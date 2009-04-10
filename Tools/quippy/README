@@ -1,0 +1,73 @@
+pyatomsf
+--------
+
+This package is a Python interface to libAtoms (and optionally, also
+to QUIP). To use it you must have Python >= 2.4 installed as well as
+the numpy extension (http://www.scipy.org/numpy). ipython
+(http://ipython.scipy.org/moin/) makes using python interactively
+much more productive.
+
+Installation
+------------
+
+Before installing, there's a patch file which needs to be applied to
+numpy. This gets optional arguments to work correctly between python
+and fortran, and I've only tested it with gfortran. It was created
+against numpy-1.2.1. To apply the patch, you need to find where
+numpy is installed:
+
+$ python
+>>> import numpy
+>>> print numpy.__file__
+
+Then go to this directory, and change to the f2py subdirectory.
+Apply the patch as:
+
+$ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
+
+To compile pyatomsf, edit the Makefile to set the LIBATOMS_DIR and
+QUIP_DIR variables, then do a 'make -I ../Makefiles' followed by 'make
+-I ../Makefiles install'. This should build everything and install the
+Python modules in ~/lib/python. If you're not using gfortran you'll
+also have to edit the COMPILER_OPTS variable. Run the command 'python
+setup.py config_fc --help-fcompiler' for a list of detected fortran
+compilers.
+
+To check everything is working try the following:
+
+$ python
+>>> import pyatomsf
+
+To enable the QUIP bindings set HAVE_QUIP=1 in the Makefile and
+rebuild and install. If you are using gfortran, the QUIP bindings
+require a recent svn version of gfortran to compile (with 4.3.2 or
+earlier you run into this bug, reported by Steve and now fixed:
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735)
+
+
+Usage
+-----
+
+The pyatomsf tries to expose all the libAtoms functions
+in an object-oriented way. Here is some sample code that loads
+an Atoms object from a NetCDF file:
+
+>>> from pyatomsf import *
+>>> a = Atoms()
+>>> a.read_xyz_filename('clusters.xyz')
+
+or
+
+>>> nc = NetCDFFile('crack.nc')
+>>> nc.read_atoms(a)
+
+Since Python is case-sensitive, and Fortran is not, all variable
+and functions names are converted to lower case. The only exception
+is type names which are wrapped by classes with the same capitalisation
+as the type definition in Fortran (e.g. Atoms, NetCDFFile above).
+
+If you're using ipython, the full documentation strings for each class
+and function can be seen by typing the name of the thing you're
+interested in, followed by a ?. For example "Atoms ?", "a.n ?" or
+"Atoms.lattice ?" (if you're using standard python, you can get the
+same information by typing help(object), e.g.  help(Atoms)).

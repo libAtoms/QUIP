@@ -1,0 +1,117 @@
+--- rules.py	2008-12-22 17:45:27.000000000 +0000
++++ rules.py	2008-12-22 17:54:42.000000000 +0000
+@@ -75,6 +75,8 @@
+ import func2subr
+ options={}
+ 
++f2py_version += '_patched_JRK'
++
+ sepdict={}
+ #for k in ['need_cfuncs']: sepdict[k]=','
+ for k in ['decl',
+@@ -116,6 +118,19 @@
+ #includes#
+ #includes0#
+ 
++/* Added by James Kermode */
++#include <setjmp.h>
++jmp_buf environment_buffer;
++char abort_message[1024];
++
++void system_abort_(char *message, int len)
++{
++  strncpy(abort_message, message, len);
++  abort_message[len] = '\\0';
++  longjmp(environment_buffer,0);
++}
++/* end addition */
++
+ """+gentitle("See f2py2e/rules.py: mod_rules['modulebody']")+"""
+ static PyObject *#modulename#_error;
+ static PyObject *#modulename#_module;
+@@ -237,6 +252,7 @@
+                            #functype# (*f2py_func)(#callprotoargument#)) {
+ \tPyObject * volatile capi_buildvalue = NULL;
+ \tvolatile int f2py_success = 1;
++\tint setjmpvalue; /* James Kermode - for setjmp */
+ #decl#
+ \tstatic char *capi_kwlist[] = {#kwlist##kwlistopt##kwlistxa#NULL};
+ #usercode#
+@@ -252,7 +268,14 @@
+ #ifdef F2PY_REPORT_ATEXIT
+ f2py_start_call_clock();
+ #endif
++/* setjmp() exception handling added by James Kermode */
++setjmpvalue = setjmp(environment_buffer);
++if (setjmpvalue != 0)
++  PyErr_SetString(PyExc_RuntimeError, abort_message);
++else {
+ #callfortranroutine#
++}
++/* End addition */
+ if (PyErr_Occurred())
+   f2py_success = 0;
+ #ifdef F2PY_REPORT_ATEXIT
+@@ -751,7 +774,8 @@
+     { # Common
+     'decl':'\t#ctype# #varname# = 0;',
+     'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",#varname#);'},
+-    'callfortran':{isintent_c:'#varname#,',l_not(isintent_c):'&#varname#,'},
++    'callfortran':{isintent_c:'#varname#,',l_and(isoptional,l_not(isintent_c)):'#varname#_capi == Py_None ? NULL : &#varname#,',
++                   l_and(l_not(isoptional),l_not(isintent_c)):'&#varname#,'},
+     'return':{isintent_out:',#varname#'},
+     '_check':l_and(isscalar,l_not(iscomplex))
+     },{
+@@ -818,7 +842,9 @@
+ # Complex scalars
+     { # Common
+     'decl':'\t#ctype# #varname#;',
+-    'callfortran':{isintent_c:'#varname#,',l_not(isintent_c):'&#varname#,'},
++#    'callfortran':{isintent_c:'#varname#,',l_not(isintent_c):'&#varname#,'},
++    'callfortran':{isintent_c:'#varname#,',l_and(isoptional,l_not(isintent_c)):'#varname#_capi == Py_None ? NULL : &#varname#,',
++                   l_and(l_not(isoptional),l_not(isintent_c)):'&#varname#,'},
+     'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",#varname#.r,#varname#.i);'},
+     'return':{isintent_out:',#varname#_capi'},
+     '_check':iscomplex
+@@ -865,7 +891,8 @@
+     'decl':['\t#ctype# #varname# = NULL;',
+             '\tint slen(#varname#);',
+             '\tPyObject *#varname#_capi = Py_None;'],
+-    'callfortran':'#varname#,',
++#    'callfortran':'#varname#,',
++    'callfortran':{isintent_out:'#varname#,', l_not(isintent_out):'#varname#_capi == Py_None ? NULL : #varname#,'},
+     'callfortranappend':'slen(#varname#),',
+     'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",slen(#varname#),#varname#);'},
+ #    'freemem':'\tSTRINGFREE(#varname#);',
+@@ -909,7 +936,8 @@
+             '\tPyArrayObject *capi_#varname#_tmp = NULL;',
+             '\tint capi_#varname#_intent = 0;',
+             ],
+-    'callfortran':'#varname#,',
++#    'callfortran':'#varname#,',
++    'callfortran':{isintent_out:'#varname#,', l_not(isintent_out):'#varname#_capi == Py_None ? NULL : #varname#,'},
+     'return':{isintent_out:',capi_#varname#_tmp'},
+     'need':'len..',
+     '_check':isarray
+@@ -971,13 +999,19 @@
+                  '\tcapi_#varname#_intent |= #intent#;',
+                  {isintent_hide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,Py_None);'},
+                  {isintent_nothide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,#varname#_capi);'},
+-                 """\
++                 {l_not(isoptional): """\
+ \tif (capi_#varname#_tmp == NULL) {
+ \t\tif (!PyErr_Occurred())
+ \t\t\tPyErr_SetString(#modulename#_error,\"failed in converting #nth# `#varname#\' of #pyname# to C/Fortran array\" );
+ \t} else {
+ \t\t#varname# = (#ctype# *)(capi_#varname#_tmp->data);
+-""",
++"""},
++                 {isoptional:"""\
++{
++\t\tPyErr_Clear();
++if (capi_#varname#_tmp != NULL)
++\t\t#varname# = (#ctype# *)(capi_#varname#_tmp->data);
++"""},
+ {hasinitvalue:[
+     {isintent_nothide:'\tif (#varname#_capi == Py_None) {'},
+     {isintent_hide:'\t{'},
