@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import sys
+from math import *
+
+xyz1 = open(sys.argv[1])
+xyz2 = open(sys.argv[2])
+
+# Get number of atoms
+n1 = int(xyz1.readline())
+n2 = int(xyz2.readline())
+
+if n1 != n2:
+   print 1000.0 # a big number
+   sys.exit(0)
+
+# Throw away comment
+xyz1.readline()
+xyz2.readline()
+
+total = 0.0
+maxdiff = 0.0
+for n in range(n1):
+   line1 = xyz1.readline().split()
+   line2 = xyz2.readline().split()
+
+   x1 = map(float,line1[1:4])
+   x2 = map(float,line2[1:4])
+   for i in range(3):
+      total = total + (x1[i] - x2[i])**2
+      if abs(x1[i]-x2[i]) > maxdiff:
+         maxdiff = abs(x1[i]-x2[i])
+   
+# Print RMS difference
+print sqrt(total / n1)
+
+# and max difference
+print maxdiff

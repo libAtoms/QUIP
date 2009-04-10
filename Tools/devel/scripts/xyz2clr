@@ -1,0 +1,37 @@
+#!/bin/awk -f
+
+BEGIN {
+  split(ARGV[1],a,"."); 
+  clrbase=a[1]
+  frame=0;
+
+  # Column to colour by
+  col=5;
+
+  # Mapping of $col values to RGB colours
+  colour[0]="0.85 0.85 0.25";
+  colour[1]="1.00 0.00 0.00";
+  colour[3]="1.00 0.00 0.00";
+}
+
+{
+  clrfile=clrbase sprintf("%05d",frame) ".clr";
+
+  natoms=$1;
+  printf "Frame "frame": " natoms" atoms              \r";
+
+  getline comment;
+
+  for (i=0; i<natoms; i++) {
+    getline;
+    
+    printf "%s\n",colour[int($col)] >> clrfile;
+  }     
+
+  close(clrfile);
+  frame=frame+1;
+}
+
+END {
+  print "Done "frame" frames.                  "
+}

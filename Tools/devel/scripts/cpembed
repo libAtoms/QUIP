@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+from pyatoms import *
+import sys
+
+if (len(sys.argv)) != 4:
+   print 'Usage: cpembed <source of embed mask.xyz> <source of positions.xyz> <dest.xyz>'
+   sys.exit(1)
+
+at1 = Atoms(sys.argv[1])
+at2 = Atoms(sys.argv[2])
+
+if at1.n != at2.n:
+   print 'Error: at1.n (%d) != at2.n (%d)' % (at1.n, at2.n)
+   sys.exit(1)
+
+at2.aux[:,0] = at1.aux[:,0]
+
+
+outf = open(sys.argv[3], 'w')
+at2.write(outf)
+outf.close()

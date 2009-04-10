@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[[ $# != 2 ]] || (echo "Usage: drop_frames <n_frames> < infile.xyz > outfile.xyz"; exit 1)
+
+nframes=$1
+natoms=`head -1`
+lines=$(((natoms+2)*nframes-1))
+sed -e "1,${lines}d" 

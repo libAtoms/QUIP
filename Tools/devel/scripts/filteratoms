@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import sys
+from pyatoms import *
+from numpy import *
+
+at = Atoms(sys.argv[1])
+
+def sphere(c,r):
+    return (norm(at.pos - c)) < r
+
+def cracktip(r):
+    return sphere(array((at.params['CrackPos'],0.0,0.0)),r)
+
+condition = eval(sys.argv[2])
+nz = condition.nonzero()[0]
+
+print '%d/%d atoms' % (len(nz), at.n)
+
+filter = open(sys.argv[1]+'.filter','w')
+filter.write('\n'.join(map(str, nz)))
+filter.write('\n')
+filter.close()
