@@ -1,0 +1,52 @@
+{VERSION 4 0 "IBM INTEL LINUX22" "4.0" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 1 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 
+0 0 1 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 1 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 }0 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }{PSTYLE "Maple Output" 0 11 1 
+{CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 }3 3 0 -1 -1 -1 0 
+0 0 0 0 0 -1 0 }{PSTYLE "" 11 12 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 }1 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }}
+{SECT 0 {EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 20 "with(LinearAlgebra):
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 46 "Gear:=proc (p,k) local \+
+Gamma,YS,G,M,i,j,m,y,x;" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 32 "G:=(i,t)
+->(-t/log(1-t))^i/(1-t):" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 52 "Gamma:=
+(i, k)->coeff(mtaylor(G(i, t), t=0,k+2),t,k):" }}{PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 9 "m:=k-p-1:" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 180 "M:=ar
+ray(1..m,1..m):M[1,1]:=1-m:for j from 2 to m do M[1,j]:=2^j-2; M[j,1]:
+=-y[j]; for i from 2 to j do M[i,j]:=j!/i!/(j-i)! end do: for i from j
++1 to m do M[i,j]:=0 end do end do:" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 
+98 "YS:=solve(map(x->x=0,\{coeffs(CharacteristicPolynomial(Matrix(M),Z
+),Z)\}[2..m]),\{seq(y[i],i=2..m)\}):" }}{PARA 0 "> " 0 "" {MPLTEXT 1 
+0 78 "for j from 2 to m do x[j]:=subs(YS,y[j]) end do: x[1]:=m-sum('x[
+j]','j'=2..m):" }}{PARA 0 "> " 0 "" {MPLTEXT 1 0 82 "seq(Gamma(p-i,k-i
+-1)*p!/i!, i=0..p-1),1,x[1]/(p+1),seq(x[i]*p!*i!/(p+i)!, i=2..m);" }}
+{PARA 0 "> " 0 "" {MPLTEXT 1 0 9 "end proc;" }}{PARA 12 "" 1 "" 
+{XPPMATH 20 "6#>%%GearGR6$%\"pG%\"kG6+%&GammaG%#YSG%\"GG%\"MG%\"iG%\"j
+G%\"mG%\"yG%\"xG6\"F3C,>8&R6$F.%\"tGF36$%)operatorG%&arrowGF3*&),$*&9%
+\"\"\"-%$logG6#,&FBFBFA!\"\"FGFG9$FBFFFGF3F3F3>8$R6$F.F(F3F:F3-%&coeff
+G6%-%(mtaylorG6%-T#6$FHF9/F9\"\"!,&FAFB\"\"#FBF9FAF3F36$F,F6>8*,(FAFBF
+HFGFBFG>8'-%&arrayG6$;FBFfnF]o>&Fin6$FBFB,&FBFBFfnFG?(8)FYFBFfn%%trueG
+C&>&Fin6$FBFco,&)FYFcoFBFYFG>&Fin6$FcoFB,$&8+6#FcoFG?(8(FYFBFcoFdo>&Fi
+n6$FcpFco*&-%*factorialGFapFB*&-Fip6#FcpFB-Fip6#,&FcoFBFcpFGFBFG?(Fcp,
+&FcoFBFBFBFBFfnFdo>FepFW>8%-%&solveG6$-%$mapG6$R6#F2F3F:F3/FHFWF3F3F3&
+<#-%'coeffsG6$-_%.LinearAlgebraG%9CharacteristicPolynomialG6$-%'Matrix
+G6#Fin%\"ZGF[s6#;FYFfn<#-%$seqG6$&F`pF\\q/FcpF]s?(FcoFYFBFfnFdo>&8,Fap
+-%%subsG6$FdqF_p>&Fgs6#FB,&FfnFB-%$sumG6$.Ffs/.FcoF]sFG6&-F`s6$*&*&-FJ
+6$,&FHFBFcpFG,(FAFBFcpFGFBFGFB-Fip6#FHFBFBF[qFG/Fcp;FW,&FHFBFBFGFB*&F
+\\tFB,&FHFBFBFBFG-F`s6$*&*(&FgsF\\qFBF^uFBF[qFBFB-Fip6#,&FHFBFcpFBFGFc
+sF3F3F3" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 10 "Gear(2,6);" }}
+{PARA 11 "" 1 "" {XPPMATH 20 "6(#\"\"$\"#?#\"$^#\"$g$\"\"\"#\"#6\"#=#F
+)\"\"'#F)\"#g" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 10 "Gear(2,7);
+" }}{PARA 11 "" 1 "" {XPPMATH 20 "6)#\"$j)\"%[g#\"#&*\"$W\"\"\"\"#\"#D
+\"#O#\"#NF(#F)\"#C#F)\"$g$" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 
+10 "Gear(2,8);" }}{PARA 11 "" 1 "" {XPPMATH 20 "6*#\"$v#\"%;?#\"&(3>\"
+&S-$\"\"\"#\"$P\"\"$!=#\"\"&\"#;#\"#<\"$S##F)\"$?\"#F)\"%?D" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 11 "Gear(2,12);" }}{PARA 11 "" 
+1 "" {XPPMATH 20 "6.#\"%rY\"&C%R#\")`A%o#\")g,!z%\"\"\"#\"%Hr\"%gv#\"%
+:l\"&'47#\"%BX\"&!oA#\"#>\"$%Q#\"%8I\"'!)GO#\"\"&\"%w`#\"#H\"'caV#F)F8
+#F)\")+%e*>" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 10 "Gear(1,8);" 
+}}{PARA 11 "" 1 "" {XPPMATH 20 "6*#\"%d_\"&!G<\"\"\"#\"#\\\"#S#\"$.#\"
+$q##F(\"$#>#\"\"(\"$W\"#F0\"%S9#F&\"%S]" }}}{EXCHG {PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 0 "" }}}}{MARK "6 0 0" 10 }{VIEWOPTS 1 1 0 1 1 1803 1 1 
+1 1 }{PAGENUMBERS 0 1 2 33 1 1 }

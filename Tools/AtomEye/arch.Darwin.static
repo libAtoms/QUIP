@@ -1,0 +1,59 @@
+#
+# C/Fortran compilers
+#
+
+CC = /usr/bin/gcc
+LD = /usr/bin/gcc
+FC = /usr/bin/gfortran
+
+#
+# Linker/Assembler
+#
+
+AR = ar -r
+RANLIB = ranlib
+NM = nm -p
+
+#
+# Compiler flags
+#
+
+CCFLAGS = \
+   -DNETCDF4\
+   -O3 \
+   -fomit-frame-pointer \
+   -fno-schedule-insns \
+   -fschedule-insns2 \
+   -I/opt/local/include
+
+#
+# AtomEye libraries
+#
+
+USE_MY_LIB = \
+   -lAX -lAtoms -lVecMat3 -lVecMat -lIO -lScalar -lTimer
+
+#
+# System libraries
+#
+
+USE_SYSTEM_LIB = -lm -L/usr/X11/lib/ -lXpm -lXext -lX11 -lmpi \
+   ../staticlibs/libpng.a \
+   ../staticlibs/libz.a \
+   ../staticlibs/libjpeg.a \
+   ../staticlibs/libhistory.a \
+   ../staticlibs/libncurses.a \
+   ../staticlibs/libnetcdf.a \
+   ../staticlibs/libhdf5.a \
+   ../staticlibs/libhdf5_hl.a \
+   ../staticlibs/libreadline.a \
+   -framework vecLib
+
+#
+# Local directories
+#
+
+MY_BIN_DIR = ../bin
+MY_LIB_DIR = ../lib
+MY_INC_DIR = ../include
+MY_BAK_DIR = ../bak

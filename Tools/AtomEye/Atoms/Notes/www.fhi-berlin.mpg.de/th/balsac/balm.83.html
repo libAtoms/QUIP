@@ -1,0 +1,228 @@
+<html><head>
+<title> BALSAC Version 2.15 Manual, Section 6.3.2</title>
+</head>
+<body bgcolor="white">
+<pre>
+<h1>6.3.2.  STRUCTURE OPTION, [S]</h1>
+
+<a href="./balm.84.html">next</a>, <a href="./balm.82.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+ 
+[S]  This option allows you to modify, shift, add, hide, or remove atoms of
+     the cluster studied in a BALSAC/CLUSTER session. If BALSAC/CLUSTER is
+     started from scratch in an interactive session (without a structure
+     input file) this option defines the initial cluster where
+ 
+          ====== STRUCTURE OPTIONS ==============
+ 
+          Build structure from scratch
+          Title (A60) :
+ 
+     asks for a title (up to 60 ASCII characters) describing the cluster
+     and
+ 
+          No. of atoms N (&gt;0, 0=esc) :
+ 
+     asks for the total number nct of atoms to define the cluster. (Dummy
+     input nct = 0  returns to the BALSAC/CLUSTER startup menu.) This is
+     followed by nt prompts
+ 
+          1   (X,Y,Z,R,NUC) :
+         ...
+         nct  (X,Y,Z,R,NUC) :
+ 
+     requesting five numbers each defining the cluster atoms by their
+     positions (x,y,z) in absolute cartesian coordinates, atom radii rad and
+     nuclear charges nuc. Atomic radii do not need to be known at this point
+     and can be determined later, see option [R] below and Sec. <a href="./balm.87.html">6.3.3</a>. The
+     initial cluster definition is confirmed by
+ 
+            nct (nel)  different atoms (elements)
+ 
+     where nel gives the number of elements (= atoms of different nuclear
+     charge) after which BALSAC moves to the structure option menu. This
+     startup input is not required if the structure option is chosen from the
+     main option menu of BALSAC/CLUSTER.
+ 
+ 
+     Selecting [S] from the main option menu of BALSAC/CLUSTER shows the
+     structure option menu, submenu S
+ 
+       ====== STRUCTURE OPTIONS =============================================
+ 
+        [T]it    [R]ad/nuc  [A]toms  [G]rp  [F]ilrd  [L]ist  [S]ymm  [D]ispla
+        [X]plot  [?,]esc
+       ================================================================  9 ==
+ 
+     from which atoms of the cluster can be (re)defined, listed, or plotted
+     in many different ways.
+ 
+ &gt;   [T]  selected from submenu S shows the present title of the cluster by
+ 
+              Title [ ... old title ... ]
+              New (A60,"-"=esc) :
+ 
+          asking for a new title (up to 60 characters, longer text will be
+          truncated). Answering the prompt by a one character title "-" will
+          leave the present title unchanged. After title (or dummy) input
+          BALSAC returns to the structure option menu S.
+ 
+ &gt;   [R]  selected from submenu S moves to the radii/charge option menu
+          allowing you to modify radii and nuclear charges of all atoms of
+          the cluster. The options of this menu are explained in detail in
+          Sec. <a href="./balm.87.html">6.3.3</a>. If the radii/charge option menu is closed by selecting
+          [,] BALSAC returns to the structure option menu S.
+ 
+ &gt;   [A]  selected from submenu S allows you to add, hide, move, or delete
+          cluster atoms. This option can be used to rebuild parts of the
+          cluster. Details of the atom modify menu are described in
+          Sec. <a href="./balm.84.html">6.3.2.1</a>.
+ 
+ &gt;   [G]  selected from submenu S allows you to define and modify groups of
+          atoms of the cluster by changing their coordinates in simple
+          geometric operations, store groups on external files for later use,
+          and more. Details of the group modify menu are described in
+          Sec. <a href="./balm.85.html">6.3.2.2</a>.
+ 
+ &gt;   [F]  selected from submenu S allows you to include additional atoms from
+          an external (PLOT3D format) file in the present cluster. Examples
+          are combinations of molecules and/or lattice sections built in
+          separate BALSAC sessions and joined to form a compound system. The
+          prompt
+ 
+               File name for add ("-"=esc) :
+ 
+          asks for the name (up to 72 characters) of a (PLOT3D format) file
+          defining any cluster. Dummy input "-" will immediately return to
+          submenu S while a valid file name fname containing a cluster of
+          nn atoms shows submenu SF
+ 
+               nn Atoms to add:  [A]ddall  [P]rompt  [?,]esc
+ 
+          asking for the include mode.
+ 
+ &gt;    &gt;   [A]  selected from submenu SF includes all cluster atoms of the
+               external file in the present cluster (if possible) which is
+               confirmed by
+ 
+                    nac ( nn ) atoms added from file
+                    name = [ fname ]
+ 
+               giving the number nac of new atoms included and the number nn
+               of atoms stored in the external file fname. The value nac
+               will be smaller than nn if the total number of atoms after the
+               include process exceeds the internal maximum namax ( = 2001
+               (DOS) or = 8000 (Unix)). After all atoms are included BALSAC
+               returns to the structure option menu S, see Sec. <a href="./balm.83.html">6.3.2</a>.
+ 
+ &gt;    &gt;   [P]  selected from submenu SF allows you to include selected
+               cluster atoms from the external file in the present cluster.
+               Here for each atom stored in the file a line
+ 
+                    Xyz,R,Id=   x   y   z   rad   nuc   : [A]cc [I]gn [?,]esc
+ 
+               shows the atom position (x,y,z), its radius rad and nuclear
+               charge nuc. This atom can then be included in the present
+               cluster by selecting [A] which is confirmed by
+ 
+                    Atom accepted as no. ni
+ 
+               where ni denotes the last atom of the present cluster list.
+               Alternatively, the atom can be ignored by selecting [I] which
+               is confirmed by
+ 
+                    Atom ignored
+ 
+               After the atom has been accepted/ignored the next atom of the
+               file is shown. After all atoms of the external file have been
+               prompted or [,] was selected in the atom prompt the message
+ 
+                    nac ( nn ) atoms added from file
+                    name = [ fname ]
+ 
+               gives the number nac of new atoms included in the cluster and
+               the total number nn of atoms stored in the external file
+               fname after which BALSAC returns to the structure option
+               menu S, see Sec. <a href="./balm.83.html">6.3.2</a>.
+ 
+ &gt;    &gt;   [,]  selected from submenu SF returns to the structure option menu
+               S, see Sec. <a href="./balm.83.html">6.3.2</a>, without atoms included in the present
+               cluster.
+ 
+          Note that all new atoms included from an external file will be
+          automatically considered a new group of atoms overriding the former
+          group definition (if it exists). Therefore, the complete set of new
+          atoms may be subject to group operations such as translation or
+          copying, see Sec. <a href="./balm.85.html">6.3.2.2</a>. This becomes particularly important if
+          new atoms coincide with or come very close to existing atoms and
+          need to be "moved out of the way" (shift the whole group by a large
+          vector, group translate option).
+ 
+ &gt;   [L]  selected from submenu S allows you to list all or selected atoms of
+          a cluster. The line
+ 
+               nct ( nel) different atoms (elements) ,  List (NA,NE) :
+ 
+          shows the total number nct (nel) of atoms (different elements) of
+          the cluster and prompts for a range of atoms [na,ne] (given as two
+          integers) to be listed. For 0 &lt; na &lt;= ne &lt;= nct the positions and
+          attributes of atoms no. na to ne are listed in the form
+ 
+                Atom      X       Y       Z        R     El/Nuc     Vis
+               ----------------------------------------------------------
+                 na)      x       y       z        r       nuc     visbl
+               na+1)      x       y       z        r       nuc     visbl
+                     ...
+                 ne)      x       y       z        r       nuc     visbl
+ 
+             ** Press [C], L-click to continue;  [,], R-click to escape **
+ 
+          where (x,y,z) are coordinates of atom no. i (i=na...ne), r its
+          radius, nuc its nuclear charges, and visbl its visibility flag ("T"
+          for visible or "F" for invisible, see Sec. <a href="./balm.84.html">6.3.2.1</a>). After this
+          BALSAC returns to the structure option menu S. Some lines of the
+          above listing may read
+ 
+                 i )      x     y     z      r     nuc    visbl  =&gt; ieq
+ 
+          which indicates that atoms i and ieq coincide. Coinciding atoms
+          should be removed from the cluster, see options [H], [P] of the
+          atom modify menu, Sec. <a href="./balm.84.html">6.3.2.1</a>.
+ 
+ 
+ &gt;   [S]  selected from submenu S allows you to impose point symmetries on
+          the cluster where the cluster will be completed by adding atoms (if
+          needed) to achieve the required symmetry. Details of the cluster
+          symmetry menu are described in Sec. <a href="./balm.86.html">6.3.2.3</a>.
+ 
+ &gt;   [D]  selected from submenu S shows up to 10 lines of the most recent
+          output generated by the graphic analysis option, see Sec. <a href="./balm.100.html">6.3.12.2</a>,
+          by
+ 
+               ============ Latest Graphics Output ==================
+ 
+                1: Xyz,R,Id( n1)=    x    y    z    rad     nuc
+                   ...
+               ======================================================
+ 
+          This allows you to look up and use numerical output from the
+          analysis for input within submenu S.
+ 
+ &gt;   [X]  selected from submenu S plots the cluster (switching to graphics
+          mode (DOS) or opening a graphics window (Unix)) or lists its atom
+          coordinates depending on the plot/list mode defined in the graphics
+          option, see Sec. <a href="./balm.64.html">6.2.7</a>.
+ 
+ &gt;   [,]  selected from submenu S moves to the view option menu, see
+          Sec. <a href="./balm.88.html">6.3.4</a>, if the cluster is built from scratch or returns to the
+          BALSAC/CLUSTER main option menu, see Sec. <a href="./balm.81.html">6.3.0</a>.
+ 
+ 
+ 
+ 
+
+<a href="./balm.84.html">next</a>, <a href="./balm.82.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+</pre>
+</body>
+</html>

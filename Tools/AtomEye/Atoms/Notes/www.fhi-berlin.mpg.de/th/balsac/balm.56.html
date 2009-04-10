@@ -1,0 +1,295 @@
+<html><head>
+<title> BALSAC Version 2.15 Manual, Section 6.2.1</title>
+</head>
+<body bgcolor="white">
+<pre>
+<h1>6.2.1.  LATTICE OPTION, [L]</h1>
+
+<a href="./balm.57.html">next</a>, <a href="./balm.55.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+ 
+[L]  This option allows you to select the crystal lattice by defining lattice
+     vectors and lattice basis vectors. Several commonly used lattices
+     including all 14 primitive Bravais lattices are implemented internally
+     and can be selected by key code rather than defining lattice and lattice
+     basis vectors. The lattice option menu L reads
+ 
+   ========== LATTICE OPTIONS ==============================================
+      Lattice:   title of lattice                (latc)  a=  acon
+ 
+      Select:  [A] sc
+               [B] fcc                [L] fcc (Bravais hkl)
+               [C] bcc                [M] bcc (Bravais hkl)
+               [D] hcp                [N] hcp (lmnq)
+               [E] diamond            [O] diamond (Bravais hkl)
+               [F] NaCl               [P] NaCl (Bravais hkl)
+               [G] CsCl
+               [H] zincblende         [Q] zincblende (Bravais hkl)
+               [I] graphite           [R] graphite (lmnq)
+               [J] free lattice       [S] free lattice (lmnq)
+               [K] Bravais lattice
+ 
+               [U]pdate free/Bravais lattice  [V]lattice scaling  [T]itle
+               {[X]plot}    [?,]esc
+   =================================================================== 50 ==
+ 
+     where the title line gives the title, "title of lattice", of the
+     presently selected lattice, the internal lattice code number, latc,
+     and the global scaling constant (lattice constant), acon. This line does
+     not show if BALSAC/LATTICE was started from scratch and no lattice had
+     been defined so far. Further, with BALSAC started from scratch the plot
+     option "[X]plot" of this menu is not available and will not be shown.
+     The selection of some commonly used lattices is possible from this menu
+     by key code input where
+ 
+ &gt;   [A]  selects a simple cubic (sc) lattice.
+ 
+ &gt;   [B]  selects a face centered cubic (fcc) lattice where Miller indices
+          are defined with respect to the sc lattice (default for surface
+          scientists).
+ 
+ &gt;   [C]  selects a body centered cubic (bcc) lattice where Miller indices
+          are defined with respect to the sc lattice (default for surface
+          scientists).
+ 
+ &gt;   [D]  selects a hexagonal close packed (hcp) lattice where Miller indices
+          are defined with respect to the true reciprocal Bravais lattice.
+ 
+ &gt;   [E]  selects a diamond lattice built of two fcc sublattices where Miller
+          indices are defined with respect to the sc lattice (default for
+          surface scientists).
+ 
+ &gt;   [F]  selects a sodium chloride, NaCl, lattice built of two fcc
+          sublattices where Miller indices are defined with respect to the sc
+          lattice (default for surface scientists).
+ 
+ &gt;   [G]  selects a cesium chloride, CsCl, lattice built of two sc
+          sublattices where Miller indices are defined with respect to the sc
+          lattice (default for surface scientists).
+ 
+ &gt;   [H]  selects a cubic Zincblende, ZnS, lattice (to be used also for GaAs)
+          built of two fcc sublattices where Miller indices are defined with
+          respect to the sc lattice (default for surface scientists).
+ 
+ &gt;   [I]  selects a graphite lattice built of four hexagonal lattices where
+          Miller indices are defined with respect to the true reciprocal
+          Bravais lattice.
+ 
+ &gt;   [L]  selects a face centered cubic (fcc) lattice where Miller indices
+          are defined with respect to the true reciprocal Bravais lattice.
+ 
+ &gt;   [M]  selects a body centered cubic (bcc) lattice where Miller indices
+          are defined with respect to the true reciprocal Bravais lattice.
+ 
+ &gt;   [N]  selects a hexagonal close packed (hcp) lattice where Miller indices
+          are given by the hexagonal 4-index notation.
+ 
+ &gt;   [O]  selects a diamond lattice built of two fcc sublattices where Miller
+          indices are defined with respect to the true reciprocal Bravais
+          lattice.
+ 
+ &gt;   [P]  selects a sodium chloride, NaCl, lattice built of two fcc
+          sublattices where Miller indices are defined with respect to the
+          true reciprocal Bravais lattice.
+ 
+ &gt;   [Q]  selects a cubic Zincblende, ZnS, lattice (to be used also for GaAs)
+          built of two fcc sublattices where Miller indices are defined with
+          respect to the true reciprocal Bravais lattice.
+ 
+ &gt;   [R]  selects a graphite lattice built of four hexagonal lattices where
+          Miller indices are given by the hexagonal 4-index notation.
+ 
+     The selection of the above lattice types is confirmed by
+ 
+          title of lattice          selected,    code = latc
+ 
+     where "title of lattice" gives the internal lattice name and latc is the
+     respective lattice code number, see below. This is followed by a prompt
+ 
+          Global lattice scaling constant  a=
+ 
+     asking for a global lattice constant a to scale all lattice and lattice
+     basis vectors (a = 1.0 yields no scaling). This completes the lattice
+     definition and BALSAC/LATTICE moves to the Miller index option (main
+     option [M]) if the lattice section is built from scratch or returns to
+     the BALSAC/LATTICE main option menu.
+ 
+ 
+ &gt;   [J]  selected from submenu L allows you to define any non-primitive
+          lattice in the most general way where lattice plane directions are
+          denoted by Miller indices with respect to the reciprocal Bravais
+          lattice vectors, see Sec. <a href="./balm.60.html">6.2.3</a>. After a message
+ 
+               free lattice  selected,    code = 10
+ 
+          the prompt
+ 
+               Title of free lattice (A40, "-"=esc) :
+ 
+          asks for a title of the lattice given by an alphanumeric string
+          with up to 40 characters (longer names will be truncated). Then the
+          three prompts
+ 
+               Lattice vectors :
+               R1 = (x1, y1, z1) :
+ 
+               R2 = (x2, y2, z2) :
+ 
+               R3 = (x3, y3, z3) :
+ 
+          ask for cartesian coordinates (x,y,z) (three numbers) of each
+          lattice vector, R1, R2, R2, and
+ 
+              No. of lattice basis vectors (&lt;0=rel, &gt;0=abs, 1=primtv, 0=esc):
+ 
+          asks for the number nc of different atoms (described by basis
+          vectors, radii and nuclear charges) of the elementary cell of the
+          lattice. Here
+ 
+            nc = 1   defines a primitive lattice with one atom (hydrogen)
+                     placed at r = (0, 0, 0).
+ 
+               &gt; 0   assumes a non-primitive lattice with nc atoms per unit
+                     cell where the following nc prompts
+ 
+                          Input lattice basis (abs:X,Y,Z,RAD,NUC) :
+                          Atom  1 ( X, Y, Z, RAD, NUC) :
+ 
+                          ...
+ 
+                          Atom nc ( X, Y, Z, RAD, NUC) :
+ 
+                     ask, for each atom, for five numbers defining absolute
+                     cartesian coordinates (x,y,z) of the lattice basis
+                     vector, an atomic radius rad, and a nuclear charge nuc.
+                     Atomic radii do not need to be known at this point. If
+                     (at least) one of the radii is set to zero all rad
+                     values are determined as renormalized covalent radii
+                     (according to respective nuclear charges nuc, see
+                     Sec. <a href="./balm.47.html">5.3</a>). The renormalization is performed such that
+                     highest packing without overlapping spheres is achieved.
+                     The first atom center will serve as origin of a
+                     cartesian coordinate system which is used later on to
+                     determine any lattice structure data.
+ 
+               &lt; 0   assumes a non-primitive lattice with |nc| atoms per unit
+                     cell analogous to nc &gt; 0. The following |nc| prompts
+ 
+                          Input lattice basis (rel:Q1,Q2,Q3,RAD,NUC) :
+                          Atom  1 (Q1,Q2,Q3, RAD, NUC) :
+ 
+                          ...
+ 
+                          Atom nc (Q1,Q2,Q3, RAD, NUC) :
+ 
+                     ask, for each atom, for five numbers (lattice basis
+                     vector, atomic radius rad, nuclear charge nuc) analogous
+                     to nc &gt; 0. However, the lattice basis vectors are
+                     defined in multiples of the lattice vectors
+ 
+                        r = q1 * R1 + q2 * R2 + q3 * R3
+ 
+                     rather than by absolute cartesian coordinates (x, y, z).
+ 
+               = 0   leaves an existing lattice basis vector set unchanged
+                     while building a lattice from scratch repeats the above
+                     prompt enforcing lattice basis input.
+ 
+          After the lattice basis has been defined BALSAC moves to the
+          lattice update menu LU where the atom basis definition can be
+          further modified, see [U] of submenu L below.
+ 
+ &gt;   [S]  selected from submenu L is identical to option [J] allowing you to
+          define any non-primitive lattice. However, lattice plane directions
+          are denoted by Miller indices using the hexagonal 4-index notation
+          which is confirmed by the lattice code -10 in the message
+ 
+               free lattice  selected,    code = -10
+ 
+          and becomes useful for non-primitive hexagonal lattices, see
+          Sec. <a href="./balm.60.html">6.2.3</a>.
+ 
+ &gt;   [K]  selected from submenu L allows you to define any of the 14
+          primitive Bravais lattices which can be updated to include a
+          lattice basis for the most general definition of a non-primitive
+          lattice. Details of the Bravais lattice option are described in
+          Sec. <a href="./balm.57.html">6.2.1.1</a>.
+ 
+ &gt;   [U]  selected from submenu L allows you to update or redefine a free
+          lattice definition including Bravais lattices selected before.
+          Details of the lattice update option are described in Sec. <a href="./balm.58.html">6.2.1.2</a>.
+ 
+ &gt;   [V]  selected from submenu L has no effect if the lattice is built from
+          scratch. Otherwise, BALSAC asks
+ 
+               Global lattice scaling constant  a=
+ 
+          for an updated lattice constant A used to rescale the present
+          lattice definition. If A' was the previous lattice constant, all
+          lattice and lattice basis vectors and atom radii are scaled by a
+          factor A/A'. After this BALSAC returns to the BALSAC/LATTICE main
+          option menu.
+ 
+ &gt;   [T]  selected from submenu L has no effect if the lattice is built from
+          scratch. Otherwise, the prompt
+ 
+              Title [ ... old title ... ]
+              New (A40,"-"=esc) :
+ 
+          shows the present title and asks for a new title (up to 40
+          characters, longer text will be truncated). If this prompt is
+          answered by the one character title "-" the old title will be kept
+          and BALSAC returns to the BALSAC/LATTICE main option menu.
+ 
+ &gt;   [X]  selected from submenu L (not shown and unavailable if the lattice
+          is built from scratch) plots the lattice section (switching to
+          graphics mode (DOS) or opening a graphics window (Unix)) or
+          lists its atom coordinates depending on the plot/list mode defined
+          in the graphics option, see Sec. <a href="./balm.64.html">6.2.7</a>.
+ 
+ &gt;   [,]  selected from submenu L returns to the BALSAC/LATTICE startup menu
+          if the lattice section is built from scratch. Otherwise BALSAC
+          returns to the BALSAC/LATTICE main option menu, see Sec. <a href="./balm.55.html">6.2.0</a>.
+ 
+     After a lattice definition is complete BALSAC/LATTICE moves to the
+     Miller index option (main option [M]) if the lattice section is built
+     from scratch or returns to the BALSAC/LATTICE main option menu.
+ 
+     In interactive mode, atom sphere radii are constructed as radii of
+     touching spheres and may be modified later, see Sec. <a href="./balm.59.html">6.2.2</a>. If the
+     lattice option is used with a structure input file values of the atomic
+     radii are always read in. If (at least) one of the atomic radii equals
+     zero a touching spheres geometry is assumed and all radii are
+     recomputed, see also below. For predefined lattices with diatomic bases
+     (NaCl, CsCl, cubic ZnS) the ratios of the radii are taken from Coulson's
+     tables of ionic radii, see Secs. <a href="./balm.47.html">5.3</a>, <a href="./balm.59.html">6.2.2</a>.
+ 
+     In structure input files code numbers, latc, are used instead of
+     characters to denote lattice types. These code numbers are also shown on
+     the first line of the BALSAC/LATTICE main option menu and of the lattice
+     option menu L. The following table connects option codes used
+     interactively in submenu L with lattice code numbers used in structure
+     files.
+ 
+         option  code     option  code     option  code     option  code
+ 
+           [A]     1        [B]     2        [C]     3        [D]     4
+           [E]     5        [F]     6        [G]     7        [H]     8
+           [I]     9        [J]    10        [K]    10        [L]    -2
+           [M]    -3        [N]    -4        [O]    -5        [P]    -6
+           [Q]    -8        [R]    -9        [S]   -10
+ 
+     NOTE that in structure output files generated by BALSAC/LATTICE all
+     structural parameters (lattice vectors, lattice basis vectors, radii)
+     are rescaled to a global lattice scaling constant A = 1.0 and A is given
+     separately in the first part of the file.
+ 
+ 
+ 
+ 
+
+<a href="./balm.57.html">next</a>, <a href="./balm.55.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+</pre>
+</body>
+</html>

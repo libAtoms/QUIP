@@ -1,0 +1,21 @@
+{VERSION 3 0 "IBM INTEL LINUX" "3.0" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 0 
+0 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 
+0 0 }0 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }{PSTYLE "Maple Output" 0 11 1 
+{CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 }3 3 0 -1 -1 -1 0 0 
+0 0 0 0 -1 0 }{PSTYLE "" 11 12 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 
+0 0 0 0 0 0 0 }1 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }}
+{SECT 0 {EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 8 "restart:" }}}{EXCHG 
+{PARA 0 "> " 0 "" {MPLTEXT 1 0 88 "sys := \{(D@@2)(x)(t)=-x(t)/(x(t)^2
++y(t)^2)^1.5, (D@@2)(y)(t)=-y(t)/(x(t)^2+y(t)^2)^1.5\}:" }}}{EXCHG 
+{PARA 0 "> " 0 "" {MPLTEXT 1 0 34 "e := 0.5: Digits:=16: Order := 10:
+" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 100 "dsolve (sys union \{x(
+0)=1-e,y(0)=0,D(x)(0)=0,D(y)(0)=sqrt((1+e)/(1-e))\}, \{x(t), y(t)\}, t
+ype=series);" }}{PARA 12 "" 1 "" {XPPMATH 20 "6#<$/-%\"yG6#%\"tG+/F($
+\"1x)ov!30K<!#:\"\"\"$!1.&en2,%4BF,\"\"$$\"1+(o)oBo!3&F,\"\"&$!1k#>$[b
+T#[\"!#9\"\"($\"1<9=r5(G&\\F6\"\"*-%\"OG6#\"\"\"\"#5/-%\"xGF'+/F($\"\"
+&!\"\"\"\"!$!1+++++++?F,\"\"#$\"1LLLLLLLLF,\"\"%$!15AAAAAA')F,\"\"'$\"
+1+l$z]Ozq#F6\"\")F;\"#5" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "
+" }}}}{MARK "3 1 0" 0 }{VIEWOPTS 1 1 0 1 1 1803 }

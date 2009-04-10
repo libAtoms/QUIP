@@ -1,0 +1,13 @@
+#
+
+set outfile = /tmp/1
+
+if (-e $outfile) rm $outfile
+
+foreach symbol ( H.html He.html Li.html Be.html B.html C.html N.html O.html F.html Ne.html Na.html Mg.html Al.html Si.html P.html S.html Cl.html Ar.html K.html Ca.html Sc.html Ti.html V.html Cr.html Mn.html Fe.html Co.html Ni.html Cu.html Zn.html Ga.html Ge.html As.html Se.html Br.html Kr.html Rb.html Sr.html Y.html Zr.html Nb.html Mo.html Tc.html Ru.html Rh.html Pd.html Ag.html Cd.html In.html Sn.html Sb.html Te.html I.html Xe.html Cs.html Ba.html La.html Ce.html Pr.html Nd.html Pm.html Sm.html Eu.html Gd.html Tb.html Dy.html Ho.html Er.html Tm.html Yb.html Lu.html Hf.html Ta.html W.html Re.html Os.html Ir.html Pt.html Au.html Hg.html Tl.html Pb.html Bi.html Po.html At.html Rn.html Fr.html Ra.html Ac.html Th.html Pa.html U.html Np.html Pu.html Am.html Cm.html Bk.html Cf.html Es.html Fm.html Md.html No.html Lr.html Rf.html Db.html Sg.html Bh.html Hs.html Mt.html )
+# foreach symbol ( H.html) #
+set a = ( `grep -E '<td colspan="6" align="left">' $symbol | sed  "s/^/\'/" | sed -e 's/<[^>]*>//g' | sed  "s/ (Space group number:/'/" |  sed  "s/ (.*)//" | sed  "s/)//" `\' `grep -E "^<td>[0-9]+" $symbol | sed  's/<[^>]*>//g' ` )
+echo "$a" | tee -a $outfile
+end
+
+echo saved on file \"$outfile\".

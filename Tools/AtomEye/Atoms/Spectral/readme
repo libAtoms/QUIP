@@ -1,0 +1,9 @@
+cd SSpectral
+cc -g -D_smile1_TEST -I$INC_PATH SSpectral.c -L$LIB_PATH \
+-lsrfftw -lsfftw -lIO -lm; a.out
+ssmile1
+
+cd DSpectral
+cc -g -D_smile1_TEST -I$INC_PATH DSpectral.c -L$LIB_PATH \
+-ldrfftw -ldfftw -lIO -lm; a.out
+dsmile1

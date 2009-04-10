@@ -1,0 +1,32 @@
+(Message inbox:189)
+Received: from GRAND-CENTRAL-STATION.MIT.EDU by po10 (5.61/4.7) id AA19360; Wed, 28 Jun 00 18:17:46 EDT
+Received: from melbourne-city-street.MIT.EDU (MELBOURNE-CITY-STREET.MIT.EDU [18.69.0.45])
+	by grand-central-station.MIT.EDU (8.9.2/8.9.2) with ESMTP id SAA11738
+	for <liju99@mit.edu>; Wed, 28 Jun 2000 18:19:01 -0400 (EDT)
+Received: from ASM.MIT.EDU (IDENT:root@ASM.MIT.EDU [18.54.0.86])
+	by melbourne-city-street.MIT.EDU (8.9.3/8.9.2) with ESMTP id SAA29319
+	for <liju99@MIT.EDU>; Wed, 28 Jun 2000 18:19:01 -0400 (EDT)
+Received: from localhost by ASM.MIT.EDU (8.9.3/4.7) id SAA24142; Wed, 28 Jun 2000 18:18:20 -0400
+Date: Wed, 28 Jun 2000 18:18:20 -0400 (EDT)
+From: Dongyi Liao <liaody@MIT.EDU>
+To: Ju Li <liju99@mit.edu>
+Subject: Gear12 coefficients.
+Message-Id: <Pine.LNX.4.21L.0006281816030.24090-100000@ASM.MIT.EDU>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+I've derived all the Gear coefficients. And have a maple script to do it
+now. Some of the derivation is not trivial, but results seems good. (At
+least all numbers are rationals)
+
+Here is the coefficient for Gear12:
+
+4671/39424, 26842253/47900160, 1, 725759/1088640, 685/3024, 1957/43200,
+163/21600, 13/12096, 1/7560, 1/72576, 1/907200, 1/19958400
+
+My maple file can be found in /home/tmp/liaody/gear.mws
+
+_______________________________________________
+Liao, Dongyi
+Phone:(617)253-7316 http://www.mit.edu/~liaody/
+
