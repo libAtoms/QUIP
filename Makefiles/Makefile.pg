@@ -1,0 +1,20 @@
+UTILLIB = libutil-pg.a
+
+export CPLUSPLUS = pgCC
+export CPLUSPLUSOPTS = -I. -I${UTILDIR} -I${BASEDIR}/Atoms -I${BASEDIR}/${QMDIR} -I${BASEDIR}/LOTFlib
+export F77 = pgf77
+export CC = pgcc
+export F77OPTS = -r8
+export COPTS = 
+export LINKER = pgCC
+export OPTIM = -O2
+#export OPTIM = -O0
+#export DEBUG = -g -L/temp2/local/lib -lefence
+#DEBUG = -g
+
+#LIBOPTS =  -L/opt/intel/mkl/lib/32  -lmkl_lapack -lmkl_p3 -lguide -lpthread ${QM_LINKOPTS}
+LIBOPTS =  -L. -lmkl_lapack -lmkl_p4 -lguide -lpthread   ${QM_LINKOPTS}
+
+
+
+

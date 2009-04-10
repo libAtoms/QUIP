@@ -1,0 +1,38 @@
+# declarations
+
+F77 = g95
+F90 = g95
+F95 = g95
+CC = gcc
+CPLUSPLUS = g++
+
+#DEBUG = -g -traceback
+OPTIM = -O3
+FOPTIM = -O3 
+
+ARCH_F95FLAGS =  -fno-second-underscore -ffree-line-length-huge -cpp -ffree-form ${FOPTIM} ${DEBUG}
+ARCH_F77FLAGS =  -fno-second-underscore -cpp ${FOPTIM} ${DEBUG}
+ARCH_CFLAGS =  -DFORTRAN_2UNDERSCORES ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_2UNDERSCORES ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS =  ${FOPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LIBDIRS = 
+ARCH_LAPACK_LIBS = -framework Accelerate
+
+ARCH_FOX_LIBDIR = -L${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs_g95/lib
+ARCH_FOX_INCLUDEDIR = -I${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs_g95/finclude
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lfsys
+
+LINKER = g95
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

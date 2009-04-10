@@ -1,0 +1,25 @@
+OPTIM = -O5  -qproto -qipa=inline=auto
+#DEBUG = -g
+DEFS = -DSP3 
+
+CPLUSPLUS = xlc
+CPLUSPLUSOPTS =  ${OPTIM} -+
+
+CC = xlc
+
+F77 = xlf
+F77OPTS = ${OPTIM}
+
+
+RM = rm -f
+
+AROPTS=-v -q -X 32_64
+
+LINKER = ${F77}
+
+UTILLIB=libutil.a
+
+
+
+
+

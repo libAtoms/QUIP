@@ -1,0 +1,37 @@
+# declarations
+
+F77 = mpif77
+F90 = mpif90
+F95 = mpif90
+CC = mpicc
+CPLUSPLUS = mpiCC
+
+OPTIM = -O3 -ip
+
+MPI_FLAGS = -D_MPI -DMPI_1 -DSCALAPACK
+
+ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG} ${MPI_FLAGS}
+ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG} ${MPI_FLAGS}
+ARCH_CFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} ${MPI_FLAGS}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} ${MPI_FLAGS}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = -L${MKLPATH} -lmkl_scalapack -lmkl_blacs_openmpi -lmkl_lapack -lmkl_em64t
+
+LINKER = mpif90 -nofor_main
+ARCH_LIBS = -lstdc++
+
+ARCH_FOX_INCLUDEDIR=-I${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs/finclude
+ARCH_FOX_LIBDIR=-L${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs/lib
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lfsys
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

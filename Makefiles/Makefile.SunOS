@@ -1,0 +1,21 @@
+DEFS = -DSunOS 
+OPTIM = -fast -xarch=v9b -xopenmp
+DEBUG = 
+
+CPLUSPLUS = CC
+CPLUSPLUSOPTS = 
+
+CC = cc
+COPTS = 
+
+F77 = f77
+F77OPTS = 
+
+LINKER = CC
+
+RM = rm -f
+
+AROPTS=src
+
+UTILLIB=libutil.a
+

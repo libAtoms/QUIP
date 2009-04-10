@@ -1,0 +1,21 @@
+OPTIM = -O3
+#OPTIM = -O0
+#DEBUG =  -g
+#DEBUG = -pg
+#DEBUG = -Wall
+#DEFS =   -DMEM_TRACE
+
+CPLUSPLUS = g++
+
+CC = gcc
+
+F77 = f95
+F77OPTS = -fdefault-real-8
+
+AROPTS=src
+
+LINKER = f95
+
+UTILLIB = libutil-gcc.a
+
+MATHLIBS = /usr/lib/liblapack.so.3 /usr/lib/libblas.so.3 -lstdc++

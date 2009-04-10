@@ -1,0 +1,25 @@
+OPTIM = -O3
+#OPTIM = -O0
+#DEBUG = -g
+#DEBUG = -pg
+#DEBUG = -Wall
+#DEFS =   -DMEM_TRACE  -DUTIL_MPI 
+DEFS =   -DUTIL_MPI 
+
+CBIN = /usr/local/mpich-1.2.1-pgi/bin
+
+CPLUSPLUS = ${CBIN}/mpiCC
+
+CC = ${CBIN}/mpicc
+
+F77 = ${CBIN}/mpif77
+F77OPTS =  -cpp
+
+LINKER = ${F77}
+
+AROPTS=src
+
+UTILLIB = libutil-mpi.a
+
+
+

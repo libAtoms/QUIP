@@ -1,0 +1,38 @@
+# declarations
+
+F77 = linux-pathf90
+F90 = linux-pathf90
+F95 = linux-pathf90
+CC = linux-pathcc
+CPLUSPLUS = linux-pathCC
+
+#DEBUG = -g -traceback
+OPTIM = -O0
+FOPTIM = -O0
+
+ARCH_F95FLAGS =  -ftpp -freeform ${FOPTIM} ${DEBUG}
+ARCH_F77FLAGS =  -ftpp ${FOPTIM} ${DEBUG}
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS =  ${FOPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LIBDIRS = 
+ARCH_LAPACK_LIBS = -lacml
+
+ARCH_FOX_LIBDIR = -L${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_pathscale-linux/lib
+ARCH_FOX_INCLUDEDIR = -I${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_pathscale-linux/finclude
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
+
+LINKER = ifort
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

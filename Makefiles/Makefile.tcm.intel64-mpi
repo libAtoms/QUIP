@@ -1,0 +1,40 @@
+# declarations
+
+F77 = mpiforte -D_MPI -DMPI_1 -f77
+F90 = mpiforte -D_MPI -DMPI_1
+F95 = mpiforte -D_MPI -DMPI_1
+CC = mpicce -D_MPI -DMPI_1
+CPLUSPLUS = mpicpce -D_MPI -DMPI_1 -Kc++
+
+#PROF = -p
+#DEBUG = -DDEBUG -O0 -g -traceback -check bounds -check format -check output_conversion
+OPTIM = -O3 -unroll -xP -DSW_MPI
+#-ip
+
+ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG} ${PROF}
+ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG} ${PROF}
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} ${PROF}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG} ${PROF}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG} ${PROF}
+
+ARCH_FOX_LIBDIR = -L/scratch/saw44/code/FoX/FoX-4.0.1/objs/lib
+ARCH_FOX_INCLUDEDIR = -I/scratch/saw44/code/FoX/FoX-4.0.1/objs/finclude
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = -lsvml -lmkl_lapack -lmkl -lguide -lpthread -lirc
+
+LINKER = mpiforte -nofor_main
+ARCH_LIBS =
+
+EXTERN_SUFFIX=.intel_64
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

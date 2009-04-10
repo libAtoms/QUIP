@@ -1,0 +1,33 @@
+# declarations
+
+F77 = pathf90
+F90 = pathf90
+F95 = pathf90
+CC = pathcc
+CPLUSPLUS = pathCC
+
+#DEBUG = -g -DDEBUG -C -DMEM_TRACE
+OPTIM = -O3
+WARN = -warn -warn unused -warn uncalled
+
+ARCH_F95FLAGS =  -cpp ${OPTIM} ${DEBUG} -DGETARG_F2003 -fno-second-underscore
+ARCH_F77FLAGS =  -cpp ${OPTIM} ${DEBUG} -DGETARG_F2003 -fno-second-underscore
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = -lacml
+
+LINKER = pathf90 ${LINKFLAGS} -fno-second-underscore
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

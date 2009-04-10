@@ -1,0 +1,26 @@
+OPTIM= -O5 -qarch=pwr4 -qtune=pwr4 -qstrict
+CPLUSPLUSOPTS =  -+
+#DEBUG = -g
+
+DEFS =  -DSP3 -DUTIL_MPI
+
+CPLUSPLUS = mpCC
+
+CC = mpcc
+
+F77 = mpxlf
+F77OPTS = 
+
+RM = rm -f
+
+AROPTS=-v -q -X 32_64
+
+LINKER = ${F77}
+
+UTILLIB=libutil.a
+
+
+
+
+
+

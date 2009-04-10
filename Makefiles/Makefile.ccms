@@ -1,0 +1,38 @@
+# declarations
+
+F77 = ifort
+F90 = ifort
+F95 = ifort
+CC = gcc
+CPLUSPLUS = g++
+
+#DEBUG = -g -traceback
+OPTIM = -O3
+FOPTIM = -O3 -ip
+
+ARCH_F95FLAGS =  -fpp -free ${FOPTIM} ${DEBUG}
+ARCH_F77FLAGS =  -fpp ${FOPTIM} ${DEBUG}
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS =  ${FOPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LIBDIRS = 
+ARCH_LAPACK_LIBS = /share/apps/acml/current/ifort32/lib/libacml.a
+
+ARCH_FOX_INCLUDEDIR=-I${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs_ifort32/finclude
+ARCH_FOX_LIBDIR=-L${HOME}/src/work/FORTRAN_XML/FoX-3.2.0/objs_ifort32/lib
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_wxml -lFoX_common -lfsys
+
+LINKER = ifort
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

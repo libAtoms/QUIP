@@ -1,0 +1,24 @@
+OPTIM = -O3 -ip -unroll
+#OPTIM = -O0
+#DEBUG = -g
+DEBUG = -pg
+#DEBUG = 
+#DEFS = -DMEM_TRACE
+
+CPLUSPLUS = icc -Kc++
+
+CC = icc
+
+F77 = ifc 
+F77OPTS = -cpp
+
+
+AROPTS=src
+
+LINKER = ${F77} -nofor_main
+
+UTILLIB=libutil-icc.a
+
+
+MATHLIBS =  -lmkl_lapack -lmkl_ia32 -lguide -lpthread -lstdc++
+

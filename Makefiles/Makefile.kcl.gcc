@@ -1,0 +1,45 @@
+# declarations
+
+F77 = gfortran
+F90 = gfortran
+F95 = gfortran
+CC = gcc
+CPLUSPLUS = gcc
+
+#DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+OPTIM = -O3 
+
+ARCH_F95FLAGS = -x f95-cpp-input -ffree-line-length-none -ffree-form ${FOPTIM} ${DEBUG}  -fno-second-underscore -DGETARG_F2003 -I/opt/local/include -DGFORTRAN -Wunused
+ARCH_F77FLAGS = -x f77-cpp-input ${FOPTIM} ${DEBUG} -fno-second-underscore
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS =  -llapack -lf77blas -lcblas -latlas
+
+ARCH_FOX_LIBDIR = -L/usr/local/lib
+ARCH_FOX_INCLUDEDIR = -I/usr/local/finclude
+ARCH_FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
+
+ARCH_NETCDF_LIBDIR = -L/usr/local/lib
+ARCH_NETCDF_INCLUDEDIR =  -I/usr/local/include
+ARCH_NETCDF_LIBS = -lnetcdf
+
+ARCH_MDCORE_INCLUDEDIR = -I${HOME}/Documents/Code/mdcore/build/r_gfortran
+ARCH_MDCORE_LIBDIR = -L${HOME}/Documents/Code/mdcore/build/r_gfortran
+ARCH_MDCORE_LIBS = -lmdcore
+
+
+LINKER = gfortran
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

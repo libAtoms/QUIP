@@ -1,0 +1,39 @@
+# declarations
+
+F77 = pgf77
+F90 = pgf90
+F95 = pgf95
+CC = pgcc
+CPLUSPLUS = pgCC
+
+# AS OF 7.2-5 and 9/4/2008, Groups.f95 fails on -O2 or -O3, even -O0 fail for TBSystem.f95
+# AS OF 8.0-1 and 11/14/2008, transition_state.f95 fails
+#DEBUG = -g -traceback
+OPTIM = -O
+FOPTIM = -O
+
+ARCH_F95FLAGS =  -Mpreprocess -Mfree ${OPTIM} ${DEBUG} -DNO_FORTRAN_ISNAN -DNO_F2003_NEW_LINE -DPGI_IOSTAT_FUNCS -DALLOCATABLE_COMPONENT_MANUAL_COPY
+ARCH_F77FLAGS =  -Mpreprocess ${OPTIM} ${DEBUG}
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = ${ACML_LIBPATH} ${ACML_LIB}
+
+ARCH_FOX_LIBDIR = -L${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_pgi64_8.0-1/lib
+ARCH_FOX_INCLUDEDIR = -I${HOME}/src/work/FORTRAN_XML/FoX-4.0.3/objs_pgi64_8.0-1/finclude
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
+
+LINKER = pgf90
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

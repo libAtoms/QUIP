@@ -1,0 +1,22 @@
+DEFS = -DUTIL_MPI -DSunOS
+OPTIM =  -O5 -xipo  -fast
+#DEBUG = -g
+
+CPLUSPLUS = mpCC
+CPLUSPLUSOPTS =    -xarch=v9b
+
+CC = mpcc
+COPTS = -fast -xarch=v9b -O5 -xipo
+
+F77 = mpf77 -f77 -ftrap=common -xarch=v9b
+F77OPTS =
+
+LINKER = mpCC
+
+RM = rm -f
+
+AROPTS=src
+
+UTILLIB=libutil-mpi.a
+
+

@@ -1,0 +1,41 @@
+# declarations
+
+F77 = ifort -f77
+F90 = ifort
+F95 = ifort
+CC = icc
+CPLUSPLUS = icpc -Kc++
+
+#DEBUG = -DDEBUG -O0 -g -traceback -check  -DIFORT_TRACEBACK_ON_ABORT
+OPTIM = -O3 -unroll -xP  -p
+#-ip
+
+ARCH_F95FLAGS =  -fpp -FR ${OPTIM} ${DEBUG}
+ARCH_F77FLAGS =  -fpp ${OPTIM} ${DEBUG}
+ARCH_CCFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS = ${OPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = -L/opt/intel/mkl/10.0.011/lib/em64t -lmkl_lapack -lmkl -lguide -lpthread 
+
+LINKER = ifort -nofor_main
+ARCH_LIBS =
+
+
+ARCH_FOX_LIBDIR = -L/home/gc121/FoX-2.1.1/objs/lib
+ARCH_FOX_INCLUDEDIR = -I/home/gc121/FoX-2.1.1/objs/finclude
+ARCH_FOX_LIBS=-lFoX_sax -lFoX_wxml -lFoX_common -lfsys
+
+
+EXTERN_SUFFIX=.intel_64
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

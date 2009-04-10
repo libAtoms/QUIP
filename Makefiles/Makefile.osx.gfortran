@@ -1,0 +1,46 @@
+# declarations
+
+F77 = gfortran
+F90 = gfortran
+F95 = gfortran
+CC = gcc
+CPLUSPLUS = g++
+
+DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
+#OPTIM = -O3
+#FOPTIM = -O3 
+
+ARCH_F95FLAGS = -x f95-cpp-input -ffree-line-length-none -ffree-form ${FOPTIM} ${DEBUG}  -fno-second-underscore -DGETARG_F2003 -I/opt/local/include -DGFORTRAN -Wunused
+ARCH_F77FLAGS = -x f77-cpp-input ${FOPTIM} ${DEBUG} -fno-second-underscore
+ARCH_CFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_CPLUSPLUSFLAGS =  -DFORTRAN_UNDERSCORE ${OPTIM} ${DEBUG}
+ARCH_LINKFLAGS =  ${FOPTIM} ${DEBUG}
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = src
+
+ARCH_LAPACK_LIBS = -framework Accelerate
+
+ARCH_FOX_LIBDIR = -L${HOME}/jellium/src/work/FORTRAN_XML/FoX-4.0.3/objs_gfortran_osx/lib
+ARCH_FOX_INCLUDEDIR = -I${HOME}/jellium/src/work/FORTRAN_XML/FoX-4.0.3/objs_gfortran_osx/finclude
+ARCH_FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
+
+ARCH_NETCDF_LIBDIR = -L${HOME}/Documents/Code/netcdf-gfortran/lib
+ARCH_NETCDF_INCLUDEDIR =  -I${HOME}/Documents/Code/netcdf-gfortran/include 
+ARCH_NETCDF_LIBS = -lnetcdf
+
+ARCH_MDCORE_INCLUDEDIR = -I${HOME}/Documents/Code/mdcore/build/r_gfortran
+ARCH_MDCORE_LIBDIR = -L${HOME}/Documents/Code/mdcore/build/r_gfortran
+ARCH_MDCORE_LIBS = -lmdcore
+
+LINKER = gfortran
+ARCH_LIBS =
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c $< -o $@
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
