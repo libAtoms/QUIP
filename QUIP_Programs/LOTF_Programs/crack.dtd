@@ -1,0 +1,158 @@
+<!ENTITY % quip SYSTEM "../QUIP/quip.dtd">
+%quip;
+
+<!ELEMENT params (crack_params|castep_param|castep_cell|%QUIP_params;)*>
+
+<!ELEMENT crack_params (crack?, simulation?, md?, minim?, io?, selection?, classical?, qm?, fit?, force_integration?, quasi_static?, hack?)>
+
+<!ELEMENT crack EMPTY>
+<!ATTLIST crack
+  structure             CDATA #IMPLIED
+  element	        CDATA #IMPLIED
+  name		        CDATA #IMPLIED
+  lattice_guess	        CDATA #IMPLIED
+  width		        CDATA #IMPLIED
+  height	        CDATA #IMPLIED
+  num_layers	        CDATA #IMPLIED
+  G		        CDATA #IMPLIED
+  loading	        CDATA #IMPLIED
+  load_interp_length    CDATA #IMPLIED
+  ramp_length	        CDATA #IMPLIED
+  ramp_end_G	        CDATA #IMPLIED
+  initial_loading_strain CDATA #IMPLIED
+  seed_length	        CDATA #IMPLIED
+  strain_zone_width     CDATA #IMPLIED
+  vacuum_size	        CDATA #IMPLIED
+  rescale_x_z	        CDATA #IMPLIED
+  rescale_x	        CDATA #IMPLIED
+  relax_loading_field   CDATA #IMPLIED
+  edge_fix_tol	        CDATA #IMPLIED
+  y_shift	        CDATA #IMPLIED
+  seed_embed_tol        CDATA #IMPLIED
+  graphene_theta	CDATA #IMPLIED
+  graphene_notch_width  CDATA #IMPLIED
+  graphene_notch_height CDATA #IMPLIED
+>
+
+<!ELEMENT simulation EMPTY>
+<!ATTLIST simulation
+  task                    CDATA #IMPLIED
+  seed			  CDATA #IMPLIED
+  restart		  CDATA #IMPLIED
+  classical		  CDATA #IMPLIED
+  force_initial_load_step CDATA #IMPLIED
+>			  
+			  
+<!ELEMENT md EMPTY>	  
+<!ATTLIST md
+  time_step              CDATA #IMPLIED
+  sim_temp		 CDATA #IMPLIED
+  extrapolate_steps	 CDATA #IMPLIED
+  crust			 CDATA #IMPLIED
+  recalc_connect_factor	 CDATA #IMPLIED
+  nneigh_tol		 CDATA #IMPLIED
+  eqm_coordination	 CDATA #IMPLIED
+  avg_time		 CDATA #IMPLIED
+  thermalise_tau	 CDATA #IMPLIED
+  thermalise_wait_time   CDATA #IMPLIED
+  thermalise_wait_factor CDATA #IMPLIED
+  tau			 CDATA #IMPLIED
+  wait_time		 CDATA #IMPLIED
+  interval_time		 CDATA #IMPLIED
+  calc_connect_interval	 CDATA #IMPLIED
+>			
+			
+<!ELEMENT minim EMPTY>	
+<!ATTLIST minim    
+  method           CDATA #IMPLIED 
+  tol		   CDATA #IMPLIED
+  eps_guess	   CDATA #IMPLIED
+  max_steps	   CDATA #IMPLIED
+  linminroutine	   CDATA #IMPLIED
+  minimise_mm	   CDATA #IMPLIED
+  mm_method	   CDATA #IMPLIED
+  mm_tol	   CDATA #IMPLIED
+  mm_eps_guess	   CDATA #IMPLIED
+  mm_max_steps	   CDATA #IMPLIED
+  mm_linminroutine CDATA #IMPLIED
+  mm_args_str	   CDATA #IMPLIED
+  mm_use_n_minim   CDATA #IMPLIED
+>
+
+<!ELEMENT io EMPTY>
+<!ATTLIST io
+  verbosity            CDATA #IMPLIED  
+  netcdf	       CDATA #IMPLIED  
+  print_interval       CDATA #IMPLIED  
+  print_all_properties CDATA #IMPLIED  
+  print_properties     CDATA #IMPLIED  
+  checkpoint_interval  CDATA #IMPLIED  
+  checkpoint_path      CDATA #IMPLIED  
+  mpi_print_all        CDATA #IMPLIED
+>
+
+<!ELEMENT selection EMPTY>
+<!ATTLIST selection
+  max_qm_atoms         CDATA #IMPLIED
+  dynamic	       CDATA #IMPLIED
+  ellipse	       CDATA #IMPLIED
+  ellipse_bias	       CDATA #IMPLIED
+  ellipse_buffer       CDATA #IMPLIED
+  cutoff_plane	       CDATA #IMPLIED
+  directionality       CDATA #IMPLIED
+  edge_tol	       CDATA #IMPLIED
+>		       
+
+<!ELEMENT classical EMPTY>
+<!ATTLIST classical
+  args           CDATA #IMPLIED
+  args_str	 CDATA #IMPLIED
+  force_reweight CDATA #IMPLIED
+>
+
+<!ELEMENT qm EMPTY>
+<!ATTLIST qm
+  args              CDATA #IMPLIED
+  args_str	    CDATA #IMPLIED
+  small_clusters    CDATA #IMPLIED
+  buffer_hops	    CDATA #IMPLIED
+  terminate	    CDATA #IMPLIED
+  force_periodic    CDATA #IMPLIED
+  randomise_buffer  CDATA #IMPLIED
+  even_hydrogens    CDATA #IMPLIED
+  vacuum_size	    CDATA #IMPLIED
+  calc_force_error  CDATA #IMPLIED
+  rescale_r         CDATA #IMPLIED
+  hysteretic_buffer CDATA #IMPLIED
+  hysteretic_buffer_inner_radius CDATA #IMPLIED
+  hysteretic_buffer_outer_radius CDATA #IMPLIED
+>
+
+<!ELEMENT fit EMPTY>
+<!ATTLIST fit
+  hops              CDATA #IMPLIED
+  spring_hops       CDATA #IMPLIED
+  method            CDATA #IMPLIED
+>
+
+<!ELEMENT force_integration EMPTY>
+<!ATTLIST force_integration
+  end_file          CDATA #IMPLIED
+  n_steps           CDATA #IMPLIED
+>
+
+<!ELEMENT quasi_static EMPTY>
+<!ATTLIST quasi_static
+  tip_move_tol      CDATA #IMPLIED
+>
+
+<!ELEMENT hack EMPTY>
+<!ATTLIST hack
+  qm_zero_z_force                 CDATA #IMPLIED
+  fit_on_eqm_coordination_only    CDATA #IMPLIED
+>
+
+<!ELEMENT castep_param (#PCDATA)>
+
+<!ELEMENT castep_cell (#PCDATA)>
+
