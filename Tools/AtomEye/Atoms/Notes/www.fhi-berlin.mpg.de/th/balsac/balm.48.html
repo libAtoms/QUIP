@@ -1,0 +1,201 @@
+<html><head>
+<title> BALSAC Version 2.15 Manual, Section 5.4</title>
+</head>
+<body bgcolor="white">
+<pre>
+<h1>5.4.  COLORS AND PAINTING USED FOR GRAPHICS AND POSTSCRIPT OUTPUT</h1>
+
+<a href="./balm.49.html">next</a>, <a href="./balm.47.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+ 
+BALSAC uses an internal color definition and coding scheme for producing
+screen graphics and color PostScript output which will be explained in the
+following.
+ 
+The complete internal table determining all available colors contains
+nctot &lt;= ncmax entries (ncmax = 16 for DOS/VGA, = 256 for Unix/X.11)
+consisting each of an integer triple (nr, ng, nb) defining RGB colors with
+values nr, ng, nb ranging between 0 and rgb (defined in the initialization
+file with defaults rgb = 63 for DOS/VGA, =  65535). The color table entries
+0...pb (pb = 3 for DOS/VGA, = 7 for Unix/X.11) determine the BASE COLORS
+defined in the following table
+ 
+    ------------------------------         ------------------------------
+      (a)  Unix/X.11                         (b)  DOS/VGA
+     entry   color definition               entry   color definition
+    ------------------------------         ------------------------------
+       0     "black"                          0     "black"
+       1     "white"                          1     "white"
+       2     graphics background              0     graphics background
+       3     graphics text color              0     graphics text color
+       4     default link color               1     default link color
+       5     default stereo red               2     default stereo red
+       6     default stereo blue              3     default stereo blue
+       7     default stereo white             1     default stereo white
+    ------------------------------         ------------------------------
+ 
+The remaining color table entries pb+1...nctot determine colors used for
+painting/shading of balls and bonds. These colors are based on ncolb entries
+(BASIC PAINT COLORS). Each paint color comes with nsh different TONES varying
+from dark to light among which there is a default DARK TONE and a LIGHT TONE.
+These definitions are given in the initialization file, see Sec. <a href="./balm.114.html">6.4.10</a>. The
+respective color table entries are as follows
+ 
+  --------------------------------------------------------------------------
+  palette    color table entries
+  color      (darkest) ..... (def.dark) ..... (def.light) .... (lightest)
+  --------------------------------------------------------------------------
+    1        ns(1)+1 ....... ns(1)+na ....... ns(1)+ne ....... ns(1)+nsh
+    2        ns(2)+1 ....... ns(2)+na ....... ns(2)+ne ....... ns(2)+nsh
+    ...
+    ncolb    ns(ncolb)+1 ... ns(ncolb)+na ... ns(ncolb)+ne ... ns(ncolb)+nsh
+  --------------------------------------------------------------------------
+ 
+   where
+          ns(i) = pb+(i-1)*nsh
+ 
+   yielding a total number of colors
+ 
+           nctot = ns(ncolb)+nsh = pb+ncolb*nsh .
+ 
+The above color table entries are used to define background and link colors
+allowing for the full range of nctot colors. In contrast, colors used to
+paint circles and (shaded) balls of atoms are addressed by their paint
+color. Defining paint color j for
+ 
+    -  a circle or ball (filled circle) will use the respective def.dark
+       color table entry given by position ns(j)+na(j) .
+ 
+    -  a hard-, fuzzy-, or dither-shaded ball (two color filling, black
+       framing) will use the "black", def.dark, and def.light color table
+       entries given by positions 0, ns(j)+na(j), and ns(j)+ne(j).
+ 
+    -  a glossy-shaded ball (continuous color filling) will use nsh color
+       table entries, ns(j)+1 ... ns(j)+nsh.
+ 
+BALSAC contains an internal color palette which is generated when BALSAC is
+started using definitions of the initialization file, see Sec. <a href="./balm.114.html">6.4.10</a>. The
+palette has nptot entries np(1), ... np(nptot) which point at paint color
+indices j and thus determine the sequence in which paint colors are used in
+plots, see Sec. <a href="./balm.64.html">6.2.7</a>.
+ 
+The above color table is generated when BALSAC is started using definitions
+of the initialization file, see Sec. <a href="./balm.114.html">6.4.10</a>. In this file all base colors
+0...pb are defined explicitly by their RGB values while the paint colors are
+given in short form. For paint color j a basic definition RGB0 = (R(j), G(j),
+B(j)), four darkness factors (values between 0 and 1), qu(j) for darkest,
+qb(j)j for def.dark, qe(j) for def.light, qt(j) for lightest, and a gamma
+value gam are defined from which the nsh different tones (color table
+entries) are built. This uses an RGB color function (linear path between
+(0,0,0), RGB0, and (rgb, rgb, rgb)) given by
+ 
+                RGB0 * q/qint                               if q &lt; qint
+    RGB(q) =
+              ( RGB0*(1-q) + RGBW*(q-qint) ) / (1-qint)     if q &gt; qint
+ 
+with
+ 
+      qint = (R(j)+G(j)+B(j)) / (3*rgb)   and   RGBW = (rgb, rgb, rgb).
+ 
+Then the different tones of paint color j corresponding to color table
+entries ns(j)+1 ... ns(j)+nsh are defined by RGB(q(i)) with
+ 
+      q(i) = qu(j) + (qt(j)-qu(j)) * [(i-1)/(nsh-1)]**gam , i = 1,...nsh .
+ 
+The gamma factor gam allows you to modify the distribution of tones between
+the darkest and lightest value. Here gam = 1 corresponds to a homogeneous
+distribution while gam &gt; 1 (gam &lt; 1) emphasizes darker (lighter) tones.
+Reasonable gamma values lie between 0.3 and 3.0.
+ 
+The offsets na(j), ne(j) used for the def.dark and def.light tones (see
+above) are determined by integers
+ 
+     na(j)  nearest to  (nsh-1) * (qb(j)-qu(j)) / (qt(j)-qu(j)) ,
+ 
+     ne(j)  nearest to  (nsh-1) * (qe(j)-qu(j)) / (qt(j)-qu(j)) .
+ 
+If gray tone conversion of screen colors is selected, see Sec. <a href="./balm.76.html">6.2.15</a>, all
+RGB color entries are replaced by gray values using the video transformation
+ 
+  (r,g,b) --&gt; (r',g',b') = (s,s,s)    with s = 0.30*r + 0.59*g + 0.11*b  .
+ 
+All color and palette definitions given in the BALSAC initialization file may
+be modified with the basic parameter option of a BALSAC session, see
+Sec. <a href="./balm.76.html">6.2.15</a>. However, the appropriate color parameters have to be chosen
+with care to avoid incomplete or incorrect graphics.
+ 
+ 
+Color PostScript file output uses the RGB values as defined in the color
+table. However, all RGB integers are renormalized to real numbers inside the
+range [0,1]. Output of color PostScript files on b/w PostScript laser
+printers automatically converts RGB colors to gray tones using the above
+transformation.
+ 
+Gray scale PostScript file output converts colors for painting atoms and
+bonds to gray tones according to the above transformation
+(r,g,b) --&gt; (r',g',b') . Note that in practice only 4 - 6 different gray
+shaded atoms can be easily discriminated in a plot. This has to be considered
+in designing gray scale PostScript output by setting respective color code
+tables, see Secs. <a href="./balm.76.html">6.2.15</a>, <a href="./balm.114.html">6.4.10</a>. An initialization file 'bwgraph.ini'
+provided with the BALSAC software contains color definitions which are
+optimized for best gray scale results. It can be loaded inside the basic
+parameter option ([P] from the main option menu) of a BALSAC session.
+ 
+The different shading algorithms for screen output are described below and in
+Secs. <a href="./balm.64.html">6.2.7</a>, <a href="./balm.89.html">6.3.5</a>. PostScript output allows only for hard-shading (option
+[H] of the graphics design menu, see Sec. <a href="./balm.64.html">6.2.7</a>) and for continuous shading
+(options [F],[D],[G] of the graphics design menu, see Sec. <a href="./balm.64.html">6.2.7</a>).
+Hard-shading used in PostScript output is identical to that of screen output.
+Continuous shading uses, for each palette color or palette gray tone, a set
+of nshps different tones which are determined by the algorithm used also for
+color screen output and described above (note that all PostScript RGB
+components are within the range [0.0,1.0] and rgb = 1.0). When continuous
+shading is active the value of nshps is prompted before PostScript file
+output is initiated. This allows for separate shading densities in PostScript
+and screen output.
+ 
+Ball shading for screen and PostScript output is determined by the direction
+of the incident light defined by angles by polar and azimuthal angles theta,
+phi with respect to the screen or paper normal direction yielding a direction
+(unit) vector
+ 
+     e = ( sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta) )
+ 
+where one light source and parallel light is assumed. A polar angle phi = 0
+corresponds to the vertical y direction on the screen. Thus, the default
+values theta,phi = 65,-25 degrees refer to light shining from the upper left
+front location relative to the viewer. Shading is based on three
+contributions
+ 
+   -  homogeneous diffuse background light of relative intensity qdiff,
+ 
+   -  Lambert shading determined by the scalar product n*e of the ball
+      surface normal (unit) vecor n and the light direction vector e with a
+      maximum relative intensity qlamb,
+ 
+   -  specularly reflected light determined by the 5th power of the scalar
+      product of the screen or paper normal direction vector and the
+      reflected light direction vector with a maximum relative intensity
+      qspec.
+ 
+   where qdiff + qlamb + qspec = 1.
+ 
+Hard-shading of balls (design option [H] using two color tones (dark, light))
+needs only factor qdiff where the separation line between the dark and light
+tone is determined by the equation n * e = qdiff  , see above.
+ 
+Fuzzy- and dither-shading of balls (options [F],[D] of the graphics design
+menu) assumes no specular reflection ( qspec = 0.0) while glossy-shading
+(option [G]) includes all tree contributions, see Sec. <a href="./balm.64.html">6.2.7</a>, <a href="./balm.89.html">6.3.5</a>. At
+present PostScript print output of shaded balls does not include specular
+reflection.
+ 
+ 
+ 
+ 
+
+<a href="./balm.49.html">next</a>, <a href="./balm.47.html">previous</a> Section  /  <a href="./balm.0.html">Table of Contents</a>  /  <a href="./balm.127.html">Index</a>
+
+</pre>
+</body>
+</html>

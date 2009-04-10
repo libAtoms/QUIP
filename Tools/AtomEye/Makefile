@@ -1,0 +1,31 @@
+#
+# Top level makefile, just loops over subdirs
+#
+
+SUBDIRS = Timer IO Scalar VecMat Min VecMat3 Atoms AX
+
+ALLSUBDIRS = ${SUBDIRS} A3
+
+.PHONY: all clean subdirs cleansubdirs lib
+
+subdirs:
+	for dir in ${SUBDIRS}; do \
+	  cp $$dir/*.h include; \
+	  $(MAKE) -C $$dir; \
+	done
+	$(MAKE) -C A3 i
+
+cleansubdirs:
+	for dir in ${ALLSUBDIRS}; do \
+	  $(MAKE) -C $$dir clean; \
+	done
+
+all: subdirs
+
+lib:
+	for dir in ${SUBDIRS}; do \
+	  $(MAKE) -C $$dir ATOMEYE_LIB=-DATOMEYE_LIB; \
+	done
+	$(MAKE) -C A3 ATOMEYE_LIB=-DATOMEYE_LIB libAtomEye.a
+
+clean: cleansubdirs

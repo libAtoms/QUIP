@@ -1,0 +1,5 @@
+ CC = cc
+ LD = cc
+ CCFLAGS = -O5
+ USE_SYSTEM_LIB = -lm -lfor -ldxml
+ USE_MY_LIB = -lVecMat3 -lVecMat -lScalar -lIO -ldb

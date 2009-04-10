@@ -1,0 +1,146 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage,doublespace,graphicx}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.35em}
+\setstretch{1.5}
+
+\title{On Temperature Rescaling}
+\date{\today}
+\author{Ju Li}
+\begin{document}
+\maketitle
+
+Debye proposed the following single-parameter spectrum density,
+\begin{equation}
+dP = d\left (\frac{\omega}{\omega_{\rm D}} \right)^3, 
+\;\;\omega < \omega_{\rm D}, \;\;\;\;\;\;0,\;\;\omega \ge \omega_{\rm
+D}, \label{Debye_DOS}
+\end{equation}
+where the normalization is a single {\em degree of freedom}, which
+{\em should} possess $k_{\rm B}T$ total energy under classical
+mechanics and harmonic approximation. In contrast, under quantum
+mechanics, the total energy is
+\begin{equation}
+\langle E \rangle = \int_0^{\omega_{\rm D}} 
+d\left (\frac{\omega}{\omega_{\rm D}} \right)^3
+\left ( \frac{1}{2} + 
+\frac{1}{\exp\left ( \frac{\hbar\omega}{k_{\rm B}T} \right ) - 1} \right )
+\hbar \omega. 
+\end{equation}
+
+Let us define
+\begin{equation}
+k_{\rm B}T_{\rm D} \;\;\equiv\;\; \hbar \omega_{\rm D}.
+\end{equation}
+We then have the quantum energy average,
+\begin{equation}
+\langle E \rangle = k_{\rm B} T_{\rm D}
+\int_0^{\omega_{\rm D}}
+d\left (\frac{\omega}{\omega_{\rm D}} \right)^3
+\left ( \frac{1}{2} + \frac{1}{\exp\left ( 
+\frac{T_{\rm D}}{T}\cdot \frac{\omega}{\omega_{\rm D}} 
+\right ) - 1} \right )
+\frac{\omega}{\omega_{\rm D}},
+\end{equation}
+which can be written as,
+\begin{equation}
+\langle E \rangle = k_{\rm B} T_{\rm D} \int_0^1
+dy^3 \left ( \frac{1}{2} + 
+\frac{1}{\exp\left ( \frac{T_{\rm D}}{T}\cdot y \right ) - 1} 
+\right ) y,
+\end{equation}
+or,
+\begin{equation}
+\langle E \rangle = k_{\rm B} T_{\rm D} \int_0^1
+dy \left ( \frac{1}{2} + 
+\frac{1}{\exp\left ( \frac{T_{\rm D}}{T}\cdot y \right ) - 1} \right ) 
+3y^3.
+\label{harmonic_total_energy}
+\end{equation}
+
+Alternatively, one can rewrite (\ref{harmonic_total_energy}) as
+\begin{equation}
+\langle E \rangle = k_{\rm B} T_{\rm D} 
+\left ( \frac{T}{T_{\rm D}} \right )^4
+\int_0^{\frac{T_{\rm D}}{T}}
+dy \left ( \frac{1}{2} +
+\frac{1}{e^y - 1} \right ) 3y^3.
+\end{equation}
+
+Therefore, if we require the classical system to have equal energy as
+the quantum system on average, we would demand
+\begin{equation}
+T_{\rm MD} = T_{\rm D} \left ( \frac{T}{T_{\rm D}} \right )^4
+\int_0^{\frac{T_{\rm D}}{T}} dy \left ( \frac{1}{2} +
+\frac{1}{e^y - 1} \right ) 3y^3.
+\label{Debye_temperature_rescaling}
+\end{equation}
+This form is more ready for numerical evaluation.  We see that when
+$T\rightarrow 0$, $T_{\rm MD}\rightarrow (3/8)T_{\rm D}$, a nonzero
+value. But when $T\rightarrow \infty$, $T_{\rm MD} = T + {\cal
+O}(1/T)$.
+
+To get the heat capacity, or $dT_{\rm MD}/dT$, it is easier to work on
+(\ref{harmonic_total_energy}):
+\begin{equation}
+\frac{dT_{\rm MD}}{dT}
+ = \left ( \frac{T_{\rm D}}{T} \right )^2
+\int_0^1
+dy \frac{
+\exp\left ( \frac{T_{\rm D}}{T}\cdot y \right ) }{\left (
+\exp\left ( \frac{T_{\rm D}}{T}\cdot y \right ) - 1 \right )^2 }
+3y^4,
+\end{equation}
+or alternatively,
+\begin{equation}
+\frac{dT_{\rm MD}}{dT}
+ = \left ( \frac{T}{T_{\rm D}} \right )^3
+\int_0^{\frac{T_{\rm D}}{T}}
+dy \frac{3y^4 e^y}{\left (e^y- 1\right )^2} \equiv
+D\left( \frac{T}{T_{\rm D}} \right ),
+\label{Debye_heat_capacity}
+\end{equation}
+where $D(x)$ is the well-known Debye function \cite{McQuarrie76}, with
+$D(x)\sim (4\pi^4/5)x^3$ as $x\sim 0$ and $D(x)\rightarrow 1$ as
+$x\rightarrow \infty$.
+
+In practice, the phonon spectrum density or DOS is of course {\em not}
+in the same form as (\ref{Debye_DOS}). Especially, multi-component
+systems have optical bands that are of entirely different structure
+than (\ref{Debye_DOS}). Nevertheless,
+(\ref{Debye_temperature_rescaling}) and (\ref{Debye_heat_capacity})
+provide good functional forms for $T_{\rm MD}(T)$ representation, both
+numerically and physically. Let us consider the temperature rescaling
+procedure's physical effect on classical MD: it can be proved that the
+initial $\hbar\omega/2$ and the later flatter $T_{\rm MD}(T)$
+excitation in classical MD mimics the effect of quantum phonon
+Boltzmann equation, but with the unsatisfactory aspect that this
+correction is incorrectly smeared out throughout the entire spectrum
+(if one allows the classical system to equilibrate), so only an
+average correction effect remains.  Given that, the question is
+suppose we have a wide spectrum which contains optical band that is
+far from the acoustic band, {\em which part should one sacrifice},
+that is, {\em more} incorrectly smeared out?  It is not hard to see
+that it should be the optical bands, since they do not contribute
+significantly to the thermal conductivity. Furthermore, one often
+worries more about the quantum effects on thermo-mechanical properties
+near room temperature, and less for when the temperature is high, say
+$T=1000$K. The reason is not just because these properties might be
+less important at high temperature than at room temperature, but also
+because the quantum effects themselves are not significant enough to
+have a big influence at high temperature. If we think about it, it is
+common practice to do classical MD without {\em any} correction - but
+one is still expected to get sound result at high temperature, so it
+must be all right if we apply correction but {\em which is not neatly
+fitted for high temperature}. Therefore, I think it is a good idea to
+fit (\ref{Debye_heat_capacity}) to the actual heat capacity at
+$T=300$K, where only the acoustic band is likely to be activated.
+
+\begin{thebibliography}{00}
+\begin{singlespace}
+\bibitem{McQuarrie76} {\em Statistical Mechanics}, D. A. McQuarrie,
+Harper Collins Publishers (New York, 1976).
+\end{singlespace}
+\end{thebibliography}
+
+\end{document}

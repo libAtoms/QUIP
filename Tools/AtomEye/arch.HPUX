@@ -1,0 +1,5 @@
+ CC = gcc
+ LD = gcc
+ CCFLAGS = -O6 -ffast-math -funroll-loops -finline-functions
+ USE_SYSTEM_LIB = /opt/mlib/lib/hpux32/libveclib.a /opt/mlib/lib/hpux32/liblapack.a -lm -lpthread -lcl -lreadline -lcurses
+ NM = nm --print-file-name --extern-only --defined-only --no-sort --portability

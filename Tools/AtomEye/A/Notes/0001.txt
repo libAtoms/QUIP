@@ -1,0 +1,38 @@
+Hello,
+
+I'm a Ph.D student at the Laboratory for Analysis and Architecture of
+Systems (LAAS-CNRS, France). I'm developing a Kinetic Monte Carlo software
+that simulates high-k oxides growth at the atomic scale (see
+www.laas.fr/~gmazaley/ ).
+
+I have used Rasmol and Molden but as soon as I found AtomEye, lots of my
+problems disappeared, as my simulations usually take hundreds of thousands
+of atoms (or even millions)... I would like to thank you for this very good
+software.
+
+The sun version was not so stable, thus I tried it on Linux systems (both
+SuSE 8.2 and Mandrake 9.0) and it worked really fine.
+But there is one problem: in France, we have 'AZERTY' keyboards (instead of
+American 'QWERTY' for which AtomEye seems to be designed). Every function
+works fine with a French keyboard except the 'Change Gear Box Value': I
+can't change it.
+On a French keyboard, numbers are considered as capital letters (we must
+press MAJ or toggle 'CAPS LOCK') to write numbers. I think that's the reason
+why AtomEye does not understand when I try to change gear box value...
+
+Do you think there is a solution to this problem?
+
+Anyway, thank you very much for AtomEye !
+
+Best regards,
+Guillaume MAZALEYRAT.
+ _____________________________
+
+Guillaume MAZALEYRAT
+LAAS-CNRS / MIS Group
+Tel : (+33) 5 61 33 62 47
+  @ : mazaleyrat@laas.fr
+www : www.laas.fr
+www : www.laas.fr/~gmazaley/
+_____________________________
+

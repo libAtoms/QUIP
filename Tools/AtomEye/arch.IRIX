@@ -1,0 +1,4 @@
+ AR = ar -rc
+ RANLIB = echo There is no \"ranlib\" to be used on
+ CCFLAGS = -O3
+ LD = f77 -dont_warn_unused

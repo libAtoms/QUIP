@@ -1,0 +1,27 @@
+{VERSION 3 0 "IBM INTEL LINUX" "3.0" }
+{USTYLETAB {CSTYLE "Maple Input" -1 0 "Courier" 0 1 255 0 0 1 0 1 0 0 
+1 0 0 0 0 }{CSTYLE "2D Math" -1 2 "Times" 0 1 0 0 0 0 0 0 2 0 0 0 0 0 
+0 }{CSTYLE "2D Output" 2 20 "" 0 1 0 0 255 1 0 0 0 0 0 0 0 0 0 }
+{PSTYLE "Normal" -1 0 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 
+0 0 }0 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }{PSTYLE "Maple Output" 0 11 1 
+{CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 }3 3 0 -1 -1 -1 0 0 
+0 0 0 0 -1 0 }{PSTYLE "" 11 12 1 {CSTYLE "" -1 -1 "" 0 1 0 0 0 0 0 0 
+0 0 0 0 0 0 0 }1 0 0 -1 -1 -1 0 0 0 0 0 0 -1 0 }}
+{SECT 0 {EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 22 "a := -B00 - B11 - B2
+2;" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%\"aG,(%$B00G!\"\"%$B11GF'%$B22
+GF'" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 57 "b := B00*B11-B01*B01
+ + B00*B22-B02*B02 + B11*B22-B12*B12;" }}{PARA 11 "" 1 "" {XPPMATH 20 
+"6#>%\"bG,.*&%$B00G\"\"\"%$B11GF(F(*$)%$B01G\"\"#\"\"\"!\"\"*&F'F.%$B2
+2GF(F(*$)%$B02GF-F.F/*&F)F.F1F.F(*$)%$B12GF-F.F/" }}}{EXCHG {PARA 0 ">
+ " 0 "" {MPLTEXT 1 0 65 "c:=B00*B12*B12+B11*B02*B02+B22*B01*B01-B00*B1
+1*B22-2*B01*B02*B12;" }}{PARA 11 "" 1 "" {XPPMATH 20 "6#>%\"cG,,*&%$B0
+0G\"\"\")%$B12G\"\"#\"\"\"F(*&%$B11GF()%$B02GF+F,F(*&%$B22GF()%$B01GF+
+F,F(*(F'F,F.F,F2F,!\"\"*(F4F(F0F(F*F(!\"#" }}}{EXCHG {PARA 0 "> " 0 "
+" {MPLTEXT 1 0 29 "simplify(9*a*b-27*c-2*a*a*a);" }}{PARA 12 "" 1 "" 
+{XPPMATH 20 "6#,J*&)%$B00G\"\"#\"\"\"%$B11G\"\"\"!\"$*&F&F*)%$B01GF'F(
+\"\"**&F%F(%$B22GF*F+*&F&F()%$B02GF'F(F/*&F&F()F)F'F(F+*&F)F(F-F(F/*&F
+6F(F1F(F+*&F&F()%$B12GF'F(!#=*&F)F(F3F(F<*&F1F(F-F(F<*(F&F(F)F(F1F(\"#
+7*(F.F*F4F*F;F*\"#a*$)F&\"\"$F(F'*$)F)FEF(F'*$)F1FEF(F'*&F)F(F:F(F/*&F
+&F()F1F'F(F+*&F1F(F3F(F/*&F)F(FLF(F+*&F1F(F:F(F/" }}}{EXCHG {PARA 0 ">
+ " 0 "" {MPLTEXT 1 0 0 "" }}}}{MARK "4 0 0" 0 }{VIEWOPTS 1 1 0 1 1 
+1803 }
