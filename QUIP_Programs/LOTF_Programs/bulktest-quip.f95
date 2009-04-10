@@ -1,0 +1,150 @@
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
+!X
+!X    
+!X     Authors: Gabor Csanyi, Alessio Commisso, Steven Winfield
+!X     James Kermode, Gianpietro Moras, Michael Payne, Alessandro De Vita
+!X
+!X     
+!X     Copyright 2005, All Rights Reserved 
+!X
+!X     This source code is confidential, all distribution is 
+!X     prohibited. Making unauthorized copies is also prohibited
+!X
+!X     When using this software, the following should be referenced:
+!X
+!X     Gabor Csanyi, Tristan Albaret, Mike C. Payne and Alessandro De Vita
+!X     "Learn on the fly": a hybrid classical and quantum-mechanical
+!X         molecular dynamics simulation
+!X     Physical Review Letters 93 p. 175503 (2004) >>PDF [626 KB]
+!X
+!X     Gabor Csanyi, T. Albaret, G. Moras, M. C. Payne, A. De Vita
+!X     Multiscale hybrid simulation methods for material systems
+!X     J. Phys. Cond. Mat. 17 R691-R703 Topical Review (2005)
+!X
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+! $Id: bulktest-quip.f95,v 1.2 2008-05-08 15:17:19 jrk33 Exp $
+
+! $Log: not supported by cvs2svn $
+! Revision 1.1  2008/05/07 14:16:58  jrk33
+! Added LOTF/QUIP version of bulktest code
+!
+
+program bulktest
+
+  use libAtoms_module
+  use LOTF_module
+  use QUIP_module
+
+  implicit none
+
+  type(Dictionary) :: params
+ 
+  real(dp) :: time_step, init_temp, sim_temp
+  integer :: seed, fit_hops, embed_hops
+  character(string_length) :: classicalpot_args, qmpot_args
+  character(string_length) :: xml, metapot_args
+
+  type(DynamicalSystem) :: ds
+  type(Atoms) :: at, dia
+  type(inoutput) :: movie, xmlfile
+  type(table) :: embedlist, fitlist
+  real(dp), allocatable :: f(:,:)
+  integer :: i, step
+
+  type(Potential) :: classicalpot, qmpot
+  type(MetaPotential) :: metapot
+  
+
+  ! initialise program
+  call system_initialise(NORMAL)
+  call initialise(movie, "movie.xyz")
+
+  ! Setup parameters
+  call param_register(params, 'time_step', '1.0', time_step)
+  call param_register(params, 'seed', '0', seed)
+  call param_register(params, 'init_temp', '300.0', init_temp)
+  call param_register(params, 'sim_temp', '300.0', sim_temp)
+  call param_register(params, 'classicalpot', 'IP SW', classicalpot_args)
+  call param_register(params, 'qmpot', 'TB Bowler',  qmpot_args)
+  call param_register(params, 'xml', 'lotf.xml', xml)
+  call param_register(params, 'metapot', 'LOTF buffer_hops=3 small_clusters=F', metapot_args)
+  call param_register(params, 'embed_hops', '2', embed_hops)
+  call param_register(params, 'fit_hops', '3', fit_hops)
+
+  if (.not. param_read_args(params, (/ (i, i=1,cmd_arg_count()) /), .true.)) &
+       call system_abort('Error reading command line arguemnts')
+
+  call initialise(xmlfile, xml)
+  call initialise(classicalpot, classicalpot_args, xmlfile)
+  call rewind(xmlfile)
+  call initialise(qmpot, qmpot_args, xmlfile)
+  call finalise(xmlfile)
+
+  call initialise(metapot, metapot_args, classicalpot, qmpot)
+  call print(metapot)
+
+  ! create some atoms
+  call diamond(dia, 5.44_dp)
+  call supercell(at, dia, 5,5,5)
+  call set_atoms(at, 14)
+  call atoms_set_cutoff(at, 4.0_dp)
+  call randomise(at%pos, 0.01_dp)
+  call calc_connect(at)
+
+  allocate(f(3,at%N))
+
+  ! initialise dynamics
+  call initialise(ds, at)
+  call rescale_velo(ds, init_temp)
+  call zero_momentum(ds)
+
+  ds%thermostat = LANGEVIN_THERM
+  ds%thermal_tau = 1000.0_dp
+  ds%sim_temp = sim_temp
+
+  ! create list of embedded atoms
+  call append(embedlist, (/1,0,0,0/))
+  call BFS_grow(ds%atoms, embedlist, embed_hops)
+
+  ! grow the embed list to include a fit zone
+  fitlist = embedlist
+  call BFS_grow(ds%atoms, fitlist, fit_hops)
+
+  call list_to_property(ds%atoms, embedlist, 'embed')
+  call list_to_property(ds%atoms, fitlist, 'fit')
+
+  call set_embed(metapot, embedlist)
+  call set_fit(metapot, fitlist)
+
+  ! Do the dynamics
+  step = 0
+  do while (.true.)
+     call calc(metapot, ds%atoms, f=f)
+     call advance_verlet(ds, time_step, f)
+     call ds_print_status(ds, 'D')
+     if (mod(step,100) == 0) then
+        call print_xyz(ds%atoms, movie, real_format='f12.8', all_properties=.true.)
+     end if
+     step = step + 1
+  end do
+  
+  call adjustable_potential_finalise()
+  call finalise(at)
+  call finalise(ds)
+  call finalise(movie)
+  call finalise(embedlist)
+  call finalise(fitlist)
+  call finalise(metapot)
+  call finalise(classicalpot)
+  call finalise(qmpot)
+
+  call system_finalise()
+
+end program bulktest
+
