@@ -1,0 +1,4 @@
+<BOP_params n_types="1" label="default" cutoff="5.0">
+<!-- dummy paramters for testing purposes, no physical meaning -->
+<per_type_data type="1" atomic_num="74" />
+</BOP_params>

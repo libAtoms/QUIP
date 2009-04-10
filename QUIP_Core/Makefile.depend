@@ -1,0 +1,5 @@
+include Makefile.arch
+
+depend: *.f95
+	rm -f depend
+	./makedep $(MAKEDEP_ARGS) -- $^ > depend

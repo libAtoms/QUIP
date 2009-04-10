@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Split a castep log file into a series of .castep files. Uses dummy_castep.py
+
+dummy_castep=`dirname $0`/dummy_castep.py
+
+stem=`basename $1`
+
+frame=0
+while $dummy_castep $stem; do
+    cp ${stem}.castep ${stem}.castep.$frame
+    frame=$((frame+1))
+done
+rm ${stem}.castep
+rm ${stem}.dummy_castep
+

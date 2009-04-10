@@ -1,0 +1,33 @@
+<Brenner_params n_types="1" label="Brenner1">
+  <!-- First set of parameters from Brenner(1990) -->
+  <per_type_data type="1" atomic_num="6" />
+  <per_pair_data atnum_i="6" atnum_j="6" R1="1.7" R2="2.0" De="6.325" S="1.29"
+     beta="1.5" delta="0.80469" Re="1.315" shift="0.0" />
+  <per_triplet_data atnum_c="6" atnum_j="6" atnum_k="6"
+     a0="0.011304" c0="19.0" d0="2.5" />
+</Brenner_params>
+
+<Brenner_params n_types="1" label="Brenner2">
+  <!-- Second set of parameters from Brenner(1990) -->
+  <per_type_data type="1" atomic_num="6" />
+  <per_pair_data atnum_i="6" atnum_j="6" R1="1.7" R2="2.0" De="6.0" S="1.22"
+     beta="2.1" delta="0.5" Re="1.390" shift="0.0" />
+  <per_triplet_data atnum_c="6" atnum_j="6" atnum_k="6"
+     a0="0.00020813" c0="330.0" d0="3.5" />
+</Brenner_params>
+
+<Brenner_params n_types="1" label="graphene">
+ <!-- 2nd set of parameters from Brenner (1990), with Re scaled to
+  give graphene lattice constant of 1.42 A and delta and shift modified
+  to match ab initio graphene elastic constants, as described in Arroyo
+  et al, Phys. Rev. B. 69 115415 (2004).
+  Gives Poission ratio 0.149, Youngs modulus in plane 342 J/m^2 and
+  bending modulus 3.9 eV A^2 per atom, in very good agreement with
+  Kudin et al, Phys. Rev. B. 64 235406 (2001) -->
+
+  <per_type_data type="1" atomic_num="6" />
+  <per_pair_data atnum_i="6" atnum_j="6" R1="1.7" R2="2.0" De="6.0" S="1.22"
+     beta="2.1" delta="0.95" Re="1.360" shift="0.03" />
+  <per_triplet_data atnum_c="6" atnum_j="6" atnum_k="6"
+     a0="0.00020813" c0="330.0" d0="3.5" />
+</Brenner_params>

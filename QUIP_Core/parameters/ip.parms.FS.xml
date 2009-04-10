@@ -1,0 +1,24 @@
+<FS_params n_types="7" label="default">
+<comment> Finnis and Sinclair, Philosophical Magazine A v 50, p 45 (1984) </comment>
+  <!-- Vanadium -->
+  <per_type_data type="1" atomic_num="23" />
+  <per_pair_data type1="1" type2="1" c="3.80" c0="-0.8816318" c1="1.4907756" c2="-0.3976370" A="2.010637" beta="0.0" d="3.692767" />
+  <!-- Niobium -->
+  <per_type_data type="2" atomic_num="41" />
+  <per_pair_data type1="2" type2="2" c="4.20" c0="-1.5640104" c1="2.0055779" c2="-0.4663764" A="3.013789" beta="0.0" d="3.915354" />
+  <!-- Tantalum -->
+  <per_type_data type="3" atomic_num="73" />
+  <per_pair_data type1="3" type2="3" c="4.20" c0="1.2157373" c1="0.0271471" c2="-0.1217350" A="2.591061" beta="0.0" d="4.076980" />
+  <!-- Chromium -->
+  <per_type_data type="4" atomic_num="24" />
+  <per_pair_data type1="4" type2="4" c="2.90" c0="29.1429813" c1="-23.3975027" c2="4.7578297" A="1.453418" beta="1.8" d="3.915720" />
+  <!-- Molybdenum -->
+  <per_type_data type="5" atomic_num="42" />
+  <per_pair_data type1="5" type2="5" c="3.25" c0="43.4475218" c1="-31.9332978" c2="6.0804249" A="1.887117" beta="0.0" d="4.114825" />
+  <!-- Tungsten -->
+  <per_type_data type="6" atomic_num="74" />
+  <per_pair_data type1="6" type2="6" c="3.25" c0="47.1346499" c1="-33.7665655" c2="6.2541999" A="1.896373" beta="0.0" d="4.400224" />
+  <!-- Iron -->
+  <per_type_data type="7" atomic_num="26" />
+  <per_pair_data type1="7" type2="7" c="3.4" c0="1.2371147" c1="-0.3592185" c2="-0.0385607" A="1.828905" beta="1.8" d="3.569745" />
+</FS_params>

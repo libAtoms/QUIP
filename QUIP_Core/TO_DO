@@ -1,0 +1,37 @@
+argument string
+	INIT and CALC strings should be interchangeable (except for the initial two), and able to set defaults/params for everything that the XML can set, at least fermiT,bandwith,fermiE,scf type,globalU,convergence tolerance
+	all of the above have a reasonable default, stored separately from actual value (and thus settable via string arg)
+
+k-points:
+
+	TB param files should have sensible defaults for a reciprocal
+	space k-point density. this is the relevant parameter, and
+	in addition ot the default, the tb_system should have this
+	as a variable, changeable from the outside, and it should
+	regenerate its kopints according to it. would b e nice to
+	have an explicit gamma-point option as well.
+
+Refactoring:
+
+	MPI_context -> libatoms/mpi.f95, needs a bit of work in generalising the existing MPI stuff in libatoms
+	  NB: lots of work, defer
+
+	Interface.h files have real interface blocks? 
+	  NB: Maybe, but there are multiple ways of calling some of them, so need multiple interface blocks?
+
+Additions
+  Documentation
+  finish ScaLAPACK
+  parallel RS_SparseMatrix
+  other TB models
+    notbad (Bernstein & Kaxiras)
+  expand/add EP models
+    ?
+
+Design Flaws(?)
+  Should parallelization be in TBMatrix?
+  Merge mpi and scalapack contexts into a single "parallel_context"?
+    (note: scalapack context can only be generated once, then must be shared/copied)
+  Fix input to calc_GF - why do fermi_E, fermi_T, band_Width duplicate what's in ApproxFermi
+  Should TBCalculate cache enough data to tell if atom list changed,
+    and call setup_atoms by itself? NO

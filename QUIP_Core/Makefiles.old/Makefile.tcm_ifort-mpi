@@ -1,0 +1,22 @@
+.SUFFIXES: .f95 .o
+
+# declarations
+
+F95 = iforte9.1
+
+ARCH_F95FLAGS =  -fpp -g -FR -traceback -I/usr/local/shared/MPI/LAM/intel64/include -DMPI -DMPI_1
+
+MAKEDEP_ARGS = -lc -suffix .mod
+
+AR_ADD = sr
+
+ARCH_LAPACK_LIBS = -lmkl_lapack -lmkl -lpthread
+ARCH_MPI_LIBS = -L/usr/local/shared/MPI/LAM/intel64/lib -llamf77mpi -lmpi -llam -lpthread
+ARCH_LIBS = ${ARCH_LAPACK_LIBS} ${ARCH_MPI_LIBS}
+
+# rules
+
+.f95.o:
+	@if ( which ${QUIP_PATH}protect_mod >/dev/null 2>&1 ); then ${QUIP_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${COMMON_F95FLAGS} ${ARCH_F95FLAGS} ${EXTRA_F95FLAGS} -c -Tf $<
+	@if ( which ${QUIP_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${QUIP_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

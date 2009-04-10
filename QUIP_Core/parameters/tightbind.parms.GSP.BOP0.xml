@@ -1,0 +1,11 @@
+<GSP_params n_types="1" tailx0="2.8" cutoff="5.0" cutoff_H="4.45" label="bcc Metals">
+<defaults fermi_T="0.1" Fermi_e="0" band_width="18.0"/>
+<per_type_data Z="74" n_orbs="5" n_elecs="4.2" E_d="0" 
+  lambda0="2.0" C="110.0" nu="2.0" m="1.5" Rtail="3.3" Rcut="4.40" />
+<per_pair_data Z1="74" Z2="74" rc="1.000" r0="2.74" na="4." nb="4.0" nc="0.05"  
+  B="15.0" Rcore="1.0" 
+  A1="-0.25493351057" A2="0.531685598475" A3="0.961779038168" A4="5.949929825811"
+  R1="5" R2="4.60" R3="3.6" R4="2.95"
+  H_dds="-1.9167" H_ddp="0.8801" H_ddd="-0.1037" 
+  O_dds="0.0" O_ddp="0.0" O_ddd="0.0"  />
+</GSP_params>

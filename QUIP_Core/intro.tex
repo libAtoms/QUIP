@@ -1,0 +1,34 @@
+\section{Copyright}
+
+\textsc{quip}: quantum mechanical and interatomic potential simulation package
+
+Portions written by Noam Bernstein, while working at the
+Naval Research Laboratory, Washington DC. 
+
+Portions written by G\'abor Cs\'anyi, Copyright 2006-2008.
+
+When using this software,  please cite the following reference:
+\texttt{reference}
+
+\begin{description}
+\item[Authors:] Noam Bernstein, G\'abor Cs\'anyi
+\item[Contributors:] James Kermode
+\end{description}
+
+\section{Introduction}
+
+\textsc{quip} depends on \textsc{libAtoms} and \textsc{FoX}.
+libAtoms can be obtained from \texttt{www.libatoms.org}.
+FoX can be obtained from \texttt{http://www.uszla.me.uk/FoX/}.
+
+As of 1/6/2007, the latest version (2.1.1) of \textsc{FoX} has some
+bugs that adversely affect \textsc{QUIP}.  The patch against
+\textsc{FoX} to fix the bugs is in \texttt{FoX.2.1.1.patch}.  Please
+apply it before compiling FoX by doing 
+
+\begin{verbatim}
+cd FoX-2.1.1
+patch -p1 < ../QUIP/FoX.2.1.1.patch
+\end{verbatim}
+
+

@@ -1,0 +1,546 @@
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!X     QUIP: quantum mechanical and interatomic potential simulation package
+!X     
+!X     Portions written by Noam Bernstein, while working at the
+!X     Naval Research Laboratory, Washington DC. 
+!X
+!X     Portions written by Gabor Csanyi, Copyright 2006-2007.   
+!X
+!X     When using this software,  please cite the following reference:
+!X
+!X     reference
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!X IP module 
+!X
+!% General object which manages all the possible interatomic potentials (IP), addressing
+!% the calls to the right modules. The available IPs are the following:
+!%   \begin{itemize}
+!%    \item    Gaussian Approximation Potential           ({\bf IPModel_GAP}) 
+!%    \item    Lennard-Jones Potential                    ({\bf IPModel_LJ}) 
+!%    \item    Stillinger and Weber Potential for Silicon ({\bf IPModel_SW}) 
+!%    \item    Tersoff potential for C/Si/Ge              ({\bf IPModel_Tersoff})  
+!%    \item    Embedded Atom Potential of Ercolessi Adam  ({\bf IPModel_EAM_ErcolAd})
+!%    \item    Brenner Potential                          ({\bf IPModel_Brenner})
+!%    \item    FB Potential for SiO2                      ({\bf IPModel_FB})
+!%    \item    Silicon Modified Embedded Atom Potentia l  ({\bf IPModel_Si_MEAM})
+!%    \item    Finnis-Sinclair                            ({\bf IPModel_FS})
+!%    \item    Bond Order Potential                       ({\bf IPModel_BOP})
+!%    \item    Screened Brenner Potential (interface)     ({\bf IPModel_Brenner_Screened})
+!%    \item    2nd generation Brenner Potential (interface) ({\bf IPModel_Brenner_2002})
+!%   \end{itemize}
+!%  The IP_type object contains details regarding the selected IP.
+!%  When a type Potential is defined
+!%>   type(Potential) :: pot
+!%  it is then necessary to initialise the IP parameters (readable from an external input file or 
+!%  from an internal string) and to define the IP type:
+!%>   call Initialise(pot, IP_type, params) 
+!%  where IP_type can be 
+!%   \begin{itemize}
+!%    \item    'IP GAP'
+!%    \item    'IP LJ'
+!%    \item    'IP SW' 
+!%    \item    'IP Tersoff'
+!%    \item    'IP EAM_ErcolAd'
+!%    \item    'IP Brenner'
+!%    \item    'IP FB'
+!%    \item    'IP Si_MEAM'
+!%    \item    'IP FS'
+!%    \item    'IP BOP'
+!%    \item    'IP Brenner_Screened'
+!%    \item    'IP_Brenner_2002'
+!%   \end{itemize}
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+module IP_module
+
+use libatoms_module
+
+use MPI_context_module
+use IPModel_GAP_module
+use IPModel_LJ_module
+use IPModel_SW_module
+use IPModel_Tersoff_module
+use IPModel_EAM_ErcolAd_module
+use IPModel_Brenner_module
+use IPModel_FB_module
+use IPModel_Si_MEAM_module
+use IPModel_FS_module
+use IPModel_BOP_module
+use IPModel_Brenner_Screened_module
+use IPModel_Brenner_2002_module
+use QUIP_Common_module
+
+implicit none
+
+private
+
+integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
+     FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
+     FF_Brenner_2002 = 12
+
+public :: IP_type
+type IP_type
+  integer :: functional_form = 0
+
+  type(IPModel_GAP) ip_gap
+  type(IPModel_LJ) ip_lj
+  type(IPModel_SW) ip_sw
+  type(IPModel_Tersoff) ip_Tersoff
+  type(IPModel_EAM_ErcolAd) ip_EAM_ErcolAd
+  type(IPModel_Brenner) ip_Brenner
+  type(IPModel_FB) ip_FB
+  type(IPModel_Si_MEAM) ip_Si_MEAM
+  type(IPModel_FS) ip_fs
+  type(IPModel_BOP) ip_BOP
+  type(IPModel_Brenner_Screened) ip_Brenner_Screened
+  type(IPModel_Brenner_2002) ip_Brenner_2002
+
+  type(mpi_context) :: mpi_glob
+end type IP_type
+
+!% Initialise IP_type object defining the IP model and the corresponding parameters. If necessary
+!% it initialises the input file for the potential parameters. 
+public :: Initialise
+public :: IP_Initialise_filename
+interface Initialise
+  module procedure IP_Initialise_inoutput, IP_Initialise_str
+end interface Initialise
+
+public :: Finalise
+interface Finalise
+  module procedure IP_Finalise
+end interface Finalise
+
+!% Return the cutoff of this interatomic potential
+public :: cutoff
+interface cutoff
+   module procedure IP_cutoff
+end interface
+
+!% Print the parameters of the selected IP model
+public :: Print
+interface Print
+  module procedure IP_Print
+end interface Print
+
+!% Call the potential calculator for the selected IP model
+public :: Calc
+private :: IP_Calc
+interface Calc
+  module procedure IP_Calc
+end interface Calc
+
+!% set up optimal parameters for parallel computation for a given system
+public :: setup_parallel
+private :: IP_setup_parallel
+interface setup_parallel
+  module procedure IP_setup_parallel
+end interface setup_parallel
+
+contains
+
+!% OMIT
+subroutine IP_Initialise_filename(this, args_str, filename, mpi_obj)
+  type(IP_type), intent(inout) :: this
+  character(len=*), intent(in) :: args_str
+  character(len=*), intent(in) :: filename  !% File name containing the IP parameters
+  type(MPI_context), intent(in), optional :: mpi_obj
+
+  type(inoutput) io
+
+  call Initialise(io, filename, INPUT)
+
+  call Initialise(this, args_str, io, mpi_obj)
+
+  call Finalise(io)
+
+end subroutine
+
+
+subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj)
+  type(IP_type), intent(inout) :: this
+  character(len=*), intent(in) :: args_str
+  type(inoutput), intent(inout), optional :: io_obj
+  type(MPI_context), intent(in), optional :: mpi_obj
+
+  type(extendable_str) :: ss
+
+  call Initialise(ss)
+  if (present(io_obj)) then
+    if (present(mpi_obj)) then
+      call read(ss, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+    else
+      call read(ss, io_obj%unit, convert_to_string=.true.)
+    endif
+  endif
+  call Initialise(this, args_str, string(ss), mpi_obj)
+  call Finalise(ss)
+
+end subroutine IP_Initialise_inoutput
+
+subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
+  type(IP_type), intent(inout) :: this
+  character(len=*), intent(in) :: args_str, param_str
+  type(MPI_context), intent(in), optional :: mpi_obj
+
+  type(Dictionary) :: params
+  logical is_GAP, is_LJ, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
+       is_Brenner_Screened, is_Brenner_2002
+
+  call Finalise(this)
+
+  call initialise(params)
+  call param_register(params, 'GAP', 'false', is_GAP)
+  call param_register(params, 'LJ', 'false', is_LJ)
+  call param_register(params, 'SW', 'false', is_SW)
+  call param_register(params, 'Tersoff', 'false', is_Tersoff)
+  call param_register(params, 'EAM_ErcolAd', 'false', is_EAM_ErcolAd)
+  call param_register(params, 'Brenner', 'false', is_Brenner)
+  call param_register(params, 'FB', 'false', is_FB)
+  call param_register(params, 'Si_MEAM', 'false', is_Si_MEAM)
+  call param_register(params, 'FS', 'false', is_FS)
+  call param_register(params, 'BOP', 'false', is_BOP)
+  call param_register(params, 'Brenner_Screened', 'false', is_Brenner_Screened)
+  call param_register(params, 'Brenner_2002', 'false', is_Brenner_2002)
+
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    call system_abort("IP_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
+  endif
+  call finalise(params)
+
+  if (count((/is_GAP, is_LJ, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, is_Brenner_Screened, is_Brenner_2002/)) /= 1) then
+    call system_abort("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'")
+  endif
+
+  if (is_GAP) then
+    this%functional_form = FF_GAP
+    call Initialise(this%ip_gap, args_str, param_str)
+  else if (is_LJ) then
+    this%functional_form = FF_LJ
+    call Initialise(this%ip_lj, args_str, param_str)
+  else if (is_SW) then
+    this%functional_form = FF_SW
+    call Initialise(this%ip_sw, args_str, param_str)
+  else if (is_Tersoff) then
+    this%functional_form = FF_Tersoff
+    call Initialise(this%ip_tersoff, args_str, param_str)
+  else if (is_EAM_ErcolAd) then
+    this%functional_form = FF_EAM_ErcolAd
+    call Initialise(this%ip_EAM_ErcolAd, args_str, param_str)
+  else if (is_Brenner) then
+    this%functional_form = FF_Brenner
+    call Initialise(this%ip_Brenner, args_str, param_str)
+  else if (is_FB) then
+    this%functional_form = FF_FB
+    call Initialise(this%ip_FB, args_str, param_str)
+  else if (is_Si_MEAM) then
+    this%functional_form = FF_Si_MEAM
+    call Initialise(this%ip_Si_MEAM, args_str, param_str)
+  else if (is_FS) then
+    this%functional_form = FF_FS
+    call Initialise(this%ip_fs, args_str, param_str)
+  else if (is_BOP) then
+    this%functional_form = FF_BOP
+    call Initialise(this%ip_bop, args_str, param_str)
+  else if (is_Brenner_Screened) then
+    this%functional_form = FF_Brenner_Screened
+    call Initialise(this%ip_brenner_screened, args_str, param_str)
+  else if (is_Brenner_2002) then
+    this%functional_form = FF_Brenner_2002
+    call Initialise(this%ip_brenner_2002, args_str, param_str)
+  end if
+
+  if (present(mpi_obj)) this%mpi_glob = mpi_obj
+
+end subroutine IP_Initialise_str
+
+subroutine IP_Finalise(this)
+  type(IP_type), intent(inout) :: this
+
+  select case (this%functional_form)
+    case (FF_GAP)
+      if (this%ip_gap%mpi%active) call free_context(this%ip_gap%mpi)
+      call Finalise(this%ip_gap)
+    case (FF_LJ)
+      if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
+      call Finalise(this%ip_lj)
+    case (FF_SW)
+      if (this%ip_sw%mpi%active) call free_context(this%ip_sw%mpi)
+      call Finalise(this%ip_sw)
+    case (FF_Tersoff)
+      if (this%ip_tersoff%mpi%active) call free_context(this%ip_tersoff%mpi)
+      call Finalise(this%ip_tersoff)
+    case (FF_EAM_ErcolAd)
+      if (this%ip_EAM_ErcolAd%mpi%active) call free_context(this%ip_EAM_ErcolAd%mpi)
+      call Finalise(this%ip_EAM_ErcolAd)
+    case(FF_Brenner)
+      if (this%ip_brenner%mpi%active) call free_context(this%ip_brenner%mpi)
+      call Finalise(this%ip_Brenner)
+    case(FF_FB)
+      if (this%ip_fb%mpi%active) call free_context(this%ip_fb%mpi)
+      call Finalise(this%ip_fb)
+    case(FF_Si_MEAM)
+      if (this%ip_Si_MEAM%mpi%active) call free_context(this%ip_Si_MEAM%mpi)
+      call Finalise(this%ip_Si_MEAM)
+    case (FF_FS)
+      if (this%ip_fs%mpi%active) call free_context(this%ip_fs%mpi)
+      call Finalise(this%ip_fs)
+    case (FF_BOP)
+      if (this%ip_bop%mpi%active) call free_context(this%ip_bop%mpi)
+      call Finalise(this%ip_bop)
+    case (FF_Brenner_Screened)
+      if(this%ip_brenner_screened%mpi%active) call free_context(this%ip_brenner_screened%mpi)
+      call Finalise(this%ip_brenner_screened)
+    case (FF_Brenner_2002)
+      if(this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
+      call Finalise(this%ip_brenner_2002)
+  end select
+
+end subroutine IP_Finalise
+
+function IP_cutoff(this)
+  type(IP_type), intent(in) :: this
+  real(dp) :: IP_cutoff
+  select case (this%functional_form)
+  case (FF_GAP)
+     IP_cutoff = this%ip_gap%cutoff
+  case (FF_LJ)
+     IP_cutoff = this%ip_lj%cutoff
+  case (FF_SW)
+     IP_cutoff = this%ip_sw%cutoff
+  case (FF_Tersoff)
+     IP_cutoff = this%ip_tersoff%cutoff
+  case (FF_EAM_ErcolAd)
+     IP_cutoff = this%ip_EAM_ErcolAd%cutoff
+  case(FF_Brenner)
+     IP_Cutoff = this%ip_Brenner%cutoff
+  case(FF_FB)
+     IP_Cutoff = this%ip_FB%cutoff
+  case(FF_Si_MEAM)
+     IP_Cutoff = this%ip_Si_MEAM%cutoff
+  case (FF_FS)
+     IP_cutoff = this%ip_fs%cutoff
+  case (FF_BOP)
+     IP_cutoff = this%ip_bop%cutoff
+  case (FF_Brenner_Screened)
+     IP_cutoff = this%ip_brenner_screened%cutoff
+  case (FF_Brenner_2002)
+     IP_cutoff = this%ip_brenner_2002%cutoff
+  case default
+     IP_cutoff = 0.0_dp
+  end select
+end function IP_cutoff
+
+subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
+  type(IP_type), intent(inout) :: this
+  type(Atoms), intent(inout) :: at                
+  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
+  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: virial(3,3)
+  character(len=STRING_LENGTH), intent(in), optional      :: args_str 
+
+  logical mpi_active
+
+  call system_timer("IP_Calc")
+
+  select case (this%functional_form)
+    case (FF_GAP)
+      mpi_active = this%ip_gap%mpi%active
+    case (FF_LJ)
+      mpi_active = this%ip_lj%mpi%active
+    case (FF_SW)
+      mpi_active = this%ip_sw%mpi%active
+    case (FF_Tersoff)
+      mpi_active = this%ip_tersoff%mpi%active
+    case (FF_EAM_ErcolAd)
+      mpi_active = this%ip_EAM_ErcolAd%mpi%active
+    case(FF_Brenner)
+      mpi_active = this%ip_Brenner%mpi%active
+    case(FF_FB)
+      mpi_active = this%ip_FB%mpi%active
+    case(FF_Si_MEAM)
+      mpi_active = this%ip_Si_MEAM%mpi%active
+    case(FF_FS)
+      mpi_active = this%ip_fs%mpi%active
+    case(FF_BOP)
+      mpi_active = this%ip_bop%mpi%active
+    case(FF_Brenner_Screened)
+      mpi_active = this%ip_brenner_screened%mpi%active
+    case(FF_Brenner_2002)
+      mpi_active = this%ip_brenner_2002%mpi%active
+    case default
+      call system_abort("IP_Calc confused by functional_form " // this%functional_form)
+  end select
+
+  if (this%mpi_glob%active .and. .not. mpi_active) then
+    call setup_parallel(this, at)
+  endif
+
+  select case (this%functional_form)
+    case (FF_GAP)
+      call calc(this%ip_gap, at, energy, local_e, f, virial)
+    case (FF_LJ)
+      call calc(this%ip_lj, at, energy, local_e, f, virial)
+    case (FF_SW)
+      call calc(this%ip_sw, at, energy, local_e, f, virial)
+    case (FF_Tersoff)
+      call calc(this%ip_tersoff, at, energy, local_e, f, virial)
+    case (FF_EAM_ErcolAd)
+      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, virial)
+    case(FF_Brenner)
+      call calc(this%ip_Brenner, at, energy, local_e, f, virial)
+    case(FF_FB)
+      call calc(this%ip_FB, at, energy, local_e, f, virial)
+    case(FF_Si_MEAM)
+      call calc(this%ip_Si_MEAM, at, energy, local_e, f, virial)
+    case (FF_FS)
+      call calc(this%ip_fs, at, energy, local_e, f, virial)
+    case (FF_BOP)
+      call calc(this%ip_bop, at, energy, local_e, f, virial, args_str)
+    case (FF_Brenner_Screened)
+      call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str)
+    case (FF_Brenner_2002)
+      call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str)
+    case default
+      call system_abort("IP_Calc confused by functional_form " // this%functional_form)
+  end select
+
+  call system_timer("IP_Calc")
+end subroutine IP_Calc
+
+
+subroutine IP_Print(this, file)
+  type(IP_type), intent(inout) :: this
+  type(Inoutput), intent(inout),optional :: file
+
+  call Print ("IP : " // this%functional_form, file=file)
+
+  select case (this%functional_form)
+    case (FF_GAP)
+      call Print(this%ip_gap, file=file)
+    case (FF_LJ)
+      call Print(this%ip_lj, file=file)
+    case (FF_SW)
+      call Print(this%ip_sw, file=file)
+    case (FF_Tersoff)
+      call Print(this%ip_tersoff, file=file)
+    case (FF_EAM_ErcolAd)
+      call Print(this%ip_EAM_ErcolAd, file=file)
+    case (FF_Brenner)
+      call Print(this%ip_Brenner, file=file)
+    case (FF_FB)
+      call Print(this%ip_FB, file=file)
+    case (FF_Si_MEAM)
+      call Print(this%ip_Si_MEAM, file=file)
+    case (FF_FS)
+      call Print(this%ip_fs, file=file)
+    case (FF_BOP)
+      call Print(this%ip_bop, file=file)
+    case (FF_Brenner_Screened)
+      call Print(this%ip_brenner_screened, file=file)
+    case (FF_Brenner_2002)
+      call Print(this%ip_brenner_2002, file=file)
+    case default
+      call system_abort("IP_Print confused by functional_form " // this%functional_form)
+  end select
+end subroutine IP_Print
+
+subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
+  type(IP_type), intent(inout) :: this
+  type(Atoms), intent(inout) :: at
+  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
+  real(dp), intent(out), optional :: f(:,:)
+  real(dp), intent(out), optional :: virial(3,3)
+  character(len=STRING_LENGTH), intent(in), optional      :: args_str 
+
+
+  integer :: pgroup_size, prev_pgroup_size
+  integer :: n_groups
+  real(dp) :: prev_time, this_time
+
+  prev_time = 1.0e38_dp
+  prev_pgroup_size = 0
+
+  do pgroup_size=1, this%mpi_glob%n_procs
+    n_groups = this%mpi_glob%n_procs / pgroup_size
+    if (n_groups*pgroup_size == this%mpi_glob%n_procs) then
+      call setup_parallel_groups(this, this%mpi_glob, pgroup_size)
+      call system_timer("IP_parallel", do_always = .true.)
+      call calc(this, at, energy, local_e, f, virial, args_str)
+      call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time)
+      this_time = max(this%mpi_glob, this_time)
+      if (this_time > prev_time) then
+	call setup_parallel_groups(this, this%mpi_glob, prev_pgroup_size)
+	exit
+      else
+	prev_time = this_time
+	prev_pgroup_size = pgroup_size
+      endif
+    endif
+  end do
+
+  call print("Parallelizing IP using group_size " // prev_pgroup_size, ERROR)
+end subroutine IP_setup_parallel
+
+subroutine setup_parallel_groups(this, mpi, pgroup_size)
+  type(IP_type), intent(inout) :: this
+  type(mpi_context), intent(in) :: mpi
+  integer, intent(in) :: pgroup_size
+
+  type(mpi_context) :: mpi_local
+  integer :: split_index
+
+  if (mpi%active) then
+    split_index = mpi%my_proc/pgroup_size
+    call split_context(mpi, split_index, mpi_local)
+  endif
+
+  select case (this%functional_form)
+    case (FF_GAP)
+      if (this%ip_gap%mpi%active) call free_context(this%ip_gap%mpi)
+      this%ip_gap%mpi = mpi_local
+    case (FF_LJ)
+      if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
+      this%ip_lj%mpi = mpi_local
+    case (FF_SW)
+      if (this%ip_sw%mpi%active) call free_context(this%ip_sw%mpi)
+      this%ip_sw%mpi = mpi_local
+    case (FF_Tersoff)
+      if (this%ip_tersoff%mpi%active) call free_context(this%ip_tersoff%mpi)
+      this%ip_tersoff%mpi = mpi_local
+    case (FF_EAM_ErcolAd)
+      if (this%ip_EAM_ErcolAd%mpi%active) call free_context(this%ip_EAM_ErcolAd%mpi)
+      this%ip_EAM_ErcolAd%mpi = mpi_local
+    case(FF_Brenner)
+      if (this%ip_brenner%mpi%active) call free_context(this%ip_brenner%mpi)
+      this%ip_Brenner%mpi = mpi_local
+    case(FF_FB)
+      if (this%ip_FB%mpi%active) call free_context(this%ip_FB%mpi)
+      this%ip_FB%mpi = mpi_local
+    case(FF_Si_MEAM)
+      if (this%ip_Si_MEAM%mpi%active) call free_context(this%ip_Si_MEAM%mpi)
+      this%ip_Si_MEAM%mpi = mpi_local
+    case(FF_FS)
+      if (this%ip_fs%mpi%active) call free_context(this%ip_fs%mpi)
+      this%ip_fs%mpi = mpi_local
+    case(FF_BOP)
+      if (this%ip_bop%mpi%active) call free_context(this%ip_bop%mpi)
+      this%ip_bop%mpi = mpi_local
+    case(FF_Brenner_Screened)
+      if (this%ip_brenner_screened%mpi%active) call free_context(this%ip_brenner_screened%mpi)
+      this%ip_brenner_screened%mpi = mpi_local
+    case(FF_Brenner_2002)
+      if (this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
+      this%ip_brenner_2002%mpi = mpi_local
+    case default
+      call system_abort("setup_parallel_groups confused by functional_form " // this%functional_form)
+  end select
+end subroutine setup_parallel_groups
+
+end module IP_module

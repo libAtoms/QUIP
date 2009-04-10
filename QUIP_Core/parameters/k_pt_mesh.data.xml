@@ -1,0 +1,6 @@
+<KPoints N="3">
+<!-- example of k-pt mesh format, not for real usage -->
+<point weight="1">0.1 0 0</point>
+<point weight="1">0.2 0 0</point>
+<point weight="1">0.3 0 0</point>
+</KPoints>

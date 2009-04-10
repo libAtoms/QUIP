@@ -1,0 +1,16 @@
+<SW_params n_types="2" label="CASTEP_Si_C_SiC_elastic_fit">
+<comment> Fit to CASTEP Elastic constants for C, Si, SiC</comment>
+<per_type_data type="1" atomic_num="6" />
+<per_type_data type="2" atomic_num="14" />
+<per_pair_data atnum_i="6" atnum_j="6" AA="7.10918707391820" BB="0.557898444150371" p="4.09179766419797" q="-9.911530806516647E-02" a="1.97619260738845" sigma="1.31810972625363" eps="2.36034502635022" />
+<per_pair_data atnum_i="6" atnum_j="14" AA="7.13026865730559" BB="0.652237865122401" p="4.12737003588713" q="-6.595585857693996E-03" a="1.88733380424768" sigma="1.62340380376393" eps="2.43238328815588" />
+<per_pair_data atnum_i="14" atnum_j="14" AA="7.04362967268783" BB="0.970594436458705" p="4.03708813593053" q="-4.450726133371393E-02" a="1.46166401588748" sigma="2.15837737924396" eps="2.15059918939978" />
+<per_triplet_data atnum_c="6" atnum_j="6" atnum_k="6" lambda="21.0035788285364" gamma="0.901831224958120" eps="2.20483692425776" />
+<per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14" lambda="21.0062236429313" gamma="0.574531293588532" eps="2.22998070902001" />
+<per_triplet_data atnum_c="6" atnum_j="14" atnum_k="14" lambda="21.0040071902589" gamma="1.02217182723394" eps="2.20876382343715" />
+<per_triplet_data atnum_c="6" atnum_j="6" atnum_k="14" lambda="21.0040071902589" gamma="1.02217182723394" eps="2.20876382343715" />
+<per_triplet_data atnum_c="6" atnum_j="14" atnum_k="6" lambda="21.0040071902589" gamma="1.02217182723394" eps="2.20876382343715" />
+<per_triplet_data atnum_c="14" atnum_j="6" atnum_k="6" lambda="21.0040330592804" gamma="1.04221585835596" eps="2.20893434192742" />
+<per_triplet_data atnum_c="14" atnum_j="14" atnum_k="6" lambda="21.0040330592804" gamma="1.04221585835596" eps="2.20893434192742" />
+<per_triplet_data atnum_c="14" atnum_j="6" atnum_k="14" lambda="21.0040330592804" gamma="1.04221585835596" eps="2.20893434192742" />
+</SW_params>

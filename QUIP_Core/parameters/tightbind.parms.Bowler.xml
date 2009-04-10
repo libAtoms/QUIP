@@ -1,0 +1,12 @@
+<Bowler_params n_types="2" tailx0="2.8" cutoff="3.2" label="PhD_thesis_Si_plus_H">
+<!-- From Bowler Ph.D. Thesis, 1997 -->
+<defaults fermi_T="0.01" Fermi_e="-6.2065" band_width="18.0"/>
+<per_type_data Z="14" n_orbs="4" n_elecs="4" E_s="-12.2" E_p="-5.75" />
+<per_type_data Z="1" n_orbs="1" n_elecs="1" E_s="-8.4" />
+<per_pair_data Z1="14" Z2="14" rc="3.8661" r0="2.35" n="1.9771" nc="6.8702" dc="3.8521" m="4.7104" mc="7.0531" 
+  H_sss="-1.938" H_sps="1.745" H_pps="3.050" H_ppp="-1.075" Vrep="3.44566" />
+<per_pair_data Z1="1" Z2="1" rc="3.4" r0="1.474" n="2.6752" nc="20.0" dc="3.4" m="4.2302" mc="20.0" 
+  H_sss="0.0" H_sps="0.0" Vrep="0.0" />
+<per_pair_data Z1="1" Z2="14" rc="3.4" r0="1.474" n="2.6752" nc="20.0" dc="3.4" m="4.2302" mc="20.0" 
+  H_sss="-3.834" H_sps="4.734" H_pss="0.0" Vrep="7.4399" />
+</Bowler_params>

@@ -1,0 +1,623 @@
+module MPI_context_module
+use libatoms_module
+implicit none
+
+private
+
+public :: MPI_context
+type MPI_context
+  logical :: active = .false.
+  integer :: communicator
+  integer :: n_procs = 1, my_proc = 0
+  ! support later?
+  ! logical is_grid
+  ! integer n_proc_rows, n_proc_cols
+  ! integer my_proc_row, my_proc_col
+end type MPI_context
+
+public :: Initialise
+interface Initialise
+  module procedure MPI_context_Initialise
+end interface
+
+public :: Finalise
+interface Finalise
+  module procedure MPI_context_Finalise
+end interface
+
+public :: Print
+interface Print
+  module procedure MPI_context_Print
+end interface
+
+public :: Split_context
+interface Split_context
+  module procedure MPI_context_Split_context
+end interface
+
+public :: free_context
+interface free_context
+  module procedure MPI_context_free_context
+end interface
+
+public :: bcast
+interface bcast
+  module procedure MPI_context_bcast_real, MPI_context_bcast_real1, MPI_context_bcast_real2, MPI_context_bcast_c, MPI_context_bcast_int
+end interface
+public :: min
+interface min
+  module procedure MPI_context_min_real
+end interface
+public :: max
+interface max
+  module procedure MPI_context_max_real
+end interface
+public :: sum
+interface sum
+  module procedure MPI_context_sum_real, MPI_context_sum_complex
+end interface
+public :: sum_in_place
+interface sum_in_place
+  module procedure MPI_context_sum_in_place_real1, MPI_context_sum_in_place_real2
+  module procedure MPI_context_sum_in_place_real3
+  module procedure MPI_context_sum_in_place_complex1, MPI_context_sum_in_place_complex2
+end interface
+
+public :: collect
+interface collect
+  module procedure MPI_context_collect_real2
+end interface collect
+
+public :: mpi_print
+
+public :: barrier
+interface barrier
+  module procedure MPI_context_barrier
+end interface barrier
+
+contains
+
+subroutine MPI_context_Initialise(this, communicator)
+  type(MPI_context), intent(inout) :: this
+  integer, intent(in), optional :: communicator
+
+#ifdef _MPI
+  integer err
+  integer is_initialized
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  call Finalise(this)
+
+  this%active = .false.
+
+#ifdef _MPI
+  if (present(communicator)) then
+    this%communicator = communicator
+  else
+    this%communicator = MPI_COMM_WORLD
+    call mpi_initialized(is_initialized, err)
+    if (is_initialized == 0) then
+      call mpi_init(err)
+    endif
+  endif
+
+  call mpi_comm_size(this%communicator, this%n_procs, err)
+  call mpi_comm_rank(this%communicator, this%my_proc, err)
+  this%active = .true.
+#endif
+end subroutine MPI_context_Initialise
+
+subroutine MPI_context_Finalise(this, end_of_program)
+  type(MPI_context), intent(inout) :: this
+  logical, optional, intent(in) :: end_of_program 
+
+#ifdef _MPI
+  integer err
+  integer is_initialized
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  if (present(end_of_program)) then
+    if (end_of_program) then
+      call mpi_initialized(is_initialized, err)
+      if (is_initialized == 0) then
+	call mpi_finalize(err)
+      endif
+    endif
+  endif
+#endif
+end subroutine MPI_context_Finalise
+
+subroutine MPI_context_free_context(this)
+  type(MPI_context), intent(inout) :: this
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call mpi_comm_free(this%communicator, err)
+  this%active = .false.
+#endif
+end subroutine MPI_context_free_context
+
+subroutine MPI_context_Split_context(this, split_index, new_context)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: split_index
+  type(MPI_context), intent(out) :: new_context
+
+#ifdef _MPI
+  integer err
+#endif
+  integer new_comm
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    new_context = this
+    return
+  endif
+
+  new_comm = this%communicator
+
+#ifdef _MPI
+  call mpi_comm_split(this%communicator, split_index, this%my_proc, new_comm, err)
+#endif
+
+  call Initialise(new_context, new_comm)
+
+end subroutine MPI_context_Split_context
+
+function MPI_context_min_real(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v
+  real(dp) :: MPI_context_min_real
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    MPI_context_min_real = v
+    return
+  endif
+
+#ifdef _MPI
+  call MPI_allreduce(v, MPI_context_min_real, 1, MPI_DOUBLE_PRECISION, MPI_MIN, this%communicator, err)
+#else
+  MPI_context_min_real = v
+#endif
+end function MPI_context_min_real
+
+function MPI_context_max_real(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v
+  real(dp) :: MPI_context_max_real
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    MPI_context_max_real = v
+    return
+  endif
+
+#ifdef _MPI
+  call MPI_allreduce(v, MPI_context_max_real, 1, MPI_DOUBLE_PRECISION, MPI_MAX, this%communicator, err)
+#else
+  MPI_context_max_real = v
+#endif
+end function MPI_context_max_real
+
+function MPI_context_sum_real(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v
+  real(dp) :: MPI_context_sum_real
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    MPI_context_sum_real = v
+    return
+  endif
+
+#ifdef _MPI
+  call MPI_allreduce(v, MPI_context_sum_real, 1, MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+#else
+  MPI_context_sum_real = v
+#endif
+end function  MPI_context_sum_real
+
+function MPI_context_sum_complex(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(in) :: v
+  complex(dp) :: MPI_context_sum_complex
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    MPI_context_sum_complex = v
+    return
+  endif
+
+#ifdef _MPI
+  call MPI_allreduce(v, MPI_context_sum_complex, 1, MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
+#else
+  MPI_context_sum_complex = v
+#endif
+end function MPI_context_sum_complex
+
+subroutine MPI_context_sum_in_place_real2(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v(:,:)
+
+#ifdef MPI_1
+  real(dp), allocatable :: v_sum(:,:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1),size(v,2)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+#endif
+#endif
+end subroutine MPI_context_sum_in_place_real2
+
+subroutine MPI_context_sum_in_place_real3(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v(:,:,:)
+
+#ifdef MPI_1
+  real(dp), allocatable :: v_sum(:,:,:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1),size(v,2),size(v,3)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+#endif
+#endif
+end subroutine  MPI_context_sum_in_place_real3
+
+subroutine MPI_context_sum_in_place_complex2(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(inout) :: v(:,:)
+
+#ifdef MPI_1
+  complex(dp), allocatable :: v_sum(:,:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1),size(v,2)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
+#endif
+#endif
+end subroutine  MPI_context_sum_in_place_complex2
+
+subroutine MPI_context_sum_in_place_real1(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v(:)
+
+#ifdef MPI_1
+  real(dp), allocatable :: v_sum(:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+#endif
+#endif
+end subroutine MPI_context_sum_in_place_real1
+
+subroutine MPI_context_sum_in_place_complex1(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(inout) :: v(:)
+
+#ifdef MPI_1
+  complex(dp), allocatable :: v_sum(:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
+#endif
+#endif
+end subroutine  MPI_context_sum_in_place_complex1
+
+subroutine MPI_context_bcast_real(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_real
+
+subroutine MPI_context_bcast_int(this, v)
+  type(MPI_context), intent(in) :: this
+  integer, intent(inout) :: v
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, 1, MPI_INTEGER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_int
+
+subroutine MPI_context_bcast_c(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(inout) :: v
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_c
+
+subroutine MPI_context_bcast_real1(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v(:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_real1
+
+subroutine MPI_context_bcast_real2(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v(:,:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_real2
+
+subroutine MPI_Context_Print(this, file)
+  type(MPI_context), intent(in) :: this
+  type(Inoutput), intent(inout), optional :: file
+
+  call print("MPI_Context : active " // this%active, file=file)
+  if (this%active) then
+    call print("communicator " // this%communicator, file=file)
+    call print("n_procs " // this%n_procs // " my_proc " // this%my_proc, file=file)
+  endif
+end subroutine MPI_Context_Print
+
+subroutine MPI_Print(this, lines)
+  type(MPI_context), intent(in) :: this
+  character(len=*), intent(in) :: lines(:)
+
+  integer i
+
+  if (.not. this%active) then
+    do i=1, size(lines)
+      call Print(trim(lines(i)))
+    end do
+#ifdef _MPI
+  else
+    call parallel_print(lines, this%communicator)
+#endif
+  endif
+
+end subroutine MPI_Print
+
+subroutine MPI_context_collect_real2(this, v_in, v_out)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:,:)
+  real(dp), intent(out) :: v_out(:,:)
+
+  integer err, i
+  integer my_count
+  integer, allocatable :: displs(:), counts(:)
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    if (size(v_in,1) /= size(v_out,1) .or. &
+        size(v_in,2) /= size(v_out,2)) then
+      call system_abort("MPI_context_collect_real (no MPI) size mismatch v_in " // &
+	shape(v_in) // " v_out " // shape(v_out))
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+
+  my_count = size(v_in)
+  allocate(displs(this%n_procs))
+  allocate(counts(this%n_procs))
+  call mpi_allgather(my_count, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, this%communicator, err)
+
+  if (sum(counts) /= size(v_out)) then
+    call system_abort("MPI_context_collect_real2 not enough space sum(counts) " // sum(counts) &
+      // " size(v_out) " // size(v_out))
+  endif
+
+  displs(1) = 0
+  do i=2, this%n_procs
+    displs(i) = displs(i-1) + counts(i-1)
+  end do
+
+  call MPI_allgatherv(v_in, my_count, MPI_DOUBLE_PRECISION, &
+		      v_out, counts, displs, MPI_DOUBLE_PRECISION, &
+		      this%communicator, err)
+
+  deallocate(displs)
+  deallocate(counts)
+
+#endif
+
+end subroutine MPI_context_collect_real2
+
+subroutine MPI_context_barrier(this)
+  type(MPI_context), intent(in) :: this
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+#ifdef _MPI
+  integer err
+
+  call mpi_barrier(this%communicator, err)
+#endif
+end subroutine MPI_context_barrier
+
+end module MPI_context_module

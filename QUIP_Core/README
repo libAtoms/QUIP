@@ -1,0 +1,11 @@
+QUIP depends on libAtoms and FoX
+libAtoms can be obtained from www.libatoms.org
+
+FoX can be obtained from http://www.uszla.me.uk/FoX/
+  As of 1/6/2007, the latest version (2.1.1) of FoX has some
+    bugs that adversely affect QUIP.  The patch against FoX
+    to fix the bugs is in FoX.2.1.1.patch.  Please apply it
+    before compiling FoX by doing
+      cd FoX-2.1.1
+      patch -p1 < ../QUIP/FoX.2.1.1.patch
+

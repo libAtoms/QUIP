@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ $# == 0 ]]; then
+  args=`ls *.xml | egrep -v '^quip_params.xml'`
+else
+  args=$*
+fi
+
+echo '<quip_params>'
+for f in $args; do
+  cat $f | fgrep -v '<?xml'
+  echo ""
+done
+echo '</quip_params>'

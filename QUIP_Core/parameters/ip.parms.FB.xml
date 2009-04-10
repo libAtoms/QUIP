@@ -1,0 +1,8 @@
+<FB_params n_types="2" label="default">
+<!-- Flikkema & Bromley  -->
+<per_type_data type="1" atomic_num="8" charge="-1.2"/>
+<per_type_data type="2" atomic_num="14" charge="2.4"/>
+<per_pair_data atomic_num_i="8" atomic_num_j="8" A="1428.406" B="0.358" C="41.374" r_cut="6.0" />
+<per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
+<per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
+</FB_params>

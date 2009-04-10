@@ -1,0 +1,46 @@
+#!/bin/bash
+
+usage="reuse saved copies of module files created by a source file if they are identical to new module file
+environment: OD_SKIP = number of bytes to skip in module file header
+Usage: $0 [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]" 1>&2
+
+if [[ $# -lt 1 ]]; then
+  echo "$usage" 1>&2
+  exit 1
+fi
+
+args=""
+while [[ $# -gt 0 && $1 != "--" ]]; do
+  args="$args $1"
+  shift
+done
+
+# echo "args $args" 1>&2
+
+if [[ $1 != "--" ]]; then
+  echo "$usage" 1>&2
+  exit 1
+fi
+shift
+
+if [ -z "$OD_SKIP" ]; then
+  OD_SKIP=0
+fi
+
+for file in $*; do
+  modules=`egrep -i '^[ 	]*module[ 	]+[^ 	]+[ 	]*$!?' $file | awk '{print $2}'`
+  for mod in `echo $modules | ${QUIP_PATH}module_name $args`; do
+    if [ -f $mod.save ]; then
+      od -t x -j $OD_SKIP < $mod > $mod.txt
+      od -t x -j $OD_SKIP < $mod.save > $mod.save.txt
+      diff -q $mod.txt $mod.save.txt > /dev/null
+      out=$?
+      if [[ $out == 0 ]]; then
+	mv $mod.save $mod
+      else
+	rm -f $mod.save
+      fi
+      rm -f $mod.txt $mod.save.txt
+    fi
+  done
+done

@@ -1,0 +1,6 @@
+<self_consistency global_U="20.0" n_types="3" tolerance="1e-8">
+<!-- example of self_consistency format usage, not for real usage -->
+<U Z="14" U="6.0"/>
+<U Z="29" U="6.0"/>
+<U Z="79" U="6.0"/>
+</self_consistency>

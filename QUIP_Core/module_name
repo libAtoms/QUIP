@@ -1,0 +1,54 @@
+#!/bin/bash
+usage="process module name to appropriate module filename case and suffix
+reads module names from stdin
+Usage: $0 [ -lc | -uc ] [ -suffix .suf ]"
+
+lc=0
+uc=0
+suffix=".mod"
+uc_set=0
+lc_set=0
+
+while [[ $# > 0 ]]; do
+  if [[ $1 == "-uc" ]]; then
+    lc=0
+    uc=1
+    uc_set=1
+  else
+    if [[ $1 == "-lc" ]]; then
+      lc=1
+      uc=0
+      lc_set=1
+    else
+      if [[ $1 == "-suffix" ]]; then
+	shift
+	suffix=$1
+      else
+	echo "$usage" 1>&2
+	exit 1
+      fi
+    fi
+  fi
+  shift
+done
+
+if [[ $lc_set == 1 && $uc_set == 1 ]]; then
+  echo "-lc and -uc conflict" 1>&2
+  exit 1
+fi
+
+SED_ARGS="s/\$/$suffix/"
+TR_ARGS="a a"
+if [[ $lc == 1 ]]; then
+  TR_ARGS="[A-Z] [a-z]"
+fi
+if [[ $uc == 1 ]]; then
+  TR_ARGS="[a-z] [A-Z]"
+fi
+
+# echo "args $lc $uc $suffix" 1>&2
+shift
+
+for name in `cat`; do
+  echo $name | tr $TR_ARGS | sed "${SED_ARGS}"
+done

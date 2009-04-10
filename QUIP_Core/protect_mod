@@ -1,0 +1,32 @@
+#!/bin/bash
+
+usage="make copies of module files defined in a source file
+Usage: $0 [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]"
+
+if [[ $# -lt 1 ]]; then
+  echo "$usage" 1>&2
+  exit 1
+fi
+
+args=""
+while [[ $# -gt 0 && $1 != "--" ]]; do
+  args="$args $1"
+  shift
+done
+
+# echo "args $args" 1>&2
+
+if [[ $1 != "--" ]]; then
+  echo "$usage" 1>&2
+  exit 1
+fi
+shift
+
+for file in $*; do
+  modules=`egrep -i '^[ 	]*module[ 	]+[^ 	]+[ 	]*$!?' $file | awk '{print $2}'`
+  for mod in `echo $modules | ${QUIP_PATH}module_name $args`; do
+    if [ -f $mod ]; then
+      mv $mod $mod.save
+    fi
+  done
+done
