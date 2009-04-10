@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+from pyatoms import *
+import sys
+
+if len(sys.argv) != 4:
+   print 'Usage: strain <in file> <out file> <new strain>'
+   sys.exit(1)
+
+at = Atoms(sys.argv[1])
+
+old_strain = at.params['Strain']
+new_strain = float(sys.argv[3])
+alpha = (new_strain - old_strain)/(1.0 + old_strain)
+
+print 'Current strain : ', old_strain
+print 'Output  strain : ', new_strain
+print 'Scaling factor : ', alpha
+
+# Scale y coordinates by factor of (1 + alpha)
+at.pos[:,1] = at.pos[:,1]*(1.0 + alpha)
+
+at.params['Strain'] = new_strain
+
+outf = open(sys.argv[2], 'w')
+at.write(outf)
+outf.close()
+

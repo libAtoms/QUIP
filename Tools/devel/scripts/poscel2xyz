@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+import sys
+from pyatoms import *
+from pyatoms.sio2utils import *
+
+if __name__ == '__main__':
+   if len(sys.argv[1:]) not in (1,2):
+      print 'Usage: poscel2xyz <out.xyz> [dt]'
+      sys.exit(0)
+
+   a1, a2 = read_pos_cel()
+
+   f = open(sys.argv[1], 'w')
+
+   a1.write_xyz(f)
+   a2.write_xyz(f)
+
+   if len(sys.argv[1:]) == 2:
+      dt = float(sys.argv[2])
+      a3 = a2.copy()
+      a3.add_property('velo', (a2.pos - a1.pos)/(dt*AU_FS))
+      a3.write_xyz(f)
+
+   f.close()
+
+
+   

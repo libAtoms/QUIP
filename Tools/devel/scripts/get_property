@@ -1,0 +1,49 @@
+#!/bin/bash
+
+function print_usage {
+    echo "Extract a property from an extended XYZ file and print it"
+    echo 
+    echo "Usage: $0 [-s] property_name < infile.xyz"
+    echo "If -s option is given, then species names are also printed."
+    exit
+}
+
+[[ $# -ge 1 ]] || print_usage
+
+if [[ "$1" == "-s" ]]; then
+    species=1
+    shift
+else
+    species=0
+fi
+prop=$1
+	
+awk 'NR == 2 {
+  match($0,/Properties="?([^" ]*)/,a);
+  nf = split(a[1],b,/:/);
+  
+  sum=0;
+  found=0;
+  for (i = 1; i <= nf; i+=3) {
+    if(b[i] != "'$prop'")
+      { sum = sum + b[i+2]}
+    else
+      { found=1; begin=sum+1; end=sum+b[i+2]; break; }
+  };
+  if (found == 0) {
+     print "Property \"'$prop'\" not found!";
+     exit;
+  }
+  n = 1;
+  for (i = begin+1; i <= end +1; i++) {
+     fields[n]=i;
+     n++;
+  }
+  n_fields=n-1;
+ }
+
+NR > 2 {
+  if ('$species'==1) printf "%s ",$1
+  for (i = 1; i <= n_fields; i++) printf "%16.8f",$fields[i];
+  printf "\n";
+}'

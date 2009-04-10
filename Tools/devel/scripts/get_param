@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function print_usage {
+    echo "Extract parameters from the comment lines of an extended XYZ file"
+    echo 
+    echo "Usage: $0 param1 [param2]... < movie.xyz"
+    exit
+}
+
+[[ $# -ge 1 ]] || print_usage
+
+props=$@
+
+grep 'Lattice=' | awk '
+{
+  split(props,ps);
+  for (p in ps) {
+    regex=ps[p] "=\"?([^\" ]*)";
+    match($0,regex,a);
+    printf "%f ",a[1]; 
+  }
+  printf "\n";
+}' props="$props" 

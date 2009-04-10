@@ -1,0 +1,21 @@
+#!/bin/awk -f
+
+BEGIN {
+  s_x=0;
+  s_x2=0;
+  n=0
+}
+
+{ 
+  n = n + 1;
+  s_x = s_x + $1;
+  s_x2 = s_x2 + $1*$1;
+}
+
+END {
+  mean = s_x/n;
+  sigma = sqrt(s_x2/n - mean*mean);
+  rms = sqrt(s_x2/n);
+
+  print mean, sigma, rms
+}

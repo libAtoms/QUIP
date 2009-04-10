@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+
+while (<>) {
+    $n = int($_);
+    print "$n\n";
+    $_ = <>;
+    s/^\W*//; # ltrim
+    s/\W*$//; # rtrim
+    @fields = map({$_ + 0.} split(/[ \t]+/));
+    print qq|Lattice="$fields[1] $fields[2] $fields[3] $fields[4] $fields[5] $fields[6] $fields[7] $fields[8] $fields[9]" Properties=species:S:1:pos:R:3\n|;
+    for ($i=0; $i<$n; $i++) {
+	$_ = <>;
+	print;
+    }
+}
+
+
