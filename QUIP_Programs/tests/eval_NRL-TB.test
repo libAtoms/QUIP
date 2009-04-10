@@ -1,0 +1,148 @@
+eval init_args={TB NRL-TB} calc_args={SCF_LOCAL_U} param_file=eval_test_params.xml E F V at_file=eval_test_NRL-TB_in.xyz
+---<eval_test_params.xml---
+<eval_test_params>
+
+<self_consistency tolerance="1e-8">
+<U Z="14" U="2.0"/>
+</self_consistency>
+
+<KPoints N="4">
+<point weight="2"> -0.25 -0.25 -0.25 </point>
+<point weight="2"> -0.25 -0.25 0.25 </point>
+<point weight="2"> -0.25 0.25 -0.25 </point>
+<point weight="2"> -0.25 0.25 0.25 </point>
+</KPoints>
+
+<NRL_TB_params header_str="NN00001" label="Silicon">
+<!-- from http://cst-www.nrl.navy.mil/bind/si.html, Phys. Rev. B v. 62, p. 4477 (2000), sp basis -->
+  <defaults fermi_T="0.01"/>
+  <header is_orthogonal="F" is_magnetic="F" has_pair_repulsion="F"
+  overlap_zero_limit="T" force_harrison_signs="F"/>
+  <n_types v="1"/>
+  <cutoff v="12.5000000000000000"/>
+  <per_type_data type="1" atomic_num="14" atomic_mass="28.0859999999999985"
+    n_orbs="4" n_elecs="4" n_orb_sets="2" lambda_sq="1.2178584715159753">
+    <orb_set_type>1 2   </orb_set_type>
+  </per_type_data>
+  <per_pair_data type1="1" type2="1" r_cut="12.5000000000000000"
+    screen_l="0.5000000000000000">
+    <abcd>  -0.0532334619024000  -0.9076427431860000  -8.8308491367399995  56.5661321469000029
+         0.3578597152650000   0.3036476931010000   7.0922290356000000 -77.4785508398999951
+        10.0000000000000000   0.0000000000000000   0.0000000000000000   0.0000000000000000
+      </abcd>
+    <H_coeff>  219.5608136509999895  -16.2132459617999984  -15.5048968096999999    1.5987058429226642
+        10.1276876205999997  -4.4036811239600002   0.2266767833680000   0.8513235098690760
+       -22.9590281075000000   1.7207707740500000   1.4191307713200001   1.0637223547809533
+        10.2654492628000007   4.6718241428000002  -2.2161562720900001   1.2350950098834053
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+      </H_coeff>
+    <S_coeff>  5.1575871864099998  0.6600093077760000 -0.0815441307353000  1.2279842062847821
+         8.8736466648800008 -16.2407704748000015   5.1822969049500003   1.5392183365105399
+        11.2504890092000007  -1.1701322928900000  -1.0591485021400000   1.2941988550186143
+       -692.1842311450000125  396.1532489560000272  -13.8172106269999997    2.4727109467970014
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+        0.0000000000000000  0.0000000000000000  0.0000000000000000  1.0000000000000000
+      </S_coeff>
+  </per_pair_data>
+</NRL_TB_params>
+</eval_test_params>
+---<eval_test_NRL-TB_in.xyz---
+8
+Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Properties=pos:R:3
+14 0.0210809907025043 -0.082432438809103 -0.0525403165481939
+14 -0.0194362141345624 2.79575394428175 2.65958482185915
+14 2.6322497362192 0.0428914772326525 2.75195107653885
+14 2.7348145379646 2.61668595724592 -0.00569985609748024
+14 1.33742072200028 1.26492764509989 1.32415402710619
+14 1.27192747372937 4.12374105659993 4.07496695423226
+14 3.97244199589577 1.36902339889138 4.0668447417454
+14 4.09570476049115 4.02286216155155 1.27329051246382
+--->stdout---
+System::Hello World: 03/10/2008   17:01:36
+System::Hello World: Random Seed = 360
+System::Hello World: global verbosity = 0
+
+Calls to system_timer will do nothing by default
+
+n_args 8
+Using init args TB NRL-TB
+Using calc args SCF_LOCAL_U
+TIMER: TB_calc/prep                   done in 0.003 cpu secs, 0.003 wall clock secs.
+TIMER: TB_calc_diag/prep              done in 0.000 cpu secs, 0.000 wall clock secs.
+TB starting SCF iterations
+SCF iteration 1 residual 0.0664873396523014
+SCF iteration 2 residual 0.0651027373496196
+SCF iteration 3 residual 0.0004120586151961
+SCF iteration 4 residual 0.0003977703007294
+SCF iteration 5 residual 0.0000440234450001
+SCF iteration 6 residual 0.0000423767704367
+SCF iteration 7 residual 0.0000008046056621
+SCF iteration 8 residual 0.0000007612860013
+SCF iteration 9 residual 0.0000000070514883
+TB SCF iterations converged
+TIMER: TB_calc_diag/solve_diag        done in 0.077 cpu secs, 0.089 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV/calc_E_f done in 0.000 cpu secs, 0.000 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV/E_calc   done in 0.000 cpu secs, 0.000 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV/calc_dm_ done in 0.001 cpu secs, 0.001 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV/calculat done in 0.030 cpu secs, 0.030 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV/calculat done in 0.035 cpu secs, 0.035 wall clock secs.
+TIMER: TB_calc_diag/calc_EFV          done in 0.067 cpu secs, 0.067 wall clock secs.
+TIMER: TB_calc_diag                   done in 0.144 cpu secs, 0.156 wall clock secs.
+TIMER: TB_calc/DIAG_calc_diag         done in 0.144 cpu secs, 0.156 wall clock secs.
+TIMER: TB_calc                        done in 0.147 cpu secs, 0.159 wall clock secs.
+MetaPotential containing potential
+TB :
+Fermi_E 5.8038560967313160 Fermi_T 0.0100000000000000
+TBSystem : N N_atoms 32 8
+TBModel_NRL_TB n_types:1
+TBModel_NRL_TB: is_orthogonal F is_magnetic F has_pair_repulsion F overlap_zero_limit T force_harrison_signs F
+TBModel_NRL_TB: atomic num mass n_orbs n_elecs 14 28.0859999999999985 4 4
+KPoints :
+KPoints : non_gamma T
+KPoints : g_N 4
+KPoints : g_k_pt 1  -0.2500000000000000E+00 -0.2500000000000000E+00 -0.2500000000000000E+00 0.2500000000000000
+KPoints : g_k_pt 2  -0.2500000000000000E+00 -0.2500000000000000E+00  0.2500000000000000E+00 0.2500000000000000
+KPoints : g_k_pt 3  -0.2500000000000000E+00  0.2500000000000000E+00 -0.2500000000000000E+00 0.2500000000000000
+KPoints : g_k_pt 4  -0.2500000000000000E+00  0.2500000000000000E+00  0.2500000000000000E+00 0.2500000000000000
+Self_Consistency : active=T
+Self_Consistency : global_U 0.0000000000000000
+Self_Consistency : allocated(this%U) T
+Self_Consistency : size(this%U) 117
+Self_Consistency : U 14 2.0000000000000000
+Self_Consistency : size(this%stoner_param) 0
+Self_Consistency : term 1
+Self_Consistency_Term type : LOCAL_U
+Self_Consistency_Term n_dof : 8
+Self_Consistency_Term : atomic_n
+  0.3968068453153894E+01  0.4023203847063553E+01  0.4008070761981631E+01  0.3999341222779875E+01  0.4000493676086512E+01
+  0.3982337146516238E+01  0.4007105832761402E+01  0.4011379059656893E+01
+homo 4.6443812335356194 lumo 7.0403719021220121 gap 2.3959906685863928
+Energy 9.3810611711945988
+Virial   0.5865603956736241E+00 -0.1377850228522719E+00 -0.3055872087626612E+00
+Virial  -0.1377850228522643E+00  0.2216201633362527E+00  0.1910908299371670E+01
+Virial  -0.3055872087626577E+00  0.1910908299371679E+01  0.1366230430253275E+01
+Pressure eV/A^3   0.3666002472960157E-02 -0.8611563928267009E-03 -0.1909920054766636E-02   GPa   0.5873669162176763E+00 -0.1379744772586940E+00 -0.3060073911747104E+00
+Pressure eV/A^3  -0.8611563928266538E-03  0.1385126020851582E-02  0.1194317687107296E-01   GPa  -0.1379744772586865E+00  0.2219248910608404E+00  0.1913535798283309E+01
+Pressure eV/A^3  -0.1909920054766614E-02  0.1194317687107302E-01  0.8538940189082982E-02   GPa  -0.3060073911747069E+00  0.1913535798283319E+01  0.1368108997094875E+01
+AT 8 
+AT Lattice="5.428835          0.000000          0.000000          0.000000          5.428835          0.000000          0.000000          0.000000          5.428835" Properties=species:S:1:pos:R:3:Z:I:1:travel:I:3:forces:R:3 Energy=9.3810611711945988 
+AT   14    0.02108099   -0.08243244   -0.05254032       14        0        0        0   -1.77614476    1.89628018    0.55837291 
+AT   14   -0.01943621   -2.63308129    2.65958482       14        0        1        0    0.12109842   -1.82740015    0.52697574 
+AT   14    2.63224974    0.04289148   -2.67688416       14        0        0        1    1.05222007   -1.42686527   -0.92338994 
+AT   14   -2.69402070    2.61668596   -0.00569986       14        1        0        0   -1.67217435    1.53461226    0.24978758 
+AT   14    1.33742072    1.26492765    1.32415403       14        0        0        0   -0.60877230    1.25525465    0.18449930 
+AT   14    1.27192747   -1.30509418   -1.35386828       14        0        1        1    2.00297551   -2.02323979   -0.56112465 
+AT   14   -1.45639324    1.36902340   -1.36199049       14        1        0        1    2.33071967   -0.46343812   -0.82128532 
+AT   14   -1.33313047   -1.40597307    1.27329051       14        1        1        0   -1.44992225    1.05479624    0.78616438 
+
+System::Finalise: 03/10/2008   17:01:36
+System::Finalise: Bye-Bye!

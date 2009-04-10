@@ -1,0 +1,232 @@
+tests/tabletest; rm table.bin
+--->stdout---
+System::Hello World: 06/10/2008   13:30:56
+System::Hello World: Random Seed = 377
+System::Hello World: global verbosity = 0
+
+Calls to system_timer will do nothing by default
+
+empty table
+
+single int table
+        1
+        2
+        3
+        4
+        5
+        6
+int_part(t)
+ 1 2 3 4 5 6
+
+single real table
+       1.00000000
+       2.00000000
+       3.00000000
+       4.00000000
+       5.00000000
+       6.00000000
+real_part(t)
+Matrix_Print: printing matrix transpose
+       1.0000000000
+       2.0000000000
+       3.0000000000
+       4.0000000000
+       5.0000000000
+       6.0000000000
+
+single int and single real table
+        1       1.00000000
+        2       2.00000000
+        3       3.00000000
+        4       4.00000000
+        5       5.00000000
+        6       6.00000000
+        1       2.00000000
+int_part(t)
+ 1 2 3 4 5 6 1
+real_part(t)
+Matrix_Print: printing matrix transpose
+       1.0000000000
+       2.0000000000
+       3.0000000000
+       4.0000000000
+       5.0000000000
+       6.0000000000
+       2.0000000000
+
+single string table
+  str1
+  str2
+  str3
+  str4
+str_part(t)
+str1
+str2
+str3
+str4
+
+single logical table
+   F
+   F
+   T
+   F
+   F
+   F
+
+multiple int and single string table
+        1        2        3  0123456789
+        4        5        6  abcdefghij
+        7        8        9  hello
+       10       11       12  world
+int_part(t)
+  1  4  7 10
+  2  5  8 11
+  3  6  9 12
+int_part(t,1)
+           1           4           7          10
+str_part(t)
+0123456789
+abcdefghij
+hello
+world
+str_part(t,1)
+0123456789
+abcdefghij
+hello
+world
+
+multiple real and multiple logical table
+       1.00000000       2.00000000       3.00000000   F   T   F
+       4.00000000       5.00000000       6.00000000   F   F   F
+       7.00000000       8.00000000       9.00000000   T   T   T
+real_part(t)
+       1.0000000000       4.0000000000       7.0000000000
+       2.0000000000       5.0000000000       8.0000000000
+       3.0000000000       6.0000000000       9.0000000000
+real_part(t,(/1,2/))
+       1.0000000000       4.0000000000       7.0000000000
+       2.0000000000       5.0000000000       8.0000000000
+logical_part(t)
+ F T F
+ F F F
+ T T T
+ T F T
+
+appending tables to tables
+t1=
+        1        2       3.00000000
+        4        5       6.00000000
+        7        8       9.00000000
+t2=
+        1        2       3.00000000
+        4        5       6.00000000
+        7        8       9.00000000
+        1        2       3.00000000
+        4        5       6.00000000
+        7        8       9.00000000
+t1=
+  hello
+  world
+t2=
+  hello
+  world
+  hello
+  world
+t1=
+  hello   T   F
+  world   F   T
+t2=
+  hello   T   F
+  world   F   T
+  hello   T   F
+  world   F   T
+testing append_column
+       0.00000000  hello   T   F
+       0.00000000  world   F   T
+       0.00000000  hello   T   F
+       0.00000000  world   F   T
+       0.00000000  hello   T   F   T   T
+       0.00000000  world   F   T   T   T
+       0.00000000  hello   T   F   T   T
+       0.00000000  world   F   T   T   T
+       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T
+       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T
+       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T
+       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T
+       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T   T
+       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T   F
+        1       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+        2       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T   T
+        3       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+        4       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T   F
+
+testing subtable
+        1       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+        2       0.00000000  world  0123456789  0123456789  0123456789   F   T   T   T   T
+        3       0.00000000  hello  0123456789  0123456789  0123456789   T   F   T   T   T
+
+testing remove_columns
+        1       0.00000000  0123456789  0123456789  0123456789   T   F   T   T   T
+        2       0.00000000  0123456789  0123456789  0123456789   F   T   T   T   T
+        3       0.00000000  0123456789  0123456789  0123456789   T   F   T   T   T
+        4       0.00000000  0123456789  0123456789  0123456789   F   T   T   T   F
+        1       0.00000000  0123456789  0123456789  0123456789
+        2       0.00000000  0123456789  0123456789  0123456789
+        3       0.00000000  0123456789  0123456789  0123456789
+        4       0.00000000  0123456789  0123456789  0123456789
+        1       0.00000000  0123456789  0123456789
+        2       0.00000000  0123456789  0123456789
+        3       0.00000000  0123456789  0123456789
+        4       0.00000000  0123456789  0123456789
+        1  0123456789  0123456789
+        2  0123456789  0123456789
+        3  0123456789  0123456789
+        4  0123456789  0123456789
+
+testing insert
+        1  0123456789  0123456789
+        2  0123456789  0123456789
+        5  alpha  beta
+        3  0123456789  0123456789
+        4  0123456789  0123456789
+testing find
+found 5 at position 3
+found (/5/) at position 3
+
+testing sort
+        1  0123456789  0123456789
+        2  0123456789  0123456789
+        3  0123456789  0123456789
+        4  0123456789  0123456789
+        5  alpha  beta
+
+testing binary search
+found (/5/) at position 3
+testing delete
+deleted first row:
+deleted row matching (/5/)
+        4  0123456789  0123456789
+        2  0123456789  0123456789
+        3  0123456789  0123456789
+deleted rows 1 and 2
+        3  0123456789  0123456789
+wiped:
+
+copy taken before deletions:
+        1  0123456789  0123456789
+        2  0123456789  0123456789
+        3  0123456789  0123456789
+        4  0123456789  0123456789
+        5  alpha  beta
+testing binary I/O
+read from file:
+        1  0123456789  0123456789
+        2  0123456789  0123456789
+        3  0123456789  0123456789
+        4  0123456789  0123456789
+        5  alpha  beta
+
+System::Finalise: 06/10/2008   13:30:56
+System::Finalise: Bye-Bye!

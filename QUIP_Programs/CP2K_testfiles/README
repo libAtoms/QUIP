@@ -1,0 +1,15 @@
+Modified CP2K source files (06 Dec 2008!!):
+topology_pdb.F
+motion_utils.F
+
+Add to your path the cp2k programs:
+serial: cp2k_serial 
+parallel: cp2k_popt (the driver runs it with 4 proc: mpirun -np 4 cp2k_popt)
+
+Files needed for CP2K runs:
+POTENTIAL
+MM_POTENTIAL
+BASIS_SETS
+charmm.pot : force field
+all_res.CHARMM.lib: motif library
+

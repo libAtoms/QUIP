@@ -1,0 +1,297 @@
+\documentclass{article}
+
+\begin{document}
+
+NO SCF
+
+\begin{eqnarray*}
+E & = & \sum_I{\frac{\langle C^I | H | C^I \rangle}{\langle C^I | C^I \rangle}} \\
+  & = & \sum_I \frac{ \sum_{ij}{ C^I_i H_{ij} C^I_j}}{\sum_{ij} { C^I_i S_{ij} C^I_j} } \\
+\\
+\frac{\partial E}{\partial C^I_i} & = & 
+  \frac {\sum_{ij} C^I_i S_{ij} C^I_j 2 \sum_{j} H_{ij} C^I_j - \sum_{ij} C^I_i H_{ij} C^I_j 2 \sum_{j} S_{ij} C^I_j}
+        { \left( \sum_{ij} C^I_i S_{ij} C^I_j \right)^2 }\\
+  & = & 2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j \\
+\frac{\partial E}{\partial C^I_i}  & = & 0 \\ 
+\sum_j H_{ij} C^I_j & = & \epsilon^I \sum_j S_{ij} C^I_j \\
+\end{eqnarray*}
+
+LOCAL U SCF (implicit sums over $i$, $j$, $k$, and $j'$ is $j(\alpha)$)
+
+\begin{eqnarray*}
+E & = & \sum_I \frac{ \sum_{ij}{ C^I_i H_{ij} C^I_j}}{\sum_{ij} { C^I_i S_{ij} C^I_j} }  +
+  0.5 \sum_\alpha U_\alpha \left( \sum_I { \sum_{j'k} C^I_{j'} S_{j'k} C^I_{k} - n_\alpha^0 } \right)^2 \\
+\frac{\partial E}{\partial C^I_i} & = & 
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  0.5 \sum_\alpha U_\alpha 2 \Delta n_\alpha 
+  \sum_{j'k} \left( \delta_{j'i} S_{j'k} C^I_k + C^I_{j'} S_{j'k} \delta_{ki} \right) \\
+ & = &  
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_\alpha U_\alpha \Delta n_\alpha \sum_{j'k} \delta_{j'i} S_{j'k} C^I_k +
+  \sum_\alpha U_\alpha \Delta n_\alpha \sum_{j'} C^I_{j'} S_{j'i} \\
+ & = &  
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_\alpha U_\alpha \Delta n_\alpha \sum_{j'(\alpha)k} \delta_{j'i} S_{j'k} C^I_k +
+  \sum_\alpha U_\alpha \Delta n_\alpha \sum_{j'(\alpha)} C^I_{j'} S_{j'i} \\
+ & = &  
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_{jk} U_{\alpha(j)} \Delta n_{\alpha(j)} \delta_{ji} S_{jk} C^I_k +
+  \sum_j U_{\alpha(j)} \Delta n_{\alpha(j)} C^I_{j} S_{ji} \\
+ & = &  
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_k U_{\alpha(i)} \Delta n_{\alpha(i)} S_{ik} C^I_k +
+  \sum_j U_{\alpha(j)} \Delta n_{\alpha(j)} S_{ij} C^I_{j}  \\
+ & = &  
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_j U_{\alpha(i)} \Delta n_{\alpha(i)} S_{ij} C^I_j +
+  \sum_j U_{\alpha(j)} \Delta n_{\alpha(j)} S_{ij} C^I_{j}  \\
+ & = &  
+  2 \sum_j \left(H_{ij} + \frac{U_{\alpha(i)} \Delta n_{\alpha(i)}  + U_{\alpha(j)} \Delta n_{\alpha(j)} }{2} S_{ij} \right) C^I_j - 
+  2 \epsilon^I \sum_j S_{ij} C^I_j \\
+\frac{\partial E}{\partial C^I_i} & = & 0 \\
+  & & \sum_j \left(H_{ij} + \frac{U_{\alpha(i)} \Delta n_{\alpha(i)}  + U_{\alpha(j)} \Delta n_{\alpha(j)} }{2} S_{ij} \right) C^I_j = 
+  \epsilon^I \sum_j S_{ij} C^I_j \\
+\end{eqnarray*}
+
+LOCAL U SCF DOUBLE COUNTING
+
+\begin{eqnarray*}
+ & & \sum_j \left(H_{ij} + \frac{U_{\alpha(i)} \Delta n_{\alpha(i)}  + U_{\alpha(j)} \Delta n_{\alpha(j)} }{2} S_{ij} \right) C^I_j = \epsilon^I \sum_j S_{ij} C^I_j \\
+& & \sum_I \sum_{ij} C^I_i \left(H_{ij} + \frac{U_{\alpha(i)} \Delta n_{\alpha(i)}  + 
+  U_{\alpha(j)} \Delta n_{\alpha(j)} }{2} S_{ij} \right) C^I_j 
+  = \sum_I \sum_{ij} \epsilon^I C^I_i S_{ij} C^I_j \\
+ & & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j +
+ \sum_I \sum_{ij} 0.5 V_i C^I_i S_{ij} C^I_j + \sum_I \sum_{ij} 0.5 V_j C^I_i S_{ij} C^I_j = \sum_I \epsilon^I \\
+ & & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j +
+ \sum_I \sum_\alpha \sum_{i'j} 0.5 V_\alpha C^I_{i'} S_{i'j} C^I_j + 
+ \sum_I \sum_\alpha \sum_{ij'} 0.5 V_\alpha C^I_i S_{ij'} C^I_{j'} = \sum_I \epsilon^I \\
+ & & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j +
+ \sum_\alpha 0.5 V_\alpha n_\alpha +
+ \sum_\alpha 0.5 V_\alpha n_\alpha =  \sum_I \epsilon^I \\
+ & & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j + \sum_\alpha  V_\alpha n_\alpha =  \sum_I \epsilon^I \\
+ & & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j = \sum_I \epsilon^I  - \sum_\alpha  V_\alpha n_\alpha  \\
+E & = & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j + 0.5 \sum_\alpha U_\alpha (\Delta n_\alpha)^2 \\
+  & = & \sum_I \epsilon^I  - \sum_\alpha V_\alpha n_\alpha  + 0.5 \sum_\alpha U_\alpha (\Delta n_\alpha)^2 \\
+  & = & \sum_I \epsilon^I  - \sum_\alpha U_\alpha \Delta n_\alpha n_\alpha  + 0.5 \sum_\alpha U_\alpha (\Delta n_\alpha)^2 \\
+  & = & \sum_I \epsilon^I  + \sum_\alpha U_\alpha \Delta n_\alpha (0.5 \Delta n_\alpha - n_\alpha ) \\
+\Delta n_\alpha & = & n_\alpha - n_\alpha^0 \\
+n_\alpha & = & \Delta n_\alpha + n_\alpha^0 \\
+  & = & \sum_I \epsilon^I  + \sum_\alpha U_\alpha \Delta n_\alpha (0.5 \Delta n_\alpha - (\Delta n_\alpha + n_\alpha^0)) \\
+  & = & \sum_I \epsilon^I  + \sum_\alpha U_\alpha \Delta n_\alpha (-0.5 \Delta n_\alpha - n_\alpha^0) \\
+\end{eqnarray*}
+
+ARBITRARY FUNCTION SCF
+
+\begin{eqnarray*}
+E & = & \sum_I \frac{ \sum_{ij}{ C^I_i H_{ij} C^I_j}}{\sum_{ij} { C^I_i S_{ij} C^I_j} }  +
+  F(\left\{ n_\alpha \right\} ) \\
+\frac{\partial E}{\partial C^I_i} & = & 
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_\alpha { \frac{\partial F}{\partial n_\alpha} \frac{\partial n_\alpha}{\partial C^I_i} } \\
+\frac{\partial F}{\partial n_\alpha} & \equiv & V_\alpha \\
+n_\alpha & = & \sum_\alpha \sum_{j(\alpha)k} C^I_{j(\alpha)} S_{j(\alpha)k} C^I_k \\
+\frac{\partial n_\alpha}{\partial C^I_i} & = & 
+  \sum_{j(\alpha)k} \delta_{j(\alpha)i} S_{j(\alpha)k} C^I_k + \sum_{j(\alpha)} C^I_{j(\alpha)} S_{j(\alpha)i} \\
+\frac{\partial E}{\partial C^I_i} & = & 
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_\alpha V_\alpha \sum_{j(\alpha)k} \delta_{j(\alpha)i} S_{j(\alpha)k} C^I_k +
+  \sum_\alpha V_\alpha \sum_{j(\alpha)} C^I_{j(\alpha)} S_{j(\alpha)i} \\
+& = &
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_\alpha \sum_{j(\alpha)} V_\alpha \sum_{k} \delta_{j(\alpha)i} S_{j(\alpha)k} C^I_k +
+  \sum_\alpha \sum_{j(\alpha)} V_\alpha C^I_{j(\alpha)} S_{j(\alpha)i} \\
+& = &
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  \sum_{j} V_{\alpha(j)} \sum_{k} \delta_{ji} S_{jk} C^I_k +
+  \sum_{j} V_{\alpha(j)} C^I_{j} S_{ji} \\
+& = &
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  V_{\alpha(i)} \sum_{k} S_{ik} C^I_k +
+  \sum_{j} V_{\alpha(j)} C^I_{j} S_{ji} \\
+& = &
+  2 \sum_j H_{ij} C^I_j - 2 \epsilon^I \sum_j S_{ij} C^I_j +
+  V_{\alpha(i)} \sum_{j} S_{ij} C^I_j +
+  \sum_{j} V_{\alpha(j)} S_{ij} C^I_{j} \\
+\frac{\partial E}{\partial C^I_i} & = & 0 \\
+&&
+  2 \sum_j H_{ij} C^I_j + 
+  V_{\alpha(i)} \sum_{j} S_{ij} C^I_j +
+  \sum_{j} V_{\alpha(j)} S_{ij} C^I_{j} = 2 \epsilon^I \sum_j S_{ij} C^I_j \\
+&& 
+  2 \sum_j { H_{ij} C^I_j + 
+  V_{\alpha(i)} S_{ij} C^I_j +
+  V_{\alpha(j)} S_{ij} C^I_{j} } = 2 \epsilon^I \sum_j S_{ij} C^I_j \\
+&& 
+  \sum_j { \left( H_{ij} + 
+    \frac{ V_{\alpha(i)}  + V_{\alpha(j)}   }{2} S_{ij} \right)  C^I_{j}}
+    = \epsilon^I \sum_j S_{ij} C^I_j \\
+\end{eqnarray*}
+
+ARBITRARY FUNCTION SCF DOUBLE COUNTING
+\begin{eqnarray*}
+&& 
+  \sum_j { \left( H_{ij} + 
+    \frac{ V_{\alpha(i)}  + V_{\alpha(j)}   }{2} S_{ij} \right)  C^I_{j}}
+    = \epsilon^I \sum_j S_{ij} C^I_j \\
+&& 
+\sum_I \sum_{ij} { C^I_i \left( H_{ij} + 
+    \frac{ V_{\alpha(i)}  + V_{\alpha(j)}   }{2} S_{ij} \right)  C^I_{j}}
+    = \sum_I \epsilon^I \sum_{ij} C^I_i S_{ij} C^I_j \\
+&& 
+\sum_I \sum_{ij} C^I_i H_{ij} C^I_j + \sum_I \sum_{ij} C^I_i \frac{V_i + V_j}{2} S_{ij} C^I_j = \sum_I \epsilon^I \\
+&& 
+\sum_I \sum_{ij} C^I_i H_{ij} C^I_j = \sum_I \epsilon^I - \sum_\alpha V_\alpha n_\alpha \\
+E & = & \sum_I \sum_{ij} C^I_i H_{ij} C^I_j + F(\left\{ n_\alpha \right\} ) \\
+  & = & \sum_I \epsilon^I - \sum_\alpha V_\alpha n_\alpha + F(\left\{ n_\alpha \right\} ) \\
+\end{eqnarray*}
+
+NONCOLLINEAR SPIN
+
+\begin{eqnarray*}
+E & = & \sum_I \frac{ \sum_{isjt}{ {C^I_{is}}^* H_{isjt} C^I_{jt}}}{\sum_{isjt} { {C^I_{is}}^* S_{isjt} C^I_{jt}} }  +
+  F(\left\{ \vec{m}_\alpha \right\} ) \\
+\frac{\partial E}{\partial C^K_{ku}} & = &
+  \sum_{isjt} \left[ \delta_{ik} \delta_{su} H_{isjt}^* {C^I_{jt}}^* + {C^I_{is}}^* H_{isjt} \delta_{jk} \delta_{tu} \right] -
+  \epsilon^K \sum_{isjt} \left[ \delta_{ik} \delta_{su} S_{isjt}^* {C^I_{jt}}^* + {C^I_{is}}^* S_{isjt} \delta_{jk} \delta_{tu} \right] + \\
+& & \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}
+                \frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} \\
+ & = & \sum_{jt} H_{kujt}^* {C^K_{jt}}^* + \sum_{is} {C^K_{is}}^* H_{isku} -
+       \epsilon^K \left[ \sum_{jt} S_{kujt}^* {C^I_{jt}}^* + \sum_{is} {C^K_{is}}^* S_{isku} \right] + \\
+& & \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}
+                \frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} \\
+ & = & \sum_{jt} H_{kujt}^* {C^K_{jt}}^* + \sum_{jt} {C^K_{jt}}^* H_{jtku} -
+       \epsilon^K \left[ \sum_{jt} S_{kujt}^* {C^I_{jt}}^* + \sum_{jt} {C^K_{jt}}^* S_{jtku} \right] + \\
+& & \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}
+                \frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} \\
+ & = & \sum_{jt} H_{kujt}^* {C^K_{jt}}^* + \sum_{jt} {C^K_{jt}}^* H_{kujt}^* -
+       \epsilon^K \left[ \sum_{jt} S_{kujt}^* {C^I_{jt}}^* + \sum_{jt} {C^K_{jt}}^* S_{kujt}^* \right] + \\
+& & \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}
+                \frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} \\
+ & = & 2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^I_{jt}}^* + 
+   \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}
+                \frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} \\
+\\
+\vec{m}_\alpha & \equiv & \sum_I \sum_{st} \langle C^I_s \mid \vec{\sigma}_{st} P^\alpha \mid C^I_t \rangle \\
+\\
+\mid C^I_s \rangle & \equiv & \sum_i C^I_{is} \mid \phi_{i} \rangle \otimes \mid s \rangle \\ 
+\\
+\vec{m}_\alpha & = & \sum_I \sum_{st} \left[ \sum_{i(\alpha)} {C^I_{is}}^*  \langle \phi_{i} \mid \otimes \langle s \mid \right] \vec{\sigma}
+    \left[  \sum_{j} C^I_{jt} \mid \phi_{j} \rangle \otimes \mid t \rangle \right] \\
+ & = & \sum_I \sum_{i(\alpha)jst} {C^I_{is}}^* C^I_{jt} \langle \phi_i \mid \phi_j \rangle \langle s \mid \vec{\sigma} \mid t \rangle \\
+ & = & \sum_I \sum_{i(\alpha)jst} {C^I_{is}}^* C^I_{jt} S_{ij} \vec{\sigma}_{st} \\
+\\
+\vec{\tilde{S}}_{isjt} & \equiv & S_{ij} \vec{\sigma}_{st} \\
+\\
+\vec{m}_\alpha & = & \sum_{i(\alpha)sjt} {C^I_{is}}^* \vec{\tilde{S}}_{isjt} C^I_jt \\
+\\
+\frac{\partial \vec{m}_\alpha}{\partial C^K_{ku}} & = & 
+   \sum_{i(\alpha)sjt} \delta_{i(\alpha)k} \delta_{su} \vec{\tilde{S}}_{i(\alpha)sjt}^* {C^K_{jt}}^* +
+         \sum_{i(\alpha)sjt} {C^K_{i(\alpha)s}}^* \vec{\tilde{S}}_{i(\alpha)sjt} \delta_{jk} \delta_{ut}\\
+& = & \sum_{i(\alpha)jt} \delta_{i(\alpha)k} \vec{\tilde{S}}_{i(\alpha)ujt}^* {C^K_{jt}}^* +
+      \sum_{i(\alpha)s} {C^K_{i(\alpha)s}}^* \vec{\tilde{S}}_{i(\alpha)sku}  \\
+\\
+\frac{\partial E}{\partial C^K_{ku}} & = &
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \sum_\alpha \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha}  
+   \left[ \sum_{i(\alpha)jt} \delta_{i(\alpha)k} \vec{\tilde{S}}_{i(\alpha)ujt}^* {C^K_{jt}}^* +
+      \sum_{i(\alpha)s} {C^K_{i(\alpha)s}}^* \vec{\tilde{S}}_{i(\alpha)sku}  \right] \\
+\\
+\vec{E}_{\alpha} & \equiv & \frac{\partial F( \left\{ \vec{m}_\alpha \right\} )}{\partial \vec{m}_\alpha} \\
+\\
+\frac{\partial E}{\partial C^K_{ku}} & = &
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \sum_\alpha \vec{E}_{\alpha} \left[ \sum_{i(\alpha)jt} \delta_{i(\alpha)k} \vec{\tilde{S}}_{i(\alpha)ujt}^* {C^K_{jt}}^* +
+      \sum_{i(\alpha)s} {C^K_{i(\alpha)s}}^* \vec{\tilde{S}}_{i(\alpha)sku} \right] \\
+& = & 
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \sum_\alpha \sum_{i(\alpha)} \vec{E}_{\alpha} \sum_{jt} \delta_{i(\alpha)k} \vec{\tilde{S}}_{i(\alpha)ujt}^* {C^K_{jt}}^* +
+      \sum_\alpha \sum_{i(\alpha)} \vec{E}_{\alpha} \sum_{s} {C^K_{i(\alpha)s}}^* \vec{\tilde{S}}_{i(\alpha)sku} \\
+& = & 
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \sum_i \vec{E}_{\alpha(i)} \sum_{jt} \delta_{ik} \vec{\tilde{S}}_{iujt}^* {C^K_{jt}}^* +
+      \sum_i \vec{E}_{\alpha(i)} \sum_{s} {C^K_{is}}^* \vec{\tilde{S}}_{isku}  \\
+& = & 
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \vec{E}_{\alpha(k)} \sum_{jt} \vec{\tilde{S}}_{kujt}^* {C^K_{jt}}^* +
+      \sum_i \vec{E}_{\alpha(i)} \sum_{s} {C^K_{is}}^* \vec{\tilde{S}}_{isku} \\
+& = & 
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \vec{E}_{\alpha(k)} \sum_{jt} \vec{\tilde{S}}_{kujt}^* {C^K_{jt}}^*  +
+      \sum_j \vec{E}_{\alpha(j)} \sum_{t} {C^K_{jt}}^* \vec{\tilde{S}}_{jtku} \\
+& = & 
+  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* - 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* + \\
+  &&  \vec{E}_{\alpha(k)} \sum_{jt} \vec{\tilde{S}}_{kujt}^* {C^K_{jt}}^* +
+      \sum_j \vec{E}_{\alpha(j)} \sum_{t} {C^K_{jt}}^* \vec{\tilde{S}}_{kujt}^* \\
+\frac{\partial E}{\partial C^K_{ku}} & = & 0 \\
+&&  2 \sum_{jt} H_{kujt}^* {C^K_{jt}}^* +
+    \vec{E}_{\alpha(k)} \sum_{jt} \vec{\tilde{S}}_{kujt}^* {C^K_{jt}}^*  +
+      \sum_j \vec{E}_{\alpha(j)} \sum_{t} {C^K_{jt}}^* \vec{\tilde{S}}_{kujt}^*  = 2 \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* \\
+&&  \sum_{jt} \left( H_{kujt}^* +
+    \frac{\vec{E}_{\alpha(k)}  + \vec{E}_{\alpha(j)} }{2} \vec{\tilde{S}}_{kujt}^* \right) {C^K_{jt}}^* = 
+    \epsilon^K \sum_{jt} S_{kujt}^* {C^K_{jt}}^* \\
+&&  \sum_{jt} \left( H_{kujt} +
+    \frac{\vec{E}_{\alpha(k)}  + \vec{E}_{\alpha(j)} }{2} \vec{\tilde{S}}_{kujt} \right) {C^K_{jt}} = 
+    \epsilon^K \sum_{jt} S_{kujt} {C^K_{jt}} \\
+&&  \sum_{jt} \left( H_{kujt} +
+    \frac{\vec{E}_{\alpha(k)} + \vec{E}_{\alpha(j)} }{2}  \vec{\tilde{S}}_{kujt} \right) {C^K_{jt}} = 
+    \epsilon^K \sum_{jt} S_{kujt} {C^K_{jt}} \\
+&&  \sum_{jt} \left( H_{kujt} +
+    \frac{\vec{E}_{\alpha(k)} + \vec{E}_{\alpha(j)} } {2}  S_{kj} \vec{\sigma}_{ut} \right) {C^K_{jt}} = 
+    \epsilon^K \sum_{jt} S_{kujt} {C^K_{jt}} \\
+\end{eqnarray*}
+
+
+
+NONCOLLINEAR SPIN DOUBLE COUNTING TERMS
+\begin{eqnarray*}
+&&  \sum_{jt} \left( H_{isjt} +
+    \frac{\vec{E}_{\alpha(i)} + \vec{E}_{\alpha(j)} }{2} \vec{\sigma}_{st} S_{isjt} \right) {C^I_{jt}} = 
+    \epsilon^I \sum_{jt} S_{isjt} {C^I_{jt}} \\
+&&  \sum_I \sum_{isjt} {C^I_{is}}^* \left( H_{isjt} +
+    \frac{\vec{E}_{\alpha(i)} + \vec{E}_{\alpha(j)} }{2} \vec{\sigma}_{st} S_{isjt} \right) {C^I_{jt}} = 
+    \sum_I \epsilon^I \sum_{isjt} {C^I_{is}}^* S_{isjt} {C^I_{jt}} \\
+&&  \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I \sum_{isjt} {C^I_{is}}^* S_{isjt} {C^I_{jt}} - 
+    \sum_I \sum_{isjt} {C^I_{is}}^* \frac{\vec{E}_{\alpha(i)} + \vec{E}_{\alpha(j)} }{2} \vec{\sigma}_{st} S_{isjt} {C^I_{jt}} \\
+&& \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I -
+    \sum_I \sum_{isjt} {C^I_{is}}^* \frac{\vec{E}_{\alpha(i)} + \vec{E}_{\alpha(j)} }{2} \vec{\sigma}_{st} S_{isjt} {C^I_{jt}} \\
+&& \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I -
+    \sum_{isjt} \frac{\vec{E}_{\alpha(i)} + \vec{E}_{\alpha(j)} }{2} \vec{\sigma}_{st} \sum_I {C^I_{is}}^* S_{isjt} {C^I_{jt}} \\
+&& \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I -
+    \sum_{isjt} \frac{\vec{E}_{\alpha(i)}}{2} \vec{\sigma}_{st} \sum_I {C^I_{is}}^* S_{isjt} {C^I_{jt}} -
+    \sum_{isjt} \frac{\vec{E}_{\alpha(j)}}{2} \vec{\sigma}_{st} \sum_I {C^I_{is}}^* S_{isjt} {C^I_{jt}} \\
+&& \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I - \\
+&& \ \ \ \ 
+    \sum_\alpha \frac{\vec{E}_{\alpha}}{2} \sum_{i(\alpha)sjt} \vec{\sigma}_{st} \sum_I {C^I_{i(\alpha)s}}^* S_{i(\alpha)sjt} {C^I_{jt}} -
+    \sum_\alpha \frac{\vec{E}_{\alpha}}{2} \sum_{isj(\alpha)t} \vec{\sigma}_{st} \sum_I {C^I_{is}}^* S_{isj(\alpha)t} {C^I_{j(\alpha)t}} \\
+\\
+n^\alpha_{st} &  \equiv & \sum_I \sum_{i(\alpha)j} {C^I_{is}}^* S_{isjt} C^I_{jt} \\
+m^\alpha_{st} &  \equiv & \sum_I \sum_{ij(\alpha)} {C^I_{is}}^* S_{isjt} C^I_{jt} \\
+ &  = & \sum_I \sum_{ij(\alpha)} C^I_{jt} S_{isjt} {C^I_{is}}^* \\
+ &  = & \sum_I \sum_{i(\alpha)j} C^I_{it} S_{jsit} {C^I_{js}}^* \\
+ &  = & \sum_I \sum_{i(\alpha)j} C^I_{it} S_{itjs}^* {C^I_{js}}^* \\
+{m^\alpha_{st}}^* &  = & \sum_I \sum_{i(\alpha)j} {C^I_{it}}^* S_{itjs} {C^I_{js}} \\
+{m^\alpha_{ts}}^* &  = & \sum_I \sum_{i(\alpha)j} {C^I_{is}}^* S_{isjt} {C^I_{jt}} \\
+ & = & n^\alpha_{st} \\
+ & = & {n^\alpha_{ts}}^* \\
+m^\alpha_{st}  & = &  n^\alpha_{st} \\
+\\
+\\
+&& \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} =
+    \sum_I \epsilon^I -
+    \frac{1}{2} \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} n^\alpha_{st} - 
+    \frac{1}{2} \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} m^\alpha_{st} \\
+& = &
+    \sum_I \epsilon^I -
+    \frac{1}{2} \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} n^\alpha_{st} - 
+    \frac{1}{2} \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} n^\alpha_{st} \\
+& = & \sum_I \epsilon^I - \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} n^\alpha_{st} \\
+E & = & \sum_I \sum_{isjt} {C^I_{is}}^* H_{isjt} C^I_{jt} + F(\left\{ \vec{m}_\alpha \right\} ) \\
+  & = & \sum_I \epsilon^I - \sum_\alpha \vec{E}_{\alpha} \sum_{st} \vec{\sigma}_{st} n^\alpha_{st} + F(\left\{ \vec{m}_\alpha \right\} ) \\
+\end{eqnarray*}
+
+\end{document}

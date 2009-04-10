@@ -1,0 +1,182 @@
+\documentclass{article}
+
+\begin{document}
+\begin{eqnarray*}
+H_{ij} & = & H^0_{ij} + 0.5 S_{ij} (U_I dn_I + U_J dn_J) \\
+ \\
+E & = & 2 Tr \left\{ H \rho W \right\} - ( 0.5 \sum_I W(I) U_I dn_I^2 + \sum_I W(I) U_I dn_I n^{nuc}_I) \\
+ \\
+S'_{ij} & = & 0.5 S_{ij} (U_I dn_I + U_J dn_J) \\
+ \\
+E & = & 2 Tr \left\{ H^0 \rho W + S' \rho W \right\} - ( \sum_I \left\{ 0.5 W(I) U_I dn_I^2 + W(I) U_I dn_I n^{nuc}_I \right\} ) \\
+ \\
+\frac{\partial S'_{ij}}{\partial r} & = & 0.5 S_{ij} (U_I \frac{\partial dn_I}{\partial r} + U_J \frac{\partial dn_J}{\partial r}) + 0.5 \frac{\partial S_{ij}}{\partial r} (U_I dn_I + U_J dn_J) \\
+ \\
+\frac{\partial E}{\partial r} & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + H^0 \frac{\partial \rho}{\partial r} W + \frac{\partial S'}{\partial r} \rho W + S' \frac{\partial \rho}{\partial r} W \right\} - \\
+&&        \sum_I \left\{ W(I) U_I ( dn_I \frac{\partial dn_I}{\partial r} + n^{nuc}_I \frac{\partial dn_I}{\partial r} ) \right\} \\
+ \\
+\rho & = & \sum_i a_i (z_i S - H)^{-1} \\
+\frac{\partial \rho}{\partial r} & = & - \sum_i a_i G_i (z_i \frac{\partial S}{\partial r} - \frac{\partial H}{\partial r}) G_i \\
+        & = & - \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H}{\partial r} G_i \right\} \\
+	& = & - \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right.\\
+&&		  \left. - a_i G_i \frac{\partial S'}{\partial r} G_i \right\} \\
+\frac{\partial \rho^0}{\partial r} & = & - \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} \\
+\frac{\partial \rho}{\partial r} & = & \frac{\partial \rho^0}{\partial r} + \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} \\
+ \\
+\frac{\partial E}{\partial r} & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + H^0 \frac{\partial \rho^0}{\partial r} W + H^0 \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W + \right. \\
+&&	     \left. \frac{\partial S'}{\partial r} \rho W + S' \frac{\partial \rho^0}{\partial r} W + S' \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I ( dn_I \frac{\partial dn_I}{\partial r} + n^{nuc}_I \frac{\partial nn_I}{\partial r} ) \right\} \\
+ \\
+\frac{\partial E}{\partial r} & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + H^0 \frac{\partial \rho^0}{\partial r} W + H^0 \sum_i \left\{a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W + \right. \\
+&&             \left. \frac{\partial S'}{\partial r} \rho W + S' \frac{\partial \rho^0}{\partial r} W + S' \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I (dn_I \frac{\partial dn_I}{\partial r} + n^{nuc}_I \frac{\partial dn_I}{\partial r} ) \right\} \\
+ \\
+      & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + (H^0+S') \frac{\partial \rho^0}{\partial r} W + \right. \\
+&&	     \left. (H^0+S') \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W + \frac{\partial S'}{\partial r} \rho W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I (dn_I + n^{nuc}_I) \frac{\partial dn_I}{\partial r} \right\} \\
+      & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + H \frac{\partial \rho^0}{\partial r} W + \right. \\
+&&	     \left. H \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W + \frac{\partial S'}{\partial r} \rho W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I (dn_I + n^{nuc}_I) \frac{\partial dn_I}{\partial r} \right\} \\
+\\
+f^0 & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W + H \frac{\partial \rho^0}{\partial r} W \right\} \\
+\\
+\frac{\partial E}{\partial r}  & = & f^0 + 2 Tr \left\{ H \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W + \frac{\partial S'}{\partial r} \rho W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I (dn_I + n^{nuc}_I) \frac{\partial dn_I}{\partial r} \right\} \\
+      & = & f^0 + 2 Tr \frac{\partial S'}{\partial r} \left\{  \sum_i \left\{ a_i  G_i W H G_i \right\}   +  \rho W \right\} - \\
+&&	\sum_I \left\{ W(I) U_I (dn_I + n^{nuc}_I) \frac{\partial dn_I}{\partial r} \right\} \\
+ \\
+dn_I & = & 2 Tr \left\{ \rho S W^I \right\} \\
+\frac{\partial dn_I}{\partial r} & = & 2 Tr \left\{ \rho \frac{\partial S}{\partial r} W^I + \frac{\partial \rho}{\partial r} S W^I \right\} \\
+         & = & 2 Tr \left\{ \rho \frac{\partial S}{\partial r} W^I + \frac{\partial \rho^0}{\partial r} S W^I - \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} S W^I \right\} \\
+	 & = & 2 Tr \left\{ \sum_i \left\{ a_i G_i \right\} \frac{\partial S}{\partial r} W^I -  \right. \\
+&&		\left. \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} S W^I +  \right. \\
+&&		\left. \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} S W^I \right\} \\
+\frac{\partial dn^0_I}{\partial dr} & = & 2 Tr \left\{ \sum_i \left\{ a_i G_i \right\} \frac{\partial S}{\partial r} W^I + \right. \\
+&&		\left. \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} S W^I \right\} \\
+\frac{\partial dn_I}{\partial r} & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&		2 Tr \left\{ \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} S W^I \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 Tr \left\{ \sum_i a_i \left\{ \sum_{mnop} G^i_{lm} 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N) G^i_{no} S_{op} W^I_{pq} \right\} \right\} + \\
+&&   2 Tr \left\{ \sum_i a_i \left\{ \sum_{mnop} G^i_{lm} 0.5 S_{mn} ( U_M \frac{\partial dn_M}{\partial r} + u_N \frac{\partial dn_N}{\partial r}) G^i_{no} S_{op} W^I_{pq} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} G^i_{lm} 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N) G^i_{no} S_{op} W^I_{pl} \right\} \right\} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} G^i_{lm} 0.5 S_{mn} ( U_M \frac{\partial dn_M}{\partial r} + u_N \frac{\partial dn_N}{\partial r}) G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{op} \right) W^I_{pl} \right\} \right\} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} G^i_{lm} 0.5 S_{mn} ( U_M \frac{\partial dn_M}{\partial r} + u_N \frac{\partial dn_N}{\partial r}) G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{op} \right) W^I_{pl} \right\} \right\} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} G^i_{lm} 0.5 S_{mn} ( U_M \frac{\partial dn_M}{\partial r} ) G^i_{no} S_{op} W^I_{pl} + G^i_{lm} 0.5 S_{mn} (u_N \frac{\partial dn_N}{\partial r}) G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{op} \right) W^I_{pl} \right\} \right\} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{m} \frac{\partial dn_M}{\partial r} \sum_{lnop} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{op} W^I_{pl} + \right.\right. \\
+&&   \left.\left. \sum_{n} \frac{\partial dn_N}{\partial r} \sum_{lmop} G^i_{lm} 0.5 S_{mn} u_N  G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \left\{ \sum_i a_i \left\{ \sum_{lmnop} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{op} \right) W^I_{pl} \right\} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lnop} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{op} W^I_{pl} \right\}\right\} + \\
+&&   2 \sum_{n} \frac{\partial dn_N}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lmop} G^i_{lm} 0.5 S_{mn} u_N G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_{mn} \frac{\partial S_{mn}}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lop} \left(G^i_{lm} \left( 0.5 (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{op} \right) W^I_{pl} \right\} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lnop} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{op} W^I_{pl} \right\}\right\} + \\
+&&   2 \sum_{n} \frac{\partial dn_N}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lmop} G^i_{lm} 0.5 S_{mn} u_N G^i_{no} S_{op} W^I_{pl} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_{mn} \frac{\partial S_{mn}}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lo} \left(G^i_{lm} \left( 0.5 (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{ol} W^I_{ll} \right\}\right\} - \\
+&&   2 \sum_{n} \frac{\partial dn_N}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lmo} G^i_{lm} 0.5 S_{mn} u_N G^i_{no} S_{ol} W^I_{ll} \right\} \right\} \\
+&& \\
+&& \\
+&& \\
+&& \\
+&& \\
+&& \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_i a_i \left\{ \sum_{lmno} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{ol} W^I_{ll} \right\}\right\} + \\
+&&   2 \sum_{n} \frac{\partial dn_N}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lmo} G^i_{lm} 0.5 S_{mn} u_N G^i_{no} S_{ol} W^I_{ll} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_i a_i \left\{ \sum_{lmno} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{lm} 0.5 S_{mn} U_M G^i_{no} S_{ol} W^I_{ll} \right\}\right\} - \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{ln} 0.5 S_{nm} U_M G^i_{mo} S_{ol} W^I_{ll} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_i a_i \left\{ \sum_{lmno} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{lm} 0.5 U_M ( S_{mn} G^i_{no} S_{ol} ) W^I_{ll} \right\}\right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{lno} G^i_{ln} 0.5 S_{nm} U_M (G^i_{mo} S_{ol}) W^I_{ll} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_i a_i \left\{ \sum_{lmno} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{l} G^i_{lm} 0.5 U_M \sum_{no} ( S_{mn} G^i_{no} S_{ol} ) W^I_{ll} \right\}\right\} + \\
+&&   2 \sum_{m} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{l} \sum_n (G^i_{ln} 0.5 S_{nm}) U_M \sum_o (G^i_{mo} S_{ol}) W^I_{ll} \right\} \right\} \\
+   & = & \frac{\partial dn^0_I}{\partial r} + \\
+&&   2 \sum_i a_i \left\{ \sum_{lmno} \left(G^i_{lm} \left( 0.5 \frac{\partial S_{mn}}{\partial r} (U_M dn_M + u_N dn_N)\right)\right) \left( G^i_{no} S_{ol} \right) W^I_{ll} \right\} + \\
+&&   2 \sum_{M} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{m \in M} \sum_{l} \left[ G^i_{lm} 0.5 U_M \sum_{no} ( S_{mn} G^i_{no} S_{ol} ) W^I_{ll} \right] \right\}\right\} + \\
+&&   2 \sum_{M} \frac{\partial dn_M}{\partial r} \left\{ \sum_i a_i \left\{ \sum_{m \in M} \sum_{l} \left[ \sum_n (G^i_{ln} 0.5 S_{nm}) U_M \sum_o (G^i_{mo} S_{ol}) W^I_{ll} \right] \right\} \right\} \\
+\end{eqnarray*}
+\pagebreak
+\begin{eqnarray*}
+N_{QM} \\
+E  & = &  2 Tr \{ H^0 \rho W_E \} + 0.5 U \Delta N ^2 \\
+   & = & 2 Tr \{ H \rho W_E \} - (0.5 U \Delta N^2 + U \Delta N N^{nuc}_{QM} ) \\
+\Delta N & = & 2 Tr \{ S \rho W_N \} - N^{nuc}_{QM}\\
+H_{ij} & = & H^0_{ij} + 0.5 S_{ij} (P_I + P_J) \\
+P_I  & = &  \frac{\partial E}{\partial n_I} \\
+     & = & U \Delta N \frac{\partial \Delta N}{\partial n_I} \\
+\Delta N  & = & \sum_i (n_I - n^{nuc}_I) W_N(I) \\
+P_I  & = &  U \Delta N W_N(I) \\
+S'_{ij} & = & 0.5 S_{ij} (P_I + P_J) \\
+ & = & 0.5 S_{ij} U \Delta N (W_N(I) + W_N(J) \\
+\\
+\frac{\partial E}{\partial r} & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W_E + H^0 \frac{\partial \rho}{\partial r} W_E + \frac{\partial S'}{\partial r} \rho W_E +
+  S' \frac{\partial \rho}{\partial r} W_E \right\} - \\
+  & & (U \Delta N + U N_{nuc}) \frac{\partial N}{\partial r}  \\
+\frac{\partial \rho^0}{\partial r} & = & - \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} \\
+\frac{\partial \rho}{\partial r} & = & \frac{\partial \rho^0}{\partial r} + \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} \\
+\frac{\partial E}{\partial r} & = &
+  2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W_E + H^0 \frac{\partial \rho^0}{\partial r} W_E + H^0 \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_E + \right. \\
+    && \left. \frac{\partial S'}{\partial r} \rho W_E + S' \frac{\partial \rho^0}{\partial r} W_E + S' \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_E \right\} -\\
+  & & (U \Delta N + U N_{nuc}) \frac{\partial N}{\partial r}  \\
+\frac{\partial E}{\partial r} & = &
+  2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W_E + H \frac{\partial \rho^0}{\partial r} W_E + H \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_E + 
+    \frac{\partial S'}{\partial r} \rho W_E \right\} -\\
+  & & (U \Delta N + U N_{nuc}) \frac{\partial N}{\partial r}  \\
+\\
+f^0 & = & 2 Tr \left\{ \frac{\partial H^0}{\partial r} \rho W_E + H \frac{\partial \rho^0}{\partial r} W_E \right\} \\
+\\
+\frac{\partial E}{\partial r}  & = & 
+  f^0 + 2 Tr \left\{ H \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_E + \frac{\partial S'}{\partial r} \rho W_E \right\} - \\
+  & &  (U \Delta N + U N_{nuc}) \frac{\partial N}{\partial r}  \\
+\frac{\partial E}{\partial r}  & = & 
+  f^0 + 2 Tr \left\{ \frac{\partial S'}{\partial r} \left( \sum_i \left\{ a_i  G_i W_E H G_i \right\} +  \rho W_E \right) \right\} - \\
+  & &  (U \Delta N + U N_{nuc}) \frac{\partial N}{\partial r}  \\
+\\
+\frac{\partial S'_{ij}}{\partial r} & = & 0.5 (W_N(I) + W_N(J)) \left( \frac{\partial S_{ij}}{\partial r} \Delta N + S_{ij} \frac{\partial N}{\partial r} \right) \\
+\tilde{S}_{ij} & = & 0.5 U (W_N(I) + W_N(J)) S_{ij} \\
+\frac{\partial S'_{ij}}{\partial r} & = & \left( \frac{\partial \tilde{S}_{ij}}{\partial r} \Delta N + \tilde{S}_{ij} \frac{\partial N}{\partial r} \right) \\
+\\
+\frac{\partial N}{\partial r} & = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N + S \frac{\partial \rho}{\partial r} W_N \right\} \\
+ & = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N + S \frac{\partial \rho^0}{\partial r} W_N + S \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_N \right\} \\
+ & = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - S \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} W_N + \right. \\
+ & & \left. S \sum_i \left\{ a_i G_i \frac{\partial S'}{\partial r} G_i \right\} W_N \right\} \\
+\frac{\partial N}{\partial r} & = & 
+  2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - S \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} W_N + \right. \\
+ & & \left. S \sum_i \left\{ a_i G_i \left( \frac{\partial \tilde{S}}{\partial r} \Delta N + \tilde{S} \frac{\partial N}{\partial r} \right) G_i \right\} W_N \right\} \\
+& = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - S \sum_i \left\{ a_i z_i G_i \frac{\partial S}{\partial r} G_i - a_i G_i \frac{\partial H^0}{\partial r} G_i \right\} W_N + \right. \\
+ & & \left. S \sum_i \left\{ a_i G_i \frac{\partial \tilde{S}}{\partial r} \Delta N G_i \right\} W_N \right\} + \\
+ & & 2 Tr \left\{ S \sum_i \left\{ a_i G_i \tilde{S} \frac{\partial N}{\partial r} G_i \right\} W_N \right\} \\
+& = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - \sum_i \left\{ \left( a_i z_i \frac{\partial S}{\partial r} - a_i \frac{\partial H^0}{\partial r} \right) G_i W_N S G_i \right\} + \right. \\
+ & & \left. \sum_i \left\{ a_i \frac{\partial \tilde{S}}{\partial r} \Delta N G_i W_N S G_i \right\} \right\} + \\
+ & & 2 Tr \left\{ S \sum_i \left\{ a_i G_i \tilde{S} \frac{\partial N}{\partial r} G_i \right\} W_N \right\} \\
+& = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - \frac{\partial S}{\partial r} \sum_i \left\{ a_i z_i G_i W_N S G_i \right\} + \frac{\partial H^0}{\partial r} \sum_i \left\{ a_i G_i W_N S G_i \right\} + \right. \\
+ & & \left. \frac{\partial \tilde{S}}{\partial r} \Delta N \sum_i \left\{ a_i  G_i W_N S G_i \right\} \right\} + \\
+ & & \frac{\partial N}{\partial r} 2 Tr \left\{ S \sum_i \left\{ a_i G_i \tilde{S} G_i \right\} W_N \right\} \\
+\frac{\partial N}{\partial r} & = &
+2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - \frac{\partial S}{\partial r} \sum_i \left\{ a_i z_i G_i W_N S G_i \right\} + \frac{\partial H^0}{\partial r} \sum_i \left\{ a_i G_i W_N S G_i \right\} + \right. \\
+ & & \left. \frac{\partial \tilde{S}}{\partial r} \Delta N \sum_i \left\{ a_i  G_i W_N S G_i \right\} \right\} / \\
+ & & \left(1 -  2 Tr \left\{ S \sum_i \left\{ a_i G_i \tilde{S} G_i \right\} W_N \right\} \right) \\
+& = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - \frac{\partial S}{\partial r} \sum_i \left\{ a_i z_i G_i W_N S G_i \right\} + \frac{\partial H^0}{\partial r} \sum_i \left\{ a_i G_i W_N S G_i \right\} + \right. \\
+ & & \left. \frac{\partial \tilde{S}}{\partial r} \Delta N \sum_i \left\{ a_i  G_i W_N S G_i \right\} \right\} / \\
+ & & \left(1 -  2 Tr \left\{ S \sum_i \left\{ a_i G_i \tilde{S} G_i W_N \right\} \right\} \right) \\
+& = & 2 Tr \left\{ \frac{\partial S}{\partial r} \rho W_N - \frac{\partial S}{\partial r} \sum_i \left\{ a_i z_i G_i W_N S G_i \right\} + \frac{\partial H^0}{\partial r} \sum_i \left\{ a_i G_i W_N S G_i \right\} + \right. \\
+ & & \left. \frac{\partial \tilde{S}}{\partial r} \Delta N \sum_i \left\{ a_i  G_i W_N S G_i \right\} \right\} / \\
+ & & \left(1 -  2 Tr \left\{ \tilde{S} \sum_i \left\{ a_i G_i W_N S G_i \right\} \right\} \right) \\
+\end{eqnarray*}
+
+\end{document}
