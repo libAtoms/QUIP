@@ -1,0 +1,161 @@
+
+                        libAtoms README file
+
+                           James Kermode
+                         <jrk33@cam.ac.uk>
+
+                             April 2007
+
+
+
+
+     Copyright 2006-2007.
+
+     Authors: Gabor Csanyi, Steven Winfield, James Kermode
+     Contributors: Noam Bernstein, Alessio Comisso
+
+     The source code is released under the GNU General Public License,
+     version 2, http://www.gnu.org/copyleft/gpl.html
+
+     If you would like to license the source code under different terms,
+     please contact Gabor Csanyi, gabor@csanyi.net
+
+     When using this software, please cite the following reference:
+     http://www.libatoms.org
+
+
+
+libAtoms is a Fortran 95 library for developing molecular dynamics
+codes. It has been designed to be extensible and efficient, and can be
+used both serially and on parallel computers that offer an
+implementation of the MPI library. The parallelisation is at a very
+early stage, and there is currently no data parallelisation.
+
+
+
+Contents
+--------
+
+After extracting the archive, you should have a libAtoms directory
+containing the following files:
+
+ COPYRIGHT              - Copyright information
+ README                 - This file
+ Makefile               - Top-level Makefile
+ Makefiles/Makefile.*   - Makefiles for various architectures
+ f90doc                 - Python script to generate documentation
+ intro.tex              - Introduction section of reference manual
+ md.f95                 - libAtoms test program
+
+libAtoms source code files:
+ Atoms.f95              
+ Constraint_Pointers.c
+ Constraints.f95
+ Dictionary.f95
+ DynamicalSystem.f95
+ Elasticity.f95
+ Group.f95
+ ParamReader.f95
+ PeriodicTable.f95
+ Quaternions.f95
+ RigidBody.f95
+ Spline.f95
+ System.f95
+ Table.f95
+ Units.f95
+ fabort.c
+ linearalgebra.f95
+ minimization.f95
+ mpi.f95
+ system_command.c
+ test_force_model.f95
+
+
+
+Compiler Requirements
+---------------------
+
+libAtoms requires some extensions to the core Fortran 95
+standard. These extensions are all part of Fortran 2003, although
+there are currenly no complete Fortran 2003 compilers available. They
+are also all part of the ISO "Allocatable Technical Report" standard
+(ISO TR-15581: Enhanced Data Type Facilities), which has been
+implemented by a number of modern compiler vendors. The extensions
+required are:
+
+- Allocatable components within derived types
+- Allocatable dummy arguments
+
+At the time of writing, these features are known to be
+supported by the following compilers:
+
+- Intel ifort version 8.1 or later
+- GNU g95 version 0.91 or later
+- Pathscale pathf90 version 2.5 or later
+- Portland group pgf90 version ?? or later
+- Sun f95 version 8.3 or later
+- HP Fortran V5.6 or later
+
+
+Library Requirements
+--------------------
+
+libAtoms requires LAPACK and BLAS libraries. It has been tested using
+the Intel MKL library, but should work with any vendor supplied library.
+
+If you want to use libAtoms on a parallel machine, you need an MPI
+library for that architecture with Fortran bindings (i.e. with a
+mpif.h header file). libAtoms has been tested with MPICH, LAM and
+Pathscale MPI, but should work with any standards complying MPI
+implementation.
+
+
+Compilation
+-----------
+
+The Makefiles/ subdirectory contains sample Makefiles for various
+architectures. You should copy one of these to 'Makefiles.arch', e.g.
+
+> cp Makefiles/Makefile.intel Makefiles/Makefile.arch
+
+then edit is as needed for your system, specifying the compiler and
+location of the LAPACK libraries. Then executing the command
+
+> make
+
+from within the libAtoms directory should compile libAtoms and produce
+the static library libatoms.a, which you can link with your program to
+produce an exectuable, using a command similar to:
+
+> f95 -o myprogram myprogram.f95 -I../libAtoms ../libAtoms/libatoms.a
+   -Llapack_install_dir -llapack -Lmpi_install_dir -lmpi
+
+To compile the test MD program described in the reference manual
+you can do:
+
+> make md
+
+
+
+Documentation
+-------------
+
+The libAtoms documentation is embedded within the source code as
+specially formatted comments. To generate the documentation, Python
+2.4 or later (http://www.python.org) and a working LaTeX installation
+(e.g. 'TeX Live' http://www.tug.org/texlive) are required. If you want
+HTML formatted documentation then you will also need LaTeX2HTML
+(available from http://www.latex2html.org).
+
+> make doc
+
+will generate the reference manual in postscript format, producing the
+file libatoms.ps. First a python script, 'f90doc', is invoked to
+extract documentation comments from the source code and produce a
+latex document 'libatoms.tex', then latex is run on this document to
+produce a DVI file. Finally this is converted to postcript using dvips.
+
+> make htmldoc
+
+will generate HTML format documention using LaTeX2HTML in a
+subdirectory called 'libatoms'.

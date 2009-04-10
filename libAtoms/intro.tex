@@ -1,0 +1,266 @@
+%!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+%!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+%!X
+%!X     libAtoms: atomistic simulation library
+%!X     
+%!X     Copyright 2006-2007.
+%!X
+%!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
+%!X     Contributors: Noam Bernstein, Alessio Comisso
+%!X
+%!X     The source code is released under the GNU General Public License,
+%!X     version 2, http://www.gnu.org/copyleft/gpl.html
+%!X
+%!X     If you would like to license the source code under different terms,
+%!X     please contact Gabor Csanyi, gabor@csanyi.net
+%!X
+%!X     When using this software, please cite the following reference:
+%!X
+%!X     http://www.libatoms.org
+%!X
+%!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+%!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+\section{Copyright}
+
+\textsc{libAtoms} is copyright 2006-2008.
+
+\begin{description}
+\item[Authors:] Gabor Csanyi, Steven Winfield, James Kermode
+\item[Contributors:] Noam Bernstein, Alessio Comisso
+\end{description}
+
+The source code is released under the GNU General Public License,
+version 2, \\ \texttt{http://www.gnu.org/copyleft/gpl.html}.
+
+If you would like to license the source code under different terms,
+please contact Gabor Csanyi, \texttt{gabor@csanyi.net}.
+
+When using this software, please cite the following reference:
+\texttt{http://www.libatoms.org}
+
+\section{Introduction}
+
+\subsection*{Purpose and Philosophy}
+
+\textsc{libAtoms}\footnote{http://www.libatoms.org} is a Fortran 95
+library for developing molecular dynamics codes. It has been designed
+to be extensible and efficient, and can be used both serially and on
+large parallel computers that offer an implementation of the MPI
+library. At present the parallisation is at a very early stage, and
+there is no parallelisation of data. The fundamental design principal
+behind the developement of \textsc{libAtoms} is the idea of
+\emph{expressive programming} --- this involves making sensible use of
+high level language features to produce clear and easily understood
+code that is as close as possible to the abstract algorithm that is
+being implemented.
+
+\textsc{libAtoms} is structured as a series of Fortran modules, each of which
+can be thought as self contained entities rather like C++ classes. Most
+modules define a type that takes its name from that of the module
+(for example the `Atoms' type in the module \texttt{Atoms\_module}),
+and a series of subroutines and functions that operate on objects
+of that type, in analogue with the methods of a C++ class.
+
+There are modules within \textsc{libAtoms} to represent a set of
+atoms, to apply constraints to those atoms and to integrate their
+equations of motion. There are also utility modules to perform task
+such as reading parameters from files, to solve multi-dimensional
+optimisation problems or to calculate the elastic properties of a
+given force model. It is intended that users write their own top-level
+programs which define instances of the various \textsc{libAtoms} types
+and call \textsc{libAtoms} methods.
+
+\subsection*{Requirements}
+
+In order to facilitate the expressive programming ideas outlined
+above, \textsc{libAtoms} requires some extensions to the core Fortran
+95 standard. These extensions are all part of Fortran 2003, although
+there are currenly no complete Fortran 2003 compilers available. They
+are also all part of the ISO ``Allocatable Technical Report''
+standard.\footnote{ISO TR-15581: Enhanced Data Type Facilities}, which
+has been implemented by a number of modern compiler vendors. The
+extensions required are:
+\begin{itemize}
+\item Allocatable components within derived types
+\item Allocatable dummy arguments
+\end{itemize}
+
+At the time of writing, these features are known to be
+supported by the following compilers:
+\begin{itemize}
+\item Intel \texttt{ifort} version 8.1 or later
+\item \texttt{g95} version 0.91 or later
+\item Pathscale \texttt{pathf90} version 2.5 or later
+\item Portland group \texttt{pgf90} version ?? or later
+\item Sun \texttt{f95} version 8.3 or later
+\item HP Fortran V5.6 or later
+\end{itemize}
+
+\textsc{libAtoms} requires \textsc{lapack} and \textsc{blas}
+libraries. It has been tested using the Intel \textsc{mkl} library,
+but should work with any vendor supplied library.
+
+If you want to use \textsc{libAtoms} on a parallel machine, you need
+an MPI library for that architecture with Fortran bindings (i.e. with
+a mpif.h header file). libAtoms has been tested with \textsc{mpich},
+\textsc{lam} and Pathscale MPI, but should work with any standards complying
+MPI implementation.
+
+To generate the \textsc{libAtoms} documentation, Python 2.4 or later
+ and a working \LaTeX{} installation are required. If you want the HTML
+documentation then you will also need \LaTeX 2\texttt{HTML}.
+
+\newpage
+
+\subsection*{Example Program --- Classical Molecular Dynamics}
+
+The best way to get a feel for how \textsc{libAtoms} is used
+is with a simple example. The following code sets up
+the \textsc{libAtoms} environment, loads a cell from
+an XYZ file, and performs 1,000 steps of classical molecular
+dynamics. For this example random forces are used, but in general
+they would be calculated using a classical potential.
+
+\begin{boxedminipage}{\textwidth}
+\verbinput{md.f95}
+\end{boxedminipage}
+
+
+\subsection*{Controlling Output Verbosity}
+
+Often it is useful to be able to vary the amount and detail of text
+produced by a program, for example to get more detailed information
+when debugging. \textsc{libAtoms} makes use of a global verbosity
+stack to control the amount of output produced by its subroutines and
+functions. The possible values, in increasing order, of verbosity are:
+\texttt{ERROR=-10}, \texttt{SILENT=-1}, \texttt{NORMAL=0},
+\texttt{VERBOSE=1}, \texttt{NERD=2} and \texttt{ANAL=3}.  Printing
+interfaces for objects normally print the their own structure at some 
+level of detail, and contained substructures at a lower level of detail.  
+Other subroutines normally print their output at some detail level, and
+request lower level subroutines to print at a lower detail level.
+You can set a verbosity minimum level that does not allow subroutines
+to lower the verbosity level, so that lower level routines and structures
+always report at the requested detail level or higher.
+
+The initial value at the top of the verbosity stack is set by
+\texttt{system\_initialise()} (the default is \texttt{NORMAL} but this
+can be overidden with an optional argument). The stack can be modified
+by calling \texttt{push\_verbosity(val)}, \texttt{push\_verbosity\_increment(n)},
+or \texttt{push\_verbosity\_decrement(n)} to place a new value on the top of the
+stack, and \texttt{pop\_verbosity()} to revert to the previous value. 
+The current value of the verbosity stack can be queried with 
+\texttt{current\_verbosity()}.
+The initial verbosity cascade status is set to false, and can be changed
+with \texttt{verbosity\_set\_minimum()} and revert to the previous value
+with \texttt{verbosity\_unset\_minimum()}.
+
+Here are some examples:
+
+\begin{boxedminipage}{\textwidth}
+\begin{verbatim}
+   type(Atoms) :: myatoms
+
+   call system_initialise(NORMAL)
+   ...
+   call print(myatoms)                 ! Prints Atoms object
+   call push(verbosity_stack,VERBOSE)  ! Temporarily switch to VERBOSE output
+   call print(myatoms)                 ! Now this will be printed
+
+   call pop(verbosity_stack)           ! Revert to NORMAL output level
+   call verbosity_set_minimum(VERBOSE) ! force lower level things to output at 
+                                       !  least at VERBOSE detail
+   call print(myatoms)                 ! Now this will be printed at VERBOSE, 
+                                       !  and subobjects too
+   call verbosity_unset_minimum()      ! revert to previous verbosity cascade
+
+   call system_finalise
+\end{verbatim}
+\end{boxedminipage}
+
+This behaviour is implemented for printing interfaces as in this example
+
+\begin{boxedminipage}{\textwidth}
+\begin{verbatim}
+  subroutine structure_print(this, out)
+  type(Structure), intent(in) :: this
+  type(inoutput), intent(inout), optional :: out
+
+  call print(this%some_int, out)
+  call verbosity_decrement() ! print following structure in a bit less detail
+  call print(this%some_substructure, out = out)
+  call verbosity_pop()
+
+  call verbosity_decrement(2) ! print following structure in a lot less detail
+  call print(this%other_substructure, out = out)
+  call verbosity_pop()
+\end{verbatim}
+\end{boxedminipage}
+
+Printing of low level entities (strings, numbers, arrays) take an optional
+verbosity parameter that sets the minimum verbosity level at which that
+print will actually occur.  Functions that want to produce output at
+different levels of detail (e.g. the \texttt{minim()} function) can use
+this verbosity parameter to output more information when the verbosity
+level is high.  To modify output of a structure, the verbosity stack
+must be used.  For example:
+
+\begin{boxedminipage}{\textwidth}
+\begin{verbatim}
+  subroutine sub()
+    ! do some stuff
+
+    ! usually print this info
+    call print("got value " // n, NORMAL) 
+
+    ! only print when current level is set to verbose
+    call print("extra internal value " // internal, VERBOSE) 
+
+    ! print this structure at normal level of detail
+    call print(struct)
+
+    ! print this structure at less than usual detail, i.e.
+    ! SILENT if current level is NORMAL
+    call verbosity_push_decrement()
+    call print(other_struct)
+    call verbosity_pop()
+
+    ! print this structure at a lot more than usual detail, i.e.
+    ! NERD if current level is NORMAL
+    call verbosity_push_increment(2)
+    call print(other_struct)
+    call verbosity_pop()
+
+\end{verbatim}
+\end{boxedminipage}
+
+These controls can be used from upper level programs as follows:
+
+\begin{boxedminipage}{\textwidth}
+\begin{verbatim}
+   call system_initialise(NORMAL)
+
+   ...
+   ! (1) Produce all the 'NORMAL' level output
+   steps = minim(x,func,dfunc,'cg','LINMIN_FAST',1e-7_dp,500)
+
+   ! (2) Print more detail (VERBOSE = 1)
+   call verbosity_push(VERBOSE)
+   steps = minim(x,func,dfunc,'cg','LINMIN_FAST',1e-7_dp,500)
+   call verbosity_pop()
+
+   ! (3) Print less detail (SILENT = -1)
+   call verbosity_push(SILENT)
+   steps = minim(x,func,dfunc,'cg','LINMIN_FAST',1e-7_dp,500)
+   call verbosity_pop()
+
+   ! (4) Same as 2, but lower level subroutines such as linmin will 
+   !     also produce verbose output
+   call verbosity_set_minimum(VERBOSE)
+   steps = minim(x,func,dfunc,'cg','LINMIN_FAST',1e-7_dp,500)
+   call verbosity_unset_minimum()
+
+   call system_finalise
+\end{verbatim}
+\end{boxedminipage}
