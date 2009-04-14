@@ -1,6 +1,6 @@
 .SUFFIXES: .c .h .f .f95
 
-FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
+FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 NETCDF_LIBS = -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5 -lhdf5_hl
 LARSPOT_LIBS = -lmdcore
