@@ -6,7 +6,7 @@ NETCDF4_LIBS = -lnetcdf -lhdf5 -lhdf5_hl
 LARSPOT_LIBS = -lmdcore
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
 
-ifeq (${COPTIM,)
+ifeq (${COPTIM},)
   COPTIM=${OPTIM}
 endif
 ifeq (${CDEBUG},)
