@@ -102,7 +102,7 @@ xyz2xyz: xyz_netcdf.c
 
 install-nc: xyz2xyz
 	@echo ; echo "Where would you like the NetCDF converters installed to?"
-	@read NCBINDIR && cp $< $$NCBINDIR ;\
+	@read NCBINDIR && cp xyz2xyz $$NCBINDIR ;\
 	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/nc2nc ;\
 	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/ncstat ;\
 	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyz2nc ;\
