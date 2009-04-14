@@ -7,19 +7,31 @@ else
 	BUILDDIR=crap
 endif
 
+FOX = FoX-4.0.3
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
 all: ${MODULES}
+
+${FOX}: ${FOX}/objs/lib/libFoX_common.a
+${FOX}/objs/lib/libFoX_common.a: 
+ifneq (${ARCH},)
+	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
+else
+	@echo
+	@echo "You need to define the architecture using the ARCH variable"
+	@echo
+	@exit 1
+endif
 
 ${MODULES}: ${BUILDDIR} ${BUILDDIR}/Makefile.inc
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
-QUIP_Core: libAtoms
-QUIP_Util: libAtoms QUIP_Core
-QUIP_Programs: libAtoms QUIP_Core QUIP_Utils 
-Tests: libAtoms QUIP_Core QUIP_Utils
+QUIP_Core: libAtoms ${FOX}
+QUIP_Util: libAtoms ${FOX} QUIP_Core
+QUIP_Programs: libAtoms ${FOX} QUIP_Core QUIP_Utils 
+Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
 
 ${BUILDDIR}:
@@ -46,13 +58,15 @@ endif
 ifndef FOX_LIBDIR
 	@echo ; \
         echo "Please enter directory where FoX libraries are kept:" ; \
-	echo "   Default: no FoX present" ; \
+	echo "   Default: use included version ${FOX}" ; \
         read FOX_LIBDIR && if [[ $$FOX_LIBDIR ]] ; then \
 	echo "FOX_LIBDIR=$$FOX_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
 	echo "Please enter directory where FoX include files are kept:" ; \
 	read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	echo "HAVE_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "HAVE_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
+	echo "HAVE_EXTERNAL_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
+	else echo "FOX_LIBDIR=$${PWD}/FoX-4.0.3/objs/lib" >> ${BUILDDIR}/Makefile.inc; \
+	echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs/finclude" >> ${BUILDDIR}/Makefile.inc; \
+	echo "HAVE_EXTERNAL_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef NETCDF_LIBDIR
 	@echo ; \

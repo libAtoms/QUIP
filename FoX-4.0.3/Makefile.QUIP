@@ -1,0 +1,17 @@
+# simple Makefile to run configure and then make
+# using C and Fortran compiler specified in Makefile.arch
+
+include Makefile.inc
+include Makefile.common
+ifeq (${ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${ARCH}
+endif
+
+all:
+ifeq (${HAVE_EXTERNAL_FOX},0)
+	FC=${F95} CC=${CC} ./configure && make
+else
+	@echo "HAVE_EXTERNAL_FOX=1 - nothing to be done"
+endif
