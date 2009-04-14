@@ -4,11 +4,10 @@ use libatoms_module
 
 use TB_Common_module
 use QUIP_Common_module
+use TBModel_NRL_TB_defs_module
 
 implicit none
 private
-
-include 'TBModel_NRL_TB_defs.h'
 
 ! character(30) :: nrltb_default_file = "tightbind.parms.NRL_TB.xml"
 
