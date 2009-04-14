@@ -97,17 +97,17 @@ ${LIBATOMS_C_OBJS}  : %.o : %.c
 md:  libatoms.a md.o
 	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
-nc2xyz: xyz_netcdf.c
+xyz2xyz: xyz_netcdf.c
 	${CC} ${CFLAGS} $< -o $@ ${LINKOPTS} -lm -DMAIN_PROGRAM
 
-install-nc: nc2xyz
+install-nc: xyz2xyz
 	@echo ; echo "Where would you like the NetCDF converters installed to?"
-	read NCBINDIR && cp $< $$NCBINDIR ;\
-	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/nc2nc ;\
-	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/ncstat ;\
-	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyz2nc ;\
-	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyz2xyz ;\
-	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyzstat
+	@read NCBINDIR && cp $< $$NCBINDIR ;\
+	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/nc2nc ;\
+	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/ncstat ;\
+	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyz2nc ;\
+	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/nc2xyz ;\
+	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyzstat
 
 -include depend
 
