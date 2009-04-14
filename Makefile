@@ -7,6 +7,7 @@ else
 	BUILDDIR=crap
 endif
 
+
 FOX = FoX-4.0.3
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
@@ -23,7 +24,7 @@ ifeq (${ARCH},)
 endif
 
 ${FOX}: ${FOX}/objs/lib/libFoX_common.a
-${FOX}/objs/lib/libFoX_common.a: arch
+${FOX}/objs/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
 
 
@@ -111,5 +112,4 @@ clean:
 	ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	${MAKE} -C ${BUILDDIR} -I${PWD}/Makefiles clean ; \
 	done
-
 
