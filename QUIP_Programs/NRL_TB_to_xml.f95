@@ -2,11 +2,10 @@ module NRL_TB_to_xml_module
 
 use System_module
 use TB_Common_module
+use TBModel_NRL_TB_defs_module
 use fox_wxml
 
 implicit none
-
-include 'TBModel_NRL_TB_defs.h'
 
 contains 
 
