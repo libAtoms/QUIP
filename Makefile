@@ -13,7 +13,7 @@ MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
 all: ${MODULES}
 
-.PHONY: arch
+.PHONY: arch ${MODULES}
 
 arch: 
 ifeq (${ARCH},)
@@ -43,9 +43,14 @@ QUIP_Programs/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
+libAtoms/%: libAtoms 
+	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/libAtoms -I${PWD}/Makefiles $${targ#libAtoms/}
+	rm ${BUILDDIR}/Makefile
+
 
 ${BUILDDIR}: arch
-	if [ ! -d build.${ARCH} ] ; then mkdir build.${ARCH} ; fi
+	@if [ ! -d build.${ARCH} ] ; then mkdir build.${ARCH} ; fi
 
 ${BUILDDIR}/Makefile.inc:
 	-rm -f ${BUILDDIR}/Makefile.inc

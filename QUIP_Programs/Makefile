@@ -6,8 +6,15 @@ else
   include Makefile.${ARCH}
 endif
 
-#include Makefile.programs
-PROGRAMS = eval
+OBJS = vacancy_map_mod.o
+
+PROGRAMS = eval md lj_example md_example \
+  NRL_TB_to_xml DFTB_to_xml \
+  calc_n_poles \
+  analyze_md_phonons \
+  xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
+  local_E_fd wrap align test local_random_search
+
 
 LIBS =  -L. -lquiputils -lquip -latoms 
 
