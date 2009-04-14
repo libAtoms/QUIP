@@ -10,6 +10,12 @@ else
 endif
 
 all:
+ifeq (${ARCH},)
+	@echo
+	@echo "You need to define the architecture using the ARCH variable"
+	@echo
+	@exit 1
+endif
 ifeq (${HAVE_EXTERNAL_FOX},0)
 	FC=${F95} CC=${CC} ./configure && make
 else
