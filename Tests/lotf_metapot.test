@@ -1,0 +1,247 @@
+lotf_metapot
+--->stdout---
+System::Hello World: 27/10/2008   16:13:36
+System::Hello World: Random Seed = 2
+System::Hello World: global verbosity = 0
+
+Calls to system_timer will do nothing by default
+
+embed list
+        1        0        0        0
+        2        0        0        0
+       32        0        0        0
+       46        0        0        0
+       52        0        0        0
+        3        0        0        0
+        5        0        0        0
+        7        0        0        0
+       13        0        0        0
+       19        0        0        0
+       31        0        0        0
+       15        0        0        0
+       35        0        0        0
+       45        0        0        0
+       23        0        0        0
+       37        0        0        0
+       51        0        0        0
+
+=============================== LOTF Metapotential =============================
+
+MetaPotential_ForceMixing:
+ minimise_mm=F
+ calc_weights=T
+ method=lotf_adj_pot_svd
+ mm_reweight=1.0000000000000000
+ conserve_momentum_weight_method=uniform
+ mm_args_str=
+ qm_args_str=single_cluster=T cluster_calc_connect=T
+ buffer_hops=3
+ fit_hops=3
+ randomise_buffer=T
+ transition_hops=0
+ weight_interpolation=hop_ramp
+ nneighb_only=T
+ save_forces=T
+ do_rescale_r=F
+ lotf_spring_hops=2
+ lotf_interp_order=linear
+ lotf_interp_space=F
+
+ minim_mm_method=cg
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
+ minim_mm_max_steps=1000
+ minim_mm_linminroutine=FAST_LINMIN
+ minim_mm_do_pos=T
+ minim_mm_do_lat=F
+ minim_mm_do_print=F
+ minim_mm_use_n_minim=F
+ minim_mm_args_str=
+
+MM Potential
+IP : 2
+IPModel_SW : Stillinger-Weber
+IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
+IPModel_SW : type 1 atomic_num 1
+IPModel_SW : type 2 atomic_num 14
+
+QM Potential
+IP : 2
+IPModel_SW : Stillinger-Weber
+IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
+IPModel_SW : type 1 atomic_num 1
+IPModel_SW : type 2 atomic_num 14
+
+
+=========================== Force Mixing Metapotential =========================
+
+MetaPotential_ForceMixing:
+ minimise_mm=F
+ calc_weights=T
+ method=force_mixing
+ mm_reweight=1.0000000000000000
+ conserve_momentum_weight_method=uniform
+ mm_args_str=
+ qm_args_str=single_cluster=T cluster_calc_connect=T
+ buffer_hops=3
+ fit_hops=3
+ randomise_buffer=F
+ transition_hops=0
+ weight_interpolation=hop_ramp
+ nneighb_only=T
+ save_forces=T
+ do_rescale_r=F
+ lotf_spring_hops=2
+ lotf_interp_order=linear
+ lotf_interp_space=F
+
+ minim_mm_method=cg
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
+ minim_mm_max_steps=1000
+ minim_mm_linminroutine=FAST_LINMIN
+ minim_mm_do_pos=T
+ minim_mm_do_lat=F
+ minim_mm_do_print=F
+ minim_mm_use_n_minim=F
+ minim_mm_args_str=
+
+MM Potential
+IP : 2
+IPModel_SW : Stillinger-Weber
+IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
+IPModel_SW : type 1 atomic_num 1
+IPModel_SW : type 2 atomic_num 14
+
+QM Potential
+IP : 2
+IPModel_SW : Stillinger-Weber
+IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
+IPModel_SW : type 1 atomic_num 1
+IPModel_SW : type 2 atomic_num 14
+
+Adding default springs
+Got 496 springs
+Number of force components: 189
+Number of parameters:       496
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0207100046811317
+Max force component error before optimisation : .1004511798383001
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.19E-02
+Max force component error after  optimisation :   0.23E-02
+Max abs spring constant   after  optimisation :   0.27E-01
+
+
+=========================== SINGLE STEP VERLET IN USE ==========================
+
+Consider changing to the two-step integrator
+
+======================================= = ======================================
+
+          Time        Temp   Mean temp     Norm(p)  Total work         Thermo work
+D         1.00      1.7116      0.0043    0.11E-14      0.00000000E+00      0.00000000E+00
+force err 1.0000000000000000 .0018534576009004  .0023361985258615
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0204894588556785
+Max force component error before optimisation : .0993645403973809
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.18E-02
+Max force component error after  optimisation :   0.23E-02
+Max abs spring constant   after  optimisation :   0.27E-01
+
+D         2.00      6.7777      0.0423    0.34E-14      0.00000000E+00      0.00000000E+00
+force err 2.0000000000000000 .0018346835461516  .0023156721882270
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0200513126689962
+Max force component error before optimisation : .0972034117625089
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.18E-02
+Max force component error after  optimisation :   0.23E-02
+Max abs spring constant   after  optimisation :   0.26E-01
+
+D         3.00     14.9948      0.1462    0.72E-15      0.00000000E+00      0.00000000E+00
+force err 3.0000000000000000 .0017973798033062  .0022748371347113
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0194014429597889
+Max force component error before optimisation : .0939919485616896
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.18E-02
+Max force component error after  optimisation :   0.22E-02
+Max abs spring constant   after  optimisation :   0.25E-01
+
+D         4.00     26.0336      0.3451    0.80E-14      0.00000000E+00      0.00000000E+00
+force err 4.0000000000000000 .0017420325294457  .0022141242174092
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0185486413892492
+Max force component error before optimisation : .0897660197821888
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.17E-02
+Max force component error after  optimisation :   0.21E-02
+Max abs spring constant   after  optimisation :   0.24E-01
+
+D         5.00     39.4532      0.6640    0.13E-13      0.00000000E+00      0.00000000E+00
+force err 5.0000000000000000 .0016693653309176  .0021341690627202
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0175046218905947
+Max force component error before optimisation : .0845727780392724
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.16E-02
+Max force component error after  optimisation :   0.20E-02
+Max abs spring constant   after  optimisation :   0.23E-01
+
+D         6.00     54.7198      1.1228    0.93E-14      0.00000000E+00      0.00000000E+00
+force err 6.0000000000000000 .0015803349453654  .0020358001606638
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0162841021217483
+Max force component error before optimisation : .0784700933574469
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.15E-02
+Max force component error after  optimisation :   0.19E-02
+Max abs spring constant   after  optimisation :   0.21E-01
+
+D         7.00     71.2295      1.7355    0.79E-14      0.00000000E+00      0.00000000E+00
+force err 7.0000000000000000 .0014761301682198  .0019200243134565
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0149050531528718
+Max force component error before optimisation : .0715258584921656
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.14E-02
+Max force component error after  optimisation :   0.18E-02
+Max abs spring constant   after  optimisation :   0.19E-01
+
+D         8.00     88.3336      2.5098    0.11E-13      0.00000000E+00      0.00000000E+00
+force err 8.0000000000000000 .0013581797730049  .0017880103602836
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0133893053898211
+Max force component error before optimisation : .0638171746217320
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.12E-02
+Max force component error after  optimisation :   0.16E-02
+Max abs spring constant   after  optimisation :   0.17E-01
+
+D         9.00    105.3660      3.4466    0.93E-14      0.00000000E+00      0.00000000E+00
+force err 9.0000000000000000 .0012281803153908  .0016410720922068
+
+Optimising 496 adjustable parameters
+RMS force component error before optimisation : .0117639163892992
+Max force component error before optimisation : .0554294279813888
+Using SVD for least squares fit, eigenvalue threshold = .0000000001000000
+RMS force component error after  optimisation :   0.11E-02
+Max force component error after  optimisation :   0.15E-02
+Max abs spring constant   after  optimisation :   0.14E-01
+
+D        10.00    121.6707      4.5404    0.18E-13      0.00000000E+00      0.00000000E+00
+force err 10.0000000000000000 .0010881663018884  .0014806511726004
+
+
+System::Finalise: 27/10/2008   16:13:47
+System::Finalise: Bye-Bye!
