@@ -144,7 +144,7 @@ contains
        enddo
     enddo
 
-  end subroutine
+  end subroutine delete_metal_connects
 
    ! removes a bond between i and j, if the bond is present
   subroutine delete_bond(my_atoms, i, j)
@@ -197,7 +197,7 @@ contains
     endif
     deallocate(bond_table)
 
-  end subroutine
+  end subroutine delete_bond
 
   subroutine print_usage
 
@@ -212,6 +212,6 @@ contains
 
     call print('')
 
-  end subroutine
+  end subroutine print_usage
 
 end program xyz2pdb
