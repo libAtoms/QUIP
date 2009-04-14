@@ -102,6 +102,8 @@ ifndef EXTRA_LINKOPTS
 	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
 endif
 	echo "HAVE_LOTF=0" >> ${BUILDDIR}/Makefile.inc
+	echo "OPTIM=${DEFAULT_OPTIM}" >> ${BUILDDIR}/Makefile.inc
+	echo "DEBUG=${DEFAULT_DEBUG}" >> ${BUILDDIR}/Makefile.inc
 
 
 clean:
