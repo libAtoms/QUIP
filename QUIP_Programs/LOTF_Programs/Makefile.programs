@@ -1,8 +1,0 @@
-export HAVE_NETCDF=1
-export HAVE_QUIP=1
-export HAVE_LOTF=1
-export HAVE_MISC_LIBS=1
-
-PROGRAMS = lotf lotfpc lotfpc_jrk lotfpc_try mears test_dimer bulktest crack makecrack sio2
-
-TEST_PROGRAMS = lotf lotfpc lotf_metapot lotfpc_metapot
