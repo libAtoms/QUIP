@@ -9,6 +9,8 @@ endif
 
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
+all: ${MODULES}
+
 ${MODULES}: ${BUILDDIR} ${BUILDDIR}/Makefile.inc
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
@@ -61,6 +63,9 @@ ifndef NETCDF_LIBDIR
 	echo "Please enter directory where NetCDF include files are kept:" ; \
 	read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
 	echo "HAVE_NETCDF=1" >> ${BUILDDIR}/Makefile.inc ; \
+	if nm $$NETCDF_LIBDIR/libnetcdf.a | grep -q deflate; then \
+        echo "NetCDF version 4 found."; echo "NETCDF4=1" >> ${BUILDDIR}/Makefile.inc; \
+	else echo "NetCDF older than version 4 found."; echo "NETCDF4=0" >> ${BUILDDIR}/Makefile.inc; fi \
 	else echo "HAVE_NETCDF=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef LARSPOT_LIBDIR
