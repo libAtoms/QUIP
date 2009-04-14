@@ -38,7 +38,7 @@ QUIP_Util: libAtoms ${FOX} QUIP_Core
 QUIP_Programs: libAtoms ${FOX} QUIP_Core QUIP_Utils 
 Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
-QUIP_Programs/%: libAtoms QUIP_Core QUIP_Util 
+QUIP_Programs/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
