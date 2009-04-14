@@ -7,8 +7,8 @@ CC = gcc
 CPLUSPLUS = g++
 LINKER = gfortran
 
-#DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-OPTIM = -O3 
+DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+DEFAULT_OPTIM = -O3
 
 F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -DGETARG_F2003 -DGFORTRAN -Wall
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
