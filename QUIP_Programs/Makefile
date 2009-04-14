@@ -19,6 +19,12 @@ all: ${PROGRAMS}
 ${PROGRAMS}: % :  ${OBJS} %.o
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
+CRACK_OBJS = crackparams.o cracktools.o
+
+crack: % :  ${CRACK_OBJS} %.o
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
+
+
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}
 
