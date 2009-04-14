@@ -12,7 +12,6 @@ implicit none
   type(Potential) pot1, pot2
   type(MetaPotential) metapot
   type(MPI_context) mpi_glob
-  type(inoutput) in
   type(Atoms) at
 
   type(Dictionary) :: cli_params
