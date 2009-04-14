@@ -12,6 +12,7 @@ MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 ${MODULES}: ${BUILDDIR} ${BUILDDIR}/Makefile.inc
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
+	rm ${BUILDDIR}/Makefile
 
 QUIP_Core: libAtoms
 QUIP_Util: libAtoms QUIP_Core
