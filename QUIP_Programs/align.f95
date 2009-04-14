@@ -8,7 +8,6 @@ implicit none
   real(dp) :: CoM(3), MoI(3,3), MoI_evecs(3,3), MoI_evals(3)
   real(dp) :: rot_mat(3,3)
   integer :: i, ii(1)
-  logical :: added_mass
   real(dp), allocatable :: orig_mass(:)
   real(dp), pointer :: mass(:)
   character(len=2048) :: props
