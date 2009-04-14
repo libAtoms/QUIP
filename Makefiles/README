@@ -2,4 +2,7 @@ Tested with new system:
 
 Makefile.linux.gfortran
 Makefile.osx.gfortran
+Makefile.linux.ifort.gcc
+
+NB: do we want a standardized naming scheme?
 
