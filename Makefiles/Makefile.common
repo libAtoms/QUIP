@@ -3,7 +3,7 @@
 FOX_LIBS = -lFoX_sax -lFoX_utils -lFoX_wxml -lFoX_common -lFoX_fsys
 NETCDF_LIBS = -lnetcdf
 LARSPOT_LIBS = -lmdcore
-SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ${BUILDPRE})"'
+SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
 
 DEFINES = ${SVN_VERSION}
 F95FLAGS = ${INCLUDES} ${OPTIM} ${DEBUG} ${DEFINES} 
