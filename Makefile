@@ -12,16 +12,20 @@ MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
 all: ${MODULES}
 
-${FOX}: ${FOX}/objs/lib/libFoX_common.a
-${FOX}/objs/lib/libFoX_common.a: 
-ifneq (${ARCH},)
-	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
-else
+.PHONY: arch
+
+arch: 
+ifeq (${ARCH},)
 	@echo
 	@echo "You need to define the architecture using the ARCH variable"
 	@echo
 	@exit 1
 endif
+
+${FOX}: ${FOX}/objs/lib/libFoX_common.a
+${FOX}/objs/lib/libFoX_common.a: arch
+	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
+
 
 ${MODULES}: ${BUILDDIR} ${BUILDDIR}/Makefile.inc
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
@@ -33,16 +37,14 @@ QUIP_Util: libAtoms ${FOX} QUIP_Core
 QUIP_Programs: libAtoms ${FOX} QUIP_Core QUIP_Utils 
 Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
+QUIP_Programs/%: libAtoms QUIP_Core QUIP_Util 
+	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD}/Makefiles $${targ#QUIP_Programs/}
+	rm ${BUILDDIR}/Makefile
 
-${BUILDDIR}:
-ifneq (${ARCH},)
+
+${BUILDDIR}: arch
 	if [ ! -d build.${ARCH} ] ; then mkdir build.${ARCH} ; fi
-else
-	@echo
-	@echo "You need to define the architecture using the ARCH variable"
-	@echo
-	@exit 1
-endif
 
 ${BUILDDIR}/Makefile.inc:
 	-rm -f ${BUILDDIR}/Makefile.inc
@@ -60,26 +62,26 @@ ifndef FOX_LIBDIR
         echo "Please enter directory where FoX libraries are kept:" ; \
 	echo "   Default: use included version ${FOX}" ; \
         read FOX_LIBDIR && if [[ $$FOX_LIBDIR ]] ; then \
-	echo "FOX_LIBDIR=$$FOX_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	echo "Please enter directory where FoX include files are kept:" ; \
-	read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	echo "HAVE_EXTERNAL_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "FOX_LIBDIR=$$FOX_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
+	  echo "Please enter directory where FoX include files are kept:" ; \
+	  read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_EXTERNAL_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
 	else echo "FOX_LIBDIR=$${PWD}/FoX-4.0.3/objs/lib" >> ${BUILDDIR}/Makefile.inc; \
-	echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs/finclude" >> ${BUILDDIR}/Makefile.inc; \
-	echo "HAVE_EXTERNAL_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
+	  echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs/finclude" >> ${BUILDDIR}/Makefile.inc; \
+	  echo "HAVE_EXTERNAL_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef NETCDF_LIBDIR
 	@echo ; \
         echo "Please enter directory where NetCDF libraries are kept:" ; \
 	echo "   Default: no NetCDF present" ; \
         read NETCDF_LIBDIR && if [[ $$NETCDF_LIBDIR ]] ; then \
-	echo "NETCDF_LIBDIR=$$NETCDF_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	echo "Please enter directory where NetCDF include files are kept:" ; \
-	read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	echo "HAVE_NETCDF=1" >> ${BUILDDIR}/Makefile.inc ; \
-	if nm $$NETCDF_LIBDIR/libnetcdf.a | grep -q deflate; then \
-        echo "NetCDF version 4 found."; echo "NETCDF4=1" >> ${BUILDDIR}/Makefile.inc; \
-	else echo "NetCDF older than version 4 found."; echo "NETCDF4=0" >> ${BUILDDIR}/Makefile.inc; fi \
+	  echo "NETCDF_LIBDIR=$$NETCDF_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
+	  echo "Please enter directory where NetCDF include files are kept:" ; \
+	  read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_NETCDF=1" >> ${BUILDDIR}/Makefile.inc ; \
+	  if nm $$NETCDF_LIBDIR/libnetcdf.a | grep -q deflate; then \
+            echo "NetCDF version 4 found."; echo "NETCDF4=1" >> ${BUILDDIR}/Makefile.inc; \
+	  else echo "NetCDF older than version 4 found."; echo "NETCDF4=0" >> ${BUILDDIR}/Makefile.inc; fi \
 	else echo "HAVE_NETCDF=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef LARSPOT_LIBDIR
@@ -87,20 +89,19 @@ ifndef LARSPOT_LIBDIR
         echo "Please enter directory where the Lars Potential libraries are kept:" ; \
 	echo "   Default: no Lars potential present" ; \
         read LARSPOT_LIBDIR && if [[ $$LARSPOT_LIBDIR ]] ; then \
-	echo "LARSPOT_LIBDIR=$$LARSPOT_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	echo "Please enter directory where Lars Potential include files are kept:" ; \
-	read LARSPOT_INCDIR && echo "LARSPOT_INCDIR=$$LARSPOT_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	echo "HAVE_LARSPOT=1" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "LARSPOT_LIBDIR=$$LARSPOT_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
+	  echo "Please enter directory where Lars Potential include files are kept:" ; \
+	  read LARSPOT_INCDIR && echo "LARSPOT_INCDIR=$$LARSPOT_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_LARSPOT=1" >> ${BUILDDIR}/Makefile.inc ; \
 	else echo "HAVE_LARSPOT=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
-ifndef ARCH_LINKOPTS
+ifndef EXTRA_LINKOPTS
 	@echo
-	@echo "Please enter any other linking options:"
+	@echo "Please enter any other extra inking options:"
 	@echo "   Default: none"
-	@read ARCH_LINKOPTS && echo "ARCH_LINKOPTS=$$ARCH_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
+	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
 endif
 	echo "HAVE_LOTF=0" >> ${BUILDDIR}/Makefile.inc
-	echo "HAVE_CP2K=0" >> ${BUILDDIR}/Makefile.inc
 
 
 clean:
