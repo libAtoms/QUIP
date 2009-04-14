@@ -1,8 +1,3 @@
-export HAVE_QUIP = 1
-export HAVE_HYBRID = 0
-export HAVE_LOTF = 0
-#add if you want to use CP2K driver
-#export HAVE_CP2K = 1
 
 OBJS = vacancy_map_mod.o
 
@@ -15,4 +10,4 @@ PROGRAMS = NRL_TB_to_xml DFTB_to_xml eval md lj_example md_example \
 # things that no longer compile
 # hybrid_example rotate vacancy_map create_hybrid_cluster vacancy_map_hybrid_generate vacancy_map_hybrid_relax vacancy_map_forcemix_relax mark_hybrid 
 
-TEST_PROGRAMS = md tests/tabletest tests/metapot_test md eval
+

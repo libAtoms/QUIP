@@ -21,20 +21,12 @@
 #!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+include Makefile.inc
 include Makefile.common
-ifeq (${MAKEFILE_ARCH_SUFFIX},)
+ifeq (${ARCH},)
   include Makefile.arch
 else
-  include Makefile.${MAKEFILE_ARCH_SUFFIX}
-endif
-
-ifneq (${BUILDDIR},)
-	ifeq (${BUILDPRE},)
-		export BUILDPRE=..
-	endif
-	ifeq (${VPATH},)
-		export VPATH=..
-	endif
+  include Makefile.${ARCH}
 endif
 
 
@@ -64,22 +56,15 @@ LIBATOMS_F95_FILES = \
   nye_tensor \
   Topology \
   CInOutput
-
 ifeq (${HAVE_NETCDF},1)
-  COMMON_F95FLAGS += -DHAVE_NETCDF ${ARCH_NETCDF_INCLUDEDIR} ${ARCH_NETCDF4}
-  CFLAGS += -DHAVE_NETCDF ${ARCH_NETCDF_INCLUDEDIR}  ${ARCH_NETCDF4}
-  ARCH_LIBS += ${ARCH_NETCDF_LIBDIR} ${ARCH_NETCDF_LIBS}
-  LIBATOMS_F95_FILES +=  netcdf \
-	  libAtoms \
-	  libAtoms_misc_utils
-else
-  LIBATOMS_F95_FILES += libAtoms \
-	  libAtoms_misc_utils
-endif		
+  LIBATOMS_F95_FILES += netcdf 
+endif
+LIBATOMS_F95_FILES += \
+  libAtoms \
+  libAtoms_misc_utils
 
 LIBATOMS_F77_FILES= \
    lbfgs	
-
 
 LIBATOMS_C_FILES = \
   cutil\
@@ -95,10 +80,6 @@ LIBATOMS_C_OBJS = ${addsuffix .o, ${LIBATOMS_C_FILES}}
 
 LIBATOMS_OBJS = ${LIBATOMS_F77_OBJS} ${LIBATOMS_F95_OBJS} ${LIBATOMS_C_OBJS}
 
-SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ${BUILDPRE})"'
-ARCH_F95FLAGS += ${SVN_VERSION}
-CFLAGS += ${SVN_VERSION}
-
 all: libatoms.a
 
 libatoms.a: ${LIBATOMS_OBJS}
@@ -111,21 +92,22 @@ allclean: clean docclean
 
 
 ${LIBATOMS_C_OBJS}  : %.o : %.c
-	${CC} ${CFLAGS} ${ARCH_CCFLAGS} -c $< 
+	${CC} ${CFLAGS} -c $< 
 
 md:  libatoms.a md.o
-	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LIBDIRS} ${ARCH_LAPACK_LIBS} ${ARCH_LIBS}
+	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
 nc2xyz: xyz_netcdf.c
-	${CC} ${CFLAGS}  ${ARCH_CCFLAGS} $< -o $@ ${ARCH_LIBS} ${SVN_VERSION} -lm -DMAIN_PROGRAM
+	${CC} ${CFLAGS} $< -o $@ ${LINKOPTS} -lm -DMAIN_PROGRAM
 
-converters: nc2xyz
-	cp $< ${HOME}/bin
-	ln -sf ${HOME}/bin/nc2xyz ${HOME}/bin/nc2nc
-	ln -sf ${HOME}/bin/nc2xyz ${HOME}/bin/ncstat
-	ln -sf ${HOME}/bin/nc2xyz ${HOME}/bin/xyz2nc
-	ln -sf ${HOME}/bin/nc2xyz ${HOME}/bin/xyz2xyz
-	ln -sf ${HOME}/bin/nc2xyz ${HOME}/bin/ncstat
+install-nc: nc2xyz
+	@echo ; echo "Where would you like the NetCDF converters installed to?"
+	read NCBINDIR && cp $< $$NCBINDIR ;\
+	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/nc2nc ;\
+	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/ncstat ;\
+	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyz2nc ;\
+	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyz2xyz ;\
+	ln -sf $$NCBINDIR/nc2xyz $$NCBINDIR/xyzstat
 
 -include depend
 
