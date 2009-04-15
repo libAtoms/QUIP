@@ -31,6 +31,9 @@ CRACK_OBJS = crackparams.o cracktools.o
 crack: % :  ${CRACK_OBJS} %.o
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
 
+makecrack: % :  ${CRACK_OBJS} %.o
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
+
 
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}
