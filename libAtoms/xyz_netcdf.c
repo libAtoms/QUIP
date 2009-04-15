@@ -78,7 +78,11 @@ void pe (char *format, ...)
 #endif
 
 #ifdef HAVE_NETCDF
+#ifdef MAIN_PROGRAM
 #define netcdf_check(s) if ((retval = (s))) pe("NetCDF Error: %s %d %s\n", __FILE__, __LINE__, nc_strerror(retval));
+#else
+#define netcdf_check(s) if ((retval = (s))) { fprintf(stderr,"NetCDF Error: %s %d %s\n", __FILE__, __LINE__, nc_strerror(retval)); return 0; }
+#endif
 #endif
 
 void atoms_init(Atoms *atoms) {
@@ -2958,7 +2962,7 @@ int main (int argc, char **argv)
     netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
 #else
-    pe("No netcdf support compiled in\n");
+      pe("No NetCDF support compiled in.\n");
 #endif
       
     if (nc2nc) {
@@ -2970,8 +2974,7 @@ int main (int argc, char **argv)
       netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #endif
 #else
-      nc_in = 0;
-      pe("No netcdf support compiled in\n");
+      pe("No NetCDF support compiled in.\n");
 #endif
     }
 
@@ -3107,8 +3110,8 @@ int main (int argc, char **argv)
       }
 
     netcdf_check(nc_close(nc_in));
-    }
 #endif
+    }
   }
 
   if (aflag) free(atomlist);
@@ -3134,16 +3137,6 @@ int main (int argc, char **argv)
 #define INPUT  0
 #define OUTPUT 1
 #define INOUT  2 
-
-int cio_query(Atoms *at, int *frame) {
-  if (at->format == XYZ_FORMAT) {
-    if (at->xyz_in == NULL) return 0;
-    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0);
-  } else if (at->format == NETCDF_FORMAT) {
-    if (at->nc_in == 0) return 0;
-    return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
-  } else return 0;
-}
 
 int cio_init(Atoms **at, char *filename, int *action, int *append,
 	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
@@ -3327,14 +3320,25 @@ void cio_free(Atoms *at) {
     if (at->xyz_out != NULL && at->xyz_out != stdout) fclose(at->xyz_out);
   } else if (at->format == NETCDF_FORMAT) {
 #ifdef HAVE_NETCDF
-    if (at->nc_in != -1) netcdf_check(nc_close(at->nc_in));
-    if (at->nc_out != -1 && at->nc_out != at->nc_in) netcdf_check(nc_close(at->nc_out));
+    if (at->nc_in != -1) nc_close(at->nc_in);
+    if (at->nc_out != -1 && at->nc_out != at->nc_in) nc_close(at->nc_out);
 #else
     pe("No NetCDF support compiled in");
+    return;
 #endif
   }
   free(at->filter);
   free(at);
+}
+
+int cio_query(Atoms *at, int *frame) {
+  if (at->format == XYZ_FORMAT) {
+    if (at->xyz_in == NULL) return 0;
+    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0);
+  } else if (at->format == NETCDF_FORMAT) {
+    if (at->nc_in == 0) return 0;
+    return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
+  } else return 0;
 }
 
 int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
