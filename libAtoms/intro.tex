@@ -116,16 +116,11 @@ documentation then you will also need \LaTeX 2\texttt{HTML}.
 \subsection*{Example Program --- Classical Molecular Dynamics}
 
 The best way to get a feel for how \textsc{libAtoms} is used
-is with a simple example. The following code sets up
+is with a simple example. The code in \texttt{libAtoms/md.f95} sets up
 the \textsc{libAtoms} environment, loads a cell from
 an XYZ file, and performs 1,000 steps of classical molecular
 dynamics. For this example random forces are used, but in general
 they would be calculated using a classical potential.
-
-\begin{boxedminipage}{\textwidth}
-\verbinput{md.f95}
-\end{boxedminipage}
-
 
 \subsection*{Controlling Output Verbosity}
 
