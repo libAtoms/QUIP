@@ -13,7 +13,7 @@ PROGRAMS = eval md lj_example md_example \
   calc_n_poles \
   analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
-  local_E_fd wrap align test local_random_search
+  local_E_fd wrap align
 
 
 LIBS =  -L. -lquiputils -lquip -latoms 
