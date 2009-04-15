@@ -1,8 +1,8 @@
 
-ifneq (${ARCH},)
-	export BUILDDIR=build.${ARCH}
-	export ARCH
-	include Makefiles/Makefile.${ARCH}
+ifneq (${QUIP_ARCH},)
+	export BUILDDIR=build.${QUIP_ARCH}
+	export QUIP_ARCH
+	include Makefiles/Makefile.${QUIP_ARCH}
 else
 	BUILDDIR=crap
 endif
@@ -16,9 +16,9 @@ all: ${MODULES}
 .PHONY: arch ${MODULES}
 
 arch: 
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
 	@echo
-	@echo "You need to define the architecture using the ARCH variable"
+	@echo "You need to define the architecture using the QUIP_ARCH variable"
 	@echo
 	@exit 1
 endif
@@ -50,7 +50,7 @@ libAtoms/%: libAtoms
 
 
 ${BUILDDIR}: arch
-	@if [ ! -d build.${ARCH} ] ; then mkdir build.${ARCH} ; fi
+	@if [ ! -d build.${QUIP_ARCH} ] ; then mkdir build.${QUIP_ARCH} ; fi
 
 ${BUILDDIR}/Makefile.inc:
 	-rm -f ${BUILDDIR}/Makefile.inc

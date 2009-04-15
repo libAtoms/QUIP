@@ -1,12 +1,12 @@
 # simple Makefile to run configure and then make
-# using C and Fortran compiler specified in Makefile.arch
+# using C and Fortran compiler specified in Makefile.${QUIP_ARCH}
 
 include Makefile.inc
 include Makefile.common
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
-  include Makefile.${ARCH}
+  include Makefile.${QUIP_ARCH}
 endif
 
 all:

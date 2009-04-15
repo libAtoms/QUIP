@@ -23,10 +23,10 @@
 
 include Makefile.inc
 include Makefile.common
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
-  include Makefile.${ARCH}
+  include Makefile.${QUIP_ARCH}
 endif
 
 
@@ -111,9 +111,9 @@ install-nc: xyz2xyz
 
 -include depend
 
-libatoms.tex: ${LIBATOMS_F95_SOURCES} f90doc intro.tex md.f95
-	@if (! ./checkcode ${LIBATOMS_F95_SOURCES}); then exit 1; fi
-	./f90doc -t 'libAtoms Reference Manual' -a "James Kermode, G\\'abor Cs\\'anyi, Steven Winfield" -l ${LIBATOMS_F95_SOURCES}  > libatoms.tex
+libatoms.tex: ${LIBATOMS_F95_SOURCES} ${TOOLSDIR}/f90doc.py intro.tex md.f95
+	@if (! ${TOOLSDIR}/checkcode $(addprefix ${VPATH}/,${LIBATOMS_F95_SOURCES})); then exit 1; fi
+	${TOOLSDIR}/f90doc.py -t 'libAtoms Reference Manual' -a "James Kermode, G\\'abor Cs\\'anyi, Steven Winfield" -l $(addprefix ${VPATH}/,${LIBATOMS_F95_SOURCES})  > libatoms.tex
 
 libatoms.dvi: libatoms.tex f90doc
 	latex libatoms.tex
