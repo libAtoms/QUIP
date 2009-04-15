@@ -11,12 +11,15 @@ module topology_module
   use structures_module,       only: find_motif
   use system_module,           only: dp, inoutput, initialise, finalise, &
                                      INPUT, OUTPUT, INOUT, &
-                                     system_abort, system_timer, &
+                                     system_timer, &
                                      optional_default, &
                                      print, print_title, &
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      operator(//)
+#ifndef HAVE_QUIPPY
+  use system_module,           only: system_abort
+#endif
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
@@ -25,17 +28,11 @@ module topology_module
 
   implicit none
 
-  private :: &
-             next_motif, &
-             write_psf_section, &
-             create_bond_list, &
-             create_angle_list, &
-             create_dihedral_list, &
-             create_improper_list, &
-             get_property
+  private :: next_motif, write_psf_section, create_bond_list
+  private :: create_angle_list, create_dihedral_list
+  private :: create_improper_list, get_property
 
-  public  :: &
-             write_brookhaven_pdb_file, &
+  public  :: write_brookhaven_pdb_file, &
              write_psf_file, &
              create_CHARMM, &
              NONE_RUN, &
@@ -1181,15 +1178,15 @@ enddo
 
   end subroutine create_improper_list
 
-  function get_property(my_atoms,prop) result(prop_index)
+  function get_property(at,prop) result(prop_index)
 
-    type(Atoms),      intent(in) :: my_atoms
+    type(Atoms),      intent(in) :: at
     character(len=*), intent(in) :: prop
   
     integer,dimension(3) :: pos_indices
     integer              :: prop_index
 
-    if (get_value(my_atoms%properties,trim(prop),pos_indices)) then
+    if (get_value(at%properties,trim(prop),pos_indices)) then
        prop_index = pos_indices(2)
     else
        call system_abort('get_property: No '//trim(prop)//' property assigned to the Atoms object!')
