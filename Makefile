@@ -103,7 +103,7 @@ ifndef LARSPOT_LIBDIR
 endif
 ifndef EXTRA_LINKOPTS
 	@echo
-	@echo "Please enter any other extra inking options:"
+	@echo "Please enter any other extra linking options:"
 	@echo "   Default: none"
 	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
 endif
