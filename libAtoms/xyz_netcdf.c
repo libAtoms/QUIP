@@ -1504,8 +1504,6 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
 #endif
 
 
-#ifndef HAVE_ATOMEYE
-
 /* Find starting positions of xyz frames within a file
  * Uses a disk cache to save recomputing if xyz
  * file hasn't been modified. Returns number of frames.
@@ -1634,9 +1632,6 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
   free(indexname);
   return nframes;
 }
-
-#endif
-
 
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int supress) {
