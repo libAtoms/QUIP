@@ -32,6 +32,7 @@ implicit none
   real(dp) :: absorption_polarization_in(6)
   complex(dp) :: absorption_polarization(3)
   real(dp) :: absorption_freq_range(3), absorption_gamma
+  real(dp), allocatable :: absorption_freqs(:), absorption_v(:)
   real(dp) :: freq
   integer :: freq_i
   real(dp) :: a
@@ -408,14 +409,19 @@ implicit none
     call print("do absorption: polarization " // absorption_polarization)
     call print("do absorption: freq_range " // absorption_freq_range)
     call print("do absorption: gamma " // absorption_gamma)
-    freq_i = 0
-    freq = absorption_freq_range(1) + freq_i * absorption_freq_range(3)
-    do while (freq <= absorption_freq_range(2))
-      a = absorption(metapot%pot%tb, absorption_polarization, freq, absorption_gamma)
-      call print("absorption i " // freq_i // " freq " // freq // " a " // a)
-      freq_i = freq_i + 1
-      freq = absorption_freq_range(1) + freq_i * absorption_freq_range(3)
+
+    allocate(absorption_freqs(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
+    allocate(absorption_v(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
+    do freq_i=1, size(absorption_freqs)
+      absorption_freqs(freq_i) = absorption_freq_range(1) +(freq_i-1)*absorption_freq_range(3)
     end do
+
+    call absorption(metapot%pot%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
+    do freq_i=1, size(absorption_freqs)
+      call print("absorption i " // freq_i // " freq " // absorption_freqs(freq_i) // " a " // absorption_v(freq_i))
+    end do
+    deallocate(absorption_freqs)
+    deallocate(absorption_v)
   endif
 
   if (.not. did_something) call system_abort("Nothing to be calculated")
