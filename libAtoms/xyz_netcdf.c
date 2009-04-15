@@ -1577,7 +1577,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
       if (fseek(in,frames[nframes],SEEK_SET) != 0 ||
 	  !fgets(linebuffer,LINESIZE,in) ||
 	  sscanf(linebuffer, "%d", &natoms) != 1 ||
-	  natoms != atoms[nframes]) {
+	  natoms != atoms[nframes]) {      index = fopen(basename(indexname)
 	// Seek failed, we'll have to rebuild index from start
 	fseek(in,0,SEEK_SET);
 	nframes = 0;
@@ -1616,6 +1616,12 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
     frames[nframes] = ftell(in); // end of last frame in file
     atoms[nframes] = natoms;
     index = fopen(indexname, "w");
+    if (index == NULL) {
+      fprintf(stderr, "Cannot write index file.\n");
+      fclose(in);
+      free(indexname);
+      return nframes;
+    }
     fprintf(index, "%d\n", nframes);
     for (i=0; i<=nframes; i++)
       fprintf(index, "%ld %d\n", frames[i], atoms[i]);
