@@ -9,9 +9,12 @@ static char atomeye_doc[] =
 "This module interfaces to AtomEye.";
 
 static char atomeye_start_doc[] = 
-  "start(filename) -- start AtomEye and load from `filename`.";
+  "start(on_click_handler) -- start AtomEye.";
 
 static PyObject *on_click_atom_pyfunc = NULL;
+static PyObject *on_redraw_pyfunc = NULL;
+
+static int atomeye_initialised = 0;
 
 static void on_click_atom(int atom)
 {
@@ -25,13 +28,31 @@ static void on_click_atom(int atom)
   PyGILState_Release(state);
 }
 
+static void* on_redraw()
+{
+  PyObject *result;
+  PyGILState_STATE state;
+  Atoms *atp;
+
+  state = PyGILState_Ensure();
+
+  result = PyEval_CallObject(on_redraw_pyfunc, NULL); // Call Python
+
+  atp = (Atoms *)PyLong_AsLongLong(result);
+
+  Py_DECREF(result);
+  PyGILState_Release(state);
+
+  return atp;
+}
+
+
 static PyObject*
 atomeye_start(PyObject *self, PyObject *args)
 {
-  char *argv[3];
-  const char *filename;
+  char *argv[2];
 
-  if (!PyArg_ParseTuple(args, "sO", &filename, &on_click_atom_pyfunc))
+  if (!PyArg_ParseTuple(args, "OO", &on_click_atom_pyfunc, &on_redraw_pyfunc))
     return NULL;
 
   if (!PyCallable_Check(on_click_atom_pyfunc)) {
@@ -39,17 +60,24 @@ atomeye_start(PyObject *self, PyObject *args)
     return NULL;
   }
 
+  if (!PyCallable_Check(on_redraw_pyfunc)) {
+    PyErr_SetString(PyExc_TypeError, "Need a callable object!");
+    return NULL;
+  }
+
   Py_INCREF(on_click_atom_pyfunc);
+  Py_INCREF(on_redraw_pyfunc);
+
+  if (PyEval_CallObject(on_redraw_pyfunc, NULL) == NULL)
+    return NULL;
 
   argv[0] = (char *)malloc(20);
   argv[1] = (char *)malloc(20);
-  argv[2] = (char *)malloc(strlen(filename)+1);
   strcpy(argv[0], "A");
   strcpy(argv[1], "-nostdin");
-  strcpy(argv[2], filename);
   
   Py_BEGIN_ALLOW_THREADS;
-  atomeyelib_main(3, argv, &on_click_atom);
+  atomeyelib_main(2, argv, &on_click_atom, &on_redraw, &atomeye_initialised);
   Py_END_ALLOW_THREADS;
 
   free(argv[0]);
@@ -71,6 +99,7 @@ atomeye_close(PyObject *self, PyObject *args)
     return NULL;
   
   atomeyelib_close(iw);
+  atomeye_initialised = 0;
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -88,17 +117,50 @@ atomeye_run_command(PyObject *self, PyObject *args)
 
   if (!PyArg_ParseTuple(args, "is", &iw, &command))
     return NULL;
+
+  if (!atomeye_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "AtomEye is not initialised");
+    return NULL;
+  }
   
   atomeyelib_run_command(iw, command, &outstr);
 
   if (outstr != NULL) {
-    PyErr_SetString(PyExc_RuntimeError, outstr);
-    return NULL;
+    return PyString_FromString(outstr);
   }
 
   Py_INCREF(Py_None);
   return Py_None;  
 }
+
+static char atomeye_help_doc[] =
+  "help(window_id, command) -- send `command` to AtomEye window `window_id`.";
+
+static PyObject*
+atomeye_help(PyObject *self, PyObject *args)
+{
+  char *command;
+  int iw;
+  char *outstr = NULL;
+
+  if (!PyArg_ParseTuple(args, "is", &iw, &command))
+    return NULL;
+
+  if (!atomeye_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "AtomEye is not initialised");
+    return NULL;
+  }
+  
+  atomeyelib_help(iw, command, &outstr);
+
+  if (outstr != NULL) {
+    return PyString_FromString(outstr);
+  }
+
+  Py_INCREF(Py_None);
+  return Py_None;  
+}
+
 
 static char atomeye_redraw_doc[] =
   "redraw(window_id) -- redraw AtomEye window `window_id`.";
@@ -110,6 +172,11 @@ atomeye_redraw(PyObject *self, PyObject *args)
 
   if (!PyArg_ParseTuple(args, "i", &iw))
     return NULL;
+
+  if (!atomeye_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "AtomEye is not initialised");
+    return NULL;
+  }
   
   atomeyelib_redraw(iw);
 
@@ -127,8 +194,13 @@ atomeye_load_libatoms(PyObject *self, PyObject *args)
   Atoms *at_ptr;
   char *title, *outstr = NULL;
 
-  if (!PyArg_ParseTuple(args, "ils", &iw, &at_ptr, &title))
+  if (!PyArg_ParseTuple(args, "iLs", &iw, &at_ptr, &title))
     return NULL;
+
+  if (!atomeye_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "AtomEye is not initialised");
+    return NULL;
+  }
 
   atomeyelib_load_libatoms(iw, at_ptr, title, &outstr);
   if (outstr != NULL) {
@@ -140,30 +212,25 @@ atomeye_load_libatoms(PyObject *self, PyObject *args)
   return Py_None;
 }
 
-static char atomeye_set_output_doc[] =
-  "set_output(on_off) -- enable or disable output to stdout and stderr.";
+static char atomeye_isAlive_doc[] =
+  "isAlive() -- return whether AtomEye has been initialised.";
 
 static PyObject*
-atomeye_set_output(PyObject *self, PyObject *args)
+atomeye_isAlive(PyObject *self, PyObject *args)
 {
-  int on_off;
-  
-  if (!PyArg_ParseTuple(args, "i", &on_off))
-    return NULL;  
+  PyObject *ret;
 
-  atomeyelib_set_output(on_off);
-
-  Py_INCREF(Py_None);
-  return Py_None;  
+  return PyBool_FromLong((long)atomeye_initialised);
 }
 
 static PyMethodDef atomeye_methods[] = {
   {"start", atomeye_start, METH_VARARGS, atomeye_start_doc},
   {"close", atomeye_close, METH_VARARGS, atomeye_close_doc},
   {"run_command", atomeye_run_command, METH_VARARGS, atomeye_run_command_doc},
+  {"help", atomeye_help, METH_VARARGS, atomeye_help_doc},
   {"redraw", atomeye_redraw, METH_VARARGS, atomeye_redraw_doc},
   {"load_libatoms", atomeye_load_libatoms, METH_VARARGS, atomeye_load_libatoms_doc},
-  {"set_output", atomeye_set_output, METH_VARARGS, atomeye_set_output_doc},
+  {"isAlive", atomeye_isAlive, METH_VARARGS, atomeye_isAlive_doc},
   {NULL, NULL}
 };
 
