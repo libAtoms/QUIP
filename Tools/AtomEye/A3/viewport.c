@@ -8,7 +8,7 @@
 
 /* Change the distance between viewpoint and anchor: if  */
 /* delta >=0, d -> d/(1+delta), else d -> d * (1-delta). */
-bool advance (int iw, double delta)
+bool foo_advance (int iw, double delta)
 {
     double tmp[3];
     if (delta >= 0) delta = 1/(1+delta);
