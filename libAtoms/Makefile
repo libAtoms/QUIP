@@ -111,28 +111,3 @@ install-nc: xyz2xyz
 
 -include depend
 
-libatoms.tex: ${LIBATOMS_F95_SOURCES} ${TOOLSDIR}/f90doc.py intro.tex md.f95
-	@if (! ${TOOLSDIR}/checkcode $(addprefix ${VPATH}/,${LIBATOMS_F95_SOURCES})); then exit 1; fi
-	${TOOLSDIR}/f90doc.py -t 'libAtoms Reference Manual' -a "James Kermode, G\\'abor Cs\\'anyi, Steven Winfield" -l $(addprefix ${VPATH}/,${LIBATOMS_F95_SOURCES})  > libatoms.tex
-
-libatoms.dvi: libatoms.tex f90doc
-	latex libatoms.tex
-	latex libatoms.tex
-	makeindex general
-	latex libatoms.tex
-
-libatoms.ps: libatoms.dvi
-	dvips libatoms.dvi -o libatoms.ps
-
-libatoms.pdf: libatoms.dvi
-	dvipdfm libatoms.dvi
-
-htmldoc: libatoms.tex
-	latex2html libatoms.tex
-
-doc: libatoms.ps libatoms.pdf
-
-docclean: 
-	-rm -f libatoms.dvi libatoms.tex libatoms.aux libatoms.toc libatoms.pdf libatoms.ps libatoms.log libatoms.idx libatoms.out general.i* 
-	-rm -rf libatoms
-
