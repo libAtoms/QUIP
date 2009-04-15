@@ -1514,19 +1514,16 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
  * Last offset is end of final frame scanned.
  */
 
+#include <libgen.h>
+
 int xyz_find_frames(char *fname, long *frames, int *atoms) {
   FILE *in, *index;
-  char *indexname;
-  char linebuffer[LINESIZE];
+  char *bname;
+  char indexname[LINESIZE], linebuffer[LINESIZE], buf1[LINESIZE], buf2[LINESIZE];
   int natoms, i, nframes;
   int from_scratch, do_update; 
   struct stat xyz_stat, idx_stat;
 
-  indexname = malloc((strlen(fname)+5)*sizeof(char));
-  if (indexname == NULL) {
-    fprintf(stderr,"Error allocating indexname in xyz_find_frames\n");
-    return 0;
-  }
   strcpy(indexname, fname);
   strcat(indexname, ".idx");
 
@@ -1536,6 +1533,22 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
   }
   
   from_scratch = stat(indexname, &idx_stat) != 0;
+
+  if (from_scratch) {
+    // Try to read from current dir instead
+    strcpy(buf1, indexname);
+    bname = basename(buf1);
+    if (getcwd(buf2, LINESIZE) != NULL) {
+      strcat(buf2, "/");
+      strcat(buf2, bname);
+      if (stat(buf2, &idx_stat) == 0) {
+	fprintf(stderr,"Found index %s\n",buf2);
+	strcpy(indexname,buf2);
+	from_scratch = 0;
+      }
+    }
+  }
+
   do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
   
   if (!from_scratch) {
@@ -1577,7 +1590,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
       if (fseek(in,frames[nframes],SEEK_SET) != 0 ||
 	  !fgets(linebuffer,LINESIZE,in) ||
 	  sscanf(linebuffer, "%d", &natoms) != 1 ||
-	  natoms != atoms[nframes]) {      index = fopen(basename(indexname)
+	  natoms != atoms[nframes]) {
 	// Seek failed, we'll have to rebuild index from start
 	fseek(in,0,SEEK_SET);
 	nframes = 0;
@@ -1617,11 +1630,22 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
     atoms[nframes] = natoms;
     index = fopen(indexname, "w");
     if (index == NULL) {
-      fprintf(stderr, "Cannot write index file.\n");
-      fclose(in);
-      free(indexname);
-      return nframes;
-    }
+      // Try to write in current dir instead
+      strcpy(buf1, indexname);
+      bname = basename(buf1);
+      if (getcwd(buf2, LINESIZE) != NULL) {
+	strcat(buf2, "/");
+	strcat(buf2, bname);
+	index = fopen(buf2, "w");
+	fprintf(stderr, "Writing index to %s\n", buf2);
+      }
+      if (index == NULL) {
+	fprintf(stderr, "Cannot write index file.\n");
+	fclose(in);
+	return nframes;
+      }
+    } else
+      fprintf(stderr, "Writing index to %s\n", indexname);
     fprintf(index, "%d\n", nframes);
     for (i=0; i<=nframes; i++)
       fprintf(index, "%ld %d\n", frames[i], atoms[i]);
@@ -1635,7 +1659,6 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 
   debug("xyz_find_frames %s: found %d complete frames\n", fname, nframes);
 
-  free(indexname);
   return nframes;
 }
 
