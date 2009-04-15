@@ -1,4 +1,4 @@
-pyatomsf
+quippy
 --------
 
 This package is a Python interface to libAtoms (and optionally, also
@@ -25,7 +25,7 @@ Apply the patch as:
 
 $ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
 
-To compile pyatomsf, edit the Makefile to set the LIBATOMS_DIR and
+To compile quippy, edit the Makefile to set the LIBATOMS_DIR and
 QUIP_DIR variables, then do a 'make -I ../Makefiles' followed by 'make
 -I ../Makefiles install'. This should build everything and install the
 Python modules in ~/lib/python. If you're not using gfortran you'll
@@ -36,7 +36,7 @@ compilers.
 To check everything is working try the following:
 
 $ python
->>> import pyatomsf
+>>> import quippy
 
 To enable the QUIP bindings set HAVE_QUIP=1 in the Makefile and
 rebuild and install. If you are using gfortran, the QUIP bindings
@@ -48,11 +48,11 @@ http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735)
 Usage
 -----
 
-The pyatomsf tries to expose all the libAtoms functions
+quippy tries to expose all the libAtoms functions
 in an object-oriented way. Here is some sample code that loads
 an Atoms object from a NetCDF file:
 
->>> from pyatomsf import *
+>>> from quippy import *
 >>> a = Atoms()
 >>> a.read_xyz_filename('clusters.xyz')
 
