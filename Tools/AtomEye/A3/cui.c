@@ -5009,8 +5009,7 @@ int atomeyelib_run_command(int iw, char *line, char **outstr) {
   return result;
 }
 
-/* Copy data from Atoms C structure in memory - in future Config_load_xyz 
-   and Config_load_netcdf could be replaced by calls to this function. */
+/* Copy data from Atoms C structure in memory */
 int atomeyelib_load_libatoms(int iw, Atoms *atoms, char *title, char **outstr) 
 {
     int i, j, k, old_np;
