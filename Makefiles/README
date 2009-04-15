@@ -1,8 +1,8 @@
 Tested with new system:
 
-Makefile.linux.gfortran
-Makefile.osx.gfortran
-Makefile.linux.ifort.gcc
+Makefile.linux_x86_64_gfortran
+Makefile.linux_x86_64_ifort_gcc
+Makefile.darwin_x86_64_gfortran
 
-NB: do we want a standardized naming scheme?
+Naming scheme is ${OS}_${ARCH}_${COMPILER}
 
