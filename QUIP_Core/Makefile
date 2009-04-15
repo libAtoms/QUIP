@@ -76,9 +76,6 @@ allclean: clean
 	rm -f depend 
 
 
-doc:
-	${VPATH}/mkdoc ${TOOLSDIR} $(addprefix ${VPATH}/,${ALL_F95_FILES})
-
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
 
