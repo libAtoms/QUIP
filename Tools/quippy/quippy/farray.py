@@ -91,8 +91,8 @@ class FortranArray(numpy.ndarray):
 	return obj
 
     def __setitem__(self, indx, value):
-        "Overloaded __setitem__ which acpepts one-based indices."
-	#indx = FortranArray.mapindices(indx)
+        "Overloaded __setitem__ which accepts one-based indices."
+	indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
 
 
