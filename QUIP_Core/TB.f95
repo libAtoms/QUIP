@@ -2111,15 +2111,15 @@ end function TB_evals
 
 ! calculation optical absorption with formula from
 ! Snyder and Rotkin, Small v. 4, p. 1284-1286
-function absorption(this, polarization, freq, gamma)
+subroutine absorption(this, polarization, freqs, gamma, a)
   type(TB_type), intent(inout) :: this
   complex(dp), intent(in) :: polarization(3)
-  real(dp), intent(in) :: freq, gamma
-  real(dp) :: absorption
+  real(dp), intent(in) :: freqs(:), gamma
+  real(dp), intent(out) :: a(:)
 
   complex(dp) :: polarization_hat(3)
   type(TBMatrix) :: dipole_evecs(3)
-  integer :: i, f, ik
+  integer :: i, f, ik, i_freq
   real(dp), allocatable :: absorption_contrib(:)
 
   if (this%evecs%N == 0 .or. this%evecs%n_matrices == 0) &
@@ -2139,35 +2139,43 @@ function absorption(this, polarization, freq, gamma)
   polarization_hat = polarization / sqrt(sum(abs(polarization)**2))
 
   allocate(absorption_contrib(this%evecs%n_matrices))
-  absorption_contrib = 0.0_dp
 
-  do ik=1, this%evecs%n_matrices
-    do i=1, this%evecs%N
-      do f=i+1, this%evecs%N
-	if ((this%E_fillings%data_d(i,ik) .fne. 0.0_dp) .and. (this%E_fillings%data_d(f,ik) .fne. 1.0_dp)) then
-	  if (dipole_evecs(1)%is_complex) then
-	    absorption_contrib(ik) = absorption_contrib(ik) + &
-			( (abs(dipole_evecs(1)%data_z(ik)%data(i,f)*polarization_hat(1) + &
-			       dipole_evecs(2)%data_z(ik)%data(i,f)*polarization_hat(2) + &
-			       dipole_evecs(3)%data_z(ik)%data(i,f)*polarization_hat(3))**2)/(freq) ) * &
-			( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
-			  ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freq)**2 + gamma**2) )
-	  else
-	    absorption_contrib(ik) = absorption_contrib(ik) + &
-			( (abs(dipole_evecs(1)%data_d(ik)%data(i,f)*polarization_hat(1) + &
-			       dipole_evecs(2)%data_d(ik)%data(i,f)*polarization_hat(2) + &
-			       dipole_evecs(3)%data_d(ik)%data(i,f)*polarization_hat(3))**2)/(freq) ) * &
-			( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
-			  ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freq)**2 + gamma**2) )
+  do i_freq=1, size(freqs)
+    absorption_contrib = 0.0_dp
+    do ik=1, this%evecs%n_matrices
+      do i=1, this%evecs%N
+	do f=i+1, this%evecs%N
+	  if ((this%E_fillings%data_d(i,ik) .fne. 0.0_dp) .and. (this%E_fillings%data_d(f,ik) .fne. 1.0_dp)) then
+	    if (dipole_evecs(1)%is_complex) then
+	      absorption_contrib(ik) = absorption_contrib(ik) + &
+			  ( (abs(dipole_evecs(1)%data_z(ik)%data(i,f)*polarization_hat(1) + &
+				 dipole_evecs(2)%data_z(ik)%data(i,f)*polarization_hat(2) + &
+				 dipole_evecs(3)%data_z(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
+			  ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
+			    ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
+	    else
+	      absorption_contrib(ik) = absorption_contrib(ik) + &
+			  ( (abs(dipole_evecs(1)%data_d(ik)%data(i,f)*polarization_hat(1) + &
+				 dipole_evecs(2)%data_d(ik)%data(i,f)*polarization_hat(2) + &
+				 dipole_evecs(3)%data_d(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
+			  ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
+			    ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
+	    endif
 	  endif
-	endif
-      end do
-    end do
+	end do ! f
+      end do ! i
+    end do ! ik
+
+    a(i_freq) = ksum_distrib(this%tbsys%kpoints, local_ksum(this%tbsys%kpoints, absorption_contrib))
   end do
-  absorption = ksum_distrib(this%tbsys%kpoints, local_ksum(this%tbsys%kpoints, absorption_contrib))
+
   deallocate(absorption_contrib)
 
-end function absorption
+  call finalise(dipole_evecs(1))
+  call finalise(dipole_evecs(2))
+  call finalise(dipole_evecs(3))
+
+end subroutine absorption
 
 subroutine dipole_matrix(this, dipole_evecs)
   type(TB_type), intent(inout) :: this
@@ -2198,6 +2206,11 @@ subroutine dipole_matrix(this, dipole_evecs)
     call matrix_product_sub(t, dipole_basis(i), this%evecs, a_conjugate=.false., b_conjugate = .false.)
     call matrix_product_sub(dipole_evecs(i), this%evecs, t, a_conjugate=.true., b_conjugate = .false.)
   end do
+
+  do i=1, 3
+    call finalise(dipole_basis(i))
+  end do
+  call finalise(t)
 
 end subroutine dipole_matrix
 
