@@ -13,6 +13,12 @@
 #   include "p3dp.h"
 #endif
 
+#ifdef ATOMEYE_LIB
+#include "xyz_netcdf.h"
+
+static void *(*atomeyelib_on_redraw)();
+#endif
+
 /* from libAtoms: */
 Aapp_Define_Config;
 bool guess_to_be_PBC;
@@ -42,6 +48,14 @@ void paint_scene (int iw)
     AX_Carrier bgcarrier;
     AX_Float HH[3][3],cr,cg,cb,ff,fr,fg,fb;
     AX_3D_Define_PW(L);  /* wireframe */
+
+#ifdef ATOMEYE_LIB
+    char *outstr = NULL;
+    Atoms *at = (*atomeyelib_on_redraw)();
+    printf("atomeyelib_on_redraw returned 0x%lx\n", at);
+    if (at != NULL) atomeyelib_load_libatoms(iw, at, "redraw", &outstr);
+#endif
+
     bgcarrier = AX_Colorcarrier
         ( n[iw].bgcolor[0], n[iw].bgcolor[1], n[iw].bgcolor[2] );
     AX_bg (iw, bgcarrier);
@@ -655,8 +669,8 @@ bool treatevent (int iw)
                     if (AXCTRL(iw)) return(xtal_shift(iw, 2, -3*n[iw].delta));
                     else return(xtal_shift(iw, 2, -n[iw].delta));
                 else
-                    if (AXCTRL(iw)) return(advance(iw, 5*n[iw].delta));
-                    else return(advance(iw, n[iw].delta));
+                    if (AXCTRL(iw)) return(foo_advance(iw, 5*n[iw].delta));
+                    else return(foo_advance(iw, n[iw].delta));
             }
             else if (AXPRESSBTN(iw) == 5)
             {
@@ -664,8 +678,8 @@ bool treatevent (int iw)
                     if (AXCTRL(iw)) return(xtal_shift(iw, 2, 3*n[iw].delta));
                     else return(xtal_shift(iw, 2, n[iw].delta));
                 else
-                    if (AXCTRL(iw)) return(advance(iw, -5*n[iw].delta));
-                    else return(advance(iw, -n[iw].delta));
+                    if (AXCTRL(iw)) return(foo_advance(iw, -5*n[iw].delta));
+                    else return(foo_advance(iw, -n[iw].delta));
             }
             else if ( (AXPRESSBTN(iw) == 2) || (AXPRESSBTN(iw) == 3) ||
                       (AXBTNTIME(iw) - n[iw].last_button_press_time <
@@ -913,10 +927,12 @@ void select_fbasename (char *raw)
     return;
 } /* end select_fbasename() */
 
+
 #ifndef ATOMEYE_LIB
 int main (int argc, char *argv[])
 #else
-  int atomeyelib_main(int argc, char *argv[], void (*callback)(int atom))
+  int atomeyelib_main(int argc, char *argv[], void (*callback)(int atom), 
+		      void *(*redrawfunc)(), int *done_init)
 #endif
 {
     register int i;
@@ -932,6 +948,7 @@ int main (int argc, char *argv[])
     memcpy(Dmitri, MENDELEYEV, (MENDELEYEV_MAX+1)*sizeof(struct Mendeleyev));
 #ifdef USE_CUI
 #ifdef ATOMEYE_LIB
+    atomeyelib_on_redraw = redrawfunc;
     if (cui_init(&argc, &argv, callback))
 #else
     if (cui_init(&argc, &argv))
@@ -1085,6 +1102,9 @@ int main (int argc, char *argv[])
 #ifdef USE_P3D
     if (p3dp_enabled && setjmp(quit_env)) p3dp_finalize();
     else
+#endif
+#ifdef ATOMEYE_LIB
+      *done_init = 1;
 #endif
       thread_start(&god);
     return(0);
