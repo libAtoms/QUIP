@@ -11,9 +11,9 @@ ALLSUBDIRS = ${SUBDIRS} A3
 subdirs:
 	for dir in ${SUBDIRS}; do \
 	  cp $$dir/*.h include; \
-	  $(MAKE) -C $$dir; \
+	  $(MAKE) -C $$dir || exit 1; \
 	done
-	$(MAKE) -C A3 i
+	$(MAKE) -C A3 i || exit 1
 
 cleansubdirs:
 	for dir in ${ALLSUBDIRS}; do \
@@ -24,8 +24,8 @@ all: subdirs
 
 lib:
 	for dir in ${SUBDIRS}; do \
-	  $(MAKE) -C $$dir ATOMEYE_LIB=-DATOMEYE_LIB; \
+	  $(MAKE) -C $$dir ATOMEYE_LIB=-DATOMEYE_LIB; || exit 1\
 	done
-	$(MAKE) -C A3 ATOMEYE_LIB=-DATOMEYE_LIB libAtomEye.a
+	$(MAKE) -C A3 ATOMEYE_LIB=-DATOMEYE_LIB libAtomEye.a || exit 1
 
 clean: cleansubdirs
