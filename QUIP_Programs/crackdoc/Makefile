@@ -1,4 +1,4 @@
-F90DOC= ../../libAtoms/f90doc.py
+F90DOC= ../../Tools/f90doc.py
 
 .PHONY: clean 
 
