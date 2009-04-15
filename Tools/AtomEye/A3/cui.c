@@ -4154,16 +4154,16 @@ bool gui_treatevent(int iw)
                     if (AXCTRL(iw)) return(xtal_shift(iw, 2, -3*n[iw].delta));
                     else return(xtal_shift(iw, 2, -n[iw].delta));
                 else
-                    if (AXCTRL(iw)) return(advance(iw, 5*n[iw].delta));
-                    else return(advance(iw, n[iw].delta));
+                    if (AXCTRL(iw)) return(foo_advance(iw, 5*n[iw].delta));
+                    else return(foo_advance(iw, n[iw].delta));
             }
             else if (AXPRESSBTN(iw) == 5) {
                 if (AXSHFT(iw) && n[iw].xtal_mode)
                     if (AXCTRL(iw)) return(xtal_shift(iw, 2, 3*n[iw].delta));
                     else return(xtal_shift(iw, 2, n[iw].delta));
                 else
-                    if (AXCTRL(iw)) return(advance(iw, -5*n[iw].delta));
-                    else return(advance(iw, -n[iw].delta));
+                    if (AXCTRL(iw)) return(foo_advance(iw, -5*n[iw].delta));
+                    else return(foo_advance(iw, -n[iw].delta));
             }
             else if ( (AXPRESSBTN(iw) == 2) || (AXPRESSBTN(iw) == 3) ||
                       (AXBTNTIME(iw) - n[iw].last_button_press_time <
@@ -5017,16 +5017,20 @@ int atomeyelib_load_libatoms(int iw, Atoms *atoms, char *title, char **outstr)
     V3 hook_s, tmp, dx;
     char *old_symbol=NULL;
     bool incompatible_config;
-
+    static int firsttime = 1;
+    
     *outstr = NULL;
 
-    if (n[iw].anchor >= 0) {
+    if (!firsttime) {
+      firsttime = 0;
+      if (n[iw].anchor >= 0) {
         /* the new configuration may not even have the atom */
         V3EQV (B->BALL[n[iw].anchor].x, n[iw].hook);
         n[iw].anchor = -1;
+      }
+      /* hook_s[] is what is kept invariant */
+      V3mM3 (n[iw].hook, HI, hook_s);
     }
-    /* hook_s[] is what is kept invariant */
-    V3mM3 (n[iw].hook, HI, hook_s);
 
     old_np = np;
     CLONE(symbol, SYMBOL_SIZE*np, char, old_symbol);
@@ -5117,26 +5121,52 @@ error:
     return FALSE;  
 }
 
-int atomeyelib_set_output(int on_off)
-{
-  static int stdout_fd = -1;
-  static fpos_t stdout_pos; 
 
-  if (on_off) {
-    if (stdout_fd != -1) {
-      fflush(stdout);
-      dup2(stdout_fd, fileno(stdout));
-      close(stdout_fd);
-      clearerr(stdout);
-      fsetpos(stdout, &stdout_pos); 
+bool atomeyelib_help(int iw, char *instr, char **outstr)
+{
+    if (!instr || !*instr)
+        *outstr = cui_show_syntax;
+    else {
+        struct aec *aecp;
+        char name[CUI_LINEMAX] = "", *s;
+        strncpy(buf, instr, sizeof(buf));
+        s = cui_stripspace(buf);
+        sscanf(s, " %[^ ]", name);
+        if ((aecp = aecp_byname(name))) {
+            if (aecp->syntax)
+                sprintf(buf, "%s%s %s", cui_show_syntax, name, aecp->syntax);
+            else
+                sprintf(buf, "%s%s",    cui_show_syntax, name);
+        }
+        else {
+            sprintf(buf, "%sunknown command \"%s\"", cui_show_syntax, name);
+        }
+        *outstr = buf;
     }
-  } else {
-    fflush(stdout);
-    fgetpos(stdout, &stdout_pos);
-    stdout_fd = dup(fileno(stdout));
-    freopen("/dev/null", "w", stdout);
-  }
-  return TRUE;
+    return FALSE;
 }
+
+
+/* int atomeyelib_set_output(int on_off) */
+/* { */
+/*   static int stdout_fd = -1; */
+/*   static fpos_t stdout_pos;  */
+
+/*   if (on_off) { */
+/*     if (stdout_fd != -1) { */
+/*       fflush(stdout); */
+/*       dup2(stdout_fd, fileno(stdout)); */
+/*       close(stdout_fd); */
+/*       clearerr(stdout); */
+/*       fsetpos(stdout, &stdout_pos);  */
+/*     } */
+/*   } else { */
+/*     fflush(stdout); */
+/*     fgetpos(stdout, &stdout_pos); */
+/*     stdout_fd = dup(fileno(stdout)); */
+/*     freopen("/dev/null", "w", stdout); */
+/*   } */
+/*   return TRUE; */
+/* } */
 
 #endif
