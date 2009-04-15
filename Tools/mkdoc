@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# Remove old documentation
+rm -rf doctmp
+mkdir doctmp
+cd doctmp
+
+# Make a copy of all input source files with function and subroutine
+# names at the end of each subprogram, so that f90doc doesn't get
+# confused
+
+for base in libAtoms QUIP_Core; do
+    rm *.f95
+    cp ../$base/intro.tex ${base}_intro.tex
+    for f in ../$base/*.f95; do
+	if ! echo $f | grep -q header; then 
+	    echo $f
+	    perl -e '
+while(<>) {
+    if (/^(double precision\s+)?\s*(recursive\s+)?(subroutine|function)\s+(\w*)/) {
+	$last_subrt = $4;
+	print $_;
+    }
+    elsif (/^\s*end\s+(subroutine|function)\s*$/) {
+	chomp($_);
+	print $_." ".$last_subrt."\n";
+    }
+    else { print $_; }
+}' ../$f > `basename $f`
+	fi
+    done
+
+    ../Tools/f90doc.py -n -l -p *.f95 > $base.tex
+done
+rm *.f95
+
+cat > quip-refence-manual.tex <<EOF
+\documentclass[11pt,twoside]{book}
+\textheight 9.5in
+\topmargin -0.5in
+\textwidth 6in
+\oddsidemargin 0in
+\evensidemargin 0in
+%\parindent=0.3in
+\pagestyle{headings}
+
+%Set depth of contents page
+\setcounter{tocdepth}{2}
+
+\usepackage {makeidx, fancyhdr, boxedminipage, multind, colortbl, sverb}
+\usepackage[dvips]{graphicx}
+\pagestyle{fancy}
+
+%\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}}
+\renewcommand{\sectionmark}[1]{\markboth{}{#1}}
+\fancyhf{}
+\fancyhead[RE,LO]{\bfseries{\thepage}}
+\fancyhead[RO,LE]{\bfseries{\rightmark}}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\makeindex{general}
+
+\begin{document}
+
+
+\title{QUIP Reference Manual}
+\date{\today}
+\author{James Kermode, Noam Bernstein, Siliva Cereda and G\'abor Cs\'anyi}
+\maketitle
+
+\thispagestyle{empty}
+
+\tableofcontents
+
+% Defines paragraphs
+\setlength{\parskip}{5mm}
+\setlength{\parindent}{0em}
+EOF
+
+
+for base in libAtoms QUIP_Core; do
+    escbase=$(echo $base | sed -e 's/_/\\_/')
+    cat >> quip-refence-manual.tex <<EOF
+\chapter{$escbase}
+\input{${base}_intro.tex}
+\input{$base.tex}
+EOF
+done
+
+cat >> quip-refence-manual.tex <<EOF
+\printindex{general}{Index}
+
+\end{document}
+EOF
+
+# LaTeX it
+latex quip-refence-manual.tex
+latex quip-refence-manual.tex
+makeindex general
+latex quip-refence-manual.tex
+
+# Make postscript
+dvips quip-refence-manual.dvi -o quip-refence-manual.ps
+
+# And PDF
+dvipdfm quip-refence-manual.dvi
+
+# Uncomment this line if you have latex2html and want HTML docs
+#latex2html $base.tex
+
+# Copy output files out of 'doctmp'
+cp quip-refence-manual.pdf ..
+
+# Tidy up
+cd .. && rm -rf doctmp

@@ -13,7 +13,7 @@ MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 
 all: ${MODULES}
 
-.PHONY: arch ${MODULES}
+.PHONY: arch ${MODULES} doc
 
 arch: 
 ifeq (${QUIP_ARCH},)
@@ -117,4 +117,10 @@ clean:
 	ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	${MAKE} -C ${BUILDDIR} -I${PWD}/Makefiles clean ; \
 	done
+
+
+doc: quip-reference-manual.pdf
+
+quip-reference-manual.pdf:
+	./Tools/mkdoc
 
