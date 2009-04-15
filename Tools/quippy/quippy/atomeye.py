@@ -1,72 +1,80 @@
-import threading, _atomeye
+import threading, _atomeye, time, sys
 
 __window_id = None
 __thread = None
 __atoms = None
 __title = None
-output = True
+from libatoms import CInOutput
+__cio = CInOutput()
 
 def on_atom_click(idx):
     print "atom %d clicked" % idx
     if __atoms is not None and __atoms.has_property('selection'):
-        __atoms.selection[idx] = True
+        print 'setting __atoms.selection[%d] to 1' % idx
+        __atoms.selection[idx] = 1
+
+def on_redraw():
+    if __atoms is None: return 0
+    if not hasattr(__atoms,'__dirty') or __atoms.__dirty:
+        r =__cio.update(__atoms)
+        __atoms.__dirty = False
+        return r
+    else:
+        return 0
 
 def select():
     if __atoms is None: return
     __atoms.add_property('selection', False)
     __atoms.show('selection')
 
-def start(filename=None, enable_output=False):
-    global __thread, __window_id, output
+def start():
+    global __thread, __window_id
     if __window_id is not None: return
-    if filename is None: filename = ""
-    output = enable_output
-    try:
-        if not output: _atomeye.set_output(False)
-        __thread = threading.Thread(target=_atomeye.start, args=(filename,on_atom_click))
-    finally:
-        if not output: _atomeye.set_output(True)
+    __thread = threading.Thread(target=_atomeye.start, args=(on_atom_click,on_redraw))
     __thread.setDaemon(True)
     __thread.start()
     __window_id = 0  # for now, we always have only one window
 
+    # wait for AtomEye to be initialised succesfully
+    while not _atomeye.isAlive():
+        time.sleep(0.1)
+
+    for funcname in dir(sys.modules[__name__]):
+        h = help(funcname)
+        if not 'unknown command' in h:
+            getattr(sys.modules[__name__],funcname).__doc__ = h
+    
+def isAlive():
+    return _atomeye.isAlive()
+
 def redraw():
     if __window_id is None: 
         raise RuntimeError('AtomEye not running')
-    if __atoms is not None:
-        from libatoms import CInOutput
-        cio = CInOutput()
-        try:
-            if not output: _atomeye.set_output(False)
-            p1 = cio.update(__atoms)
-            __atoms._frozen = True
-            p2 = cio.update(__atoms)
-            assert(p1 == p2)
-            _atomeye.load_libatoms(__window_id, p2, __title)
-        finally:
-            if not output: _atomeye.set_output(True)
-            __atoms._frozen = False
+    if __atoms is None:
+        raise RuntimeError('No Atoms object assigned to AtomEye viewer')
+    __atoms.__dirty = True
     _atomeye.redraw(__window_id)
 
-def run_command(command):
+def run_command(command, expect_output=False):
     if __window_id is None: 
         raise RuntimeError('AtomEye not running')
-    try:
-        if not output: _atomeye.set_output(False);
-        _atomeye.run_command(__window_id, command)
-    finally:
-        if not output: _atomeye.set_output(True);
+    res = _atomeye.run_command(__window_id, command)
+    if not expect_output:
+        if res is not None:
+            raise RuntimeError(res)
+    else:
+        return res
+    
 
 def help(command):
-    try:
-        run_command("syntax %s" % command)
-    except RuntimeError, message:
-        print message
+    return _atomeye.help(__window_id, command)
 
 def close():
+    global __window_id
     if __window_id is None: 
         raise RuntimeError('AtomEye not running')
     _atomeye.close(__window_id)
+    __window_id = None
 
 def set_atoms(atoms, title=None):
     global __atoms, __title
@@ -79,7 +87,9 @@ def set_atoms(atoms, title=None):
     redraw()
 
 def set(key, value):
-    _atomeye.run_command(__window_id, "set %s %s" % (str(key), str(value)))
+    res = _atomeye.run_command(__window_id, "set %s %s" % (str(key), str(value)))
+    if res is not None:
+        raise ValueError(res)
 
 def save(filename):
     run_command("save %s" % str(filename))
@@ -241,3 +251,5 @@ def toggle_xtal_mode():
 def change_shear_strain_subtract_mean():
     run_command("change_shear_strain_subtract_mean")
 
+def zoom_to_fit():
+    pass
