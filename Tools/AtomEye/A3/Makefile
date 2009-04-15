@@ -40,7 +40,7 @@ A.o:	A.c Icon/icon.c ${MY_LIB_DIR}/libAX.a ${MY_LIB_DIR}/libAtoms.a ${MY_LIB_DIR
 
 $(PROG):$(OBJS) Makefile
 	${LD} ${CFLAGS} ${OBJS} -o $@${EXESUFFIX} ${LDFLAGS}
-	-@if [ "${CCFLAGS}" != "-g" ] ; then strip $@${EXESUFFIX}; fi; 
+	#@if [ "${CCFLAGS}" != "-g" ] ; then strip $@${EXESUFFIX}; fi; 
 
 i:	install
 install:$(PROG)
