@@ -1,9 +1,9 @@
 include Makefile.inc
 include Makefile.common
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
-  include Makefile.${ARCH}
+  include Makefile.${QUIP_ARCH}
 endif
 
 BASE_F95_FILES = MPI_context ScaLAPACK Matrix RS_SparseMatrix QUIP_Common
@@ -77,10 +77,10 @@ allclean: clean
 
 
 doc:
-	./mkdoc ${ALL_F95_FILES}
+	${VPATH}/mkdoc ${TOOLSDIR} $(addprefix ${VPATH}/,${ALL_F95_FILES})
 
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
-	./mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
+	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
 
 # depend:
 # 	${MAKE} -f Makefile.depend

@@ -1,9 +1,9 @@
 include Makefile.inc
 include Makefile.common
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
-  include Makefile.${ARCH}
+  include Makefile.${QUIP_ARCH}
 endif
 
 
