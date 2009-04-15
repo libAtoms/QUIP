@@ -2045,12 +2045,13 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 
     k = 0;
     p = linebuffer;
-    while ((p1 = strsep(&p, " \t")) != NULL) {
+    while ((p1 = strsep(&p, " \t\n")) != NULL) {
       if (*p1 == '\0') continue;
       strcpy(fields[k++], p1);
     }
     if (k != entry_count) {
       fprintf(stderr, "incomplete row, atom %d - got %d/%d entries\n", n, k, entry_count);
+      for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %d\n", i, fields[i], strlen(fields[i]));
       return 0;
     }
 
