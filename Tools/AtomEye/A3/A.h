@@ -147,7 +147,7 @@ bool config_advance_last (int iw);
 bool load_atom_color_from_file (int iw);
 
 /* viewport.c */
-bool advance (int iw, double delta);
+bool foo_advance (int iw, double delta);
 bool pointer_advance (int iw, int to_x, int to_y);
 bool translate (int iw, int i, double d);
 bool pointer_translate (int iw, int to_x, int to_y);
