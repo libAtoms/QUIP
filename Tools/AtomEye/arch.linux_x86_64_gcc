@@ -18,10 +18,13 @@ NM = nm --print-file-name --extern-only --defined-only --no-sort --portability
 # Compiler flags
 #
 
+SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n .)"'
+
 CCFLAGS = \
    -g \
    -I/usr/local/include -m64 -fPIC \
-   -DNETCDF4 \
+   -DHAVE_NETCDF -DNETCDF4 \
+   ${SVN_VERSION} \
    -Wall -Wshadow
 
 #  CCFLAGS = -O2 -axKWNBP #
