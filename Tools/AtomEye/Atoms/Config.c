@@ -13,7 +13,7 @@
 #include <netcdf.h>
 #include <sys/stat.h>
 
-#define netcdf_check(s) if (retval = (s)) pe("NetCDF Error: %s %d %s\n", __FILE__, __LINE__, nc_strerror(retval));
+#define netcdf_check(s) if ((retval = (s))) pe("NetCDF Error: %s %d %s\n", __FILE__, __LINE__, nc_strerror(retval));
 
 #define N_A 6.0221479e23
 #define ELEM_CHARGE 1.60217653e-19
@@ -3399,7 +3399,6 @@ void Config_load_xyz (char *fname, FILE *info, Alib_Declare_Config)
     if (strcmp(fields[3*i+1], "L") == 0) pe("Config_load_xyz: logical properties not supported\n");
 
     if (sscanf(fields[3*i+2], "%d", &ncols) != 1) pe("Config_load_xyz: Bad column count %s", fields[3*i+2]);
-
     if (strcmp(fields[3*i], "mass") == 0 && strcmp(fields[3*i+1],"R") == 0 && ncols == 1)
       mass_aux_index = entry_count;
 
@@ -3629,22 +3628,29 @@ int Config_Load (char *fname, FILE *info, Alib_Declare_Config)
     Fprintf(info, "should be Protein Data Bank format.\n\n");
     Config_load_from_pdb(fname, info, Config_Alib_to_Alib);
     return(CONFIG_PDB_LOADED);
-  NETCDF:
-    Fprintf(info, "should be NetCDF trajectory.\n\n");
-    Config_load_netcdf(fname, info, Config_Alib_to_Alib);
-    return(CONFIG_CFG_LOADED); // We want folding into primitive cell, not bounding box
+/*  NETCDF: */
+/*     Fprintf(info, "should be NetCDF trajectory.\n\n"); */
+/*     Config_load_netcdf(fname, info, Config_Alib_to_Alib); */
+/*     return(CONFIG_CFG_LOADED); // We want folding into primitive cell, not bounding box */
+/*  XYZ: */
+/*     Fprintf(info, "should be XYZ format\n\n"); */
+/*     Config_load_xyz(fname, info, Config_Alib_to_Alib); */
+/*     return(CONFIG_CFG_LOADED); // We want folding into primitive cell, not bounding box */
+ NETCDF:
  XYZ:
-    Fprintf(info, "should be XYZ format\n\n");
-    Config_load_xyz(fname, info, Config_Alib_to_Alib);
+    Fprintf(info, "calling Config_load_libatoms_filename\n\n");
+    Config_load_libatoms_filename(fname, info, Config_Alib_to_Alib);
     return(CONFIG_CFG_LOADED); // We want folding into primitive cell, not bounding box
+    
     
 } /* end Config_Load() */
 
+Atoms *config_libatoms;
 
 /* Load atomistic configuration from libAtoms-compatible Atoms C structure */
 void Config_load_libatoms (Atoms *atoms, FILE *info, Alib_Declare_Config)
 {
-  int i,n, entry_count,j,k,ncols, species_idx, pos_idx;
+  int i,n, entry_count,j,k, species_idx, pos_idx;
   M3 g;
   double x[3], sp[3];
   int naux, mass_aux_index = -1;
@@ -3758,6 +3764,132 @@ void Config_load_libatoms (Atoms *atoms, FILE *info, Alib_Declare_Config)
 
   return;
 } /* end Config_load_libatoms() */
+
+void Config_load_libatoms_filename(char *fname, FILE *info, Alib_Declare_Config)
+{
+  char *p, *q, *framestr, *nfname, buf1[CFG_LINESIZE], buf2[CFG_LINESIZE], 
+    buf3[CFG_LINESIZE], linebuffer[CFG_LINESIZE];
+  int netcdf, xyz, gotfilter;
+  int n_frame, i;
+  static int frame;
+  Atoms at;
+  int *atomlist, natomlist;  
+  int offset, nc_in;
+  FILE *fxyz, *atomfile;
+  int retval, inc;
+
+  atoms_init(&at);
+
+  xyz = 0;
+  netcdf = 0;
+  offset = 0;
+    
+  p = strrchr(fname, '/');
+  if (p == NULL) p = fname;
+  q = strchr(p, '.');
+  if (q != NULL) {
+    if (strstr(q, "nc") || strstr(q, "NC"))
+      netcdf = 1;
+    if (strstr(q, "xyz") || strstr(q, "XYZ"))
+      xyz = 1;
+  }
+  if (!xyz && !netcdf) pe("Don't know how to read from file %s", fname);
+
+  strcpy(buf1, fname);
+  framestr = buf1;
+  nfname = strsep(&framestr, ":");
+  if (framestr == NULL) {
+    strcpy(buf2, "first");
+    framestr = buf2;
+  }
+
+  atomlist = NULL;
+  natomlist = 0;
+
+  strcpy(buf3,nfname);
+  strcat(buf3,".filter");
+  gotfilter = ((atomfile = fopen(buf3,"r")) != NULL);
+
+  if (gotfilter) {
+    natomlist = 0;  // Count lines in atomlist file
+    while (fgets(linebuffer,LINESIZE,atomfile)) natomlist++;
+      
+    atomlist = malloc(natomlist*sizeof(int));
+    if (atomlist == NULL) pe("Error allocating atomlist");
+    fseek(atomfile, 0, SEEK_SET);
+    for (i=0; i<natomlist; i++) {
+      if (!fgets(linebuffer,LINESIZE,atomfile)) pe("Premature end of atom file");
+      if (sscanf(linebuffer, "%d", &atomlist[i]) != 1) pe("Error reading line %d of atom list: %s", i+1, linebuffer);
+      atomlist[i] -= offset;
+    }
+    fclose(atomfile);
+  }
+
+  if (xyz) {
+    n_frame = xyz_find_frames(nfname, at.frames, at.atoms);
+    if (n_frame == 0) pe("Error building frame index");
+    fprintf(stderr, "got xyz file with %d frames\n", n_frame);
+    at.got_index = 1;
+  }
+  else {
+    fprintf(info, "Opening netcdf file %s\n", nfname);
+#ifdef NETCDF4
+    netcdf_check(nc_open(nfname, NC_NOWRITE, &nc_in));
+#else
+    netcdf_check(nc_open(nfname, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
+#endif
+    n_frame = read_netcdf(nc_in, &at, 0, atomlist, natomlist, 1, 0, 1, 1, 0, 0.0);
+    fprintf(stderr, "got netcdf file with %d frames\n", n_frame);
+    if (n_frame == 0) pe("Error reading netcdf");
+    at.got_index = 1;
+  }
+
+  if (sscanf(framestr, "%d", &frame) == 1) {
+    // Check frame is in range
+    if ((frame < 0) || (frame >= n_frame)) {
+      pe("Config_load_libatoms_filename: frame should be in range 0 <= frame <= %d\n", n_frame-1);
+    }
+  }
+  else if (strstr(framestr, "first")) {
+    frame = 0;
+  }
+  else if (strstr(framestr, "last")) {
+    frame = n_frame-1;
+  }
+  else if (strstr(framestr, "forward")) {
+    if (sscanf(framestr, "forward:%d", &inc) != 1) inc = 1;
+    if ((frame += inc) >= n_frame) frame = 0;
+  } else if (strstr(framestr, "backward")) {
+    if (sscanf(framestr, "backward:%d", &inc) != 1) inc = 1;
+    if ((frame -= inc) <= -1) frame = n_frame-1;
+  }
+  else if (strstr(framestr, "reload")) {
+    fprintf(info, "Config_load_libatoms_filename: reloaded file, remaining at frame %d/%d\n", frame, n_frame);
+  }
+  else {
+    pe("Config_load_libatoms_filename: unknown framestr %s\n", framestr);
+  }
+
+  if (xyz) {
+    if ((fxyz = fopen(nfname, "r")) == NULL) pe("Cannot open xyz file %s.\n", nfname);
+    if (!read_xyz(fxyz, &at, atomlist, natomlist, frame, 0, 0, 1, 0)) 
+      pe("Error reading frame %d from xyz file %s.\n", frame, nfname);
+    fclose(fxyz);
+  }
+  else {
+    if (!read_netcdf(nc_in, &at, frame, atomlist, natomlist, 0, 0, 1, 1, 0, 0.0))
+      pe("Error reading frame %d from netcdf file %s.\n", frame, nfname);
+    nc_close(nc_in);
+  }
+
+  Config_load_libatoms(&at, info, Config_Alib_to_Alib);
+  atoms_free(&at);
+
+  strcpy(fname, nfname);
+  sprintf(buf2, ":%%0%dd", (int)ceil(log10(n_frame)));
+  sprintf(buf1, buf2, frame);
+  strcat(fname, buf1);
+}
 
 
 #ifdef _CONFIG_TEST
