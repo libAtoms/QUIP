@@ -336,7 +336,7 @@ class C_module:
         for a in self.subts:
             a.display()
 
-    def f2py(self, type_map, f2py_docs, out=None):
+    def f2py(self, type_map, f2py_docs, out=None, kindlines=[]):
 
         def println(*args):
             out.write('%s%s\n' % ((' '*indent),' '.join(args)))
@@ -417,8 +417,6 @@ class C_module:
 
         debug('%s: %d subs' % (self.name, len(subts+functs)))
 
-        #if len(subts+functs) == 0: return # nothing in this module
-
         indent = 0
         println('module',shortname)
         indent += 3
@@ -475,8 +473,12 @@ class C_module:
             indent -= 3
         println()
 
-        # Copy parameters from module
-        println('integer,  parameter :: dp = 8')
+        # Kind lines
+        for line in kindlines:
+            println(line)
+        # Must have at least one item in module or f2py gives segfaults
+        # Let's put the module name in, could be handy
+        println('character*(%d), parameter :: module_name = "%s"' % (len(shortname), shortname))
 
         println()
         println('contains')
@@ -2806,7 +2808,7 @@ def read_files(args):
 
 
 
-def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_short_doc, intro, header=True):
+def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_short_doc, intro, header):
     # Print start
     if os.path.exists('COPYRIGHT'):
         for line in open('COPYRIGHT').readlines():
