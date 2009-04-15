@@ -60,8 +60,8 @@ module libAtoms_module
   use Topology_module
   use cinoutput_module
 
-#ifdef HAVE_NETCDF
+#ifdef HAVE_NETCDF_F
   use netcdf_module
-#endif HAVE_NETCDF
+#endif HAVE_NETCDF_F
 
 end module libAtoms_module
