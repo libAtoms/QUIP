@@ -24,7 +24,7 @@ all: subdirs
 
 lib:
 	for dir in ${SUBDIRS}; do \
-	  $(MAKE) -C $$dir ATOMEYE_LIB=-DATOMEYE_LIB; || exit 1\
+	  $(MAKE) -C $$dir ATOMEYE_LIB=-DATOMEYE_LIB || exit 1; \
 	done
 	$(MAKE) -C A3 ATOMEYE_LIB=-DATOMEYE_LIB libAtomEye.a || exit 1
 
