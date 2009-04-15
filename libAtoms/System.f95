@@ -2094,14 +2094,8 @@ contains
     character((len(string)+2*size(log)-1)) :: string_cat_logical_array
     character(len=32) format
 
-    if (size(log)>1) then
-       format = '(a,'//(size(log)-1)//'(l1,1x),l1)'
-       write(string_cat_logical_array,format) string, log
-    elseif (size(log) .eq. 1) then
-       write(string_cat_logical_array,'(a,l1)') string, log
-    else
-       write(string_cat_logical_array,'(a)') string
-    end if
+    format = '(a,'//size(log)//'(l1,1x),l1)'
+    write(string_cat_logical_array,format) string, log
   end function string_cat_logical_array
 
   elemental function int_format_length(i) result(len)
@@ -2136,11 +2130,9 @@ contains
 
       character(32) :: format
 
-      if (size(values)>1) then
+      if (size(values)>0) then
          format = '(a,' // (size(values)-1) //'(i0,1x),i0)'
          write(string_cat_int_array,format) string, values
-      elseif (size(values) .eq. 1) then
-         write(string_cat_int_array,'(a,i0)') string, values
       else
          write(string_cat_int_array,'(a)') string
       end if
@@ -2426,7 +2418,7 @@ contains
 #endif
   end subroutine system_finalise
 
-#ifndef NO_SYSTEM_ABORT
+#ifndef HAVE_QUIPPY
   !% Quit with an error message. Calls 'MPI_Abort' for MPI programs.
   subroutine system_abort(message)
     character(*),      intent(in) :: message
