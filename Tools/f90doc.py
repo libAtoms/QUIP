@@ -2669,7 +2669,7 @@ def main():
     all_args=sys.argv[1:]
 
     try:
-        optlist, args = getopt.getopt(all_args, 'sa:t:hni:lf', 'help')
+        optlist, args = getopt.getopt(all_args, 'sa:t:hni:lfp', 'help')
     except getopt.GetoptError:
         # print help information and exit:
         print "f90doc: use -h or --help for help"
@@ -2681,6 +2681,7 @@ def main():
     do_latex=False
     do_f2py=False
     intro='intro'
+    do_header = True
 
     for o,a in optlist:
         if o=='-t':
@@ -2700,6 +2701,8 @@ def main():
             do_latex = True
         if o in '-f':
             do_f2py = True
+        if o in '-p':
+            do_header = False
 
     if len(args) < 1:
         debug('You need to supply at one least argument!')
@@ -2710,7 +2713,7 @@ def main():
 
     if do_latex:
         write_latex(programs, modules, functs, subts,
-                    doc_title, doc_author, do_short_doc, intro)
+                    doc_title, doc_author, do_short_doc, intro, do_header)
 
     if do_f2py:
         import cPickle
@@ -2803,13 +2806,14 @@ def read_files(args):
 
 
 
-def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_short_doc, intro):
+def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_short_doc, intro, header=True):
     # Print start
     if os.path.exists('COPYRIGHT'):
         for line in open('COPYRIGHT').readlines():
             print '%'+line.strip()
-    
-    print r"""
+
+    if header:
+        print r"""
 \documentclass[11pt]{article}
 \textheight 10in
 \topmargin -0.5in
@@ -2875,8 +2879,9 @@ def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_shor
         for a in functs:
             a[0].latex(1,a[1],short_doc=do_short_doc)
 
-        
-    print r"""
+
+    if header:
+        print r"""
 \printindex{general}{Index}
 
 \end{document}
