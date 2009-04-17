@@ -20,6 +20,16 @@ integer, parameter, public :: &
    HYBRID_FIT_MARK = 6, &
    HYBRID_NO_MARK = 0
 
+
+character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
+  (/ "h_none    ", &
+     "h_active  ", &
+     "h_buffer  ", &
+     "h_trans   ", &
+     "h_term    ", &
+     "h_outer_l ", &
+     "h_fit     " /)
+
 public :: create_cluster, create_cluster_hybrid_mark, create_hybrid_weights, bfs_grow, bfs_step, &
      multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, add_cut_hydrogens, & 
      construct_buffer, select_hysteretic_quantum_region
@@ -393,6 +403,7 @@ contains
     logical allow_cluster_mod
     integer, allocatable, dimension(:,:)     :: periodic_shift
 
+    integer, pointer :: hybrid_mark(:)
     ! optional defaults
 
     allow_cluster_mod = optional_default(.true., allow_cluster_modification)
@@ -403,6 +414,9 @@ contains
     
     do_periodic = (/.false.,.false.,.false./)
     if (present(periodic)) do_periodic = periodic
+
+    if (.not. assign_pointer(this, "hybrid_mark", hybrid_mark)) &
+      call system_abort("create_cluster impossible failure to assing hybrid_mark pointer")
 
     ! 
     ! Validate arguments
@@ -439,7 +453,7 @@ contains
     ! It's length will be at least atomlist%N
 
     call print('create_cluster: Creating temporary cluster table', NERD)
-    call table_allocate(cluster_temp,6,4,0,0,atomlist%N)
+    call table_allocate(cluster_temp,6,4,1,0,atomlist%N)
 
 
     ! First, put all the marked atoms into cluster_temp, storing their positions and shifts
@@ -453,7 +467,7 @@ contains
           ishift = (/0,0,0/)
        end if
        call append(cluster_temp, (/atomlist%int(1,i),ishift,this%Z(atomlist%int(1,i)),0/),&
-            (/this%pos(:,atomlist%int(1,i)),1.0_dp/))
+	    (/this%pos(:,atomlist%int(1,i)),1.0_dp/), (/ hybrid_mark_name(hybrid_mark(atomlist%int(1,i))) /) )
     end do
 
     call print("create_cluster: cluster list:", NERD)
@@ -502,7 +516,7 @@ contains
 
                 !If all j's nearest neighbours are IN then add it
                 if (all_in) then
-                   call append(cluster_temp, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/))
+                   call append(cluster_temp, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
                    if(current_verbosity() .ge. NERD) then
 		      call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_temp%N, NERD)
                    end if
@@ -595,13 +609,13 @@ contains
                   call print(H2, ANAL)
                   call print("create_cluster: hydrogen distance would be "//norm(H1-H2), ANAL)
                   ! If i and k are nearest neighbours, or the terminating hydrogens would be very close, then
-                  ! include j in the cluster. The H--H checking is concervative, hence the extra factor of 1.2
+                  ! include j in the cluster. The H--H checking is conservative, hence the extra factor of 1.2
         
         
                   if ((norm(diff_ik) < bond_length(this%Z(i),this%Z(k))*this%nneightol) .or. &
                        (norm(H1-H2) < bond_length(1,1)*this%nneightol*1.2_dp) ) then
         
-                     call append(cluster_temp,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/))
+                     call append(cluster_temp,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
                      call print('create_cluster:  Atom '//j//' added to cluster. Atoms = '//cluster_temp%N, &
                           NERD)
                      ! j is now included in the cluster, so we can exit this do loop (over p)
@@ -650,7 +664,7 @@ contains
 
                 ! Label term atom with indices into original atoms structure.
                 ! j is atom it's generated from and n is index into cluster table of atom it's attached to
-                call append(cluster_temp,(/j,ishift,1,n/),(/H1, rescale/)) 
+                call append(cluster_temp,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
 
                 ! Keep track of how many termination atoms each cluster atom has
                 p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
@@ -705,6 +719,7 @@ contains
     call print('List of atoms in cluster:', NERD)
     call print(int_part(cluster_temp,1), NERD)
 
+
     ! first pick up an atoms structure with the right number of atoms and copy the properties
     call select(cluster, this, list=int_part(cluster_temp,1))
     ! then reset the positions species and Z (latter two needed because termination atoms have Z=1)
@@ -721,7 +736,7 @@ contains
     cluster%data%int(lookup(2):lookup(3),1:cluster%N) = cluster_temp%int(2:4,1:cluster_temp%N)
     call add_property(cluster, 'termindex', int_part(cluster_temp,6))
     call add_property(cluster, 'rescale', real_part(cluster_temp,4))
-
+    call add_property(cluster,"cluster_ident", cluster_temp%str(1,:))
 
     ! Find smallest bounding box for cluster
     ! Find boxes aligned with xyz (maxlen) and with a1 a2 a3 (lat_maxlen)
@@ -930,7 +945,6 @@ contains
     call finalise(activelist)
     call finalise(bufferlist)
     
-
     cluster = create_cluster(at, cluster_list, terminate=terminate, &
          periodic=do_periodic, even_hydrogens=even_hydrogens, &
          vacuum_size=cluster_vacuum, allow_cluster_modification=cluster_allow_modification)
@@ -938,7 +952,6 @@ contains
     ! reassign pointers
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
          call system_abort('cannot reassign hybrid_mark property')
-    
     
     ! rescale cluster positions and lattice 
     if (do_rescale_r) then
@@ -1011,7 +1024,6 @@ contains
       end if
 
     end if
-
 
     if (value(mainlog%verbosity_stack) >= VERBOSE .or. print_clusters) then
 #ifdef _MPI
