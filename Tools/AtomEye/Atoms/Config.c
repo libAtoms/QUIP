@@ -3675,7 +3675,7 @@ void Config_load_libatoms (Atoms *atoms, FILE *info, Alib_Declare_Config)
     if (i == species_idx || i == pos_idx) continue;
 
     if (atoms->property_type[i] == PROPERTY_STR) {
-      fprintf(info, "warning: ignoring string property %s\n", atoms->property_name[i]);
+      Fprintf(info, "warning: ignoring string property %s\n", atoms->property_name[i]);
       continue;
     }
 
@@ -3696,10 +3696,10 @@ void Config_load_libatoms (Atoms *atoms, FILE *info, Alib_Declare_Config)
   }
 
   entry_count += 4;  // For symbol and positions
-  fprintf(info, "Config_load_libatoms: entry_count = %d\n", entry_count);
+  Fprintf(info, "Config_load_libatoms: entry_count = %d\n", entry_count);
 
   // Reallocate to correct size
-  fprintf(info, "Config_load_libatoms: got %d atoms\n", *np);
+  Fprintf(info, "Config_load_libatoms: got %d atoms\n", *np);
   Config_realloc (Config_Alib_to_Alib);
 
   // Allocate correct number of aux props
@@ -3828,18 +3828,18 @@ void Config_load_libatoms_filename(char *fname, FILE *info, Alib_Declare_Config)
   if (xyz) {
     n_frame = xyz_find_frames(nfname, at.frames, at.atoms);
     if (n_frame == 0) pe("Error building frame index");
-    fprintf(stderr, "got xyz file with %d frames\n", n_frame);
+    Fprintf(stderr, "got xyz file with %d frames\n", n_frame);
     at.got_index = 1;
   }
   else {
-    fprintf(info, "Opening netcdf file %s\n", nfname);
+    Fprintf(info, "Opening netcdf file %s\n", nfname);
 #ifdef NETCDF4
     netcdf_check(nc_open(nfname, NC_NOWRITE, &nc_in));
 #else
     netcdf_check(nc_open(nfname, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
     n_frame = read_netcdf(nc_in, &at, 0, atomlist, natomlist, 1, 0, 1, 1, 0, 0.0);
-    fprintf(stderr, "got netcdf file with %d frames\n", n_frame);
+    Fprintf(stderr, "got netcdf file with %d frames\n", n_frame);
     if (n_frame == 0) pe("Error reading netcdf");
     at.got_index = 1;
   }
@@ -3864,7 +3864,7 @@ void Config_load_libatoms_filename(char *fname, FILE *info, Alib_Declare_Config)
     if ((frame -= inc) <= -1) frame = n_frame-1;
   }
   else if (strstr(framestr, "reload")) {
-    fprintf(info, "Config_load_libatoms_filename: reloaded file, remaining at frame %d/%d\n", frame, n_frame);
+    Fprintf(info, "Config_load_libatoms_filename: reloaded file, remaining at frame %d/%d\n", frame, n_frame);
   }
   else {
     pe("Config_load_libatoms_filename: unknown framestr %s\n", framestr);
@@ -3942,7 +3942,11 @@ int main (int argc, char *argv[])
     Config_free_auxiliary();
     safe_symbol(si,SYM(0)); mass[0] = 54. / UMASS_IN_AMU;
     safe_symbol(si,SYM(3)); mass[3] = 53. / UMASS_IN_AMU;
+#ifndef ATOMEYE_LIB
     rebind_CT (Config_Aapp_to_Alib, "Si C", ct, &tp); cr();
+#else
+    rebind_ct (Config_Aapp_to_Alib, "Si C", ct, &tp, NULL); cr();
+#endif
     Config_compact_index (ct, &tp, Config_Aapp_to_Alib);
     CONFIG_SAVE
         (Config_Aapp_to_Alib, CONFIG_FILE_GZ, "%.7g %.7g %.7g",
