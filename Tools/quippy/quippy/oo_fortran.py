@@ -10,7 +10,7 @@ if (major, minor) < (2, 5):
     any = lambda seq: True in seq
 
 
-logging.root.setLevel(logging.DEBUG)
+#logging.root.setLevel(logging.DEBUG)
 
 py_keywords = ['and',       'del',       'from',      'not',       'while',    
                'as',        'elif',      'global',    'or',        'with',     
@@ -107,7 +107,7 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
       elif lcls in short_names:
          if '%s_initialise' % short_names[lcls] in routines:
             constructor = '%s_initialise'  % short_names[lcls]
-         if '%s_allocate' % short_names[lcls] in routines:
+         elif '%s_allocate' % short_names[lcls] in routines:
             constructor = '%s_allocate'  % short_names[lcls]
       else:
          cands = filter(lambda x: x.startswith('%s_initialise' % lcls), routines)
@@ -145,6 +145,10 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
          fullname = name
          if name[:len(lcls)+1] == lcls+'_':
             name = name[len(lcls)+1:]
+
+         if lcls in short_names:
+             if name[:len(short_names[lcls])+1] == short_names[lcls]+'_':
+                name = name[len(short_names[lcls])+1:]
 
          if name in py_keywords: name = name+'_'
          
@@ -227,7 +231,7 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
        code = code.replace('_dp', '')
        params[name] = eval(code, evaldict)
        evaldict[name] = params[name]
-       logging.debug('  added parameter %s' % name)
+       logging.debug('  adding parameter %s' % name)
 
    
    return (classes, routines, params)
@@ -247,6 +251,7 @@ def wrap_set(modobj, name):
                                
    def func(self, value):
       res = call_fortran(fobj, (self._p,value))
+      self._update()
       return res
 
    return func
@@ -316,33 +321,36 @@ def process_in_args(args, kwargs, inargs):
    return tuple(newargs), newkwargs
 
 def process_results(res, args, kwargs, inargs, outargs):
-   if res is None: return None
    newres = []
    
    madeseq = False
-   if len(outargs) <= 1:
+   if res is not None and len(outargs) <= 1:
       madeseq = True
       res = (res,)
 
    # intent(out) arguments form result tuple
-   for r, spec in zip(res,outargs):
-      if spec['type'].startswith('type'):
-         newres.append(FortranDerivedTypes[spec['type'].lower()](p=r,finalise=True))
-      else:
-         newres.append(r)
+   if res is not None:
+       for r, spec in zip(res,outargs):
+          if spec['type'].startswith('type'):
+             newres.append(FortranDerivedTypes[spec['type'].lower()](p=r,finalise=True))
+          else:
+             newres.append(r)
 
    # update any objects in args or kwargs affected by this call
    for arg, spec in zip(args, inargs):
-      if isinstance(arg, FortranDerivedType) and 'pointer' in spec['attributes']: 
-          if not arg._frozen:
-              arg._update()
+      if (isinstance(arg, FortranDerivedType) and 'pointer' in spec['attributes'] and
+          not 'fintent(in)' in spec['attributes']):
+          arg._update()
 
    type_lookup = dict([(fix_badnames(x['name'].lower()),x) for x in inargs])
    for k,a in kwargs.iteritems():
-      if isinstance(a, FortranDerivedType) and 'pointer' in type_lookup[k]['attributes']:
-         if not a._frozen: a._update()
+      if (isinstance(a, FortranDerivedType) and 'pointer' in type_lookup[k]['attributes']
+          and not 'fintent(in)' in type_lookup[k]['attributes']):
+         a._update()
 
-   if madeseq:
+   if res is None:
+       return None
+   elif madeseq:
       return newres[0]
    else:
       return tuple(newres)
@@ -403,8 +411,6 @@ def wrapinit(cls, modobj, moddoc, name, default_init_args):
       self._finalise = True
       if 'finalise' in newkwargs:
          self._finalise = newkwargs['finalise']
-
-      self._frozen = False
 
       self._update()
 
@@ -530,6 +536,7 @@ def wrap_interface(cls, name, routines, doc):
 
 
 def _update(self):
+   logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))
    for name in self._arrays:
       try:
          delattr(self, name)
@@ -541,7 +548,12 @@ def _update(self):
       dtype = dtype.strip()
       if shape.any() and loc != 0:
          if dtype in numpy_scalar_types:
-             setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
+             if hasattr(self, '_map_array_shape'):
+                 nshape = self._map_array_shape(name, shape)
+                 setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
+                 setattr(self, name, getattr(self, '_'+name)[nshape])
+             else:
+                 setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
          else:
             # access to arrays of derived type not yet implemented
             continue
@@ -558,14 +570,13 @@ def _update(self):
    for name, (cls, getfunc, setfunc) in self._subobjs.iteritems():
       if name == 'thetype': name = 'type' # special case: f2py misparses name 'type'
       if not cls.lower() in FortranDerivedTypes:
-         logging.warning('Unknown class %s' % cls)
+         logging.debug('Unknown class %s' % cls)
          continue
       p = getfunc(self._p)
       if p != 0:
          savedoc = getattr(self, name).__doc__
          setattr(self, name, FortranDerivedTypes[cls.lower()](p=p,finalise=False))
          getattr(self,name).__doc__ = savedoc
-         getattr(self,name)._update()
 
    if hasattr(self,'update_hook'): 
        self.update_hook()
@@ -575,15 +586,3 @@ def _update(self):
 def call_fortran(fobj, args=(), kwargs={}):
    return fobj(*args, **kwargs)
    
-
-class frozen(object):
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __enter__(self):
-        self.obj._frozen = True
-        return self.obj
-
-    def __exit__(self, *exc_info):
-        self.obj._frozen = False
-        self.obj._update()
