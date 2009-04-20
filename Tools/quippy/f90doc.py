@@ -566,6 +566,10 @@ class C_module:
                 if arg.type.startswith('type'):
                     mytype = 'type(my_%s' % arg.type[arg.type.index('(')+1:]
 
+                    # Preserve original fortran intent
+                    fintent = [ a for a in attributes if a.startswith('intent')]
+                    if fintent != []: fintent = fintent[0].replace('intent', 'fintent')
+                    
                     if ('intent(out)' in attributes or 
                         ((sub.name.lower().find('_initialise') != -1 or sub.name.lower().find('_allocate') != -1) \
                              and len(argnames) > 0 and argnames[0] == 'this' and arg.name == 'this')):
@@ -663,7 +667,11 @@ class C_module:
 
                 f2py_attributes = attributes[:]
                 # For types, we want the intent of the f2py 'pointer', rather than the real fortran intent
-                if arg.type.startswith('type'): f2py_attributes.append(intent)
+                # We also store the fortran intent as 'fintent', to help with determining which
+                # objects are affected by a call.
+                if arg.type.startswith('type'):
+                    f2py_attributes.append(intent)
+                    f2py_attributes.append(fintent)
                 thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': arg.type, 'attributes': f2py_attributes})
 
                 if dims != []:
