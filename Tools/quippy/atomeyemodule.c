@@ -8,11 +8,8 @@
 static char atomeye_doc[] = 
 "This module interfaces to AtomEye.";
 
-static char atomeye_start_doc[] = 
-  "start(on_click_handler) -- start AtomEye.";
-
 static PyObject *on_click_atom_pyfunc = NULL;
-static PyObject *on_redraw_pyfunc = NULL;
+static PyObject *on_advance_pyfunc = NULL;
 
 static int atomeye_initialised = 0;
 
@@ -28,31 +25,35 @@ static void on_click_atom(int atom)
   PyGILState_Release(state);
 }
 
-static void* on_redraw()
+static void on_advance(char *instr)
 {
-  PyObject *result;
+  PyObject *arglist;
   PyGILState_STATE state;
-  Atoms *atp;
 
   state = PyGILState_Ensure();
-
-  result = PyEval_CallObject(on_redraw_pyfunc, NULL); // Call Python
-
-  atp = (Atoms *)PyLong_AsLongLong(result);
-
-  Py_DECREF(result);
+  arglist = Py_BuildValue("(s)", instr);               // Build argument list
+  PyEval_CallObject(on_advance_pyfunc, arglist);       // Call Python
+  Py_DECREF(arglist);                                   // Trash arglist
   PyGILState_Release(state);
-
-  return atp;
 }
 
+
+static void on_close()
+{
+  fprintf(stderr, "atomeyemodule on_close handler called.\n");
+  atomeye_initialised = 0;
+}
+
+
+static char atomeye_start_doc[] = 
+  "start(on_click_handler, on_advance_handler) -- start AtomEye.";
 
 static PyObject*
 atomeye_start(PyObject *self, PyObject *args)
 {
   char *argv[2];
 
-  if (!PyArg_ParseTuple(args, "OO", &on_click_atom_pyfunc, &on_redraw_pyfunc))
+  if (!PyArg_ParseTuple(args, "OO", &on_click_atom_pyfunc, &on_advance_pyfunc))
     return NULL;
 
   if (!PyCallable_Check(on_click_atom_pyfunc)) {
@@ -60,16 +61,13 @@ atomeye_start(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  if (!PyCallable_Check(on_redraw_pyfunc)) {
+  if (!PyCallable_Check(on_advance_pyfunc)) {
     PyErr_SetString(PyExc_TypeError, "Need a callable object!");
     return NULL;
   }
 
   Py_INCREF(on_click_atom_pyfunc);
-  Py_INCREF(on_redraw_pyfunc);
-
-  if (PyEval_CallObject(on_redraw_pyfunc, NULL) == NULL)
-    return NULL;
+  Py_INCREF(on_advance_pyfunc);
 
   argv[0] = (char *)malloc(20);
   argv[1] = (char *)malloc(20);
@@ -77,7 +75,7 @@ atomeye_start(PyObject *self, PyObject *args)
   strcpy(argv[1], "-nostdin");
   
   Py_BEGIN_ALLOW_THREADS;
-  atomeyelib_main(2, argv, &on_click_atom, &on_redraw, &atomeye_initialised);
+  atomeyelib_main(2, argv, &on_click_atom, &on_close, &on_advance, &atomeye_initialised);
   Py_END_ALLOW_THREADS;
 
   free(argv[0]);
@@ -99,7 +97,6 @@ atomeye_close(PyObject *self, PyObject *args)
     return NULL;
   
   atomeyelib_close(iw);
-  atomeye_initialised = 0;
 
   Py_INCREF(Py_None);
   return Py_None;
