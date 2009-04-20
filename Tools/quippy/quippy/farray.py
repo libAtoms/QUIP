@@ -8,6 +8,12 @@ def frange(min=None,max=None,step=1):
     else:
         return range(min,max+1,step)
 
+def fzeros(shape,dtype=float):
+    return FortranArray(numpy.zeros(shape,dtype))
+
+def farray(seq):
+    return FortranArray(numpy.array(seq))
+
 class FortranArray(numpy.ndarray):
     """Subclass of ndarray which uses Fortran-style one-based
     indexing. The first element is numbered one rather than zero and
@@ -24,7 +30,7 @@ class FortranArray(numpy.ndarray):
         Construct a FortanArray from input_array, optionally setting
         docstring to doc."""
 
-	self = numpy.asarray(input_array).view(FortranArray)
+	self = numpy.asarray(input_array,order='F').view(FortranArray)
         if doc is not None:
             self.__doc__ = doc
 	return self
@@ -92,7 +98,6 @@ class FortranArray(numpy.ndarray):
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
-	indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
 
 
