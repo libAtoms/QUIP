@@ -226,6 +226,30 @@ def show_atoms(self, property=None):
 Atoms.show = show_atoms
 del show_atoms
 
+Atoms._select = Atoms.select
+del Atoms.select
+
+def select_atoms(self, mask=None, list=None):
+    """
+    Select a subset of the atoms in an atoms object, either using a logical
+    mask array or list of atom indices to include.
+
+    small_at = at.select([mask, list])
+    
+    """
+    if mask is not None:
+        out = Atoms(mask.count(),self.lattice)
+    elif list is not None:
+        out = Atoms(list.size(), self.lattice)
+    else:
+        raise ValueError('Either mask or list must be present.')
+    Atoms._select(out, self, mask, list)
+    return out
+    
+
+Atoms.select = select_atoms
+del select_atoms
+
 def atoms_update_hook(self):
    # Remove existing pointers
    if hasattr(self, '_props'):
