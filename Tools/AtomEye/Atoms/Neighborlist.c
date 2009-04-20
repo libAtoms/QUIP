@@ -219,7 +219,12 @@ void Neighborlist_Recreate
         if ( (ii > 1) || (jj > 1) || (kk > 1) )
         {
             Config_multiply ( ii, jj, kk, Config_Alib_to_Alib );
-            rebind_CT (Config_Alib_to_Alib, "", ct, tp);
+	    //            rebind_CT (Config_Alib_to_Alib, "", ct, tp);
+#ifndef ATOMEYE_LIB
+	    rebind_CT (Config_Alib_to_Alib, "", ct, tp);
+#else
+	    rebind_ct (Config_Alib_to_Alib, "", ct, tp, NULL);
+#endif
             goto restart;
         }
     }
