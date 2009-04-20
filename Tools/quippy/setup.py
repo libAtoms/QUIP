@@ -11,6 +11,8 @@ from distutils.util import get_platform
 from numpy import get_include
 from distutils.command.clean import clean as _clean
 import sys, os, cPickle, glob, stat, subprocess
+import f90doc
+
 
 major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
@@ -150,17 +152,34 @@ argfilt = filter(lambda s: s.startswith('--libatoms-dir'), sys.argv)
 if argfilt:
     libatoms_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
+else:
+    raise ValueError('No --libatoms-dir argument')
 
-sys.path.append(libatoms_dir)
-import f90doc
-
-do_quip = False
-quip_dir = '../QUIP'
-argfilt = filter(lambda s: s.startswith('--quip-dir'), sys.argv)
+argfilt = filter(lambda s: s.startswith('--libatoms-sources'), sys.argv)
 if argfilt:
-    do_quip = True
-    quip_dir = argfilt[0].split('=')[1]
+    libatoms_sources = argfilt[0].split('=')[1].split(':')
     del sys.argv[sys.argv.index(argfilt[0])]
+else:
+    raise ValueError('No --libatoms-sources argument')
+
+print libatoms_sources
+
+
+quip_core_dir = '../QUIP_CORE'
+argfilt = filter(lambda s: s.startswith('--quip-core-dir'), sys.argv)
+if argfilt:
+    quip_core_dir = argfilt[0].split('=')[1]
+    del sys.argv[sys.argv.index(argfilt[0])]
+
+argfilt = filter(lambda s: s.startswith('--quip-core-sources'), sys.argv)
+if argfilt:
+    quip_core_sources = argfilt[0].split('=')[1].split(':')
+    del sys.argv[sys.argv.index(argfilt[0])]
+else:
+    raise ValueError('No --quip-core-sources argument')
+
+
+print quip_core_sources
 
 cpp = 'cpp'
 argfilt = filter(lambda s: s.startswith('--cpp'), sys.argv)
@@ -178,36 +197,6 @@ arraydata_ext = Extension(name='quippy.arraydata',
                           sources=['arraydatamodule.c'],
                           include_dirs=[get_include()])
 
-libatoms_sources = ['mpi.f95',
-                    'System.f95',
-                    'ExtendableStr.f95',
-                    'Units.f95',
-                    'linearalgebra.f95',
-                    'Dictionary.f95',
-                    'Table.f95',
-                    'PeriodicTable.f95',
-                    'minimization.f95',
-                    'Atoms.f95',
-                    'Quaternions.f95',
-                    'RigidBody.f95',
-                    'Group.f95',
-                    'Constraints.f95',
-                    'Thermostat.f95',
-                    'DynamicalSystem.f95',
-                    'ParamReader.f95',
-                    'Spline.f95',
-                    'Sparse.f95',
-                    'clusters.f95',
-                    'Structures.f95',
-                    'frametools.f95',
-                    'nye_tensor.f95',
-                    'CInOutput.f95',
-                    'Topology.f95',
-                    'libAtoms.f95',
-                    'libAtoms_misc_utils.f95',
-                    'lbfgs.f', 
-                    'cutil.c',
-                    'xyz_netcdf.c']
 
 libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
 
@@ -217,18 +206,28 @@ libatoms_lib = ('atoms', {
         'macros': macros
         })
 
-data_files = ['libatoms.spec']
+quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
 
-ext_args = {'name': 'quippy._libatoms',
-            'sources': [ F90WrapperBuilder('libatoms', filter(lambda f: f.endswith('.f95'), libatoms_sources),
-                                           cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding'}], 
+quip_core_lib = ('quip_core', {
+    'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
+    'include_dirs': include_dirs + [quip_core_dir],
+    'macros': macros
+    })
+
+
+data_files = ['quippy.spec']
+
+ext_args = {'name': 'quippy._quippy',
+            'sources': [ F90WrapperBuilder('quippy', filter(lambda f: f.endswith('.f95'), libatoms_sources + quip_core_sources),
+                                           cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
+                                                                'dictionary_t':'FoX_sax'}], 
                                            donothing=False,
                                            kindlines=['use system_module, only: dp',
-                                                      'use iso_c_binding, only: C_SIZE_T']) ],
+                                                      'use iso_c_binding, only: C_SIZE_T'])
+                       ],
             'library_dirs': library_dirs,
             'include_dirs': include_dirs + [mod_dir],
-            'depends': [os.path.join(libatoms_dir, 'f90doc.py')],
-            'libraries':  ['atoms'] + libraries,
+            'libraries':  ['quip_core', 'atoms'] + libraries,
             'define_macros': macros
             }
 
@@ -238,48 +237,10 @@ if not lapack_opt:
     sys.exit(1)
 dict_append(ext_args,**lapack_opt)
 
-libatoms_ext = Extension(**ext_args)
+quippy_ext = Extension(**ext_args)
 
-build_libraries = [libatoms_lib] 
-exts = [arraydata_ext, libatoms_ext]
-
-if do_quip:
-    quip_sources = ['MPI_context.f95', 'ScaLAPACK.f95', 'Matrix.f95', 'RS_SparseMatrix.f95', 'QUIP_Common.f95', 
-                    'TB_Common.f95', 'TB_Kpoints.f95', 'TBModel_NRL_TB.f95', 'TBModel_Bowler.f95', 
-                    'TBModel_DFTB.f95', 'TBModel_GSP.f95', 'TBModel.f95', 'TBMatrix.f95', 'TB_Mixing.f95', 
-                    'Functions.f95', 'Ewald.f95', 'TBSystem.f95', 'ApproxFermi.f95', 'TB_GreensFunctions.f95', 
-                    'TB.f95', 'FilePot.f95', 'IPModel_GAP.f95', 'IPModel_LJ.f95', 'IPModel_SW.f95', 'IPModel_Tersoff.f95', 
-                    'IPModel_EAM_Ercolessi_Adams.f95', 'IPModel_Brenner.f95', 'IPModel_FS.f95', 'IPModel_BOP.f95', 'IPEwald.f95', 
-                    'IPModel_FB.f95', 'IPModel_Si_MEAM.f95', 'IPModel_Brenner_Screened.f95', 'IPModel_Brenner_2002.f95', 'IP.f95', 
-                    'Potential.f95', 'MetaPotential.f95', 'QUIP_module.f95', 'ginted.f']
-
-    quip_files = [os.path.join(quip_dir, f) for f in quip_sources]
-
-    quip_lib = ('quip', {
-            'sources': [ SourceImporter(f, macros, [quip_dir], cpp) for f in quip_files ],
-            'include_dirs': include_dirs + [quip_dir],
-            'macros': macros
-            })
-    build_libraries.append(quip_lib)
-
-    ext_args = {'name': 'quippy._quip',
-            'sources': [ F90WrapperBuilder('quip', filter(lambda f: f.endswith('.f95'), quip_sources), cpp, 
-                                           dep_type_maps=['libatoms', {'dictionary_t':'FoX_sax', 'c_ptr': 'iso_c_binding'}],
-                                           kindlines=['use system_module, only: dp',
-                                                      'use iso_c_binding, only: C_SIZE_T']) ],
-            'library_dirs': library_dirs,
-            'include_dirs': include_dirs + [mod_dir],
-            'libraries':  ['quip', 'atoms'] + libraries,
-            'define_macros': macros
-            }
-
-    dict_append(ext_args, **lapack_opt)
-
-    quip_ext = Extension(**ext_args)
-    exts.append(quip_ext)
-
-    data_files.append('quip.spec')
-
+build_libraries = [libatoms_lib, quip_core_lib] 
+exts = [arraydata_ext, quippy_ext]
 
 do_atomeye = True
 atomeye_dir = '../AtomEye'
