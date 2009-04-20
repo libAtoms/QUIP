@@ -10,12 +10,14 @@ BASE_F95_FILES = MPI_context ScaLAPACK Matrix RS_SparseMatrix QUIP_Common
 BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
 BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
 
+TB_F77_FILES = ginted
 TB_F95_FILES = TB_Common  TB_Kpoints TBModel_NRL_TB_defs TBModel_NRL_TB TBModel_Bowler TBModel_DFTB TBModel_GSP \
-  TBModel TBMatrix TB_Mixing Functions Ewald ginted TBSystem  ApproxFermi TB_GreensFunctions TB FilePot
+  TBModel TBMatrix TB_Mixing Functions Ewald TBSystem  ApproxFermi TB_GreensFunctions TB FilePot
+TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
 TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
-TB_F95_OBJS = ${addsuffix .o, ${TB_F95_FILES}}
+TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
 
-IP_F95_FILES = IPModel_GAP IPModel_LJ IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPEwald IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IP
+IP_F95_FILES = IPModel_GAP IPModel_LJ IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPEwald IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_Template IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
