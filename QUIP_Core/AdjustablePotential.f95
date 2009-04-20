@@ -187,6 +187,7 @@
 ! new kind of adjustable potential, just a linear spring
 !
 
+#ifdef HAVE_LOTF
 
 module AdjustablePotential_module
   use libAtoms_module
@@ -1422,3 +1423,5 @@ contains
   end function is_excluded
 
 end module AdjustablePotential_module
+
+#endif HAVE_LOTF
