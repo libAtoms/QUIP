@@ -98,6 +98,7 @@ class FortranArray(numpy.ndarray):
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
+        indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
 
 
@@ -179,3 +180,18 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[0]):
                 yield self[i]
                 
+
+    def norm2(self):
+        "array of the norm**2 of each vector in a 3xN array"
+        n, m = self.shape
+        if n != 3:
+          raise ValueError('first array dimension should be of size 3')
+        out = fzeros(m)
+        for i in frange(m):
+          out[i] = numpy.dot(self[:,i],self[:,i])
+        return out
+
+    def norm(self):
+       "Return sqrt(norm2(a))"
+       return numpy.sqrt(self.norm2())
+
