@@ -1,39 +1,70 @@
 import threading, _atomeye, time, sys
+from math import ceil, log10
 
-__window_id = None
-__thread = None
-__atoms = None
-__title = None
-from libatoms import CInOutput
+from quippy import CInOutput
 __cio = CInOutput()
 
+__window_id = 0 # for now, we always have only one window
+__thread = None
+
+atoms = None
+__olddata = None
+
+frame = 0
+delta = 1
+
+paint_property = None
+paint_value = 1
+
 def on_atom_click(idx):
-    print "atom %d clicked" % idx
-    if __atoms is not None and __atoms.has_property('selection'):
-        print 'setting __atoms.selection[%d] to 1' % idx
-        __atoms.selection[idx] = 1
+    if atoms is None: return
+    theat = atoms
+    if hasattr(atoms, '__iter__'):
+        theat = atoms[frame]
+    
+    if idx > theat.n:
+        idx = idx % theat.n
+    print "frame %d, atom %d clicked" % (frame, idx)
+    
+    if paint_property is not None and theat.has_property(paint_property):
+        getattr(theat, paint_property)[idx] = paint_value
+        redraw()
 
-def on_redraw():
-    if __atoms is None: return 0
-    if not hasattr(__atoms,'__dirty') or __atoms.__dirty:
-        r =__cio.update(__atoms)
-        __atoms.__dirty = False
-        return r
-    else:
-        return 0
+def on_advance(mode):
+    global atoms, frame, delta
+    
+    if not hasattr(atoms,'__iter__'): return
+    if mode == 'forward':
+        frame += delta
+        if frame >= len(atoms):
+            frame = 0
+    elif mode == 'backward':
+        frame -= delta
+        if frame < 0:
+            frame = len(atoms)-1
+    elif mode == 'first':
+        frame = 0
+    elif mode == 'last':
+        frame = len(atoms)-1
+    redraw()
+    
 
-def select():
-    if __atoms is None: return
-    __atoms.add_property('selection', False)
-    __atoms.show('selection')
+def paint(property='selection',value=1,fill=0):
+    global paint_property, paint_value
+    if atoms is None: return
+    if not atoms.has_property(property):
+        atoms.add_property(property, fill)
+    paint_property = property
+    paint_value = value
+    _atomeye.load_libatoms(__window_id, __cio.update(atoms), 'paint')
+    aux_property_coloring(paint_property)
 
 def start():
-    global __thread, __window_id
-    if __window_id is not None: return
-    __thread = threading.Thread(target=_atomeye.start, args=(on_atom_click,on_redraw))
+    global __thread
+    if isAlive(): return
+    __thread = threading.Thread(target=_atomeye.start, args=(on_atom_click,on_advance))
     __thread.setDaemon(True)
     __thread.start()
-    __window_id = 0  # for now, we always have only one window
 
     # wait for AtomEye to be initialised succesfully
     while not _atomeye.isAlive():
@@ -43,20 +74,55 @@ def start():
         h = help(funcname)
         if not 'unknown command' in h:
             getattr(sys.modules[__name__],funcname).__doc__ = h
+
+
+def show(obj, property=None, frame=None):
+    global atoms
+
+    if not isAlive(): start()
+
+    atoms = obj
+    if hasattr(obj,'__iter__'):
+        if frame is not None:
+            if frame < 0: frame = len(atoms)-frame
+            if frame >= len(atoms): frame=len(atoms)-1
+            setattr(sys.modules[__name__],'frame',frame)
+        else:
+            frame = getattr(sys.modules[__name__],'frame')
+        redraw(property=property)
+    else:
+        redraw(property=property)
+
     
 def isAlive():
     return _atomeye.isAlive()
 
-def redraw():
-    if __window_id is None: 
+def redraw(property=None):
+    global __olddata
+
+    if not isAlive(): 
         raise RuntimeError('AtomEye not running')
-    if __atoms is None:
-        raise RuntimeError('No Atoms object assigned to AtomEye viewer')
-    __atoms.__dirty = True
+    
+    if atoms is None:
+        raise RuntimeError('Nothing to view -- set atomeye.atoms to Atoms or sequence of Atoms')
+
+    theat = atoms
+    if hasattr(atoms, '__iter__'):
+        theat = atoms[frame]
+        fmt = "%%0%dd" % ceil(log10(len(atoms)+1))
+        title = 'atoms[%s/%s]' % (fmt % frame, fmt % len(atoms))
+    else:
+        title = 'atoms'
+
+    #if __olddata is None or __oldproperty != property or not theat.data.equal(__olddata):
+    #    __olddata = theat.data.copy()
+    _atomeye.load_libatoms(__window_id, __cio.update(theat), title)
+    if property is not None:
+        aux_property_coloring(property)
     _atomeye.redraw(__window_id)
 
 def run_command(command, expect_output=False):
-    if __window_id is None: 
+    if not isAlive(): 
         raise RuntimeError('AtomEye not running')
     res = _atomeye.run_command(__window_id, command)
     if not expect_output:
@@ -70,21 +136,9 @@ def help(command):
     return _atomeye.help(__window_id, command)
 
 def close():
-    global __window_id
-    if __window_id is None: 
+    if not isAlive(): 
         raise RuntimeError('AtomEye not running')
     _atomeye.close(__window_id)
-    __window_id = None
-
-def set_atoms(atoms, title=None):
-    global __atoms, __title
-
-    if __window_id is None:
-        raise RuntimeError('AtomEye not running')
-    __atoms = atoms    
-    if title is None: title = 'pyatomsf'
-    __title = title
-    redraw()
 
 def set(key, value):
     res = _atomeye.run_command(__window_id, "set %s %s" % (str(key), str(value)))
