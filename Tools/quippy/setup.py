@@ -128,7 +128,7 @@ print 'sizeof_void_ptr = %d bytes' % sizeof_void_ptr
 size_t_lookup = {4:'int', 8:'long_long'}
 if sizeof_void_ptr not in size_t_lookup:
     raise ValueError("Can't guess C type for size_t with sizeof(void *) = %d" % sizeof_void_ptr)
-cmapf = open('.fpy_f2cmap','w')
+cmapf = open('.f2py_f2cmap','w')
 cmapf.write("""{
  'real':{'dp':'double'},
  'complex':{'dp':'complex_double'},
