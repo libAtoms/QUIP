@@ -55,11 +55,7 @@ LIBATOMS_F95_FILES = \
   frametools\
   nye_tensor \
   Topology \
-  CInOutput
-ifeq (${HAVE_NETCDF},1)
-  LIBATOMS_F95_FILES += netcdf 
-endif
-LIBATOMS_F95_FILES += \
+  CInOutput \
   libAtoms \
   libAtoms_misc_utils
 
