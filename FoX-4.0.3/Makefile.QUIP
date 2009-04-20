@@ -10,14 +10,14 @@ else
 endif
 
 all:
-ifeq (${ARCH},)
+ifeq (${QUIP_ARCH},)
 	@echo
 	@echo "You need to define the architecture using the ARCH variable"
 	@echo
 	@exit 1
 endif
 ifeq (${HAVE_EXTERNAL_FOX},0)
-	FC=${F95} CC=${CC} ./configure && make
+	FC=${F95} CC=${CC} ./configure && make && mv objs objs.${QUIP_ARCH}
 else
 	@echo "HAVE_EXTERNAL_FOX=1 - nothing to be done"
 endif
