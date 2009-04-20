@@ -23,8 +23,8 @@ ifeq (${QUIP_ARCH},)
 	@exit 1
 endif
 
-${FOX}: ${FOX}/objs/lib/libFoX_common.a
-${FOX}/objs/lib/libFoX_common.a:
+${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
+${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
 
 
