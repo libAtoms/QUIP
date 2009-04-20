@@ -4,7 +4,7 @@ quippy
 This package is a Python interface to libAtoms (and optionally, also
 to QUIP). To use it you must have Python >= 2.4 installed as well as
 the numpy extension (http://www.scipy.org/numpy). ipython
-(http://ipython.scipy.org/moin/) makes using python interactively
+(http://ipython.scipy.org/) makes using python interactively
 much more productive.
 
 Installation
@@ -25,9 +25,11 @@ Apply the patch as:
 
 $ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
 
-To compile quippy, edit the Makefile to set the LIBATOMS_DIR and
-QUIP_DIR variables, then do a 'make -I ../Makefiles' followed by 'make
--I ../Makefiles install'. This should build everything and install the
+To compile quippy, run
+
+$ make -I ../../Makefiles ../../build.${QUIP_ARCH} install
+
+This should build everything and install the
 Python modules in ~/lib/python. If you're not using gfortran you'll
 also have to edit the COMPILER_OPTS variable. Run the command 'python
 setup.py config_fc --help-fcompiler' for a list of detected fortran
@@ -48,18 +50,14 @@ http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735)
 Usage
 -----
 
-quippy tries to expose all the libAtoms functions
+quippy tries to expose all the libAtoms and QUIP functions
 in an object-oriented way. Here is some sample code that loads
-an Atoms object from a NetCDF file:
+an Atoms object from a NetCDF file and writes it to a new XYZ
+file.
 
 >>> from quippy import *
->>> a = Atoms()
->>> a.read_xyz_filename('clusters.xyz')
-
-or
-
->>> nc = NetCDFFile('crack.nc')
->>> nc.read_atoms(a)
+>>> a = Atoms.read('file.nc')
+>>> a.write('newfile.xyz')
 
 Since Python is case-sensitive, and Fortran is not, all variable
 and functions names are converted to lower case. The only exception
@@ -71,3 +69,5 @@ and function can be seen by typing the name of the thing you're
 interested in, followed by a ?. For example "Atoms ?", "a.n ?" or
 "Atoms.lattice ?" (if you're using standard python, you can get the
 same information by typing help(object), e.g.  help(Atoms)).
+
+[More to come...]
