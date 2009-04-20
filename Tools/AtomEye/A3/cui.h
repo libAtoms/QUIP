@@ -54,7 +54,7 @@ CUI_GLOBAL Window cui_xterm_win;
 /* cui.c */
 double cui_wtime(void);
 #ifdef ATOMEYE_LIB
-int cui_init(int *argc, char ***argv,  void (*callback)(int atom));
+int cui_init(int *argc, char ***argv,  void (*on_click)(int atom), void (*on_close)(), void (*on_advance)(char *instr));
 #else
 int cui_init(int *argc, char ***argv);
 #endif
