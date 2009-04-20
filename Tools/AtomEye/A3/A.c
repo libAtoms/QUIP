@@ -15,8 +15,6 @@
 
 #ifdef ATOMEYE_LIB
 #include "xyz_netcdf.h"
-
-static void *(*atomeyelib_on_redraw)();
 #endif
 
 /* from libAtoms: */
@@ -48,13 +46,6 @@ void paint_scene (int iw)
     AX_Carrier bgcarrier;
     AX_Float HH[3][3],cr,cg,cb,ff,fr,fg,fb;
     AX_3D_Define_PW(L);  /* wireframe */
-
-#ifdef ATOMEYE_LIB
-    char *outstr = NULL;
-    Atoms *at = (*atomeyelib_on_redraw)();
-    printf("atomeyelib_on_redraw returned 0x%lx\n", at);
-    if (at != NULL) atomeyelib_load_libatoms(iw, at, "redraw", &outstr);
-#endif
 
     bgcarrier = AX_Colorcarrier
         ( n[iw].bgcolor[0], n[iw].bgcolor[1], n[iw].bgcolor[2] );
@@ -931,8 +922,9 @@ void select_fbasename (char *raw)
 #ifndef ATOMEYE_LIB
 int main (int argc, char *argv[])
 #else
-  int atomeyelib_main(int argc, char *argv[], void (*callback)(int atom), 
-		      void *(*redrawfunc)(), int *done_init)
+  int atomeyelib_main(int argc, char *argv[], void (*on_click)(int atom), 
+		      void (*on_close)(), void (*on_advance)(char *instr),
+		      int *done_init)
 #endif
 {
     register int i;
@@ -948,8 +940,7 @@ int main (int argc, char *argv[])
     memcpy(Dmitri, MENDELEYEV, (MENDELEYEV_MAX+1)*sizeof(struct Mendeleyev));
 #ifdef USE_CUI
 #ifdef ATOMEYE_LIB
-    atomeyelib_on_redraw = redrawfunc;
-    if (cui_init(&argc, &argv, callback))
+    if (cui_init(&argc, &argv, on_click, on_close, on_advance))
 #else
     if (cui_init(&argc, &argv))
 #endif
@@ -1026,7 +1017,11 @@ int main (int argc, char *argv[])
     guess_to_be_PBC = TRUE;  
     M3InV (H, HI, volume);
     lengthscale = cbrt(volume);
+#ifndef ATOMEYE_LIB
     rebind_CT (Config_Aapp_to_Alib, "", ct, &tp); cr();
+#else
+    rebind_ct (Config_Aapp_to_Alib, "", ct, &tp, NULL); cr();
+#endif
     Neighborlist_Recreate_Form (Config_Aapp_to_Alib, ct, N);
     /* Everything is assumed to be under PBC except overflow */
     /* error treatment is different for PDB and CFG.         */
