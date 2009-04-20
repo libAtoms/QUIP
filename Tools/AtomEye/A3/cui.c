@@ -30,6 +30,8 @@ static int frontend = -1;
 
 #ifdef ATOMEYE_LIB
 static void (*atomeyelib_on_click_atom)(int atom);
+static void (*atomeyelib_on_close)();
+static void (*atomeyelib_on_advance)(char *instr);
 #endif
 
 double cui_wtime(void)
@@ -1017,6 +1019,9 @@ static bool proc_next(int iw, char *instr, char **outstr)
 
 static bool proc_close(int iw, char *instr, char **outstr)
 {
+#ifdef ATOMEYE_LIB
+  (*atomeyelib_on_close)();
+#endif
     if (iw == cui_iw)
         proc_next(iw, NULL, outstr);
     if (cui_iw < 0)
@@ -1042,6 +1047,10 @@ static bool proc_new(int iw, char *instr, char **outstr)
 {
     pthread_t tid;
 
+#ifdef ATOMEYE_LIB
+    *outstr = "new window creation disabled";
+    return FALSE;
+#endif
 #ifdef USE_P3D
     if (p3dp_enabled) {
         *outstr = "not supported";
@@ -2678,7 +2687,9 @@ static bool proc_load_config(int iw, char *instr, char **outstr)
 #ifdef USE_P3D
     }
 #endif
+#ifndef ATOMEYE_LIB
     if (AX_display[iw]) printf("\n");
+#endif
 
     old_np = np;
     CLONE(symbol, SYMBOL_SIZE*np, char, old_symbol);
@@ -2687,7 +2698,11 @@ static bool proc_load_config(int iw, char *instr, char **outstr)
     for (k=0; k<CONFIG_num_auxiliary; k++)
         if (*blank_advance(CONFIG_auxiliary_name[k])==EOS)
             sprintf(CONFIG_auxiliary_name[k], "auxiliary%d", k);
+#ifndef ATOMEYE_LIB
     rebind_CT (Config_Aapp_to_Alib, "", ct, &tp); cr();
+#else
+    rebind_ct (Config_Aapp_to_Alib, "", ct, &tp, NULL); cr();
+#endif
     Neighborlist_Recreate_Form (Config_Aapp_to_Alib, ct, N);
     if (i == CONFIG_CFG_LOADED)
         N->s_overflow_err_handler =
@@ -2778,6 +2793,10 @@ static bool proc_load_config_advance(int iw, char *instr, char **outstr)
 {
   char *p;
 
+#ifdef ATOMEYE_LIB
+  (*atomeyelib_on_advance)(instr);
+  return FALSE;
+#endif
     *outstr = "parameter error";
     if (strstr(config_fname, ".nc") || strstr(config_fname, ".xyz")) {
       // Remove trailing frame number from current filename 
@@ -4626,7 +4645,7 @@ static struct co cui_options[] = {
 };
 
 #ifdef ATOMEYE_LIB
-int cui_init(int *argc, char ***argv,  void (*callback)(int atom))
+int cui_init(int *argc, char ***argv,  void (*on_click)(int atom), void (*on_close)(), void (*on_advance)(char *instr))
 #else
 int cui_init(int *argc, char ***argv)
 #endif
@@ -4637,7 +4656,9 @@ int cui_init(int *argc, char ***argv)
     extern char xterm_identifier[XTERM_IDENTIFIER_SIZE];
 
 #ifdef ATOMEYE_LIB
-    atomeyelib_on_click_atom = callback;
+    atomeyelib_on_click_atom = on_click;
+    atomeyelib_on_close = on_close;
+    atomeyelib_on_advance = on_advance;
 #endif
 
     cui_time = cui_wtime();
@@ -5016,29 +5037,35 @@ int atomeyelib_load_libatoms(int iw, Atoms *atoms, char *title, char **outstr)
     V3 hook_s, tmp, dx;
     char *old_symbol=NULL;
     bool incompatible_config;
-    static int firsttime = 1;
+/*     static int firsttime = 1; */
     
     *outstr = NULL;
 
-    if (!firsttime) {
-      firsttime = 0;
-      if (n[iw].anchor >= 0) {
-        /* the new configuration may not even have the atom */
-        V3EQV (B->BALL[n[iw].anchor].x, n[iw].hook);
-        n[iw].anchor = -1;
-      }
-      /* hook_s[] is what is kept invariant */
-      V3mM3 (n[iw].hook, HI, hook_s);
-    }
+    n[iw].suppress_printout = 1;
+
+/*     if (!firsttime) { */
+/*       firsttime = 0; */
+/*       if (n[iw].anchor >= 0) { */
+/*         /\* the new configuration may not even have the atom *\/ */
+/*         V3EQV (B->BALL[n[iw].anchor].x, n[iw].hook); */
+/*         n[iw].anchor = -1; */
+/*       } */
+/*       /\* hook_s[] is what is kept invariant *\/ */
+/*       V3mM3 (n[iw].hook, HI, hook_s); */
+/*     } */
 
     old_np = np;
     CLONE(symbol, SYMBOL_SIZE*np, char, old_symbol);
-    Config_load_libatoms(atoms, stdout, Config_Aapp_to_Alib);
+    Config_load_libatoms(atoms, NULL, Config_Aapp_to_Alib);
 
     for (k=0; k<CONFIG_num_auxiliary; k++)
         if (*blank_advance(CONFIG_auxiliary_name[k])==EOS)
             sprintf(CONFIG_auxiliary_name[k], "auxiliary%d", k);
+#ifndef ATOMEYE_LIB
     rebind_CT (Config_Aapp_to_Alib, "", ct, &tp); cr();
+#else
+    rebind_ct (Config_Aapp_to_Alib, "", ct, &tp, NULL); 
+#endif
     Neighborlist_Recreate_Form (Config_Aapp_to_Alib, ct, N);
     N->s_overflow_err_handler =
       NEIGHBORLIST_S_OVERFLOW_ERR_HANDLER_FOLD_INTO_PBC;
@@ -5052,7 +5079,7 @@ int atomeyelib_load_libatoms(int iw, Atoms *atoms, char *title, char **outstr)
                          (rcut_patch[k].Zj == ct->Z[i]) ) ) )
                     NEIGHBOR_TABLE(N->rcut,ct,i,j) =
                         NEIGHBOR_TABLE(N->rcut,ct,j,i) = rcut_patch[k].rcut;
-    Neighborlist_Recreate (Config_Aapp_to_Alib, stdout, ct, &tp, N);
+    Neighborlist_Recreate (Config_Aapp_to_Alib, NULL, ct, &tp, N);
     V3mM3 (hook_s, H, tmp);
     V3SUB (tmp, n[iw].hook, dx);
     V3EQV (tmp, n[iw].hook);
