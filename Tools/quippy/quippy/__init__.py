@@ -144,8 +144,12 @@ class AtomsList(list):
         return 'AtomsList(%r)' % list.__repr__(self)
 
     def show(self, property=None, frame=None):
-        atomeye.show(self, property, frame)
+        try:
+           atomeye.show(self,property, frame)
+        except NameError:
+           raise RuntimeError('AtomEye not available')
 
+        
 class FrameReader(AtomsList):
    """Read-only access to an XYZ or NetCDF trajectory. The file is opened
    and then read lazily as frames are asked for. Supports list-like interface:
@@ -221,7 +225,10 @@ del read_atoms
 
 def show_atoms(self, property=None):
    """Show this atoms object in AtomEye."""
-   atomeye.show(self,property=property)
+   try:
+      atomeye.show(self,property=property)
+   except NameError:
+      raise RuntimeError('AtomEye not available')
 
 Atoms.show = show_atoms
 del show_atoms
@@ -371,5 +378,8 @@ def dynamicalsystem_run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_
 DynamicalSystem.run = dynamicalsystem_run
 del dynamicalsystem_run
 
-import atomeye
+try:
+   import atomeye
+except ImportError:
+   pass
 
