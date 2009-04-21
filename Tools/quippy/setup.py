@@ -118,24 +118,12 @@ def F90WrapperBuilder(modname, f95_sources, cpp, dep_type_maps=[], donothing=Fal
     return func
 
 # Compile simple C program to find sizeof(void *) on this arch
+print 'Calculating sizeof(void *)...', 
 if not os.path.exists('./sizeof_void_ptr'):
     cc = new_compiler()
     cc.link_executable(cc.compile(['sizeof_void_ptr.c']),'sizeof_void_ptr')
 sizeof_void_ptr = int(os.popen('./sizeof_void_ptr').read())
-print 'sizeof_void_ptr = %d bytes' % sizeof_void_ptr
-
-# Generate .f2py_f2cmap
-size_t_lookup = {4:'int', 8:'long_long'}
-if sizeof_void_ptr not in size_t_lookup:
-    raise ValueError("Can't guess C type for size_t with sizeof(void *) = %d" % sizeof_void_ptr)
-cmapf = open('.f2py_f2cmap','w')
-cmapf.write("""{
- 'real':{'dp':'double'},
- 'complex':{'dp':'complex_double'},
- 'integer':{'C_SIZE_T':'%s'}
-}
-""" % size_t_lookup[sizeof_void_ptr])
-cmapf.close()
+print sizeof_void_ptr, 'bytes.'
 
 # Bit of a hack: we have to add directory which will contain .mod files
 build_base = 'build'
@@ -264,10 +252,6 @@ if argfilt:
     del sys.argv[sys.argv.index(argfilt[0])]
 
 if do_atomeye:
-    # build in atomeye_dir
-    if os.system('make -C %s lib' % atomeye_dir) != 0:
-        raise RuntimeError('Compilation of AtomEye library failed') 
-
     ext_args = {'name': 'quippy._atomeye',
                 'sources': ['atomeyemodule.c'],
                 'library_dirs':  library_dirs + [os.path.join(atomeye_dir, 'lib'),'/usr/X11/lib'],
