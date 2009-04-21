@@ -1,4 +1,0 @@
- CCFLAGS = -fast -O3 -fomit-frame-pointer
- CC = ccc
- LD = fort -nofor_main
- USE_MY_LIB = -lVecMat3 -lVecMat -lIO -lScalar -lTimer -lcxml

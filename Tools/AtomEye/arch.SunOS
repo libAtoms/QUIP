@@ -1,2 +1,0 @@
- CCFLAGS = -xO4 -fsimple -dalign -fast
- SHELL = bash
