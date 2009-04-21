@@ -10,13 +10,18 @@ LINKER = gfortran -L/usr/local/lib64 -Wl,-rpath,/usr/local/lib64
 DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
 DEFAULT_OPTIM = -O3
 
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -DGETARG_F2003 -DGFORTRAN -Wunused
+DEFINES += -DGETARG_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
-CFLAGS +=  -fPIC -DFORTRAN_UNDERSCORE
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
+CFLAGS +=  -fPIC 
 
 MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
+
+ATOMEYE_LIBS = -lm \
+   -lutil -lXpm -lXext -lX11  \
+   -lreadline -lnetcdf -lhdf5 -lhdf5_hl -lpthread \
+   -lpng -ljpeg  -lncurses -lz -llapack -lf77blas -lcblas -latlas
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 
