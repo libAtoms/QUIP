@@ -50,7 +50,7 @@ ifeq (${HAVE_CP2K},1)
 endif
 LIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
-LINKOPTS = ${OPTIM} ${CDEBUG} ${LIBS}
+LINKOPTS := ${OPTIM} ${CDEBUG} ${LIBS}
 
 .f.o:
 	${F77}  ${F77FLAGS} -c $< -o $@
