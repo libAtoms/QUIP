@@ -148,39 +148,35 @@ libraries = [s[2:] for s in sys.argv if s.startswith('-l')]
 sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l')]
 
 
-libatoms_dir = '../libAtoms'
+do_quippy_extension = True
+
 argfilt = filter(lambda s: s.startswith('--libatoms-dir'), sys.argv)
 if argfilt:
     libatoms_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 else:
-    raise ValueError('No --libatoms-dir argument')
+    do_quippy_extension = False
 
 argfilt = filter(lambda s: s.startswith('--libatoms-sources'), sys.argv)
 if argfilt:
     libatoms_sources = argfilt[0].split('=')[1].split(':')
     del sys.argv[sys.argv.index(argfilt[0])]
 else:
-    raise ValueError('No --libatoms-sources argument')
+    do_quippy_extension = False
 
-print libatoms_sources
-
-
-quip_core_dir = '../QUIP_CORE'
 argfilt = filter(lambda s: s.startswith('--quip-core-dir'), sys.argv)
 if argfilt:
     quip_core_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
+else:
+    do_quippy_extension = False
 
 argfilt = filter(lambda s: s.startswith('--quip-core-sources'), sys.argv)
 if argfilt:
     quip_core_sources = argfilt[0].split('=')[1].split(':')
     del sys.argv[sys.argv.index(argfilt[0])]
 else:
-    raise ValueError('No --quip-core-sources argument')
-
-
-print quip_core_sources
+    do_quippy_extension = False
 
 cpp = 'cpp'
 argfilt = filter(lambda s: s.startswith('--cpp'), sys.argv)
@@ -188,87 +184,95 @@ if argfilt:
     cpp = argfilt[0].split('=')[1].split()
     del sys.argv[sys.argv.index(argfilt[0])]
 
-
-macros = [('HAVE_NETCDF',None), ('NETCDF4',None), ('GETARG_F2003',None),
-          ('SVN_VERSION','\\"%s\\"' % os.popen('svnversion -n .').read()),
-          ('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
-
-
-arraydata_ext = Extension(name='quippy.arraydata', 
-                          sources=['arraydatamodule.c'],
-                          include_dirs=[get_include()])
-
-
-libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
-
-libatoms_lib = ('atoms', {
-        'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp) for f in libatoms_files ],
-        'include_dirs': include_dirs + [libatoms_dir],
-        'macros': macros
-        })
-
-quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
-
-quip_core_lib = ('quip_core', {
-    'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
-    'include_dirs': include_dirs + [quip_core_dir],
-    'macros': macros
-    })
-
-
-data_files = ['quippy.spec']
-
-ext_args = {'name': 'quippy._quippy',
-            'sources': [ F90WrapperBuilder('quippy', filter(lambda f: f.endswith('.f95'), libatoms_sources + quip_core_sources),
-                                           cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
-                                                                'dictionary_t':'FoX_sax'}], 
-                                           donothing=False,
-                                           kindlines=['use system_module, only: dp',
-                                                      'use iso_c_binding, only: C_SIZE_T'])
-                       ],
-            'library_dirs': library_dirs,
-            'include_dirs': include_dirs + [mod_dir],
-            'libraries':  ['quip_core', 'atoms'] + libraries,
-            'define_macros': macros
-            }
-
-lapack_opt = get_info('lapack_opt')
-if not lapack_opt:
-    print 'No lapack_opt resources found in system'
-    sys.exit(1)
-dict_append(ext_args,**lapack_opt)
-
-quippy_ext = Extension(**ext_args)
-
-build_libraries = [libatoms_lib, quip_core_lib] 
-exts = [arraydata_ext, quippy_ext]
-
 do_atomeye = False
-atomeye_dir = '../AtomEye'
 argfilt = filter(lambda s: s.startswith('--atomeye-dir'), sys.argv)
 if argfilt:
     do_atomeye = True
     atomeye_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 
-if do_atomeye:
-    ext_args = {'name': 'quippy._atomeye',
-                'sources': ['atomeyemodule.c'],
-                'library_dirs':  library_dirs + [os.path.join(atomeye_dir, 'lib'),'/usr/X11/lib'],
-                'libraries': ['AtomEye', 'AX', 'png', 'z', 'jpeg', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer',
-                              'history', 'ncurses', 'm', 'Xpm', 'Xext', 'X11', 'readline'] + libraries,
-                'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
-                'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
+
+if do_quippy_extension:
+    macros = [('HAVE_NETCDF',None), ('NETCDF4',None), ('GETARG_F2003',None),
+              ('SVN_VERSION','\\"%s\\"' % os.popen('svnversion -n .').read()),
+              ('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
+    arraydata_ext = Extension(name='quippy.arraydata', 
+                              sources=['arraydatamodule.c'],
+                              include_dirs=[get_include()])
+
+
+    libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
+
+    libatoms_lib = ('atoms', {
+            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp) for f in libatoms_files ],
+            'include_dirs': include_dirs + [libatoms_dir],
+            'macros': macros
+            })
+
+    quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
+
+    quip_core_lib = ('quip_core', {
+        'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
+        'include_dirs': include_dirs + [quip_core_dir],
+        'macros': macros
+        })
+
+
+    data_files = ['quippy.spec']
+
+    ext_args = {'name': 'quippy._quippy',
+                'sources': [ F90WrapperBuilder('quippy', filter(lambda f: f.endswith('.f95'), libatoms_sources + quip_core_sources),
+                                               cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
+                                                                    'dictionary_t':'FoX_sax'}], 
+                                               donothing=False,
+                                               kindlines=['use system_module, only: dp',
+                                                          'use iso_c_binding, only: C_SIZE_T'])
+                           ],
+                'library_dirs': library_dirs,
+                'include_dirs': include_dirs + [mod_dir],
+                'libraries':  ['quip_core', 'atoms'] + libraries,
                 'define_macros': macros
                 }
 
-    dict_append(ext_args, **lapack_opt)
-    atomeye_ext = Extension(**ext_args)
-    exts.append(atomeye_ext)
+    lapack_opt = get_info('lapack_opt')
+    if not lapack_opt:
+        print 'No lapack_opt resources found in system'
+        sys.exit(1)
+    dict_append(ext_args,**lapack_opt)
+
+    quippy_ext = Extension(**ext_args)
+
+    build_libraries = [libatoms_lib, quip_core_lib]
+    exts = [arraydata_ext, quippy_ext]
+
+    if do_atomeye:
+        ext_args = {'name': 'quippy._atomeye',
+                    'sources': ['atomeyemodule.c'],
+                    'library_dirs':  library_dirs + [os.path.join(atomeye_dir, 'lib'),'/usr/X11/lib'],
+                    'libraries': ['AtomEye', 'AX', 'png', 'z', 'jpeg', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer',
+                                  'history', 'ncurses', 'm', 'Xpm', 'Xext', 'X11', 'readline'] + libraries,
+                    'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
+                    'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
+                    'define_macros': macros
+                    }
+
+        dict_append(ext_args, **lapack_opt)
+        atomeye_ext = Extension(**ext_args)
+        exts.append(atomeye_ext)
+else:
+    build_libraries = []
+    exts = []
+    data_files = []
+
 
 setup(name='quippy',
       libraries=build_libraries,
       packages = ['quippy'],
       ext_modules = exts,
       data_files = [('quippy',data_files)],
-      cmdclass = {'clean':clean})
+      cmdclass = {'clean':clean},
+      version=os.popen('svnversion -n .').read(),
+      description='Python binding to QUIP code',
+      author='James Kermode',
+      author_email='james.kermode@kcl.ac.uk',
+      url='http://www.libatoms.org')
