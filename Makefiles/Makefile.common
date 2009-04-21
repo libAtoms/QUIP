@@ -4,10 +4,6 @@ FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 NETCDF_LIBS = -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5 -lhdf5_hl
 LARSPOT_LIBS = -lmdcore
-ATOMEYE_LIBS =    -lm \
-   -lutil -lXpm -lXext -lX11  \
-   -lreadline -lnetcdf -lhdf5 -lhdf5_hl -lpthread \
-   -lpng -ljpeg  -lncurses -lz -llapack -lf77blas -lcblas -latlas
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
 
 AR = ar -r
@@ -26,24 +22,23 @@ F95FLAGS = ${INCLUDES} ${OPTIM} ${DEBUG} ${DEFINES}
 F77FLAGS = ${INCLUDES} ${OPTIM} ${DEBUG} ${DEFINES} 
 CPLUSPLUSFLAGS = ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} 
 CFLAGS = ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} 
-LINKOPTS = ${OPTIM} ${CDEBUG}
 
-LINKOPTS += -L${FOX_LIBDIR} ${FOX_LIBS}
-INCLUDES += -I${FOX_INCDIR}
+LIBS = -L${FOX_LIBDIR} ${FOX_LIBS}
+INCLUDES = -I${FOX_INCDIR}
 
 ifeq (${HAVE_NETCDF},1)
-  LINKOPTS += -L${NETCDF_LIBDIR}
+  LIBS += -L${NETCDF_LIBDIR}
   INCLUDES += -I${NETCDF_INCDIR}
   ifeq (${NETCDF4}, 1)
     DEFINES += -DHAVE_NETCDF -DNETCDF4
-    LINKOPTS +=  ${NETCDF4_LIBS}
+    LIBS +=  ${NETCDF4_LIBS}
   else
     DEFINES  += -DHAVE_NETCDF
-    LINKOPTS +=  ${NETCDF_LIBS}
+    LIBS +=  ${NETCDF_LIBS}
   endif
 endif
 ifeq (${HAVE_LARSPOT},1)
-  LINKOPTS += -L${LARSPOT_LIBDIR} ${LARSPOT_LIBS}
+  LIBS += -L${LARSPOT_LIBDIR} ${LARSPOT_LIBS}
   INCLUDES += -I${LARSPOT_INCDIR}
   DEFINES  += -DHAVE_MDCORE
 endif
@@ -53,7 +48,9 @@ endif
 ifeq (${HAVE_CP2K},1)
   DEFINES += -DHAVE_CP2K
 endif
-LINKOPTS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
+LIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
+
+LINKOPTS = ${OPTIM} ${CDEBUG} ${LIBS}
 
 .f.o:
 	${F77}  ${F77FLAGS} -c $< -o $@
