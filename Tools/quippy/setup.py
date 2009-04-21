@@ -13,6 +13,7 @@ from distutils.command.clean import clean as _clean
 import sys, os, cPickle, glob, stat, subprocess
 import f90doc
 
+print sys.argv
 
 major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
@@ -147,6 +148,18 @@ library_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-L'
 libraries = [s[2:] for s in sys.argv if s.startswith('-l')]
 sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l')]
 
+argfilt = filter(lambda s: s.startswith('-D'), sys.argv)
+macros = []
+for arg in argfilt:
+    try:
+        k, v = arg[2:].split('=')
+        v = v.replace('"',r'\"')
+    except ValueError:
+        k, v = arg[2:], None
+    macros.append((k,v))
+    del sys.argv[sys.argv.index(arg)]
+
+print 'macros = ', macros
 
 do_quippy_extension = True
 
@@ -191,11 +204,8 @@ if argfilt:
     atomeye_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 
-
 if do_quippy_extension:
-    macros = [('HAVE_NETCDF',None), ('NETCDF4',None), ('GETARG_F2003',None),
-              ('SVN_VERSION','\\"%s\\"' % os.popen('svnversion -n .').read()),
-              ('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
+    macros += [('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
     arraydata_ext = Extension(name='quippy.arraydata', 
                               sources=['arraydatamodule.c'],
                               include_dirs=[get_include()])
