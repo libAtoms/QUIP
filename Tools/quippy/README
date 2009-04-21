@@ -27,7 +27,7 @@ $ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
 
 To compile quippy, run
 
-$ make -I ../../Makefiles ../../build.${QUIP_ARCH} install
+$ make -I ../../Makefiles -I ../../build.${QUIP_ARCH} install
 
 This should build everything and install the
 Python modules in ~/lib/python. If you're not using gfortran you'll
