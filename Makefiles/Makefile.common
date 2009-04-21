@@ -4,7 +4,15 @@ FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 NETCDF_LIBS = -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5 -lhdf5_hl
 LARSPOT_LIBS = -lmdcore
+ATOMEYE_LIBS =    -lm \
+   -lutil -lXpm -lXext -lX11  \
+   -lreadline -lnetcdf -lhdf5 -lhdf5_hl -lpthread \
+   -lpng -ljpeg  -lncurses -lz -llapack -lf77blas -lcblas -latlas
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
+
+AR = ar -r
+RANLIB = ranlib
+NM = nm --print-file-name --extern-only --defined-only --no-sort --portability
 
 ifeq (${COPTIM},)
   COPTIM=${OPTIM}
