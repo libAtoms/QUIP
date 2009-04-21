@@ -9,7 +9,7 @@ endif
 .PHONY: clean build install atomeyelib presetup
 
 CONFIG_FC_OPTS =  --fcompiler=gnu95 --f90flags="-ffree-line-length-none -x f95-cpp-input" --cpp="cpp -x f95-cpp-input" 
-BUILD_EXT_OPTS = -I${NETCDF_INCDIR} -L${NETCDF_LIBDIR} ${NETCDF4_LIBS} -I${FOX_INCDIR} -L${FOX_LIBDIR} ${FOX_LIBS} 
+BUILD_EXT_OPTS = ${INCLUDES} ${DEFINES} ${LIBS}
 BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${ATOMEYE} #--f2py-opts=--debug-capi 
 BUILD_OPTS = --debug
 INSTALL_OPTS = --home=${HOME}
