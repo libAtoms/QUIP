@@ -255,10 +255,11 @@ quippy_ext = Extension(**ext_args)
 build_libraries = [libatoms_lib, quip_core_lib] 
 exts = [arraydata_ext, quippy_ext]
 
-do_atomeye = True
+do_atomeye = False
 atomeye_dir = '../AtomEye'
 argfilt = filter(lambda s: s.startswith('--atomeye-dir'), sys.argv)
 if argfilt:
+    do_atomeye = True
     atomeye_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 
