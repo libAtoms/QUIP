@@ -128,4 +128,4 @@ atomeye:
 	make -C Tools/AtomEye QUIP_ROOT=${PWD}
 
 quippy:
-	make -C Tools/quippy QUIP_ROOT=${PWD}
+	make -C Tools/quippy install QUIP_ROOT=${PWD}
