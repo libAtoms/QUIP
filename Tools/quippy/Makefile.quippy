@@ -34,7 +34,7 @@ atomeyelib:
 presetup:
 	./presetup.py
 
-build: atomeyelib
+build: atomeyelib presetup
 	python setup.py ${SETUP_OPTS} -I${NETCDF_INCDIR} -L${NETCDF_LIBDIR} ${NETCDF4_LIBS} -I${FOX_INCDIR} -L${FOX_LIBDIR} ${FOX_LIBS} ${LIBATOMS} ${QUIP_CORE} ${ATOMEYE} build --debug
 
 install: build
