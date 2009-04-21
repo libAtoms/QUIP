@@ -1,6 +1,0 @@
- CC = gcc
- LD = g77 -static
- CCFLAGS = -O6 -ffast-math -funroll-loops -finline-functions
- NM = nm --print-file-name --extern-only --defined-only --no-sort --portability
- BACKUPDIRS = /asm/home/Moon/Bak /Home/Sun/Bak
- EXESUFFIX = .exe
