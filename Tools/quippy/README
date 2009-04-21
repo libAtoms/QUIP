@@ -1,5 +1,5 @@
 quippy
---------
+------
 
 This package is a Python interface to libAtoms (and optionally, also
 to QUIP). To use it you must have Python >= 2.4 installed as well as
@@ -27,11 +27,11 @@ $ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
 
 To compile quippy, run
 
-$ make -I ../../Makefiles -I ../../build.${QUIP_ARCH} install
+$ make QUIP_ARCH=arch -I ../../Makefiles -I ../../build.${QUIP_ARCH} install
 
-This should build everything and install the
-Python modules in ~/lib/python. If you're not using gfortran you'll
-also have to edit the COMPILER_OPTS variable. Run the command 'python
+This should build everything and install the Python modules in
+~/lib/python. If you're not using gfortran you'll also have to edit
+the SETUP_OPTS variable in the Makefile. Run the command 'python
 setup.py config_fc --help-fcompiler' for a list of detected fortran
 compilers.
 
@@ -40,10 +40,9 @@ To check everything is working try the following:
 $ python
 >>> import quippy
 
-To enable the QUIP bindings set HAVE_QUIP=1 in the Makefile and
-rebuild and install. If you are using gfortran, the QUIP bindings
-require a recent svn version of gfortran to compile (with 4.3.2 or
-earlier you run into this bug, reported by Steve and now fixed:
+If you are using gfortran, the QUIP bindings require a recent svn
+version of gfortran to compile (with 4.3.2 or earlier you run into
+this bug, reported by Steve and now fixed:
 http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735)
 
 
