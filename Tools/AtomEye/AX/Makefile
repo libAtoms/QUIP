@@ -20,7 +20,24 @@ SRCS = $(addsuffix .c, $(basename ${OBJS}))
 GDBTMP = /tmp/${LIB}.gdb
 EXESUFFIX =
 
-include ../arch.make
+include Makefile.inc
+include Makefile.common
+ifeq (${QUIP_ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${QUIP_ARCH}
+endif
+
+USE_SYSTEM_LIB = ${ATOMEYE_SYSTEM_LIB}
+
+MY_BIN_DIR = ../bin
+MY_LIB_DIR = ../lib
+MY_INC_DIR = ../include
+MY_BAK_DIR = ../bak
+
+USE_MY_LIB = \
+   -lAX -lAtoms -lVecMat3 -lVecMat -lIO -lScalar -lTimer
+
 
 CFLAGS += -D_$(SYS) ${CCFLAGS} -I${MY_INC_DIR}
 LDFLAGS = ${SYSTEM_LIB_FLAG} ${USE_SYSTEM_LIB} -L${MY_LIB_DIR} ${USE_MY_LIB}
