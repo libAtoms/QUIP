@@ -62,7 +62,8 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 	print $_." ".$last_subrt."\n";
     }
     else { s/^\s*private/!private/; print; }
-}' %s | %s %s - | perl -ne 'print if !/^$/' > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))
+}' %s > tmp.out; %s %s tmp.out -o %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
+#}' %s | %s %s - | perl -ne 'print if !/^$/' > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))
         else:
             #if newer(infile, outfile):
             #    os.system("cat %s | cpp %s > %s" % (infile, cpp_opt, outfile))
