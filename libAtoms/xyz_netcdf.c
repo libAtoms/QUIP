@@ -2260,6 +2260,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   }
 
   atoms->n_frame++;
+  fflush(out);
   return 1;
 }
 
