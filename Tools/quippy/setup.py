@@ -149,6 +149,21 @@ library_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-L'
 libraries = [s[2:] for s in sys.argv if s.startswith('-l')]
 sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l')]
 
+# Silently ignore framework options
+cp = []
+i = 0
+while sys.argv:
+    p = sys.argv.pop(0)
+    if p != '-framework': 
+        cp.append(p)
+        continue
+    else:
+        # throw away next thing
+        sys.argv.pop(0)
+
+sys.argv = cp
+print sys.argv
+
 argfilt = filter(lambda s: s.startswith('-D'), sys.argv)
 macros = []
 for arg in argfilt:
