@@ -13,7 +13,7 @@ PROGRAMS = eval md lj_example md_example \
   calc_n_poles \
   analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
-  local_E_fd wrap align
+  local_E_fd wrap align asaptest
 
 
 LIBS =  -L. -lquiputils -lquip -latoms 
@@ -23,7 +23,7 @@ LIBS =  -L. -lquiputils -lquip -latoms
 
 all: ${PROGRAMS}
 
-${PROGRAMS}: % :  ${OBJS} %.o
+${PROGRAMS}: % :  ${OBJS} %.o libatoms.a libquip.a libquiputils.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 CRACK_OBJS = crackparams.o cracktools.o
