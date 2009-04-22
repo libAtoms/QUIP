@@ -101,6 +101,15 @@ ifndef LARSPOT_LIBDIR
 	  echo "HAVE_LARSPOT=1" >> ${BUILDDIR}/Makefile.inc ; \
 	else echo "HAVE_LARSPOT=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
+ifndef ASAP_LIBDIR
+	@echo ; \
+        echo "Please enter directory where the ASAP Potential libraries are kept:" ; \
+	echo "   Default: no ASAP potential present" ; \
+        read ASAP_LIBDIR && if [[ $$ASAP_LIBDIR ]] ; then \
+	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
+	  echo "HAVE_ASAP=1" >> ${BUILDDIR}/Makefile.inc ; \
+	else echo "HAVE_ASAP=0" >> ${BUILDDIR}/Makefile.inc ; fi
+endif
 ifndef EXTRA_LINKOPTS
 	@echo
 	@echo "Please enter any other extra linking options:"
@@ -125,6 +134,7 @@ quip-reference-manual.pdf:
 	./Tools/mkdoc
 
 atomeye:
+	if [[ ! -d Tools/AtomEye ]]; then svn co svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye Tools/AtomEye; fi
 	make -C Tools/AtomEye QUIP_ROOT=${PWD}
 
 quippy:
