@@ -1,5 +1,18 @@
---- rules.py	2008-12-22 17:45:27.000000000 +0000
-+++ rules.py	2008-12-22 17:54:42.000000000 +0000
+diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./capi_maps.py /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py
+--- ./capi_maps.py	2008-10-28 11:21:47.000000000 +0000
++++ /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py	2009-04-08 11:40:40.000000000 +0100
+@@ -200,7 +200,7 @@
+              'unsigned':'%u',
+              'long':'%ld',
+              'unsigned_long':'%lu',
+-             'long_long':'%ld',
++             'long_long':'%Ld',  # changed %ld -> %Ld James Kermode
+              'complex_float':'(%g,%g)',
+              'complex_double':'(%g,%g)',
+              'complex_long_double':'(%Lg,%Lg)',
+diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py
+--- ./rules.py	2008-10-28 11:21:47.000000000 +0000
++++ /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py	2009-02-06 16:57:51.000000000 +0000
 @@ -75,6 +75,8 @@
  import func2subr
  options={}

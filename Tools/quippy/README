@@ -23,7 +23,7 @@ $ python
 Then go to this directory, and change to the f2py subdirectory.
 Apply the patch as:
 
-$ patch -p0 < ~/Code/pyatomf/numpy.f2py.rule.patch
+$ patch -p0 < ~/Code/pyatomf/numpy.f2py.patch
 
 To compile quippy, run
 
