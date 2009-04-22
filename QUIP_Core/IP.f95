@@ -76,6 +76,7 @@ use IPModel_FS_module
 use IPModel_BOP_module
 use IPModel_Brenner_Screened_module
 use IPModel_Brenner_2002_module
+use IPModel_ASAP_module
 ! Add new IPs here
 use IPModel_Template_module
 use QUIP_Common_module
@@ -86,7 +87,7 @@ private
 
 integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
-     FF_Brenner_2002 = 12, &   ! Add new IPs here
+     FF_Brenner_2002 = 12, FF_ASAP = 13, &   ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -105,6 +106,7 @@ type IP_type
   type(IPModel_BOP) ip_BOP
   type(IPModel_Brenner_Screened) ip_Brenner_Screened
   type(IPModel_Brenner_2002) ip_Brenner_2002
+  type(IPModel_ASAP) ip_ASAP
      ! Add new IPs here  
   type(IPModel_Template) ip_Template
 
@@ -198,7 +200,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
 
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, is_template
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_template
 
   call Finalise(this)
 
@@ -215,6 +217,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   call param_register(params, 'BOP', 'false', is_BOP)
   call param_register(params, 'Brenner_Screened', 'false', is_Brenner_Screened)
   call param_register(params, 'Brenner_2002', 'false', is_Brenner_2002)
+  call param_register(params, 'ASAP', 'false', is_ASAP)
   ! Add new IPs here
   call param_register(params, 'Template', 'false', is_template)
 
@@ -224,7 +227,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   call finalise(params)
 
   if (count((/is_GAP, is_LJ, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
-       is_Brenner_Screened, is_Brenner_2002, &        ! add new IPs here
+       is_Brenner_Screened, is_Brenner_2002, is_ASAP, &        ! add new IPs here
        is_Template /)) /= 1) then
     call system_abort("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'")
   endif
@@ -265,6 +268,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   else if (is_Brenner_2002) then
     this%functional_form = FF_Brenner_2002
     call Initialise(this%ip_brenner_2002, args_str, param_str)
+  else if (is_ASAP) then
+    this%functional_form = FF_ASAP
+    call Initialise(this%ip_ASAP, args_str, param_str) 
     ! add new IPs here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -315,6 +321,9 @@ subroutine IP_Finalise(this)
     case (FF_Brenner_2002)
       if(this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
       call Finalise(this%ip_brenner_2002)
+    case (FF_ASAP)
+      if(this%ip_ASAP%mpi%active) call free_context(this%ip_ASAP%mpi)
+      call Finalise(this%ip_ASAP)
       ! add new IP here
     case (FF_Template)
       if(this%ip_template%mpi%active) call free_context(this%ip_template%mpi)
@@ -351,6 +360,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_brenner_screened%cutoff
   case (FF_Brenner_2002)
      IP_cutoff = this%ip_brenner_2002%cutoff
+  case (FF_ASAP)
+     IP_cutoff = this%ip_asap%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_template%cutoff
@@ -396,6 +407,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
       mpi_active = this%ip_brenner_screened%mpi%active
     case(FF_Brenner_2002)
       mpi_active = this%ip_brenner_2002%mpi%active
+    case(FF_ASAP)
+      mpi_active = this%ip_asap%mpi%active
     ! add new IP here
     case(FF_Template)
       mpi_active = this%ip_template%mpi%active
@@ -432,6 +445,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
       call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str)
     case (FF_Brenner_2002)
       call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str)
+    case (FF_ASAP)
+      call calc(this%ip_asap, at, energy, local_e, f, virial, args_str)
     ! add new IP here
     case (FF_Template)
       call calc(this%ip_template, at, energy, local_e, f, virial, args_str)
@@ -474,6 +489,8 @@ subroutine IP_Print(this, file)
       call Print(this%ip_brenner_screened, file=file)
     case (FF_Brenner_2002)
       call Print(this%ip_brenner_2002, file=file)
+    case (FF_ASAP)
+      call Print(this%ip_asap, file=file)
     ! add new IP here
     case (FF_Template)
       call Print(this%ip_template, file=file)
@@ -569,6 +586,9 @@ subroutine setup_parallel_groups(this, mpi, pgroup_size)
     case(FF_Brenner_2002)
       if (this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
       this%ip_brenner_2002%mpi = mpi_local
+    case(FF_ASAP)
+      if (this%ip_asap%mpi%active) call free_context(this%ip_asap%mpi)
+      this%ip_asap%mpi = mpi_local
     ! add new IP here
     case(FF_Template)
       if (this%ip_template%mpi%active) call free_context(this%ip_template%mpi)
