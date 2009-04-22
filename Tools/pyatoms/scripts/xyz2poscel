@@ -16,7 +16,7 @@ if __name__ == '__main__':
       f1 = Atoms()
       f1.read_xyz(f)
       f2 = Atoms()
-      f2.read_xyz()
+      f2.read_xyz(f)
       f.close()
 
    write_pos_cel(f1, f2)
