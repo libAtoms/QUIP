@@ -42,6 +42,10 @@ ifeq (${HAVE_LARSPOT},1)
   INCLUDES += -I${LARSPOT_INCDIR}
   DEFINES  += -DHAVE_MDCORE
 endif
+ifeq (${HAVE_ASAP},1)
+  LIBS += -L${ASAP_LIBDIR} -lasap
+  DEFINES += -DHAVE_ASAP
+endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif
