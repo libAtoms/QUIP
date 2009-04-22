@@ -17,21 +17,21 @@ PROGRAMS = eval md lj_example md_example \
 
 
 LIBS =  -L. -lquiputils -lquip -latoms 
-
+LIBFILES = libatoms.a libquip.a libquiputils.a
 
 .PHONY: clean allclean test
 
 all: ${PROGRAMS}
 
-${PROGRAMS}: % :  ${OBJS} %.o libatoms.a libquip.a libquiputils.a
+${PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 CRACK_OBJS = crackparams.o cracktools.o
 
-crack: % :  ${CRACK_OBJS} %.o
+crack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
 
-makecrack: % :  ${CRACK_OBJS} %.o
+makecrack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
 
 
