@@ -85,8 +85,8 @@ ifndef FOX_LIBDIR
 	  echo "Please enter directory where FoX include files are kept:" ; \
 	  read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> Makefile.inc ; \
 	  echo "HAVE_EXTERNAL_FOX=1" >> Makefile.inc ; \
-	else echo "FOX_LIBDIR=$${PWD}/FoX-4.0.3/objs/lib" >> Makefile.inc; \
-	  echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs/finclude" >> Makefile.inc; \
+	else echo "FOX_LIBDIR=$${PWD}/../FoX-4.0.3/objs.${QUIP_ARCH}/lib" >> Makefile.inc; \
+	  echo "FOX_INCDIR=$${PWD}/../FoX-4.0.3/objs.${QUIP_ARCH}/finclude" >> Makefile.inc; \
 	  echo "HAVE_EXTERNAL_FOX=0" >> Makefile.inc ; fi
 endif
 ifndef NETCDF_LIBDIR
