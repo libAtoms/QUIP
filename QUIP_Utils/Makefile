@@ -1,3 +1,6 @@
+all: libquiputils.a
+
+
 include Makefile.inc
 include Makefile.common
 ifeq (${QUIP_ARCH},)
@@ -10,7 +13,6 @@ endif
 F95_FILES =  transition_state elasticity phonons potential_test
 OBJS = ${addsuffix .o, ${F95_FILES}}
 
-all: libquiputils.a
 
 .PHONY : clean allclean 
 
