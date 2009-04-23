@@ -4226,6 +4226,7 @@ CONTAINS
    end subroutine uniq
 
    !% Sort an array of integers into ascending order (slow: scales as N$^2$).
+   !% r_data is an accompanying array of reals on which the same reordering is performed
    subroutine sort_array_i(array, r_data)
 
       integer, dimension(:), intent(inout) :: array
@@ -4233,6 +4234,7 @@ CONTAINS
       integer                              :: i,j,minpos
       integer :: min, tmp
       real(dp) :: r_tmp
+
 
       do i = 1, (size(array) - 1)
 
@@ -4261,6 +4263,7 @@ CONTAINS
    end subroutine sort_array_i
 
    !% Sort an array of integers into ascending order (slow: scales as N$^2$).
+   !% i_data is an accompanying array of integers on which the same reordering is performed
    subroutine sort_array_r(array, i_data)
 
       real(dp), dimension(:), intent(inout) :: array
@@ -4268,6 +4271,7 @@ CONTAINS
       integer                              :: i,j, minpos
       real(dp) :: tmp, min
       integer :: i_tmp
+
 
       do i = 1, (size(array) - 1)
 
