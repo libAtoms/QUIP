@@ -1,3 +1,5 @@
+all: libquip.a
+
 include Makefile.inc
 include Makefile.common
 ifeq (${QUIP_ARCH},)
@@ -47,7 +49,6 @@ TEST_TARGETS = test_KP test_Matrix test_TBMatrix test_TBModel test_TBSystem test
 
 TARGETS = ${TEST_TARGETS}
 
-all: libquip.a
 
 .PHONY : clean allclean depend doc
 
