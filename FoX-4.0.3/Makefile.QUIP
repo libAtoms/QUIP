@@ -1,6 +1,8 @@
 # simple Makefile to run configure and then make
 # using C and Fortran compiler specified in Makefile.${QUIP_ARCH}
 
+all: foxlibs
+
 include Makefile.inc
 include Makefile.common
 ifeq (${QUIP_ARCH},)
