@@ -119,9 +119,9 @@ ifndef ASAP_LIBDIR
         echo "Please enter directory where the ASAP Potential libraries are kept:" ; \
 	echo "   Default: no ASAP potential present" ; \
         read ASAP_LIBDIR && if [[ $$ASAP_LIBDIR ]] ; then \
-	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	  echo "HAVE_ASAP=1" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "HAVE_ASAP=0" >> ${BUILDDIR}/Makefile.inc ; fi
+	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> Makefile.inc ; echo ; \
+	  echo "HAVE_ASAP=1" >> Makefile.inc ; \
+	else echo "HAVE_ASAP=0" >> Makefile.inc ; fi
 endif
 ifndef EXTRA_LINKOPTS
 	@echo
