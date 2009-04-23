@@ -2075,7 +2075,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     }
     if (k != entry_count) {
       fprintf(stderr, "incomplete row, atom %d - got %d/%d entries\n", n, k, entry_count);
-      for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %d\n", i, fields[i], strlen(fields[i]));
+      for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
       return 0;
     }
 
@@ -3164,6 +3164,16 @@ int main (int argc, char **argv)
 #define OUTPUT 1
 #define INOUT  2 
 
+int cio_query(Atoms *at, int *frame) {
+  if (at->format == XYZ_FORMAT) {
+    if (at->xyz_in == NULL) return 0;
+    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0);
+  } else if (at->format == NETCDF_FORMAT) {
+    if (at->nc_in == 0) return 0;
+    return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
+  } else return 0;
+}
+
 int cio_init(Atoms **at, char *filename, int *action, int *append,
 	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	     int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
@@ -3171,7 +3181,10 @@ int cio_init(Atoms **at, char *filename, int *action, int *append,
 	     int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice)
 {
   char *p, *q;
-  int retval, i, z, *zp;
+  int i, z, *zp;
+#ifdef HAVE_NETCDF
+  int retval;
+#endif
 
   *at = malloc(sizeof(Atoms));
   if (*at == NULL) return 0;
@@ -3355,16 +3368,6 @@ void cio_free(Atoms *at) {
   }
   free(at->filter);
   free(at);
-}
-
-int cio_query(Atoms *at, int *frame) {
-  if (at->format == XYZ_FORMAT) {
-    if (at->xyz_in == NULL) return 0;
-    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0);
-  } else if (at->format == NETCDF_FORMAT) {
-    if (at->nc_in == 0) return 0;
-    return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
-  } else return 0;
 }
 
 int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
