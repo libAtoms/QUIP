@@ -1,3 +1,5 @@
+all: ${PROGRAMS}
+
 include Makefile.inc
 include Makefile.common
 ifeq (${QUIP_ARCH},)
@@ -6,14 +8,16 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-OBJS = vacancy_map_mod.o
+OBJS = vacancy_map_mod.o 
 
 PROGRAMS = eval md lj_example md_example \
   NRL_TB_to_xml DFTB_to_xml \
   calc_n_poles \
   analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
-  local_E_fd wrap align asaptest
+  local_E_fd wrap align local_random_search\
+  asaptest
+
 
 
 LIBS =  -L. -lquiputils -lquip -latoms 
@@ -21,7 +25,6 @@ LIBFILES = libatoms.a libquip.a libquiputils.a
 
 .PHONY: clean allclean test
 
-all: ${PROGRAMS}
 
 ${PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
