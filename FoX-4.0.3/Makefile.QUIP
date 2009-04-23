@@ -1,8 +1,16 @@
 # simple Makefile to run configure and then make
 # using C and Fortran compiler specified in Makefile.${QUIP_ARCH}
 
+include Makefile.inc
+include Makefile.common
+ifeq (${QUIP_ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${QUIP_ARCH}
+endif
 
-all:
+
+foxlibs:
 ifeq (${QUIP_ARCH},)
 	@echo
 	@echo "You need to define the architecture using the ARCH variable"
@@ -15,10 +23,3 @@ else
 	@echo "HAVE_EXTERNAL_FOX=1 - nothing to be done"
 endif
 
-include Makefile.inc
-include Makefile.common
-ifeq (${QUIP_ARCH},)
-  include Makefile.arch
-else
-  include Makefile.${QUIP_ARCH}
-endif
