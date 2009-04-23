@@ -28,7 +28,7 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
 
 
-${MODULES}: ${BUILDDIR} ${BUILDDIR}/Makefile.inc
+${MODULES}: ${BUILDDIR}
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
@@ -51,74 +51,6 @@ libAtoms/%: libAtoms
 
 ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH} ] ; then mkdir build.${QUIP_ARCH} ; fi
-
-${BUILDDIR}/Makefile.inc:
-	-rm -f ${BUILDDIR}/Makefile.inc
-ifndef MATH_LINKOPTS
-	@echo ; echo "In the following, hit enter to accept the defaults."
-	@echo
-	@echo "Please enter the linking options for LAPACK and BLAS libraries:"
-	@echo "   Default: ${DEFAULT_MATH_LINKOPTS}"
-	@read MATH_LINKOPTS && if [[ $$MATH_LINKOPTS == "" ]] ; then \
-	echo "MATH_LINKOPTS=${DEFAULT_MATH_LINKOPTS}" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "MATH_LINKOPTS=$$MATH_LINKOPTS" >> ${BUILDDIR}/Makefile.inc ; fi
-endif
-ifndef FOX_LIBDIR
-	@echo ; \
-        echo "Please enter directory where FoX libraries are kept:" ; \
-	echo "   Default: use included version ${FOX}" ; \
-        read FOX_LIBDIR && if [[ $$FOX_LIBDIR ]] ; then \
-	  echo "FOX_LIBDIR=$$FOX_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	  echo "Please enter directory where FoX include files are kept:" ; \
-	  read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	  echo "HAVE_EXTERNAL_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "FOX_LIBDIR=$${PWD}/FoX-4.0.3/objs.${QUIP_ARCH}/lib" >> ${BUILDDIR}/Makefile.inc; \
-	  echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs.${QUIP_ARCH}/finclude" >> ${BUILDDIR}/Makefile.inc; \
-	  echo "HAVE_EXTERNAL_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
-endif
-ifndef NETCDF_LIBDIR
-	@echo ; \
-        echo "Please enter directory where NetCDF libraries are kept:" ; \
-	echo "   Default: no NetCDF present" ; \
-        read NETCDF_LIBDIR && if [[ $$NETCDF_LIBDIR ]] ; then \
-	  echo "NETCDF_LIBDIR=$$NETCDF_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	  echo "Please enter directory where NetCDF include files are kept:" ; \
-	  read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	  echo "HAVE_NETCDF=1" >> ${BUILDDIR}/Makefile.inc ; \
-	  if nm $$NETCDF_LIBDIR/libnetcdf.a | grep -q deflate; then \
-            echo "NetCDF version 4 found."; echo "NETCDF4=1" >> ${BUILDDIR}/Makefile.inc; \
-	  else echo "NetCDF older than version 4 found."; echo "NETCDF4=0" >> ${BUILDDIR}/Makefile.inc; fi \
-	else echo "HAVE_NETCDF=0" >> ${BUILDDIR}/Makefile.inc ; fi
-endif
-ifndef LARSPOT_LIBDIR
-	@echo ; \
-        echo "Please enter directory where the Lars Potential libraries are kept:" ; \
-	echo "   Default: no Lars potential present" ; \
-        read LARSPOT_LIBDIR && if [[ $$LARSPOT_LIBDIR ]] ; then \
-	  echo "LARSPOT_LIBDIR=$$LARSPOT_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	  echo "Please enter directory where Lars Potential include files are kept:" ; \
-	  read LARSPOT_INCDIR && echo "LARSPOT_INCDIR=$$LARSPOT_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
-	  echo "HAVE_LARSPOT=1" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "HAVE_LARSPOT=0" >> ${BUILDDIR}/Makefile.inc ; fi
-endif
-ifndef ASAP_LIBDIR
-	@echo ; \
-        echo "Please enter directory where the ASAP Potential libraries are kept:" ; \
-	echo "   Default: no ASAP potential present" ; \
-        read ASAP_LIBDIR && if [[ $$ASAP_LIBDIR ]] ; then \
-	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; echo ; \
-	  echo "HAVE_ASAP=1" >> ${BUILDDIR}/Makefile.inc ; \
-	else echo "HAVE_ASAP=0" >> ${BUILDDIR}/Makefile.inc ; fi
-endif
-ifndef EXTRA_LINKOPTS
-	@echo
-	@echo "Please enter any other extra linking options:"
-	@echo "   Default: none"
-	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
-endif
-	echo "HAVE_LOTF=0" >> ${BUILDDIR}/Makefile.inc
-	echo "OPTIM=${DEFAULT_OPTIM}" >> ${BUILDDIR}/Makefile.inc
-	echo "DEBUG=${DEFAULT_DEBUG}" >> ${BUILDDIR}/Makefile.inc
 
 
 clean:
