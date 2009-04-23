@@ -25,7 +25,7 @@ endif
 
 ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
-	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP
+	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP foxlibs
 
 
 ${MODULES}: ${BUILDDIR}
