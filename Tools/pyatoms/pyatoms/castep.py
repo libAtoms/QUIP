@@ -535,6 +535,8 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
       energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
                             castep_output)
+   elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
+      energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
    else:
       energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
 
@@ -543,20 +545,20 @@ def read_castep_output(castep_file, cluster=None, abort=True):
          raise ValueError('No total energy found in castep file')
    else:
       # Energy is second to last field on line (last is "eV")
-      cluster.params['energy'] = float(energy_lines[0].split()[-2])
+      # Use last matching energy line in file
+      cluster.params['energy'] = float(energy_lines[-1].split()[-2])
 
    try:
 
-      try:
-         force_start = castep_output.index(' ******************** Forces *********************\n')
-      except ValueError:
-         try: 
-            force_start  = castep_output.index(' ************** Symmetrised Forces ***************\n')
-         except ValueError:
-            try:
-               force_start = castep_output.index(' ***************** Symmetrised Forces *****************\n')
-            except ValueError:
-               raise
+      for fn in ('Forces', 'Symmetrised Forces'):
+         force_start_lines = [s for s in castep_output if s.find('****** %s ******' % fn) != -1]
+         if force_start_lines != []: break
+
+      if force_start_lines == []:
+         raise ValueError
+
+      # Use last set of forces in file
+      force_start = castep_output.index(force_start_lines[-1])
 
       # Extract force lines from .castep file
       force_lines = castep_output[force_start+6:force_start+6+cluster.n]
