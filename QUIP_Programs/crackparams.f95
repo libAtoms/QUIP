@@ -382,7 +382,7 @@ contains
     this%classical_force_reweight = 1.0_dp   ! Fraction
 
      ! QM parameters
-    this%qm_args                  = 'FilePot ./castep_driver.py property_list=pos:embed'
+    this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
     this%qm_args_str              = ' '
     this%qm_small_clusters        = .false.
     this%qm_buffer_hops           = 3        ! Number
