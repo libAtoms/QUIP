@@ -39,7 +39,7 @@ def remove_ignored_stdout_lines(line):
 	       line.startswith('TIMER'))
 
 
-def runtest(command, diff_method, infiles, outfiles, capture_output=True):
+def runtest(testname, command, diff_method, infiles, outfiles, capture_output=True, keep_all_files=False):
 
    for name, contents in infiles.iteritems():
       if name != 'stdin':
@@ -111,23 +111,29 @@ def runtest(command, diff_method, infiles, outfiles, capture_output=True):
       if rd != []:
          no_differences = False
          print 'Mismatch in file %s' % name
-         fleft = open('%s.candidate' % name, 'w')
+         fleft = open('%s.%s.candidate' % (testname, name), 'w')
          fleft.writelines(cmpout[name][0])
          fleft.close()
-         fright = open('%s.reference' % name, 'w')
+         fright = open('%s.%s.reference' % (testname, name), 'w')
          fright.writelines(cmpout[name][1])
          fright.close()
          
          print ''.join(rd)
          
 
+   if keep_all_files:
+      open('%s.stdout' % testname,'w').write(stdout)
+      if 'stdin' in infiles:
+         open('%s.stdin' % testname, 'w').write(input)
+
    if not no_differences:
       return False
 
    # remove tmp files if passed
-   for fname in infiles.keys()+outfiles.keys():
-      if not fname in ('stdin','stdout'):
-         if os.path.exists(fname): os.unlink(fname)
+   if not keep_all_files:
+      for fname in infiles.keys()+outfiles.keys():
+         if not fname in ('stdin','stdout'):
+            if os.path.exists(fname): os.unlink(fname)
 
    return True
 
@@ -154,7 +160,7 @@ def do_diff(a, b, diff_method):
       return ndiff(a, b)
 
 
-def runtests(tests, capture_output, diff_method='auto'):
+def runtests(tests, capture_output, diff_method='auto', keep_all_files=False):
    if diff_method == 'auto':
       # Look for ndiff(1) executable somewhere on PATH
       diff_method = 'built in'
@@ -178,7 +184,7 @@ def runtests(tests, capture_output, diff_method='auto'):
    for name, command, infiles, outfiles in tests:
 
       print '  Running test : %s  ' % name
-      if runtest(command, diff_method, infiles, outfiles, capture_output):
+      if runtest(name, command, diff_method, infiles, outfiles, capture_output, keep_all_files):
          print '%s: OK' % name
       else:
          print '%s: FAIL' % name
@@ -232,7 +238,7 @@ def print_usage():
 James Kermode <james.kermode@kcl.ac.uk>
 
 Usage:  
-  To run tests:       QUIP_ARCH=arch %s -r [-D] [-d diff] TESTFILE...' % sys.argv[0
+  To run tests:       QUIP_ARCH=arch %s -r [-D -d -a] diff] TESTFILE...' % sys.argv[0
   To make a new test: QUIP_ARCH=arch -m TESTFILE [-i INFILE]...'  % sys.argv[0
                          [-o OUTFILE]... COMMAND
 
@@ -242,11 +248,13 @@ test case command, and INFILE and OUTFILE are input and output
 files for the new test case. If "-i stdin" is present then stdin
 will be read and passed along to the test program.
 
-The -D option indicates debug mode: stdout and stderr are dumped to the console.
+-D indicates debug mode: stdout and stderr are dumped to the console.
 
 -d can be used to override automatic detection of the diff tool to use to
 compare test output with the reference. By default we look for 'ndiff(1)'
 and fall back on built in Python diff if this can't be found.
+
+-a keeps all output files even if tests are passed.
    """
       
 if __name__ == '__main__':
@@ -262,7 +270,7 @@ if __name__ == '__main__':
       print_usage()
       sys.exit(1)
 
-   opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:Dd:')
+   opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:Dd:a')
 
    if opts[0][0] == '-r':
       try:
@@ -276,8 +284,10 @@ if __name__ == '__main__':
       if '-d' in opt:
          diff_method = vals[opt.index('-d')]
 
+      keep_all_files = '-a' in opt
+
       runtests(tests, capture_output=not ('-D','') in opts,
-               diff_method=diff_method)
+               diff_method=diff_method, keep_all_files=keep_all_files)
       
    elif opts[0][0] == '-m':
 
