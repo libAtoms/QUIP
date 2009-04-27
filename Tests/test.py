@@ -91,6 +91,11 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
    cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.split('\n')]),
                        filter(remove_ignored_stdout_lines,outfiles['stdout']))
 
+   if keep_all_files:
+      open('%s.stdout' % testname,'w').write(stdout)
+      if 'stdin' in infiles:
+         open('%s.stdin' % testname, 'w').write(input)
+
    for name, contents in outfiles.iteritems():
       if name != 'stdout':
          if not os.path.exists(name):
@@ -120,11 +125,6 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
          
          print ''.join(rd)
          
-
-   if keep_all_files:
-      open('%s.stdout' % testname,'w').write(stdout)
-      if 'stdin' in infiles:
-         open('%s.stdin' % testname, 'w').write(input)
 
    if not no_differences:
       return False
