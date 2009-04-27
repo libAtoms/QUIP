@@ -2602,8 +2602,10 @@ subroutine TBSystem_calc_orb_local_pot(this, global_at_weight)
 
   if (allocated(this%scf%terms)) then
      do i_term=1, size(this%scf%terms)
-        call add_term_dSCFE_dn(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_local_pot)
-        call add_term_dSCFE_dm(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_exch_field)
+	if (allocated(this%scf%orb_local_pot)) &
+	  call add_term_dSCFE_dn(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_local_pot)
+	if (allocated(this%scf%orb_exch_field)) &
+	  call add_term_dSCFE_dm(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_exch_field)
      end do
   end if
 
@@ -2616,6 +2618,8 @@ subroutine add_term_dSCFE_dn(this, tbsys, global_at_weight, dSCFE_dn)
   real(dp), intent(out) :: dSCFE_dn(:)
 
   integer :: i
+
+  dSCFE_dn = 0.0_dp
 
   select case (this%type)
     case (SCF_NONE)
@@ -2653,6 +2657,8 @@ subroutine add_term_dSCFE_dm(this, tbsys, global_at_weight, dSCFE_dm)
 
   integer :: i_at, i_man, i_orb
   real(dp) :: e(3)
+
+  dSCFE_dm = 0.0_dp
 
   select case (this%type)
     case (SCF_NONE)
@@ -3336,6 +3342,8 @@ function add_term_scf_virial_correction(this, at) result (virial_scf)
   type(Self_Consistency_Term), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp) :: virial_scf(3) ! result
+
+  virial_scf = 0.0_dp
 
   select case(this%type)
     case (SCF_NONE)
