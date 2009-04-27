@@ -67,8 +67,8 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
    if capture_output:
       stdout = subprocess.PIPE
       stderr = subprocess.PIPE
-      print 'running %s < %s.stdin' % (' '.join(args), testname)
    else:
+      print 'running %s < %s.stdin' % (' '.join(args), testname)
       stdout = None
       stderr = None
 
@@ -79,6 +79,10 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
       input = ''.join(infiles['stdin'])
 
    stdout, stderr = proc.communicate(input)
+
+   if keep_all_files:
+      if 'stdin' in infiles:
+         open('%s.stdin' % testname, 'w').write(input)
 
    if not capture_output:
       return False
@@ -94,8 +98,6 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
 
    if keep_all_files:
       open('%s.stdout' % testname,'w').write(stdout)
-      if 'stdin' in infiles:
-         open('%s.stdin' % testname, 'w').write(input)
 
    for name, contents in outfiles.iteritems():
       if name != 'stdout':
