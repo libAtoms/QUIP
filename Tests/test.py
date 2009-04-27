@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, re, getopt
+import os, sys, re, getopt, subprocess
 from difflib import ndiff
 
 def loadtests(testfiles):
@@ -39,7 +39,7 @@ def remove_ignored_stdout_lines(line):
 	       line.startswith('TIMER'))
 
 
-def runtest(command, diff_method, infiles, outfiles):
+def runtest(command, diff_method, infiles, outfiles, capture_output=True):
 
    for name, contents in infiles.iteritems():
       if name != 'stdin':
@@ -47,25 +47,44 @@ def runtest(command, diff_method, infiles, outfiles):
          f.writelines(contents)
          f.close()
 
-   # escape "s from shell
-   command = command.replace('"',r'\"')
-
    # Remove old output files
    for name, contents in outfiles.iteritems():
       if name != 'stdout':
          if os.path.exists(name): os.unlink(name)
 
-   stdin, stdout, stderr = os.popen3('./build.%s/%s' % (ARCH, command))
+   args = command.split()
+   exe_name = args[0]
+   exe = '%s/../build.%s/%s' % (os.environ['PWD'], ARCH, args[0])
 
+   if not os.path.isfile(exe):
+      print '%s does not exist, trying to build in QUIP_Programs' % exe
+      if os.system('cd .. && make QUIP_Programs/%s' % exe_name) != 0:
+         print 'Cannot compile %s' % exe_name
+         return False
+
+   args[0] = exe
+
+   if capture_output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.PIPE
+   else:
+      stdout = None
+      stderr = None
+
+   proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
+                           
+   input = None
    if 'stdin' in infiles:
-      stdin.writelines(infiles['stdin'])
-      stdin.close()
+      input = ''.join(infiles['stdin'])
 
+   stdout, stderr = proc.communicate(input)
+
+   if not capture_output:
+      return False
+   
    cmpout = {}
-   cmpout['stdout'] = (filter(remove_ignored_stdout_lines,stdout.readlines()),
+   cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.split('\n')]),
                        filter(remove_ignored_stdout_lines,outfiles['stdout']))
-
-   sys.stdout.writelines(stderr.readlines())
 
    for name, contents in outfiles.iteritems():
       if name != 'stdout':
@@ -118,18 +137,18 @@ def do_diff(a, b, diff_method):
       return ndiff(a, b)
 
 
-def runtests(tests):
+def runtests(tests, capture_output):
    # Look for ndiff(1) executable somewhere on PATH
    diff_method = 'built in'
-   for p in os.environ['PATH'].split(':'):
-      candidate_path = os.path.join(p,'ndiff')
-      if os.path.exists(candidate_path):
-         diff_method = candidate_path
-         break
+   #for p in os.environ['PATH'].split(':'):
+   #   candidate_path = os.path.join(p,'ndiff')
+   #   if os.path.exists(candidate_path):
+   #      diff_method = candidate_path
+   #      break
 
    if diff_method != 'built in':
       # Disable RuntimeWarning printed by os.tmpnam
-      def nowarning(message, category, filename, lineno): pass
+      def nowarning(message, category, filename, lineno, file=None, line=None): pass
       import warnings
       warnings.showwarning = nowarning
 
@@ -139,7 +158,7 @@ def runtests(tests):
    for name, command, infiles, outfiles in tests:
 
       print '  Running test : %s  ' % name, 
-      if runtest(command, diff_method, infiles, outfiles):
+      if runtest(command, diff_method, infiles, outfiles, capture_output):
          print 'OK'
       else:
          print 'FAIL'
@@ -188,29 +207,36 @@ def mktest(name, command, read_stdin=False, infiles=[], outfiles=[]):
          
 
 def print_usage():
-   print 'Regression testing program'
-   print 'James Kermode <jrk33@cam.ac.uk>'
-   print 
-   print 'Usage:  '
-   print '  To run tests:       %s ARCH -r TESTFILE...' % sys.argv[0]
-   print '  To make a new test: %s ARCH -m TESTFILE [-i INFILE]...'  % sys.argv[0]
-   print '                         [-o OUTFILE]... COMMAND'
-   print
-   print 'where ARCH is the Makefile arch suffix, TESTFILE is a file containing a'
-   print 'test case, COMMAND is the test case command, and INFILE and OUTFILE are'
-   print 'input and output files for the new test case. If "-i stdin" is present'
-   print 'then stdin will be read and passed along to the test program.'
-
+   """Regression testing program
+   James Kermode <jrk33@cam.ac.uk>
+   
+   Usage:  
+     To run tests:       QUIP_ARCH=arch %s -r [-d] TESTFILE...' % sys.argv[0
+     To make a new test: QUIP_ARCH=arch -m TESTFILE [-i INFILE]...'  % sys.argv[0
+                            [-o OUTFILE]... COMMAND
+   
+   where QUIP_ARCH is the architecture (can be set in an environment
+   variable), TESTFILE is a file containing a test case, COMMAND is the
+   test case command, and INFILE and OUTFILE are input and output
+   files for the new test case. If "-i stdin" is present then stdin
+   will be read and passed along to the test program. The -d option
+   indicates debug mode.
+   """
       
 if __name__ == '__main__':
 
-   if len(sys.argv) < 4:
+   if len(sys.argv) < 3:
       print_usage()
       sys.exit(1)
 
-   ARCH = sys.argv[1]
+   if 'QUIP_ARCH' in os.environ:
+      ARCH = os.environ['QUIP_ARCH']
+   else:
+      print 'QUIP_ARCH environment variable not set.'
+      print_usage()
+      sys.exit(1)
 
-   opts, args = getopt.getopt(sys.argv[2:],'rm:i:o:')
+   opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:d')
 
    print opts, args
 
@@ -220,7 +246,7 @@ if __name__ == '__main__':
       except ValueError,v:
          print 'Error loading testfile: %s' % v
          sys.exit(1)
-      runtests(tests)
+      runtests(tests, capture_output=not ('-d','') in opts)
       
    elif opts[0][0] == '-m':
 
