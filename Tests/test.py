@@ -160,17 +160,19 @@ def runtests(tests, capture_output):
    print 'Running %d regression tests using diff method: %s' % (len(tests), diff_method)
    print
    n_fail = 0
+   failed_tests = []
    for name, command, infiles, outfiles in tests:
 
       print '  Running test : %s  ' % name, 
       if runtest(command, diff_method, infiles, outfiles, capture_output):
-         print 'OK'
+         print '%s: OK' % name
       else:
-         print 'FAIL'
+         print '%s: FAIL' % name
+         failed_tests.append(name)
          n_fail += 1
 
    print
-   print 'Failed %d tests.' % n_fail
+   print 'Failed %d tests:  \n%s' % (n_fail, '\n  '.join(failed_tests))
    return n_fail == 0
 
 
@@ -242,8 +244,6 @@ if __name__ == '__main__':
       sys.exit(1)
 
    opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:d')
-
-   print opts, args
 
    if opts[0][0] == '-r':
       try:
