@@ -31,8 +31,8 @@ module MetaPotential_module
 #ifdef HAVE_LOTF
   use adjustablepotential_module, only: adjustable_potential_init, adjustable_potential_optimise, &
        adjustable_potential_force, adjustable_potential_finalise
-  use adjustablepotential_sw_module, only: adjustable_potential_sw_init, adjustable_potential_sw_optimise, &
-       adjustable_potential_sw_force, adjustable_potential_sw_finalise
+!  use adjustablepotential_sw_module, only: adjustable_potential_sw_init, adjustable_potential_sw_optimise, &
+!       adjustable_potential_sw_force, adjustable_potential_sw_finalise
 #endif
 
   implicit none
@@ -649,7 +649,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     am = transfer(am_data, am)
     ! beware of transfer and pointers !!!
-    call atoms_initialise_pointers(am%minim_at)
+    call atoms_repoint(am%minim_at)
 
     if (associated(am%minim_inoutput_movie) .or. associated(am%minim_cinoutput_movie)) then
       if (size(x) /= am%minim_at%N*3+9) call system_abort("Called gradient_func() with size mismatch " // &
@@ -737,7 +737,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     if (.not. present(am_data)) call system_abort("metapotential_minimise energy_func must have am_data")
     am = transfer(am_data, am)
-    call atoms_initialise_pointers(am%minim_at)
+    call atoms_repoint(am%minim_at)
 
     am%minim_n_eval_e = am%minim_n_eval_e + 1
 
@@ -802,7 +802,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     if (.not. present(am_data)) call system_abort("metapotential_minimise gradient_func must have am_data")
     am = transfer(am_data, am)
     ! beware of transfer and pointers !!!
-    call atoms_initialise_pointers(am%minim_at)
+    call atoms_repoint(am%minim_at)
 
     am%minim_n_eval_e = am%minim_n_eval_e + 1
 
@@ -915,7 +915,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     if (.not. present(am_data)) call system_abort("metapotential_minimise both_func must have am_data")
     am = transfer(am_data, am)
     ! beware of transfer and pointers !!!
-    call atoms_initialise_pointers(am%minim_at)
+    call atoms_repoint(am%minim_at)
 
     error = 0
 

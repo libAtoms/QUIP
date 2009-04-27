@@ -328,7 +328,7 @@ contains
        end select
     end do
 
-    call atoms_initialise_pointers(at)
+    call atoms_repoint(at)
     call set_lattice(at, transpose(this%lattice))
 
     if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
@@ -337,11 +337,11 @@ contains
        call system_abort('cinoutput_read: atoms object read from file has neither Z nor species')
     else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
        call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
-       call atoms_initialise_pointers(at)
+       call atoms_repoint(at)
        at%species = ElementName(at%Z)
     else if (.not. has_property(at,"Z") .and. has_property(at, "species")) then
        call add_property(at, "Z", 0)
-       call atoms_initialise_pointers(at)
+       call atoms_repoint(at)
        do i=1,at%n
           at%Z(i) = atomic_number_from_symbol(at%species(i))
        end do
