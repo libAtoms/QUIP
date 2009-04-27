@@ -81,6 +81,11 @@ def runtest(command, diff_method, infiles, outfiles, capture_output=True):
 
    if not capture_output:
       return False
+
+   if stderr != '':
+      print 'Error occurred running test.'
+      print stderr
+      return False
    
    cmpout = {}
    cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.split('\n')]),
@@ -140,11 +145,11 @@ def do_diff(a, b, diff_method):
 def runtests(tests, capture_output):
    # Look for ndiff(1) executable somewhere on PATH
    diff_method = 'built in'
-   #for p in os.environ['PATH'].split(':'):
-   #   candidate_path = os.path.join(p,'ndiff')
-   #   if os.path.exists(candidate_path):
-   #      diff_method = candidate_path
-   #      break
+   for p in os.environ['PATH'].split(':'):
+      candidate_path = os.path.join(p,'ndiff')
+      if os.path.exists(candidate_path):
+         diff_method = candidate_path
+         break
 
    if diff_method != 'built in':
       # Disable RuntimeWarning printed by os.tmpnam
