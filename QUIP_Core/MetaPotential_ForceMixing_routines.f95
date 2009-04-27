@@ -324,6 +324,8 @@
        !! TODO - possibly want to set more default options in the qm_args_str here
        if (.not. has_key(params, 'buffer_hops')) call set_value(params, 'buffer_hops', buffer_hops)
 
+       call set_value(params, 'randomise_buffer', randomise_buffer)
+
        ! We may have to rescale the cluster
        if (do_rescale_r) then
           call set_value(params, 'do_rescale_r', .true.)
