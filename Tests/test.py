@@ -67,6 +67,7 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
    if capture_output:
       stdout = subprocess.PIPE
       stderr = subprocess.PIPE
+      print 'running %s < %s.stdin' % (' '.join(args), testname)
    else:
       stdout = None
       stderr = None
