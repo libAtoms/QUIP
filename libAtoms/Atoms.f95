@@ -253,7 +253,7 @@
 ! Fixed real properties in atoms_intialise_pointers. Changed connection_print "out" argument to "file". Updated connection_file_write to use new Table array binary_writes for speed
 !
 ! Revision 1.99  2007/08/10 15:27:19  gc121
-! now we return immediate form atoms_initialise_pointers if this%N==0, but for now I didnt touch the zero-sized pointer assignments, until we conclude the argument about this routine
+! now we return immediate form atoms_repoint if this%N==0, but for now I didnt touch the zero-sized pointer assignments, until we conclude the argument about this routine
 !
 ! Revision 1.98  2007/08/10 13:09:16  jrk33
 ! Removed hardcoded sizes for default_int and default_real in atoms_initialise
@@ -1374,7 +1374,7 @@ contains
 
     this%N = N
 
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
 
     stack_size = 3*N*8/1024
     if (stack_size > 4000 .and. .not. printed_stack_warning) then
@@ -1397,7 +1397,7 @@ contains
 
   !% OMIT
   ! Initialise pointers for convenient access to special columns of this%data
-  subroutine atoms_initialise_pointers(this)
+  subroutine atoms_repoint(this)
     type(Atoms), target, intent(inout) :: this
     integer :: i, lookup(3)
     character(len=key_len) :: key
@@ -1414,7 +1414,7 @@ contains
 
        key = this%properties%keys(i)
        if (.not. get_value(this%properties, key, lookup)) &
-            call system_abort('Atoms_initialise_pointers: key '//trim(key)//' not found.')
+            call system_abort('Atoms_repoint: key '//trim(key)//' not found.')
 
        ! If this%N is zero then point at zero length arrays
        if (this%N == 0) then
@@ -1499,7 +1499,7 @@ contains
 
     end do
 
-  end subroutine atoms_initialise_pointers
+  end subroutine atoms_repoint
 
 
   subroutine atoms_finalise(this)
@@ -1588,7 +1588,7 @@ contains
     to%cutoff      = from%cutoff
     to%nneightol   = from%nneightol
 
-    call atoms_initialise_pointers(to)
+    call atoms_repoint(to)
     to%initialised = .true.
 
   end subroutine atoms_copy_without_connect
@@ -1626,7 +1626,7 @@ contains
        call select(to%data, from%data, row_list=list)
     end if
 
-    call atoms_initialise_pointers(to)
+    call atoms_repoint(to)
   end subroutine atoms_select
 
   subroutine atoms_remove_property(this, name)
@@ -1654,7 +1654,7 @@ contains
     call remove_value(this%properties, name)
 
     ! remove_columns will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
 
   end subroutine atoms_remove_property
 
@@ -1699,7 +1699,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int
@@ -1735,7 +1735,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int_a
@@ -1771,7 +1771,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real
@@ -1807,7 +1807,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real_a
@@ -1843,7 +1843,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str
@@ -1879,7 +1879,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str_a
@@ -1915,7 +1915,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical
@@ -1951,7 +1951,7 @@ contains
     if (present(lookup)) lookup = use_lookup
 
     ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
     call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical_a
@@ -2510,7 +2510,7 @@ contains
             call system_abort('Add_Atoms: this%data%realsize /= data%realsize')
 
        call append(this%data, data)
-       call atoms_initialise_pointers(this)
+       call atoms_repoint(this)
     
     else
        if (.not. present(Z)) call system_abort('Atoms_Add: Z must be present if data is not')
@@ -2524,7 +2524,7 @@ contains
        if (present(acc)) call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom')
 
        call append(this%data, blank_rows=size(Z))
-       call atoms_initialise_pointers(this)
+       call atoms_repoint(this)
 
        ! First check the integer properties...
        if (.not. get_value(this%properties, 'Z', lookup)) &
@@ -2617,7 +2617,7 @@ contains
     ! update N
     this%N = this%N - size(atom_indices)
 
-    call atoms_initialise_pointers(this)
+    call atoms_repoint(this)
 
   end subroutine remove_atom_multiple
 
@@ -4911,7 +4911,7 @@ contains
       call read_binary(this%params, infile)               !3
       call read_binary(this%connect,infile)               !4
 
-      call atoms_initialise_pointers(this)
+      call atoms_repoint(this)
 
    end subroutine atoms_file_read
 

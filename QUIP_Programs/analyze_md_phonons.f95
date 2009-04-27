@@ -81,7 +81,7 @@ implicit none
   call print("Masses " // ElementMass(config%Z))
 
 call add_property(config, "mass", 0.0_dp, 1)
-call atoms_initialise_pointers(config)
+call atoms_repoint(config)
 config%mass = ElementMass(config%Z)
 MoI = moment_of_inertia_tensor(config, centre_of_mass(config))
 call diagonalise(MoI, MoI_evals, MoI_evecs_orig)
@@ -96,7 +96,7 @@ call print(MoI_evecs_orig, VERBOSE)
       done = .true.
     else
       call add_property(config, "mass", 0.0_dp, 1)
-      call atoms_initialise_pointers(config)
+      call atoms_repoint(config)
       config%mass = ElementMass(config%Z)
       if (.not. associated(config%velo)) &
 	call system_abort("config " // config_i // " has no velo pointer")
