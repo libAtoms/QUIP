@@ -111,9 +111,13 @@ def runtest(command, diff_method, infiles, outfiles, capture_output=True):
       if rd != []:
          no_differences = False
          print 'Mismatch in file %s' % name
-         print ''.join(rd)
-         #print ''.join(cmpout[name][0])
-         #print ''.join(cmpout[name][1])
+         fleft = open('%s.candidate' % name, 'w')
+         fleft.writelines(cmpout[name][0])
+         fleft.close()
+         fright = open('%s.reference' % name, 'w')
+         fright.writelines(cmpout[name][1])
+         fright.close()
+         
 
    if not no_differences:
       return False
@@ -136,7 +140,7 @@ def do_diff(a, b, diff_method):
       fb.close()
       if diff_method.find('ndiff') != -1:
          cin, cout, cerr = os.popen3("%s -abserr 1e-10 -separators '[ \t=\(\)\n]' %s %s" % (diff_method, fnamea, fnameb))
-      else: # assume it's like standard diff
+      else: # assume it's called like standard unix diff
          cin, cout, cerr = os.popen3("%s %s %s" % (diff_method, fnamea, fnameb))
       result = cout.readlines()
       result.extend(cerr.readlines())
@@ -200,7 +204,7 @@ def mktest(name, command, read_stdin=False, infiles=[], outfiles=[]):
    # escape "s from shell
    command = command.replace('"',r'\"')
 
-   stdin, stdout = os.popen2('./build.%s/%s' % (ARCH, command))
+   stdin, stdout = os.popen2('%s/../build.%s/%s' % (os.environ['PWD'],ARCH, command))
 
    if read_stdin:
       testfile.write('---<stdin---\n')
