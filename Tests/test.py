@@ -118,6 +118,8 @@ def runtest(command, diff_method, infiles, outfiles, capture_output=True):
          fright.writelines(cmpout[name][1])
          fright.close()
          
+         print ''.join(rd)
+         
 
    if not no_differences:
       return False
@@ -175,7 +177,7 @@ def runtests(tests, capture_output, diff_method='auto'):
    failed_tests = []
    for name, command, infiles, outfiles in tests:
 
-      print '  Running test : %s  ' % name, 
+      print '  Running test : %s  ' % name
       if runtest(command, diff_method, infiles, outfiles, capture_output):
          print '%s: OK' % name
       else:
