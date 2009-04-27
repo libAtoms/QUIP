@@ -1320,6 +1320,7 @@ subroutine TB_Spin_Orbit_Coupling_Initialise_str(this, args_str, param_str)
 
   call read_params_xml(this, param_str)
 
+  call initialise(params)
   call param_register(params, 'spin_orbit_coupling', 'F', this%active)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
     call system_abort("TB_Spin_Orbit_Coupling_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
