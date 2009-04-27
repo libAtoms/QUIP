@@ -1,0 +1,9 @@
+Tests for QUIP system
+
+Usage:
+  set the QUIP_ARCH environment variable, and run
+    ./test.py -r FILE.test
+
+Results will almost certainly indicate failure, even if tests succeeded, because
+of numerical noise, unless you install ndiff
+   http://www.math.utah.edu/~beebe/software/ndiff/
