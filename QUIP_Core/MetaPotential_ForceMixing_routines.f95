@@ -380,31 +380,34 @@
           deallocate(df)
 
        else if (trim(this%method) == 'lotf_adj_pot_sw') then
+
+          call system_abort('lotf_adj_pot_sw no longer supported.')
+
           ! old style adj pot: SW with variable parameters
 
-          allocate(df(3,this%fitlist%N))
-       
-          ! old style method: we fit to QM force in embed region and MM force in outer fit region,
-          ! not to force difference
-          df = f_mm(:,fit)
-          df(:,1:this%embedlist%N) = f_qm(:,embed)
-
-          if (lotf_do_init) &
-               call adjustable_potential_sw_init(at, this%fitlist)
-
-          if (lotf_do_qm .and. lotf_do_fit) &
-               call adjustable_potential_sw_optimise(at, df)
-
-          if (lotf_do_interp) then
-             call adjustable_potential_force(at, df, interp=lotf_interp)
-          else
-             call adjustable_potential_force(at, df)
-          end if
-       
-          f = f_mm           ! start with classical forces
-          f(:,fit) = df      ! replace with fitted force
-
-          deallocate(df)
+!!$          allocate(df(3,this%fitlist%N))
+!!$       
+!!$          ! old style method: we fit to QM force in embed region and MM force in outer fit region,
+!!$          ! not to force difference
+!!$          df = f_mm(:,fit)
+!!$          df(:,1:this%embedlist%N) = f_qm(:,embed)
+!!$
+!!$          if (lotf_do_init) &
+!!$               call adjustable_potential_sw_init(at, this%fitlist)
+!!$
+!!$          if (lotf_do_qm .and. lotf_do_fit) &
+!!$               call adjustable_potential_sw_optimise(at, df)
+!!$
+!!$          if (lotf_do_interp) then
+!!$             call adjustable_potential_force(at, df, interp=lotf_interp)
+!!$          else
+!!$             call adjustable_potential_force(at, df)
+!!$          end if
+!!$       
+!!$          f = f_mm           ! start with classical forces
+!!$          f(:,fit) = df      ! replace with fitted force
+!!$
+!!$          deallocate(df)
 
        end if
 
