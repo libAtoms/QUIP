@@ -87,8 +87,6 @@ embed list
       389        0        0        0
       483        0        0        0
 WARNING: atoms_add_property - pointers invalidated
-count(hybrid /= 0)17
-count(hybrid_mark /= 0)17
 single_cluster
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
