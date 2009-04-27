@@ -71,3 +71,6 @@ atomeye:
 
 quippy:
 	make -C Tools/quippy install QUIP_ROOT=${PWD}
+
+test:
+	${MAKE} -C Tests -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}
