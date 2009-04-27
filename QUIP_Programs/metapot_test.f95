@@ -41,6 +41,7 @@ program metapot_test
   ! Test embedding methods in Potential calc()
   call add_property(at, 'hybrid_mark', HYBRID_NO_MARK)
   if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) call system_abort('Cannot assign hybrid_mark pointer')
+  if (.not. assign_pointer(at, 'hybrid', hybrid)) call system_abort('Cannot assign hybrid pointer')
   where (hybrid /= 0) hybrid_mark = HYBRID_ACTIVE_MARK
 
   call print('single_cluster')
