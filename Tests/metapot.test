@@ -1,4 +1,4 @@
-tests/metapot_test
+metapot_test
 ---<metapot_test_params.xml---
 <quip_params>
 <SW_params n_types="2" label="PRB_31_plus_H">
