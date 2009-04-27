@@ -10,12 +10,13 @@
 # Input file is $1, output goes to $2. Both file are in extended
 # XYZ format.
 
+SEQ=jot # name of seq. on BSD systems, it happens to be called jot
 olddir=`pwd`
 [[ -z "$castep" ]] && castep=$olddir/castep  # Path to CASTEP executable
 template=$olddir/castep_driver         # Template .cell and .param files
 castep_dir=.                           # Directory in which to run CASTEP
 use_check_files=1                      # Should we try to restart from .check files?
-max_force_tol=5.0                      # Max force that is considered reasonable:
+max_force_tol=99999.0                      # Max force that is considered reasonable:
                                        # if there are any larger forces we rerun CASTEP
 test_mode=0                            # Set to 1 to test script without actually running castep
 
@@ -29,6 +30,7 @@ cd $castep_dir
 # $1 : file name
 # $2 : property name
 # $3 : if set to 1, print species labels, otherwise don't
+# $4 : if nonempty, multiply property by this
 function print_property {
     awk 'NR == 2 {
   match($0,/Properties="?([^" ]*)/,a);
@@ -42,7 +44,7 @@ function print_property {
       { begin=sum+1; end=sum+b[i+2]; break; }
   };
   n = 1;
-  for (i = begin+1; i <= end +1; i++) {
+  for (i = begin; i <= end; i++) {
      fields[n]=i;
      n++;
   }
@@ -100,7 +102,7 @@ then
     echo "reuse: default" >> ${stem}.param
 fi
 
-for loop in `seq 1 2`; do # Loop at most twice: once reusing check file and once without
+for loop in 1 2 ; do # Loop at most twice: once reusing check file and once without
 
     # Invoke castep
     if [[ $test_mode == 1 ]]; then
@@ -134,7 +136,9 @@ for loop in `seq 1 2`; do # Loop at most twice: once reusing check file and once
     # Extract information from .castep file
     ctime=`grep 'Total time' ${stem}.castep | awk '{print $4}'`
 
-    if ! grep "fix_occupancy" ${stem}.param | grep -q 'true'; then
+    if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
+	energy=`grep "Final Enthalpy" ${stem}.castep | awk '{print $5}'`
+    elif ! grep "fix_occupancy" ${stem}.param | grep -q 'true'; then
 	energy=`grep "Final energy" ${stem}.castep | awk '{print $4}'`
     elif ! grep "finite_basis_corr" ${stem}.param | grep -q 'none'; then
 	energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | 
@@ -147,7 +151,7 @@ for loop in `seq 1 2`; do # Loop at most twice: once reusing check file and once
     echo $N > ${stem}.out
 
     # Second line of output is parameter line
-    echo Lattice\=\"$lattice\" Properties=\"pos:R:3:force:R:3\" energy\=$energy >> ${stem}.out
+    echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy >> ${stem}.out
 
     # Extract forces
     grep -A $(($N+5)) "***** Forces *****" ${stem}.castep | tail -$N | \
@@ -155,7 +159,22 @@ for loop in `seq 1 2`; do # Loop at most twice: once reusing check file and once
 
     # Combine atomic positions and forces, converting from castep 
     # (species,species number) ordering to atom number ordering as we go
-    paste <(print_property $xyzfile pos 1) <(for i in `seq 1 $N`
+    
+    if [[ $SEQ == "seq" ]] ; then
+	numlist=`seq 1 $N`
+    elif [[ $SEQ == "jot" ]] ; then
+	numlist=`jot $N 1` 
+    else
+	echo "cannot interpret SEQ variable"
+	exit 1
+    fi
+
+    if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
+	tail -$(($N*2+1)) ${stem}.geom | head -$N | awk -v factor=1 '{print $1, $3*factor,$4*factor,$5*factor}' > ${stem}_tmppos
+    else
+	print_property $xyzfile pos 1 > ${stem}_tmppos
+    fi
+    paste ${stem}_tmppos <(for i in $numlist
     do
        # Find species and species count of ith atom in XYZ file
        at=`awk 'NR > 2 { nz[$1] += 1 } NR-2 == '$i' {print $1, nz[$1]}' $xyzfile`
@@ -163,9 +182,11 @@ for loop in `seq 1 2`; do # Loop at most twice: once reusing check file and once
        grep "^$at " ${stem}_tmpforce | awk '{printf "%16.8f%16.8f%16.8f\n",$3,$4,$5}'
     done) >> ${stem}.out
 
+    
+
     # Save all castep output
     cat ${stem}.castep >> ${stem}_castep_output
-    rm ${stem}_tmpforce
+    #rm ${stem}_tmpforce ${stem}_tmppos
 
     if [[ `wc -l ${stem}.out | awk '{print $1}'` != $(($N+2)) ]]
 	then
