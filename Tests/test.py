@@ -24,10 +24,7 @@ def loadtests(testfiles):
             infiles[name[1:].strip()]  = contents[1:].splitlines(1)
          elif name[0] == '>':
             outfiles[name[1:].strip()] = contents[1:].splitlines(1)
-            fo = open(name[1:],'w')
-            fo.writelines(outfiles[name[1:]])
-            fo.close()
-      
+     
       if not 'stdout' in outfiles:
          raise ValueError('Missing stdout section in testfile %s' % testfile)
       
