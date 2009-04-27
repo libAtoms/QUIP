@@ -1,4 +1,4 @@
-tests/tabletest; rm table.bin
+tabletest
 --->stdout---
 System::Hello World: 06/10/2008   13:30:56
 System::Hello World: Random Seed = 377
