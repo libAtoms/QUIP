@@ -24,6 +24,9 @@ def loadtests(testfiles):
             infiles[name[1:].strip()]  = contents[1:].splitlines(1)
          elif name[0] == '>':
             outfiles[name[1:].strip()] = contents[1:].splitlines(1)
+            fo = open(name[1:],'w')
+            fo.writelines(outfiles[name[1:]])
+            fo.close()
       
       if not 'stdout' in outfiles:
          raise ValueError('Missing stdout section in testfile %s' % testfile)
@@ -115,12 +118,15 @@ def runtest(command, diff_method, infiles, outfiles, capture_output=True):
          #print ''.join(cmpout[name][0])
          #print ''.join(cmpout[name][1])
 
-   # remove tmp files
+   if not no_differences:
+      return False
+
+   # remove tmp files if passed
    for fname in infiles.keys()+outfiles.keys():
       if not fname in ('stdin','stdout'):
          if os.path.exists(fname): os.unlink(fname)
 
-   return no_differences
+   return True
 
 # Use ndiff(1) if found, otherwise use built in diff
 def do_diff(a, b, diff_method):
@@ -142,14 +148,16 @@ def do_diff(a, b, diff_method):
       return ndiff(a, b)
 
 
-def runtests(tests, capture_output):
-   # Look for ndiff(1) executable somewhere on PATH
-   diff_method = 'built in'
-   for p in os.environ['PATH'].split(':'):
-      candidate_path = os.path.join(p,'ndiff')
-      if os.path.exists(candidate_path):
-         diff_method = candidate_path
-         break
+def runtests(tests, capture_output, diff_method='auto'):
+   if diff_method == 'auto':
+      # Look for ndiff(1) executable somewhere on PATH
+      diff_method = 'built in'
+      for p in os.environ['PATH'].split(':'):
+         candidate_path = os.path.join(p,'ndiff')
+         if os.path.exists(candidate_path):
+            diff_method = candidate_path
+            break
+
 
    if diff_method != 'built in':
       # Disable RuntimeWarning printed by os.tmpnam
@@ -214,20 +222,25 @@ def mktest(name, command, read_stdin=False, infiles=[], outfiles=[]):
          
 
 def print_usage():
-   """Regression testing program
-   James Kermode <jrk33@cam.ac.uk>
-   
-   Usage:  
-     To run tests:       QUIP_ARCH=arch %s -r [-d] TESTFILE...' % sys.argv[0
-     To make a new test: QUIP_ARCH=arch -m TESTFILE [-i INFILE]...'  % sys.argv[0
-                            [-o OUTFILE]... COMMAND
-   
-   where QUIP_ARCH is the architecture (can be set in an environment
-   variable), TESTFILE is a file containing a test case, COMMAND is the
-   test case command, and INFILE and OUTFILE are input and output
-   files for the new test case. If "-i stdin" is present then stdin
-   will be read and passed along to the test program. The -d option
-   indicates debug mode.
+   print """Regression testing program
+James Kermode <james.kermode@kcl.ac.uk>
+
+Usage:  
+  To run tests:       QUIP_ARCH=arch %s -r [-D] [-d diff] TESTFILE...' % sys.argv[0
+  To make a new test: QUIP_ARCH=arch -m TESTFILE [-i INFILE]...'  % sys.argv[0
+                         [-o OUTFILE]... COMMAND
+
+where QUIP_ARCH is the architecture (can be set in an environment
+variable), TESTFILE is a file containing a test case, COMMAND is the
+test case command, and INFILE and OUTFILE are input and output
+files for the new test case. If "-i stdin" is present then stdin
+will be read and passed along to the test program.
+
+The -D option indicates debug mode: stdout and stderr are dumped to the console.
+
+-d can be used to override automatic detection of the diff tool to use to
+compare test output with the reference. By default we look for 'ndiff(1)'
+and fall back on built in Python diff if this can't be found.
    """
       
 if __name__ == '__main__':
@@ -243,7 +256,7 @@ if __name__ == '__main__':
       print_usage()
       sys.exit(1)
 
-   opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:d')
+   opts, args = getopt.getopt(sys.argv[1:],'rm:i:o:Dd:')
 
    if opts[0][0] == '-r':
       try:
@@ -251,7 +264,14 @@ if __name__ == '__main__':
       except ValueError,v:
          print 'Error loading testfile: %s' % v
          sys.exit(1)
-      runtests(tests, capture_output=not ('-d','') in opts)
+
+      opt, vals = zip(*opts)
+      diff_method = 'auto'
+      if '-d' in opt:
+         diff_method = vals[opt.index('-d')]
+
+      runtests(tests, capture_output=not ('-D','') in opts,
+               diff_method=diff_method)
       
    elif opts[0][0] == '-m':
 
