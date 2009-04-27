@@ -137,7 +137,10 @@ def do_diff(a, b, diff_method):
       fb.writelines(b)
       fa.close()
       fb.close()
-      cin, cout, cerr = os.popen3("%s -abserr 1e-10 -separators '[ \t=\(\)\n]' %s %s" % (diff_method, fnamea, fnameb))
+      if diff_method.find('ndiff') != -1:
+         cin, cout, cerr = os.popen3("%s -abserr 1e-10 -separators '[ \t=\(\)\n]' %s %s" % (diff_method, fnamea, fnameb))
+      else: # assume it's like standard diff
+         cin, cout, cerr = os.popen3("%s %s %s" % (diff_method, fnamea, fnameb))
       result = cout.readlines()
       result.extend(cerr.readlines())
       result = filter(lambda s: not s.startswith('###'), result)
