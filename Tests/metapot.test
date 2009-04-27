@@ -1,5 +1,5 @@
 metapot_test
----<lotf_params.xml---
+---<metapot_test_params.xml---
 <quip_params>
 <SW_params n_types="2" label="PRB_31_plus_H">
 <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984), extended for other elements </comment>
@@ -28,7 +28,7 @@ metapot_test
       lambda="21.0" gamma="1.20" eps="2.1675" />
 </SW_params>
 
-<SW_params n_types="2" label="eps_2.3">
+<SW_params n_types="2" label="eps_2.6">
 
 <per_type_data type="1" atomic_num="1" />
 <per_type_data type="2" atomic_num="14" />
