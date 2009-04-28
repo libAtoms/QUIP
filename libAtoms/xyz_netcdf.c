@@ -2537,6 +2537,7 @@ int main (int argc, char **argv)
 			  {0.0,0.0,0.0}};
   int shuffle, deflate, deflate_level;
   int nc_in, nc_out;
+  int allow_redefine = 0;
 
   // default deflation settings for now
   shuffle = 1; deflate = 1; deflate_level = 6;
@@ -2552,6 +2553,8 @@ int main (int argc, char **argv)
   if (xyz2xyz + xyz2nc + nc2xyz + xyzstat + nc2nc + ncstat != 1)
     pe("Executable %s should be one of:\nxyz2nc, nc2xyz, xyz2xyz, nc2nc, xyzstat, ncstat\n", 
        exename);
+
+  if(xyz2xyz) allow_redefine = 1;
 
   cflag = 0;
   rflag = 0;
@@ -2838,7 +2841,7 @@ int main (int argc, char **argv)
 	for (i=f_start; i<f_stop; i+=f_step) nframes++;
 
 	for (i=f_start; i < f_stop; i += f_step) {
-	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, 0, 1, 0)) 
+	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, allow_redefine, 1, 0)) 
 	    pe("Error reading frame %d", i);
 	  
 	  if (xyz2xyz || xyz2nc) {
@@ -2910,7 +2913,7 @@ int main (int argc, char **argv)
 	  }
 	}
       } else {
-	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, 0, 1, 1))) {
+	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1))) {
 	  debug("read frame %d\n", n);
 	  
 	  if(Lflag)
