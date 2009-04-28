@@ -29,6 +29,7 @@ program metapot_test
   call calc_connect(at)
 
   ! Mark some atoms for embedding
+  call set_value(at%params, 'mode', 'embedding')
   call add_property(at, 'hybrid', 0)
   if (.not. assign_pointer(at, 'hybrid', hybrid)) call system_abort('Cannot assign hybrid pointer')
   call append(embedlist, (/1,0,0,0/))
@@ -58,6 +59,7 @@ program metapot_test
 
   ! Now test all the (non-LOTF) force mixing methods
 
+  call set_value(at%params, 'mode', 'force_mixing')
   call print('force_mixing')
   call initialise(metapot, 'ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(metapot)
@@ -65,6 +67,7 @@ program metapot_test
   call print(f1)
   call finalise(metapot)
 
+  call set_value(at%params, 'mode', 'force_mixing_smooth')
   call print('force_mixing_smooth')
   call initialise(metapot, 'ForceMixing method=force_mixing_smooth buffer_hops=1 qm_args_str={single_cluster=T  cluster_calc_connect=T}', pot1, pot2)
   call print(metapot)
@@ -73,6 +76,7 @@ program metapot_test
   call print('force_mixing_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
   call finalise(metapot)
 
+  call set_value(at%params, 'mode', 'force_mixing_super_smooth')
   call print('force_mixing_super_smooth')
   call initialise(metapot, 'ForceMixing method=force_mixing_super_smooth buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(metapot)
@@ -81,6 +85,7 @@ program metapot_test
   call print('force_mixing_super_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
   call finalise(metapot)
 
+  call set_value(at%params, 'mode', 'conserve_momentum')
   call print('conserve_momentum')
   call initialise(metapot, 'ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(metapot)
