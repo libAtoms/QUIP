@@ -35,7 +35,7 @@ class clean(_clean):
         remove_tree(build_base)
 
 
-def SourceImporter(infile, defines, include_dirs, cpp):
+def SourceImporter(infile, defines, include_dirs, cpp, do_import=True):
     """Import source code from infile and copy to build_dir/package,
        passing through filter if it's an F95 source file. The filter
        converts all private variables to public and runs the cpp
@@ -45,10 +45,13 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 
         outfile = os.path.join(build_dir, os.path.split(infile)[1])
 
+        if outfile.endswith('.f95'):
+            outfile = outfile[:-4]+'.f90'
+
         cpp_opt = ' '.join(gen_preprocess_options(macros, include_dirs))
 
         if infile.endswith('.f95'):
-            if newer(infile, outfile):
+            if do_import and newer(infile, outfile):
                 print 'filtering %s to create %s' % (infile, outfile)
                 # Munge source a little... this could be converted to pure python at some point
 
@@ -67,7 +70,8 @@ def SourceImporter(infile, defines, include_dirs, cpp):
         else:
             #if newer(infile, outfile):
             #    os.system("cat %s | cpp %s > %s" % (infile, cpp_opt, outfile))
-            copy_file(infile, outfile, update=True)
+            if do_import:
+                copy_file(infile, outfile, update=True)
 
         return outfile
     
@@ -175,6 +179,11 @@ for arg in argfilt:
     macros.append((k,v))
     del sys.argv[sys.argv.index(arg)]
 
+argfilt = filter(lambda s: s.startswith('-U'), sys.argv)
+for arg in argfilt:
+    macros.append((arg[2:],))
+    del sys.argv[sys.argv.index(arg)]
+
 print 'macros = ', macros
 
 do_quippy_extension = True
@@ -220,6 +229,12 @@ if argfilt:
     atomeye_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 
+do_import = True
+argfilt = [ s for s in sys.argv if s == '--no-import-source']
+if argfilt:
+    do_import = False
+    del sys.argv[sys.argv.index(argfilt[0])]
+
 if do_quippy_extension:
     macros += [('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
     arraydata_ext = Extension(name='quippy.arraydata', 
@@ -230,7 +245,7 @@ if do_quippy_extension:
     libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
 
     libatoms_lib = ('atoms', {
-            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp) for f in libatoms_files ],
+            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp, do_import) for f in libatoms_files ],
             'include_dirs': include_dirs + [libatoms_dir],
             'macros': macros
             })
@@ -247,7 +262,7 @@ if do_quippy_extension:
     data_files = ['quippy.spec']
 
     ext_args = {'name': 'quippy._quippy',
-                'sources': [ F90WrapperBuilder('quippy', filter(lambda f: f.endswith('.f95'), libatoms_sources + quip_core_sources),
+                'sources': [ F90WrapperBuilder('quippy', [ f[:-4]+'.f90' for f in libatoms_sources + quip_core_sources if f.endswith('.f95') ],
                                                cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                     'dictionary_t':'FoX_sax'}], 
                                                donothing=False,
