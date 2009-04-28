@@ -2591,7 +2591,7 @@ contains
 
     call print('System::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,VERBOSE)
     idum = new_seed
-    call random_seed(new_seed) ! fortran intrinsic generator
+    call random_seed(put=(/new_seed/)) ! fortran intrinsic generator
   end subroutine system_reseed_rng
 
   !% Return the current random number seed. 
