@@ -8,10 +8,10 @@ endif
 
 .PHONY: clean build install atomeyelib presetup
 
-CONFIG_FC_OPTS =  --f90flags="-ffree-line-length-none -x f95-cpp-input" --cpp="gfortran -E -x f95-cpp-input" 
+CONFIG_FC_OPTS =  --f90flags="-ffree-line-length-none" --cpp="gfortran -E -x f95-cpp-input" 
 BUILD_EXT_OPTS =  --fcompiler=gnu95
 BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${ATOMEYE} #--f2py-opts=--debug-capi 
-BUILD_OPTS = --debug ${INCLUDES} ${DEFINES} ${SYSLIBS} 
+BUILD_OPTS = --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
 INSTALL_OPTS = --home=${HOME}
 
 SETUP_OPTS = config_fc ${CONFIG_FC_OPTS} build_ext ${BUILD_EXT_OPTS} build_src ${BUILD_SRC_OPTS}
@@ -28,7 +28,6 @@ include ${QUIP_CORE_DIR}/Makefile
 QUIP_CORE=--quip-core-dir=${QUIP_CORE_DIR} \
 	--quip-core-sources=$(subst $(space),:,$(strip ${TB_F77_SOURCES})):$(subst $(space),:,$(strip ${ALL_F95_FILES}))
 
-HAVE_ATOMEYE=0
 ifeq (${HAVE_ATOMEYE},1)
   ATOMEYE_DIR=../AtomEye
   ATOMEYE=--atomeye-dir=${ATOMEYE_DIR}
@@ -46,7 +45,7 @@ build: atomeyelib presetup
 	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
 
 install: build
-	python setup.py ${SETUP_OPTS} install ${INSTALL_OPTS}
+	python setup.py ${SETUP_OPTS} --no-import-source install ${INSTALL_OPTS}
 
 .DEFAULT: 
 	python setup.py ${SETUP_OPTS} $@
