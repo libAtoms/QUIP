@@ -137,14 +137,16 @@ implicit none
      
      ! TIMING TEST
      
-     x = reshape(at%pos, (/at%N*3/))
-     do i=1,1000000
-        !call random_number(rrr)
-        call randomise(x, 1e-6_dp)
-        !x = x + 1.0e-10_dp
-        eold = lj(x)
-     end do
-     stop
+     !x = reshape(at%pos, (/at%N*3/))
+     !eold = 0.0_dp
+     !do i=1,1000000
+     !   !call random_number(rrr)
+     !   !call randomise(x, 1e-6_dp)
+     !   x = x + 1.0e-10_dp
+     !   eold = eold+lj(x)
+     !end do
+     !call print(eold)
+     !stop
 
 
      x0 = reshape(at%pos, (/at%N*3/))
