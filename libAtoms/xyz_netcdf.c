@@ -2565,7 +2565,7 @@ int main (int argc, char **argv)
     pe("Executable %s should be one of:\nxyz2nc, nc2xyz, xyz2xyz, nc2nc, xyzstat, ncstat\n", 
        exename);
 
-  if(xyz2xyz) allow_redefine = 1;
+  if(xyz2xyz || xyzstat) allow_redefine = 1;
 
   cflag = 0;
   rflag = 0;
@@ -2915,11 +2915,9 @@ int main (int argc, char **argv)
 	      } else {
 		// It's a param. Print one frame per line
 		sprint_param(linebuffer, &at, dvar, intformat, realformat);
-		strcat(linebuffer,"\n");
-		printf(linebuffer);
 	      }
 	    }
-	    if (!printed_stats && (fflag || nflag || oflag)) {
+	    if (!printed_stats && (dflag || fflag || nflag || oflag)) {
 	      strcat(linebuffer,"\n");
 	      printf(linebuffer);
 	    }
@@ -3096,7 +3094,7 @@ int main (int argc, char **argv)
 	    sprint_param(linebuffer, &at, dvar, intformat, realformat);
 	  }
 	}
-	if (!printed_stats && (!nflag || fflag)) {
+	if (!printed_stats && (!nflag || fflag || dflag)) {
 	  strcat(linebuffer,"\n");
 	  printf(linebuffer);
 	}
