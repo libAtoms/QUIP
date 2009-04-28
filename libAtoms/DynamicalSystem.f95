@@ -3072,12 +3072,14 @@ contains
     !% DynamicalSystem. If present, the optional
     !% 'label' parameter should be a one character label for the log lines and is printed
     !% in the first column of the output.
-   subroutine ds_print_status(this, label, epot)
+   subroutine ds_print_status(this, label, epot, instantaneous)
      type(DynamicalSystem),  intent(in):: this
      character(*), optional, intent(in)::label
      character(2)                      ::string
      real(dp),     optional, intent(in)::epot
+     logical, optional :: instantaneous
      logical, save :: firstcall = .true.
+     real(dp) :: temp
 
      string = " "
      if(present(label)) string = label
@@ -3093,14 +3095,17 @@ contains
           end if
         firstcall = .false.
      end if
+
+     temp = temperature(this, instantaneous=instantaneous)
+
      if(present(epot)) then
         write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') string, this%t, &
-             temperature(this), this%avg_temp, norm(momentum(this)),&
+             temp, this%avg_temp, norm(momentum(this)),&
              this%work, this%thermostat_work, kinetic_energy(this), &
              epot+kinetic_energy(this),epot+kinetic_energy(this)+this%ext_energy
      else
         write(line, '(a,f12.2,2f12.4,e12.2,2e20.8)') string, this%t, &
-             temperature(this), this%avg_temp,norm(momentum(this)), &
+             temp, this%avg_temp,norm(momentum(this)), &
              this%work, this%thermostat_work
 
      end if
