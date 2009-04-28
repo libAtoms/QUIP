@@ -1796,10 +1796,10 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	strcpy(fields[0], linebuffer);
       } 
 
-      if (k != 1 && k != 3) {
-	fprintf(stderr,"Parameter %s must have size 1 or 3\n", atoms->param_key[i]);
-	return 0;
-      }
+/*       if (k != 1 && k != 3) { */
+/* 	fprintf(stderr,"Parameter %s must have size 1 or 3\n", atoms->param_key[i]); */
+/* 	return 0; */
+/*       } */
       atoms->param_size[i] = k;
 
       for (j=0; j<k; j++) {
@@ -1820,7 +1820,16 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     NOT_REAL:
       // Fallback option: treat as a single string
       atoms->param_type[i] = T_CHAR;
+      atoms->param_size[i] = 1;
       continue;
+    }
+
+    for (i=0; i<atoms->n_param; i++) {
+      if ((atoms->param_type[i] == T_INTEGER_A || atoms->param_type[i] == T_REAL_A) &&
+	  atoms->param_size[i] != 3) {
+ 	fprintf(stderr,"Parameter %s must have size 1 or 3, but got %d\n", atoms->param_key[i], atoms->param_size[i]);
+ 	return 0; 
+      }
     }
 
     properties_idx = atoms_find_param(atoms, "Properties");
@@ -2189,6 +2198,11 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   }
   atoms->param_value[properties_idx][strlen(atoms->param_value[properties_idx])-1] = '\0';
 
+  sprintf(intf, "%%s%s", int_format);
+  sprintf(realf, "%%s%s", real_format);
+  sprintf(strf, "%%s%s", str_format);
+  sprintf(logf, "%%s%s", logical_format);
+
   // Build parameter values
   linebuffer[0] = '\0';
   for (i=0; i<atoms->n_param; i++) {
@@ -2197,13 +2211,15 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
       sprintf(atoms->param_value[i], int_format, atoms->param_int[i]);
     else if (atoms->param_type[i] == T_REAL)
       sprintf(atoms->param_value[i], real_format, atoms->param_real[i]);
-    else if (atoms->param_type[i] == T_INTEGER_A)
+    else if (atoms->param_type[i] == T_INTEGER_A) {
+      atoms->param_value[i][0]='\0';
       for (j=0; j<3; j++)
 	sprintf(atoms->param_value[i], intf, atoms->param_value[i], atoms->param_int_a[i][j]);
-    else if (atoms->param_type[i] == T_REAL_A)
+    } else if (atoms->param_type[i] == T_REAL_A) {
+      atoms->param_value[i][0]='\0';
       for (j=0; j<3; j++)
 	sprintf(atoms->param_value[i], realf, atoms->param_value[i], atoms->param_real_a[i][j]);
-
+    }
     trimmed = atoms->param_value[i];
     while (isblank(trimmed[0])) trimmed++;
 
@@ -2216,11 +2232,6 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   fprintf(out, "%d\n", (int)atoms->n_atom);
   linebuffer[strlen(linebuffer)-1] = '\n';
   fputs(linebuffer, out);
-
-  sprintf(intf, "%%s%s", int_format);
-  sprintf(realf, "%%s%s", real_format);
-  sprintf(strf, "%%s%s", str_format);
-  sprintf(logf, "%%s%s", logical_format);
 
   for (n=0; n<atoms->n_atom; n++) {
     linebuffer[0] = '\0';
@@ -2904,6 +2915,8 @@ int main (int argc, char **argv)
 	      } else {
 		// It's a param. Print one frame per line
 		sprint_param(linebuffer, &at, dvar, intformat, realformat);
+		strcat(linebuffer,"\n");
+		printf(linebuffer);
 	      }
 	    }
 	    if (!printed_stats && (fflag || nflag || oflag)) {
