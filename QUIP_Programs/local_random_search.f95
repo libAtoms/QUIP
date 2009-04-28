@@ -89,7 +89,7 @@ implicit none
 
   real(dp) :: r(3), r0(3), etmp(N), e(N), v, eold, rr
   real(dp), pointer :: atlocale(:)
-  real(dp), allocatable :: x(:)
+  real(dp), allocatable :: x(:), x0(:), rrr(:)
   logical :: allok, status
   integer :: i, jj, j, k, niter, count, nrand, idx(N)
 
@@ -102,20 +102,23 @@ implicit none
 !  call Initialise(pot, 'IP LJ', '<LJ_params n_types="1" label="default"><per_type_data type="1" atomic_num="1" /><per_pair_data type1="1" type2="1" sigma="1.0" eps6="1.0" eps12="1.0" cutoff="10.0" shifted="T" /></LJ_params>')
 
 !  call Initialise(mpot, 'Simple', pot)
+
+  call Initialise(pot, 'FilePot command=./castep_driver.sh')
   
-  call initialise(at, N, reshape((/100.0_dp,0.0_dp,0.0_dp,0.0_dp,100.0_dp,0.0_dp,0.0_dp,0.0_dp, 100.0_dp/), (/3,3/)))
+  call initialise(at, N, reshape((/50.0_dp,0.0_dp,0.0_dp,0.0_dp,50.0_dp,0.0_dp,0.0_dp,0.0_dp, 50.0_dp/), (/3,3/)))
   call set_cutoff(at, cutoff(pot)+0.2)
   call add_property(at, "local_e", 0.0_dp);
   call initialise(movie, 'movie.xyz', OUTPUT)
   call set_atoms(at, 1)
+
+  allocate(x(N*3), x0(N*3), rrr(N*3))
   status = assign_pointer(at, 'local_e', atlocale)
 
-  allocate(x(N*3))
+  do k=1,10000
 
-  do k=1,1000
      at%pos = 0.0_dp
-     call randomise(at%pos, 6.0_dp)
-     at%pos = at%pos+50.0_dp
+     call randomise(at%pos, 3.0_dp)
+!     at%pos = at%pos+50.0_dp
      
      allok = .false.
      do while(allok .eqv. .false.)
@@ -125,29 +128,53 @@ implicit none
         call print (atlocale)
         allok = .true.
         do i=1,N
-           if(atlocale(i) > 0.0_dp) then 
+           if(atlocale(i) > 100.0_dp) then 
               call randomise(at%pos(:,i), 2.0_dp)
               allok = .false.
            end if
         end do
      end do
-
-
-     x = reshape(at%pos, (/at%N*3/))
-     atlocale = elj(x)
      
-     do i=1,20
+     ! TIMING TEST
+     
+     x = reshape(at%pos, (/at%N*3/))
+     do i=1,1000000
+        !call random_number(rrr)
+        call randomise(x, 1e-6_dp)
+        !x = x + 1.0e-10_dp
+        eold = lj(x)
+     end do
+     stop
+
+
+     x0 = reshape(at%pos, (/at%N*3/))
+     !atlocale = elj(x0)
+     !call print_xyz(at, movie, ('ljenergy='//sum(atlocale)), all_properties=.true.)
+     
+     do i=1,1
 !        niter =  minim(mpot, at, 'cg', 1.0e-10_dp, 5000, &
 !             do_pos=.true., do_print=.false., print_inoutput=movie)
 !        call calc_connect(at)
 !        call calc(mpot, at, local_e=atlocale)
 
-        niter = minim(x, lj, dlj, 'cg', 1.0e-10_dp, 5000)
-        call print('Relaxation finished after '//niter//' iterations')
+        !x = x0
+        !niter = minim(x, lj, dlj, 'cg', 1.0e-10_dp, 5000)
+        !call print('Relaxation finished after '//niter//' iterations')
+        !atlocale = elj(x)
+        !at%pos = reshape(x, (/3,at%N/))
+        !call print_xyz(at, movie, ('comment="quip cg" Energy='//sum(atlocale)), all_properties=.true.)
+ 
 
-        at%pos = reshape(x, (/3,at%N/))
+        at%pos = reshape(x0, (/3,at%N/))
+        call Calc(pot, at, e=eold)
+        call read_xyz(at, 'filepot.0.out')
+        call zero_sum(at%pos)
+        call add_property(at, "local_e", 0.0_dp);
+        status = assign_pointer(at, 'local_e', atlocale)
+        x = reshape(at%pos, (/at%N*3/))
+
         atlocale = elj(x)
-        call print_xyz(at, movie, ('Energy='//sum(atlocale)), all_properties=.true.)
+        call print_xyz(at, movie, ('comment="castep bfgs" ljenergy='//sum(atlocale)), all_properties=.true.)
         
         !r = 0
         !call randomise(r, 0.7_dp)
@@ -162,16 +189,16 @@ implicit none
         !   end if
         !end do     
         
-        ! find out nrand-th highest energy atom
+        ! find highest energy atoms
         etmp = elj(x)
         idx = (/ (i, i=1,size(etmp)) /)
         call sort_array(etmp, idx)
 
-        rr = 10.0_dp ! randomize by this amount
+        rr = 6.0_dp ! randomize by max this amount
 
         do j=1,1
            jj = idx(N-j+1)
-           call print('Randomsing '//jj)
+           call print('Randomising '//jj)
            r0 = x((jj-1)*3+1:(jj-1)*3+3)
            atlocale(jj) = 1.0_dp
            do while (atlocale(jj) > 0.0_dp)
@@ -181,7 +208,10 @@ implicit none
               atlocale = elj(x)
            end do
         enddo
-        
+
+        at%pos = reshape(x, (/3,at%N/))
+        x0 = x
+
      end do
   end do
 
