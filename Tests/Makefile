@@ -1,12 +1,6 @@
-all: alltests
+.PHONY: all alltests clean
 
-include Makefile.inc
-include Makefile.common
-ifeq (${QUIP_ARCH},)
-  include Makefile.arch
-else
-  include Makefile.${QUIP_ARCH}
-endif
+all: alltests
 
 alltests:
 ifeq (${QUIP_ARCH},)
@@ -16,3 +10,6 @@ ifeq (${QUIP_ARCH},)
 	@exit 1
 endif
 	QUIP_ARCH=${QUIP_ARCH} ./test.py -r *.test
+
+clean:
+	-rm *.candidate *.reference *.stdin *.stdout *.xyz *.xml
