@@ -7,9 +7,9 @@ CC = icc
 CPLUSPLUS = icpc -Kc++
 LINKER = ifort
 
-DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
+DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
+DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP -p
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
-OPTIM = -O3 -vec-report0 -unroll -xP -p
 COPTIM = -O3
 
 F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused

@@ -54,7 +54,7 @@ ifeq (${HAVE_CP2K},1)
 endif
 SYSLIBS += ${MATH_LINKOPTS} ${EXTRA_LINKOPTS}
 
-LINKOPTS = ${OPTIM} ${CDEBUG} ${SYSLIBS}
+LINKOPTS = ${OPTIM} ${DEBUG} ${SYSLIBS}
 
 .f.o:
 	${F77}  ${F77FLAGS} -c $< -o $@
