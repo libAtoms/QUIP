@@ -82,7 +82,7 @@ program lotf_metapot
         end if
         call calc(forcemix, ds%atoms, f=f_hyb)
         call advance_verlet(ds, 1.0_dp, f)
-        call ds_print_status(ds, 'E')
+        call ds_print_status(ds, 'E', instantaneous=.true.)
         call print('E err '//ds%t//' '//rms_diff(f_hyb, f)//' '//maxval(abs(f_hyb-f)))
      end do
 
@@ -98,7 +98,7 @@ program lotf_metapot
              //(real(j-1,dp)/real(n_extrap,dp)))
         call calc(forcemix, ds%atoms, f=f_hyb)
         call advance_verlet(ds, 1.0_dp, f)
-        call ds_print_status(ds, 'I')
+        call ds_print_status(ds, 'I', instantaneous=.true.)
         call print('I err '//ds%t//' '//rms_diff(f_hyb, f)//' '//maxval(abs(f_hyb-f)))
      end do
 
