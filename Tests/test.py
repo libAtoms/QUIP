@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, re, getopt, subprocess
-from difflib import ndiff
+from difflib import ndiff, unified_diff
 
 def loadtests(testfiles):
    tests = []
@@ -93,7 +93,7 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
       return False
    
    cmpout = {}
-   cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.split('\n')]),
+   cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.strip().split('\n')]),
                        filter(remove_ignored_stdout_lines,outfiles['stdout']))
 
    if keep_all_files:
@@ -125,7 +125,7 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
          fright = open('%s.%s.reference' % (testname, name), 'w')
          fright.writelines(cmpout[name][1])
          fright.close()
-         
+
          print ''.join(rd)
          
 
@@ -150,7 +150,7 @@ def do_diff(a, b, diff_method):
       fa.close()
       fb.close()
       if diff_method.find('ndiff') != -1:
-         cin, cout, cerr = os.popen3("%s -abserr 1e-10 -separators '[ \t=\(\)\n]' %s %s" % (diff_method, fnamea, fnameb))
+         cin, cout, cerr = os.popen3("%s -abserr 1e-9 -separators '([ \t=\(\)\n])+' %s %s" % (diff_method, fnamea, fnameb))
       else: # assume it's called like standard unix diff
          cin, cout, cerr = os.popen3("%s %s %s" % (diff_method, fnamea, fnameb))
       result = cout.readlines()
@@ -160,7 +160,10 @@ def do_diff(a, b, diff_method):
       os.remove(fnameb)
       return result
    else:
-      return ndiff(a, b)
+      if list(unified_diff(a,b)) != []:
+         return ndiff(a, b)
+      else:
+         return []
 
 
 def runtests(tests, capture_output, diff_method='auto', keep_all_files=False):
@@ -195,7 +198,7 @@ def runtests(tests, capture_output, diff_method='auto', keep_all_files=False):
          n_fail += 1
 
    print
-   print 'Failed %d tests:  \n%s' % (n_fail, '\n  '.join(failed_tests))
+   print 'Failed %d tests:\n  %s' % (n_fail, '\n  '.join(failed_tests))
    return n_fail == 0
 
 
