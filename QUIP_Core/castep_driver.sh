@@ -10,7 +10,16 @@
 # Input file is $1, output goes to $2. Both file are in extended
 # XYZ format.
 
-SEQ=jot # name of seq. on BSD systems, it happens to be called jot
+# name of seq. ; on BSD systems, it happens to be called jot
+if which seq >& /dev/null ; then 
+    SEQ=seq
+elif which jot >& /dev/null ; then
+    SEQ=jot
+else
+    echo "Cannot find \`seq\' or equivalent"
+    exit
+fi
+
 olddir=`pwd`
 [[ -z "$castep" ]] && castep=$olddir/castep  # Path to CASTEP executable
 template=$olddir/castep_driver         # Template .cell and .param files
