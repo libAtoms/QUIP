@@ -1,0 +1,27 @@
+# -*- Mode: Shell-Script -*- Not really, but it shows comments correctly
+#***************************************************************************
+# Configuration file for ipython -- ipythonrc format
+#
+# The format of this file is one of 'key value' lines.
+# Lines containing only whitespace at the beginning and then a # are ignored
+# as comments. But comments can NOT be put on lines with data.
+#***************************************************************************
+
+# If this file is found in the user's ~/.ipython directory as ipythonrc-pylab,
+# it can be loaded by calling passing the '-profile pylab' (or '-p pylab')
+# option to IPython.
+
+# This profile load modules which turn IPython into a very capable environment
+# for numerical work, as compatible with Matlab as possible.
+
+# Load the user's basic configuration
+include ipythonrc
+
+# Load all additional matlab-like functionality from Numeric and matplotlib
+execfile quippy_load.py
+
+# -*- coding: iso-8859-1 -*-
+"""matlab-like functionality based on matplotlib and Numeric's MLab,
+plus quippy interace to QUIP code.
+
+Load these modules and configure them for interactive use"""
