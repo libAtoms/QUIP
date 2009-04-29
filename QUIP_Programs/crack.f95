@@ -238,9 +238,12 @@ program crack
   ! Constants
   integer, parameter :: STATE_THERMALISE = 1
   integer, parameter :: STATE_MD = 2
-  integer, parameter :: STATE_DAMPED_MD = 3
-  integer, parameter :: STATE_MICROCANONICAL = 4
-  character(len=10), dimension(4), parameter :: STATE_NAMES = (/"THERMALISE", "MD", "DAMPED_MD", "MICROCANONICAL"/)
+  integer, parameter :: STATE_MD_LOADING = 3
+  integer, parameter :: STATE_MD_CRACKING = 4
+  integer, parameter :: STATE_DAMPED_MD = 5
+  integer, parameter :: STATE_MICROCANONICAL = 6
+  character(len=11), dimension(6), parameter :: STATE_NAMES = &
+       (/"THERMALISE", "MD", "MD_LOADING", "MD_CRACKING", "DAMPED_MD", "MICROCANONICAL"/)
 
   ! Objects
   type(InOutput) :: xmlfile, checkfile
@@ -253,8 +256,9 @@ program crack
   type(Dictionary) :: metapot_params
 
   ! Pointers into Atoms data table
-  real(dp), pointer, dimension(:,:) :: load
-  integer, pointer, dimension(:) :: nn, changed_nn, old_nn, md_old_changed_nn, edge_mask, hybrid, hybrid_mark
+  real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+  integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+       old_nn, hybrid, hybrid_mark
 
   ! Big arrays
   real(dp), allocatable, dimension(:,:) :: f, f_fm, dr, pos1
@@ -265,7 +269,7 @@ program crack
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
-       last_md_interval_time, time, temp, crack_pos, orig_crack_pos
+       last_md_interval_time, time, temp, crack_pos, orig_crack_pos, G, orig_width
   character(STRING_LENGTH) :: stem, movie_name, xyzfilename, xmlfilename
   character(value_len) :: state_string
 
@@ -453,7 +457,8 @@ end if
   call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
   call add_property(ds%atoms, 'qm_force', 0.0_dp, n_cols=3)
   call add_property(ds%atoms, 'mm_force', 0.0_dp, n_cols=3)
-  call fix_pointers()
+  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+       old_nn, hybrid, hybrid_mark, u_disp, k_disp)
 
   ds%atoms%damp_mask = 1
   ds%atoms%thermostat_region = 1
@@ -547,8 +552,20 @@ end if
 
   call setup_parallel(classicalpot, ds%atoms, e=energy, f=f,args_str=params%classical_args_str)
 
-  call fix_pointers()
+  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+       old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+
+  if (.not. has_property(ds%atoms, 'load') .and. params%crack_apply_initial_load) then
+     call print_title('Applying Initial Load')
+     call crack_apply_initial_load(ds%atoms, params, mpi_glob, simple_metapot)
+
+     call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+          old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+  end if
+
   if (params%simulation_force_initial_load_step) then
+     if (.not. has_property(ds%atoms, 'load')) &
+          call system_abort('simulation_force_initial_load_step is true but crack slab has no load field - set crack_apply_initial_load = T to regenerate load')
     call print_title('Force_load_step is true,  applying load')
     call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
   end if
@@ -597,18 +614,38 @@ end if
      ds%avg_time = params%md_avg_time
 
      if (trim(params%simulation_task) == 'md') then
-        if (.not. get_value(ds%atoms%params, "State", state_string)) state_string = 'THERMALISE'
+        if (.not. get_value(ds%atoms%params, "State", state_string)) then
+           if (params%md_gentle_loading_rate .fne. 0.0_dp) then 
+              state_string = 'MD_LOADING'
+           else
+              state_string = 'THERMALISE'
+           end if
+        end if
      else 
         state_string = 'DAMPED_MD'
      end if
+
+     if (trim(state_string) == "MD" .and. (params%md_gentle_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
      if (state_string(1:10) == 'THERMALISE') then
         state = STATE_THERMALISE
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_thermalise_tau)
 
-     else if (state_string(1:2) == 'MD') then
+     else if (state_string(1:10) == 'MD') then
         state = STATE_MD
+        call disable_damping(ds)
+        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
+
+     else if (state_string(1:10) == 'MD_LOADING') then
+        state = STATE_MD_LOADING
+        call disable_damping(ds)
+        call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
+        dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
+        crack_pos = orig_crack_pos
+
+     else if (state_string(1:2) == 'MD_CRACKING') then
+        state = STATE_MD_CRACKING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
 
@@ -628,7 +665,6 @@ end if
      call print(ds%thermostat)
 
      call print('Starting in state '//STATE_NAMES(state))
-     call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
 
      ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
      if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
@@ -641,7 +677,9 @@ end if
      !****************************************************************    
      do
         call system_timer('step')
-        call fix_pointers()
+        call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+             old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+
 
         select case(state)
         case(STATE_THERMALISE)
@@ -651,7 +689,6 @@ end if
               call print('STATE changing THERMALISE -> MD')
               state = STATE_MD
               last_state_change_time = ds%t
-              call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
               call disable_damping(ds)
               call initialise(ds%thermostat(1), LANGEVIN, params%md_sim_temp, &
                    gamma=1.0_dp/params%md_tau)
@@ -677,15 +714,19 @@ end if
                  call print('STATE changing MD -> THERMALISE')
                  state = STATE_THERMALISE
                  last_state_change_time = ds%t
-                 call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
 
                  call disable_damping(ds)
                  call initialise(ds%thermostat(1), LANGEVIN, params%md_sim_temp, &
                       gamma=1.0_dp/params%md_thermalise_tau)
-
-                 ! Apply loading field
+              end if
+              
+              ! Apply loading field
+              if (has_property(ds%atoms, 'load')) then
                  call print_title('Applying load')
                  call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
+                 call calc_dists(ds%atoms)
+              else
+                 call print('No load field found - not increasing load.')
               end if
 
               md_old_changed_nn = changed_nn
@@ -695,6 +736,44 @@ end if
         case(STATE_DAMPED_MD)
 
         case(STATE_MICROCANONICAL)
+
+        case(STATE_MD_LOADING)
+           ! If tip has moved by more than gentle_loading_tip_move_tol then
+           ! turn off loading. 
+           dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
+           if ((crack_pos - orig_crack_pos) > params%md_gentle_loading_tip_move_tol) then
+              call print_title('Crack Moving')
+              call print('STATE changing MD_LOADING -> MD_CRACKING')
+              state = STATE_MD_CRACKING
+              last_state_change_time = ds%t
+              orig_crack_pos = crack_pos
+           else
+              call print('STATE: crack is not moving')
+           end if
+
+        case(STATE_MD_CRACKING)
+           ! Monitor tip and if it doesn't move by more than gentle_loading_tip_move_tol in
+           ! time gentle_loading_arrest_time then switch back to loading
+           if (ds%t - last_state_change_time >= params%md_gentle_loading_arrest_time) then
+              dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
+              dummy = get_value(ds%atoms%params, 'OrigWidth', orig_width)
+              
+              if ((crack_pos - orig_crack_pos) < params%md_gentle_loading_tip_move_tol) then
+
+                 if (orig_width/2.0_dp - crack_pos < params%md_gentle_loading_tip_edge_tol) then
+                    call print_title('Cracked Through')
+                    exit
+                 else
+                    call print_title('Crack Arrested')
+                    call print('STATE changing MD_CRACKING -> MD_LOADING')
+                    state = STATE_MD_LOADING
+                 end if
+              else
+                 call print('STATE: crack is moving')
+              end if
+              last_state_change_time = ds%t
+              orig_crack_pos = crack_pos
+           end if
 
         case default
            call system_abort('Unknown molecular dynamics state!')
@@ -755,6 +834,17 @@ end if
               end if
               if (params%qm_calc_force_error) call print('E err '//ds%t//' '//rms_diff(f, f_fm)//' '//maxval(abs(f_fm-f)))
 
+              if (state == STATE_MD_LOADING) then
+                 ! increment the load
+                 if (has_property(ds%atoms, 'load')) then
+                    call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                    call calc_dists(ds%atoms)
+                    if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
+                 else
+                    call print('No load field found - not increasing load.')
+                 end if
+              end if
+
            end do
            call system_timer('extrapolation')
 
@@ -804,6 +894,17 @@ end if
                       call print('Damped MD: norm2(force) = '//norm2(reshape(f,(/3*ds%N/)))//&
                       ' max(abs(force)) = '//maxval(abs(f)))
 
+                 if (state == STATE_MD_LOADING) then
+                    ! increment the load
+                    if (has_property(ds%atoms, 'load')) then
+                       call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                       call calc_dists(ds%atoms)
+                       if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
+                    else
+                       call print('No load field found - not increasing load.')
+                    end if
+                 end if
+
               end do
               call system_timer('interpolation')
 
@@ -843,21 +944,32 @@ end if
                 call print('Damped MD: norm2(force) = '//norm2(reshape(f,(/3*ds%N/)))//&
                 ' max(abs(force)) = '//maxval(abs(f)))
 
+           if (state == STATE_MD_LOADING) then
+              ! increment the load
+              if (has_property(ds%atoms, 'load')) then
+                 call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                 call calc_dists(ds%atoms)
+                 if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
+              else
+                 call print('No load field found - not increasing load.')
+              end if
+           end if
+
         end if ! params%extrapolate_steps /= 1
 
-        call set_value(ds%atoms%params, 'Time', ds%t)
-        call set_value(ds%atoms%params, 'Temp', temperature(ds))
 
         ! Print movie
 
         if (ds%t - last_print_time >=  params%io_print_interval) then
            last_print_time = ds%t
+           call set_value(ds%atoms%params, 'Time', ds%t)
+           call set_value(ds%atoms%params, 'Temp', temperature(ds))
            call set_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)
            call set_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)
            call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
            call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
            call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
-           
+           call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
            call crack_print(ds%atoms, movie, params, mpi_glob)
         end if
 
@@ -1007,6 +1119,11 @@ end if
 
      call print_title('Quasi Static Loading')
 
+     if (.not. has_property(ds%atoms, 'load')) then
+        call print('No load field found. Regenerating load.')
+        call crack_apply_initial_load(ds%atoms, params, mpi_glob, simple_metapot)
+     end if
+
      call crack_update_connect(ds%atoms, params)
 
      dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
@@ -1108,37 +1225,5 @@ end if
   if (allocated(f_fm)) deallocate(f_fm)
 
   call system_finalise()
-
-contains
-
-  subroutine fix_pointers()
-
-    ! Make pointers for various properties
-    if (.not. assign_pointer(ds%atoms, 'nn', nn)) &
-         call system_abort('nn pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'changed_nn', changed_nn)) &
-         call system_abort('changed_nn pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'load', load)) &
-         call system_abort('load pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'edge_mask', edge_mask)) &
-         call system_abort('edge_mask pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'md_old_changed_nn', md_old_changed_nn)) &
-         call system_abort('md_old_changed_nn pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'old_nn', old_nn)) &
-         call system_abort('old_nn pointer assignment failed')
-    
-    if (.not. assign_pointer(ds%atoms, 'hybrid', hybrid)) &
-         call system_abort('hybrid pointer assignment failed')
-
-    if (.not. assign_pointer(ds%atoms, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('hybrid_mark pointer assignment failed')
-
-  end subroutine fix_pointers
-
 
 end program crack

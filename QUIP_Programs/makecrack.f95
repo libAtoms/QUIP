@@ -119,22 +119,23 @@ program makecrack
   type(Metapotential) :: simple
   type(MPI_context) :: mpi_glob
   type(Inoutput) :: xmlfile, infile
-  type(CInoutput) :: movie, netcdf
+  type(CInoutput) :: netcdf
   type(Inoutput) :: checkfile
 
   ! Pointers into Atoms data structure
   real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
-  integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask
+  integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+       old_nn, hybrid, hybrid_mark
+
   
-  real(dp), allocatable :: pos1(:,:), pos2(:,:), f(:,:)
+  real(dp), allocatable :: f(:,:)
   real(dp), dimension(6,6) :: c, c0
   real (dp), dimension(3,3) :: axes, lattice
 
   real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, &
-       l_crack_pos, r_crack_pos, width, height, strain, a, E, v, v2, uij(3), &
-       orig_height, G1, K1, r, energy
+       width, height, a, E, v, v2, uij(3), energy
 
-  integer :: i, j, k, n_fixed, atom1, atom2, n, Z(2), steps, nargs
+  integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
 
   character(len=STRING_LENGTH) :: stem, xmlfilename, xyzfilename
 
@@ -351,7 +352,8 @@ program makecrack
   call set_value(crack_slab%params, 'OrigHeight', height)
 
   call set_value(crack_slab%params, 'YoungsModulus', E)
-  call set_value(crack_slab%params, 'PoissonRatio', v)
+  call set_value(crack_slab%params, 'PoissonRatio_yx', v)
+  call set_value(crack_slab%params, 'PoissonRatio_yz', v2)
 
   ! Open x and y surfaces, remain periodic in z direction (normal to plane)
   if (trim(params%crack_structure) /= 'graphene') then
@@ -370,11 +372,10 @@ program makecrack
   call add_property(crack_slab, 'old_nn', 0)
   call add_property(crack_slab, 'md_old_changed_nn', 0)
   call add_property(crack_slab, 'edge_mask', 0)
-  call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
-  call add_property(crack_slab, 'k_disp', 0.0_dp, n_cols=3)
-  call add_property(crack_slab, 'uniform_disp', 0.0_dp, n_cols=3)
 
-  call fix_pointers()
+  call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+       old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+
 
   call print_title('Fixing Atoms')
 
@@ -397,14 +398,6 @@ program makecrack
   call Print(crack_slab%N//' atoms. '//n_fixed//' fixed atoms.')
   
   call print_title('Aligning Seed Crack at y=0')
-
-  ! Determine position of seed crack
-  l_crack_pos = -width ! single ended crack
-  r_crack_pos = -width/2.0_dp + params%crack_seed_length
-
-  if (trim(params%crack_structure) == 'graphene') then
-     r_crack_pos = -width
-  end if
 
   ! Find an atom close to y=0
   minabsy = 1000.0_dp
@@ -472,291 +465,20 @@ program makecrack
      end do
   end if
 
-
-  if (params%io_netcdf) then
-     call initialise(movie, 'makecrack_movie.nc', action=OUTPUT)
-  else
-     call initialise(movie, 'makecrack_movie.xyz', action=OUTPUT)
-  end if
-
-  if (mpi_glob%active .and. params%crack_relax_loading_field) then
-     allocate(f(3,crack_slab%N))
-     call setup_parallel(classicalpot, crack_slab, e=energy, f=f, args_str=params%classical_args_str)
-     deallocate(f)
-  end if
-
-  ! Apply initial load
-  if (trim(params%crack_loading) == 'uniform') then
-     if (params%crack_G > 0.0_dp) then
-
-        call print_title('Applying Uniform Load')
-        
-        call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-             params%crack_strain_zone_width, params%crack_G, apply_load=.true.)
-
-        if(params%crack_rescale_x_z) then
-       !  Rescale in x direction by v and in z direction by v2
-          if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-          strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
-          crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
-          crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
-          crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
-          call atoms_set_lattice(crack_slab, crack_slab%lattice)
-        elseif(params%crack_rescale_x) then 
-       !  Rescale in x direction by v 
-          if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-          strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
-          crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
-        endif
-
+  if (params%crack_apply_initial_load) then
+     if (mpi_glob%active .and. params%crack_relax_loading_field) then
+        allocate(f(3,crack_slab%N))
+        call setup_parallel(classicalpot, crack_slab, e=energy, f=f, args_str=params%classical_args_str)
+        deallocate(f)
      end if
-
-     call Print_title('Initialising QM region for unrelaxed system')
-     call setup_crack_marks(crack_slab, params)
-     call crack_print(crack_slab, movie, params, mpi_glob)
-        
-     ! Save positions
-     pos1 = crack_slab%pos
-
-     call Print_title('Generating Load Field')
-
-     call Print('Initial strain = '//params%crack_initial_loading_strain)
-
-     allocate(pos1(3,crack_slab%N))
-
-     if (params%crack_relax_loading_field) then
-        ! Geometry optimise
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-
-        call Print_title('Initialising QM region for relaxed system')
-        call setup_crack_marks(crack_slab, params)
-        call crack_print(crack_slab, movie, params, mpi_glob)
-
-     end if
-
-     ! strain it a bit
-     do i=1,crack_slab%N
-        crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp+params%crack_initial_loading_strain)
-     end do
-        
-     if (params%crack_relax_loading_field) then
-
-        ! now re-relax
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-     end if
-
-     ! work out displacement field
-     do i=1,crack_slab%N
-        load(:,i) = crack_slab%pos(:,i) - pos1(:,i)
-     end do
      
-     ! Restore pos1 - relaxed positions at initial load
-     crack_slab%pos = pos1
-
-     call print('Displacement field generated. Max disp: '//maxval(load))
-     call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*crack_slab%N/)))/(3.0_dp*crack_slab%N)))
-
-  else if (trim(params%crack_loading) == 'ramp') then
-
-     call print_title('Applying Loading Ramp')
-
-     call crack_apply_strain_ramp(crack_slab, params%crack_G, params%crack_ramp_end_G, r_crack_pos, &
-          r_crack_pos+params%crack_strain_zone_width, &
-          r_crack_pos+params%crack_strain_zone_width+params%crack_ramp_length)
-
-     call Print_title('Initialising QM region for unrelaxed system')
-     call setup_crack_marks(crack_slab, params)
-     call crack_print(crack_slab, movie, params, mpi_glob)
-
-  else if (trim(params%crack_loading) == 'kfield') then
-     
-     call print_title('Applying Irwin K-field Loading')
-
-     if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-
-     call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
-     
-     call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-     call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v))
-
-     call fix_pointers()
-
-     allocate(pos1(3,crack_slab%N),pos2(3,crack_slab%N))
-
-     ! Save bulk positions
-     pos1 = crack_slab%pos
-
-     do i=1,crack_slab%N
-        crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
-     end do
-
-     call Print_title('Initialising QM region for unrelaxed system')
-     call setup_crack_marks(crack_slab, params)
-     call crack_print(crack_slab, movie, params, mpi_glob)
-
-     ! relax initial loading
-     if (params%crack_relax_loading_field) then
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-        call Print_title('Initialising QM region for relaxed system')
-        call setup_crack_marks(crack_slab, params)
-        call crack_print(crack_slab, movie, params, mpi_glob)
-
-     end if
-
-     pos2 = crack_slab%pos
-
-     ! apply load increment
-     K1 = crack_g_to_k(crack_strain_to_g( &
-          crack_g_to_strain(params%crack_G, E, v, orig_height) + &
-          params%crack_initial_loading_strain, E, v, orig_height),E,v)
-
-     call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-     call crack_k_field(crack_slab, K1)
-     call fix_pointers()
-
-     do i=1,crack_slab%N
-        crack_slab%pos(:,i) = pos1(:,i) + k_disp(:,i)
-     end do
-
-     ! relax again at new load
-     if (params%crack_relax_loading_field) then
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-     end if
-       
-     do i=1,crack_slab%N
-        load(:,i) = crack_slab%pos(:,i) - pos2(:,i)
-     end do
-
-     call print('Displacement field generated. Max disp: '//maxval(load))
-     call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*crack_slab%N/)))/(3.0_dp*crack_slab%N)))
-
-     crack_slab%pos = pos2
-
-     deallocate(pos1,pos2)
-
-  else if (trim(params%crack_loading) == 'interp_kfield_uniform') then
-     
-     ! interpolate linearly between K field (near tip) and uniform loading (near edge)
-
-     call print_title('Applying Combined K-field and Uniform Loading')
-
-     call print('Interpolation length '//params%crack_load_interp_length//' A')
-
-     if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
-
-     call print('Initial energy release rate    G_0 = '//params%crack_G//' J/m^2')
-     call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
-     
-     call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-     call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v))
-
-     call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-          params%crack_strain_zone_width, params%crack_G, apply_load=.false.)
-
-     call fix_pointers()
-
-     allocate(pos1(3,crack_slab%N),pos2(3,crack_slab%N))
-
-     ! Save bulk positions
-     pos1 = crack_slab%pos
-
-     do i=1,crack_slab%N
-        r = sqrt((crack_slab%pos(1,i) - (r_crack_pos + 0.85*params%crack_strain_zone_width))**2.0_dp + &
-             crack_slab%pos(2,i)**2.0_dp)
-        if (r > params%crack_load_interp_length) then
-           crack_slab%pos(:,i) = pos1(:,i) + u_disp(:,i)
-        else
-           do k=1,3
-              crack_slab%pos(k,i) = pos1(k,i) +  &
-                   linear_interpolate(0.0_dp, k_disp(k,i), params%crack_load_interp_length, u_disp(k,i), r)
-           end do
-        end if
-     end do
-
-     call Print_title('Initialising QM region for unrelaxed system')
-     call setup_crack_marks(crack_slab, params)
-     call crack_print(crack_slab, movie, params, mpi_glob)
-
-     ! relax initial loading
-     if (params%crack_relax_loading_field) then
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-        call Print_title('Initialising QM region for relaxed system')
-        call setup_crack_marks(crack_slab, params)
-        call crack_print(crack_slab, movie, params, mpi_glob)
-     end if
-
-     pos2 = crack_slab%pos
-
-     ! apply load increment to u_disp
-     G1 = crack_strain_to_g( &
-          crack_g_to_strain(params%crack_G, E, v, orig_height) + &
-          params%crack_initial_loading_strain, E, v, orig_height)
-
-     call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-          params%crack_strain_zone_width, G1, apply_load=.false.)
-
-     ! apply load increment to K_disp
-     K1 = crack_g_to_k(G1,E,v)
-
-     call print('Energy release rate     G_1 = '//G1//' J/m^2')
-     call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-     call crack_k_field(crack_slab, K1, do_sig=.false., do_disp=.true.)
-     call fix_pointers()
-
-     do i=1,crack_slab%N
-        r = sqrt((crack_slab%pos(1,i) - (r_crack_pos + 0.85*params%crack_strain_zone_width))**2.0_dp + &
-             crack_slab%pos(2,i)**2.0_dp)
-        if (r > params%crack_load_interp_length) then
-           crack_slab%pos(:,i) = pos1(:,i) + u_disp(:,i)
-        else
-           do k=1,3
-              crack_slab%pos(k,i) = pos1(k,i) +  &
-                   linear_interpolate(0.0_dp, k_disp(k,i), params%crack_load_interp_length, u_disp(k,i), r)
-           end do
-        end if
-     end do
-
-     ! relax again at new load
-     if (params%crack_relax_loading_field) then
-        steps = minim(simple, crack_slab, params%minim_mm_method, params%minim_mm_tol, params%minim_mm_max_steps, &
-             params%minim_mm_linminroutine, do_print=.true., do_pos=.true.,do_lat=.false., &
-             use_fire=trim(params%minim_mm_method)=='fire', &
-             print_cinoutput=movie)
-     end if
-       
-     do i=1,crack_slab%N
-        load(:,i) = crack_slab%pos(:,i) - pos2(:,i)
-     end do
-
-     call print('Displacement field generated. Max disp: '//maxval(load))
-     call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*crack_slab%N/)))/(3.0_dp*crack_slab%N)))
-
-     crack_slab%pos = pos2
-
-     deallocate(pos1,pos2)
-
-  else
-     call system_abort('Unknown loading type '//trim(params%crack_loading))
+     ! Apply initial load
+     call crack_apply_initial_load(crack_slab, params, mpi_glob, simple)  
   end if
 
   call Print_title('Initialising QM region')
 
-  call setup_crack_marks(crack_slab, params)
+  call crack_setup_marks(crack_slab, params)
   call crack_print(crack_slab, xyzfilename, params, mpi_glob)
 
   if (params%io_netcdf) then
@@ -779,65 +501,5 @@ program makecrack
   call finalise(classicalpot)
   call finalise(simple)
   call system_finalise()
-
-contains
-
-  subroutine setup_crack_marks(crack_slab, params)
-    type(Atoms) :: crack_slab
-    type(CrackParams) :: params
-
-    integer :: i
-    real(dp) :: crack_pos
-
-    ! Setup edge_mask to allow easy exclusion of edge atoms
-    do i=1,crack_slab%N
-       if (crack_is_edge_atom(crack_slab, i, params%selection_edge_tol)) &
-	    edge_mask(i) = 1
-    end do
-
-    ! Calculate connectivity and numbers of nearest neighbours
-    call crack_update_connect(crack_slab, params)
-
-    ! Find rightmost undercoordinated atoms in bulk - this is initial crack tip position
-    crack_pos = crack_find_crack_pos(crack_slab, params)
-
-    ! Artificially set changed_nn to 1 for atoms near to crack tip
-    do i = 1, crack_slab%N
-       if (distance_min_image(crack_slab, i, (/crack_pos,0.0_dp,0.0_dp/)) < params%crack_seed_embed_tol) &
-	    changed_nn(i) = 1
-    end do
-
-    call Print('Seeded embed region with '//count(changed_nn /= 0)//' atoms.')
-
-    call crack_update_selection(crack_slab, params)
-
-  end subroutine
-
-
-  subroutine fix_pointers()
-
-    if (.not. assign_pointer(crack_slab, 'nn', nn)) &
-         call system_abort('nn pointer assignment failed')
-
-    if (.not. assign_pointer(crack_slab, 'changed_nn', changed_nn)) &
-         call system_abort('changed_nn pointer assignment failed')
-  
-    if (.not. assign_pointer(crack_slab, 'load', load)) &
-         call system_abort('load pointer assignment failed')
-
-    if (.not. assign_pointer(crack_slab, 'move_mask', move_mask)) &
-         call system_abort('move_mask pointer assignment failed')
-
-    if (.not. assign_pointer(crack_slab, 'edge_mask', edge_mask)) &
-         call system_abort('edge_mask pointer assignment failed')
-
-    if (.not. assign_pointer(crack_slab, 'uniform_disp', u_disp)) &
-         call system_abort('u_disp pointer assignment failed')
-
-    if (.not. assign_pointer(crack_slab, 'k_disp', k_disp)) &
-         call system_abort('k_disp pointer assignment failed')
-
-  end subroutine fix_pointers
-
 
 end program makecrack
