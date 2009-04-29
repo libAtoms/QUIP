@@ -2492,10 +2492,13 @@ void parse_range(int rflag, int nframes, int offset, int gotcolon,
     }
 	  
     if (stop  == NULL || strcmp(stop, "") == 0) 
-      if (gotcolon || *f_start < 0)
+      if (gotcolon)
 	*f_stop = nframes;
       else
-	*f_stop = *f_start + 1;
+	if (*f_start == -1)
+	  *f_stop = nframes;
+	else
+	  *f_stop = *f_start + 1;
     else {
       if (sscanf(stop, "%d", f_stop) != 1) pe("Bad stop frame %s\n", stop);
     }
@@ -2506,7 +2509,8 @@ void parse_range(int rflag, int nframes, int offset, int gotcolon,
       if (sscanf(step, "%d", f_step) != 1) pe("Bad step %s\n", step);
 
     if (*f_start < 0) *f_start = nframes+*f_start;
-    if (*f_stop < 0)  *f_stop  = nframes+*f_stop;
+    if (*f_stop < 0)  *f_stop = nframes+*f_stop;
+    
 
     debug("start %d stop %d step %d\n", *f_start, *f_stop, *f_step);
 
@@ -3205,32 +3209,32 @@ int cio_init(Atoms **at, char *filename, int *action, int *append,
   atoms_init(*at);
 
   // Pass back some pointers into this Atoms structure
-  *property_name = (char *)(**at).property_name;
-  *property_type = (**at).property_type;
-  *property_ncols = (**at).property_ncols;
-  *property_start = (**at).property_start;
-  *property_filter = (**at).property_filter;
+  if (property_name) *property_name = (char *)(**at).property_name;
+  if (property_type) *property_type = (**at).property_type;
+  if (property_ncols) *property_ncols = (**at).property_ncols;
+  if (property_start) *property_start = (**at).property_start;
+  if (property_filter) *property_filter = (**at).property_filter;
   
-  *param_name = (char *)(**at).param_key;
-  *param_type = (**at).param_type;
-  *param_size = (**at).param_size;
-  *param_value = (char *)(**at).param_value;
-  *param_int = (**at).param_int;
-  *param_real = (**at).param_real;
-  *param_int_a = (int *)(**at).param_int_a;
-  *param_real_a = (double *)(**at).param_real_a;
-  *param_filter = (**at).param_filter;
+  if (param_name) *param_name = (char *)(**at).param_key;
+  if (param_type) *param_type = (**at).param_type;
+  if (param_size) *param_size = (**at).param_size;
+  if (param_value) *param_value = (char *)(**at).param_value;
+  if (param_int) *param_int = (**at).param_int;
+  if (param_real) *param_real = (**at).param_real;
+  if (param_int) *param_int_a = (int *)(**at).param_int_a;
+  if (param_real) *param_real_a = (double *)(**at).param_real_a;
+  if (param_filter) *param_filter = (**at).param_filter;
 
-  *lattice = (double *)(**at).lattice;
+  if (lattice) *lattice = (double *)(**at).lattice;
 
-  *n_frame = (int *)&((**at).n_frame);
-  *n_atom = (int *)&((**at).n_atom);
-  *n_int = &((**at).n_int);
-  *n_real = &((**at).n_real);
-  *n_str = &((**at).n_str);
-  *n_logical = &((**at).n_logical);
-  *n_param = &((**at).n_param);
-  *n_property = &((**at).n_property);
+  if (n_frame) *n_frame = (int *)&((**at).n_frame);
+  if (n_atom) *n_atom = (int *)&((**at).n_atom);
+  if (n_int) *n_int = &((**at).n_int);
+  if (n_real) *n_real = &((**at).n_real);
+  if (n_str) *n_str = &((**at).n_str);
+  if (n_logical) *n_logical = &((**at).n_logical);
+  if (n_param) *n_param = &((**at).n_param);
+  if (n_property) *n_property = &((**at).n_property);
   
   (**at).xyz_in = NULL;
   (**at).xyz_out = NULL;
