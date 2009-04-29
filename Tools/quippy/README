@@ -69,4 +69,10 @@ interested in, followed by a ?. For example "Atoms ?", "a.n ?" or
 "Atoms.lattice ?" (if you're using standard python, you can get the
 same information by typing help(object), e.g.  help(Atoms)).
 
-[More to come...]
+There's an ipython profile called quippy which you can install by
+copying the files ipythonrc-quippy and quippy_load.py to
+${HOME}/.ipythonrc.  Then you can invoke ipython as "ipython -p
+quippy" to automatically load numpy, matplotlib and quippy and drop
+you straight into an interactive shell.
+
+
