@@ -104,6 +104,7 @@ module CrackParams_module
      real(dp) :: crack_width              !% Width of crack slab, in \AA{}.
      real(dp) :: crack_height             !% Height of crack slab, in \AA{}.
      integer  :: crack_num_layers         !% Number of primitive cells in $z$ direction
+     logical  :: crack_apply_initial_load !% If 'true', apply initial loading field to crack slab
      real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$
      character(STRING_LENGTH) :: crack_loading !% 'unform' for constant load, 
                                                !% 'ramp' for linearly decreasing load along $x$, 
@@ -138,6 +139,7 @@ module CrackParams_module
      logical  :: simulation_classical     !% Perform a purely classical simulation
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
 
+
      ! Molecular dynamics parameters
      real(dp) :: md_time_step             !% Molecular Dynamics time-step, in fs.
      integer  :: md_extrapolate_steps     !% Number of steps to extrapolate for
@@ -154,6 +156,12 @@ module CrackParams_module
      real(dp) :: md_wait_time             !% Minimum wait time between loadings. Unit:~fs.
      real(dp) :: md_interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
      real(dp) :: md_calc_connect_interval !% How often should connectivity be recalculated?
+     real(dp) :: md_gentle_loading_rate !% increment load at this rate, in units of (J/m$^2$)/fs, after every integration step
+     real(dp) :: md_gentle_loading_tip_move_tol !% Distance in angstrom by which CrackPos must increase for crack to be considered to be moving
+     real(dp) :: md_gentle_loading_arrest_time  !% Crack must move by at least 'gentle_loading_tip_move_tol' A in every 'gentle_loading_arrest_time'
+                                                        !% to be considered to be moving.
+     real(dp) :: md_gentle_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
+
 
      ! Minimisation parameters
      character(STRING_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
@@ -290,6 +298,7 @@ contains
     this%crack_width             = 200.0_dp ! Angstrom
     this%crack_height            = 100.0_dp ! Angstrom
     this%crack_num_layers        = 1        ! number
+    this%crack_apply_initial_load = .true.
     this%crack_G                 = 2.0_dp   ! J/m^2
     this%crack_loading           = 'uniform'
     this%crack_load_interp_length = 100.0_dp ! Angstrom
@@ -320,6 +329,7 @@ contains
     this%simulation_classical    = .false.
     this%simulation_force_initial_load_step = .false.
 
+
     ! Molecular dynamics parameters
     this%md_time_step            = 1.0_dp   ! fs
     this%md_extrapolate_steps    = 10       ! number
@@ -336,6 +346,11 @@ contains
     this%md_wait_time            = 500.0_dp ! fs
     this%md_interval_time        = 100.0_dp ! fs
     this%md_calc_connect_interval = 10.0_dp ! fs
+    this%md_gentle_loading_rate = 0.0_dp
+    this%md_gentle_loading_tip_move_tol = 3.0_dp ! Angstrom
+    this%md_gentle_loading_arrest_time  = 400.0_dp ! fs
+    this%md_gentle_loading_tip_edge_tol = 100.0_dp ! Angstrom
+
     
     ! Minimisation parameters
     this%minim_method            = 'cg'
@@ -503,6 +518,11 @@ contains
           read (value, *) parse_cp%crack_num_layers
        end if
 
+       call QUIP_FoX_get_value(attributes, "apply_initial_load", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_apply_initial_load
+       end if
+
        call QUIP_FoX_get_value(attributes, "G", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_G
@@ -630,6 +650,7 @@ contains
           read (value, *) parse_cp%simulation_force_initial_load_step
        end if
 
+
     elseif (parse_in_crack .and. name == 'md') then
 
        call QUIP_FoX_get_value(attributes, "time_step", value, status)
@@ -706,6 +727,26 @@ contains
        call QUIP_FoX_get_value(attributes, "calc_connect_interval", value, status)
        if (status == 0) then
           read (value, *) parse_cp%md_calc_connect_interval
+       end if
+
+       call QUIP_FoX_get_value(attributes, "gentle_loading_rate", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_gentle_loading_rate
+       end if
+
+       call QUIP_FoX_get_value(attributes, "gentle_loading_tip_move_tol", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_gentle_loading_tip_move_tol
+       end if
+
+       call QUIP_FoX_get_value(attributes, "gentle_loading_arrest_time", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_gentle_loading_arrest_time
+       end if
+
+       call QUIP_FoX_get_value(attributes, "gentle_loading_tip_edge_tol", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_gentle_loading_tip_edge_tol
        end if
 
 
@@ -1065,6 +1106,7 @@ contains
     call Print('     width                 = '//this%crack_width//' A', file=file)
     call Print('     height                = '//this%crack_height//' A', file=file)
     call Print('     num_layers            = '//this%crack_num_layers, file=file)
+    call Print('     apply_initial_load    = '//this%crack_apply_initial_load, file=file)
     call Print('     G                     = '//this%crack_G//' J/m^2', file=file)
     call Print('     loading               = '//this%crack_loading, file=file)
     call Print('     load_interp_length    = '//this%crack_load_interp_length, file=file)
@@ -1109,6 +1151,10 @@ contains
     call Print('     wait_time             = '//this%md_wait_time//' fs',file=file)
     call Print('     interval_time         = '//this%md_interval_time//' fs',file=file)
     call Print('     calc_connect_interval = '//this%md_calc_connect_interval//' fs',file=file)
+    call Print('     gentle_loading_rate         = '//this%md_gentle_loading_rate//' (J/m^2)/fs', file=file)
+    call Print('     gentle_loading_tip_move_tol = '//this%md_gentle_loading_tip_move_tol//' A', file=file)
+    call Print('     gentle_loading_arrest_time  = '//this%md_gentle_loading_arrest_time//' fs', file=file)
+    call Print('     gentle_loading_tip_edge_tol = '//this%md_gentle_loading_tip_edge_tol//' A', file=file)
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)
     call Print('     method                = '//trim(this%minim_method),file=file)

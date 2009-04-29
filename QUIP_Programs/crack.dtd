@@ -14,6 +14,7 @@
   width		        CDATA #IMPLIED
   height	        CDATA #IMPLIED
   num_layers	        CDATA #IMPLIED
+  apply_initial_load    CDATA #IMPLIED
   G		        CDATA #IMPLIED
   loading	        CDATA #IMPLIED
   load_interp_length    CDATA #IMPLIED
@@ -60,6 +61,10 @@
   wait_time		 CDATA #IMPLIED
   interval_time		 CDATA #IMPLIED
   calc_connect_interval	 CDATA #IMPLIED
+  gentle_loading_rate    CDATA #IMPLIED
+  gentle_loading_tip_move_tol  CDATA #IMPLIED
+  gentle_loading_arrest_time   CDATA #IMPLIED
+  gentle_loading_tip_edge_tol  CDATA #IMPLIED
 >			
 			
 <!ELEMENT minim EMPTY>	
