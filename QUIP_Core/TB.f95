@@ -279,8 +279,7 @@ subroutine TB_Setup_atoms(this, at, is_noncollinear)
   call setup_atoms(this%tbsys, at, is_noncollinear)
 
   this%at = at
-  this%at%use_uniform_cutoff = .true.
-  this%at%cutoff = this%tbsys%tbmodel%cutoff
+  call set_cutoff(this%at, this%tbsys%tbmodel%cutoff)
   call calc_connect(this%at, own_neighbour=.true.)
 
 end subroutine TB_setup_atoms
@@ -609,6 +608,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
   call system_timer("TB_calc")
 
   call copy_atoms_fields(this%at, at)
+
 
 end subroutine TB_calc
 
