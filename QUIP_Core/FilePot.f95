@@ -173,16 +173,17 @@ subroutine FilePot_Print(this, file)
 
 end subroutine FilePot_Print
 
-subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, err)
+subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err)
   type(FilePot_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), target, optional :: local_e(:)
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
+  character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: err
 
-  character(len=1024) :: xyzfile, outfile
+  character(len=1024) :: xyzfile, outfile, my_args_str
   type(inoutput) :: xyzio
   integer :: nx, ny, nz
   type(Atoms) :: sup
@@ -193,6 +194,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, err)
   if (present(forces)) forces = 0.0_dp
   if (present(virial)) virial = 0.0_dp
   if (present(err)) err = 0
+  my_args_str = ''
+  if (present(args_str)) my_args_str = args_str
 
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
@@ -215,13 +218,13 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, err)
      if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
         call Print('FilePot: replicating cell '//nx//'x'//ny//'x'//nz//' times.')
         call supercell(sup, at, nx, ny, nz)
-        call print_xyz(sup, xyzio, properties=trim(this%property_list))
+        call print_xyz(sup, xyzio, properties=trim(this%property_list),real_format='f17.10')
      else
-        call print_xyz(at, xyzio, properties=trim(this%property_list))
+        call print_xyz(at, xyzio, properties=trim(this%property_list),real_format='f17.10')
      end if
      call finalise(xyzio)
 
-     call print("FilePot: invoking external command "//trim(this%command)//" "//trim(xyzfile)//" "// &
+     call print("FilePot: invoking external command "//trim(this%command)//" "//trim(my_args_str)//trim(xyzfile)//" "// &
           trim(outfile)//" on "//at%N//" atoms...")
 
      ! call the external command here
