@@ -1,5 +1,4 @@
-!last modified: 19 Dec 2008
-!
+!CP2K driver
 
 !to use external basis set or potential list add to atoms%params BASIS_SET_list=... or POTENTIAL_list=...,
 !   or pass to calc in args_str (see below)
@@ -293,8 +292,8 @@ contains
     this%mm_forcefield%charge_HT = 0.417_dp
   endif
     this%mm_ewald%ewald_type = 'ewald'
-    this%mm_ewald%ewald_alpha = 0.44_dp
-    this%mm_ewald%ewald_gmax = 25
+    this%mm_ewald%ewald_alpha = 0.35_dp
+    this%mm_ewald%ewald_gmax = int(max(at%lattice(1,1),at%lattice(2,2),at%lattice(3,3))/2._dp)*2+1
 
   if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
    ! let's have 3 Angstroms on any side of the cell
@@ -656,10 +655,10 @@ contains
     call set_cutoff(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
     call calc_connect(atoms_for_add_cut_hydrogens)
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
-    call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
-    do i=1,core%N
-       call print(core%int(1,i))
-    enddo
+    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
+    !do i=1,core%N
+    !   call print(core%int(1,i))
+    !enddo
     call finalise(atoms_for_add_cut_hydrogens)
 
    ! check changes in QM list and set the new QM list
@@ -1005,41 +1004,41 @@ contains
     if (buffer_general) then
        call print('Not element specific buffer selection')
        call construct_buffer(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       call print('Atoms in inner buffer:')
-       do i=1,inner_buffer%N
-          call print(inner_buffer%int(1,i))
-       enddo
+       !call print('Atoms in inner buffer:')
+       !do i=1,inner_buffer%N
+       !   call print(inner_buffer%int(1,i))
+       !enddo
        call construct_buffer(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       call print('Atoms in outer buffer:')
-       do i=1,outer_buffer%N
-          call print(outer_buffer%int(1,i))
-       enddo
-       call print('Atoms in the quantum region before updating:')
-       do i=1,ext_qmlist%N
-          call print(ext_qmlist%int(1,i))
-       enddo
+       !call print('Atoms in outer buffer:')
+       !do i=1,outer_buffer%N
+       !   call print(outer_buffer%int(1,i))
+       !enddo
+       !call print('Atoms in the quantum region before updating:')
+       !do i=1,ext_qmlist%N
+       !   call print(ext_qmlist%int(1,i))
+       !enddo
     else
        call print('Element specific buffer selection, only heavy atoms count')
        call construct_buffer_RADIUS(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       call print('Atoms in inner buffer:')
-       do i=1,inner_buffer%N
-          call print(inner_buffer%int(1,i))
-       enddo
+       !call print('Atoms in inner buffer:')
+       !do i=1,inner_buffer%N
+       !   call print(inner_buffer%int(1,i))
+       !enddo
        call construct_buffer_RADIUS(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       call print('Atoms in outer buffer:')
-       do i=1,outer_buffer%N
-          call print(outer_buffer%int(1,i))
-       enddo
-       call print('Atoms in the quantum region before updating:')
-       do i=1,ext_qmlist%N
-          call print(ext_qmlist%int(1,i))
-       enddo
+       !call print('Atoms in outer buffer:')
+       !do i=1,outer_buffer%N
+       !   call print(outer_buffer%int(1,i))
+       !enddo
+       !call print('Atoms in the quantum region before updating:')
+       !do i=1,ext_qmlist%N
+       !   call print(ext_qmlist%int(1,i))
+       !enddo
     endif
     call select_hysteretic_quantum_region(fake,inner_buffer,outer_buffer,ext_qmlist,verbosity=NORMAL)
-    call print('Atoms in hysteretic quantum region:')
-    do i=1,ext_qmlist%N
-       call print(ext_qmlist%int(1,i))
-    enddo
+    !call print('Atoms in hysteretic quantum region:')
+    !do i=1,ext_qmlist%N
+    !   call print(ext_qmlist%int(1,i))
+    !enddo
     call finalise(fake)
     call finalise(inner_buffer)
     call finalise(outer_buffer)
@@ -1052,10 +1051,10 @@ contains
     call set_cutoff(atoms_for_add_cut_hydrogens,0._dp)
     call calc_connect(atoms_for_add_cut_hydrogens)
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,ext_qmlist)
-    call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
-    do i=1,ext_qmlist%N
-       call print(ext_qmlist%int(1,i))
-    enddo
+    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
+    !do i=1,ext_qmlist%N
+    !   call print(ext_qmlist%int(1,i))
+    !enddo
     call finalise(atoms_for_add_cut_hydrogens)
 
    ! check changes in QM list and set the new QM list
@@ -1086,10 +1085,10 @@ contains
     logical :: delete_it
 
     call construct_buffer(my_atoms,core,(radius*maxval(ElementCovRad(my_atoms%Z(1:my_atoms%N)))/ElementCovRad(8)),buffer,use_avgpos=use_avgpos,verbosity=verbosity)
-    call print('Atoms in buffer:')
-    do i=1,buffer%N
-       call print(buffer%int(1,i))
-    enddo
+    !call print('Atoms in buffer:')
+    !do i=1,buffer%N
+    !   call print(buffer%int(1,i))
+    !enddo
 
     i = 1
     do while (i.le.buffer%N)
@@ -1103,13 +1102,13 @@ contains
                 if (distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)).le. &
                    radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j))))) then
                    delete_it = .false.
-                   call print('Atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//' is within element specific buffer distance '//round(distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)),3)//' < '//round(radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j)))),3))
+                   !call print('Atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//' is within element specific buffer distance '//round(distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)),3)//' < '//round(radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j)))),3))
                 endif
              enddo
           endif
        endif
        if (delete_it) then
-          call print('delete atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//'from buffer')
+          !call print('delete atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//'from buffer')
           call delete(buffer,i)
           i = i - 1
        endif
@@ -1782,11 +1781,11 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
                 call print('      SCF_GUESS '//trim(param%dft%scf_guess),file=input_file)
   !           endif
           endif
-  !        call print('#      EPS_SCF 3.0E-6',file=input_file)
-  !        call print('#      MAX_SCF 20',file=input_file)
+          call print('      EPS_SCF 1.0E-6',file=input_file)
+          call print('      MAX_SCF 200',file=input_file)
           call print('      &OUTER_SCF',file=input_file)
-  !        call print('#         EPS_SCF 3.0E-6',file=input_file)
-  !        call print('#         MAX_SCF 20',file=input_file)
+          call print('         EPS_SCF 1.0E-6',file=input_file)
+          call print('         MAX_SCF 200',file=input_file)
           call print('      &END',file=input_file)
           call print('      &OT',file=input_file)
           call print('         MINIMIZER CG',file=input_file)
@@ -1845,6 +1844,10 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call print('    &FORCEFIELD',file=input_file)
     call print('      PARMTYPE '//trim(param%mm_forcefield%parmtype),file=input_file)
     call print('      PARM_FILE_NAME ../'//trim(param%mm_forcefield%parm_file_name),file=input_file) ! charmm.pot
+#ifdef HAVE_DANNY
+    call print('      DANNY T',file=input_file)
+    call print('      DANNY_CUTOFF 10.0',file=input_file)
+#endif
 
 !!for old CP2K, QM/MM
 !    if (any(my_atoms%data%str(atom_type_index,1:my_atoms%N).eq.'CCL') .and. any(my_atoms%data%str(atom_type_index,1:my_atoms%N).eq.'CLA')) then
@@ -1910,7 +1913,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
        call print('  &QMMM',file=input_file)
        call print('    MM_POTENTIAL_FILE_NAME ../MM_POTENTIAL',file=input_file)
        call print('    &CELL',file=input_file)
-       call print('      ABC '//round(param%qmmm%qmmm_cell(1),3)//' '//round(param%qmmm%qmmm_cell(2),3)//' '//round(param%qmmm%qmmm_cell(3),3),file=input_file) !some cell size for the QM region
+       call print('      ABC '//round(param%qmmm%qmmm_cell(1),6)//' '//round(param%qmmm%qmmm_cell(2),6)//' '//round(param%qmmm%qmmm_cell(3),6),file=input_file) !some cell size for the QM region
 !       call print('      UNIT '//trim(param%qmmm%qmmm_cell_unit),file=input_file)   !in Angstroms
        call print('      PERIODIC XYZ',file=input_file)   !in Angstroms
        call print('    &END CELL',file=input_file)
@@ -2192,13 +2195,13 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call read_convert_back_pos(forces,param,my_atoms,run_type=run_type,verbose=my_verbose)
 
     call print('')
-    call print('The energy of the system: '//energy*HARTREE)
+    call print('The energy of the system: '//energy)
     call print('The forces acting on each atom (eV/A):')
     call print('atom     F(x)     F(y)     F(z)')
     do m=1,size(forces,2)
-    call print('  '//m//'    '//round(forces(1,m),5)//'  '//round(forces(2,m),5)//'  '//round(forces(3,m),5))
+    call print('  '//m//'    '//forces(1,m)//'  '//forces(2,m)//'  '//forces(3,m))
     enddo
-    call print('Sum of the forces: '//round(sum(forces(1,1:num_atoms)),5)//' '//round(sum(forces(2,1:num_atoms)),5)//' '//round(sum(forces(3,1:num_atoms)),5))
+    call print('Sum of the forces: '//sum(forces(1,1:num_atoms))//' '//sum(forces(2,1:num_atoms))//' '//sum(forces(3,1:num_atoms)))
 
 !    if (any(abs(forces(1:3,1:my_atoms%N)).gt.(4.21648784E-02*HARTREE/BOHR))) &
 !       call print('at least one too large force')
@@ -2336,7 +2339,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     mass_corr = sum(ElementMass(my_atoms%Z(int_part(fitlist,1))))
 
     force_corr = force_corr / mass_corr
-    call print('Force mixing: the force correction is '//round(force_corr(1),5)//' '//round(force_corr(2),5)//' '//round(force_corr(3),5))
+    call print('Force mixing: the force correction is '//force_corr(1)//' '//force_corr(2)//' '//force_corr(3))
 
     combined_forces(1:3,1:my_atoms%N) = mm_forces(1:3,1:my_atoms%N)
     combined_forces(1:3,int_part(core,1)) = qmmm_forces(1:3,int_part(core,1))
@@ -2351,7 +2354,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     do m=1,size(combined_forces,2)
     call print('  '//m//'    '//combined_forces(1,m)//'  '//combined_forces(2,m)//'  '//combined_forces(3,m))
     enddo
-    call print('Sum of the combined forces: '//round(sum(combined_forces(1,1:my_atoms%N)),5)//' '//round(sum(combined_forces(2,1:my_atoms%N)),5)//' '//round(sum(combined_forces(3,1:my_atoms%N)),5))
+    call print('Sum of the combined forces: '//sum(combined_forces(1,1:my_atoms%N))//' '//sum(combined_forces(2,1:my_atoms%N))//' '//sum(combined_forces(3,1:my_atoms%N)))
 
     
   end subroutine QUIP_combine_forces
