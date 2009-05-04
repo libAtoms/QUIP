@@ -133,6 +133,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
   real(dp) :: de, de_dr, de_drij, de_drik, de_dcos_ijk
   real(dp) :: cur_cutoff
 
+  integer :: n_neigh_i
+
 #ifdef OPENMP
   real(dp) :: private_virial(3,3), private_e
   real(dp), allocatable :: private_f(:,:), private_local_e(:)
@@ -162,6 +164,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 
 !$omp do
 #endif
+time_elapsed_tot = 0.0_dp
   do i=1, at%N
     if (this%mpi%active) then
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
@@ -169,7 +172,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
     ti = get_type(this%type_of_atomic_num, at%Z(i))
     if (current_verbosity() >= ANAL) call print ("IPModel_SW_Calc i " // i // " " // atoms_n_neighbours(at,i), ANAL)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
-    do ji=1, atoms_n_neighbours(at, i)
+    n_neigh_i = atoms_n_neighbours(at, i)
+    do ji=1, n_neigh_i
       j = atoms_neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff)
       if (j <= 0) cycle
       if (drij_mag .feq. 0.0_dp) cycle
@@ -233,7 +237,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 	w_f = 1.0_dp
       endif
 
-      do ki=1, atoms_n_neighbours(at, i)
+      do ki=1, n_neigh_i
 	if (ki <= ji) cycle
 	k = atoms_neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
 	if (k <= 0) cycle
