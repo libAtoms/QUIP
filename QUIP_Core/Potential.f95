@@ -486,7 +486,7 @@ contains
           elseif(associated(this%ip)) then
              call Calc(this%ip, at, e, local_e, f, virial, args_str=args_str)
           elseif(associated(this%filepot)) then
-             call Calc(this%filepot, at, e, local_e, f, virial, err)
+             call Calc(this%filepot, at, e, local_e, f, virial, args_str=args_str, err=err)
           elseif(this%is_wrapper) then
              !
              ! put here hardcoded energy and force functions
