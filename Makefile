@@ -48,6 +48,11 @@ libAtoms/%: libAtoms
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/libAtoms -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
+Tools/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
+	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/Tools -I${PWD}/Makefiles $${targ#Tools/}
+	rm ${BUILDDIR}/Makefile
+
 
 ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH} ] ; then mkdir build.${QUIP_ARCH} ; fi
