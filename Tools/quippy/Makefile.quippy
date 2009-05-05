@@ -30,7 +30,11 @@ QUIP_CORE=--quip-core-dir=${QUIP_CORE_DIR} \
 
 TOOLS_DIR=..
 include ${TOOLS_DIR}/Makefile
-TOOLS=--tools-dir=${TOOLS_DIR} --tools-sources=$(addsuffix .f95,${PROGRAMS})
+TOOLS_SOURCES=$(addprefix ${TOOLS_DIR}/,$(addsuffix .f95,${PROGRAMS}))
+QUIP_UTILS_DIR=../../QUIP_Utils
+include ${QUIP_UTILS_DIR}/Makefile
+QUIP_UTILS_SOURCES=$(addprefix ${QUIP_UTILS_DIR}/,$(addsuffix .f95,${F95_FILES}))
+TOOLS=--tools-sources="${TOOLS_SOURCES} ${QUIP_UTILS_SOURCES}"
 
 ifeq (${HAVE_ATOMEYE},1)
   ATOMEYE_DIR=../AtomEye
