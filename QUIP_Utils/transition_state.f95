@@ -288,7 +288,7 @@
         real(dp), dimension(this%cos%N)                          :: energy, gfac, error
         real(dp)                                                 :: fnorma, gmaxstepfact, rmaxstep, energy_save
         logical                                                  :: lcheck(this%cos%N) 
-        integer                                                  :: i, iat, isaddle, is
+        integer                                                  :: i, iat, is
         real(dp)                                                 :: emax, emin
         character(len=STRING_LENGTH)                             :: string_arg,args_str_calc
 
