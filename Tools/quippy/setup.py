@@ -245,16 +245,11 @@ if argfilt:
     del sys.argv[sys.argv.index(argfilt[0])]
 
 
-tools_dir = None
 tools_sources = []
-argfilt = [ s for s in sys.argv if s.startswith('--tools-dir') ]
+argfilt = [ s for s in sys.argv if s.startswith('--tools-sources')]
 if argfilt:
-    tools_dir = argfilt[0].split('=')[1]
+    tools_sources = argfilt[0].split('=')[1].split()
     del sys.argv[sys.argv.index(argfilt[0])]
-    argfilt = [ s for s in sys.argv if s.startswith('--tools-sources')]
-    if argfilt:
-        tools_sources = argfilt[0].split('=')[1].split()
-        del sys.argv[sys.argv.index(argfilt[0])]
         
 
 
@@ -284,10 +279,9 @@ if do_quippy_extension:
     int_libs = ['quip_core', 'atoms']
     build_libraries = [libatoms_lib, quip_core_lib]
 
-    if tools_dir:
-        tools_files = [os.path.join(tools_dir, f) for f in tools_sources ]
+    if tools_sources:
         tools_lib = ('tools', {
-            'sources': [ SourceImporter(f, macros, [libatoms_dir, quip_core_dir], cpp) for f in tools_files ],
+            'sources': [ SourceImporter(f, macros, [libatoms_dir, quip_core_dir], cpp) for f in tools_sources ],
             'include_dirs': include_dirs + [libatoms_dir, quip_core_dir],
             'macros': macros
             })
@@ -300,7 +294,8 @@ if do_quippy_extension:
 
     ext_args = {'name': 'quippy._quippy',
                 'sources': [ F90WrapperBuilder('quippy', [ f[:-4]+'.f90' for f in
-                                                           libatoms_sources + quip_core_sources + tools_sources if f.endswith('.f95') ],
+                                                           libatoms_sources + quip_core_sources +
+                                                           [os.path.basename(x) for x in tools_sources] if f.endswith('.f95') ],
                                                cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                     'dictionary_t':'FoX_sax'}], 
                                                donothing=False,
