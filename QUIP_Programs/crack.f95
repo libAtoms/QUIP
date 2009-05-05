@@ -80,6 +80,22 @@ program crack
   !% return to almost microcanonical molecular dynamics.
   !% After the crack has started to move, the rebonding is automatically
   !% detected and the load is not increased further.
+  !%
+  !%\subsection{Molecular Dynamics -- smooth loading}
+  !%
+  !% There is now an alternative way to smoothly increase the load during
+  !% an MD simulation. To use this method set the 'md_smooth_loading_rate'
+  !% parameter to a non-zero value. This parameter causes the load to be 
+  !% increased smoothly by an amount 'md_smooth_loading_rate*md_time_step'
+  !% after each Verlet integration step. Once the crack starts to move
+  !% (defined by the tip position changing by more than 'md_smooth_loading_tip_move_tol'
+  !% from the original position), then loading will stop. If the crack arrests
+  !% (defined by a movement of less than 'md_smooth_loading_tip_move_tol' in
+  !% a time 'md_smooth_loading_arrest_time' then loading will recommence.
+  !% 
+  !% At the moment loading always uses the same 'load' field, but it is
+  !% planned to allow the loading field to be recomputed from time to time
+  !% if the crack moves and subsequently arrests.                                          
   !% 
   !% \subsection{QM Selection Algorithm}
   !% 
@@ -261,7 +277,7 @@ program crack
        old_nn, hybrid, hybrid_mark
 
   ! Big arrays
-  real(dp), allocatable, dimension(:,:) :: f, f_fm, dr, pos1
+  real(dp), allocatable, dimension(:,:) :: f, f_fm, dr
   real(dp), pointer :: dr_prop(:,:), f_prop(:,:)
 
   ! Scalars
@@ -555,9 +571,9 @@ end if
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark, u_disp, k_disp)
 
-  if (.not. has_property(ds%atoms, 'load') .and. params%crack_apply_initial_load) then
+  if (.not. has_property(ds%atoms, 'load')) then
      call print_title('Applying Initial Load')
-     call crack_apply_initial_load(ds%atoms, params, mpi_glob, simple_metapot)
+     call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true.)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
           old_nn, hybrid, hybrid_mark, u_disp, k_disp)
@@ -615,7 +631,7 @@ end if
 
      if (trim(params%simulation_task) == 'md') then
         if (.not. get_value(ds%atoms%params, "State", state_string)) then
-           if (params%md_gentle_loading_rate .fne. 0.0_dp) then 
+           if (params%md_smooth_loading_rate .fne. 0.0_dp) then 
               state_string = 'MD_LOADING'
            else
               state_string = 'THERMALISE'
@@ -625,7 +641,7 @@ end if
         state_string = 'DAMPED_MD'
      end if
 
-     if (trim(state_string) == "MD" .and. (params%md_gentle_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
+     if (trim(state_string) == "MD" .and. (params%md_smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
      if (state_string(1:10) == 'THERMALISE') then
         state = STATE_THERMALISE
@@ -738,33 +754,38 @@ end if
         case(STATE_MICROCANONICAL)
 
         case(STATE_MD_LOADING)
-           ! If tip has moved by more than gentle_loading_tip_move_tol then
+           ! If tip has moved by more than smooth_loading_tip_move_tol then
            ! turn off loading. 
            dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
-           if ((crack_pos - orig_crack_pos) > params%md_gentle_loading_tip_move_tol) then
+           dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
+
+           if ((crack_pos - orig_crack_pos) > params%md_smooth_loading_tip_move_tol) then
               call print_title('Crack Moving')
               call print('STATE changing MD_LOADING -> MD_CRACKING')
               state = STATE_MD_CRACKING
               last_state_change_time = ds%t
               orig_crack_pos = crack_pos
+              call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
            else
               call print('STATE: crack is not moving')
            end if
 
         case(STATE_MD_CRACKING)
-           ! Monitor tip and if it doesn't move by more than gentle_loading_tip_move_tol in
-           ! time gentle_loading_arrest_time then switch back to loading
-           if (ds%t - last_state_change_time >= params%md_gentle_loading_arrest_time) then
+           ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
+           ! time smooth_loading_arrest_time then switch back to loading
+           if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
               dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
               dummy = get_value(ds%atoms%params, 'OrigWidth', orig_width)
+              dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
               
-              if ((crack_pos - orig_crack_pos) < params%md_gentle_loading_tip_move_tol) then
+              if ((crack_pos - orig_crack_pos) < params%md_smooth_loading_tip_move_tol) then
 
-                 if (orig_width/2.0_dp - crack_pos < params%md_gentle_loading_tip_edge_tol) then
+                 if ((orig_width/2.0_dp - crack_pos) < params%md_smooth_loading_tip_edge_tol) then
                     call print_title('Cracked Through')
                     exit
                  else
                     call print_title('Crack Arrested')
+                    call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .false.)
                     call print('STATE changing MD_CRACKING -> MD_LOADING')
                     state = STATE_MD_LOADING
                  end if
@@ -773,6 +794,7 @@ end if
               end if
               last_state_change_time = ds%t
               orig_crack_pos = crack_pos
+              call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
            end if
 
         case default
@@ -837,7 +859,7 @@ end if
               if (state == STATE_MD_LOADING) then
                  ! increment the load
                  if (has_property(ds%atoms, 'load')) then
-                    call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                    call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
                     call calc_dists(ds%atoms)
                     if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                  else
@@ -897,7 +919,7 @@ end if
                  if (state == STATE_MD_LOADING) then
                     ! increment the load
                     if (has_property(ds%atoms, 'load')) then
-                       call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                       call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
                        call calc_dists(ds%atoms)
                        if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                     else
@@ -947,7 +969,7 @@ end if
            if (state == STATE_MD_LOADING) then
               ! increment the load
               if (has_property(ds%atoms, 'load')) then
-                 call crack_apply_load_increment(ds%atoms, params%md_gentle_loading_rate*params%md_time_step)
+                 call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
                  call calc_dists(ds%atoms)
                  if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
               else
@@ -1121,7 +1143,7 @@ end if
 
      if (.not. has_property(ds%atoms, 'load')) then
         call print('No load field found. Regenerating load.')
-        call crack_apply_initial_load(ds%atoms, params, mpi_glob, simple_metapot)
+        call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true.)
      end if
 
      call crack_update_connect(ds%atoms, params)
@@ -1159,49 +1181,6 @@ end if
         
         call crack_print(ds%atoms, movie, params, mpi_glob)
      end do
-
-  else if (trim(params%simulation_task) == 'rerelax_load') then
-
-     allocate(pos1(3,ds%atoms%N))
-
-     if (params%crack_relax_loading_field) then
-        ! Geometry optimise
-        steps = minim(simple_metapot, ds%atoms, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
-	     max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-	     do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-             print_cinoutput=movie)
-     end if
-
-     ! Save positions
-     pos1 = ds%atoms%pos     
-        
-     ! Apply loading field
-     call print_title('Applying load increment')
-     call crack_apply_load_increment(ds%atoms)
-        
-     if (params%crack_relax_loading_field) then
-
-        ! now re-relax
-        steps = minim(simple_metapot, ds%atoms, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
-	     max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-	     do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-             print_cinoutput=movie)
-     end if
-
-     ! work out displacement field
-     do i=1,ds%atoms%N
-        load(:,i) = ds%atoms%pos(:,i) - pos1(:,i)
-     end do
-
-     ! Restore pos1 - relaxed positions at initial load
-     ds%atoms%pos = pos1
-
-     call print('Displacement field generated. Max disp: '//maxval(load))
-     call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*ds%atoms%N/)))/(3.0_dp*ds%atoms%N)))
-
-     
-     call crack_print(ds%atoms, movie, params, mpi_glob)
-     deallocate(pos1)
 
   else
 
