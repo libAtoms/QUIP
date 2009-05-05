@@ -156,11 +156,11 @@ module CrackParams_module
      real(dp) :: md_wait_time             !% Minimum wait time between loadings. Unit:~fs.
      real(dp) :: md_interval_time         !% How long must there be no topological changes for before load is incremented. Unit:~fs.
      real(dp) :: md_calc_connect_interval !% How often should connectivity be recalculated?
-     real(dp) :: md_gentle_loading_rate !% increment load at this rate, in units of (J/m$^2$)/fs, after every integration step
-     real(dp) :: md_gentle_loading_tip_move_tol !% Distance in angstrom by which CrackPos must increase for crack to be considered to be moving
-     real(dp) :: md_gentle_loading_arrest_time  !% Crack must move by at least 'gentle_loading_tip_move_tol' A in every 'gentle_loading_arrest_time'
+     real(dp) :: md_smooth_loading_rate !% increment load at this rate, in units of (J/m$^2$)/fs, after every integration step
+     real(dp) :: md_smooth_loading_tip_move_tol !% Distance in angstrom by which CrackPos must increase for crack to be considered to be moving
+     real(dp) :: md_smooth_loading_arrest_time  !% Crack must move by at least 'smooth_loading_tip_move_tol' A in every 'smooth_loading_arrest_time'
                                                         !% to be considered to be moving.
-     real(dp) :: md_gentle_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
+     real(dp) :: md_smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
 
 
      ! Minimisation parameters
@@ -346,10 +346,10 @@ contains
     this%md_wait_time            = 500.0_dp ! fs
     this%md_interval_time        = 100.0_dp ! fs
     this%md_calc_connect_interval = 10.0_dp ! fs
-    this%md_gentle_loading_rate = 0.0_dp
-    this%md_gentle_loading_tip_move_tol = 3.0_dp ! Angstrom
-    this%md_gentle_loading_arrest_time  = 400.0_dp ! fs
-    this%md_gentle_loading_tip_edge_tol = 100.0_dp ! Angstrom
+    this%md_smooth_loading_rate = 0.0_dp
+    this%md_smooth_loading_tip_move_tol = 3.0_dp ! Angstrom
+    this%md_smooth_loading_arrest_time  = 400.0_dp ! fs
+    this%md_smooth_loading_tip_edge_tol = 50.0_dp ! Angstrom
 
     
     ! Minimisation parameters
@@ -729,24 +729,24 @@ contains
           read (value, *) parse_cp%md_calc_connect_interval
        end if
 
-       call QUIP_FoX_get_value(attributes, "gentle_loading_rate", value, status)
+       call QUIP_FoX_get_value(attributes, "smooth_loading_rate", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_gentle_loading_rate
+          read (value, *) parse_cp%md_smooth_loading_rate
        end if
 
-       call QUIP_FoX_get_value(attributes, "gentle_loading_tip_move_tol", value, status)
+       call QUIP_FoX_get_value(attributes, "smooth_loading_tip_move_tol", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_gentle_loading_tip_move_tol
+          read (value, *) parse_cp%md_smooth_loading_tip_move_tol
        end if
 
-       call QUIP_FoX_get_value(attributes, "gentle_loading_arrest_time", value, status)
+       call QUIP_FoX_get_value(attributes, "smooth_loading_arrest_time", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_gentle_loading_arrest_time
+          read (value, *) parse_cp%md_smooth_loading_arrest_time
        end if
 
-       call QUIP_FoX_get_value(attributes, "gentle_loading_tip_edge_tol", value, status)
+       call QUIP_FoX_get_value(attributes, "smooth_loading_tip_edge_tol", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%md_gentle_loading_tip_edge_tol
+          read (value, *) parse_cp%md_smooth_loading_tip_edge_tol
        end if
 
 
@@ -1151,10 +1151,10 @@ contains
     call Print('     wait_time             = '//this%md_wait_time//' fs',file=file)
     call Print('     interval_time         = '//this%md_interval_time//' fs',file=file)
     call Print('     calc_connect_interval = '//this%md_calc_connect_interval//' fs',file=file)
-    call Print('     gentle_loading_rate         = '//this%md_gentle_loading_rate//' (J/m^2)/fs', file=file)
-    call Print('     gentle_loading_tip_move_tol = '//this%md_gentle_loading_tip_move_tol//' A', file=file)
-    call Print('     gentle_loading_arrest_time  = '//this%md_gentle_loading_arrest_time//' fs', file=file)
-    call Print('     gentle_loading_tip_edge_tol = '//this%md_gentle_loading_tip_edge_tol//' A', file=file)
+    call Print('     smooth_loading_rate         = '//this%md_smooth_loading_rate//' (J/m^2)/fs', file=file)
+    call Print('     smooth_loading_tip_move_tol = '//this%md_smooth_loading_tip_move_tol//' A', file=file)
+    call Print('     smooth_loading_arrest_time  = '//this%md_smooth_loading_arrest_time//' fs', file=file)
+    call Print('     smooth_loading_tip_edge_tol = '//this%md_smooth_loading_tip_edge_tol//' A', file=file)
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)
     call Print('     method                = '//trim(this%minim_method),file=file)
