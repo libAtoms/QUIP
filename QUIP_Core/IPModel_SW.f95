@@ -164,7 +164,6 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 
 !$omp do
 #endif
-time_elapsed_tot = 0.0_dp
   do i=1, at%N
     if (this%mpi%active) then
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
