@@ -126,7 +126,7 @@ string_lengths = {
     'default': 1024
     }
 
-valid_dim_re = re.compile(r'^([-0-9.e]+)|(size\([_a-zA-Z0-9\+\-\*\/]*\))|(len\(.*\))$')
+valid_dim_re = re.compile(r'^(([-0-9.e]+)|(size\([_a-zA-Z0-9\+\-\*\/]*\))|(len\(.*\)))$')
 
 def debug(str):
     if do_debug:
@@ -417,6 +417,9 @@ class C_module:
 
         debug('%s: %d subs' % (self.name, len(subts+functs)))
 
+        names = [x.name for x in subts+functs]
+        if shortname in names: shortname += '_'
+
         indent = 0
         println('module',shortname)
         indent += 3
@@ -628,7 +631,7 @@ class C_module:
 
                     newds = []
                     for i,d in enumerate(ds):
-                        if valid_dim_re.match(d): 
+                        if valid_dim_re.match(d):
                             #if ',' in d: ds[i] = d.replace('size','shape')
                             if d.startswith('len'):
                                 arglines.append('!f2py %s %s, dimension(%s) :: %s' % \
