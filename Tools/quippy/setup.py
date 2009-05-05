@@ -229,11 +229,34 @@ if argfilt:
     atomeye_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
 
+    argfilt = [s for s in sys.argv if s.startswith('--atomeye-libs')]
+    if argfilt:
+        print argfilt[0].split('=')[1]
+        atomeye_libs = [s[2:] for s in argfilt[0].split('=')[1].split()]
+        del sys.argv[sys.argv.index(argfilt[0])]
+        print atomeye_libs
+    else:
+        do_atomeye = False
+
 do_import = True
 argfilt = [ s for s in sys.argv if s == '--no-import-source']
 if argfilt:
     do_import = False
     del sys.argv[sys.argv.index(argfilt[0])]
+
+
+tools_dir = None
+tools_sources = []
+argfilt = [ s for s in sys.argv if s.startswith('--tools-dir') ]
+if argfilt:
+    tools_dir = argfilt[0].split('=')[1]
+    del sys.argv[sys.argv.index(argfilt[0])]
+    argfilt = [ s for s in sys.argv if s.startswith('--tools-sources')]
+    if argfilt:
+        tools_sources = argfilt[0].split('=')[1].split()
+        del sys.argv[sys.argv.index(argfilt[0])]
+        
+
 
 if do_quippy_extension:
     macros += [('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
@@ -258,11 +281,26 @@ if do_quippy_extension:
         'macros': macros
         })
 
+    int_libs = ['quip_core', 'atoms']
+    build_libraries = [libatoms_lib, quip_core_lib]
+
+    if tools_dir:
+        tools_files = [os.path.join(tools_dir, f) for f in tools_sources ]
+        tools_lib = ('tools', {
+            'sources': [ SourceImporter(f, macros, [libatoms_dir, quip_core_dir], cpp) for f in tools_files ],
+            'include_dirs': include_dirs + [libatoms_dir, quip_core_dir],
+            'macros': macros
+            })
+
+        int_libs = ['tools'] + int_libs
+        build_libraries = [libatoms_lib, quip_core_lib, tools_lib]
+    
 
     data_files = ['quippy.spec']
 
     ext_args = {'name': 'quippy._quippy',
-                'sources': [ F90WrapperBuilder('quippy', [ f[:-4]+'.f90' for f in libatoms_sources + quip_core_sources if f.endswith('.f95') ],
+                'sources': [ F90WrapperBuilder('quippy', [ f[:-4]+'.f90' for f in
+                                                           libatoms_sources + quip_core_sources + tools_sources if f.endswith('.f95') ],
                                                cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                     'dictionary_t':'FoX_sax'}], 
                                                donothing=False,
@@ -271,7 +309,7 @@ if do_quippy_extension:
                            ],
                 'library_dirs': library_dirs,
                 'include_dirs': include_dirs + [mod_dir],
-                'libraries':  ['quip_core', 'atoms'] + libraries,
+                'libraries':  int_libs + libraries,
                 'define_macros': macros
                 }
 
@@ -283,15 +321,13 @@ if do_quippy_extension:
 
     quippy_ext = Extension(**ext_args)
 
-    build_libraries = [libatoms_lib, quip_core_lib]
     exts = [arraydata_ext, quippy_ext]
 
     if do_atomeye:
         ext_args = {'name': 'quippy._atomeye',
                     'sources': ['atomeyemodule.c'],
                     'library_dirs':  library_dirs + [os.path.join(atomeye_dir, 'lib'),'/usr/X11/lib'],
-                    'libraries': ['AtomEye', 'AX', 'png', 'z', 'jpeg', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer',
-                                  'history', 'ncurses', 'm', 'Xpm', 'Xext', 'X11', 'readline'] + libraries,
+                    'libraries': ['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
                     'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
                     'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
                     'define_macros': macros
@@ -313,7 +349,7 @@ setup(name='quippy',
       data_files = [('quippy',data_files)],
       cmdclass = {'clean':clean},
       version=os.popen('svnversion -n .').read(),
-      description='Python binding to QUIP code',
+      description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',
       url='http://www.libatoms.org')
