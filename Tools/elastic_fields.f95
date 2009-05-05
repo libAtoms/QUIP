@@ -1,4 +1,4 @@
-module elastic_fields_module
+module elastic_module
 
   use libAtoms_module
 
@@ -249,12 +249,12 @@ contains
 
   end subroutine elastic_fields
 
-end module elastic_fields_module
+end module elastic_module
 
 program elastic
 
   use libAtoms_module
-  use elastic_fields_module, only: elastic_fields
+  use elastic_module, only: elastic_fields
  
   implicit none
 
