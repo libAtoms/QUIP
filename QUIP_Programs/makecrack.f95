@@ -465,6 +465,9 @@ program makecrack
      end do
   end if
 
+  call crack_make_seed(crack_slab, params)
+  call crack_setup_marks(crack_slab, params)
+
   if (params%crack_apply_initial_load) then
      if (mpi_glob%active .and. params%crack_relax_loading_field) then
         allocate(f(3,crack_slab%N))
@@ -473,7 +476,7 @@ program makecrack
      end if
      
      ! Apply initial load
-     call crack_apply_initial_load(crack_slab, params, mpi_glob, simple)  
+     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true.)
   end if
 
   call Print_title('Initialising QM region')
