@@ -1,18 +1,21 @@
+"""Contains FortranArray class and utility functions for handling one-based
+array indexing."""
+
 import numpy
 
-def frange(min=None,max=None,step=1):
-    """Return a list of integers from min to max inclusive, increasing by
+def frange(min,max=None,step=1):
+    """Return an iterator for integers from min to max inclusive, increasing by
     step each time."""
     if max is None:
-        return range(1,min+1,step)
+        return xrange(1,min+1,step)
     else:
-        return range(min,max+1,step)
+        return xrange(min,max+1,step)
 
 def fzeros(shape,dtype=float):
-    return FortranArray(numpy.zeros(shape,dtype))
+    return FortranArray(numpy.zeros(shape,dtype,order='F'))
 
 def farray(seq):
-    return FortranArray(numpy.array(seq))
+    return FortranArray(numpy.array(seq,order='F'))
 
 class FortranArray(numpy.ndarray):
     """Subclass of ndarray which uses Fortran-style one-based
@@ -30,7 +33,7 @@ class FortranArray(numpy.ndarray):
         Construct a FortanArray from input_array, optionally setting
         docstring to doc."""
 
-	self = numpy.asarray(input_array,order='F').view(FortranArray)
+	self = numpy.asarray(input_array).view(FortranArray)
         if doc is not None:
             self.__doc__ = doc
 	return self
@@ -101,6 +104,12 @@ class FortranArray(numpy.ndarray):
         indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
 
+
+    def __setslice__(self, i,j, value):
+        raise NotImplentedError
+
+    def __getslice__(self, i,j):
+        raise NotImplementedError
 
     def nonzero(self):
         """a.nonzero()
