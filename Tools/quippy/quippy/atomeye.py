@@ -1,3 +1,5 @@
+"""High-level interface to atomeye. Low-level interface is in _atomeye extension module."""
+
 import threading, _atomeye, time, sys
 from math import ceil, log10
 
@@ -76,7 +78,7 @@ def start():
             getattr(sys.modules[__name__],funcname).__doc__ = h
 
 
-def show(obj, property=None, frame=None):
+def show(obj, property=None, frame=None, animate=False):
     global atoms
 
     if not isAlive(): start()
@@ -89,7 +91,11 @@ def show(obj, property=None, frame=None):
             setattr(sys.modules[__name__],'frame',frame)
         else:
             frame = getattr(sys.modules[__name__],'frame')
-        redraw(property=property)
+        if animate:
+            while True:
+                on_advance('forward')
+        else:
+            redraw(property=property)
     else:
         redraw(property=property)
 
