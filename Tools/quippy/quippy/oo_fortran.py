@@ -1,7 +1,10 @@
+"""Object oriented interface on top of f2py generated wrappers."""
+
 import logging, numpy, sys
 from arraydata import arraydata
 from farray import FortranArray
 import numpy
+from types import MethodType
 
 major, minor = sys.version_info[0:2]
 
@@ -10,7 +13,7 @@ if (major, minor) < (2, 5):
     any = lambda seq: True in seq
 
 
-#logging.root.setLevel(logging.DEBUG)
+logging.root.setLevel(logging.DEBUG)
 
 py_keywords = ['and',       'del',       'from',      'not',       'while',    
                'as',        'elif',      'global',    'or',        'with',     
@@ -28,7 +31,136 @@ numpy_to_fortran['f'] = 'real(dp)' # will be converted up by f2py
 
 class FortranDerivedType(object):
    """Abstract base class for all fortran derived types."""
-   pass
+
+   _modobj = None
+   _moddoc = None
+   _classdoc = None
+   _routines = {}
+   _subobjs = {}
+   _arrays = {}
+   _interfaces = {}
+   _elements = {}
+   _elements = {}
+
+   def __init__(self, *args, **kwargs):
+
+       call_init = True
+       self._p = None
+       self._finalise = True
+       
+       if 'p' in kwargs:
+           call_init = False
+           self._p = kwargs['p']
+           del kwargs['p']
+
+       if 'finalise' in kwargs:
+           self._finalise = kwargs['finalise']
+           del kwargs['finalise']
+
+       if call_init and '__init__' in self._routines:
+
+           fobj, doc = self._routines['__init__']
+           
+           inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
+           newargs, newkwargs = process_in_args(args, kwargs, inargs)
+           
+           self._p = call_fortran(fobj, newargs, newkwargs)
+
+       self._update()
+       
+
+   def __del__(self):
+       logging.warning('del %s id=%d p=%d finalise=%d' % (self.__class__.__name__, id(self), self._p, self._finalise))
+
+       if self._p and self._finalise and '__del__' in self._routines:
+           self._runroutine('__del__')
+           self._p = None
+ 
+   def __str__(self):
+      items = []
+      for k in dir(self):
+         if k.startswith('_'): continue
+         v = getattr(self,k)
+         if isinstance(v, MethodType): continue
+         if isinstance(v, FortranDerivedType): 
+            items.append('%s=%s()' % (k,v.__class__.__name__))
+         else:
+            items.append('%s=%s' % (k,v))
+      return '%s(%s)' % (self.__class__.__name__, ',\n'.join(items))
+
+
+   def _update(self):
+       logging.warning('updating %s at 0x%x' % (self.__class__, id(self)))
+       if self._p is None: return
+       
+       for name in self._arrays:
+          try:
+             delattr(self, name)
+          except AttributeError:
+             pass
+
+       for name, (arrayfunc, doc) in self._arrays.iteritems():
+          dtype, shape, loc = arrayfunc(self._p)
+          dtype = dtype.strip()
+          if shape.any() and loc != 0:
+             if dtype in numpy_scalar_types:
+                 if hasattr(self, '_map_array_shape'):
+                     nshape = self._map_array_shape(name, shape)
+                     setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
+                     setattr(self, name, getattr(self, '_'+name)[nshape])
+                 else:
+                     setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
+             else:
+                # access to arrays of derived type not yet implemented
+                continue
+          else:
+             logging.debug('Ignoring uninitialised array %s (shape=%s, dtype=%s, loc=%s)' % (name, shape, dtype, loc))
+             continue
+
+       for name in self._subobjs:
+          try:
+             delattr(self, name)
+          except AttributeError:
+             pass
+
+       for name, (cls, getfunc, setfunc) in self._subobjs.iteritems():
+          if name == 'thetype': name = 'type' # special case: f2py misparses name 'type'
+          if not cls.lower() in FortranDerivedTypes:
+             logging.debug('Unknown class %s' % cls)
+             continue
+          p = getfunc(self._p)
+          if p != 0:
+             savedoc = getattr(self, name).__doc__
+             setattr(self, name, FortranDerivedTypes[cls.lower()](p=p,finalise=False))
+             getattr(self,name).__doc__ = savedoc
+
+       if hasattr(self,'update_hook'): 
+           self.update_hook()
+
+
+   def _runroutine(self, name, *args, **kwargs):
+       if self._p is None:
+           raise ValueError('%s object not initialised.' % self.__class__.__name__)
+
+       if not name in self._routines:
+           raise NameError('Unknown fortran routine: %s' % name)
+
+       fobj, doc = self._routines[name]
+       
+       inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
+       outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
+
+       # Put self at beginning of args list
+       args = tuple([self] + list(args))
+                               
+       newargs, newkwargs = process_in_args(args, kwargs, inargs)
+
+       res = call_fortran(fobj, newargs, newkwargs)
+       newres = process_results(res, args, kwargs, inargs, outargs)
+      
+       return newres
+
+
 
 FortranDerivedTypes = {}
 
@@ -44,7 +176,7 @@ def is_scalar_type(t):
    return False
 
 
-def wrap_all(topmod, spec, mods, short_names, default_init_args, base_classes={}):
+def wrap_all(topmod, spec, mods, short_names, default_init_args):
    all_classes = []
    leftover_routines = []
    standalone_routines = []
@@ -60,7 +192,7 @@ def wrap_all(topmod, spec, mods, short_names, default_init_args, base_classes={}
        classes, routines, params = wrapmod(fmod, spec[mod],
                                            short_names=short_names,
                                            default_init_args=default_init_args,
-                                           params=params, base_classes=base_classes)
+                                           params=params)
        all_classes.extend(classes)
        leftover_routines.append((fmod, spec[mod], routines))
 
@@ -92,7 +224,8 @@ def wrap_all(topmod, spec, mods, short_names, default_init_args, base_classes={}
    return all_classes, standalone_routines, params
 
 
-def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes):
+
+def wrapmod(modobj, moddoc, short_names, default_init_args, params):
 
    routines = [x for x in moddoc['routines'].keys()]
    types =  [x for x in moddoc['types'].keys()]
@@ -100,45 +233,67 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
    classes = []
    for cls in types:
       lcls = cls.lower()
-      if '%s_initialise' % lcls in routines: 
-         constructor = '%s_initialise' % lcls
-      elif '%s_allocate' % lcls in routines:
-         constructor = '%s_allocate' % lcls
-      elif lcls in short_names:
-         if '%s_initialise' % short_names[lcls] in routines:
-            constructor = '%s_initialise'  % short_names[lcls]
-         elif '%s_allocate' % short_names[lcls] in routines:
-            constructor = '%s_allocate'  % short_names[lcls]
-      else:
-         cands = filter(lambda x: x.startswith('%s_initialise' % lcls), routines)
-         if cands:
-            constructor = cands[0] # pick the first one, for now
-         else:
-            logging.debug("Can't find constructor for type %s" % cls)
-            continue
-
-      if '%s_finalise' % lcls in routines:
-         destructor = '%s_finalise' % lcls
-      elif lcls in short_names and '%s_finalise' % short_names[lcls] in routines:
-         destructor = '%s_finalise' % short_names[lcls]
-      else:
-         logging.debug("Can't find destructor for type %s" % cls)
-         continue
 
       logging.debug('  Class %s' % cls)
 
       methods = [ x for x in moddoc['routines'].keys()
                   if (len(moddoc['routines'][x]['args']) > 0 and 
                       moddoc['routines'][x]['args'][0]['type'].lower() == 'type(%s)' % lcls) ]
-      
-      d = {}
-      d['_classdoc'] = moddoc['types'][cls]
-      d['__init__'] =  wrapinit(cls, modobj, moddoc, constructor, default_init_args)
-      d['__del__'] = wrapdel(cls, modobj, moddoc, destructor)
-      d['__str__'] = wraprepr(cls)
-      d['_update'] = _update
-      d['_arrays'] = {}
-      d['_subobjs'] = {}
+
+
+      constructors = [ x for x in methods if (x.startswith('%s_initialise' % lcls) or
+                                              x.startswith('%s_allocate' % lcls))]
+
+      destructors = [ x for x in methods if x.startswith('%s_finalise' % lcls)]
+
+
+      if lcls in short_names:
+          constructors += [ x for x in methods if(x.startswith('%s_initialise' % short_names[lcls]) or
+                                                  x.startswith('%s_allocate' % short_names[lcls]))
+                            and 'intent(out)' in moddoc['routines'][x]['args'][0]['attributes'] ]
+
+          destructors += [ x for x in methods if x.startswith('%s_finalise' % short_names[lcls]) ]
+
+      if (len(constructors) == 0):
+          logging.warning("Can't find constructor for type %s. Skipping class" % cls)
+          continue
+          
+      if (len(destructors) == 0):
+          logging.warning("Can't find destructor for type %s. Skipping class" % cls)
+          continue
+
+      destructor = destructors[0]
+      constructor = constructors[0]
+
+      print 'constructors', constructors
+      print 'destructors', destructors
+
+      tcls = cls[0].upper()+cls[1:]
+      new_cls = type(object)(tcls, (FortranDerivedType,),
+                            {'__doc__': moddoc['doc'],
+                             '_moddoc': None,
+                             '_modobj': None,
+                             '_classdoc': None,
+                             '_routines': {},
+                             '_subobjs': {},
+                             '_arrays': {},
+                             '_interfaces': {},
+                             '_elements': {},
+                             })
+      FortranDerivedTypes['type(%s)' % cls.lower()] = new_cls
+      classes.append((tcls, new_cls))
+
+
+      new_cls._classdoc = moddoc['types'][cls]
+      new_cls._moddoc = moddoc
+      new_cls._modobj = modobj
+
+      if constructor:
+          new_cls._routines['__init__'] = (getattr(modobj, constructor), moddoc['routines'][constructor])
+
+      if destructor:
+          new_cls._routines['__del__'] = (getattr(modobj, destructor), moddoc['routines'][destructor])
+
       interfaces = {}
 
       for name in methods:
@@ -151,39 +306,43 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
                 name = name[len(short_names[lcls])+1:]
 
          if name in py_keywords: name = name+'_'
-         
-         d[name] = wraproutine(modobj, moddoc, fullname, cls+'.'+name)
+
+         fobj = getattr(modobj, fullname)
+         doc = moddoc['routines'][fullname]
+         new_cls._routines[name] = (fobj, doc)
+
+         setattr(new_cls, name, add_doc(wrapmethod(name), fobj, doc, fullname, tcls+'.'+name))
+                                       
+         #setattr(new_cls,name,wraproutine(modobj, moddoc, fullname, cls+'.'+name))
 
          for intf_name,value in moddoc['interfaces'].iteritems():
             intf_routines = value['routines']
             if fullname in intf_routines:
                if not intf_name in interfaces: interfaces[intf_name] = []
-               interfaces[intf_name].append((cls+'.'+name, moddoc['routines'][fullname], d[name]))
+               interfaces[intf_name].append((cls+'.'+name, moddoc['routines'][fullname], getattr(new_cls,name)))
 
          logging.debug('    adding method %s' % name)
          del routines[routines.index(fullname)]
 
-      d['__doc__'] = moddoc['doc']
-
       # only keep interfaces with more than one routine in them
       # if there's just one routine we want to copy the docstring
-      d['_interfaces'] = {}
       for name,value in interfaces.iteritems():
          if len(value) > 1: 
-             d['_interfaces'][name] = value
+             new_cls._interfaces[name] = value
          else:
-             value[0][2].__doc__  ='\n'.join(moddoc['interfaces'][name]['doc']) + '\n\n' + value[0][2].__doc__
+             pass
+#             value[0][2].__doc__  ='\n'.join(moddoc['interfaces'][name]['doc']) + '\n\n' + value[0][2].__doc__
 
-      for intf, value in d['_interfaces'].iteritems():
+      for intf, value in new_cls._interfaces.iteritems():
          # if there's a routine with same name as interface, move it first
-         if intf in d:
-            d[intf+'_'] = d[intf]
-         d[intf] = wrap_interface(cls, intf, value, moddoc['interfaces'][intf]['doc'])
+         if hasattr(new_cls, intf):
+            setattr(new_cls,intf+'_', getattr(new_cls, intf))
+         setattr(new_cls, intf, wrap_interface(cls, intf, value, moddoc['interfaces'][intf]['doc']))
 
       # Constructor documentation could be in initialise interface
-      if 'initialise' in moddoc['interfaces']:
-          if moddoc['interfaces']['initialise']['doc'] != []:
-              d['__init__'].__doc__ = '\n'.join(moddoc['interfaces']['initialise']['doc'])+ '\n\n' + d['__init__'].__doc__
+      #if 'initialise' in moddoc['interfaces']:
+      #    if moddoc['interfaces']['initialise']['doc'] != []:
+      #        d['__init__'].__doc__ = '\n'.join(moddoc['interfaces']['initialise']['doc'])+ '\n\n' + d['__init__'].__doc__
 
       # Add property() calls for get and set routines of scalar type,
       # and placeholders for dynamically created sub objects
@@ -196,29 +355,27 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
             if is_scalar_type(el['type']):
                logging.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
 
-               d['_get_%s' % name] = wrap_get(modobj, el['get'])
-               d['_set_%s' % name] = wrap_set(modobj, el['set'])
+               new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']))
+                  
+               setattr(new_cls, '_get_%s' % name, wrap_get(name))
+               setattr(new_cls, '_set_%s' % name, wrap_set(name))
 
-               d[name] = property(fget=d['_get_%s'%name],fset=d['_set_%s'%name],doc=el['doc'])
+               setattr(new_cls, name, property(fget=getattr(new_cls,'_get_%s'%name),
+                                               fset=getattr(new_cls,'_set_%s'%name),
+                                               doc=el['doc']))
             else:
-               d['_subobjs'][name] = (el['type'], 
-                                     getattr(modobj, el['get']), 
-                                     getattr(modobj, el['set']))
-               d[name] = FortranDerivedType()
-               d[name].__doc__ = el['doc']
+                new_cls._subobjs[name] = (el['type'], 
+                                          getattr(modobj, el['get']), 
+                                          getattr(modobj, el['set']))
+                setattr(new_cls, name,FortranDerivedType())
+                getattr(new_cls, name).__doc__ = el['doc']
 
          # Placeholders for array members
          if 'array' in el:
             logging.debug('    adding array %s' % name)
-            d['_arrays'][name] = (getattr(modobj, el['array']), el['doc'])
-            d[name] = FortranArray(doc=el['doc'])
+            new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'])
+            setattr(new_cls, name, FortranArray(doc=el['doc']))
    
-         if cls in base_classes:
-            new_cls = type(object)(cls[0].upper()+cls[1:], (FortranDerivedType,base_classes[cls]), d)
-         else:
-             new_cls = type(object)(cls[0].upper()+cls[1:], (FortranDerivedType,), d)
-         FortranDerivedTypes['type(%s)' % cls.lower()] = new_cls
-         classes.append((cls[0].upper()+cls[1:], new_cls))
 
    # Try to evaluate params
    evaldict = numpy.__dict__
@@ -237,22 +394,28 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params, base_classes
    return (classes, routines, params)
 
 
-def wrap_get(modobj, name):
-   fobj = getattr(modobj, name)
+def wrap_get(name):
                                
    def func(self):
-      res = call_fortran(fobj, (self._p,))
-      return res
+       if self._p is None:
+           raise ValueError('%s object not initialised.' % self.__class__.__name__)
+       if not name in self._elements:
+           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
+       res = call_fortran(self._elements[name][0], (self._p,))
+       return res
 
    return func
 
-def wrap_set(modobj, name):
-   fobj = getattr(modobj, name)
-                               
+def wrap_set(name):
+                              
    def func(self, value):
-      res = call_fortran(fobj, (self._p,value))
-      self._update()
-      return res
+       if self._p is None:
+           raise ValueError('%s object not initialised.' % self.__class__.__name__)
+       if not name in self._elements:
+           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
+       res = call_fortran(self._elements[name][1], (self._p, value))
+       self._update()
+       return res
 
    return func
 
@@ -292,6 +455,8 @@ def add_doc(func, fobj, doc, fullname, name):
             arg_lines[i] = (fmt % (arg_lines[i].strip(),arg['doc'])).replace('\n','\n   '+indent*' ')
 
       func.__doc__ = '%s\n\n%s' % ('\n'.join(L[:3]+arg_lines), doc['doc'])
+      func.__name__ = fullname
+      func._fobj = fobj
 
    return func
 
@@ -371,64 +536,12 @@ def wraproutine(modobj, moddoc, name, shortname):
 
    return add_doc(func, fobj, doc, name, shortname)
 
-def wraprepr(cls):
-   def func(self):
-      items = []
-      for k in dir(self):
-         if k.startswith('_'): continue
-         v = getattr(self,k)
-         if type(v).__name__ == 'instancemethod': continue
-         if isinstance(v, FortranDerivedType): 
-            items.append('%s=%s()' % (k,v.__class__.__name__))
-         else:
-            items.append('%s=%s' % (k,v))
-      return '%s(%s)' % (cls, ',\n'.join(items))
+def wrapmethod(name):
 
-   return func
-
-def wrapinit(cls, modobj, moddoc, name, default_init_args):
-   doc = moddoc['routines'][name]
-   fobj = getattr(modobj, name)
-   inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'][1:])
-   inargs.append({'name':'p','type':'integer','attributes':[]})
-   inargs.append({'name':'finalise','type':'logical','attributes':[]})
-   outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
-                               
-   def func(self, *args, **kwargs):
-      logging.debug('init %s %s %s ' % (cls, args, kwargs))
-      newargs, newkwargs = process_in_args(args, kwargs, inargs)
-
-      if newargs == () and cls in default_init_args:
-         newargs = default_init_args[cls]
-
-      if not 'p' in newkwargs:
-         newkwargs2 = newkwargs.copy()
-         if 'finalise' in newkwargs2: del newkwargs2['finalise']
-         self._p = call_fortran(fobj, newargs, newkwargs2)
-      else:
-         self._p = newkwargs['p']
-
-      self._finalise = True
-      if 'finalise' in newkwargs:
-         self._finalise = newkwargs['finalise']
-
-      self._update()
-
-   return add_doc(func, fobj, doc, name, cls)
-
-
-def wrapdel(cls, modobj, moddoc, name):
-   doc = moddoc['routines'][name]
-   fobj = getattr(modobj, name)
-                               
-   def func(self):
-      logging.debug('del %s' % cls)
-
-      if self._finalise:
-         call_fortran(fobj, (self._p,))
-      self._p = None
- 
-   return add_doc(func, fobj, doc, name, 'del')
+    def method(self, *args, **kwargs):
+        return self._runroutine(name, *args, **kwargs)
+        
+    return method
 
 
 def fortran_equivalent_type(t):
@@ -503,7 +616,8 @@ def wrap_interface(cls, name, routines, doc):
 
          # Check types and dimensions are compatible
          if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
-            continue
+             print [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]
+             continue
 
          # Check keyword arguments, if incompatible continue to next
          # candidate interface
@@ -520,7 +634,8 @@ def wrap_interface(cls, name, routines, doc):
                      raise ValueError
 
             except ValueError:
-               continue
+                print rname, 'failed at kwarg', key
+                continue
          
          return routine(*args, **kwargs)
             
@@ -532,57 +647,9 @@ def wrap_interface(cls, name, routines, doc):
    for rname,spec,routine in routines:
        func.__doc__ += routine.__doc__.replace(rname,cls+'.'+name)
 
-   return func
-
-
-def _update(self):
-   logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))
-   for name in self._arrays:
-      try:
-         delattr(self, name)
-      except AttributeError:
-         pass
-
-   for name, (arrayfunc, doc) in self._arrays.iteritems():
-      dtype, shape, loc = arrayfunc(self._p)
-      dtype = dtype.strip()
-      if shape.any() and loc != 0:
-         if dtype in numpy_scalar_types:
-             if hasattr(self, '_map_array_shape'):
-                 nshape = self._map_array_shape(name, shape)
-                 setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
-                 setattr(self, name, getattr(self, '_'+name)[nshape])
-             else:
-                 setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
-         else:
-            # access to arrays of derived type not yet implemented
-            continue
-      else:
-         logging.debug('Ignoring uninitialised array %s (shape=%s, dtype=%s, loc=%s)' % (name, shape, dtype, loc))
-         continue
-
-   for name in self._subobjs:
-      try:
-         delattr(self, name)
-      except AttributeError:
-         pass
-
-   for name, (cls, getfunc, setfunc) in self._subobjs.iteritems():
-      if name == 'thetype': name = 'type' # special case: f2py misparses name 'type'
-      if not cls.lower() in FortranDerivedTypes:
-         logging.debug('Unknown class %s' % cls)
-         continue
-      p = getfunc(self._p)
-      if p != 0:
-         savedoc = getattr(self, name).__doc__
-         setattr(self, name, FortranDerivedTypes[cls.lower()](p=p,finalise=False))
-         getattr(self,name).__doc__ = savedoc
-
-   if hasattr(self,'update_hook'): 
-       self.update_hook()
-      
+   return func      
          
 
 def call_fortran(fobj, args=(), kwargs={}):
-   return fobj(*args, **kwargs)
-   
+    return fobj(*args, **kwargs)
+
