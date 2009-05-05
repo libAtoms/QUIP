@@ -390,8 +390,10 @@ contains
        end do
     else
        do i=1,size(properties)
-          if (.not. has_key(at%properties, properties(i))) &
-               call system_abort('cinoutput_write: unknown property '//trim(properties(i)))
+          if (.not. has_key(at%properties, properties(i))) then
+             call print('cinoutput_write: skipping unknown property '//trim(properties(i)))
+             cycle
+          end if
           call set_value(selected_properties, properties(i), 1)
        end do
     end if
