@@ -10,7 +10,7 @@ endif
 
 CONFIG_FC_OPTS =  --f90flags="-ffree-line-length-none" --cpp="gfortran -E -x f95-cpp-input" 
 BUILD_EXT_OPTS =  --fcompiler=gnu95
-BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${ATOMEYE} #--f2py-opts=--debug-capi 
+BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} #--f2py-opts=--debug-capi 
 BUILD_OPTS = --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
 INSTALL_OPTS = --home=${HOME}
 
@@ -28,9 +28,13 @@ include ${QUIP_CORE_DIR}/Makefile
 QUIP_CORE=--quip-core-dir=${QUIP_CORE_DIR} \
 	--quip-core-sources=$(subst $(space),:,$(strip ${TB_F77_SOURCES})):$(subst $(space),:,$(strip ${ALL_F95_FILES}))
 
+TOOLS_DIR=..
+include ${TOOLS_DIR}/Makefile
+TOOLS=--tools-dir=${TOOLS_DIR} --tools-sources=$(addsuffix .f95,${PROGRAMS})
+
 ifeq (${HAVE_ATOMEYE},1)
   ATOMEYE_DIR=../AtomEye
-  ATOMEYE=--atomeye-dir=${ATOMEYE_DIR}
+  ATOMEYE=--atomeye-dir=${ATOMEYE_DIR} --atomeye-libs="${ATOMEYE_LIBS}"
 atomeyelib:
 	make -C ${ATOMEYE_DIR} atomeyelib
 else
