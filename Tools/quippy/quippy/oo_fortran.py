@@ -64,16 +64,17 @@ class FortranDerivedType(object):
            inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
            newargs, newkwargs = process_in_args(args, kwargs, inargs)
            
-           self._p = call_fortran(fobj, newargs, newkwargs)
+           self._p = call_fortran(fobj, *newargs, **newkwargs)
 
        self._update()
        
 
    def __del__(self):
-       logging.warning('del %s id=%d p=%d finalise=%d' % (self.__class__.__name__, id(self), self._p, self._finalise))
+       print 'del %s id=%d p=%d finalise=%d' % (self.__class__.__name__, id(self), self._p, self._finalise)
 
        if self._p and self._finalise and '__del__' in self._routines:
-           self._runroutine('__del__')
+           fobj, doc = self._routines['__del__']
+           call_fortran(fobj, self._p)
            self._p = None
  
    def __str__(self):
@@ -155,7 +156,7 @@ class FortranDerivedType(object):
                                
        newargs, newkwargs = process_in_args(args, kwargs, inargs)
 
-       res = call_fortran(fobj, newargs, newkwargs)
+       res = call_fortran(fobj, *newargs, **newkwargs)
        newres = process_results(res, args, kwargs, inargs, outargs)
       
        return newres
@@ -401,7 +402,7 @@ def wrap_get(name):
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
            raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
-       res = call_fortran(self._elements[name][0], (self._p,))
+       res = call_fortran(self._elements[name][0], self._p)
        return res
 
    return func
@@ -413,7 +414,7 @@ def wrap_set(name):
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
            raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
-       res = call_fortran(self._elements[name][1], (self._p, value))
+       res = call_fortran(self._elements[name][1], self._p, value)
        self._update()
        return res
 
@@ -529,7 +530,7 @@ def wraproutine(modobj, moddoc, name, shortname):
    def func(*args, **kwargs):
       newargs, newkwargs = process_in_args(args, kwargs, inargs)
 
-      res = call_fortran(fobj, newargs, newkwargs)
+      res = call_fortran(fobj, *newargs, **newkwargs)
       newres = process_results(res, args, kwargs, inargs, outargs)
       
       return newres
@@ -650,6 +651,6 @@ def wrap_interface(cls, name, routines, doc):
    return func      
          
 
-def call_fortran(fobj, args=(), kwargs={}):
+def call_fortran(fobj, *args, **kwargs):
     return fobj(*args, **kwargs)
 
