@@ -1,13 +1,25 @@
-class AtomsList(list):
-    def __repr__(self):
-        return 'AtomsList(%r)' % list.__repr__(self)
+class AtomsList(object):
+   def __init__(self, seq):
+      self._list = list(seq)
+   
+   def __repr__(self):
+      return '%s(%r)' % (self.__class__.__name__, self._list)
 
-    def show(self, property=None, frame=None):
-        try:
-           import atomeye
-           atomeye.show(self,property, frame)
-        except ImportError:
-           raise RuntimeError('AtomEye not available')
+   def show(self, property=None, frame=None):
+      try:
+         import atomeye
+         atomeye.show(self, property, frame)
+      except ImportError:
+         raise RuntimeError('AtomEye not available')
+
+   def __getitem__(self, idx):
+      return self._list[idx]
+
+   def __iter__(self):
+      return self._list.__iter__()
+
+   def __len__(self):
+      return len(self._list)
 
         
 class GenericFrameReader(AtomsList):
@@ -24,21 +36,21 @@ class GenericFrameReader(AtomsList):
 
       self._init(source)
       if count is not None:
-         self.frames = slice(count)
+         self._frames = slice(count)
       else:
-         self.frames = slice(start,stop,step)
+         self._frames = slice(start,stop,step)
 
-      self._list = [None for a in range(*(self.frames.indices(self._nframe()+1)))]
+      self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
 
 
    def __del__(self):
       self._close()
 
    def __len__(self):
-      return len(range(*self.frames.indices(self._nframe()+1)))
+      return len(range(*self._frames.indices(self._nframe()+1)))
 
    def __getitem__(self, frame):
-      start, stop, step = self.frames.indices(self._nframe()+1)
+      start, stop, step = self._frames.indices(self._nframe()+1)
 
       if isinstance(frame, int):
          if frame < 0: frame = frame + (stop - start)
@@ -65,12 +77,12 @@ class GenericFrameReader(AtomsList):
       return self.__getitem__(slice(first,last,None))
 
    def __iter__(self):
-      for frame in range(*self.frames.indices(self._nframe()+1)):
+      for frame in range(*self._frames.indices(self._nframe()+1)):
          yield self[frame]
       raise StopIteration
 
    def __reversed__(self):
-      for frame in reversed(range(*self.frames.indices(self._nframe()+1))):
+      for frame in reversed(range(*self._frames.indices(self._nframe()+1))):
          yield self[frame]
       raise StopIteration
 
@@ -95,13 +107,23 @@ FrameReader = CInOutputFrameReader
 try:
    from netCDF4 import Dataset
 
-   class NetCDFFrameReader(GenericFrameReader):
+   class NetCDFFrameReader(GenericFrameReader,Dataset):
 
       def _init(self, source):
-         self.nc = Dataset(source)
+         Dataset.__init__(self, source)
 
       def _close(self):
-         self.nc.close()
+         self.close()
+
+      def __getattr__(self, name):
+         return Dataset.__getattr__(self,name)
+
+      def __setattr__(self, name, value):
+         if name[0] == '_':
+            self.__dict__[name] = value
+         else:
+            Dataset.__setattr__(self, name, value)
+         
 
       def _getframe(self, frame):
          from quippy import Atoms, make_lattice
@@ -128,13 +150,13 @@ try:
                               ('frame', 'atom'): 1}
 
 
-         cl = self.nc.variables['cell_lengths'][frame]
-         ca = self.nc.variables['cell_angles'][frame]
+         cl = self.variables['cell_lengths'][frame]
+         ca = self.variables['cell_angles'][frame]
          lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
 
-         a = Atoms(len(self.nc.dimensions['atom']),lattice)
+         a = Atoms(len(self.dimensions['atom']),lattice)
 
-         for name, var in self.nc.variables.iteritems():
+         for name, var in self.variables.iteritems():
             name = remap_names.get(name, name)
 
             if name is None:
@@ -157,7 +179,7 @@ try:
          return a
 
       def _nframe(self):
-         return len(self.nc.dimensions['frame'])
+         return len(self.dimensions['frame'])
 
 except ImportError:
    print 'netCDF4 module not found - NetCDFFrameReader disabled.'
