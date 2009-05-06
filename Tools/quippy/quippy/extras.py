@@ -144,6 +144,21 @@ class AtomsExtras(object):
                    numpy.array(value[1,:]),numpy.array(value[2,:]))
 
 
+   def __getattr__(self, name):
+      from quippy import Dictionary
+      if isinstance(self.params, Dictionary) and name in self.params:
+         return self.params[name]
+      raise AttributeError('Unknown Atoms parameter %s' % name)
+
+   def __setattr__(self, name, value):
+      from quippy import Dictionary
+      from oo_fortran import FortranDerivedType
+      
+      if (not isinstance(self.params, Dictionary) or isinstance(value, FortranDerivedType)
+          or isinstance(value, FortranArray) or name[0] == '_'):
+         object.__setattr__(self, name, value)
+      else:
+         self.params[name] = value
 
 from dictmixin import DictMixin
 class DictionaryExtras(DictMixin):
