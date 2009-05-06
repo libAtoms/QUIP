@@ -214,30 +214,7 @@ class DictionaryExtras(DictMixin):
       return v
 
    def __setitem__(self, k, v):
-      if type(v) == type(0):
-         self.set_value_i(k,v)
-      elif type(v) == type(0.0):
-         self.set_value_r(k,v)
-      elif type(v) == type(0j):
-         self.set_value_c(k,v)
-      elif type(v) == type(''):
-         self.set_value_s(k,v)
-      elif type(v) == type(True):
-         self.set_value_l(k,v)
-      elif hasattr(v, '__iter__'):
-         v0 = v[0]
-         if type(v0) == type(0):
-            self.set_value_i_a(k,v)
-         elif type(v0) == type(0.0):
-            self.set_value_r_a(k,v)
-         elif type(v0) == type(0j):
-            self.set_value_c_a(k,v)
-         elif type(v0) == type(''):
-            self.set_value_s_a(k,numpy.array(v))
-         elif type(v0) == type(True):
-            self.set_value_l_a(k,v)
-      else:
-         raise ValueError('Unsupported dictionary entry type %s' % v)
+      self.set_value(k, v)
 
    def __repr__(self):
       return 'Dictionary(%s)' % DictMixin.__repr__(self)
