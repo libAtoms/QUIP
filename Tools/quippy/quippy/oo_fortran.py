@@ -45,12 +45,12 @@ class FortranDerivedType(object):
    def __init__(self, *args, **kwargs):
 
        call_init = True
-       self._p = None
+       self._fpointer = None
        self._finalise = True
        
        if 'p' in kwargs:
            call_init = False
-           self._p = kwargs['p']
+           self._fpointer = kwargs['p']
            del kwargs['p']
 
        if 'finalise' in kwargs:
@@ -64,18 +64,18 @@ class FortranDerivedType(object):
            inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
            newargs, newkwargs = process_in_args(args, kwargs, inargs)
            
-           self._p = call_fortran(fobj, *newargs, **newkwargs)
+           self._fpointer = call_fortran(fobj, *newargs, **newkwargs)
 
        self._update()
        
 
    def __del__(self):
-       print 'del %s id=%d p=%d finalise=%d' % (self.__class__.__name__, id(self), self._p, self._finalise)
+       print 'del %s id=%d p=%d finalise=%d' % (self.__class__.__name__, id(self), self._fpointer, self._finalise)
 
-       if self._p and self._finalise and '__del__' in self._routines:
+       if self._fpointer and self._finalise and '__del__' in self._routines:
            fobj, doc = self._routines['__del__']
-           call_fortran(fobj, self._p)
-           self._p = None
+           call_fortran(fobj, self._fpointer)
+           self._fpointer = None
  
    def __str__(self):
       items = []
@@ -92,7 +92,7 @@ class FortranDerivedType(object):
 
    def _update(self):
        logging.warning('updating %s at 0x%x' % (self.__class__, id(self)))
-       if self._p is None: return
+       if self._fpointer is None: return
        
        for name in self._arrays:
           try:
@@ -101,7 +101,7 @@ class FortranDerivedType(object):
              pass
 
        for name, (arrayfunc, doc) in self._arrays.iteritems():
-          dtype, shape, loc = arrayfunc(self._p)
+          dtype, shape, loc = arrayfunc(self._fpointer)
           dtype = dtype.strip()
           if shape.any() and loc != 0:
              if dtype in numpy_scalar_types:
@@ -129,7 +129,7 @@ class FortranDerivedType(object):
           if not cls.lower() in FortranDerivedTypes:
              logging.debug('Unknown class %s' % cls)
              continue
-          p = getfunc(self._p)
+          p = getfunc(self._fpointer)
           if p != 0:
              savedoc = getattr(self, name).__doc__
              setattr(self, name, FortranDerivedTypes[cls.lower()](p=p,finalise=False))
@@ -140,7 +140,7 @@ class FortranDerivedType(object):
 
 
    def _runroutine(self, name, *args, **kwargs):
-       if self._p is None:
+       if self._fpointer is None:
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
 
        if not name in self._routines:
@@ -398,11 +398,11 @@ def wrapmod(modobj, moddoc, short_names, default_init_args, params):
 def wrap_get(name):
                                
    def func(self):
-       if self._p is None:
+       if self._fpointer is None:
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
            raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
-       res = call_fortran(self._elements[name][0], self._p)
+       res = call_fortran(self._elements[name][0], self._fpointer)
        return res
 
    return func
@@ -410,11 +410,11 @@ def wrap_get(name):
 def wrap_set(name):
                               
    def func(self, value):
-       if self._p is None:
+       if self._fpointer is None:
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
            raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
-       res = call_fortran(self._elements[name][1], self._p, value)
+       res = call_fortran(self._elements[name][1], self._fpointer, value)
        self._update()
        return res
 
@@ -466,7 +466,7 @@ def process_in_args(args, kwargs, inargs):
    for arg, spec in zip(args,inargs):
       if spec['type'].startswith('type'):
          if isinstance(arg, FortranDerivedTypes[spec['type'].lower()]):
-            newargs.append(arg._p)
+            newargs.append(arg._fpointer)
          else:
             raise TypeError('Argument %s should be of type %s' % (arg, spec['type']))
       else:
@@ -478,7 +478,7 @@ def process_in_args(args, kwargs, inargs):
       if not k in type_lookup: raise ValueError('Unknown keyword argument %s' % k)
       if type_lookup[k].startswith('type'):
          if isinstance(a, FortranDerivedTypes[type_lookup[k].lower()]):
-            newkwargs[k] = a._p
+            newkwargs[k] = a._fpointer
          else:
             raise TypeError('Argument %s=%s should be of type %s' % (k,a,type_lookup[k]))
       else:
