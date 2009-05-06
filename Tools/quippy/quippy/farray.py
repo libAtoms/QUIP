@@ -58,6 +58,11 @@ class FortranArray(numpy.ndarray):
             one_dim = True
             indx = (indx,)
 
+        islist = isinstance(indx, list)
+
+        if isinstance(indx, numpy.ndarray):
+            indx = (indx,)
+
         nindx = []
         for idx in indx:
             if isinstance(idx, int) or isinstance(idx, numpy.integer):
@@ -76,7 +81,9 @@ class FortranArray(numpy.ndarray):
                 nindx.append( rslice )
             elif isinstance(idx, numpy.ndarray):
                 if idx.dtype.kind == 'i':
-                    nindx.append(numpy.array([map_int(i) for i in idx]))
+                    if (idx == 0).any(): raise ValueError('Advanced slicing array must not contain index 0')
+                    print 'mapping %s to %s' % (idx, numpy.where(idx > 0, idx-1, idx))
+                    nindx.append(numpy.where(idx > 0, idx-1, idx))
                 elif idx.dtype.kind == 'b':
                     nindx.append(idx)
                 else:
@@ -84,12 +91,15 @@ class FortranArray(numpy.ndarray):
             elif idx is Ellipsis or idx is None:
                 nindx.append(idx)
             else:
-                raise ValueError('Unknown index object %s' % idx)
+                raise ValueError('Unknown index object %r' % (idx,))
 
         if one_dim:
             return nindx[0]
         else:
-            return tuple(nindx)
+            if islist:
+                return nindx
+            else:
+                return tuple(nindx)
 
     def __getitem__(self, indx):
         "Overloaded __getitem__ which accepts one-based indices."
@@ -101,15 +111,10 @@ class FortranArray(numpy.ndarray):
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
-        indx = FortranArray.mapindices(indx)
+        if not isinstance(indx, slice) and not (hasattr(indx, '__iter__') and any([isinstance(x,slice) for x in indx])):
+            # if indx contains a slice then __getitem__ will be called and mapping will be done twice
+            indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
-
-
-    def __setslice__(self, i,j, value):
-        raise NotImplentedError
-
-    def __getslice__(self, i,j):
-        raise NotImplementedError
 
     def nonzero(self):
         """a.nonzero()
@@ -175,7 +180,10 @@ class FortranArray(numpy.ndarray):
 				 values, mode)
 				 
     def __repr__(self):
-        return numpy.asarray(self).view(numpy.ndarray).__repr__().replace('array','FortranArray')
+        s = numpy.asarray(self).view(numpy.ndarray).__repr__()
+        s = s.replace('array','FortranArray')
+        s = s.replace('\n     ','\n            ')
+        return s
 
     def __str__(self):
         return numpy.asarray(self).view(numpy.ndarray).__str__()
