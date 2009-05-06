@@ -126,8 +126,6 @@ class AtomsExtras(object):
       import pylab
 
       ax = pylab.gca()
-
-      print kwargs
       ax.scatter(self.pos[1,:],self.pos[2,:], **kwargs)
 
       if bonds:
