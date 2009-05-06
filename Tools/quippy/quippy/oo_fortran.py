@@ -549,23 +549,25 @@ def fortran_equivalent_type(t):
    tmap = {'int': 'integer', 
            'float': 'real(dp)',
            'bool': 'logical',
-           'str': 'character'}
+           'str': 'character',
+           }
 
    if type(t).__name__ in tmap:
       return (tmap[type(t).__name__], 'scalar')
-   elif hasattr(t,'__iter__'):
+   elif isinstance(t, FortranDerivedType):
+      return ('type(%s)' % t.__class__.__name__.lower(), 'scalar')
+   elif hasattr(t,'__iter__') or hasattr(t,'dtype'):
       a = numpy.array(t)
       if a.dtype.kind in numpy_to_fortran:
          return (numpy_to_fortran[a.dtype.kind], a.shape)
       else:
          raise TypeError('Unknown array type %s' % a.dtype.kind)      
-   elif isinstance(t, FortranDerivedType):
-      return ('type(%s)' % t.__class__.__name__.lower(), 'scalar')
    else:
       raise TypeError('Unknown type %s' % type(t))
           
 def type_is_compatible(spec, arg):
     arg_type, dims = fortran_equivalent_type(arg)
+    if dims == (): dims = 'scalar'
 
     spec_type = spec['type'].lower()
     if spec_type.startswith('character'):
@@ -617,7 +619,6 @@ def wrap_interface(cls, name, routines, doc):
 
          # Check types and dimensions are compatible
          if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
-             print [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]
              continue
 
          # Check keyword arguments, if incompatible continue to next
@@ -638,6 +639,7 @@ def wrap_interface(cls, name, routines, doc):
                 print rname, 'failed at kwarg', key
                 continue
          
+         logging.debug('calling '+rname)
          return routine(*args, **kwargs)
             
             
