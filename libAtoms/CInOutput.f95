@@ -417,8 +417,8 @@ contains
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
     n = 1
     do i=1, at%params%N
-       if (trim(at%params%keys(i)) == 'Lattice' .or. &
-           trim(at%params%keys(i)) == 'Properties') cycle
+       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
+           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
        call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
        this%param_filter(n) = 1
        select case(at%params%entries(i)%type)
@@ -522,8 +522,8 @@ contains
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
     n = 1
     do i=1, this%n_param
-       if (trim(at%params%keys(i)) == 'Lattice' .or. &
-           trim(at%params%keys(i)) == 'Properties') cycle
+       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
+           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
        call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
        this%param_filter(n) = 1
        select case(at%params%entries(i)%type)
