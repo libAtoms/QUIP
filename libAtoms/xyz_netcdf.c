@@ -231,7 +231,7 @@ int atoms_find_property(Atoms *atoms, char *key)
   int i;
 
   for (i=0; i < atoms->n_property; i++)
-    if (strcmp(atoms->property_name[i],key) == 0) return i;
+    if (strcasecmp(atoms->property_name[i],key) == 0) return i;
   
   return -1;
 }
@@ -241,7 +241,7 @@ int atoms_find_param(Atoms *atoms, char *key)
   int i;
 
   for (i=0; i < atoms->n_param; i++)
-    if (strcmp(atoms->param_key[i],key) == 0) return i;
+    if (strcasecmp(atoms->param_key[i],key) == 0) return i;
   
   return -1;
 }
@@ -574,8 +574,8 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
 
   // read parameters
   for (i=0; i<atoms->n_param; i++) {
-    if (strcmp(atoms->param_key[i], "Lattice") == 0 ||
-	strcmp(atoms->param_key[i], "Properties") == 0) continue;
+    if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
+	strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
     
     switch(atoms->param_type[i]) {
     case(T_INTEGER):
@@ -926,8 +926,8 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
     
     // Define variables for per-frame parameters
     for (i=0; i<atoms->n_param; i++) {
-      if (strcmp(atoms->param_key[i], "Lattice") == 0 ||
-	  strcmp(atoms->param_key[i], "Properties") == 0) continue;
+      if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
+	  strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
       if (!atoms->param_filter[i]) continue;
 
       newvar = 0;
@@ -1266,8 +1266,8 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
   // Write the data. First the parameters.
   debug("writing params\n");
   for (i=0; i<atoms->n_param; i++) {
-      if (strcmp(atoms->param_key[i], "Lattice") == 0 ||
-	  strcmp(atoms->param_key[i], "Properties") == 0) continue;
+      if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
+	  strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
       if (!atoms->param_filter[i]) continue;
 
       debug("  writing %s\n", atoms->param_key[i]);
@@ -1695,7 +1695,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   linebuffer[strlen(linebuffer)-1] = '\0';   // Remove trailing newline
 
 
-  if (!strstr(linebuffer, "Lattice")) {
+  if (!strstr(linebuffer, "Lattice") && !strstr(linebuffer, "lattice")) {
     // It's not an extended XYZ file. Try to guess what's going on.
     // If comment line contains nine or more fields, assume last nine are
     // lattice in cartesian coordinates. 
@@ -1731,7 +1731,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     }
   }
 
-  if (!strstr(linebuffer, "Properties")) {
+  if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
     // No Properties key. Add a default one.
     if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
     strcat(linebuffer, "Properties=species:S:1:pos:R:3\n");
@@ -1781,8 +1781,8 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   
     // Try to guess param types
     for (i=0; i<atoms->n_param; i++) {
-      if (strcmp(atoms->param_key[i], "Lattice") == 0 ||
-	  strcmp(atoms->param_key[i], "Properties") == 0) continue;
+      if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
+	  strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
 
       strcpy(linebuffer, atoms->param_value[i]);
       k = 0;
@@ -1940,8 +1940,8 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     }
 
     strcpy(atoms->param_value[j], p+1);
-    if (strcmp(atoms->param_key[j], "Lattice") == 0 ||
-	strcmp(atoms->param_key[j], "Properties") == 0) continue;
+    if (strcasecmp(atoms->param_key[j], "Lattice") == 0 ||
+	strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
 
     strcpy(linebuffer, atoms->param_value[j]);
     if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A) {
@@ -2820,8 +2820,8 @@ int main (int argc, char **argv)
       if (Pflag) {
 	debug("Parameters:\n");
 	for (i=0; i<at.n_param; i++) {
-	  if (strcmp(at.param_key[i], "Lattice") == 0 ||
-	      strcmp(at.param_key[i], "Properties") == 0) continue;
+	  if (strcasecmp(at.param_key[i], "Lattice") == 0 ||
+	      strcasecmp(at.param_key[i], "Properties") == 0) continue;
 	
 	  printf("%s %s size %d\n", at.param_key[i], PARAM_TYPES[at.param_type[i]], at.param_size[i]);
 	}
@@ -3139,8 +3139,8 @@ int main (int argc, char **argv)
       if (Pflag) {
 	debug("Parameters:\n");
 	for (i=0; i<at.n_param; i++) {
-	  if (strcmp(at.param_key[i], "Lattice") == 0 ||
-	      strcmp(at.param_key[i], "Properties") == 0) continue;
+	  if (strcasecmp(at.param_key[i], "Lattice") == 0 ||
+	      strcasecmp(at.param_key[i], "Properties") == 0) continue;
 	
 	  printf("%s %s size %d\n", at.param_key[i], PARAM_TYPES[at.param_type[i]], at.param_size[i]);
 	}
