@@ -75,10 +75,6 @@ class GenericFrameReader(AtomsList):
       raise StopIteration
 
 
-class NetCDFFrameReader(GenericFrameReader):
-   pass
-
-
 class CInOutputFrameReader(GenericFrameReader):
    def _init(self, source):
       from quippy import CInOutput
@@ -95,6 +91,77 @@ class CInOutputFrameReader(GenericFrameReader):
       return self.cio.n_frame
    
 FrameReader = CInOutputFrameReader
+
+try:
+   from netCDF4 import Dataset
+
+   class NetCDFFrameReader(GenericFrameReader):
+
+      def _init(self, source):
+         self.nc = Dataset(source)
+
+      def _close(self):
+         self.nc.close()
+
+      def _getframe(self, frame):
+         from quippy import Atoms, make_lattice
+         from math import pi
+         from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
+                             T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                             T_CHAR, T_LOGICAL, T_INTEGER_A,
+                             T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
+
+         DEG_TO_RAD = pi/180.0
+
+         remap_names = {'coordinates': 'pos',
+                        'velocities': 'velo',
+                        'cell_lengths': None,
+                        'cell_angles': None}
+         
+         prop_type_to_value = {PROPERTY_INT: 0,
+                               PROPERTY_REAL: 0.0,
+                               PROPERTY_STR: "",
+                               PROPERTY_LOGICAL: False}
+
+         prop_dim_to_ncols = {('frame','atom','spatial'): 3,
+                              ('frame','atom','label'): 1,
+                              ('frame', 'atom'): 1}
+
+
+         cl = self.nc.variables['cell_lengths'][frame]
+         ca = self.nc.variables['cell_angles'][frame]
+         lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
+
+         a = Atoms(len(self.nc.dimensions['atom']),lattice)
+
+         for name, var in self.nc.variables.iteritems():
+            name = remap_names.get(name, name)
+
+            if name is None:
+               continue
+
+            if 'frame' in var.dimensions:
+               if 'atom' in var.dimensions:
+                  # It's a property
+                  a.add_property(name, prop_type_to_value[var.type],
+                                 n_cols=prop_dim_to_ncols[var.dimensions])
+                  getattr(a,name.lower())[...] = var[frame].T
+               else:
+                  # It's a param
+                  if var.dimensions == ('frame','string'):
+                     # if it's a single string, join it and strip it
+                     a.params[name] = ''.join(var[frame]).strip()
+                  else:
+                     a.params[name] = var[frame]
+                  
+         return a
+
+      def _nframe(self):
+         return len(self.nc.dimensions['frame'])
+
+except ImportError:
+   print 'netCDF4 module not found - NetCDFFrameReader disabled.'
+
 
 class Trajectory(object):
     def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
