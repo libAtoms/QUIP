@@ -8,14 +8,14 @@ CPLUSPLUS = mpiCC #icpc -Kc++
 LINKER = mpif90 #ifort
 
 DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
-DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP -p
+DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP -p 
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused
-F77FLAGS += -fpp -fixed
-CFLAGS +=  -DFORTRAN_UNDERSCORE
-CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
+F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -D_MPI -D
+F77FLAGS += -fpp -fixed -D_MPI
+CFLAGS +=  -DFORTRAN_UNDERSCORE -D_MPI
+CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE -D_MPI
 
 MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
