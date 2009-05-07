@@ -10,12 +10,6 @@ HAVE_LARSPOT=0
 HAVE_ASAP=0
 EXTRA_LINKOPTS=
 HAVE_LOTF=0
-OPTIM=-O3 -vec-report0 -unroll -xP -p
-DEBUG=-g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
+OPTIM=${DEFAULT_OPTIM}
 
-F77 = mpif90
-F90 = mpif90
-F95 = mpif90
-CC = mpicc
-CPLUSPLUS = mpiCC
-LINKER = mpif90
+
