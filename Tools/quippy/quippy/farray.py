@@ -26,7 +26,11 @@ class FortranArray(numpy.ndarray):
     i.e. inclusive on the second element so 1:2 includes the one-based
     elements 1 and 2, equivalent to a C-style slice of 0:2. The self.flat
     iterator is still indexed from zero."""
-    
+
+    def additerators(self):
+        self.rows = self.row_iter()
+        self.cols = self.__iter__()
+
     def __new__(self, input_array=None, doc=None):
         """a = FortranArray(input_array=None, doc=None)
 
@@ -34,9 +38,12 @@ class FortranArray(numpy.ndarray):
         docstring to doc."""
 
 	self = numpy.asarray(input_array).view(FortranArray)
+        
         if doc is not None:
             self.__doc__ = doc
+        self.additerators()
 	return self
+
 
     @staticmethod
     def mapindices(indx):
@@ -105,8 +112,10 @@ class FortranArray(numpy.ndarray):
         "Overloaded __getitem__ which accepts one-based indices."
 	indx = FortranArray.mapindices(indx)
 	obj = numpy.ndarray.__getitem__(self, indx) 
-	if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin): 
-	    return obj.view(FortranArray) 
+	if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
+            fa = obj.view(FortranArray)
+            fa.additerators()
+	    return fa
 	return obj
 
     def __setitem__(self, indx, value):
@@ -196,7 +205,6 @@ class FortranArray(numpy.ndarray):
         else:
             for i in frange(self.shape[0]):
                 yield self[i]
-                
 
     def norm2(self):
         "array of the norm**2 of each vector in a 3xN array"
@@ -211,4 +219,14 @@ class FortranArray(numpy.ndarray):
     def norm(self):
        "Return sqrt(norm2(a))"
        return numpy.sqrt(self.norm2())
+
+    def row_iter(self):
+        """Iterator for MxN arrays to return rows [:,i] for i=1,N one by one
+        as Mx1 arrays."""
+        if self.shape == ():
+            yield self.item()
+        else:
+            for i in frange(self.shape[-1]):
+                yield self[...,i]       
+
 
