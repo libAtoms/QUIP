@@ -767,7 +767,7 @@ end if
               orig_crack_pos = crack_pos
               call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
            else
-              call print('STATE: crack is not moving')
+              call print('STATE: crack is not moving (crack_pos='//crack_pos//')')
            end if
 
         case(STATE_MD_CRACKING)
@@ -790,7 +790,7 @@ end if
                     state = STATE_MD_LOADING
                  end if
               else
-                 call print('STATE: crack is moving')
+                 call print('STATE: crack is moving (crack_pos='//crack_pos//')')
               end if
               last_state_change_time = ds%t
               orig_crack_pos = crack_pos
