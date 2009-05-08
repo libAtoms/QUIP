@@ -851,6 +851,8 @@ contains
           call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
                params%crack_strain_zone_width, G, apply_load=.true.)
           call set_value(crack_slab%params, 'G', G)
+          call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+          call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
 
           if(params%crack_rescale_x_z) then
              !  Rescale in x direction by v and in z direction by v2
@@ -889,6 +891,7 @@ contains
        call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
 
        call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+       call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'G', params%crack_G)
        call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), do_disp=.true.)
 
@@ -918,6 +921,7 @@ contains
        call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
 
        call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+       call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), do_disp=.true.)
 
        G = params%crack_G
@@ -1194,12 +1198,12 @@ contains
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
-    integer :: p, i, j, surface, age
+    integer :: p, i, j, k, surface, age, n
     type(Table) :: old_embed, selectlist(2), tmp_select, embedlist
     type(Table), dimension(2) :: new_embed
     integer, allocatable, dimension(:) :: sorted, sindex
     real(dp), dimension(2,3) :: selection_ellipse
-    real(dp) :: ellipse_bias(3), crack_pos
+    real(dp) :: ellipse_bias(3), crack_pos, real_pos(3), lattice_coord(3)
 
     integer, pointer, dimension(:) :: nn, changed_nn, hybrid
 
@@ -1222,6 +1226,7 @@ contains
 
     call allocate(embedlist, 1,0,0,0)
     call allocate(old_embed, 1,0,0,0)
+    call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
     call print('Got '//count(hybrid == HYBRID_ACTIVE_MARK)//' old embed atoms')
     if (count(hybrid == HYBRID_ACTIVE_MARK) /= 0) &
          call append(old_embed, find(hybrid == HYBRID_ACTIVE_MARK))
@@ -1246,7 +1251,7 @@ contains
 
        do i=1,at%N
           if (changed_nn(i) == 0) cycle
-
+          
           if (abs(at%pos(1,i)-crack_pos) < params%selection_cutoff_plane .and. &
                abs(at%pos(2,i)) < params%selection_cutoff_plane) then
 
@@ -1358,7 +1363,18 @@ contains
        crack_pos = 0.0_dp
        do i=1,embedlist%N
           if (trim(params%simulation_task) == 'md' .and. associated(at%avgpos)) then
-             crack_pos = crack_pos + at%avgpos(1,embedlist%int(1,i))
+
+             lattice_coord = at%g .mult. at%avgpos(:,embedlist%int(1,i))
+             do n=1,3
+                if ((lattice_coord(n) < -0.5_dp) .or. (lattice_coord(n) >= 0.5_dp)) then
+                   k = floor(lattice_coord(n)+0.5_dp)
+                   lattice_coord(n) = lattice_coord(n) - k
+                end if
+             end do
+
+             real_pos = at%lattice .mult. lattice_coord
+             call print(real_pos)
+             crack_pos = crack_pos + real_pos(1)
           else
              crack_pos = crack_pos + at%pos(1,embedlist%int(1,i))
           end if
