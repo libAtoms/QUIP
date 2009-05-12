@@ -1712,7 +1712,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
 
     if (any(run_type.eq.(/QS_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
        call print('  &DFT',file=input_file)
-       if (len(param%dft%file) > 0) then
+       if (len(trim(param%dft%file)) > 0) then
           call initialise(dft_in_io,trim(param%dft%file), INPUT)
           stat = 0
           do while (stat == 0)
