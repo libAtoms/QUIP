@@ -7,7 +7,7 @@ CC = gcc
 CPLUSPLUS = g++
 LINKER = gfortran -L/usr/local/lib64 -Wl,-rpath,/usr/local/lib64
 
-DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
+DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT -DDEBUG
 DEFAULT_OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
