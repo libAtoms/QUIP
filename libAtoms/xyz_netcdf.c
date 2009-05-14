@@ -1640,7 +1640,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 	strcat(buf2, "/");
 	strcat(buf2, bname);
 	index = fopen(buf2, "w");
-	fprintf(stderr, "Writing index to %s\n", buf2);
+	debug("Writing index to %s\n", buf2);
       }
       if (index == NULL) {
 	fprintf(stderr, "Cannot write index file.\n");
@@ -1648,7 +1648,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 	return nframes;
       }
     } else
-      fprintf(stderr, "Writing index to %s\n", indexname);
+      debug("Writing index to %s\n", indexname);
     fprintf(index, "%d\n", nframes);
     for (i=0; i<=nframes; i++)
       fprintf(index, "%ld %d\n", frames[i], atoms[i]);
