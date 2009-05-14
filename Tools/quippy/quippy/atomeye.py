@@ -27,7 +27,10 @@ def on_atom_click(idx):
     if idx > theat.n:
         idx = idx % theat.n
     print "frame %d, atom %d clicked" % (frame, idx)
-    print theat[idx]
+    d = theat[idx]
+    for k in sorted(d):
+        print '%s = %s' % (k,d[k])
+    print
     
     if paint_property is not None and theat.has_property(paint_property):
         getattr(theat, paint_property)[idx] = paint_value
