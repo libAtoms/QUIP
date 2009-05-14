@@ -161,13 +161,12 @@ class AtomsExtras(object):
    def __getitem__(self, i):
       if i < 1 or i > self.n:
          raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
-
-      res = ''
-      for k in sorted(self.properties.keys()):
-         v = getattr(self, k.lower())[...,i]
+      res = {}
+      for k in self.properties.keys():
+         v = getattr(self,k.lower())[...,i]
          if isinstance(v,FortranArray) and v.dtype.kind == 'S':
-            v = ''.join(v).strip()
-         res += '%s = %s\n' % (k, v)
+             v = ''.join(v).strip()
+         res[k] = v
       return res
 
 from dictmixin import DictMixin
