@@ -279,13 +279,11 @@ program makecrack
      elseif(trim(params%crack_structure) == 'bcc') then
        call print_title('BCC Structure Crack')
        call bcc(bulk, params%crack_lattice_guess, Z(1))
-       bulk%cutoff = cutoff(simple)
-       bulk%use_uniform_cutoff = .true. 
+       call set_cutoff(bulk, cutoff(simple))
      elseif(trim(params%crack_structure) == 'fcc') then
        call print_title('FCC Structure Crack')
        call fcc(bulk, params%crack_lattice_guess, Z(1))
-       bulk%cutoff = cutoff(simple)
-       bulk%use_uniform_cutoff = .true. 
+       call set_cutoff(bulk, cutoff(simple))
      endif 
      call calc_elastic_constants(simple, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
 
