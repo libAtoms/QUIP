@@ -27,6 +27,7 @@ def on_atom_click(idx):
     if idx > theat.n:
         idx = idx % theat.n
     print "frame %d, atom %d clicked" % (frame, idx)
+    print theat[idx]
     
     if paint_property is not None and theat.has_property(paint_property):
         getattr(theat, paint_property)[idx] = paint_value
@@ -279,7 +280,7 @@ def xtal_origin_goto(s):
     run_command("xtal_origin_goto %f %f %f" % (s[0], s[1], s[2]))
 
 def find_atom(i):
-    run_command("find_atom %d" % i)
+    run_command("find_atom %d" % i-1)
 
 def resize(width, height):
     run_command("resize %d %d" % (width, height))

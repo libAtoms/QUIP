@@ -158,6 +158,18 @@ class AtomsExtras(object):
       else:
          self.params[name] = value
 
+   def __getitem__(self, i):
+      if i < 1 or i > self.n:
+         raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
+
+      res = ''
+      for k in sorted(self.properties.keys()):
+         v = getattr(self, k.lower())[...,i]
+         if isinstance(v,FortranArray) and v.dtype.kind == 'S':
+            v = ''.join(v).strip()
+         res += '%s = %s\n' % (k, v)
+      return res
+
 from dictmixin import DictMixin
 class DictionaryExtras(DictMixin):
 
@@ -185,27 +197,27 @@ class DictionaryExtras(DictMixin):
       if t == T_NONE:
          raise ValueError('Key %s has no associated value' % k)
       elif t == T_INTEGER:
-         v,p = self.get_value_i(k)
+         v,p = self._get_value_i(k)
       elif t == T_REAL:
-         v,p = self.get_value_r(k)
+         v,p = self._get_value_r(k)
       elif t == T_COMPLEX:
-         v,p = self.get_value_c(k)
+         v,p = self._get_value_c(k)
       elif t == T_CHAR:
-         v,p = self.get_value_s(k)
+         v,p = self._get_value_s(k)
          v = v.strip()
       elif t == T_LOGICAL:
-         v,p = self.get_value_l(k)
+         v,p = self._get_value_l(k)
       elif t == T_INTEGER_A:
-         v,p = self.get_value_i_a(k,s)
+         v,p = self._get_value_i_a(k,s)
       elif t == T_REAL_A:
-         v,p = self.get_value_r_a(k,s)
+         v,p = self._get_value_r_a(k,s)
       elif t == T_COMPLEX_A:
-         v,p = self.get_value_c_a(k,s)
+         v,p = self._get_value_c_a(k,s)
       elif t == T_CHAR_A:
-         a,p = self.get_value_s_a(k,s)
+         a,p = self._get_value_s_a(k,s)
          v = [''.join(line).strip() for line in a]
       elif t == T_LOGICAL_A:
-         v,p = self_get_value_l_a(k,s)
+         v,p = self._get_value_l_a(k,s)
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
 
@@ -254,6 +266,33 @@ class TableExtras(object):
            return (slice(None),slice(None),slice(1,self.n))
 
 
+from atomslist import AtomsList
+
+class Trajectory(object):
+    def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
+        self.ds = ds
+        self.pot = pot
+        self.dt = dt
+        self.n_steps = n_steps
+        self.save_interval = save_interval
+        self.connect_interval = connect_interval
+
+        self.f = fzeros((3,ds.atoms.n))
+        self.e = farray(0.0)
+        self.pot.calc(ds.atoms, f=self.f, e=self.e)
+
+    def __iter__(self):
+        for n in range(self.n_steps):
+            self.ds.advance_verlet1(self.dt, self.f)
+            self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
+            self.ds.advance_verlet2(self.dt, self.f)
+            self.ds.print_status(epot=self.e)
+            if n % self.connect_interval == 0:
+                self.ds.atoms.calc_connect()
+            if n % self.save_interval == 0:
+                yield self.ds.atoms.copy()
+        raise StopIteration
+
 class DynamicalSystemExtras(object):
 
    @classmethod
@@ -261,7 +300,6 @@ class DynamicalSystemExtras(object):
       pass
 
    def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10):
-      from atomslist import AtomsList, Trajectory
       traj = Trajectory(self, pot, dt, n_steps, save_interval, connect_interval)
       return AtomsList(traj)
 

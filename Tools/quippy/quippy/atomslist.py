@@ -21,7 +21,7 @@ class AtomsList(object):
    def __len__(self):
       return len(self._list)
 
-        
+       
 class GenericFrameReader(AtomsList):
    """Read-only access to an XYZ or NetCDF trajectory. The file is opened
    and then read lazily as frames are asked for. Supports list-like interface:
@@ -31,7 +31,7 @@ class GenericFrameReader(AtomsList):
    at2 = fr[-1]     # Last frame
    ats = fr[0:10:3] # Every third frame between 0 and 10
    ats = [ a for a in fr if a.n == 100 ]  # Only frames with exactly 100 atoms
-"""
+   """
    def __init__(self, source, start=0, stop=-1, step=None, count=None):
 
       self._init(source)
@@ -63,11 +63,10 @@ class GenericFrameReader(AtomsList):
       elif isinstance(frame, slice):
          allframes = range(start, stop, step)
          subframes = [ allframes[i] for i in range(*frame.indices(len(allframes))) ]
-         print allframes, subframes
          res = []
          for f in subframes:
             if self._list[f] is None:
-               self._list[f] = self_getframe(f)
+               self._list[f] = self._getframe(f)
             res.append(self._list[f])
          return res
       else:
@@ -86,34 +85,50 @@ class GenericFrameReader(AtomsList):
          yield self[frame]
       raise StopIteration
 
+   def loadall(self, progress=True, progress_width=80, show_value=True):
+      if progress:
+         from progbar import ProgressBar
+         pb = ProgressBar(0,len(self),progress_width,showValue=show_value)
+         update_interval = len(self)/progress_width
+      
+      for i in range(len(self)):
+         if progress and i % update_interval == 0:
+            pb(i)
+         self[i]
 
-class CInOutputFrameReader(GenericFrameReader):
-   def _init(self, source):
-      from quippy import CInOutput
-      self.cio = CInOutput(source)
-      self.cio.query()
-
-   def _close(self):
-      self.cio.close()
-
-   def _getframe(self, frame):
-      return self.cio.read(frame) 
-
-   def _nframe(self):
-      return self.cio.n_frame
+try:
+   from quippy import CInOutput
    
-FrameReader = CInOutputFrameReader
+   class CInOutputFrameReader(GenericFrameReader):
+      def _init(self, source):
+         self._cio = CInOutput(source)
+         self._cio.query()
+
+      def _close(self):
+         self._cio.close()
+
+      def _getframe(self, frame):
+         return self._cio.read(frame) 
+
+      def _nframe(self):
+         return self._cio.n_frame
+   
+   FrameReader = CInOutputFrameReader
+except ImportError:
+   print 'Cannot import CInOutput. CInoutputFrameReader disabled.'
 
 try:
    from netCDF4 import Dataset
 
-   class NetCDFFrameReader(GenericFrameReader,Dataset):
+   class NetCDFFrameReader(CInOutputFrameReader,Dataset):
 
       def _init(self, source):
          Dataset.__init__(self, source)
+         CInOutputFrameReader._init(self, source)
 
       def _close(self):
          self.close()
+         CInOutputFrameReader._close()
 
       def __getattr__(self, name):
          return Dataset.__getattr__(self,name)
@@ -125,87 +140,63 @@ try:
             Dataset.__setattr__(self, name, value)
          
 
-      def _getframe(self, frame):
-         from quippy import Atoms, make_lattice
-         from math import pi
-         from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-                             T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                             T_CHAR, T_LOGICAL, T_INTEGER_A,
-                             T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
+##       def _getframe(self, frame):
+##          from quippy import Atoms, make_lattice
+##          from math import pi
+##          from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
+##                              T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+##                              T_CHAR, T_LOGICAL, T_INTEGER_A,
+##                              T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
 
-         DEG_TO_RAD = pi/180.0
+##          DEG_TO_RAD = pi/180.0
 
-         remap_names = {'coordinates': 'pos',
-                        'velocities': 'velo',
-                        'cell_lengths': None,
-                        'cell_angles': None}
+##          remap_names = {'coordinates': 'pos',
+##                         'velocities': 'velo',
+##                         'cell_lengths': None,
+##                         'cell_angles': None}
          
-         prop_type_to_value = {PROPERTY_INT: 0,
-                               PROPERTY_REAL: 0.0,
-                               PROPERTY_STR: "",
-                               PROPERTY_LOGICAL: False}
+##          prop_type_to_value = {PROPERTY_INT: 0,
+##                                PROPERTY_REAL: 0.0,
+##                                PROPERTY_STR: "",
+##                                PROPERTY_LOGICAL: False}
 
-         prop_dim_to_ncols = {('frame','atom','spatial'): 3,
-                              ('frame','atom','label'): 1,
-                              ('frame', 'atom'): 1}
+##          prop_dim_to_ncols = {('frame','atom','spatial'): 3,
+##                               ('frame','atom','label'): 1,
+##                               ('frame', 'atom'): 1}
 
 
-         cl = self.variables['cell_lengths'][frame]
-         ca = self.variables['cell_angles'][frame]
-         lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
+##          cl = self.variables['cell_lengths'][frame]
+##          ca = self.variables['cell_angles'][frame]
+##          lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
 
-         a = Atoms(len(self.dimensions['atom']),lattice)
+##          a = Atoms(len(self.dimensions['atom']),lattice)
 
-         for name, var in self.variables.iteritems():
-            name = remap_names.get(name, name)
+##          for name, var in self.variables.iteritems():
+##             name = remap_names.get(name, name)
 
-            if name is None:
-               continue
+##             if name is None:
+##                continue
 
-            if 'frame' in var.dimensions:
-               if 'atom' in var.dimensions:
-                  # It's a property
-                  a.add_property(name, prop_type_to_value[var.type],
-                                 n_cols=prop_dim_to_ncols[var.dimensions])
-                  getattr(a,name.lower())[...] = var[frame].T
-               else:
-                  # It's a param
-                  if var.dimensions == ('frame','string'):
-                     # if it's a single string, join it and strip it
-                     a.params[name] = ''.join(var[frame]).strip()
-                  else:
-                     a.params[name] = var[frame]
+##             if 'frame' in var.dimensions:
+##                if 'atom' in var.dimensions:
+##                   # It's a property
+##                   a.add_property(name, prop_type_to_value[var.type],
+##                                  n_cols=prop_dim_to_ncols[var.dimensions])
+##                   getattr(a,name.lower())[...] = var[frame].T
+##                else:
+##                   # It's a param
+##                   if var.dimensions == ('frame','string'):
+##                      # if it's a single string, join it and strip it
+##                      a.params[name] = ''.join(var[frame]).strip()
+##                   else:
+##                      a.params[name] = var[frame]
                   
-         return a
+##          return a
 
-      def _nframe(self):
-         return len(self.dimensions['frame'])
+##       def _nframe(self):
+##          return len(self.dimensions['frame'])
 
 except ImportError:
-   print 'netCDF4 module not found - NetCDFFrameReader disabled.'
+   print 'Cannot import netCDF4. NetCDFFrameReader disabled.'
 
 
-class Trajectory(object):
-    def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
-        self.ds = ds
-        self.pot = pot
-        self.dt = dt
-        self.n_steps = n_steps
-        self.save_interval = save_interval
-        self.connect_interval = connect_interval
-
-        self.f = fzeros((3,ds.atoms.n))
-        self.e = farray(0.0)
-        self.pot.calc(ds.atoms, f=self.f, e=self.e)
-
-    def __iter__(self):
-        for n in range(self.n_steps):
-            self.ds.advance_verlet1(self.dt, self.f)
-            self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
-            self.ds.advance_verlet2(self.dt, self.f)
-            self.ds.print_status(epot=self.e)
-            if n % self.connect_interval == 0:
-                self.ds.atoms.calc_connect()
-            if n % self.save_interval == 0:
-                yield self.ds.atoms.copy()
-        raise StopIteration

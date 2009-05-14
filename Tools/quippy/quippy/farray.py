@@ -44,6 +44,14 @@ class FortranArray(numpy.ndarray):
         self.additerators()
 	return self
 
+    @staticmethod
+    def map_int(idx):
+        if idx > 0:
+            return idx-1
+        elif idx == 0:
+            raise IndexError('index 0 not permitted - FortranArrays are one-based')
+        else:
+            return idx
 
     @staticmethod
     def mapindices(indx):
@@ -51,14 +59,6 @@ class FortranArray(numpy.ndarray):
         indices. indx can be any object that can be used to subscript
         an ndarray - scalar integer or slice, sequence of integers and
         slices or an ndarray of integer or boolean kind."""
-
-	def map_int(idx):
-	    if idx > 0:
-		return idx-1
-	    elif idx == 0:
-		raise IndexError('index 0 not permitted - FortranArrays are one-based')
-	    else:
-		return idx
 
         one_dim = False
         if not hasattr(indx, '__iter__'):
@@ -73,23 +73,24 @@ class FortranArray(numpy.ndarray):
         nindx = []
         for idx in indx:
             if isinstance(idx, int) or isinstance(idx, numpy.integer):
-                nindx.append(map_int(idx))
+#                print 'mapping int %d to %d' % (idx, FortranArray.map_int(idx))
+                nindx.append(FortranArray.map_int(idx))
             elif isinstance(idx, slice):
                 rslice_start = None
                 rslice_stop = None
                 rslice_step = None
                 if idx.start is not None:
-                    rslice_start = map_int(idx.start)
+                    rslice_start = FortranArray.map_int(idx.start)
                 if idx.stop is not None:
                     rslice_stop = idx.stop
                 if idx.step is not None:
                     rslice_step = idx.step
                 rslice = slice(rslice_start, rslice_stop, rslice_step)
+#                print 'mapping slice %s to %s' % (idx, rslice)
                 nindx.append( rslice )
             elif isinstance(idx, numpy.ndarray):
                 if idx.dtype.kind == 'i':
                     if (idx == 0).any(): raise ValueError('Advanced slicing array must not contain index 0')
-                    print 'mapping %s to %s' % (idx, numpy.where(idx > 0, idx-1, idx))
                     nindx.append(numpy.where(idx > 0, idx-1, idx))
                 elif idx.dtype.kind == 'b':
                     nindx.append(idx)
@@ -124,6 +125,22 @@ class FortranArray(numpy.ndarray):
             # if indx contains a slice then __getitem__ will be called and mapping will be done twice
             indx = FortranArray.mapindices(indx)
 	numpy.ndarray.__setitem__(self, indx, value)
+
+
+    def __getslice__(self, i, j):
+        i = FortranArray.map_int(i)
+        j = FortranArray.map_int(j)
+        obj = numpy.ndarray.__getslice__(self, i, j)
+	if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
+            fa = obj.view(FortranArray)
+            fa.additerators()
+	    return fa
+	return obj
+
+    def __setslice__(self, i, j, value):
+        i = FortranArray.map_int(i)
+        j = FortranArray.map_int(j)
+        numpy.ndarray.__setslice__(self, i, j, value)
 
     def nonzero(self):
         """a.nonzero()
