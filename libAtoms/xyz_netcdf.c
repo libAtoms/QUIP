@@ -1596,12 +1596,15 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 	nframes = 0;
 	debug(" failed, rebuilding from scratch.\n");
       }
-      // Rewind to start of frame
+      else {
+	// Rewind to start of frame
+	fseek(in,frames[nframes],SEEK_SET);
+      }
 
       // TODO - improve check - fails if number of atoms has changed
-      
-      fseek(in,frames[nframes],SEEK_SET);
     }
+
+    debug("starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
 
     while (fgets(linebuffer,LINESIZE,in)) {
       frames[nframes] = ftell(in)-strlen(linebuffer);
