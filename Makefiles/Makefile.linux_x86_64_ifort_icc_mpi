@@ -7,9 +7,9 @@ CC = mpicc #icc
 CPLUSPLUS = mpiCC #icpc -Kc++
 LINKER = mpif90 #ifort
 
-DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
+DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT -DDEBUG
 DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP -p 
-CDEBUG = -g -DDUMP_CORE_ON_ABORT
+CDEBUG = -g -DDUMP_CORE_ON_ABORT -DDEBUG
 COPTIM = -O3
 
 F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused -D_MPI -DMPI_1
