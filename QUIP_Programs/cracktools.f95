@@ -604,12 +604,13 @@ contains
   end subroutine crack_setup_marks
 
 
-  subroutine crack_calc_load_field(crack_slab, params, metapot, load_method, overwrite_pos)
+  subroutine crack_calc_load_field(crack_slab, params, metapot, load_method, overwrite_pos, mpi)
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
     type(MetaPotential), intent(inout) :: metapot
     character(*), intent(in) :: load_method
     logical, intent(in) :: overwrite_pos
+    type(MPI_Context), intent(in) :: mpi
 
     real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
@@ -645,10 +646,12 @@ contains
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark, u_disp, k_disp)
 
-    if (params%io_netcdf) then
-       call initialise(movie, 'crack_relax_loading_movie.nc', action=OUTPUT)
-    else
-       call initialise(movie, 'crack_relax_loading_movie.xyz', action=OUTPUT)
+    if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
+       if (params%io_netcdf) then
+          call initialise(movie, 'crack_relax_loading_movie.nc', action=OUTPUT)
+       else
+          call initialise(movie, 'crack_relax_loading_movie.xyz', action=OUTPUT)
+       end if
     end if
 
     allocate(pos1(3,crack_slab%N), pos2(3,crack_slab%N))
@@ -1373,7 +1376,6 @@ contains
              end do
 
              real_pos = at%lattice .mult. lattice_coord
-             call print(real_pos)
              crack_pos = crack_pos + real_pos(1)
           else
              crack_pos = crack_pos + at%pos(1,embedlist%int(1,i))

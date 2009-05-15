@@ -573,7 +573,7 @@ end if
 
   if (.not. has_property(ds%atoms, 'load')) then
      call print_title('Applying Initial Load')
-     call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true.)
+     call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true., mpi_glob)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
           old_nn, hybrid, hybrid_mark, u_disp, k_disp)
@@ -785,7 +785,7 @@ end if
                     exit
                  else
                     call print_title('Crack Arrested')
-                    call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .false.)
+                    call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .false., mpi_glob)
                     call print('STATE changing MD_CRACKING -> MD_LOADING')
                     state = STATE_MD_LOADING
                  end if
@@ -1143,7 +1143,7 @@ end if
 
      if (.not. has_property(ds%atoms, 'load')) then
         call print('No load field found. Regenerating load.')
-        call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true.)
+        call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, .true., mpi_glob)
      end if
 
      call crack_update_connect(ds%atoms, params)
