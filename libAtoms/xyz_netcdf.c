@@ -3321,6 +3321,7 @@ int cio_init(Atoms **at, char *filename, int *action, int *append,
 #else
       netcdf_check(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
 #endif
+      (**at).n_frame = 0;
 #else
 #endif
     } else if (*action == INOUT) {
