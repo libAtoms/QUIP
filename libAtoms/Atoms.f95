@@ -1633,7 +1633,8 @@ contains
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: name
 
-    integer :: lookup(3)
+    integer :: i, lookup(3), rem_type, rem_start, n_removed
+    logical :: dummy
 
     if (get_value(this%properties, name, lookup)) then
        if (lookup(1) == PROPERTY_INT) then
@@ -1652,6 +1653,20 @@ contains
     endif
 
     call remove_value(this%properties, name)
+    rem_type = lookup(1)
+    rem_start = lookup(2)
+    n_removed = lookup(3)-lookup(2)+1
+    
+    ! correct columns in subsequent properties
+    do i=1,this%properties%N
+       dummy = get_value(this%properties, this%properties%keys(i), lookup)
+       if (lookup(1) /= rem_type) cycle
+       if (lookup(2) > rem_start) then
+          lookup(2) = lookup(2) - n_removed
+          lookup(3) = lookup(3) - n_removed
+          call set_value(this%properties, this%properties%keys(i), lookup)
+       end if
+    end do
 
     ! remove_columns will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
