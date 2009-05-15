@@ -474,7 +474,7 @@ program makecrack
      end if
      
      ! Apply initial load
-     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true.)
+     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true., mpi_glob)
   end if
 
   call Print_title('Initialising QM region')
