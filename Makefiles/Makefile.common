@@ -46,6 +46,10 @@ ifeq (${HAVE_ASAP},1)
   SYSLIBS += -L${ASAP_LIBDIR} -lasap
   DEFINES += -DHAVE_ASAP
 endif
+ifeq (${HAVE_GP},1)
+  DEFINES += -DHAVE_GP
+  GP_LIB = -lgp
+endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif
@@ -130,5 +134,6 @@ ifndef EXTRA_LINKOPTS
 	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> Makefile.inc
 endif
 	echo "HAVE_LOTF=0" >> Makefile.inc
+	echo "HAVE_GP=0" >> Makefile.inc
 	echo "OPTIM=${DEFAULT_OPTIM}" >> Makefile.inc
 	echo "DEBUG=${DEFAULT_DEBUG}" >> Makefile.inc
