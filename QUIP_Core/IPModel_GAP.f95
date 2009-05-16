@@ -31,8 +31,10 @@ use libatoms_module
 use mpi_context_module
 use QUIP_Common_module
 
-!use gp_module
-!use bispectrum_module
+#ifdef HAVE_GP
+use bispectrum_module
+use gp_sparse_module
+#endif
 
 implicit none
 
@@ -42,27 +44,23 @@ include 'IPModel_interface.h'
 
 ! this stuff is here for now, but it should live somewhere else eventually
 ! lower down in the GP
-integer, parameter :: N_max = 11  
-integer, parameter :: L_max = 3
 
 public :: IPModel_GAP
 type IPModel_GAP
   integer :: n_types = 0         !% Number of atomic types. 
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
+  integer :: j_max = 0
+  real(dp) :: z0 = 0.0_dp
 
   character(len=256) datafile !% File name containing the GAP database
 
   character(len=FIELD_LENGTH) label
   type(mpi_context) :: mpi
 
-  !type(gp) :: my_gp
-
-  ! this stuff is here for now, but it should live somewhere else eventually
-  ! lower down in the GP
-  real(dp), dimension(N_max) :: gr0 
-  real(dp), dimension(N_max) :: gsigma 
-
+#ifdef HAVE_GP
+  type(gp) :: my_gp
+#endif
 
 end type IPModel_GAP
 
@@ -92,30 +90,33 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   character(len=*), intent(in) :: args_str, param_str
   type(mpi_context), intent(in), optional :: mpi
 
-  type(Dictionary) :: params
+  type(Dictionary) :: params, my_dictionary
 
   call Finalise(this)
 
-  call initialise(params)
-  this%label = ''
-  call param_register(params, 'label', '', this%label)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
-    call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
-  endif
-  call finalise(params)
-
-  call IPModel_GAP_read_params_xml(this, param_str)
+  !call initialise(params)
+  !this%label = ''
+  !call param_register(params, 'label', '', this%label)
+  !if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  !  call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
+  !endif
+  !call finalise(params)
 
   if (present(mpi)) this%mpi = mpi
 
   ! now initialise the potential
-  this%gsigma = 5.0_dp
-  !call uni_div(this%gr0,2.0_dp,3.0_dp)
-  !call initialise(this%gr0,this%gsigma)
 
-  !call gp_read(this%my_gp, this%datafile)
+#ifdef HAVE_GP
+  call gp_read_binary(this%my_gp,'gp.dat')
+  call read_string(my_dictionary,this%my_gp%comment)
+#endif  
 
-  this%cutoff = 3.0_dp
+  if( .not. ( get_value(my_dictionary,'cutoff',this%cutoff) .and. &
+            & get_value(my_dictionary,'j_max',this%j_max) .and. &
+            & get_value(my_dictionary,'z0',this%z0) ) ) &
+  & call system_abort('Did not find bispectrum parameters in gp.dat file, &
+  & might be old version or format not correct')
+  call finalise(my_dictionary)
 
 end subroutine IPModel_GAP_Initialise_str
 
@@ -136,21 +137,24 @@ end subroutine IPModel_GAP_Finalise
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
-  type(IPModel_GAP), intent(inout) :: this
+  type(IPModel_GAP), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
 
   real(dp), pointer :: w_e(:)
-  real(dp) :: e_i, error_e
-  real(dp), dimension(:,:), allocatable :: atoms_pos
-  real(dp), dimension(:), allocatable   :: vec
-  integer :: i, j, n
+  real(dp) :: e_i, f_gp, f_gp_k
+  real(dp), dimension(:,:), allocatable   :: vec
+  real(dp), dimension(:,:,:), allocatable   :: jack
+  integer :: d, i, j, k, n, nei_max, jn
 
-  !type(fourier_coefficient) :: f_hat
-  !type(bispectrum_coefficient) :: bispectrum
-
+#ifdef HAVE_GP
+  type(fourier_so4) :: f_hat
+  type(grad_fourier_so4) :: df_hat
+  type(bispectrum_so4) :: bis
+  type(grad_bispectrum_so4) :: dbis
+#endif  
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -161,55 +165,86 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   end if
 
   ! no forces or virials for now
-  if(present(f) .or. present(virial)) &
-       call system_abort('IPModel_GAP_Cals: no forces or virials yet!')
+  if(present(virial)) &
+       call system_abort('IPModel_GAP_Calc: no virials yet!')
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
-  ! temporary variable for bispectrum
-  !allocate( vec(this%my_gp%d) )
+#ifdef HAVE_GP
+  call initialise(f_hat,this%j_max,this%z0)
+  if(present(f)) call initialise(df_hat,this%j_max,this%z0)
+  d = j_max2d(this%j_max)
+#endif
 
-  do i=1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
-    endif
+  nei_max = 0
+  do i = 1, at%N
+     if( nei_max < (atoms_n_neighbours(at,i)+1) ) nei_max = atoms_n_neighbours(at,i)+1
+  enddo
 
-    ! pre-libatoms legacy: coordinates in array
-    ! 1st: central atom
-    ! other atoms relative to the central atom
-    allocate( atoms_pos(3,atoms_n_neighbours(at,i)+1) )
+  allocate(vec(d,at%N),jack(d,3*nei_max,at%N))
 
-    atoms_pos(:,1) = 0.0_dp
-    do n = 1, atoms_n_neighbours(at,i)
-       j = atoms_neighbour(at,i,n)
-       atoms_pos(:,n+1) = diff_min_image(at,j,i)
-    enddo
+  do i = 1, at%N
+     if (this%mpi%active) then
+        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     endif
+
+#ifdef HAVE_GP
+     call fourier_transform(f_hat,at,i)
+     call calc_bispectrum(bis,f_hat)
+     call bispectrum2vec(bis,vec(:,i))
+     if(present(f)) then
+        do n = 0, atoms_n_neighbours(at,i)
+           call fourier_transform(df_hat,at,i,n)
+           call calc_bispectrum(dbis,f_hat,df_hat)
+           call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
+        enddo
+     endif
+#endif
+  enddo
     
-    ! f_hat: fourier transformed coordinates
-    !call fourier_transform(atoms_pos,f_hat,N_max=N_max,L_max=L_max)
-    ! bispectrum: bispectrum of f_hat
-    !call calc_bispectrum(f_hat,bispectrum)
-    ! transforming from bispectrum format to array
-    !call bispectrum2vec( bispectrum,vec )
-    
-    ! predicting function value:
-    ! estimated value: e_i
-    ! estimated error: error_e
-    ! variable: vec
-    ! GP data: my_gp
-    !call gp_predict(e_i, error_e, vec, this%my_gp)
-    !e_i = gp_mean(vec, this%my_gp)
+  do i = 1, at%N
+     if(present(e) .or. present(local_e)) then
+#ifdef HAVE_GP
+        call gp_predict(gp_data=this%my_gp, mean=e_i,x_star=vec(:,i))
+#endif
+        if(present(e)) e = e + e_i
+        if(present(local_e)) local_e(i) = e_i
+     endif
 
-    if(present(local_e)) local_e(i) = e_i
-    if (associated(w_e)) e_i = w_e(i)*e_i
-    if(present(e)) e = e + e_i
+     if(present(f)) then
+        do k = 1, 3
+           f_gp = 0.0_dp
+           !kk = (i-1)*3 + k
+       
+           !call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,kk,i))
+#ifdef HAVE_GP
+           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i))
+#endif
+           f_gp = f_gp - f_gp_k
+       
+           do n = 1, atoms_n_neighbours(at,i)
+              j = atoms_neighbour(at,i,n,jn=jn)
+       
+#ifdef HAVE_GP
+              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j))
+#endif
+              !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
+              f_gp = f_gp - f_gp_k
+           enddo
+       
+           f(k,i) = f_gp
+        enddo
+     endif
+  enddo
 
-    deallocate( atoms_pos )
-  end do
+  deallocate(vec,jack)
 
-  deallocate( vec )
-  !call finalise(f_hat)
-  !call finalise(bispectrum)
+#ifdef HAVE_GP
+  call finalise(f_hat)
+  call finalise(df_hat)
+  call finalise(bis)
+  call finalise(dbis)
+#endif
 
   if (present(e)) e = sum(this%mpi, e)
   if (present(local_e)) call sum_in_place(this%mpi, local_e)
