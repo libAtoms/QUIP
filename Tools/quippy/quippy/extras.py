@@ -1,6 +1,6 @@
 """Various mixin classes to add functionality to automatically generated classes."""
 
-import numpy
+import numpy, hashlib
 from farray import *
 
 class AtomsExtras(object):
@@ -33,7 +33,6 @@ class AtomsExtras(object):
          atomeye.show(self,property=property)
       except ImportError:
          raise RuntimeError('AtomEye not available')
-
 
    def select(self, mask=None, list=None):
       """Select a subset of the atoms in an atoms object, either using a logical
@@ -78,23 +77,31 @@ class AtomsExtras(object):
          if ptype == PROPERTY_REAL:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
+               #setattr(self, prop, self.data.real[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc))
+               #setattr(self, prop, self.data.real[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_INT:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
+               #setattr(self, prop, self.data.int[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc))
+               #setattr(self, prop, self.data.int[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_STR:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
+               #setattr(self, prop, self.data.str[:,col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc))
+               #setattr(self, prop, self.data.str[:,col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_LOGICAL:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
+               #setattr(self, prop, self.data.logical[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc))
+               #setattr(self, prop, self.data.logical[col_start-1:col_end,0:self.n])
          else:
             raise ValueError('Bad property type :'+str(self.properties[prop]))
 
@@ -148,15 +155,15 @@ class AtomsExtras(object):
          return self.params[name]
       raise AttributeError('Unknown Atoms parameter %s' % name)
 
-   def __setattr__(self, name, value):
-      from quippy import Dictionary
-      from oo_fortran import FortranDerivedType
+##    def __setattr__(self, name, value):
+##       from quippy import Dictionary
+##       from oo_fortran import FortranDerivedType
       
-      if (not isinstance(self.params, Dictionary) or isinstance(value, FortranDerivedType)
-          or isinstance(value, FortranArray) or name[0] == '_'):
-         object.__setattr__(self, name, value)
-      else:
-         self.params[name] = value
+##       if (not isinstance(self.params, Dictionary) or isinstance(value, FortranDerivedType)
+##           or isinstance(value, FortranArray) or name[0] == '_'):
+##          object.__setattr__(self, name, value)
+##       else:
+##          self.params[name] = value
 
    def __getitem__(self, i):
       if i < 1 or i > self.n:
@@ -179,7 +186,17 @@ class DictionaryExtras(DictMixin):
       del cls.keys
 
    def keys(self):
-      return[''.join(self._keys[:,i]).strip() for i in frange(self.n)]
+      new_hash = hashlib.md5(self._keys).hexdigest()
+      if new_hash != self.__dict__.get('_keys_hash', None):
+         self._cache_misses = self.__dict__.get('_cache_misses',0) + 1
+         self._keys_cache = [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
+      else:
+         self._cache_hits = self.__dict__.get('_cache_hits',0) + 1
+      self._keys_hash = new_hash
+      return self._keys_cache
+
+   def slowkeys(self):
+      return [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
 
    def __getitem__(self, k):
       i = self.lookup_entry_i(k)
@@ -208,15 +225,19 @@ class DictionaryExtras(DictMixin):
          v,p = self._get_value_l(k)
       elif t == T_INTEGER_A:
          v,p = self._get_value_i_a(k,s)
+         v = farray(v)
       elif t == T_REAL_A:
          v,p = self._get_value_r_a(k,s)
+         v = farray(v)
       elif t == T_COMPLEX_A:
          v,p = self._get_value_c_a(k,s)
+         v = farray(v)
       elif t == T_CHAR_A:
          a,p = self._get_value_s_a(k,s)
          v = [''.join(line).strip() for line in a]
       elif t == T_LOGICAL_A:
          v,p = self._get_value_l_a(k,s)
+         v = farray(v)
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
 
