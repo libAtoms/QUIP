@@ -19,9 +19,9 @@ static void on_click_atom(int atom)
   PyGILState_STATE state;
 
   state = PyGILState_Ensure();
-  arglist = Py_BuildValue("(i)", atom+1);               // Build argument list
-  PyEval_CallObject(on_click_atom_pyfunc, arglist);     // Call Python
-  Py_DECREF(arglist);                                   // Trash arglist
+  arglist = Py_BuildValue("(i)", atom);               // Build argument list
+  PyEval_CallObject(on_click_atom_pyfunc, arglist);   // Call Python
+  Py_DECREF(arglist);                                 // Trash arglist
   PyGILState_Release(state);
 }
 
@@ -33,7 +33,7 @@ static void on_advance(char *instr)
   state = PyGILState_Ensure();
   arglist = Py_BuildValue("(s)", instr);               // Build argument list
   PyEval_CallObject(on_advance_pyfunc, arglist);       // Call Python
-  Py_DECREF(arglist);                                   // Trash arglist
+  Py_DECREF(arglist);                                 // Trash arglist
   PyGILState_Release(state);
 }
 
