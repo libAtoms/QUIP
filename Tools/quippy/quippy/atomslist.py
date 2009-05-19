@@ -36,7 +36,7 @@ class GenericFrameReader(AtomsList):
 
       self._init(source)
       if count is not None:
-         self._frames = slice(count)
+         self._frames = slice(start,start+count,1)
       else:
          self._frames = slice(start,stop,step)
 
@@ -89,7 +89,7 @@ class GenericFrameReader(AtomsList):
       if progress:
          from progbar import ProgressBar
          pb = ProgressBar(0,len(self),progress_width,showValue=show_value)
-         update_interval = len(self)/progress_width
+         update_interval = max(1, len(self)/progress_width)
       
       for i in range(len(self)):
          if progress and i % update_interval == 0:
