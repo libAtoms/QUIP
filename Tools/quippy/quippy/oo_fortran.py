@@ -21,8 +21,8 @@ py_keywords = ['and',       'del',       'from',      'not',       'while',
                'continue',  'finally',   'is',        'return',             
                'def',       'for',       'lambda',    'try']
 
-scalar_types = ['real(dp)', 'integer', 'logical', 'complex', 'character']
-numpy_scalar_types = ['d', 'i', 'i', 'complex', 'S']
+scalar_types = ['real(dp)', 'integer', 'logical', 'complex', 'character', 'logical']
+numpy_scalar_types = ['d', 'i', 'i', 'complex', 'S', 'b']
 
 numpy_to_fortran = dict(zip(numpy_scalar_types, scalar_types))
 numpy_to_fortran['f'] = 'real(dp)' # will be converted up by f2py
@@ -231,9 +231,11 @@ class FortranDerivedType(object):
                  if hasattr(self, '_map_array_shape'):
                      nshape = self._map_array_shape(name, shape)
                      setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
+                     #setattr(self, '_'+name, arraydata(shape,dtype,loc))
                      setattr(self, name, getattr(self, '_'+name)[nshape])
                  else:
                      setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
+                     #setattr(self, name, arraydata(shape,dtype,loc))
              else:
                 # access to arrays of derived type not yet implemented
                 continue
@@ -322,7 +324,6 @@ class FortranDerivedType(object):
            if not all([type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]):
                logging.debug('Types and dimensions of args incompatible %s %s %s' %
                              (newinargs, args, [type_is_compatible(spec, a) for (spec,a) in zip(newinargs, args)]))
-               raise ValueError
                continue
 
            # Check keyword arguments, if incompatible continue to next
