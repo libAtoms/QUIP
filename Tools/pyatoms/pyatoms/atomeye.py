@@ -206,7 +206,7 @@ class AtomEye(object):
       if aux_prop is not None: self.set_aux_prop(aux_prop)
 
       if width is not None and height is not None:
-         raise ValueError("Can't see both width and height at same time")
+         raise ValueError("Can't set both width and height at same time")
       if width  is not None:  self.set_width(width)
       if height is not None:  self.set_height(height)
       if save_view: self.save_view()
