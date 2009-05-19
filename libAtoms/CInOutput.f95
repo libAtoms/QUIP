@@ -379,8 +379,8 @@ contains
     do_real_format = optional_default('%16.8f', real_format)
     do_frame = this%n_frame
     if (present(frame)) do_frame = frame
-    do_shuffle = optional_default(.true., shuffle)
-    do_deflate = optional_default(.true., deflate)
+    do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
+    do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
     
     call initialise(selected_properties)
