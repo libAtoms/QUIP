@@ -84,7 +84,8 @@ module cp2k_driver_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      operator(//), &
-                                     NORMAL, ANAL, NERD
+                                     NORMAL, ANAL, NERD, ERROR, &
+				     verbosity_push_decrement, verbosity_pop
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
@@ -212,7 +213,7 @@ module cp2k_driver_module
     character(80) :: force_file != 'cp2k-frc-1.xyz'
     character(80) :: pos_file != 'cp2k-pos-1.xyz'
     character(80) :: wrk_filename != 'wrk.dat'
-    character(80) :: cp2k_program != 'cp2k_serial' or 'cp2k_popt'
+    character(800) :: cp2k_program != 'cp2k_serial' or 'cp2k_popt'. long, for possible long path
   end type working_env
 
   type param_cp2k
@@ -265,7 +266,7 @@ contains
   integer                        :: i,j
   logical                        :: ex
   logical                        :: cubic
-  character(len=80)              :: env_program_name
+  character(len=800)             :: env_program_name
   integer                        :: name_len, status
   real(dp),dimension(3)          :: old_QM_cell
   logical                        :: QM_list_changed
@@ -2196,11 +2197,13 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
 
     call print('')
     call print('The energy of the system: '//energy)
-    call print('The forces acting on each atom (eV/A):')
-    call print('atom     F(x)     F(y)     F(z)')
-    do m=1,size(forces,2)
-    call print('  '//m//'    '//forces(1,m)//'  '//forces(2,m)//'  '//forces(3,m))
-    enddo
+    call verbosity_push_decrement()
+      call print('The forces acting on each atom (eV/A):')
+      call print('atom     F(x)     F(y)     F(z)')
+      do m=1,size(forces,2)
+      call print('  '//m//'    '//forces(1,m)//'  '//forces(2,m)//'  '//forces(3,m))
+      enddo
+    call verbosity_pop()
     call print('Sum of the forces: '//sum(forces(1,1:num_atoms))//' '//sum(forces(2,1:num_atoms))//' '//sum(forces(3,1:num_atoms)))
 
 !    if (any(abs(forces(1:3,1:my_atoms%N)).gt.(4.21648784E-02*HARTREE/BOHR))) &
