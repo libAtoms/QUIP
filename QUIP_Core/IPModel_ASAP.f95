@@ -37,9 +37,11 @@ private
 
 include 'IPModel_interface.h'
 
+logical, private :: asap_initialised = .false.
+
 public :: IPModel_ASAP
 type IPModel_ASAP
-  integer :: n_types = 0
+  integer :: n_types = 0, n_atoms = 0
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
 
   real(dp) :: cutoff = 0.0_dp
@@ -92,14 +94,9 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
   call finalise(params)
 
   call IPModel_ASAP_read_params_xml(this, param_str)
-
-#ifdef HAVE_ASAP
-  call asap_singlepoint_init(this%param_file)
+  this%n_atoms = 0
   this%initialised = .true.
-#else
-  call system_abort('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1')
-#endif
-
+  
   if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_ASAP_Initialise_str
@@ -108,10 +105,11 @@ subroutine IPModel_ASAP_Finalise(this)
   type(IPModel_ASAP), intent(inout) :: this
 
 #ifdef HAVE_ASAP
-  if (this%initialised) then
+  if (asap_initialised) then
      call asap_singlepoint_finalise()
-     this%initialised = .false.
+     asap_initialised = .false.
   end if
+  this%initialised = .false.
 #else
   call system_abort('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1')
 #endif
@@ -152,6 +150,18 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    endif
    call finalise(params)
 
+   if (.not. asap_initialised .or. this%n_atoms /= at%n) then
+      
+      if (asap_initialised) then
+         call asap_singlepoint_finalise()
+         asap_initialised = .false.
+      end if
+
+      this%n_atoms = at%n
+      call asap_singlepoint_init(this%n_atoms, this%n_types, this%param_file)
+      asap_initialised = .true.
+   end if
+
    spind = 0
    do i=1,this%n_types
       where(at%Z == this%atomic_num(i)) spind = i
@@ -184,7 +194,7 @@ subroutine IPModel_ASAP_Print(this, file)
   integer :: ti, tj
 
   call Print("IPModel_ASAP : ASAP Potential", file=file)
-  call Print("IPModel_ASAP : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_ASAP : n_types = " // this%n_types //" n_atoms = "//this%n_atoms// " cutoff = " // this%cutoff, file=file)
 
   do ti=1, this%n_types
     call Print ("IPModel_ASAP : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
