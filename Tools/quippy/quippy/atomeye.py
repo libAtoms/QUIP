@@ -1,19 +1,21 @@
 """High-level interface to atomeye. Low-level interface is in _atomeye extension module."""
 
-import threading, _atomeye, time, sys
+import threading, _atomeye, time, sys, numpy
 from math import ceil, log10
 
 from quippy import CInOutput
+from farray import *
 __cio = CInOutput()
 
 __window_id = 0 # for now, we always have only one window
 __thread = None
 
 atoms = None
-__olddata = None
 
 frame = 0
 delta = 1
+
+ATOMEYE_MAX_AUX_PROPS = 48
 
 paint_property = None
 paint_value = 1
@@ -23,7 +25,8 @@ def on_atom_click(idx):
     theat = atoms
     if hasattr(atoms, '__iter__'):
         theat = atoms[frame]
-    
+
+    idx = idx + 1 # atomeye uses zero based indices
     if idx > theat.n:
         idx = idx % theat.n
     print "frame %d, atom %d clicked" % (frame, idx)
@@ -108,7 +111,7 @@ def isAlive():
     return _atomeye.isAlive()
 
 def redraw(property=None):
-    global __olddata
+    global atoms
 
     if not isAlive(): 
         raise RuntimeError('AtomEye not running')
@@ -124,8 +127,34 @@ def redraw(property=None):
     else:
         title = 'atoms'
 
-    #if __olddata is None or __oldproperty != property or not theat.data.equal(__olddata):
-    #    __olddata = theat.data.copy()
+    if property is not None:
+        if isinstance(property,str):
+            pass
+        elif isinstance(property,int):
+            theat.add_property('_show', False)
+            theat._show[:] = [i == property for i in frange(theat.n)]
+            property = '_show'
+        else:
+            if isinstance(property, numpy.ndarray):
+                theat.add_property('_show', property.flat[0],
+                                   1 if len(property.shape) == 1 else property.shape[0])
+            else:
+                theat.add_property('_show', property)
+            theat._show[...] = property
+            property = '_show'
+
+        # Make sure property we're looking at is in the first 48 columns, or it won't be available
+        if sum((theat.data.intsize, theat.data.realsize, theat.data.logicalsize, theat.data.strsize)) > ATOMEYE_MAX_AUX_PROPS:
+
+            col = 0
+            for p in theat.properties:
+                col += theat.properties[p][3] - theat.properties[p][2] + 1
+                if p == property:
+                    break
+                
+            if col >= ATOMEYE_MAX_AUX_PROPS:
+                theat.properties.swap(theat.properties.keys()[2], property)
+
     _atomeye.load_libatoms(__window_id, __cio.update(theat), title)
     if property is not None:
         aux_property_coloring(property)
