@@ -1611,20 +1611,33 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine table_record_delete_by_index(this,n)
+  subroutine table_record_delete_by_index(this, n, keep_order)
     type(table), intent(inout) :: this
     integer,     intent(in)    :: n
+    logical, intent(in), optional :: keep_order
+
+    logical :: do_keep_order
+
+    do_keep_order = optional_default(.true., keep_order)
 
     if (n > this%N .or. n < 1) then
        write(line,'(a,2(i0,a))')'table_record_delete_by_index: Tried to delete record ',n,' (N=',this%N,')'
        call system_abort(line)
     end if
 
-    ! replace the row with the last row
-    if(allocated(this%int))  this%int (:,n) = this%int (:,this%N)
-    if(allocated(this%real)) this%real(:,n) = this%real(:,this%N)
-    if(allocated(this%str)) this%str(:,n) = this%str(:,this%N)
-    if(allocated(this%logical)) this%logical(:,n) = this%logical(:,this%N)
+    if (do_keep_order) then
+      ! move all later rows back 1
+      if(allocated(this%int))  this%int (:,n:this%N-1) = this%int (:,n+1:this%N)
+      if(allocated(this%real)) this%real(:,n:this%N-1) = this%real(:,n+1:this%N)
+      if(allocated(this%str)) this%str(:,n:this%N-1) = this%str(:,n+1:this%N)
+      if(allocated(this%logical)) this%logical(:,n:this%N-1) = this%logical(:,n+1:this%N)
+    else
+      ! replace the row with the last row
+      if(allocated(this%int))  this%int (:,n) = this%int (:,this%N)
+      if(allocated(this%real)) this%real(:,n) = this%real(:,this%N)
+      if(allocated(this%str)) this%str(:,n) = this%str(:,this%N)
+      if(allocated(this%logical)) this%logical(:,n) = this%logical(:,this%N)
+    endif
 
     this%N=this%N-1
 
@@ -1677,26 +1690,23 @@ contains
   end subroutine table_record_delete_multiple
 
 
-  subroutine table_record_delete_by_value(this,n)
+  subroutine table_record_delete_by_value(this,n, keep_order)
     type(table), intent(inout) :: this
     integer,     intent(in)    :: n(:)
+    logical, intent(in), optional :: keep_order
+
     integer                    :: i
 
     if (.not.allocated(this%int)) &
          call system_abort('table_record_delete_by_value: you cannot delete by value from a table without an int part')
 
     if (size(n).ne.size(this%int,1)) &  
-         call system_abort('table_record_delete_by_value: the row you are look to delete has the wrong size')  
+         call system_abort('table_record_delete_by_value: the row you are trying to delete has the wrong size')  
 
     do i=1,this%N
        if ( all(this%int(:,i) == n(:)) ) then
-          this%int(:,i)=this%int(:,this%N)
-          if(allocated(this%real)) this%real(:,i)=this%real(:,this%N)
-          if(allocated(this%str)) this%str(:,i)=this%str(:,this%N)
-          if(allocated(this%logical)) this%logical(:,i)=this%logical(:,this%N)
-
-          this%N = this%N-1
-          exit
+	call delete(this, i, keep_order)
+	exit
        end if
     end do
     !maybe we can reduce the memory

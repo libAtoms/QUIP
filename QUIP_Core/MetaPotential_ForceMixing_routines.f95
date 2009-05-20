@@ -32,6 +32,10 @@
     call param_register(params, 'hysteretic_buffer', 'F', this%hysteretic_buffer)
     call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', this%hysteretic_buffer_inner_radius)
     call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', this%hysteretic_buffer_outer_radius)
+    call param_register(params, 'hysteretic_connect', 'F', this%hysteretic_connect)
+    call param_register(params, 'hysteretic_connect_cluster_radius', '20.0', this%hysteretic_connect_cluster_radius)
+    call param_register(params, 'hysteretic_connect_inner_factor', '1.2', this%hysteretic_connect_inner_factor)
+    call param_register(params, 'hysteretic_connect_outer_factor', '1.5', this%hysteretic_connect_outer_factor)
     call param_register(params, 'fit_hops', '3', this%fit_hops)
     call param_register(params, 'randomise_buffer', 'F', this%randomise_buffer)
     call param_register(params, 'transition_hops', '0', this%transition_hops)
@@ -41,6 +45,7 @@
     call param_register(params, 'lotf_spring_hops', '2', this%lotf_spring_hops)
     call param_register(params, 'lotf_interp_order', 'linear', this%lotf_interp_order)
     call param_register(params, 'lotf_interp_space', 'F', this%lotf_interp_space)
+    call param_register(params, 'lotf_nneighb_only', 'T', this%lotf_nneighb_only)
 
 
     ! Parameters for do_reference_bulk calculation
@@ -127,6 +132,7 @@
     call Print(' lotf_spring_hops='//this%lotf_spring_hops, file=file)
     call Print(' lotf_interp_order='//this%lotf_interp_order, file=file)
     call Print(' lotf_interp_space='//this%lotf_interp_space, file=file)
+    call Print(' lotf_nneighb_only='//this%lotf_nneighb_only, file=file)
     call Print('',file=file)
     call Print(' minim_mm_method='//this%minim_mm_method,file=file)
     call Print(' minim_mm_tol='//this%minim_mm_tol,file=file)
@@ -173,11 +179,12 @@
     logical :: dummy
     logical  :: minimise_mm, calc_weights, nneighb_only, save_forces, lotf_do_init, &
          lotf_do_map, lotf_do_fit, lotf_do_interp, lotf_do_qm, lotf_interp_space, do_rescale_r, &
-         randomise_buffer, hysteretic_buffer
+         randomise_buffer, hysteretic_buffer, hysteretic_connect, lotf_nneighb_only
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
          AP_method, weight_interpolation, lotf_interp_order
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
     real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
+    real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
 
     integer :: weight_method, buffer_hops, transition_hops, fit_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4
@@ -199,6 +206,10 @@
     call param_register(params, 'hysteretic_buffer', ''//this%hysteretic_buffer, hysteretic_buffer)
     call param_register(params, 'hysteretic_buffer_inner_radius', ''//this%hysteretic_buffer_inner_radius, hysteretic_buffer_inner_radius)
     call param_register(params, 'hysteretic_buffer_outer_radius', ''//this%hysteretic_buffer_outer_radius, hysteretic_buffer_outer_radius)
+    call param_register(params, 'hysteretic_connect', ''//this%hysteretic_connect, hysteretic_connect)
+    call param_register(params, 'hysteretic_connect_cluster_radius', ''//this%hysteretic_connect_cluster_radius, hysteretic_connect_cluster_radius)
+    call param_register(params, 'hysteretic_connect_inner_factor', ''//this%hysteretic_connect_inner_factor, hysteretic_connect_inner_factor)
+    call param_register(params, 'hysteretic_connect_outer_factor', ''//this%hysteretic_connect_outer_factor, hysteretic_connect_outer_factor)
     call param_register(params, 'transition_hops', ''//this%transition_hops, transition_hops)
     call param_register(params, 'fit_hops', ''//this%fit_hops, fit_hops)
     call param_register(params, 'randomise_buffer', ''//this%randomise_buffer, randomise_buffer)
@@ -207,6 +218,7 @@
     call param_register(params, 'lotf_spring_hops', ''//this%lotf_spring_hops, lotf_spring_hops)
     call param_register(params, 'lotf_interp_order', this%lotf_interp_order, lotf_interp_order)
     call param_register(params, 'lotf_interp_space', ''//this%lotf_interp_space, lotf_interp_space)
+    call param_register(params, 'lotf_nneighb_only', ''//this%lotf_nneighb_only, lotf_nneighb_only)
     call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
     call param_register(params, 'do_rescale_r', ''//this%do_rescale_r, do_rescale_r)
 
@@ -263,7 +275,11 @@
             weight_interpolation=weight_interpolation, nneighb_only=nneighb_only, min_images_only=.true., &
             mark_buffer_outer_layer=randomise_buffer, hysteretic_buffer=hysteretic_buffer, &
             hysteretic_buffer_inner_radius=hysteretic_buffer_inner_radius, &
-            hysteretic_buffer_outer_radius=hysteretic_buffer_outer_radius)
+            hysteretic_buffer_outer_radius=hysteretic_buffer_outer_radius, &
+            hysteretic_connect=hysteretic_connect, &
+            hysteretic_connect_cluster_radius=hysteretic_connect_cluster_radius, &
+            hysteretic_connect_inner_factor=hysteretic_connect_inner_factor, &
+            hysteretic_connect_outer_factor=hysteretic_connect_outer_factor)
 
        ! reassign pointers
        
@@ -305,7 +321,7 @@
 
        if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
           call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
-               nneighb_only=nneighb_only, min_images_only=.true.)
+               nneighb_only=lotf_nneighb_only, min_images_only=.true.)
        end if
 
        ! Make some convenient arrays of embed and fit list
@@ -362,7 +378,7 @@
           if (lotf_do_init) then
              call print('Initialising adjustable potential with map='//lotf_do_map, VERBOSE)
              call adjustable_potential_init(at, this%fitlist, directionN=this%embedlist%N, &
-                  method=AP_method, nnonly=nneighb_only, &
+                  method=AP_method, nnonly=lotf_nneighb_only, &
                   spring_hops=lotf_spring_hops, map=lotf_do_map)
           end if
             

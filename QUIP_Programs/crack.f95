@@ -402,6 +402,12 @@ end if
      call set_value(metapot_params, 'hysteretic_buffer_inner_radius', params%qm_hysteretic_buffer_inner_radius)
      call set_value(metapot_params, 'hysteretic_buffer_outer_radius', params%qm_hysteretic_buffer_outer_radius)
 
+     call set_value(metapot_params, 'hysteretic_connect', params%qm_hysteretic_connect)
+     call set_value(metapot_params, 'nneighb_only', (.not. params%qm_hysteretic_connect))
+     call set_value(metapot_params, 'hysteretic_connect_cluster_radius', params%qm_hysteretic_connect_cluster_radius)
+     call set_value(metapot_params, 'hysteretic_connect_inner_factor', params%qm_hysteretic_connect_inner_factor)
+     call set_value(metapot_params, 'hysteretic_connect_outer_factor', params%qm_hysteretic_connect_outer_factor)
+
 
      call set_value(metapot_params, 'mm_args_str', params%classical_args_str)
 
@@ -415,7 +421,10 @@ end if
           '  cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
           '  buffer_hops='//params%qm_buffer_hops//&
           '  randomise_buffer='//params%qm_randomise_buffer//&
-	  '  ' //  params%qm_args_str&
+          '  hysteretic_connect='//params%qm_hysteretic_connect//&
+          '  nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+          '  cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
+	  '  ' //trim(params%qm_args_str) &
 	  //' }')
 
      if (params%qm_rescale_r) then

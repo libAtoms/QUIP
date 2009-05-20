@@ -32,7 +32,7 @@ implicit none
   call Print("post initialise pot LJ")
   call Print(pot)
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)
@@ -46,13 +46,12 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "IP SW", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot SW")
   call Print(pot)
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)
@@ -66,13 +65,12 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_tersoff.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "IP Tersoff", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot Tersoff")
   call Print(pot)
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)
@@ -86,12 +84,11 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB Bowler", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot Bowler Si")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
 !  call Print (pot)
@@ -105,12 +102,11 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB DFTB", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot DFTB Si")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
 !  call Print (pot)
@@ -124,12 +120,11 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB NRL-TB Silicon", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot NRL-TB Si")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)
@@ -143,12 +138,11 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB DFTB SCF_NONLOCAL_U_DFTB", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot DFTB Si SCF_NONLOCAL_U_DFTB")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
 !  call Print (pot)
@@ -162,12 +156,11 @@ implicit none
 
   call finalise(at)
   call read_xyz(at, "atoms_potential_sw.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB NRL-TB Silicon SCF_NONLOCAL_U_DFTB", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot NRL-TB Si SCF_NONLOCAL_U_DFTB")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)
@@ -180,12 +173,11 @@ implicit none
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   call finalise(at)
   call read_xyz(at, "atoms_potential_cuau.xyz")
-  at%use_uniform_cutoff = .true.
 
   call Initialise(pot, "TB NRL-TB Cu-Au--PW91", string(params_str), mpi_obj=mpi_glob)
   call Print("post initialise pot NRL-TB Ag")
 
-  at%cutoff = cutoff(pot)
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
   call Print (pot)

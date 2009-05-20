@@ -33,8 +33,7 @@ implicit none
   call Print ("Post initialise")
   call Print(tbc)
 
-  at%cutoff = tbc%tbsys%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at, tbc%tbsys%tbmodel%cutoff)
   call calc_connect(at)
 
   call Print ("call setup_atoms")
@@ -78,8 +77,7 @@ implicit none
   call Print ("Post initialise")
   call Print(tbc)
 
-  at%cutoff = tbc%tbsys%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at, tbc%tbsys%tbmodel%cutoff)
   call calc_connect(at)
 
   call Print ("call setup_atoms")

@@ -23,8 +23,7 @@ implicit none
   call Print ("Atoms", verbosity=VERBOSE)
   call Print (at)
 
-  at%cutoff = 3.0_dp
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at,3.0_dp)
   call calcConnectFast(at, rebuild=.true.)
   call Print(at)
 

@@ -41,6 +41,8 @@
      integer :: buffer_hops !% Number of bond hops used for buffer region. Applies to 'force_mixing' methods only.
      logical :: hysteretic_buffer !% Turn on hysteretic selection algorithm for buffer region
      real(dp) :: hysteretic_buffer_inner_radius,  hysteretic_buffer_outer_radius
+     logical :: hysteretic_connect !% Turn on hysteretic selection algorithm for connection used for buffer region
+     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor,  hysteretic_connect_outer_factor
 
      integer :: transition_hops !% Number of bond hops used for transition region. Applies to 'force_mixing' methods only.
      integer :: fit_hops !% Number of bond hops used for fit region. Applies to 'conserve_momentum' and 'lotf_*' methods only.
@@ -54,6 +56,7 @@
      integer :: lotf_spring_hops  !% Maximum lengths of springs for LOTF 'adj_pot_svd' and 'adj_pot_minim' methods (default is 2).
      character(FIELD_LENGTH) :: lotf_interp_order !% Interpolation order: should be one of 'linear', 'quadratic', or 'cubic'. Default is 'linear'.
      logical :: lotf_interp_space !% Do spatial rather than temporal interpolation of adj pot parameters. Default is false.
+     logical :: lotf_nneighb_only !% If true (which is the default), uses nearest neigbour hopping to determine fit atoms
      logical :: do_rescale_r !% Should positions in QM region be rescaled
      real(dp) :: r_scale_pot1 !% Rescale positions in QM region by this factor
      

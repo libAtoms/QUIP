@@ -430,7 +430,7 @@ module paramreader_module
       my_ignore_unknown=optional_default(.false., ignore_unknown)
 
       ! First split by '"', then odd fields are outside of quoted strings
-      call parse_string(myline, '"''{}', fields, num_fields)
+      call parse_string(myline, "''"//'""'//'{}', fields, num_fields, matching=.true.)
 
       k = 1 ! Index into final_fields
       do i=1,num_fields

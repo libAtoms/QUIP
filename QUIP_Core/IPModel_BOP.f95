@@ -209,7 +209,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
 !  A vacuum region surrounding the cluster has to be applied before computing the connecting
    at_bop%lattice = at_bop%lattice * 3.0_dp
 !  Cutoff set to the potential value in order to reduce the number of neighbours for the BOP library 
-   at_bop%cutoff  = this%cutoff
+   call set_cutoff(at_bop, this%cutoff)
 !  Recompute connectivity
    call print('IPModel_BOP : cutoff used for conenctivity' // at_bop%cutoff, NERD)
    call atoms_set_lattice(at_bop,at_bop%lattice,remap=.true.,reconnect=.true.)
@@ -691,8 +691,11 @@ end function pos_j
     lattice(:,2) = a%lattice(:,2)*n2save
     lattice(:,3) = a%lattice(:,3)*n3save
     call atoms_initialise(aa, a%N*n1*n2*n3, lattice, data=big_data, properties=a%properties)
-    aa%use_uniform_cutoff = a%use_uniform_cutoff
-    aa%cutoff = a%cutoff
+    if (a%use_uniform_cutoff) then
+       call set_cutoff(aa, a%cutoff)
+    else
+       call set_cutoff_factor(aa, a%cutoff)
+    end if
 
    if (.not. assign_pointer(a, 'map', map)) &
        call system_abort('active pointer assignment failed')

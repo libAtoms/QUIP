@@ -343,6 +343,7 @@ contains
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), allocatable, dimension(:,:) :: f_cluster
     type(Atoms) :: cluster
+    character(len=256) :: prefix_save
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -414,6 +415,12 @@ contains
           cluster = create_cluster_hybrid_mark(at, new_args_str)
           allocate(f_cluster(3,cluster%N))
 
+	  if (current_verbosity() >= NERD) then
+	    prefix_save = mainlog%prefix
+	    mainlog%prefix="LITTLE_CLUSTER_"//i
+	    call print_xyz(cluster, mainlog, all_properties=.true.)
+	    mainlog%prefix=prefix_save
+	  endif
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)
@@ -456,6 +463,12 @@ contains
        call print('potential_calc: constructing single_cluster', VERBOSE)
 
        cluster = create_cluster_hybrid_mark(at, new_args_str)
+       if (current_verbosity() >= NERD) then
+	 prefix_save = mainlog%prefix
+	 mainlog%prefix="CLUSTER"
+	 call print_xyz(cluster, mainlog, all_properties=.true.)
+	 mainlog%prefix=prefix_save
+       endif
        if (.not. assign_pointer(cluster, 'index', cluster_index)) &
             call system_abort('potential_calc: cluster is missing index property')
        if (.not. assign_pointer(cluster, 'termindex', termindex)) &
