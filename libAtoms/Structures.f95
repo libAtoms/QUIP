@@ -792,8 +792,11 @@ contains
     lattice(:,2) = a%lattice(:,2)*n2
     lattice(:,3) = a%lattice(:,3)*n3
     call atoms_initialise(aa, a%N*n1*n2*n3, lattice, data=big_data, properties=a%properties)
-    aa%use_uniform_cutoff = a%use_uniform_cutoff
-    aa%cutoff = a%cutoff
+    if (a%use_uniform_cutoff) then
+       call set_cutoff(aa, a%cutoff)
+    else
+       call set_cutoff_factor(aa, a%cutoff)
+    end if
 
     do i = 0,n1-1
        do j = 0,n2-1

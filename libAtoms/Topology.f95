@@ -2,7 +2,7 @@ module topology_module
 
   use atoms_module,            only: atoms, print, &
                                      add_property, &
-                                     read_line, parse_line
+                                     read_line, parse_line, atoms_n_neighbours
   use clusters_module,         only: bfs_step, add_cut_hydrogens
   use dictionary_module,       only: get_value, value_len
   use linearalgebra_module,    only: find_in_array, find, &
@@ -267,7 +267,7 @@ contains
        call print(find(unidentified))
 do i=1,at%N
    if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5))
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//(at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N))
+   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i))
 enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO

@@ -49,8 +49,7 @@ implicit none
 !NB  call Print ("Post initialize")
 !NB  call Print(tbc)
 
-  at%cutoff = tbc%tbsys%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call atoms_set_cutoff(at, tbc%tbsys%tbmodel%cutoff)
   call calc_connect(at)
 
   call Setup_atoms(tbc, at)

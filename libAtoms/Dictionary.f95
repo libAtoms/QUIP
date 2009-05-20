@@ -985,7 +985,7 @@ subroutine dictionary_read_string(this, str, append)
   character(len=dict_field_length), dimension(dict_n_fields) :: fields, sub_fields, final_fields
   character(len=dict_field_length) :: key, value
   integer :: num_fields, i, j,  k, num_sub_fields, num_pairs
-  
+
   do_append = optional_default(.false., append)
 
   if (.not. do_append) then
@@ -993,7 +993,7 @@ subroutine dictionary_read_string(this, str, append)
   end if
 
   ! First split by '"', then odd fields are outside of quoted strings
-  call parse_string(str, '"''', fields, num_fields)
+  call parse_string(str, '""'//"''"//'{}', fields, num_fields, matching=.true.)
 
   k = 1 ! Index into final_fields
   do i=1,num_fields
@@ -1060,7 +1060,6 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
 
   my_char_a_sep = optional_default(',',char_a_sep)
 
-  
   ! First, let's check if value is arbitrary data, represented
   ! as 'DATA"i1 i2 i3 i4"' with i1,i2, etc. integers
   if (strvalue(1:4) == 'DATA') then
@@ -1075,7 +1074,7 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
            return
         end if
      end do
-          
+
      call set_value(this,key,data)
      deallocate(data%d)
      status = .true.
@@ -1085,10 +1084,11 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
   ! Otherwise, start by splitting value into fields
   call parse_string(strvalue, ' ', fields, num_fields)
 
-
   if (num_fields == 0) then
-     ! Nothing there
-     status = .false.
+     ! Nothing there, assume it's logical and true
+     l = .true.
+     call set_value(this, key, l)
+     status = .true.
      return
 
   else if (num_fields == 1) then
@@ -1106,7 +1106,7 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
      ! Is it a logical?
      if (trim(fields(1)) == 'T' .or. trim(fields(1)) == 't' .or. &
           trim(fields(1)) == 'F' .or. trim(fields(1)) == 'f') then
-        l = string_to_logical(fields(1))
+	l = string_to_logical(fields(1))
         call set_value(this, key, l)
         status = .true.
         return

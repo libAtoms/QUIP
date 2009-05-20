@@ -28,6 +28,9 @@ LIBFILES = libatoms.a libquip.a libquiputils.a
 ${PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
+test: % :  ${OBJS} %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
+
 CRACK_OBJS = crackparams.o cracktools.o
 
 crack: % :  ${CRACK_OBJS} %.o ${LIBFILES}

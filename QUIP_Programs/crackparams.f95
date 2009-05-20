@@ -228,6 +228,11 @@ module CrackParams_module
      real(dp) :: qm_hysteretic_buffer_inner_radius !% Inner radius used for hystertic buffer region
      real(dp) :: qm_hysteretic_buffer_outer_radius !% Outer radius used for hystertic buffer region
 
+     logical :: qm_hysteretic_connect !% Enable hysteretic connectivity 
+     real(dp) :: qm_hysteretic_connect_inner_factor !% Inner bond factor. Default 1.2
+     real(dp) :: qm_hysteretic_connect_outer_factor !% Outer bond factor. Default 1.5
+     real(dp) :: qm_hysteretic_connect_cluster_radius !% Radius other which to keep track of hysteretic connectivity info. Default 10.0 A.
+
      ! Fit parameters
      integer :: fit_hops                  !% Number of hops used to generate fit region from embed region
      integer :: fit_spring_hops           !% Number of hops used when creating list of springs
@@ -411,6 +416,10 @@ contains
     this%qm_hysteretic_buffer     = .false.
     this%qm_hysteretic_buffer_inner_radius = 5.0_dp
     this%qm_hysteretic_buffer_outer_radius = 7.0_dp
+    this%qm_hysteretic_connect    = .false.
+    this%qm_hysteretic_connect_inner_factor = 1.2_dp
+    this%qm_hysteretic_connect_outer_factor = 1.5_dp
+    this%qm_hysteretic_connect_cluster_radius = 10.0_dp
 
     ! Fit parameters
     this%fit_hops                 = 3
@@ -1022,6 +1031,26 @@ contains
           read (value, *) parse_cp%qm_hysteretic_buffer_outer_radius
        end if
 
+       call QUIP_FoX_get_value(attributes, "hysteretic_connect", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_hysteretic_connect
+       end if
+
+       call QUIP_FoX_get_value(attributes, "hysteretic_connect_inner_factor", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_hysteretic_connect_inner_factor
+       end if
+
+       call QUIP_FoX_get_value(attributes, "hysteretic_connect_outer_factor", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_hysteretic_connect_outer_factor
+       end if
+
+       call QUIP_FoX_get_value(attributes, "hysteretic_connect_cluster_radius", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_hysteretic_connect_cluster_radius
+       end if
+
 
     elseif (parse_in_crack .and. name == 'fit') then
 
@@ -1216,6 +1245,10 @@ contains
     call Print('     hysteretic_buffer     = '//this%qm_hysteretic_buffer, file=file)
     call Print('     hysteretic_buffer_inner_radius = '//this%qm_hysteretic_buffer_inner_radius//' A', file=file)
     call Print('     hysteretic_buffer_outer_radius = '//this%qm_hysteretic_buffer_outer_radius//' A', file=file)
+    call Print('     hysteretic_connect    = '//this%qm_hysteretic_connect, file=file)
+    call Print('     hysteretic_connect_inner_factor = '//this%qm_hysteretic_connect_inner_factor, file=file)
+    call Print('     hysteretic_connect_outer_factor = '//this%qm_hysteretic_connect_outer_factor, file=file)
+    call Print('     hysteretic_connect_cluster_radius = '//this%qm_hysteretic_connect_cluster_radius//' A', file=file)
     call Print('',file=file)
     call Print('  Fit parameters:',file=file)
     call Print('     hops                  = '//this%fit_hops,file=file)

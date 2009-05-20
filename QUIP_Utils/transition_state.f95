@@ -177,8 +177,11 @@
           this%cos%image(im)%at = at_ref
           this%cos%image(im)%at%pos = reshape(conf(im,:), (/3, at_ref%N/))   
           this%cos%image(im)%at%Z(:)   = at_ref%Z(:) 
-          this%cos%image(im)%at%cutoff = at_ref%cutoff
-          this%cos%image(im)%at%use_uniform_cutoff  = at_ref%use_uniform_cutoff
+          if (at_ref%use_uniform_cutoff) then
+             call set_cutoff(this%cos%image(im)%at, at_ref%cutoff)
+          else
+             call set_cutoff_factor(this%cos%image(im)%at, at_ref%cutoff)
+          end if
           if(associated(at_ref%move_mask)) &
                   this%cos%image(im)%at%move_mask = at_ref%move_mask 
         enddo
@@ -243,8 +246,13 @@
           do im = 2, this%cos%N -1
              this%cos%image(im)%at%pos(:,:)     = this%cos%image(1)%at%pos(:,:) + real(im-1) * increm(:,:)  
              this%cos%image(im)%at%Z(:)         = this%cos%image(1)%at%Z(:) 
-             this%cos%image(im)%at%cutoff       = this%cos%image(1)%at%cutoff
-             this%cos%image(im)%at%use_uniform_cutoff  = this%cos%image(1)%at%use_uniform_cutoff
+
+             if (this%cos%image(1)%at%use_uniform_cutoff) then
+                call set_cutoff(this%cos%image(im)%at, this%cos%image(1)%at%cutoff)
+             else
+                call set_cutoff_factor(this%cos%image(im)%at, this%cos%image(1)%at%cutoff)
+             end if
+
              if(associated(this%cos%image(1)%at%move_mask)) &
                   this%cos%image(im)%at%move_mask = this%cos%image(1)%at%move_mask 
           enddo 

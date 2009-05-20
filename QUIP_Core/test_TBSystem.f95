@@ -31,8 +31,7 @@ implicit none
   call Print ("Post initialize")
   call Print(tbs)
 
-  at%cutoff = tbs%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at, tbs%tbmodel%cutoff)
   write (line, '(a,f10.5)') "at%cutoff ", at%cutoff
   call Print(line)
   call calc_connect(at)
@@ -69,8 +68,7 @@ implicit none
   call Print ("Post initialize")
   call Print(tbs)
 
-  at%cutoff = tbs%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at, tbs%tbmodel%cutoff)
   write (line, '(a,f10.5)') "at%cutoff ", at%cutoff
   call Print(line)
   call calc_connect(at)
@@ -107,8 +105,7 @@ implicit none
   call Print ("Post initialize")
   call Print(tbs)
 
-  at%cutoff = tbs%tbmodel%cutoff
-  at%use_uniform_cutoff = .true.
+  call set_cutoff(at, tbs%tbmodel%cutoff)
   write (line, '(a,f10.5)') "at%cutoff ", at%cutoff
   call Print(line)
   call calc_connect(at)

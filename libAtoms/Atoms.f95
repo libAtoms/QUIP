@@ -962,6 +962,10 @@ module  atoms_module
 
   logical :: printed_stack_warning = .false.   !% OMIT
 
+  type Table_pointer
+    type(Table), pointer :: t => null()
+  end type Table_pointer
+
   type Connection
 
      !% We do not use a minimum image convention, rather, collect all the images of a neigbouring atom
@@ -1037,9 +1041,9 @@ module  atoms_module
      integer                                    :: cellsNa !% no. of cells in the lattice directions
      integer                                    :: cellsNb, cellsNc
 
-     type(table), allocatable, dimension(:)     :: neighbour1 !% Neighbour information for pairs $i <= j$. 
+     type(table_pointer), allocatable, dimension(:)     :: neighbour1 !% Neighbour information for pairs $i <= j$. 
                                                               !% Contains full details of $j$, $r_{ij}$ and shift.
-     type(table), allocatable, dimension(:)     :: neighbour2 !% Neighbour information for pairs $i > j$.
+     type(table_pointer), allocatable, dimension(:)     :: neighbour2 !% Neighbour information for pairs $i > j$.
                                                               !% Simply contains $j$ and a reference to $j$'s
                                                               !% 'neighbour1' table.
 
@@ -1055,7 +1059,7 @@ module  atoms_module
 
      logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
                                                                            !% default is variable cutoff.
-     real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL !% Connectivity cutoff distance.
+     real(dp)                              :: cutoff = DEFAULT_NNEIGHTOL, cutoff_break = DEFAULT_NNEIGHTOL
      !% if 'use_uniform_cutoff' is true, cutoff is the cutoff distance in \AA{}.
      !% Otherwise, cutoff is a multiplier for 'bond_length(Zi,Zj)'.
 
@@ -1128,6 +1132,7 @@ module  atoms_module
      real(dp), pointer, dimension(:,:) :: oldpos => null()  !% $(3,N)$ array  of positions of atoms at previous time step.
      real(dp), pointer, dimension(:) :: avg_ke => null()    !% Time-averaged atomic kinetic energy
      type(Connection)                      :: connect       !% Connectivity object (see above)
+     type(Connection)                      :: hysteretic_connect       !% Hysteretic connectivity object (see above)
 
   end type Atoms
 
@@ -1232,12 +1237,12 @@ module  atoms_module
 
   !% Write a binary representation of an Atoms or Connection object to a file
   interface write_binary
-     module procedure Atoms_File_Write, Connection_File_Write
+     module procedure Atoms_File_Write, Connection_File_Write, Table_Pointer_write_binary_a
   end interface
 
   !% Read an Atoms or Connection object from a binary file
   interface read_binary
-     module procedure Atoms_File_Read, Connection_File_Read
+     module procedure Atoms_File_Read, Connection_File_Read, Table_Pointer_read_binary_a
   end interface
 
   !% Print a verbose textual description of an Atoms or Connection object to the default logger or to
@@ -1302,6 +1307,11 @@ module  atoms_module
   interface cell_volume
     module procedure atoms_cell_volume
     module procedure lattice_cell_volume
+  end interface
+
+  interface map_into_cell
+    module procedure atoms_map_into_cell
+    module procedure vec_map_into_cell
   end interface
 
 
@@ -1515,6 +1525,7 @@ contains
     nullify(this%pos, this%velo, this%acc, this%avgpos, this%oldpos, this%avg_ke)
 
     call connection_finalise(this%connect)
+    call connection_finalise(this%hysteretic_connect)
 
     this%N = 0
 
@@ -1557,9 +1568,11 @@ contains
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
+    to%cutoff_break      = from%cutoff_break
     to%nneightol   = from%nneightol
 
     to%connect     = from%connect
+    to%hysteretic_connect     = from%hysteretic_connect
 
   end subroutine atoms_assignment
 
@@ -1586,6 +1599,7 @@ contains
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
+    to%cutoff_break      = from%cutoff_break
     to%nneightol   = from%nneightol
 
     call atoms_repoint(to)
@@ -1618,6 +1632,7 @@ contains
     to%params = from%params
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff = from%cutoff
+    to%cutoff_break = from%cutoff_break
     to%nneightol = from%nneightol
 
     if(present(mask)) then
@@ -2150,11 +2165,18 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff_minimum(this, cut)
+  subroutine atoms_set_cutoff_minimum(this, cutoff, cutoff_break)
     type(Atoms),      intent(inout) :: this
-    real(dp),         intent(in)    :: cut
+    real(dp),         intent(in)    :: cutoff
+    real(dp), optional, intent(in)    :: cutoff_break
 
-    this%cutoff = max(this%cutoff, cut)
+    if (present(cutoff_break)) then
+      this%cutoff_break = max(this%cutoff_break, cutoff_break)
+      this%cutoff = max(this%cutoff, cutoff)
+    else
+      this%cutoff_break = max(this%cutoff_break, cutoff)
+      this%cutoff = max(this%cutoff, cutoff)
+    endif
 
   end subroutine atoms_set_cutoff_minimum
 
@@ -2165,15 +2187,35 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff(this, cut)
+  subroutine atoms_set_cutoff(this, cutoff, cutoff_break)
     type(Atoms),      intent(inout) :: this
-    real(dp),         intent(in)    :: cut
+    real(dp),         intent(in)    :: cutoff
+    real(dp), optional, intent(in)    :: cutoff_break
 
-    if (cut .feq. 0.0_dp) then
-      this%cutoff = DEFAULT_NNEIGHTOL
+    if (present(cutoff_break)) then
+      if (cutoff .feq. 0.0_dp) then
+	this%cutoff = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff = cutoff
+      endif
+      if (cutoff_break .feq. 0.0_dp) then
+	this%cutoff_break = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff_break = cutoff_break
+      endif
+    else
+      if (cutoff .feq. 0.0_dp) then
+	this%cutoff = DEFAULT_NNEIGHTOL
+	this%cutoff_break = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff = cutoff
+	this%cutoff_break = cutoff
+      endif
+    endif
+
+    if (cutoff .feq. 0.0_dp) then
       this%use_uniform_cutoff = .false.
     else
-      this%cutoff = cut
       this%use_uniform_cutoff = .true.
     endif
 
@@ -2187,14 +2229,30 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_cutoff_factor(this, factor)
+  subroutine atoms_set_cutoff_factor(this, factor, factor_break)
     type(Atoms),      intent(inout) :: this
     real(dp),         intent(in)    :: factor
+    real(dp), optional, intent(in)    :: factor_break
 
-    if (factor .feq. 0.0_dp) then
-      this%cutoff = DEFAULT_NNEIGHTOL
+    if (present(factor_break)) then
+      if (factor .feq. 0.0_dp) then
+	this%cutoff = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff = factor
+      endif
+      if (factor_break .feq. 0.0_dp) then
+	this%cutoff_break = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff_break = factor_break
+      endif
     else
-      this%cutoff = factor
+      if (factor .feq. 0.0_dp) then
+	this%cutoff = DEFAULT_NNEIGHTOL
+	this%cutoff_break = DEFAULT_NNEIGHTOL
+      else
+	this%cutoff = factor
+	this%cutoff_break = factor
+      endif
     endif
     this%use_uniform_cutoff = .false.
 
@@ -2203,7 +2261,7 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Return the actual cutoff in \AA{} used by this atoms object
-  !% used for 'Z1---Z2' bonds. If 'this%use_uniform_cutoff' is
+  !% used to form 'Z1---Z2' bonds. If 'this%use_uniform_cutoff' is
   !% true, then this is simply 'this%cutoff', otherwise the
   !% cutoff is used multiplied by the 'Z1---Z2' bond-length.
   !
@@ -2221,6 +2279,28 @@ contains
     end if
 
   end function atoms_cutoff
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !% Return the actual cutoff in \AA{} used by this atoms object
+  !% used to break 'Z1---Z2' bonds. If 'this%use_uniform_cutoff' is
+  !% true, then this is simply 'this%cutoff', otherwise the
+  !% cutoff is used multiplied by the 'Z1---Z2' bond-length.
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  function atoms_cutoff_break(this, Z1, Z2)
+    type(Atoms), intent(in) :: this
+    integer, intent(in) :: Z1, Z2
+    real(dp) :: atoms_cutoff_break
+
+    if (this%use_uniform_cutoff) then
+       atoms_cutoff_break = this%cutoff_break
+    else
+       atoms_cutoff_break = this%cutoff_break*bond_length(Z1, Z2)
+    end if
+
+  end function atoms_cutoff_break
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2316,31 +2396,45 @@ contains
   !% Return the number of neighbour that atom $i$ has.
   !% If the optional arguments max_dist or max_factor are present 
   !% then only neighbours closer than this cutoff are included.
-  function atoms_n_neighbours(this, i, max_dist, max_factor) result(n)
-    type(Atoms), intent(in)::this
-    integer::i, n
-    real(dp), optional :: max_dist, max_factor
+  function atoms_n_neighbours(this, i, max_dist, max_factor, alt_connect) result(n)
+    type(Atoms), intent(in), target :: this
+    integer, intent(in) :: i
+    real(dp), optional, intent(in) :: max_dist, max_factor
+    type(Connection), optional, intent(in), target :: alt_connect
+    integer :: n
 
     integer :: j, m
     real(dp) :: r_ij
+    type(Connection), pointer :: use_connect
 
-    if (.not. this%connect%initialised) &
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
+
+    if (.not. use_connect%initialised) &
        call system_abort('Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.')
+
+    if (.not. associated(use_connect%neighbour1(i)%t)) then
+      n = 0
+      return
+    endif
 
     if (.not. present(max_dist) .and. .not. present(max_factor)) then
        ! All neighbours
-       n = this%connect%neighbour1(i)%N + this%connect%neighbour2(i)%N
+       n = use_connect%neighbour1(i)%t%N + use_connect%neighbour2(i)%t%N
     else if (present(max_dist)) then
        ! Only count neighbours within max_dist distance of i
        n = 0
-       do m=1,this%connect%neighbour1(i)%N+this%connect%neighbour2(i)%N
+       do m=1,use_connect%neighbour1(i)%t%N+use_connect%neighbour2(i)%t%N
           j = atoms_neighbour(this, i, m, distance=r_ij)
           if (r_ij < max_dist) n = n + 1
        end do
     else if (present(max_factor)) then
        ! Only count neighbours within max_factor of i
        n = 0
-       do m=1,this%connect%neighbour1(i)%N+this%connect%neighbour2(i)%N
+       do m=1,use_connect%neighbour1(i)%t%N+use_connect%neighbour2(i)%t%N
           j = atoms_neighbour(this, i, m, distance=r_ij)
           if (r_ij < bond_length(this%Z(i),this%Z(j))*max_factor) n = n + 1
        end do
@@ -2363,35 +2457,48 @@ contains
   !%>   end do
   !%
   !% if distance > max_dist, return 0, and do not waste time calculating other quantities
-  function atoms_neighbour(this, i, n, distance, diff, cosines, shift, index, max_dist, jn) result(j)
-    type(Atoms), intent(in)::this
-    integer::i, j, n
-    real(dp), optional, intent(out):: distance
-    real(dp), dimension(3), optional, intent(out):: diff
-    real(dp), optional, intent(out):: cosines(3)
-    integer,  optional, intent(out):: shift(3)
-    integer,  optional, intent(out):: index
-    real(dp), optional, intent(in) :: max_dist
-    integer,  optional, intent(out):: jn
+  function atoms_neighbour(this, i, n, distance, diff, cosines, shift, index, max_dist, jn, alt_connect) result(j)
+    type(Atoms), intent(in), target :: this
+    integer ::i, j, n
+    real(dp), optional, intent(out) :: distance
+    real(dp), dimension(3), optional, intent(out) :: diff
+    real(dp), optional, intent(out) :: cosines(3)
+    integer,  optional, intent(out) :: shift(3)
+    integer,  optional, intent(out) :: index
+    real(dp), optional, intent(in)  :: max_dist
+    integer,  optional, intent(out) :: jn
+    type(Connection), optional, intent(in), target :: alt_connect
 
     real(dp)::mydiff(3)
     integer ::myshift(3)
     integer ::i_n1n, j_n1n, i_njn
+    type(Connection), pointer :: use_connect
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
+
+    if (.not. associated(use_connect%neighbour1(i)%t)) then
+      call system_abort("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table")
+      return
+    endif
 
     ! First we give the neighbour2 entries (i > j) then the neighbour1 (i <= j)
     ! This order chosen to give neighbours in approx numerical order but doesn't matter
-    if (this%connect%initialised) then
-       i_n1n = n-this%connect%neighbour2(i)%N
-       if (n <= this%connect%neighbour2(i)%N) then
-          j = this%connect%neighbour2(i)%int(1,n)
-          j_n1n = this%connect%neighbour2(i)%int(2,n)
+    if (use_connect%initialised) then
+       i_n1n = n-use_connect%neighbour2(i)%t%N
+       if (n <= use_connect%neighbour2(i)%t%N) then
+          j = use_connect%neighbour2(i)%t%int(1,n)
+          j_n1n = use_connect%neighbour2(i)%t%int(2,n)
           if(present(index)) index = j_n1n
-       else if (i_n1n <= this%connect%neighbour1(i)%N) then
-          j = this%connect%neighbour1(i)%int(1,i_n1n)
+       else if (i_n1n <= use_connect%neighbour1(i)%t%N) then
+          j = use_connect%neighbour1(i)%t%int(1,i_n1n)
           if(present(index)) index = i_n1n
        else
           call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
-               ' Should be in range 1 < n < '//atoms_n_neighbours(this, i))
+               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
        end if
     else
        call system_abort('atoms_neighbour: Atoms structure has no connectivity data. Call calc_connect first.')
@@ -2399,17 +2506,17 @@ contains
 
     if(present(jn)) then
        if(i < j) then
-          do i_njn = 1, this%connect%neighbour2(j)%N
-             if( (this%connect%neighbour2(j)%int(1,i_njn)==i) .and. &
-             & (this%connect%neighbour2(j)%int(2,i_njn)==i_n1n) ) jn = i_njn
+          do i_njn = 1, use_connect%neighbour2(j)%t%N
+             if( (use_connect%neighbour2(j)%t%int(1,i_njn)==i) .and. &
+             & (use_connect%neighbour2(j)%t%int(2,i_njn)==i_n1n) ) jn = i_njn
           enddo
        elseif(i > j) then
-          jn = j_n1n + this%connect%neighbour2(j)%N
+          jn = j_n1n + use_connect%neighbour2(j)%t%N
        else
-          do i_njn = 1, this%connect%neighbour1(j)%N
-             if( (this%connect%neighbour1(j)%int(1,i_njn) == i) .and. &
-             & all(this%connect%neighbour1(j)%int(2:4,i_njn) == -this%connect%neighbour1(i)%int(2:4,i_n1n))) &
-             & jn = i_njn + this%connect%neighbour2(j)%N
+          do i_njn = 1, use_connect%neighbour1(j)%t%N
+             if( (use_connect%neighbour1(j)%t%int(1,i_njn) == i) .and. &
+             & all(use_connect%neighbour1(j)%t%int(2:4,i_njn) == -use_connect%neighbour1(i)%t%int(2:4,i_n1n))) &
+             & jn = i_njn + use_connect%neighbour2(j)%t%N
           enddo
        endif
     endif
@@ -2417,9 +2524,9 @@ contains
     ! found neighbour, now check for optional requests
     if(present(distance)) then
        if(i <= j) then 
-          distance = this%connect%neighbour1(i)%real(1,i_n1n)
+          distance = use_connect%neighbour1(i)%t%real(1,i_n1n)
        else
-          distance = this%connect%neighbour1(j)%real(1,j_n1n)
+          distance = use_connect%neighbour1(j)%t%real(1,j_n1n)
        end if
        if (present(max_dist)) then
 	 if (distance > max_dist) then
@@ -2430,12 +2537,12 @@ contains
     else
        if (present(max_dist)) then
 	 if (i <= j) then
-	   if (this%connect%neighbour1(i)%real(1,i_n1n) > max_dist) then
+	   if (use_connect%neighbour1(i)%t%real(1,i_n1n) > max_dist) then
 	     j = 0
 	     return
 	   endif
 	 else
-	   if (this%connect%neighbour1(j)%real(1,j_n1n) > max_dist) then
+	   if (use_connect%neighbour1(j)%t%real(1,j_n1n) > max_dist) then
 	     j = 0
 	     return
 	   endif
@@ -2445,9 +2552,9 @@ contains
 
     if(present(diff) .or. present(cosines) .or. present(shift)) then
        if (i <= j) then
-          myshift = this%connect%neighbour1(i)%int(2:4,i_n1n)
+          myshift = use_connect%neighbour1(i)%t%int(2:4,i_n1n)
        else
-          myshift = -this%connect%neighbour1(j)%int(2:4,j_n1n)
+          myshift = -use_connect%neighbour1(j)%t%int(2:4,j_n1n)
        end if
 
        if(present(shift)) shift = myshift
@@ -2645,13 +2752,12 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine map_into_cell(this)
-
+  subroutine atoms_map_into_cell(this)
     type(Atoms), intent(inout) :: this
-    real(dp), dimension(3)     :: lattice_coord
-    integer                    :: i,j,k,n,m
-    integer, dimension(3)      :: shift
-    logical                    :: mapped
+
+    integer      :: i,j, n, m
+    integer      :: shift(3)
+    logical      :: mapped
 
 
     ! Loop over all atoms
@@ -2665,43 +2771,57 @@ contains
          call add_property(this, 'travel', 0, n_cols=3)
 
     do i=1,this%N
-       lattice_coord = this%g .mult. this%pos(:,i)
-       mapped = .false.
+      call map_into_cell(this%pos(:,i), this%lattice, this%g, shift, mapped)
+      if (mapped) then
+	 this%travel(:,i) = this%travel(:,i) - shift
+	 if (this%connect%initialised) then
+	   do n=1,atoms_n_neighbours(this, i)  ! Loop over all atom i's neighbours
 
-       shift = 0
+	      j = atoms_neighbour(this, i, n, index=m) ! get neighbour
 
-       do n=1,3
-          if ((lattice_coord(n) < -0.5_dp) .or. (lattice_coord(n) >= 0.5_dp)) then
-             k = floor(lattice_coord(n)+0.5_dp)
-             lattice_coord(n) = lattice_coord(n) - k
-             this%travel(n,i) = this%travel(n,i) + k
-             shift(n) = -k
-             mapped = .true.
-          end if
-       end do
+	      ! now update the data for atom i and the current neighbour
+	      if (i <= j) then
+		 this%connect%neighbour1(i)%t%int(2:4,m) = this%connect%neighbour1(i)%t%int(2:4,m) + shift
+	      else
+		 this%connect%neighbour1(j)%t%int(2:4,m) = this%connect%neighbour1(j)%t%int(2:4,m) - shift
+	      end if
+	   end do
+	end if ! this%connect%initialised
+      end if ! mapped
+    end do ! i=1..N
 
-       ! if this atom has been mapped then recalculate its position and shifts for its neighbours
-       if (mapped) then
+  end subroutine atoms_map_into_cell
 
-          this%pos(:,i) = this%lattice .mult. lattice_coord
+  subroutine vec_map_into_cell(pos, lattice, g, shift, mapped)
+    real(dp), intent(inout) :: pos(3)
+    real(dp), intent(in) :: lattice(3,3), g(3,3)
+    integer, intent(out), optional :: shift(3)
+    logical, intent(out), optional :: mapped
 
-          if (this%connect%initialised) then
-             do n=1,atoms_n_neighbours(this, i)  ! Loop over all atom i's neighbours
+    integer n, k
+    real(dp) :: lattice_coord(3)
+    logical :: my_mapped
 
-                j = atoms_neighbour(this, i, n, index=m) ! get neighbour
+   lattice_coord = g .mult. pos(:)
+   my_mapped = .false.
+   if (present(shift)) shift = 0
 
-                ! now update the data for atom i and the current neighbour
-                if (i <= j) then
-                   this%connect%neighbour1(i)%int(2:4,m) = this%connect%neighbour1(i)%int(2:4,m) + shift
-                else
-                   this%connect%neighbour1(j)%int(2:4,m) = this%connect%neighbour1(j)%int(2:4,m) - shift
-                end if
-             end do
-          end if
-       end if
-    end do
+   do n=1,3
+      if ((lattice_coord(n) < -0.5_dp) .or. (lattice_coord(n) >= 0.5_dp)) then
+	 k = floor(lattice_coord(n)+0.5_dp)
+	 lattice_coord(n) = lattice_coord(n) - k
+	 if (present(shift)) shift(n) = -k
+	 my_mapped = .true.
+      end if
+   end do
 
-  end subroutine map_into_cell
+   ! if this atom has been mapped then recalculate its position and shifts for its neighbours
+   if (my_mapped) then
+      pos(:) = lattice .mult. lattice_coord
+   end if
+   if (present(mapped)) mapped = my_mapped
+  end subroutine vec_map_into_cell
+
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -2732,10 +2852,10 @@ contains
 
 #ifdef _MPI
     if (do_parallel) then
-       ! Nelements = sum(this%connect%neighbour1(i)%N)
+       ! Nelements = sum(this%connect%neighbour1(i)%t%N)
        Nelements = 0
        do i=1,this%N
-          Nelements = Nelements + this%connect%neighbour1(i)%N
+          Nelements = Nelements + this%connect%neighbour1(i)%t%N
        end do
 
        allocate(mpi_send(Nelements))
@@ -2756,7 +2876,7 @@ contains
 #ifdef _MPI
        if (do_parallel) then
           mpi_old_pos = mpi_pos
-          mpi_pos = mpi_pos + this%connect%neighbour1(i)%N
+          mpi_pos = mpi_pos + this%connect%neighbour1(i)%t%N
 
           ! cycle loop if processor rank does not match
           if(mod(i, mpi_n_procs()) .ne. mpi_id()) cycle
@@ -2770,9 +2890,9 @@ contains
           j_pos = this%pos(:,j) + ( this%lattice .mult. shift )
 
           if (i <= j) then
-             this%connect%neighbour1(i)%real(1,index) = norm(j_pos - this%pos(:,i))
+             this%connect%neighbour1(i)%t%real(1,index) = norm(j_pos - this%pos(:,i))
           else
-             this%connect%neighbour1(j)%real(1,index) = norm(j_pos - this%pos(:,i))
+             this%connect%neighbour1(j)%t%real(1,index) = norm(j_pos - this%pos(:,i))
           end if
 
        end do
@@ -2781,7 +2901,7 @@ contains
        if (do_parallel) then
 	  if (mpi_old_pos <= mpi_pos-1) then
 	    mpi_send(mpi_old_pos:mpi_pos-1) = &
-		 this%connect%neighbour1(i)%real(1,1:this%connect%neighbour1(i)%N)
+		 this%connect%neighbour1(i)%t%real(1,1:this%connect%neighbour1(i)%t%N)
 	  end if
        end if
 #endif      
@@ -2799,10 +2919,10 @@ contains
 
        mpi_pos = 1
        do i=1, this%N
-	  if (this%connect%neighbour1(i)%N > 0) then
-	    this%connect%neighbour1(i)%real(1,1:this%connect%neighbour1(i)%N) = &
-		 mpi_recv(mpi_pos:mpi_pos+this%connect%neighbour1(i)%N-1)
-	    mpi_pos = mpi_pos + this%connect%neighbour1(i)%N
+	  if (this%connect%neighbour1(i)%t%N > 0) then
+	    this%connect%neighbour1(i)%t%real(1,1:this%connect%neighbour1(i)%t%N) = &
+		 mpi_recv(mpi_pos:mpi_pos+this%connect%neighbour1(i)%t%N-1)
+	    mpi_pos = mpi_pos + this%connect%neighbour1(i)%t%N
 	  endif
        end do
 
@@ -3114,44 +3234,104 @@ contains
   !% If the optional Atoms argument is present then we calculate
   !% the atomic density to initialise the default lengths of the neighbour
   !% list for efficient memory usage.
-   subroutine connection_initialise(this,N, at)
-
+   subroutine connection_initialise(this,N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
-    type(Atoms), optional, intent(in) :: at
-    integer                           :: i, n0
-    real(dp)                          :: mycutoff
+    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3), cutoff
+    logical, optional, intent(in) :: use_uniform_cutoff
+    real(dp), optional, intent(in) :: origin(3), extent(3,3)
 
     ! If already initialised, destroy the existing data an start again
     if (this%initialised) call connection_finalise(this)
+
+    call connection_fill(this, N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
+  end subroutine connection_initialise
+
+  subroutine connection_fill(this, N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
+    type(Connection),   intent(inout) :: this
+    integer,            intent(in)    :: N    ! No. of atoms
+    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3), cutoff
+    logical, optional, intent(in) :: use_uniform_cutoff
+    real(dp), optional, intent(in) :: origin(3), extent(3,3)
+
+    integer                           :: i, n0
+    real(dp)                          :: mycutoff, extent_inv(3,3), subregion_center(3)
+    logical :: do_subregion
 
     ! If we're given at atoms structure then use density N/V to work
     ! out roughtly how many neighbours to expect within sphere of radius
     ! cutoff. Assume half of these belong in neighbour1 and half in 
     ! neighbour2. Increment is set to n0/2.
-    if (present(at)) then
-       if(at%use_uniform_cutoff) then
-          mycutoff = at%cutoff
+    if (present(lattice) .and. present(cutoff) .and. present(use_uniform_cutoff)) then
+       if(use_uniform_cutoff) then
+          mycutoff = cutoff
        else
-          mycutoff = 3.0_dp*at%cutoff
+          mycutoff = 3.0_dp*cutoff
        endif
-       n0 = int(0.5_dp*4.0_dp/3.0_dp*PI*mycutoff**3*at%N/Cell_Volume(at))
+       n0 = int(0.5_dp*4.0_dp/3.0_dp*PI*mycutoff**3*N/Cell_Volume(lattice))
     else
        n0 = 5
     end if
 
-    allocate( this%neighbour1(N), this%neighbour2(N) )
-    do i=1,N
-       call allocate(this%neighbour1(i),4,1, 0, 0, max(n0, 1))
-       this%neighbour1(i)%increment = max(n0/2, 1)
+    if (present(origin) .and. present(extent)) then
+      if (.not.present(lattice) .or. .not.present(g)) &
+	call system_abort ("connection_fill got origin and extent, so trying to do subregion, but lattice or g are missing")
+      do_subregion = .true.
+      call matrix3x3_inverse(extent,extent_inv)
+      subregion_center = origin + 0.5_dp*sum(extent,2)
+    else
+      do_subregion = .false.
+    endif
 
-       call allocate(this%neighbour2(i),2,0, 0, 0, max(n0, 1))
-       this%neighbour2(i)%increment = max(n0/2, 1)
+    if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(N))
+    if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(N))
+    do i=1,N
+       if (do_subregion) then
+	 if (.not. is_in_subregion(pos(:,i), subregion_center, lattice, g, extent_inv)) then
+	   if (associated(this%neighbour1(i)%t)) then
+	      call connection_remove_atom(this, i)
+	      call finalise(this%neighbour1(i)%t)
+	      call finalise(this%neighbour2(i)%t)
+	      deallocate(this%neighbour1(i)%t)
+	      deallocate(this%neighbour2(i)%t)
+	   endif
+	   cycle
+	 endif 
+       endif
+       if (.not. associated(this%neighbour1(i)%t)) then
+	 allocate(this%neighbour1(i)%t)
+	 call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(n0, 1))
+	 this%neighbour1(i)%t%increment = max(n0/2, 1)
+
+	 allocate(this%neighbour2(i)%t)
+	 call allocate(this%neighbour2(i)%t,2,0, 0, 0, max(n0, 1))
+	 this%neighbour2(i)%t%increment = max(n0/2, 1)
+       endif
     end do
 
     this%initialised = .true.
 
-  end subroutine connection_initialise
+  end subroutine connection_fill
+
+  function is_in_subregion(p, center, lattice, lattice_inv, extent_inv)
+    real(dp), intent(in) :: p(3), center(3)
+    real(dp), intent(in) :: lattice(3,3), lattice_inv(3,3), extent_inv(3,3)
+    logical :: is_in_subregion
+
+    real(dp) :: relative_p(3), extent_lattice_relative_p(3)
+
+    relative_p = p - center
+    call map_into_cell(relative_p, lattice, lattice_inv)
+
+    extent_lattice_relative_p = extent_inv .mult. relative_p
+
+    if (any(extent_lattice_relative_p < -0.5_dp) .or. any(extent_lattice_relative_p > 0.5_dp)) then
+      is_in_subregion = .false.
+    else
+      is_in_subregion = .true.
+    endif
+
+  end function is_in_subregion
 
 
   !% OMIT
@@ -3204,11 +3384,11 @@ contains
     if (.not.this%initialised) return
 
     do i=1,size(this%neighbour1)
-       call finalise(this%neighbour1(i))
+       call finalise(this%neighbour1(i)%t)
     end do
 
     do i=1,size(this%neighbour2)
-       call finalise(this%neighbour2(i))
+       call finalise(this%neighbour2(i)%t)
     end do
 
 
@@ -3231,11 +3411,11 @@ contains
     if (.not.this%initialised) return
 
     do i=1,size(this%neighbour1)
-       call wipe(this%neighbour1(i))
+       call wipe(this%neighbour1(i)%t)
     end do
 
     do i=1,size(this%neighbour2)
-       call wipe(this%neighbour2(i))
+       call wipe(this%neighbour2(i)%t)
     end do
 
     call wipe_cells(this)
@@ -3280,11 +3460,11 @@ contains
 
     ! Use Append to append the source tables to our (empty) destination tables
     do i=1,size(from%neighbour1)
-       call append(to%neighbour1(i),from%neighbour1(i))
+       call append(to%neighbour1(i)%t,from%neighbour1(i)%t)
     end do
 
     do i=1,size(from%neighbour2)
-       call append(to%neighbour2(i),from%neighbour2(i))
+       call append(to%neighbour2(i)%t,from%neighbour2(i)%t)
     end do
 
 
@@ -3323,16 +3503,19 @@ contains
   end subroutine wipe_cells
 
   !% Test if an atom's $n$th neighbour is one if its nearest neighbours
-  function is_nearest_neighbour(this,i,n)
+  function is_nearest_neighbour(this,i,n, alt_connect)
 
-    type(Atoms), intent(in) :: this
+    type(Atoms), intent(in), target :: this
     integer,     intent(in) :: i,n
+    type(Connection), intent(in), optional, target :: alt_connect
     logical                 :: is_nearest_neighbour
+
     real(dp)                :: d
     integer :: j
+
     is_nearest_neighbour = .false.
 
-    j = atoms_neighbour(this, i, n, distance=d)
+    j = atoms_neighbour(this, i, n, distance=d, alt_connect=alt_connect)
     if (d < (bond_length(this%Z(i),this%Z(j))*this%nneightol)) &
          is_nearest_neighbour = .true.
 
@@ -3347,37 +3530,104 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_connect(this,i,j, shift)
+  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup)
 
-    type(Atoms), intent(inout) :: this
+    type(Connection), intent(inout) :: this
+    real(dp), intent(in) :: cutoff
+    logical, intent(in) :: use_uniform_cutoff
+    integer, intent(in) :: Z(:)
+    real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
+    logical, intent(in), optional :: check_for_dup
+
+    logical                    :: do_check_for_dup
+    integer                    :: index
     real(dp)                   :: d
-    real(dp)                   :: cutoff
+    real(dp)                   :: use_cutoff
 
     if (i > j) return
 
+    if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
+
+    do_check_for_dup = optional_default(.false., check_for_dup)
+
     if(current_verbosity() >= ANAL) then
-       call print('Entering test_connect, i = '//i//' j = '//j, ANAL)
-       call print('use_uniform_cutoff = '//this%use_uniform_cutoff, ANAL)
+       call print('Entering test_form_bond, i = '//i//' j = '//j, ANAL)
+       call print('use_uniform_cutoff = '//use_uniform_cutoff, ANAL)
     end if
 
     !Determine what cutoff distance to use
-    if (this%use_uniform_cutoff) then
-       cutoff = this%cutoff
+    if (use_uniform_cutoff) then
+       use_cutoff = cutoff
     else
-       cutoff = bond_length(this%Z(i),this%Z(j)) * this%cutoff
+       use_cutoff = bond_length(Z(i),Z(j)) * cutoff
     end if
 
-    d = norm(this%pos(:,j)+(this%lattice .mult. shift) - this%pos(:,i))
+    d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+
+    if (do_check_for_dup) then
+      index = find(this%neighbour1(i)%t, (/ j, shift /)) 
+      if (index /= 0) then ! bond is already in table
+	if (current_verbosity() >= ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', ANAL)
+	this%neighbour1(i)%t%real(1,index) = d
+	return
+      endif
+    endif
+
     if(current_verbosity() >= ANAL)  call print('d = '//d, ANAL)
-    if (d < cutoff) then
-       call add_bond(this, i, j, shift, d)
+    if (d < use_cutoff) then
+       call add_bond(this, pos, lattice, i, j, shift, d)
     end if
 
-    if(current_verbosity() >= ANAL) call print('Leaving test_connect', ANAL)
+    if(current_verbosity() >= ANAL) call print('Leaving test_form_bond', ANAL)
 
-  end subroutine test_connect
+  end subroutine test_form_bond
+
+  !% Test if atom $i$ is no longer neighbour of atom $j$ with shift $s$, and update 'this%connect' as necessary.
+  !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
+  !% to get the correct image position.
+  function test_break_bond(this,cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift)
+    type(Connection), intent(inout) :: this
+    real(dp), intent(in) :: cutoff_break
+    logical, intent(in) :: use_uniform_cutoff
+    integer, intent(in) :: Z(:)
+    real(dp), intent(in) :: pos(:,:), lattice(3,3)
+    integer,     intent(in)    :: i,j
+    integer, intent(in)        :: shift(3)
+    logical test_break_bond
+
+    real(dp)                   :: d
+    real(dp)                   :: cutoff
+
+    test_break_bond = .false.
+    if (i > j) return
+
+    if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
+
+    if(current_verbosity() >= ANAL) then
+       call print('Entering test_break_bond, i = '//i//' j = '//j, ANAL)
+       call print('use_uniform_cutoff = '//use_uniform_cutoff // " cutoff_break = "// cutoff_break, ANAL)
+    end if
+
+    !Determine what cutoff distance to use
+    if (use_uniform_cutoff) then
+       cutoff = cutoff_break
+    else
+       cutoff = bond_length(Z(i),Z(j)) * cutoff_break
+    end if
+
+    d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+    if(current_verbosity() >= ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, ANAL)
+    if (d > cutoff) then
+	if(current_verbosity() >= ANAL) call print('removing bond from tables', ANAL)
+       call remove_bond(this, i, j, shift)
+       test_break_bond = .true.
+    end if
+
+    if(current_verbosity() >= ANAL) call print('Leaving test_break_bond', ANAL)
+
+  end function test_break_bond
 
   subroutine set_bonds(this, pairs, shifts)
     type(Atoms), intent(inout) :: this
@@ -3387,7 +3637,7 @@ contains
     integer i
 
     if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this)
+       call connection_initialise(this%connect, this%N)
     else
        ! otherwise just wipe the connection table
        call wipe(this%connect)
@@ -3398,12 +3648,13 @@ contains
     if (size(pairs,2) /= size(shifts,2)) call system_abort("set_bonds called with mismatching pairs and shifts sizes")
 
     do i=1, size(pairs,2)
-      call add_bond(this, pairs(1,i), pairs(2,i), shifts(:,i))
+      call add_bond(this%connect, this%pos, this%lattice, pairs(1,i), pairs(2,i), shifts(:,i))
     end do
   end subroutine set_bonds
 
-  subroutine add_bond(this, i, j, shift, d)
-    type(Atoms), intent(inout) :: this
+  subroutine add_bond(this, pos, lattice, i, j, shift, d)
+    type(Connection), intent(inout) :: this
+    real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     real(dp), intent(in), optional :: d
@@ -3411,8 +3662,13 @@ contains
     real(dp) :: dd
     integer :: ii, jj, index
 
-    if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this)
+    if (.not.this%initialised) then
+       call system_abort("add_bond called on uninitialized connection")
+    endif
+
+    if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
+      call system_abort("tried to add_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
+	associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false")
     endif
 
     if (i > j) then
@@ -3426,18 +3682,286 @@ contains
     if (present(d)) then
       dd = d
     else
-      dd = norm(this%pos(:,j)+(this%lattice .mult. shift) - this%pos(:,i))
+      dd = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
     endif
 
     ! Add full details to neighbour1 for smaller of i and j
-    call append(this%connect%neighbour1(ii), (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+    call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
     if(ii .ne. jj) then		
-       index = this%connect%neighbour1(min(ii,jj))%N
+       index = this%neighbour1(min(ii,jj))%t%N
        ! Put a reference to this in neighbour2 for larger of i and j
-       call append(this%connect%neighbour2(jj), (/ ii, index/))
+       call append(this%neighbour2(jj)%t, (/ ii, index/))
     end if
 
   end subroutine add_bond
+
+  subroutine remove_bond(this, i, j, shift)
+    type(Connection), intent(inout) :: this
+    integer,     intent(in)    :: i,j
+    integer,     intent(in)    :: shift(3)
+
+    integer :: ii, jj, iii, jjj, jjjj, index
+
+    if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
+      call system_abort("tried to remove_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
+	associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false")
+    endif
+
+    if (i > j) then
+      ii = j
+      jj = i
+    else
+      ii = i
+      jj = j
+    endif
+    ! now ii <= jj
+
+    ! remove entry from neighbour1(ii)
+    index = find(this%neighbour1(ii)%t, (/ jj, shift /) )
+    if (index == 0) then
+      call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // " couldn't find a bond to remove", ERROR)
+      return
+    endif
+    call delete(this%neighbour1(ii)%t, index, keep_order = .true.)
+    ! remove entry from neighbour2(jj)
+    if (ii /= jj) then
+      call delete(this%neighbour2(jj)%t, (/ ii, index /), keep_order = .true.)
+    endif
+    ! renumber other neighbour2 entries
+    do iii=index, this%neighbour1(ii)%t%N
+      ! jjj is another neighbour of ii
+      jjj = this%neighbour1(ii)%t%int(1,iii)
+      if (jjj > ii) then
+	! jjjj is index in jjj's neighbour2 of pointer back to ii's neighbour1
+	jjjj = find(this%neighbour2(jjj)%t, (/ ii, iii+1 /) )
+	if (jjjj /= 0) then
+	  ! decrement reference in jjj's neighbour2 table
+	  this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
+	else
+	  call system_abort("Couldn't find neighbor to fix neighbour2 of")
+	endif
+      endif
+      end do
+
+  end subroutine remove_bond
+
+
+  !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
+  !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
+  !% in which the unit cell is big enough. In narrow directions, the unit cell is replicated on the fly to collect
+  !% neighbours that are images of the stored atoms. For very small unit cells, there is only one subcell, so the routine
+  !% is equivalent to the standard $O(N^2)$ method.
+  subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour)
+    type(Atoms), intent(inout), target           :: this
+    type(Connection), intent(inout), target, optional :: alt_connect
+    real(dp), optional :: origin(3), extent(3,3)
+    logical, optional, intent(in) :: own_neighbour
+
+    integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
+    integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
+    real(dp)                             :: cutoff
+    integer :: ji, s_ij(3)
+    logical my_own_neighbour
+    type(Connection), pointer :: use_connect
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
+
+    my_own_neighbour = optional_default(.false., own_neighbour)
+
+    if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
+       call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
+    end if
+
+    if (this%cutoff > this%cutoff_break) then
+       call system_abort('calc_connect: Negative hysteresis cutoff radius formation ' // this%cutoff // ' > breaking ' // this%cutoff_break )
+    end if
+
+    if ((this%cutoff .feq. 0.0_dp) .or. (this%cutoff_break .feq. 0.0_dp)) then
+      call wipe(use_connect)
+      return
+    endif
+
+    !Calculate the cutoff value we should use in dividing up the simulation cell
+    if (this%use_uniform_cutoff) then
+       !The cutoff has been specified by the user, so use that value
+       cutoff = this%cutoff
+    else
+       !Otherwise, find the maximum covalent radius of all the atoms in the structure, double it
+       !and multiple by cutoff. This makes sure we can deal with the worst case scenario of big atom 
+       !bonded to big atom
+       cutoff = 0.0_dp
+       do i = 1, this%N
+          if (ElementCovRad(this%Z(i)) > cutoff) cutoff = ElementCovRad(this%Z(i))
+       end do
+       cutoff = (2.0_dp * cutoff) * this%cutoff
+    end if
+
+    call print("calc_connect: cutoff calc_connect " // cutoff, NERD)
+
+    if (present(origin) .and. present(extent)) then
+      cellsNa = 1
+      cellsNb = 1
+      cellsNc = 1
+    else
+      call divide_cell(this%lattice, cutoff, cellsNa, cellsNb, cellsNc)
+    endif
+
+    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, NERD)
+
+    ! If the lattice has changed, then the cells need de/reallocating
+    if ((cellsNa /= use_connect%cellsNa) .or. &
+         (cellsNb /= use_connect%cellsNb) .or. &
+         (cellsNc /= use_connect%cellsNc)) call connection_cells_finalise(use_connect)
+
+    ! Allocate space for the connection object if needed
+    if (present(origin) .and. present(extent)) then
+      if (.not.use_connect%initialised) then
+	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff, origin, extent)
+      else
+	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff, origin, extent)
+      end if
+    else
+      if (.not.use_connect%initialised) then
+	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
+      else
+	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
+      end if
+    endif
+
+    if (.not.use_connect%cells_initialised) then
+      call connection_cells_initialise(use_connect, cellsNa, cellsNb, cellsNc,this%N)
+    endif
+
+    ! Partition the atoms into cells
+    call partition_atoms(use_connect, this)
+
+
+    ! figure out how many unit cell images we will need to loop over in each direction
+    call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
+    ! cell_image_N{a,b,c} apply to a box of side 2*cutoff. Since we loop from -cell_image_N to
+    ! +cell_image_N we can reduce them as follows
+
+    cell_image_Na = max(1,(cell_image_Na+1)/2)
+    cell_image_Nb = max(1,(cell_image_Nb+1)/2)
+    cell_image_Nc = max(1,(cell_image_Nc+1)/2)
+
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, NERD)
+
+    ! look for bonds that have been broken, and remove them
+    do i=1, this%N
+      ji = 1
+      do
+	if (ji > atoms_n_neighbours(this, i, alt_connect=use_connect)) exit
+	j = atoms_neighbour(this, i, ji, shift = s_ij, alt_connect=use_connect)
+	if (.not. test_break_bond(use_connect, this%cutoff_break, this%use_uniform_cutoff, &
+	  this%Z, this%pos, this%lattice, i, j, s_ij)) then
+	  ji = ji + 1 ! we didn't break this bond, so go to next one
+	              ! if we did break a bond, ji now points to a different bond, so don't increment it
+	endif
+      end do
+!      do ji=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+!	j = atoms_neighbour(this, i, ji, shift = s_ij, alt_connect=use_connect)
+!	call test_break_bond(use_connect, this%cutoff_break, this%use_uniform_cutoff, &
+!	  this%Z, this%pos, this%lattice, i, j, s_ij)
+!      end do
+    end do
+
+    ! Here is the main loop:
+    ! Go through each cell and update the connectivity between atoms in this cell and neighbouring cells
+    ! N.B. test_form_bond updates both atoms i and j, so only update if i <= j to avoid doubling processing
+
+    ! defaults for cellsNx = 1
+    k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
+    ! Loop over all cells
+    do k = 1, cellsNc
+       do j = 1, cellsNb
+          do i = 1, cellsNa
+
+             !Loop over atoms in cell(i,j,k)
+             do n1 = 1, use_connect%cell(i,j,k)%N
+
+                atom1 = use_connect%cell(i,j,k)%int(1,n1)
+
+                ! Loop over neighbouring cells, applying PBC
+                do k2 = -cell_image_Nc, +cell_image_Nc
+
+                   ! the stored cell we are in 
+                   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+
+                   ! the shift we need to get to the cell image
+                   k4 = (k+k2-k3)/cellsNc
+
+                   do j2 = -cell_image_Nb, +cell_image_Nb
+                      ! the stored cell we are in                 
+                      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+
+                      ! the shift we need to get to the cell image
+                      j4 = (j+j2-j3)/cellsNb
+
+                      do i2 = -cell_image_Na, +cell_image_Na
+                         ! the stored cell we are in                 
+                         if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+
+                         ! the shift we need to get to the cell image
+                         i4 = (i+i2-i3)/cellsNa
+
+                         ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
+                         ! with shift (i4,j4,k4)
+                         ! loop over it's atoms and test connectivity if atom1 < atom2
+
+                         do n2 = 1, use_connect%cell(i3,j3,k3)%N
+
+                            atom2 = use_connect%cell(i3,j3,k3)%int(1,n2)
+                            ! omit atom2 < atom1
+                            if (atom1 > atom2) cycle
+                            ! omit self in the same cell without shift
+                            if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
+                                 (i4==0 .and. j4==0 .and. k4==0) .and. &
+                                 (i==i3 .and. j==j3 .and. k==k3))) cycle
+
+                            call test_form_bond(use_connect, this%cutoff, this%use_uniform_cutoff, &
+			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .true.)
+
+                         end do ! n2
+
+                      end do ! i2
+		   end do ! j2
+                end do ! k2
+
+             end do ! n1
+
+          end do ! i
+       end do ! j
+    end do ! k
+
+  end subroutine calc_connect_hysteretic
+
+  subroutine connection_remove_atom(this, i)
+    type(Connection), intent(inout) :: this
+    integer, intent(in) :: i
+
+    integer :: ji, j, jj, s_ij(3), n_entries
+
+    n_entries=this%neighbour1(i)%t%N
+    do ji=n_entries, 1, -1
+      j = this%neighbour1(i)%t%int(1,ji)
+      s_ij = this%neighbour1(i)%t%int(2:4,ji)
+      call remove_bond(this, i, j, s_ij)
+    end do
+
+    n_entries=this%neighbour2(i)%t%N
+    do ji=n_entries, 1, -1
+      j = this%neighbour2(i)%t%int(1,ji)
+      jj = this%neighbour2(i)%t%int(2,ji)
+      s_ij = this%neighbour1(j)%t%int(2:4,jj)
+      call remove_bond(this, j, i, s_ij)
+    end do
+
+  end subroutine connection_remove_atom
 
   !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
@@ -3455,11 +3979,13 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
 
-    if (this%cutoff < 0.0_dp) then
-       call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff )
+    my_own_neighbour = optional_default(.false., own_neighbour)
+
+    if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
+       call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
     end if
 
-    if (this%cutoff .feq. 0.0_dp) then
+    if ((this%cutoff .feq. 0.0_dp) .or. (this%cutoff_break .feq. 0.0_dp)) then
       call wipe(this%connect)
       return
     endif
@@ -3492,7 +4018,7 @@ contains
 
     ! Allocate space for the connection object if needed
     if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this)
+       call connection_initialise(this%connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
     else
        ! otherwise just wipe the connection table
        call wipe(this%connect)
@@ -3502,7 +4028,7 @@ contains
          call connection_cells_initialise(this%connect, cellsNa, cellsNb, cellsNc,this%N)
 
     ! Partition the atoms into cells
-    call partition_atoms(this)
+    call partition_atoms(this%connect, this)
 
     ! figure out how many unit cell images we will need to loop over in each direction
     call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
@@ -3517,7 +4043,7 @@ contains
 
     ! Here is the main loop:
     ! Go through each cell and update the connectivity between atoms in this cell and neighbouring cells
-    ! N.B. test_connect updates both atoms i and j, so only update if i <= j to avoid doubling processing
+    ! N.B. test_form_bond updates both atoms i and j, so only update if i <= j to avoid doubling processing
 
     ! defaults for cellsNx = 1
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
@@ -3568,7 +4094,8 @@ contains
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
-                            call test_connect(this,atom1,atom2, (/i4,j4,k4/))
+                            call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
+			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/))
 
                          end do
 
@@ -3588,32 +4115,36 @@ contains
   !% Spatially partition the atoms into cells. The number of cells in each dimension must already be
   !% set (cellsNa,b,c). Pre-wiping of the cells can be skipped (e.g. if they are already empty).
   !
-  subroutine partition_atoms(this,dont_wipe)
+  subroutine partition_atoms(this, at, dont_wipe)
 
-    type(Atoms),       intent(inout) :: this
+    type(Connection), intent(inout) :: this
+    type(Atoms), intent(inout) :: at
     logical, optional, intent(in)    :: dont_wipe
+
     logical                          :: my_dont_wipe
     integer                          :: i,j,k,n,cellsNa,cellsNb,cellsNc
     real(dp), dimension(3)           :: t
 
     ! Check inputs
-    if (.not.this%connect%cells_initialised) call system_abort('Partition_Atoms: Cells have not been initialised')
+    if (.not.this%cells_initialised) call system_abort('Partition_Atoms: Cells have not been initialised')
     my_dont_wipe = .false.
     if (present(dont_wipe)) my_dont_wipe = dont_wipe
 
-    cellsNa = this%connect%cellsNa
-    cellsNb = this%connect%cellsNb
-    cellsNc = this%connect%cellsNc
+    cellsNa = this%cellsNa
+    cellsNb = this%cellsNb
+    cellsNc = this%cellsNc
 
     ! Wipe the cells
-    if (.not.my_dont_wipe) call wipe_cells(this%connect)
+    if (.not.my_dont_wipe) call wipe_cells(this)
 
     ! Make sure all atomic positions are within the cell
-    call map_into_cell(this)
+    call map_into_cell(at)
 
-    do n = 1, this%N
+    do n = 1, at%N
 
-       t = this%g .mult. this%pos(:,n)
+       if (.not. associated(this%neighbour1(n)%t)) cycle ! not in active subregion
+
+       t = at%g .mult. at%pos(:,n)
        i = floor(real(cellsNa,dp) * (t(1)+0.5_dp)) + 1
        j = floor(real(cellsNb,dp) * (t(2)+0.5_dp)) + 1
        k = floor(real(cellsNc,dp) * (t(3)+0.5_dp)) + 1
@@ -3639,7 +4170,7 @@ contains
        end if
 
        !Add the atom to this cell
-       call append( this%connect%cell(i,j,k), (/n/) )
+       call append( this%cell(i,j,k), (/n/) )
 
     end do
 
@@ -4110,9 +4641,11 @@ contains
       call print('Number of atoms = '//this%N, NORMAL, my_out)
 
       if(this%use_uniform_cutoff) then
-         call print('Cutoff radius = '//this%cutoff//' Angstroms', NORMAL, my_out)
+         call print('Bond-formation cutoff radius = '//this%cutoff//' Angstroms', NORMAL, my_out)
+         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' Angstroms', NORMAL, my_out)
       else
-         call print('Cutoff radius = '//this%cutoff//' *bond_length', NORMAL, my_out)
+         call print('Bond-formation cutoff radius = '//this%cutoff//' *bond_length', NORMAL, my_out)
+         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' *bond_length', NORMAL, my_out)
       end if
 
       call print('Lattice vectors:', NORMAL, my_out)
@@ -4874,6 +5407,7 @@ contains
 
       !Scalar reals
       call write_binary(this%cutoff,outfile)             !1
+      call write_binary(this%cutoff_break,outfile)             !1
 
       !Real arrays
       call write_binary(this%lattice,outfile)            !1
@@ -4892,7 +5426,7 @@ contains
       type(Atoms),     intent(inout) :: this
       type(Inoutput),  intent(inout) :: infile
       integer                        :: N
-      real(dp)                       :: cutoff
+      real(dp)                       :: cutoff, cutoff_break
       character(5)                   :: id
       logical                        :: initialised, use_uniform_cutoff
       real(dp), dimension(3,3)       :: lattice            
@@ -4912,6 +5446,7 @@ contains
       call read_binary(N,infile)                          !1
       !Scalar reals
       call read_binary(cutoff,infile)                     !1
+      call read_binary(cutoff_break,infile)                     !1
       !Real arrays
       call read_binary(lattice,infile)                    !1
 
@@ -4919,6 +5454,7 @@ contains
 
       this%use_uniform_cutoff = use_uniform_cutoff
       this%cutoff = cutoff
+      this%cutoff_break = cutoff_break
 
       !Derived types
       call read_binary(this%data,   infile)               !1
@@ -4945,23 +5481,26 @@ contains
 
     do i = 1, size(this%neighbour1)
 
-       write(line,'(a47)')'| Neighbour1 (i <= j)                           |'
-       call print(line, file=file)
+       if (.not. associated(this%neighbour1(i)%t)) cycle
 
+       if ((this%neighbour1(i)%t%N + this%neighbour2(i)%t%N) > 0) then
+	 write(line,'(a47)')'| Neighbour1 (i <= j)                           |'
+	 call print(line, file=file)
+       endif
 
-       do j = 1, this%neighbour1(i)%N
+       do j = 1, this%neighbour1(i)%t%N
           if(j == 1) then
              write(line,'(a2,i7,a3,i7,a3,3i4,a3,f10.5,a2)')'| ',    &
-                 & i, ' | ', this%neighbour1(i)%int(1,j),' | ',this%neighbour1(i)%int(2:4,j),&
-                 &' | ',this%neighbour1(i)%real(1,j),' |'
+                 & i, ' | ', this%neighbour1(i)%t%int(1,j),' | ',this%neighbour1(i)%t%int(2:4,j),&
+                 &' | ',this%neighbour1(i)%t%real(1,j),' |'
           else
              write(line,'(a12,i7,a3,3i4,a3,f10.5,a2)')'|         | ',    &
-                  this%neighbour1(i)%int(1,j),' | ',this%neighbour1(i)%int(2:4,j),' | ',this%neighbour1(i)%real(1,j),' |'
+                  this%neighbour1(i)%t%int(1,j),' | ',this%neighbour1(i)%t%int(2:4,j),' | ',this%neighbour1(i)%t%real(1,j),' |'
           end if
           call print(line,file=file)
        end do
 
-       if (this%neighbour2(i)%N > 0) then
+       if (this%neighbour2(i)%t%N > 0) then
 
           write(line,'(a47)')'-----------------------------------------------'
           call print(line, file=file)
@@ -4969,22 +5508,24 @@ contains
           call print(line, file=file)
 
 
-          do j = 1, this%neighbour2(i)%N
+          do j = 1, this%neighbour2(i)%t%N
 
              if(j == 1) then
-                write(line,'(a2,i7,a3,i7,a3,i7,a)') '| ', i, ' | ', this%neighbour2(i)%int(1,j),' | ',&
-                       &this%neighbour2(i)%int(2,j),'                 |'
+                write(line,'(a2,i7,a3,i7,a3,i7,a)') '| ', i, ' | ', this%neighbour2(i)%t%int(1,j),' | ',&
+                       &this%neighbour2(i)%t%int(2,j),'                 |'
              else
-                write(line,'(a12,i7,a3,i7,a)') '|         | ', this%neighbour2(i)%int(1,j),' | ',&
-                       &this%neighbour2(i)%int(2,j),'                 |'
+                write(line,'(a12,i7,a3,i7,a)') '|         | ', this%neighbour2(i)%t%int(1,j),' | ',&
+                       &this%neighbour2(i)%t%int(2,j),'                 |'
              end if
              call print(line,file=file)
           end do
 
        end if
 
-       write(line,'(a47)')'-----------------------------------------------'
-       call print(line,file=file)
+       if ((this%neighbour1(i)%t%N + this%neighbour2(i)%t%N) > 0) then
+	 write(line,'(a47)')'-----------------------------------------------'
+	 call print(line,file=file)
+       endif
 
     end do
 
@@ -5029,8 +5570,21 @@ contains
 
   end subroutine connection_print
 
+  subroutine table_pointer_write_binary_a(this, outfile)
+    type(Table_Pointer), intent(in) :: this(:)
+    type(Inoutput), intent(inout) :: outfile
+
+    integer i
+
+    call write_binary(size(this), outfile)
+    do i=1, size(this)
+      call write_binary(this(i)%t, outfile)
+    end do
+  end subroutine table_pointer_write_binary_a
+
+
   subroutine connection_file_write(this,outfile)
-    type(Connection), intent(inout) :: this
+    type(Connection), intent(in) :: this
     type(Inoutput),   intent(inout) :: outfile
     integer                         :: N
 
@@ -5052,6 +5606,19 @@ contains
          call write_binary(this%cell,outfile)
 
   end subroutine connection_file_write
+
+  subroutine table_pointer_read_binary_a(this, outfile)
+    type(Table_Pointer), allocatable, intent(inout) :: this(:)
+    type(Inoutput), intent(inout) :: outfile
+
+    integer i, N
+
+    call read_binary(N, outfile)
+    allocate(this(N))
+    do i=1, N
+      call read_binary(this(i)%t, outfile)
+    end do
+  end subroutine table_pointer_read_binary_a
 
   subroutine connection_file_read(this,infile)
     type(Connection), intent(inout) :: this
