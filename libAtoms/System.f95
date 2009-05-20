@@ -2623,6 +2623,22 @@ contains
 
   end function date_and_time_string
 
+  subroutine system_set_random_seeds(seed)
+    integer, intent(in) :: seed
+
+    integer :: n
+    integer, allocatable :: seed_a(:)
+
+    idum=seed              !gabor generator
+
+    call random_seed(size=n)
+    allocate(seed_a(n))
+    seed_a = seed
+    call random_seed(put=seed_a) !fortran 90 generator
+    deallocate(seed_a)
+
+  end subroutine system_set_random_seeds
+
   !% Called by 'system_initialise' to print welcome messages and
   !% seed the random number generator. 
   subroutine hello_world(seed, common_seed)
@@ -2672,8 +2688,7 @@ contains
     end if
 
     call print('System::Hello World: Random Seed = '//actual_seed)
-    idum=actual_seed              !gabor generator
-    call random_seed(put=(/actual_seed/)) !fortran 90 generator
+    call system_set_random_seeds(actual_seed)
 
     call print('System::Hello World: global verbosity = '//value(mainlog%verbosity_stack))
     call print('')
@@ -2726,8 +2741,7 @@ contains
     integer, intent(in) :: new_seed
 
     call print('System::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,VERBOSE)
-    idum = new_seed
-    call random_seed(put=(/new_seed/)) ! fortran intrinsic generator
+    call system_set_random_seeds(new_seed)
   end subroutine system_reseed_rng
 
   !% Return the current random number seed. 
