@@ -21,18 +21,21 @@ py_keywords = ['and',       'del',       'from',      'not',       'while',
                'continue',  'finally',   'is',        'return',             
                'def',       'for',       'lambda',    'try']
 
-scalar_types = ['real(dp)', 'integer', 'logical', 'complex', 'character', 'logical']
-numpy_scalar_types = ['d', 'i', 'i', 'complex', 'S', 'b']
-
-numpy_to_fortran = dict(zip(numpy_scalar_types, scalar_types))
-numpy_to_fortran['f'] = 'real(dp)' # will be converted up by f2py
+numpy_to_fortran = {
+    'd': 'real(dp)',
+    'i': 'integer',
+    'b': 'logical',
+    'complex': 'complex',
+    'S': 'character',
+    'f': 'real(dp)'
+    }
 
 FortranDerivedTypes = {}
 
 from numpy.f2py.crackfortran import badnames
 
 def is_scalar_type(t):
-   if t in scalar_types: return True
+   if t in numpy_to_fortran.values(): return True
    if t.startswith('character'): return True
    if t.startswith('integer'): return True
    return False
@@ -227,7 +230,7 @@ class FortranDerivedType(object):
           dtype, shape, loc = arrayfunc(self._fpointer)
           dtype = dtype.strip()
           if shape.any() and loc != 0:
-             if dtype in numpy_scalar_types:
+             if dtype in numpy_to_fortran.keys():
                  if hasattr(self, '_map_array_shape'):
                      nshape = self._map_array_shape(name, shape)
                      setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
