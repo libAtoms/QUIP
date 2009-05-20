@@ -1754,7 +1754,7 @@ contains
   function table_find_row(this, n, mask) result(i)
     type(table),     intent(in) :: this
     integer,         intent(in) :: n(:)    ! what we are looking for
-    logical,optional,intent(in) :: mask(:) ! if this exists, we only compare elements where this is 1
+    logical,optional,intent(in) :: mask(:) ! if this exists, we only compare elements where this is true
     integer                     :: i
 
 
