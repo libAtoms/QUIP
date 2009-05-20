@@ -3698,9 +3698,9 @@ contains
   subroutine remove_bond(this, i, j, shift)
     type(Connection), intent(inout) :: this
     integer,     intent(in)    :: i,j
-    integer,     intent(in)    :: shift(3)
+    integer,     intent(in), optional    :: shift(3)
 
-    integer :: ii, jj, iii, jjj, jjjj, index
+    integer :: ii, jj, iii, jjj, jjjj, r_index, n_removed
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
       call system_abort("tried to remove_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
@@ -3716,32 +3716,49 @@ contains
     endif
     ! now ii <= jj
 
-    ! remove entry from neighbour1(ii)
-    index = find(this%neighbour1(ii)%t, (/ jj, shift /) )
-    if (index == 0) then
-      call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // " couldn't find a bond to remove", ERROR)
-      return
-    endif
-    call delete(this%neighbour1(ii)%t, index, keep_order = .true.)
-    ! remove entry from neighbour2(jj)
-    if (ii /= jj) then
-      call delete(this%neighbour2(jj)%t, (/ ii, index /), keep_order = .true.)
-    endif
-    ! renumber other neighbour2 entries
-    do iii=index, this%neighbour1(ii)%t%N
-      ! jjj is another neighbour of ii
-      jjj = this%neighbour1(ii)%t%int(1,iii)
-      if (jjj > ii) then
-	! jjjj is index in jjj's neighbour2 of pointer back to ii's neighbour1
-	jjjj = find(this%neighbour2(jjj)%t, (/ ii, iii+1 /) )
-	if (jjjj /= 0) then
-	  ! decrement reference in jjj's neighbour2 table
-	  this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
-	else
-	  call system_abort("Couldn't find neighbor to fix neighbour2 of")
-	endif
+    r_index = 1
+    n_removed = 0
+    do while (r_index /= 0)
+      ! remove entry from neighbour1(ii)
+      if (present(shift)) then
+	r_index = find(this%neighbour1(ii)%t, (/ jj, shift /) )
+      else
+	r_index = find(this%neighbour1(ii)%t, (/ jj, 0, 0, 0 /), (/ .true., .false., .false., .false./) )
       endif
-      end do
+      if (r_index == 0) then
+	if (n_removed == 0) then
+	  if (present(shift)) then
+	    call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // &
+		       " couldn't find a bond to remove", ERROR)
+	  else
+	    call print("WARNING: remove bond called for i " // i // " j " // j // &
+		       " couldn't find a bond to remove", ERROR)
+	  endif
+	endif
+      else ! r_index /= 0
+	n_removed = n_removed + 1
+	call delete(this%neighbour1(ii)%t, r_index, keep_order = .true.)
+	! remove entry from neighbour2(jj)
+	if (ii /= jj) then
+	  call delete(this%neighbour2(jj)%t, (/ ii, r_index /), keep_order = .true.)
+	endif
+	! renumber other neighbour2 entries
+	do iii=r_index, this%neighbour1(ii)%t%N
+	  ! jjj is another neighbour of ii
+	  jjj = this%neighbour1(ii)%t%int(1,iii)
+	  if (jjj > ii) then
+	    ! jjjj is r_index in jjj's neighbour2 of pointer back to ii's neighbour1
+	    jjjj = find(this%neighbour2(jjj)%t, (/ ii, iii+1 /) )
+	    if (jjjj /= 0) then
+	      ! decrement reference in jjj's neighbour2 table
+	      this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
+	    else
+	      call system_abort("Couldn't find neighbor to fix neighbour2 of")
+	    endif
+	  endif
+	end do
+      end if ! r_index == 0
+    end do ! while r_index /= 0
 
   end subroutine remove_bond
 

@@ -61,7 +61,7 @@ module cp2k_driver_module
                                      calc_connect, DEFAULT_NNEIGHTOL, &
                                      distance_min_image, &
                                      read_line, parse_line, &
-                                     assignment(=)
+                                     assignment(=), atoms_n_neighbours, remove_bond
   use clusters_module,         only: bfs_step,&
                                      construct_buffer, &
                                      select_hysteretic_quantum_region, &
@@ -85,7 +85,7 @@ module cp2k_driver_module
                                      parse_string, read_line, &
                                      operator(//), &
                                      NORMAL, ANAL, NERD, ERROR, &
-				     verbosity_push_decrement, verbosity_pop
+				     verbosity_push_decrement, verbosity_pop, current_verbosity
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
@@ -545,7 +545,7 @@ contains
     if (nproc.eq.1) then !serial
        call get_environment_variable('CP2K_SOPT',env_program_name,name_len,status,.true.)
        if (name_len.ne.0) then
-          call print('use CP2K serial version stored in env.var. CP2K_SOPT='//env_program_name//name_len)
+          call print('use CP2K serial version stored in env.var. CP2K_SOPT='//trim(env_program_name)//" " //name_len)
           this%wenv%cp2k_program = env_program_name
        else
           call print('use cp2k_program passed in args_str: '//trim(cp2k_program))
@@ -554,7 +554,7 @@ contains
     else !parallel
        call get_environment_variable('CP2K_POPT',env_program_name,name_len,status,.true.)
        if (name_len.ne.0) then
-          call print('use CP2K parallel version with '//nproc//' processors stored in env.var. CP2K_POPT='//env_program_name//name_len)
+          call print('use CP2K parallel version with '//nproc//' processors stored in env.var. CP2K_POPT='//trim(env_program_name)//" " //name_len)
           this%wenv%cp2k_program = 'mpirun -np '//nproc//' '//env_program_name
        else
           call print('use cp2k_program passed in args_str: '//trim(cp2k_program))
@@ -1308,8 +1308,8 @@ contains
     bonds2 = 0
     
     do i=1,at%N
-       bonds  = bonds  + at%connect%neighbour1(i)%N
-       bonds2 = bonds2 + at%connect%neighbour2(i)%N
+       if (associated(at%connect%neighbour1(i)%t)) bonds  = bonds  + at%connect%neighbour1(i)%t%N
+       if (associated(at%connect%neighbour2(i)%t)) bonds2 = bonds2 + at%connect%neighbour2(i)%t%N
     enddo
 
     if (bonds.ne.bonds2) call system_abort('num_of_bonds: connectivities of atoms are not symmetric.')
@@ -1321,21 +1321,22 @@ contains
   subroutine check_neighbour_numbers(at)
 
     type(atoms),intent(in) :: at
-    integer                :: i
+    integer                :: i, n_neigh
 
     do i=1,at%N
 
-       if ( (at%Z(i).eq.1) .AND. (at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N.ne.1) ) then
+       n_neigh = atoms_n_neighbours(at, i)
+       if ( (at%Z(i).eq.1) .AND. (n_neigh.ne.1) ) then
 !          do n=1,atoms_n_neighbours(at,i)
 !             j=atoms_neighbour(at,i,n)
 !          enddo
-          call print('Warning: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has unusual number of neighbours: '//(at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N))
+          call print('Warning: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has unusual number of neighbours: '//(n_neigh))
        endif
-       if ( (at%Z(i).eq.8) .AND. (at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N.ne.2) ) &
-          call print('Warning: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has unusual number of neighbours: '//(at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N))
+       if ( (at%Z(i).eq.8) .AND. (n_neigh.ne.2) ) &
+          call print('Warning: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has unusual number of neighbours: '//(n_neigh))
 
        if ( .not.any(at%Z(i).eq.(/1,8/)) ) &
-          call print('Info: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has number of neighbours: '//(at%connect%neighbour1(i)%N+at%connect%neighbour2(i)%N))
+          call print('Info: '//ElementName(at%Z(i))//' atom '//i//' position '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5)//' has number of neighbours: '//(n_neigh))
 
     enddo
 
@@ -1477,12 +1478,12 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
 
    ! removes a bond between i and j, if the bond is present
   subroutine delete_bond(my_atoms, i, j)
-
     type(Atoms), intent(inout) :: my_atoms
     integer, intent(in) :: i, j
 
-    integer :: ii, jj, kk, k, ll, change
-    integer, allocatable :: bond_table(:,:)
+    integer :: ii, jj
+!!    integer :: kk, k, ll, change
+!!    integer, allocatable :: bond_table(:,:)
 
     if (i.eq.j) return
 
@@ -1494,37 +1495,39 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
        ii = j
     endif
 
-    allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%N))
-    bond_table = int_part(my_atoms%connect%neighbour1(ii))
-    kk = find_in_array(bond_table(1,:),jj)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//ii//' '//jj)
-       call delete(my_atoms%connect%neighbour1(ii),kk)
-    endif
-    deallocate(bond_table)
+    call remove_bond(my_atoms%connect, ii, jj)
 
-   ! if I delete a bond from neighbour1, I should update in neighbour2 that
-   ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
-    if (kk.gt.0) then
-       do k = kk, my_atoms%connect%neighbour1(ii)%N     ! k-th neighbour of ii
-          ll = my_atoms%connect%neighbour1(ii)%int(1,k)     ! is ll
-          allocate (bond_table(4,my_atoms%connect%neighbour2(ll)%N))
-          bond_table = int_part(my_atoms%connect%neighbour2(ll))
-          change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
-          if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
-          my_atoms%connect%neighbour2(ll)%int(2,change) = k ! this account is updated now
-          deallocate (bond_table)
-       enddo
-    endif
-
-    allocate (bond_table(4,my_atoms%connect%neighbour2(jj)%N))
-    bond_table = int_part(my_atoms%connect%neighbour2(jj))
-    kk = find_in_array(bond_table(1,:),ii)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//jj//' '//ii)
-       call delete(my_atoms%connect%neighbour2(jj),kk)
-    endif
-    deallocate(bond_table)
+!!     allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%N))
+!!     bond_table = int_part(my_atoms%connect%neighbour1(ii))
+!!     kk = find_in_array(bond_table(1,:),jj)
+!!     if (kk.gt.0) then
+!! !       call print('found bond to delete for atoms '//ii//' '//jj)
+!!        call delete(my_atoms%connect%neighbour1(ii),kk)
+!!     endif
+!!     deallocate(bond_table)
+!! 
+!!    ! if I delete a bond from neighbour1, I should update in neighbour2 that
+!!    ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
+!!     if (kk.gt.0) then
+!!        do k = kk, my_atoms%connect%neighbour1(ii)%N     ! k-th neighbour of ii
+!!           ll = my_atoms%connect%neighbour1(ii)%int(1,k)     ! is ll
+!!           allocate (bond_table(4,my_atoms%connect%neighbour2(ll)%N))
+!!           bond_table = int_part(my_atoms%connect%neighbour2(ll))
+!!           change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
+!!           if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
+!!           my_atoms%connect%neighbour2(ll)%int(2,change) = k ! this account is updated now
+!!           deallocate (bond_table)
+!!        enddo
+!!     endif
+!! 
+!!     allocate (bond_table(4,my_atoms%connect%neighbour2(jj)%N))
+!!     bond_table = int_part(my_atoms%connect%neighbour2(jj))
+!!     kk = find_in_array(bond_table(1,:),ii)
+!!     if (kk.gt.0) then
+!! !       call print('found bond to delete for atoms '//jj//' '//ii)
+!!        call delete(my_atoms%connect%neighbour2(jj),kk)
+!!     endif
+!!     deallocate(bond_table)
 
   end subroutine
 
@@ -2201,7 +2204,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
       call print('The forces acting on each atom (eV/A):')
       call print('atom     F(x)     F(y)     F(z)')
       do m=1,size(forces,2)
-      call print('  '//m//'    '//forces(1,m)//'  '//forces(2,m)//'  '//forces(3,m))
+        call print('  '//m//'    '//forces(1,m)//'  '//forces(2,m)//'  '//forces(3,m))
       enddo
     call verbosity_pop()
     call print('Sum of the forces: '//sum(forces(1,1:num_atoms))//' '//sum(forces(2,1:num_atoms))//' '//sum(forces(3,1:num_atoms)))
@@ -2352,11 +2355,13 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
 
     call print('')
     call print('No energy after force mixing.')
-    call print('The forces acting on each atom (eV/A):')
-    call print('atom     F(x)     F(y)     F(z)')
-    do m=1,size(combined_forces,2)
-    call print('  '//m//'    '//combined_forces(1,m)//'  '//combined_forces(2,m)//'  '//combined_forces(3,m))
-    enddo
+    call verbosity_push_decrement()
+      call print('The forces acting on each atom (eV/A):')
+      call print('atom     F(x)     F(y)     F(z)')
+      do m=1,size(combined_forces,2)
+      call print('  '//m//'    '//combined_forces(1,m)//'  '//combined_forces(2,m)//'  '//combined_forces(3,m))
+      enddo
+    call verbosity_pop()
     call print('Sum of the combined forces: '//sum(combined_forces(1,1:my_atoms%N))//' '//sum(combined_forces(2,1:my_atoms%N))//' '//sum(combined_forces(3,1:my_atoms%N)))
 
     
