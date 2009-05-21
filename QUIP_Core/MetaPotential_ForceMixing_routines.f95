@@ -338,7 +338,7 @@
        call read_string(params, qm_args_str)
 
        !! TODO - possibly want to set more default options in the qm_args_str here
-       if (.not. has_key(params, 'buffer_hops')) call set_value(params, 'buffer_hops', buffer_hops)
+       if (.not. dictionary_has_key(params, 'buffer_hops')) call set_value(params, 'buffer_hops', buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
 
