@@ -1666,7 +1666,8 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 }
 
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
-	      int query, int redefine, int realloc, int supress) {
+	      int query, int redefine, int realloc, int supress, int override_lattice,
+	      double lattice[3][3]) {
   int i,n, entry_count,j,k,ncols,m, atidx;
   char linebuffer[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
@@ -1725,12 +1726,16 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 		linebuffer, fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
       } else {
-	fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
-	return 0;
+	if (!override_lattice) {
+	  fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
+	  return 0;
+	}
       }
     } else {
-      fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
-	return 0;
+	if (!override_lattice) {
+	  fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
+	  return 0;
+	}
     }
   }
 
@@ -1985,17 +1990,24 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   }
 
   // Read lattice
-  lattice_idx = atoms_find_param(atoms, "Lattice");
-  if (lattice_idx == -1)    {
-    fprintf(stderr,"missing lattice parameter\n");
-    return 0;
+  if (override_lattice) {
+    for (i=0; i<3; i++)
+      for (j=0; j<3; j++)
+	atoms->lattice[i][j] = lattice[i][j];
   }
-  if (sscanf(atoms->param_value[lattice_idx], "%lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-	     &(atoms->lattice[0][0]), &(atoms->lattice[1][0]), &(atoms->lattice[2][0]), 
-	     &(atoms->lattice[0][1]), &(atoms->lattice[1][1]), &(atoms->lattice[2][1]),
-	     &(atoms->lattice[0][2]), &(atoms->lattice[1][2]), &(atoms->lattice[2][2])) != 9) {
-    fprintf(stderr,"error reading lattice from string %s\n", atoms->param_value[lattice_idx]);
-    return 0;
+  else {
+    lattice_idx = atoms_find_param(atoms, "Lattice");
+    if (lattice_idx == -1)    {
+      fprintf(stderr,"missing lattice parameter\n");
+      return 0;
+    }
+    if (sscanf(atoms->param_value[lattice_idx], "%lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+	       &(atoms->lattice[0][0]), &(atoms->lattice[1][0]), &(atoms->lattice[2][0]), 
+	       &(atoms->lattice[0][1]), &(atoms->lattice[1][1]), &(atoms->lattice[2][1]),
+	       &(atoms->lattice[0][2]), &(atoms->lattice[1][2]), &(atoms->lattice[2][2])) != 9) {
+      fprintf(stderr,"error reading lattice from string %s\n", atoms->param_value[lattice_idx]);
+      return 0;
+    }
   }
 
   // Check properties match definition
@@ -2818,7 +2830,7 @@ int main (int argc, char **argv)
     }
 
     if (xyzstat && (pflag || Pflag)) {
-      if (!read_xyz(infile, &at, atomlist, natomlist, 0, 1, 0, 1, 0))
+      if (!read_xyz(infile, &at, atomlist, natomlist, 0, 1, 0, 1, 0, Lflag, lattice))
 	pe("Error reading xyz header");
       if (Pflag) {
 	debug("Parameters:\n");
@@ -2859,15 +2871,10 @@ int main (int argc, char **argv)
 	for (i=f_start; i<f_stop; i+=f_step) nframes++;
 
 	for (i=f_start; i < f_stop; i += f_step) {
-	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, allow_redefine, 1, 0)) 
+	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, allow_redefine, 1, 0, Lflag, lattice)) 
 	    pe("Error reading frame %d", i);
 	  
 	  if (xyz2xyz || xyz2nc) {
-	    if(Lflag)
-	      for (j=0; j<3; j++)
-		for (k=0; k<3; k++)
-		  at.lattice[j][k] = lattice[j][k];
-
 	    if (pflag) {
 	      for (j=0; j<at.n_property; j++)
 		at.property_filter[j] = 0;
@@ -2931,14 +2938,9 @@ int main (int argc, char **argv)
 	  }
 	}
       } else {
-	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1))) {
+	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1, Lflag, lattice))) {
 	  debug("read frame %d\n", n);
 	  
-	  if(Lflag)
-	    for (i=0; i<3; i++)
-	      for (j=0; j<3; j++)
-		at.lattice[i][j] = lattice[i][j];
-	
 	  if (pflag) {
 	    for (i=0; i<at.n_property; i++)
 	      at.property_filter[i] = 0;
@@ -3041,10 +3043,6 @@ int main (int argc, char **argv)
 	pe("Error reading frame %d\n", i);
 	
       if (!ncstat) {
-	if(Lflag)
-	  for (j=0; j<3; j++)
-	    for (k=0; k<3; k++)
-	      at.lattice[j][k] = lattice[j][k];
 
 	if (pflag) {
 	  for (j=0; j<at.n_property; j++)
@@ -3188,7 +3186,7 @@ int main (int argc, char **argv)
 int cio_query(Atoms *at, int *frame) {
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0);
+    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0, 0, NULL);
   } else if (at->format == NETCDF_FORMAT) {
     if (at->nc_in == 0) return 0;
     return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
@@ -3404,7 +3402,7 @@ int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_
 
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, 0);
+    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, 0, 0, NULL);
     if (status == 0) return status;
     return status;
   } else if (at->format == NETCDF_FORMAT) {
