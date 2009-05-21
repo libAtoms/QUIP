@@ -232,6 +232,10 @@ interface assignment(=)
 end interface assignment(=)
 #endif
 
+interface has_key
+   module procedure dictionary_has_key
+end interface
+
 private add_entry, extend_entries, remove_entry
 
 contains
@@ -1427,15 +1431,15 @@ function lookup_entry_i(this, key, case_sensitive)
 end function lookup_entry_i
 
 !% Return true if 'key' is in Dictionary or false if not
-function has_key(this, key, case_sensitive)
+function dictionary_has_key(this, key, case_sensitive)
   type(Dictionary), intent(in) :: this
   character(len=*) :: key
-  logical :: has_key
+  logical :: dictionary_has_key
   logical, optional :: case_sensitive
 
-  has_key = lookup_entry_i(this, key, case_sensitive) /= -1
+  dictionary_has_key = lookup_entry_i(this, key, case_sensitive) /= -1
   
-end function has_key
+end function dictionary_has_key
 
 !% Return a dictionary that is a subset of this,
 !% with only the keys in the arrays 'keys' present.
