@@ -17,38 +17,7 @@ atexit.register(_quippy.system.system_finalise)
 
 spec = cPickle.load(open(os.path.join(os.path.dirname(__file__),'quippy.spec')))
 
-classes, routines, params = wrap_all(_quippy, spec,
-                                     ['system',
-                                      'extendable_str',
-                                      'units',
-                                      'linearalgebra',
-                                      'dictionary',
-                                      'table',
-                                      'periodictable',
-                                      'minimization',
-                                      'atoms',
-                                      'quaternions',
-                                      'rigidbody',
-                                      'group',
-                                      'constraints',
-                                      'thermostat',
-                                      'dynamicalsystem',
-                                      'paramreader',
-                                      'spline',
-                                      'sparse',
-                                      'clusters',
-                                      'structures',
-                                      'frametools',
-                                      'nye_tensor',
-                                      'libatoms',
-                                      'libatoms_misc_utils',
-                                      'cinoutput',
-                                      'topology',
-                                      'potential',
-                                      'metapotential',
-                                      'mpi_context',
-                                      'elastic'],
-                                     short_names={'dynamicalsystem':'ds'})   
+classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'])
 
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)
