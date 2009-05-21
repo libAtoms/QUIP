@@ -8,10 +8,18 @@ endif
 
 .PHONY: clean build install atomeyelib presetup
 
-CONFIG_FC_OPTS =  --f90flags="-ffree-line-length-none" --cpp="gfortran -E -x f95-cpp-input" 
-BUILD_EXT_OPTS =  --fcompiler=gnu95
-BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} #--f2py-opts=--debug-capi 
-BUILD_OPTS = --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
+ifeq (${QUIPPY_FCOMPILER},)
+	@echo
+	@echo "You need to set the QUIPPY_FCOMPILER, QUIPPY_F90FLAGS and QUIPPY_CPP variables
+	@echo
+	@exit 1
+endif
+
+CONFIG_FC_OPTS = --f90flags="${QUIPPY_F90FLAGS}" --cpp="${QUIPPY_CPP}"
+BUILD_EXT_OPTS = --fcompiler="${QUIPPY_FCOMPILER}"
+
+BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} ${WRAP} --f2py-opts=--no-wrap-functions
+BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -DDEBUG -UHAVE_LOTF ${SYSLIBS} 
 INSTALL_OPTS = --home=${HOME}
 
 SETUP_OPTS = config_fc ${CONFIG_FC_OPTS} build_ext ${BUILD_EXT_OPTS} build_src ${BUILD_SRC_OPTS}
@@ -36,6 +44,9 @@ include ${QUIP_UTILS_DIR}/Makefile
 QUIP_UTILS_SOURCES=$(addprefix ${QUIP_UTILS_DIR}/,$(addsuffix .f95,${F95_FILES}))
 TOOLS=--tools-sources="${TOOLS_SOURCES} ${QUIP_UTILS_SOURCES}"
 
+WRAP=--wrap-modules="system extendable_str units linearalgebra dictionary table periodictable minimization atoms quaternions rigidbody group constraints thermostat dynamicalsystem paramreader spline sparse clusters structures frametools nye_tensor libatoms libatoms_misc_utils cinoutput topology potential metapotential mpi_context elastic"
+
+
 ifeq (${HAVE_ATOMEYE},1)
   ATOMEYE_DIR=../AtomEye
   ATOMEYE=--atomeye-dir=${ATOMEYE_DIR} --atomeye-libs="${ATOMEYE_LIBS}"
@@ -52,11 +63,11 @@ presetup:
 build: atomeyelib presetup
 	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
 
-install: build
-	python setup.py ${SETUP_OPTS} --no-import-source install ${INSTALL_OPTS}
+install:
+	python setup.py ${SETUP_OPTS} --no-import-source  build ${BUILD_OPTS} install ${INSTALL_OPTS}
 
 .DEFAULT: 
 	python setup.py ${SETUP_OPTS} $@
 
 clean:
-	rm -rf build
+	rm -rf build.${QUIP_ARCH}
