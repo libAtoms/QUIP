@@ -483,10 +483,12 @@ class C_module:
         # Let's put the module name in, could be handy
         println('character*(%d), parameter :: module_name = "%s"' % (len(shortname), shortname))
 
-        println()
-        println('contains')
-        println()
-        indent += 3
+
+        if len(subts+functs) > 0:
+            println()
+            println('contains')
+            println()
+            indent += 3
 
         f2py_docs[shortname.lower()] = {'doc': '\n'.join(self.doc),
                                         'routines': {},
@@ -2695,6 +2697,7 @@ def main():
     do_f2py=False
     intro='intro'
     do_header = True
+    do_f2py_output = True
 
     for o,a in optlist:
         if o=='-t':
@@ -2716,6 +2719,8 @@ def main():
             do_f2py = True
         if o in '-p':
             do_header = False
+        if o in '-N':
+            do_f2py_output = False
 
     if len(args) < 1:
         debug('You need to supply at one least argument!')
@@ -2740,8 +2745,9 @@ def main():
                 type_map[n.lower()] = mod.name
         cPickle.dump(type_map, open('f2pydoc.types','w'))
 
-        for mod, name in modules:
-            mod.f2py(type_map,f2pydoc)
+        if do_f2py_output:
+            for mod, name in modules:
+                mod.f2py(type_map,f2pydoc)
             
         cPickle.dump(f2pydoc, open('f2pydoc.data','w'))
 
