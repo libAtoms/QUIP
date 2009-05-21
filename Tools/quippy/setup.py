@@ -87,11 +87,14 @@ def F90WrapperBuilder(modname, all_sources, wrap_modules, cpp, dep_type_maps=[],
         in_files = ['%s/../%s' % (build_dir, f) for f in all_sources]
 
         if not newer_group(in_files, '%s.spec' % modname):
-            print 'F90WrapperBuilder: nothing changed', in_files, '%s.spec' % modname
             return [ '%s/%s_%s_wrap.f90' % (build_dir, modname, mod) for mod in wrap_modules ]
+
         programs, modules, functs, subts = f90doc.read_files(in_files)
 
         type_map = {}
+        if os.path.exists('%s.type' % modname):
+            type_map = cPickle.load(open('%s.type' % modname))
+            
         for item in dep_type_maps:
             if hasattr(item, '__getitem__') and hasattr(item, 'keys'): # dictionary
                 type_map.update(item)
