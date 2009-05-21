@@ -1,11 +1,11 @@
   !*************************************************************************
   !*
-  !*  MetaPotential_ForceMixing header
+  !*  MetaPotential_FM header
   !*
   !*************************************************************************
 
-  public :: MetaPotential_ForceMixing
-  type MetaPotential_ForceMixing
+  public :: MetaPotential_FM
+  type MetaPotential_FM
 
      type(Potential), pointer :: mmpot => null() 
      type(Potential), pointer :: qmpot => null() 
@@ -75,25 +75,25 @@
 
      type(Table) :: embedlist, fitlist
 
-  end type MetaPotential_ForceMixing
+  end type MetaPotential_FM
 
   interface Initialise
-     module procedure MetaPotential_ForceMixing_initialise
+     module procedure MetaPotential_FM_initialise
   end interface
 
   interface Finalise
-     module procedure MetaPotential_ForceMixing_Finalise
+     module procedure MetaPotential_FM_Finalise
   end interface
 
   interface Print
-     module procedure MetaPotential_ForceMixing_Print
+     module procedure MetaPotential_FM_Print
   end interface
 
   interface Cutoff
-     module procedure MetaPotential_ForceMixing_Cutoff
+     module procedure MetaPotential_FM_Cutoff
   end interface
 
   interface Calc
-     module procedure MetaPotential_ForceMixing_Calc
+     module procedure MetaPotential_FM_Calc
   end interface
 

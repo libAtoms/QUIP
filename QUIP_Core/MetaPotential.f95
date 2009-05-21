@@ -57,7 +57,7 @@ module MetaPotential_module
 
 
      logical :: is_forcemixing
-     type(MetaPotential_ForceMixing), pointer :: forcemixing => null()
+     type(MetaPotential_FM), pointer :: forcemixing => null()
 
 #ifdef HAVE_LOCAL_E_MIX
      logical :: is_local_e_mix
