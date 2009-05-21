@@ -28,7 +28,7 @@ else:
    sx = sy = sz = 0.0
 
 cell_lines = ['KPOINT_MP_GRID   %d %d %d\n' % (nx, ny, nz),
-              'KPOINT_MP_OFFSET %f %f %f\n' % (sx, sy, nz)]
+              'KPOINT_MP_OFFSET %f %f %f\n' % (sx, sy, sz)]
 
 param_lines = ['task : SinglePoint\n']
 
