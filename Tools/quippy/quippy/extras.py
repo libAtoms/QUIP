@@ -12,6 +12,7 @@ class AtomsExtras(object):
 
    def write(self, target, append=True):
       "Write atoms object to an XYZ or NetCDF file."
+      from quippy import CInOutput, OUTPUT
       cio = CInOutput(target, OUTPUT, append)
       try:
          cio.write(self)
