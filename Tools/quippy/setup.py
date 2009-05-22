@@ -122,7 +122,6 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
 
             wrapper = '%s/%s_%s_wrap.f90' % (build_dir, modname, wrap_mod_name)
 
-            print name, wrapper, newer(name, wrapper)
             if not newer(name, wrapper):
                 res.append(wrapper)
                 continue
