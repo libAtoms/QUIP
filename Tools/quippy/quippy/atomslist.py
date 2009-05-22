@@ -41,6 +41,7 @@ class GenericFrameReader(AtomsList):
          self._frames = slice(start,stop,step)
 
       self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
+      self._iterframes = None
 
 
    def __del__(self):
@@ -75,10 +76,20 @@ class GenericFrameReader(AtomsList):
    def __getslice__(self, first, last):
       return self.__getitem__(slice(first,last,None))
 
-   def __iter__(self):
+   def iterframes(self):
       for frame in range(*self._frames.indices(self._nframe()+1)):
          yield self[frame]
       raise StopIteration
+
+   def __iter__(self):
+      if self._iterframes is None:
+         self._iterframes = self.iterframes()
+      return self._iterframes
+
+   def next(self):
+      if self._iterframes is None:
+         self._iterframes = self.iterframes()
+      return self._iterframes.next()
 
    def __reversed__(self):
       for frame in reversed(range(*self._frames.indices(self._nframe()+1))):
@@ -95,6 +106,7 @@ class GenericFrameReader(AtomsList):
          if progress and i % update_interval == 0:
             pb(i)
          self[i]
+
 
 try:
    from quippy import CInOutput
