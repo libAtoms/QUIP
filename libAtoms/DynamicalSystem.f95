@@ -595,7 +595,7 @@ contains
 
       this%initialised = .true.
       
-      call verbosity_push_decrement()
+      call verbosity_push_decrement(ANAL)
       call print(this)
       call verbosity_pop()
          
