@@ -39,6 +39,8 @@ crack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 makecrack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
 
+ts_calculation: % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}

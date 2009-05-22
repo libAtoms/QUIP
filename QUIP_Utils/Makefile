@@ -10,7 +10,7 @@ else
 endif
 
 
-F95_FILES =  transition_state elasticity phonons potential_test
+F95_FILES =  ts_params transition_state elasticity phonons potential_test
 OBJS = ${addsuffix .o, ${F95_FILES}}
 
 
