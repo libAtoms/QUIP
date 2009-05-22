@@ -815,7 +815,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     max_atom_rij_change = max_rij_change(am%last_connect_x, x, cutoff(am%minim_metapot), &
       1.0_dp/am%pos_lat_preconditioner_factor)
 
-    call print("gradient_func got x " // x, NERD)
+    if (current_verbosity() >= NERD) call print("gradient_func got x " // x, NERD)
 
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -861,10 +861,12 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
        end do
     end if
 
-    call print ("gradient_func got f", NERD)
-    call print(f, NERD)
-    call print ("gradient_func got virial", NERD)
-    call print(virial, NERD)
+    if (current_verbosity() >= NERD) then
+      call print ("gradient_func got f", NERD)
+      call print(f, NERD)
+      call print ("gradient_func got virial", NERD)
+      call print(virial, NERD)
+    endif
 
     f = transpose(deform_grad) .mult. f
 
@@ -875,8 +877,10 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     virial = merge(0.0_dp, virial, am%lattice_fix)
 
     call pack_pos_dg(-f, -virial, gradient_func, 1.0_dp/am%pos_lat_preconditioner_factor)
-    call print ("gradient_func packed as", NERD)
-    call print (gradient_func, NERD)
+    if (current_verbosity() >= NERD) then
+      call print ("gradient_func packed as", NERD)
+      call print (gradient_func, NERD)
+    endif
 
     t_i = maxloc(abs(f))
     call print ("gradient_func got max force component " // f(t_i(1),t_i(2)) // " on atom " // t_i(2) // &
