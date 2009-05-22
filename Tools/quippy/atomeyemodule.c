@@ -38,7 +38,7 @@ static void on_advance(char *instr)
 }
 
 
-static void on_close()
+static void on_close(void)
 {
   fprintf(stderr, "atomeyemodule on_close handler called.\n");
   atomeye_initialised = 0;
@@ -215,8 +215,6 @@ static char atomeye_isAlive_doc[] =
 static PyObject*
 atomeye_isAlive(PyObject *self, PyObject *args)
 {
-  PyObject *ret;
-
   return PyBool_FromLong((long)atomeye_initialised);
 }
 
