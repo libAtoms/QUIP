@@ -35,7 +35,7 @@ class clean(_clean):
         remove_tree(build_base)
 
 
-def SourceImporter(infile, defines, include_dirs, cpp, do_import=True):
+def SourceImporter(infile, defines, include_dirs, cpp):
     """Import source code from infile and copy to build_dir/package,
        passing through filter if it's an F95 source file. The filter
        converts all private variables to public and runs the cpp
@@ -51,7 +51,7 @@ def SourceImporter(infile, defines, include_dirs, cpp, do_import=True):
         cpp_opt = ' '.join(gen_preprocess_options(macros, include_dirs))
 
         if infile.endswith('.f95'):
-            if do_import and newer(infile, outfile):
+            if newer(infile, outfile):
                 print 'filtering %s to create %s' % (infile, outfile)
                 # Munge source a little... this could be converted to pure python at some point
 
@@ -70,30 +70,31 @@ def SourceImporter(infile, defines, include_dirs, cpp, do_import=True):
         else:
             #if newer(infile, outfile):
             #    os.system("cat %s | cpp %s > %s" % (infile, cpp_opt, outfile))
-            if do_import:
-                copy_file(infile, outfile, update=True)
+            copy_file(infile, outfile, update=True)
 
         return outfile
     
     return func
 
 
-def F90WrapperBuilder(modname, all_sources, wrap_modules, cpp, dep_type_maps=[], kindlines=[], short_names={}):
+def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[], kindlines=[], short_names={}):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
     give access to methods and instance data."""
 
     def func(extension, build_dir):
         in_files = ['%s/../%s' % (build_dir, f) for f in all_sources]
+        wrap_files = ['%s/../%s' % (build_dir, f) for f in wrap_sources]
 
-        if not newer_group(in_files, '%s.spec' % modname):
-            return [ '%s/%s_%s_wrap.f90' % (build_dir, modname, mod) for mod in wrap_modules ]
+        if newer_group(wrap_files, '%s.f90doc' % modname):
+            programs, modules, functs, subts = f90doc.read_files(in_files)
+            cPickle.dump((programs, modules, functs, subts), open('%s.f90doc' % modname, 'w'))
+        else:
+            (programs, modules, functs, subts) = cPickle.load(open('%s.f90doc' % modname))
 
-        programs, modules, functs, subts = f90doc.read_files(in_files)
-
-        type_map = {}
-        if os.path.exists('%s.type' % modname):
-            type_map = cPickle.load(open('%s.type' % modname))
+        for mod, name in modules:
+            for n in [t.name for t in mod.types]:
+                type_map[n.lower()] = mod.name
             
         for item in dep_type_maps:
             if hasattr(item, '__getitem__') and hasattr(item, 'keys'): # dictionary
@@ -101,23 +102,25 @@ def F90WrapperBuilder(modname, all_sources, wrap_modules, cpp, dep_type_maps=[],
             else: # assume it's a string
                 type_map.update(cPickle.load(open('%s.type' % item)))
 
-        for mod, name in modules:
-            for n in [t.name for t in mod.types]:
-                type_map[n.lower()] = mod.name
-                
-        cPickle.dump(type_map, open('%s.type' % modname, 'w'))
-
         res = []
-
         fortran_spec = {}
         if os.path.exists('%s.spec' % modname):
             fortran_spec = cPickle.load(open('%s.spec' % modname))
 
+        wrap_modules = []
         cpp_opt = gen_preprocess_options(macros, [])
-        for mod, name in modules:
-            if mod.name.lower()[:-7] not in wrap_modules: continue
+        for file in wrap_sources:
 
-            wrapper = '%s/%s_%s_wrap.f90' % (build_dir, modname, mod.name.lower()[:-7])
+            for mod, name in modules:
+                if os.path.basename(name) == os.path.basename(file):
+                    break
+            else:
+                raise ValueError("Can't find module %s" % file)
+
+            wrap_mod_name = mod.name.lower()[:-7]
+            wrap_modules.append(wrap_mod_name)
+
+            wrapper = '%s/%s_%s_wrap.f90' % (build_dir, modname, wrap_mod_name)
 
             print name, wrapper, newer(name, wrapper)
             if not newer(name, wrapper):
@@ -257,11 +260,11 @@ if argfilt:
     else:
         do_atomeye = False
 
-do_import = True
-argfilt = [ s for s in sys.argv if s == '--no-import-source']
-if argfilt:
-    do_import = False
-    del sys.argv[sys.argv.index(argfilt[0])]
+#do_import = True
+#argfilt = [ s for s in sys.argv if s == '--no-import-source']
+#if argfilt:
+#    do_import = False
+#    del sys.argv[sys.argv.index(argfilt[0])]
 
 
 tools_sources = []
@@ -271,10 +274,10 @@ if argfilt:
     del sys.argv[sys.argv.index(argfilt[0])]
 
 
-wrap_modules = []
-argfilt = [ s for s in sys.argv if s.startswith('--wrap-modules')]
+wrap_sources = []
+argfilt = [ s for s in sys.argv if s.startswith('--wrap-sources')]
 if argfilt:
-    wrap_modules = argfilt[0].split('=')[1].split()
+    wrap_sources = argfilt[0].split('=')[1].split()
     del sys.argv[sys.argv.index(argfilt[0])]
 
 
@@ -288,7 +291,7 @@ if do_quippy_extension:
     libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
 
     libatoms_lib = ('atoms', {
-            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp, do_import) for f in libatoms_files ],
+            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp) for f in libatoms_files ],
             'include_dirs':  [libatoms_dir] + include_dirs,
             'macros': macros
             })
@@ -321,7 +324,7 @@ if do_quippy_extension:
                 'sources': [ F90WrapperBuilder('quippy',
                                                [f[:-4]+'.f90' for f in libatoms_sources + quip_core_sources +
                                                 [os.path.basename(x) for x in tools_sources] if f.endswith('.f95')],
-                                               wrap_modules,
+                                               [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
                                                cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                     'dictionary_t':'FoX_sax'}], 
                                                kindlines=['use system_module, only: dp',

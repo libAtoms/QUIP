@@ -44,7 +44,7 @@ include ${QUIP_UTILS_DIR}/Makefile
 QUIP_UTILS_SOURCES=$(addprefix ${QUIP_UTILS_DIR}/,$(addsuffix .f95,${F95_FILES}))
 TOOLS=--tools-sources="${TOOLS_SOURCES} ${QUIP_UTILS_SOURCES}"
 
-WRAP=--wrap-modules="system extendable_str units linearalgebra dictionary table periodictable minimization atoms quaternions rigidbody group constraints thermostat dynamicalsystem paramreader spline sparse clusters structures frametools nye_tensor libatoms libatoms_misc_utils cinoutput topology potential metapotential mpi_context elastic"
+WRAP=--wrap-sources="System.f95 ExtendableStr.f95 Units.f95 linearalgebra.f95 Dictionary.f95 Table.f95 PeriodicTable.f95 Atoms.f95  DynamicalSystem.f95  clusters.f95 Structures.f95 libAtoms_misc_utils.f95 CInOutput.f95 Topology.f95 Potential.f95 MetaPotential.f95 MPI_context.f95 elasticity.f95"
 
 
 ifeq (${HAVE_ATOMEYE},1)
@@ -64,7 +64,7 @@ build: atomeyelib presetup
 	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
 
 install:
-	python setup.py ${SETUP_OPTS} --no-import-source  build ${BUILD_OPTS} install ${INSTALL_OPTS}
+	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS} install ${INSTALL_OPTS}
 
 .DEFAULT: 
 	python setup.py ${SETUP_OPTS} $@
