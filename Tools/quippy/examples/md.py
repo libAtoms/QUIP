@@ -1,4 +1,3 @@
-from numpy import *
 from quippy import *
 
 s = supercell(diamond(5.44, 14), 2, 2, 2)

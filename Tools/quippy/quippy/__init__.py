@@ -5,6 +5,8 @@ import _quippy
 
 import sys, cPickle, atexit, os, numpy, logging
 
+from numpy import *
+
 logging.root.setLevel(logging.WARNING)
 
 from oo_fortran  import FortranDerivedType, FortranDerivedTypes, wrap_all

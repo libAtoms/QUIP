@@ -1,5 +1,4 @@
 from quippy import *
-from numpy import *
 
 if len(sys.argv[1:]) != 3:
    print """Usage: cracktip RADIUS INFILE OUTFILE
