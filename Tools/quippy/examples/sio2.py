@@ -237,14 +237,14 @@ O Si
 </ASAP_params>""" 
 
 
-reps = (1, 2, 3, 4)
+reps = (1, 2, 3, 4, 5, 6, 7, 8, 9)
 alphas = (0.0, 0.01, 0.05, 0.1)
 
 times = {}
 fvar('e')
 at = alpha_quartz_cubic()
 for rep in reps:
-   aa = supercell(at, rep, rep, rep)
+   aa = supercell(at, 1, 1, rep)
    for alpha in alphas:
       p = Potential('IP ASAP', xml % (rcut(alpha), alpha))
 
@@ -255,11 +255,12 @@ for rep in reps:
       times[(rep,alpha)] = (aa.n, t2-t1)
 
 
-#for alpha in alphas:
-#   x = []
-#   y = []
-#  for rep in reps:
-#      x.append(at.n*rep**3)
-#      y.append(times[(rep,alpha)])
-#   plot(x,y)
-#legend(alphas, 2)
+for alpha in alphas:
+   x = []
+   y = []
+   for rep in reps:
+      n, t = times[(rep,alpha)]
+      x.append(n)
+      y.append(t)
+   plot(x,y)
+legend(alphas, 2)
