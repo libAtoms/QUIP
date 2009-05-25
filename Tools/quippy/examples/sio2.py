@@ -3,6 +3,7 @@ from math import ceil
 import time
 
 def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
+   """Primitive 9-atom orthorhombic alpha quartz cell"""
 
    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
    a2 = farray((0.5*a,  0.5*sqrt(3.0)*a, 0.0))
@@ -29,38 +30,22 @@ def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
    
    return at
 
-
-
-def alpha_quartz_cubic():
-   a0 = alpha_quartz()
-   at = supercell(alpha_quartz(), 6, 6, 1)
+def alpha_quartz_cubic(*args, **kwargs):
+   """Non-primitive 18-atom cubic quartz cell."""
+   a0 = alpha_quartz(*args, **kwargs)
+   at = supercell(a0, 4, 4, 1)
+   at.map_into_cell()
 
    lattice = fzeros((3,3))
-   lattice[:,1] = [a0.lattice[1,1]*4.0, 0.0, 0.0]
-   lattice[:,2] = [0.0, a0.lattice[2,2]*2.0, 0.0]
-   lattice[:,3] = [0.0, 0.0, a0.lattice[3,3]]
-
-#   at.set_lattice(lattice, remap=False)
+   lattice[1,1] = a0.lattice[1,1]*2.0
+   lattice[2,2] = a0.lattice[2,2]*2.0
+   lattice[3,3] = a0.lattice[3,3]
 
    g = linalg.inv(lattice)
-
-   d = farray((0.01, 0.02, 0.03))
-   i = 1
-   while True:
-      t = dot(g, at.pos[:,i] + d)
-      if any(t <= -0.5) or any(t >= 0.5):
-         print 'killing', t
-         at.remove_atoms(i)
-         i = i - 1 # Retest since we've removed an atom
-      else:
-         print 'keeping', t
-      if i == at.n: break
-      i = i + 1
-
-   at.set_lattice(lattice)
-   at.map_into_cell()
-   return at
-
+   t = dot(g, at.pos)
+   cubic = at.select(logical_and(t >= -0.5, t < 0.5).all(axis=1))
+   cubic.set_lattice(lattice)
+   return cubic
 
 def beta_quartz():
    pass
@@ -249,36 +234,25 @@ O Si
 *************Yukawa***************
 %f 10.0 .t.
 </params>
-</ASAP_params>""" % (rcut(alpha), alpha)
-
-p = Potential('IP ASAP', xml)
-
-#q = alpha_quartz()
-#at = supercell(q, 3, 3, 3)
-
-#at = Atoms.read("out.xyz")
-
-#at.show()
-
-#p.print_()
-
-#af1, df1, ferr1 = force_test(at, p)
-#e = fzeros(1)
-#af2 = fzeros((3,at.n))
-#df2 = fzeros((3,at.n))
-#at.calc_connect()
-#p.calc(at, e=e, f=af2)
+</ASAP_params>""" 
 
 
-#for rep in (4,):
-#   for alpha in (0.1,):
-#      aa = supercell(at, rep, rep, rep)
+reps = (1, 2, 3, 4)
+alphas = (0.0, 0.01, 0.05, 0.1)
 
-      #t1 = time.time()
-      #p.calc(aa, f=f, e=e)
-      #t2 = time.time()
+times = {}
+fvar('e')
+at = alpha_quartz_cubic()
+for rep in reps:
+   aa = supercell(at, rep, rep, rep)
+   for alpha in alphas:
+      p = Potential('IP ASAP', xml % (rcut(alpha), alpha))
 
-      #times[(rep,alpha)] = t2-t1
+      t1 = time.time()
+      p.calc(aa, e=e)
+      t2 = time.time()
+
+      times[(rep,alpha)] = (aa.n, t2-t1)
 
 
 #for alpha in alphas:
