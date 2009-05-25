@@ -317,3 +317,14 @@ class FortranArray(numpy.ndarray):
                     yield fa
                 else:
                     yield obj
+
+    def all(self, axis=None, out=None):
+	if axis is not None:
+	    axis -= 1
+	return numpy.ndarray.all(self, axis, out).view(FortranArray)
+
+    def any(self, axis=None, out=None):
+	if axis is not None:
+	    axis -= 1
+	return numpy.ndarray.any(self, axis, out).view(FortranArray)
+
