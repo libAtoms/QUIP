@@ -39,6 +39,8 @@ include 'IPModel_interface.h'
 
 logical, private :: asap_initialised = .false.
 
+integer, private, parameter :: PARAM_LINE_LENGTH = 255, N_PARAM_LINE = 93
+
 public :: IPModel_ASAP
 type IPModel_ASAP
   integer :: n_types = 0, n_atoms = 0
@@ -46,13 +48,15 @@ type IPModel_ASAP
 
   real(dp) :: cutoff = 0.0_dp
 
-  character(len=FIELD_LENGTH) :: label, param_file
+  character(len=FIELD_LENGTH) :: label
+  character(len=PARAM_LINE_LENGTH) param_lines(N_PARAM_LINE)
+  integer :: n_param_lines = 0
   type(mpi_context) :: mpi
   logical :: initialised
 
 end type IPModel_ASAP
 
-logical :: parse_in_ip, parse_matched_label
+logical :: parse_in_ip, parse_matched_label, parse_in_ip_params
 type(IPModel_ASAP), pointer :: parse_ip
 
 interface Initialise
@@ -158,7 +162,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       end if
 
       this%n_atoms = at%n
-      call asap_singlepoint_init(this%n_atoms, this%n_types, this%param_file)
+      call asap_singlepoint_init(this%n_atoms, this%n_types, this%param_lines)
       asap_initialised = .true.
    end if
 
@@ -191,10 +195,15 @@ subroutine IPModel_ASAP_Print(this, file)
   type(IPModel_ASAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj
+  integer :: ti, tj, i
 
   call Print("IPModel_ASAP : ASAP Potential", file=file)
   call Print("IPModel_ASAP : n_types = " // this%n_types //" n_atoms = "//this%n_atoms// " cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_ASAP : n_param_lines = " // this%n_param_lines)
+
+  do i=1,this%n_param_lines
+     call print(this%param_lines(i))
+  end do
 
   do ti=1, this%n_types
     call Print ("IPModel_ASAP : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
@@ -212,17 +221,24 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
   character(len=*), intent(in) :: param_str
 
   type(xml_t) :: fxml
+  integer i
 
   if (len(trim(param_str)) <= 0) return
 
-  parse_in_ip = .false.
+  parse_in_ip = .false. 
   parse_matched_label = .false.
   parse_ip => this
+
+  this%n_param_lines = 0
+  do i=1,N_PARAM_LINE
+     this%param_lines(i) = repeat(' ',PARAM_LINE_LENGTH)
+  end do
 
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
     startElement_handler = IPModel_startElement_handler, &
-    endElement_handler = IPModel_endElement_handler)
+    endElement_handler = IPModel_endElement_handler, &
+    characters_handler = IPModel_character_handler)
   call close_xml_t(fxml)
 
   if (this%n_types == 0) then
@@ -246,7 +262,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=FIELD_LENGTH) :: value
 
   logical shifted
-  integer ti, tj
+  integer ti, tj, i, num_fields
 
   if (name == 'ASAP_params') then ! new ASAP stanza
 
@@ -284,13 +300,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
-
-      call QUIP_FoX_get_value(attributes, "param_file", value, status)
-      if (status /= 0) call system_abort("IPModel_ASAP_read_params_xml cannot find param_file")
-      parse_ip%param_file = value
-
     endif
-
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
 
@@ -310,10 +320,46 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
+  else if (parse_in_ip .and. name == 'params') then
+
+     call Print('entering <params>')
+     parse_in_ip_params = .true.
 
   endif
 
 end subroutine IPModel_startElement_handler
+
+subroutine IPModel_character_handler(chars)
+  character(len=*), intent(in) :: chars
+
+  integer :: i, l
+  integer, save :: j = 1, k = 1
+
+  if (parse_in_ip_params) then
+     call print('n_param_lines = '//parse_ip%n_param_lines)
+     do i=1,len(chars)
+        if (chars(i:i) == char(10)) then
+           if (i /= 1) then
+              parse_ip%n_param_lines = parse_ip%n_param_lines + 1
+              if (parse_ip%n_param_lines > N_PARAM_LINE) then
+                 call print(chars)
+                 do l=1,93
+                    call print(parse_ip%param_lines(l))
+                 end do
+                 call system_abort('IPModel_ASAP: too many param lines '//parse_ip%n_param_lines)
+              end if
+              k = k + 1
+              j = 1
+           end if
+        else
+           parse_ip%param_lines(k)(j:j) = chars(i:i)
+           j = j + 1
+           if (j > PARAM_LINE_LENGTH) call system_abort('IPModel_ASAPL: param line too long')
+        end if
+     end do
+  end if
+
+end subroutine IPModel_character_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: URI
@@ -324,6 +370,12 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     if (name == 'ASAP_params') then
       parse_in_ip = .false.
     end if
+    
+    if (name == 'params') then
+       call Print('leaving <params>')
+       parse_in_ip_params = .false.
+    end if
+
   endif
 
 end subroutine IPModel_endElement_handler
