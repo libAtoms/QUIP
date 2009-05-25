@@ -1783,12 +1783,13 @@ contains
   end subroutine table_print_mainlog
   
 
-  subroutine table_print(this,verbosity,file,real_format,int_format,str_format,logical_format,properties)
+  subroutine table_print(this,verbosity,file,real_format,int_format,str_format,logical_format,properties,mask)
     type(table),    intent(in)        :: this
     type(inoutput), intent(inout)        :: file
     integer,        intent(in), optional :: verbosity
     character(*), optional, intent(in) :: real_format, int_format, str_format, logical_format
     type(Dictionary), intent(in), optional :: properties
+    logical, optional, intent(in) :: mask(:)
 
     !locals
     character(10) :: my_real_format, my_int_format, my_str_format, my_logical_format
@@ -1804,6 +1805,9 @@ contains
     if (.not. present(properties)) then
        ! Print all columns in order, first ints then reals, strs and logicals
        do i=1,this%N
+	  if (present(mask)) then
+	    if (.not.mask(i)) cycle
+	  endif
           line = ''
           do j=1,this%intsize
              write (fmt,'('//trim(my_int_format)//')') this%int(j,i)
@@ -1828,6 +1832,9 @@ contains
        ! to print, and in what order
 
        do i=1,this%N
+	  if (present(mask)) then
+	    if (.not.mask(i)) cycle
+	  endif
           line = ''
           fmt = ''
           do j=1,properties%N
