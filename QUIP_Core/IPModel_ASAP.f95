@@ -50,7 +50,7 @@ type IPModel_ASAP
 
   character(len=FIELD_LENGTH) :: label
   character(len=PARAM_LINE_LENGTH) param_lines(N_PARAM_LINE)
-  integer :: n_param_lines = 0
+  integer :: n_param_lines = 0, param_col = 1
   type(mpi_context) :: mpi
   logical :: initialised
 
@@ -229,7 +229,8 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
   parse_matched_label = .false.
   parse_ip => this
 
-  this%n_param_lines = 0
+  this%n_param_lines = 1
+  this%param_col = 1
   do i=1,N_PARAM_LINE
      this%param_lines(i) = repeat(' ',PARAM_LINE_LENGTH)
   end do
@@ -333,28 +334,21 @@ subroutine IPModel_character_handler(chars)
   character(len=*), intent(in) :: chars
 
   integer :: i, l
-  integer, save :: j = 1, k = 1
 
   if (parse_in_ip_params) then
-     call print('n_param_lines = '//parse_ip%n_param_lines)
      do i=1,len(chars)
         if (chars(i:i) == char(10)) then
-           if (i /= 1) then
+           if (i /= 1 .and. i /= len(chars)) then
               parse_ip%n_param_lines = parse_ip%n_param_lines + 1
               if (parse_ip%n_param_lines > N_PARAM_LINE) then
-                 call print(chars)
-                 do l=1,93
-                    call print(parse_ip%param_lines(l))
-                 end do
                  call system_abort('IPModel_ASAP: too many param lines '//parse_ip%n_param_lines)
               end if
-              k = k + 1
-              j = 1
+              parse_ip%param_col = 1
            end if
         else
-           parse_ip%param_lines(k)(j:j) = chars(i:i)
-           j = j + 1
-           if (j > PARAM_LINE_LENGTH) call system_abort('IPModel_ASAPL: param line too long')
+           parse_ip%param_lines(parse_ip%n_param_lines)(parse_ip%param_col:parse_ip%param_col) = chars(i:i)
+           parse_ip%param_col = parse_ip%param_col + 1
+           if (parse_ip%param_col > PARAM_LINE_LENGTH) call system_abort('IPModel_ASAPL: param line too long')
         end if
      end do
   end if
