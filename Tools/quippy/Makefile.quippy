@@ -61,9 +61,10 @@ presetup:
 	./presetup.py
 
 build: atomeyelib presetup
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
 	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
 
-install:
+install: atomeyelib presetup
 	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS} install ${INSTALL_OPTS}
 
 .DEFAULT: 

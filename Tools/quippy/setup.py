@@ -253,9 +253,10 @@ if argfilt:
     argfilt = [s for s in sys.argv if s.startswith('--atomeye-libs')]
     if argfilt:
         print argfilt[0].split('=')[1]
-        atomeye_libs = [s[2:] for s in argfilt[0].split('=')[1].split()]
+        atomeye_libs = [s[2:] for s in argfilt[0].split('=')[1].split() if s[:2] == '-l']
+        atomeye_libdirs = [s[2:] for s in argfilt[0].split('=')[1].split() if s[:2] == '-L']
         del sys.argv[sys.argv.index(argfilt[0])]
-        print atomeye_libs
+        print atomeye_libs, atomeye_libdirs
     else:
         do_atomeye = False
 
@@ -349,7 +350,7 @@ if do_quippy_extension:
     if do_atomeye:
         ext_args = {'name': 'quippy._atomeye',
                     'sources': ['atomeyemodule.c'],
-                    'library_dirs':  library_dirs + [os.path.join(atomeye_dir, 'lib'),'/usr/X11/lib'],
+                    'library_dirs':  atomeye_libdirs + library_dirs + [os.path.join(atomeye_dir, 'lib')],
                     'libraries': ['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
                     'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
                     'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
