@@ -42,6 +42,9 @@ makecrack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 ts_calculation: % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
+QMMM_CP2K_md: % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
+
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}
 
