@@ -4686,7 +4686,7 @@ contains
    end subroutine atoms_print
 
 
-   subroutine atoms_print_xyz(this, xyzfile, comment, properties, all_properties, human_readable, real_format)
+   subroutine atoms_print_xyz(this, xyzfile, comment, properties, all_properties, human_readable, real_format, mask)
 
       type(Atoms),            intent(inout)    :: this     !% Atoms object to print
       type(Inoutput),         intent(inout) :: xyzfile  !% Inoutput object to write to
@@ -4698,6 +4698,7 @@ contains
       logical,      optional, intent(in)    :: human_readable !% If set to true, pretty-print table of 
                                                               !% atomic properties.
       character(len=*), optional, intent(in) :: real_format
+      logical, optional, intent(in) :: mask(:)
 
       logical             :: got_species
       integer             :: i,lookup(3), n_properties
@@ -4792,8 +4793,11 @@ contains
 
       if (.not. do_human_readable) then
          ! First write the number of atoms
-         write(line,'(i0)') this%N
-         call print(line,file=xyzfile)
+	 if (present(mask)) then
+	    call print(""//count(mask), file=xyzfile)
+	 else
+	    call print(""//this%N, file=xyzfile)
+	 endif
 
          ! Then the lattice, property names and other parameters
          call set_value(this%params, 'Lattice', reshape(this%lattice, (/9/)))
@@ -4815,7 +4819,7 @@ contains
       end if
 
       call print(this%data,file=xyzfile,real_format=my_real_format,&
-           properties=use_properties)
+           properties=use_properties, mask=mask)
 
       call finalise(use_properties)
 
