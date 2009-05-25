@@ -61,7 +61,8 @@ module cp2k_driver_module
                                      calc_connect, DEFAULT_NNEIGHTOL, &
                                      distance_min_image, &
                                      read_line, parse_line, &
-                                     assignment(=), atoms_n_neighbours, remove_bond
+                                     assignment(=), atoms_n_neighbours, remove_bond, &
+				     assign_pointer, print_xyz
   use clusters_module,         only: bfs_step,&
                                      construct_buffer, &
                                      select_hysteretic_quantum_region, &
@@ -85,7 +86,8 @@ module cp2k_driver_module
                                      parse_string, read_line, &
                                      operator(//), &
                                      NORMAL, ANAL, NERD, ERROR, &
-				     verbosity_push_decrement, verbosity_pop, current_verbosity
+				     verbosity_push_decrement, verbosity_pop, current_verbosity, &
+				     mainlog
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
@@ -527,6 +529,9 @@ contains
 !added status optionally to system_command!
     call system_command('mkdir '//trim(dir),status=status)
     call print('system_command status: '//status)
+    if (status /= 0) then
+      call system_abort('Failed to mkdir '//trim(dir))
+    endif
 
     call print('the working directory: '//trim(dir))
     this%wenv%working_directory = trim(dir)
@@ -678,6 +683,26 @@ contains
 
   end subroutine create_centred_qmcore
 
+  subroutine print_qm_region(at, file)
+    type(Atoms), intent(inout) :: at
+    type(Inoutput), optional :: file
+
+    integer, pointer :: qm_flag(:)
+
+    if (.not.(assign_pointer(at, "QM_flag", qm_flag))) &
+      call system_abort("print_qm_region couldn't find QM_flag property")
+
+    if (present(file)) then
+      file%prefix="QM_REGION"
+      call print_xyz(at, file, mask=(qm_flag /= 0))
+      file%prefix=""
+    else
+      mainlog%prefix="QM_REGION"
+      call print_xyz(at, mainlog, mask=(qm_flag /= 0))
+      mainlog%prefix=""
+    end if
+  end subroutine print_qm_region
+
   subroutine construct_buffer_origin(my_atoms,Radius,list,origin)
 
     type(Atoms),        intent(inout) :: my_atoms
@@ -797,7 +822,7 @@ contains
   logical                               :: ex
 
 
-    call system_timer('go_cp2k')
+    call system_timer('go_cp2k_start')
     call print_title('Setting up the CP2K run')
 
     if (.not.present(energy).and..not.present(forces)) call system_abort('go_cp2k: nothing to be calculated. Neither energy, nor forces.')
@@ -903,7 +928,11 @@ contains
 
     call print(run_command)
 !added status optionally to system_command.
+    call system_timer('go_cp2k_start')
+    call system_timer('system_command(run_command)')
     call system_command(run_command,status=status)
+    call system_timer('system_command(run_command)')
+    call system_timer('go_cp2k_end')
     call print_title('...CP2K...')
     call print('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
     call system_command('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
@@ -940,7 +969,7 @@ contains
     call finalise(param)    
 
     call print('CP2K finished. Go back to main program.')
-    call system_timer('go_cp2k')
+    call system_timer('go_cp2k_end')
 
   end subroutine go_cp2k
 
