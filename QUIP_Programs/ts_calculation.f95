@@ -2,9 +2,6 @@ program ts_main
   use libAtoms_module
   use QUIP_module 
   use ts_module
-#ifdef HAVE_CP2K
-  use cp2k_driver_module
-#endif
   use tsParams_module
 
   implicit none
