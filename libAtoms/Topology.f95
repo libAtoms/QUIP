@@ -2,12 +2,14 @@ module topology_module
 
   use atoms_module,            only: atoms, print, &
                                      add_property, &
-                                     read_line, parse_line, atoms_n_neighbours
+                                     read_line, parse_line, &
+                                     atoms_n_neighbours, atoms_neighbour, &
+                                     distance_min_image
   use clusters_module,         only: bfs_step, add_cut_hydrogens
   use dictionary_module,       only: get_value, value_len
   use linearalgebra_module,    only: find_in_array, find, &
                                      print
-  use periodictable_module,    only: ElementName, ElementMass
+  use periodictable_module,    only: ElementName, ElementMass, ElementCovRad
   use structures_module,       only: find_motif
   use system_module,           only: dp, inoutput, initialise, finalise, &
                                      INPUT, OUTPUT, INOUT, &
@@ -23,7 +25,7 @@ module topology_module
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
-  use units_module,            only: MASSCONVERT
+  use units_module,            only: MASSCONVERT, PI
 
 
   implicit none
@@ -31,8 +33,12 @@ module topology_module
   private :: next_motif, write_psf_section, create_bond_list
   private :: create_angle_list, create_dihedral_list
   private :: create_improper_list, get_property
+#ifdef HAVE_DANNY
+  private :: create_pos_dep_charges, calc_fc
+#endif
 
-  public  :: write_brookhaven_pdb_file, &
+  public  :: delete_bond, &
+             write_brookhaven_pdb_file, &
              write_psf_file, &
              create_CHARMM, &
              NONE_RUN, &
@@ -54,6 +60,20 @@ module topology_module
                                                            !(really about 116 at the mo)
   integer,  parameter, private :: MAX_ATOMS_PER_RES = 50   !Maximum number of atoms in one residue
   integer,  parameter, private :: MAX_IMPROPERS_PER_RES = 12   !Maximum number of impropers in one residue
+
+#ifdef HAVE_DANNY
+  real(dp), parameter, private :: Danny_R_q = 2.0_dp
+  real(dp), parameter, private :: Danny_Delta_q = 0.1_dp
+
+  real(dp), parameter, private :: Danny_Si_Si_cutoff = 2.8_dp
+  real(dp), parameter, private :: Danny_Si_Si_O_cutoff = 2.8_dp
+  real(dp), parameter, private :: Danny_Si_O_cutoff = 2.6_dp
+  real(dp), parameter, private :: Danny_Si_H_cutoff = 0._dp
+!  real(dp), parameter, private :: Danny_O_O_cutoff = 2.6_dp
+  real(dp), parameter, private :: Danny_O_O_cutoff = 0._dp
+  real(dp), parameter, private :: Danny_O_H_cutoff = 1.0_dp
+  real(dp), parameter, private :: Danny_H_H_cutoff = 0._dp
+#endif
 
 contains
 
@@ -90,7 +110,12 @@ contains
     real(dp)                             :: mol_charge_sum
     logical                              :: found_residues
 #ifdef HAVE_DANNY
-    type(Table)                          :: atom_Si, atom_SiO
+    type(Table)                          :: atom_Si, atom_SiO, SiO_list
+    real(dp), dimension(:), allocatable  :: charge
+integer :: j,k, atom_i
+logical :: silanol
+    type(Table) :: bondH,bondSi
+    integer :: bond_H,bond_Si
 #endif
 !    integer                             :: qm_flag_index, pos_indices(3)
 !    logical                             :: do_qmmm
@@ -215,14 +240,28 @@ contains
        !2 cluster carving steps, to include OSI and HSI atoms
        call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.)
        call print(atom_SiO%N//' O atoms found in total')
-!       do i=1,atom_SiO%N
+       do i=1,atom_SiO%N
+           if (at%Z(atom_SiO%int(1,i)).eq.1) then
+              call print('WARNING! Si and H are very close')
+              bond_H = atom_SiO%int(1,i)
+              call initialise(bondH,4,0,0,0,0)
+              call append(bondH,(/bond_H,0,0,0/))
+              call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.)
+              do j = 1,bondSi%N
+                 if (at%Z(bondSi%int(1,i)).eq.14) then
+                    bond_Si = bondSi%int(1,i)
+                    call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')')
+                    call delete_bond(at,bond_H,bond_Si)
+                 endif
+              enddo
+           endif
 !          call print('atom_SiO has '//at%Z(atom_SiO%int(1,i)))
-!       enddo
+       enddo
 !       if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
    !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
        call add_cut_hydrogens(at,atom_SiO)
-       call print(atom_SiO%N//' Si/O/H atoms found in total')
-       !check if none of these atom are identified yet
+       call print(atom_SiO%N//' O/H atoms found in total')
+       !check if none of these atoms are identified yet
        if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
           call system_abort('already identified atoms found again.')
        endif
@@ -237,13 +276,49 @@ contains
        endif
        unidentified(atom_Si%int(1,1:atom_Si%N)) = .false.
        unidentified(atom_SiO%int(1,1:atom_SiO%N)) = .false.
+
        !add atom, residue and molecule names
-       atom_name(atom_Si%int(1,1:atom_Si%N)) = 'SIO'
-       do i = 1, atom_SiO%N
-!          if (at%Z(atom_SiO%int(1,i)).eq.14) atom_name(atom_SiO%int(1,i)) = 'SIO'
-          if (at%Z(atom_SiO%int(1,i)).eq.8)  atom_name(atom_SiO%int(1,i)) = 'OSI'
+       do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
+          atom_i = atom_Si%int(1,i)
+          if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.8) .or. &
+               any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.8) ) then
+             atom_name(atom_i) = 'SIO'
+!             call print('Found SIO silica oxygen.'//atom_i)
+          else
+             atom_name(atom_i) = 'SIB'
+!             call print('Found SIB bulk silicon.'//atom_i)
+          endif
+!if (atoms_n_neighbours(at,atom_i).ne.4) call system_abort('More than 4 neighbours of Si '//atom_i)
+       enddo
+       do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
+          atom_i = atom_SiO%int(1,i)
+          if (at%Z(atom_i).eq.8) then
+!             silanol = .false.
+!             do k = 1, atoms_n_neighbours(at,atom_i)
+!                j = atoms_neighbour(at,atom_i,k)
+!                if (at%Z(j).eq.1) silanol = .true.
+!             enddo
+!             if (silanol) then
+!                atom_name(atom_i) = 'OSI'
+!                call print('Found OH silanol oxygen.'//atom_i)
+!             else
+!                atom_name(atom_i) = 'OSB'
+!                call print('Found OB bridging oxygen.'//atom_i)
+!             endif
+             if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.1) .or. &
+                  any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.1) ) then
+                atom_name(atom_i) = 'OSI'
+!                call print('Found OH silanol oxygen.'//atom_SiO%int(1,i))
+             else
+                atom_name(atom_i) = 'OSB'
+!                call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
+             endif
+!if (atoms_n_neighbours(at,atom_i).ne.2) call system_abort('More than 4 neighbours of Si '//atom_i)
+          endif
           if (at%Z(atom_SiO%int(1,i)).eq.1)  atom_name(atom_SiO%int(1,i)) = 'HSI'
        enddo
+!call print(at%connect)
+
        residue_number(atom_Si%int(1,1:atom_Si%N)) = nres
        residue_number(atom_SiO%int(1,1:atom_SiO%N)) = nres
 !this should be fine, added later:       cha_res_name(atom_SiO%int(1,1:atom_SiO%N)) = 'SIO2'
@@ -253,8 +328,29 @@ contains
 !!!!
 !!!!
 !!!!
+      ! collect the whole molecule
+       call initialise(SiO_list,4,0,0,0,0)
+       do i = 1, atom_Si%N
+          call append (SiO_list,atom_Si%int(1:4,i))
+       enddo
+       do i = 1, atom_SiO%N
+          call append (SiO_list,atom_SiO%int(1:4,i))
+       enddo
+
+      ! calc charges for the whole molecule
+       call create_pos_dep_charges(at,SiO_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+
+      ! add charges to the CHARMM charges
+       atom_charge(SiO_list%int(1,1:SiO_list%N)) = charge(SiO_list%int(1,1:SiO_list%N))
+     ! do i=1,at%N
+     !    call print('atom '//i//' has charge '//atom_charge(i))
+     ! enddo
+!!!!
+!!!!
+!!!!
        call finalise(atom_Si)
        call finalise(atom_SiO)
+       call finalise(SiO_list)
     endif
 
 #endif
@@ -763,12 +859,16 @@ enddo
 !  logical              :: do_qmmm
 !  integer,dimension(3) :: pos_indices
 !  integer              :: qm_flag_index
+  integer              :: atom_mol_name_index
 
     call system_timer('create_bond_list')
 
     if (.not. at%connect%initialised) &
        call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
 
+#ifdef HAVE_DANNY
+    atom_mol_name_index = get_property(at,'atom_mol_name')
+#endif
     call initialise(bonds,2,0,0,0,0)
 
 !    do_qmmm = .true.
@@ -781,7 +881,11 @@ enddo
     do i=1,at%N
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/i,0,0,0/))
+#ifdef HAVE_DANNY
+       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
+#else
        call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
+#endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.gt.i) then
@@ -797,6 +901,19 @@ enddo
 !!                   call print('added '//i//' (QM flag '//at%data%int(qm_flag_index,i)//') -- '//atom_j//' (QM flag '//at%data%int(qm_flag_index,atom_j)//')')
 !                endif
 !             endif
+#ifdef HAVE_DANNY
+            ! do not include H2O -- SiO2 bonds
+             if ((trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i)))) then
+                call print ('Check if add '//atom_j//'--'//i//' from molecules '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)))
+             !call print('Check if add '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)))
+!                call print ('  Yes, if '//distance_min_image(at,atom_j,i)//' < '//(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol)
+!                call print ((distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) )
+!             call print(.not.( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i))) .and. &
+!                        (distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) ))
+             endif
+             if (.not.( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i))) .and. &
+                        (distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) )) &
+#endif
              call append(bonds,(/i,atom_j/))
 !             call print('added '//i//' -- '//atom_j)
           else
@@ -823,23 +940,52 @@ enddo
   integer     :: i,j
   type(Table) :: atom_a, atom_b
   integer     :: atom_j
+#ifdef HAVE_DANNY
+  logical     :: keep_it
+  integer     :: atom_type_index
+  integer     :: atom_mol_name_index
+#endif
 
     call system_timer('create_angle_list')
 
     if (.not. at%connect%initialised) &
        call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
 
+#ifdef HAVE_DANNY
+    atom_type_index = get_property(at,'atom_type')
+    atom_mol_name_index = get_property(at,'atom_mol_name')
+#endif
     call initialise(angles,3,0,0,0,0)
 
     do i=1,bonds%N
-!NEW VARIATION
       ! look for one more to the beginning: ??--1--2 where ??<2
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/bonds%int(1,i),0,0,0/))
+#ifdef HAVE_DANNY
+       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
+#else
        call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
+#endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
+#ifdef HAVE_DANNY
+         ! we kept 2.8 A cutoff for Si-Si and Si-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
+          if (any(at%Z(atom_j)*1000000+at%Z(bonds%int(1,i))*1000+at%Z(bonds%int(2,i)).eq.(/14008014,8014008,14008001,1008014/))) then
+             keep_it =  (distance_min_image(at,atom_j,bonds%int(1,i)).le.2.6_dp).and. &
+                        (distance_min_image(at,bonds%int(2,i),bonds%int(1,i)).le.2.6_dp)
+             !call print('keeping '//trim(at%data%str(atom_type_index,atom_j))//atom_j//'--'//trim(at%data%str(atom_type_index,bonds%int(1,i)))//bonds%int(1,i)//'--'//trim(at%data%str(atom_type_index,bonds%int(2,i)))//bonds%int(2,i)//' ? '//keep_it)
+          else
+             keep_it = .true.
+          endif
+         ! we still have a 2.6 A cutoff even for intermolecular Si-O. Decrease it to nearest neighbour tolerance
+          if ( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,bonds%int(1,i)))) .and. &
+               (distance_min_image(at,atom_j,bonds%int(1,i)).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(bonds%int(1,i))))*at%nneightol) ) &
+             keep_it = .false.
+
+          if (keep_it.and.(atom_j.lt.bonds%int(2,i))) &
+#else
           if (atom_j.lt.bonds%int(2,i)) &
+#endif
              call append(angles,(/atom_j,bonds%int(1,i),bonds%int(2,i)/))
        enddo
        call finalise(atom_a)
@@ -847,36 +993,36 @@ enddo
       ! look for one more to the end: 1--2--?? where 1<??
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/bonds%int(2,i),0,0,0/))
+#ifdef HAVE_DANNY
+       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
+#else
        call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
+#endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
+#ifdef HAVE_DANNY
+         ! we kept 2.8 A cutoff for Si-Si and Si-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
+          if (any(at%Z(atom_j)*1000000+at%Z(bonds%int(2,i))*1000+at%Z(bonds%int(1,i)).eq.(/14008014,8014008,14008001,1008014/))) then
+             keep_it =  (distance_min_image(at,atom_j,bonds%int(2,i)).le.2.6_dp).and. &
+                        (distance_min_image(at,bonds%int(2,i),bonds%int(1,i)).le.2.6_dp)
+             !call print('keeping '//trim(at%data%str(atom_type_index,bonds%int(1,i)))//bonds%int(1,i)//'--'//trim(at%data%str(atom_type_index,bonds%int(2,i)))//bonds%int(2,i)//'--'//trim(at%data%str(atom_type_index,atom_j))//atom_j//' ? '//keep_it)
+          else
+             keep_it = .true.
+          endif
+         ! we still have a 2.6 A cutoff even for intermolecular Si-O. Decrease it to nearest neighbour tolerance
+          if ( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,bonds%int(2,i)))) .and. &
+               (distance_min_image(at,atom_j,bonds%int(2,i)).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(bonds%int(2,i))))*at%nneightol) ) &
+             keep_it = .false.
+
+          if (keep_it.and.(atom_j.lt.bonds%int(1,i))) &
+#else
           if (atom_j.lt.bonds%int(1,i)) &
+#endif
              call append(angles,(/bonds%int(1,i),bonds%int(2,i),atom_j/))
        enddo
        call finalise(atom_a)
        call finalise(atom_b)
-!NEW VARIATION
 
-!OLD VARIATION
-!       do j=i+1,bonds%N !all angles will be included only once
-!          if (bonds%int(1,j).eq.bonds%int(1,i)) then
-!             call append(angles,(/bonds%int(2,j),bonds%int(1,i),bonds%int(2,i)/))
-!    !         call print('added(1) '//bonds%int(2,j)//' -- '//bonds%int(1,i)//' -- '//bonds%int(2,i))
-!          endif
-!          if (bonds%int(2,j).eq.bonds%int(1,i)) then
-!             call append(angles,(/bonds%int(1,j),bonds%int(1,i),bonds%int(2,i)/))
-!    !         call print('added(2) '//bonds%int(1,j)//' -- '//bonds%int(1,i)//' -- '//bonds%int(2,i))
-!          endif
-!          if (bonds%int(1,j).eq.bonds%int(2,i)) then
-!             call append(angles,(/bonds%int(1,i),bonds%int(2,i),bonds%int(2,j)/))
-!    !         call print('added(3) '//bonds%int(1,i)//' -- '//bonds%int(2,i)//' -- '//bonds%int(2,j))
-!          endif
-!          if (bonds%int(2,j).eq.bonds%int(2,i)) then
-!             call append(angles,(/bonds%int(1,i),bonds%int(2,i),bonds%int(1,j)/))
-!    !         call print('added(4) '//bonds%int(1,i)//' -- '//bonds%int(2,i)//' -- '//bonds%int(1,j))
-!          endif
-!       enddo
-!OLD VARIATION
     enddo
 
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
@@ -890,7 +1036,7 @@ enddo
     call system_timer('create_angle_list')
 
   end subroutine create_angle_list
-  
+
   subroutine create_dihedral_list(at,bonds,angles,dihedrals)
 
   type(Atoms), intent(in)  :: at
@@ -910,7 +1056,9 @@ enddo
     call initialise(dihedrals,4,0,0,0,0)
 
     do i=1,angles%N
-!NEW VARIATION
+#ifdef HAVE_DANNY
+       if (any(at%Z(angles%int(1:3,i)).eq.14)) cycle
+#endif
       ! look for one more to the beginning: ??--1--2--3
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(1,i),0,0,0/))
@@ -918,13 +1066,18 @@ enddo
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
-!make sure it's not included twice -- no need to O(N^2) check at the end
-             if (atom_j.lt.angles%int(3,i)) &
+            ! make sure it's not included twice -- no need to O(N^2) check at the end
+             if (atom_j.lt.angles%int(3,i)) then
+#ifdef HAVE_DANNY
+                if (at%Z(atom_j).eq.14) cycle
+#endif
                 call append(dihedrals,(/atom_j,angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
+             endif
           endif
        enddo
        call finalise(atom_a)
        call finalise(atom_b)
+
       ! look for one more to the end: 1--2--3--??
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(3,i),0,0,0/))
@@ -932,51 +1085,18 @@ enddo
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
-             if (atom_j.lt.angles%int(1,i)) &
-!make sure it's not included twice -- no need to O(N^2) check at the end
+            ! make sure it's not included twice -- no need to O(N^2) check at the end
+             if (atom_j.lt.angles%int(1,i)) then
+#ifdef HAVE_DANNY
+                if (at%Z(atom_j).eq.14) cycle
+#endif
                 call append(dihedrals,(/angles%int(1,i),angles%int(2,i),angles%int(3,i),atom_j/))
+             endif
           endif
        enddo
        call finalise(atom_a)
        call finalise(atom_b)
-!NEW VARIATION
-
-!OLD VARIATION
-!       do j=1,bonds%N
-!          if (bonds%int(2,j).eq.angles%int(2,i)) cycle
-!          if (bonds%int(1,j).eq.angles%int(2,i)) cycle
-!          if (bonds%int(1,j).eq.angles%int(1,i)) then
-!             call append(dihedrals,(/bonds%int(2,j),angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
-!          endif
-!          if (bonds%int(2,j).eq.angles%int(1,i)) then
-!             call append(dihedrals,(/bonds%int(1,j),angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
-!          endif
-!          if (bonds%int(1,j).eq.angles%int(3,i)) then
-!             call append(dihedrals,(/angles%int(1,i),angles%int(2,i),angles%int(3,i),bonds%int(2,j)/))
-!          endif
-!          if (bonds%int(2,j).eq.angles%int(3,i)) then
-!             call append(dihedrals,(/angles%int(1,i),angles%int(2,i),angles%int(3,i),bonds%int(1,j)/))
-!          endif
-!       enddo
-!OLD VARIATION
     enddo
-
-!OLD VARIATION -- this part of the algorithm takes ~ O(dihedrals%N^2) -- alternatively 1 </> check can be used
-!   ! delete lines included twice
-!    i = 1
-!    do while (i<dihedrals%N)
-!!       call print ('i = '//i//', j = '//j)
-!       j = find_in_array(dihedrals%int(1:4,(i+1):dihedrals%N), dihedrals%int(1:4,i))
-!       if (j.eq.0) j = find_in_array(dihedrals%int(1:4,(i+1):dihedrals%N), (/dihedrals%int(4,i),dihedrals%int(3,i),dihedrals%int(2,i),dihedrals%int(1,i)/))
-!!       call print ('i = '//i//', j = '//(i+j))
-!       if (j.gt.0) then
-!!          call print('found '//dihedrals%int(1,i)//' '//dihedrals%int(2,i)//' '//dihedrals%int(3,i)//' '//dihedrals%int(4,i))
-!!          call print('delete '//dihedrals%int(1,(i+j))//' '//dihedrals%int(2,(i+j))//' '//dihedrals%int(3,(i+j))//' '//dihedrals%int(4,(i+j)))
-!          call delete(dihedrals,(i+j)) ! j>i and none of the dihedrals are included twice => no need to recheck i (i=i-1)
-!       endif
-!       i = i + 1
-!    enddo
-!OLD VARIATION
 
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
        call system_abort('create_dihedral_list: element(s) of dihedrals not within (0;at%N]')
@@ -1066,7 +1186,7 @@ enddo
       atom_res_name_index = get_property(at,'atom_res_name')
       if (all(at%data%str(atom_res_name_index,imp_atoms(2:4)).eq.at%data%str(atom_res_name_index,imp_atoms(1)))) &
          cycle ! these should be added when identifying the residues
-!ORDER!!!!!!!! check charmm.pot file - start with $i, end with  H or O or N, in this order -- for intraresidual residues this can be needed later on...
+!ORDER: check charmm.pot file - start with $i, end with  H or O or N, in this order -- for intraresidual residues this can be needed later on...
       reordered = .true.
       tmp = 0
       ! if there is H
@@ -1116,7 +1236,7 @@ enddo
         endif
       endif
 
-      !checking and adding only backbone i.e. not intraresidual impropers where order of 2nd and 3rd atom doesn't matter
+      !checking and adding only backbone (i.e. not intraresidual impropers) where the order of the 2nd and 3rd atoms doesn't matter
       atom_res_name_index = get_property(at,'atom_res_name')
       if (all(at%data%str(atom_res_name_index,imp_atoms(2:4)).eq.at%data%str(atom_res_name_index,imp_atoms(1)))) &
          cycle ! these should be added when identifying the residues
@@ -1193,5 +1313,194 @@ enddo
     end if
 
   end function get_property
+
+#ifdef HAVE_DANNY
+  subroutine create_pos_dep_charges(my_atoms,SiOH_list,charge,residue_names)
+
+    type(Atoms), intent(in) :: my_atoms
+    type(Table), intent(in) :: SiOH_list
+    real(dp), allocatable, dimension(:), intent(out) :: charge
+    character(4),dimension(:), intent(in) :: residue_names
+
+    real(dp) :: r_ij(3), rij, fcq
+    integer :: iatom, jatom, n_jatoms
+    integer :: atom_i, atom_j, jj
+    integer :: res_name_index
+
+    if (size(residue_names).ne.my_atoms%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//my_atoms%N)
+    allocate(charge(my_atoms%N))
+    charge = 0._dp
+
+    do iatom = 1, SiOH_list%N
+       atom_i = SiOH_list%int(1,iatom)
+       do jatom = 1, atoms_n_neighbours(my_atoms,atom_i)
+          atom_j = atoms_neighbour(my_atoms, atom_i, jatom)
+         ! check if atom_j is in SiOH_list
+          if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
+             ! if it's a water O/H, ignore it!
+             if (('TIP3'.eq.trim(residue_names(atom_j))) .or. &
+                 ('TIP' .eq.trim(residue_names(atom_j)))) then
+                 cycle
+             else
+                call print('Not found atom '//ElementName(my_atoms%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N))
+                call system_abort('Found a neighbour that is not part of the SiO2 residue')
+             endif
+          endif
+          if (atom_j.lt.atom_i) cycle
+
+         ! get the distance between atom $i$ and $j$, apply (R_q + Delta_q) cutoff
+          rij = distance_min_image(my_atoms, atom_i, atom_j)
+          if (rij.gt.(Danny_R_q+Danny_Delta_q)) cycle
+
+         !silanol endings (O--H and H--O)
+          if (my_atoms%Z(atom_i).eq.1) then
+             !call print('Found H--X for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+             if (rij.lt.1.0_dp) then
+                charge(atom_i) = 0.2_dp
+                charge(atom_j) = charge(atom_j) - 0.2_dp
+             endif
+          else
+             if (my_atoms%Z(atom_j).eq.1) then
+                !call print('Found X--H for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+                if (rij.lt.1.0_dp) then
+                   charge(atom_i) = charge(atom_i) - 0.2_dp
+                   charge(atom_j) = 0.2_dp
+                endif
+             else
+            !Si--Si and O--O do not affect each other
+                if (my_atoms%Z(atom_i).eq.my_atoms%Z(atom_j)) cycle
+            !Si--O and O--Si
+                fcq = calc_fc(rij)
+                if (my_atoms%Z(atom_i).eq.14 .and. my_atoms%Z(atom_j).eq.8) then
+                   !call print('Found Si--O for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+                   charge(atom_i) = charge(atom_i) + 0.4_dp * fcq
+                   charge(atom_j) = charge(atom_j) - 0.4_dp * fcq
+                else
+                   if (my_atoms%Z(atom_i).eq.8 .and. my_atoms%Z(atom_j).eq.14) then
+                      !call print('Found O--Si for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+                      charge(atom_i) = charge(atom_i) - 0.4_dp * fcq
+                      charge(atom_j) = charge(atom_j) + 0.4_dp * fcq
+                   else
+                      print *, atom_i, ElementName(my_atoms%Z(atom_i)),'--', atom_j, ElementName(my_atoms%Z(atom_j)),' could not be located'
+                      call system_abort('create_pos_dep_charge: unknown neighbour pair')
+                   endif
+                endif
+             endif
+          endif
+       enddo
+    enddo
+
+!    print *, 'Calculated charge on atoms:'
+!    do jj = 1, my_atoms%N
+!       print *,'   atom ',jj,': ',charge(jj)
+!    enddo
+
+
+  end subroutine create_pos_dep_charges
+
+! helper function
+  function calc_fc(rij) result(fc)
+
+    real(dp), intent(in) :: rij
+    real(dp) :: fc
+
+    real(dp) :: Danny_R, Danny_Delta
+
+      Danny_R = Danny_R_q
+      Danny_Delta = Danny_Delta_q
+
+    if (rij.lt.(Danny_R-Danny_Delta)) then
+       fc = 1._dp
+    else
+       if (rij.ge.(Danny_R+Danny_Delta)) then
+          fc = 0._dp
+       else
+          fc = 1._dp - (rij - Danny_R + Danny_Delta) / (2._dp * Danny_Delta) + &
+               sin(PI*(rij - Danny_R + Danny_Delta) / Danny_Delta) / (2._dp*PI)
+       endif
+    endif
+
+  end function calc_fc
+
+! code = 1000 * Z(atom_i) + Z(atom_j)
+  function danny_cutoff(code) result(cutoff)
+
+    integer, intent(in) :: code
+    real(dp)            :: cutoff
+
+    cutoff = 0._dp
+
+    select case(code)
+      case (14014)       !Si-Si
+        cutoff = Danny_Si_Si_cutoff
+      case (14008,8014) !Si-O
+        cutoff = Danny_Si_Si_O_cutoff
+      case (14001,1014)  !Si-H
+        cutoff = Danny_Si_H_cutoff
+      case (8008)       !O-O should never ever be less than 2.6
+        cutoff = Danny_O_O_cutoff
+      case (8001,1008)  !O-H
+        cutoff = Danny_O_H_cutoff
+      case (1001)        !H-H
+        cutoff = Danny_H_H_cutoff
+      case default
+        call system_abort('danny_cutoff: unknown code '//code)
+    end select
+
+  end function danny_cutoff
+#endif
+
+   ! removes a bond between i and j, if the bond is present
+  subroutine delete_bond(my_atoms, i, j)
+
+    type(Atoms), intent(inout) :: my_atoms
+    integer, intent(in) :: i, j
+
+    integer :: ii, jj, kk, k, ll, change
+    integer, allocatable :: bond_table(:,:)
+
+    if (i.eq.j) return
+
+    if (i.lt.j) then
+       ii = i
+       jj = j
+    else
+       ii = j
+       jj = i
+    endif
+
+    allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%t%N))
+    bond_table = int_part(my_atoms%connect%neighbour1(ii)%t)
+    kk = find_in_array(bond_table(1,:),jj)
+    if (kk.gt.0) then
+!       call print('found bond to delete for atoms '//ii//' '//jj)
+       call delete(my_atoms%connect%neighbour1(ii)%t,kk)
+    endif
+    deallocate(bond_table)
+
+   ! if I delete a bond from neighbour1, I should update in neighbour2 that
+   ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
+    if (kk.gt.0) then
+       do k = kk, my_atoms%connect%neighbour1(ii)%t%N     ! k-th neighbour of ii
+          ll = my_atoms%connect%neighbour1(ii)%t%int(1,k)     ! is ll
+          allocate (bond_table(2,my_atoms%connect%neighbour2(ll)%t%N))
+          bond_table = int_part(my_atoms%connect%neighbour2(ll)%t)
+          change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
+          if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
+          my_atoms%connect%neighbour2(ll)%t%int(2,change) = k ! this account is updated now
+          deallocate (bond_table)
+       enddo
+    endif
+
+    allocate (bond_table(2,my_atoms%connect%neighbour2(jj)%t%N))
+    bond_table = int_part(my_atoms%connect%neighbour2(jj)%t)
+    kk = find_in_array(bond_table(1,:),ii)
+    if (kk.gt.0) then
+!       call print('found bond to delete for atoms '//jj//' '//ii)
+       call delete(my_atoms%connect%neighbour2(jj)%t,kk)
+    endif
+    deallocate(bond_table)
+
+  end subroutine delete_bond
 
 end module topology_module
