@@ -1391,7 +1391,45 @@ contains
 
       r = sqrt(temp/currTemp)
       this%atoms%velo = this%atoms%velo * r
-    end subroutine rescale_velo
+   end subroutine rescale_velo
+
+   !% Reinitialise the atomic velocities to temperature 'temp'.
+   !% We first randomise the velocites.
+   subroutine reinitialise_velo_normal(this, temp, mass_weighted, zero_L)
+      type(DynamicalSystem), intent(inout) :: this
+      real(dp),              intent(in)    :: temp
+      logical, intent(in), optional        :: mass_weighted, zero_L
+
+      logical                              ::  my_mass_weighted, my_zero_L
+      real(dp)                             :: r, currTemp
+      integer                              :: i
+
+      my_mass_weighted = optional_default(.false., mass_weighted)
+      my_zero_L = optional_default(.false., zero_L)
+      currTemp = temperature(this, instantaneous=.true.)
+      ! write(line, '(a,f8.1,a,f8.1,a)')"Reinitialising velocities from ",currTemp," K to ",temp," K"; call print(line)
+
+      !call print('Randomizing velocities')
+      if (my_mass_weighted) then
+        do i=1,this%atoms%N
+           this%atoms%velo(1:3,i) = ran_normal3()/sqrt(this%atoms%mass(i))
+        enddo
+      else
+        do i=1,this%atoms%N
+           this%atoms%velo(1:3,i) = ran_normal3()
+        enddo
+      endif
+      !call print('Zeroing total momentum')
+      call zero_momentum(this)
+      if (my_zero_L) then
+        call print('Zeroing angular momentum')
+        call zero_angular_momentum(this%atoms)
+      endif
+      currTemp = temperature(this, instantaneous=.true.)
+
+      r = sqrt(temp/currTemp)
+      this%atoms%velo = this%atoms%velo * r
+   end subroutine reinitialise_velo_normal
 
    !% Draw a velocity component from the correct Gaussian distribution for
    !% a degree of freedom with (effective) mass 'm' at temperature 'T'
@@ -3286,6 +3324,44 @@ contains
      call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/d/))
 
    end subroutine constrain_bond
+
+   !
+   ! Routines to make adding constraints easier
+   !
+   !% Constrain the difference of bond length between atoms i--j and j--k
+   subroutine constrain_bond_diff(this,i,j,k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: i,j,k
+     logical, save                        :: first_call = .true.
+     integer, save                        :: BOND_DIFF_FUNC
+     real(dp)                             :: d
+
+     !Do nothing for i==j or i==k or j==k
+     if (i==j.or.i==k.or.j==k) then
+        write(line,'(3(a,i0))')'Constrain_Bond_Diff: Tried to constrain bond ',i,'--',j,'--',k
+        call print_warning(line)
+        return
+     end if
+     
+     !Report bad atom indices
+     if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) .or. (k>this%N) .or. (k<0) ) then
+        write(line,'(a,4(i0,a))')'Constrain_Bond_Diff: Cannot constrain bond ',i,'--',j,'--',k,&
+                                 ': Atom out of range (N=',this%N,')'
+        call system_abort(line)
+     end if
+     
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        BOND_DIFF_FUNC = register_constraint(BONDLENGTH_DIFF)
+        first_call = .false.
+     end if
+     
+     !Add the constraint
+     d = abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k))
+     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d/))
+
+   end subroutine constrain_bond_diff
 
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
