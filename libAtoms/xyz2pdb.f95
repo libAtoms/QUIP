@@ -1,7 +1,5 @@
-! A program that takes an XYZ file and outputs a PSF and a PDB file.
-! Also needs a residue library.
-! written by Csilla Varnai
-! last modified -- 2009-02-19
+! last modified -- 2009-02-19 -- Csilla
+! takes an xyz file, identifies the residues and outputs a PSF and a PDB file.
 
 program xyz2pdb
 
@@ -18,13 +16,15 @@ program xyz2pdb
   use paramreader_module,      only: param_register, param_read_args, &
                                      FIELD_LENGTH, PARAM_MANDATORY
   use periodictable_module,    only: ElementCovRad
-  use system_module,           only: dp, system_initialise, system_finalise, &
+  use system_module,           only: dp, inoutput, &
+                                     system_initialise, system_finalise, &
                                      system_timer, system_abort, &
                                      print, verbosity_push, &
                                      operator(//), &
+                                     INPUT, OUTPUT, &
                                      SILENT, NORMAL, ANAL, NERD
   use table_module,            only: table, finalise, int_part, delete
-  use topology_module,         only: create_CHARMM, &
+  use topology_module,         only: create_CHARMM, delete_bond, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
                                      MM_RUN
@@ -39,9 +39,11 @@ program xyz2pdb
                                    xyz_file
     real(dp)                    :: Neighbour_Tolerance
     logical                     :: Delete_Metal_Connections
+    logical                     :: print_xsc
     character(80)               :: Root, &
                                    pdb_name, &
-                                   psf_name
+                                   psf_name, &
+                                   xsc_name
     integer                     :: len_name
     logical                     :: ex
 
@@ -55,6 +57,7 @@ program xyz2pdb
     call param_register(params_in, 'Residue_Library', 'protein_res.CHARMM.lib',Library)
     call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance)
     call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
+    call param_register(params_in, 'Print_XSC', 'F', print_xsc)
     if (.not. param_read_args(params_in, do_check = .true.)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -69,16 +72,19 @@ program xyz2pdb
     endif
     pdb_name = trim(Root)//'.pdb'
     psf_name = trim(Root)//'.psf'
+    xsc_name = trim(Root)//'.xsc'
 
    ! print run parameters
     call print('Input:')
     call print('  XYZ file: '//trim(xyz_file))
     call print('  Residue Library: '//trim(Library))
+    call print('  Print_XSC (NAMD cell file): '//print_xsc)
     call print('  Delete_Metal_Connections'//Delete_Metal_Connections)
     call print('  Neighbour Tolerance: '//Neighbour_Tolerance)
     call print('Output:')
     call print('  PDB file: '//trim(pdb_name))
     call print('  PSF file: '//trim(psf_name))
+    if (print_xsc) call print('  XSC file: '//trim(xsc_name))
     call print('CHARMM atomic types and Brookhaven PDB format are used')
     call print('')
 
@@ -120,6 +126,7 @@ program xyz2pdb
     call print('Writing files with CHARMM format...')
     call write_psf_file(my_atoms,psf_file=trim(psf_name),run_type=MM_RUN,intrares_impropers=intrares_impropers)
     call write_brookhaven_pdb_file(my_atoms,trim(pdb_name),run_type=MM_RUN)
+    if (Print_XSC) call write_xsc_file(my_atoms,xsc_file=trim(xsc_name))
 
     call finalise(intrares_impropers)
     call finalise(my_atoms)
@@ -146,65 +153,13 @@ contains
 
   end subroutine delete_metal_connects
 
-   ! removes a bond between i and j, if the bond is present
-  subroutine delete_bond(my_atoms, i, j)
-
-    type(Atoms), intent(inout) :: my_atoms
-    integer, intent(in) :: i, j
-
-    integer :: ii, jj, kk, k, ll, change
-    integer, allocatable :: bond_table(:,:)
-
-    if (i.eq.j) return
-
-    if (i.lt.j) then
-       ii = i
-       jj = j
-    else
-       ii = j
-       jj = i
-    endif
-
-    allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%N))
-    bond_table = int_part(my_atoms%connect%neighbour1(ii))
-    kk = find_in_array(bond_table(1,:),jj)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//ii//' '//jj)
-       call delete(my_atoms%connect%neighbour1(ii),kk)
-    endif
-    deallocate(bond_table)
-
-   ! if I delete a bond from neighbour1, I should update in neighbour2 that
-   ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
-    if (kk.gt.0) then
-       do k = kk, my_atoms%connect%neighbour1(ii)%N     ! k-th neighbour of ii
-          ll = my_atoms%connect%neighbour1(ii)%int(1,k)     ! is ll
-          allocate (bond_table(2,my_atoms%connect%neighbour2(ll)%N))
-          bond_table = int_part(my_atoms%connect%neighbour2(ll))
-          change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
-          if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
-          my_atoms%connect%neighbour2(ll)%int(2,change) = k ! this account is updated now
-          deallocate (bond_table)
-       enddo
-    endif
-
-    allocate (bond_table(2,my_atoms%connect%neighbour2(jj)%N))
-    bond_table = int_part(my_atoms%connect%neighbour2(jj))
-    kk = find_in_array(bond_table(1,:),ii)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//jj//' '//ii)
-       call delete(my_atoms%connect%neighbour2(jj),kk)
-    endif
-    deallocate(bond_table)
-
-  end subroutine delete_bond
-
   subroutine print_usage
 
-    call print('Usage: xyz2pdb File=filename.xyz [Residue_Library=library] [Delete_Metal_Connections=T] [Neighbour_tolerance=1.2]')
+    call print('Usage: xyz2pdb File=filename.xyz [Residue_Library=library] [Print_XSC] [Delete_Metal_Connections=T] [Neighbour_tolerance=1.2]')
     call print('')
     call print('  File=filename,        where your input file has extension .xyz')
     call print('  [Residue_Library=library],  optional, default is protein_res.CHARMM.lib')
+    call print('  [Print_XSC],          optional, whether to print NAMD cell file, default is false')
     call print('  [Delete_Metal_Connections=T],  optional, default is true, only calculates connection for H,C,N,O,Si,P,S,Cl')
     call print('                           should work fine - only modify if you want bonds with other elements in your structure')
     call print('  [Neighbour_Tolerance=1.2],  optional, default is 1.2, should work fine - do not poke it ')
@@ -212,6 +167,24 @@ contains
 
     call print('')
 
-  end subroutine print_usage
+  end subroutine
+
+  subroutine write_xsc_file(at, xsc_file)
+
+    character(len=*),  intent(in) :: xsc_file
+    type(Atoms),       intent(in) :: at
+
+    type(InOutput) :: xsc
+
+    call initialise(xsc,trim(xsc_file),action=OUTPUT)
+    call print('   XSC file: '//trim(xsc%filename))
+
+    call print('#NAMD cell file',file=xsc)
+    call print('#$LABELS step a_x a_y a_z b_x b_y b_z c_x c_y c_z o_x o_y o_z',file=xsc)
+    call print('1 '//reshape(at%lattice,(/9/))//' '//(/0,0,0/),file=xsc)
+!write_string(this%params,real_format='f18.6')
+    call finalise(xsc)
+
+  end subroutine write_xsc_file
 
 end program xyz2pdb
