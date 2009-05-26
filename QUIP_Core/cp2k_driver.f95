@@ -546,26 +546,8 @@ contains
     this%N=at%N
 
    ! get program name from environment variable
-    if (nproc.le.0) call system_abort('Number of processors used must be positive ('//nproc//')')
-    if (nproc.eq.1) then !serial
-       call get_environment_variable('CP2K_SOPT',env_program_name,name_len,status,.true.)
-       if (name_len.ne.0) then
-          call print('use CP2K serial version stored in env.var. CP2K_SOPT='//trim(env_program_name)//" " //name_len)
-          this%wenv%cp2k_program = env_program_name
-       else
-          call print('use cp2k_program passed in args_str: '//trim(cp2k_program))
-          this%wenv%cp2k_program = trim(cp2k_program)
-       endif
-    else !parallel
-       call get_environment_variable('CP2K_POPT',env_program_name,name_len,status,.true.)
-       if (name_len.ne.0) then
-          call print('use CP2K parallel version with '//nproc//' processors stored in env.var. CP2K_POPT='//trim(env_program_name)//" " //name_len)
-          this%wenv%cp2k_program = 'mpirun -np '//nproc//' '//env_program_name
-       else
-          call print('use cp2k_program passed in args_str: '//trim(cp2k_program))
-          this%wenv%cp2k_program = trim(cp2k_program)
-       endif
-    endif
+    call print('use cp2k_program passed in args_str: '//trim(cp2k_program))
+    this%wenv%cp2k_program = trim(cp2k_program)
 
   call system_timer('param_init')
 
@@ -964,7 +946,7 @@ contains
 
   ! remove all unnecessary files
     fin_command = 'rm -rf '//trim(param%wenv%working_directory)
-!    call system_command(fin_command,status=status)
+    call system_command(fin_command,status=status)
 
     call finalise(param)    
 
@@ -1836,8 +1818,8 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
              call print('    &POISSON',file=input_file)
              call print('      &EWALD',file=input_file)
              call print('        EWALD_TYPE '//trim(param%mm_ewald%ewald_type),file=input_file)
-            ! call print('#        EWALD_ACCURACY 1.E-6',file=input_file)
-            ! call print('#        ALPHA '//round(param%mm_ewald%ewald_alpha,2),file=input_file)
+             call print('        EWALD_ACCURACY 1.E-6',file=input_file)
+             call print('        ALPHA '//round(param%mm_ewald%ewald_alpha,2),file=input_file)
              call print('        GMAX '//param%mm_ewald%ewald_gmax,file=input_file)
              call print('      &END EWALD',file=input_file)
              call print('      POISSON_SOLVER PERIODIC',file=input_file)
@@ -1879,7 +1861,11 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call print('      PARM_FILE_NAME ../'//trim(param%mm_forcefield%parm_file_name),file=input_file) ! charmm.pot
 #ifdef HAVE_DANNY
     call print('      DANNY T',file=input_file)
-    call print('      DANNY_CUTOFF 10.0',file=input_file)
+    call print('      DANNY_CUTOFF 5.5',file=input_file)
+    call print('      &SPLINE',file=input_file)
+    call print('        EMAX_SPLINE 0.5',file=input_file)
+    call print('        EMAX_ACCURACY 0.1',file=input_file)
+    call print('      &END SPLINE',file=input_file)
 #endif
 
 !!for old CP2K, QM/MM
@@ -1934,8 +1920,8 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call print('    &POISSON',file=input_file)
     call print('      &EWALD',file=input_file)
     call print('        EWALD_TYPE '//trim(param%mm_ewald%ewald_type),file=input_file)
-!    call print('#        EWALD_ACCURACY 1.E-6',file=input_file)
-!    call print('#        ALPHA '//round(param%mm_ewald%ewald_alpha,2),file=input_file)
+    call print('        EWALD_ACCURACY 1.E-6',file=input_file)
+    call print('        ALPHA '//round(param%mm_ewald%ewald_alpha,2),file=input_file)
     call print('        GMAX '//param%mm_ewald%ewald_gmax,file=input_file)
     call print('      &END EWALD',file=input_file)
     call print('    &END POISSON',file=input_file)
