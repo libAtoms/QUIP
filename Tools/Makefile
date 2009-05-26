@@ -10,7 +10,7 @@ endif
 
 OBJS = 
 
-PROGRAMS = elastic_fields
+PROGRAMS = elastic_fields density_1d
 
 LIBS =  -L. -lquiputils -lquip -latoms 
 LIBFILES = libatoms.a libquip.a libquiputils.a
