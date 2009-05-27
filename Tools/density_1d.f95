@@ -11,7 +11,7 @@ program density_1d
     integer, parameter                    :: DISTANCES_INIT = 1000000
     integer, parameter                    :: DISTANCES_INCR = 1000000
    
-    type(Atoms)                           :: structure, new_structure
+    type(Atoms)                           :: structure
     type(Table)                           :: distances, atom_table
     real(dp)                              :: d
     type(Inoutput)                        :: xyzfile, datafile
@@ -74,8 +74,6 @@ program density_1d
     end if
     call finalise(params_in)
 
-    call initialise(xyzfile,xyzfilename,action=INPUT)
-
     call print('Run_parameters: ')
     call print('==================================')
     call print('    Input file: '//trim(xyzfilename))
@@ -84,6 +82,12 @@ program density_1d
     call print('        Cutoff: '//round(Cutoff,3))
     call print('      BinWidth: '//round(bin_width,3))
     call print('    decimation: '//decimation)
+    if (decimation == 1) then
+       call print('             Processing every frame')
+    else
+       write(line,'(a,i0,a,a)')'             Processing every ',decimation,th(decimation),' frame'
+       call print(line)
+    end if
     call print('    from Frame: '//from)
     call print('      to Frame: '//to)
     call print('       IO_Rate: '//IO_Rate)
@@ -92,6 +96,8 @@ program density_1d
     call print('==================================')
     call print('')
  
+    call initialise(xyzfile,xyzfilename,action=INPUT)
+
     !
     ! Read the element symbol / atom mask
     !
@@ -141,21 +147,12 @@ program density_1d
     write(line,'(i0,a,f0.4,a,f0.4,a)') num_bins,' bins x ',bin_width,' Angstroms per bin = ',cutoff,' Angstroms cutoff'
     call print(line)
     call print('')
-    if (decimation == 1) then
-       call print('Processing every frame')
-    else
-       write(line,'(a,i0,a,a)')'Processing every ',decimation,th(decimation),' frame'
-       call print(line)
-    end if
-    call print('')
  
     call print('Reading data...')
  
     !Set up cells
-!    call read_xyz(new_structure, xyzfile, status=status)
     call read_xyz(structure, xyzfile, status=status)
  
-!    structure = new_structure
     call atoms_set_cutoff(structure,cutoff)
  
     call allocate(distances,0,1,0,0,DISTANCES_INIT)
@@ -186,13 +183,7 @@ program density_1d
        if (frame_count.ge.from) then
           if ((frame_count.gt.to) .and.(to.gt.0)) exit
   
-          !Copy the read data into the working atoms object
-!          if (structure%N == new_structure%N) then
-!             structure = new_structure
-!          else
-!             structure = new_structure
-             call atoms_set_cutoff(structure,cutoff)
-!          end if
+          call atoms_set_cutoff(structure,cutoff)
   
           if (prop) call update_list(structure,atom_table,trim(prop_name),prop_val)
        
@@ -279,7 +270,6 @@ program density_1d
        endif     
      
        !Try to read another frame
-!       call read_xyz(new_structure,xyzfile,status=status)
        call read_xyz(structure,xyzfile,status=status)
         
     end do
@@ -395,18 +385,18 @@ contains
     Gaussian_histogram = 0.0_dp
 
     do i=1,size(vector)
-       call print('')
-       call print('Distribution of vector '//i//' over the whole histogram:')
+!       call print('')
+!       call print('Distribution of vector '//i//' over the whole histogram:')
 
        if (Gaussian) then
 !          if(.not.present(sigma)) call system_abort('Gaussian_histogram: Missing Gaussian sigma parameter.')
           do j=1,Nbin
              min_bin = min_x + real(j-1,dp) * binsize
              max_bin = min_bin + binsize
-             call print('min_bin: '//min_bin//', max_bin: '//max_bin)
-             call print('ERF(min_bin) = '//erf((vector(i)-min_bin)/(sigma*sqrt(2._dp))))
-             call print('ERF(max_bin) = '//erf((max_bin-vector(i))/(sigma*sqrt(2.0_dp))))
-             call print('Adding to bin '//j//' '//erf((vector(i)-min_bin)/(sigma*sqrt(2._dp))) + erf((max_bin-vector(i))/(sigma*sqrt(2.0_dp))))
+!             call print('min_bin: '//min_bin//', max_bin: '//max_bin)
+!             call print('ERF(min_bin) = '//erf((vector(i)-min_bin)/(sigma*sqrt(2._dp))))
+!             call print('ERF(max_bin) = '//erf((max_bin-vector(i))/(sigma*sqrt(2.0_dp))))
+!             call print('Adding to bin '//j//' '//(erf((vector(i)-min_bin)/(sigma*sqrt(2._dp))) + erf((max_bin-vector(i))/(sigma*sqrt(2.0_dp)))))
              Gaussian_histogram(j) = Gaussian_histogram(j) - 0.5_dp*erf((min_bin-vector(i))/(sigma*sqrt(2._dp))) + 0.5_dp*erf((max_bin-vector(i))/(sigma*sqrt(2.0_dp)))
           enddo
        else
