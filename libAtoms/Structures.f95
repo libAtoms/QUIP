@@ -565,6 +565,7 @@ contains
 
     call Atoms_Initialise(slab, keep_list%N, tmp_slab%lattice)
     slab%Z = tmp_slab%Z(keep_list%int(1,1:keep_list%N))
+    slab%species = tmp_slab%species(keep_list%int(1,1:keep_list%N))
 
     if (has_property(slab, 'mass')) &
          forall (i=1:slab%N) slab%mass(i) = ElementMass(slab%Z(i))
