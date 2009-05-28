@@ -220,9 +220,9 @@ program tabletest
   t1 = t2 
   call print('testing delete')
   call print('deleted first row:')
-  call delete(t2, 1) ! by index
+  call delete(t2, 1, keep_order=.false.) ! by index
   call print('deleted row matching (/5/)')
-  call delete(t2, (/5/)) ! by value
+  call delete(t2, (/5/), keep_order=.false.) ! by value
   call print(t2)
   call print('deleted rows 1 and 2')
   call delete_multiple(t2, (/1,2/))
