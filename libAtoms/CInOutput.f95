@@ -6,8 +6,7 @@ module CInOutput_module
 
   !% Interface to C routines for reading and writing Atoms objects to and from XYZ and NetCDF files.
   !% The XYZ routines are much faster (around a factor of a hundred!) than atoms_print_xyz and 
-  !% atoms_read_xyz. The NetCDF routines are similiar to those in NetCDF.f95, although probably
-  !% a little faster. 
+  !% atoms_read_xyz. 
 
   use iso_c_binding
   use Atoms_module
@@ -119,11 +118,13 @@ module CInOutput_module
   interface read
      !% Read an Atoms object from this CInOutput stream.
      module procedure CInOutput_read
+     module procedure atoms_read
   end interface
 
   interface write
      !% Write an Atoms object to this CInOutput stream.
      module procedure CInOutput_write
+     module procedure atoms_write
   end interface
 
   interface query
@@ -253,11 +254,12 @@ contains
 
   end subroutine cinoutput_query
 
-  subroutine cinoutput_read(this, at, frame, zero)
+  subroutine cinoutput_read(this, at, frame, zero, status)
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    integer, optional, intent(inout) :: status
 
     type(Dictionary) :: properties
     type(Table) :: data
@@ -266,6 +268,8 @@ contains
     character(len=KEY_LEN) :: namestr
     integer :: do_zero
     integer(C_SIZE_T) :: do_frame
+
+    if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
@@ -305,12 +309,30 @@ contains
     if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
     if (this%n_frame /= -1) then
-       if (do_frame < 0 .or. do_frame >= this%n_frame) &
-            call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+       if (do_frame < 0 .or. do_frame >= this%n_frame) then
+          if (present(status)) then
+             call finalise(properties)
+             call finalise(data)
+             call finalise(at)
+             status = 1
+             return
+          else
+             call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+          end if
+       end if
     end if
 
-    if (cio_read(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) &
-         call system_abort("Error reading from file")
+    if (cio_read(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
+       if (present(status)) then
+          call finalise(properties)
+          call finalise(data)
+          call finalise(at)
+          status = 1
+          return
+       else
+          call system_abort("Error reading from file")
+       end if
+    end if
 
     do i=1,this%n_param
        namestr = c_array_to_f_string(this%param_name(:,i))
@@ -353,7 +375,7 @@ contains
   end subroutine cinoutput_read
 
   subroutine cinoutput_write(this, at, properties, int_format, real_format, frame, &
-       shuffle, deflate, deflate_level)
+       shuffle, deflate, deflate_level, status)
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(in) :: at
     character(*), intent(in), optional :: properties(:)
@@ -361,6 +383,7 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
+    integer, optional, intent(out) :: status
 
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
@@ -371,6 +394,8 @@ contains
     character(len=KEY_LEN) :: do_int_format, do_real_format
     integer :: do_shuffle, do_deflate
     integer :: do_deflate_level
+
+    if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= OUTPUT .and. this%action /= INOUT) call system_abort("Cannot write to action=INPUT CInOutput object")
@@ -484,8 +509,13 @@ contains
 
     if (cio_write(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
          trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
-         do_shuffle, do_deflate, do_deflate_level) == 0) &
-         call system_abort("Error writing file")
+         do_shuffle, do_deflate, do_deflate_level) == 0) then
+       if (present(status)) then
+          status = 1
+       else
+          call system_abort("Error writing file")
+       end if
+    end if
 
     call finalise(selected_properties)
 
@@ -500,8 +530,7 @@ contains
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
     character(len=VALUE_LEN) :: valuestr
-    integer :: i, lookup(3), extras, n, do_frame
-    character(len=KEY_LEN) :: do_int_format, do_real_format
+    integer :: i, lookup(3), extras, n
 
     this%n_atom = at%n
     this%lattice = transpose(at%lattice)
@@ -636,5 +665,39 @@ contains
     carray(len_trim(fstring)+1) = C_NULL_CHAR
 
   end subroutine f_string_to_c_array
+
+
+  subroutine atoms_read(this, filename, frame, zero, status)
+    !% Read Atoms object from XYZ or NetCDF file.
+    type(Atoms), intent(out) :: this
+    character(len=*), intent(in) :: filename
+    integer, optional, intent(in) :: frame
+    logical, optional, intent(in) :: zero
+    integer, optional, intent(out) :: status
+
+    type(CInOutput) :: cio
+
+    call initialise(cio, filename, INPUT)
+    call read(cio, this, frame, zero, status)
+    call finalise(cio)    
+
+  end subroutine atoms_read
+
+
+  subroutine atoms_write(this, filename, append, properties, status)
+    !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: filename
+    logical, optional, intent(in) :: append
+    character(*), intent(in), optional :: properties(:)    
+    integer, optional, intent(out) :: status
+
+    type(CInOutput) :: cio
+
+    call initialise(cio, filename, OUTPUT, append)
+    call write(cio, this, properties, status=status)
+    call finalise(cio)
     
+  end subroutine atoms_write
+
 end module CInOutput_module
