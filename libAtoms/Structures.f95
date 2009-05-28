@@ -510,7 +510,7 @@ contains
                     0.0_dp,   sqrt(3.0_dp)*a, 0.0_dp, &
                     0.0_dp,   0.0_dp,   10.0_dp/), (/3, 3/)))
 
-    cube%Z = 6
+    call set_atoms(cube, 6)
     cube%pos(:,1) = a*(/0.0_dp, sqrt(3.0_dp)/2.0, 0.0_dp/) 
     cube%pos(:,2) = a*(/0.5_dp, 0.0_dp, 0.0_dp/) 
     cube%pos(:,3) = a*(/1.5_dp, 0.0_dp, 0.0_dp/) 
