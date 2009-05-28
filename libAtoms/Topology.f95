@@ -1315,9 +1315,9 @@ enddo
   end function get_property
 
 #ifdef HAVE_DANNY
-  subroutine create_pos_dep_charges(my_atoms,SiOH_list,charge,residue_names)
+  subroutine create_pos_dep_charges(at,SiOH_list,charge,residue_names)
 
-    type(Atoms), intent(in) :: my_atoms
+    type(Atoms), intent(in) :: at
     type(Table), intent(in) :: SiOH_list
     real(dp), allocatable, dimension(:), intent(out) :: charge
     character(4),dimension(:), intent(in) :: residue_names
@@ -1327,14 +1327,14 @@ enddo
     integer :: atom_i, atom_j, jj
     integer :: res_name_index
 
-    if (size(residue_names).ne.my_atoms%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//my_atoms%N)
-    allocate(charge(my_atoms%N))
+    if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
+    allocate(charge(at%N))
     charge = 0._dp
 
     do iatom = 1, SiOH_list%N
        atom_i = SiOH_list%int(1,iatom)
-       do jatom = 1, atoms_n_neighbours(my_atoms,atom_i)
-          atom_j = atoms_neighbour(my_atoms, atom_i, jatom)
+       do jatom = 1, atoms_n_neighbours(at,atom_i)
+          atom_j = atoms_neighbour(at, atom_i, jatom)
          ! check if atom_j is in SiOH_list
           if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
              ! if it's a water O/H, ignore it!
@@ -1342,46 +1342,46 @@ enddo
                  ('TIP' .eq.trim(residue_names(atom_j)))) then
                  cycle
              else
-                call print('Not found atom '//ElementName(my_atoms%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N))
+                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N))
                 call system_abort('Found a neighbour that is not part of the SiO2 residue')
              endif
           endif
           if (atom_j.lt.atom_i) cycle
 
          ! get the distance between atom $i$ and $j$, apply (R_q + Delta_q) cutoff
-          rij = distance_min_image(my_atoms, atom_i, atom_j)
+          rij = distance_min_image(at, atom_i, atom_j)
           if (rij.gt.(Danny_R_q+Danny_Delta_q)) cycle
 
          !silanol endings (O--H and H--O)
-          if (my_atoms%Z(atom_i).eq.1) then
-             !call print('Found H--X for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+          if (at%Z(atom_i).eq.1) then
+             !call print('Found H--X for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
              if (rij.lt.1.0_dp) then
                 charge(atom_i) = 0.2_dp
                 charge(atom_j) = charge(atom_j) - 0.2_dp
              endif
           else
-             if (my_atoms%Z(atom_j).eq.1) then
-                !call print('Found X--H for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+             if (at%Z(atom_j).eq.1) then
+                !call print('Found X--H for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
                 if (rij.lt.1.0_dp) then
                    charge(atom_i) = charge(atom_i) - 0.2_dp
                    charge(atom_j) = 0.2_dp
                 endif
              else
             !Si--Si and O--O do not affect each other
-                if (my_atoms%Z(atom_i).eq.my_atoms%Z(atom_j)) cycle
+                if (at%Z(atom_i).eq.at%Z(atom_j)) cycle
             !Si--O and O--Si
                 fcq = calc_fc(rij)
-                if (my_atoms%Z(atom_i).eq.14 .and. my_atoms%Z(atom_j).eq.8) then
-                   !call print('Found Si--O for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+                if (at%Z(atom_i).eq.14 .and. at%Z(atom_j).eq.8) then
+                   !call print('Found Si--O for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
                    charge(atom_i) = charge(atom_i) + 0.4_dp * fcq
                    charge(atom_j) = charge(atom_j) - 0.4_dp * fcq
                 else
-                   if (my_atoms%Z(atom_i).eq.8 .and. my_atoms%Z(atom_j).eq.14) then
-                      !call print('Found O--Si for atoms '//atom_i//ElementName(my_atoms%Z(atom_i))//'--'//atom_j//ElementName(my_atoms%Z(atom_j)))
+                   if (at%Z(atom_i).eq.8 .and. at%Z(atom_j).eq.14) then
+                      !call print('Found O--Si for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
                       charge(atom_i) = charge(atom_i) - 0.4_dp * fcq
                       charge(atom_j) = charge(atom_j) + 0.4_dp * fcq
                    else
-                      print *, atom_i, ElementName(my_atoms%Z(atom_i)),'--', atom_j, ElementName(my_atoms%Z(atom_j)),' could not be located'
+                      print *, atom_i, ElementName(at%Z(atom_i)),'--', atom_j, ElementName(at%Z(atom_j)),' could not be located'
                       call system_abort('create_pos_dep_charge: unknown neighbour pair')
                    endif
                 endif
@@ -1391,7 +1391,7 @@ enddo
     enddo
 
 !    print *, 'Calculated charge on atoms:'
-!    do jj = 1, my_atoms%N
+!    do jj = 1, at%N
 !       print *,'   atom ',jj,': ',charge(jj)
 !    enddo
 
@@ -1451,9 +1451,9 @@ enddo
 #endif
 
    ! removes a bond between i and j, if the bond is present
-  subroutine delete_bond(my_atoms, i, j)
+  subroutine delete_bond(at, i, j)
 
-    type(Atoms), intent(inout) :: my_atoms
+    type(Atoms), intent(inout) :: at
     integer, intent(in) :: i, j
 
     integer :: ii, jj, kk, k, ll, change
@@ -1469,35 +1469,35 @@ enddo
        jj = i
     endif
 
-    allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%t%N))
-    bond_table = int_part(my_atoms%connect%neighbour1(ii)%t)
+    allocate (bond_table(4,at%connect%neighbour1(ii)%t%N))
+    bond_table = int_part(at%connect%neighbour1(ii)%t)
     kk = find_in_array(bond_table(1,:),jj)
     if (kk.gt.0) then
 !       call print('found bond to delete for atoms '//ii//' '//jj)
-       call delete(my_atoms%connect%neighbour1(ii)%t,kk)
+       call delete(at%connect%neighbour1(ii)%t,kk)
     endif
     deallocate(bond_table)
 
    ! if I delete a bond from neighbour1, I should update in neighbour2 that
    ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
     if (kk.gt.0) then
-       do k = kk, my_atoms%connect%neighbour1(ii)%t%N     ! k-th neighbour of ii
-          ll = my_atoms%connect%neighbour1(ii)%t%int(1,k)     ! is ll
-          allocate (bond_table(2,my_atoms%connect%neighbour2(ll)%t%N))
-          bond_table = int_part(my_atoms%connect%neighbour2(ll)%t)
+       do k = kk, at%connect%neighbour1(ii)%t%N     ! k-th neighbour of ii
+          ll = at%connect%neighbour1(ii)%t%int(1,k)     ! is ll
+          allocate (bond_table(2,at%connect%neighbour2(ll)%t%N))
+          bond_table = int_part(at%connect%neighbour2(ll)%t)
           change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
           if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
-          my_atoms%connect%neighbour2(ll)%t%int(2,change) = k ! this account is updated now
+          at%connect%neighbour2(ll)%t%int(2,change) = k ! this account is updated now
           deallocate (bond_table)
        enddo
     endif
 
-    allocate (bond_table(2,my_atoms%connect%neighbour2(jj)%t%N))
-    bond_table = int_part(my_atoms%connect%neighbour2(jj)%t)
+    allocate (bond_table(2,at%connect%neighbour2(jj)%t%N))
+    bond_table = int_part(at%connect%neighbour2(jj)%t)
     kk = find_in_array(bond_table(1,:),ii)
     if (kk.gt.0) then
 !       call print('found bond to delete for atoms '//jj//' '//ii)
-       call delete(my_atoms%connect%neighbour2(jj)%t,kk)
+       call delete(at%connect%neighbour2(jj)%t,kk)
     endif
     deallocate(bond_table)
 
