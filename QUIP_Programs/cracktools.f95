@@ -1265,7 +1265,13 @@ contains
                 selectlist(surface)%int(5,p) = min(selectlist(surface)%int(5,p), changed_nn(i))
              end if
 
-             call select_ellipse(at, selection_ellipse(surface,:), ellipse_bias, tmp_select, i)
+             if (old_embed%N == 0) then
+                ! First time we do embedding, use ellipse halfway between inner and outer
+                call select_ellipse(at, 0.5_dp*(selection_ellipse(1,:) + selection_ellipse(2,:)), &
+                     ellipse_bias, tmp_select, i)
+             else
+                call select_ellipse(at, selection_ellipse(surface,:), ellipse_bias, tmp_select, i)
+             end if
 
              do j = 1, tmp_select%N
                 p = Find_in_array(int_part(selectlist(surface),(/1,2,3,4/)), tmp_select%int(:,j))
@@ -1305,6 +1311,9 @@ contains
 
        deallocate(sorted)
        deallocate(sindex)
+
+       ! First time there's no need to go round twice
+       if(old_embed%N == 0) exit
     end do
 
 
