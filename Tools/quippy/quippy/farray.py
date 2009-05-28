@@ -65,12 +65,15 @@ class FortranArray(numpy.ndarray):
     elements 1 and 2, equivalent to a C-style slice of 0:2. The self.flat
     iterator is still indexed from zero."""
 
-    def additerators(self):
+    def _addfields(self, transpose_on_print):
         self.rows = self.row_iter()
         self.cols = self.col_iter()
         self._mapcache = {}
+        self.transpose_on_print = transpose_on_print
 
-    def __new__(self, input_array=None, doc=None):
+        return self
+
+    def __new__(cls, input_array=None, doc=None, transpose_on_print=False):
         """Construct a FortanArray from input_array
 
         a = FortranArray(input_array=None, doc=None)
@@ -81,7 +84,7 @@ class FortranArray(numpy.ndarray):
         
         if doc is not None:
             self.__doc__ = doc
-        self.additerators()
+        self._addfields(transpose_on_print)
 	return self
 
     @staticmethod
@@ -172,9 +175,8 @@ class FortranArray(numpy.ndarray):
         "Overloaded __getitem__ which accepts one-based indices."
 	indx = self.mapindices(indx)
 	obj = numpy.ndarray.__getitem__(self, indx) 
-	if (len(obj.shape) > 1 and obj.dtype.isbuiltin):
-            fa = obj.view(FortranArray)
-            fa.additerators()
+	if (len(obj.shape) >= 1 and obj.dtype.isbuiltin):
+            fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
 	    return fa
 	return obj
 
@@ -193,9 +195,8 @@ class FortranArray(numpy.ndarray):
         if j != sys.maxint:
             j = FortranArray.map_int(j)
         obj = numpy.ndarray.__getslice__(self, i, j)
-	if (len(self.shape) > 1 and obj.dtype.isbuiltin):
-            fa = obj.view(FortranArray)
-            fa.additerators()
+	if (len(self.shape) >= 1 and obj.dtype.isbuiltin):
+            fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
 	    return fa
 	return obj
 
@@ -256,14 +257,21 @@ class FortranArray(numpy.ndarray):
 				 values, mode)
 				 
     def __repr__(self):
-        s = numpy.asarray(self.T).view(numpy.ndarray).__repr__()
+        if self.transpose_on_print:
+            s = numpy.asarray(self.T).view(numpy.ndarray).__repr__()
+        else:
+            s = numpy.asarray(self).view(numpy.ndarray).__repr__()
+            
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
         return s
         
 
     def __str__(self):
-        return numpy.asarray(self.T).view(numpy.ndarray).__str__()
+        if self._transpose_on_print:
+            return numpy.asarray(self.T).view(numpy.ndarray).__str__()
+        else:
+            return numpy.asarray(self).view(numpy.ndarray).__str__()
 
     def __iter__(self):
         """Iterate over this FortranArray treating first dimension as fastest varying.
@@ -284,8 +292,7 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[0]):
                 obj = numpy.ndarray.__getitem__(self, i-1)
                 if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)
-                    fa.additerators()
+                    fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
                     yield fa
                 else:
                     yield obj
@@ -302,7 +309,7 @@ class FortranArray(numpy.ndarray):
 
     def norm(self):
        "Return sqrt(norm2(a))"
-       return numpy.sqrt(self.norm2())
+       return numpy.sqrt(self.norm2()).view(FortranArray)._addfields(self.transpose_on_print)
 
     def row_iter(self):
         """Iterator for MxN arrays to return rows [:,i] for i=1,N one by one as Mx1 arrays."""
@@ -312,8 +319,7 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[-1]):
                 obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1))
                 if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)
-                    fa.additerators()
+                    fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
                     yield fa
                 else:
                     yield obj
@@ -321,10 +327,17 @@ class FortranArray(numpy.ndarray):
     def all(self, axis=None, out=None):
 	if axis is not None:
 	    axis -= 1
-	return numpy.ndarray.all(self, axis, out).view(FortranArray)
+	return numpy.ndarray.all(self, axis, out).view(FortranArray)._addfields(self.transpose_on_print)
 
     def any(self, axis=None, out=None):
 	if axis is not None:
 	    axis -= 1
-	return numpy.ndarray.any(self, axis, out).view(FortranArray)
+	return numpy.ndarray.any(self, axis, out).view(FortranArray)._addfields(self.transpose_on_print)
+
+
+    def transpose(self):
+        return numpy.ndarray.transpose(self).view(FortranArray)._addfields(self.transpose_on_print)
+
+    T = property(fget=transpose)
+
 

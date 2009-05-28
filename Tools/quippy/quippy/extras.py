@@ -80,28 +80,28 @@ class AtomsExtras(object):
                setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
                #setattr(self, prop, self.data.real[col_start-1,0:self.n])
             else:
-               setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc))
+               setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc,transpose_on_print=True))
                #setattr(self, prop, self.data.real[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_INT:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
                #setattr(self, prop, self.data.int[col_start-1,0:self.n])
             else:
-               setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc))
+               setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc,transpose_on_print=True))
                #setattr(self, prop, self.data.int[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_STR:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
                #setattr(self, prop, self.data.str[:,col_start-1,0:self.n])
             else:
-               setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc))
+               setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc,transpose_on_print=True))
                #setattr(self, prop, self.data.str[:,col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_LOGICAL:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
                #setattr(self, prop, self.data.logical[col_start-1,0:self.n])
             else:
-               setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc))
+               setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
                #setattr(self, prop, self.data.logical[col_start-1:col_end,0:self.n])
          else:
             raise ValueError('Bad property type :'+str(self.properties[prop]))
