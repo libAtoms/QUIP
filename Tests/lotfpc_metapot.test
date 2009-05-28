@@ -57,9 +57,6 @@ lotfpc_metapot
 
 </quip_params>
 --->stdout---
-System::Hello World: 28/04/2009   09:41:45
-System::Hello World: Random Seed = 2
-System::Hello World: global verbosity = 0
 
 Calls to system_timer will do nothing by default
 
@@ -84,7 +81,7 @@ embed list
 
 =============================== LOTF Metapotential =============================
 
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=lotf_adj_pot_svd
@@ -103,6 +100,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -132,7 +130,7 @@ IPModel_SW : type 2 atomic_num 14
 
 =========================== Force Mixing Metapotential =========================
 
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=force_mixing
@@ -151,6 +149,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -180,7 +179,7 @@ IPModel_SW : type 2 atomic_num 14
 
 =================================== Bootstrap ==================================
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 Adding default springs
 Got 496 springs
 Number of force components: 189
@@ -199,12 +198,12 @@ Max abs spring constant   after  optimisation :   0.27E-01
 
 ================================= Extrapolation ================================
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 Adding default springs
 Got 496 springs
 Number of force components: 189
 Number of parameters:       496
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 
 =========================== SINGLE STEP VERLET IN USE ==========================
 
@@ -213,48 +212,48 @@ Consider changing to the two-step integrator
 ======================================= = ======================================
 
           Time        Temp   Mean temp     Norm(p)  Total work         Thermo work
-E         1.00      1.7116      0.0043    0.14E-14      0.00000000E+00      0.00000000E+00
-E err 1.0000000000000000 .0018534576009005  .0023361985258615
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         2.00      6.7789      0.0423    0.33E-14      0.00000000E+00      0.00000000E+00
+E         1.00      1.7116      0.0043    0.53E-15      0.00000000E+00      0.00000000E+00
+E err 1.0000000000000000 .0018534576009004  .0023361985258615
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         2.00      6.7789      0.0423    0.39E-14      0.00000000E+00      0.00000000E+00
 E err 2.0000000000000000 .0018483635932331  .0029910904136885
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         3.00     15.0021      0.1462    0.22E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         3.00     15.0021      0.1462    0.38E-14      0.00000000E+00      0.00000000E+00
 E err 3.0000000000000000 .0019184702970585  .0042945862825673
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         4.00     26.0576      0.3453    0.24E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         4.00     26.0576      0.3453    0.43E-14      0.00000000E+00      0.00000000E+00
 E err 4.0000000000000000 .0021940461368052  .0062341378321150
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         5.00     39.5115      0.6646    0.99E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         5.00     39.5115      0.6646    0.12E-13      0.00000000E+00      0.00000000E+00
 E err 5.0000000000000000 .0027665189450435  .0087909926619321
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         6.00     54.8382      1.1242    0.11E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         6.00     54.8382      1.1242    0.67E-14      0.00000000E+00      0.00000000E+00
 E err 6.0000000000000000 .0036387233722840  .0137001724539749
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         7.00     71.4421      1.7386    0.11E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         7.00     71.4421      1.7386    0.12E-13      0.00000000E+00      0.00000000E+00
 E err 7.0000000000000000 .0047705517910959  .0198293913229504
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         8.00     88.6820      2.5156    0.86E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         8.00     88.6820      2.5156    0.70E-14      0.00000000E+00      0.00000000E+00
 E err 8.0000000000000000 .0061210945321798  .0268100255666281
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E         9.00    105.8979      3.4567    0.10E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E         9.00    105.8979      3.4567    0.11E-13      0.00000000E+00      0.00000000E+00
 E err 9.0000000000000000 .0076572710683918  .0345672698075701
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-E        10.00    122.4375      4.5568    0.98E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+E        10.00    122.4375      4.5568    0.12E-13      0.00000000E+00      0.00000000E+00
 E err 10.0000000000000000 .0093515305931762  .0430182124425131
 
 ============================== QM Force Evaluation =============================
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 Optimising 496 adjustable parameters
 RMS force component error before optimisation : .0100218740288045
 Max force component error before optimisation : .0462527709105776
@@ -266,49 +265,47 @@ Max abs spring constant   after  optimisation :   0.12E-01
 
 ================================= Interpolation ================================
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         1.00      1.7116      0.0043    0.14E-14      0.00000000E+00      0.00000000E+00
-I err 1.0000000000000000 .0018534576009005  .0023361985258615
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         2.00      6.7728      0.0423    0.27E-14      0.00000000E+00      0.00000000E+00
-I err 2.0000000000000000 .0020389543030210  .0064403353394218
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         3.00     14.9747      0.1460    0.62E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         1.00      1.7116      0.0043    0.53E-15      0.00000000E+00      0.00000000E+00
+I err 1.0000000000000000 .0018534576009004  .0023361985258615
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         2.00      6.7728      0.0423    0.29E-14      0.00000000E+00      0.00000000E+00
+I err 2.0000000000000000 .0020389543030209  .0064403353394218
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         3.00     14.9747      0.1460    0.50E-14      0.00000000E+00      0.00000000E+00
 I err 3.0000000000000000 .0023786289534479  .0095809402907336
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         4.00     25.9858      0.3446    0.34E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         4.00     25.9858      0.3446    0.77E-14      0.00000000E+00      0.00000000E+00
 I err 4.0000000000000000 .0026605887066645  .0116724019777086
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         5.00     39.3655      0.6629    0.12E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         5.00     39.3655      0.6629    0.13E-13      0.00000000E+00      0.00000000E+00
 I err 5.0000000000000000 .0028069552720314  .0127516342852716
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         6.00     54.5831      1.1206    0.62E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         6.00     54.5831      1.1206    0.82E-14      0.00000000E+00      0.00000000E+00
 I err 6.0000000000000000 .0027948163703666  .0128663932416102
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         7.00     71.0397      1.7317    0.24E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         7.00     71.0397      1.7317    0.17E-13      0.00000000E+00      0.00000000E+00
 I err 7.0000000000000000 .0026235796961971  .0120747153894241
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         8.00     88.0934      2.5039    0.12E-13      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         8.00     88.0934      2.5039    0.13E-13      0.00000000E+00      0.00000000E+00
 I err 8.0000000000000000 .0023049580998187  .0104442382338537
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I         9.00    105.0853      3.4382    0.81E-14      0.00000000E+00      0.00000000E+00
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I         9.00    105.0853      3.4382    0.25E-13      0.00000000E+00      0.00000000E+00
 I err 9.0000000000000000 .0018633635672068  .0080514115322414
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-MetaPotential_ForceMixing_calc: got 17 active atoms.
-I        10.00    121.3666      4.5291    0.16E-13      0.00000000E+00      0.00000000E+00
-I err 10.0000000000000000 .0013529460906818  .0049806096581244
+MetaPotential_FM_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
+I        10.00    121.3666      4.5291    0.13E-13      0.00000000E+00      0.00000000E+00
+I err 10.0000000000000000 .0013529460906818  .0049806096581243
 
 ============================== Connectivity update =============================
 
 
-System::Finalise: 28/04/2009   09:41:51
-System::Finalise: Bye-Bye!
