@@ -39,7 +39,7 @@ def remove_ignored_stdout_lines(line):
 	       line.startswith('TIMER'))
 
 
-def runtest(testname, command, diff_method, infiles, outfiles, capture_output=True, keep_all_files=False):
+def runtest(testname, command, diff_method, infiles, outfiles, capture_output=True, keep_all_files=False, create_new_test=False):
 
    for name, contents in infiles.iteritems():
       if name != 'stdin':
@@ -91,7 +91,7 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
       print 'Error occurred running test.'
       print stderr
       return False
-   
+
    cmpout = {}
    cmpout['stdout'] = (filter(remove_ignored_stdout_lines,[s+'\n' for s in stdout.strip().split('\n')]),
                        filter(remove_ignored_stdout_lines,outfiles['stdout']))
@@ -128,6 +128,30 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
 
          print ''.join(rd)
          
+
+   if create_new_test:
+      # create new .test file with one that will pass
+      testfile = open(testname+'.new', 'w')
+      testfile.write(command+'\n')
+
+      inkeys = sorted(infiles.keys())
+      if 'stdin' in inkeys: # move stdin to end
+         inkeys.remove('stdin')
+         inkeys.append('stdin')
+      for name in inkeys:
+         contents = infiles[name]
+         testfile.write('---<%s---\n' % name)
+         testfile.writelines(contents)
+
+      outkeys = sorted(outfiles.keys())
+      if 'stdout' in outkeys: # move stdout to start
+         outkeys.remove('stdout')
+         outkeys = ['stdout'] + outkeys
+      for name in outkeys:
+         testfile.write('--->%s---\n' % name)
+         testfile.writelines(cmpout[name][0])
+
+      testfile.close()
 
    if not no_differences:
       return False
@@ -166,7 +190,7 @@ def do_diff(a, b, diff_method):
          return []
 
 
-def runtests(tests, capture_output, diff_method='auto', keep_all_files=False):
+def runtests(tests, capture_output, diff_method='auto', keep_all_files=False, create_new_test=False):
    if diff_method == 'auto':
       # Look for ndiff(1) executable somewhere on PATH
       diff_method = 'built in'
@@ -190,10 +214,13 @@ def runtests(tests, capture_output, diff_method='auto', keep_all_files=False):
    for name, command, infiles, outfiles in tests:
 
       print '  Running test : %s  ' % name
-      if runtest(name, command, diff_method, infiles, outfiles, capture_output, keep_all_files):
+      if runtest(name, command, diff_method, infiles, outfiles, capture_output, keep_all_files, create_new_test):
          print '%s: OK' % name
       else:
          print '%s: FAIL' % name
+         print 
+         print 'Review output in %s.stdout.candidate and %s.stdout.reference.' % (name, name)
+         print 'If test should have passed, overwrite %s with %s.new' % (name, name)
          failed_tests.append(name)
          n_fail += 1
 
@@ -208,7 +235,7 @@ def mktest(name, command, read_stdin=False, infiles=[], outfiles=[]):
    testfile.write(command+'\n')
 
    if infiles != []:
-      for fname in infiles:
+      for fname in sorted(infiles):
          testfile.write('---<%s---\n' % fname)
          lines = open(fname,'r').readlines()
          testfile.writelines(lines)
@@ -231,7 +258,7 @@ def mktest(name, command, read_stdin=False, infiles=[], outfiles=[]):
    testfile.writelines(stdout.readlines())
 
    if outfiles != []:
-      for fname in outfiles:
+      for fname in sorted(outfiles):
          testfile.write('--->%s---\n' % fname)
          lines = open(fname, 'r').readlines()
          testfile.writelines(lines)
@@ -244,8 +271,11 @@ def print_usage():
 James Kermode <james.kermode@kcl.ac.uk>
 
 Usage:  
-  To run tests:       QUIP_ARCH=arch %s -r [-D -d -a] diff] TESTFILE...' % sys.argv[0
-  To make a new test: QUIP_ARCH=arch -m TESTFILE [-i INFILE]...'  % sys.argv[0
+  To run tests:
+     QUIP_ARCH=arch test.py -r [-D -d DIFF -a] TESTFILE...
+     
+  To make a new test:
+     QUIP_ARCH=arch test.py -m TESTFILE [-i INFILE]...
                          [-o OUTFILE]... COMMAND
 
 where QUIP_ARCH is the architecture (can be set in an environment
@@ -261,7 +291,8 @@ compare test output with the reference. By default we look for 'ndiff(1)'
 and fall back on built in Python diff if this can't be found.
 
 -a keeps all output files even if tests are passed.
-   """
+
+"""
       
 if __name__ == '__main__':
 
@@ -293,7 +324,7 @@ if __name__ == '__main__':
       keep_all_files = '-a' in opt
 
       runtests(tests, capture_output=not ('-D','') in opts,
-               diff_method=diff_method, keep_all_files=keep_all_files)
+               diff_method=diff_method, keep_all_files=keep_all_files, create_new_test=True)
       
    elif opts[0][0] == '-m':
 
@@ -316,8 +347,9 @@ if __name__ == '__main__':
          del infiles[infiles.index('stdin')]
 
       mktest(testfile, command, read_stdin, infiles, outfiles)
-                         
-      
+
    else:
       print_usage()
       sys.exit(1)
+      
+
