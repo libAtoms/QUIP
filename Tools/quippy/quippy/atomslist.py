@@ -73,6 +73,11 @@ class GenericFrameReader(AtomsList):
       else:
          raise TypeError('frame should be either an integer or a slice')
 
+   def __delitem__(self, frame):
+      a = self._list[frame]
+      self._list[frame] = None
+      del a
+
    def __getslice__(self, first, last):
       return self.__getitem__(slice(first,last,None))
 
@@ -106,6 +111,10 @@ class GenericFrameReader(AtomsList):
          if progress and i % update_interval == 0:
             pb(i)
          self[i]
+
+   def clearall(self):
+      for i in range(len(self)):
+         del self[i]
 
 
 try:
