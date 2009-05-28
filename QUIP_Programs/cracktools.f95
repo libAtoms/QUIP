@@ -659,9 +659,9 @@ contains
     l_crack_pos = -orig_width
     r_crack_pos = crack_pos
     
-    if (trim(params%crack_structure) == 'graphene') then
-       r_crack_pos = -orig_width
-    end if
+!!$    if (trim(params%crack_structure) == 'graphene') then
+!!$       r_crack_pos = -orig_width
+!!$    end if
 
     ! Save original positions
     pos1 = crack_slab%pos
@@ -837,9 +837,9 @@ contains
     l_crack_pos = -orig_width ! single ended crack
     r_crack_pos = -orig_width/2.0_dp + params%crack_seed_length
     
-    if (trim(params%crack_structure) == 'graphene') then
-       r_crack_pos = -orig_width
-    end if
+!!$    if (trim(params%crack_structure) == 'graphene') then
+!!$       r_crack_pos = -orig_width
+!!$    end if
 
     if (trim(params%crack_loading) == 'uniform') then
        if (params%crack_G > 0.0_dp) then
