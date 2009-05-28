@@ -83,21 +83,18 @@ Lattice="7.12 0 0 0 7.12 0 0 0 7.12" Properties=pos:R:3:velo:R:3
 6 6.23 4.45 6.23 -0.00924378031234806 0.000428670913396328 0.00379061562085293
 6 6.23 6.23 4.45 -0.0098571449499882 0.000171478590631485 -0.0016754965018994
 --->stdout---
-System::Hello World: 27/04/2009   16:27:16
-System::Hello World: Random Seed = 582
-System::Hello World: global verbosity = 0
 
 Calls to system_timer will do nothing by default
 
-md_params%metapot_init_args='IP Brenner'
+md_params%metapot_init_args='{IP Brenner}'
 md_params%metapot_calc_args=''
 md_params%atoms_in_file='stdin'
 md_params%params_in_file='brenner.xml'
 md_params%trajectory_out_file='traj.xyz'
 md_params%rng_seed=-1
 md_params%N_steps=1000
-md_params%dt=0.0500000000000000
-md_params%T=0.0000000000000000
+md_params%dt=.0500000000000000
+md_params%T=.0000000000000000
 md_params%const_T=F
 md_params%calc_virial=F
 md_params%summary_interval=1
@@ -1116,8 +1113,6 @@ ST       49.95  29203.2785  36729.8978    0.10E+04      0.00000000E+00      0.00
 ST       50.00  29139.2250  36726.1034    0.10E+04      0.00000000E+00      0.00000000E+00      0.24105976E+03     -0.14834609E+02     -0.14834609E+02
 ST       50.00  29139.2250  36726.1034    0.10E+04      0.00000000E+00      0.00000000E+00      0.24105976E+03     -0.14834609E+02     -0.14834609E+02
 
-System::Finalise: 27/04/2009   16:27:22
-System::Finalise: Bye-Bye!
 --->traj.xyz---
 64
 Lattice="7.120000          0.000000          0.000000          0.000000          7.120000          0.000000          0.000000          0.000000          7.120000" Properties=species:S:1:pos:R:3:Z:I:1:velo:R:3:mass:R:1:travel:I:3:move_mask:I:1:damp_mask:I:1:thermostat_region:I:1:avg_ke:R:1:acc:R:3:avgpos:R:3:oldpos:R:3:forces:R:3 t=0.0000000000000000 e=-14.7645719209609751
