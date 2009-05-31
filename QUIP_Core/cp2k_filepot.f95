@@ -33,7 +33,6 @@ program cp2k_filepot
 
   type(Dictionary)            :: params_in
   character(len=FIELD_LENGTH) :: Run_Type            !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
-  integer                     :: nproc
   character(len=FIELD_LENGTH) :: Print_PSF           !_NO_PSF_, USE_EXISTING_PSF
   character(len=FIELD_LENGTH) :: coord_file
   character(len=FIELD_LENGTH) :: new_coord_file      !output XYZ file
@@ -43,7 +42,6 @@ program cp2k_filepot
 
       call initialise(params_in)
       call param_register(params_in, 'Run_Type', 'MM', Run_Type)
-      call param_register(params_in, 'nproc', '1', nproc)
       call param_register(params_in, 'Print_PSF', 'NO_PSF', Print_PSF)
       call param_register(params_in, 'coord_file', 'filepot.0.xyz',coord_file) 
       call param_register(params_in, 'new_coord_file', 'filepot.0.out',new_coord_file) 
@@ -56,7 +54,6 @@ program cp2k_filepot
 
       call print('Run parameters:')
       call print('  Run_Type '//Run_Type)
-      call print('  nproc '//nproc)
       call print('  Print_PSF '//Print_PSF)
       call print('  coord_file '//coord_file) 
       call print('  new_coord_file '//new_coord_file) 
@@ -75,7 +72,7 @@ program cp2k_filepot
 
     allocate(f0(3,my_atoms%N))
     if (.not.(trim(Print_PSF).eq.'NO_PSF'.or.trim(Print_PSF).eq.'USE_EXISTING_PSF')) call system_abort('Print_PSF not known: '//trim(Print_PSF))
-    write (args_str,'(a,i0,a)') 'Run_Type='//trim(Run_Type)//' nproc=',nproc,' PSF_Print='//trim(Print_PSF)//' cp2k_program=cp2k_serial'
+    write (args_str,'(a)') 'Run_Type='//trim(Run_Type)//' PSF_Print='//trim(Print_PSF)//' cp2k_program=cp2k_serial'
     call print(args_str)
     call go_cp2k(my_atoms=my_atoms, forces=f0, energy=energy, args_str=args_str)
 
