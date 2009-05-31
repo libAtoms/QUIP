@@ -18,6 +18,7 @@ module topology_module
                                      print, print_title, &
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
+                                     ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
                                      operator(//)
 #ifndef HAVE_QUIPPY
   use system_module,           only: system_abort
@@ -168,7 +169,7 @@ logical :: silanol
        pdb_res_name(n) = pres_name
 
        ! Search the atom structure for this residue
-       call print('|-Looking for '//cres_name//'...')
+       call print('|-Looking for '//cres_name//'...',verbosity=ANAL)
        call find_motif(at,motif,list,mask=unidentified)
 
        if (list%N > 0) then
@@ -208,7 +209,7 @@ logical :: silanol
 
        end if
 
-       call print('|')
+       call print('|',verbosity=ANAL)
 
     end do
 
@@ -242,7 +243,7 @@ logical :: silanol
        call print(atom_SiO%N//' O atoms found in total')
        do i=1,atom_SiO%N
            if (at%Z(atom_SiO%int(1,i)).eq.1) then
-              call print('WARNING! Si and H are very close')
+              call print('WARNING! Si and H are very close',verbosity=ERROR)
               bond_H = atom_SiO%int(1,i)
               call initialise(bondH,4,0,0,0,0)
               call append(bondH,(/bond_H,0,0,0/))
@@ -250,7 +251,7 @@ logical :: silanol
               do j = 1,bondSi%N
                  if (at%Z(bondSi%int(1,i)).eq.14) then
                     bond_Si = bondSi%int(1,i)
-                    call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')')
+                    call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
                     call delete_bond(at,bond_H,bond_Si)
                  endif
               enddo
@@ -280,14 +281,14 @@ logical :: silanol
        !add atom, residue and molecule names
        do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
           atom_i = atom_Si%int(1,i)
-          if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.8) .or. &
-               any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.8) ) then
+!!          if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.8) .or. &
+!!               any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.8) ) then
              atom_name(atom_i) = 'SIO'
-!             call print('Found SIO silica oxygen.'//atom_i)
-          else
-             atom_name(atom_i) = 'SIB'
-!             call print('Found SIB bulk silicon.'//atom_i)
-          endif
+!!!             call print('Found SIO silica oxygen.'//atom_i)
+!!          else
+!!             atom_name(atom_i) = 'SIB'
+!!!             call print('Found SIB bulk silicon.'//atom_i)
+!!          endif
 !if (atoms_n_neighbours(at,atom_i).ne.4) call system_abort('More than 4 neighbours of Si '//atom_i)
        enddo
        do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
@@ -342,9 +343,9 @@ logical :: silanol
 
       ! add charges to the CHARMM charges
        atom_charge(SiO_list%int(1,1:SiO_list%N)) = charge(SiO_list%int(1,1:SiO_list%N))
-     ! do i=1,at%N
-     !    call print('atom '//i//' has charge '//atom_charge(i))
-     ! enddo
+      do i=1,at%N
+         call print('atom '//i//' has charge '//atom_charge(i),verbosity=ANAL)
+      enddo
 !!!!
 !!!!
 !!!!
@@ -359,11 +360,11 @@ logical :: silanol
     call print(nres//' residues found in total')
 
     if (any(unidentified)) then
-       call print(count(unidentified)//' unidentified atoms')
+       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
        call print(find(unidentified))
 do i=1,at%N
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5))
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i))
+   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
+   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
 enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
@@ -545,7 +546,7 @@ enddo
 !    if (abs(mod(check_charge,1.0_dp)).ge.0.0001_dp .and. &
 !        abs(mod(check_charge,1.0_dp)+1._dp).ge.0.0001_dp .and. &    !for -0.9999...
 !        abs(mod(check_charge,1.0_dp)-1._dp).ge.0.0001_dp) then    !for +0.9999...
-!       call print('WARNING next_motif: Charge of '//res_name//' residue is :'//round(check_charge,4))
+!       call print('WARNING next_motif: Charge of '//res_name//' residue is :'//round(check_charge,4),verbosity=ERROR)
 !    endif
 
     allocate(motif(motif_table%N,7))
@@ -682,7 +683,7 @@ enddo
     call system_timer('write_psf_file')
 
     !intraresidual impropers: table or read in from file
-    if (.not.present(intrares_impropers).and..not.present(imp_filename)) call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!')
+    if (.not.present(intrares_impropers).and..not.present(imp_filename)) call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!',verbosity=ERROR)
     if (present(imp_filename)) then
        call system_abort('Not yet implemented.')
     endif
@@ -739,14 +740,14 @@ enddo
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
-          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i))
+          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=ERROR)
        enddo
        call system_abort('write_psf_file: element(s) of angles not within (0;at%N]')
     endif
     call write_psf_section(data_table=angles,psf=psf,section='THETA',int_format=int_format,title_format=title_format)
 
    ! DIHEDRAL section
-    call create_dihedral_list(at,bonds,angles,dihedrals)
+    call create_dihedral_list(at,angles,dihedrals)
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
        call system_abort('write_psf_file: element(s) of dihedrals not within (0;at%N]')
     call write_psf_section(data_table=dihedrals,psf=psf,section='PHI',int_format=int_format,title_format=title_format)
@@ -904,7 +905,7 @@ enddo
 #ifdef HAVE_DANNY
             ! do not include H2O -- SiO2 bonds
              if ((trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i)))) then
-                call print ('Check if add '//atom_j//'--'//i//' from molecules '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)))
+                call print ('Check if add '//atom_j//'--'//i//' from molecules '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)),verbosity=VERBOSE)
              !call print('Check if add '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)))
 !                call print ('  Yes, if '//distance_min_image(at,atom_j,i)//' < '//(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol)
 !                call print ((distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) )
@@ -1028,7 +1029,7 @@ enddo
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
-          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i))
+          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=ERROR)
        enddo
        call system_abort('create_angle_list: element(s) of angles not within (0;at%N]')
     endif
@@ -1037,10 +1038,9 @@ enddo
 
   end subroutine create_angle_list
 
-  subroutine create_dihedral_list(at,bonds,angles,dihedrals)
+  subroutine create_dihedral_list(at,angles,dihedrals)
 
   type(Atoms), intent(in)  :: at
-  type(Table), intent(in)  :: bonds
   type(Table), intent(in)  :: angles
   type(Table), intent(out) :: dihedrals
 
@@ -1113,7 +1113,7 @@ enddo
   type(Table), optional, intent(in)  :: intrares_impropers
 
   integer, dimension(4) :: imp_atoms
-  integer               :: counter,nn,mm
+  integer               :: nn,mm
   logical               :: cont
   integer, allocatable, dimension(:) :: count_array ! to count number of bonds
   integer               :: i,j, i_impr
@@ -1287,7 +1287,7 @@ enddo
 !                      trim(ElementName(at%Z(intrares_impropers%int(4,i_impr))))//intrares_impropers%int(4,i_impr))
        enddo
     else
-       call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!!!')
+       call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!!!',verbosity=ERROR)
     endif
 
    ! final check
@@ -1322,10 +1322,9 @@ enddo
     real(dp), allocatable, dimension(:), intent(out) :: charge
     character(4),dimension(:), intent(in) :: residue_names
 
-    real(dp) :: r_ij(3), rij, fcq
-    integer :: iatom, jatom, n_jatoms
+    real(dp) :: rij, fcq
+    integer :: iatom, jatom
     integer :: atom_i, atom_j, jj
-    integer :: res_name_index
 
     if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
     allocate(charge(at%N))
@@ -1342,7 +1341,7 @@ enddo
                  ('TIP' .eq.trim(residue_names(atom_j)))) then
                  cycle
              else
-                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N))
+                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=ERROR)
                 call system_abort('Found a neighbour that is not part of the SiO2 residue')
              endif
           endif
@@ -1381,7 +1380,7 @@ enddo
                       charge(atom_i) = charge(atom_i) - 0.4_dp * fcq
                       charge(atom_j) = charge(atom_j) + 0.4_dp * fcq
                    else
-                      print *, atom_i, ElementName(at%Z(atom_i)),'--', atom_j, ElementName(at%Z(atom_j)),' could not be located'
+                      call print(atom_i//trim(ElementName(at%Z(atom_i)))//'--'//atom_j//trim(ElementName(at%Z(atom_j)))//' could not be located',verbosity=ERROR)
                       call system_abort('create_pos_dep_charge: unknown neighbour pair')
                    endif
                 endif
@@ -1390,10 +1389,10 @@ enddo
        enddo
     enddo
 
-!    print *, 'Calculated charge on atoms:'
-!    do jj = 1, at%N
-!       print *,'   atom ',jj,': ',charge(jj)
-!    enddo
+    call print('Calculated charge on atoms:',verbosity=ANAL)
+    do jj = 1, at%N
+       call print ('   atom '//jj//': '//charge(jj),verbosity=ANAL)
+    enddo
 
 
   end subroutine create_pos_dep_charges
