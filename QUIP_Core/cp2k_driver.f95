@@ -13,7 +13,6 @@
 !    Run_Type, default: 'MM', also understands 'QS', 'QMMM_CORE', and 'QMMM_EXTENDED'
 !    PSF_Print, default: 'NO_PSF', also understands 'CP2K_PRINT_AND_SAVE', 'DRIVER_PRINT_AND_SAVE', 'USE_EXISTING_PSF'
 !    cp2k_program, default:'cp2k.sopt'
-!    nproc, default: 1      ! runs mpirun -np $nproc$ if the cp2k program is stored in CP2K_POPT variable, otherwise uses the one in args_str
 !    basis_set_file: default none, name of file (instead of atoms%params value BASIS_SET_list)
 !    potential_file: default none, name of file (instead of atoms%params value POTENTIAL_list)
 !
@@ -24,7 +23,7 @@
 !S  construct_buffer_RADIUS(my_atoms,core,radius,buffer,use_avgpos,verbosity)
 !F  check_qmlist_change(old_qmlist,new_qmlist) result(list_changed)
 !F  num_of_bonds(at) result(bonds)
-!S  param_initialise(this,at,run_type,nproc,use_cubic_cell)
+!S  param_initialise(this,at,run_type,use_cubic_cell)
 !S  get_qm_list_int(my_atoms,qmflag,qmlist)
 !S  get_qm_list_int_rec(my_atoms,qmflag,qmlist, do_recursive)
 !S  get_qm_list_array(my_atoms,qmflag,qmlist)
@@ -85,7 +84,7 @@ module cp2k_driver_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      operator(//), &
-                                     NORMAL, ANAL, NERD, ERROR, &
+                                     ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
 				     verbosity_push_decrement, verbosity_pop, current_verbosity, &
 				     mainlog
   use table_module,            only: table, initialise, finalise, &
@@ -251,13 +250,12 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
-  subroutine param_initialise(this,at,run_type,nproc,cp2k_program,basis_set_file,potential_file,&
+  subroutine param_initialise(this,at,run_type,cp2k_program,basis_set_file,potential_file,&
     dft_file,cell_file,use_cubic_cell)
 
   type(param_cp2k),  intent(out) :: this
   type(atoms),       intent(inout) :: at
   integer,           intent(in)  :: run_type
-  integer,           intent(in)  :: nproc
   character(len=*),  intent(in)  :: cp2k_program
   character(len=*),  intent(in)  :: basis_set_file, potential_file, dft_file, cell_file
   logical, optional, intent(in)  :: use_cubic_cell
@@ -301,9 +299,9 @@ contains
   if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
    ! let's have 3 Angstroms on any side of the cell
     call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least 3-3 Angstrom around the QM atoms.')
-    call print('WARNING! Please check if your cell is centered around the QM region!')
-    call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the')
-    call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.')
+    call print('WARNING! Please check if your cell is centered around the QM region!',verbosity=SILENT)
+    call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',verbosity=SILENT)
+    call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',verbosity=SILENT)
     this%qmmm%qmmm_cell = 0._dp
     call get_qm_list_int_rec(at,run_type,fitlist, do_recursive=.true.)  ! with QM_flag 1 or 2
     if (any(at%Z(int_part(fitlist,1)).gt.8)) this%dft%mgrid_cutoff = 300._dp
@@ -792,7 +790,7 @@ contains
 
   type(Dictionary)                      :: params
   integer                               :: run_type
-  integer                               :: nproc, PSF_print
+  integer                               :: PSF_print
   character(len=FIELD_LENGTH)           :: cp2k_program
   character(len=FIELD_LENGTH)           :: run_type_str, psf_print_str
   character(len=FIELD_LENGTH)           :: fileroot_str
@@ -817,7 +815,6 @@ contains
     cell_file=''
     call initialise(params)
     call param_register(params, 'Run_Type', 'MM', run_type_str)
-    call param_register(params, 'nproc', '1', nproc)
     call param_register(params, 'PSF_Print', 'NO_PSF', psf_print_str)
     call param_register(params, 'cp2k_program','cp2k.sopt', cp2k_program)
     call param_register(params, 'root', '', fileroot_str)
@@ -879,7 +876,6 @@ contains
    if (run_type.eq.MM_RUN) call print ('Run type: MM')
    if (run_type.eq.QMMM_RUN_CORE) call print ('Run type: QM/MM run, QM: quantum core')
    if (run_type.eq.QMMM_RUN_EXTENDED) call print ('Run type: QM/MM run, QM: extended quantum region')
-   call print ('Number of processors used: '//nproc)
    if (PSF_Print.eq.NO_PSF) call print ('PSF printing: No PSF')
    if (PSF_Print.eq.CP2K_PRINT_AND_SAVE) call print ('PSF printing: CP2K prints PSF')
    if (PSF_Print.eq.DRIVER_PRINT_AND_SAVE) call print ('PSF printing: driver prints PSF')
@@ -890,14 +886,14 @@ contains
        call get_qm_list_int_rec(my_atoms,run_type,qmlist, do_recursive=.true.)
       !check if all the atoms are QM, QS used instead
        if (qmlist%N.eq.my_atoms%N) then
-          call print('WARNING: go_cp2k: QM/MM calculation was requested, but all the atoms are within the quantum zone: fully QS will be run!')
+          call print('WARNING: go_cp2k: QM/MM calculation was requested, but all the atoms are within the quantum zone: fully QS will be run!',verbosity=ERROR)
           run_type = QS_RUN
           call print ('Run type: QS')
        endif
     endif
 
   ! set params, CHARMM formats and create working directory
-    call param_initialise(param,my_atoms,run_type,nproc,cp2k_program,basis_set_file,potential_file,dft_file,cell_file)
+    call param_initialise(param,my_atoms,run_type,cp2k_program,basis_set_file,potential_file,dft_file,cell_file)
 
   ! check CHARMM topology
   ! Write the coordinate file and the QM/MM or MM input file
@@ -1146,7 +1142,7 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag)
+    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag,verbosity=SILENT)
 
   end subroutine get_qm_list_int
 
@@ -1179,7 +1175,7 @@ contains
        enddo
     endif
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag)
+    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag,verbosity=SILENT)
 
   end subroutine get_qm_list_int_rec
 
@@ -1200,7 +1196,7 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflags(1:size(qmflags)))
+    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflags(1:size(qmflags)),verbosity=SILENT)
 
   end subroutine get_qm_list_array
 
@@ -1265,7 +1261,7 @@ contains
     end if
 
     num_qm_atoms = string_to_int(fields(1))
-    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file')
+    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=ERROR)
     call print('Number of QM atoms: '//num_qm_atoms)
     call allocate(qm_list,4,0,0,0,num_qm_atoms)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
 
