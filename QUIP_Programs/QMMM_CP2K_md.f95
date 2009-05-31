@@ -100,7 +100,6 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, or QMMM_CORE
   integer                     :: Run_Type_1              !type of force calculation: MM_RUN, QS_RUN, QMMM_RUN_CORE or QMMM_RUN_EXTENDED
   integer                     :: Run_Type_2              !type of second force calculation: NONE_RUN, MM_RUN or QMMM_RUN_CORE
-  integer                     :: nproc
   integer                     :: IO_Rate                 !print coordinates at every n-th step
   integer                     :: Thermostat_Type         !_0_ none, 1 Langevin
   character(len=FIELD_LENGTH) :: Print_PSF               !_NO_PSF_, DRIVER_AT0, CP2K_AT0, EVERY_#,USE_EXIST
@@ -149,7 +148,6 @@ real(dp) :: pot
       call initialise(params_in)
       call param_register(params_in, 'Run_Type1', 'MM', Run_Type1)
       call param_register(params_in, 'Run_Type2', 'NONE', Run_Type2)
-      call param_register(params_in, 'nproc', '1', nproc)
       call param_register(params_in, 'IO_Rate', '1', IO_Rate)
       call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type)
       call param_register(params_in, 'Print_PSF', 'NO_PSF', Print_PSF)
@@ -231,7 +229,6 @@ real(dp) :: pot
       call print('Run parameters:')
       call print('  Run_Type1 '//Run_Type1)
       call print('  Run_Type2 '//Run_Type2)
-      call print('  nproc '//nproc)
       call print('  IO_Rate '//IO_Rate)
       if (Thermostat_Type.eq.1) then
          call print('  Thermostat_Type '//'Langevin')
@@ -519,10 +516,10 @@ real(dp) :: pot
      endif
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
-        args_str=trim(cp2k_calc_args) // ' Run_Type=MM nproc=' // nproc // ' PSF_Print='// &
+        args_str=trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='// &
 	  trim(PSF_Print)//' cp2k_program=cp2k_serial'
      else
-        args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' nproc=' // nproc // &
+        args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)// &
 	  ' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
      endif
      call print_qm_region(ds%atoms)
@@ -551,9 +548,9 @@ real(dp) :: pot
      if (Run_Type_2.ne.NONE_RUN) then
         if (Topology_Print.ne.0) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
-           write (args_str,'(a,i0,a,i0,a)') 'Run_Type=MM nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
         else
-           write (args_str,'(a,i0,a,i0,a)') 'Run_Type='//trim(Run_Type2)//' nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           write (args_str,'(a)') 'Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
         endif
         call print_qm_region(ds%atoms)
         call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
@@ -674,9 +671,9 @@ real(dp) :: pot
      endif
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
-        write (args_str,'(a,i0,a)') 'Run_Type=MM nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+        write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
      else
-        write (args_str,'(a,i0,a)') 'Run_Type='//trim(Run_Type1)//' nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+        write (args_str,'(a)') 'Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
      endif
      call print_qm_region(ds%atoms)
      call calc(CP2K_potential,ds%atoms,e=energy,f=f1,args_str=args_str)
@@ -701,9 +698,9 @@ real(dp) :: pot
      if (Run_Type_2.ne.NONE_RUN) then
         if (Topology_Print.ne.TOPOLOGY_NO_PSF) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
-           write (args_str,'(a,i0,a)') 'Run_Type=MM nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
         else
-           write (args_str,'(a,i0,a)') 'Run_Type='//trim(Run_Type2)//' nproc=',nproc,' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           write (args_str,'(a)') 'Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
         endif
 	call print_qm_region(ds%atoms)
         call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
