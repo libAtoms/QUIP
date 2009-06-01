@@ -3383,13 +3383,23 @@ contains
     !do nothing if not initialised / already finalised
     if (.not.this%initialised) return
 
-    do i=1,size(this%neighbour1)
-       call finalise(this%neighbour1(i)%t)
-    end do
+    if (allocated(this%neighbour1)) then
+      do i=1,size(this%neighbour1)
+	 if (associated(this%neighbour1(i)%t)) then
+	   call finalise(this%neighbour1(i)%t)
+	   deallocate(this%neighbour1(i)%t)
+	 endif
+      end do
+    endif
 
-    do i=1,size(this%neighbour2)
-       call finalise(this%neighbour2(i)%t)
-    end do
+    if (allocated(this%neighbour2)) then
+      do i=1,size(this%neighbour2)
+	 if (associated(this%neighbour2(i)%t)) then
+	   call finalise(this%neighbour2(i)%t)
+	   deallocate(this%neighbour2(i)%t)
+	 endif
+      end do
+    endif
 
 
     if(allocated(this%neighbour1)) deallocate(this%neighbour1)
