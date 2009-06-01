@@ -37,6 +37,7 @@ program density
     real(dp)                              :: x_max, y_max, z_max
     real(dp), dimension(3)                :: Gaussian_centre
     integer                               :: j,k,l
+    integer                               :: bin_j,bin_k,bin_l
 
     call system_initialise(SILENT)
     call verbosity_push(NORMAL)
@@ -114,88 +115,87 @@ program density
           frame_count = frame_count + 1
        end do
 
-       if (status.ne.0) then
-          call print('double exit')
-          exit
-       endif
-
        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Frame ',frame_count
   
        if (frame_count.gt.from) then
           if ((frame_count.gt.to).and.(to.ne.0)) exit
           call calc_connect(at)     
           call map_into_cell(at)
+
+          !spatial binning of the cell
+          if (Gaussian_smoothing) then
+             increment = at%lattice .mult. (/1.0_dp/real(numbins,dp),1.0_dp/real(numbins,dp),1.0_dp/real(numbins,dp)/)
+             x_min_bin = -0.5*at%lattice(1,1)
+             y_min_bin = -0.5*at%lattice(2,2)
+             z_min_bin = -0.5*at%lattice(3,3)
+          endif
+
           do i = 1, at%N
           
+             !calculate bin / central bin of the Gaussian
+             t = at%g .mult. at%pos(:,i)
+             box_a = floor(real(numbins,dp) * (t(1)+0.5_dp)) + 1
+             box_b = floor(real(numbins,dp) * (t(2)+0.5_dp)) + 1
+             box_c = floor(real(numbins,dp) * (t(3)+0.5_dp)) + 1
+            
              if (.not.Gaussian_smoothing) then
-                t = at%g .mult. at%pos(:,i)
-                box_a = floor(real(numbins,dp) * (t(1)+0.5_dp)) + 1
-                box_b = floor(real(numbins,dp) * (t(2)+0.5_dp)) + 1
-                box_c = floor(real(numbins,dp) * (t(3)+0.5_dp)) + 1
-             
+
                 mass_cuml(box_a,box_b,box_c) = mass_cuml(box_a,box_b,box_c) + ElementMass(at%Z(i))
+
              else
-!call print('hi!'//i)
+
+                !binning is centred around the Gaussian
                 Gaussian_centre = at%pos(1:3,i)
-                increment = at%lattice .mult. (/1.0_dp/real(numbins,dp),1.0_dp/real(numbins,dp),1.0_dp/real(numbins,dp)/)
-                x_min_bin = -0.5*at%lattice(1,1)
-                y_min_bin = -0.5*at%lattice(2,2)
-                z_min_bin = -0.5*at%lattice(3,3)
-!call print('hi!'//increment)
-                do j=1,numbins
-                   do k=1,numbins
-                      do l=1,numbins
-!call print('hi! '//j//' '//k//' '//l)
+
+                do j=int(real(box_a,dp)+real(numbins,dp)/2._dp)-numbins+1,int(real(box_a,dp)+real(numbins,dp)/2._dp)
+
+                   !calculate bin in the range of [1:numbins]
+                   bin_j = mod(j+numbins,numbins)
+                   if (bin_j.eq.0) bin_j = numbins
+
+                   do k=int(real(box_b,dp)+real(numbins,dp)/2._dp)-numbins+1,int(real(box_b,dp)+real(numbins,dp)/2._dp)
+
+                      !calculate bin in the range of [1:numbins]
+                      bin_k = mod(k+numbins,numbins)
+                      if (bin_k.eq.0) bin_k = numbins
+
+                      do l=int(real(box_c,dp)+real(numbins,dp)/2._dp)-numbins+1,int(real(box_c,dp)+real(numbins,dp)/2._dp)
+
+                         !calculate bin in the range of [1:numbins]
+                         bin_l = mod(l+numbins,numbins)
+                         if (bin_l.eq.0) bin_l = numbins
+
+                         !spatial coordinates of this bin
                          x_min = x_min_bin + real(j-1,dp)*increment(1)
-!call print('x_min '//x_min)
                          y_min = y_min_bin + real(k-1,dp)*increment(2)
-!call print('y_min '//y_min)
                          z_min = z_min_bin + real(l-1,dp)*increment(3)
-!call print('z_min '//z_min)
                          x_max = x_min + increment(1)
-!call print('x_max '//x_max)
                          y_max = y_min + increment(2)
-!call print('y_max '//y_max)
                          z_max = z_min + increment(3)
-!call print('z_max '//z_max)
-                         !call print('min_bin: '//x_min_bin//', max_bin: '//x_max)
-                         !call print('ERF(min_bin) = '//erf((Gaussian_centre(1)-min_bin)/(Gaussian_sigma*sqrt(2._dp))))
-                         !call print('ERF(max_bin) = '//erf((max_bin-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))))
-                         !call print('Adding to bin '//j//' '//erf((Gaussian_centre(1)-min_bin)/(Gaussian_sigma*sqrt(2._dp))) + erf((max_bin-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))))
-!call print('hi! '//size(mass_cuml,1)//' '//size(mass_cuml,2)//' '//size(mass_cuml,3))
-!call print('hi! '//mass_cuml(j,k,l))
-!call print('Gaussian centre'//Gaussian_centre)
-!call print('ERF '//( (x_min-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( - erf((x_min-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-!call print('ERF '//( (x_max-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( + erf((x_max-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-!call print('ERF '//( (y_min-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( - erf((y_min-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-!call print('ERF '//( (y_max-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( + erf((y_max-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-!call print('ERF '//( (z_min-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( - erf((z_min-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-!call print('ERF '//( (z_max-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('ERF term '//( + erf((z_max-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) ))
-                         mass_cuml(j,k,l) = mass_cuml(j,k,l) + ElementMass(at%Z(i)) * &
+
+                         !add the integral of the Gaussian on the range [x_min,y_min,z_min:x_max,y_max,z_max]
+                         mass_cuml(bin_j,bin_k,bin_l) = mass_cuml(bin_j,bin_k,bin_l) + ElementMass(at%Z(i)) * &
                            0.5_dp * ( - erf((x_min-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) + erf((x_max-Gaussian_centre(1))/(Gaussian_sigma*sqrt(2.0_dp))) ) * &
                            0.5_dp * ( - erf((y_min-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) + erf((y_max-Gaussian_centre(2))/(Gaussian_sigma*sqrt(2.0_dp))) ) * &
                            0.5_dp * ( - erf((z_min-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) + erf((z_max-Gaussian_centre(3))/(Gaussian_sigma*sqrt(2.0_dp))) )
-!call print('hi! '//mass_cuml(j,k,l))
+
                       enddo
                    enddo
                 enddo
-!call print('hi!'//i)
+
              endif
           end do
   
-!call print('hi!')
           if (mod(frame_count-from,IO_RATE)==0) call write_data
        endif
   
        !Try to read another frame
        call read_xyz(at,xyzfile,status=status)
        
+       if (status.ne.0) then
+          exit
+       endif
+
     end do
     
     call print('')
@@ -210,7 +210,7 @@ program density
   
     call print('Finished.')
   
-    call verbosity_pop
+!    call verbosity_pop
     call system_finalise
 
 contains
