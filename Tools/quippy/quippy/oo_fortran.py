@@ -13,6 +13,8 @@ if (major, minor) < (2, 5):
     any = lambda seq: True in seq
 
 
+fortran_class_prefix = 'Fortran'
+
 py_keywords = ['and',       'del',       'from',      'not',       'while',    
                'as',        'elif',      'global',    'or',        'with',     
                'assert',    'else',      'if',        'pass',      'yield',    
@@ -111,10 +113,13 @@ def process_in_args(args, kwargs, inargs):
       if type_lookup[k].startswith('type'):
          if isinstance(a, FortranDerivedTypes[type_lookup[k].lower()]):
             newkwargs[k] = a._fpointer
+         elif a is None:
+             continue
          else:
             raise TypeError('Argument %s=%s should be of type %s' % (k,a,type_lookup[k]))
       else:
-         newkwargs[k] = a
+          if a is None: continue
+          newkwargs[k] = a
 
    return tuple(newargs), newkwargs
 
@@ -174,13 +179,17 @@ class FortranDerivedType(object):
        self._finalise = True
        
        if 'fpointer' in kwargs:
-           call_init = False
-           self._fpointer = kwargs['fpointer']
+           if kwargs['fpointer'] is not None:
+               call_init = False
+               self._fpointer = kwargs['fpointer']
            del kwargs['fpointer']
 
        if 'finalise' in kwargs:
            self._finalise = kwargs['finalise']
            del kwargs['finalise']
+
+       orig_args = args
+       orig_kwargs = kwargs.copy()
 
        if call_init:
            if '__init__' in self._interfaces:
@@ -189,7 +198,6 @@ class FortranDerivedType(object):
                self._fpointer = self._runroutine('__init__', *args, **kwargs)
 
        self._update()
-       
 
    def __del__(self):
        #print 'del %s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
@@ -210,9 +218,11 @@ class FortranDerivedType(object):
          v = getattr(self,k)
          if isinstance(v, MethodType): continue
          if isinstance(v, FortranDerivedType): 
-            items.append('%s=%s()' % (k,v.__class__.__name__))
+             items.append('%s=%s()' % (k,v.__class__.__name__))
          else:
-            items.append('%s=%s' % (k,v))
+             if isinstance(v, str):
+                 v = v.strip()
+             items.append('%s=%s' % (k,v))
       return '%s(%s)' % (self.__class__.__name__, ',\n'.join(items))
 
 
@@ -231,8 +241,8 @@ class FortranDerivedType(object):
           dtype = dtype.strip()
           if shape.any() and loc != 0:
              if dtype in numpy_to_fortran.keys():
-                 if hasattr(self, '_map_array_shape'):
-                     nshape = self._map_array_shape(name, shape)
+                 nshape = self._get_array_shape(name)
+                 if nshape is not None:
                      setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
                      #setattr(self, '_'+name, arraydata(shape,dtype,loc))
                      setattr(self, name, getattr(self, '_'+name)[nshape])
@@ -263,9 +273,13 @@ class FortranDerivedType(object):
              setattr(self, name, FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False))
              getattr(self,name).__doc__ = savedoc
 
-       if hasattr(self,'update_hook'): 
-           self.update_hook()
+       self._update_hook()
 
+   def _get_array_shape(self, name):
+       return None
+
+   def _update_hook(self):
+       pass
 
    def _runroutine(self, name, *args, **kwargs):
        if not name.startswith('__init__') and self._fpointer is None:
@@ -384,9 +398,11 @@ def wrap_all(topmod, spec, mods, short_names):
              rspec['args'][0]['name'].lower() == 'this'):
             
             cls = FortranDerivedTypes[rspec['args'][0]['type'].lower()]
-               
-            if routine[:len(cls.__name__)+1] == cls.__name__.lower()+'_':
-               method_name = routine[len(cls.__name__)+1:]
+
+            lclsname = cls.__name__.lower()[len(fortran_class_prefix):]
+
+            if routine[:len(lclsname)+1] == lclsname+'_':
+               method_name = routine[len(lclsname)+1:]
             else:
                method_name = routine
 
@@ -437,17 +453,17 @@ def wrapmod(modobj, moddoc, short_names, params):
           destructors += [ x for x in methods if x.startswith('%s_finalise' % short_names[lcls]) ]
 
       if (len(constructors) == 0):
-          logging.debug("Can't find constructor for type %s. Skipping class" % cls)
+          logging.warning("Can't find constructor for type %s. Skipping class" % cls)
           continue
           
       if (len(destructors) == 0):
-          logging.debug("Can't find destructor for type %s. Skipping class" % cls)
+          logging.warning("Can't find destructor for type %s. Skipping class" % cls)
           continue
 
       destructor = destructors[0]
       constructor = constructors[0]
 
-      tcls = cls[0].upper()+cls[1:]
+      tcls = fortran_class_prefix+cls[0].upper()+cls[1:]
       new_cls = type(object)(tcls, (FortranDerivedType,),
                             {'__doc__': moddoc['doc'],
                              '_moddoc': None,

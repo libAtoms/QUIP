@@ -32,6 +32,11 @@ def farray(seq):
     A copy of the data in seq will be made if necessary."""
     return FortranArray(numpy.array(seq,order='F'))
 
+def fidentity(n):
+    """Return the n dimensional identity matrix."""
+
+    return farray(numpy.identity(n))
+
 def fvar(seq):
     """
     Create rank-0 FortranArrays and inject them into the global namespace.
@@ -174,11 +179,11 @@ class FortranArray(numpy.ndarray):
     def __getitem__(self, indx):
         "Overloaded __getitem__ which accepts one-based indices."
 	indx = self.mapindices(indx)
-	obj = numpy.ndarray.__getitem__(self, indx) 
-	if (len(obj.shape) >= 1 and obj.dtype.isbuiltin):
+	obj = numpy.ndarray.__getitem__(self, indx)
+        if isinstance(obj, numpy.ndarray):
             fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
-	    return fa
-	return obj
+            return fa
+        return obj
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
@@ -195,10 +200,10 @@ class FortranArray(numpy.ndarray):
         if j != sys.maxint:
             j = FortranArray.map_int(j)
         obj = numpy.ndarray.__getslice__(self, i, j)
-	if (len(self.shape) >= 1 and obj.dtype.isbuiltin):
+        if isinstance(obj, numpy.ndarray):
             fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
-	    return fa
-	return obj
+            return fa
+        return obj
 
     def __setslice__(self, i, j, value):
         "Overloaded __setslice__ which accpepts one-based indices."
@@ -257,7 +262,7 @@ class FortranArray(numpy.ndarray):
 				 values, mode)
 				 
     def __repr__(self):
-        if self.transpose_on_print:
+        if hasattr(self, 'transpose_on_print') and self.transpose_on_print:
             s = numpy.asarray(self.T).view(numpy.ndarray).__repr__()
         else:
             s = numpy.asarray(self).view(numpy.ndarray).__repr__()
@@ -268,10 +273,16 @@ class FortranArray(numpy.ndarray):
         
 
     def __str__(self):
-        if self._transpose_on_print:
-            return numpy.asarray(self.T).view(numpy.ndarray).__str__()
+        if self.transpose_on_print:
+            if self.dtype.kind == 'S':
+                return str(self.T.stripstrings())
+            else:
+                return numpy.asarray(self.T).view(numpy.ndarray).__str__()
         else:
-            return numpy.asarray(self).view(numpy.ndarray).__str__()
+            if self.dtype.kind == 'S':
+                return str(self.stripstrings())
+            else:
+                return numpy.asarray(self).view(numpy.ndarray).__str__()
 
     def __iter__(self):
         """Iterate over this FortranArray treating first dimension as fastest varying.
@@ -327,17 +338,34 @@ class FortranArray(numpy.ndarray):
     def all(self, axis=None, out=None):
 	if axis is not None:
 	    axis -= 1
-	return numpy.ndarray.all(self, axis, out).view(FortranArray)._addfields(self.transpose_on_print)
+	obj = numpy.ndarray.all(self, axis, out).view(FortranArray)
+        if isinstance(obj, numpy.ndarray):
+            obj = obj.view(FortranArray)._addfields(self.transpose_on_print)
+        return obj
 
     def any(self, axis=None, out=None):
 	if axis is not None:
 	    axis -= 1
-	return numpy.ndarray.any(self, axis, out).view(FortranArray)._addfields(self.transpose_on_print)
-
+	obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
+        if isinstance(obj, numpy.ndarray):
+            obj = obj.view(FortranArray)._addfields(self.transpose_on_print)
+        return obj
 
     def transpose(self):
         return numpy.ndarray.transpose(self).view(FortranArray)._addfields(self.transpose_on_print)
 
     T = property(fget=transpose)
+
+    def stripstrings(self):
+        """Return string or list of strings with trailing spaces removed
+
+        Raises ValueError if this FortranArray does not have a string datatype.
+        """
+
+        if self.dtype.kind != 'S': raise ValueError('dtype.kind must be "S"')
+        if len(self.shape) == 1:
+            return ''.join(self).strip()
+        else:
+            return [''.join(x).strip() for x in self]
 
 

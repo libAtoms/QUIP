@@ -5,7 +5,7 @@ class AtomsList(object):
    def __repr__(self):
       return '%s(%r)' % (self.__class__.__name__, self._list)
 
-   def show(self, property=None, frame=None):
+   def show(self, property=None, frame=0):
       try:
          import atomeye
          atomeye.show(self, property, frame)
