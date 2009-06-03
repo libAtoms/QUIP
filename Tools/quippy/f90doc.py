@@ -361,6 +361,7 @@ class C_module:
             return True
 
         # Also skip allocatable and pointer array arguments
+        # (and return type if sub is a function)
         def no_allocatables_or_pointers(sub):
             for arg in sub.arguments:
                 # FIXME: this skips scalar pointer args too
@@ -370,6 +371,10 @@ class C_module:
                 # arrays of derived type are out as well
                 dims = filter(lambda x: x.startswith('dimension'), arg.attributes)
                 if len(dims) > 0 and arg.type.startswith('type'):
+                    return False
+
+            if isinstance(sub, C_funct):
+                if 'allocatable' in sub.ret_val.attributes or 'pointer' in sub.ret_val.attributes:
                     return False
 
             return True
@@ -829,6 +834,29 @@ class C_module:
                     else:
                         # Return by value
                         if 'pointer' in attributes: attributes.remove('pointer')
+
+                        if el.type.startswith('character'):
+
+                            # change from '(len=*)' or '(*)' syntax to *(*) syntax
+                            try:
+                                lind = el.type.index('(')
+                                rind = el.type.rindex(')')
+                                mytype = el.type[:lind]+'*'+el.type[lind:rind+1].replace('len=','')
+                            
+                                # Try to get length of string arguments
+                                if not mytype[11:-1] == '*' and not all([x in '0123456789' for x in mytype[11:-1]]):
+                                    try:
+                                        mytype = 'character*(%s)' % string_lengths[mytype[11:-1].lower()]
+                                    except KeyError:
+                                        mytype = 'character*(%s)' % string_lengths['default']
+
+                                # Default string length for intent(out) strings 
+                                if mytype[11:-1] == '*' and 'intent(out)' in attributes:
+                                    mytype = 'character*(%s)' % string_lengths['default']
+
+                            except ValueError:
+                                pass
+                        
                         if attributes != []:
                             println('%s, %s, intent(out) :: the%s' % (mytype, ','.join(attributes), name))
                         else:
