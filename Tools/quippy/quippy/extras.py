@@ -1,34 +1,21 @@
-"""Various mixin classes to add functionality to automatically generated classes."""
+"""Various subclasses to add functionality to automatically generated classes."""
 
 import numpy, hashlib
 from farray import *
 
-class AtomsExtras(object):
+from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem
 
-   @classmethod
-   def _init_extra(cls):
-      cls._select = cls.select
-      del cls.select
+class Atoms(FortranAtoms):
 
-   def write(self, target, append=True):
-      "Write atoms object to an XYZ or NetCDF file."
-      from quippy import CInOutput, OUTPUT
-      cio = CInOutput(target, OUTPUT, append)
-      try:
-         cio.write(self)
-      finally:
-         cio.close()
-
-   @classmethod
-   def read(cls, source, frame=0):
-      """Read a single frame from an XYZ or NetCDF file, then close the file.
-      This is a classmethod so should be called as at = Atoms.read(source)."""
-      from atomslist import FrameReader
-      at = FrameReader(source, start=frame)[0]
-      return at
+   def __init__(self, filename=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True, frame=None,
+                data=None, properties=None,  params=None):
+      FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
+                            data=data, properties=properties, params=params)
+      if filename is not None:
+         self.read(filename, frame=frame)
 
    def show(self, property=None):
-      """Show this atoms object in AtomEye."""
+      """Show this Atoms object in AtomEye."""
       try:
          import atomeye
          atomeye.show(self,property=property)
@@ -42,18 +29,17 @@ class AtomsExtras(object):
       small_at = at.select([mask, list])
       
       """
-      from quippy import Atoms
       if mask is not None:
-         out = Atoms(mask.count(),self.lattice)
+         out = Atoms(n=mask.count(),lattice=self.lattice)
          out._select(self, mask=mask)
       elif list is not None:
-         out = Atoms(list.size(), self.lattice)
-         out._select(self, list=list)
+         out = Atoms(n=list.size(), lattice=self.lattice)
+         FortranAtoms.select(out, self, list=list)
       else:
          raise ValueError('Either mask or list must be present.')
       return out
     
-   def update_hook(self):
+   def _update_hook(self):
       # Remove existing pointers
       if hasattr(self, '_props'):
          for prop in self._props:
@@ -107,9 +93,8 @@ class AtomsExtras(object):
             raise ValueError('Bad property type :'+str(self.properties[prop]))
 
    def copy(self):
-      from quippy import Atoms
-      other = Atoms(self.n, self.lattice, self.data, 
-                    self.properties, self.params)
+      other = Atoms(n=self.n, lattice=self.lattice, data=self.data, 
+                    properties=self.properties, params=self.params)
       return other
 
    def calc_bonds(self):
@@ -151,20 +136,9 @@ class AtomsExtras(object):
 
 
    def __getattr__(self, name):
-      from quippy import Dictionary
-      if isinstance(self.params, Dictionary) and name in self.params:
+      if isinstance(self.params, FortranDictionary) and name in self.params:
          return self.params[name]
       raise AttributeError('Unknown Atoms parameter %s' % name)
-
-##    def __setattr__(self, name, value):
-##       from quippy import Dictionary
-##       from oo_fortran import FortranDerivedType
-      
-##       if (not isinstance(self.params, Dictionary) or isinstance(value, FortranDerivedType)
-##           or isinstance(value, FortranArray) or name[0] == '_'):
-##          object.__setattr__(self, name, value)
-##       else:
-##          self.params[name] = value
 
    def __getitem__(self, i):
       if i < 1 or i > self.n:
@@ -178,13 +152,13 @@ class AtomsExtras(object):
       return res
 
 from dictmixin import DictMixin
-class DictionaryExtras(DictMixin):
+class Dictionary(DictMixin, FortranDictionary):
 
-   @classmethod
-   def _init_extra(cls):
-      cls._arrays['_keys'] = cls._arrays['keys']
-      del cls._arrays['keys']
-      del cls.keys
+   def __init__(self, *args, **kwargs):
+      FortranDictionary.__init__(self, *args, **kwargs)
+      if 'keys' in self._arrays:
+         self._arrays['_keys'] = self._arrays['keys']
+         del self._arrays['keys']
 
    def keys(self):
       new_hash = hashlib.md5(self._keys).hexdigest()
@@ -251,14 +225,9 @@ class DictionaryExtras(DictMixin):
       return 'Dictionary(%s)' % DictMixin.__repr__(self)
 
 
-class TableExtras(object):
+class Table(FortranTable):
 
-   @classmethod
-   def _init_extra(cls):
-      pass
-   
    def copy(self):
-      from quippy import Table
       t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
       t.n = self.n
       t._update()
@@ -280,54 +249,45 @@ class TableExtras(object):
       return True
 
 
-   def map_array_shape(self, name, shape):
+   def _get_array_shape(self, name):
        if name in ('int','real','logical'):
            return (slice(None),slice(1,self.n))
        elif name == 'str':
            return (slice(None),slice(None),slice(1,self.n))
+       else:
+          return None
 
-
-from atomslist import AtomsList
 
 class Trajectory(object):
-    def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
-        self.ds = ds
-        self.pot = pot
-        self.dt = dt
-        self.n_steps = n_steps
-        self.save_interval = save_interval
-        self.connect_interval = connect_interval
+   def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
+      self.ds = ds
+      self.pot = pot
+      self.dt = dt
+      self.n_steps = n_steps
+      self.save_interval = save_interval
+      self.connect_interval = connect_interval
+      
+      self.f = fzeros((3,ds.atoms.n))
+      self.e = farray(0.0)
+      self.pot.calc(ds.atoms, f=self.f, e=self.e)
+      
+   def __iter__(self):
+      for n in range(self.n_steps):
+         self.ds.advance_verlet1(self.dt, self.f)
+         self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
+         self.ds.advance_verlet2(self.dt, self.f)
+         self.ds.print_status(epot=self.e)
+         if n % self.connect_interval == 0:
+            self.ds.atoms.calc_connect()
+         if n % self.save_interval == 0:
+            yield self.ds.atoms.copy()
+      raise StopIteration
 
-        self.f = fzeros((3,ds.atoms.n))
-        self.e = farray(0.0)
-        self.pot.calc(ds.atoms, f=self.f, e=self.e)
 
-    def __iter__(self):
-        for n in range(self.n_steps):
-            self.ds.advance_verlet1(self.dt, self.f)
-            self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
-            self.ds.advance_verlet2(self.dt, self.f)
-            self.ds.print_status(epot=self.e)
-            if n % self.connect_interval == 0:
-                self.ds.atoms.calc_connect()
-            if n % self.save_interval == 0:
-                yield self.ds.atoms.copy()
-        raise StopIteration
-
-class DynamicalSystemExtras(object):
-
-   @classmethod
-   def _init_extra(cls):
-      pass
-
+class DynamicalSystem(FortranDynamicalSystem):
+   
    def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10):
-      traj = Trajectory(self, pot, dt, n_steps, save_interval, connect_interval)
-      return AtomsList(traj)
+      return Trajectory(self, pot, dt, n_steps, save_interval, connect_interval)
+      
 
-
-
-extras_map = {'Atoms': AtomsExtras,
-              'Dictionary': DictionaryExtras,
-              'Table': TableExtras,
-              'DynamicalSystem': DynamicalSystemExtras}
 
