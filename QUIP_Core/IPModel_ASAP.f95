@@ -39,7 +39,7 @@ include 'IPModel_interface.h'
 
 logical, private :: asap_initialised = .false.
 
-integer, private, parameter :: PARAM_LINE_LENGTH = 255, N_PARAM_LINE = 93
+integer, private, parameter :: PARAM_LINE_LENGTH = 255, N_PARAM_LINE = 94
 
 public :: IPModel_ASAP
 type IPModel_ASAP
