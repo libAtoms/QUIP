@@ -4,7 +4,8 @@ module topology_module
                                      add_property, &
                                      read_line, parse_line, &
                                      atoms_n_neighbours, atoms_neighbour, &
-                                     distance_min_image
+                                     distance_min_image, &
+                                     DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect
   use clusters_module,         only: bfs_step, add_cut_hydrogens
   use dictionary_module,       only: get_value, value_len
   use linearalgebra_module,    only: find_in_array, find, &
@@ -252,7 +253,7 @@ logical :: silanol
                  if (at%Z(bondSi%int(1,i)).eq.14) then
                     bond_Si = bondSi%int(1,i)
                     call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
-                    call delete_bond(at,bond_H,bond_Si)
+                    call remove_bond(at%connect,bond_H,bond_Si)
                  endif
               enddo
            endif
@@ -1447,6 +1448,38 @@ enddo
     end select
 
   end function danny_cutoff
+
+  subroutine calc_connect_danny(at,cut_3body)
+
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(in) :: cut_3body
+    integer :: i,j,n, neighbours
+    real(dp) :: distance
+
+    !Add every distance within cut_3body(=2.8 A)
+    call set_cutoff(at,cut_3body)
+    call calc_connect(at)
+
+    !Remove all the bonds that are longer than (rcov(A)+rcov(B))*this%cutoff, except Si-Si and Si-O bonds (keep that for the 3 body generation).
+    do i=1,at%N
+       n=1
+       neighbours = atoms_n_neighbours(at,i)
+       do while (n.le.neighbours)
+          j = atoms_neighbour(at,i,n,distance=distance)
+          if (.not.any((at%Z(i)*1000+at%Z(j)).eq.(/14014,14008,8014/))) then
+             if (distance.gt.(ElementCovRad(at%Z(i))+ElementCovRad(at%Z(j)))*DEFAULT_NNEIGHTOL) then
+                call remove_bond(at%connect,i,j)
+                n = n - 1
+             endif
+          endif
+          n = n + 1
+          neighbours = atoms_n_neighbours(at,i)
+          if (neighbours.eq.0) call system_abort('0 neighbours')
+       enddo
+       !if (at%Z(i).eq.1) call print ('H atom '//i//' has neighbours = '//neighbours)
+    enddo
+
+  end subroutine calc_connect_danny
 #endif
 
    ! removes a bond between i and j, if the bond is present
