@@ -415,7 +415,7 @@ module paramreader_module
 
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       character(len=*), intent(in) :: myline  !% Line to parse
-      logical, optional :: ignore_unknown !% If true, ignore unknown keys in line
+      logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       logical :: status
 
       character(len=FIELD_LENGTH) :: field
@@ -425,7 +425,7 @@ module paramreader_module
       integer :: num_fields, i, j,  k, num_sub_fields, num_pairs
       type(ParamEntry) :: entry
       type(DictData) :: data
-      logical my_ignore_unknown
+      logical :: my_ignore_unknown
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
 
@@ -557,16 +557,20 @@ module paramreader_module
     !% arguments that we should look at, in order, if it's not given we look
     !% at all arguments.  Returns false if fails, or if optional check that
     !% all mandatory values have been specified fails.
-    function param_read_args(dict, args, do_check) result(status)
+    function param_read_args(dict, args, do_check,ignore_unknown) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       integer, dimension(:), intent(in), optional :: args !% Argument indices to use
       logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       logical :: status
 
       integer :: i, nargs
       character(len=1024) :: this_arg
       character(len=1024) :: command_line
       integer, dimension(:), allocatable :: xargs
+      logical :: my_ignore_unknown
+
+      my_ignore_unknown=optional_default(.false., ignore_unknown)
 
       nargs = cmd_arg_count()
 
@@ -584,7 +588,7 @@ module paramreader_module
       ! Concatentate command line options into one string
       command_line = ''
       do i=1, size(xargs)
-	 call get_cmd_arg(xargs(i), this_arg)
+         call get_cmd_arg(xargs(i), this_arg)
          command_line = trim(command_line)//' '//trim(this_arg)
       end do
 
@@ -593,7 +597,7 @@ module paramreader_module
       deallocate(xargs)
 
       ! Then parse this string, and return success or failure
-      status =  param_read_line(dict, command_line)
+      status =  param_read_line(dict, command_line,ignore_unknown=my_ignore_unknown)
       if (.not. status) return
 
       status = .true.
