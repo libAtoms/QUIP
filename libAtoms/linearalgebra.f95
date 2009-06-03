@@ -3375,7 +3375,7 @@ CONTAINS
 
   ! add random values to the elements of an array in the range(-a/2,a/2)
   subroutine matrix_randomise(m,a)
-    real(dp), dimension(:,:)::m
+    real(dp), dimension(:,:), intent(inout) ::m
     real(dp)::a
     !local
     integer::i,j
@@ -3389,7 +3389,7 @@ CONTAINS
   end subroutine matrix_randomise
 
   subroutine matrix_z_randomise(m,a)
-    complex(dp), dimension(:,:)::m
+    complex(dp), dimension(:,:), intent(inout) ::m
     real(dp)::a
     !local
     integer::i,j
