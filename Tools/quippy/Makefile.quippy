@@ -19,7 +19,7 @@ CONFIG_FC_OPTS = --f90flags="${QUIPPY_F90FLAGS}" --cpp="${QUIPPY_CPP}"
 BUILD_EXT_OPTS = --fcompiler="${QUIPPY_FCOMPILER}"
 
 BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} ${WRAP} --f2py-opts=--no-wrap-functions
-BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -DDEBUG -UHAVE_LOTF ${SYSLIBS} 
+BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
 INSTALL_OPTS = --home=${HOME}
 
 SETUP_OPTS = config_fc ${CONFIG_FC_OPTS} build_ext ${BUILD_EXT_OPTS} build_src ${BUILD_SRC_OPTS}
@@ -42,9 +42,9 @@ TOOLS_SOURCES=$(addprefix ${TOOLS_DIR}/,$(addsuffix .f95,${PROGRAMS}))
 QUIP_UTILS_DIR=../../QUIP_Utils
 include ${QUIP_UTILS_DIR}/Makefile
 QUIP_UTILS_SOURCES=$(addprefix ${QUIP_UTILS_DIR}/,$(addsuffix .f95,${F95_FILES}))
-TOOLS=--tools-sources="${TOOLS_SOURCES} ${QUIP_UTILS_SOURCES}"
+TOOLS=--tools-sources="${TOOLS_SOURCES} ${QUIP_UTILS_SOURCES} ../../QUIP_Programs/crackparams.f95 ../../QUIP_Programs/cracktools.f95"
 
-WRAP=--wrap-sources="System.f95 ExtendableStr.f95 Units.f95 linearalgebra.f95 Dictionary.f95 Table.f95 PeriodicTable.f95 Atoms.f95  DynamicalSystem.f95  clusters.f95 Structures.f95 libAtoms_misc_utils.f95 CInOutput.f95 Topology.f95 Potential.f95 MetaPotential.f95 MPI_context.f95 elasticity.f95"
+WRAP=--wrap-sources="System.f95 ExtendableStr.f95 Units.f95 linearalgebra.f95 Dictionary.f95 Table.f95 PeriodicTable.f95 Atoms.f95  DynamicalSystem.f95  clusters.f95 Structures.f95 libAtoms_misc_utils.f95 CInOutput.f95 Topology.f95 Potential.f95 MetaPotential.f95 MPI_context.f95 elasticity.f95 cracktools.f95 crackparams.f95"
 
 
 ifeq (${HAVE_ATOMEYE},1)
