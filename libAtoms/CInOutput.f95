@@ -669,7 +669,7 @@ contains
 
   subroutine atoms_read(this, filename, frame, zero, status)
     !% Read Atoms object from XYZ or NetCDF file.
-    type(Atoms), intent(out) :: this
+    type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: filename
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
