@@ -65,7 +65,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 	print $_." ".$last_subrt."\n";
     }
     else { s/^\s*private/!private/; print; }
-}' %s > tmp.out; %s %s tmp.out > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
+}' %s > tmp.out; %s %s tmp.out | grep -v '^#' >  %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
 #}' %s | %s %s - | perl -ne 'print if !/^$/' > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))
         else:
             #if newer(infile, outfile):
@@ -334,6 +334,7 @@ if do_quippy_extension:
                 'library_dirs': library_dirs,
                 'include_dirs': [mod_dir] + include_dirs,
                 'libraries':  int_libs + libraries,
+#                'depends': ['%s/lib%s.a' % (mod_dir,L) for L in int_libs],
                 'define_macros': macros
                 }
 
@@ -353,7 +354,7 @@ if do_quippy_extension:
                     'library_dirs':  atomeye_libdirs + library_dirs + [os.path.join(atomeye_dir, 'lib')],
                     'libraries': ['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
                     'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
-                    'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
+#                    'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
                     'define_macros': macros
                     }
 
