@@ -591,6 +591,11 @@ contains
     ! Find rightmost undercoordinated atoms in bulk - this is initial crack tip position
     crack_pos = crack_find_crack_pos(crack_slab, params)
 
+    ! clear changed_nn, hybrid and hybrid_mark 
+    hybrid(:) = 0
+    hybrid_mark(:) = 0
+    changed_nn(:) = 0
+
     ! Artificially set changed_nn to 1 for atoms near to crack tip
     do i = 1, crack_slab%N
        if (distance_min_image(crack_slab, i, (/crack_pos,0.0_dp,0.0_dp/)) < params%crack_seed_embed_tol) &
@@ -1168,6 +1173,19 @@ contains
        nn_atoms%pos = at%pos
     end if
     call calc_connect(nn_atoms)
+
+    ! fix pointers - calc_connect() may have called map_into_cell() which adds properties
+    if (.not. assign_pointer(at, 'nn', nn)) &
+         call system_abort('crack_update_connect: nn property missing from atoms')
+
+    if (.not. assign_pointer(at, 'old_nn', old_nn)) &
+         call system_abort('crack_update_connect: old_nn property missing from atoms')
+
+    if (.not. assign_pointer(at, 'changed_nn', changed_nn)) &
+         call system_abort('crack_update_connect: changed_nn property missing from atoms')
+
+    if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
+         call system_abort('crack_update_connect: edge property missing from atoms')    
 
     nn = 0
     do i = 1,nn_atoms%N
