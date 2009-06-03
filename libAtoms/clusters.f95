@@ -32,9 +32,9 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
      "h_outer_l ", &
      "h_fit     " /)
 
-public :: create_cluster, create_cluster_hybrid_mark, create_hybrid_weights, bfs_grow, bfs_step, &
-     multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, add_cut_hydrogens, & 
-     construct_buffer, select_hysteretic_quantum_region
+public :: create_cluster_info, create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
+    bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
+    add_cut_hydrogens, construct_buffer, select_hysteretic_quantum_region
 
 interface create_hybrid_weights
    module procedure create_hybrid_weights_args
@@ -361,24 +361,15 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  ! Create Cluster:
-  !% Returns an Atoms object (cluster) which contains the atoms whose
+  ! Create Cluster Information Structure:
+  !% Returns an Table object (cluster_info) which contains info on atoms whose
   !% indices are given in atomlist, possibly with some extras for consistency,
-  !% and optionally terminated with Hydrogens.
-  !% The output cluster contains all properties of the initial atoms object, and
-  !% some additional columns, which are:
-  !% "index" : index of the cluster atoms into the initial atoms object.
-  !% "termindex": nonzero for termination atoms, and is an index into the cluster atoms specifiying which atom
-  !% is being terminated, it is used in collecting the forces.
-  !% "rescale" : a real number which for nontermination atoms is 1.0, for termination atoms records
-  !% the scaling applied to termination bond lengths
-  !% "shift" : the shift of each atom
-  !% 
+  !% and optionally terminated with Hydrogens, that can be used by carve_cluster().
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function create_cluster(this, atomlist, terminate, periodic, same_lattice, even_hydrogens, vacuum_size, &
-       cut_bonds, allow_cluster_modification, hysteretic_connect) result(cluster)
+  function create_cluster_info(this, atomlist, terminate, periodic, same_lattice, even_hydrogens, &
+       cut_bonds, allow_cluster_modification, hysteretic_connect) result(cluster_info)
     type(Atoms), target,       intent(in)    :: this           !% Input Atoms object
     type(Table),               intent(in)    :: atomlist       !% List of atoms to include in cluster. This should be
                                                                !% either 1 column with indices, or 4 columns with indices
@@ -394,23 +385,20 @@ contains
                                                                !% of spin up and spin down electrons. If a hydrogen has to
                                                                !% be removed it will be taken from an atom with as many 
                                                                !% termination hydrogens as possible.
-    real(dp),    optional                    :: vacuum_size    !% Amount of vacuum around clusters, in \AA{}.
-                                                               !% Default is 10 \AA{}.
     type(Table), optional,     intent(out)   :: cut_bonds      !% Return a list of the bonds cut when making
                                                                !% the cluster. Table with 8 'int' columns,
                                                                !% for $i$, $j$, 'shift_i' and 'shift_j'.
                                                                !% for the atom indices at each end of the cut bonds.
     logical,     optional,     intent(in)    :: allow_cluster_modification  !% if false, don't try to fix cluster surface
     logical,     optional,     intent(in)    :: hysteretic_connect  !% if true, use this%hysteretic_connect for connectivity (also, don't restrict hops to nneigh_tol)
-    type(Atoms)                              :: cluster      ! this is the output
+    type(Table)                              :: cluster_info   ! this is the output
 
-    type(Table)                              :: cluster_temp,  n_term, sorted_n_term
-    integer                                  :: i, j, k, m, n, p, lookup(3)
+    type(Table)                              :: n_term, sorted_n_term
+    integer                                  :: i, j, k, m, n, p
 
     real(dp),    dimension(3)                :: diff_ik
-    real(dp),    dimension(3)                :: dhat_ij, dhat_jk, H1, H2, maxlen, sep
-    real(dp),    dimension(3)                :: lat_maxlen, lat_sep
-    real(dp)                                 :: r_ij, r_jk, cluster_vacuum, rescale
+    real(dp),    dimension(3)                :: dhat_ij, dhat_jk, H1, H2
+    real(dp)                                 :: r_ij, r_jk, rescale
     logical                                  :: all_in
     logical                                  :: do_terminate, do_periodic(3), do_even_hydrogens, do_same_lattice, do_hysteretic_connect
     integer                                  :: ishift(3), jshift(3), kshift(3), oldN, most_hydrogens
@@ -425,7 +413,6 @@ contains
 
 
     allow_cluster_mod = optional_default(.true., allow_cluster_modification)
-    cluster_vacuum    = optional_default(10.0_dp, vacuum_size)
     do_terminate      = optional_default(.true., terminate)
     do_same_lattice   = optional_default(.false., same_lattice)
     do_even_hydrogens = optional_default(.false., even_hydrogens)
@@ -436,7 +423,7 @@ contains
     if (present(periodic)) do_periodic = periodic
 
     if (.not. assign_pointer(this, "hybrid_mark", hybrid_mark)) &
-      call system_abort("create_cluster impossible failure to assing hybrid_mark pointer")
+      call system_abort("create_cluster impossible failure to assign hybrid_mark pointer")
 
     ! 
     ! Validate arguments
@@ -465,7 +452,7 @@ contains
          call system_abort("create_cluster: atomlist table must have intsize=1 or 4 and realsize=0.")
 
 
-    ! Cluster_temp is a temporary, extensible storage for the cluster
+    ! Cluster_info is extensible storage for the cluster
     ! It stores atomic indices and shifts (4 ints)
     ! atomic number (1 int)
     ! termination index (1 int): for termination atoms, which atom is being terminated?
@@ -473,10 +460,10 @@ contains
     ! It's length will be at least atomlist%N
 
     call print('create_cluster: Creating temporary cluster table', NERD)
-    call table_allocate(cluster_temp,6,4,1,0,atomlist%N)
+    call table_allocate(cluster_info,6,4,1,0,atomlist%N)
 
 
-    ! First, put all the marked atoms into cluster_temp, storing their positions and shifts
+    ! First, put all the marked atoms into cluster_info, storing their positions and shifts
     call print('create_cluster: Adding specified atoms to the cluster', NERD)
     do i = 1, atomlist%N
        if(atomlist%intsize == 4) then
@@ -486,16 +473,16 @@ contains
           ! no incoming shifts
           ishift = (/0,0,0/)
        end if
-       call append(cluster_temp, (/atomlist%int(1,i),ishift,this%Z(atomlist%int(1,i)),0/),&
+       call append(cluster_info, (/atomlist%int(1,i),ishift,this%Z(atomlist%int(1,i)),0/),&
 	    (/this%pos(:,atomlist%int(1,i)),1.0_dp/), (/ hybrid_mark_name(hybrid_mark(atomlist%int(1,i))) /) )
     end do
 
     call print("create_cluster: cluster list:", NERD)
-    call print(cluster_temp, NERD)
+    call print(cluster_info, NERD)
 
     ! Next, check for various gotchas
 
-    ! this mask is used to match with atoms already in the cluster_temp table
+    ! this mask is used to match with atoms already in the cluster_info table
     ! if we are periodic in a direction, we don't care about the shifts in that direction when matching
     atom_mask = (/.true.,.not.do_periodic, .true., .true./)
 
@@ -507,22 +494,22 @@ contains
 
     if(allow_cluster_mod) then
        ! Gotcha 1: Hollow sections
-       ! OUT and IN refers to the list in cluster_temp
+       ! OUT and IN refers to the list in cluster_info
        ! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
        ! atom are IN, then make the OUT atom IN.
        n = 1
        ! Loop over cluster atoms (including ones that may get added in this loop)
        call print('create_cluster: Checking for hollow sections', NERD)
-       do while(n <= cluster_temp%N)
-          i = cluster_temp%int(1,n)
-          ishift = cluster_temp%int(2:4,n)
+       do while(n <= cluster_info%N)
+          i = cluster_info%int(1,n)
+          ishift = cluster_info%int(2:4,n)
           call print('create_cluster: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
 
           !Loop over neighbours
           do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
              j = atoms_neighbour(this,i,m, r_ij,shift=jshift,alt_connect=use_connect)
 
-             if (find(cluster_temp,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
+             if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
 		  (do_hysteretic_connect .or.  is_nearest_neighbour(this, i, m,alt_connect=use_connect)) ) then
 
                 call print('create_cluster:   checking j = '//j//" ["//jshift//"]",ANAL)
@@ -533,7 +520,7 @@ contains
                 all_in = .true.
                 do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
                    k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
-                   if (find(cluster_temp,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
+                   if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
                         (do_hysteretic_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
                       all_in = .false.
                       exit
@@ -542,9 +529,9 @@ contains
 
                 !If all j's nearest neighbours are IN then add it
                 if (all_in) then
-                   call append(cluster_temp, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
+                   call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
                    if(current_verbosity() .ge. NERD) then
-		      call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_temp%N, NERD)
+		      call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
                    end if
                 end if
 
@@ -556,7 +543,7 @@ contains
 
        call print('create_cluster: Finished checking for hollow sections',NERD)
        call print("create_cluster: cluster list:", NERD)
-       call print(cluster_temp, NERD)
+       call print(cluster_info, NERD)
 
        ! Gotcha 2: In-out-in structures
        ! Find cases where two IN atoms have a common
@@ -569,9 +556,9 @@ contains
        !Loop over atoms in the cluster
        n = 1
        if(do_terminate) then
-         do while (n <= cluster_temp%N)
-            i = cluster_temp%int(1,n)     ! index of atom in the cluster
-            ishift = cluster_temp%int(2:4,n)
+         do while (n <= cluster_info%N)
+            i = cluster_info%int(1,n)     ! index of atom in the cluster
+            ishift = cluster_info%int(2:4,n)
             call print('create_cluster: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
             !Loop over atom i's neighbours
             do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
@@ -580,7 +567,7 @@ contains
         
                !If j is IN the cluster, or not a nearest neighbour then try the next neighbour
         
-               if(find(cluster_temp,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+               if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
                   call print('create_cluster:   j = '//j//" ["//jshift//"] is in cluster",ANAL)
                   cycle
                end if
@@ -610,7 +597,7 @@ contains
                   !If k is OUT of the cluster or k == i or it is not a nearest neighbour of j
                   !then try the next neighbour
         
-                  if(find(cluster_temp,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
+                  if(find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
                      call print('create_cluster:   k = '//k//" ["//kshift//"] not in cluster",ANAL)
                      cycle
                   end if
@@ -641,8 +628,8 @@ contains
                   if ((norm(diff_ik) < bond_length(this%Z(i),this%Z(k))*this%nneightol) .or. &
                        (norm(H1-H2) < bond_length(1,1)*this%nneightol*1.2_dp) ) then
         
-                     call append(cluster_temp,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
-                     call print('create_cluster:  Atom '//j//' added to cluster. Atoms = '//cluster_temp%N, &
+                     call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
+                     call print('create_cluster:  Atom '//j//' added to cluster. Atoms = '//cluster_info%N, &
                           NERD)
                      ! j is now included in the cluster, so we can exit this do loop (over p)
                      exit
@@ -657,40 +644,42 @@ contains
 
        call print('create_cluster: Finished checking for termination clashes',NERD)
        call print("create_cluster: cluster list:", NERD)
-       call print(cluster_temp, NERD)
+       call print(cluster_info, NERD)
     end if ! allow_cluster_mod
 
-    !So now cluster_temp contains all the atoms that are going to be in the cluster.
+    !So now cluster_info contains all the atoms that are going to be in the cluster.
     !If do_terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
     if (do_terminate) then
        call print('create_cluster: Terminating cluster with hydrogens',NERD)
 
        call table_allocate(n_term, 5, 0, 0, 0)
-       oldN = cluster_temp%N
+       oldN = cluster_info%N
 
        !Loop over atoms in the cluster
        do n = 1, oldN
 
-          i = cluster_temp%int(1,n)
-          ishift = cluster_temp%int(2:4,n)
+          i = cluster_info%int(1,n)
+          ishift = cluster_info%int(2:4,n)
           !Loop over atom i's neighbours
           do m = 1, atoms_n_neighbours(this,i, alt_connect=use_connect)
 
              j = atoms_neighbour(this,i,m, r_ij, diff=dhat_ij, shift=jshift, alt_connect=use_connect)
              dhat_ij = dhat_ij / r_ij
 
-             if (find(cluster_temp,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
+             if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
                   (do_hysteretic_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect))) then
 
                 ! If j is an OUT atom, and it is close enough, put a terminating hydrogen
                 ! at the scaled distance between i and j
-               
+  
                 rescale = termination_bond_rescale(this%Z(i), this%Z(j))
                 H1 = this%pos(:,i) + rescale * r_ij * dhat_ij
 
                 ! Label term atom with indices into original atoms structure.
                 ! j is atom it's generated from and n is index into cluster table of atom it's attached to
-                call append(cluster_temp,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
+                call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
+		! label term atom in original atos object calso
+		hybrid_mark(j) = HYBRID_TERM_MARK
 
                 ! Keep track of how many termination atoms each cluster atom has
                 p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
@@ -714,7 +703,7 @@ contains
        end do
 
        ! Do we need to remove a hydrogen atom to ensure equal n_up and n_down electrons?
-       if (do_even_hydrogens .and. mod(count(int_part(cluster_temp,5) == 1),2) == 1) then
+       if (do_even_hydrogens .and. mod(count(int_part(cluster_info,5) == 1),2) == 1) then
 
           ! Find first atom with a maximal number of terminating hydrogens
 
@@ -729,11 +718,11 @@ contains
           ishift = n_term%int(2:4,most_hydrogens)
 
           ! Loop over termination atoms
-          do j=oldN,cluster_temp%N
+          do j=oldN,cluster_info%N
              ! Remove first H atom attached to atom i
-             if (all(cluster_temp%int(2:6,j) == (/ishift,1,n/))) then
-                call delete(cluster_temp, j)
-                call print('create_cluster: removed one of atom '//cluster_temp%int(1,n)//" "//maxval(int_part(n_term,5))// &
+             if (all(cluster_info%int(2:6,j) == (/ishift,1,n/))) then
+                call delete(cluster_info, j)
+                call print('create_cluster: removed one of atom '//cluster_info%int(1,n)//" "//maxval(int_part(n_term,5))// &
                      ' terminating hydrogens to zero total spin', VERBOSE)
                 exit 
              end if
@@ -749,29 +738,97 @@ contains
        if (allocated(periodic_shift)) deallocate(periodic_shift)
     end if
 
-    !Now turn the cluster_temp table into an atoms structure
-    call print('create_cluster: Copying atomic data to output object',NERD)
-    call print('List of atoms in cluster:', NERD)
-    call print(int_part(cluster_temp,1), NERD)
+    call print ('Exiting create_cluster_info', NERD)
 
+  end function create_cluster_info
+
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! Create cluster from atoms and cluster information table
+  !% The output cluster contains all properties of the initial atoms object, and
+  !% some additional columns, which are:
+  !% "index" : index of the cluster atoms into the initial atoms object.
+  !% "termindex": nonzero for termination atoms, and is an index into the cluster atoms specifiying which atom
+  !% is being terminated, it is used in collecting the forces.
+  !% "rescale" : a real number which for nontermination atoms is 1.0, for termination atoms records
+  !% the scaling applied to termination bond lengths
+  !% "shift" : the shift of each atom
+  !% 
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  function carve_cluster(at, args_str, cluster_info) result(cluster)
+    type(Atoms), intent(in), target :: at
+    character(len=*), intent(in) :: args_str
+    type(Table), intent(in) :: cluster_info
+    type(Atoms) :: cluster
+
+    type(Dictionary) :: params
+    logical :: do_rescale_r
+    real(dp) :: r_scale, cluster_vacuum
+    logical :: terminate, randomise_buffer, print_clusters, do_calc_connect, do_same_lattice
+    logical :: hysteretic_connect
+    integer :: i, j, k, at_j, n
+    real(dp) :: maxlen(3), sep(3), lat_maxlen(3), lat_sep(3)
+    integer :: lookup(3)
+    logical :: do_periodic(3)
+    integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:)
+    type(Inoutput)                    :: clusterfile
+    character(len=255)                :: clusterfilename
+    type(Connection), pointer :: use_connect
+    type(Table) :: outer_layer
+    logical :: in_outer_layer
+
+#ifdef _MPI
+    integer::mpi_size, mpi_rank, error
+    include "mpif.h"
+    integer :: mpi_force_size
+    real(dp), allocatable, dimension(:)  :: mpi_force
+
+    call get_mpi_size_rank(MPI_COMM_WORLD, mpi_size, mpi_rank)
+#endif _MPI
+
+    call print('carve_cluster got args_str "'//trim(args_str)//'"', VERBOSE)
+
+    call initialise(params)
+    call param_register(params, 'terminate', 'T', terminate)
+    call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
+    call param_register(params, 'r_scale', '1.0', r_scale)
+    call param_register(params, 'randomise_buffer', 'T', randomise_buffer)
+    call param_register(params, 'print_clusters', 'F', print_clusters)
+    call param_register(params, 'cluster_calc_connect', 'F', do_calc_connect)
+    call param_register(params, 'cluster_same_lattice', 'F', do_same_lattice)
+    call param_register(params, 'cluster_periodic_x', 'F', do_periodic(1))
+    call param_register(params, 'cluster_periodic_y', 'F', do_periodic(2))
+    call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3))
+    call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
+    call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+      call system_abort("carve_cluster failed to parse args_str='"//trim(args_str)//"'")
+    call finalise(params)
 
     ! first pick up an atoms structure with the right number of atoms and copy the properties
-    call select(cluster, this, list=int_part(cluster_temp,1))
+    !Now turn the cluster_temp table into an atoms structure
+    call print('carve_cluster: Copying atomic data to output object',NERD)
+    call print('List of atoms in cluster:', NERD)
+    call print(int_part(cluster_info,1), NERD)
+
+    call select(cluster, at, list=int_part(cluster_info,1))
     ! then reset the positions species and Z (latter two needed because termination atoms have Z=1)
-    ! unfold the positions to real positions using the stored shifts, this is neede because
+    ! unfold the positions to real positions using the stored shifts, at is neede because
     ! next we might make the unit cell much smaller
-    do i=1,cluster_temp%N
-       cluster%pos(:,i) = cluster_temp%real(1:3, i)+(this%lattice .mult. cluster_temp%int(2:4, i))
-       cluster%Z(i) = cluster_temp%int(5,i)
-       cluster%species(i) = ElementName(cluster_temp%int(5,i))
+    do i=1,cluster_info%N
+       cluster%pos(:,i) = cluster_info%real(1:3, i)+(at%lattice .mult. cluster_info%int(2:4, i))
+       cluster%Z(i) = cluster_info%int(5,i)
+       cluster%species(i) = ElementName(cluster_info%int(5,i))
     end do
     ! add properties to cluster
-    call add_property(cluster, 'index', int_part(cluster_temp,1))
+    call add_property(cluster, 'index', int_part(cluster_info,1))
     call add_property(cluster, 'shift', 0, n_cols=3, lookup=lookup)
-    cluster%data%int(lookup(2):lookup(3),1:cluster%N) = cluster_temp%int(2:4,1:cluster_temp%N)
-    call add_property(cluster, 'termindex', int_part(cluster_temp,6))
-    call add_property(cluster, 'rescale', real_part(cluster_temp,4))
-    call add_property(cluster,"cluster_ident", cluster_temp%str(1,:))
+    cluster%data%int(lookup(2):lookup(3),1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
+    call add_property(cluster, 'termindex', int_part(cluster_info,6))
+    call add_property(cluster, 'rescale', real_part(cluster_info,4))
+    call add_property(cluster, 'cluster_ident', cluster_info%str(1,:))
 
     ! Find smallest bounding box for cluster
     ! Find boxes aligned with xyz (maxlen) and with a1 a2 a3 (lat_maxlen)
@@ -779,12 +836,12 @@ contains
     lat_maxlen = 0.0_dp
     do i=1,cluster%N
        do j=1,cluster%N
-          sep = cluster%pos(:,i)-cluster%pos(:,j)
+	  sep = cluster%pos(:,i)-cluster%pos(:,j)
 	  lat_sep = cluster%g .mult. sep
-          do k=1,3
-             if (abs(sep(k)) > maxlen(k)) maxlen(k) = abs(sep(k))
+	  do k=1,3
+	     if (abs(sep(k)) > maxlen(k)) maxlen(k) = abs(sep(k))
 	     if (abs(lat_sep(k)) > lat_maxlen(k)) lat_maxlen(k) = abs(lat_sep(k))
-          end do
+	  end do
        end do
     end do
 
@@ -797,23 +854,23 @@ contains
     forall (k=1:3) maxlen(k) = 3.0_dp*ceiling(maxlen(k)/3.0_dp)
     forall (k=1:3) lat_maxlen(k) = 3.0_dp*ceiling(lat_maxlen(k)/3.0_dp)
 
-    ! vacuum pad cluster (if didn't set same_lattice)
+    ! vacuum pad cluster (if didn't set do_same_lattice)
     ! if not periodic at all, just do vacuum padding
     ! if periodic along some dir, keep supercell vector directions, and set
     !    extent in each direction to lesser of cluster extent + vacuum or original extent
     if (do_same_lattice) then
-      cluster%lattice = this%lattice
+      cluster%lattice = at%lattice
     else
       if (any(do_periodic)) then
 	do k=1,3
 	  if (do_periodic(k)) then
-	    if (lat_maxlen(k)+cluster_vacuum >= norm(this%lattice(:,k))) then
-	      cluster%lattice(:,k) = this%lattice(:,k)
+	    if (lat_maxlen(k)+cluster_vacuum >= norm(at%lattice(:,k))) then
+	      cluster%lattice(:,k) = at%lattice(:,k)
 	    else
-	      cluster%lattice(:,k) = (lat_maxlen(k)+cluster_vacuum)*this%lattice(:,k)/norm(this%lattice(:,k))
+	      cluster%lattice(:,k) = (lat_maxlen(k)+cluster_vacuum)*at%lattice(:,k)/norm(at%lattice(:,k))
 	    endif
 	  else
-	    cluster%lattice(:,k) = (lat_maxlen(k)+cluster_vacuum)*this%lattice(:,k)/norm(this%lattice(:,k))
+	    cluster%lattice(:,k) = (lat_maxlen(k)+cluster_vacuum)*at%lattice(:,k)/norm(at%lattice(:,k))
 	  endif
 	end do
       else
@@ -829,54 +886,132 @@ contains
     ! Remap positions so any image atoms end up inside the cell
     call map_into_cell(cluster)
 
+    call print ('carve_cluster: carved cluster with '//cluster%N//' atoms', VERBOSE)
+
     write (line, '(a,f10.3,f10.3,f10.3)') &
-         'create_cluster: Cluster dimensions are ', cluster%lattice(1,1), &
+         'carve_cluster: Cluster dimensions are ', cluster%lattice(1,1), &
          cluster%lattice(2,2), cluster%lattice(3,3)
     call print(line, VERBOSE)
 
-    !Deallocate the table to tidy up
-    call print('create_cluster: Freeing temporary storage',NERD)
-    call finalise(cluster_temp)
+    ! reassign pointers
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
+         call system_abort('cannot reassign hybrid_mark property')
+    
+    ! rescale cluster positions and lattice 
+    if (do_rescale_r) then
+       cluster%pos = r_scale * cluster%pos
+       call set_lattice(cluster, r_scale * cluster%lattice)
+    end if
 
-    call print ('create_cluster: carved cluster with '//cluster%N//' atoms', VERBOSE)
+    if (randomise_buffer .and. .not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) &
+         do_calc_connect = .true.
 
-    call print ('Exiting create_cluster', NERD)
+    if (do_calc_connect) then
+       call print('carve_cluster: doing calc_connect', VERBOSE)
+       ! Does QM force model need connectivity information?
+       if (at%use_uniform_cutoff) then
+          call atoms_set_cutoff(cluster, at%cutoff)
+       else
+          call atoms_set_cutoff_factor(cluster, at%cutoff)
+       end if
+       call calc_connect(cluster)
+    end if
 
-  end function create_cluster
+    if (randomise_buffer) then
+       ! If outer buffer layer is not marked do so now. This will be
+       ! the case if we're using hysteretic_buffer selection option.
+       ! In this case we consider any atoms connected to terminating
+       ! hydrogens to be in the outer layer - obviously this breaks down 
+       ! if we're not terminating so we abort if that's the case.
+       if (.not. assign_pointer(cluster, 'index', cluster_index)) &
+            call system_abort('carve_cluster: cluster is missing index property')
+
+       if (.not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) then
+          if (.not. terminate) call system_abort('cannot determine which buffer atoms to randomise if terminate=F and hysteretic_buffer=T')
+
+          if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) &
+               call system_abort('hybrid_mark property not found in cluster')
+
+	  if (hysteretic_connect) then
+	    use_connect => at%hysteretic_connect
+	  else
+	    use_connect => at%connect
+	  endif
+
+          do i=1,cluster%N
+             if (hybrid_mark(cluster_info%int(1,i)) /= HYBRID_BUFFER_MARK) cycle
+             in_outer_layer = .false.
+             do n=1,atoms_n_neighbours(cluster,i, alt_connect=use_connect)
+                if (.not. (hysteretic_connect .or. is_nearest_neighbour(cluster,i,n, use_connect))) cycle
+                j = atoms_neighbour(cluster,i,n, alt_connect=use_connect)
+		at_j = cluster_info%int(1,i)
+		if (hybrid_mark(at_j) == HYBRID_TERM_MARK) then ! j is a termination atoms, so i must be in_outer_layer
+                   in_outer_layer = .true.
+                   exit
+                end if
+             end do
+             if (in_outer_layer) then
+                hybrid_mark(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
+                cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
+             end if
+          end do
+       end if
+
+      if (any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) then
+	 ! Slightly randomise the positions of the outermost layer
+	 ! of the buffer region in order to avoid systematic errors
+	 ! in QM forces.
+
+	 call initialise(outer_layer, 1,0,0,0)
+	 call append(outer_layer, find(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK))
+
+	 do i=1,outer_layer%N
+	    ! Shift atom by randomly distributed vector of magnitude 0.05 A
+	    j = find_in_array(cluster_index, outer_layer%int(1,i))
+	    cluster%pos(:,j) = cluster%pos(:,j) + 0.05_dp*random_unit_vector()
+	 end do
+
+	 call finalise(outer_layer)
+      end if
+
+    end if
+
+    if (value(mainlog%verbosity_stack) >= VERBOSE .or. print_clusters) then
+#ifdef _MPI
+       write (clusterfilename, '(a,i3.3,a)') 'clusters.',mpi_rank,'.xyz'
+#else
+       clusterfilename = 'clusters.xyz'
+#endif _MPI
+       call initialise(clusterfile, clusterfilename, append=.true., action=OUTPUT)
+       call inoutput_mpi_all_inoutput(clusterfile, .true.)
+       call print_xyz(cluster, clusterfile, all_properties=.true.)
+       call finalise(clusterfile)
+    end if
+
+  end function carve_cluster
 
   !% Create a cluster using the 'hybrid_mark' property and options in 'args_str'.
   !% All atoms that are marked with anything other than 'HYBRID_NO_MARK' will
   !% be included in the cluster; this includes active, transition and buffer
   !% atoms. 
-  function create_cluster_hybrid_mark(at, args_str) result(cluster)
+  function create_cluster_info_from_hybrid_mark(at, args_str, cut_bonds) result(cluster_info)
     type(Atoms), intent(inout), target :: at
     character(len=*), intent(in) :: args_str
-    type(Atoms) :: cluster
+    type(Table), optional, intent(out)   :: cut_bonds !% Return a list of the bonds cut when making
+                                                      !% the cluster.  See create_cluster() documentation.
+    type(Table) :: cluster_info
 
     type(Dictionary) :: params
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
-       even_hydrogens, do_calc_connect, do_periodic(3), cluster_nneighb_only, cluster_allow_modification, &
-       do_rescale_r, print_clusters, randomise_buffer, in_outer_layer, hysteretic_connect
-    real(dp) :: cluster_vacuum, r_scale, r, r_min, centre(3)
-    type(Table) :: cluster_list, outer_layer, currentlist, nextlist, activelist, bufferlist
-    integer :: i, j, jj, n, first_active, old_n, n_cluster, shift(3)
-    integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:)
+       even_hydrogens, do_periodic(3), cluster_nneighb_only, &
+       cluster_allow_modification, hysteretic_connect, same_lattice
+    real(dp) :: r, r_min, centre(3)
+    type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
+    integer :: i, j, jj, first_active, old_n, n_cluster, shift(3)
+    integer, pointer :: hybrid_mark(:)
     integer, allocatable, dimension(:) :: uniqed, tmp_index
 
-    type(Connection), pointer :: use_connect
-    type(Inoutput)                    :: clusterfile
-    character(len=255)                :: clusterfilename
-
-#ifdef _MPI
-    integer::mpi_size, mpi_rank, error
-    include "mpif.h"
-    integer :: mpi_force_size
-    real(dp), allocatable, dimension(:)  :: mpi_force
-
-    call get_mpi_size_rank(MPI_COMM_WORLD, mpi_size, mpi_rank)
-#endif _MPI
-
-    call print('create_cluster_hybrid_mark got args_str "'//trim(args_str)//'"', VERBOSE)
+    call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', VERBOSE)
 
     call initialise(params)
     call param_register(params, 'terminate', 'T', terminate)
@@ -884,27 +1019,22 @@ contains
     call param_register(params, 'cluster_periodic_y', 'F', periodic_y)
     call param_register(params, 'cluster_periodic_z', 'F', periodic_z)
     call param_register(params, 'even_hydrogens', 'F', even_hydrogens)
-    call param_register(params, 'cluster_calc_connect', 'F', do_calc_connect)
     call param_register(params, 'cluster_nneighb_only', 'T', cluster_nneighb_only)
-    call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
     call param_register(params, 'cluster_allow_modification', 'T', cluster_allow_modification)
-    call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
-    call param_register(params, 'r_scale', '1.0', r_scale)
-    call param_register(params, 'randomise_buffer', 'T', randomise_buffer)
-    call param_register(params, 'print_clusters', 'F', print_clusters)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
-      call system_abort("create_cluster_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
-    call finalise(params)
+    call param_register(params, 'cluster_same_lattice', 'F', same_lattice)
 
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+      call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
+    call finalise(params)
 
     do_periodic = (/periodic_x,periodic_y,periodic_z/)
 
     if (.not. has_property(at, 'hybrid_mark')) &
-         call system_abort('create_cluster_hybrid_mark: atoms structure has no "hybrid_mark" property')
+         call system_abort('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property')
 
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('create_cluster_hybrid_mark passed atoms structure with no hybrid_mark property')
+         call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
 
 
     ! Calculate centre of cluster
@@ -967,7 +1097,7 @@ contains
        
        ! check that cluster is still growing
        if (cluster_list%N == old_n) &
-            call system_abort('create_cluster_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
+            call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
        old_n = cluster_list%N
     end do
     deallocate(tmp_index, uniqed)
@@ -987,110 +1117,16 @@ contains
     call finalise(activelist)
     call finalise(bufferlist)
 
-    cluster = create_cluster(at, cluster_list, terminate=terminate, &
-         periodic=do_periodic, even_hydrogens=even_hydrogens, &
-         vacuum_size=cluster_vacuum, allow_cluster_modification=cluster_allow_modification, hysteretic_connect=hysteretic_connect)
-
-    ! reassign pointers
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('cannot reassign hybrid_mark property')
-    
-    ! rescale cluster positions and lattice 
-    if (do_rescale_r) then
-       cluster%pos = r_scale * cluster%pos
-       call set_lattice(cluster, r_scale * cluster%lattice)
-    end if
-
-    if (randomise_buffer .and. .not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) &
-         do_calc_connect = .true.
-
-    if (do_calc_connect) then
-       call print('create_cluster_hybrid_mark: doing calc_connect', VERBOSE)
-       ! Does QM force model need connectivity information?
-       if (at%use_uniform_cutoff) then
-          call atoms_set_cutoff(cluster, at%cutoff)
-       else
-          call atoms_set_cutoff_factor(cluster, at%cutoff)
-       end if
-       call calc_connect(cluster)
-    end if
-
-    if (randomise_buffer) then
-       ! If outer buffer layer is not marked do so now. This will be
-       ! the case if we're using hysteretic_buffer selection option.
-       ! In this case we consider any atoms connected to terminating
-       ! hydrogens to be in the outer layer - obviously this breaks down 
-       ! if we're not terminating so we abort if that's the case.
-       if (.not. assign_pointer(cluster, 'index', cluster_index)) &
-            call system_abort('create_cluster_hybrid_mark: cluster is missing index property')
-
-       if (.not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) then
-          if (.not. terminate) call system_abort('cannot determine which buffer atoms to randomise if terminate=F and hysteretic_buffer=T')
-
-          if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) &
-               call system_abort('hybrid_mark property not found in cluster')
-
-	  if (hysteretic_connect) then
-	    use_connect => at%hysteretic_connect
-	  else
-	    use_connect => at%connect
-	  endif
-
-          do i=1,cluster_list%N
-             if (hybrid_mark(cluster_list%int(1,i)) /= HYBRID_BUFFER_MARK) cycle
-             in_outer_layer = .false.
-             do n=1,atoms_n_neighbours(cluster,i, alt_connect=use_connect)
-                if (.not. (hysteretic_connect .or. is_nearest_neighbour(cluster,i,n, use_connect))) cycle
-                j = atoms_neighbour(cluster,i,n, alt_connect=use_connect)
-                if (j > cluster_list%N .and. cluster%Z(j) == 1) then
-                   in_outer_layer = .true.
-                   exit
-                end if
-             end do
-             if (in_outer_layer) then
-                hybrid_mark(cluster_list%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
-                cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
-             end if
-          end do
-       end if
-
-      if (any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) then
-	 ! Slightly randomise the positions of the outermost layer
-	 ! of the buffer region in order to avoid systematic errors
-	 ! in QM forces.
-
-	 call initialise(outer_layer, 1,0,0,0)
-	 call append(outer_layer, find(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK))
-
-	 do i=1,outer_layer%N
-	    ! Shift atom by randomly distributed vector of magnitude 0.05 A
-	    j = find_in_array(cluster_index, outer_layer%int(1,i))
-	    cluster%pos(:,j) = cluster%pos(:,j) + 0.05_dp*random_unit_vector()
-	 end do
-
-	 call finalise(outer_layer)
-      end if
-
-    end if
-
-    if (value(mainlog%verbosity_stack) >= VERBOSE .or. print_clusters) then
-#ifdef _MPI
-       write (clusterfilename, '(a,i3.3,a)') 'clusters.',mpi_rank,'.xyz'
-#else
-       clusterfilename = 'clusters.xyz'
-#endif _MPI
-       call initialise(clusterfile, clusterfilename, append=.true., action=OUTPUT)
-       call inoutput_mpi_all_inoutput(clusterfile, .true.)
-       call print_xyz(cluster, clusterfile, all_properties=.true.)
-       call finalise(clusterfile)
-    end if
+    cluster_info = create_cluster_info(at, cluster_list, terminate=terminate, &
+         periodic=do_periodic, same_lattice=same_lattice, even_hydrogens=even_hydrogens, &
+         cut_bonds=cut_bonds, allow_cluster_modification=cluster_allow_modification, &
+	 hysteretic_connect=hysteretic_connect)
 
     call finalise(currentlist)
     call finalise(nextlist)
     call finalise(cluster_list)
-    call finalise(outer_layer)
 
-  end function create_cluster_hybrid_mark
+  end function create_cluster_info_from_hybrid_mark
 
   
   subroutine create_hybrid_weights_args_str(at, args_str)
@@ -1653,10 +1689,11 @@ contains
     integer, optional, intent(in)  :: verbosity
 
     logical                             :: do_use_avgpos, more_atoms, add_atom
-    integer                             :: buffer_atoms_guess, i(4), j(4), n, nn, my_verbosity, lookup(3)
+    integer                             :: buffer_atoms_guess, i(4), j(4), n, nn, my_verbosity
     type(Table)                         :: cluster, extra_atoms
     integer,  allocatable, dimension(:) :: append_row_int
     real(dp), allocatable, dimension(:) :: append_row_real
+    integer :: lookup(3)
     
     !Check the input arguments
     if (.not.at%connect%initialised) call system_abort('Construct_Buffer: Atomic connectivity data required')
