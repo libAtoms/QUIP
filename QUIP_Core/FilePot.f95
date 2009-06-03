@@ -188,6 +188,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   integer :: nx, ny, nz
   type(Atoms) :: sup
   integer :: my_err
+  integer :: status
 
   if (present(energy)) energy = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -224,11 +225,19 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      end if
      call finalise(xyzio)
 
-     call print("FilePot: invoking external command "//trim(this%command)//" "//trim(my_args_str)//trim(xyzfile)//" "// &
+#if HAVE_CP2K
+     call print("FilePot: invoking external command "//trim(this%command)//" "//trim(my_args_str)//' '//trim(xyzfile)//" "// &
           trim(outfile)//" on "//at%N//" atoms...")
 
      ! call the external command here
-     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile))
+     call system_command(trim(this%command)//" "//trim(my_args_str)//' '//trim(xyzfile)//" "//trim(outfile),status=status)
+#else
+     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
+          trim(outfile)//" on "//at%N//" atoms...")
+
+     ! call the external command here
+     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile),status=status)
+#endif
 
      ! read back output from external command
      call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, my_err)
