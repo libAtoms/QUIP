@@ -440,6 +440,13 @@ contains
 
   end subroutine CrackParams_initialise
 
+  subroutine CrackParams_finalise(this)
+    type(CrackParams), intent(inout) :: this
+    
+    ! do nothing
+
+  end subroutine CrackParams_finalise
+
 
   !% Read crack parameters from 'xmlfile' into this CrackParams object.
   !% First we reset to default values by calling 'initialise(this)'.
