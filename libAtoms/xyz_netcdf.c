@@ -3422,7 +3422,7 @@ int cio_write(Atoms *at, int *int_data, double *real_data, char *str_data, int *
 
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_out == NULL) return 0;
-    if (fseek(at->xyz_out, 0, SEEK_END) != 0) return 0;
+    if (at->xyz_out != stdout && fseek(at->xyz_out, 0, SEEK_END) != 0) return 0;
 
     if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5s", 1))
       return 0;
