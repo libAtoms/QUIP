@@ -35,7 +35,6 @@ program cp2k_filepot
     character(len=FIELD_LENGTH)   :: cp2k_program
     character(len=FIELD_LENGTH)   :: fileroot_str
     character(len=FIELD_LENGTH)   :: basis_set_file, potential_file, dft_file, cell_file
-
 !  logical                     :: Delete_Metal_Connections
 
     call system_initialise(verbosity=SILENT,enable_timing=.true.)
@@ -56,8 +55,9 @@ program cp2k_filepot
     call param_register(params_in, 'cell_file', '', cell_file)
 !    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
 
-!    if (.not. param_read_line(params_in, args_str, ignore_unknown=.true.)) &
-!      call system_abort("Potential_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
+    if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.)) then
+      call system_abort('could not parse argument line')
+    end if
 
     call finalise(params_in)
 
@@ -91,7 +91,9 @@ program cp2k_filepot
 !    if (Delete_Metal_Connections) call delete_metal_connects(my_atoms)
     call map_into_cell(my_atoms)
     call calc_dists(my_atoms)
-    call create_CHARMM(my_atoms,do_CHARMM=.true.)
+    if (trim(Run_Type).ne.'QS') then
+       call create_CHARMM(my_atoms,do_CHARMM=.true.)
+    endif
 
     !generate args_str for go_cp2k
     write (args_str,'(a)') 'Run_Type='//trim(Run_Type)//' PSF_Print='//trim(Print_PSF)
