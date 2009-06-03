@@ -142,6 +142,8 @@ module Potential_module
   use cp2k_driver_module
 #endif
 
+#define MAX_CUT_BONDS 4
+
   implicit none
   private
 
@@ -331,7 +333,7 @@ contains
     integer, intent(out), optional :: err
     type(MPI_context), intent(in), optional :: mpi_obj
 
-    integer:: i,k,n
+    integer:: i,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale
     real(dp), parameter::delta = 1.0e-4_dp
     type(Dictionary) :: params
@@ -342,6 +344,10 @@ contains
     integer, allocatable, dimension(:) :: hybrid_mark_saved
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), allocatable, dimension(:,:) :: f_cluster
+    logical :: do_carve_cluster
+    type(Table) :: cluster_info, cut_bonds
+    integer, pointer :: cut_bonds_p(:,:)
+    integer :: i_inner, i_outer
     type(Atoms) :: cluster
     character(len=256) :: prefix_save
 
@@ -354,6 +360,7 @@ contains
 
     call initialise(params)
     call param_register(params, 'single_cluster', 'F', single_cluster)
+    call param_register(params, 'carve_cluster', 'T', do_carve_cluster)
     call param_register(params, 'little_clusters', 'F', little_clusters)
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
     call param_register(params, 'r_scale', '1.0', r_scale)
@@ -412,7 +419,9 @@ contains
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, new_args_str)
-          cluster = create_cluster_hybrid_mark(at, new_args_str)
+          cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
+	  cluster = carve_cluster(at, new_args_str, cluster_info)
+	  call finalise(cluster_info)
           allocate(f_cluster(3,cluster%N))
 
 	  if (current_verbosity() >= NERD) then
@@ -425,6 +434,7 @@ contains
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)
           deallocate(f_cluster)
+	   call finalise(cluster)
        end do
 
        if (present(mpi_obj)) then
@@ -437,7 +447,6 @@ contains
           weight_region1 = weight_region1_saved
           deallocate(weight_region1_saved)
        end if
-       call finalise(cluster)
 
     else if (single_cluster) then
 
@@ -462,36 +471,70 @@ contains
        ! call ourselves on a cluster formed from marked atoms
        call print('potential_calc: constructing single_cluster', VERBOSE)
 
-       cluster = create_cluster_hybrid_mark(at, new_args_str)
-       if (current_verbosity() >= NERD) then
-	 prefix_save = mainlog%prefix
-	 mainlog%prefix="CLUSTER"
-	 call print_xyz(cluster, mainlog, all_properties=.true.)
-	 mainlog%prefix=prefix_save
-       endif
-       if (.not. assign_pointer(cluster, 'index', cluster_index)) &
-            call system_abort('potential_calc: cluster is missing index property')
-       if (.not. assign_pointer(cluster, 'termindex', termindex)) &
-            call system_abort('potential_calc: cluster is missing termindex property')
-       allocate(f_cluster(3,cluster%N))
-       call calc(this, cluster, f=f_cluster, args_str=new_args_str)
-       if (do_rescale_r)  f_cluster = f_cluster*r_scale
+       if (do_carve_cluster) then
+	 call print('potential_calc: carving cluster', VERBOSE)
+	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
+	 cluster = carve_cluster(at, new_args_str, cluster_info)
+	 call finalise(cluster_info)
+!NB	 if (current_verbosity() >= NERD) then
+	   prefix_save = mainlog%prefix
+	   mainlog%prefix="CLUSTER"
+	   call print_xyz(cluster, mainlog, all_properties=.true.)
+	   mainlog%prefix=prefix_save
+!NB	 endif
+	 if (.not. assign_pointer(cluster, 'index', cluster_index)) &
+	      call system_abort('potential_calc: cluster is missing index property')
+	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
+	      call system_abort('potential_calc: cluster is missing termindex property')
+	 allocate(f_cluster(3,cluster%N))
+	 call calc(this, cluster, f=f_cluster, args_str=new_args_str)
+	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
 
-       ! copy forces for all active and transition atoms
+	 ! copy forces for all active and transition atoms
 
-       !! TODO: if there are repeated images in cluster, we want force from
-       !! the one with smallest shift relative to centre of cluster
+	 !! TODO: if there are repeated images in cluster, we want force from
+	 !! the one with smallest shift relative to centre of cluster
 
-       f = 0.0_dp
-       do i=1,cluster%N
-          if (termindex(i) /= 0) cycle ! skip termination atoms
-          if (hybrid_mark(cluster_index(i)) == HYBRID_ACTIVE_MARK .or. &
-              hybrid_mark(cluster_index(i)) == HYBRID_TRANS_MARK) &
-                f(:,cluster_index(i)) = f_cluster(:,i)
-       end do
-       deallocate(f_cluster)   
-       call finalise(cluster)
-    
+	 f = 0.0_dp
+	 do i=1,cluster%N
+	    if (termindex(i) /= 0) cycle ! skip termination atoms
+	    if (hybrid_mark(cluster_index(i)) == HYBRID_ACTIVE_MARK .or. &
+		hybrid_mark(cluster_index(i)) == HYBRID_TRANS_MARK) &
+		  f(:,cluster_index(i)) = f_cluster(:,i)
+	 end do
+	 deallocate(f_cluster)   
+	 call finalise(cluster)
+       else ! not do_carve_cluster
+	 call print('potential_calc: not carving cluster', VERBOSE)
+	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str, cut_bonds)
+	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)
+	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
+	   call system_abort("potential_calc failed to assing pointer for cut_bonds pointer")
+	 do i=1, cut_bonds%N
+	   i_inner = cut_bonds%int(1,i)
+	   i_outer = cut_bonds%int(2,i)
+	   zero_loc = minloc(cut_bonds_p(:,i_inner))
+	   if (cut_bonds_p(zero_loc(1),i_inner) == 0) then ! free space for a cut bond
+	     cut_bonds_p(zero_loc(1),i_inner) = i_outer
+	   else
+	     call print("cut_bonds table:", VERBOSE)
+	     call print(cut_bonds, VERBOSE)
+	     call print("ERROR: potential_calc ran out of space to store cut_bonds information", ERROR)
+	     call print("ERROR: inner atom " // i_inner // " already has cut_bonds to " // cut_bonds_p(:,i_inner) // &
+	      " no space to add cut bond to " // i_outer, ERROR)
+	     call system_abort("potential_calc out of space to store cut_bonds information")
+	   endif
+	 end do
+	 call finalise(cut_bonds)
+	 if (current_verbosity() >= ANAL) then
+	   prefix_save = mainlog%prefix
+	   mainlog%prefix="UNCARVED_CLUSTER"
+	   call print_xyz(at, mainlog, all_properties=.true.)
+	   mainlog%prefix=prefix_save
+	 endif
+	 call calc(this, at, f=f, args_str=new_args_str)
+	 if (do_rescale_r)  f = f*r_scale
+       endif ! do_carve_cluster
     else
        if(present(e) .or. present(local_e) .or. present(f) .or. present(virial)) then
           if(associated(this%tb)) then
