@@ -11,7 +11,7 @@ module clusters_module
 implicit none
 private
 
-integer, parameter, public :: &
+integer, parameter :: &
    HYBRID_ACTIVE_MARK = 1, &
    HYBRID_BUFFER_MARK = 2, &
    HYBRID_TRANS_MARK = 3, &
@@ -20,6 +20,8 @@ integer, parameter, public :: &
    HYBRID_FIT_MARK = 6, &
    HYBRID_NO_MARK = 0
 
+public :: HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK, HYBRID_TRANS_MARK, HYBRID_TERM_MARK, &
+   HYBRID_BUFFER_OUTER_LAYER_MARK, HYBRID_FIT_MARK, HYBRID_NO_MARK
 
 character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
   (/ "h_none    ", &
