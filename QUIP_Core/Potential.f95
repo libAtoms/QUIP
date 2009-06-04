@@ -476,12 +476,12 @@ contains
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
 	 cluster = carve_cluster(at, new_args_str, cluster_info)
 	 call finalise(cluster_info)
-!NB	 if (current_verbosity() >= NERD) then
+	 if (current_verbosity() >= NERD) then
 	   prefix_save = mainlog%prefix
 	   mainlog%prefix="CLUSTER"
 	   call print_xyz(cluster, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
-!NB	 endif
+	 endif
 	 if (.not. assign_pointer(cluster, 'index', cluster_index)) &
 	      call system_abort('potential_calc: cluster is missing index property')
 	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
