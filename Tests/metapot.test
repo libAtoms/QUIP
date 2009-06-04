@@ -57,9 +57,6 @@ metapot_test
 
 </quip_params>
 --->stdout---
-System::Hello World: 27/04/2009   17:08:16
-System::Hello World: Random Seed = 2
-System::Hello World: global verbosity = 1
 
 Calls to system_timer will do nothing by default
 
@@ -92,17 +89,21 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 WARNING: atoms_add_property - pointers invalidated
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T"
 potential_calc: constructing single_cluster
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T"
+potential_calc: carving cluster
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T"
 Growing cluster starting from atom 1, n_cluster=147
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 cluster hopping: got 83 atoms, of which 83 are unique.
 cluster hopping: got 147 atoms, of which 147 are unique.
+carve_cluster got args_str "cluster_calc_connect=T"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -111,9 +112,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     28.000    28.000    28.000
-create_cluster: carved cluster with 295 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 295 atoms
+carve_cluster: Cluster dimensions are     28.000    28.000    28.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T"
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
@@ -635,12 +636,15 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -649,22 +653,25 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 2
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 26 atoms, of which 26 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -673,23 +680,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 3
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -698,23 +708,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -723,23 +736,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 7
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -748,23 +764,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 29
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -773,23 +792,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 31
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -798,23 +820,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 99
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -823,23 +848,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 103
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -848,23 +876,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 127
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -873,22 +904,25 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 128
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 26 atoms, of which 26 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -897,23 +931,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 387
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -922,23 +959,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 389
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -947,23 +987,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 413
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -972,22 +1015,25 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 414
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 26 atoms, of which 26 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -996,23 +1042,26 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 483
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 10 atoms, of which 10 are unique.
 cluster hopping: got 22 atoms, of which 22 are unique.
 cluster hopping: got 29 atoms, of which 29 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1021,22 +1070,25 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 potential_calc: constructing little_cluster around atom 484
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 26 atoms, of which 26 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1045,9 +1097,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
@@ -1564,7 +1616,7 @@ Matrix_Print: printing matrix transpose
        0.0000000000       0.0000000000       0.0000000000
 embedding test force error .0000000000000000  .0000000000000002
 force_mixing
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=force_mixing
@@ -1583,6 +1635,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -1665,23 +1718,27 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
 potential_calc got args_str ""
-MetaPotential_ForceMixing_Calc: reweighting classical forces by 1.0000000000000000 in active region
+MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
 potential_calc: constructing single_cluster
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
+potential_calc: carving cluster
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
 Growing cluster starting from atom 1, n_cluster=147
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 cluster hopping: got 83 atoms, of which 83 are unique.
 cluster hopping: got 147 atoms, of which 147 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1690,9 +1747,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     28.000    28.000    28.000
-create_cluster: carved cluster with 295 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 295 atoms
+carve_cluster: Cluster dimensions are     28.000    28.000    28.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -2211,7 +2268,7 @@ Matrix_Print: printing matrix transpose
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
 force_mixing_smooth
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=force_mixing_smooth
@@ -2230,6 +2287,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -2312,21 +2370,25 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
-MetaPotential_ForceMixing_Calc: reweighting classical forces by 1.0000000000000000 in active region
+MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 potential_calc: constructing single_cluster
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+potential_calc: carving cluster
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -2335,9 +2397,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
@@ -2854,7 +2916,7 @@ Matrix_Print: printing matrix transpose
       -0.9099268121      -0.4814231815       0.4761962741
 force_mixing_smooth force error .0006667513914028  .0098193171391806
 force_mixing_super_smooth
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=force_mixing_super_smooth
@@ -2873,6 +2935,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -2955,21 +3018,25 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=distance_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
-MetaPotential_ForceMixing_Calc: reweighting classical forces by 1.0000000000000000 in active region
+MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 potential_calc: constructing single_cluster
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+potential_calc: carving cluster
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -2978,9 +3045,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
@@ -3497,7 +3564,7 @@ Matrix_Print: printing matrix transpose
       -0.9099268121      -0.4814231815       0.4761962741
 force_mixing_super_smooth force error .0006667513914028  .0098193171391806
 conserve_momentum
-MetaPotential_ForceMixing:
+MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
  method=conserve_momentum
@@ -3516,6 +3583,7 @@ MetaPotential_ForceMixing:
  lotf_spring_hops=2
  lotf_interp_order=linear
  lotf_interp_space=F
+ lotf_nneighb_only=T
 
  minim_mm_method=cg
  minim_mm_tol=.0000010000000000
@@ -3598,22 +3666,26 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
-MetaPotential_ForceMixing_calc: got 17 active atoms.
+MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
   hysteretic_buffer_outer_radius=7.0000000000000000
+  hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
+  hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
-MetaPotential_ForceMixing_Calc: reweighting classical forces by 1.0000000000000000 in active region
+MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 create_embed_and_fit_lists: 17 embed, 66 fit
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 potential_calc: constructing single_cluster
-create_cluster_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+potential_calc: carving cluster
+create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
+carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -3622,9 +3694,9 @@ WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
-create_cluster: Cluster dimensions are     22.000    22.000    22.000
-create_cluster: carved cluster with 101 atoms
-create_cluster_hybrid_mark: doing calc_connect
+carve_cluster: carved cluster with 101 atoms
+carve_cluster: Cluster dimensions are     22.000    22.000    22.000
+carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 Conserving momentum using fit list with 83 atoms
 conserve_momentum: norm(sum of target forces) = .134158971527074
@@ -4144,8 +4216,6 @@ Matrix_Print: printing matrix transpose
       -0.9093006761      -0.4827778579       0.4768171344
 conserve_momentum force error .0007685613560578  .0111739935800209
 
-System::Finalise: 27/04/2009   17:08:19
-System::Finalise: Bye-Bye!
 --->clusters.xyz---
 295
 mode=embedding Lattice="28.000000          0.000000          0.000000          0.000000         28.000000          0.000000          0.000000          0.000000         28.000000" Properties=species:S:1:pos:R:3:Z:I:1:travel:I:3:hybrid:I:1:hybrid_mark:I:1:weight_region1:R:1:index:I:1:shift:I:3:termindex:I:1:rescale:R:1:cluster_ident:S:1
