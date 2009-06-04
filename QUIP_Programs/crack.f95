@@ -669,7 +669,7 @@ end if
         dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
         crack_pos = orig_crack_pos
 
-     else if (state_string(1:2) == 'MD_CRACKING') then
+     else if (state_string(1:11) == 'MD_CRACKING') then
         state = STATE_MD_CRACKING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
