@@ -56,11 +56,11 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
    exe_name = args[0]
    exe = '%s/../build.%s/%s' % (os.environ['PWD'], ARCH, args[0])
 
-   if not os.path.isfile(exe):
-      print '%s does not exist, trying to build in QUIP_Programs' % exe
-      if os.system('cd .. && make QUIP_Programs/%s' % exe_name) != 0:
-         print 'Cannot compile %s' % exe_name
-         return False
+   #if not os.path.isfile(exe):
+   #   print '%s does not exist, trying to build in QUIP_Programs' % exe
+   if os.system('cd .. && make QUIP_Programs/%s' % exe_name) != 0:
+      print 'Cannot compile %s' % exe_name
+      return False
 
    args[0] = exe
 
