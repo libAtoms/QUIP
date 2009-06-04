@@ -19,12 +19,12 @@ module CInOutput_module
 
   interface
 
-     subroutine cio_free(at) bind(c)
+     subroutine ciofree(at) bind(c)
        use iso_c_binding, only: C_PTR
        type(C_PTR), intent(in), value :: at
-     end subroutine cio_free
+     end subroutine ciofree
 
-     function cio_init(at, filename, action, append, &
+     function cioinit(at, filename, action, append, &
           n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
           property_name, property_type, property_ncols, property_start, property_filter, &
           param_name, param_type, param_size, param_value, param_int, param_real, param_int_a, &
@@ -37,26 +37,26 @@ module CInOutput_module
             property_name, property_type, property_ncols, property_start, property_filter, &
             param_name, param_type, param_size, param_value, &
             param_int, param_real, param_int_a, param_real_a, param_filter, lattice
-       integer(kind=C_INT) :: cio_init
-     end function cio_init
+       integer(kind=C_INT) :: cioinit
+     end function cioinit
 
-     function cio_query(at, frame) bind(c)
+     function cioquery(at, frame) bind(c)
        use iso_c_binding, only: C_PTR, C_INT, C_LONG, C_SIZE_T
        type(C_PTR), intent(in), value :: at
        integer(C_SIZE_T), intent(in) :: frame
-       integer(C_INT) :: cio_query
-     end function cio_query
+       integer(C_INT) :: cioquery
+     end function cioquery
 
-     function cio_read(at, frame, int_data, real_data, str_data, logical_data, zero) bind(c)
+     function cioread(at, frame, int_data, real_data, str_data, logical_data, zero) bind(c)
        use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_SIZE_T
        type(C_PTR), intent(in), value :: at
        integer(C_SIZE_T), intent(in) :: frame
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
        integer(C_INT), intent(in) :: zero
-       integer(C_INT) :: cio_read
-     end function cio_read
+       integer(C_INT) :: cioread
+     end function cioread
 
-     function cio_write(at, int_data, real_data, str_data, logical_data, intformat, realformat, frame, &
+     function ciowrite(at, int_data, real_data, str_data, logical_data, intformat, realformat, frame, &
        shuffle, deflate, deflate_level) bind(c)
        use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_SIZE_T
        type(C_PTR), intent(in), value :: at
@@ -64,15 +64,15 @@ module CInOutput_module
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: intformat, realformat
        integer(C_SIZE_T) :: frame
        integer(C_INT) :: shuffle, deflate, deflate_level
-       integer(C_INT) :: cio_write
-     end function cio_write
+       integer(C_INT) :: ciowrite
+     end function ciowrite
 
-     function cio_update(at, int_data, real_data, str_data, logical_data) bind(c)
+     function cioupdate(at, int_data, real_data, str_data, logical_data) bind(c)
        use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG
        type(C_PTR), intent(in), value :: at
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
-       integer(C_INT) :: cio_update
-     end function cio_update
+       integer(C_INT) :: cioupdate
+     end function cioupdate
 
   end interface
 
@@ -158,14 +158,14 @@ contains
     end if
 
     if (present(filename)) then
-       if (cio_init(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, &
+       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice) == 0) &
             call system_abort("Error opening file "//filename)
     else
-       if (cio_init(this%c_at, ""//C_NULL_CHAR, this%action, do_append, &
+       if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
@@ -212,7 +212,7 @@ contains
     type(CInOutput), intent(inout) :: this
 
     if (this%initialised) then
-       call cio_free(this%c_at) ! closes files and frees C struct
+       call ciofree(this%c_at) ! closes files and frees C struct
        this%initialised = .false.
     end if
 
@@ -233,7 +233,7 @@ contains
     do_frame = 0
     if (present(frame)) do_frame = frame
 
-    if (cio_query(this%c_at, do_frame) == 0) &
+    if (cioquery(this%c_at, do_frame) == 0) &
          call system_abort("Error querying CInOutput file")
 
     call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
@@ -322,7 +322,7 @@ contains
        end if
     end if
 
-    if (cio_read(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
+    if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
        if (present(status)) then
           call finalise(properties)
           call finalise(data)
@@ -507,7 +507,7 @@ contains
     this%n_logical = at%data%logicalsize
     if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
-    if (cio_write(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
+    if (ciowrite(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
          trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
          do_shuffle, do_deflate, do_deflate_level) == 0) then
        if (present(status)) then
@@ -612,7 +612,7 @@ contains
     this%n_logical = at%data%logicalsize
     if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
-    if (cio_update(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr) == 0) &
+    if (cioupdate(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr) == 0) &
          call system_abort('error updating C structure')
 
     atoms_ptr = transfer(this%c_at, atoms_ptr)
