@@ -3,7 +3,7 @@
  *
  * To build main program compile with -DHAVE_NETCDF -DMAIN_PROGRAM and link with
  * NetCDF library version 3 or above. There's also a Fortran 95 API which calls
- * the cio_* functions at the bottom of this file. This can be found in CInOuput.f95.
+ * the cio* functions at the bottom of this file. This can be found in CInOuput.f95.
  *
  * If you're only interested in XYZ support, you can compile without -DHAVE_NETCDF.
  * For the Fortran API don't need to include the main program, so don't need
@@ -3175,7 +3175,7 @@ int main (int argc, char **argv)
 
 /********************************* FORTRAN API *********************************
  *                                                                             *
- * cio_init(), cio_free(), cio_query(), cio_read() and cio_write()	       *
+ * cioinit(), ciofree(), cioquery(), cioread() and ciowrite()	       *
  *									       *
  ********************************* FORTRAN API *********************************/
 
@@ -3183,7 +3183,7 @@ int main (int argc, char **argv)
 #define OUTPUT 1
 #define INOUT  2 
 
-int cio_query(Atoms *at, int *frame) {
+int cioquery(Atoms *at, int *frame) {
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
     return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0, 0, NULL);
@@ -3193,7 +3193,7 @@ int cio_query(Atoms *at, int *frame) {
   } else return 0;
 }
 
-int cio_init(Atoms **at, char *filename, int *action, int *append,
+int cioinit(Atoms **at, char *filename, int *action, int *append,
 	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	     int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	     int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
@@ -3334,7 +3334,7 @@ int cio_init(Atoms **at, char *filename, int *action, int *append,
       (**at).format = NETCDF_FORMAT;
       z = 0;
       zp = &z;
-      cio_query(*at, zp);
+      cioquery(*at, zp);
 
       for (i=0; i<(**at).n_property; i++)
 	(**at).property_var_id[i][NETCDF_OUT] = (**at).property_var_id[i][NETCDF_IN];
@@ -3368,7 +3368,7 @@ int cio_init(Atoms **at, char *filename, int *action, int *append,
 }
 
 
-void cio_free(Atoms *at) {
+void ciofree(Atoms *at) {
 #ifdef HAVE_NETCDF
   int retval;
 #endif
@@ -3390,7 +3390,7 @@ void cio_free(Atoms *at) {
   free(at);
 }
 
-int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
+int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
 	     int *logical_data, int *zero)
 {
   int status;
@@ -3411,7 +3411,7 @@ int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_
   } else return 0;
 }
 
-int cio_write(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
+int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
 	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
 	      int *deflate_level)
 {
@@ -3434,7 +3434,7 @@ int cio_write(Atoms *at, int *int_data, double *real_data, char *str_data, int *
   } else return 0;
 }
 
-int cio_update(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data)
+int cioupdate(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data)
 {
   at->int_data = int_data;
   at->real_data = real_data;
