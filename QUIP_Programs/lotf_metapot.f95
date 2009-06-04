@@ -47,9 +47,9 @@ program lotf_metapot
 
   ! Set up metapotentials for LOTF and for force mixing with the same buffer size
   call initialise(lotf, 'ForceMixing method=lotf_adj_pot_svd fit_hops=3 buffer_hops=3 '//&
-       'randomise_buffer=T qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2, dia)
+       'randomise_buffer=T qm_args_str={carve_cluster=T single_cluster=T cluster_calc_connect=T}', pot1, pot2, dia)
   call initialise(forcemix, 'ForceMixing method=force_mixing buffer_hops=3 '//&
-       'qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
+       'qm_args_str={carve_cluster=T single_cluster=T cluster_calc_connect=T}', pot1, pot2)
 
   call initialise(ds, at)
   

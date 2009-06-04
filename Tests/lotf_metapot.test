@@ -88,7 +88,7 @@ MetaPotential_FM:
  mm_reweight=1.0000000000000000
  conserve_momentum_weight_method=uniform
  mm_args_str=
- qm_args_str=single_cluster=T cluster_calc_connect=T
+ qm_args_str=carve_cluster=T single_cluster=T cluster_calc_connect=T
  buffer_hops=3
  fit_hops=3
  randomise_buffer=T
@@ -137,7 +137,7 @@ MetaPotential_FM:
  mm_reweight=1.0000000000000000
  conserve_momentum_weight_method=uniform
  mm_args_str=
- qm_args_str=single_cluster=T cluster_calc_connect=T
+ qm_args_str=carve_cluster=T single_cluster=T cluster_calc_connect=T
  buffer_hops=3
  fit_hops=3
  randomise_buffer=F
@@ -198,8 +198,8 @@ Consider changing to the two-step integrator
 ======================================= = ======================================
 
           Time        Temp   Mean temp     Norm(p)  Total work         Thermo work
-D         1.00      1.7116      0.0043    0.53E-15      0.00000000E+00      0.00000000E+00
-force err 1.0000000000000000 .0018534576009004  .0023361985258615
+D         1.00      1.7116      0.0043    0.14E-14      0.00000000E+00      0.00000000E+00
+force err 1.0000000000000000 .0018534576009005  .0023361985258615
 
 MetaPotential_FM_calc: got 17 active atoms.
 Adding default springs
@@ -215,7 +215,7 @@ Max force component error after  optimisation :   0.23E-02
 Max abs spring constant   after  optimisation :   0.27E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         2.00      6.7777      0.0423    0.43E-14      0.00000000E+00      0.00000000E+00
+D         2.00      6.7777      0.0423    0.41E-14      0.00000000E+00      0.00000000E+00
 force err 2.0000000000000000 .0018346835461516  .0023156721882269
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -232,7 +232,7 @@ Max force component error after  optimisation :   0.23E-02
 Max abs spring constant   after  optimisation :   0.26E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         3.00     14.9948      0.1462    0.55E-14      0.00000000E+00      0.00000000E+00
+D         3.00     14.9948      0.1462    0.57E-14      0.00000000E+00      0.00000000E+00
 force err 3.0000000000000000 .0017973798033062  .0022748371347113
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -249,7 +249,7 @@ Max force component error after  optimisation :   0.22E-02
 Max abs spring constant   after  optimisation :   0.25E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         4.00     26.0336      0.3451    0.66E-14      0.00000000E+00      0.00000000E+00
+D         4.00     26.0336      0.3451    0.51E-14      0.00000000E+00      0.00000000E+00
 force err 4.0000000000000000 .0017420325294457  .0022141242174091
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -266,7 +266,7 @@ Max force component error after  optimisation :   0.21E-02
 Max abs spring constant   after  optimisation :   0.24E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         5.00     39.4532      0.6640    0.51E-14      0.00000000E+00      0.00000000E+00
+D         5.00     39.4532      0.6640    0.28E-14      0.00000000E+00      0.00000000E+00
 force err 5.0000000000000000 .0016693653309176  .0021341690627202
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -300,8 +300,8 @@ Max force component error after  optimisation :   0.19E-02
 Max abs spring constant   after  optimisation :   0.21E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         7.00     71.2295      1.7355    0.20E-13      0.00000000E+00      0.00000000E+00
-force err 7.0000000000000000 .0014761301682198  .0019200243134564
+D         7.00     71.2295      1.7355    0.21E-13      0.00000000E+00      0.00000000E+00
+force err 7.0000000000000000 .0014761301682198  .0019200243134565
 
 MetaPotential_FM_calc: got 17 active atoms.
 Adding default springs
@@ -317,7 +317,7 @@ Max force component error after  optimisation :   0.18E-02
 Max abs spring constant   after  optimisation :   0.19E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         8.00     88.3336      2.5098    0.63E-14      0.00000000E+00      0.00000000E+00
+D         8.00     88.3336      2.5098    0.13E-13      0.00000000E+00      0.00000000E+00
 force err 8.0000000000000000 .0013581797730049  .0017880103602836
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -334,7 +334,7 @@ Max force component error after  optimisation :   0.16E-02
 Max abs spring constant   after  optimisation :   0.17E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D         9.00    105.3660      3.4466    0.10E-13      0.00000000E+00      0.00000000E+00
+D         9.00    105.3660      3.4466    0.13E-13      0.00000000E+00      0.00000000E+00
 force err 9.0000000000000000 .0012281803153908  .0016410720922067
 
 MetaPotential_FM_calc: got 17 active atoms.
@@ -351,7 +351,7 @@ Max force component error after  optimisation :   0.15E-02
 Max abs spring constant   after  optimisation :   0.14E-01
 
 MetaPotential_FM_calc: got 17 active atoms.
-D        10.00    121.6707      4.5404    0.33E-13      0.00000000E+00      0.00000000E+00
+D        10.00    121.6707      4.5404    0.34E-13      0.00000000E+00      0.00000000E+00
 force err 10.0000000000000000 .0010881663018884  .0014806511726004
 
 
