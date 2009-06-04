@@ -425,6 +425,7 @@ contains
     if (.not. assign_pointer(this, "hybrid_mark", hybrid_mark)) &
       call system_abort("create_cluster impossible failure to assign hybrid_mark pointer")
 
+
     ! 
     ! Validate arguments
     !
@@ -679,7 +680,7 @@ contains
                 ! j is atom it's generated from and n is index into cluster table of atom it's attached to
                 call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
 		! label term atom in original atos object calso
-		hybrid_mark(j) = HYBRID_TERM_MARK
+!!$		hybrid_mark(j) = HYBRID_TERM_MARK
 
                 ! Keep track of how many termination atoms each cluster atom has
                 p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
@@ -896,7 +897,7 @@ contains
     ! reassign pointers
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
          call system_abort('cannot reassign hybrid_mark property')
-    
+
     ! rescale cluster positions and lattice 
     if (do_rescale_r) then
        cluster%pos = r_scale * cluster%pos
@@ -944,8 +945,10 @@ contains
              do n=1,atoms_n_neighbours(cluster,i, alt_connect=use_connect)
                 if (.not. (hysteretic_connect .or. is_nearest_neighbour(cluster,i,n, use_connect))) cycle
                 j = atoms_neighbour(cluster,i,n, alt_connect=use_connect)
+
 		at_j = cluster_info%int(1,i)
-		if (hybrid_mark(at_j) == HYBRID_TERM_MARK) then ! j is a termination atoms, so i must be in_outer_layer
+!!$		if (hybrid_mark(at_j) == HYBRID_TERM_MARK) then ! j is a termination atoms, so i must be in_outer_layer
+                if (cluster_info%int(6,at_j) /= 0) then
                    in_outer_layer = .true.
                    exit
                 end if
@@ -1035,7 +1038,6 @@ contains
 
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
          call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
-
 
     ! Calculate centre of cluster
     call allocate(cluster_list, 1,0,0,0)
