@@ -21,6 +21,10 @@ class AtomsList(object):
    def __len__(self):
       return len(self._list)
 
+   def write(self, dest):
+      for a in self:
+         dest.write(self)
+
        
 class GenericFrameReader(AtomsList):
    """Read-only access to an XYZ or NetCDF trajectory. The file is opened
