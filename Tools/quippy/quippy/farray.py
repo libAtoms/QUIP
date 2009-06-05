@@ -70,13 +70,11 @@ class FortranArray(numpy.ndarray):
     elements 1 and 2, equivalent to a C-style slice of 0:2. The self.flat
     iterator is still indexed from zero."""
 
-    def _addfields(self, transpose_on_print):
+    def __array_finalize__(self, obj):
         self.rows = self.row_iter()
         self.cols = self.col_iter()
         self._mapcache = {}
-        self.transpose_on_print = transpose_on_print
-
-        return self
+        self.transpose_on_print = getattr(obj, 'transpose_on_print', False)
 
     def __new__(cls, input_array=None, doc=None, transpose_on_print=False):
         """Construct a FortanArray from input_array
@@ -89,7 +87,11 @@ class FortranArray(numpy.ndarray):
         
         if doc is not None:
             self.__doc__ = doc
-        self._addfields(transpose_on_print)
+
+        self.rows = self.row_iter()
+        self.cols = self.col_iter()
+        self._mapcache = {}
+        self.transpose_on_print = transpose_on_print
 	return self
 
     @staticmethod
@@ -181,7 +183,7 @@ class FortranArray(numpy.ndarray):
 	indx = self.mapindices(indx)
 	obj = numpy.ndarray.__getitem__(self, indx)
         if isinstance(obj, numpy.ndarray):
-            fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
+            fa = obj.view(FortranArray)
             return fa
         return obj
 
@@ -201,7 +203,7 @@ class FortranArray(numpy.ndarray):
             j = FortranArray.map_int(j)
         obj = numpy.ndarray.__getslice__(self, i, j)
         if isinstance(obj, numpy.ndarray):
-            fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
+            fa = obj.view(FortranArray)
             return fa
         return obj
 
@@ -262,7 +264,7 @@ class FortranArray(numpy.ndarray):
 				 values, mode)
 				 
     def __repr__(self):
-        if hasattr(self, 'transpose_on_print') and self.transpose_on_print:
+        if self.transpose_on_print:
             s = numpy.asarray(self.T).view(numpy.ndarray).__repr__()
         else:
             s = numpy.asarray(self).view(numpy.ndarray).__repr__()
@@ -303,7 +305,7 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[0]):
                 obj = numpy.ndarray.__getitem__(self, i-1)
                 if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
+                    fa = obj.view(FortranArray)
                     yield fa
                 else:
                     yield obj
@@ -320,7 +322,7 @@ class FortranArray(numpy.ndarray):
 
     def norm(self):
        "Return sqrt(norm2(a))"
-       return numpy.sqrt(self.norm2()).view(FortranArray)._addfields(self.transpose_on_print)
+       return numpy.sqrt(self.norm2()).view(FortranArray)
 
     def row_iter(self):
         """Iterator for MxN arrays to return rows [:,i] for i=1,N one by one as Mx1 arrays."""
@@ -330,7 +332,7 @@ class FortranArray(numpy.ndarray):
             for i in frange(self.shape[-1]):
                 obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1))
                 if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)._addfields(self.transpose_on_print)
+                    fa = obj.view(FortranArray)
                     yield fa
                 else:
                     yield obj
@@ -340,7 +342,7 @@ class FortranArray(numpy.ndarray):
 	    axis -= 1
 	obj = numpy.ndarray.all(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)._addfields(self.transpose_on_print)
+            obj = obj.view(FortranArray)
         return obj
 
     def any(self, axis=None, out=None):
@@ -348,13 +350,8 @@ class FortranArray(numpy.ndarray):
 	    axis -= 1
 	obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
-            obj = obj.view(FortranArray)._addfields(self.transpose_on_print)
+            obj = obj.view(FortranArray)
         return obj
-
-    def transpose(self):
-        return numpy.ndarray.transpose(self).view(FortranArray)._addfields(self.transpose_on_print)
-
-    T = property(fget=transpose)
 
     def stripstrings(self):
         """Return string or list of strings with trailing spaces removed
