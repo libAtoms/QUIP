@@ -15,7 +15,7 @@ def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
    lattice[:,2] = a2
    lattice[:,3] = a3
    
-   at = Atoms(9,lattice)
+   at = Atoms(n=9,lattice=lattice)
 
    at.set_atoms((14,14,14,8,8,8,8,8,8))
 
