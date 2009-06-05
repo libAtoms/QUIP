@@ -31,7 +31,7 @@ class Atoms(FortranAtoms):
       """
       if mask is not None:
          out = Atoms(n=mask.count(),lattice=self.lattice)
-         out._select(self, mask=mask)
+         FortranAtoms.select(out, self, mask=mask)
       elif list is not None:
          out = Atoms(n=list.size(), lattice=self.lattice)
          FortranAtoms.select(out, self, list=list)
