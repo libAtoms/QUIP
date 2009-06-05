@@ -266,15 +266,20 @@ class Trajectory(object):
       self.n_steps = n_steps
       self.save_interval = save_interval
       self.connect_interval = connect_interval
-      
+
+      self.ds.atoms.add_property('force', 0.0, n_cols=3)
       self.f = fzeros((3,ds.atoms.n))
       self.e = farray(0.0)
       self.pot.calc(ds.atoms, f=self.f, e=self.e)
+      self.ds.atoms.force[:] = self.f[:]
+      self.ds.atoms.params['energy'] = self.e
       
    def __iter__(self):
       for n in range(self.n_steps):
          self.ds.advance_verlet1(self.dt, self.f)
          self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
+         self.ds.atoms.force[:] = self.f[:]
+         self.ds.atoms.params['energy'] = self.e
          self.ds.advance_verlet2(self.dt, self.f)
          self.ds.print_status(epot=self.e)
          if n % self.connect_interval == 0:
