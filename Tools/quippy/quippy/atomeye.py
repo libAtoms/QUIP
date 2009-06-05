@@ -16,30 +16,30 @@ default_settings = {'n->xtal_mode': 1,
                     }
 
 def on_click(iw, idx):
-    if not iw in instances:
+    if not iw in views:
         raise RuntimeError('Unexpected window id %d' % iw)
-    instances[iw].on_click(idx)
+    views[iw].on_click(idx)
     
 
 def on_advance(iw, mode):
-    if not iw in instances:
+    if not iw in views:
         raise RuntimeError('Unexpected window id %d' % iw)
-    instances[iw].on_advance(mode)
+    views[iw].on_advance(mode)
 
 def on_close(iw):
-    if not iw in instances:
+    if not iw in views:
         raise RuntimeError('Unexpected window id %d' % iw)
-    instances[iw].on_close()
+    views[iw].on_close()
 
 
 def on_new_window(iw):
-    if iw in instances:
-        instances[iw].is_alive = True
+    if iw in views:
+        views[iw].is_alive = True
     else:
-        instances[iw] = AtomEye(window_id=iw)       
+        views[iw] = AtomEye(window_id=iw)       
     
 
-class AtomEye(object):
+class AtomEyeView(object):
     def __init__(self, atoms=None, window_id=None, copy=None, frame=0, delta=1, property=None):
 
         self._cio = CInOutput()
@@ -89,7 +89,7 @@ class AtomEye(object):
 
         self.is_alive = False
         self._window_id = _atomeye.open_window(icopy,atoms)
-        instances[self._window_id] = self
+        views[self._window_id] = self
         while not self.is_alive:
             time.sleep(0.1)
         time.sleep(0.1)
@@ -110,6 +110,7 @@ class AtomEye(object):
         for k in sorted(d):
             print '%s = %s' % (k,d[k])
         print
+        sys.stdout.flush()
 
         if self.paint_property is not None and theat.has_property(self.paint_property):
             getattr(theat, self.paint_property)[idx] = self.paint_value
@@ -135,7 +136,7 @@ class AtomEye(object):
 
     def on_close(self):
         self.is_alive = False
-        del instances[self._window_id]
+        del views[self._window_id]
 
 
     def paint(self, property='selection',value=1,fill=0):
@@ -392,25 +393,30 @@ class AtomEye(object):
     
     
 
-instances = {}
+views = {}
 _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 
-atomeye = None
+view = None
 
 def show(obj, property=None, frame=0):
-    global atomeye
-    if atomeye is None:
-        if instances.keys():
-            atomeye = instances[instances.keys()[0]]
-            atomeye.show(obj, property, frame)
+    global view
+    
+    if view is None:
+        if views.keys():
+            view = views[views.keys()[0]]
+            view.show(obj, property, frame)
         else:
-            atomeye = AtomEye(obj, property=property, frame=frame)
+            view = AtomEyeView(obj, property=property, frame=frame)
     else:
-        atomeye.show(obj, property, frame)
+        view.show(obj, property, frame)
+
+    return view
 
 
 def redraw(property=None):
-    atomeye.redraw(property)
+    if view is None:
+        raise ValueError('AtomEyeView instance atomeye.view not initialised. Call atomeye.show() first')
+    view.redraw(property)
 
 
