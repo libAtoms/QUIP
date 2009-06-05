@@ -36,7 +36,7 @@ def on_new_window(iw):
     if iw in views:
         views[iw].is_alive = True
     else:
-        views[iw] = AtomEye(window_id=iw)       
+        views[iw] = AtomEyeView(window_id=iw)
     
 
 class AtomEyeView(object):
@@ -58,11 +58,14 @@ class AtomEyeView(object):
         else:
             self._window_id = window_id
             self.is_alive = True
+            views[self._window_id] = self
 
         if property is not None:
             self.redraw(property)
             
     def start(self, copy=None):
+        if self.is_alive: return
+        
         if self.atoms is None:
             atoms = 0
             title = 'null'
@@ -92,7 +95,7 @@ class AtomEyeView(object):
         views[self._window_id] = self
         while not self.is_alive:
             time.sleep(0.1)
-        time.sleep(0.1)
+        time.sleep(0.3)
         _atomeye.set_title(self._window_id, title)
         self.set(default_settings)
 
@@ -120,8 +123,6 @@ class AtomEyeView(object):
     def on_advance(self, mode):
         if not hasattr(self.atoms,'__iter__'): return
 
-        print 'on_advance: %d %s' % (self.frame, mode)
-            
         if mode == 'forward':
             self.frame += self.delta
         elif mode == 'backward':
@@ -399,9 +400,16 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 view = None
 
-def show(obj, property=None, frame=0):
+def show(obj, property=None, frame=0, window_id=None):
+    """Show obj in the default AtomEye view"""
     global view
-    
+
+    # if window_id was passed in, then use that window
+    if window_id is not None:
+        views[window_id].show(obj, property, frame)
+        return views[window_id]
+
+    # otherwise use the default viewer, initialising it if necessary
     if view is None:
         if views.keys():
             view = views[views.keys()[0]]
@@ -415,8 +423,8 @@ def show(obj, property=None, frame=0):
 
 
 def redraw(property=None):
-    if view is None:
-        raise ValueError('AtomEyeView instance atomeye.view not initialised. Call atomeye.show() first')
-    view.redraw(property)
+    """Redraw all AtomEye views"""
+    for v in views.itervalues():
+        v.redraw(property)
 
 
