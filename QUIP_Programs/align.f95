@@ -1,3 +1,5 @@
+! Align a configuration (presumably a molecule) so that moment of inertia
+! axes are aligned with cartesian axes
 program align_prog
 use libatoms_module
 implicit none

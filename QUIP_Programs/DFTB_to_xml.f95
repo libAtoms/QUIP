@@ -1,3 +1,4 @@
+! convert from DFTB web-site input files to QUIP xml format
 module DFTB_to_xml_module
 
 use System_module
