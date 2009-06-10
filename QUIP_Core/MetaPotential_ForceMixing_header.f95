@@ -19,7 +19,6 @@
      !% \begin{itemize}
      !%  \item 'lotf_adj_pot_svd' --- LOTF using SVD to optimised the Adj Pot
      !%  \item 'lotf_adj_pot_minim' --- LOTF using conjugate gradients to optimise the Adj Pot
-     !%  \item 'lotf_adj_pot_sw' --- LOTF using old style SW Adj Pot
      !%  \item 'conserve_momentum' --- divide the total force on QM region over the fit atoms to conserve momentum 
      !%  \item 'force_mixing' --- force mixing with details depending on values of
      !%      'buffer_hops', 'transtion_hops' and 'weight_interpolation'
