@@ -1,3 +1,5 @@
+! FrameTools like wrapper for coalesce_in_one_periodic_image()
+! moves all atoms so that no bonds occur across a periodic image
 program wrap_prog
 use libatoms_module
 implicit none

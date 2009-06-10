@@ -1,3 +1,4 @@
+! convert from NRL-TB web-site input files to QUIP XML format
 module NRL_TB_to_xml_module
 
 use System_module
