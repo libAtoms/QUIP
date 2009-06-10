@@ -487,7 +487,7 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
     for (i=0; i<atoms->n_property; i++) {
       if (strcmp(atoms->property_name[i],"coordinates") == 0)
 	strcpy(atoms->property_name[i],"pos");
-      if (strcmp(atoms->property_name[i],"veloticites") == 0)
+      if (strcmp(atoms->property_name[i],"velocities") == 0)
 	strcpy(atoms->property_name[i],"velo");
     }
 
