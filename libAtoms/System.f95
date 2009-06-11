@@ -1311,7 +1311,7 @@ contains
       endif
       if (delim_pos == 0) then ! didn't find closing delimiter
 	if (do_matching) then
-	  call print("parse_string failed to find closing delimter to match opening delimiter at position " // (field_start-1), ERROR)
+	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), ERROR)
 	  call print("parse_string string='"//this//"'", ERROR)
 	  call system_abort("parse_string failed to find closing delimiter")
 	else
