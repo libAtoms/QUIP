@@ -111,7 +111,11 @@ class AtomEyeView(object):
         print "frame %d, atom %d clicked" % (self.frame, idx)
         d = theat[idx]
         for k in sorted(d):
-            print '%s = %s' % (k,d[k])
+            v = d[k]
+            if isinstance(v, FortranArray) and v.dtype.kind == 'f':
+                print '%s = %s (norm %f)' % (k, v, v.norm())
+            else:
+                print '%s = %s' % (k, v)
         print
         sys.stdout.flush()
 
@@ -136,7 +140,11 @@ class AtomEyeView(object):
 
 
     def on_close(self):
+        global view
+        
         self.is_alive = False
+        if view is self:
+            view = None
         del views[self._window_id]
 
 
@@ -401,7 +409,12 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 view = None
 
 def show(obj, property=None, frame=0, window_id=None):
-    """Show obj in the default AtomEye view"""
+    """Convenience function to show obj in the default AtomEye view
+
+    If window_id is not None, then this window will be used. Otherwise
+    the default window is used, initialising it if necessary.
+    
+    Returns instance of AtomEyeView."""
     global view
 
     # if window_id was passed in, then use that window
@@ -420,11 +433,4 @@ def show(obj, property=None, frame=0, window_id=None):
         view.show(obj, property, frame)
 
     return view
-
-
-def redraw(property=None):
-    """Redraw all AtomEye views"""
-    for v in views.itervalues():
-        v.redraw(property)
-
 
