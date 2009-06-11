@@ -311,18 +311,29 @@ class FortranArray(numpy.ndarray):
                     yield obj
                 
     def norm2(self):
-        "array of the norm**2 of each vector in a 3xN array"
-        n, m = self.shape
-        if n != 3:
-            raise ValueError('first array dimension should be of size 3')
-        out = fzeros(m)
-        for i in frange(m):
-            out[i] = numpy.dot(self[:,i],self[:,i])
-        return out
+        """Squared norm of a 1D or 2D array.
+
+        For a 1D array, returns dot(self,self)
+        For a 2D array, must have shape (3,n). Returns array a where a[i] = dot(self[:,i],self[:,i])"""
+        if len(self.shape) == 2:
+            n, m = self.shape
+            if n != 3:
+                raise ValueError('first array dimension should be of size 3')
+            out = fzeros(m)
+            for i in frange(m):
+                out[i] = numpy.dot(self[:,i],self[:,i])
+            return out
+        elif len(self.shape) == 1:
+            return numpy.dot(self,self)
+        elif len(self.shape) == 0:
+            return self.item()
+        else:
+            raise ValueError("Don't know how to take norm of array with shape %s" % self.shape)
+            
 
     def norm(self):
        "Return sqrt(norm2(a))"
-       return numpy.sqrt(self.norm2()).view(FortranArray)
+       return numpy.sqrt(self.norm2())
 
     def row_iter(self):
         """Iterator for MxN arrays to return rows [:,i] for i=1,N one by one as Mx1 arrays."""
