@@ -6,9 +6,31 @@ from farray import *
 from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem
 
 class Atoms(FortranAtoms):
+   """
+   Thin pythonic wrapper over auto-generated FortranAtoms class
+   
+   An atoms object contains atomic numbers, all dynamical variables
+   and connectivity information for all the atoms in the simulation cell.
+   It is initialised like this:
+   >         call initialise(MyAtoms,N,lattice)
+   where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
+   matrix of lattice vectors given as column vectors.
+   
+   Atoms also contains a Connection object, which stores distance information about
+   the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
+   image convention, all neighbours are stored up to a radius of 'cutoff', including images
+   """
 
    def __init__(self, filename=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True, frame=None,
                 data=None, properties=None,  params=None):
+      """
+      Initialise an Atoms object.
+
+      The arugments, n, lattice, fpointer, finalise, data, properties and params are passed on
+      to the FortranAtoms constructor.
+
+      If filename is given, Atoms.read(filename, frame=frame) is called.
+      """
       FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
                             data=data, properties=properties, params=params)
       if filename is not None:
@@ -23,8 +45,9 @@ class Atoms(FortranAtoms):
          raise RuntimeError('AtomEye not available')
 
    def select(self, mask=None, list=None):
-      """Select a subset of the atoms in an atoms object, either using a logical
-      mask array or list of atom indices to include.
+      """Select a subset of the atoms in an atoms object
+
+      Use either a logical mask array or a list of atom indices to include.
 
       small_at = at.select([mask, list])
       
@@ -259,25 +282,26 @@ class Table(FortranTable):
 
 
 class Trajectory(object):
-   def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval):
+   def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval, args_str):
       self.ds = ds
       self.pot = pot
       self.dt = dt
       self.n_steps = n_steps
       self.save_interval = save_interval
       self.connect_interval = connect_interval
+      self.args_str = args_str
 
       self.ds.atoms.add_property('force', 0.0, n_cols=3)
       self.f = fzeros((3,ds.atoms.n))
       self.e = farray(0.0)
-      self.pot.calc(ds.atoms, f=self.f, e=self.e)
+      self.pot.calc(ds.atoms, f=self.f, e=self.e, args_str=self.args_str)
       self.ds.atoms.force[:] = self.f[:]
       self.ds.atoms.params['energy'] = self.e
       
    def __iter__(self):
       for n in range(self.n_steps):
          self.ds.advance_verlet1(self.dt, self.f)
-         self.pot.calc(self.ds.atoms, e=self.e, f=self.f)
+         self.pot.calc(self.ds.atoms, e=self.e, f=self.f, args_str=self.args_str)
          self.ds.atoms.force[:] = self.f[:]
          self.ds.atoms.params['energy'] = self.e
          self.ds.advance_verlet2(self.dt, self.f)
@@ -291,8 +315,8 @@ class Trajectory(object):
 
 class DynamicalSystem(FortranDynamicalSystem):
    
-   def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10):
-      return Trajectory(self, pot, dt, n_steps, save_interval, connect_interval)
+   def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str=""):
+      return Trajectory(self, pot, dt, n_steps, save_interval, connect_interval, args_str)
       
 
 
