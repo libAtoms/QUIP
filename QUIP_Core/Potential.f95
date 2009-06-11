@@ -344,12 +344,13 @@ contains
     integer, allocatable, dimension(:) :: hybrid_mark_saved
     real(dp), allocatable, dimension(:) :: weight_region1_saved
     real(dp), allocatable, dimension(:,:) :: f_cluster
-    logical :: do_carve_cluster
+    logical :: do_carve_cluster, set_properties
     type(Table) :: cluster_info, cut_bonds
     integer, pointer :: cut_bonds_p(:,:)
     integer :: i_inner, i_outer
     type(Atoms) :: cluster
     character(len=256) :: prefix_save
+    real(dp), pointer :: force_ptr(:,:), df_ptr(:,:), local_e_ptr(:)
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -359,6 +360,7 @@ contains
     call print('potential_calc got args_str "'//trim(args_str)//'"', VERBOSE)
 
     call initialise(params)
+    call param_register(params, 'set_properties', 'F', set_properties)
     call param_register(params, 'single_cluster', 'F', single_cluster)
     call param_register(params, 'carve_cluster', 'T', do_carve_cluster)
     call param_register(params, 'little_clusters', 'F', little_clusters)
@@ -577,6 +579,26 @@ contains
              end do
           end do
        end if
+
+       if (set_properties) then
+          if (present(e)) call set_value(at%params, 'energy', e)
+          if (present(f)) then
+             if (.not. has_property(at, 'force')) call add_property(at, 'force', 0.0_dp, n_cols=3)
+             if (.not. assign_pointer(at, 'force', force_ptr)) call system_abort('Potential_calc: cannot assign force_ptr')
+             force_ptr = f
+          end if
+          if (present(df)) then
+             if (.not. has_property(at, 'df')) call add_property(at, 'df', 0.0_dp, n_cols=3)
+             if (.not. assign_pointer(at, 'df', df_ptr)) call system_abort('Potential_calc: cannot assign df_ptr')
+             df_ptr = df
+          end if
+          if (present(local_e)) then
+             if (.not. has_property(at, 'local_e')) call add_property(at, 'local_e', 0.0_dp)
+             if (.not. assign_pointer(at, 'local_e', local_e_ptr)) call system_abort('Potential_calc: cannot assign local_e_ptr')
+             local_e_ptr = local_e
+          end if
+       end if
+
     end if
 
   end subroutine Potential_Calc
