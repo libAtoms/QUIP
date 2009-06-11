@@ -131,14 +131,14 @@ module CrackParams_module
      real(dp) :: crack_graphene_notch_width  !% Width of graphene notch. Unit:~\AA{}.
      real(dp) :: crack_graphene_notch_height !% Height of graphene notch. Unit:~\AA{}.
      character(STRING_LENGTH) :: crack_slab_filename !%Input file to use instead of generating slabs.
-     
+     integer  :: crack_dislo_seed          !% atom at the core of the dislocation
+ 
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
      integer  :: simulation_seed          !% Random number seed. Use zero for a random seed, or a particular value to repeat a previous run.
      logical  :: simulation_restart       !% Restart from checkfile containing velocites of all atoms.
      logical  :: simulation_classical     !% Perform a purely classical simulation
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
-
 
      ! Molecular dynamics parameters
      real(dp) :: md_time_step             !% Molecular Dynamics time-step, in fs.
@@ -320,6 +320,7 @@ contains
     this%crack_edge_fix_tol      = 2.7_dp   ! Angstrom
     this%crack_y_shift           = 0.0_dp   ! Angstrom
     this%crack_seed_embed_tol    = 3.0_dp   ! Angstrom
+    this%crack_dislo_seed        = 0
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -333,7 +334,6 @@ contains
     this%simulation_restart      = .false.
     this%simulation_classical    = .false.
     this%simulation_force_initial_load_step = .false.
-
 
     ! Molecular dynamics parameters
     this%md_time_step            = 1.0_dp   ! fs
@@ -437,6 +437,7 @@ contains
     this%hack_qm_zero_z_force        = .false.
     this%hack_fit_on_eqm_coordination_only = .false.
 
+    call print('set default values for params')
 
   end subroutine CrackParams_initialise
 
@@ -639,6 +640,12 @@ contains
           read (value, *) parse_cp%crack_slab_filename
        end if
 
+       call QUIP_FoX_get_value(attributes, "dislo_seed", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_dislo_seed
+       end if
+
+
     elseif (parse_in_crack .and. name == 'simulation') then
 
        call QUIP_FoX_get_value(attributes, "task", value, status)
@@ -665,7 +672,6 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%simulation_force_initial_load_step
        end if
-
 
     elseif (parse_in_crack .and. name == 'md') then
 
@@ -1163,6 +1169,7 @@ contains
     call Print('     graphene_notch_width  = '//this%crack_graphene_notch_width//' A', file=file)
     call Print('     graphene_notch_height = '//this%crack_graphene_notch_height//' A', file=file)
     call Print('     slab_filename         = '//this%crack_slab_filename, file=file)
+    call Print('     dislo_seed            = '//this%crack_dislo_seed, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
