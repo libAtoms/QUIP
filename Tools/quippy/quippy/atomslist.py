@@ -1,5 +1,7 @@
 class AtomsList(object):
    def __init__(self, seq):
+      if not hasattr(seq, '__iter__'):
+         seq = [seq]
       self._list = list(seq)
    
    def __repr__(self):
