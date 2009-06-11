@@ -408,11 +408,10 @@ contains
     real(dp), allocatable, dimension(:,:), optional, intent(out) :: sig, disp 
     logical, optional, intent(in) :: do_sig, do_disp
 
-    real(dp), pointer, dimension(:,:) :: psig, pdisp
     real(dp), allocatable, dimension(:,:) :: mysig
     real(dp) :: E, v, r, theta, kappa, vp, vpp, crack_pos(3), pos(3)
     character(20) :: use_mode
-    logical :: dummy, my_do_sig, my_do_disp
+    logical :: my_do_sig, my_do_disp
     integer :: i
 
     use_mode = optional_default("plane strain", mode)
@@ -457,20 +456,18 @@ contains
        r = sqrt(pos(1)*pos(1) + pos(2)*pos(2))*1e-10_dp
        theta = atan2(pos(2),pos(1))
 
-       if (my_do_sig) then
-          mysig(1,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp - sin(theta/2.0_dp)* &
-               sin(3.0_dp*theta/2.0_dp))
-
-          mysig(2,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp + sin(theta/2.0_dp)* &
-               sin(3.0_dp*theta/2.0_dp))
-
-          mysig(3,i) = vp*(mysig(1,i) + mysig(2,i))
-          mysig(4,i) = 0.0_dp
-          mysig(5,i) = 0.0_dp
-
-          mysig(6,i) = K/sqrt(2.0_dp*pi*r)*sin(theta/2.0_dp)*cos(theta/2.0_dp)* &
-               cos(3.0_dp*theta/2.0_dp)
-       endif
+       mysig(1,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp - sin(theta/2.0_dp)* &
+            sin(3.0_dp*theta/2.0_dp))
+       
+       mysig(2,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp + sin(theta/2.0_dp)* &
+            sin(3.0_dp*theta/2.0_dp))
+       
+       mysig(3,i) = vp*(mysig(1,i) + mysig(2,i))
+       mysig(4,i) = 0.0_dp
+       mysig(5,i) = 0.0_dp
+       
+       mysig(6,i) = K/sqrt(2.0_dp*pi*r)*sin(theta/2.0_dp)*cos(theta/2.0_dp)* &
+            cos(3.0_dp*theta/2.0_dp)
 
        if(my_do_disp) then
           disp(1,i) = K/(2.0_dp*E*1e9_dp)*sqrt(r/(2.0_dp*pi))*((1.0_dp+v)*(2.0_dp*kappa-1.0_dp)*cos(theta/2.0_dp) - &
@@ -800,6 +797,9 @@ contains
             print_cinoutput=movie)
     end if
     
+    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+         old_nn, hybrid, hybrid_mark)  
+
     ! work out displacement field, using relaxed positions
     do i=1,crack_slab%N
        load(:,i) = crack_slab%pos(:,i) - pos2(:,i)
