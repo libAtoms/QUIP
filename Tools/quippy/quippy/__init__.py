@@ -58,6 +58,6 @@ ElementName = farray([s.strip() for s in ElementName[2:]])
 ElementMass = dict(zip(ElementName,ElementMass))
 ElementCovRad = dict(zip(ElementName,ElementCovRad))
 
-import atomeye
+import atomeye, castep
 
 from util import *
