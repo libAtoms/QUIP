@@ -123,7 +123,7 @@ program makecrack
   type(Inoutput) :: checkfile
 
   ! Pointers into Atoms data structure
-  real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+  real(dp), pointer, dimension(:,:) :: load
   integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark
 
@@ -133,12 +133,11 @@ program makecrack
   real (dp), dimension(3,3) :: axes, lattice
 
   real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, &
-       width, height, a, E, v, v2, uij(3), energy, crack_pos, G
+       width, height, a, E, v, v2, uij(3), energy
 
   integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
 
   character(len=STRING_LENGTH) :: stem, xmlfilename, xyzfilename
-  logical :: dummy
 
   call initialise(mpi_glob)
 
@@ -373,7 +372,7 @@ program makecrack
   call add_property(crack_slab, 'edge_mask', 0)
 
   call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)  !CHIARA
+       old_nn, hybrid, hybrid_mark)
 
 
   call print_title('Fixing Atoms')

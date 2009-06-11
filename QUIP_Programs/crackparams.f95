@@ -437,8 +437,6 @@ contains
     this%hack_qm_zero_z_force        = .false.
     this%hack_fit_on_eqm_coordination_only = .false.
 
-    call print('set default values for params')
-
   end subroutine CrackParams_initialise
 
   subroutine CrackParams_finalise(this)
