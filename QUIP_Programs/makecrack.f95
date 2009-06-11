@@ -133,13 +133,14 @@ program makecrack
   real (dp), dimension(3,3) :: axes, lattice
 
   real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, &
-       width, height, a, E, v, v2, uij(3), energy
+       width, height, a, E, v, v2, uij(3), energy, crack_pos, G
 
   integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
 
   character(len=STRING_LENGTH) :: stem, xmlfilename, xyzfilename
+  logical :: dummy
 
-!  call initialise(mpi_glob)
+  call initialise(mpi_glob)
 
   if (mpi_glob%active) then
      ! Same random seed for each process, otherwise velocites will differ
@@ -372,7 +373,7 @@ program makecrack
   call add_property(crack_slab, 'edge_mask', 0)
 
   call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+       old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)  !CHIARA
 
 
   call print_title('Fixing Atoms')
@@ -474,7 +475,10 @@ program makecrack
      end if
      
      ! Apply initial load
-     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true., mpi=mpi_glob)
+     !dummy = get_value(crack_slab%params, 'CrackPos', crack_pos) !CHIARA
+     !dummy = get_value(crack_slab%params, 'G', G)
+     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true., &
+          mpi=mpi_glob)!, crackpos_last_load=crack_pos, G_last_load=G) !CHIARA
   end if
 
   call Print_title('Initialising QM region')
