@@ -17,10 +17,10 @@ module CrackTools_module
 contains
 
   subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+       old_nn, hybrid, hybrid_mark) 
 
     type(Atoms), intent(in) :: crack_slab
-    real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+    real(dp), pointer, dimension(:,:) :: load 
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
@@ -69,15 +69,15 @@ contains
             call system_abort('hybrid_mark pointer assignment failed')
     end if
 
-    if (has_property(crack_slab, 'uniform_disp')) then
-       if (.not. assign_pointer(crack_slab, 'uniform_disp', u_disp)) &
-            call system_abort('u_disp pointer assignment failed')
-    end if
+    !if (has_property(crack_slab, 'uniform_disp')) then
+    !   if (.not. assign_pointer(crack_slab, 'uniform_disp', u_disp)) &
+    !        call system_abort('u_disp pointer assignment failed')
+    !end if
     
-    if (has_property(crack_slab, 'k_disp')) then
-       if (.not. assign_pointer(crack_slab, 'k_disp', k_disp)) &
-            call system_abort('k_disp pointer assignment failed')
-    end if
+    !if (has_property(crack_slab, 'k_disp')) then
+    !   if (.not. assign_pointer(crack_slab, 'k_disp', k_disp)) &
+    !        call system_abort('k_disp pointer assignment failed')
+    !end if
 
   end subroutine crack_fix_pointers
 
@@ -298,16 +298,16 @@ contains
   !% \hline 
   !% \hline
   !% \end{tabular}\end{center}
-  subroutine crack_uniform_load(at, l_crack_pos, r_crack_pos, zone_width, G, apply_load)
+  subroutine crack_uniform_load(at, l_crack_pos, r_crack_pos, zone_width, G, apply_load, disp)
     type(Atoms), intent(inout) :: at
     real(dp), intent(in) :: l_crack_pos, r_crack_pos, zone_width
     real(dp), intent(inout) :: G
     logical, optional :: apply_load
+    real(dp), allocatable, dimension(:,:), intent(out) :: disp
 
     integer ::  j
     real(dp) top_old, top_new, bottom_old, bottom_new, x, y, q, strain, E, v, &
          orig_height, new_height
-    real(dp), pointer, dimension(:,:) :: disp
     logical :: do_apply_load
 
     if (.not. get_value(at%params, 'OrigHeight', orig_height)) &
@@ -319,9 +319,7 @@ contains
     if (.not. get_value(at%params, 'PoissonRatio_yx', v)) &
          call system_abort('crack_uniform_load: "PoissonRatio_yx" missing')
 
-    call add_property(at, 'uniform_disp', 0.0_dp, n_cols=3)
-    if (.not. assign_pointer(at, 'uniform_disp', disp)) &
-         call system_abort('crack_uniform_load: failed to assign pointer to uniform_disp')
+    allocate(disp(3,at%N))
 
     ! Calculate strain corresponding to given G
     strain = crack_g_to_strain(G, E, v, orig_height)
@@ -400,11 +398,14 @@ contains
   !% are present thenn properties are added to at if do_disp or do_sig are true.
   !% Stress is in 6 component Voigt notation: $1=xx, 2=yy, 3=zz, 4=yz, 5=zx$ and $6=xy$, and 
   !% displacement is a Cartesian vector $(u_x,u_y,u_z)$.
+
+  !CHIARA: instead of adding a property to the atom structure, return 
+  !an array with sig and disp, if do_sig or do_disp are true
   subroutine crack_k_field(at, K, mode, sig, disp, do_sig, do_disp)
-    type(Atoms), intent(inout) :: at
+    type(Atoms), intent(in) :: at 
     real(dp), intent(in) :: K
     character(*), intent(in), optional :: mode
-    real(dp), dimension(:,:), optional, target :: sig, disp
+    real(dp), allocatable, dimension(:,:), optional, intent(out) :: sig, disp 
     logical, optional, intent(in) :: do_sig, do_disp
 
     real(dp), pointer, dimension(:,:) :: psig, pdisp
@@ -440,23 +441,15 @@ contains
        call system_abort('crack_k_field: bad mode '//trim(use_mode))
     end if
 
-    nullify(psig,pdisp)
     allocate(mysig(6,at%N))
 
-    if (present(sig) .or. present(disp)) then
-       if (present(sig)) psig => sig
-       if (present(disp)) pdisp => disp
-    else
        if (my_do_sig) then
-          call add_property(at, 'k_sig', 0.0_dp, n_cols=6)
-          dummy = assign_pointer(at, 'k_sig', psig)
+          allocate(sig(6, at%N))
        end if
 
        if (my_do_disp) then
-          call add_property(at, 'k_disp', 0.0_dp, n_cols=3)    
-          dummy = assign_pointer(at, 'k_disp', pdisp)
+          allocate(disp(3, at%N))
        end if
-    end if
 
     do i=1,at%N
 
@@ -464,30 +457,32 @@ contains
        r = sqrt(pos(1)*pos(1) + pos(2)*pos(2))*1e-10_dp
        theta = atan2(pos(2),pos(1))
 
-       mysig(1,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp - sin(theta/2.0_dp)* &
-            sin(3.0_dp*theta/2.0_dp))
+       if (my_do_sig) then
+          mysig(1,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp - sin(theta/2.0_dp)* &
+               sin(3.0_dp*theta/2.0_dp))
 
-       mysig(2,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp + sin(theta/2.0_dp)* &
-            sin(3.0_dp*theta/2.0_dp))
+          mysig(2,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp + sin(theta/2.0_dp)* &
+               sin(3.0_dp*theta/2.0_dp))
 
-       mysig(3,i) = vp*(mysig(1,i) + mysig(2,i))
-       mysig(4,i) = 0.0_dp
-       mysig(5,i) = 0.0_dp
+          mysig(3,i) = vp*(mysig(1,i) + mysig(2,i))
+          mysig(4,i) = 0.0_dp
+          mysig(5,i) = 0.0_dp
 
-       mysig(6,i) = K/sqrt(2.0_dp*pi*r)*sin(theta/2.0_dp)*cos(theta/2.0_dp)* &
-            cos(3.0_dp*theta/2.0_dp)
+          mysig(6,i) = K/sqrt(2.0_dp*pi*r)*sin(theta/2.0_dp)*cos(theta/2.0_dp)* &
+               cos(3.0_dp*theta/2.0_dp)
+       endif
 
-       if (associated(pdisp)) then
-          pdisp(1,i) = K/(2.0_dp*E*1e9_dp)*sqrt(r/(2.0_dp*pi))*((1.0_dp+v)*(2.0_dp*kappa-1.0_dp)*cos(theta/2.0_dp) - &
+       if(my_do_disp) then
+          disp(1,i) = K/(2.0_dp*E*1e9_dp)*sqrt(r/(2.0_dp*pi))*((1.0_dp+v)*(2.0_dp*kappa-1.0_dp)*cos(theta/2.0_dp) - &
                cos(3.0_dp*theta/2.0_dp))/1e-10
-          pdisp(2,i) = K/(2.0_dp*E*1e9_dp)*sqrt(r/(2.0_dp*pi))*((1.0_dp+v)*(2.0_dp*kappa-1.0_dp)*sin(theta/2.0_dp) - &
+          disp(2,i) = K/(2.0_dp*E*1e9_dp)*sqrt(r/(2.0_dp*pi))*((1.0_dp+v)*(2.0_dp*kappa-1.0_dp)*sin(theta/2.0_dp) - &
                sin(3.0_dp*theta/2.0_dp))/1e-10
-          pdisp(3,i) = -vpp*pos(3)*1e-10_dp/(E*1e9_dp)*(mysig(1,i) + mysig(2,i))/1e-10
+          disp(3,i) = -vpp*pos(3)*1e-10_dp/(E*1e9_dp)*(mysig(1,i) + mysig(2,i))/1e-10
        end if
 
     end do
 
-    if (associated(psig)) psig = mysig/1e9_dp ! Convert to GPa
+    if (my_do_sig) sig = mysig/1e9_dp
     deallocate(mysig)
 
   end subroutine crack_k_field
@@ -572,12 +567,12 @@ contains
     real(dp) :: crack_pos
 
     ! Pointers into Atoms data structure
-    real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+    real(dp), pointer, dimension(:,:) :: load!, k_disp, u_disp
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+         old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
 
     ! Setup edge_mask to allow easy exclusion of edge atoms
     do i=1,crack_slab%N
@@ -609,21 +604,24 @@ contains
   end subroutine crack_setup_marks
 
 
-  subroutine crack_calc_load_field(crack_slab, params, metapot, load_method, overwrite_pos, mpi)
+  subroutine crack_calc_load_field(crack_slab, params, metapot, load_method, overwrite_pos, mpi, crackpos_last_load, G_last_load) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
     type(MetaPotential), intent(inout) :: metapot
     character(*), intent(in) :: load_method
     logical, intent(in) :: overwrite_pos
     type(MPI_Context), intent(in) :: mpi
+    real(dp), optional, intent(in) :: crackpos_last_load, G_last_load
 
-    real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+    real(dp), pointer, dimension(:,:) :: load
+    real(dp), allocatable, dimension(:,:) :: k_disp, u_disp
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     type(CInOutput) :: movie
     real(dp), allocatable :: pos1(:,:), pos2(:,:)
     integer :: i, k, steps
-    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, K1, r, l_crack_pos, r_crack_pos, crack_pos
+    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, G_old, old_crack_pos
+    real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos, r_pos_last_load
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_calc_load_field: "OrigHeight" parameter missing')
@@ -649,7 +647,8 @@ contains
     call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+         old_nn, hybrid, hybrid_mark)  
+   
 
     if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
        if (params%io_netcdf) then
@@ -663,6 +662,8 @@ contains
 
     l_crack_pos = -orig_width
     r_crack_pos = crack_pos
+
+    old_crack_pos = optional_default(crack_pos, crackpos_last_load) 
     
 !!$    if (trim(params%crack_structure) == 'graphene') then
 !!$       r_crack_pos = -orig_width
@@ -681,7 +682,14 @@ contains
     
     ! Save relaxed positions
     pos2 = crack_slab%pos
-        
+   
+
+    r_pos_last_load = old_crack_pos - 0.85*params%crack_strain_zone_width
+    G_old = optional_default(G, G_last_load)
+
+    allocate(k_disp(3, crack_slab%N))  
+    allocate(u_disp(3, crack_slab%N))
+     
     ! Apply loading field
     
     if (trim(load_method) == 'saved') then
@@ -701,23 +709,21 @@ contains
 
        call print_title('Applying K-field load increment')
 
-       if (.not. has_property(crack_slab, 'k_disp')) &
-            call system_abort('crack_calc_load_field: kfield mode and k_disp property missing.')
+       call crack_k_field(crack_slab, crack_g_to_k(G_old, E, v), disp = k_disp, do_disp=.true.) 
 
        ! remove old load k_disp
        do i=1,crack_slab%N
           crack_slab%pos(:,i) = crack_slab%pos(:,i) - k_disp(:,i)
        end do
-
+ 
+       k_disp = 0.0_dp 
        ! apply load increment
        K1 = crack_g_to_k(crack_strain_to_g( &
             crack_g_to_strain(G, E, v, orig_height) + &
             params%crack_initial_loading_strain, E, v, orig_height),E,v)
 
        call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-       call crack_k_field(crack_slab, K1, do_disp=.true.)
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+       call crack_k_field(crack_slab, K1, disp = k_disp, do_disp=.true.) 
 
        do i=1,crack_slab%N
           crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
@@ -727,15 +733,18 @@ contains
 
        call print_title('Applying interp. kfield-uniform load increment')
 
-       if (.not. has_property(crack_slab, 'uniform_disp')) &
-            call system_abort('crack_calc_load_field: interp_kfield_uniform mode and uniform_disp property missing.')
-       
-       if (.not. has_property(crack_slab, 'k_disp')) &
-            call system_abort('crack_calc_load_field: interp_kfield_uniform mode and k_disp property missing.')
+       k_disp = 0.0_dp
+       u_disp = 0.0_dp
+       call print('Recomputing the old load')
+       call crack_k_field(crack_slab, crack_g_to_k(G_old, E, v), disp = k_disp, do_disp=.true.)
+
+       call crack_uniform_load(crack_slab, l_crack_pos, r_pos_last_load, &
+            params%crack_strain_zone_width, G_old, apply_load=.false., disp=u_disp)
 
        ! remove old load u_disp + k_disp
+       call print('Removing the old load')
        do i=1,crack_slab%N
-          r = sqrt((crack_slab%pos(1,i) - crack_pos)**2.0_dp + &
+          r = sqrt((crack_slab%pos(1,i) - old_crack_pos)**2.0_dp + & 
                crack_slab%pos(2,i)**2.0_dp)
           if (r > params%crack_load_interp_length) then
              crack_slab%pos(:,i) = crack_slab%pos(:,i) - u_disp(:,i)
@@ -747,23 +756,26 @@ contains
           end if
        end do
 
+       call print('Applying new load')
        ! apply load increment to u_disp
+
        G1 = crack_strain_to_g( &
             crack_g_to_strain(G, E, v, orig_height) + &
             params%crack_initial_loading_strain, E, v, orig_height)
 
+       u_disp = 0.0_dp
        call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-            params%crack_strain_zone_width, G1, apply_load=.false.)
+            params%crack_strain_zone_width, G1, apply_load=.false., disp=u_disp) 
 
        ! apply load increment to K_disp
        K1 = crack_g_to_k(G1,E,v)
 
+       k_disp = 0.0_dp
        call print('Energy release rate     G_1 = '//G1//' J/m^2')
        call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-       call crack_k_field(crack_slab, K1, do_sig=.false., do_disp=.true.)
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+       call crack_k_field(crack_slab, K1, do_sig=.false., disp=k_disp, do_disp=.true.)  
 
+       r = 0.0 
        do i=1,crack_slab%N
           r = sqrt((crack_slab%pos(1,i) - crack_pos)**2.0_dp + &
                crack_slab%pos(2,i)**2.0_dp)
@@ -776,7 +788,7 @@ contains
              end do
           end if
        end do
-       
+     
     end if
     
     if (params%crack_relax_loading_field) then
@@ -814,14 +826,15 @@ contains
     type(CrackParams), intent(in) :: params
 
     ! Pointers into Atoms data structure
-    real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+    real(dp), allocatable, dimension(:,:) :: k_disp, u_disp 
+    real(dp), pointer, dimension(:,:) :: load
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain
     integer :: i, k
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+         old_nn, hybrid, hybrid_mark) 
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_make_seed: "OrigHeight" parameter missing')
@@ -838,6 +851,9 @@ contains
     if (.not. get_value(crack_slab%params, 'PoissonRatio_yz', v2)) &
          call system_abort('crack_make_seed: "PoissonRatio_yz" missing')
 
+    allocate(k_disp(3,crack_slab%N))
+    allocate(u_disp(3,crack_slab%N))
+
     ! Determine position of seed crack
     l_crack_pos = -orig_width ! single ended crack
     r_crack_pos = -orig_width/2.0_dp + params%crack_seed_length
@@ -851,13 +867,9 @@ contains
 
           call print_title('Seed crack - Uniform Load')
 
-          call add_property(crack_slab, 'uniform_disp', 0.0_dp, n_cols=3)
-          call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-               old_nn, hybrid, hybrid_mark, u_disp, k_disp)
-
           G = params%crack_G
           call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G, apply_load=.true.)
+               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
           call set_value(crack_slab%params, 'G', G)
           call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
           call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
@@ -890,10 +902,6 @@ contains
 
        call print_title('Seed crack - Irwin K-field Loading')
 
-       call add_property(crack_slab, 'k_disp', 0.0_dp, n_cols=3)
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
-
        if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
 
        call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
@@ -901,10 +909,7 @@ contains
        call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'G', params%crack_G)
-       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), do_disp=.true.)
-
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
+       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.)  
 
        do i=1,crack_slab%N
           crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
@@ -916,11 +921,8 @@ contains
 
        call print_title('Seed crack - K-field and Uniform Loading')
 
-       call add_property(crack_slab, 'uniform_disp', 0.0_dp, n_cols=3)
-       call add_property(crack_slab, 'k_disp', 0.0_dp, n_cols=3)
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
-
+       k_disp = 0.0_dp
+       u_disp = 0.0_dp
        call print('Interpolation length '//params%crack_load_interp_length//' A')
 
        if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
@@ -930,15 +932,12 @@ contains
 
        call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), do_disp=.true.)
+       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.) 
 
        G = params%crack_G
        call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-            params%crack_strain_zone_width, G, apply_load=.false.)
+            params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp)  
        call set_value(crack_slab%params, 'G', G)
-
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, u_disp, k_disp)
 
        do i=1,crack_slab%N
           r = sqrt((crack_slab%pos(1,i) - (r_crack_pos + 0.85*params%crack_strain_zone_width))**2.0_dp + &
@@ -955,6 +954,9 @@ contains
     else
        call system_abort('Unknown loading type '//trim(params%crack_loading))
     end if
+
+    deallocate(u_disp) 
+    deallocate(k_disp) 
 
   end subroutine crack_make_seed
 
@@ -1220,11 +1222,12 @@ contains
     type(CrackParams), intent(in) :: params
 
     integer :: p, i, j, k, surface, age, n
-    type(Table) :: old_embed, selectlist(2), tmp_select, embedlist
+    type(Table) :: old_embed, selectlist(2), tmp_select, embedlist, temptable
     type(Table), dimension(2) :: new_embed
     integer, allocatable, dimension(:) :: sorted, sindex
     real(dp), dimension(2,3) :: selection_ellipse
     real(dp) :: ellipse_bias(3), crack_pos, real_pos(3), lattice_coord(3)
+    integer :: dislo_seed, temp_N !CHIARINA
 
     integer, pointer, dimension(:) :: nn, changed_nn, hybrid
 
@@ -1244,7 +1247,7 @@ contains
          call system_abort('crack_update_selection: CrackPos parameter missing from atoms')
 
     call print('Building QM selection zone...')
-
+    
     call allocate(embedlist, 1,0,0,0)
     call allocate(old_embed, 1,0,0,0)
     call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
@@ -1261,28 +1264,42 @@ contains
     ! bias ellipse forward by arbitrary fraction of a radius (0.5 => 1/4 back, 3/4 ahead)
     ellipse_bias(1) = params%selection_ellipse_bias*selection_ellipse(1,1)
 
+    !CHIARINA
+    !if there is a dislo_seed, add qm atoms around the dislocation core
+    call allocate(temptable, 4,0,0,0)
+    dislo_seed = params%crack_dislo_seed
+    temp_N=0
+    if (dislo_seed .ne. 0) then
+       call print('DISLOCATION: adding atoms around the core '//dislo_seed)
+       !call print('atoms in embedlist before = '//embedlist%N)
+       call bfs_grow(at, temptable, dislo_seed, 3,nneighb_only=.false.,min_images_only=.true.)
+       temp_N = temptable%N
+       call print('found '//temp_N//' extra qm atoms')
+    endif
+    !CHIARINA
+
     ! Do selection twice, once to get inner and once to get outer surface
     do surface=1,2
-
+       
        call table_allocate(selectlist(surface), 5, 0, 0, 0)
 
        ! Mark ellipsoid around each real atom with changed_nn /= 0 with its age
        !  - If central (active) atom already marked, keep the newer mark
        !  - If embedded atoms already marked, also keep newer mark
-
+       
        do i=1,at%N
           if (changed_nn(i) == 0) cycle
           
           if (abs(at%pos(1,i)-crack_pos) < params%selection_cutoff_plane .and. &
                abs(at%pos(2,i)) < params%selection_cutoff_plane) then
-
+             
              p = Find_in_array(selectlist(surface)%int(1,1:selectlist(surface)%N), i)
              if (p == 0) then
                 call append(selectlist(surface), (/i,0,0,0,changed_nn(i)/))
              else
                 selectlist(surface)%int(5,p) = min(selectlist(surface)%int(5,p), changed_nn(i))
              end if
-
+             
              if (old_embed%N == 0) then
                 ! First time we do embedding, use ellipse halfway between inner and outer
                 call select_ellipse(at, 0.5_dp*(selection_ellipse(1,:) + selection_ellipse(2,:)), &
@@ -1290,7 +1307,7 @@ contains
              else
                 call select_ellipse(at, selection_ellipse(surface,:), ellipse_bias, tmp_select, i)
              end if
-
+             
              do j = 1, tmp_select%N
                 p = Find_in_array(int_part(selectlist(surface),(/1,2,3,4/)), tmp_select%int(:,j))
                 if (p == 0) then
@@ -1303,30 +1320,31 @@ contains
              end do
           end if
        end do
-
+    
        ! Sort by age of NN changes, most recent are smallest values
        allocate(sorted(selectlist(surface)%N))
        allocate(sindex(selectlist(surface)%N))
        sorted = selectlist(surface)%int(5,1:selectlist(surface)%N)
-
+       
        call insertion_sort(sorted, sindex)
 
        i = 1
-       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms)
+       !do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms) !CHIARINA
+       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N)
           age = sorted(i)
           write (line, '(a,i0)') '  Selecting changed_nn age ', age
           call print(line)
-
+          
           do while(i <= selectlist(surface)%N)
              if (sorted(i) /= age) exit
              call append(new_embed(surface), selectlist(surface)%int(1:4,sindex(i)))
              i = i + 1
           end do
-
+          
           write (line,'(a,i0,a,i0,a)') 'Surface ',surface,' Now embedding ', new_embed(surface)%N, ' atoms'
           call print(line)
        end do
-
+       
        deallocate(sorted)
        deallocate(sindex)
 
@@ -1342,13 +1360,13 @@ contains
        if (is_in_array(new_embed(2)%int(1,1:new_embed(2)%N), old_embed%int(1,i))) &
             call append(embedlist, old_embed%int(:,i))
     end do
-
+    
     ! Add atoms inside inner surface
     do i=1,new_embed(1)%N
        if (.not. is_in_array(embedlist%int(1,1:embedlist%N), new_embed(1)%int(1,i))) &
             call append(embedlist, new_embed(1)%int(1,i))
     end do
-
+    
     call Print('Embedding '//embedlist%N//' atoms.')
 
     call finalise(old_embed)
@@ -1413,6 +1431,25 @@ contains
     call Print('Crack position = '//crack_pos)
     call set_value(at%params, 'CrackPos', crack_pos)
 
+    !CHIARINA
+    !if there is a dislo_seed, add qm atoms around the dislocation core
+    !call allocate(temptable, 4,0,0,0)
+    !dislo_seed = params%crack_dislo_seed
+    if (dislo_seed .ne. 0) then
+    !   call print('DISLOCATION: adding atoms around the core '//dislo_seed)
+    !   call print('atoms in embedlist before = '//embedlist%N)
+    !   call bfs_grow(at, temptable, dislo_seed, 2,nneighb_only=.false.,min_images_only=.false.)
+    !   temp_N = temptable%N
+    !   call print('found '//temp_N//' extra qm atoms')
+       do i = 1, temp_N
+          if (.not.Is_In_Array(int_part(embedlist,1),temptable%int(1,i))) then
+             call append(embedlist,temptable%int(1,i))
+          endif
+       enddo
+       call print('atoms in the embedlist after = '//embedlist%N)
+     endif
+    !CHIARINA
+
     ! Copy embedlist to 'hybrid' property
     hybrid = 0
     hybrid(int_part(embedlist,1)) = 1
@@ -1442,11 +1479,11 @@ contains
 
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_crack_pos: "OrigWidth" parameter missing from atoms')
-
+    
     crack_pos = -orig_width
     crack_tip_atom = 0
     do i=1,at%N
-       if (nn(i) == params%md_eqm_coordination) cycle
+       if (nn(i) >= params%md_eqm_coordination) cycle  !CHIARINA >= invece di ==
        if (edge_mask(i) == 1) cycle
        if (at%pos(1,i) > crack_pos) then
           crack_pos = at%pos(1,i)
