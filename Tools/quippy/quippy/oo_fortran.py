@@ -528,6 +528,8 @@ def wrapmod(modobj, moddoc, short_names, params):
       # if there's just one routine we want to copy the docstring
       for name,value in interfaces.iteritems():
          if name.lower() == 'initialise': name = '__init__'
+         if name in py_keywords: name = name + '_'
+
          if len(value) > 1: 
              new_cls._interfaces[name] = value
          else:
@@ -539,8 +541,10 @@ def wrapmod(modobj, moddoc, short_names, params):
          if hasattr(new_cls, intf):
             setattr(new_cls,intf+'_', getattr(new_cls, intf))
 
-         func = wrapinterface(intf)
          docname = intf
+         if docname.endswith('_'): docname=docname[:-1]
+
+         func = wrapinterface(intf)
          if intf == '__init__': docname = 'initialise'
          doc = '\n'.join(moddoc['interfaces'][docname]['doc']) + '\n\n'
          
