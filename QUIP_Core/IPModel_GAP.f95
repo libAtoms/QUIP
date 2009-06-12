@@ -171,8 +171,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
 #ifdef HAVE_GP
-  call initialise(f_hat,this%j_max,this%z0)
-  if(present(f)) call initialise(df_hat,this%j_max,this%z0)
+  call initialise(f_hat,this%j_max,this%z0,this%cutoff)
+  if(present(f)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
   d = j_max2d(this%j_max)
 #endif
 
