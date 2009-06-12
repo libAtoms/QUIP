@@ -559,8 +559,12 @@ real(dp) :: pot
            f0 = f0 + add_force
            deallocate(add_force)
         endif
-        call QUIP_combine_forces(f1,f0,f,ds%atoms)
-     else
+        if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
+           f = sum0(f1)
+        else
+           call QUIP_combine_forces(f1,f0,f,ds%atoms)
+        endif
+     else !no 2nd run, f = f1
         if (origin_centre.and.use_spline) then
            f = sum0(f1+add_force)
            deallocate(add_force)
@@ -709,8 +713,12 @@ real(dp) :: pot
            f0 = f0 + add_force
            deallocate(add_force)
         endif
-        call QUIP_combine_forces(f1,f0,f,ds%atoms)
-     else
+        if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
+           f = sum0(f1)
+        else
+           call QUIP_combine_forces(f1,f0,f,ds%atoms)
+        endif
+     else !no 2nd run, f = f1
         if (origin_centre.and.use_spline) then
            f = sum0(f1+add_force)
            deallocate(add_force)
