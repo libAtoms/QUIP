@@ -670,6 +670,7 @@ real(dp) :: pot
         endif
      endif
 
+     empty_QM_core = .false.
      if (origin_centre) then
         qm_flag_index = get_property(ds%atoms,'QM_flag')
         if (.not.any(ds%atoms%data%int(qm_flag_index,1:ds%atoms%N).eq.1)) empty_QM_core = .true.
