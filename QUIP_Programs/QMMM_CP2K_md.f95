@@ -139,6 +139,7 @@ program qmmm_md
   real(dp)                    :: spline_dpot
   logical                     :: use_spline
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
+  integer :: max_n_steps
 integer :: pot_index
 real(dp) :: pot
 
@@ -181,6 +182,7 @@ real(dp) :: pot
       call param_register(params_in, 'spline_to', '0.0', spline_to)
       call param_register(params_in, 'spline_dpot', '0.0', spline_dpot)
       call param_register(params_in, 'use_spline', 'F', use_spline)
+      call param_register(params_in, 'max_n_steps', '-1', max_n_steps)
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
 
@@ -517,10 +519,10 @@ real(dp) :: pot
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
         args_str=trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='// &
-	  trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	  trim(PSF_Print)
      else
         args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)// &
-	  ' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	  ' PSF_Print='//trim(PSF_Print)
      endif
      call print_qm_region(ds%atoms)
      call calc(CP2K_potential,ds%atoms,e=energy,f=f1,args_str=args_str)
@@ -548,9 +550,9 @@ real(dp) :: pot
      if (Run_Type_2.ne.NONE_RUN) then
         if (Topology_Print.ne.0) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
-           write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	   args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
         else
-           write (args_str,'(a)') 'Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	   args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
         endif
         call print_qm_region(ds%atoms)
         call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
@@ -604,10 +606,9 @@ real(dp) :: pot
 
     call system_timer('step')
 
-
 !LOOP - force calc, then VV-2, VV-1
 
-  do while (ds%t < (Equilib_Time + Run_Time))
+  do while (ds%t < (Equilib_Time + Run_Time) .and. ((max_n_steps < 0) .or. (n < max_n_steps)))
 
     call system_timer('step')
      n = n + 1
@@ -675,9 +676,9 @@ real(dp) :: pot
      endif
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
-        write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
      else
-        write (args_str,'(a)') 'Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+	args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(PSF_Print)
      endif
      call print_qm_region(ds%atoms)
      call calc(CP2K_potential,ds%atoms,e=energy,f=f1,args_str=args_str)
@@ -702,9 +703,9 @@ real(dp) :: pot
      if (Run_Type_2.ne.NONE_RUN) then
         if (Topology_Print.ne.TOPOLOGY_NO_PSF) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
-           write (args_str,'(a)') 'Run_Type=MM PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
         else
-           write (args_str,'(a)') 'Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)//' cp2k_program=cp2k_serial'
+           args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
         endif
 	call print_qm_region(ds%atoms)
         call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
