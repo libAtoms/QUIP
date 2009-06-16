@@ -149,6 +149,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer :: d, i, j, k, n, nei_max, jn
 
+  integer, dimension(3) :: shift
+
 #ifdef HAVE_GP
   type(fourier_so4) :: f_hat
   type(grad_fourier_so4) :: df_hat
@@ -160,19 +162,19 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if (present(local_e)) local_e = 0.0_dp
   if (present(virial)) virial = 0.0_dp
   if (present(f)) then 
-     if(size(f,1) .ne. 3 .or. size(f,2) .ne. at%N) call system_abort('IPModel_GAP_Calc: f is the wrong size')
+     call check_size('Force',f,(/3,at%N/),'IPModel_GAP_Calc')
      f = 0.0_dp
   end if
 
   ! no forces or virials for now
-  if(present(virial)) &
-       call system_abort('IPModel_GAP_Calc: no virials yet!')
+!  if(present(virial)) &
+!       call system_abort('IPModel_GAP_Calc: no virials yet!')
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
 #ifdef HAVE_GP
   call initialise(f_hat,this%j_max,this%z0,this%cutoff)
-  if(present(f)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
+  if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
   d = j_max2d(this%j_max)
 #endif
 
@@ -192,7 +194,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      call fourier_transform(f_hat,at,i)
      call calc_bispectrum(bis,f_hat)
      call bispectrum2vec(bis,vec(:,i))
-     if(present(f)) then
+     if(present(f).or.present(virial)) then
         do n = 0, atoms_n_neighbours(at,i)
            call fourier_transform(df_hat,at,i,n)
            call calc_bispectrum(dbis,f_hat,df_hat)
@@ -211,7 +213,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
         if(present(local_e)) local_e(i) = e_i
      endif
 
-     if(present(f)) then
+     if(present(f).or.present(virial)) then
         do k = 1, 3
            f_gp = 0.0_dp
            !kk = (i-1)*3 + k
@@ -222,17 +224,20 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 #endif
            f_gp = f_gp - f_gp_k
        
+           if( present(virial) ) virial(:,k) = virial(:,k) - f_gp_k*at%pos(:,i)
+
            do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,jn=jn)
+              j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
 #ifdef HAVE_GP
               call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j))
 #endif
               !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
               f_gp = f_gp - f_gp_k
+              if( present(virial) ) virial(:,k) = virial(:,k) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
            enddo
        
-           f(k,i) = f_gp
+           if(present(f)) f(k,i) = f_gp
         enddo
      endif
   enddo
