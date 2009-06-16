@@ -44,7 +44,7 @@ program cp2k_filepot
     !read parameters
     call initialise(params_in)
     call param_register(params_in, 'Run_Type', 'MM', Run_Type)
-    call param_register(params_in, 'Print_PSF', 'NO_PSF', Print_PSF)
+    call param_register(params_in, 'PSF_Print', 'NO_PSF', Print_PSF)
     call param_register(params_in, 'coord_file', 'filepot.0.xyz',coord_file) 
     call param_register(params_in, 'new_coord_file', 'filepot.0.out',new_coord_file) 
     call param_register(params_in, 'cp2k_program', 'cp2k_serial',cp2k_program) 
@@ -64,7 +64,7 @@ program cp2k_filepot
     !print parameters
     call print('Run parameters:')
     call print('  Run_Type '//trim(Run_Type))
-    call print('  Print_PSF '//trim(Print_PSF))
+    call print('  PSF_Print '//trim(Print_PSF))
     call print('  coord_file '//trim(coord_file))
     call print('  new_coord_file '//trim(new_coord_file))
     call print('  cp2k_program '//trim(cp2k_program))
