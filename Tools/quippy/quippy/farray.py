@@ -30,7 +30,10 @@ def farray(seq):
     >>> fa = farray([1,2,3])
 
     A copy of the data in seq will be made if necessary."""
-    return FortranArray(numpy.array(seq,order='F'))
+    na = numpy.array(seq,order='F')
+    if isinstance(seq,tuple) or isinstance(seq,list):
+        na = na.transpose()
+    return FortranArray(na)
 
 def fidentity(n):
     """Return the n dimensional identity matrix."""
@@ -71,8 +74,8 @@ class FortranArray(numpy.ndarray):
     iterator is still indexed from zero."""
 
     def __array_finalize__(self, obj):
-        self.rows = self.row_iter()
         self.cols = self.col_iter()
+        self.rows = self.row_iter()
         self._mapcache = {}
         self.transpose_on_print = getattr(obj, 'transpose_on_print', False)
 
@@ -83,16 +86,39 @@ class FortranArray(numpy.ndarray):
 
         If doc is not None, docstring of new array is set to doc."""
 
-	self = numpy.asarray(input_array).view(FortranArray)
+	self = numpy.asarray(input_array)
+
+        if isinstance(input_array,tuple) or isinstance(input_array,list):
+            self = self.transpose()
+
+        self = self.view(FortranArray)
         
         if doc is not None:
             self.__doc__ = doc
 
-        self.rows = self.row_iter()
         self.cols = self.col_iter()
+        self.rows = self.row_iter()
         self._mapcache = {}
         self.transpose_on_print = transpose_on_print
 	return self
+
+    def __eq__(self, other):
+        return numpy.ndarray.__eq__(self, other).view(FortranArray)
+
+    def __ne__(self, other):
+        return numpy.ndarray.__ne__(self, other).view(FortranArray)
+
+    def __lt__(self, other):
+        return numpy.ndarray.__lt__(self, other).view(FortranArray)
+
+    def __gt__(self, other):
+        return numpy.ndarray.__gt__(self, other).view(FortranArray)
+
+    def __le__(self, other):
+        return numpy.ndarray.__le__(self, other).view(FortranArray)
+
+    def __ge__(self, other):
+        return numpy.ndarray.__ge__(self, other).view(FortranArray)
 
     @staticmethod
     def map_int(idx):
@@ -109,6 +135,10 @@ class FortranArray(numpy.ndarray):
         indx can be any object that can be used to subscript
         an ndarray - scalar integer or slice, sequence of integers and
         slices or an ndarray of integer or boolean kind."""
+
+
+        def nested(L):
+            return [x for x in L if isinstance(x,list)] != []
 
 ##         hindx = indx
 ##         if isinstance(indx, slice):
@@ -164,16 +194,32 @@ class FortranArray(numpy.ndarray):
                     raise ValueError('Advanced slicing array must be integer or boolean')
             elif idx is Ellipsis or idx is None:
                 nindx.append(idx)
+            elif isinstance(idx, list):
+                islist = True
+                if 0 in idx: raise ValueError('Advanced slicing list must not contain index 0')
+                nindx.append([FortranArray.map_int(i) for i in idx])
             else:
                 raise ValueError('Unknown index object %r' % (idx,))
 
         if one_dim:
-            res = nindx[0]
+            if len(self.shape) > 1:
+                res = (Ellipsis,nindx[0])
+            else:
+                res = nindx[0]
         else:
             if islist:
-                res = nindx
+                if not Ellipsis in nindx:
+                    if nested(nindx):
+                        res = [Ellipsis] + nindx
+                    else:
+                        res = [Ellipsis] + [nindx]
+                else:
+                    res = nindx
             else:
-                res = tuple(nindx)
+                if len(self.shape) > len(nindx):
+                    res = tuple([Ellipsis] + nindx)
+                else:
+                    res = tuple(nindx)
 
 ##         self._mapcache[hindx] = res
         return res
@@ -189,30 +235,37 @@ class FortranArray(numpy.ndarray):
 
     def __setitem__(self, indx, value):
         "Overloaded __setitem__ which accepts one-based indices."
-        if not isinstance(indx, slice) and not (hasattr(indx, '__iter__') and any([isinstance(x,slice) for x in indx])):
-            # if indx contains a slice then __getitem__ will be called and mapping will be done twice
-            indx = self.mapindices(indx)
-	numpy.ndarray.__setitem__(self, indx, value)
 
+        domap = True
+        if isinstance(indx, slice): domap = False
+        if indx is Ellipsis: domap = False
+
+        if hasattr(indx, '__iter__'):
+            if any([isinstance(x,slice) or x is Ellipsis for x in indx]): domap = False
+            if len(indx) != len(self.shape): domap = False
+        elif isinstance(indx, int):
+            if len(self.shape) != 1:
+                domap = False
+                indx = (Ellipsis, indx)
+        
+        if domap:
+            indx = self.mapindices(indx)
+            
+	numpy.ndarray.__setitem__(self, indx, value)
 
     def __getslice__(self, i, j):
         "Overloaded __getslice__ which accpepts one-based indices."
         if i != 0:
             i = FortranArray.map_int(i)
-        if j != sys.maxint:
-            j = FortranArray.map_int(j)
         obj = numpy.ndarray.__getslice__(self, i, j)
         if isinstance(obj, numpy.ndarray):
             fa = obj.view(FortranArray)
             return fa
-        return obj
 
     def __setslice__(self, i, j, value):
         "Overloaded __setslice__ which accpepts one-based indices."
         if i != 0:
             i = FortranArray.map_int(i)
-        if j != sys.maxint:
-            j = FortranArray.map_int(j)
         numpy.ndarray.__setslice__(self, i, j, value)
 
     def nonzero(self):
@@ -229,21 +282,25 @@ class FortranArray(numpy.ndarray):
         """Return one-based indices of the minimum values along the given  axis of `a`.
         
         Refer to `numpy.ndarray.argmax` for detailed documentation."""
-
+	if axis is not None and axis > 0:
+	    axis -= 1
 	return numpy.ndarray.argmin(self,axis,out) + 1
 
     def argmax(self, axis=None, out=None):
         """Return one-based indices of the maximum values along the given axis of `a`.
         
         Refer to `numpy.ndarray.argmax` for detailed documentation."""
-
+	if axis is not None and axis > 0:
+	    axis -= 1
 	return numpy.ndarray.argmax(self,axis,out) + 1	
 
-    def argsort(self, axis=-1, kind='quicksort', order=None):
+    def argsort(self, axis=None, kind='quicksort', order=None):
         """Returns the indices that would sort this array.
         
         Refer to `numpy.argsort` for full documentation."""
 
+        if axis is not None and axis > 0:
+            axis -= 1
 	return numpy.ndarray.argsort(self,axis,kind,order) + 1
 
     def take(self, indices, axis=None, out=None, mode='raise'):
@@ -252,6 +309,8 @@ class FortranArray(numpy.ndarray):
         
         Refer to `numpy.take` for full documentation."""
 
+        if axis is not None and axis > 0:
+            axis -= 1
 	return numpy.ndarray.take(self,self.mapindices(indices),
 				  axis,out,mode)
 		
@@ -292,12 +351,12 @@ class FortranArray(numpy.ndarray):
         Calls fast ndarray.__iter__ for a 1D array."""
 
         if len(self.shape) > 1:
-            return self.row_iter()
+            return self.col_iter()
         else:
             return numpy.ndarray.__iter__(numpy.asarray(self).view(numpy.ndarray))
 
 
-    def col_iter(self):
+    def row_iter(self):
         """Iterate over this FortranArray treating first dimension as fastest varying"""
         if self.shape == ():
             yield self.item()
@@ -328,28 +387,24 @@ class FortranArray(numpy.ndarray):
         elif len(self.shape) == 0:
             return self.item()
         else:
-            raise ValueError("Don't know how to take norm of array with shape %s" % self.shape)
+            raise ValueError("Don't know how to take norm2 of array with shape %s" % str(self.shape))
             
 
     def norm(self):
        "Return sqrt(norm2(a))"
        return numpy.sqrt(self.norm2())
 
-    def row_iter(self):
-        """Iterator for MxN arrays to return rows [:,i] for i=1,N one by one as Mx1 arrays."""
+    def col_iter(self):
+        """Iterator for MxN arrays to return cols [...,i] for i=1,N one by one as Mx1 arrays."""
         if self.shape == ():
             yield self.item()
         else:
             for i in frange(self.shape[-1]):
-                obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1))
-                if (isinstance(obj, numpy.ndarray) and obj.dtype.isbuiltin):
-                    fa = obj.view(FortranArray)
-                    yield fa
-                else:
-                    yield obj
+                obj = numpy.ndarray.__getitem__(self, (Ellipsis, i-1)).view(FortranArray)
+                yield obj
 
     def all(self, axis=None, out=None):
-	if axis is not None:
+	if axis is not None and axis > 0:
 	    axis -= 1
 	obj = numpy.ndarray.all(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
@@ -357,7 +412,7 @@ class FortranArray(numpy.ndarray):
         return obj
 
     def any(self, axis=None, out=None):
-	if axis is not None:
+	if axis is not None and axis > 0:
 	    axis -= 1
 	obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
         if isinstance(obj, numpy.ndarray):
@@ -371,7 +426,9 @@ class FortranArray(numpy.ndarray):
         """
 
         if self.dtype.kind != 'S': raise ValueError('dtype.kind must be "S"')
-        if len(self.shape) == 1:
+        if len(self.shape) == 0:
+            return self.item()
+        elif len(self.shape) == 1:
             return ''.join(self).strip()
         else:
             return [''.join(x).strip() for x in self]
