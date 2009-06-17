@@ -225,7 +225,7 @@ class CastepCell(OrderedDict):
          raise ValueError('cell is missing POSITIONS_ABS block')
       
       result = Atoms(n=len(self['POSITIONS_ABS']),lattice = \
-                     farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]).T)
+                     farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
       
       field_list = [line.split() for line in self['POSITIONS_ABS']]
 
@@ -235,12 +235,10 @@ class CastepCell(OrderedDict):
       elements = [ el.isdigit() and ElementName[int(el)] or el \
                    for el in elements ]
 
-      print elements
-
       # Set the element and pos data
       result.species[:] = elements
       result.pos[:,:] = farray([ [float(x) for x in row] \
-                                 for row in [field[1:4] for field in field_list]]).T
+                                 for row in [field[1:4] for field in field_list]])
       return result
 
 
@@ -408,12 +406,12 @@ def read_geom():
    # Lattice is next, in units of Bohr
    lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
    lattice = farray([ [float(x)* BOHR_TO_ANG for x in row[0:3]]
-                      for row in map(string.split, lattice_lines) ]).T
+                      for row in map(string.split, lattice_lines) ])
 
    # Then optionally stress tensor (FIXME: units)
    stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
    params['stress'] = farray([ [float(x) for x in row[0:3]]
-                               for row in map(string.split, stress_lines) ]).T
+                               for row in map(string.split, stress_lines) ])
 
    # Find positions and forces
    poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -429,12 +427,12 @@ def read_geom():
    field_list = [line.split() for line in poslines]
    result.species[:] = farray(map(operator.itemgetter(0), field_list))
    result.pos[:,:] = farray([ [float(x)* BOHR_TO_ANG for x in row] \
-                      for row in [field[2:5] for field in field_list]]).T
+                      for row in [field[2:5] for field in field_list]])
 
    # And finally the forces, which are in units of hartree/bohr
    field_list = [line.split() for line in forcelines]
    force = farray([ [float(x)*HARTREE_TO_EV/BOHR_TO_ANG for x in row] \
-                      for row in [field[2:5] for field in field_list]]).T
+                      for row in [field[2:5] for field in field_list]])
    result.add_property('force', force)
    result.force[:] = force
 
@@ -494,7 +492,7 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    R1 = map(float, lattice_lines[0].split()[0:3])
    R2 = map(float, lattice_lines[1].split()[0:3])
    R3 = map(float, lattice_lines[2].split()[0:3])
-   lattice = farray([R1,R2,R3]).T
+   lattice = farray([R1,R2,R3])
    
    try:
       cell_first_line = castep_output.index('                                     Cell Contents\n')
@@ -536,7 +534,7 @@ def read_castep_output(castep_file, cluster=None, abort=True):
       cluster.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
 
    # Calculate cartesian postions from fractional positions
-   cluster.pos[:] = farray([ dot(cluster.frac_pos[:,i],cluster.lattice) for i in range(cluster.n) ]).T
+   cluster.pos[:] = farray([ dot(cluster.frac_pos[:,i],cluster.lattice) for i in range(cluster.n) ])
 
    if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
       energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
