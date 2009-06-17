@@ -349,15 +349,15 @@ class FortranDerivedType(object):
            # Check keyword arguments, if incompatible continue to next
            # candidate interface
            if kwargs:
-               innames = [badnames.get(x['name'],x['name']) for x in oblig_inargs + opt_inargs]
+               innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
 
-           if not all([key in innames[len(args):] for key in kwargs.keys()]):
-               logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys, innames[len(args):]))
+           if not all([key.lower() in innames[len(args):] for key in kwargs.keys()]):
+               logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
                continue
 
            try:
                for key, arg in kwargs.iteritems():
-                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']) == key]
+                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == key.lower()]
                    if not type_is_compatible(inarg, arg):
                        logging.debug('Types and dimensions of kwarg %s incompatible' % key)
                        raise ValueError
@@ -379,10 +379,7 @@ def wrap_all(topmod, spec, mods, short_names):
    params = {}
 
    for mod in mods:
-       try:
-           fmod = getattr(topmod, mod)
-       except AttributeError:
-           fmod = None
+       fmod = getattr(topmod, mod)
        logging.debug('Module %s' % mod)
        fmod.__doc__ = spec[mod]['doc']
        classes, routines, params = wrapmod(fmod, spec[mod],
