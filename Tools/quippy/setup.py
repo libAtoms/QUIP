@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from numpy.distutils.core import setup, Extension
+from numpy.distutils.core import setup, Extension, Command
 from numpy.distutils.system_info import get_info
 from numpy.distutils.misc_util import dict_append
 from numpy.distutils.ccompiler import new_compiler, gen_preprocess_options 
@@ -12,6 +12,7 @@ from numpy import get_include
 from distutils.command.clean import clean as _clean
 import sys, os, cPickle, glob, stat, subprocess
 import f90doc
+from unittest import TestLoader, TextTestRunner
 
 print sys.argv
 
@@ -34,6 +35,36 @@ class clean(_clean):
 
         remove_tree(build_base)
 
+
+class TestCommand(Command):
+    user_options = [ ]
+
+    def initialize_options(self):
+        self._dir = os.getcwd()
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        '''
+        Finds all the tests modules in tests/test*.py, and runs them.
+        '''
+        testfiles = [ ]
+        for t in glob.glob(os.path.join(self._dir, 'tests', 'test*.py')):
+            if not t.endswith('__init__.py'):
+                testfiles.append('.'.join(
+                    ['tests', os.path.splitext(os.path.basename(t))[0]])
+                )
+
+        save_path = sys.path[:]
+        if '' in sys.path: sys.path.remove('')
+        if self._dir in sys.path: sys.path.remove(self._dir)
+
+        tests = TestLoader().loadTestsFromNames(testfiles)
+        t = TextTestRunner(verbosity = 3)
+        t.run(tests)
+
+        sys.path = save_path
 
 def SourceImporter(infile, defines, include_dirs, cpp):
     """Import source code from infile and copy to build_dir/package,
@@ -372,7 +403,7 @@ setup(name='quippy',
       packages = ['quippy'],
       ext_modules = exts,
       data_files = [('quippy',data_files)],
-      cmdclass = {'clean':clean},
+      cmdclass = {'clean':clean, 'test': TestCommand},
       version=os.popen('svnversion -n .').read(),
       description='Python bindings to QUIP code',
       author='James Kermode',
