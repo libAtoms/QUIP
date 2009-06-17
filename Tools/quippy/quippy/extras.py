@@ -260,6 +260,12 @@ class Table(FortranTable):
       t.logical[...] = self.logical[...]
       return t
 
+   def __eq__(self, other):
+      return self.equal(other)
+
+   def __ne__(self, other):
+      return not self.equal(other)
+
    def equal(self, other):
       for t1, t2 in zip((self.n,  self.intsize,  self.realsize,  self.strsize,  self.logicalsize),
                         (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
