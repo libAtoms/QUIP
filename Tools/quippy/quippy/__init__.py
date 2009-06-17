@@ -60,4 +60,5 @@ ElementCovRad = dict(zip(ElementName,ElementCovRad))
 
 import atomeye, castep
 
-from util import *
+from paramreader import *
+
