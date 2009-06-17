@@ -182,6 +182,8 @@ class Dictionary(DictMixin, FortranDictionary):
       if 'keys' in self._arrays:
          self._arrays['_keys'] = self._arrays['keys']
          del self._arrays['keys']
+         del self.keys
+         self._update()
 
    def keys(self):
       new_hash = hashlib.md5(self._keys).hexdigest()
