@@ -583,6 +583,9 @@ contains
     ! Find rightmost undercoordinated atoms in bulk - this is initial crack tip position
     crack_pos = crack_find_crack_pos(crack_slab, params)
 
+    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+         old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
+
     ! clear changed_nn, hybrid and hybrid_mark 
     hybrid(:) = 0
     hybrid_mark(:) = 0
