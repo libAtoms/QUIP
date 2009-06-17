@@ -2,6 +2,7 @@ from quippy import *
 from math import ceil
 import time
 from pylab import *
+from StringIO import StringIO
 
 def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
    """Primitive 9-atom orthorhombic alpha quartz cell"""
@@ -133,7 +134,7 @@ def force_test(at, p, dx=1e-4):
    return analytic_f, num_f, analytic_f - num_f
 
 
-if __name__ == '__main__':
+def timing_test():
    times = {}
 
    alpha = 0.0
@@ -270,3 +271,459 @@ if __name__ == '__main__':
       plot(x,y, 'o-')
 
    legend([r'$\alpha=%.2f$ Bohr$^{-1}$ $R=%.2f$ Bohr' % (a, R) for (a,R) in zip(alphas, vectorize(rcut)(alphas))],2)
+
+#################
+
+logical = lambda x: True if x in (1, True, '1', 'True', 't', 'T', '.t.', '.T') else False
+real = lambda s: float(s.replace('d', 'e'))
+
+param_format_traj = [
+   [('mass', real, 'nspecies', False)],
+   [('species', str, 'nspecies', False)],
+   [('nsp', int, 'nspecies', False)],
+   [('tewald', logical, 1, False),('raggio', real, 1, False),('a_ew', real, 1, False),('gcut', real, 1, False),('iesr', int, 3, False),('rcut', real, 4, False)],
+   [('z', real, 'nspecies-1', False)],
+   [('alphaij', real, 'triangle(nspecies)', False)],
+   [('bij', real, 'triangle(nspecies)', False)],
+   [('cij', real, 'triangle(nspecies)', False)],
+   [('dij', real, 'triangle(nspecies)', False)],
+   [('eij', real, 'triangle(nspecies)', False)],
+   [('nij', real, 'triangle(nspecies)', False)],
+   [('b_tt1', real, 'triangle(nspecies)', False)],
+   [('b_tt2', real, 'triangle(nspecies)', False)],
+   [('b_tt3', real, 'triangle(nspecies)', False)],
+   [('d_ms', real, 'triangle(nspecies)', False)],
+   [('gamma_ms', real, 'triangle(nspecies)', False)],
+   [('r_ms', real, 'triangle(nspecies)', False)],
+   [('pol', real, 'nspecies', False)],
+   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False), ('pred_order', int, 1, False)],
+   [('bpol', real, 'triangle(nspecies)', False)],
+   [('cpol', real, 'triangle(nspecies)', False)],
+   [('taimsp', logical, 'nspecies', False),('xgmin', real, 1, False),('xgmax', real, 1, False)],
+   [('adist',   real, 'triangle(nspecies)', False)],
+   [('bdist',   real, 'triangle(nspecies)', False)],
+   [('cdist',   real, 'nspecies', False)],
+   [('ddist',   real, 'triangle(nspecies)', False)],
+   [('sigma1',  real, 'nspecies', False)],
+   [('sigma2',  real, 'nspecies', False)],
+   [('sigma3',  real, 'nspecies', False)],
+   [('sigma4',  real, 'nspecies', False)],
+   [('bu1',     real, 'triangle(nspecies)', False)],
+   [('alphau1', real, 'triangle(nspecies)', False)],
+   [('bu2',     real, 'triangle(nspecies)', False)],
+   [('alphau2', real, 'triangle(nspecies)', False)],
+   [('c_harm',  real, 'triangle(nspecies)', False)],
+   [('rmin', real, 'triangle(nspecies)', False)],
+   [('a_s', real, 1, False),('n_s', real, 1, False),('smooth', logical, 1, False)],
+   [('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False),('tdip_sr', logical, 1, False)]
+   ]
+
+
+param_format_gen = [
+   [('testewald', logical, 1, False), ('time', logical, 1, False), ('tpbc', logical, 1, False), ('tangstrom', logical, 1, False),
+    ('trydberg', logical, 1, False), ('tev', logical, 1, False)],
+   [('nat', int, 1, False), ('nspecies', int, 1, False), ('npar', int, 1, False)],
+   [('ntmin', int, 1, False)],
+   [('nts', int ,'ntmin', False)],
+   [('filepos', str, 1, False)],
+   [('fileforce', str, 1, False)],
+   [('filestress', str, 1, False)],
+   [('filecel', str, 1, False)],
+   [('fileene', str, 1, False)],
+   [('testforce', logical, 1, False), ('ngrid', int, 1, False), ('gridmin1', real, 1, False), ('gridmax1', real, 1, False),
+    ('gridmin2', real, 1, False), ('gridmax2', real, 1, False), ('isp_tf', int, 1, False)],
+   [('tquickpar', logical, 1, False)],
+   [('mass', real, 'nspecies', False)],
+   [('nsp', int, 'nspecies', False)],
+   [('tewald', logical, 1, False),('raggio', real, 1, False),('a_ew', real, 1, False),('gcut', real, 1, False),('iesr', int, 3, False),('rcut', real, 4, False)],
+   [('z', real, 'nspecies-1', False), ('tz', logical, 'nspecies-1', False)],
+   [('alphaij', real, 'triangle(nspecies)', True)],
+   [('bij', real, 'triangle(nspecies)', True)],
+   [('cij', real, 'triangle(nspecies)', True)],
+   [('dij', real, 'triangle(nspecies)', True)],
+   [('eij', real, 'triangle(nspecies)', True)],
+   [('nij', real, 'triangle(nspecies)', True)],
+   [('b_tt1', real, 'triangle(nspecies)', True)],
+   [('b_tt2', real, 'triangle(nspecies)', True)],
+   [('b_tt3', real, 'triangle(nspecies)', True)],
+   [('d_ms', real, 'triangle(nspecies)', True)],
+   [('gamma_ms', real, 'triangle(nspecies)', True)],
+   [('r_ms', real, 'triangle(nspecies)', True)],
+   [('pol', real, 'nspecies', True)],
+   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False)],
+   [('bpol', real, 'triangle(nspecies)', True)],
+   [('cpol', real, 'triangle(nspecies)', True)],
+   [('taimsp', logical, 'nspecies', False),('xgmin', real, 1, False),('xgmax', real, 1, False)],
+   [('adist',   real, 'triangle(nspecies)', True)],
+   [('bdist',   real, 'triangle(nspecies)', True)],
+   [('cdist',   real, 'nspecies', True)],
+   [('ddist',   real, 'triangle(nspecies)', True)],
+   [('sigma1',  real, 'nspecies', True)],
+   [('sigma2',  real, 'nspecies', True)],
+   [('sigma3',  real, 'nspecies', True)],
+   [('sigma4',  real, 'nspecies', True)],
+   [('bu1',     real, 'triangle(nspecies)', True)],
+   [('alphau1', real, 'triangle(nspecies)', True)],
+   [('bu2',     real, 'triangle(nspecies)', True)],
+   [('alphau2', real, 'triangle(nspecies)', True)],
+   [('c_harm',  real, 'triangle(nspecies)', True)],
+   [('rmin', real, 'triangle(nspecies)', False)],
+   [('a_s', real, 1, False),('n_s', real, 1, False),('smooth', logical, 1, False)],
+   [('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False),('tdip_sr', logical, 1, False)]
+   ]
+
+def triangle(n):
+   """Return list of length n which sums to nth triangular number"""
+   res = []
+   for i in range(1,n+1):
+      res.append(i)
+   res.reverse()
+   return res
+
+def inv_trig(t):
+   """Given the nth triangular number t_n, return n by inverting t_n = 1/2 n (n+1)"""
+   return int(0.5*(sqrt(1+8*t)-1))
+
+output_converters = {
+   (real, 'triangle(nspecies)'): lambda v: '\n'.join(['%E '*n for n in triangle(inv_trig(len(v)))]) % tuple(v),
+   int: lambda v: ' '.join(['%d' % x for x in v]),
+   real: lambda v: ' '.join(['%f' % x for x in v]),
+   logical: lambda v: ' '.join(['.t.' if x else '.f.' for x in v]),
+   str: lambda v: ' '.join(v)
+   }
+
+type_map = {}
+for line in param_format_gen:
+   for key, conv, nfields, interleave in line:
+      if (key, conv, nfields) in output_converters:
+         invconv = output_converters[(key, conv, nfields)]
+      elif (conv, nfields) in output_converters:
+         invconv = output_converters[(conv, nfields)]
+      elif conv in output_converters:
+         invconv = output_converters[conv]
+      else:
+         invconv = lambda s: str(s)
+      type_map[key] = (conv, invconv)
+
+def read_traj_gen(format, lines, defaults={}):
+
+   lines = filter(lambda x: not (x.strip().startswith('--') or x.strip().startswith('**') or x.strip().startswith('%%')), lines)
+
+   lengths = [ len(x) for x in format ]
+
+   origlines = lines[:]
+
+   params = defaults.copy()
+   fixed = {}
+   fixed_order = []
+   
+   evaldict = defaults.copy()
+   evaldict['triangle'] = triangle
+   for entries in format:
+      n = 0
+      gotline = False
+      for key, conv, nfields, interleave in entries:
+         if isinstance(nfields, str):
+            nfields = eval(nfields, evaldict)
+
+
+         if isinstance(nfields, list) and len(nfields) != 1:
+            # multiple lines
+
+            if interleave:
+               mylines = lines[:2*len(nfields):2]
+               ilines = lines[1:2*len(nfields):2]
+               del lines[:2*len(nfields)]
+            else:
+               mylines = lines[:len(nfields)]
+               ilines = ['']*len(mylines)
+               del lines[:len(nfields)]
+               
+            for line, iline, nf in zip(mylines, ilines, nfields):
+               fields = line.split()
+               values = [conv(x) for x in fields[:nf]]
+               if key in params:
+                  params[key] = params[key] + values
+                  evaldict[key] = params[key] + values
+               else:
+                  if len(values) == 1: values = values[0]
+                  params[key] = values
+                  evaldict[key] = values
+                  
+               if interleave:
+                  tfields = iline.split()
+                  tvalues = [logical(x) for x in tfields[:nf]]
+
+                  if key in fixed:
+                     fixed[key] += tvalues
+                  else:
+                     fixed_order.append(key)
+                     fixed[key] = tvalues
+                  
+         else:
+            # just one line, possibly multiple values per line
+
+            if not gotline:
+               line = lines[0]
+               del lines[0]
+               if interleave:
+                  iline = lines[0]
+                  del lines[0]
+               gotline = True
+            
+            fields = line.split()
+            values = [conv(x) for x in fields[n:n+nfields]]
+            if len(values) == 1: values = values[0]
+            params[key] = values
+            evaldict[key] = values
+
+            if interleave:
+               tvalues = [logical(x) for x in iline.split()[n:n+nfields]]
+
+               if key in fixed:
+                  fixed[key] += tvalues
+               else:
+                  fixed_order.append(key)
+                  fixed[key] = tvalues
+            
+            n += nfields
+
+   # special case: tz logical option is on same line as z
+   if 'tz' in params:
+      fixed['z'] = [params['tz']]
+      fixed_order.insert(0,'z')
+      del params['tz']
+
+   opt_vars = []
+   for var in fixed_order:
+      if len(fixed[var]) == 1:
+         if fixed[var]: opt_vars.append(var)
+      else:
+         for i,v in enumerate(fixed[var]):
+            if v: opt_vars.append((var, i))
+
+   return params, opt_vars
+
+traj_format_str = """%(mass)s
+%(species)s
+%(nsp)s
+%(tewald)s %(raggio)s %(a_ew)s %(gcut)s %(iesr)s %(rcut)s
+%(z)s
+-------------Alphaij---------------
+%(alphaij)s
+-------------Bij--------------------
+%(bij)s
+---------------Cij------------------
+%(cij)s
+-----------------Dij----------------
+%(dij)s
+---------------Eij------------------
+%(eij)s
+---------------Nij------------------
+%(nij)s
+---------Tang-Toennies-------------
+%(b_tt1)s
+---------Tang-Toennies-------------
+%(b_tt2)s
+---------Tang-Toennies-------------
+%(b_tt3)s
+---------------D_ms----------------
+%(d_ms)s
+---------------Gamma_ms------------
+%(gamma_ms)s
+----------------R_ms---------------
+%(r_ms)s
+--------------Polarization---------
+%(pol)s
+%(betapol)s %(maxipol)s %(tolpol)s %(pred_order)s
+---------------Bpol----------------
+%(bpol)s
+---------------Cpol----------------
+%(cpol)s
+--------Aspherical-Ion-Model-------
+%(taimsp)s %(xgmin)s %(xgmax)s
+-----------Adist-------------------
+%(adist)s
+---------------Bdist---------------
+%(bdist)s
+---------------Cdist---------------
+%(cdist)s
+--------------Ddist----------------
+%(ddist)s
+-------------Sigma1----------------
+%(sigma1)s
+-------------Sigma2----------------
+%(sigma2)s
+------------Sigma3-----------------
+%(sigma3)s
+-------------Sigma4----------------
+%(sigma4)s
+-------------Bu1-------------------
+%(bu1)s
+--------------Alphau1--------------
+%(alphau1)s
+---------------Bu2-----------------
+%(bu2)s
+--------------Alphau2--------------
+%(alphau2)s
+***********Spring Constant*********
+%(c_harm)s
+***********Spring Cutoff***********
+%(rmin)s
+**********Smoothing***************
+%(a_s)s %(n_s)s %(smooth)s
+*************Yukawa***************
+%(yukalpha)s %(yuksmoothlength)s %(tdip_sr)s"""
+
+def param_to_str(format, params):
+
+   out_params = {}
+   
+   for key in params:
+      try:
+         len(params[key])
+         out_params[key] = type_map[key][1](params[key])
+      except TypeError:
+         out_params[key] = type_map[key][1]([params[key]])
+
+   return format % out_params
+
+
+def param_to_xml(params, output, encoding='iso-8859-1'):
+   from xml.sax.saxutils import XMLGenerator
+
+   xml = XMLGenerator(output, encoding)
+   xml.startDocument()
+
+   xml.startElement('ASAP_params', {'cutoff': ' '.join([str(x) for x in params['rcut']]),
+                                    'n_types': str(params['nspecies']),
+                                    'betapol': str(params['betapol']),
+                                    'maxipol': str(params['maxipol']),
+                                    'tolpol': str(params['tolpol']),
+                                    'pred_order': str(params['pred_order']),
+                                    'yukalpha': str(params['yukalpha']),
+                                    'yuksmoothlength': str(params['yuksmoothlength'])})
+   ti_tj_to_index = {}
+   n = 0
+   for ti in range(params['nspecies']):
+      for tj in range(params['nspecies']):
+         if tj > ti: continue
+         ti_tj_to_index[(ti,tj)] = n
+         n += 1
+
+   for ti in range(params['nspecies']):
+      zi = atomic_number_from_symbol(params['species'][ti])
+      xml.startElement('per_type_data', {'type':str(ti+1),
+                                         'atomic_num': str(zi),
+                                         'pol': str(params['pol'][ti]),
+                                         'z': str(params['z'][ti])})
+      xml.endElement('per_type_data')
+      
+      for tj in range(params['nspecies']):
+         if tj > ti: continue
+         idx = ti_tj_to_index[(ti,tj)]
+         zj = atomic_number_from_symbol(params['species'][tj])
+         xml.startElement('per_pair_data', {'atnum_i':str(zi),
+                                            'atnum_j':str(zj),
+                                            'D_ms': str(params['d_ms'][idx]),
+                                            'gamma_ms': str(params['gamma_ms'][idx]),
+                                            'R_ms': str(params['r_ms'][idx]),
+                                            'B_pol': str(params['bpol'][idx]),
+                                            'C_pol': str(params['cpol'][idx]),
+                                            })
+         xml.endElement('per_pair_data')
+         
+   xml.endElement('ASAP_params')
+   xml.endDocument()
+
+def update_vars(params, opt_vars, param_str):
+   out_params = params.copy()
+   opt_values = [real(x) for x in param_str.split()]
+
+   assert(len(opt_values) == len(opt_vars))
+
+   for var, value in zip(opt_vars, opt_values):
+      if isinstance(var, str):
+         if var not in out_params: raise ValueError('var %s missing' % var)
+         print '%s   %f -> %f' % (var, params[var], value)
+         out_params[var] = value
+      else:
+         key, idx = var
+         if key not in out_params: raise ValueError('var %s missing' % key)
+         print '%s[%d] %f -> %f' % (key, idx, params[key][idx], value)
+         out_params[key][idx] = value
+
+   return out_params
+
+
+
+default_params = {'species': ['O', 'Si'],
+                  'pred_order': 2}
+
+type_map['species'] = (str, output_converters[str])
+type_map['pred_order'] = (int, output_converters[int])
+
+
+def try_new_params(task='md'):
+   params = default_params.copy()
+   gen_params, opt_vars = read_traj_gen(param_format_gen, open('gen.in.01').readlines())
+   params.update(gen_params)
+
+   print 'opt_vars = ', opt_vars
+
+   params = update_vars(params, opt_vars, open('parameters').read())
+
+   # fix masses
+   params['mass'] = [ElementMass[x]/MASSCONVERT for x in params['species']]
+
+   # fix charges
+   params['z'] = [params['z'], -2.0*params['z']]
+
+   xml = StringIO()
+   param_to_xml(params, xml)
+
+   print xml.getvalue()
+   
+   p = Potential('IP ASAP', xml.getvalue())
+
+   a = supercell(alpha_quartz_cubic(), 2, 1, 2)
+   a.calc_connect()
+
+   e = farray(0.0)
+   f = fzeros((3,a.n))
+   v = fzeros((3,3))
+   dip = fzeros((3,a.n))
+
+   if task == 'md':
+      ds = DynamicalSystem(a)
+      ds.rescale_velo(300.0)
+      ds.zero_momentum()
+
+      traj = ds.run(p, dt=1.0, n_steps=100, save_interval=1, args_str=args_str({'set_properties':True}))
+      return AtomsList(traj)
+   elif task == 'minim':
+
+      mp = MetaPotential('Simple', p)
+
+      nsteps = mp.minim(a, 'cg', 1e-3, 100, do_pos=True, do_lat=True)
+
+      p.calc(a,e=e,f=f,virial=v,args_str=args_str({'set_properties':True}))
+      a.add_property('force', 0.0, n_cols=3)
+      a.force[:] = f
+      a.params['e'] = e
+
+      return a, v
+
+   elif task == 'singlepoint':
+
+      p.print_()
+      p.calc(a, e=e, f=f, virial=v, args_str="set_properties=T")
+
+      return a, v
+      
+   else:
+      raise ValueError('Unknown task %s' % task)
+
+
+a = try_new_params(task='md')
+
