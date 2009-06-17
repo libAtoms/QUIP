@@ -209,7 +209,10 @@ class FortranDerivedType(object):
  
 
    def __repr__(self):
-       return '%s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
+       if self._fpointer is None:
+           return '%s(fpointer=None, finalise=%d)' % (self.__class__.__name__, self._finalise)
+       else:
+           return '%s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
    def __str__(self):
       items = []
