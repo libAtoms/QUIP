@@ -39,24 +39,24 @@ include 'IPModel_interface.h'
 
 logical, private :: asap_initialised = .false.
 
-integer, private, parameter :: PARAM_LINE_LENGTH = 255, N_PARAM_LINE = 94
-
 public :: IPModel_ASAP
 type IPModel_ASAP
   integer :: n_types = 0, n_atoms = 0
+  real(dp) :: betapol, tolpol, yukalpha, yuksmoothlength
+  integer :: maxipol, pred_order
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
+  real(dp), allocatable, dimension(:) :: pol, z
+  real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
 
-  real(dp) :: cutoff = 0.0_dp
+  real(dp) :: cutoff(4)
 
   character(len=FIELD_LENGTH) :: label
-  character(len=PARAM_LINE_LENGTH) param_lines(N_PARAM_LINE)
-  integer :: n_param_lines = 0, param_col = 1
   type(mpi_context) :: mpi
   logical :: initialised
 
 end type IPModel_ASAP
 
-logical :: parse_in_ip, parse_matched_label, parse_in_ip_params
+logical :: parse_in_ip, parse_matched_label
 type(IPModel_ASAP), pointer :: parse_ip
 
 interface Initialise
@@ -76,6 +76,296 @@ interface Calc
 end interface Calc
 
 contains
+
+#ifdef HAVE_ASAP
+  subroutine asap_singlepoint_init(natoms, nspecies)
+    use atoms
+    use verlet
+    use neighbour 
+    use pot_parameters
+    use stuff 
+    use energy_i
+    use print65
+    use electric_field
+    use nndim
+    use neighbour3
+    use fixpar
+    use distortion, only : taimsp,rmin_aim
+    use thermal_cond
+    use shakes
+    use compress
+    use quench
+    use forcetest
+    use iteration
+    use changepress
+    use metric
+    use netquant
+    use universal
+    use initstuff
+    use plot_efield
+    use polar
+    use structopt
+    use parameters
+    use presstemp
+    use testf
+    use minimiser
+    implicit none
+
+    integer natoms, nspecies
+    integer at0, atf
+    integer i,ix, idebug
+    integer is,js,j
+    character*25 filepos,filecel,cdum
+    integer potkind
+    real*8 dtold,dtnew
+    real*8 ranf
+    logical  tzeroc
+    logical sumewald,always_ew
+    logical always_sr,calc_sr
+    real*8 mass_cel
+    real*8 expf_ist,econs0,econs,TK,pist
+    logical tprintall
+    integer nprintall
+    common/printall/tprintall,nprintall
+    real*8 ht_1(3,3),ht_2(3,3)
+    logical tscaled
+    logical readnat
+    logical texist
+    integer element_to_number
+    integer ios,itmp
+    real*8 dip_perm_tmp(3)
+    integer iun_pos,iun_cel,iun_dip,vacant
+    integer iun_xyz, iun_in
+    logical tpow,tgmin
+
+    nthermo = min(atf-at0+1,nat-1)
+    allocate(mass(nspecies))
+
+    tsinglepoint = .true.
+    idebug = 0 
+    nat = natoms
+    nsp = nspecies
+    at0 = 1
+    atf = nat
+    nobj = 1
+
+    tangstrom = .false.
+    irestart = -1
+    itsave = 0
+    readunit = 90
+    saveunit = 90
+    readnat = .false.
+
+    dtold = 0.0d0
+    dtnew = 0.0d0
+    ntstep = 0
+    iprint = 0
+    iprintxyz = 0
+
+    deltat = dtnew
+
+    tcenter = .false.
+    timposepbc = .false.
+    tremovetrans = .false.
+    treadxyz = .false.
+    tfirst_xyzprint = .true.
+    treadpar = .false.
+    tappendfiles = .false.
+    tstructopt = .false.
+    tsdp = .false.
+    tpbc = .true.
+    tpow = .false.
+    tgmin = .false.
+    testewald = .false.
+    ttime = .false.
+    tforcetest = .false. 
+    tscaled = .false.
+    tangstrom = .false.
+
+    sumewald = .true.
+    allocate(spind(nat),objind(nat),numobj(nobj),numobjsp(nobj,nsp))
+    allocate(z(nsp),bij(nsp,nsp),Cij(nsp,nsp))
+    allocate(Dij(nsp,nsp),alphaij(nsp,nsp))
+    allocate(Eij(nsp,nsp),Nij(nsp,nsp))
+    allocate(pol(nsp),bpol(nsp,nsp),cpol(nsp,nsp))
+    allocate(theta0jik(nsp,nsp,nsp),bjik(nsp,nsp,nsp))
+    allocate(b_tt(3,nsp,nsp),r_ms(nsp,nsp))
+    allocate(gamma_ms(nsp,nsp),d_ms(nsp,nsp))
+    allocate(c_harm(nsp,nsp),rmin(nsp,nsp))
+    allocate(rmin_aim(nsp,nsp))
+    rmin_aim = 0.d0
+    allocate(adist(nsp,nsp),bdist(nsp,nsp))
+    allocate(cdist(nsp),ddist(nsp,nsp))
+    allocate(bu1(nsp,nsp),alphau1(nsp,nsp))
+    allocate(sigma1(nsp),sigma2(nsp),sigma3(nsp),sigma4(nsp))
+    allocate(bu2(nsp,nsp),alphau2(nsp,nsp))
+    allocate(taimsp(nsp))
+    allocate(minr(nsp,nsp),mindistl(nsp,nsp))
+    mindistl = 0.d0
+
+    allocate(s(3,nat),sm(3,nat))
+    allocate(r(3,nat),rm(3,nat))
+    allocate(dt2bym(nat),aumass(nat))
+    allocate(elements(nsp))
+    allocate(aelements(nat))
+    allocate(ielements(nat))
+    nparm = (nsp*nsp*nsp+21*nsp*nsp+28*nsp)/2 + 4*nsp
+    allocate (parf(nparm),tparf(nparm))
+    tgen = .false.
+    testforce = .false.
+    npar = 1
+
+    inquire(file='Permanent_Dipoles',exist=texist)
+    if (texist) then
+       iun_dip = vacant()
+       open(iun_dip,file='Permanent_Dipoles' &
+            ,form='formatted',status='old')
+       allocate(dip_perm(3,nat))
+       dip_perm = 0.0d0
+       ndip_perm = 0
+       total_dip_perm = 0.0d0
+       write(6,'(/," Reading permanent dipoles..")')
+       do 
+          read(iun_dip,*,iostat=ios) dip_perm_tmp,itmp
+          if (ios /= 0) exit
+          dip_perm(:,itmp) = dip_perm_tmp
+          ndip_perm = ndip_perm + 1
+          total_dip_perm = total_dip_perm + dip_perm_tmp
+       enddo
+       write(6,'(/,"There are ",i6," permanent dipoles")'),ndip_perm
+       write(6,'(/,"The sum of the dipoles is ",3(1x,e15.9))') &
+            total_dip_perm
+       tperm_dip = .true.
+    else
+       tperm_dip = .false.
+    endif
+    tprint65 = .false.
+    tenergy_i = .false.
+    tbin65 = .false.
+    iprint65 = 1
+    tzeroc = .false.
+    tcel = .false.
+    tsdc = .false.
+    cell_dir = 3
+    press = 0.0d0
+    mass_cel = 2.0d6
+    press = press / au_to_kbar
+    wc = mass_cel
+    trescale = .false.
+    tnosep = .false.
+    tboltz = .false.
+    tshake = .false.
+    tcompress = .false.
+    tquench = .false.
+    tchangeP= .false.
+    tprintall = .false.
+    tpolwrite = .false.
+    t_therm = .false.
+    tshowforce = .false.
+    tplot_efield = .false.
+    tfirst_efield_plot = .true.
+    ntnlist = (/1,1/)
+    nnatmax = 100000
+    nnatmax_sr = 30000
+    allocate(posobj(3,nobj),velobj(3,nobj),dipobj(3,nobj))
+    allocate(timposepos(nobj),timposevel(nobj),timposedip(nobj))
+    allocate(zerovec(3,nobj),falseimp(nobj))
+    zerovec = 0.0d0!
+
+    falseimp = .false.
+    XNOS2M = 0.D0
+    XNOSM  = 0.D0
+    XNOS0  = 0.D0
+    VRNOS  = 0.D0 
+
+    it = 0
+
+!    write (*,*) 'Initialisation of ASAP potential complete.'
+
+  end subroutine asap_singlepoint_init
+
+  subroutine asap_singlepoint_finalise()
+
+    use atoms
+    use verlet
+    use neighbour 
+    use pot_parameters
+    use stuff 
+    use energy_i
+    use print65
+    use electric_field
+    use nndim
+    use neighbour3
+    use fixpar
+    use distortion, only : taimsp,rmin_aim
+    use thermal_cond
+    use shakes
+    use compress
+    use quench
+    use forcetest
+    use iteration
+    use changepress
+    use metric
+    use netquant
+    use universal
+    use initstuff
+    use plot_efield
+    use polar
+    use structopt
+    use parameters
+    use presstemp
+    use testf
+    use minimiser
+    implicit none
+
+    deallocate(mass,spind,objind,numobj,numobjsp)
+    deallocate(nnlist,nnlist2,nnlist3)
+    deallocate(nnat,nnat2,nnat3,nn_imag)
+    deallocate(nn_imag2,nn_imag3)
+    deallocate(s,sm)
+    deallocate(r,rm)
+    deallocate(Z,bij,Cij)
+    deallocate(Dij,alphaij)
+    deallocate(Eij,Nij)
+    deallocate(pol,bpol,cpol)
+    deallocate(theta0jik,bjik)
+    deallocate(b_tt,r_ms)
+    deallocate(gamma_ms,d_ms)
+    deallocate(c_harm,rmin,rmin_aim)
+    deallocate(adist,bdist,cdist,ddist)
+    deallocate(bu1,alphau1)
+    deallocate(sigma1,sigma2,sigma3,sigma4)
+    deallocate(bu2,alphau2)
+    deallocate(taimsp,minr,mindistl)
+    deallocate(elements)
+    deallocate(aelements)
+    deallocate(ielements)
+    deallocate(dt2bym, aumass)
+    deallocate(parf, tparf)
+    deallocate(posobj,velobj,dipobj)
+    deallocate(timposepos,timposevel,timposedip)
+    deallocate(zerovec,falseimp)
+    if (allocated(dip_perm)) deallocate(dip_perm)
+    if (t_therm) deallocate(nzave,ztempave)
+
+    if (allocated(efield_old)) deallocate(efield_old)
+    if (allocated(efield)) deallocate(efield)
+    if (allocated(fqdip)) deallocate(fqdip)
+    if (allocated(fdipdip)) deallocate(fdipdip)
+    if (allocated(force_ew)) deallocate(force_ew)
+    if (allocated(efield_ew)) deallocate(efield_ew)
+    if (allocated(dip)) deallocate(dip)
+    if (allocated(stress_ew)) deallocate(stress_ew)
+    if (allocated(dip_sr)) deallocate(dip_sr)
+    if (allocated(efield_old)) deallocate(efield_old)
+    if (allocated(force_pol)) deallocate(force_pol)
+    if (allocated(stress_pol)) deallocate(stress_pol)
+    if (allocated(testt)) deallocate(testt)
+
+  end subroutine asap_singlepoint_finalise
+
+#endif
+
 
 subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
   type(IPModel_ASAP), intent(inout) :: this
@@ -120,35 +410,67 @@ subroutine IPModel_ASAP_Finalise(this)
 
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
-
+  if (allocated(this%pol)) deallocate(this%pol)
+  if (allocated(this%z)) deallocate(this%z)
+  if (allocated(this%D_ms)) deallocate(this%D_ms)
+  if (allocated(this%gamma_ms)) deallocate(this%gamma_ms)
+  if (allocated(this%R_ms)) deallocate(this%R_ms)
+  if (allocated(this%B_pol)) deallocate(this%B_pol)
+  if (allocated(this%C_pol)) deallocate(this%C_pol)
   this%n_types = 0
   this%label = ''
 end subroutine IPModel_ASAP_Finalise
 
 
 subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
+#ifdef HAVE_ASAP
+  use neighbour!, only : nsp,nat,iesr,spind,rcut
+  use neighbour3
+  use pot_parameters
+  use logical_stuff
+  use polar
+  use stuff
+  use distortion, only :  xgmin,xgmax,taimsp
+  use parameters
+  use testf
+  use initstuff
+  use atoms
+  use verlet
+  use iteration
+  use nndim
+  use metric
+  use fixpar, only: ntype
+
+  use libAtoms_module, myAtoms => Atoms
+#endif
    type(IPModel_ASAP), intent(inout):: this
-   type(Atoms), intent(inout)      :: at
+   type(myAtoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
 
    type(Dictionary) :: params
-   integer, allocatable :: spind(:)
+   integer, allocatable :: myspind(:)
    real(dp) :: asap_e, asap_stress(3,3)
    real(dp), allocatable :: asap_f(:,:)
-   integer :: i
-   logical :: restart
+   real(dp), pointer :: dipoles_ptr(:,:)
+   integer :: i, ti, tj
+   logical :: do_restart, set_properties
 
-   allocate(asap_f(3,at%N))
-   allocate(spind(at%N))
+   integer species(nat)
+   real(dp) pos(3,nat), cel(3,3), energy, force(3,nat)
+   real(dp) dipoles(3,nat), stress(3,3)
+   integer j, k, nesr
 
 #ifdef HAVE_ASAP
 
+   allocate(asap_f(3,at%N))
+
    call initialise(params)
    this%label=''
-   call param_register(params, 'restart', 'F', restart)
+   call param_register(params, 'restart', 'F', do_restart)
+   call param_register(params, 'set_properties', 'F', set_properties)
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
       call system_abort("IPModel_ASAP_Initialise_str failed to parse args_str="//trim(args_str))
    endif
@@ -162,7 +484,114 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       end if
 
       this%n_atoms = at%n
-      call asap_singlepoint_init(this%n_atoms, this%n_types, this%param_lines)
+      call asap_singlepoint_init(this%n_atoms, this%n_types)
+
+      ! set parameters in ASAP modules
+      tewald = .false.
+      calc_ewald = .false.
+      write_ewald = .false. 
+      read_ewald = .false.
+      write_sr = .false.
+      read_sr= .false.
+      calc_sr=.false.
+      calc_pol = .false.
+      write_pol=.false.
+      read_pol=.false.
+      calc_gvec=.false.
+      write_gvec=.false.
+      read_gvec=.false.
+      write_aim = .false.
+      read_aim= .false.
+      calc_aim=.false.
+      tzvar=.false.
+      tpolvar=.false.
+      tsrvar=.false.
+      tpol=.false.
+      tsr=.false.
+      taim = .false.
+      tz=.false.
+      hafta=.false.
+      tbegin = .true.
+      
+      c_harm = 0.0_dp
+      rmin = 0.0_dp
+
+      nsp = this%n_types
+
+      ! Per type parameters
+      do ti=1,this%n_types
+         mass(ti)     = ElementMass(this%atomic_num(ti))/MASSCONVERT
+         elements(ti) = ElementName(this%atomic_num(ti))
+         z(ti) = this%z(ti)
+         pol(ti) = this%pol(ti)
+         ntype(ti) = count(at%Z == this%atomic_num(ti))
+      end do
+
+      write(6,'(/," Nos of each species:",10i6)') (ntype(i),i=1,nsp)
+      write(6,'(/," Masses :",2(1x,f10.5))') mass
+
+      ! Ewald parameters
+      tewald = .false.
+      raggio = 0.0_dp
+      gcut = 0.0_dp
+      rcut = this%cutoff
+      ! iesr will be computed later from rcut and cell
+      
+      netcharge = 0.0d0
+      do i=1,this%n_types
+         netcharge = netcharge + z(i)*dfloat(ntype(i))
+         if (dabs(z(i)).gt.1.d-10) tz = .true.
+      end do
+      
+      write(6,'(/," Charges : ",100(e13.5))') z
+      write(6,'(/," Net charge ",e13.5)') netcharge
+      write(6,*)
+      
+      ! Short range terms
+      tsr = .true.
+      alphaij = 0.0_dp
+      bij = 0.0_dp
+      cij = 0.0_dp
+      dij = 0.0_dp
+      eij = 0.0_dp
+      nij = 0.0_dp
+      b_tt = 0.0_dp
+      gamma_ms = 0.d0
+      r_ms = 0.0d0
+      d_ms= 0.0d0
+      do ti=1,this%n_types
+         do tj=1,this%n_types
+            d_ms(ti,tj) = this%d_ms(ti,tj)
+            gamma_ms(ti,tj) = this%gamma_ms(ti,tj)
+            R_ms(ti,tj) = this%R_ms(ti,tj)
+         end do
+      end do
+
+      ! Polarisation
+      betapol = this%betapol
+      maxipol = this%maxipol
+      tolpol = this%tolpol
+      pred_order = this%pred_order
+
+      tpol = any(dabs(pol) > 1.0e-6_dp)
+
+      bpol = 0.0_dp
+      cpol = 0.0_dp
+      do ti=1,this%n_types
+         do tj=1,this%n_types
+            bpol(ti,tj) = this%B_pol(ti,tj)
+            cpol(ti,tj) = this%C_pol(ti, tj)
+         end do
+      end do
+
+      ! Smoothing
+      smooth = .false.
+      
+      ! Yukawa parameters
+      yukalpha = this%yukalpha
+      yuksmoothlength = this%yuksmoothlength
+      tdip_sr = .true.
+      
       asap_initialised = .true.
    end if
 
@@ -173,17 +602,73 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
 
    ! ASAP uses atomic units - lengths are in Bohr, energies in Hartree,
    ! forces in Hartree/Bohr and stress in Hartree/Bohr**3
-   call asap_singlepoint_calc(at%pos/BOHR, spind, at%lattice/BOHR, &
-        asap_e, asap_f, asap_stress, restart)
+
+   r(:,:) = at%pos(:,:)/BOHR     !  positions
+   rm(:,:) = at%pos(:,:)/BOHR
+   htm = at%lattice/BOHR             ! lattice
+   ht = at%lattice/BOHR
+   restart = do_restart   ! reset electric field
+   
+   objind = 1
+   numobj(1) = nat
+   ntype = 1
+   numobjsp = 0
+   do i=1,nat
+      ntype(spind(i)) = ntype(spind(i)) + 1
+      numobjsp(1,spind(i)) = numobjsp(1,spind(i)) + 1
+   end do
+
+   call inv3(ht,htm1,omega)
+
+   ! given rcut(1) and lattice, compute iesr
+   call fit_box_in_cell(rcut(1),rcut(1),rcut(1), at%lattice, iesr(1), iesr(2), iesr(3))
+   iesr = iesr/2
+
+   nesr = (2*iesr(1)+1)*(2*iesr(2)+1)*(2*iesr(3)+1)
+   nnatmax = min(nnatmax,nat*nesr)
+   nnatmax = nnatmax + 10
+  
+   if (allocated(nnat)) deallocate(nnat)
+   if (allocated(nnat2)) deallocate(nnat2)
+   if (allocated(nnat3)) deallocate(nnat3)
+   if (allocated(nnlist)) deallocate(nnlist)
+   if (allocated(nnlist2)) deallocate(nnlist2)
+   if (allocated(nnlist3)) deallocate(nnlist3)
+   if (allocated(nn_imag)) deallocate(nn_imag)
+   if (allocated(nn_imag2)) deallocate(nn_imag2)
+   if (allocated(nn_imag3)) deallocate(nn_imag3)
+
+   call label_elements
+   call init
+   call prepare_traj
+
+   if((mod(it,ntnlist(1)).eq.1).or.(ntnlist(1).eq.1)) then
+      call nbrlist(r,nnatmax)
+      call nbrlist3(r)
+      write(*,*) 'Updating neighbour lists 1, 2 and 3',nnatm,nnatm2
+   endif
+
+   if(mod(it,ntnlist(2)).eq.1) then
+      call nbrlist3(r)
+      write(*,*) 'Updating neighbour list 3',nnatm3
+   endif
+
+   call force_ft(asap_e, asap_f, asap_stress, 0)
+   it = it + 1
 
    ! Convert to {eV, A, fs} units
    if (present(e)) e = asap_e*HARTREE
    if (present(f)) f = asap_f*(HARTREE/BOHR)
    if (present(virial)) virial = asap_stress*(HARTREE/(BOHR**3))
+   if (present(local_e)) local_e = 0.0_dp
+
+   if (set_properties) then
+      if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
+      if (.not. assign_pointer(at, 'dipoles', dipoles_ptr)) call system_abort('IPModel_ASAP_calc: assign_pointer dipoles failed')
+      dipoles_ptr = dip
+   end if
    
    deallocate(asap_f)
-   deallocate(spind)
-
 #else
   call system_abort('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1')
 #endif
@@ -195,23 +680,25 @@ subroutine IPModel_ASAP_Print(this, file)
   type(IPModel_ASAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj, i
+  integer :: ti, tj
 
   call Print("IPModel_ASAP : ASAP Potential", file=file)
-  call Print("IPModel_ASAP : n_types = " // this%n_types //" n_atoms = "//this%n_atoms// " cutoff = " // this%cutoff, file=file)
-  call Print("IPModel_ASAP : n_param_lines = " // this%n_param_lines)
-
-  do i=1,this%n_param_lines
-     call print(this%param_lines(i))
-  end do
+  call Print("IPModel_ASAP : n_types = " // this%n_types //" n_atoms = "//this%n_atoms, file=file)
+  call Print("IPModel_ASAP : betapol = "//this%betapol//" maxipol = "//this%maxipol//" tolpol = "//this%tolpol//" pred_order = "//this%pred_order, file=file)
+  call Print("IPModel_ASAP : yukalpha = "//this%yukalpha//" yuksmoothlength = "//this%yuksmoothlength, file=file)
 
   do ti=1, this%n_types
     call Print ("IPModel_ASAP : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
-    call verbosity_push_decrement()
-    call Print ("IPModel_ASAP : " // &
-        "cutoff " // this%cutoff , &
-         file=file)
-    call verbosity_pop()
+    call Print ("IPModel_ASAP : pol = "//this%pol(ti), file=file)
+    call Print ("IPModel_ASAP : z   = "//this%z(ti), file=file)
+   call verbosity_push_decrement()
+    do tj =1,this%n_types
+       call Print ("IPModel_ASAP : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) //&
+            " " // this%atomic_num(tj), file=file)
+       call Print ("IPModel_ASAP : pair " // this%D_ms(ti,tj) // " " // this%gamma_ms(ti,tj) // " " &
+            // this%R_ms(ti,tj) // " " // this%B_pol(ti,tj) // " " // this%C_pol(ti, tj), file=file)
+    end do
+   call verbosity_pop()
   end do
 
 end subroutine IPModel_ASAP_Print
@@ -221,7 +708,6 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
   character(len=*), intent(in) :: param_str
 
   type(xml_t) :: fxml
-  integer i
 
   if (len(trim(param_str)) <= 0) return
 
@@ -229,17 +715,10 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
   parse_matched_label = .false.
   parse_ip => this
 
-  this%n_param_lines = 1
-  this%param_col = 1
-  do i=1,N_PARAM_LINE
-     this%param_lines(i) = repeat(' ',PARAM_LINE_LENGTH)
-  end do
-
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
     startElement_handler = IPModel_startElement_handler, &
-    endElement_handler = IPModel_endElement_handler, &
-    characters_handler = IPModel_character_handler)
+    endElement_handler = IPModel_endElement_handler)
   call close_xml_t(fxml)
 
   if (this%n_types == 0) then
@@ -263,7 +742,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=FIELD_LENGTH) :: value
 
   logical shifted
-  integer ti, tj, i, num_fields
+  integer ti, tj, Zi, Zj
 
   if (name == 'ASAP_params') then ! new ASAP stanza
 
@@ -298,9 +777,43 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       parse_ip%atomic_num = 0
 
+      allocate(parse_ip%pol(parse_ip%n_types))
+      parse_ip%pol = 0.0_dp
+      allocate(parse_ip%z(parse_ip%n_types))
+
+      allocate(parse_ip%D_ms(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%D_ms = 0.0_dp
+      allocate(parse_ip%gamma_ms(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%gamma_ms = 0.0_dp
+      allocate(parse_ip%R_ms(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%R_ms = 0.0_dp
+      allocate(parse_ip%B_pol(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%B_pol = 0.0_dp
+      allocate(parse_ip%C_pol(parse_ip%n_types,parse_ip%n_types))
+      parse_ip%C_pol = 0.0_dp
+
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
+
+      call QUIP_FoX_get_value(attributes, "betapol", value, status)
+      if (status == 0) read (value, *) parse_ip%betapol
+
+      call QUIP_FoX_get_value(attributes, "maxipol", value, status)
+      if (status == 0) read (value, *) parse_ip%maxipol
+
+      call QUIP_FoX_get_value(attributes, "tolpol", value, status)
+      if (status == 0) read (value, *) parse_ip%tolpol
+
+      call QUIP_FoX_get_value(attributes, "pred_order", value, status)
+      if (status == 0) read (value, *) parse_ip%pred_order
+
+      call QUIP_FoX_get_value(attributes, "yukalpha", value, status)
+      if (status == 0) read (value, *) parse_ip%yukalpha
+
+      call QUIP_FoX_get_value(attributes, "yuksmoothlength", value, status)
+      if (status == 0) read (value, *) parse_ip%yuksmoothlength
+
     endif
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
@@ -313,6 +826,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find atomic_num")
     read (value, *) parse_ip%atomic_num(ti)
 
+    call QUIP_FoX_get_value(attributes, "pol", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find pol")
+    read (value, *) parse_ip%pol(ti)
+
+    call QUIP_FoX_get_value(attributes, "z", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find z")
+    read (value, *) parse_ip%z(ti)
+
     if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
     allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
     parse_ip%type_of_atomic_num = 0
@@ -321,39 +842,45 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
-  else if (parse_in_ip .and. name == 'params') then
+  elseif (parse_in_ip .and. name == 'per_pair_data') then
 
-     call Print('entering <params>')
-     parse_in_ip_params = .true.
+    call QUIP_FoX_get_value(attributes, "atnum_i", value, status)
+    if (status /= 0) call system_abort ("IPModel_SW_read_params_xml cannot find atnum_i")
+    read (value, *) Zi
+    call QUIP_FoX_get_value(attributes, "atnum_j", value, status)
+    if (status /= 0) call system_abort ("IPModel_SW_read_params_xml cannot find atnum_j")
+    read (value, *) Zj
+
+    ti = get_type(parse_ip%type_of_atomic_num,Zi)
+    tj = get_type(parse_ip%type_of_atomic_num,Zj)
+
+    call QUIP_FoX_get_value(attributes, "D_ms", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find D_ms")
+    read (value, *) parse_ip%D_ms(ti,tj)
+    call QUIP_FoX_get_value(attributes, "gamma_ms", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find gamma_ms")
+    read (value, *) parse_ip%gamma_ms(ti,tj)
+    call QUIP_FoX_get_value(attributes, "R_ms", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find R_ms")
+    read (value, *) parse_ip%R_ms(ti,tj)
+    call QUIP_FoX_get_value(attributes, "B_pol", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find B_pol")
+    read (value, *) parse_ip%B_pol(ti,tj)
+    call QUIP_FoX_get_value(attributes, "C_pol", value, status)
+    if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find C_pol")
+    read (value, *) parse_ip%C_pol(ti,tj)
+
+    if (ti /= tj) then
+      parse_ip%D_ms(tj,ti) = parse_ip%D_ms(ti,tj)
+      parse_ip%gamma_ms(tj,ti) = parse_ip%gamma_ms(ti,tj)
+      parse_ip%R_ms(tj,ti) = parse_ip%R_ms(ti,tj)
+      parse_ip%B_pol(tj,ti) = parse_ip%B_pol(ti,tj)
+      parse_ip%C_pol(tj,ti) = parse_ip%C_pol(ti,tj)
+    endif
 
   endif
 
 end subroutine IPModel_startElement_handler
-
-subroutine IPModel_character_handler(chars)
-  character(len=*), intent(in) :: chars
-
-  integer :: i, l
-
-  if (parse_in_ip_params) then
-     do i=1,len(chars)
-        if (chars(i:i) == char(10)) then
-           if (i /= 1 .and. i /= len(chars)) then
-              parse_ip%n_param_lines = parse_ip%n_param_lines + 1
-              if (parse_ip%n_param_lines > N_PARAM_LINE) then
-                 call system_abort('IPModel_ASAP: too many param lines '//parse_ip%n_param_lines)
-              end if
-              parse_ip%param_col = 1
-           end if
-        else
-           parse_ip%param_lines(parse_ip%n_param_lines)(parse_ip%param_col:parse_ip%param_col) = chars(i:i)
-           parse_ip%param_col = parse_ip%param_col + 1
-           if (parse_ip%param_col > PARAM_LINE_LENGTH) call system_abort('IPModel_ASAPL: param line too long')
-        end if
-     end do
-  end if
-
-end subroutine IPModel_character_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: URI
@@ -364,12 +891,6 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     if (name == 'ASAP_params') then
       parse_in_ip = .false.
     end if
-    
-    if (name == 'params') then
-       call Print('leaving <params>')
-       parse_in_ip_params = .false.
-    end if
-
   endif
 
 end subroutine IPModel_endElement_handler
