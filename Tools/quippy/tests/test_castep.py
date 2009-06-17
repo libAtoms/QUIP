@@ -3,7 +3,7 @@ from StringIO import StringIO
 import unittest
 import xml.dom.minidom
 
-class TestCastep(unittest.TestCase):
+class TestCastepCell(unittest.TestCase):
    def setUp(self):
       self.cell_lines = """fix_all_cell  TRUE
             
@@ -70,10 +70,15 @@ class TestCastep(unittest.TestCase):
 
    def testto_atoms(self):
       at = self.cell.to_atoms()
-
+      self.assertEqual(at.n, 1)
+      latt_error = at.lattice - farray([[10.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]])
+      self.assertEqual((latt_error < 1e-8).all(), True)
+      
       
 
+def getTestSuite():
+   return unittest.TestLoader().loadTestsFromTestCase(TestCastepCell)
+
 if __name__ == '__main__':
-   #unittest.main()
-   suite = unittest.TestLoader().loadTestsFromTestCase(TestCastep)
+   suite = getTestSuite()
    unittest.TextTestRunner(verbosity=2).run(suite)

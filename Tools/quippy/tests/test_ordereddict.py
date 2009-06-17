@@ -22,6 +22,12 @@ class TestOrderedDict(unittest.TestCase):
       self.assertEqual(odict_copy.keys(), [1,2,3])
       self.assertEqual(odict_copy.values(), ['a','b','c'])
 
+      from copy import copy
+      odict_copy2 = copy(self.odict)
+      self.assertEqual(odict_copy2.keys(), [1,2,3])
+      self.assertEqual(odict_copy2.values(), ['a','b','c'])
+      
+
    def testsetitem(self):
       odict_copy = self.odict.copy()
       odict_copy[4] = 'd'
@@ -44,6 +50,10 @@ class TestOrderedDict(unittest.TestCase):
       self.assertEqual(zip(self.odict.keys(),self.odict.values()),
                        [kv for kv in self.odict.iteritems()])
 
+   def testitems(self):
+      self.assertEqual(zip(self.odict.keys(),self.odict.values()),
+                       self.odict.items())
+
    def testpopitem(self):
       odict_copy = self.odict.copy()
       key, val = odict_copy.popitem()
@@ -51,7 +61,9 @@ class TestOrderedDict(unittest.TestCase):
       self.assertEqual(val, 'c')
       self.assertEqual(odict_copy.keys(), [1,2])
       self.assertEqual(odict_copy.values(), ['a','b'])
-      
+      key, val = odict_copy.popitem()
+      key, val = odict_copy.popitem()
+      self.assertRaises(KeyError, odict_copy.popitem)
 
    def testsetdefault(self):
       odict_copy = self.odict.copy()
@@ -64,9 +76,24 @@ class TestOrderedDict(unittest.TestCase):
       odict_copy.rename(1,4)
       self.assertEqual(odict_copy.keys(), [4,2,3])
       self.assertEqual(odict_copy.values(), ['a','b','c'])
-      
+
+      odict_copy.rename(4,4)
+      self.assertEqual(odict_copy.keys(), [4,2,3])
+
+      self.assertRaises(ValueError, odict_copy.rename, 4, 2)
+
+   def testupdate(self):
+      odict_copy = self.odict.copy()
+
+      odict_copy.update({4:'d'})
+      self.assertEqual(odict_copy.keys(), [1,2,3,4])
+      self.assertEqual(odict_copy.values(), ['a','b','c','d'])
+                                          
+
+
+def getTestSuite():
+   return unittest.TestLoader().loadTestsFromTestCase(TestOrderedDict)
 
 if __name__ == '__main__':
-   #unittest.main()
-   suite = unittest.TestLoader().loadTestsFromTestCase(TestOrderedDict)
+   suite = getTestSuite()
    unittest.TextTestRunner(verbosity=2).run(suite)
