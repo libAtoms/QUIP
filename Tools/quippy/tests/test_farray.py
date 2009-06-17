@@ -362,7 +362,7 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(str(farray('s')), 's')
 
       s2 = farray((('s','1'), ('s','2')))
-      self.assertEqual(str(s2), "['s1', 's2']")
+      self.assertEqual([str(x) for x in s2], ['s1', 's2'])
       
    def testnorm(self):
       self.assertAlmostEqual(farray(1.0).norm(), 1.0)
