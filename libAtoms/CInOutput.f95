@@ -309,6 +309,7 @@ contains
     if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
     if (this%n_frame /= -1) then
+       if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
        if (do_frame < 0 .or. do_frame >= this%n_frame) then
           if (present(status)) then
              call finalise(properties)
