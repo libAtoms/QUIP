@@ -420,7 +420,7 @@ class FortranArray(numpy.ndarray):
         return obj
 
     def stripstrings(self):
-        """Return string or list of strings with trailing spaces removed
+        """Return string or array of strings with trailing spaces removed
 
         Raises ValueError if this FortranArray does not have a string datatype.
         """
@@ -431,6 +431,6 @@ class FortranArray(numpy.ndarray):
         elif len(self.shape) == 1:
             return ''.join(self).strip()
         else:
-            return [''.join(x).strip() for x in self]
+            return farray([''.join(x).strip() for x in self])
 
 
