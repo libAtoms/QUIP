@@ -18,8 +18,8 @@ module elasticity_module
 
 contains
 
-  subroutine metapot_calc_elastic_constants(metapot, at, fd, args_str, c, c0, relax_initial, return_relaxed)
-    type(MetaPotential), intent(inout) :: metapot
+  subroutine metapot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed)
+    type(MetaPotential), intent(inout) :: this
     type(Atoms), intent(inout) :: at !% Atoms object for which to compute $C_{ij}$
     real(dp), intent(in), optional :: fd !% Finite strain to apply. Default $10^{-3}$.
     character(len=*), intent(in), optional :: args_str !% Optional args_str to pass to 'minim'
@@ -49,7 +49,7 @@ contains
 
     if (current_verbosity() > VERBOSE) then
        call verbosity_push_decrement(NERD)
-       call calc(metapot, at_bulk, e=e0, virial=v0)
+       call calc(this, at_bulk, e=e0, virial=v0)
        call verbosity_pop()
        call print("initial config")
        call print_xyz(at_bulk, mainlog)
@@ -60,13 +60,13 @@ contains
 
     if (my_relax_initial) then
        call verbosity_push_decrement(VERBOSE)
-       iter = minim(metapot, at_bulk, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+       iter = minim(this, at_bulk, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
             do_pos=.true., do_lat=.true., args_str=args_str, use_n_minim=.true.)
        call verbosity_pop()
 
        if (current_verbosity() >= VERBOSE) then
           call verbosity_push_decrement(VERBOSE)
-          call calc(metapot, at_bulk, e=e0, virial=v0)
+          call calc(this, at_bulk, e=e0, virial=v0)
           call verbosity_pop()
           call print("relaxed config")
           call print_xyz(at_bulk, mainlog)
@@ -95,7 +95,7 @@ contains
           call set_lattice(at_t, Fp .mult. at_t%lattice)
           at_t%pos = Fp .mult. at_t%pos
           call calc_connect(at_t)
-          call calc(metapot, at_t, e=e0, virial=V0p)
+          call calc(this, at_t, e=e0, virial=V0p)
           call verbosity_push_decrement(VERBOSE)
           call print("plus perturbed config")
           call print_xyz(at_t, mainlog)
@@ -106,12 +106,12 @@ contains
 
           if (present(c)) then
              call verbosity_push_decrement(VERBOSE)
-             iter = minim(metapot, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+             iter = minim(this, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(metapot, at_t, e=e0, virial=Vp)
+             call calc(this, at_t, e=e0, virial=Vp)
              call verbosity_push_decrement(VERBOSE)
              call print("plus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
@@ -125,7 +125,7 @@ contains
           call set_lattice(at_t, Fm .mult. at_t%lattice)
           at_t%pos = Fm .mult. at_t%pos
           call calc_connect(at_t)
-          call calc(metapot, at_t, e=e0, virial=V0m)
+          call calc(this, at_t, e=e0, virial=V0m)
           call verbosity_push_decrement(VERBOSE)
           call print("minus perturbed config")
           call print_xyz(at_t, mainlog)
@@ -136,12 +136,12 @@ contains
 
           if (present(c)) then
              call verbosity_push_decrement(VERBOSE)
-             iter = minim(metapot, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+             iter = minim(this, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(metapot, at_t, e=e0, virial=Vm)
+             call calc(this, at_t, e=e0, virial=Vm)
              call verbosity_push_decrement(VERBOSE)
              call print("minus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
