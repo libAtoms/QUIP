@@ -360,7 +360,8 @@ if do_quippy_extension:
                                                                     'dictionary_t':'FoX_sax'}], 
                                                kindlines=['use system_module, only: dp',
                                                           'use iso_c_binding, only: C_SIZE_T'],
-                                               short_names={'dynamicalsystem':'ds'})
+                                               short_names={'dynamicalsystem':'ds',
+                                                            'metapotential': 'metapot'})
                              ],
                 'library_dirs': library_dirs,
                 'include_dirs': [mod_dir] + include_dirs,
