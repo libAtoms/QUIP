@@ -128,10 +128,6 @@ class Atoms(FortranAtoms):
          
       self._bonds = []
       from matplotlib.lines import Line2D
-      import pylab
-      fig = pylab.gcf()
-      ax = pylab.gca()
-      
       for i in frange(self.n):
          for n in frange(self.n_neighbours(i)):
             if self.is_nearest_neighbour(i, n):
