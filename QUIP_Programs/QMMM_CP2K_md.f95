@@ -346,7 +346,7 @@ real(dp) :: pot
        endif
     endif
     call finalise(my_atoms)
-    if (origin_centre .and. use_spline) call add_property(ds%atoms,'pot',0._dp)
+    call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
     call write_cp2k_info(ds) ! to compare temperature with CP2K
 
 !SET CONSTRAINTS
@@ -608,7 +608,7 @@ real(dp) :: pot
 
 !LOOP - force calc, then VV-2, VV-1
 
-  do while (ds%t < (Equilib_Time + Run_Time) .and. ((max_n_steps < 0) .or. (n < max_n_steps)))
+  do while (ds%t < (Equilib_Time + Run_Time) .and. ((max_n_steps < 0) .or. (n < (max_n_steps-1))))
 
     call system_timer('step')
      n = n + 1
