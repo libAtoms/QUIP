@@ -66,13 +66,29 @@ class TestCastepCell(unittest.TestCase):
       self.assertEqual([line.strip() for line in lines if line.strip() != ''],
                        [line.strip() for line in self.cell_lines if line.strip() != ''])
 
-
-
    def testto_atoms(self):
       at = self.cell.to_atoms()
       self.assertEqual(at.n, 1)
       latt_error = at.lattice - farray([[10.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]])
       self.assertEqual((latt_error < 1e-8).all(), True)
+
+
+   def testbadparseblock(self):
+      bad_lines = """%BLOCK SPECIES_POT
+      %BLOCK LATTICE_CART
+      H  H_00PBE.usp
+      C  C_00PBE.usp
+      %ENDBLOCK SPECIES_POT
+      """.split("\n")
+      self.assertRaises(ValueError, castep.CastepCell, bad_lines)
+
+
+   def testbadparseblock2(self):
+      bad_lines = """%BLOCK SPECIES_POT
+      %ENDBLOCK LATTICE_CART""".split("\n")
+      self.assertRaises(ValueError, castep.CastepCell, bad_lines)
+
+
       
       
 
