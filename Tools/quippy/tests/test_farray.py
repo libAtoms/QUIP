@@ -71,11 +71,10 @@ class TestFortranArray(unittest.TestCase):
       self.assertRaises(IndexError, self.f.__setitem__, 0, 1)
 
    def testsetitem(self):
-      cp = self.f.copy()
-      cp[1] = -1
-      self.assertEqual(cp[1], -1)
-      self.assertEqual(cp[2], 2)
-      self.assertEqual(cp[3], 3)
+      self.f[1] = -1
+      self.assertEqual(self.f[1], -1)
+      self.assertEqual(self.f[2], 2)
+      self.assertEqual(self.f[3], 3)
 
    def testnegindex(self):
       self.assert_(isinstance(self.f[-1], numpy.int))
@@ -92,11 +91,10 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(sl[3], 3)
 
    def testsetslice(self):
-      cp = self.f.copy()
-      cp[:] = 0
-      self.assertEqual(cp[1], 0)
-      self.assertEqual(cp[2], 0)
-      self.assertEqual(cp[3], 0)
+      self.f[:] = 0
+      self.assertEqual(self.f[1], 0)
+      self.assertEqual(self.f[2], 0)
+      self.assertEqual(self.f[3], 0)
 
    def testlist(self):
       self.assertEqual(list(self.f), [1,2,3])
@@ -152,86 +150,72 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(self.f2[3,2], 6)
 
    def test2dsetitem(self):
-      cp = self.f2.copy()
-      cp[1,1] = 0
-      self.assertEqual(list(cp[1]), [0,2,3])
-      self.assertEqual(list(cp[2]), [4,5,6])
+      self.f2[1,1] = 0
+      self.assertEqual(list(self.f2[1]), [0,2,3])
+      self.assertEqual(list(self.f2[2]), [4,5,6])
 
    def test2dsetslice(self):
-      cp = self.f2.copy()
-      cp[:,1] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [4,5,6])
+      self.f2[:,1] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [4,5,6])
 
    def test2dsetslice2(self):
-      cp = self.f2.copy()
-      cp[1,:] = 0
-      self.assertEqual(list(cp[1]), [0,2,3])
-      self.assertEqual(list(cp[2]), [0,5,6])
+      self.f2[1,:] = 0
+      self.assertEqual(list(self.f2[1]), [0,2,3])
+      self.assertEqual(list(self.f2[2]), [0,5,6])
 
    def test2dsetslice3(self):
-      cp = self.f2.copy()
-      cp[:,:] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [0,0,0])
+      self.f2[:,:] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [0,0,0])
 
    def test2dsetslice4(self):
-      cp = self.f2.copy()
-      cp[:] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [0,0,0])
+      self.f2[:] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [0,0,0])
 
    def test2dsetslice5(self):
-      cp = self.f2.copy()
-      cp[1::2,1] = 0
-      self.assertEqual(list(cp[1]), [0,2,0])
-      self.assertEqual(list(cp[2]), [4,5,6])
+      self.f2[1::2,1] = 0
+      self.assertEqual(list(self.f2[1]), [0,2,0])
+      self.assertEqual(list(self.f2[2]), [4,5,6])
 
    def test2dsetslice6(self):
-      cp = self.f2.copy()
-      cp[1:] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [0,0,0])
+      self.f2[1:] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [0,0,0])
 
    def test2dsetellipsis(self):
-      cp = self.f2.copy()
-      cp[...] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [0,0,0])
+      self.f2[...] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [0,0,0])
 
    def test2dsetellipsis2(self):
-      cp = self.f2.copy()
-      cp[...,1] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [4,5,6])
+      self.f2[...,1] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [4,5,6])
 
    def test2dsetellipsis3(self):
-      cp = self.f2.copy()
-      cp[1,...] = 0
-      self.assertEqual(list(cp[1]), [0,2,3])
-      self.assertEqual(list(cp[2]), [0,5,6])
+      self.f2[1,...] = 0
+      self.assertEqual(list(self.f2[1]), [0,2,3])
+      self.assertEqual(list(self.f2[2]), [0,5,6])
 
    def test2dsetcol(self):
-      cp = self.f2.copy()
-      cp[1] = 0
-      self.assertEqual(list(cp[1]), [0,0,0])
-      self.assertEqual(list(cp[2]), [4,5,6])         
+      self.f2[1] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,0])
+      self.assertEqual(list(self.f2[2]), [4,5,6])         
 
    def test2dcols(self):
-      cp = self.f2.copy()
-      col1 = list(cp.cols.next())
+      col1 = list(self.f2.cols.next())
       self.assertEqual(col1, [1,2,3])
       self.assertEqual(col1, list(self.f2[1]))
 
    def test2drows(self):
-      cp = self.f2.copy()
-      row1 = list(cp.rows.next())
+      row1 = list(self.f2.rows.next())
       self.assertEqual(row1, [1,4])
       self.assertEqual(row1, list(self.f2[1,:]))
 
    def test2diter(self):
-      cp = self.f2.copy()
-      col1 = iter(cp).next()
+      col1 = iter(self.f2).next()
       self.assertEqual(list(col1), [1,2,3])
 
    def test2dfromseq(self):
@@ -270,11 +254,9 @@ class TestFortranArray(unittest.TestCase):
       self.assert_((bf == bn).all())
 
    def test2dextindexbool2(self):
-      cp = self.f2.copy()
-      na = self.na.copy()
-      cp[cp > 1] = 0
-      na[na > 1] = 0
-      self.assert_((cp == na).all())
+      self.f2[self.f2 > 1] = 0
+      self.na[self.na > 1] = 0
+      self.assert_((self.f2 == self.na).all())
       
    def testnonzero(self):
       self.assertEqual(list((self.f > 1).nonzero()[0]), [2,3])
@@ -336,10 +318,9 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(list(self.f2.take((1,2),axis=1)[1]), [1,2])
 
    def testput(self):
-      cp = self.f2.copy()
-      cp.put((1, 4), (0, 0))
-      self.assertEqual(list(cp[1]), [0, 2, 3])
-      self.assertEqual(list(cp[2]), [4, 0, 6])
+      self.f2.put((1, 4), (0, 0))
+      self.assertEqual(list(self.f2[1]), [0, 2, 3])
+      self.assertEqual(list(self.f2[2]), [4, 0, 6])
 
    def testreprstr(self):
       self.assertEqual(repr(self.f2),"""FortranArray([[1, 4],
@@ -349,15 +330,13 @@ class TestFortranArray(unittest.TestCase):
  [2 5]
  [3 6]]""")
 
-      cp = self.f2.copy()
-      cp.transpose_on_print = True
-      self.assertEqual(repr(cp),"FortranArray([[1, 2, 3],\n              [4, 5, 6]])")
-      self.assertEqual(str(cp),"[[1 2 3]\n [4 5 6]]")
+      self.f2.transpose_on_print = True
+      self.assertEqual(repr(self.f2),"FortranArray([[1, 2, 3],\n              [4, 5, 6]])")
+      self.assertEqual(str(self.f2),"[[1 2 3]\n [4 5 6]]")
 
       self.assertEqual(str(self.s), "s1s2s3")
-      cp = self.s.copy()
-      cp.transpose_on_print = True
-      self.assertEqual(str(cp), "s1s2s3")
+      self.s.transpose_on_print = True
+      self.assertEqual(str(self.s), "s1s2s3")
 
       self.assertEqual(str(farray('s')), 's')
 
