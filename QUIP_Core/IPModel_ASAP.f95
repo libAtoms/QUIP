@@ -272,7 +272,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), allocatable :: asap_f(:,:)
    real(dp), pointer :: dipoles_ptr(:,:)
    integer :: i, ti, tj
-   logical :: do_restart, set_properties
+   logical :: do_restart, calc_dipoles
    integer at0, atf
    integer idebug
    real(dp) dtold,dtnew
@@ -292,7 +292,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    call initialise(params)
    this%label=''
    call param_register(params, 'restart', 'F', do_restart)
-   call param_register(params, 'set_properties', 'F', set_properties)
+   call param_register(params, 'calc_dipoles', 'F', calc_dipoles)
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
       call system_abort("IPModel_ASAP_Initialise_str failed to parse args_str="//trim(args_str))
    endif
@@ -593,7 +593,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(virial)) virial = asap_stress*(HARTREE/(BOHR**3))
    if (present(local_e)) local_e = 0.0_dp
 
-   if (set_properties .and. tpol) then
+   if (calc_dipoles .and. tpol) then
       if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
       if (.not. assign_pointer(at, 'dipoles', dipoles_ptr)) call system_abort('IPModel_ASAP_calc: assign_pointer dipoles failed')
       dipoles_ptr = dip
