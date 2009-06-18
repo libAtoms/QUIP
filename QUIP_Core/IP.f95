@@ -376,7 +376,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
-  character(len=STRING_LENGTH), intent(in), optional      :: args_str 
+  character(len=*), intent(in), optional      :: args_str 
 
   logical mpi_active
 
