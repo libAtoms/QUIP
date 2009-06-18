@@ -401,10 +401,12 @@ def wrap_all(topmod, spec, mods, short_names):
 
             lclsname = cls.__name__.lower()[len(fortran_class_prefix):]
 
-            if routine[:len(lclsname)+1] == lclsname+'_':
-               method_name = routine[len(lclsname)+1:]
+            if routine.startswith(lclsname+'_'):
+                method_name = routine[len(lclsname)+1:]
+            elif lclsname in short_names and routine.startswith(short_names[lclsname]+'_'):
+                method_name = routine[len(short_names[lclsname])+1:]
             else:
-               method_name = routine
+                method_name = routine
 
             if method_name in py_keywords: name = name+'_'
          
