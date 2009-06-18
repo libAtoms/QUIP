@@ -78,212 +78,6 @@ end interface Calc
 contains
 
 #ifdef HAVE_ASAP
-  subroutine asap_singlepoint_init(natoms, nspecies)
-    use atoms
-    use verlet
-    use neighbour 
-    use pot_parameters
-    use stuff 
-    use energy_i
-    use print65
-    use electric_field
-    use nndim
-    use neighbour3
-    use fixpar
-    use distortion, only : taimsp,rmin_aim
-    use thermal_cond
-    use shakes
-    use compress
-    use quench
-    use forcetest
-    use iteration
-    use changepress
-    use metric
-    use netquant
-    use universal
-    use initstuff
-    use plot_efield
-    use polar
-    use structopt
-    use parameters
-    use presstemp
-    use testf
-    use minimiser
-    implicit none
-
-    integer natoms, nspecies
-    integer at0, atf
-    integer i,ix, idebug
-    integer is,js,j
-    character*25 filepos,filecel,cdum
-    integer potkind
-    real*8 dtold,dtnew
-    real*8 ranf
-    logical  tzeroc
-    logical sumewald,always_ew
-    logical always_sr,calc_sr
-    real*8 mass_cel
-    real*8 expf_ist,econs0,econs,TK,pist
-    logical tprintall
-    integer nprintall
-    common/printall/tprintall,nprintall
-    real*8 ht_1(3,3),ht_2(3,3)
-    logical tscaled
-    logical readnat
-    logical texist
-    integer element_to_number
-    integer ios,itmp
-    real*8 dip_perm_tmp(3)
-    integer iun_pos,iun_cel,iun_dip,vacant
-    integer iun_xyz, iun_in
-    logical tpow,tgmin
-
-    nthermo = min(atf-at0+1,nat-1)
-    allocate(mass(nspecies))
-
-    tsinglepoint = .true.
-    idebug = 0 
-    nat = natoms
-    nsp = nspecies
-    at0 = 1
-    atf = nat
-    nobj = 1
-
-    tangstrom = .false.
-    irestart = -1
-    itsave = 0
-    readunit = 90
-    saveunit = 90
-    readnat = .false.
-
-    dtold = 0.0d0
-    dtnew = 0.0d0
-    ntstep = 0
-    iprint = 0
-    iprintxyz = 0
-
-    deltat = dtnew
-
-    tcenter = .false.
-    timposepbc = .false.
-    tremovetrans = .false.
-    treadxyz = .false.
-    tfirst_xyzprint = .true.
-    treadpar = .false.
-    tappendfiles = .false.
-    tstructopt = .false.
-    tsdp = .false.
-    tpbc = .true.
-    tpow = .false.
-    tgmin = .false.
-    testewald = .false.
-    ttime = .false.
-    tforcetest = .false. 
-    tscaled = .false.
-    tangstrom = .false.
-
-    sumewald = .true.
-    allocate(spind(nat),objind(nat),numobj(nobj),numobjsp(nobj,nsp))
-    allocate(z(nsp),bij(nsp,nsp),Cij(nsp,nsp))
-    allocate(Dij(nsp,nsp),alphaij(nsp,nsp))
-    allocate(Eij(nsp,nsp),Nij(nsp,nsp))
-    allocate(pol(nsp),bpol(nsp,nsp),cpol(nsp,nsp))
-    allocate(theta0jik(nsp,nsp,nsp),bjik(nsp,nsp,nsp))
-    allocate(b_tt(3,nsp,nsp),r_ms(nsp,nsp))
-    allocate(gamma_ms(nsp,nsp),d_ms(nsp,nsp))
-    allocate(c_harm(nsp,nsp),rmin(nsp,nsp))
-    allocate(rmin_aim(nsp,nsp))
-    rmin_aim = 0.d0
-    allocate(adist(nsp,nsp),bdist(nsp,nsp))
-    allocate(cdist(nsp),ddist(nsp,nsp))
-    allocate(bu1(nsp,nsp),alphau1(nsp,nsp))
-    allocate(sigma1(nsp),sigma2(nsp),sigma3(nsp),sigma4(nsp))
-    allocate(bu2(nsp,nsp),alphau2(nsp,nsp))
-    allocate(taimsp(nsp))
-    allocate(minr(nsp,nsp),mindistl(nsp,nsp))
-    mindistl = 0.d0
-
-    allocate(s(3,nat),sm(3,nat))
-    allocate(r(3,nat),rm(3,nat))
-    allocate(dt2bym(nat),aumass(nat))
-    allocate(elements(nsp))
-    allocate(aelements(nat))
-    allocate(ielements(nat))
-    nparm = (nsp*nsp*nsp+21*nsp*nsp+28*nsp)/2 + 4*nsp
-    allocate (parf(nparm),tparf(nparm))
-    tgen = .false.
-    testforce = .false.
-    npar = 1
-
-    inquire(file='Permanent_Dipoles',exist=texist)
-    if (texist) then
-       iun_dip = vacant()
-       open(iun_dip,file='Permanent_Dipoles' &
-            ,form='formatted',status='old')
-       allocate(dip_perm(3,nat))
-       dip_perm = 0.0d0
-       ndip_perm = 0
-       total_dip_perm = 0.0d0
-       write(6,'(/," Reading permanent dipoles..")')
-       do 
-          read(iun_dip,*,iostat=ios) dip_perm_tmp,itmp
-          if (ios /= 0) exit
-          dip_perm(:,itmp) = dip_perm_tmp
-          ndip_perm = ndip_perm + 1
-          total_dip_perm = total_dip_perm + dip_perm_tmp
-       enddo
-       write(6,'(/,"There are ",i6," permanent dipoles")'),ndip_perm
-       write(6,'(/,"The sum of the dipoles is ",3(1x,e15.9))') &
-            total_dip_perm
-       tperm_dip = .true.
-    else
-       tperm_dip = .false.
-    endif
-    tprint65 = .false.
-    tenergy_i = .false.
-    tbin65 = .false.
-    iprint65 = 1
-    tzeroc = .false.
-    tcel = .false.
-    tsdc = .false.
-    cell_dir = 3
-    press = 0.0d0
-    mass_cel = 2.0d6
-    press = press / au_to_kbar
-    wc = mass_cel
-    trescale = .false.
-    tnosep = .false.
-    tboltz = .false.
-    tshake = .false.
-    tcompress = .false.
-    tquench = .false.
-    tchangeP= .false.
-    tprintall = .false.
-    tpolwrite = .false.
-    t_therm = .false.
-    tshowforce = .false.
-    tplot_efield = .false.
-    tfirst_efield_plot = .true.
-    ntnlist = (/1,1/)
-    nnatmax = 100000
-    nnatmax_sr = 30000
-    allocate(posobj(3,nobj),velobj(3,nobj),dipobj(3,nobj))
-    allocate(timposepos(nobj),timposevel(nobj),timposedip(nobj))
-    allocate(zerovec(3,nobj),falseimp(nobj))
-    zerovec = 0.0d0!
-
-    falseimp = .false.
-    XNOS2M = 0.D0
-    XNOSM  = 0.D0
-    XNOS0  = 0.D0
-    VRNOS  = 0.D0 
-
-    it = 0
-
-!    write (*,*) 'Initialisation of ASAP potential complete.'
-
-  end subroutine asap_singlepoint_init
-
   subroutine asap_singlepoint_finalise()
 
     use atoms
@@ -373,7 +167,6 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
   type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
-  character(len=FIELD_LENGTH) label
 
   this%initialised = .false.
 
@@ -439,7 +232,31 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
   use iteration
   use nndim
   use metric
-  use fixpar, only: ntype
+  use fixpar, only: ntype, tpbc, treadpar
+  use energy_i
+  use print65
+  use electric_field
+  use nndim
+  use distortion, only : taimsp,rmin_aim
+  use thermal_cond
+  use shakes
+  use compress
+  use quench
+  use forcetest
+  use iteration
+  use changepress
+  use metric
+  use netquant
+  use universal, only: au_to_kbar
+  use initstuff
+  use plot_efield
+  use polar
+  use structopt
+  use parameters
+  use presstemp
+  use testf
+  use minimiser
+
 
   use libAtoms_module, myAtoms => Atoms
 #endif
@@ -448,20 +265,25 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
-   character(len=*), optional      :: args_str
+   character(len=*), optional, intent(in) :: args_str
 
    type(Dictionary) :: params
-   integer, allocatable :: myspind(:)
    real(dp) :: asap_e, asap_stress(3,3)
    real(dp), allocatable :: asap_f(:,:)
    real(dp), pointer :: dipoles_ptr(:,:)
    integer :: i, ti, tj
    logical :: do_restart, set_properties
-
-   integer species(nat)
-   real(dp) pos(3,nat), cel(3,3), energy, force(3,nat)
-   real(dp) dipoles(3,nat), stress(3,3)
-   integer j, k, nesr
+   integer at0, atf
+   integer idebug
+   real(dp) dtold,dtnew
+   logical  tzeroc
+   logical sumewald
+   real(dp) mass_cel
+   logical tscaled
+   logical readnat
+   logical texist
+   logical tpow,tgmin
+   integer nesr
 
 #ifdef HAVE_ASAP
 
@@ -484,9 +306,72 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       end if
 
       this%n_atoms = at%n
-      call asap_singlepoint_init(this%n_atoms, this%n_types)
 
-      ! set parameters in ASAP modules
+      idebug = 0 
+      nat = this%n_atoms
+      nsp = this%n_types
+      at0 = 1
+      atf = nat
+      nobj = 1
+
+      nthermo = min(atf-at0+1,nat-1)
+      allocate(mass(this%n_types))
+
+      tsinglepoint = .true.
+      tangstrom = .false.
+      irestart = -1
+      itsave = 0
+      readunit = 90
+      saveunit = 90
+      readnat = .false.
+      dtold = 0.0d0
+      dtnew = 0.0d0
+      ntstep = 0
+      iprint = 0
+      iprintxyz = 0
+      deltat = dtnew
+      tcenter = .false.
+      timposepbc = .false.
+      tremovetrans = .false.
+      treadxyz = .false.
+      tfirst_xyzprint = .true.
+      treadpar = .false.
+      tappendfiles = .false.
+      tstructopt = .false.
+      tsdp = .false.
+      tpbc = .true.
+      tpow = .false.
+      tgmin = .false.
+      testewald = .false.
+      ttime = .false.
+      tforcetest = .false. 
+      tscaled = .false.
+      tangstrom = .false.
+      texist = .false.
+      tprint65 = .false.
+      tenergy_i = .false.
+      tbin65 = .false.
+      iprint65 = 1
+      tzeroc = .false.
+      tcel = .false.
+      tsdc = .false.
+      cell_dir = 3
+      press = 0.0d0
+      mass_cel = 2.0d6
+      press = press / au_to_kbar
+      wc = mass_cel
+      trescale = .false.
+      tnosep = .false.
+      tboltz = .false.
+      tshake = .false.
+      tcompress = .false.
+      tquench = .false.
+      tchangeP= .false.
+      tpolwrite = .false.
+      t_therm = .false.
+      tshowforce = .false.
+      tplot_efield = .false.
+      tfirst_efield_plot = .true.
       tewald = .false.
       calc_ewald = .false.
       write_ewald = .false. 
@@ -513,10 +398,57 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       hafta=.false.
       tbegin = .true.
       
+      sumewald = .true.
+      allocate(spind(nat),objind(nat),numobj(nobj),numobjsp(nobj,nsp))
+      allocate(z(nsp),bij(nsp,nsp),Cij(nsp,nsp))
+      allocate(Dij(nsp,nsp),alphaij(nsp,nsp))
+      allocate(Eij(nsp,nsp),Nij(nsp,nsp))
+      allocate(pol(nsp),bpol(nsp,nsp),cpol(nsp,nsp))
+      allocate(theta0jik(nsp,nsp,nsp),bjik(nsp,nsp,nsp))
+      allocate(b_tt(3,nsp,nsp),r_ms(nsp,nsp))
+      allocate(gamma_ms(nsp,nsp),d_ms(nsp,nsp))
+      allocate(c_harm(nsp,nsp),rmin(nsp,nsp))
+      allocate(rmin_aim(nsp,nsp))
+      rmin_aim = 0.d0
+      allocate(adist(nsp,nsp),bdist(nsp,nsp))
+      allocate(cdist(nsp),ddist(nsp,nsp))
+      allocate(bu1(nsp,nsp),alphau1(nsp,nsp))
+      allocate(sigma1(nsp),sigma2(nsp),sigma3(nsp),sigma4(nsp))
+      allocate(bu2(nsp,nsp),alphau2(nsp,nsp))
+      allocate(taimsp(nsp))
+      allocate(minr(nsp,nsp),mindistl(nsp,nsp))
+      mindistl = 0.d0
+
+      allocate(s(3,nat),sm(3,nat))
+      allocate(r(3,nat),rm(3,nat))
+      allocate(dt2bym(nat),aumass(nat))
+      allocate(elements(nsp))
+      allocate(aelements(nat))
+      allocate(ielements(nat))
+      nparm = (nsp*nsp*nsp+21*nsp*nsp+28*nsp)/2 + 4*nsp
+      allocate (parf(nparm),tparf(nparm))
+      tgen = .false.
+      testforce = .false.
+      npar = 1
+
+      ntnlist = (/1,1/)
+      nnatmax = 100000
+      nnatmax_sr = 30000
+      allocate(posobj(3,nobj),velobj(3,nobj),dipobj(3,nobj))
+      allocate(timposepos(nobj),timposevel(nobj),timposedip(nobj))
+      allocate(zerovec(3,nobj),falseimp(nobj))
+      zerovec = 0.0d0!
+
+      falseimp = .false.
+      XNOS2M = 0.D0
+      XNOSM  = 0.D0
+      XNOS0  = 0.D0
+      VRNOS  = 0.D0 
+      
+      it = 0
+
       c_harm = 0.0_dp
       rmin = 0.0_dp
-
-      nsp = this%n_types
 
       ! Per type parameters
       do ti=1,this%n_types
@@ -547,7 +479,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       write(6,'(/," Net charge ",e13.5)') netcharge
       write(6,*)
       
-      ! Short range terms
+      ! Short range parameters
       tsr = .true.
       alphaij = 0.0_dp
       bij = 0.0_dp
@@ -574,6 +506,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       pred_order = this%pred_order
 
       tpol = any(dabs(pol) > 1.0e-6_dp)
+      call Print('Polarisation: '//pol)
 
       bpol = 0.0_dp
       cpol = 0.0_dp
@@ -645,12 +578,10 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    if((mod(it,ntnlist(1)).eq.1).or.(ntnlist(1).eq.1)) then
       call nbrlist(r,nnatmax)
       call nbrlist3(r)
-      write(*,*) 'Updating neighbour lists 1, 2 and 3',nnatm,nnatm2
    endif
 
    if(mod(it,ntnlist(2)).eq.1) then
       call nbrlist3(r)
-      write(*,*) 'Updating neighbour list 3',nnatm3
    endif
 
    call force_ft(asap_e, asap_f, asap_stress, 0)
@@ -662,7 +593,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(virial)) virial = asap_stress*(HARTREE/(BOHR**3))
    if (present(local_e)) local_e = 0.0_dp
 
-   if (set_properties) then
+   if (set_properties .and. tpol) then
       if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
       if (.not. assign_pointer(at, 'dipoles', dipoles_ptr)) call system_abort('IPModel_ASAP_calc: assign_pointer dipoles failed')
       dipoles_ptr = dip
@@ -741,7 +672,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=FIELD_LENGTH) :: value
 
-  logical shifted
   integer ti, tj, Zi, Zj
 
   if (name == 'ASAP_params') then ! new ASAP stanza
