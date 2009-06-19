@@ -353,7 +353,7 @@ contains
     real(dp), pointer :: force_ptr(:,:), df_ptr(:,:), local_e_ptr(:)
     real(dp), pointer :: e_ptr
     real(dp), target :: my_e
-    logical :: calc_force, calc_energy, calc_local_e, calc_df
+    logical :: calc_force, calc_energy, calc_local_e, calc_df, do_calc_force, do_calc_energy, do_calc_local_e, do_calc_df
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -545,14 +545,14 @@ contains
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
     else
-       calc_force = calc_force .or. present(f)
-       calc_energy = calc_energy .or. present(e)
-       calc_local_e = calc_local_e .or. present(local_e)
-       calc_df = calc_df .or. present(df)
+       do_calc_force = calc_force .or. present(f)
+       do_calc_energy = calc_energy .or. present(e)
+       do_calc_local_e = calc_local_e .or. present(local_e)
+       do_calc_df = calc_df .or. present(df)
 
-       if(present(virial) .or. calc_energy .or. calc_force .or. calc_local_e) then
+       if(present(virial) .or. do_calc_energy .or. do_calc_force .or. do_calc_local_e) then
 
-          if (calc_force) then
+          if (do_calc_force) then
              if (.not. present(f)) then
                 if (.not. has_property(at, 'force')) call add_property(at, 'force', 0.0_dp, n_cols=3)
              else
@@ -560,7 +560,7 @@ contains
              end if
           end if
 
-          if (calc_local_e) then
+          if (do_calc_local_e) then
              if (.not. present(local_e)) then
                 if (.not. has_property(at, 'local_e')) call add_property(at, 'local_e', 0.0_dp)
              else
@@ -568,7 +568,7 @@ contains
              end if
           end if
 
-          if (calc_energy) then
+          if (do_calc_energy) then
              if (.not. present(e)) then
                 e_ptr => my_e
              else
@@ -577,70 +577,70 @@ contains
           end if
 
           ! Do pointer assignments after all properties have been added
-          if (calc_force .and. .not. present(f)) then
+          if (do_calc_force .and. .not. present(f)) then
              if (.not. assign_pointer(at, 'force', force_ptr)) call system_abort('Potential_calc: cannot assign force_ptr')
           end if
-          if (calc_local_e .and. .not. present(local_e)) then
+          if (do_calc_local_e .and. .not. present(local_e)) then
              if (.not. assign_pointer(at, 'local_e', local_e_ptr)) call system_abort('Potential_calc: cannot assign local_e_ptr')
           end if
           
           if(associated(this%tb)) then
 
-             if (.not. calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%tb, at, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%tb, at, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%tb, at, local_e=local_e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%tb, at, local_e=local_e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%tb, at, energy=e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%tb, at, energy=e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
              end if
 
           elseif(associated(this%ip)) then
 
-             if (.not. calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%ip, at, virial=virial, args_str=args_str)
-             else if (.not. calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%ip, at, f=force_ptr, virial=virial, args_str=args_str)
-             else if (.not. calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%ip, at, local_e=local_e_ptr, virial=virial, args_str=args_str)
-             else if (.not. calc_energy .and. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, virial=virial, args_str=args_str)
-             else if (calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%ip, at, energy=e_ptr, virial=virial, args_str=args_str)
-             else if (calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%ip, at, energy=e_ptr, f=force_ptr, virial=virial, args_str=args_str)
-             else if (calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, virial=virial, args_str=args_str)
-             else if (calc_energy .and. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, virial=virial, args_str=args_str)
              end if
 
           elseif(associated(this%filepot)) then
 
-             if (.not. calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%filepot, at, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%filepot, at, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%filepot, at, local_e=local_e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (.not. calc_energy .and. calc_local_e .and. calc_force) then
+             else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%filepot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. .not. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%filepot, at, energy=e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. .not. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%filepot, at, energy=e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. calc_local_e .and. .not. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
                 call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial, args_str=args_str, err=err)
-             else if (calc_energy .and. calc_local_e .and. calc_force) then
+             else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
                 call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial, args_str=args_str, err=err)
              end if
 
@@ -661,18 +661,34 @@ contains
              call system_abort ("Potential_Calc: potential is not initialised")
           end if
 
-          if (calc_energy .and. .not. present(e)) then
+          if (calc_energy) then
              call set_value(at%params, 'energy', e_ptr)
+          end if
+
+          ! Copy force and local_e to properties as well if necessary
+          if (calc_force .and. present(f)) then
+             if (.not. has_property(at, 'force')) call add_property(at, 'force', 0.0_dp, n_cols=3)
+             if (.not. assign_pointer(at, 'force', force_ptr)) call system_abort('Potential_calc: cannot assign force_ptr')
+             force_ptr(:,:) = f(:,:)
+          end if
+
+          if (calc_local_e .and. present(local_e)) then
+             if (.not. has_property(at, 'local_e')) call add_property(at, 'local_e', 0.0_dp)
+             if (.not. assign_pointer(at, 'local_e', local_e_ptr)) call system_abort('Potential_calc: cannot assign local_e_ptr')
+             local_e_ptr(:) = local_e(:)
           end if
 
        end if
 
-       if (calc_df) then ! do forces by finite difference
+       if (do_calc_df) then ! do forces by finite difference
 
-          ! must remove 'calc_df' from args_str if it's there
+          ! must remove 'calc_df' from args_str if it's there (and the rest, or properties get overwritten)
           call initialise(params)
           call read_string(params, args_str)
           call remove_value(params, 'calc_df')
+          call remove_value(params, 'calc_force')
+          call remove_value(params, 'calc_energy')
+          call remove_value(params, 'calc_local_e')
           new_args_str = write_string(params)
           call finalise(params)
 
@@ -697,6 +713,13 @@ contains
                 df_ptr(k,i) = (e_minus-e_plus)/(2.0_dp*delta) ! force is -ve gradient
              end do
           end do
+
+          ! Copy to property as well if necessary
+          if (calc_df .and. present(df)) then
+             if (.not. has_property(at, 'df')) call add_property(at, 'df', 0.0_dp, n_cols=3)
+             if (.not. assign_pointer(at, 'df', df_ptr)) call system_abort('Potential_calc: cannot assign df_ptr')
+             df_ptr(:,:) = df(:,:)
+          end if
        end if
     end if
 
