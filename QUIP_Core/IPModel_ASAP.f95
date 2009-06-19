@@ -256,10 +256,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
   use presstemp
   use testf
   use minimiser
-
-
-  use libAtoms_module, myAtoms => Atoms
 #endif
+  use libAtoms_module, only : myAtoms => Atoms
+
    type(IPModel_ASAP), intent(inout):: this
    type(myAtoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
