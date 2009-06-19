@@ -42,6 +42,7 @@ class TestPotential(unittest.TestCase):
 
       self.e, = fvar('e')
       self.f = fzeros((3,self.at.n))
+      self.df = fzeros((3,self.at.n))
       self.le = fzeros(self.at.n)
       self.v = fzeros((3,3))
 
@@ -155,45 +156,67 @@ class TestPotential(unittest.TestCase):
       self.assertArrayAlmostEqual(self.f, self.f_ref)
 
    def testcalc17(self):
-      self.pot.calc(self.at, args_str="calc_force=T")
+      self.pot.calc(self.at, calc_force=True)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
    def testcalc18(self):
-      self.pot.calc(self.at, args_str="calc_local_e=T")
+      self.pot.calc(self.at, calc_local_e=True)
       self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
      
    def testcalc19(self):
-      self.pot.calc(self.at, args_str="calc_local_e=T calc_force=T")
+      self.pot.calc(self.at, calc_local_e=True, calc_force=True)
       self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
    def testcalc20(self):
-      self.pot.calc(self.at, args_str="calc_energy=T")
+      self.pot.calc(self.at, calc_energy=True)
       self.assertAlmostEqual(self.at.energy, self.e_ref)
     
    def testcalc21(self):
-      self.pot.calc(self.at, args_str="calc_energy=T calc_force=T")
+      self.pot.calc(self.at, calc_energy=True, calc_force=True)
       self.assertAlmostEqual(self.at.energy, self.e_ref)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
    def testcalc22(self):
-      self.pot.calc(self.at, args_str="calc_energy=T calc_local_e=T")
+      self.pot.calc(self.at, calc_energy=True, calc_local_e=True)
       self.assertAlmostEqual(self.at.energy, self.e_ref)
       self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
 
    def testcalc23(self):
-      self.pot.calc(self.at, args_str="calc_energy=T calc_local_e=T calc_force=T")
+      self.pot.calc(self.at, calc_energy=True, calc_local_e=True, calc_force=True)
       self.assertAlmostEqual(self.at.energy, self.e_ref)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
    def testcalc_df(self):
-      df = fzeros((3,self.at.n))
-      self.pot.calc(self.at, df=df)
-      self.assertArrayAlmostEqual(df, self.f_ref)
+      self.pot.calc(self.at, df=self.df)
+      self.assertArrayAlmostEqual(self.df, self.f_ref)
 
    def testcalc_df2(self):
-      self.pot.calc(self.at, args_str="calc_df=T")
+      self.pot.calc(self.at, calc_df=True)
       self.assertArrayAlmostEqual(self.at.df, self.f_ref)
+
+   def testcalc_force_both(self):
+      self.pot.calc(self.at, f=self.f, calc_force=True)
+      self.assertArrayAlmostEqual(self.f, self.f_ref)
+      self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+
+   def testcalc_all(self):
+      self.pot.calc(self.at, f=self.f, df=self.df, e=self.e, local_e=self.le, virial=self.v,
+                    calc_force=True, calc_energy=True, calc_local_e=True, calc_df=True)
+
+      self.assertArrayAlmostEqual(self.f, self.f_ref)
+      self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+
+      self.assertArrayAlmostEqual(self.df, self.f_ref)
+      self.assertArrayAlmostEqual(self.at.df, self.f_ref)
+
+      self.assertArrayAlmostEqual(self.le, self.le_ref)
+      self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
+
+      self.assertAlmostEqual(self.e, self.e_ref)
+      self.assertAlmostEqual(self.at.energy, self.e_ref)
+
+      self.assertArrayAlmostEqual(self.v, self.v_ref)
       
 
 class TestMetaPotential(unittest.TestCase):
@@ -277,10 +300,10 @@ class TestMetaPotential(unittest.TestCase):
       v2 = fzeros((3,3))
       
       self.at.calc_connect()
-      self.pot.calc(self.at, args_str="calc_energy=T calc_force=T calc_df=T", virial=v1)
+      self.pot.calc(self.at, calc_energy=True, calc_force=True, calc_df=True, virial=v1)
 
       cp = self.at.copy()
-      self.metapot.calc(self.at, args_str="calc_energy=T calc_force=T calc_df=T", virial=v2)
+      self.metapot.calc(self.at, calc_energy=True, calc_force=True, calc_df=True, virial=v2)
 
       self.assertAlmostEqual(self.at.energy, cp.energy)
       self.assertArrayAlmostEqual(self.at.force, cp.force)
