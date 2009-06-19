@@ -345,15 +345,15 @@ contains
        if (old_QM_cell(1:3) .feq. this%qmmm%qmmm_cell(1:3)) then
           this%qmmm%reuse_wfn = .true.
           if (Run_Type.eq.QMMM_RUN_CORE) call print('QM cell size have not changed. Reuse previous wavefunction.')
-!          call print('QM_cell size has not changed in at%params, will reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3)//' if QM list has not changed')
+          call print('QM_cell size has not changed in at%params, will reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3)//' if QM list has not changed', VERBOSE)
        else
           this%qmmm%reuse_wfn = .false.
-!          call print('QM_cell size changed in at%params, will not reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3))
+          call print('QM_cell size changed in at%params, will not reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3), VERBOSE)
           call set_value(at%params,'QM_cell',this%qmmm%qmmm_cell(1:3))
        endif
     else !for the first step there is no QM_cell, no wavefunction
        this%qmmm%reuse_wfn = .false.
-!       call print('did not find QM_cell property in at%params, will not reuse wfn')
+       call print('did not find QM_cell property in at%params, will not reuse wfn', VERBOSE)
        call set_value(at%params,'QM_cell',this%qmmm%qmmm_cell(1:3))
     endif
    ! only in case of extended run also QM buffer zone change counts
@@ -361,12 +361,12 @@ contains
        ex = .false.
        ex = get_value(at%params,'QM_list_changed',QM_list_changed)
        if (ex) then
-       this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
-!       if (QM_list_changed) then
-!          call print('QM list changed, will not use wfn')
-!       else
-!          call print('QM list has not changed, will use wfn if QM cell is the same')
-!       endif
+	 this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
+	 if (QM_list_changed) then
+	    call print('QM list changed, will not use wfn', VERBOSE)
+	 else
+	    call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
+	 endif
        else
           this%qmmm%reuse_wfn = .false.
        endif
@@ -519,7 +519,7 @@ contains
     ex = .true.
     i=1
     do while (ex)
-       write (dir,'(a,i0)') 'cp2k_run_',i
+       dir = "cp2k_run_"//i
        inquire(file=(trim(dir)//'/cp2k_input.inp'),exist=ex)
        i = i + 1
     enddo
@@ -798,6 +798,7 @@ contains
 
   character(max_char_length)            :: run_command='', &
                                            fin_command=''
+  logical                               :: clean_up_files
   integer                               :: status
   logical                               :: ex
 
@@ -822,6 +823,7 @@ contains
     call param_register(params, 'potential_file', '', potential_file)
     call param_register(params, 'dft_file', '', dft_file)
     call param_register(params, 'cell_file', '', cell_file)
+    call param_register(params, 'clean_up_files', 'T', clean_up_files)
 
     if (present(args_str)) then
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) &
@@ -941,8 +943,8 @@ contains
     endif
 
   ! remove all unnecessary files
-    fin_command = 'rm -rf '//trim(param%wenv%working_directory)
-    call system_command(fin_command,status=status)
+    if (clean_up_files) &
+      call system_command('rm -rf '//trim(param%wenv%working_directory),status=status)
 
     call finalise(param)    
 
@@ -1739,7 +1741,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
              else
                 call print('#    WFN_RESTART_FILE_NAME ../'//trim(param%wenv%wfn_file),file=input_file)
              endif
-          endif
+          endif ! run_type == QS_RUN
           if (run_type == QS_RUN) then
             ! check if the system is charged, given Charge=... in the comment line
              if (get_value(my_atoms%params,'Charge',charge)) then
@@ -1753,8 +1755,8 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
              if (mod(nint(sum(my_atoms%data%real(atom_charge_index,int_part(qm_list,1)))),2).ne.0) call print('    LSD',file=input_file)
              if (nint(sum(my_atoms%data%real(atom_charge_index,int_part(qm_list,1)))).ne.0) &
                 call print('    CHARGE '//nint(sum(my_atoms%data%real(atom_charge_index,int_part(qm_list,1)))),file=input_file)
-          endif
-       else
+          endif ! run_type == QS_RUN
+       else ! len(param%dft_file) > 0
          ! call print('    &PRINT',file=input_file)
          ! call print('      &LOCALIZATION',file=input_file)
          ! call print('        &LOCALIZE',file=input_file)
