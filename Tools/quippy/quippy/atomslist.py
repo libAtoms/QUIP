@@ -132,7 +132,7 @@ try:
          self._cio.query()
 
       def _close(self):
-         self._cio.close()
+         pass
 
       def _getframe(self, frame):
          return self._cio.read(frame) 
