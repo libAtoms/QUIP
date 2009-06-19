@@ -5,6 +5,7 @@ from arraydata import arraydata
 from farray import *
 import numpy
 from types import MethodType
+from paramreader import args_str
 
 major, minor = sys.version_info[0:2]
 
@@ -108,8 +109,14 @@ def process_in_args(args, kwargs, inargs):
 
    type_lookup = dict([(badnames.get(x['name'].lower(),x['name'].lower()),x['type']) for x in inargs])
    newkwargs = {}
+   args_str_kwargs = {}
    for k,a in kwargs.iteritems():
-      if not k in type_lookup: raise ValueError('Unknown keyword argument %s' % k)
+      if not k in type_lookup:
+          if 'args_str' in type_lookup:
+              args_str_kwargs[k] = a
+              continue
+          else:
+              raise ValueError('Unknown keyword argument %s' % k)
       if type_lookup[k].startswith('type'):
          if isinstance(a, FortranDerivedTypes[type_lookup[k].lower()]):
             newkwargs[k] = a._fpointer
@@ -120,6 +127,9 @@ def process_in_args(args, kwargs, inargs):
       else:
           if a is None: continue
           newkwargs[k] = a
+
+   if 'args_str' in type_lookup and args_str_kwargs != {}:
+       newkwargs['args_str'] = newkwargs.get('args_str', '') + ' ' + args_str(args_str_kwargs)
 
    return tuple(newargs), newkwargs
 
