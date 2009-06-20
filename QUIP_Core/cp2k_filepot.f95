@@ -35,6 +35,7 @@ program cp2k_filepot
     character(len=FIELD_LENGTH)   :: cp2k_program
     character(len=FIELD_LENGTH)   :: fileroot_str
     character(len=FIELD_LENGTH)   :: basis_set_file, potential_file, dft_file, cell_file
+  logical                               :: clean_up_files
 !  logical                     :: Delete_Metal_Connections
 
     call system_initialise(verbosity=SILENT,enable_timing=.true.)
@@ -53,6 +54,7 @@ program cp2k_filepot
     call param_register(params_in, 'potential_file', '', potential_file)
     call param_register(params_in, 'dft_file', '', dft_file)
     call param_register(params_in, 'cell_file', '', cell_file)
+    call param_register(params_in, 'clean_up_files', 'T', clean_up_files)
 !    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
 
     if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.)) then
@@ -103,6 +105,11 @@ program cp2k_filepot
     if (trim(potential_file).ne.'') args_str = trim(args_str)//' potential_file='//trim(potential_file)
     if (trim(dft_file).ne.'') args_str = trim(args_str)//' dft_file='//trim(dft_file)
     if (trim(cell_file).ne.'') args_str = trim(args_str)//' cell_file='//trim(cell_file)
+    if (clean_up_files) then
+       args_str = trim(args_str)//' clean_up_files=T'
+    else
+       args_str = trim(args_str)//' clean_up_files=F'
+    endif
 
     call print('FILEPOT |'//args_str,verbosity=SILENT)
 
