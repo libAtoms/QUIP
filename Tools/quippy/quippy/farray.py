@@ -20,6 +20,13 @@ def frange(min,max=None,step=1):
     else:
         return xrange(min,max+1,step)
 
+def fenumerate(seq):
+    """One-based equivalent of enumerate"""
+    i = 1
+    for s in seq:
+        yield (i, s)
+        i += 1
+
 def fzeros(shape,dtype=float):
     """Create an empty FortranArray with Fortran ordering."""
     return FortranArray(numpy.zeros(shape,dtype,order='F'))
