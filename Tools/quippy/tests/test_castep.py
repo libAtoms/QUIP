@@ -331,6 +331,9 @@ class TestReadGeom(unittest.TestCase):
 
    def testspecies(self):
       self.assert_(all(self.at.species.stripstrings() == 'Si'))
+
+   def testframereader(self):
+      list(castep.CastepGeomFrameReader(self.geom_lines))
       
 
 def getTestSuite():
