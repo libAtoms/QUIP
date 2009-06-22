@@ -1,7 +1,7 @@
 import sys, string, os, operator
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary
+from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
 
 import xml.dom.minidom
 
@@ -232,11 +232,10 @@ class CastepCell(OrderedDict):
       elements = map(operator.itemgetter(0), field_list)
 
       # Look up names of elements specified by atomic number
-      elements = [ el.isdigit() and ElementName[int(el)] or el \
-                   for el in elements ]
+      elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
 
       # Set the element and pos data
-      result.species[:] = elements
+      result.set_atoms(elements)
       result.pos[:,:] = farray([ [float(x) for x in row] \
                                  for row in [field[1:4] for field in field_list]])
       return result
@@ -246,13 +245,13 @@ class CastepCell(OrderedDict):
       
       # Add lattice to cell
       self['LATTICE_CART'] = []
-      for i in range(3):
+      for i in frange(3):
          self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
 
       # Add atomic positions to cell
       self['POSITIONS_ABS'] = []
-      for i in range(at.n):
-         self['POSITIONS_ABS'].append(at.species[:,i]+' %f %f %f' % tuple(at.pos[:,i]))
+      for i in frange(at.n):
+         self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
 
 
@@ -288,10 +287,9 @@ class CastepParam(OrderedDict):
          if line.startswith('#') or line == '':
             continue
 
-         for c in ':=':  # Remove delimeters
-            line = line.replace(c,'',1)
-
          fields = line.split()
+         fields = [ f for f in fields if not f in (':','=')]
+         
          key = fields[0].lower()
          if not key in valid_parameters_keywords:
             raise ValueError('Unknown PARAMETERS keyword %s' % key)
@@ -315,6 +313,8 @@ class CastepParam(OrderedDict):
 
    def read_from_castep_output(self, castep_output):
       "Read user parameters from .castep output. Input should be filename, file-like object or list of lines"
+
+      value_map = {'T': 'true', 'F': 'false'}
 
       if type(castep_output) == type(''):
          f = open(castep_output, 'r')
@@ -340,6 +340,7 @@ class CastepParam(OrderedDict):
       while castep_output[i].strip():
          line = castep_output[i]
          key, value = map(string.strip, line[:line.index('#')].split(':',1))
+         value = value_map.get(value, value)
          if not key in param_lookup:
             raise ValueError('Unknown parameter %s in castep output file' % key)
          param_lines.append('%s = %s' % (param_lookup[key], value))
@@ -363,26 +364,28 @@ class CastepParam(OrderedDict):
 
 
 
-def read_geom():
+def read_geom(geom):
    opened = False
    if type(geom) == type(''):
       geom = open(geom, 'r')
       opened = True
 
+   geom = iter(geom)
+
    lines = []
-   line = geom.readline().strip()
+   line = geom.next().strip()
 
    # Skip header if present
    if line.startswith('BEGIN header'):
       while not line.startswith('END header'):
-         line = geom.readline().strip()
-      geom.readline() # skip blank line
+         line = geom.next().strip()
+      geom.next() # skip blank line
    else:
       lines.append(line)
 
    # Read until next blank line
    while line != '':
-      line = geom.readline().strip()
+      line = geom.next().strip()
       if line != '': lines.append(line)
 
    if opened: geom.close() # Let go of the file
@@ -401,17 +404,17 @@ def read_geom():
       raise ValueError('Number of energy lines should be exactly one.')
 
    params['energy'], params['hamiltonian'] = \
-                          [float(x)*HARTREE_TO_EV for x in energy_lines[0].split()[0:2]]
+                          [float(x)*HARTREE for x in energy_lines[0].split()[0:2]]
 
    # Lattice is next, in units of Bohr
    lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
-   lattice = farray([ [float(x)* BOHR_TO_ANG for x in row[0:3]]
+   lattice = farray([ [float(x)* BOHR for x in row[0:3]]
                       for row in map(string.split, lattice_lines) ])
 
-   # Then optionally stress tensor (FIXME: units)
+   # Then optionally stress tensor
    stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
-   params['stress'] = farray([ [float(x) for x in row[0:3]]
-                               for row in map(string.split, stress_lines) ])
+   params['stress'] = str(farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
+                                   for row in map(string.split, stress_lines) ]))
 
    # Find positions and forces
    poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -425,18 +428,22 @@ def read_geom():
 
    # Now parse the positions, converting from units of Bohr
    field_list = [line.split() for line in poslines]
-   result.species[:] = farray(map(operator.itemgetter(0), field_list))
-   result.pos[:,:] = farray([ [float(x)* BOHR_TO_ANG for x in row] \
+
+   elements = [ f[0] for f in field_list]
+
+   # Look up names of elements specified by atomic number
+   elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
+
+   result.set_atoms(elements)
+   result.pos[:,:] = farray([ [float(x)* BOHR for x in row] \
                       for row in [field[2:5] for field in field_list]])
 
    # And finally the forces, which are in units of hartree/bohr
    field_list = [line.split() for line in forcelines]
-   force = farray([ [float(x)*HARTREE_TO_EV/BOHR_TO_ANG for x in row] \
+   force = farray([ [float(x)*HARTREE/BOHR for x in row] \
                       for row in [field[2:5] for field in field_list]])
-   result.add_property('force', force)
+   result.add_property('force', 0.0, n_cols=3)
    result.force[:] = force
-
-   result.add_property('norm_f',norm(force))
 
    return result
 
@@ -455,7 +462,7 @@ def read_castep_output(castep_file, cluster=None, abort=True):
 
    got_header = False
    while True:
-      line = castep_file.readline()
+      line = castep_file.next()
       if line == '': break
       castep_output.append(line)
       if line == ' |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |\n':
