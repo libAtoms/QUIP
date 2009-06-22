@@ -1,7 +1,7 @@
 from quippy import *
 from math import ceil
 import time
-from pylab import *
+#from pylab import *
 from StringIO import StringIO
 
 def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
@@ -699,15 +699,19 @@ def try_new_params(task='md'):
       ds.rescale_velo(300.0)
       ds.zero_momentum()
 
-      traj = ds.run(p, dt=1.0, n_steps=100, save_interval=1, args_str=args_str({'set_properties':True}))
+      traj = ds.run(p, dt=1.0, n_steps=100, save_interval=1, calc_dipoles=True)
       return AtomsList(traj)
    elif task == 'minim':
 
       mp = MetaPotential('Simple', p)
+      cio = CInOutput('minim.xyz', OUTPUT)
 
-      nsteps = mp.minim(a, 'cg', 1e-3, 100, do_pos=True, do_lat=True)
+      verbosity_push(VERBOSE)
+      nsteps = mp.minim(a, 'cg', 1e-3, 100, do_pos=True, do_lat=True, do_print=True,
+                        print_cinoutput=cio, calc_force=True, calc_dipoles=True)
+      verbosity_pop()
 
-      p.calc(a,e=e,f=f,virial=v,args_str=args_str({'set_properties':True}))
+      p.calc(a,e=e,f=f,virial=v, calc_dipoles=True)
       a.add_property('force', 0.0, n_cols=3)
       a.force[:] = f
       a.params['e'] = e
@@ -717,13 +721,13 @@ def try_new_params(task='md'):
    elif task == 'singlepoint':
 
       p.print_()
-      p.calc(a, e=e, f=f, virial=v, args_str="set_properties=T")
+      p.calc(a, calc_energy=True, calc_force=True, calc_dipoles=True)
 
-      return a, v
+      return a
       
    else:
       raise ValueError('Unknown task %s' % task)
 
 
-a = try_new_params(task='md')
+a = try_new_params(task='minim')
 
