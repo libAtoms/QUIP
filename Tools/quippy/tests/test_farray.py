@@ -17,6 +17,9 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(list(frange(3)), [1,2,3])
       self.assertEqual(list(frange(3,6,2)), [3, 5])
 
+   def testfenumerate(self):
+      self.assertEqual(list(fenumerate(frange(3))), [(1,1), (2,2), (3,3)])
+
    def testfzeros0(self):
       self.assertEqual(self.z0.shape, (0,))
 
