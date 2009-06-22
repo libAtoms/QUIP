@@ -2,6 +2,7 @@ import sys, string, os, operator
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
+from framereader import GenericFrameReader, FrameReaderTypes
 
 import xml.dom.minidom
 
@@ -365,6 +366,11 @@ class CastepParam(OrderedDict):
 
 
 def read_geom(geom):
+   """Read Atoms from CASTEP .geom file.
+
+   Read a single Atoms object from filename, open .geom file, or iteator returning
+   strings. Raises IOError on EOF."""
+   
    opened = False
    if type(geom) == type(''):
       geom = open(geom, 'r')
@@ -373,7 +379,10 @@ def read_geom(geom):
    geom = iter(geom)
 
    lines = []
-   line = geom.next().strip()
+   try:
+      line = geom.next().strip()
+   except StopIteration:
+      raise IOError
 
    # Skip header if present
    if line.startswith('BEGIN header'):
@@ -446,6 +455,22 @@ def read_geom(geom):
    result.force[:] = force
 
    return result
+
+class CastepGeomFrameReader(GenericFrameReader):
+   def _init(self, source):
+      if type(source) == type(''):
+         source = open(source, 'r')
+      source = iter(source)
+
+      self.is_lazy = False
+      self._list = []
+      while True:
+         try:
+            self._list.append(read_geom(source))
+         except IOError:
+            break
+
+FrameReaderTypes['.geom'] = CastepGeomFrameReader
 
 
 def read_castep_output(castep_file, cluster=None, abort=True):
@@ -634,6 +659,32 @@ def read_castep_output(castep_file, cluster=None, abort=True):
             raise ValueError('No populations found in castep file')
 
    return cluster
+
+
+class CastepOutputFrameReader(GenericFrameReader):
+   def _init(self, source):
+      if type(source) == type(''):
+         source = open(source, 'r')
+      source = iter(source)
+
+      self._casteplist = []
+      while True:
+         try:
+            self._casteplist.append(read_castep_output(source))
+         except IOError:
+            break
+
+   def _close(self):
+      pass
+
+   def _getframe(self, frame):
+      return self._casteplist[frame]
+
+   def _nframe(self):
+      return len(self._casteplist)
+
+FrameReaderTypes['.castep'] = CastepOutputFrameReader
+
 
 def get_valid_keywords(castep):
    """Determines valid cell and parameter keyword by invoking castep with -help parameter.
