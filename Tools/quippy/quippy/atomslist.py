@@ -27,6 +27,8 @@ class AtomsList(object):
       for a in self:
          dest.write(self)
 
+
+FrameReaderTypes = {}
        
 class GenericFrameReader(AtomsList):
    """Read-only access to an XYZ or NetCDF trajectory. The file is opened
@@ -122,9 +124,20 @@ class GenericFrameReader(AtomsList):
       for i in range(len(self)):
          del self[i]
 
-
 try:
    from quippy import CInOutput
+   got_cinoutput = True
+except ImportError:
+   got_cinoutput = False
+
+try:
+   from netCDF4 import Dataset
+   got_netcdf4 = True
+except ImportError:
+   got_netcdf4 = False
+
+
+if got_cinoutput:
    
    class CInOutputFrameReader(GenericFrameReader):
       def _init(self, source):
@@ -139,23 +152,21 @@ try:
 
       def _nframe(self):
          return self._cio.n_frame
+
+   FrameReaderTypes['xyz'] = CInOutputFrameReader
+   FrameReaderTypes['nc'] = CInOutputFrameReader
    
-   FrameReader = CInOutputFrameReader
-except ImportError:
-   print 'Cannot import CInOutput. CInoutputFrameReader disabled.'
 
-try:
-   from netCDF4 import Dataset
 
-   class NetCDFFrameReader(CInOutputFrameReader,Dataset):
+if got_netcdf4:
+
+   class NetCDFFrameReader(Dataset):
 
       def _init(self, source):
          Dataset.__init__(self, source)
-         CInOutputFrameReader._init(self, source)
 
       def _close(self):
          self.close()
-         CInOutputFrameReader._close()
 
       def __getattr__(self, name):
          return Dataset.__getattr__(self,name)
@@ -165,65 +176,94 @@ try:
             self.__dict__[name] = value
          else:
             Dataset.__setattr__(self, name, value)
-         
-
-##       def _getframe(self, frame):
-##          from quippy import Atoms, make_lattice
-##          from math import pi
-##          from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-##                              T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-##                              T_CHAR, T_LOGICAL, T_INTEGER_A,
-##                              T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
-
-##          DEG_TO_RAD = pi/180.0
-
-##          remap_names = {'coordinates': 'pos',
-##                         'velocities': 'velo',
-##                         'cell_lengths': None,
-##                         'cell_angles': None}
-         
-##          prop_type_to_value = {PROPERTY_INT: 0,
-##                                PROPERTY_REAL: 0.0,
-##                                PROPERTY_STR: "",
-##                                PROPERTY_LOGICAL: False}
-
-##          prop_dim_to_ncols = {('frame','atom','spatial'): 3,
-##                               ('frame','atom','label'): 1,
-##                               ('frame', 'atom'): 1}
 
 
-##          cl = self.variables['cell_lengths'][frame]
-##          ca = self.variables['cell_angles'][frame]
-##          lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
+      def _getframe(self, frame):
+         from quippy import Atoms, make_lattice
+         from math import pi
+         from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
+                             T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                             T_CHAR, T_LOGICAL, T_INTEGER_A,
+                             T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
 
-##          a = Atoms(len(self.dimensions['atom']),lattice)
+         DEG_TO_RAD = pi/180.0
 
-##          for name, var in self.variables.iteritems():
-##             name = remap_names.get(name, name)
+         remap_names = {'coordinates': 'pos',
+                        'velocities': 'velo',
+                        'cell_lengths': None,
+                        'cell_angles': None}
 
-##             if name is None:
-##                continue
+         prop_type_to_value = {PROPERTY_INT: 0,
+                               PROPERTY_REAL: 0.0,
+                               PROPERTY_STR: "",
+                               PROPERTY_LOGICAL: False}
 
-##             if 'frame' in var.dimensions:
-##                if 'atom' in var.dimensions:
-##                   # It's a property
-##                   a.add_property(name, prop_type_to_value[var.type],
-##                                  n_cols=prop_dim_to_ncols[var.dimensions])
-##                   getattr(a,name.lower())[...] = var[frame].T
-##                else:
-##                   # It's a param
-##                   if var.dimensions == ('frame','string'):
-##                      # if it's a single string, join it and strip it
-##                      a.params[name] = ''.join(var[frame]).strip()
-##                   else:
-##                      a.params[name] = var[frame]
-                  
-##          return a
-
-##       def _nframe(self):
-##          return len(self.dimensions['frame'])
-
-except ImportError:
-   print 'Cannot import netCDF4. NetCDFFrameReader disabled.'
+         prop_dim_to_ncols = {('frame','atom','spatial'): 3,
+                              ('frame','atom','label'): 1,
+                              ('frame', 'atom'): 1}
 
 
+         cl = self.variables['cell_lengths'][frame]
+         ca = self.variables['cell_angles'][frame]
+         lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
+
+         a = Atoms(len(self.dimensions['atom']),lattice)
+
+         for name, var in self.variables.iteritems():
+            name = remap_names.get(name, name)
+
+            if name is None:
+               continue
+
+            if 'frame' in var.dimensions:
+               if 'atom' in var.dimensions:
+                  # It's a property
+                  a.add_property(name, prop_type_to_value[var.type],
+                                 n_cols=prop_dim_to_ncols[var.dimensions])
+                  getattr(a,name.lower())[...] = var[frame].T
+               else:
+                  # It's a param
+                  if var.dimensions == ('frame','string'):
+                     # if it's a single string, join it and strip it
+                     a.params[name] = ''.join(var[frame]).strip()
+                  else:
+                     a.params[name] = var[frame]
+
+         return a
+
+      def _nframe(self):
+         return len(self.dimensions['frame'])
+
+   FrameReaderTypes['nc'] = NetCDFFrameReader
+
+   if got_cinoutput:
+
+      class CInOutputNetCDFFrameReader(CInOutputFrameReader, NetCDFFrameReader):
+         """Subclass of NetCDFFrameReader which uses CInOutput to do bulk reading for increased speed."""
+
+         def _init(self, source):
+            CInOutputFrameReader._init(self, source)
+            NetCDFFrameReader._init(self, source)
+
+         def _close(self):
+            CInOutputFrameReader._close(self)
+            NetCDFFrameReader._close(self)
+
+         def _getframe(self, frame):
+            return CInOutputFrameReader._getframe(self, frame)
+
+         def _nframe(self):
+            return CInOutputFrameReader._nframe(self)
+
+      FrameReaderTypes['nc'] = CInOutputNetCDFFrameReader
+
+
+
+del got_cinoutput, got_netcdf4
+
+def FrameReader(source):
+   if isinstance(source, str):
+      path, ext = os.path.splitext(source)
+   return FrameReaderTypes.get(ext, CInOutputFrameReader)(source)
+      
+   
