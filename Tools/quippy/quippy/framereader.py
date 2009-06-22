@@ -1,3 +1,5 @@
+import os
+
 class AtomsList(object):
    def __init__(self, seq):
       if not hasattr(seq, '__iter__'):
@@ -42,13 +44,15 @@ class GenericFrameReader(AtomsList):
    """
    def __init__(self, source, start=0, stop=-1, step=None, count=None):
 
+      self.is_lazy = True
       self._init(source)
       if count is not None:
          self._frames = slice(start,start+count,1)
       else:
          self._frames = slice(start,stop,step)
 
-      self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
+      if self.is_lazy:
+         self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
       self._iterframes = None
 
 
@@ -59,27 +63,30 @@ class GenericFrameReader(AtomsList):
       return len(range(*self._frames.indices(self._nframe()+1)))
 
    def __getitem__(self, frame):
-      start, stop, step = self._frames.indices(self._nframe()+1)
+      if self.is_lazy:
+         start, stop, step = self._frames.indices(self._nframe()+1)
 
-      if isinstance(frame, int):
-         if frame < 0: frame = frame + (stop - start)
-         if start + frame >= stop:
-            raise ValueError("frame %d out of range %d" % (start + frame, stop))
-         if self._list[frame] is None:
-            self._list[frame] = self._getframe(start+frame)
-         return self._list[frame]
+         if isinstance(frame, int):
+            if frame < 0: frame = frame + (stop - start)
+            if start + frame >= stop:
+               raise ValueError("frame %d out of range %d" % (start + frame, stop))
+            if self._list[frame] is None:
+               self._list[frame] = self._getframe(start+frame)
+            return self._list[frame]
 
-      elif isinstance(frame, slice):
-         allframes = range(start, stop, step)
-         subframes = [ allframes[i] for i in range(*frame.indices(len(allframes))) ]
-         res = []
-         for f in subframes:
-            if self._list[f] is None:
-               self._list[f] = self._getframe(f)
-            res.append(self._list[f])
-         return res
+         elif isinstance(frame, slice):
+            allframes = range(start, stop, step)
+            subframes = [ allframes[i] for i in range(*frame.indices(len(allframes))) ]
+            res = []
+            for f in subframes:
+               if self._list[f] is None:
+                  self._list[f] = self._getframe(f)
+               res.append(self._list[f])
+            return res
+         else:
+            raise TypeError('frame should be either an integer or a slice')
       else:
-         raise TypeError('frame should be either an integer or a slice')
+         return self._list[frame]
 
    def __delitem__(self, frame):
       a = self._list[frame]
@@ -124,6 +131,9 @@ class GenericFrameReader(AtomsList):
       for i in range(len(self)):
          del self[i]
 
+   def _nframe(self):
+      return len(self._list)
+
 try:
    from quippy import CInOutput
    got_cinoutput = True
@@ -153,8 +163,8 @@ if got_cinoutput:
       def _nframe(self):
          return self._cio.n_frame
 
-   FrameReaderTypes['xyz'] = CInOutputFrameReader
-   FrameReaderTypes['nc'] = CInOutputFrameReader
+   FrameReaderTypes['.xyz'] = CInOutputFrameReader
+   FrameReaderTypes['.nc'] = CInOutputFrameReader
    
 
 
@@ -234,7 +244,7 @@ if got_netcdf4:
       def _nframe(self):
          return len(self.dimensions['frame'])
 
-   FrameReaderTypes['nc'] = NetCDFFrameReader
+   FrameReaderTypes['.nc'] = NetCDFFrameReader
 
    if got_cinoutput:
 
@@ -255,7 +265,7 @@ if got_netcdf4:
          def _nframe(self):
             return CInOutputFrameReader._nframe(self)
 
-      FrameReaderTypes['nc'] = CInOutputNetCDFFrameReader
+      FrameReaderTypes['.nc'] = CInOutputNetCDFFrameReader
 
 
 
@@ -264,6 +274,10 @@ del got_cinoutput, got_netcdf4
 def FrameReader(source):
    if isinstance(source, str):
       path, ext = os.path.splitext(source)
-   return FrameReaderTypes.get(ext, CInOutputFrameReader)(source)
+
+   try:
+      return FrameReaderTypes[ext](source)
+   except KeyError:
+      raise ValueError('No FrameReader registered for files of type %s' % ext)
       
    
