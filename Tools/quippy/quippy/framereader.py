@@ -134,6 +134,9 @@ class GenericFrameReader(AtomsList):
    def _nframe(self):
       return len(self._list)
 
+   def _close(self):
+      pass
+
 try:
    from quippy import CInOutput
    got_cinoutput = True
