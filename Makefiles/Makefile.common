@@ -44,6 +44,7 @@ ifeq (${HAVE_LARSPOT},1)
 endif
 ifeq (${HAVE_ASAP},1)
   SYSLIBS += -L${ASAP_LIBDIR} -lasap
+  INCLUDES += -I${ASAP_LIBDIR}
   DEFINES += -DHAVE_ASAP
 endif
 ifeq (${HAVE_GP},1)
