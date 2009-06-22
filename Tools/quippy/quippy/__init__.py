@@ -51,7 +51,7 @@ del extras
 del fortran_class_prefix
                       
 from farray import *
-from atomslist import *
+from framereader import *
 
 # Convert periodic table arrays
 ElementName = farray([s.strip() for s in ElementName[2:]])
