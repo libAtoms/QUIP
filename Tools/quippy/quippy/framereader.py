@@ -33,7 +33,9 @@ class AtomsList(object):
 FrameReaderTypes = {}
        
 class GenericFrameReader(AtomsList):
-   """Read-only access to an XYZ or NetCDF trajectory. The file is opened
+   """Abstract base class for reading sequence of Atoms objects from file.
+
+   Provides read-only access to a trajectory. The file is opened
    and then read lazily as frames are asked for. Supports list-like interface:
 
    fr = FrameReader('foo.xyz')
@@ -42,19 +44,17 @@ class GenericFrameReader(AtomsList):
    ats = fr[0:10:3] # Every third frame between 0 and 10
    ats = [ a for a in fr if a.n == 100 ]  # Only frames with exactly 100 atoms
    """
+
    def __init__(self, source, start=0, stop=-1, step=None, count=None):
 
-      self.is_lazy = True
+      self._list = []
       self._init(source)
       if count is not None:
          self._frames = slice(start,start+count,1)
       else:
          self._frames = slice(start,stop,step)
 
-      if self.is_lazy:
-         self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
       self._iterframes = None
-
 
    def __del__(self):
       self._close()
@@ -63,30 +63,7 @@ class GenericFrameReader(AtomsList):
       return len(range(*self._frames.indices(self._nframe()+1)))
 
    def __getitem__(self, frame):
-      if self.is_lazy:
-         start, stop, step = self._frames.indices(self._nframe()+1)
-
-         if isinstance(frame, int):
-            if frame < 0: frame = frame + (stop - start)
-            if start + frame >= stop:
-               raise ValueError("frame %d out of range %d" % (start + frame, stop))
-            if self._list[frame] is None:
-               self._list[frame] = self._getframe(start+frame)
-            return self._list[frame]
-
-         elif isinstance(frame, slice):
-            allframes = range(start, stop, step)
-            subframes = [ allframes[i] for i in range(*frame.indices(len(allframes))) ]
-            res = []
-            for f in subframes:
-               if self._list[f] is None:
-                  self._list[f] = self._getframe(f)
-               res.append(self._list[f])
-            return res
-         else:
-            raise TypeError('frame should be either an integer or a slice')
-      else:
-         return self._list[frame]
+      return self._list[frame]
 
    def __delitem__(self, frame):
       a = self._list[frame]
@@ -116,6 +93,43 @@ class GenericFrameReader(AtomsList):
          yield self[frame]
       raise StopIteration
 
+   def _nframe(self):
+      return len(self._list)
+
+   def _getframe(self):
+      raise NotImplementedError
+
+   def _close(self):
+      pass
+
+class LazyFrameReader(GenericFrameReader):
+   def _init(self, source):
+      GenericFrameReader._init(self, source)
+      self._list = [None for a in range(*(self._frames.indices(self._nframe()+1)))]
+
+   def _getframe(self, frame):
+      start, stop, step = self._frames.indices(self._nframe()+1)
+
+      if isinstance(frame, int):
+         if frame < 0: frame = frame + (stop - start)
+         if start + frame >= stop:
+            raise ValueError("frame %d out of range %d" % (start + frame, stop))
+         if self._list[frame] is None:
+            self._list[frame] = self._getframe(start+frame)
+         return self._list[frame]
+
+      elif isinstance(frame, slice):
+         allframes = range(start, stop, step)
+         subframes = [ allframes[i] for i in range(*frame.indices(len(allframes))) ]
+         res = []
+         for f in subframes:
+            if self._list[f] is None:
+               self._list[f] = self._getframe(f)
+            res.append(self._list[f])
+         return res
+      else:
+         raise TypeError('frame should be either an integer or a slice')
+
    def loadall(self, progress=True, progress_width=80, show_value=True):
       if progress:
          from progbar import ProgressBar
@@ -131,8 +145,6 @@ class GenericFrameReader(AtomsList):
       for i in range(len(self)):
          del self[i]
 
-   def _nframe(self):
-      return len(self._list)
 
    def _close(self):
       pass
@@ -152,7 +164,7 @@ except ImportError:
 
 if got_cinoutput:
    
-   class CInOutputFrameReader(GenericFrameReader):
+   class CInOutputFrameReader(LazyFrameReader):
       def _init(self, source):
          self._cio = CInOutput(source)
          self._cio.query()
@@ -166,8 +178,8 @@ if got_cinoutput:
       def _nframe(self):
          return self._cio.n_frame
 
-   FrameReaderTypes['.xyz'] = CInOutputFrameReader
-   FrameReaderTypes['.nc'] = CInOutputFrameReader
+   FrameReaderTypes['xyz'] = CInOutputFrameReader
+   FrameReaderTypes['nc'] = CInOutputFrameReader
    
 
 
@@ -247,7 +259,7 @@ if got_netcdf4:
       def _nframe(self):
          return len(self.dimensions['frame'])
 
-   FrameReaderTypes['.nc'] = NetCDFFrameReader
+   FrameReaderTypes['nc'] = NetCDFFrameReader
 
    if got_cinoutput:
 
@@ -268,19 +280,40 @@ if got_netcdf4:
          def _nframe(self):
             return CInOutputFrameReader._nframe(self)
 
-      FrameReaderTypes['.nc'] = CInOutputNetCDFFrameReader
+      FrameReaderTypes['nc'] = CInOutputNetCDFFrameReader
 
 
 
 del got_cinoutput, got_netcdf4
 
-def FrameReader(source):
-   if isinstance(source, str):
-      path, ext = os.path.splitext(source)
+def FrameReader(source, format=None, framereader=None):
 
-   try:
-      return FrameReaderTypes[ext](source)
-   except KeyError:
-      raise ValueError('No FrameReader registered for files of type %s' % ext)
+   if framereader is not None:
+      return framereader(source)
+   else:
+      if format is None:
+         path, ext = os.path.splitext(source)
+         format = ext[1:] # throw away leading .
+      try:
+         return FrameReaderTypes[format](source)
+      except KeyError:
+         raise ValueError('No FrameReader registered for files of type %s' % ext)
       
-   
+def FrameReaderFactory(name, ext, init=None, close=None, getframe=None, nframe=None, 
+                       is_lazy=False):
+   if is_lazy:
+      new_cls = type(object)(name, (LazyFrameReader,))
+   else:
+      new_cls = type(object)(name, (GenericFrameReader,))
+
+   if init is not None:
+      new_cls._init = init
+      
+   if getframe is not None:
+      new_cls._getframe = getframe
+
+   if nframe is not None:
+      new_cls._nframe = nframe
+
+   FrameReaderTypes[ext] = new_cls
+   return new_cls
