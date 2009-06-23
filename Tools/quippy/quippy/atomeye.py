@@ -62,7 +62,7 @@ class AtomEyeView(object):
         if self.is_alive: return
         
         if self.atoms is None:
-            atoms = 0
+            theat = None
             title = 'null'
         else:
             if hasattr(self.atoms, '__iter__'):
