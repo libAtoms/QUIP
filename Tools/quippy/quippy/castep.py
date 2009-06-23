@@ -2,7 +2,7 @@ import sys, string, os, operator
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
-from framereader import GenericFrameReader, FrameReaderTypes
+from framereader import GenericFrameReader, LazyFrameReader, FrameReaderTypes
 
 import xml.dom.minidom
 
@@ -255,7 +255,17 @@ class CastepCell(OrderedDict):
          self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
 
+class CastepCellFrameReader(LazyFrameReader):
+   """FrameReader subclass to read a single frame from CASTEP .cell file"""
+   
+   def _init(self, source):
+      self._cell = CastepCell(source)
 
+   def _nframes(self):
+      return 1
+
+   def _getframe(self, frame):
+      return self._cell.to_atoms()
 
 
 class CastepParam(OrderedDict):
@@ -420,10 +430,10 @@ def read_geom(geom):
    lattice = farray([ [float(x)* BOHR for x in row[0:3]]
                       for row in map(string.split, lattice_lines) ])
 
-   # Then optionally stress tensor
+   # Then optionally virial tensor
    stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
-   params['stress'] = str(farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
-                                   for row in map(string.split, stress_lines) ]))
+   params['virial'] = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
+                               for row in map(string.split, stress_lines) ]).reshape((9,))
 
    # Find positions and forces
    poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -457,12 +467,13 @@ def read_geom(geom):
    return result
 
 class CastepGeomFrameReader(GenericFrameReader):
+   is_lazy = False
+
    def _init(self, source):
       if type(source) == type(''):
          source = open(source, 'r')
       source = iter(source)
 
-      self.is_lazy = False
       self._list = []
       while True:
          try:
@@ -470,7 +481,7 @@ class CastepGeomFrameReader(GenericFrameReader):
          except IOError:
             break
 
-FrameReaderTypes['.geom'] = CastepGeomFrameReader
+FrameReaderTypes['geom'] = CastepGeomFrameReader
 
 
 def read_castep_output(castep_file, cluster=None, abort=True):
@@ -683,7 +694,7 @@ class CastepOutputFrameReader(GenericFrameReader):
    def _nframe(self):
       return len(self._casteplist)
 
-FrameReaderTypes['.castep'] = CastepOutputFrameReader
+FrameReaderTypes['castep'] = CastepOutputFrameReader
 
 
 def get_valid_keywords(castep):
