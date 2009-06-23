@@ -1077,9 +1077,9 @@ contains
     old_n = cluster_list%N
     do 
        if (hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. do_same_lattice , alt_connect=at%hysteretic_connect)
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
        else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. do_same_lattice)
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. same_lattice)
        endif
        do j=1,nextlist%N
           jj = nextlist%int(1,j)
