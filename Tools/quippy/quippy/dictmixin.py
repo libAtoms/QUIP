@@ -22,6 +22,8 @@ class DictMixin:
     def __iter__(self):
         for k in self.keys():
             yield k
+    def __len__(self):
+	return len(self.keys())
 
     # third level uses second level instead of first
     def __contains__(self, key):
