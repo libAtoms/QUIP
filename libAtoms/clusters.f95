@@ -133,6 +133,7 @@ contains
 
     do_min_images_only = .false.
     if (present(min_images_only)) do_min_images_only = min_images_only
+    call print('bfs_step: do_min_images_only = '//do_min_images_only, NERD)
 
     if(input%intsize /= 4 .or. input%realsize /= 0) &
          call system_abort("bfs_step: input table must have intsize=4.")
@@ -1076,9 +1077,9 @@ contains
     old_n = cluster_list%N
     do 
        if (hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic), alt_connect=at%hysteretic_connect)
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. do_same_lattice , alt_connect=at%hysteretic_connect)
        else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic))
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. do_same_lattice)
        endif
        do j=1,nextlist%N
           jj = nextlist%int(1,j)
