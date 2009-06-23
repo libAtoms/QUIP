@@ -151,7 +151,75 @@ cut_off_energy          : 200
 devel_code              : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD
 mix_charge_amp		: 0.25"""
 
-      self.castep_lines = [s+"\n" for s in castep_output.split("\n")]
+      self.castep_output = """ +-------------------------------------------------+
+ |                                                 |
+ |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |
+ |     C     A  A  S       T    E      P   P       |
+ |     C     AAAA   SS     T    EEE    PPPP        |
+ |     C     A  A     S    T    E      P           |
+ |      CCC  A  A  SSS     T    EEEEE  P           |
+ |                                                 |
+ +-------------------------------------------------+
+ |                                                 |
+ | Welcome to Academic Release CASTEP version 4.4  |
+ | Ab Initio Total Energy Program                  |
+ |                                                 |
+ | Authors:                                        |
+ | M. Segall, M. Probert, C. Pickard, P. Hasnip,   |
+ | S. Clark, K. Refson, M. Payne                   |
+ |                                                 |
+ | Contributors:                                   |
+ | P. Lindan, P. Haynes, J. White, V. Milman,      |
+ | N. Govind, M. Gibson, P. Tulip, V. Cocula,      |
+ | B. Montanari, D. Quigley, M. Glover,            |
+ | L. Bernasconi, A. Perlov, M. Plummer            |
+ |                                                 |
+ | Copyright (c) 2000 - 2008                       |
+ |                                                 |
+ |     Distributed under the terms of an           |
+ |     Agreement between the United Kingdom        |
+ |     Car-Parrinello (UKCP) Consortium,           |
+ |     Daresbury Laboratory and Accelrys, Inc.     |
+ |                                                 |
+ | Please cite                                     |
+ |                                                 |
+ |     "First principles methods using CASTEP"     |
+ |                                                 |
+ |         Zeitschrift fuer Kristallographie       |
+ |           220(5-6) pp. 567-570 (2005)           |
+ |                                                 |
+ | S. J. Clark, M. D. Segall, C. J. Pickard,       |
+ | P. J. Hasnip, M. J. Probert, K. Refson,         |
+ | M. C. Payne                                     |
+ |                                                 |
+ |       in all publications arising from          |
+ |              your use of CASTEP                 |
+ |                                                 |
+ +-------------------------------------------------+
+ 
+
+ ******************************* User Parameters *******************************
+iprint          : 3                                       # verbosity control (I)
+reuse           : NULL                                    # reuse filename (S)
+task            : SinglePoint                             # type of calculation (S)
+optstrategy     : speed                                   # optimization strategy (S)
+xcfunctional    : PBE                                     # exchange-correlation functional (S)
+cutoffenergy    : 200.0000000 ev                          # maximum energy of planewaves in basis set (P)
+finitebasiscorr : none                                    # finite basis set correction (S)
+spinpolarised   : F                                       # spin polarised (L)
+metalsmethod    : DM                                      # treatment of metals or finite temperature insulator (S)
+elecenergytol   : 0.0001000 ev                            # total energy per atom convergence tolerance (P)
+maxscfcycles    : 60                                      # maximum SCF cycles (I)
+fixoccupancy    : F                                       # treat system as an insulator (L)
+numdumpcycles   : -1                                      # frequency of wavefunction dumps (I)
+mixchargeamp    : 0.2500000                               # charge density mixing amplitude (R)
+popncalculate   : F                                       # population analysis on/off (L)
+develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
+
+ *******************************************************************************
+  
+"""
+      self.castep_lines = [s+"\n" for s in self.castep_output.split("\n")]
 
 
       self.param_lines = self.param_str.split("\n")
@@ -331,6 +399,10 @@ class TestReadGeom(unittest.TestCase):
 
    def testspecies(self):
       self.assert_(all(self.at.species.stripstrings() == 'Si'))
+      self.assertEqual((self.at.species.stripstrings() == 'Si').count(), 28)
+      self.assertEqual(self.at.n, 28)
+      print self.at.energy
+
 
    def testframereader(self):
       list(castep.CastepGeomFrameReader(self.geom_lines))
@@ -347,71 +419,3 @@ if __name__ == '__main__':
    unittest.TextTestRunner(verbosity=2).run(suite)
 
 
-castep_output=""" +-------------------------------------------------+
- |                                                 |
- |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |
- |     C     A  A  S       T    E      P   P       |
- |     C     AAAA   SS     T    EEE    PPPP        |
- |     C     A  A     S    T    E      P           |
- |      CCC  A  A  SSS     T    EEEEE  P           |
- |                                                 |
- +-------------------------------------------------+
- |                                                 |
- | Welcome to Academic Release CASTEP version 4.4  |
- | Ab Initio Total Energy Program                  |
- |                                                 |
- | Authors:                                        |
- | M. Segall, M. Probert, C. Pickard, P. Hasnip,   |
- | S. Clark, K. Refson, M. Payne                   |
- |                                                 |
- | Contributors:                                   |
- | P. Lindan, P. Haynes, J. White, V. Milman,      |
- | N. Govind, M. Gibson, P. Tulip, V. Cocula,      |
- | B. Montanari, D. Quigley, M. Glover,            |
- | L. Bernasconi, A. Perlov, M. Plummer            |
- |                                                 |
- | Copyright (c) 2000 - 2008                       |
- |                                                 |
- |     Distributed under the terms of an           |
- |     Agreement between the United Kingdom        |
- |     Car-Parrinello (UKCP) Consortium,           |
- |     Daresbury Laboratory and Accelrys, Inc.     |
- |                                                 |
- | Please cite                                     |
- |                                                 |
- |     "First principles methods using CASTEP"     |
- |                                                 |
- |         Zeitschrift fuer Kristallographie       |
- |           220(5-6) pp. 567-570 (2005)           |
- |                                                 |
- | S. J. Clark, M. D. Segall, C. J. Pickard,       |
- | P. J. Hasnip, M. J. Probert, K. Refson,         |
- | M. C. Payne                                     |
- |                                                 |
- |       in all publications arising from          |
- |              your use of CASTEP                 |
- |                                                 |
- +-------------------------------------------------+
- 
-
- ******************************* User Parameters *******************************
-iprint          : 3                                       # verbosity control (I)
-reuse           : NULL                                    # reuse filename (S)
-task            : SinglePoint                             # type of calculation (S)
-optstrategy     : speed                                   # optimization strategy (S)
-xcfunctional    : PBE                                     # exchange-correlation functional (S)
-cutoffenergy    : 200.0000000 ev                          # maximum energy of planewaves in basis set (P)
-finitebasiscorr : none                                    # finite basis set correction (S)
-spinpolarised   : F                                       # spin polarised (L)
-metalsmethod    : DM                                      # treatment of metals or finite temperature insulator (S)
-elecenergytol   : 0.0001000 ev                            # total energy per atom convergence tolerance (P)
-maxscfcycles    : 60                                      # maximum SCF cycles (I)
-fixoccupancy    : F                                       # treat system as an insulator (L)
-numdumpcycles   : -1                                      # frequency of wavefunction dumps (I)
-mixchargeamp    : 0.2500000                               # charge density mixing amplitude (R)
-popncalculate   : F                                       # population analysis on/off (L)
-develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
-
- *******************************************************************************
-  
-"""
