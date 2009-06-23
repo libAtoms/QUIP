@@ -2,8 +2,6 @@
 
 import _atomeye, sys, numpy, time
 from math import ceil, log10
-
-from quippy import CInOutput
 from farray import *
 
 ATOMEYE_MAX_AUX_PROPS = 48
@@ -41,9 +39,6 @@ def on_new_window(iw):
 
 class AtomEyeView(object):
     def __init__(self, atoms=None, window_id=None, copy=None, frame=0, delta=1, property=None):
-
-        self._cio = CInOutput()
-        
         self.atoms = atoms
         self.frame = frame
         self.delta = delta
@@ -79,8 +74,6 @@ class AtomEyeView(object):
                 theat = self.atoms
                 title = 'atoms'
 
-            atoms = self._cio.update(theat)
-
         icopy = -1
         if copy is not None:
             if isinstance(copy, AtomEye):
@@ -91,7 +84,7 @@ class AtomEyeView(object):
                 raise TypeError('copy should be either an int or an AtomEye instance')
 
         self.is_alive = False
-        self._window_id = _atomeye.open_window(icopy,atoms)
+        self._window_id = _atomeye.open_window(icopy,theat)
         views[self._window_id] = self
         while not self.is_alive:
             time.sleep(0.1)
@@ -154,7 +147,7 @@ class AtomEyeView(object):
             self.atoms.add_property(property, fill)
         self.paint_property = property
         self.paint_value = value
-        _atomeye.load_atoms(self._window_id, 'paint', self._cio.update(self.atoms))
+        _atomeye.load_atoms(self._window_id, 'paint', self.atoms)
         self.aux_property_coloring(self.paint_property)
 
 
@@ -212,7 +205,7 @@ class AtomEyeView(object):
                 if col >= ATOMEYE_MAX_AUX_PROPS:
                     theat.properties.swap(theat.properties.keys()[2], property)
 
-        _atomeye.load_atoms(self._window_id, title, self._cio.update(theat))
+	_atomeye.load_atoms(self._window_id, title, theat)
         if property is not None:
             self.aux_property_coloring(property)
 
