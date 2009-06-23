@@ -1051,6 +1051,8 @@ contains
        return
     end if
 
+    if (other%n == 0) return
+
     ! we have ints
     if(allocated(this%int)) then
        if (.not.allocated(other%int))&
