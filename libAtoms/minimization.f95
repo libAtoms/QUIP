@@ -467,6 +467,7 @@ CONTAINS
 
        epsilon=b
        linmin=1
+       call print("  Linmin: Eb.feq.Ea, returning after one step", VERBOSE)
        return
     end if
 
