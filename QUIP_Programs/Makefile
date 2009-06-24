@@ -16,8 +16,8 @@ PROGRAMS = eval md lj_example md_example \
   analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search\
-  metapot_test tabletest lotf_metapot lotfpc_metapot ts_calculation
-	
+  metapot_test tabletest lotf_metapot lotfpc_metapot ts_calculation\
+  lotf_time
 
 LIBS =  -L. -lquiputils -lquip -latoms 
 LIBFILES = libatoms.a libquip.a libquiputils.a

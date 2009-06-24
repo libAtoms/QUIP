@@ -44,115 +44,126 @@
 ! subroutine version of the simple time-embedded LOTF extrapolation loop
 !
 
-subroutine lotf_time(pos, vel, force, Z, cell, timestep, thermo_time, n_extrap_steps)
+program lotf_time
+
+  ! 
+  ! this is an example program for LOTF which does time-embedding
+  ! i.e. fit springs for all atoms, and use these springs to advance the dynamics
+  ! for some number of steps in between calling a force model
+  !
+
 
   use libAtoms_module
-  use LOTF_module
+  use QUIP_module
+  use adjustablepotential_module
 
   implicit none
+
+  type(Atoms) :: at
+  type(Potential) :: pot
+  real(dp), allocatable :: f(:,:)
+  integer :: i, j, n_cycle, n_extrap
+  type(Table) :: fitlist
+  type(DynamicalSystem) :: ds, ds_saved
+  type(CInOutput) :: movie
   
-  real(dp), intent(inout):: pos(:,:), vel(:,:),force(:,:)
-  real(dp), intent(in)   :: cell(3,3), timestep, thermo_time
-  integer, intent(in)    :: Z(:)
-  integer, intent(in)    :: n_extrap_steps
   
-  type(DynamicalSystem)::ds
-  type(Atoms)::at, di
-  type(table)::fitforce
-  real(dp), allocatable::f0(:,:), f1(:,:), f(:,:), df(:,:)
-  real(dp)::de
-  integer:: n, i, Nat
-  integer, allocatable::fitlist(:)
-  logical, save::firstcall=.true.
+  call system_initialise(NORMAL)
+  call initialise(pot, 'FilePot command=./castep_driver.sh')
+  call initialise(movie, "movie.xyz", action=OUTPUT)
 
-
-  Nat = size(pos,2)
- 
-  if(firstcall) then
-     ! initialise program
-     call system_initialise(NORMAL,1) ! use SILENT for no output
-     firstcall = .false.
-  end if
-
-  ! create some atoms
-  call atoms_initialise(at, Nat, cell)
-  call atoms_set_cutoff(at, 4.0_dp)
-  at%pos = pos
-  at%Z = Z
+  ! read in initial configuration
+  call read(at, "start.xyz")
+  call set_cutoff(at, 4.0_dp)
   call calc_connect(at)
-  call calc_dists(at)
+
+  call initialise(ds, at)
+  call rescale_velo(ds, 300.0_dp)
+  
+  ! number of LOTF extrapolation cycles
+  n_cycle = 100
+
+  ! number of LOTF extrapolation steps in each cycle
+  n_extrap = 10
 
 
-  ! initialise dynamics
-  call ds_initialise(ds, at, vel)
-
-  ! allocate some force arrays
-  allocate(f0(3,Nat))
-  allocate(f1(3,Nat))
-  allocate(f(3,Nat))
-  allocate(fitlist(Nat))
-  allocate(df(3,Nat))
-
-  ! do something!
+  allocate(f(3,at%N))
 
 
-  do i=1,Nat
-     fitlist(i) = i
+  ! create fitlist - all atoms
+  call wipe(fitlist)
+  do i=1,ds%atoms%N
+     call append(fitlist, (/i, 0, 0, 0/))
   end do
 
 
-  call print('==================== Time embedding ====================')
+  call print_title('Time embedding')
      
-  ! compute default forces
-  call hybrid_force(ds%atoms, f0, SW_Force_noopt)
-  ! compute target forces
-  f1 = force
+  ! bootstrap the adjustable potential
+  call adjustable_potential_init(ds%atoms, fitlist, directionN=ds%atoms%N, &
+          method='SVD', nnonly=.true., &
+          spring_hops=2, map=.false.)
+  call calc(pot, ds%atoms, f=f) 
+  call adjustable_potential_optimise(ds%atoms, f, method='SVD')
 
-  ! copy force differences for the embedding zone 
-  df = f1-f0
-  call wipe(fitforce)
-  call append(fitforce, reshape(fitlist, (/1,Nat/)), df)
+  ! main loop
+  do i = 1,n_cycle
 
-  write(line, '(i0,a,i0,a)') Nat, " atoms, fitting on ", Nat, " atoms" 
-  call print(line)
-  call print("Fitting forces:", VERBOSE)   
-  call print(fitforce, VERBOSE)
-  call print("", VERBOSE)
-
-  call print('====================  Adjustable potential   ====================')
-
-  ! create and optimise adjustable potential
-  call adjustable_potential_init(ds%atoms, fitforce, Nat)
-  call adjustable_potential_optimise(ds%atoms, real_part(fitforce))
+     ! reinitialise LOTF interpolation 'springs'
+     call adjustable_potential_init(ds%atoms, fitlist, directionN=ds%atoms%N, &
+          method='SVD', nnonly=.true., &
+          spring_hops=2, map=.true.)
+     
+     call print_title('LOTF: Extrapolation')
   
-  
-  call print('====================        Dynamics         ====================')
+     ds_saved = ds
 
-  do i = 1, n_extrap_steps
+     ! extrapolation loop
+     do j = 1,n_extrap
 
-     ! get force from optimised adjustable potential
-     call adjustable_potential_force(ds%atoms, df)
-     call hybrid_force(ds%atoms, f, SW_Force_noopt)
-     f = f+df
-        
-     ! advance the dynamics
-     call advance_verlet(ds, 1.0_dp, f)
-     call ds_print_status(ds, 'D')
+        ! get force from optimised adjustable potential
+        call adjustable_potential_force(ds%atoms, f)
+
+        ! advance the dynamics
+        call advance_verlet(ds, 1.0_dp, f)
+        call ds_print_status(ds, 'E')
+
+     end do
+
+     call print_title('LOTF: Optimisation')
+
+     ! get new force from force-model (e.g. CASTEP)
+     call calc(pot, ds%atoms, f=f)
+
+     call adjustable_potential_optimise(ds%atoms, f, method='SVD')
+
+
+     call print_title('LOTF: Interpolation')
+
+     ! revert dynamical system
+     ds = ds_saved
+
+     ! interpolation loop
+     do j = 1,n_extrap
+
+        ! get force from optimised adjustable potential
+        call adjustable_potential_force(ds%atoms, f, interp=real(j-1,dp)/real(n_extrap,dp), &
+             interp_space=.false., interp_order='linear')
+
+        ! advance the dynamics
+        call advance_verlet(ds, 1.0_dp, f)
+        call ds_print_status(ds, 'I', instantaneous = .true.)
+
+        ! write movie of configurations
+        call write(movie, ds%atoms)
+     end do
+
+     ! update connectivity
+     call print_title('Connectivity update')
+     call calc_connect(ds%atoms)
+
+
   end do
 
-
-  pos = ds%atoms%pos
-  vel = ds%atoms%velo
-
-  ! need to compute final forces separately
-  call adjustable_potential_force(ds%atoms, df)
-  call hybrid_force(ds%atoms, f, SW_Force_noopt)
-  force = f+df
-
-  call Finalise(at)
-  call Finalise(ds)
-  call Finalise(fitforce)
-  deallocate(f0,f1,f,df, fitlist)
-
-end subroutine lotf_time
+end program lotf_time
 

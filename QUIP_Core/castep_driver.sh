@@ -147,9 +147,7 @@ for loop in 1 2 ; do # Loop at most twice: once reusing check file and once with
 
     if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
 	energy=`grep "Final Enthalpy" ${stem}.castep | awk '{print $5}'`
-    elif ! grep "fix_occupancy" ${stem}.param | grep -q 'true'; then
-	energy=`grep "Final energy" ${stem}.castep | awk '{print $4}'`
-    elif ! grep "finite_basis_corr" ${stem}.param | grep -q 'none'; then
+    elif grep -i "finite_basis_corr" ${stem}.param | grep -q '2'; then
 	energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | 
                 awk '{print $9}'`
     else
@@ -206,7 +204,7 @@ for loop in 1 2 ; do # Loop at most twice: once reusing check file and once with
     # Check there are no crazily large forces
     max_force=`print_property ${stem}.out force 0 | awk '{ print sqrt($1*$1 + $2*$2 + $3*$3) }' | sort -g -r | head -1`
     echo castep_driver ${stem}: max force is $max_force after iteration $loop
-    if (( `echo "$max_force > $max_force_tol" | bc -l` == 1)); then
+    if (( `echo "$max_force > $max_force_tol" | bc -l` == 1 )) ; then
         # Repeat without using checkfile
 	echo "castep_driver ${stem}: max force too large: repeating without check file"
 	cp ${stem}.param ${stem}.param.old
