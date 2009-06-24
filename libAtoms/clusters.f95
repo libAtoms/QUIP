@@ -1591,6 +1591,7 @@ contains
 !    call append(fitlist, embedlist)
 
     ! create region2 (fit region)
+    call wipe(tmpfitlist)
     n_region2 = 0
     do i = 0,fit_hops-1
        call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
