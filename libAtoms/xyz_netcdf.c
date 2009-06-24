@@ -1418,7 +1418,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
       //   netcdf_check(nc_put_vara_text(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,
       //			    &(atoms->str_data[PROPERTY_STRING_LENGTH*atoms->property_start[i]*atoms->n_atom])));
       for (j=0; j<atoms->n_atom; j++)
-	strncpy(tmpchar+PROPERTY_STRING_LENGTH*j, &property_str(atoms,i,0,0), PROPERTY_STRING_LENGTH);
+	strncpy(tmpchar+PROPERTY_STRING_LENGTH*j, &property_str(atoms,i,0,j), PROPERTY_STRING_LENGTH);
       netcdf_check(nc_put_vara_text(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,
 				    tmpchar));
       break;
