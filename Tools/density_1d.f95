@@ -7,41 +7,42 @@ program density_1d
     use libatoms_module
 
     implicit none
-  
+
     integer, parameter                    :: DISTANCES_INIT = 1000000
     integer, parameter                    :: DISTANCES_INCR = 1000000
-   
+
     type(Atoms)                           :: structure
     type(Table)                           :: distances, atom_table
     real(dp)                              :: d
     type(Inoutput)                        :: xyzfile, datafile
-    integer                               :: frame_count, frames_processed
+    integer                               :: frame_count, frames_processed, frames_processed_intermed
     integer                               :: status
     integer                               :: i, j
-  
+
     !Input
     type(Dictionary)                      :: params_in
     character(FIELD_LENGTH)               :: xyzfilename, datafilename
     real(dp)                              :: cutoff, bin_width
     character(FIELD_LENGTH)               :: mask
-    integer                               :: IO_Rate
+    integer                               :: IO_Rate, Density_Time_Evolution_Rate
     integer                               :: decimation
     integer                               :: from, to
     logical                               :: Gaussian_smoothing
     real(dp)                              :: Gaussian_sigma
-  
+
     !AtomMask processing
     character(30)                         :: prop_name
     logical                               :: list, prop
     integer                               :: prop_val
     integer                               :: Zb
-  
+
     !Histogram & its integration/normalisation
-    real(dp), allocatable, dimension(:,:) :: data
-    real(dp), allocatable, dimension(:)   :: hist, hist_sum
+    real(dp), allocatable, dimension(:,:) :: data, data_intermed
+    real(dp), allocatable, dimension(:)   :: hist, hist_sum, hist_sum_intermed
     integer                               :: num_bins, num_atoms
-    real(dp)                              :: hist_int
+    real(dp)                              :: hist_int, hist_int_intermed
     real(dp)                              :: density, r, dV
+    logical :: first_time
 
 
   !Start up LOTF, suppressing messages
@@ -62,6 +63,7 @@ program density_1d
     call param_register(params_in, 'from', '0', from)
     call param_register(params_in, 'to', '0', to)
     call param_register(params_in, 'IO_Rate', '1', IO_Rate)
+    call param_register(params_in, 'Density_Time_Evolution_Rate', '0', Density_Time_Evolution_Rate)
     call param_register(params_in, 'Gaussian', 'F', Gaussian_smoothing)
     call param_register(params_in, 'sigma', '0.0', Gaussian_sigma)
     if (.not. param_read_args(params_in, do_check = .true.)) then
@@ -91,11 +93,15 @@ program density_1d
     call print('    from Frame: '//from)
     call print('      to Frame: '//to)
     call print('       IO_Rate: '//IO_Rate)
+    call print('       Density_Time_Evolution_Rate: '//Density_Time_Evolution_Rate)
+    if (IO_Rate > 0 .and. Density_Time_Evolution_Rate > 0) then
+      call print('WARNING: IO_Rate = ' // IO_Rate // ' will effectively override Density_Time_Evolution_Rate='//Density_Time_Evolution_Rate, ERROR)
+    endif
     call print('     Gaussians: '//Gaussian_smoothing)
     if (Gaussian_smoothing) call print('        sigma: '//round(Gaussian_sigma,3))
     call print('==================================')
     call print('')
- 
+
     call initialise(xyzfile,xyzfilename,action=INPUT)
 
     !
@@ -123,83 +129,94 @@ program density_1d
        call print(line)
        call print('')
     end if
- 
+
     if (cutoff < 0.0_dp) call system_abort('Cutoff < 0.0 Angstroms')
     if (bin_width < 0.0_dp) call system_abort('Bin width < 0.0 Angstroms')
     if (Gaussian_smoothing.and.(Gaussian_sigma.le.0._dp)) call system_abort('sigma must be > 0._dp')
- 
+
     !Make num_bins and bin_width consistent
     num_bins = ceiling(cutoff / bin_width)
     bin_width = cutoff / real(num_bins,dp)
- 
-    allocate( hist(num_bins), hist_sum(num_bins), data(num_bins,3) )
- 
+
+    allocate( hist(num_bins), hist_sum(num_bins), hist_sum_intermed(num_bins), data(num_bins,3), data_intermed(num_bins,3) )
+
     hist = 0.0_dp
     hist_sum = 0.0_dp
     hist_int = 0.0_dp
- 
+
     !Set up the x coordinates of the plot
     do i = 1, num_bins
-       data(i,1) = (real(i,dp) - 0.5_dp) * bin_width
+       data_intermed(i,1) = (real(i,dp) - 0.5_dp) * bin_width
     end do
- 
+    data(:,1) = data_intermed(:,1)
+
     call print('')
     write(line,'(i0,a,f0.4,a,f0.4,a)') num_bins,' bins x ',bin_width,' Angstroms per bin = ',cutoff,' Angstroms cutoff'
     call print(line)
     call print('')
- 
+
     call print('Reading data...')
- 
-    !Set up cells
-    call read_xyz(structure, xyzfile, status=status)
- 
-    call atoms_set_cutoff(structure,cutoff)
- 
-    call allocate(distances,0,1,0,0,DISTANCES_INIT)
-    call set_increment(distances,DISTANCES_INCR)
- 
+
+    ! initialize frame counters
     frame_count = 0
     frames_processed = 0
- 
+    frames_processed_intermed = 0
+
+    !Set up cells
+    call read_xyz(structure, xyzfile, status=status)
+    frame_count = frame_count + 1
+
+    call atoms_set_cutoff(structure,cutoff)
+
+    call allocate(distances,0,1,0,0,DISTANCES_INIT)
+    call set_increment(distances,DISTANCES_INCR)
+
+    do while (frame_count < from)
+      call read_xyz(xyzfile,status)
+      if (status/=0) exit
+      frame_count = frame_count + 1
+    end do
+
+    first_time=.true.
+
     do
-     
+
        if (status/=0) exit
-  
+
        !Skip ahead (decimation-1) frames in the xyz file
-       frame_count = frame_count + 1
        do i = 1, (decimation-1)
           call read_xyz(xyzfile,status)
           if (status/=0) exit
           frame_count = frame_count + 1
        end do
-  
+
        if (status.ne.0) then
           call print('double exit')
           exit
        endif
-  
+
        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Frame ',frame_count
-  
+
        if (frame_count.ge.from) then
           if ((frame_count.gt.to) .and.(to.gt.0)) exit
-  
+
           call atoms_set_cutoff(structure,cutoff)
-  
+
           if (prop) call update_list(structure,atom_table,trim(prop_name),prop_val)
-       
+
           call wipe(distances)
-       
+
           num_atoms = 0
-     
+
           do j = 1, structure%N
-          
+
              !Count the atoms
              if (list) then
                 if (find(atom_table,j)/=0) num_atoms = num_atoms + 1
              else
                 if (structure%Z(j) == Zb) num_atoms = num_atoms + 1
              end if
-          
+
              !Do we have a "Mask" atom? Cycle if not
              if (list) then
                 if (find(atom_table,j)==0) cycle
@@ -215,77 +232,121 @@ program density_1d
                 !Add this distance to the list
                 call append(distances, d)
              end if
-             
+
           end do
-           
+
           frames_processed = frames_processed + 1
-     
+          frames_processed_intermed = frames_processed_intermed + 1
+
 #ifdef DEBUG
           call print('Number of atoms = '//num_atoms)
 #endif
-     
+
           !Calculate histogram
           if (.not.Gaussian_smoothing) then
              hist = histogram(distances%real(1,1:distances%N), 0.0_dp, cutoff, num_bins)
           else
              hist = Gaussian_histogram(distances%real(1,1:distances%N), 0.0_dp, cutoff, num_bins,Gaussian=Gaussian_smoothing,sigma=Gaussian_sigma)
           endif
-     
+
           !Calculate B atom density
           density = real(num_atoms,dp) / cell_volume(structure)
-     
+
           !Normalise histogram
           do i = 1, num_bins
              r = (real(i,dp) - 1._dp) * bin_width
              dV = 4.0_dp * PI * (r*r + r*bin_width + bin_width*bin_width/3.0_dp ) * bin_width
              hist(i) = hist(i) / (dV * density * 1._dp)
           end do
-        
+
           !Accumulate the data
           hist_sum = hist_sum + hist
-          
+          hist_sum_intermed = hist_sum_intermed + hist
+
           !copy the current averages into the y coordinates of the plot
           data(:,2) = hist_sum / real(frames_processed,dp)
-      
+          data_intermed(:,2) = hist_sum_intermed / real(frames_processed_intermed,dp)
+
           !integrate the average data
           hist_int = 0.0_dp
+          hist_int_intermed = 0.0_dp
           do i = 1, num_bins
              r = data(i,1)
              dV = PI * (4.0_dp * r*r + bin_width*bin_width/3.0_dp) * bin_width
              hist_int = hist_int + data(i,2)*dV*density
              data(i,3) = hist_int
+             hist_int_intermed = hist_int_intermed + data_intermed(i,2)*dV*density
+             data_intermed(i,3) = hist_int_intermed
           end do
-           
+
+	  if (Density_Time_Evolution_Rate > 0) then
+	    if (mod(frames_processed,Density_Time_Evolution_Rate)==0) then
+	       if (first_time) then
+		 call initialise(datafile,datafilename,action=OUTPUT)
+		 first_time = .false.
+	       else
+		 call initialise(datafile,datafilename,action=OUTPUT,append=.true.)
+		 call print('',file=datafile)
+		 call print('',file=datafile)
+	       endif
+	       call print('# Density 1D',file=datafile)
+	       call print('# Input file: '//trim(xyzfilename),file=datafile)
+	       call print('#      Frames read = '//frame_count,file=datafile)
+	       call print('# Frames processed = '//frames_processed,file=datafile)
+	       call print(data_intermed,file=datafile)
+	       call finalise(datafile)
+	       hist_sum_intermed = 0.0_dp
+	       frames_processed_intermed = 0.0_dp
+	    endif
+	  endif
+
           !Write the current data. This allows the user to Ctrl-C after a certain number
           !of frames if things are going slowly
-          if (mod(frames_processed,IO_Rate)==0) then
-             call initialise(datafile,datafilename,action=OUTPUT)
-             call print('# Density 1D',file=datafile)
-             call print('# Input file: '//trim(xyzfilename),file=datafile)
-             call print('#      Frames read = '//frame_count,file=datafile)
-             call print('# Frames processed = '//frames_processed,file=datafile)
-             call print(data,file=datafile)
-             call finalise(datafile)
-          endif
+	  if (IO_Rate > 0) then
+	    if (mod(frames_processed,IO_Rate)==0) then
+	       call initialise(datafile,datafilename,action=OUTPUT)
+	       call print('# Density 1D',file=datafile)
+	       call print('# Input file: '//trim(xyzfilename),file=datafile)
+	       call print('#      Frames read = '//frame_count,file=datafile)
+	       call print('# Frames processed = '//frames_processed,file=datafile)
+	       call print(data,file=datafile)
+	       call finalise(datafile)
+	    endif
+	  endif
        endif     
-     
+
        !Try to read another frame
        call read_xyz(structure,xyzfile,status=status)
-        
-    end do
+       frame_count = frame_count + 1
   
+    end do
+
+    if (Density_Time_Evolution_Rate > 0) then
+      call initialise(datafile,datafilename,action=OUTPUT,append=.true.)
+      call print('',file=datafile)
+      call print('',file=datafile)
+    else
+      call initialise(datafile,datafilename,action=OUTPUT)
+    endif
+    call print('# Final Density 1D',file=datafile)
+    call print('# Input file: '//trim(xyzfilename),file=datafile)
+    call print('#      Frames read = '//frame_count,file=datafile)
+    call print('# Frames processed = '//frames_processed,file=datafile)
+    call print(data,file=datafile)
+    call finalise(datafile)
+
     call print('')
     call print('Read '//frame_count//' frames, processed '//frames_processed//' frames.')
-  
+
     !Free up memory
     call finalise(distances)
     call finalise(structure)
     call finalise(xyzfile)
-  
+
     deallocate(hist, hist_sum, data)
-  
+
     call print('Finished.')
-  
+
     !call verbosity_pop
     call system_finalise
 
@@ -310,6 +371,7 @@ contains
     call print(' <from>          Optional. Only process frames from this frame.')
     call print(' <to>            Optional. Only process frames until this frame.')
     call print(' <IO_Rate>       Optional. Write data after every n processed frames.')
+    call print(' <Density_Time_Evolution_Rate>  Optional. Compute separate densities for each n processed frames (overriden if IO_Rate > 0)')
     call print(' <Gaussian>      Optional. Use Gaussians instead of delta functions.')
     call print(' <sigma>         Optional. The sigma is the sqrt(variance) of the Gaussian function.')
     call print('')
@@ -319,7 +381,7 @@ contains
     !call verbosity_pop
     call system_finalise
     stop
-        
+
   end subroutine print_usage
 
   subroutine get_prop_info(mask,name,value)
@@ -356,7 +418,7 @@ contains
     end if
 
     call wipe(list)
-    
+
     do i = 1, at%N
 
        if (at%data%int(index,i)==value) call append(list,(/i/))
@@ -376,7 +438,7 @@ contains
     !local variables
     real(dp)                           :: binsize,min_bin,max_bin
     integer                            :: i, bin, j
-  
+
     if(max_x <= min_x) then
        call system_abort('Vector_Histogram: max_x < min_x')
     end if
