@@ -134,7 +134,7 @@ ifndef EXTRA_LINKOPTS
 	@echo "   Default: none"
 	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> Makefile.inc
 endif
-	echo "HAVE_LOTF=0" >> Makefile.inc
+	echo "HAVE_LOTF=1" >> Makefile.inc
 	echo "HAVE_GP=0" >> Makefile.inc
 	echo "OPTIM=${DEFAULT_OPTIM}" >> Makefile.inc
 	echo "DEBUG=${DEFAULT_DEBUG}" >> Makefile.inc
