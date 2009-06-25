@@ -48,8 +48,6 @@ integer, parameter, public :: SK_SSS = 1, SK_SPS = 2, SK_PPS = 3, SK_PPP = 4, &
 
 public :: angular_function, dangular_function, spin_orbit_function
 
-real(dp), parameter :: root_3 = sqrt(3.0_dp)
-
 contains
 
 function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_dir_j, sk) result(V)
@@ -63,6 +61,10 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
   real(dp) :: u_V_sds, u_V_pds, u_V_pdp
   real(dp) :: u_V_dds, u_V_ddp, u_V_ddd
   real(dp) :: L, M, N, Lsq, Msq, Nsq
+
+  real(dp) :: root_3
+  
+  root_3 = sqrt(3.0_dp)
 
   u_V_sss = sk(SK_SSS)
 
@@ -444,6 +446,10 @@ function spin_orbit_function(orb_type_i, orb_dir_i, orb_dir_j) result(V)
   integer, intent(in) :: orb_type_i, orb_dir_i, orb_dir_j
   complex(dp) :: V(2,2)
 
+  real(dp) :: root_3
+  
+  root_3 = sqrt(3.0_dp)
+
   ! spin-orbit term 
   ! from Podolskiy and Vogl, Phys. Rev. B v. 69, p 233101 (2004)
   select case (orb_type_i)
@@ -680,6 +686,10 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
   real(dp) :: u_Vd_dds, u_Vd_ddp, u_Vd_ddd
   real(dp) :: L, M, N, Lsq, Msq, Nsq
   real(dp) :: dL_dr(3), dM_dr(3), dN_dr(3)
+
+  real(dp) :: root_3
+  
+  root_3 = sqrt(3.0_dp)
 
   u_V_sss = sk(SK_SSS)
 

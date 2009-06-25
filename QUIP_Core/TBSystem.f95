@@ -3484,10 +3484,14 @@ implicit none
     parameter (OT_S = 1, OT_PY = 2, OT_PZ = 3, OT_PX = 4)
     integer OT_DXY, OT_DYZ, OT_DZX, OT_DXXYY, OT_DZZRR
     parameter (OT_DXY = 5, OT_DYZ = 6, OT_DZZRR = 7, OT_DZX = 8, OT_DXXYY = 9)
-    real(dp), parameter :: inv_rt2 = 1.0_dp/sqrt(2.0_dp), inv_rt6 = 1.0_dp/sqrt(6.0_dp)
-    real(dp), parameter :: rt2 = sqrt(2.0_dp)
+    real(dp) :: inv_rt2, inv_rt6
+    real(dp) :: rt2
 
     real(dp) :: base_norm_factor, rt_sigma
+
+    inv_rt2 = 1.0_dp/sqrt(2.0_dp)
+    inv_rt6 = 1.0_dp/sqrt(6.0_dp)
+    rt2 = sqrt(2.0_dp)
 
     base_norm_factor = 1.0D0/(PI/(2.0_dp*sigma))**(3.0_dp/4.0_dp)
     rt_sigma = sqrt(sigma)
