@@ -193,11 +193,13 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
   else if (this%is_forcemixing) then
 
-    if (.not. present(pot2)) &
-      call system_abort('MetaPotential_initialise: two potentials needed for ForceMixing metapotential')
-
     allocate(this%forcemixing)
-    call initialise(this%forcemixing, args_str, pot, pot2, bulk_scale, mpi_obj)
+    if(present(pot2)) then
+       call initialise(this%forcemixing, args_str, pot, pot2, bulk_scale, mpi_obj)
+    else
+       ! if only one pot is given, assign it to QM. this is useful for time-embedding LOTF
+       call initialise(this%forcemixing, args_str, qmpot=pot, reference_bulk=bulk_scale, mpi=mpi_obj)
+    endif
 
 #ifdef HAVE_LOCAL_E_MIX
   else if (this%is_local_e_mix) then

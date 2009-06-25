@@ -8,7 +8,8 @@
   subroutine MetaPotential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi)
     type(MetaPotential_FM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: mmpot, qmpot
+    type(Potential), intent(in), target :: qmpot
+    type(Potential), optional, intent(in), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi
 
@@ -77,6 +78,9 @@
             call system_abort("metapotential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//&
             do_tb_defaults//" but reference_bulk is not present")
 
+       if (.not. present(mmpot)) &
+            call system_abort("metapotential_forcemixing_initialise got do_rescale_r=T but no mmpot was given")
+
        call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, .true., .false., &
             this%r_scale_pot1, dummy_E, do_tb_defaults)
       
@@ -84,10 +88,14 @@
        call print ("Rescaling positions in region1 potential by " // this%r_scale_pot1 // " to match lattice constants")
     end if
 
-    this%mmpot => mmpot
     this%qmpot => qmpot
+    if(present(mmpot)) then
+       this%mmpot => mmpot
+    else
+       this%mmpot => null()
+    end if
 
-    if (this%minimise_mm) then
+    if (this%minimise_mm .and. present(mmpot)) then
       call initialise(this%relax_metapot, "Simple", mmpot)
     endif
 
@@ -146,13 +154,17 @@
     call Print(' minim_mm_args_str='//trim(this%minim_mm_args_str),file=file)
     call Print('',file=file)
     if (associated(this%mmpot)) then
-       call Print('MM Potential',file=file)
+       call Print('MM Potential:',file=file)
        call Print(this%mmpot,file=file)
        call Print('',file=file)
+    else
+       call print('MM potential not initialised')
     end if
     if (associated(this%qmpot)) then
-       call Print('QM Potential',file=file)
+       call Print('QM potential:',file=file)
        call Print(this%qmpot,file=file)
+    else
+       call print('QM potential not initialised')
     end if
     call Print('',file=file)
 
@@ -303,7 +315,11 @@
     endif
 
     ! Do the classical calculation
-    call calc(this%mmpot, at, f=f_mm, err=err, args_str=mm_args_str)
+    if(associated(this%mmpot)) then
+       call calc(this%mmpot, at, f=f_mm, err=err, args_str=mm_args_str)
+    else
+       f_mm = 0
+    end if
 
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
        f = f_mm
@@ -542,7 +558,15 @@
     real(dp) :: metapotential_fm_cutoff
 
     ! Return larger of QM and MM cutoffs
-    metapotential_fm_cutoff = max(cutoff(this%mmpot), cutoff(this%qmpot))
+    if(associated(this%mmpot) .and. associated(this%qmpot)) then
+       metapotential_fm_cutoff = max(cutoff(this%mmpot), cutoff(this%qmpot))
+    else if(associated(this%qmpot)) then
+       metapotential_fm_cutoff = cutoff(this%qmpot)
+    else if(associated(this%mmpot)) then
+       metapotential_fm_cutoff = cutoff(this%mmpot)
+    else
+       metapotential_fm_cutoff = 0.0_dp
+    endif
 
   end function MetaPotential_FM_cutoff
 
