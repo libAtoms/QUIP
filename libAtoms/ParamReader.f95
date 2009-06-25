@@ -164,13 +164,13 @@ module paramreader_module
      character(len=VALUE_LENGTH):: value
      integer :: N, param_type
 
-     real(dp), pointer :: real
-     integer, pointer :: integer
-     logical, pointer :: logical
-     character(len=STRING_LENGTH), pointer :: string
+     real(dp), pointer :: real => null()
+     integer, pointer :: integer => null()
+     logical, pointer :: logical => null()
+     character(len=STRING_LENGTH), pointer :: string => null()
 
-     real(dp), dimension(:), pointer :: reals
-     integer, dimension(:), pointer :: integers
+     real(dp), dimension(:), pointer :: reals => null()
+     integer, dimension(:), pointer :: integers => null()
 
      logical, pointer :: has_value
 
@@ -192,6 +192,12 @@ module paramreader_module
 	  param_register_single_logical
 
   end interface
+
+#ifdef POINTER_COMPONENT_MANUAL_COPY
+  interface assignment(=)
+    module procedure ParamEntry_assign
+  end interface
+#endif
 
   contains
 
@@ -882,5 +888,23 @@ module paramreader_module
       deallocate(data%d)
 
     end function param_check
+
+#ifdef POINTER_COMPONENT_MANUAL_COPY
+  subroutine ParamEntry_assign(to, from)
+    type(ParamEntry) :: to, from
+
+    to%value = from%value
+    to%N = from%N
+    to%param_type = from%param_type
+    to%real => from%real
+    to%integer => from%integer
+    to%logical => from%logical
+    to%string => from%string
+    to%reals => from%reals
+    to%integers => from%integers
+
+    to%has_value => from%has_value
+  end subroutine ParamEntry_assign
+#endif
 
 end module paramreader_module
