@@ -85,10 +85,11 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
          open('%s.stdin' % testname, 'w').write(input)
 
    if not capture_output:
+      print 'capture_output is false (debugging mode?), so can not figure out if test succeeded, so assuming it failed'
       return False
 
    if stderr != '':
-      print 'Error occurred running test.'
+      print 'Error occurred running test (stderr not empty).'
       print stderr
       return False
 
@@ -219,7 +220,8 @@ def runtests(tests, capture_output, diff_method='auto', keep_all_files=False, cr
       else:
          print '%s: FAIL' % name
          print 
-         print 'Review output in %s.stdout.candidate and %s.stdout.reference.' % (name, name)
+         print 'If this failure was because of mismatched output files,'
+         print 'review output in %s.stdout.candidate and %s.stdout.reference.' % (name, name)
          print 'If test should have passed, overwrite %s with %s.new' % (name, name)
          failed_tests.append(name)
          n_fail += 1
