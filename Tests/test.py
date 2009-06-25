@@ -217,9 +217,16 @@ def runtests(tests, capture_output, diff_method='auto', keep_all_files=False, cr
 
       print '  Running test : %s  ' % name
       if runtest(name, command, diff_method, infiles, outfiles, capture_output, keep_all_files, create_new_test):
+         print
+         print '==================================='
          print '%s: OK' % name
+         print '==================================='
+         print
       else:
+         print
+         print '==================================='
          print '%s: FAIL' % name
+         print '==================================='
          print 
          print 'If this failure was because of mismatched output files,'
          print 'review output in %s.stdout.candidate and %s.stdout.reference.' % (name, name)
