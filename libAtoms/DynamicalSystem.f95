@@ -1856,7 +1856,7 @@ contains
      end if
 #endif
 
-     call calc_dists(this%atoms,parallel=.true.)
+     call calc_dists(this%atoms,parallel=do_parallel)
 
    end subroutine advance_verlet1
 
