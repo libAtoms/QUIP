@@ -1,22 +1,5 @@
-While in principle things are quite flexible, the default setup assumes
-that things are set up as follows
-  top_dir/
-    libAtoms/
-    QUIP/
-    QUIP_Utils/
-    QUIP_Programs/
-    Makefiles/
-
-To compile, you need to create and appropriate Makefiles/Makefile.my_arch_name
-
-You will need LAPACK, which will need to be put in via ARCH_LIBDIRS and ARCH_LAPACK_LIBDIRS
-in Makefile.my_arch_name
-
-You will also need FoX (for QUIP), which will need ARCH_FOX_INCLUDEDIR and ARCH_FOX_LIBDIR
-to be set properly in Makefile.my_arch_name
-
-finally, in QUIP_Programs, just do:
-  ./build.sh my_arch_name target
-
 Targets:
   eval - evaluates energy/forces/virial of a configuration
+  md   - rudimentary molecular dynamics program
+  crack - and realted programs to simulate fracture
+  ts_calculation - rudimentary transition state finder
