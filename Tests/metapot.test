@@ -1648,7 +1648,7 @@ MetaPotential_FM:
  minim_mm_use_n_minim=F
  minim_mm_args_str=
 
-MM Potential
+MM Potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -1683,7 +1683,7 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 
-QM Potential
+QM potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -2300,7 +2300,7 @@ MetaPotential_FM:
  minim_mm_use_n_minim=F
  minim_mm_args_str=
 
-MM Potential
+MM Potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -2335,7 +2335,7 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 
-QM Potential
+QM potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -2948,7 +2948,7 @@ MetaPotential_FM:
  minim_mm_use_n_minim=F
  minim_mm_args_str=
 
-MM Potential
+MM Potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -2983,7 +2983,7 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 
-QM Potential
+QM potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -3596,7 +3596,7 @@ MetaPotential_FM:
  minim_mm_use_n_minim=F
  minim_mm_args_str=
 
-MM Potential
+MM Potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
@@ -3631,7 +3631,7 @@ IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 
-QM Potential
+QM potential:
 IP : 2
 IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
