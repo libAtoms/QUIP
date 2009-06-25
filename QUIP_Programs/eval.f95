@@ -432,6 +432,5 @@ implicit none
   mainlog%prefix = ""
 
   call system_finalise()
-  stop
 
 end program
