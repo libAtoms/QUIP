@@ -3,14 +3,19 @@
 # Convert a netcdf file to a movie
 
 if [[ $# == 0 ]]; then
-    echo "Usage: $0 <AtomEye view script> <Extra command file> <movie file> <netcdf file>"
+    echo "Usage: $0 <AtomEye view script> <movie file> <netcdf file> <Extra command file>"
     exit 1
 fi
 
 view=$1
-extras=$2
-movie=$3
-nc=$4
+movie=$2
+nc=$3
+extras=$4
+
+echo "View script: $view"
+echo "Movie output file: $movie"
+echo "NetCDF file: $nc"
+echo "Extra command file: $extras"
 
 echo Removing old Jpg dir...
 rm -rf Jpg
@@ -27,14 +32,19 @@ n=0
 script_n=1
 
 cp $view scr_movie_${script_n}
-cat $extras >> scr_movie_${script_n}
+if [[ $extras != "" ]] ; then
+  cat $extras >> scr_movie_${script_n}
+fi
 
 nframe=$(ncstat -c $nc | awk '{print $1}')
+
+echo "Found $nframe frames"
 
 base=`basename $nc .nc`
 ndigit=$(python -c 'from math import *; print int(ceil(log10('$nframe')))')
 
 for i in $(seq 0 $((nframe-1)))
+#echo "Processing Frame $i"
 do
   if [[ -e `basename $i .cfg`.clr ]]
       then
@@ -49,7 +59,9 @@ do
 
       cp $view scr_movie_${script_n}
       echo shift_xtal 0 0 >> scr_movie_${script_n}
-      cat $extras >> scr_movie_${script_n}
+      if [[ $extras != "" ]] ; then
+        cat $extras >> scr_movie_${script_n}
+      fi
   fi
 
 done
