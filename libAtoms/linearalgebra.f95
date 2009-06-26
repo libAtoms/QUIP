@@ -3238,11 +3238,12 @@ CONTAINS
 
 
   ! returns a vector, contining a histogram of frequencies
-  function vector_histogram(vector,min_x,max_x,Nbin)
+  function vector_histogram(vector,min_x,max_x,Nbin,weight_vector)
 
     real(dp), dimension(:), intent(in) :: vector
     real(dp),               intent(in) :: min_x, max_x
     integer,                intent(in) :: Nbin
+    real(dp), dimension(:), intent(in), optional :: weight_vector
     real(dp), dimension(Nbin)          :: vector_histogram
     !local variables
     real(dp)                           :: binsize
@@ -3260,7 +3261,11 @@ CONTAINS
        bin = ceiling((vector(i)-min_x)/binsize)
        if (bin < 1) bin = 1
        if (bin > Nbin) bin = Nbin
-       vector_histogram(bin) = vector_histogram(bin) + 1.0_dp
+       if (present(weight_vector)) then
+	 vector_histogram(bin) = vector_histogram(bin) + weight_vector(i)
+       else
+	 vector_histogram(bin) = vector_histogram(bin) + 1.0_dp
+       endif
 
     end do
 
