@@ -208,6 +208,7 @@ program density_1d
 
           num_atoms = 0
 
+	  hist = 0.0_dp
           do j = 1, structure%N
 
              !Count the atoms
