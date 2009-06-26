@@ -230,10 +230,10 @@ program density_1d
                 call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
 #endif
                 !Add this distance to the list
-                call append(distances, d)
+		call accum_histogram(hist, d, 0.0_dp, cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
              end if
-
           end do
+
 
           frames_processed = frames_processed + 1
           frames_processed_intermed = frames_processed_intermed + 1
@@ -241,13 +241,6 @@ program density_1d
 #ifdef DEBUG
           call print('Number of atoms = '//num_atoms)
 #endif
-
-          !Calculate histogram
-          if (.not.Gaussian_smoothing) then
-             hist = histogram(distances%real(1,1:distances%N), 0.0_dp, cutoff, num_bins)
-          else
-             hist = Gaussian_histogram(distances%real(1,1:distances%N), 0.0_dp, cutoff, num_bins,Gaussian=Gaussian_smoothing,sigma=Gaussian_sigma)
-          endif
 
           !Calculate B atom density
           density = real(num_atoms,dp) / cell_volume(structure)
@@ -351,6 +344,53 @@ program density_1d
     call system_finalise
 
 contains
+
+  subroutine accum_histogram(hist, d, minx, maxx, num_bins, gaussian_smoothing, sigma)
+    real(dp), intent(inout) :: hist(:)
+    real(dp) :: d, minx, maxx
+    integer :: num_bins
+    logical :: gaussian_smoothing
+    real(dp) :: sigma
+
+    real(dp), allocatable :: hist_t(:)
+    real(dp), allocatable :: d_a(:), w_a(:)
+    real(dp) :: px, py, pz
+    integer :: ix, iy, iz, io
+    integer :: n_samples = 10
+    real(dp) :: n_samples_d, normalization
+    real(dp) :: range
+
+    range = 3.0_dp*sigma
+    normalization=((2.0*range/real(n_samples,dp))**3)/(sigma*sqrt(PI))**3
+
+    n_samples_d = real(n_samples/2,dp)
+    allocate(hist_t(size(hist)))
+
+    if (gaussian_smoothing) then
+      allocate(d_a((n_samples+1)**3))
+      allocate(w_a((n_samples+1)**3))
+      do ix=1, n_samples+1
+      px = real(ix-1-(n_samples/2), dp)/n_samples_d*range
+      do iy=1, n_samples+1
+      py = real(iy-1-(n_samples/2), dp)/n_samples_d*range
+      do iz=1, n_samples+1
+      pz = real(iz-1-(n_samples/2), dp)/n_samples_d*range
+	io = (ix-1)*(n_samples+1)**2 + (iy-1)*(n_samples+1) + (iz-1) + 1
+	d_a(io) = sqrt((px+d)**2+py**2+pz**2)
+	w_a(io) = normalization*exp(-(px**2+py**2+pz**2)/sigma**2)
+      end do
+      end do
+      end do
+      hist_t = histogram(d_a, minx, maxx, num_bins, weight_vector=w_a)
+      deallocate(d_a)
+      deallocate(w_a)
+    else
+      hist_t = histogram((/d/), minx, maxx, num_bins)
+    endif
+    hist = hist + hist_t
+    deallocate(hist_t)
+
+  end subroutine accum_histogram
 
   subroutine print_usage(name)
 
