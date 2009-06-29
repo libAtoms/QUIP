@@ -357,7 +357,7 @@ contains
     real(dp), allocatable :: d_a(:), w_a(:)
     real(dp) :: px, py, pz
     integer :: ix, iy, iz, io
-    integer :: n_samples = 10
+    integer :: n_samples = 20
     real(dp) :: n_samples_d, normalization
     real(dp) :: range
 
