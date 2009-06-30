@@ -68,11 +68,11 @@ class AtomEyeView(object):
             if hasattr(self.atoms, '__iter__'):
                 theat = self.atoms[self.frame]
                 fmt = "%%0%dd" % ceil(log10(len(self.atoms)+1))
-                title = 'atoms[%s/%s]' % (fmt % self.frame, fmt % len(self.atoms))
+                title = 'AtomsList[%s] len=%s' % (fmt % self.frame, fmt % len(self.atoms))
 
             else:
                 theat = self.atoms
-                title = 'atoms'
+                title = 'Atoms'
 
         icopy = -1
         if copy is not None:
@@ -128,7 +128,15 @@ class AtomEyeView(object):
             self.frame = 0
         elif mode == 'last':
             self.frame = len(self.atoms)-1
-        self.frame = self.frame % len(self.atoms)            
+
+        if self.frame >= len(self.atoms):
+            try:
+                self.atoms[self.frame]
+            except IndexError:
+                self.frame = self.frame % len(self.atoms)
+                
+        if self.frame < 0:
+                self.frame = self.frame % len(self.atoms)
         self.redraw()
 
 
@@ -156,7 +164,11 @@ class AtomEyeView(object):
         if hasattr(obj,'__iter__'):
             if frame is not None:
                 if frame < 0: frame = len(self.atoms)-frame
-                if frame >= len(self.atoms): frame=len(self.atoms)-1
+                if frame >= len(self.atoms):
+                    try:
+                        self.atoms[self.frame]
+                    except IndexError:
+                        frame=len(self.atoms)-1
                 self.frame = frame
                 
         self.redraw(property=property)
@@ -173,9 +185,9 @@ class AtomEyeView(object):
         if hasattr(self.atoms, '__iter__'):
             theat = self.atoms[self.frame]
             fmt = "%%0%dd" % ceil(log10(len(self.atoms)+1))
-            title = 'atoms[%s/%s]' % (fmt % self.frame, fmt % len(self.atoms))
+            title = 'AtomsList[%s] len=%s' % (fmt % self.frame, fmt % len(self.atoms))
         else:
-            title = 'atoms'
+            title = 'Atoms'
 
         if property is not None:
             if isinstance(property,str):
