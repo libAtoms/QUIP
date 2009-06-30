@@ -119,12 +119,14 @@ module CInOutput_module
      !% Read an Atoms object from this CInOutput stream.
      module procedure CInOutput_read
      module procedure atoms_read
+     module procedure atoms_read_cinoutput
   end interface
 
   interface write
      !% Write an Atoms object to this CInOutput stream.
      module procedure CInOutput_write
      module procedure atoms_write
+     module procedure atoms_write_cinoutput
   end interface
 
   interface query
@@ -135,7 +137,7 @@ module CInOutput_module
   end interface
 
   interface update
-     !% Update C structure from Atoms object. Used to communicate with AtomEye.
+     !% Update C structure from Atoms object
      module procedure CInOutput_update
   end interface
 
@@ -143,11 +145,11 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, query)
+  subroutine cinoutput_initialise(this, filename, action, append)
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
-    logical, intent(in), optional :: append, query
+    logical, intent(in), optional :: append
 
     integer :: do_append
 
@@ -202,9 +204,7 @@ contains
 
     this%initialised = .true.
     
-    if (present(query)) then
-       if (query) call cinoutput_query(this, 0)
-    end if
+    if (this%action == INPUT .or. this%action == INOUT) call cinoutput_query(this, 0)
     
   end subroutine cinoutput_initialise
 
@@ -684,6 +684,16 @@ contains
 
   end subroutine atoms_read
 
+  subroutine atoms_read_cinoutput(this, cio, frame, zero, status)
+    type(Atoms), target, intent(inout) :: this
+    type(CInOutput), intent(inout) :: cio
+    integer, optional, intent(in) :: frame
+    logical, optional, intent(in) :: zero
+    integer, optional, intent(inout) :: status
+
+    call cinoutput_read(cio, this, frame, zero, status)
+
+  end subroutine atoms_read_cinoutput
 
   subroutine atoms_write(this, filename, append, properties, status)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
@@ -700,5 +710,21 @@ contains
     call finalise(cio)
     
   end subroutine atoms_write
+
+  subroutine atoms_write_cinoutput(this, cio, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, status)
+    type(Atoms), target, intent(inout) :: this
+    type(CInOutput), intent(inout) :: cio
+    character(*), intent(in), optional :: properties(:)    
+    character(*), intent(in), optional :: int_format, real_format
+    integer, intent(in), optional :: frame
+    logical, intent(in), optional :: shuffle, deflate
+    integer, intent(in), optional :: deflate_level
+    integer, optional, intent(out) :: status
+
+    call cinoutput_write(cio, this, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, status)
+
+  end subroutine atoms_write_cinoutput
+
+
 
 end module CInOutput_module
