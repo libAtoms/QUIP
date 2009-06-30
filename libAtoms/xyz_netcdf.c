@@ -599,14 +599,16 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
       count2[0] = 1;
       count2[1] = 3;
       netcdf_check(nc_get_vara_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, &atoms->param_int_a[i][0]));
+      break;
     case(T_REAL_A):
       start2[0] = frame;
       start2[1] = 0;
       count2[0] = 1;
       count2[1] = 3;
       netcdf_check(nc_get_vara_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, &atoms->param_real_a[i][0]));
+      break;
     default:
-      fprintf(stderr,"Unknown parameter type %d\n", atoms->param_type[i]);
+      fprintf(stderr,"Unknown parameter %s type %d\n", atoms->param_key[i], atoms->param_type[i]);
       return 0;
     }
   }
@@ -2172,6 +2174,11 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   char *trimmed;
   int species_idx, pos_idx;
 
+  if (fseek(out, 0, SEEK_END) != 0) {
+    fprintf(stderr,"Cannot seek to end of file\n");
+    return 0;
+  }
+
   if (swap) {
     // Move species to first property
     species_idx = atoms_find_property(atoms, "species");
@@ -3269,6 +3276,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 	return 0;
       }
       (**at).got_index = 1;
+    }  else {
+      **n_frame = 0;
     }
     
     if (*action == INPUT) {
@@ -3369,14 +3378,10 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 
 
 void ciofree(Atoms *at) {
-#ifdef HAVE_NETCDF
-  int retval;
-#endif
-
   // We don't call atoms_free as data belongs to fortran caller
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in  != NULL && at->xyz_in  != stdin)  fclose(at->xyz_in);
-    if (at->xyz_out != NULL && at->xyz_out != stdout) fclose(at->xyz_out);
+    if (at->xyz_in != at->xyz_out && at->xyz_out != NULL && at->xyz_out != stdout) fclose(at->xyz_out);
   } else if (at->format == NETCDF_FORMAT) {
 #ifdef HAVE_NETCDF
     if (at->nc_in != -1) nc_close(at->nc_in);
