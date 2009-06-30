@@ -7,14 +7,15 @@
 !1 DZVP-GTH-PADE    !atomic number and basis set
 !8 DZVP-GTH-PADE
 !
-!add HAVE_CP2K=1 to the Makefile.programs
-!
 !arguments to be passed to go_cp2k in the args_str:
 !    Run_Type, default: 'MM', also understands 'QS', 'QMMM_CORE', and 'QMMM_EXTENDED'
 !    PSF_Print, default: 'NO_PSF', also understands 'CP2K_PRINT_AND_SAVE', 'DRIVER_PRINT_AND_SAVE', 'USE_EXISTING_PSF'
 !    cp2k_program, default:'cp2k.sopt'
 !    basis_set_file: default none, name of file (instead of atoms%params value BASIS_SET_list)
 !    potential_file: default none, name of file (instead of atoms%params value POTENTIAL_list)
+!    dft_file: default none, name of file
+!    cell_file: default none, name of file
+!    clean_up_files: default TRUE
 !
 !contains the following subroutines and functions:
 !
@@ -361,12 +362,12 @@ contains
        ex = .false.
        ex = get_value(at%params,'QM_list_changed',QM_list_changed)
        if (ex) then
-	 this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
-	 if (QM_list_changed) then
-	    call print('QM list changed, will not use wfn', VERBOSE)
-	 else
-	    call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
-	 endif
+       this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
+       if (QM_list_changed) then
+          call print('QM list changed, will not use wfn', VERBOSE)
+       else
+         call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
+       endif
        else
           this%qmmm%reuse_wfn = .false.
        endif
