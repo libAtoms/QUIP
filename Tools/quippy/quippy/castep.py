@@ -1,8 +1,8 @@
-import sys, string, os, operator
+import sys, string, os, operator, itertools
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
-from framereader import GenericFrameReader, LazyFrameReader, FrameReaderTypes
+from quippy import AtomsReaders, AtomsWriters
 
 import xml.dom.minidom
 
@@ -114,12 +114,14 @@ valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'chec
 class CastepCell(OrderedDict):
    """Class to wrap a CASTEP cell (.cell) file"""
 
-   def __init__(self, cellfile=None,xml=None):
+   def __init__(self, cellfile=None,xml=None,atoms=None):
       OrderedDict.__init__(self)
       if cellfile is not None:
          self.read(cellfile)
       elif xml is not None:
          self.read_xml(xml)
+      elif atoms is not None:
+         self.update_from_atoms(atoms)
 
    def copy(self):
       new = CastepCell()
@@ -129,10 +131,8 @@ class CastepCell(OrderedDict):
    def read(self, cellfile):
       "Read a CASTEP .cell file. cellfile can be a filename or an open file"
 
-      opened = False
       if type(cellfile) == type(''):
          cellfile = open(cellfile,'r')
-         opened = True
 
       current_block = None
 
@@ -179,8 +179,6 @@ class CastepCell(OrderedDict):
                except ValueError:
                   raise ValueError('Error parsing cell file line: %s' % line)
 
-      # If we opened the file, then we should close it
-      if opened: cellfile.close()
 
    def read_xml(self, xml):
       els = xml.documentElement.getElementsByTagName('castep_cell')
@@ -200,10 +198,8 @@ class CastepCell(OrderedDict):
    def write(self, cellfile=sys.stdout):
       "Write CASTEP .cell file. cellfile can be a filename or an open file"
 
-      opened = False
       if type(cellfile) == type(''):
          cellfile = open(cellfile,'w')
-         opened = True
          
       for key, value in self.iteritems():
          if type(value) == type([]):
@@ -214,19 +210,16 @@ class CastepCell(OrderedDict):
          else:
             cellfile.write('%s  %s\n' % (key, value))
 
-      # If we opened the file, then we should close it
-      if opened: cellfile.close()
 
    def to_atoms(self):
-
       if not self.has_key('LATTICE_CART'):
          raise ValueError('self is missing LATTICE_CART block')
 
       if not self.has_key('POSITIONS_ABS'):
          raise ValueError('cell is missing POSITIONS_ABS block')
       
-      result = Atoms(n=len(self['POSITIONS_ABS']),lattice = \
-                     farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
+      atoms = Atoms(n=len(self['POSITIONS_ABS']),lattice = 
+                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
       
       field_list = [line.split() for line in self['POSITIONS_ABS']]
 
@@ -236,11 +229,11 @@ class CastepCell(OrderedDict):
       elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
 
       # Set the element and pos data
-      result.set_atoms(elements)
-      result.pos[:,:] = farray([ [float(x) for x in row] \
-                                 for row in [field[1:4] for field in field_list]])
-      return result
+      atoms.set_atoms(elements)
+      atoms.pos[:,:] = farray([ [float(x) for x in row] \
+                                for row in [field[1:4] for field in field_list]])
 
+      return atoms
 
    def update_from_atoms(self, at):
       
@@ -254,19 +247,26 @@ class CastepCell(OrderedDict):
       for i in frange(at.n):
          self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
+   def __iter__(self):
+      yield self.to_atoms()
 
-class CastepCellFrameReader(LazyFrameReader):
-   """FrameReader subclass to read a single frame from CASTEP .cell file"""
-   
-   def _init(self, source):
-      self._cell = CastepCell(source)
+   @staticmethod
+   def cellwriter(dest):
+      """Generator to write single .cell file"""
 
-   def _nframes(self):
-      return 1
+      at = yield None
+      CastepCell(atoms=at).write(dest)
+      yield 1
 
-   def _getframe(self, frame):
-      return self._cell.to_atoms()
+   def cellupdater(self):
+      at = yield None
+      self.update_from_atoms(at)
+      yield 1
 
+ 
+AtomsReaders['cell'] = AtomsReaders[CastepCell] = CastepCell
+AtomsWriters['cell'] = CastepCell.cellwriter
+AtomsWriters[CastepCell] = CastepCell.cellupdater
 
 class CastepParam(OrderedDict):
    "Class to wrap a CASTEP parameter (.param) file"
@@ -286,10 +286,8 @@ class CastepParam(OrderedDict):
    def read(self, paramfile):
       "Read a CASTEP .param file. paramfile can be a filename or an open file"
 
-      opened = False
       if type(paramfile) == type(''):
          paramfile = open(paramfile,'r')
-         opened = True
 
       for line in paramfile:
          line = line.strip()
@@ -305,8 +303,6 @@ class CastepParam(OrderedDict):
          if not key in valid_parameters_keywords:
             raise ValueError('Unknown PARAMETERS keyword %s' % key)
          self[key] = ' '.join(fields[1:])
-
-      if opened: paramfile.close()
 
    def read_xml(self, xml):
       els = xml.documentElement.getElementsByTagName('castep_param')
@@ -328,7 +324,7 @@ class CastepParam(OrderedDict):
       value_map = {'T': 'true', 'F': 'false'}
 
       if type(castep_output) == type(''):
-         f = open(castep_output, 'r')
+         castep_output = open(castep_output, 'r')
          castep_output = f.readlines()
          f.close()
       elif hasattr(castep_output, 'read'):
@@ -362,339 +358,316 @@ class CastepParam(OrderedDict):
    def write(self,paramfile=sys.stdout):
       "Write CASTEP .param file"
 
-      opened = False
       if type(paramfile) == type(''):
          paramfile = open(paramfile,'w')
-         opened = True
          
       for key, value in self.iteritems():
          paramfile.write('%s = %s\n' % (key, value))
 
-      # If we opened the file, then we should close it
-      if opened: paramfile.close()
 
 
+def CastepGeomReader(source):
+   """Generator to read frames from CASTEP .geom file"""
 
-def read_geom(geom):
-   """Read Atoms from CASTEP .geom file.
+   if type(source) == type(''):
+      source = open(source, 'r')
+   source = iter(source)
 
-   Read a single Atoms object from filename, open .geom file, or iteator returning
-   strings. Raises IOError on EOF."""
-   
-   opened = False
-   if type(geom) == type(''):
-      geom = open(geom, 'r')
-      opened = True
+   while True:
+      lines = []
+      line = source.next().strip() # raises StopIteration at end of file
 
-   geom = iter(geom)
+      # Skip header if present
+      if line.startswith('BEGIN header'):
+         while not line.startswith('END header'):
+            line = source.next().strip()
+         source.next() # skip blank line
+      else:
+         lines.append(line)
 
-   lines = []
-   try:
-      line = geom.next().strip()
-   except StopIteration:
-      raise IOError
+      # Read until next blank line
+      while line != '':
+         line = source.next().strip()
+         if line != '': lines.append(line)
 
-   # Skip header if present
-   if line.startswith('BEGIN header'):
-      while not line.startswith('END header'):
-         line = geom.next().strip()
-      geom.next() # skip blank line
-   else:
-      lines.append(line)
+      if len(lines) <= 1:
+         raise StopIteration
 
-   # Read until next blank line
-   while line != '':
-      line = geom.next().strip()
-      if line != '': lines.append(line)
+      params = Dictionary()
 
-   if opened: geom.close() # Let go of the file
+      # First line is the time/step
+      params['time'] = float(lines[0])
 
-   if len(lines) <= 1: # Check for EOF
-      raise IOError
+      # Then the energy, in Hartree
+      energy_lines = filter(lambda s: s.endswith('<-- E'), lines)
+      if len(energy_lines) != 1:
+         raise ValueError('Number of energy lines should be exactly one.')
 
-   params = Dictionary()
+      params['energy'], params['hamiltonian'] = \
+                             [float(x)*HARTREE for x in energy_lines[0].split()[0:2]]
 
-   # First line is the time/step
-   params['time'] = float(lines[0])
+      # Lattice is next, in units of Bohr
+      lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
+      lattice = farray([ [float(x)* BOHR for x in row[0:3]]
+                         for row in map(string.split, lattice_lines) ])
 
-   # Then the energy, in Hartree
-   energy_lines = filter(lambda s: s.endswith('<-- E'), lines)
-   if len(energy_lines) != 1:
-      raise ValueError('Number of energy lines should be exactly one.')
+      # Then optionally virial tensor
+      stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
+      if stress_lines:
+         virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
+                           for row in map(string.split, stress_lines) ])
+         params['virial_1'] = virial[1]
+         params['virial_2'] = virial[2]
+         params['virial_3'] = virial[3]
 
-   params['energy'], params['hamiltonian'] = \
-                          [float(x)*HARTREE for x in energy_lines[0].split()[0:2]]
+      # Find positions and forces
+      poslines   = filter(lambda s: s.endswith('<-- R'), lines)
+      forcelines = filter(lambda s: s.endswith('<-- F'), lines)
 
-   # Lattice is next, in units of Bohr
-   lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
-   lattice = farray([ [float(x)* BOHR for x in row[0:3]]
-                      for row in map(string.split, lattice_lines) ])
+      if len(poslines) != len(forcelines):
+         raise ValueError('Number of pos lines (%d) != force lines (%d)'\
+                          % (len(poslines), len(forcelines)))
 
-   # Then optionally virial tensor
-   stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
-   params['virial'] = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
-                               for row in map(string.split, stress_lines) ]).reshape((9,))
+      at = Atoms(n=len(poslines), lattice=lattice, params=params)
+      at.virial = virial
 
-   # Find positions and forces
-   poslines   = filter(lambda s: s.endswith('<-- R'), lines)
-   forcelines = filter(lambda s: s.endswith('<-- F'), lines)
+      # Now parse the positions, converting from units of Bohr
+      field_list = [line.split() for line in poslines]
 
-   if len(poslines) != len(forcelines):
-      raise ValueError('Number of pos lines (%d) != force lines (%d)'\
-                       % (len(poslines), len(forcelines)))
+      elements = [ f[0] for f in field_list]
 
-   result = Atoms(n=len(poslines),lattice=lattice,params=params)
+      # Look up names of elements specified by atomic number
+      elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
 
-   # Now parse the positions, converting from units of Bohr
-   field_list = [line.split() for line in poslines]
+      at.set_atoms(elements)
+      at.pos[:,:] = farray([ [float(x)* BOHR for x in row] \
+                         for row in [field[2:5] for field in field_list]])
 
-   elements = [ f[0] for f in field_list]
+      # And finally the forces, which are in units of hartree/bohr
+      field_list = [line.split() for line in forcelines]
+      force = farray([ [float(x)*HARTREE/BOHR for x in row] \
+                         for row in [field[2:5] for field in field_list]])
+      at.add_property('force', 0.0, n_cols=3)
+      at.force[:] = force
 
-   # Look up names of elements specified by atomic number
-   elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
+      yield at
 
-   result.set_atoms(elements)
-   result.pos[:,:] = farray([ [float(x)* BOHR for x in row] \
-                      for row in [field[2:5] for field in field_list]])
+      
+AtomsReaders['geom'] = CastepGeomReader
 
-   # And finally the forces, which are in units of hartree/bohr
-   field_list = [line.split() for line in forcelines]
-   force = farray([ [float(x)*HARTREE/BOHR for x in row] \
-                      for row in [field[2:5] for field in field_list]])
-   result.add_property('force', 0.0, n_cols=3)
-   result.force[:] = force
-
-   return result
-
-class CastepGeomFrameReader(GenericFrameReader):
-   is_lazy = False
-
-   def _init(self, source):
-      if type(source) == type(''):
-         source = open(source, 'r')
-      source = iter(source)
-
-      self._list = []
-      while True:
-         try:
-            self._list.append(read_geom(source))
-         except IOError:
-            break
-
-FrameReaderTypes['geom'] = CastepGeomFrameReader
-
-
-def read_castep_output(castep_file, cluster=None, abort=True):
+def CastepOutputReader(castep_file, cluster=None, abort=True):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
       well"""
 
-   opened = False
    if type(castep_file) == type(''):
-      opened = True
       castep_file = open(castep_file,'r')
-
-   castep_output = []
+   castep_file = iter(castep_file)
 
    got_header = False
+   eof = False
    while True:
-      line = castep_file.next()
-      if line == '': break
-      castep_output.append(line)
-      if line == ' |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |\n':
-         if got_header:
+
+      castep_output = []
+      while True:
+         try:
+            line = castep_file.next()
+         except StopIteration:
+            eof = True
             break
-         else:
-            got_header = True
-   
-   if opened: castep_file.close()
-   # NB: CASTEP doesn't always print 'Total time'
-   run_time = -1.0
-   if abort:
+         castep_output.append(line)
+
+         if line == ' |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |\n':
+            if got_header:
+               break
+            else:
+               got_header = True
+
+         if line.startswith(' Starting BFGS iteration'):
+            break
+         
+      # NB: CASTEP doesn't always print 'Total time'
+      run_time = -1.0
       total_time = filter(lambda s: s.startswith('Total time'), castep_output)
       if total_time == []:
          has_converged = filter(lambda s: s.startswith('Total energy has converged'), castep_output)
-         if has_converged == []:
+         if abort and has_converged == []:
             raise ValueError("castep didn't complete")
       else:
          run_time = float(total_time[0].split()[3])
 
-   # Now we should have contents of a valid .castep file in castep_output
+      # Now we should have contents of a valid .castep file in castep_output
 
-   # First let's read the user parameters for this run from top of file
-   param = CastepParam()
-   param.read_from_castep_output(castep_output)
-
-   # Next let's extract the lattice and atomic positions
-   try:
-      lattice_line = castep_output.index('                                      Unit Cell\n')
-   except:
-      raise ValueError('No unit cell found in castep file')
-
-   lattice_lines = castep_output[lattice_line+3:lattice_line+6]
-   R1 = map(float, lattice_lines[0].split()[0:3])
-   R2 = map(float, lattice_lines[1].split()[0:3])
-   R3 = map(float, lattice_lines[2].split()[0:3])
-   lattice = farray([R1,R2,R3])
-   
-   try:
-      cell_first_line = castep_output.index('                                     Cell Contents\n')
-   except ValueError:
-      raise ValueError('No cell contents found in castep file')
-
-   n_atoms = int(castep_output[cell_first_line+2].split()[-1])
-
-   if cluster is not None:
-      # If we were passed in an Atoms object, construct mapping from
-      # CASTEP (element, number) to original atom index
-      cluster = cluster.copy()
-      species_count = {}
-      lookup = {}
-      for i in range(cluster.n):
-         el = cluster.species[i]
-         if species_count.has_key(el):
-            species_count[el] += 1
-         else:
-            species_count[el] = 1
-         lookup[(el,species_count[el])] = i
-   else:
-      # Otherwise we make a new, empty Atoms object. Atoms will
-      # be ordered as they are in .castep file.
-      lookup = {}
-      cluster = atoms.Atoms(n=n_atoms,lattice=lattice)
-
-   cluster.params['castep_run_time'] = run_time
-   cell_lines = castep_output[cell_first_line+10:cell_first_line+10+n_atoms]
-
-   # Fill in species and fractional positions
-   cluster.add_property('frac_pos',0.0,ncols=3)
-   for i, line in enumerate(cell_lines):
-      x1, el, num, u, v, w, x2 = line.split()
-      num = int(num)
-      if not (el,num) in lookup:
-         lookup[(el,num)] = i
-      cluster.species[:,lookup[(el,num)]] = el
-      cluster.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
-
-   # Calculate cartesian postions from fractional positions
-   cluster.pos[:] = farray([ dot(cluster.frac_pos[:,i],cluster.lattice) for i in range(cluster.n) ])
-
-   if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
-      energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
-                            castep_output)
-   elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
-      energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
-   else:
-      energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
-
-   if (len(energy_lines) == 0):
-      if abort:
-         raise ValueError('No total energy found in castep file')
-   else:
-      # Energy is second to last field on line (last is "eV")
-      # Use last matching energy line in file
-      cluster.params['energy'] = float(energy_lines[-1].split()[-2])
-
-   try:
-
-      for fn in ('Forces', 'Symmetrised Forces'):
-         force_start_lines = [s for s in castep_output if s.find('****** %s ******' % fn) != -1]
-         if force_start_lines != []: break
-
-      if force_start_lines == []:
-         raise ValueError
-
-      # Use last set of forces in file
-      force_start = castep_output.index(force_start_lines[-1])
-
-      # Extract force lines from .castep file
-      force_lines = castep_output[force_start+6:force_start+6+cluster.n]
-
-      cluster.add_property('force',0.0,ncols=3)
-
-      # Fill in the forces
-      for i, line in enumerate(force_lines):
-         line = line.replace('*','') # Remove the *s
-         el, num_str, fx, fy, fz = line.split()
-         num = int(num_str)
-         cluster.force[:,lookup[(el,num)]] = (fx,fy,fz)
-
-   except ValueError, m:
-      if abort:
-         raise ValueError('No forces found in castep file %s: ' % m)
-
-   # Have we calculated stress?
-   if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
+      # First let's read the user parameters for this run from top of file
+      param = CastepParam()
       try:
-         stress_start = castep_output.index(' ***************** Stress Tensor *****************\n')
-
-         stress_lines = castep_output[stress_start+6:stress_start+9]
-         virial = zeros((3,3),float)
-         for i in range(3):
-            star1, label, vx, vy, vz, star2 = stress_lines[i].split()
-            virial[:,i] = (vx,vy,vz)
-
-         # Convert to libAtoms units and append to comment line
-         cluster.params['virial'] = ' '.join(map(str, reshape(virial/GPA,9)))
-
+         param.read_from_castep_output(castep_output)
       except ValueError:
          if abort:
-            raise ValueError('No stress tensor found in .castep file')
+            raise
 
-   # Have we calculated local populations and charges?
-   if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
+      # Next let's extract the lattice and atomic positions
+      lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell\n']
+      
+      if lattice_lines == []:
+         raise ValueError('No unit cell found in castep file')
+         
+      lattice_line = lattice_lines[-1] # last lattice
+      
+      lattice_lines = castep_output[lattice_line+3:lattice_line+6]
+      R1 = map(float, lattice_lines[0].split()[0:3])
+      R2 = map(float, lattice_lines[1].split()[0:3])
+      R3 = map(float, lattice_lines[2].split()[0:3])
+      lattice = farray([R1,R2,R3])
+
+      cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
+      if cell_contents == []:
+         raise ValueError('No cell contents found in castep file')
+
+      cell_first_line = cell_contents[-1] # last cell contents line
+
       try:
-         popn_start = castep_output.index('     Atomic Populations\n')
+         n_atoms = int(castep_output[cell_first_line+2].split()[-1])
+         offset = 10
+      except IndexError:
+         offset = 7
 
-         popn_lines = castep_output[popn_start+4:popn_start+4+cluster.n]
+      if cluster is not None:
+         # If we were passed in an Atoms object, construct mapping from
+         # CASTEP (element, number) to original atom index
+         atoms = cluster.copy()
+         species_count = {}
+         lookup = {}
+         for i in frange(atoms.n):
+            el = atoms.species[i].stripstrings()
+            if species_count.has_key(el):
+               species_count[el] += 1
+            else:
+               species_count[el] = 1
+            lookup[(el,species_count[el])] = i
+      else:
+         # Otherwise we make a new, empty Atoms object. Atoms will
+         # be ordered as they are in .castep file.
+         lookup = {}
+         atoms = Atoms(n=n_atoms,lattice=lattice)
 
-         cluster.add_property('popn_s',0.0)
-         cluster.add_property('popn_p',0.0)
-         cluster.add_property('popn_d',0.0)
-         cluster.add_property('popn_f',0.0)
-         cluster.add_property('popn_total',0.0)
-         cluster.add_property('popn_charge',0.0)
+      atoms.params['castep_run_time'] = run_time
+      cell_lines = castep_output[cell_first_line+offset:cell_first_line+offset+n_atoms]
 
-         for line in popn_lines:
-            el, num_str, s, p, d, f, tot, charge = line.split()
+      # Fill in species and fractional positions
+      atoms.add_property('frac_pos',0.0,n_cols=3)
+      for i, line in fenumerate(cell_lines):
+         x1, el, num, u, v, w, x2 = line.split()
+         num = int(num)
+         if not (el,num) in lookup:
+            lookup[(el,num)] = i
+         atoms.set_species(lookup[(el,num)], el)
+         atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
+
+      # Calculate cartesian postions from fractional positions
+      atoms.pos[:] = farray([ numpy.dot(atoms.frac_pos[:,i],atoms.lattice) for i in frange(atoms.n) ])
+
+      if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
+         energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
+                               castep_output)
+      elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
+         energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
+      else:
+         energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
+
+      if (len(energy_lines) == 0):
+         if abort:
+            raise ValueError('No total energy found in castep file')
+      else:
+         # Energy is second to last field on line (last is "eV")
+         # Use last matching energy line in file
+         atoms.params['energy'] = float(energy_lines[-1].split()[-2])
+
+      try:
+
+         for fn in ('Forces', 'Symmetrised Forces'):
+            force_start_lines = [i for (i,s) in enumerate(castep_output) if s.find('****** %s ******' % fn) != -1]
+            if force_start_lines != []: break
+
+         if force_start_lines == []:
+            raise ValueError
+
+         # Use last set of forces
+         force_start = force_start_lines[-1]
+
+         # Extract force lines from .castep file
+         force_lines = castep_output[force_start+6:force_start+6+atoms.n]
+
+         atoms.add_property('force',0.0,n_cols=3)
+
+         # Fill in the forces
+         for i, line in enumerate(force_lines):
+            line = line.replace('*','') # Remove the *s
+            el, num_str, fx, fy, fz = line.split()
             num = int(num_str)
-            cluster.popn_s[lookup[(el,num)]] = float(s)
-            cluster.popn_p[lookup[(el,num)]] = float(p)
-            cluster.popn_d[lookup[(el,num)]] = float(d)
-            cluster.popn_f[lookup[(el,num)]] = float(f)
-            cluster.popn_total[lookup[(el,num)]] = float(tot)
-            cluster.popn_charge[lookup[(el,num)]] = float(charge)
+            atoms.force[:,lookup[(el,num)]] = (fx,fy,fz)
 
-      except ValueError:
+      except ValueError, m:
          if abort:
-            raise ValueError('No populations found in castep file')
+            raise ValueError('No forces found in castep file %s: ' % m)
 
-   return cluster
-
-
-class CastepOutputFrameReader(GenericFrameReader):
-   def _init(self, source):
-      if type(source) == type(''):
-         source = open(source, 'r')
-      source = iter(source)
-
-      self._casteplist = []
-      while True:
+      # Have we calculated stress?
+      if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
          try:
-            self._casteplist.append(read_castep_output(source))
-         except IOError:
-            break
+            stress_start = castep_output.index(' ***************** Stress Tensor *****************\n')
 
-   def _close(self):
-      pass
+            stress_lines = castep_output[stress_start+6:stress_start+9]
+            virial = zeros((3,3),float)
+            for i in range(3):
+               star1, label, vx, vy, vz, star2 = stress_lines[i].split()
+               virial[:,i] = (vx,vy,vz)
 
-   def _getframe(self, frame):
-      return self._casteplist[frame]
+            # Convert to libAtoms units and append to comment line
+            atoms.params['virial_1'] = virial[1]/GPA
+            atoms.params['virial_2'] = virial[2]/GPA
+            atoms.params['virial_3'] = virial[3]/GPA
+            atoms.virial = virial
 
-   def _nframe(self):
-      return len(self._casteplist)
+         except ValueError:
+            if abort:
+               raise ValueError('No stress tensor found in .castep file')
 
-FrameReaderTypes['castep'] = CastepOutputFrameReader
+      # Have we calculated local populations and charges?
+      if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
+         try:
+            popn_start = castep_output.index('     Atomic Populations\n')
+
+            popn_lines = castep_output[popn_start+4:popn_start+4+atoms.n]
+
+            atoms.add_property('popn_s',0.0)
+            atoms.add_property('popn_p',0.0)
+            atoms.add_property('popn_d',0.0)
+            atoms.add_property('popn_f',0.0)
+            atoms.add_property('popn_total',0.0)
+            atoms.add_property('popn_charge',0.0)
+
+            for line in popn_lines:
+               el, num_str, s, p, d, f, tot, charge = line.split()
+               num = int(num_str)
+               atoms.popn_s[lookup[(el,num)]] = float(s)
+               atoms.popn_p[lookup[(el,num)]] = float(p)
+               atoms.popn_d[lookup[(el,num)]] = float(d)
+               atoms.popn_f[lookup[(el,num)]] = float(f)
+               atoms.popn_total[lookup[(el,num)]] = float(tot)
+               atoms.popn_charge[lookup[(el,num)]] = float(charge)
+
+         except ValueError:
+            if abort:
+               raise ValueError('No populations found in castep file')
+
+      yield atoms
+
+      if eof:
+         break
+
+
+AtomsReaders['castep'] = AtomsReaders['castep_log'] = CastepOutputReader
+
 
 
 def get_valid_keywords(castep):

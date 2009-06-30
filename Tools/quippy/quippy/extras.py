@@ -1,9 +1,10 @@
 """Various subclasses to add functionality to automatically generated classes."""
 
-import numpy, hashlib
+import numpy, hashlib, os
 from farray import *
 
-from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem
+from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput
+from quippy import AtomsReaders, AtomsWriters
 
 class Atoms(FortranAtoms):
    """
@@ -21,20 +22,61 @@ class Atoms(FortranAtoms):
    image convention, all neighbours are stored up to a radius of 'cutoff', including images
    """
 
-   def __init__(self, filename=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True, frame=None,
-                data=None, properties=None,  params=None):
+   def __new__(cls, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
+                data=None, properties=None, params=None, *readargs, **readkwargs):
       """
       Initialise an Atoms object.
 
       The arugments, n, lattice, fpointer, finalise, data, properties and params are passed on
       to the FortranAtoms constructor.
 
-      If filename is given, Atoms.read(filename, frame=frame) is called.
+      If source is given, Atoms.read(source, frame=frame) is called.
       """
-      FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
-                            data=data, properties=properties, params=params)
-      if filename is not None:
-         self.read(filename, frame=frame)
+
+      if source is None:
+         self = object.__new__(cls)
+      else:
+         self = cls.read(source, *readargs, **readkwargs)
+
+      return self
+
+   def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
+                data=None, properties=None, params=None, *readargs, **readkwargs):
+      if source is None:
+         FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
+                               data=data, properties=properties, params=params)
+
+   @classmethod
+   def read(cls, source, format=None, *args, **kwargs):
+      if format is None:
+         if isinstance(source, str):
+            base, ext = os.path.splitext(source)
+            format = ext[1:]
+         else:
+            format = source.__class__
+
+      if format in AtomsReaders:
+         source = iter(AtomsReaders[format](source, *args, **kwargs))
+
+      at = source.next()
+      if not isinstance(at, cls):
+         raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
+      return at
+         
+
+   def write(self, dest, format=None, *args, **kwargs):
+      if format is None:
+         if isinstance(dest, str):
+            base, ext = os.path.splitext(dest)
+            format = ext[1:]
+         else:
+            format = dest.__class__
+
+      if format in AtomsWriters:
+         dest = iter(AtomsWriters[format](dest, *args, **kwargs))
+         dest.next()
+
+      return dest.send(self)
 
    def show(self, property=None):
       """Show this Atoms object in AtomEye."""
@@ -61,6 +103,9 @@ class Atoms(FortranAtoms):
       else:
          raise ValueError('Either mask or list must be present.')
       return out
+
+   def set_species(self, i, species):
+      self.species[i] = [x for x in species] + [' ' for a in range(self.species.shape[0]-len(species))]
     
    def _update_hook(self):
       # Remove existing pointers
@@ -153,6 +198,8 @@ class Atoms(FortranAtoms):
       pylab.quiver(numpy.array(self.pos[1,:]),numpy.array(self.pos[2,:]),
                    numpy.array(value[1,:]),numpy.array(value[2,:]))
 
+   def __len__(self):
+      return self.n
 
    def __getattr__(self, name):
       if isinstance(self.params, FortranDictionary) and name in self.params:
@@ -169,6 +216,25 @@ class Atoms(FortranAtoms):
              v = ''.join(v).strip()
          res[k] = v
       return res
+
+   def __eq__(self, other):
+      tol = 1e-10
+      
+      if self.n != other.n: return False
+      if sorted(self.properties.keys()) != sorted(other.properties.keys()): return False
+      for key in self.properties:
+         v1, v2 = self.properties[key], other.properties[key]
+         if v1[1] != v2[1]: return False # type
+         if v1[3]-v1[2] != v2[3]-v2[2]: return False # ncols
+         
+      if self.params != other.params: return False
+      if (self.lattice - other.lattice > tol).any(): return False
+      if self.data != other.data: return False
+      return True
+
+   def __ne__(self, other):
+      return not self.__eq__(other)
+      
 
 from dictmixin import DictMixin
 class Dictionary(DictMixin, FortranDictionary):
@@ -245,6 +311,21 @@ class Dictionary(DictMixin, FortranDictionary):
    def __repr__(self):
       return 'Dictionary(%s)' % DictMixin.__repr__(self)
 
+   def __eq__(self, other):
+      if self.keys() != other.keys(): return False
+
+      for key in self:
+         v1, v2 = self[key], other[key]
+         if isinstance(v1, FortranArray):
+            if (v1 != v2).any(): return False
+         else:
+            if v1 != v2: return False
+      return True
+         
+
+   def __ne__(self, other):
+      return not self.__eq__(other)
+
 
 class Table(FortranTable):
 
@@ -265,13 +346,18 @@ class Table(FortranTable):
       return not self.equal(other)
 
    def equal(self, other):
+      tol = 1e-10
+      
       for t1, t2 in zip((self.n,  self.intsize,  self.realsize,  self.strsize,  self.logicalsize),
                         (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
          if t1 != t2: return False
 
       for a1, a2, in zip((self.int,  self.real,  self.str,  self.logical),
                          (other.int, other.real, other.str, other.logical)):
-         if (a1 != a2).any(): return False
+         try:
+            if (a1 - a2 > tol).any(): return False
+         except TypeError:
+            if (a1 != a2).any(): return Falswe
 
       return True
 
@@ -321,6 +407,23 @@ class DynamicalSystem(FortranDynamicalSystem):
    
    def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str=""):
       return Trajectory(self, pot, dt, n_steps, save_interval, connect_interval, args_str)
-      
+
+
+from quippy import INPUT, OUTPUT, INOUT
+
+
+class CInOutput(FortranCInOutput):
+
+   def __init__(self, filename, action=INPUT, append=False):
+      FortranCInOutput.__init__(self, filename, action, append)
+
+   def __len__(self):
+      return int(self.n_frame)
+
+   def __getitem__(self, index):
+      return self.read(frame=index)
+
+   def __setitem__(self, index, value):
+      self.write(value, frame=index)
 
 
