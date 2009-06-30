@@ -2174,7 +2174,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   char *trimmed;
   int species_idx, pos_idx;
 
-  if (fseek(out, 0, SEEK_END) != 0) {
+  if (out != stdout && fseek(out, 0, SEEK_END) != 0) {
     fprintf(stderr,"Cannot seek to end of file\n");
     return 0;
   }
