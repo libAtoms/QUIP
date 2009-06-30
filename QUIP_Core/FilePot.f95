@@ -225,19 +225,14 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      end if
      call finalise(xyzio)
 
-#if HAVE_CP2K
-     call print("FilePot: invoking external command "//trim(this%command)//" "//trim(my_args_str)//' '//trim(xyzfile)//" "// &
-          trim(outfile)//" on "//at%N//" atoms...")
+!     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
+!          trim(outfile)//" on "//at%N//" atoms...")
+     call print("FilePot: invoking external command "//trim(this%command)//' '//trim(xyzfile)//" "// &
+          trim(outfile)//" "//trim(my_args_str)//" on "//at%N//" atoms...")
 
      ! call the external command here
-     call system_command(trim(this%command)//" "//trim(my_args_str)//' '//trim(xyzfile)//" "//trim(outfile),status=status)
-#else
-     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
-          trim(outfile)//" on "//at%N//" atoms...")
-
-     ! call the external command here
-     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile),status=status)
-#endif
+!     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile),status=status)
+     call system_command(trim(this%command)//' '//trim(xyzfile)//" "//trim(outfile)//" "//trim(my_args_str),status=status)
 
      ! read back output from external command
      call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, my_err)
@@ -264,7 +259,7 @@ end subroutine FilePot_calc
 
 subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, err)
   character(len=*), intent(in) :: outfile
-  type(Atoms), intent(in) :: at
+  type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
   real(dp), intent(out), optional :: energy
   real(dp), intent(out), target, optional :: local_e(:)
@@ -278,6 +273,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   integer, pointer :: Z_p(:)
   real(dp) :: virial_1d(9)
   real(dp), pointer :: local_e_p(:), forces_p(:,:)
+  real(dp),dimension(3)          :: QM_cell
 
   call initialise(outio, outfile)
   call read_xyz(at_out, outio)
@@ -383,6 +379,11 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
       endif
     endif
     forces = forces_p
+  endif
+
+  !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*
+  if (get_value(at_out%params,'QM_cell',QM_cell)) then
+     call set_value(at%params,'QM_cell',QM_cell)
   endif
 
   call finalise(at_out)
