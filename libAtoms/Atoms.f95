@@ -1136,6 +1136,17 @@ module  atoms_module
 
   end type Atoms
 
+  type atoms_ll
+    type (atoms_ll_entry), pointer :: first => null()
+    type (atoms_ll_entry), pointer :: last => null()
+  end type atoms_ll
+
+  type atoms_ll_entry
+    type(atoms) :: at
+    type(atoms_ll_entry), pointer :: next => null()
+    type(atoms_ll_entry), pointer :: prev => null()
+  end type atoms_ll_entry
+
 
   interface initialise
      module procedure atoms_initialise, connection_initialise
@@ -1273,7 +1284,7 @@ module  atoms_module
   !% all types of dictionary entries with the exception, for now, of
   !% complex numbers are supported.
   interface print_xyz
-     module procedure atoms_print_xyz, atoms_print_xyz_filename
+     module procedure atoms_print_xyz, atoms_print_xyz_filename, atoms_ll_print_xyz
   end interface print_xyz
 
   !% Print in AtomEye extended CFG format. Arguments are as for 'print_xyz' above.
@@ -1313,6 +1324,16 @@ module  atoms_module
     module procedure atoms_map_into_cell
     module procedure vec_map_into_cell
   end interface
+
+  !% add new entry to atoms linked list structure
+  interface new_entry
+     module procedure atoms_ll_new_entry
+  end interface new_entry
+
+  !% remove last entry from atoms linked list structure
+  interface remove_last_entry
+     module procedure atoms_ll_remove_last_entry
+  end interface remove_last_entry
 
 
 contains
@@ -5194,6 +5215,8 @@ contains
      integer                          :: i,n,my_status
      character(80)                    :: text
 
+     if (present(status)) status = 0
+
      !Read number of atoms
      text = Read_Line(xyzfile,my_status)
      if (my_status /= 0) then
@@ -5209,7 +5232,7 @@ contains
      !Now read past the comment and that number of atoms
      do i = 1, n+1
         text = Read_Line(xyzfile,my_status)
-        if (status /= 0) then
+        if (my_status /= 0) then
            if (present(status)) then
               status = my_status
               return
@@ -5945,5 +5968,55 @@ contains
     deallocate(shifts)
 
   end subroutine coalesce_in_one_periodic_image
+
+  subroutine atoms_ll_new_entry(this, atoms_p)
+    type(atoms_ll), target, intent(inout) :: this
+    type(atoms), intent(out), pointer :: atoms_p
+
+    type(atoms_ll_entry), pointer :: entry
+
+    allocate(entry)
+    if (associated(this%first) .or. associated(this%last)) then
+      if (.not. associated(this%first) .or. .not. associated(this%last)) &
+	call system_abort("new_entry associated(first) " // associated(this%first) // &
+		  " associated(this%lat) " // associated(this%last))
+      this%last%next => entry
+      entry%prev => this%last
+      this%last => entry
+    else
+      this%first => entry
+      this%last => entry
+    endif
+
+    atoms_p => entry%at
+  end subroutine atoms_ll_new_entry
+
+  subroutine atoms_ll_remove_last_entry(this)
+    type(atoms_ll), target, intent(inout) :: this
+
+    if (associated(this%last)) then
+      call finalise(this%last%at)
+      nullify(this%last%prev%next)
+      this%last => this%last%prev
+    endif
+
+  end subroutine atoms_ll_remove_last_entry
+
+  subroutine atoms_ll_print_xyz(this, file)
+    type(atoms_ll), intent(inout), target :: this
+    type(inoutput), optional, intent(inout) :: file
+
+    type(atoms_ll_entry), pointer :: entry
+    integer :: i
+
+    entry => this%first
+    i = 1
+    do while (associated(entry)) 
+      call print("atoms_ll entry # " // i, file=file)
+      call print_xyz(entry%at, xyzfile=file)
+      entry => entry%next
+      i = i + 1
+    end do
+  end subroutine atoms_ll_print_xyz
 
 end module atoms_module
