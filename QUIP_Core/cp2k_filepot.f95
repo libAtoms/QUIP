@@ -3,7 +3,10 @@
 !reads filepot.0.xyz  >>  runs CP2K  >>  writes filepot.0.out with forces
 
 !Initialisation:
+!For QS or MM calculation:
 !   call initialise(CP2K_pot,'FilePot command=/Users/csilla/QUIP/build.darwin_x86_64_g95/cp2k_filepot property_list=pos min_cutoff=0.0')
+!For QM/MM calculation:
+!   call initialise(CP2K_pot,'FilePot command=/Users/csilla/QUIP/build.darwin_x86_64_g95/cp2k_filepot property_list=pos:QM_flag min_cutoff=0.0')
 
 !Calc (args_str is the same as for go_cp2k):
 !   call calc(CP2K_pot,ds%atoms,energy=energy,forces=f1,args_str=trim(args_str))
@@ -38,8 +41,8 @@ program cp2k_filepot
   logical                               :: clean_up_files
 !  logical                     :: Delete_Metal_Connections
 
-    call system_initialise(verbosity=SILENT,enable_timing=.true.)
-!    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+!    call system_initialise(verbosity=SILENT,enable_timing=.true.)
+    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !read parameters
