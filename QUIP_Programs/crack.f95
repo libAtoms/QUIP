@@ -460,7 +460,7 @@ end if
   if (params%simulation_restart) then
       if (params%io_netcdf) then
         call Print('Restarting from NetCDF trajectory '//trim(stem)//'.nc')
-        call initialise(movie, trim(stem)//'.nc', action=INOUT, append=.true., query=.true.)
+        call initialise(movie, trim(stem)//'.nc', action=INOUT, append=.true.)
         call read(movie, crack_slab, frame=int(movie%n_frame)-1) ! Read last frame
       else
         call Print('Restarting from checkfile '//trim(params%io_checkpoint_path)//trim(stem)//'.check')
