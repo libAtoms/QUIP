@@ -28,6 +28,14 @@ classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)
 
+for name, routine in routines:
+   setattr(sys.modules[__name__], name, routine)
+
+sys.modules[__name__].__dict__.update(params)
+
+AtomsReaders = {}
+AtomsWriters = {}
+
 import extras
 for name, cls in classes:
    try:
@@ -38,10 +46,6 @@ for name, cls in classes:
    setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
    FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
 
-for name, routine in routines:
-   setattr(sys.modules[__name__], name, routine)
-
-sys.modules[__name__].__dict__.update(params)
 
 del classes
 del routines
@@ -51,7 +55,7 @@ del extras
 del fortran_class_prefix
                       
 from farray import *
-from framereader import *
+from atomslist import *
 
 # Convert periodic table arrays
 ElementName = farray([s.strip() for s in ElementName[2:]])
