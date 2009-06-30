@@ -1,5 +1,6 @@
 !last modified: 2008-08-30
 !reads atoms & QM list & runs CP2K & writes movie xyz with QM flags
+!filepot_program can be e.g. /Users/csilla/QUIP/build.darwin_x86_64_g95/cp2k_filepot
 
 program qmmm_md
 
@@ -139,6 +140,7 @@ program qmmm_md
   real(dp)                    :: spline_dpot
   logical                     :: use_spline
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
+  character(len=FIELD_LENGTH) :: filepot_program
   integer :: max_n_steps
 integer :: pot_index
 real(dp) :: pot
@@ -185,6 +187,7 @@ real(dp) :: pot
       call param_register(params_in, 'max_n_steps', '-1', max_n_steps)
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
+      call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
@@ -229,6 +232,7 @@ real(dp) :: pot
       call finalise(params_in)
 
       call print('Run parameters:')
+      call print('  filepot_program '//trim(filepot_program))
       call print('  Run_Type1 '//Run_Type1)
       call print('  Run_Type2 '//Run_Type2)
       call print('  IO_Rate '//IO_Rate)
@@ -488,8 +492,13 @@ real(dp) :: pot
      !----------------------------------------------------
 
 
-    call initialise(CP2K_potential,'wrapper=.true.')
-!    call initialise(my_metapotential,'Simple',CP2K_potential)
+    !call initialise(CP2K_potential,'wrapper=.true.')
+    if ((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM')) then
+       call initialise(CP2K_potential,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')
+    else
+       call initialise(CP2K_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:QM_flag min_cutoff=0.0')
+    endif
+    call initialise(my_metapotential,args_str='Simple=T',pot=CP2K_potential)
 
     !allocate force lists
     allocate(f0(3,ds%N),f1(3,ds%N),f(3,ds%N))
@@ -519,13 +528,15 @@ real(dp) :: pot
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
         args_str=trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='// &
-	  trim(PSF_Print)
+        trim(PSF_Print)
      else
         args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)// &
-	  ' PSF_Print='//trim(PSF_Print)
+          ' PSF_Print='//trim(PSF_Print)
      endif
-     call print_qm_region(ds%atoms)
-     call calc(CP2K_potential,ds%atoms,e=energy,f=f1,args_str=args_str)
+     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+        call print_qm_region(ds%atoms)
+     endif
+     call calc(my_metapotential,ds%atoms,e=energy,f=f1,args_str=trim(args_str))
 
      PSF_Print = 'USE_EXISTING_PSF' !every case but
      if (Topology_Print.eq.TOPOLOGY_NO_PSF) PSF_Print='NO_PSF'
@@ -554,8 +565,10 @@ real(dp) :: pot
         else
 	   args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
         endif
-        call print_qm_region(ds%atoms)
-        call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
+        if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+           call print_qm_region(ds%atoms)
+        endif
+        call calc(my_metapotential,ds%atoms,e=energy,f=f0,args_str=trim(args_str))
         if (origin_centre.and.use_spline) then
            f1 = f1 + add_force
            f0 = f0 + add_force
@@ -681,8 +694,10 @@ real(dp) :: pot
      else
 	args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(PSF_Print)
      endif
-     call print_qm_region(ds%atoms)
-     call calc(CP2K_potential,ds%atoms,e=energy,f=f1,args_str=args_str)
+     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+        call print_qm_region(ds%atoms)
+     endif
+     call calc(my_metapotential,ds%atoms,e=energy,f=f1,args_str=trim(args_str))
 
     !spline force calculation, if needed
      if (origin_centre.and.use_spline) then
@@ -708,8 +723,10 @@ real(dp) :: pot
         else
            args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
         endif
-	call print_qm_region(ds%atoms)
-        call calc(CP2K_potential,ds%atoms,e=energy,f=f0,args_str=args_str)
+        if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+	   call print_qm_region(ds%atoms)
+        endif
+        call calc(my_metapotential,ds%atoms,e=energy,f=f0,args_str=trim(args_str))
         if (origin_centre.and.use_spline) then
            f1 = f1 + add_force
            f0 = f0 + add_force
