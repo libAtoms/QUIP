@@ -138,10 +138,6 @@ module Potential_module
   use TB_module
   use FilePot_module
 
-#ifdef HAVE_CP2K
-  use cp2k_driver_module
-#endif
-
 #define MAX_CUT_BONDS 4
 
   implicit none
@@ -650,13 +646,7 @@ contains
              !
              !if(present(e)) e = wrapper_energy(at)
              !if(present(f)) call wrapper_force(at, f)
-#ifdef HAVE_CP2K
-             if (.not.present(e) .and. .not.present(f)) &
-                call system_abort('Potential_Calc: neither energy nor force are requested')
-             call go_cp2k(my_atoms=at, forces=f, energy=e, args_str=args_str)
-#else 
              call system_abort("Potential_Calc: hardcoded wrapper functions are not defined")
-#endif
           else
              call system_abort ("Potential_Calc: potential is not initialised")
           end if
