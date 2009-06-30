@@ -1350,6 +1350,7 @@ contains
 
     if (present(data)) then
        if (data%N /= N) call system_abort('Atoms_Initialise: data%N ('//data%N//') /= N('//N//')')
+       if (data%N == 0) call system_abort('Atoms_Initialise: cannot initialise from data with zero length')
        this%data = data
        this%properties = properties
     else
