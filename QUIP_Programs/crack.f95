@@ -416,7 +416,7 @@ end if
           '{ little_clusters='//params%qm_small_clusters// &
           '  single_cluster='//(.not. params%qm_small_clusters)// &
           '  terminate='//params%qm_terminate// &
-          '  even_hydrogens='//params%qm_even_hydrogens// &
+          '  even_parity='//params%qm_even_parity// &
           '  cluster_vacuum='//params%qm_vacuum_size// &
           '  cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
           '  cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &

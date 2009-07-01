@@ -66,7 +66,7 @@
 !%>  <classical args="IP SW label=PRB_31_plus_H" reweight="1.0" />
 !%>
 !%>  <qm args="TB Bowler" small_clusters="F" terminate="T"
-!%>    buffer_hops="3" vacuum_size="3.0" even_hydrogens="T"
+!%>    buffer_hops="3" vacuum_size="3.0" even_parity="T"
 !%>    randomise_buffer="T" force_periodic="F" />
 !%> 
 !%>  <fit hops="3" method="adj_pot_svd" />
@@ -219,8 +219,7 @@ module CrackParams_module
      logical :: qm_terminate              !% Terminate clusters with hydrogen atoms
      logical :: qm_force_periodic         !% Force clusters to be periodic in $z$ direction.
      logical :: qm_randomise_buffer       !% Randomise positions of outer layer of buffer atoms slightly to avoid systematic errors.
-     logical :: qm_even_hydrogens         !% Discard a hydrogen if necessary to give an overall non-spin-polarised cluster 
-                                          !% (i.e. one with an even number of hydrogen atoms).
+     logical :: qm_even_parity            !% Discard a hydrogen if necessary to give an overall non-spin-polarised cluster 
      real(dp) :: qm_vacuum_size           !% Amount of vacuum surrounding cluster in non-periodic directions ($x$ and $y$ at least). Unit:~\AA{}.
      logical :: qm_calc_force_error       !% Do a full QM calculation at each stage in extrap and interp to measure force error
      logical :: qm_rescale_r              !% If true, rescale space in QM cluster to match QM lattice constant
@@ -409,7 +408,7 @@ contains
     this%qm_terminate             = .true.
     this%qm_force_periodic        = .false.
     this%qm_randomise_buffer      = .true.
-    this%qm_even_hydrogens        = .false.
+    this%qm_even_parity           = .false.
     this%qm_vacuum_size           = 3.0_dp   ! Angstrom
     this%qm_calc_force_error      = .false.
     this%qm_rescale_r             = .false.
@@ -1007,9 +1006,15 @@ contains
           read (value, *) parse_cp%qm_randomise_buffer
        end if
 
+       ! backwards compatibility
        call QUIP_FoX_get_value(attributes, "even_hydrogens", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%qm_even_hydrogens
+          read (value, *) parse_cp%qm_even_parity
+       end if
+
+       call QUIP_FoX_get_value(attributes, "even_parity", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_even_parity
        end if
 
        call QUIP_FoX_get_value(attributes, "vacuum_size", value, status)
@@ -1250,7 +1255,7 @@ contains
     call Print('     terminate             = '//this%qm_terminate,file=file)
     call Print('     force_periodic        = '//this%qm_force_periodic,file=file)
     call Print('     randomise_buffer      = '//this%qm_randomise_buffer,file=file)
-    call Print('     even_hydrogens        = '//this%qm_even_hydrogens,file=file)
+    call Print('     even_parity           = '//this%qm_even_parity,file=file)
     call Print('     vacuum_size           = '//this%qm_vacuum_size//' A',file=file)
     call Print('     calc_force_error      = '//this%qm_calc_force_error, file=file)
     call Print('     rescale_r             = '//this%qm_rescale_r, file=file)
