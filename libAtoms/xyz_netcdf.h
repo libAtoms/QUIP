@@ -108,7 +108,7 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
                  int shuffle, int deflate, int deflate_level);
 int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char *str_format, char *logical_format, int swap);
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
-	      int query, int redefine, int realloc, int supress, int override_lattice, double lattice[3][3], int skip);
+	      int query, int redefine, int realloc, int supress, int override_lattice, double lattice[3][3]);
 int cio_init(Atoms **at, char *filename, int *action, int *append,
 	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	     int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,

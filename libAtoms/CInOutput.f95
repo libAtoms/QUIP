@@ -47,13 +47,12 @@ module CInOutput_module
        integer(C_INT) :: cioquery
      end function cioquery
 
-     function cioread(at, frame, int_data, real_data, str_data, logical_data, zero, skip) bind(c)
+     function cioread(at, frame, int_data, real_data, str_data, logical_data, zero) bind(c)
        use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_SIZE_T
        type(C_PTR), intent(in), value :: at
        integer(C_SIZE_T), intent(in) :: frame
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
        integer(C_INT), intent(in) :: zero
-       integer(C_INT), intent(in) :: skip
        integer(C_INT) :: cioread
      end function cioread
 
@@ -89,6 +88,7 @@ module CInOutput_module
 
      integer(C_SIZE_T), pointer :: n_atom, n_frame
      integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property
+     integer :: current_frame
 
      integer, pointer, dimension(:) :: property_type, property_ncols, property_start, &
           param_type, param_size, pint, property_filter, param_filter
@@ -205,7 +205,15 @@ contains
 
     this%initialised = .true.
     
-    if (this%action == INPUT .or. this%action == INOUT) call cinoutput_query(this, 0)
+    if (this%action == INPUT .or. this%action == INOUT) then
+       call cinoutput_query(this, 0)
+    end if
+
+    if (this%action /= INPUT .and. do_append /= 0) then
+       this%current_frame = this%n_frame
+    else
+       this%current_frame = 0
+    end if
     
   end subroutine cinoutput_initialise
 
@@ -231,8 +239,7 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
 
-    do_frame = 0
-    if (present(frame)) do_frame = frame
+    do_frame = optional_default(this%current_frame, frame)
 
     if (cioquery(this%c_at, do_frame) == 0) &
          call system_abort("Error querying CInOutput file")
@@ -257,7 +264,7 @@ contains
 
   subroutine cinoutput_read(this, at, frame, zero, status)
     type(CInOutput), intent(inout) :: this
-    type(Atoms), target, intent(out), optional :: at
+    type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
     integer, optional, intent(inout) :: status
@@ -269,22 +276,22 @@ contains
     character(len=KEY_LEN) :: namestr
     integer :: do_zero
     integer(C_SIZE_T) :: do_frame
-    integer :: cioread_status
+    integer :: tmp_do_frame
 
     if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
 
-    do_frame = 0
-    if (present(frame)) do_frame = frame
+    do_frame = optional_default(this%current_frame, frame)
 
     do_zero = 0
     if (present(zero)) then
        if (zero) do_zero = 1
     end if
     
-    call cinoutput_query(this, frame)
+    tmp_do_frame = do_frame
+    call cinoutput_query(this, tmp_do_frame)
 
     call initialise(properties)
     do i=1,this%n_property
@@ -296,21 +303,19 @@ contains
     ! get C routine to read directly into final Atoms structure to save copying.
     call allocate(data, this%n_int, this%n_real, this%n_str, this%n_logical, int(this%n_atom))
     call append(data, blank_rows=int(this%n_atom))
-    if (present(at)) then
-      call initialise(at, int(this%n_atom), transpose(this%lattice), data, properties)
+    call initialise(at, int(this%n_atom), transpose(this%lattice), data, properties)
 
-      int_ptr = C_NULL_PTR
-      if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
+    int_ptr = C_NULL_PTR
+    if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
 
-      real_ptr = C_NULL_PTR
-      if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
-      
-      str_ptr = C_NULL_PTR
-      if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
+    real_ptr = C_NULL_PTR
+    if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
+    
+    str_ptr = C_NULL_PTR
+    if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
 
-      log_ptr = C_NULL_PTR
-      if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
-    endif
+    log_ptr = C_NULL_PTR
+    if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
     if (this%n_frame /= -1) then
        if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
@@ -318,7 +323,7 @@ contains
           if (present(status)) then
              call finalise(properties)
              call finalise(data)
-             if (present(at)) call finalise(at)
+             call finalise(at)
              status = 1
              return
           else
@@ -327,32 +332,17 @@ contains
        end if
     end if
 
-    if (present(at)) then
-      cioread_status = cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero, 0)
-    else
-      cioread_status = cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero, 1)
-    endif
-    if (cioread_status == 0) then
+    if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
        if (present(status)) then
-	  call finalise(properties)
-	  call finalise(data)
-	  call finalise(at)
-	  status = 1
-	  return
+          call finalise(properties)
+          call finalise(data)
+          call finalise(at)
+          status = 1
+          return
        else
-	  if (present(at)) then
-	    call system_abort("ERROR: cinoutput_read reading from file")
-	  else
-	    call system_abort("ERROR: cinoutput_read skipping frame in file")
-	  endif
+          call system_abort("Error reading from file")
        end if
     end if
-
-    if (.not. present(at)) then
-      call finalise(properties)
-      call finalise(data)
-      return
-    endif
 
     do i=1,this%n_param
        namestr = c_array_to_f_string(this%param_name(:,i))
@@ -391,6 +381,7 @@ contains
 
     call finalise(properties)
     call finalise(data)
+    this%current_frame = this%current_frame + 1
 
   end subroutine cinoutput_read
 
@@ -422,8 +413,9 @@ contains
 
     do_int_format = optional_default('%8d', int_format)
     do_real_format = optional_default('%16.8f', real_format)
-    do_frame = this%n_frame
-    if (present(frame)) do_frame = frame
+
+    do_frame = optional_default(this%current_frame, frame)
+
     do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
     do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
@@ -538,6 +530,7 @@ contains
     end if
 
     call finalise(selected_properties)
+    this%current_frame = this%current_frame + 1
 
   end subroutine cinoutput_write
 
