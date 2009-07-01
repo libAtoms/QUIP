@@ -3238,29 +3238,37 @@ CONTAINS
 
 
   ! returns a vector, contining a histogram of frequencies
-  function vector_histogram(vector,min_x,max_x,Nbin,weight_vector)
+  function vector_histogram(vector,min_x,max_x,Nbin,weight_vector, drop_outside)
 
     real(dp), dimension(:), intent(in) :: vector
     real(dp),               intent(in) :: min_x, max_x
     integer,                intent(in) :: Nbin
     real(dp), dimension(:), intent(in), optional :: weight_vector
+    logical, optional, intent(in) :: drop_outside
     real(dp), dimension(Nbin)          :: vector_histogram
     !local variables
     real(dp)                           :: binsize
     integer                            :: i, bin
+    logical :: do_drop_outside
   
     if(max_x <= min_x) then
        call system_abort('Vector_Histogram: max_x < min_x')
     end if
 
+    do_drop_outside = optional_default(.false., drop_outside)
+
     binsize=(max_x-min_x)/(real(Nbin,dp))
     vector_histogram = 0.0_dp
 
     do i=1,size(vector)
- 
+
        bin = ceiling((vector(i)-min_x)/binsize)
-       if (bin < 1) bin = 1
-       if (bin > Nbin) bin = Nbin
+       if (drop_outside) then
+	 if (bin < 1 .or. bin > Nbin) cycle
+       else
+	 if (bin < 1) bin = 1
+	 if (bin > Nbin) bin = Nbin
+       endif
        if (present(weight_vector)) then
 	 vector_histogram(bin) = vector_histogram(bin) + weight_vector(i)
        else
