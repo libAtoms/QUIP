@@ -251,7 +251,6 @@ void lattice_abc_to_xyz(double cell_lengths[3], double cell_angles[3],
 {
   double a, b, c, alpha, beta, gamma, cos_alpha, cos2_alpha, cos_beta, cos2_beta, cos_gamma, cos2_gamma,
     sin_gamma, sin2_gamma;
-  int i, j;
 
   a = cell_lengths[0];  b = cell_lengths[1]; c = cell_lengths[2];
   alpha = cell_angles[0]*M_PI/180.0; beta = cell_angles[1]*M_PI/180.0; gamma = cell_angles[2]*M_PI/180.0;
@@ -261,14 +260,13 @@ void lattice_abc_to_xyz(double cell_lengths[3], double cell_angles[3],
   cos_gamma = cos(gamma); cos2_gamma = cos_gamma*cos_gamma;
   sin_gamma = sin(gamma); sin2_gamma = sin_gamma*sin_gamma;
 
-  for (i=0; i<2; i++)
-    for (j=0; j<2; j++)
-      lattice[i][j] = 0.0;
-
   lattice[0][0] = a;
+  lattice[0][1] = 0.0;
+  lattice[0][2] = 0.0;
 
   lattice[1][0] = b * cos_gamma;
   lattice[1][1] = b * sin_gamma;
+  lattice[1][2] = 0.0;
 
   lattice[2][0] = c * cos_beta;
   lattice[2][1] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma;
@@ -569,7 +567,6 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
   netcdf_check(nc_get_vara_double(nc_id, atoms->cell_lengths_var_id[NETCDF_IN], start2, count2, cell_lengths));
   netcdf_check(nc_get_vara_double(nc_id, atoms->cell_angles_var_id[NETCDF_IN], start2, count2, cell_angles));
   lattice_abc_to_xyz(cell_lengths, cell_angles, atoms->lattice);
-
   debug("reading params\n");
 
   // read parameters
@@ -1669,7 +1666,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int supress, int override_lattice,
-	      double lattice[3][3], int skip) {
+	      double lattice[3][3]) {
   int i,n, entry_count,j,k,ncols,m, atidx;
   char linebuffer[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
@@ -1691,16 +1688,6 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   if (sscanf(linebuffer, "%d", &nxyz) != 1) {
     fprintf(stderr,"first line (%s) must be number of atoms\n", linebuffer);
     return 0;
-  }
-
-  if (skip) {
-    for (i=0; i < n+1; i++) {
-      if (!fgets(linebuffer,LINESIZE,in)) {
-	fprintf(stderr,"premature file ending\n");
-	return 0;
-      }
-    }
-    return nxyz;
   }
 
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
@@ -2184,7 +2171,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
   char *trimmed;
   int species_idx, pos_idx;
 
-  if (out != stdout && fseek(out, 0, SEEK_END) != 0) {
+  if (fseek(out, 0, SEEK_END) != 0) {
     fprintf(stderr,"Cannot seek to end of file\n");
     return 0;
   }
@@ -2847,7 +2834,7 @@ int main (int argc, char **argv)
     }
 
     if (xyzstat && (pflag || Pflag)) {
-      if (!read_xyz(infile, &at, atomlist, natomlist, 0, 1, 0, 1, 0, Lflag, lattice, 0))
+      if (!read_xyz(infile, &at, atomlist, natomlist, 0, 1, 0, 1, 0, Lflag, lattice))
 	pe("Error reading xyz header");
       if (Pflag) {
 	debug("Parameters:\n");
@@ -2888,7 +2875,7 @@ int main (int argc, char **argv)
 	for (i=f_start; i<f_stop; i+=f_step) nframes++;
 
 	for (i=f_start; i < f_stop; i += f_step) {
-	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, allow_redefine, 1, 0, Lflag, lattice, 0)) 
+	  if (!read_xyz(infile, &at, atomlist, natomlist, i, 0, allow_redefine, 1, 0, Lflag, lattice)) 
 	    pe("Error reading frame %d", i);
 	  
 	  if (xyz2xyz || xyz2nc) {
@@ -2955,7 +2942,7 @@ int main (int argc, char **argv)
 	  }
 	}
       } else {
-	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1, Lflag, lattice, 0))) {
+	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1, Lflag, lattice))) {
 	  debug("read frame %d\n", n);
 	  
 	  if (pflag) {
@@ -3203,7 +3190,7 @@ int main (int argc, char **argv)
 int cioquery(Atoms *at, int *frame) {
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0, 0, NULL, 0);
+    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0, 0, NULL);
   } else if (at->format == NETCDF_FORMAT) {
     if (at->nc_in == 0) return 0;
     return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
@@ -3406,7 +3393,7 @@ void ciofree(Atoms *at) {
 }
 
 int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
-	     int *logical_data, int *zero, int *skip)
+	     int *logical_data, int *zero)
 {
   int status;
 
@@ -3417,7 +3404,7 @@ int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_d
 
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, 0, 0, NULL, *skip);
+    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, 0, 0, NULL);
     if (status == 0) return status;
     return status;
   } else if (at->format == NETCDF_FORMAT) {
