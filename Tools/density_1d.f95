@@ -162,38 +162,26 @@ program density_1d
     frames_processed = 0
     frames_processed_intermed = 0
 
-    !Set up cells
-    call read_xyz(structure, xyzfile, status=status)
-    frame_count = frame_count + 1
-
     call atoms_set_cutoff(structure,cutoff)
 
     call allocate(distances,0,1,0,0,DISTANCES_INIT)
     call set_increment(distances,DISTANCES_INCR)
 
-    do while (frame_count < from)
+    !skip frames before from
+    do while (frame_count < (from-1))
       call read_xyz(xyzfile,status)
       if (status/=0) exit
       frame_count = frame_count + 1
     end do
+    !The next read frame is the (from)th.
+    call read_xyz(structure, xyzfile, status=status)
+    frame_count = frame_count + 1
 
     first_time=.true.
 
     do
 
        if (status/=0) exit
-
-       !Skip ahead (decimation-1) frames in the xyz file
-       do i = 1, (decimation-1)
-          call read_xyz(xyzfile,status)
-          if (status/=0) exit
-          frame_count = frame_count + 1
-       end do
-
-       if (status.ne.0) then
-          call print('double exit')
-          exit
-       endif
 
        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Frame ',frame_count
 
@@ -208,7 +196,7 @@ program density_1d
 
           num_atoms = 0
 
-	  hist = 0.0_dp
+          hist = 0.0_dp
           do j = 1, structure%N
 
              !Count the atoms
@@ -231,7 +219,7 @@ program density_1d
                 call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
 #endif
                 !Add this distance to the list
-		call accum_histogram(hist, d, 0.0_dp, cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
+                call accum_histogram(hist, d, 0.0_dp, cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
              end if
           end do
 
@@ -273,46 +261,53 @@ program density_1d
              data_intermed(i,3) = hist_int_intermed
           end do
 
-	  if (Density_Time_Evolution_Rate > 0) then
-	    if (mod(frames_processed,Density_Time_Evolution_Rate)==0) then
-	       if (first_time) then
-		 call initialise(datafile,datafilename,action=OUTPUT)
-		 first_time = .false.
-	       else
-		 call initialise(datafile,datafilename,action=OUTPUT,append=.true.)
-		 call print('',file=datafile)
-		 call print('',file=datafile)
-	       endif
-	       call print('# Density 1D',file=datafile)
-	       call print('# Input file: '//trim(xyzfilename),file=datafile)
-	       call print('#      Frames read = '//frame_count,file=datafile)
-	       call print('# Frames processed = '//frames_processed,file=datafile)
-	       call print(data_intermed,file=datafile)
-	       call finalise(datafile)
-	       hist_sum_intermed = 0.0_dp
-	       frames_processed_intermed = 0.0_dp
-	    endif
-	  endif
+          if (Density_Time_Evolution_Rate > 0) then
+            if (mod(frames_processed,Density_Time_Evolution_Rate)==0) then
+               if (first_time) then
+                 call initialise(datafile,datafilename,action=OUTPUT)
+                 first_time = .false.
+               else
+                 call initialise(datafile,datafilename,action=OUTPUT,append=.true.)
+                 call print('',file=datafile)
+                 call print('',file=datafile)
+               endif
+               call print('# Density 1D',file=datafile)
+               call print('# Input file: '//trim(xyzfilename),file=datafile)
+               call print('#      Frames read = '//frame_count,file=datafile)
+               call print('# Frames processed = '//frames_processed,file=datafile)
+               call print(data_intermed,file=datafile)
+               call finalise(datafile)
+               hist_sum_intermed = 0.0_dp
+               frames_processed_intermed = 0
+            endif
+          endif
 
           !Write the current data. This allows the user to Ctrl-C after a certain number
           !of frames if things are going slowly
-	  if (IO_Rate > 0) then
-	    if (mod(frames_processed,IO_Rate)==0) then
-	       call initialise(datafile,datafilename,action=OUTPUT)
-	       call print('# Density 1D',file=datafile)
-	       call print('# Input file: '//trim(xyzfilename),file=datafile)
-	       call print('#      Frames read = '//frame_count,file=datafile)
-	       call print('# Frames processed = '//frames_processed,file=datafile)
-	       call print(data,file=datafile)
-	       call finalise(datafile)
-	    endif
-	  endif
+          if (IO_Rate > 0) then
+            if (mod(frames_processed,IO_Rate)==0) then
+               call initialise(datafile,datafilename,action=OUTPUT)
+               call print('# Density 1D',file=datafile)
+               call print('# Input file: '//trim(xyzfilename),file=datafile)
+               call print('#      Frames read = '//frame_count,file=datafile)
+               call print('# Frames processed = '//frames_processed,file=datafile)
+               call print(data,file=datafile)
+               call finalise(datafile)
+            endif
+          endif
        endif     
 
+       !Skip ahead (decimation-1) frames in the xyz file
+       do i = 1, (decimation-1)
+          call read_xyz(xyzfile,status)
+          if (status/=0) exit
+          frame_count = frame_count + 1
+       end do
+       if (status/=0) exit
        !Try to read another frame
        call read_xyz(structure,xyzfile,status=status)
        frame_count = frame_count + 1
-  
+
     end do
 
     if (Density_Time_Evolution_Rate > 0) then
@@ -376,9 +371,9 @@ contains
       py = real(iy-1-(n_samples/2), dp)/n_samples_d*range
       do iz=1, n_samples+1
       pz = real(iz-1-(n_samples/2), dp)/n_samples_d*range
-	io = (ix-1)*(n_samples+1)**2 + (iy-1)*(n_samples+1) + (iz-1) + 1
-	d_a(io) = sqrt((px+d)**2+py**2+pz**2)
-	w_a(io) = normalization*exp(-(px**2+py**2+pz**2)/sigma**2)
+        io = (ix-1)*(n_samples+1)**2 + (iy-1)*(n_samples+1) + (iz-1) + 1
+        d_a(io) = sqrt((px+d)**2+py**2+pz**2)
+        w_a(io) = normalization*exp(-(px**2+py**2+pz**2)/sigma**2)
       end do
       end do
       end do
