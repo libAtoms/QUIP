@@ -18,6 +18,7 @@ program density_1d
     type(Table)                           :: distances, atom_table
     real(dp)                              :: d
     type(Inoutput)                        :: xyzfile, datafile
+    type(CInoutput)                       :: cxyzfile
     integer                               :: frame_count, frames_processed, frames_processed_intermed
     integer                               :: status
     integer                               :: i, j
@@ -32,6 +33,7 @@ program density_1d
     integer                               :: from, to
     logical                               :: Gaussian_smoothing
     real(dp)                              :: Gaussian_sigma
+    logical                               :: fortran_io
 
     !AtomMask processing
     character(30)                         :: prop_name
@@ -69,6 +71,7 @@ program density_1d
     call param_register(params_in, 'Density_Time_Evolution_Rate', '0', Density_Time_Evolution_Rate)
     call param_register(params_in, 'Gaussian', 'F', Gaussian_smoothing)
     call param_register(params_in, 'sigma', '0.0', Gaussian_sigma)
+    call param_register(params_in, 'fortran_io', 'F', fortran_io)
     if (.not. param_read_args(params_in, do_check = .true.)) then
        if (EXEC_NAME == '<UNKNOWN>') then
           call print_usage
@@ -105,7 +108,11 @@ program density_1d
     call print('==================================')
     call print('')
 
-    call initialise(xyzfile,xyzfilename,action=INPUT)
+    if (fortran_io) then
+      call initialise(xyzfile,xyzfilename,action=INPUT)
+    else
+      call initialise(cxyzfile,xyzfilename,action=INPUT)
+    endif
 
     !
     ! Read the element symbol / atom mask
@@ -164,34 +171,52 @@ program density_1d
     frames_processed = 0
     frames_processed_intermed = 0
 
-    status = 0
-    frame_count = 0
-    do while (frame_count < from-1)
-      frame_count = frame_count + 1
-      call read_xyz(xyzfile,status)
-      if (status/=0) exit
-    end do
-
-    ! read rest of configs, skipping decimation related ones, put in structure_ll
-    do while (status == 0 .and. (to <= 0 .or. frame_count < to))
-      frame_count = frame_count + 1
-      call new_entry(structure_ll, structure)
-      write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
-      call read_xyz(structure_in, xyzfile, status=status)
-      call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
-      if (to > 0 .and. frame_count >= to) then
-	exit
-      endif
-
-      do i=1, (decimation-1)
-	frame_count = frame_count + 1
-	call read_xyz(xyzfile, status)
-	if (status /= 0) exit
+    if (fortran_io) then
+      status = 0
+      frame_count = 0
+      do while (frame_count < from-1)
+        frame_count = frame_count + 1
+        call read_xyz(xyzfile,status)
+        if (status/=0) exit
       end do
-    end do
-
-    if (status /= 0) then
-      call remove_last_entry(structure_ll)
+  
+      ! read rest of configs, skipping decimation related ones, put in structure_ll
+      do while (status == 0 .and. (to <= 0 .or. frame_count < to))
+        frame_count = frame_count + 1
+        call new_entry(structure_ll, structure)
+        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
+        call read_xyz(structure_in, xyzfile, status=status)
+        call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+        if (to > 0 .and. frame_count >= to) then
+  	exit
+        endif
+  
+        do i=1, (decimation-1)
+  	frame_count = frame_count + 1
+  	call read_xyz(xyzfile, status)
+  	if (status /= 0) exit
+        end do
+      end do
+  
+      if (status /= 0) then
+        call remove_last_entry(structure_ll)
+      endif
+    else ! not fortran I/O
+      status = 0
+      if (from > 0) then
+	frame_count = from
+      else
+	frame_count = 1
+      endif
+      do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
+	write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
+	call read(cxyzfile, structure_in, frame=frame_count-1, status=status)
+	if (status == 0) then
+	  call new_entry(structure_ll, structure)
+	  call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+	endif
+	frame_count = frame_count + decimation
+      end do
     endif
 
     call allocate(distances,0,1,0,0,DISTANCES_INIT)
@@ -423,6 +448,7 @@ contains
     call print(' <Density_Time_Evolution_Rate>  Optional. Compute separate densities for each n processed frames (overriden if IO_Rate > 0)')
     call print(' <Gaussian>      Optional. Use Gaussians instead of delta functions.')
     call print(' <sigma>         Optional. The sigma is the sqrt(variance) of the Gaussian function.')
+    call print(' <fotran_io>     Optional. If true, use FORTRAN I/O.  Slower, but might not work for stdin otherwise')
     call print('')
     call print('Pressing Ctrl-C during execution will leave the output file with the rdf averaged over the frames read so far')
     call print('')
