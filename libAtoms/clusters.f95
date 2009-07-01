@@ -369,7 +369,7 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function create_cluster_info(this, atomlist, terminate, periodic, same_lattice, even_hydrogens, &
+  function create_cluster_info(this, atomlist, terminate, periodic, same_lattice, even_parity, &
        cut_bonds, allow_cluster_modification, hysteretic_connect) result(cluster_info)
     type(Atoms), target,       intent(in)    :: this           !% Input Atoms object
     type(Table),               intent(in)    :: atomlist       !% List of atoms to include in cluster. This should be
@@ -381,8 +381,7 @@ contains
                                                                !% Number of true entries must be zero, one or three.
     logical,	 optional,     intent(in)    :: same_lattice   !% Should lattice be left the same, overrides periodic variable
                                                                !% Default false
-    logical,     optional,     intent(in)    :: even_hydrogens !% If true, then cluster will always be terminated with
-                                                               !% an even number of hydrogens to prevent an imbalance
+    logical,     optional,     intent(in)    :: even_parity    !% If true, then cluster will such that there is no imbalance
                                                                !% of spin up and spin down electrons. If a hydrogen has to
                                                                !% be removed it will be taken from an atom with as many 
                                                                !% termination hydrogens as possible.
@@ -401,7 +400,7 @@ contains
     real(dp),    dimension(3)                :: dhat_ij, dhat_jk, H1, H2
     real(dp)                                 :: r_ij, r_jk, rescale
     logical                                  :: all_in
-    logical                                  :: do_terminate, do_periodic(3), do_even_hydrogens, do_same_lattice, do_hysteretic_connect
+    logical                                  :: do_terminate, do_periodic(3), do_even_parity, do_same_lattice, do_hysteretic_connect
     integer                                  :: ishift(3), jshift(3), kshift(3), oldN, most_hydrogens
     logical                                  :: atom_mask(6)
     logical allow_cluster_mod
@@ -416,7 +415,7 @@ contains
     allow_cluster_mod = optional_default(.true., allow_cluster_modification)
     do_terminate      = optional_default(.true., terminate)
     do_same_lattice   = optional_default(.false., same_lattice)
-    do_even_hydrogens = optional_default(.false., even_hydrogens)
+    do_even_parity = optional_default(.false., even_parity)
     do_hysteretic_connect = optional_default(.false., hysteretic_connect)
 
     
@@ -705,7 +704,7 @@ contains
        end do
 
        ! Do we need to remove a hydrogen atom to ensure equal n_up and n_down electrons?
-       if (do_even_hydrogens .and. mod(count(int_part(cluster_info,5) == 1),2) == 1) then
+       if (do_even_parity .and. mod(sum(int_part(cluster_info,5)),2) == 1) then
 
           ! Find first atom with a maximal number of terminating hydrogens
 
@@ -1007,7 +1006,7 @@ contains
 
     type(Dictionary) :: params
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
-       even_hydrogens, do_periodic(3), cluster_nneighb_only, &
+       even_parity, do_periodic(3), cluster_nneighb_only, &
        cluster_allow_modification, hysteretic_connect, same_lattice
     real(dp) :: r, r_min, centre(3)
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
@@ -1022,7 +1021,7 @@ contains
     call param_register(params, 'cluster_periodic_x', 'F', periodic_x)
     call param_register(params, 'cluster_periodic_y', 'F', periodic_y)
     call param_register(params, 'cluster_periodic_z', 'F', periodic_z)
-    call param_register(params, 'even_hydrogens', 'F', even_hydrogens)
+    call param_register(params, 'even_parity', 'F', even_parity)
     call param_register(params, 'cluster_nneighb_only', 'T', cluster_nneighb_only)
     call param_register(params, 'cluster_allow_modification', 'T', cluster_allow_modification)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
@@ -1121,7 +1120,7 @@ contains
     call finalise(bufferlist)
 
     cluster_info = create_cluster_info(at, cluster_list, terminate=terminate, &
-         periodic=do_periodic, same_lattice=same_lattice, even_hydrogens=even_hydrogens, &
+         periodic=do_periodic, same_lattice=same_lattice, even_parity=even_parity, &
          cut_bonds=cut_bonds, allow_cluster_modification=cluster_allow_modification, &
 	 hysteretic_connect=hysteretic_connect)
 
