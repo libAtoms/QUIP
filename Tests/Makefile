@@ -12,4 +12,4 @@ endif
 	QUIP_ARCH=${QUIP_ARCH} ./test.py -r *.test
 
 clean:
-	-rm *.candidate *.reference *.stdin *.stdout *.xyz *.xml *.new
+	-rm *.candidate *.reference *.stdin *.stdout *.xyz *.xyz.idx *.xml *.new
