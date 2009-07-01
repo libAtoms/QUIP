@@ -169,6 +169,7 @@ class FortranArray(numpy.ndarray):
             indx = (indx,)
 
         islist = isinstance(indx, list)
+        doext = False
 
         if isinstance(indx, numpy.ndarray):
             indx = (indx,)
@@ -208,20 +209,22 @@ class FortranArray(numpy.ndarray):
             else:
                 raise ValueError('Unknown index object %r' % (idx,))
 
-        if one_dim:
+        if one_dim and not islist:
             if len(self.shape) > 1:
                 res = (Ellipsis,nindx[0])
             else:
                 res = nindx[0]
         else:
             if islist:
-                if not Ellipsis in nindx:
-                    if nested(nindx):
-                        res = [Ellipsis] + nindx
-                    else:
-                        res = [Ellipsis] + [nindx]
-                else:
-                    res = nindx
+                #if not Ellipsis in nindx:
+                #    if doext:
+                #        pass
+                #    elif nested(nindx):
+                #        res = [Ellipsis] + nindx
+                #    else:
+                #        res = [Ellipsis] + [nindx]
+                #else:
+                res = nindx
             else:
                 if len(self.shape) > len(nindx):
                     res = tuple([Ellipsis] + nindx)
@@ -244,18 +247,27 @@ class FortranArray(numpy.ndarray):
         "Overloaded __setitem__ which accepts one-based indices."
 
         domap = True
+        doext = False
         if isinstance(indx, slice): domap = False
         if indx is Ellipsis: domap = False
+        if isinstance(indx, list): doext = True
+        if isinstance(indx, numpy.ndarray): doext = True
 
         if hasattr(indx, '__iter__'):
             if any([isinstance(x,slice) or x is Ellipsis for x in indx]): domap = False
+            if any([isinstance(x,numpy.ndarray) for x in indx]): doext = True
+            if any([isinstance(x,list) for x in indx]): doext = True
             if len(indx) != len(self.shape): domap = False
         elif isinstance(indx, int):
             if len(self.shape) != 1:
                 domap = False
                 indx = (Ellipsis, indx)
+
+        if doext:
+            domap = True
         
         if domap:
+#            print 'mapping', indx
             indx = self.mapindices(indx)
             
 	numpy.ndarray.__setitem__(self, indx, value)
@@ -331,9 +343,9 @@ class FortranArray(numpy.ndarray):
 				 
     def __repr__(self):
         if self.transpose_on_print:
-            s = numpy.asarray(self.T).view(numpy.ndarray).__repr__()
+            s = repr(numpy.asarray(self.T).view(numpy.ndarray))
         else:
-            s = numpy.asarray(self).view(numpy.ndarray).__repr__()
+            s = repr(numpy.asarray(self).view(numpy.ndarray))
             
         s = s.replace('array','FortranArray')
         s = s.replace('\n     ','\n            ')
@@ -345,12 +357,12 @@ class FortranArray(numpy.ndarray):
             if self.dtype.kind == 'S':
                 return str(self.T.stripstrings())
             else:
-                return numpy.asarray(self.T).view(numpy.ndarray).__str__()
+                return str(numpy.asarray(self.T).view(numpy.ndarray))
         else:
             if self.dtype.kind == 'S':
                 return str(self.stripstrings())
             else:
-                return numpy.asarray(self).view(numpy.ndarray).__str__()
+                return str(numpy.asarray(self).view(numpy.ndarray))
 
     def __iter__(self):
         """Iterate over this FortranArray treating first dimension as fastest varying.

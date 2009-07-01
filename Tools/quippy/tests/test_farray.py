@@ -129,7 +129,23 @@ class TestFortranArray(unittest.TestCase):
    def testcols(self):
       self.assertEqual(farray(0).cols.next(), 0)
       self.assertEqual(list(self.f.cols), [1,2,3])
-      
+
+   def testextsetlist(self):
+      self.f[[1,2]] = 0
+      self.assertEqual(list(self.f), [0,0,3])
+
+   def testextsetfarray(self):
+      self.f[farray([1])] = 0
+      self.assertEqual(list(self.f), [0,2,3])
+
+   def testextsetlistbool(self):
+      self.f[[True,False,False]] = 0
+      self.assertEqual(list(self.f), [0,2,3])
+
+   def testextsetlistbool(self):
+      self.f[farray([True,False,False])] = 0
+      self.assertEqual(list(self.f), [0,2,3])
+
    def test2dshape(self):
       self.assertEqual(self.f2.shape, (3,2))
 
@@ -235,15 +251,25 @@ class TestFortranArray(unittest.TestCase):
       self.assertEqual(list(fa[3,:]), [3,6,9])
 
    def test2dextindexintlist(self):
-      self.assert_((self.f2[[1]] == self.na[...,[0]]).all())
-      self.assert_((self.f2[[1,2]] == self.na[...,[0,1]]).all())
-      self.assert_((self.f2[[2,1],:] == self.na[...,[1,0],:]).all())
+      self.assert_((self.f2[...,[1]] == self.na[...,[0]]).all())
+      self.assert_((self.f2[...,[1,2]] == self.na[...,[0,1]]).all())
+      self.assert_((self.f2[...,[2,1],:] == self.na[...,[1,0],:]).all())
       self.assert_((self.f2[...,[2,1],:] == self.na[...,[1,0],:]).all())
 
    def test2dextindexintarray(self):
       self.assert_((self.f2[farray([1])] == self.na[...,numpy.array([0])]).all())
       self.assert_((self.f2[farray([1,2])] == self.na[...,numpy.array([0,1])]).all())
       self.assert_((self.f2[farray([2,1]),:] == self.na[...,numpy.array([1,0]),:]).all())
+
+   def test2dextindexsetlist(self):
+      self.f2[farray([1,2]),:] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,3])
+      self.assertEqual(list(self.f2[2]), [0,0,6])
+
+   def test2dextindexsetarray(self):
+      self.f2[[1,2],:] = 0
+      self.assertEqual(list(self.f2[1]), [0,0,3])
+      self.assertEqual(list(self.f2[2]), [0,0,6])
 
    def test2dextindexintfail(self):
       self.assertRaises(ValueError, self.f2.__getitem__, farray(0))
