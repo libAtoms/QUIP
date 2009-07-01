@@ -228,7 +228,7 @@ class Atoms(FortranAtoms):
          if v1[3]-v1[2] != v2[3]-v2[2]: return False # ncols
          
       if self.params != other.params: return False
-      if (self.lattice - other.lattice > tol).any(): return False
+      if abs(self.lattice - other.lattice).max() > tol: return False
       if self.data != other.data: return False
       return True
 
@@ -352,12 +352,15 @@ class Table(FortranTable):
                         (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
          if t1 != t2: return False
 
-      for a1, a2, in zip((self.int,  self.real,  self.str,  self.logical),
-                         (other.int, other.real, other.str, other.logical)):
+      for n, a1, a2, in zip((self.intsize, self.realsize, self.strsize, self.logicalsize),
+                            (self.int,  self.real,  self.str,  self.logical),
+                            (other.int, other.real, other.str, other.logical)):
+
+         if n == 0: continue
          try:
-            if (a1 - a2 > tol).any(): return False
+            if abs(a1 - a2).max() > tol: return False
          except TypeError:
-            if (a1 != a2).any(): return Falswe
+            if (a1 != a2).any(): return False
 
       return True
 
