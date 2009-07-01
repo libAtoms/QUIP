@@ -285,6 +285,21 @@ contains
 
     do_frame = optional_default(this%current_frame, frame)
 
+    if (this%n_frame /= -1) then
+       if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
+       if (do_frame < 0 .or. do_frame >= this%n_frame) then
+          if (present(status)) then
+             call finalise(properties)
+             call finalise(data)
+             call finalise(at)
+             status = 1
+             return
+          else
+             call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+          end if
+       end if
+    end if
+
     do_zero = 0
     if (present(zero)) then
        if (zero) do_zero = 1
@@ -316,21 +331,6 @@ contains
 
     log_ptr = C_NULL_PTR
     if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
-
-    if (this%n_frame /= -1) then
-       if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
-       if (do_frame < 0 .or. do_frame >= this%n_frame) then
-          if (present(status)) then
-             call finalise(properties)
-             call finalise(data)
-             call finalise(at)
-             status = 1
-             return
-          else
-             call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
-          end if
-       end if
-    end if
 
     if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
        if (present(status)) then
