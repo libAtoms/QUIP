@@ -139,8 +139,8 @@ class TestAtomsList(unittest.TestCase):
 class TestAtomsListCInOutput(unittest.TestCase):
 
    def setUp(self):
-      self.at = supercell(diamond(5.44, 14), 2, 2, 2)
-      self.al = AtomsList(self.at for x in range(5))
+      self.at = supercell(diamond(5.44,14), 2,2,2)
+      self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
 
       self.xyz_ref = ['64\n',
                       'Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1\n',
@@ -210,34 +210,55 @@ class TestAtomsListCInOutput(unittest.TestCase):
                       'Si              6.80000000      9.52000000      9.52000000      14\n']
 
    def tearDown(self):
-      pass
+      if os.path.exists('test.xyz'): os.remove('test.xyz')
+      if os.path.exists('test.nc'): os.remove('test.nc')
+      if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
 
    def testsinglexyz(self):
       self.at.write('test.xyz')
       at = Atoms('test.xyz')
       self.assertEqual(self.at, at)
       self.assertEqual(self.xyz_ref, open('test.xyz', 'r').readlines())
-      os.remove('test.xyz')
-      os.remove('test.xyz.idx')
 
    def testsinglenc(self):
       self.at.write('test.nc')
       at = Atoms('test.nc')
       self.assertEqual(self.at, at)
-      os.remove('test.nc')
       
    def testmultixyz(self):
       self.al.write('test.xyz', progress=False)
       al = AtomsList('test.xyz')
       self.assertEqual(list(self.al), list(al))
-      os.remove('test.xyz')
-      os.remove('test.xyz.idx')
 
    def testmultinc(self):
       self.al.write('test.nc', progress=False)
       al = AtomsList('test.nc')
-      self.assertEqual(list(self.al), list(al))
-      os.remove('test.nc')
+      self.assertEqual(list(self.al), list(al))      
+
+   def testxyzlowlevel(self):
+      cio = CInOutput("test.xyz", OUTPUT)
+      for a in self.al:
+         cio.write(a)
+      cio.close()
+
+      cio = CInOutput("test.xyz")
+      a = []
+      for i in range(5):
+         a.append(cio.read())
+      self.assertEqual(a, list(self.al))      
+
+   def testnclowlevel(self):
+      cio = CInOutput("test.nc", OUTPUT)
+      for a in self.al:
+         cio.write(a)
+      cio.close()
+
+      cio = CInOutput("test.nc")
+      a = []
+      for i in range(5):
+         a.append(cio.read())
+      self.assertEqual(a, list(self.al))      
+
 
 
 class TestNetCDFAtomsList(unittest.TestCase):
