@@ -465,11 +465,11 @@ def wrapmod(modobj, moddoc, short_names, params):
           destructors += [ x for x in methods if x.startswith('%s_finalise' % short_names[lcls]) ]
 
       if (len(constructors) == 0):
-          logging.warning("Can't find constructor for type %s. Skipping class" % cls)
+          logging.debug("Can't find constructor for type %s. Skipping class" % cls)
           continue
           
       if (len(destructors) == 0):
-          logging.warning("Can't find destructor for type %s. Skipping class" % cls)
+          logging.debug("Can't find destructor for type %s. Skipping class" % cls)
           continue
 
       destructor = destructors[0]
