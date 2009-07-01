@@ -2024,36 +2024,36 @@ contains
     if (any(rows > this%N)) call system_abort('subtable: Row out of range')
     
     if(present(intcols)) then
-       if(any(intcols > this%intsize)) call system_abort('subtable: Integer column out of range')
-       allocate(use_intcols(size(intcols)))
-       use_intcols = intcols
+       if(any(intcols > 0 .and. intcols > this%intsize)) call system_abort('subtable: Integer column out of range')
+       allocate(use_intcols(count(intcols > 0)))
+       use_intcols = pack(intcols, intcols > 0)
     else
        allocate(use_intcols(this%intsize))
        use_intcols = (/ (i, i=1,this%intsize ) /)
     end if
     
     if(present(realcols)) then
-       if(any(realcols > this%realsize)) call system_abort('subtable: Real column out of range')
-       allocate(use_realcols(size(realcols)))
-       use_realcols = realcols
+       if(any(realcols > 0 .and. realcols > this%realsize)) call system_abort('subtable: Real column out of range')
+       allocate(use_realcols(count(realcols > 0)))
+       use_realcols = pack(realcols, realcols > 0)
     else
        allocate(use_realcols(this%realsize))
        use_realcols = (/ (i, i=1,this%realsize )/)
     end if
     
     if(present(strcols)) then
-       if(any(strcols > this%strsize)) call system_abort('subtable: Str column out of range')
-       allocate(use_strcols(size(strcols)))
-       use_strcols = strcols
+       if(any(strcols > 0 .and. strcols > this%strsize)) call system_abort('subtable: Str column out of range')
+       allocate(use_strcols(count(strcols > 0)))
+       use_strcols = pack(strcols, strcols > 0)
     else
        allocate(use_strcols(this%strsize))
        use_strcols = (/ (i, i=1,this%strsize ) /)
     end if
     
     if(present(logicalcols)) then
-       if(any(logicalcols > this%logicalsize)) call system_abort('subtable: Logical column out of range')
-       allocate(use_logicalcols(size(logicalcols)))
-       use_logicalcols = logicalcols
+       if(any(logicalcols > 0 .and. logicalcols > this%logicalsize)) call system_abort('subtable: Logical column out of range')
+       allocate(use_logicalcols(count(logicalcols > 0)))
+       use_logicalcols = pack(logicalcols, logicalcols > 0)
     else
        allocate(use_logicalcols(this%logicalsize))
        use_logicalcols = (/ (i, i=1,this%logicalsize ) /)

@@ -1603,10 +1603,16 @@ contains
   !% connectivity information. Useful for saving the state of a
   !% dynamical simulation without incurring too great a memory
   !% cost. 
-  subroutine atoms_copy_without_connect(to, from)
-    
+  subroutine atoms_copy_without_connect(to, from, properties)
+
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
+    character(len=*), optional, intent(in) :: properties
+
+    integer :: i, n_properties, n_cols, col, lookup(3)
+    character(len=1024) :: tmp_properties(from%properties%N)
+    integer :: intcols(from%data%intsize), realcols(from%data%realsize), strcols(from%data%strsize), logicalcols(from%data%logicalsize)
+    integer :: last_int_col, last_real_col, last_str_col, last_logical_col
 
     if(.not. from%initialised) &
          call system_abort("atoms_copy_without_connect: 'from' object is not initialised")
@@ -1615,8 +1621,55 @@ contains
     to%lattice = from%lattice
     to%g = from%g
 
-    to%data = from%data
-    to%properties = from%properties
+    if (present(properties)) then
+      call finalise(to%data)
+      call initialise(to%data, max_length=from%data%N)
+      last_int_col=0
+      last_real_col=0
+      last_str_col=0
+      last_logical_col=0
+      intcols = -1
+      realcols = -1
+      strcols = -1
+      logicalcols = -1
+      call parse_string(properties, ':', tmp_properties, n_properties)
+      do i=1, n_properties
+	if (.not. get_value(from%properties, tmp_properties(i), lookup)) &
+	  call system_abort('ERROR: atoms_copy_without_connect: copying key '//trim(tmp_properties(i))//' not found.')
+	n_cols = lookup(3)-lookup(2)+1
+	if (lookup(1) == PROPERTY_INT) then
+	  do col=1, n_cols
+	    intcols(last_int_col+col) = lookup(2)+col-1
+	  end do
+	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_int_col+1, last_int_col+n_cols/) )
+	  last_int_col = last_int_col + n_cols
+	else if (lookup(1) == PROPERTY_REAL) then
+	  do col=1, n_cols
+	    realcols(last_real_col+col) = lookup(2)+col-1
+	  end do
+	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_real_col+1, last_real_col+n_cols/) )
+	  last_real_col = last_real_col + n_cols
+	else if (lookup(1) == PROPERTY_STR) then
+	  do col=1, n_cols
+	    strcols(last_str_col+col) = lookup(2)+col-1
+	  end do
+	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_str_col+1, last_str_col+n_cols/) )
+	  last_str_col = last_str_col + n_cols
+	else if (lookup(1) == PROPERTY_LOGICAL) then
+	  do col=1, n_cols
+	    logicalcols(last_logical_col+col) = lookup(2)+col-1
+	  end do
+	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_logical_col+1, last_logical_col+n_cols/) )
+	  last_logical_col = last_logical_col + n_cols
+	else
+	  call system_abort("ERROR: atoms_copy_without_connect got unknown property type " // lookup(1) // " for property " // trim(tmp_properties(i)))
+	end if
+      end do
+      to%data = subtable(from%data, (/ (i, i=1,from%data%N) /), intcols, realcols, strcols, logicalcols)
+    else
+      to%data = from%data
+      to%properties = from%properties
+    endif
     to%params = from%params
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
