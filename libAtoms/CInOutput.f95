@@ -280,6 +280,7 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
+    if (present(frame) .and. this%got_index == 0) call system_abort("CInOutput object not seekable and frame argument passed")
 
     do_frame = optional_default(this%current_frame, frame)
 
