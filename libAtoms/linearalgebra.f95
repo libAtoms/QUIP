@@ -3263,7 +3263,7 @@ CONTAINS
     do i=1,size(vector)
 
        bin = ceiling((vector(i)-min_x)/binsize)
-       if (drop_outside) then
+       if (do_drop_outside) then
 	 if (bin < 1 .or. bin > Nbin) cycle
        else
 	 if (bin < 1) bin = 1
