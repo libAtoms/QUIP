@@ -235,6 +235,7 @@ contains
     integer(C_SIZE_T) :: do_frame
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
+    if (present(frame) .and. this%got_index == 0) call system_abort("CInOutput object not seekable and frame argument passed")
 
     do_frame = optional_default(this%current_frame, frame)
 
