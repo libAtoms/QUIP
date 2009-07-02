@@ -235,7 +235,7 @@ contains
     integer(C_SIZE_T) :: do_frame
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
-    if (present(frame) .and. this%got_index == 0) call system_abort("CInOutput object not seekable and frame argument passed")
+    if (present(frame) .and. this%got_index == 0) call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed")
 
     do_frame = optional_default(this%current_frame, frame)
 
@@ -281,7 +281,7 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
-    if (present(frame) .and. this%got_index == 0) call system_abort("CInOutput object not seekable and frame argument passed")
+    if (present(frame) .and. this%got_index == 0) call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed")
 
     do_frame = optional_default(this%current_frame, frame)
 
@@ -305,8 +305,12 @@ contains
        if (zero) do_zero = 1
     end if
     
-    tmp_do_frame = do_frame
-    call cinoutput_query(this, tmp_do_frame)
+    if (this%got_index == 1) then
+       tmp_do_frame = do_frame
+       call cinoutput_query(this, tmp_do_frame)
+    else
+       call cinoutput_query(this)
+    end if
 
     call initialise(properties)
     do i=1,this%n_property
