@@ -50,8 +50,11 @@ class Atoms(FortranAtoms):
    def read(cls, source, format=None, *args, **kwargs):
       if format is None:
          if isinstance(source, str):
-            base, ext = os.path.splitext(source)
-            format = ext[1:]
+            if source in AtomsReaders:
+               format = source
+            else:
+               base, ext = os.path.splitext(source)
+               format = ext[1:]
          else:
             format = source.__class__
 
@@ -67,8 +70,11 @@ class Atoms(FortranAtoms):
    def write(self, dest, format=None, *args, **kwargs):
       if format is None:
          if isinstance(dest, str):
-            base, ext = os.path.splitext(dest)
-            format = ext[1:]
+            if dest in AtomsWriters:
+               format = dest
+            else:
+               base, ext = os.path.splitext(dest)
+               format = ext[1:]
          else:
             format = dest.__class__
 
