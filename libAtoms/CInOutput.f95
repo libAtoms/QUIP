@@ -28,7 +28,7 @@ module CInOutput_module
           n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
           property_name, property_type, property_ncols, property_start, property_filter, &
           param_name, param_type, param_size, param_value, param_int, param_real, param_int_a, &
-          param_real_a, param_filter, lattice) bind(c)
+          param_real_a, param_filter, lattice, got_index) bind(c)
        use iso_c_binding, only: C_INT, C_CHAR, C_PTR, C_LONG
        type(C_PTR), intent(out) :: at
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
@@ -36,7 +36,7 @@ module CInOutput_module
        type(C_PTR) :: n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
             property_name, property_type, property_ncols, property_start, property_filter, &
             param_name, param_type, param_size, param_value, &
-            param_int, param_real, param_int_a, param_real_a, param_filter, lattice
+            param_int, param_real, param_int_a, param_real_a, param_filter, lattice, got_index
        integer(kind=C_INT) :: cioinit
      end function cioinit
 
@@ -84,10 +84,10 @@ module CInOutput_module
      type(C_PTR) :: c_n_frame, c_n_atom, c_n_int, c_n_real, c_n_str, c_n_logical, c_n_param, c_n_property, &
           c_property_name, c_property_type, c_property_start, c_property_ncols, c_property_filter, &
           c_param_name, c_param_type, c_param_size, c_param_value, c_pint, c_preal, c_pint_a, c_preal_a, &
-          c_param_filter, c_lattice
+          c_param_filter, c_lattice, c_got_index
 
      integer(C_SIZE_T), pointer :: n_atom, n_frame
-     integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property
+     integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index
      integer :: current_frame
 
      integer, pointer, dimension(:) :: property_type, property_ncols, property_start, &
@@ -165,14 +165,14 @@ contains
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index) == 0) &
             call system_abort("Error opening file "//filename)
     else
        if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index) == 0) &
             call system_abort("Error allocating C structure")
     end if
 
@@ -184,6 +184,7 @@ contains
     call c_f_pointer(this%c_n_logical, this%n_logical)
     call c_f_pointer(this%c_n_param, this%n_param)
     call c_f_pointer(this%c_n_property, this%n_property)
+    call c_f_pointer(this%c_got_index, this%got_index)
 
     call c_f_pointer(this%c_lattice, this%lattice, (/3,3/))
 
@@ -205,16 +206,12 @@ contains
 
     this%initialised = .true.
     
-    if (this%action == INPUT .or. this%action == INOUT) then
-       call cinoutput_query(this, 0)
-    end if
-
     if (this%action /= INPUT .and. do_append /= 0) then
        this%current_frame = this%n_frame
     else
        this%current_frame = 0
     end if
-    
+
   end subroutine cinoutput_initialise
 
   subroutine cinoutput_close(this)
@@ -263,6 +260,7 @@ contains
   end subroutine cinoutput_query
 
   subroutine cinoutput_read(this, at, frame, zero, status)
+    use iso_c_binding, only: C_SIZE_T
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
@@ -285,7 +283,7 @@ contains
 
     do_frame = optional_default(this%current_frame, frame)
 
-    if (this%n_frame /= -1) then
+    if (this%got_index == 1) then
        if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
        if (do_frame < 0 .or. do_frame >= this%n_frame) then
           if (present(status)) then
