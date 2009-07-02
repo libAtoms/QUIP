@@ -30,6 +30,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1665,7 +1666,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 }
 
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
-	      int query, int redefine, int realloc, int supress, int override_lattice,
+	      int query, int redefine, int realloc, int suppress, int override_lattice,
 	      double lattice[3][3]) {
   int i,n, entry_count,j,k,ncols,m, atidx;
   char linebuffer[LINESIZE];
@@ -1675,246 +1676,254 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   int properties_idx, lattice_idx, nxyz, original_index=0, nfields, idx, offset, error;
   double tmpd;
 
-  if (atoms->got_index)
+  if (in != stdin && atoms->got_index)
     if (fseek(in, atoms->frames[frame], SEEK_SET) == -1) {
       fprintf(stderr,"cannot seek XYZ input file\n");
       return 0;
     }
 
-  if (!fgets(linebuffer,LINESIZE,in)) {
-    if (!supress) fprintf(stderr, "premature file ending - expecting number of atoms\n");
-    return 0;
-  }
-  if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-    fprintf(stderr,"first line (%s) must be number of atoms\n", linebuffer);
-    return 0;
-  }
-
-  // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
-  if (!fgets(linebuffer,LINESIZE,in)) {
-    fprintf(stderr,"premature file ending - expecting comment line\n");
-    return 0;
-  }
-  linebuffer[strlen(linebuffer)-1] = '\0';   // Remove trailing newline
-
-
-  if (!strstr(linebuffer, "Lattice") && !strstr(linebuffer, "lattice")) {
-    // It's not an extended XYZ file. Try to guess what's going on.
-    // If comment line contains nine or more fields, assume last nine are
-    // lattice in cartesian coordinates. 
-
-    p = linebuffer;
-    k = 0;
-    while ((p1 = strsep(&p, " \t")) != NULL) {
-      if (*p1 == '\0') continue;
-      strcpy(fields[k++], p1);
+  if (in != stdin || (in == stdin && query)) {
+    if (!fgets(linebuffer,LINESIZE,in)) {
+      if (!suppress) fprintf(stderr, "premature file ending - expecting number of atoms\n");
+      return 0;
     }
-    
-    if (k >= 9) {
-      offset = k-9;
-      error = 0;
-      for (i=0; i<9; i++)
-	if (sscanf(fields[offset+i], "%lf", &tmpd) != 1) {
-	  error = 1;
-	  break;
-	}
+    if (sscanf(linebuffer, "%d", &nxyz) != 1) {
+      fprintf(stderr,"first line (%s) must be number of atoms\n", linebuffer);
+      return 0;
+    }
+
+    // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
+    if (!fgets(linebuffer,LINESIZE,in)) {
+      fprintf(stderr,"premature file ending - expecting comment line\n");
+      return 0;
+    }
+    linebuffer[strlen(linebuffer)-1] = '\0';   // Remove trailing newline
+
+
+    if (!strstr(linebuffer, "Lattice") && !strstr(linebuffer, "lattice")) {
+      // It's not an extended XYZ file. Try to guess what's going on.
+      // If comment line contains nine or more fields, assume last nine are
+      // lattice in cartesian coordinates. 
+
+      p = linebuffer;
+      k = 0;
+      while ((p1 = strsep(&p, " \t")) != NULL) {
+	if (*p1 == '\0') continue;
+	strcpy(fields[k++], p1);
+      }
       
-      if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-      if (!error) {
-	sprintf(linebuffer, "%s Lattice=\"%s %s %s %s %s %s %s %s %s\"\n",
-		linebuffer, fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
-		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
+      if (k >= 9) {
+	offset = k-9;
+	error = 0;
+	for (i=0; i<9; i++)
+	  if (sscanf(fields[offset+i], "%lf", &tmpd) != 1) {
+	    error = 1;
+	    break;
+	  }
+	
+	if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
+	if (!error) {
+	  sprintf(linebuffer, "%s Lattice=\"%s %s %s %s %s %s %s %s %s\"\n",
+		  linebuffer, fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
+		  fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
+	} else {
+	  if (!override_lattice) {
+	    fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
+	    return 0;
+	  }
+	}
       } else {
 	if (!override_lattice) {
 	  fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
 	  return 0;
 	}
       }
-    } else {
-	if (!override_lattice) {
-	  fprintf(stderr,"Cannot extract lattice from line %s\n", linebuffer);
-	  return 0;
-	}
     }
-  }
-
-  if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
-    // No Properties key. Add a default one.
-    if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-    strcat(linebuffer, "Properties=species:S:1:pos:R:3\n");
-  }
-
-  // Parse parameters. First split on ", ', { or }
-  p = linebuffer;
-  k = 0;
-  while ((p1 = strsep(&p, "\"'{}")) != NULL) {
-    if (*p1 == '\0') continue;
-    strcpy(fields[k++], p1);
-  }
-
-  // Now split things outside quotes on whitespace
-  nfields = 0;
-  for (i=0; i<k; i++) {
-    if (i % 2 == 0) {
-      p = fields[i];
-      j = 0;
-      while ((p1 = strsep(&p, " \t")) != NULL) {
-	if (*p1 == '\0') continue;
-	strcpy(subfields[j++], p1);
-      }
-      for (n=0; n<j; n++, nfields++) {
-	strcpy(finalfields[nfields],subfields[n]);
-      }
-	
-    } else {
-      strcat(finalfields[nfields-1],fields[i]);
-    }
-  }
-
-  if (redefine || !atoms->initialised) {
-    // Finally, split on '=' to get key/value pairs
-    atoms->n_param = 0;
-    for (i=0; i<nfields; i++) {
-      strcpy(linebuffer, finalfields[i]);
-      if ((p = strchr(linebuffer,'=')) == NULL) {
-	fprintf(stderr,"Badly formed key/value pair %s\n", linebuffer);
-	return 0;
-      }
-      
-      *p = '\0';
-      idx = atoms_add_param(atoms, linebuffer, 0, 0, -1, NETCDF_IN);
-      strcpy(atoms->param_value[idx], p+1);
-    }
-  
-    // Try to guess param types
-    for (i=0; i<atoms->n_param; i++) {
-      if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
-	  strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
-
-      strcpy(linebuffer, atoms->param_value[i]);
-      k = 0;
-      p = linebuffer;
-      while ((p1 = strsep(&p, " ")) != NULL) {
-	if (*p1 == '\0') continue;
-	strcpy(fields[k++], p1);
-      }
-      if (k == 0) {
-	k = 1;
-	strcpy(fields[0], linebuffer);
-      } 
-
-/*       if (k != 1 && k != 3) { */
-/* 	fprintf(stderr,"Parameter %s must have size 1 or 3\n", atoms->param_key[i]); */
-/* 	return 0; */
-/*       } */
-      atoms->param_size[i] = k;
-
-      for (j=0; j<k; j++) {
-	for (n=0; n<strlen(fields[j]); n++)
-	  if (!isblank(fields[j][n]) && !isdigit(fields[j][n])) goto NOT_INT;
-      }
-
-      atoms->param_type[i] = (k == 1 ? T_INTEGER : T_INTEGER_A);
-      continue;
-
-    NOT_INT:
-      for (j=0; j<k; j++)
-	if (strtod(fields[j], &p), strlen(p) != 0) goto NOT_REAL;
-
-      atoms->param_type[i] = (k == 1 ? T_REAL : T_REAL_A);
-      continue;
-      
-    NOT_REAL:
-      // Fallback option: treat as a single string
-      atoms->param_type[i] = T_CHAR;
-      atoms->param_size[i] = 1;
-      continue;
+    
+    if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
+      // No Properties key. Add a default one.
+      if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
+      strcat(linebuffer, "Properties=species:S:1:pos:R:3\n");
     }
 
-    for (i=0; i<atoms->n_param; i++) {
-      if ((atoms->param_type[i] == T_INTEGER_A || atoms->param_type[i] == T_REAL_A) &&
-	  atoms->param_size[i] != 3) {
- 	fprintf(stderr,"Parameter %s must have size 1 or 3, but got %d\n", atoms->param_key[i], atoms->param_size[i]);
- 	return 0; 
-      }
-    }
-
-    properties_idx = atoms_find_param(atoms, "Properties");
-    if (properties_idx == -1) {
-      fprintf(stderr,"missing properties parameter\n");
-      return 0;
-    }
-
-    // Now parse properties
-    strcpy(linebuffer, atoms->param_value[properties_idx]);
+    // Parse parameters. First split on ", ', { or }
     p = linebuffer;
     k = 0;
-    while ((p1 = strsep(&p, ":")) != NULL) {
+    while ((p1 = strsep(&p, "\"'{}")) != NULL) {
+      if (*p1 == '\0') continue;
       strcpy(fields[k++], p1);
     }
-
-    atoms->n_property = 0;
-    atoms->n_int = atoms->n_real = atoms->n_str = atoms->n_logical = 0;
-    entry_count = 0;
-  
-    for (i=0; i<k/3; i++) {
-      debug("got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
-
-      if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
-	fprintf(stderr,"Bad column count %s\n", fields[3*i+2]);
-	return 0;
-      }
-
-      entry_count += ncols;
-      if (entry_count > MAX_ENTRY_COUNT) {
-	fprintf(stderr,"Maximum entry count(%d) exceeded\n", MAX_ENTRY_COUNT);
-	return 0;
-      }
-
-      if (strcmp(fields[3*i+1],"I") == 0) {
-	atoms_add_property(atoms, fields[3*i], PROPERTY_INT, ncols, -1, NETCDF_IN);
-      } else if (strcmp(fields[3*i+1],"R") == 0) {
-	atoms_add_property(atoms, fields[3*i], PROPERTY_REAL, ncols, -1, NETCDF_IN);
-      } else if (strcmp(fields[3*i+1],"S") == 0) {
-	atoms_add_property(atoms, fields[3*i], PROPERTY_STR, ncols, -1, NETCDF_IN);
-      } else if (strcmp(fields[3*i+1],"L") == 0) {
-	atoms_add_property(atoms, fields[3*i], PROPERTY_LOGICAL, ncols, -1, NETCDF_IN);
-      } else  {
-	fprintf(stderr,"Bad property type %s\n", fields[3*i+1]);
-	return 0;
+    
+    // Now split things outside quotes on whitespace
+    nfields = 0;
+    for (i=0; i<k; i++) {
+      if (i % 2 == 0) {
+	p = fields[i];
+	j = 0;
+	while ((p1 = strsep(&p, " \t")) != NULL) {
+	  if (*p1 == '\0') continue;
+	  strcpy(subfields[j++], p1);
+	}
+	for (n=0; n<j; n++, nfields++) {
+	  strcpy(finalfields[nfields],subfields[n]);
+	}
+	
+      } else {
+	strcat(finalfields[nfields-1],fields[i]);
       }
     }
 
-    if (atoms->filter != NULL) free(atoms->filter);
-    atoms->filter = malloc(nxyz*sizeof(int));
-    if (atoms->filter == NULL) {
-      fprintf(stderr,"Error allocating atoms->filter\n");
-      return 0;
-    }
-    if (atomlist) {
-      for (i=0; i<atoms->n_atom; i++) atoms->filter[i] = 0;
-      for (i=0; i<natomlist; i++) {
-	if(atomlist[i] < 0 || atomlist[i] >= nxyz)  {
-	  fprintf(stderr,"filter atom %d out of range 0 < i < %d\n", atomlist[i], nxyz);
+    if (redefine || !atoms->initialised) {
+      // Finally, split on '=' to get key/value pairs
+      atoms->n_param = 0;
+      for (i=0; i<nfields; i++) {
+	strcpy(linebuffer, finalfields[i]);
+	if ((p = strchr(linebuffer,'=')) == NULL) {
+	  fprintf(stderr,"Badly formed key/value pair %s\n", linebuffer);
 	  return 0;
 	}
-	atoms->filter[atomlist[i]] = 1;
+	
+	*p = '\0';
+	idx = atoms_add_param(atoms, linebuffer, 0, 0, -1, NETCDF_IN);
+	strcpy(atoms->param_value[idx], p+1);
       }
-      atoms->n_atom = natomlist;
-      fprintf(stderr, "filter applied. Selected %d/%d atoms.\n", natomlist, nxyz);
-      // Add an int property for original index
-      original_index = atoms_add_property(atoms, "original_index", PROPERTY_INT, 1, -1, NETCDF_IN);
-    }
-    else {
-      // Include all atoms
-      atoms->n_atom = nxyz;
-      for (i=0; i<atoms->n_atom; i++) atoms->filter[i] = 1;
-    }
+      
+      // Try to guess param types
+      for (i=0; i<atoms->n_param; i++) {
+	if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
+	    strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
+	
+	strcpy(linebuffer, atoms->param_value[i]);
+	k = 0;
+	p = linebuffer;
+	while ((p1 = strsep(&p, " ")) != NULL) {
+	  if (*p1 == '\0') continue;
+	  strcpy(fields[k++], p1);
+	}
+	if (k == 0) {
+	  k = 1;
+	  strcpy(fields[0], linebuffer);
+	} 
+	
+	/*       if (k != 1 && k != 3) { */
+	/* 	fprintf(stderr,"Parameter %s must have size 1 or 3\n", atoms->param_key[i]); */
+	/* 	return 0; */
+	/*       } */
+	atoms->param_size[i] = k;
+	
+	for (j=0; j<k; j++) {
+	  for (n=0; n<strlen(fields[j]); n++)
+	    if (!isblank(fields[j][n]) && !isdigit(fields[j][n])) goto NOT_INT;
+	}
+	
+	atoms->param_type[i] = (k == 1 ? T_INTEGER : T_INTEGER_A);
+	continue;
 
-    if (realloc) atoms_realloc(atoms);
-    atoms->initialised = 1;
+      NOT_INT:
+	for (j=0; j<k; j++)
+	  if (strtod(fields[j], &p), strlen(p) != 0) goto NOT_REAL;
+	
+	atoms->param_type[i] = (k == 1 ? T_REAL : T_REAL_A);
+	continue;
+      
+      NOT_REAL:
+	// Fallback option: treat as a single string
+	atoms->param_type[i] = T_CHAR;
+	atoms->param_size[i] = 1;
+	continue;
+      }
+      
+      for (i=0; i<atoms->n_param; i++) {
+	if ((atoms->param_type[i] == T_INTEGER_A || atoms->param_type[i] == T_REAL_A) &&
+	    atoms->param_size[i] != 3) {
+	  fprintf(stderr,"Parameter %s must have size 1 or 3, but got %d\n", atoms->param_key[i], atoms->param_size[i]);
+	  return 0; 
+	}
+      }
 
-  } /* end if (redefine) */
+      properties_idx = atoms_find_param(atoms, "Properties");
+      if (properties_idx == -1) {
+	fprintf(stderr,"missing properties parameter\n");
+	return 0;
+      }
+
+      // Now parse properties
+      strcpy(linebuffer, atoms->param_value[properties_idx]);
+      p = linebuffer;
+      k = 0;
+      while ((p1 = strsep(&p, ":")) != NULL) {
+	strcpy(fields[k++], p1);
+      }
+      
+      atoms->n_property = 0;
+      atoms->n_int = atoms->n_real = atoms->n_str = atoms->n_logical = 0;
+      entry_count = 0;
+      
+      for (i=0; i<k/3; i++) {
+	debug("got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
+	
+	if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
+	  fprintf(stderr,"Bad column count %s\n", fields[3*i+2]);
+	  return 0;
+	}
+
+	entry_count += ncols;
+	if (entry_count > MAX_ENTRY_COUNT) {
+	  fprintf(stderr,"Maximum entry count(%d) exceeded\n", MAX_ENTRY_COUNT);
+	  return 0;
+	}
+
+	if (strcmp(fields[3*i+1],"I") == 0) {
+	  atoms_add_property(atoms, fields[3*i], PROPERTY_INT, ncols, -1, NETCDF_IN);
+	} else if (strcmp(fields[3*i+1],"R") == 0) {
+	  atoms_add_property(atoms, fields[3*i], PROPERTY_REAL, ncols, -1, NETCDF_IN);
+	} else if (strcmp(fields[3*i+1],"S") == 0) {
+	  atoms_add_property(atoms, fields[3*i], PROPERTY_STR, ncols, -1, NETCDF_IN);
+	} else if (strcmp(fields[3*i+1],"L") == 0) {
+	  atoms_add_property(atoms, fields[3*i], PROPERTY_LOGICAL, ncols, -1, NETCDF_IN);
+	} else  {
+	  fprintf(stderr,"Bad property type %s\n", fields[3*i+1]);
+	  return 0;
+	}
+      }
+
+      if (atoms->filter != NULL) free(atoms->filter);
+      atoms->filter = malloc(nxyz*sizeof(int));
+      if (atoms->filter == NULL) {
+	fprintf(stderr,"Error allocating atoms->filter\n");
+	return 0;
+      }
+      if (atomlist) {
+	for (i=0; i<atoms->n_atom; i++) atoms->filter[i] = 0;
+	for (i=0; i<natomlist; i++) {
+	  if(atomlist[i] < 0 || atomlist[i] >= nxyz)  {
+	    fprintf(stderr,"filter atom %d out of range 0 < i < %d\n", atomlist[i], nxyz);
+	    return 0;
+	  }
+	  atoms->filter[atomlist[i]] = 1;
+	}
+	atoms->n_atom = natomlist;
+	fprintf(stderr, "filter applied. Selected %d/%d atoms.\n", natomlist, nxyz);
+	// Add an int property for original index
+	original_index = atoms_add_property(atoms, "original_index", PROPERTY_INT, 1, -1, NETCDF_IN);
+      }
+      else {
+	// Include all atoms
+	atoms->n_atom = nxyz;
+	for (i=0; i<atoms->n_atom; i++) atoms->filter[i] = 1;
+      }
+
+      if (realloc) atoms_realloc(atoms);
+      atoms->initialised = 1;
+
+    } /* end if (redefine) */
+  } else {
+    if (atomlist) {
+      natomlist = atoms->n_atom;
+    } else {
+      nxyz = atoms->n_atom;
+    }
+  }
 
   if (query) return atoms->n_atom;
 
@@ -3190,7 +3199,7 @@ int main (int argc, char **argv)
 int cioquery(Atoms *at, int *frame) {
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, 0, 0, NULL);
+    return read_xyz((*at).xyz_in, at, NULL, 0, *frame, 1, 1, 0, !at->got_index, 0, NULL);
   } else if (at->format == NETCDF_FORMAT) {
     if (at->nc_in == 0) return 0;
     return read_netcdf(at->nc_in, at, *frame, NULL, 0, 1, 1, 0, 0, 0, 0.0);
@@ -3198,10 +3207,11 @@ int cioquery(Atoms *at, int *frame) {
 }
 
 int cioinit(Atoms **at, char *filename, int *action, int *append,
-	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
-	     int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
-	     int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
-	     int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice)
+	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
+	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
+	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
+	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice,
+	    int **got_index)
 {
   char *p, *q;
   int i, z, *zp;
@@ -3240,6 +3250,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
   if (n_logical) *n_logical = &((**at).n_logical);
   if (n_param) *n_param = &((**at).n_param);
   if (n_property) *n_property = &((**at).n_property);
+  if (got_index) *got_index = &((**at).got_index);
   
   (**at).xyz_in = NULL;
   (**at).xyz_out = NULL;
@@ -3260,13 +3271,14 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
       if (strstr(q, "xyz") || strstr(q, "XYZ"))
 	goto XYZ;
     }
+    if (strcmp(filename, "stdin") == 0) goto XYZ;
     if (strcmp(filename, "stdout") == 0) goto XYZ;
     fprintf(stderr, "unknown file format: %s\n", filename);
     return 0;
   }
 
   XYZ:
-    if (*action == INPUT || *action == INOUT) {
+    if ((*action == INPUT || *action == INOUT) && strcmp(filename, "stdin") != 0) {
       **n_frame = xyz_find_frames(filename, (**at).frames, (**at).atoms);
       if (**n_frame == 0) {
 	fprintf(stderr, "Error building XYZ index\n");
@@ -3275,12 +3287,28 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
       (**at).got_index = 1;
     }  else {
       **n_frame = 0;
+      (**at).got_index = 0;
     }
     
     if (*action == INPUT) {
-      (**at).xyz_in = fopen(filename, "r");
+      if (strcmp(filename, "stdin") == 0) {
+	(**at).xyz_in = stdin;
+      } else if (strcmp(filename, "stdout") == 0) {
+	fprintf(stderr, "cannot open stdout for action INPOUT");
+	return 0;
+      }
+      else
+	(**at).xyz_in = fopen(filename, "r");
       if ((**at).xyz_in == NULL) return 0;
+      (**at).format = XYZ_FORMAT;
+      if (strcmp(filename, "stdin") != 0) { 
+	z = 0; zp = &z;  cioquery(*at, zp); 
+      }
     } else if (*action == OUTPUT) {
+      if (strcmp(filename, "stdin") == 0) {
+	fprintf(stderr, "cannot open stdin for action OUTPUT");
+	return 0;
+      }
       if (strcmp(filename, "stdout") == 0)
 	(**at).xyz_out = stdout;
       else {
@@ -3289,8 +3317,16 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 	else
 	  (**at).xyz_out = fopen(filename, "w");
       }
+      (**at).format = XYZ_FORMAT;
       if ((**at).xyz_out == NULL) return 0;
     } else if (*action == INOUT) {
+      if (strcmp(filename, "stdin") == 0) {
+	fprintf(stderr, "cannot open stdin for action INOUT");
+	return 0;
+      } else if (strcmp(filename, "stdout") == 0) {
+	fprintf(stderr, "cannot open stdout for action INOUT");
+	return 0;	
+      }
       if (*append) {
 	(**at).xyz_out = fopen(filename, "a+");
 	(**at).xyz_in  = (**at).xyz_out;
@@ -3299,15 +3335,17 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 	(**at).xyz_in  = (**at).xyz_out;
       }      
       if ((**at).xyz_out == NULL) return 0;
+    (**at).format = XYZ_FORMAT;
+      z = 0; zp = &z;  cioquery(*at, zp);
     } else {
       fprintf(stderr,"Bad action %d - should be one of INPUT(%d), OUTPUT(%d) or INOUT (%d)",
 	      *action, INPUT, OUTPUT, INOUT);
       return 0;
     }
-    (**at).format = XYZ_FORMAT;
     return 1;
     
   NETCDF:
+    (**at).got_index = 1;
 #ifdef HAVE_NETCDF
     if (*action == INPUT) {
 
@@ -3317,6 +3355,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 #else
       netcdf_check(nc_open(filename, NC_64BIT_OFFSET | NC_NOWRITE, &((**at).nc_in)));
 #endif
+      (**at).format = NETCDF_FORMAT;
+      z = 0; zp = &z;  cioquery(*at, zp);
     } else if (*action == OUTPUT) {
       debug("Opening NetCDF file \"%s\" for writing\n", filename);
 #ifdef HAVE_NETCDF
@@ -3326,6 +3366,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
       netcdf_check(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
 #endif
       (**at).n_frame = 0;
+      (**at).format = NETCDF_FORMAT;
 #else
 #endif
     } else if (*action == INOUT) {
@@ -3338,9 +3379,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
       // do a query and copy all dimension and variable ids from IN to OUT
       
       (**at).format = NETCDF_FORMAT;
-      z = 0;
-      zp = &z;
-      cioquery(*at, zp);
+      z = 0; zp = &z; cioquery(*at, zp);
 
       for (i=0; i<(**at).n_property; i++)
 	(**at).property_var_id[i][NETCDF_OUT] = (**at).property_var_id[i][NETCDF_IN];
@@ -3365,7 +3404,6 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 	      *action, INPUT, OUTPUT, INOUT);
       return 0;      
     }
-    (**at).format = NETCDF_FORMAT;
     return 1;
 #else
     pe("No NetCDF support compiled in");
@@ -3404,7 +3442,7 @@ int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_d
 
   if (at->format == XYZ_FORMAT) {
     if (at->xyz_in == NULL) return 0;
-    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, 0, 0, NULL);
+    status = read_xyz(at->xyz_in, at, NULL, 0, *frame, 0, 0, 0, !at->got_index, 0, NULL);
     if (status == 0) return status;
     return status;
   } else if (at->format == NETCDF_FORMAT) {
