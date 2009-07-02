@@ -1,5 +1,5 @@
 from quippy import *
-import unittest, itertools
+import unittest, itertools, sys
 
 class TestAtomsList(unittest.TestCase):
 
@@ -33,7 +33,7 @@ class TestAtomsList(unittest.TestCase):
       self.assert_(self.listal._list[-1] is last)
 
    def testdelitem(self):
-      self.listal.loadall(progress=False)
+      self.listal.loadall()
       del self.listal[0]
       self.assert_(self.listal._list[0] is None)
       self.assertEqual(self.listal[0], diamond(5.44, 14))
@@ -46,7 +46,7 @@ class TestAtomsList(unittest.TestCase):
       self.assertEqual(list(tupal), list(self.listal))
 
    def testloadall(self):
-      self.listal.loadall(progress=False)
+      self.listal.loadall()
       nonlazy = AtomsList([diamond(5.44+0.01*x, 14) for x in range(5)], lazy=False)
       self.assertEqual(self.listal._list, nonlazy._list)
 
@@ -82,7 +82,7 @@ class TestAtomsList(unittest.TestCase):
 
    def testgenloadall(self):
       self.assertEqual(len(self.genal), 0)
-      self.genal.loadall(progress=False)
+      self.genal.loadall()
       self.assertEqual(len(self.genal), 5)      
       self.assertEqual(list(self.genal), self.genal._list)
 
@@ -126,8 +126,8 @@ class TestAtomsList(unittest.TestCase):
 
       g = testwriter()
       g.next()
-      self.assertEqual(self.listal.write(g, progress=False), [8, 8, 8, 8, 8])
-      self.assertEqual(self.genal.write(g, progress=False),  [8, 8, 8, 8, 8])
+      self.assertEqual(self.listal.write(g), [8, 8, 8, 8, 8])
+      self.assertEqual(self.genal.write(g),  [8, 8, 8, 8, 8])
 
 
    def testfromat(self):
@@ -213,6 +213,8 @@ class TestAtomsListCInOutput(unittest.TestCase):
       if os.path.exists('test.xyz'): os.remove('test.xyz')
       if os.path.exists('test.nc'): os.remove('test.nc')
       if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
+      if os.path.exists('test2.xyz'): os.remove('test2.xyz')
+      if os.path.exists('test2.xyz.idx'): os.remove('test2.xyz.idx')
 
    def testsinglexyz(self):
       self.at.write('test.xyz')
@@ -226,12 +228,12 @@ class TestAtomsListCInOutput(unittest.TestCase):
       self.assertEqual(self.at, at)
       
    def testmultixyz(self):
-      self.al.write('test.xyz', progress=False)
+      self.al.write('test.xyz')
       al = AtomsList('test.xyz')
       self.assertEqual(list(self.al), list(al))
 
    def testmultinc(self):
-      self.al.write('test.nc', progress=False)
+      self.al.write('test.nc')
       al = AtomsList('test.nc')
       self.assertEqual(list(self.al), list(al))      
 
@@ -259,6 +261,11 @@ class TestAtomsListCInOutput(unittest.TestCase):
          a.append(cio.read())
       self.assertEqual(a, list(self.al))      
 
+   def teststdinstdout(self):
+      self.al.write('test.xyz')
+      os.system("python -c 'from quippy import *; al = AtomsList(\"stdin\"); al.write(\"stdout\",)' < test.xyz > test2.xyz")
+      al = AtomsList('test2.xyz')
+      self.assertEqual(list(al), list(self.al))
 
 
 class TestNetCDFAtomsList(unittest.TestCase):
@@ -266,7 +273,7 @@ class TestNetCDFAtomsList(unittest.TestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 2, 2, 2)
       self.al = AtomsList(self.at for x in range(5))
-      self.al.write('test.nc', progress=False)      
+      self.al.write('test.nc')      
 
    def tearDown(self):
       os.remove('test.nc')
