@@ -9,8 +9,11 @@ class AtomsList(object):
 
       if format is None:
          if isinstance(source, str):
-            base, ext = os.path.splitext(source)
-            format = ext[1:]
+            if source in AtomsReaders:
+               format = source
+            else:
+               base, ext = os.path.splitext(source)
+               format = ext[1:]
          else:
             format = source.__class__
 
@@ -95,7 +98,7 @@ class AtomsList(object):
    def __setitem__(self, i, value):
       self._list[i] = value
 
-   def loadall(self, progress=True, progress_width=80, update_interval=None, show_value=True):
+   def loadall(self, progress=False, progress_width=80, update_interval=None, show_value=True):
       if progress:
          if self._randomaccess:
             from progbar import ProgressBar
@@ -118,12 +121,15 @@ class AtomsList(object):
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
-   def write(self, dest, format=None, progress=True, progress_width=80, update_interval=None,
+   def write(self, dest, format=None, progress=False, progress_width=80, update_interval=None,
              show_value=True, *args, **kwargs):
       if format is None:
          if isinstance(dest, str):
-            base, ext = os.path.splitext(dest)
-            format = ext[1:]
+            if dest in AtomsWriters:
+               format = dest
+            else:
+               base, ext = os.path.splitext(dest)
+               format = ext[1:]
          else:
             format = dest.__class__
       
@@ -173,15 +179,20 @@ try:
             self.stop = stop
             self.step = step
 
+         if self.source.got_index:
+            self.__len__ = lambda self: len(self.source)
+            self.__getitem__ = lambda self, idx: self.source[idx]
+
       def __iter__(self):
-         for frame in range(self.start,self.stop,self.step):
-            yield self.source[frame]
-
-      def __len__(self):
-         return len(self.source)
-
-      def __getitem__(self, idx):
-         return self.source[idx]
+         if not self.source.got_index:
+            while True:
+               try:
+                  yield self.source.read()
+               except RuntimeError:
+                  break
+         else:
+            for frame in range(self.start,self.stop,self.step):
+               yield self.source[frame]
 
 
    def CInOutputWriter(dest, append=False):
@@ -197,6 +208,8 @@ try:
 
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
    AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
+   AtomsReaders['stdin'] = CInOutputReader
+   AtomsWriters['stdout'] = CInOutputWriter
 
    
 except ImportError:
