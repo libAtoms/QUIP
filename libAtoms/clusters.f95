@@ -1042,6 +1042,7 @@ contains
     ! Calculate centre of cluster
     call allocate(cluster_list, 1,0,0,0)
     call append(cluster_list, find(hybrid_mark /= HYBRID_NO_MARK))
+    centre = 0.0_dp
     do i=1,cluster_list%N
        centre = centre + at%pos(:,cluster_list%int(1,i))
     end do
