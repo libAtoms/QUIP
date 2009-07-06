@@ -33,9 +33,7 @@ implicit none
   complex(dp) :: absorption_polarization(3)
   real(dp) :: absorption_freq_range(3), absorption_gamma
   real(dp), allocatable :: absorption_freqs(:), absorption_v(:)
-  real(dp) :: freq
   integer :: freq_i
-  real(dp) :: a
 
   real(dp) :: E0
   real(dp), allocatable :: local_E0(:)
@@ -114,7 +112,7 @@ implicit none
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", ERROR)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", ERROR)
     call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(NORMAL)] [use_n_minim]", ERROR)
-    call print("  [hybrid] [init_args_pot1] [init_args_pot2]", ERROR)
+    call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", ERROR)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
