@@ -118,7 +118,7 @@ program makecrack
   type(Potential) :: classicalpot
   type(Metapotential) :: simple
   type(MPI_context) :: mpi_glob
-  type(Inoutput) :: xmlfile, infile
+  type(Inoutput) :: xmlfile
   type(CInoutput) :: netcdf
   type(Inoutput) :: checkfile
 
@@ -128,11 +128,11 @@ program makecrack
        old_nn, hybrid, hybrid_mark
 
   
-  real(dp), allocatable :: f(:,:)
-  real(dp), dimension(6,6) :: c, c0
-  real (dp), dimension(3,3) :: axes, lattice
+  real(dp), allocatable :: f(:,:), u_disp(:,:), k_disp(:,:)
+  real(dp), dimension(6,6) :: c
+  real (dp), dimension(3,3) :: lattice
 
-  real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, &
+  real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, G, &
        width, height, a, E, v, v2, uij(3), energy
 
   integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
@@ -191,157 +191,7 @@ program makecrack
   call print(simple)
 
   ! Crack structure specific code
-  if (trim(params%crack_structure) == 'graphene') then
-
-     call print_title('Graphene Crack')
-     
-!!$     call graphene_elastic(simple, a, v, E)
-
-     a = 1.42_dp
-     v = 0.144_dp
-     E = 344.0_dp
-
-     call Print('graphene sheet, lattice constant a='//a)
-
-     bulk = graphene_cubic(a)
-    
-     if (trim(params%crack_slab_filename).ne.'') then
-        call Initialise(infile, trim(params%crack_slab_filename))
-        call print('Reading atoms from input file')
-        call read_xyz(crack_slab, infile)
-     else
-        call graphene_slab(crack_layer, a, params%crack_graphene_theta, &
-             params%crack_width, params%crack_height)
-        crack_layer%Z = 6
-
-        if (abs(params%crack_graphene_theta - 0.0_dp) < 1e-3_dp) then
-           call print('armchair sheet')
-           shift = 0.61567821_dp
-        else if (abs(params%crack_graphene_theta - pi/6.0_dp) < 1e-3_dp) then
-           call print('zigzag sheet')
-           shift = 0.53319064_dp
-        end if
-
-        lattice = crack_layer%lattice
-        lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
-        lattice(2,2) = lattice(2,2) + params%crack_vacuum_size
-        call atoms_set_lattice(crack_layer, lattice)
-
-        do i=1,crack_layer%N
-           crack_layer%pos(2,i) = crack_layer%pos(2,i) + shift
-        end do
-     endif
-
-     ! Actual width and height differ a little from requested
-     width = maxval(crack_layer%pos(1,:))-minval(crack_layer%pos(1,:))
-     height = maxval(crack_layer%pos(2,:))-minval(crack_layer%pos(2,:))
-     call Print('Actual slab dimensions '//width//' A x '//height//' A')
-
-     ! Cut notch
-     if (params%crack_graphene_notch_width  > 0.0_dp .and. &
-         params%crack_graphene_notch_height > 0.0_dp) then
-        call Print('Cutting notch with width '//params%crack_graphene_notch_width// &
-             ' A, height '//params%crack_graphene_notch_height//' A.')
-     
-        i = 1
-        do 
-           if ((crack_layer%pos(2,i) < &
-                -(0.5_dp*params%crack_graphene_notch_height/ &
-                params%crack_graphene_notch_width*(crack_layer%pos(1,i)+width/2.0_dp)) + &
-                params%crack_graphene_notch_height/2.0_dp) .and. &
-                (crack_layer%pos(2,i) > &
-                (0.5_dp*params%crack_graphene_notch_height/ &
-                params%crack_graphene_notch_width*(crack_layer%pos(1,i)+width/2.0_dp)) - &
-                params%crack_graphene_notch_height/2.0_dp)) then
-              call remove_atoms(crack_layer, i)
-
-              i = i - 1 ! retest
-           end if
-           if (i == crack_layer%N) exit
-           i = i + 1
-        end do
-     end if
-
-     crack_layer%lattice(3,3) = 10.0_dp
-     crack_slab = crack_layer
-
-     call atoms_set_cutoff(crack_slab, cutoff(classicalpot)+params%md_crust)
-     call calc_connect(crack_slab)
-
-     call Print('Graphene sheet contains '//crack_slab%N//' atoms.')
-
-  else if (trim(params%crack_structure) == 'diamond'.or.trim(params%crack_structure) == 'bcc'.or.trim(params%crack_structure) == 'fcc') then
-
-     call crack_parse_atomic_numbers(params%crack_element, Z)
-     if(trim(params%crack_structure) == 'diamond') then 
-       call print_title('Diamond Structure Crack')
-       call diamond(bulk, params%crack_lattice_guess, Z)
-     elseif(trim(params%crack_structure) == 'bcc') then
-       call print_title('BCC Structure Crack')
-       call bcc(bulk, params%crack_lattice_guess, Z(1))
-       call set_cutoff(bulk, cutoff(simple))
-     elseif(trim(params%crack_structure) == 'fcc') then
-       call print_title('FCC Structure Crack')
-       call fcc(bulk, params%crack_lattice_guess, Z(1))
-       call set_cutoff(bulk, cutoff(simple))
-     endif 
-     call calc_elastic_constants(simple, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
-
-     call print('Relaxed elastic constants (GPa):')
-     call print(c*GPA)
-     call print('')
-     call print('Unrelaxed elastic constants (GPa):')
-     call print(c0*GPA)
-     call print('')
-
-     call print('Relaxed lattice')
-     call print(bulk%lattice)
-     a = bulk%lattice(1,1)
-
-     call Print(trim(params%crack_element)//' crack: atomic number Z='//Z//&
-          ', lattice constant a = '//a)
-     call Print('Crack name '//params%crack_name)
-
-     ! Parse crack name and make crack slab
-     call crack_parse_name(params%crack_name, axes)
-
-     ! Get elastic constants relevant for a pull in y direction
-     E = Youngs_Modulus(C, axes(:,2))*GPA
-     v = Poisson_Ratio(C, axes(:,2), axes(:,1))
-     v2 = Poisson_Ratio(C, axes(:,2), axes(:,3))
-
-     call Print('')
-     call print('Youngs modulus E_y = '//E) 
-     call print('Poisson ratio v_yx = '//v) 
-     call print('Poisson ratio v_yz = '//v2) 
-     call Print('')
-
-     if (trim(params%crack_slab_filename).ne.'') then
-        call Initialise(infile, trim(params%crack_slab_filename))
-        call print('Reading atoms from input file')
-        call read_xyz(crack_slab, infile)
-     else
-        call slab(crack_layer, axes,  a, params%crack_width, params%crack_height, 1, Z, &
-             trim(params%crack_structure))
-        call atoms_set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
-        call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
-     endif
-
-     call calc_connect(crack_slab)
-
-     call Print('Slab contains '//crack_slab%N//' atoms.')
-
-     ! Actual width and height differ a little from requested
-     width = maxval(crack_slab%pos(1,:))-minval(crack_slab%pos(1,:))
-     height = maxval(crack_slab%pos(2,:))-minval(crack_slab%pos(2,:))
-     call Print('Actual slab dimensions '//width//' A x '//height//' A')
-
-  else
-     ! Add code here for other structures...
-     
-     call system_abort("Don't (yet!) know how to make cracks with structure "//trim(params%crack_structure))
-     
-  end if ! select on crack_structure 
+  call crack_make_slab(params, classicalpot, simple, crack_slab, width, height, E, v, v2, bulk)
 
   ! Save bulk cube (used for qm_rescale_r parameter in crack code)
   call print_xyz(bulk, trim(stem)//'_bulk.xyz')
@@ -373,7 +223,6 @@ program makecrack
 
   call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
-
 
   call print_title('Fixing Atoms')
 
@@ -463,8 +312,8 @@ program makecrack
      end do
   end if
 
-  call crack_make_seed(crack_slab, params)
-  call crack_setup_marks(crack_slab, params)
+  call crack_make_seed(crack_slab, params, u_disp, k_disp)
+  !call crack_setup_marks(crack_slab, params) 
 
   if (params%crack_apply_initial_load) then
      if (mpi_glob%active .and. params%crack_relax_loading_field) then
@@ -474,10 +323,8 @@ program makecrack
      end if
      
      ! Apply initial load
-     !dummy = get_value(crack_slab%params, 'CrackPos', crack_pos) !CHIARA
-     !dummy = get_value(crack_slab%params, 'G', G)
-     call crack_calc_load_field(crack_slab, params, simple, params%crack_loading, overwrite_pos=.true., &
-          mpi=mpi_glob)!, crackpos_last_load=crack_pos, G_last_load=G) !CHIARA
+     call crack_calc_load_field(crack_slab, params, classicalpot, simple, params%crack_loading, overwrite_pos=.true., &
+          mpi=mpi_glob)
   end if
 
   call Print_title('Initialising QM region')

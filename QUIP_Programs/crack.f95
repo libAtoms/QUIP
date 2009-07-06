@@ -565,9 +565,6 @@ end if
      end if
   end if
 
-  dummy = get_value(ds%atoms%params, 'CrackPos', crackpos_last_load)
-  dummy = get_value(ds%atoms%params, 'G', G_last_load)               
-
   ! Print a frame before we start
   call crack_print(ds%atoms, movie, params, mpi_glob)
 
@@ -586,10 +583,8 @@ end if
 
   if (.not. has_property(ds%atoms, 'load')) then
      call print_title('Applying Initial Load')
-     call print('crack_pos corresponding to load'//crackpos_last_load)
-     call print('G corresponding to load'//G_last_load)
-     call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, & 
-          .true., mpi_glob, crackpos_last_load, G_last_load)
+     call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, & 
+          .true., mpi_glob)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
           old_nn, hybrid, hybrid_mark)
@@ -659,7 +654,6 @@ end if
 
      if (trim(state_string) == "MD" .and. (params%md_smooth_loading_rate .fne. 0.0_dp)) state_string = 'MD_LOADING'
 
-     call print('state_string(1:2)= '//state_string(1:2))
      if (state_string(1:10) == 'THERMALISE') then
         state = STATE_THERMALISE
         call disable_damping(ds)
@@ -802,13 +796,8 @@ end if
                     exit
                  else
                     call print_title('Crack Arrested')
-                    call print('G corresponding to old load '//G_last_load)
-                    call print("crack_pos corresponding to old load "//crackpos_last_load)
-                    call print("crack_pos now "//crack_pos)
-                    call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, &
-                         .false., mpi_glob,crackpos_last_load, G_last_load)
-                    crackpos_last_load = crack_pos 
-                    dummy = get_value(ds%atoms%params, 'G', G_last_load)
+                    call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
+                         .false., mpi_glob)
                     call print('STATE changing MD_CRACKING -> MD_LOADING')
                     state = STATE_MD_LOADING
                  end if
@@ -1166,13 +1155,8 @@ end if
 
      if (.not. has_property(ds%atoms, 'load')) then
         call print('No load field found. Regenerating load.')
-        call print("crack_pos corresponding to old load"//crackpos_last_load)
-        call print("crack_pos now"//crack_pos)
-        call crack_calc_load_field(ds%atoms, params, simple_metapot, params%crack_loading, &
-             .true., mpi_glob,crackpos_last_load, G_last_load)
-        dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
-        crackpos_last_load = crack_pos
-        dummy = get_value(ds%atoms%params, 'G', G_last_load)
+        call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
+             .true., mpi_glob)
      end if
 
      call crack_update_connect(ds%atoms, params)
