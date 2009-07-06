@@ -101,14 +101,14 @@ def runtest(testname, command, diff_method, infiles, outfiles, capture_output=Tr
    if keep_all_files:
       open('%s.stdout' % testname,'w').write(stdout)
 
-   for name, contents in outfiles.iteritems():
+   for name, exp_contents in outfiles.iteritems():
       if name != 'stdout':
          if not os.path.exists(name):
             print 'Output file %s not produced' % name
             return False
          
          f = open(name,'r')
-         exp_contents = f.readlines()
+         contents = f.readlines()
          cmpout[name] = (contents, exp_contents)
 
    diffs = {}
