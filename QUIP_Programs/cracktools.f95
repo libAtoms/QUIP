@@ -2,8 +2,9 @@ module CrackTools_module
 
   use libAtoms_module
   use QUIP_module
-
+  use elasticity_module
   use CrackParams_module
+  use atoms_module
 
   implicit none
 
@@ -69,20 +70,7 @@ contains
             call system_abort('hybrid_mark pointer assignment failed')
     end if
 
-    !if (has_property(crack_slab, 'uniform_disp')) then
-    !   if (.not. assign_pointer(crack_slab, 'uniform_disp', u_disp)) &
-    !        call system_abort('u_disp pointer assignment failed')
-    !end if
-    
-    !if (has_property(crack_slab, 'k_disp')) then
-    !   if (.not. assign_pointer(crack_slab, 'k_disp', k_disp)) &
-    !        call system_abort('k_disp pointer assignment failed')
-    !end if
-
   end subroutine crack_fix_pointers
-
-
-
 
   !% Parse crack name in the format is (ijk)[lmn], with negative numbers
   !% denoted by a trailing 'b' (short for 'bar'), e.g. '(111)[11b0]'
@@ -399,7 +387,7 @@ contains
   !% Stress is in 6 component Voigt notation: $1=xx, 2=yy, 3=zz, 4=yz, 5=zx$ and $6=xy$, and 
   !% displacement is a Cartesian vector $(u_x,u_y,u_z)$.
 
-  !CHIARA: instead of adding a property to the atom structure, return 
+  !Instead of adding a property to the atom structure, return 
   !an array with sig and disp, if do_sig or do_disp are true
   subroutine crack_k_field(at, K, mode, sig, disp, do_sig, do_disp)
     type(Atoms), intent(in) :: at 
@@ -439,6 +427,7 @@ contains
     else
        call system_abort('crack_k_field: bad mode '//trim(use_mode))
     end if
+
 
     allocate(mysig(6,at%N))
 
@@ -603,25 +592,27 @@ contains
 
   end subroutine crack_setup_marks
 
-
-  subroutine crack_calc_load_field(crack_slab, params, metapot, load_method, overwrite_pos, mpi, crackpos_last_load, G_last_load) 
+  subroutine crack_calc_load_field(crack_slab, params, classicalpot, metapot, load_method, overwrite_pos, mpi) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
+    type(Potential), intent(in) :: classicalpot
     type(MetaPotential), intent(inout) :: metapot
     character(*), intent(in) :: load_method
     logical, intent(in) :: overwrite_pos
     type(MPI_Context), intent(in) :: mpi
-    real(dp), optional, intent(in) :: crackpos_last_load, G_last_load
 
+    type(Atoms) :: crack_slab1, bulk
     real(dp), pointer, dimension(:,:) :: load
     real(dp), allocatable, dimension(:,:) :: k_disp, u_disp
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     type(CInOutput) :: movie
-    real(dp), allocatable :: pos1(:,:), pos2(:,:)
+    real(dp), allocatable :: relaxed_pos(:,:), initial_pos(:,:), new_pos(:,:)
     integer :: i, k, steps
-    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, G_old, old_crack_pos
-    real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos, r_pos_last_load
+    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, width1, height1, G2
+    real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos
+    real (dp), dimension(3,3) :: lattice
+    logical :: dummy
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_calc_load_field: "OrigHeight" parameter missing')
@@ -648,7 +639,6 @@ contains
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark)  
-   
 
     if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
        if (params%io_netcdf) then
@@ -658,47 +648,41 @@ contains
        end if
     end if
 
-    allocate(pos1(3,crack_slab%N), pos2(3,crack_slab%N))
-
     l_crack_pos = -orig_width
-    r_crack_pos = crack_pos
 
-    old_crack_pos = optional_default(crack_pos, crackpos_last_load) 
-    
-!!$    if (trim(params%crack_structure) == 'graphene') then
-!!$       r_crack_pos = -orig_width
-!!$    end if
-
-    ! Save original positions
-    pos1 = crack_slab%pos
-    
-    if (params%crack_relax_loading_field) then
-       ! Geometry optimise
-       steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
-	     max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-	     do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-             print_cinoutput=movie)
-    end if
-    
-    ! Save relaxed positions
-    pos2 = crack_slab%pos
-   
-
-    r_pos_last_load = old_crack_pos - 0.85*params%crack_strain_zone_width
-    G_old = optional_default(G, G_last_load)
-
+    allocate(relaxed_pos(3,crack_slab%N), new_pos(3,crack_slab%N))
     allocate(k_disp(3, crack_slab%N))  
     allocate(u_disp(3, crack_slab%N))
-     
-    ! Apply loading field
-    
-    if (trim(load_method) == 'saved') then
+    allocate(initial_pos(3,crack_slab%N))
 
+    !save initial positions of crack_slab 
+    initial_pos = crack_slab%pos
+
+    !relax the positions of the original slab 
+    crack_slab%pos = initial_pos
+    if (params%crack_relax_loading_field) then
+      ! Geometry optimise
+       steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+         max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
+         do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+             print_cinoutput=movie)
+    end if
+
+    ! Save relaxed positions 
+    relaxed_pos = crack_slab%pos
+ 
+    !create a bulk slab
+    call crack_make_slab(params, classicalpot, metapot, crack_slab1, width1, height1, E, v, v2, bulk)
+
+    ! Apply loading field   
+    if (trim(load_method) == 'saved') then 
+       crack_slab%pos = initial_pos 
+ 
        call print_title('Applying saved load increment')
        call crack_apply_load_increment(crack_slab)
 
-    else if (trim(load_method) == 'uniform') then
-
+    else if (trim(load_method) == 'uniform') then 
+       crack_slab%pos = initial_pos  
        call print_title('Applying uniform load increment')
        ! strain it a bit
        do i=1,crack_slab%N
@@ -709,55 +693,84 @@ contains
 
        call print_title('Applying K-field load increment')
 
-       call crack_k_field(crack_slab, crack_g_to_k(G_old, E, v), disp = k_disp, do_disp=.true.) 
+       crack_slab%pos = crack_slab1%pos
 
-       ! remove old load k_disp
-       do i=1,crack_slab%N
-          crack_slab%pos(:,i) = crack_slab%pos(:,i) - k_disp(:,i)
-       end do
- 
-       k_disp = 0.0_dp 
-       ! apply load increment
-       K1 = crack_g_to_k(crack_strain_to_g( &
-            crack_g_to_strain(G, E, v, orig_height) + &
-            params%crack_initial_loading_strain, E, v, orig_height),E,v)
-
-       call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-       call crack_k_field(crack_slab, K1, disp = k_disp, do_disp=.true.) 
+       k_disp = 0.0_dp
+       call print('Energy release rate     G = '//G//' J/m^2')
+       call print('Stress Intensity Factor K = '//(crack_g_to_k(G,E,v)/1e6_dp)//' MPa.sqrt(m)')
+       call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)  
 
        do i=1,crack_slab%N
           crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
        end do
+
+      if (params%crack_relax_loading_field) then
+  
+         ! now relax
+         steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+              max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
+              do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+              print_cinoutput=movie)
+      end if
+      relaxed_pos = crack_slab%pos  
+
+
+       crack_slab%pos = crack_slab1%pos
+       ! apply load increment
+       K1 = crack_g_to_k(crack_strain_to_g( &
+            crack_g_to_strain(G, E, v, orig_height) + &
+            params%crack_initial_loading_strain, E, v, orig_height),E,v)
        
+       k_disp = 0.0_dp
+       call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
+       call crack_k_field(crack_slab, K1, do_sig=.false., disp=k_disp, do_disp=.true.)
+
+       do i=1,crack_slab%N
+          crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
+       end do
+
+
     else if (trim(load_method) == 'interp_kfield_uniform') then
 
-       call print_title('Applying interp. kfield-uniform load increment')
+       crack_slab%pos = crack_slab1%pos
+       r_crack_pos = crack_pos-0.85*params%crack_strain_zone_width
+       
+       call print('Applying load 1')
+
+       u_disp = 0.0_dp
+       call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+            params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp) 
 
        k_disp = 0.0_dp
-       u_disp = 0.0_dp
-       call print('Recomputing the old load')
-       call crack_k_field(crack_slab, crack_g_to_k(G_old, E, v), disp = k_disp, do_disp=.true.)
+       call print('Energy release rate     G = '//G//' J/m^2')
+       call print('Stress Intensity Factor K = '//(crack_g_to_k(G,E,v)/1e6_dp)//' MPa.sqrt(m)')
+       call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)  
 
-       call crack_uniform_load(crack_slab, l_crack_pos, r_pos_last_load, &
-            params%crack_strain_zone_width, G_old, apply_load=.false., disp=u_disp)
-
-       ! remove old load u_disp + k_disp
-       call print('Removing the old load')
+       r = 0.0 
        do i=1,crack_slab%N
-          r = sqrt((crack_slab%pos(1,i) - old_crack_pos)**2.0_dp + & 
+          r = sqrt((crack_slab%pos(1,i) - crack_pos)**2.0_dp + &
                crack_slab%pos(2,i)**2.0_dp)
           if (r > params%crack_load_interp_length) then
-             crack_slab%pos(:,i) = crack_slab%pos(:,i) - u_disp(:,i)
+             crack_slab%pos(:,i) = crack_slab%pos(:,i) + u_disp(:,i)
           else
              do k=1,3
-                crack_slab%pos(k,i) = crack_slab%pos(k,i) -  &
+                crack_slab%pos(k,i) = crack_slab%pos(k,i) +  &
                      linear_interpolate(0.0_dp, k_disp(k,i), params%crack_load_interp_length, u_disp(k,i), r)
              end do
           end if
        end do
+ 
+      if (params%crack_relax_loading_field) then
+         steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+              max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
+              do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+              print_cinoutput=movie)
+      end if
+      relaxed_pos = crack_slab%pos  
 
        call print('Applying new load')
-       ! apply load increment to u_disp
+
+       crack_slab%pos = crack_slab1%pos
 
        G1 = crack_strain_to_g( &
             crack_g_to_strain(G, E, v, orig_height) + &
@@ -788,9 +801,10 @@ contains
              end do
           end if
        end do
-     
+ 
     end if
-    
+
+
     if (params%crack_relax_loading_field) then
        
        ! now re-relax
@@ -805,36 +819,36 @@ contains
 
     ! work out displacement field, using relaxed positions
     do i=1,crack_slab%N
-       load(:,i) = crack_slab%pos(:,i) - pos2(:,i)
+       load(:,i) = crack_slab%pos(:,i) - relaxed_pos(:,i)
     end do
-    
+   
     call print('Displacement field generated. Max disp: '//maxval(load))
     call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*crack_slab%N/)))/(3.0_dp*crack_slab%N)))
-     
+   
     if (overwrite_pos) then
-       crack_slab%pos = pos2
+       crack_slab%pos = relaxed_pos
     else
-       crack_slab%pos = pos1
+       crack_slab%pos = initial_pos
     end if
     call calc_connect(crack_slab)
 
-    deallocate(pos1,pos2)
+    deallocate(relaxed_pos, new_pos)
+    deallocate(u_disp, k_disp)
     call finalise(movie)
     
   end subroutine crack_calc_load_field
 
-
-  subroutine crack_make_seed(crack_slab, params) 
+  subroutine crack_make_seed(crack_slab, params, u_disp, k_disp) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
+    real(dp), allocatable, dimension(:,:), optional, intent(out):: k_disp, u_disp 
 
-    ! Pointers into Atoms data structure
-    real(dp), allocatable, dimension(:,:) :: k_disp, u_disp 
     real(dp), pointer, dimension(:,:) :: load
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
-    real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain
-    integer :: i, k
+    real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain, crack_pos
+    integer :: i, k, j
+    logical :: dummy
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark) 
@@ -860,7 +874,7 @@ contains
     ! Determine position of seed crack
     l_crack_pos = -orig_width ! single ended crack
     r_crack_pos = -orig_width/2.0_dp + params%crack_seed_length
-    
+
 !!$    if (trim(params%crack_structure) == 'graphene') then
 !!$       r_crack_pos = -orig_width
 !!$    end if
@@ -933,9 +947,13 @@ contains
        call print('Initial energy release rate    G_0 = '//params%crack_G//' J/m^2')
        call print('Initial stress intesity factor K_0 = '//crack_g_to_k(params%crack_G, E, v)/1e6_dp//' MPa.sqrt(m)')
 
+
        call set_value(crack_slab%params, 'CrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.) 
+
+       dummy = get_value(crack_slab%params, 'CrackPos', crack_pos)
+       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.)
+       !call crack_k_field(crack_slab, crack_g_to_k(G, E, v), disp=k_disp, do_disp=.true.)
 
        G = params%crack_G
        call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
@@ -958,15 +976,10 @@ contains
        call system_abort('Unknown loading type '//trim(params%crack_loading))
     end if
 
-    deallocate(u_disp) 
-    deallocate(k_disp) 
+    !deallocate(u_disp) 
+    !deallocate(k_disp) 
 
   end subroutine crack_make_seed
-
-
-  ! displacement field subtracted must be identical to that added - save interp field
-
-
 
 
   !% Increase the load by adding the the load displacement field
@@ -1230,7 +1243,7 @@ contains
     integer, allocatable, dimension(:) :: sorted, sindex
     real(dp), dimension(2,3) :: selection_ellipse
     real(dp) :: ellipse_bias(3), crack_pos, real_pos(3), lattice_coord(3)
-    integer :: dislo_seed, temp_N !CHIARINA
+    integer :: dislo_seed, temp_N 
 
     integer, pointer, dimension(:) :: nn, changed_nn, hybrid
 
@@ -1267,7 +1280,6 @@ contains
     ! bias ellipse forward by arbitrary fraction of a radius (0.5 => 1/4 back, 3/4 ahead)
     ellipse_bias(1) = params%selection_ellipse_bias*selection_ellipse(1,1)
 
-    !CHIARINA
     !if there is a dislo_seed, add qm atoms around the dislocation core
     call allocate(temptable, 4,0,0,0)
     dislo_seed = params%crack_dislo_seed
@@ -1279,7 +1291,6 @@ contains
        temp_N = temptable%N
        call print('found '//temp_N//' extra qm atoms')
     endif
-    !CHIARINA
 
     ! Do selection twice, once to get inner and once to get outer surface
     do surface=1,2
@@ -1332,8 +1343,7 @@ contains
        call insertion_sort(sorted, sindex)
 
        i = 1
-       !do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms) !CHIARINA
-       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N)
+       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N) 
           age = sorted(i)
           write (line, '(a,i0)') '  Selecting changed_nn age ', age
           call print(line)
@@ -1434,16 +1444,7 @@ contains
     call Print('Crack position = '//crack_pos)
     call set_value(at%params, 'CrackPos', crack_pos)
 
-    !CHIARINA
-    !if there is a dislo_seed, add qm atoms around the dislocation core
-    !call allocate(temptable, 4,0,0,0)
-    !dislo_seed = params%crack_dislo_seed
     if (dislo_seed .ne. 0) then
-    !   call print('DISLOCATION: adding atoms around the core '//dislo_seed)
-    !   call print('atoms in embedlist before = '//embedlist%N)
-    !   call bfs_grow(at, temptable, dislo_seed, 2,nneighb_only=.false.,min_images_only=.false.)
-    !   temp_N = temptable%N
-    !   call print('found '//temp_N//' extra qm atoms')
        do i = 1, temp_N
           if (.not.Is_In_Array(int_part(embedlist,1),temptable%int(1,i))) then
              call append(embedlist,temptable%int(1,i))
@@ -1451,7 +1452,6 @@ contains
        enddo
        call print('atoms in the embedlist after = '//embedlist%N)
      endif
-    !CHIARINA
 
     ! Copy embedlist to 'hybrid' property
     hybrid = 0
@@ -1486,7 +1486,7 @@ contains
     crack_pos = -orig_width
     crack_tip_atom = 0
     do i=1,at%N
-       if (nn(i) >= params%md_eqm_coordination) cycle  !CHIARINA >= invece di ==
+       if (nn(i) >= params%md_eqm_coordination) cycle 
        if (edge_mask(i) == 1) cycle
        if (at%pos(1,i) > crack_pos) then
           crack_pos = at%pos(1,i)
@@ -1556,5 +1556,175 @@ contains
     end if
   end subroutine crack_print_filename
 
+  subroutine crack_make_slab(params, classicalpot, simple, crack_slab,width, height, E, v, v2, bulk)
+  type(CrackParams), intent(in) :: params
+  type(Potential), intent(in) :: classicalpot
+  type(Metapotential), intent(in) :: simple
+  type(Atoms), intent(out) :: crack_slab
+  real(dp), intent(out) :: width, height, E, v, v2
+  type(Atoms), intent(out) :: bulk
+
+  real(dp) :: a, shift
+  type(inoutput) :: infile
+  type(Atoms) :: crack_layer
+  real (dp), dimension(3,3) :: axes, lattice
+  integer :: i, Z(2)
+  real(dp), dimension(6,6) :: c, c0
+  type(Metapotential) :: simple_metapot
+
+  if (trim(params%crack_structure) == 'graphene') then
+
+     call print_title('Graphene Crack')
+
+!!$     call graphene_elastic(simple, a, v, E)
+
+     a = 1.42_dp
+     v = 0.144_dp
+     E = 344.0_dp
+
+     call Print('graphene sheet, lattice constant a='//a)
+
+     bulk = graphene_cubic(a)
+
+     if (trim(params%crack_slab_filename).ne.'') then
+        call Initialise(infile, trim(params%crack_slab_filename))
+        call print('Reading atoms from input file')
+        call read_xyz(crack_slab, infile)
+     else
+        call graphene_slab(crack_layer, a, params%crack_graphene_theta, &
+             params%crack_width, params%crack_height)
+        crack_layer%Z = 6
+
+        if (abs(params%crack_graphene_theta - 0.0_dp) < 1e-3_dp) then
+           call print('armchair sheet')
+           shift = 0.61567821_dp
+        else if (abs(params%crack_graphene_theta - pi/6.0_dp) < 1e-3_dp) then
+           call print('zigzag sheet')
+           shift = 0.53319064_dp
+        end if
+
+        lattice = crack_layer%lattice
+        lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
+        lattice(2,2) = lattice(2,2) + params%crack_vacuum_size
+        call atoms_set_lattice(crack_layer, lattice)
+
+        do i=1,crack_layer%N
+           crack_layer%pos(2,i) = crack_layer%pos(2,i) + shift
+        end do
+     endif
+
+     ! Actual width and height differ a little from requested
+     width = maxval(crack_layer%pos(1,:))-minval(crack_layer%pos(1,:))
+     height = maxval(crack_layer%pos(2,:))-minval(crack_layer%pos(2,:))
+     call Print('Actual slab dimensions '//width//' A x '//height//' A')
+
+     ! Cut notch
+     if (params%crack_graphene_notch_width  > 0.0_dp .and. &
+         params%crack_graphene_notch_height > 0.0_dp) then
+        call Print('Cutting notch with width '//params%crack_graphene_notch_width// &
+             ' A, height '//params%crack_graphene_notch_height//' A.')
+
+        i = 1
+        do
+           if ((crack_layer%pos(2,i) < &
+                -(0.5_dp*params%crack_graphene_notch_height/ &
+                params%crack_graphene_notch_width*(crack_layer%pos(1,i)+width/2.0_dp)) + &
+                params%crack_graphene_notch_height/2.0_dp) .and. &
+                (crack_layer%pos(2,i) > &
+                (0.5_dp*params%crack_graphene_notch_height/ &
+                params%crack_graphene_notch_width*(crack_layer%pos(1,i)+width/2.0_dp)) - &
+                params%crack_graphene_notch_height/2.0_dp)) then
+              call remove_atoms(crack_layer, i)
+
+              i = i - 1 ! retest
+           end if
+           if (i == crack_layer%N) exit
+           i = i + 1
+        end do
+     end if
+
+     crack_layer%lattice(3,3) = 10.0_dp
+     crack_slab = crack_layer
+
+     call atoms_set_cutoff(crack_slab, cutoff(classicalpot)+params%md_crust)
+     call calc_connect(crack_slab)
+
+     call Print('Graphene sheet contains '//crack_slab%N//' atoms.')
+
+  else if (trim(params%crack_structure) == 'diamond'.or.trim(params%crack_structure) == 'bcc'.or.trim(params%crack_structure) == 'fcc') then
+
+     call crack_parse_atomic_numbers(params%crack_element, Z)
+     if(trim(params%crack_structure) == 'diamond') then
+       call print_title('Diamond Structure Crack')
+       call diamond(bulk, params%crack_lattice_guess, Z)
+     elseif(trim(params%crack_structure) == 'bcc') then
+       call print_title('BCC Structure Crack')
+       call bcc(bulk, params%crack_lattice_guess, Z(1))
+       call set_cutoff(bulk, cutoff(simple))
+     elseif(trim(params%crack_structure) == 'fcc') then
+       call print_title('FCC Structure Crack')
+       call fcc(bulk, params%crack_lattice_guess, Z(1))
+       call set_cutoff(bulk, cutoff(simple))
+     endif
+     simple_metapot = simple
+     call calc_elastic_constants(simple_metapot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+
+     call print('Relaxed elastic constants (GPa):')
+     call print(c*GPA)
+     call print('')
+     call print('Unrelaxed elastic constants (GPa):')
+     call print(c0*GPA)
+     call print('')
+
+     call print('Relaxed lattice')
+     call print(bulk%lattice)
+     a = bulk%lattice(1,1)
+
+     call Print(trim(params%crack_element)//' crack: atomic number Z='//Z//&
+          ', lattice constant a = '//a)
+     call Print('Crack name '//params%crack_name)
+
+     ! Parse crack name and make crack slab
+     call crack_parse_name(params%crack_name, axes)
+
+     ! Get elastic constants relevant for a pull in y direction
+     E = Youngs_Modulus(C, axes(:,2))*GPA
+     v = Poisson_Ratio(C, axes(:,2), axes(:,1))
+     v2 = Poisson_Ratio(C, axes(:,2), axes(:,3))
+
+     call Print('')
+     call print('Youngs modulus E_y = '//E)
+     call print('Poisson ratio v_yx = '//v)
+     call print('Poisson ratio v_yz = '//v2)
+     call Print('')
+
+     if (trim(params%crack_slab_filename).ne.'') then
+        call Initialise(infile, trim(params%crack_slab_filename))
+        call print('Reading atoms from input file')
+        call read_xyz(crack_slab, infile)
+     else
+        call slab(crack_layer, axes,  a, params%crack_width, params%crack_height, 1, Z, &
+             trim(params%crack_structure))
+        call atoms_set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
+        call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
+     endif
+
+     call calc_connect(crack_slab)
+
+     call Print('Slab contains '//crack_slab%N//' atoms.')
+
+     ! Actual width and height differ a little from requested
+     width = maxval(crack_slab%pos(1,:))-minval(crack_slab%pos(1,:))
+     height = maxval(crack_slab%pos(2,:))-minval(crack_slab%pos(2,:))
+     call Print('Actual slab dimensions '//width//' A x '//height//' A')
+
+  else
+     ! Add code here for other structures...
+
+     call system_abort("Don't (yet!) know how to make cracks with structure "//trim(params%crack_structure))
+
+  end if ! select on crack_structure
+  
+  end subroutine crack_make_slab
 
 end module CrackTools_module
