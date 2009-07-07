@@ -39,9 +39,7 @@ ds = DynamicalSystem(s)
 ds.rescale_velo(300.0)
 ds.zero_momentum()
 
-traj = ds.run(pot, dt=1.0, n_steps=100, save_interval=1)
-
-al = AtomsList(traj)
+al = AtomsList(ds.run(pot, dt=1.0, n_steps=10, save_interval=1))
 
 al.show()
 raw_input()

@@ -61,6 +61,8 @@ class Atoms(FortranAtoms):
       if format in AtomsReaders:
          source = iter(AtomsReaders[format](source, *args, **kwargs))
 
+      if not hasattr(source, 'next'):
+         raise ValueError('Cannot read from source %r - no next() function' % source)
       at = source.next()
       if not isinstance(at, cls):
          raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
@@ -380,42 +382,20 @@ class Table(FortranTable):
           return None
 
 
-class Trajectory(object):
-   def __init__(self, ds, pot, dt, n_steps, save_interval, connect_interval, args_str):
-      self.ds = ds
-      self.pot = pot
-      self.dt = dt
-      self.n_steps = n_steps
-      self.save_interval = save_interval
-      self.connect_interval = connect_interval
-      self.args_str = args_str
-
-      self.ds.atoms.add_property('force', 0.0, n_cols=3)
-      self.f = fzeros((3,ds.atoms.n))
-      self.e = farray(0.0)
-      self.pot.calc(ds.atoms, f=self.f, e=self.e, args_str=self.args_str)
-      self.ds.atoms.force[:] = self.f[:]
-      self.ds.atoms.params['energy'] = self.e
-      
-   def __iter__(self):
-      for n in range(self.n_steps):
-         self.ds.advance_verlet1(self.dt, self.f)
-         self.pot.calc(self.ds.atoms, e=self.e, f=self.f, args_str=self.args_str)
-         self.ds.atoms.force[:] = self.f[:]
-         self.ds.atoms.params['energy'] = self.e
-         self.ds.advance_verlet2(self.dt, self.f)
-         self.ds.print_status(epot=self.e)
-         if n % self.connect_interval == 0:
-            self.ds.atoms.calc_connect()
-         if n % self.save_interval == 0:
-            yield self.ds.atoms.copy()
-      raise StopIteration
-
-
 class DynamicalSystem(FortranDynamicalSystem):
    
    def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str=""):
-      return Trajectory(self, pot, dt, n_steps, save_interval, connect_interval, args_str)
+      pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
+      for n in range(n_steps):
+         self.advance_verlet1(dt, self.atoms.force)
+         pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
+         self.advance_verlet2(dt, self.atoms.force)
+         self.print_status(epot=self.atoms.energy)
+         if n % connect_interval == 0:
+            self.atoms.calc_connect()
+         if n % save_interval == 0:
+            yield self.atoms.copy()
+      raise StopIteration
 
 
 from quippy import INPUT, OUTPUT, INOUT
