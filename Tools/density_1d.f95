@@ -17,7 +17,7 @@ program density_1d
     type(Atoms)                           :: structure_in
     type(Table)                           :: distances, atom_table
     real(dp)                              :: d
-    type(Inoutput)                        :: xyzfile, datafile
+    type(Inoutput)                        :: xyzfile, datafile, xyzfile_list
     type(CInoutput)                       :: cxyzfile
     integer                               :: frame_count, frames_processed, frames_processed_intermed
     integer                               :: status
@@ -26,11 +26,13 @@ program density_1d
     !Input
     type(Dictionary)                      :: params_in
     character(FIELD_LENGTH)               :: xyzfilename, datafilename
+    logical                               :: xyzfile_is_list
     real(dp)                              :: cutoff, bin_width
     character(FIELD_LENGTH)               :: mask
     integer                               :: IO_Rate, Density_Time_Evolution_Rate
     integer                               :: decimation
     integer                               :: from, to
+    real(dp)                              :: min_time, max_time
     logical                               :: Gaussian_smoothing
     real(dp)                              :: Gaussian_sigma
     logical                               :: fortran_io
@@ -47,7 +49,9 @@ program density_1d
     integer                               :: num_bins, num_atoms
     real(dp)                              :: hist_int, hist_int_intermed
     real(dp)                              :: density, r, dV
-    logical :: first_time
+    logical :: first_time, skip_frame
+    integer :: last_file_frame_n
+    real(dp) :: cur_time
 
 
   !Start up LOTF, suppressing messages
@@ -60,11 +64,14 @@ program density_1d
 
     call initialise(params_in)
     call param_register(params_in, 'xyzfile', param_mandatory, xyzfilename)
+    call param_register(params_in, 'xyzfile_is_list', 'F', xyzfile_is_list)
     call param_register(params_in, 'datafile', 'data.den1', datafilename)
     call param_register(params_in, 'AtomMask', param_mandatory, mask)
     call param_register(params_in, 'Cutoff', param_mandatory, cutoff)
     call param_register(params_in, 'BinWidth', param_mandatory, bin_width)
     call param_register(params_in, 'decimation', '1', decimation)
+    call param_register(params_in, 'min_time', '-1.0', min_time)
+    call param_register(params_in, 'max_time', '-1.0', max_time)
     call param_register(params_in, 'from', '0', from)
     call param_register(params_in, 'to', '0', to)
     call param_register(params_in, 'IO_Rate', '1', IO_Rate)
@@ -84,12 +91,13 @@ program density_1d
 
     call print('Run_parameters: ')
     call print('==================================')
-    call print('    Input file: '//trim(xyzfilename))
-    call print('   Output file: '//trim(datafilename))
-    call print('      AtomMask: '//trim(mask))
-    call print('        Cutoff: '//round(Cutoff,3))
-    call print('      BinWidth: '//round(bin_width,3))
-    call print('    decimation: '//decimation)
+    call print('         Input file: '//trim(xyzfilename))
+    call print(' Input file is list: '//xyzfile_is_list)
+    call print('        Output file: '//trim(datafilename))
+    call print('           AtomMask: '//trim(mask))
+    call print('             Cutoff: '//round(Cutoff,3))
+    call print('           BinWidth: '//round(bin_width,3))
+    call print('         decimation: '//decimation)
     if (decimation == 1) then
        call print('             Processing every frame')
     else
@@ -107,12 +115,6 @@ program density_1d
     if (Gaussian_smoothing) call print('        sigma: '//round(Gaussian_sigma,3))
     call print('==================================')
     call print('')
-
-    if (fortran_io) then
-      call initialise(xyzfile,xyzfilename,action=INPUT)
-    else
-      call initialise(cxyzfile,xyzfilename,action=INPUT)
-    endif
 
     !
     ! Read the element symbol / atom mask
@@ -171,7 +173,10 @@ program density_1d
     frames_processed = 0
     frames_processed_intermed = 0
 
+
     if (fortran_io) then
+      if (xyzfile_is_list) call system_abort("ERROR: xyzfile_is_list is not supported with fortran I/O")
+      call initialise(xyzfile,xyzfilename,action=INPUT)
       status = 0
       frame_count = 0
       do while (frame_count < from-1)
@@ -183,12 +188,22 @@ program density_1d
       ! read rest of configs, skipping decimation related ones, put in structure_ll
       do while (status == 0 .and. (to <= 0 .or. frame_count < to))
         frame_count = frame_count + 1
-        call new_entry(structure_ll, structure)
         write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
         call read_xyz(structure_in, xyzfile, status=status)
-        call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+	skip_frame = .false.
+	if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
+	  if (get_value(structure_in%params,"Time",cur_time)) then
+	    if (cur_time < min_time .or. cur_time > max_time) skip_frame = .true.
+	  else
+	    call system_abort("ERROR: min_time="//min_time//" > 0.0 or max_time="//max_time//" > 0.0, but Time field wasn't found in config " // frame_count)
+	  endif
+	endif
+	if (.not. skip_frame) then
+	  call new_entry(structure_ll, structure)
+	  call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+	endif
         if (to > 0 .and. frame_count >= to) then
-  	exit
+	  exit
         endif
   
         do i=1, (decimation-1)
@@ -201,23 +216,61 @@ program density_1d
       if (status /= 0) then
         call remove_last_entry(structure_ll)
       endif
-    else ! not fortran I/O
-      status = 0
+
+      call finalise(xyzfile)
+
+    else ! not fortran I/O, i.e. C
+
       if (from > 0) then
 	frame_count = from
       else
 	frame_count = 1
       endif
-      do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
-	write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
-	call read(cxyzfile, structure_in, frame=frame_count-1, status=status)
-	if (status == 0) then
-	  call new_entry(structure_ll, structure)
-	  call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+      last_file_frame_n = 0
+
+      if (xyzfile_is_list) then
+	call initialise(xyzfile_list, trim(xyzfilename), INPUT)
+	xyzfilename = read_line(xyzfile_list, status)
+	if (status /= 0) call finalise(xyzfile_list)
+      endif
+
+      do while (status == 0) ! loop over files
+	call initialise(cxyzfile,trim(xyzfilename),action=INPUT)
+	status = 0
+	do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
+	  write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(xyzfilename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+	  call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, status=status)
+	  if (status == 0) then
+	    skip_frame = .false.
+	    if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
+	      if (get_value(structure_in%params,"Time",cur_time)) then
+		if (cur_time < min_time .or. cur_time > max_time) skip_frame = .true.
+	      else
+		call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
+	      endif
+	    endif
+	    if (.not. skip_frame) then
+	      call new_entry(structure_ll, structure)
+	      call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+	    else
+	      write (mainlog%unit,'(a,$)') " skip"
+	    endif
+	    frame_count = frame_count + decimation
+	  endif
+	end do
+	last_file_frame_n = frame_count - 1
+	call finalise(cxyzfile)
+
+	if (xyzfile_is_list) then
+	  xyzfilename = read_line(xyzfile_list, status)
+	  if (status /= 0) call finalise(xyzfile_list)
+	else
+	  status = 1
 	endif
-	frame_count = frame_count + decimation
+
       end do
-    endif
+
+    endif ! fortran I/O
 
     call allocate(distances,0,1,0,0,DISTANCES_INIT)
     call set_increment(distances,DISTANCES_INCR)
@@ -227,6 +280,7 @@ program density_1d
     structure_ll_entry => structure_ll%first
 
     frame_count = from
+    if (min_time > 0.0_dp) call print("WARNING: min_time > 0, frame_count will be wrong if frames were skipped", ERROR)
 
     do while (associated(structure_ll_entry))
 
@@ -419,7 +473,7 @@ contains
       deallocate(d_a)
       deallocate(w_a)
     else
-      hist_t = histogram((/d/), minx, maxx, num_bins)
+      hist_t = histogram((/d/), minx, maxx, num_bins, drop_outside=.true.)
     endif
     hist = hist + hist_t
     deallocate(hist_t)
