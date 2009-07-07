@@ -6027,23 +6027,39 @@ contains
 
   end subroutine coalesce_in_one_periodic_image
 
-  subroutine atoms_ll_new_entry(this, atoms_p)
+  subroutine atoms_ll_new_entry(this, atoms_p, before, after)
     type(atoms_ll), target, intent(inout) :: this
     type(atoms), intent(out), pointer :: atoms_p
+    type(atoms_ll_entry), intent(in), target, optional :: before, after
 
+    type(atoms_ll_entry), pointer :: my_before, my_after
     type(atoms_ll_entry), pointer :: entry
 
+    if (present(before) .and. present(after)) call system_abort("atoms_ll_new_entry got both before and after")
+
+    if (present(before)) then
+      my_before => before
+      my_after => before%prev
+    else if (present(after)) then
+      my_before => after%next
+      my_after => after
+    else
+      my_after => this%last
+      my_before => null()
+    endif
+
     allocate(entry)
-    if (associated(this%first) .or. associated(this%last)) then
-      if (.not. associated(this%first) .or. .not. associated(this%last)) &
-	call system_abort("new_entry associated(first) " // associated(this%first) // &
-		  " associated(this%lat) " // associated(this%last))
-      this%last%next => entry
-      entry%prev => this%last
+    if (associated(my_before)) then
+      my_before%prev => entry
+      entry%next => my_before
+    else
       this%last => entry
+    endif
+    if (associated(my_after)) then
+      my_after%next => entry
+      entry%prev => my_before
     else
       this%first => entry
-      this%last => entry
     endif
 
     atoms_p => entry%at
