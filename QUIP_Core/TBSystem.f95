@@ -2104,21 +2104,25 @@ subroutine Self_Consistency_Print(this,file)
   call Print("Self_Consistency : global_U " // this%global_U, file=file)
 
   call Print("Self_Consistency : allocated(this%U) " // allocated(this%U), file=file)
-  call Print("Self_Consistency : size(this%U) " // size(this%U), file=file)
   if (allocated(this%U)) then
-    do i=1, size(this%U)
-      if (this%U(i) /= 0.0_dp) then
-	call Print('Self_Consistency : U ' // i // " " // this%U(i), file=file)
-      endif
-    end do
+     call Print("Self_Consistency : size(this%U) " // size(this%U), file=file)
+     do i=1, size(this%U)
+        if (this%U(i) /= 0.0_dp) then
+           call Print('Self_Consistency : U ' // i // " " // this%U(i), file=file)
+        endif
+     end do
+  else
+     call Print("Self_Consistency : size(this%U) 0", file=file)
   endif
-  call Print("Self_Consistency : size(this%stoner_param) " // size(this%stoner_param), file=file)
   if (allocated(this%stoner_param)) then
-    do i=1, size(this%stoner_param,2)
-      if (maxval(this%stoner_param(:,i)) /= 0.0_dp) then
-	call Print('Self_Consistency : stoner_param ' // i // " " // this%stoner_param(:,i), file=file)
-      endif
-    end do
+     call Print("Self_Consistency : size(this%stoner_param) " // size(this%stoner_param), file=file)
+     do i=1, size(this%stoner_param,2)
+        if (maxval(this%stoner_param(:,i)) /= 0.0_dp) then
+           call Print('Self_Consistency : stoner_param ' // i // " " // this%stoner_param(:,i), file=file)
+        endif
+     end do
+  else
+     call Print("Self_Consistency : size(this%stoner_param) 0", file=file)
   endif
 
   if (allocated(this%terms)) then
