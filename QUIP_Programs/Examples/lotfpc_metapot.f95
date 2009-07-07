@@ -72,7 +72,7 @@ program lotf_metapot
 
      ! Extrapolation
      call print_title('Extrapolation')
-     ds_saved = ds
+     call ds_save_state(ds_saved, ds)
 
      do j=1,n_extrap
         if (j == 1) then
@@ -92,7 +92,7 @@ program lotf_metapot
 
      ! Interpolation
      call print_title('Interpolation')
-     ds = ds_saved
+     call ds_restore_state(ds, ds_saved)
      do j=1,n_extrap
         call calc(lotf, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
              //(real(j-1,dp)/real(n_extrap,dp)))
