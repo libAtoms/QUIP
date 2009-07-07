@@ -103,7 +103,7 @@ Reading parameters from file crack.xml
      ramp_length           = 100.0000000000000000 A
      ramp_end_G            = 1.0000000000000000 J/m^2
      initial_loading_strain= .0050000000000000
-     G_increment           = .0000000000000000J/m^2 per load cycle
+     G_increment           = .0000000000000000 J/m^2 per load cycle
      seed_length           = 50.0000000000000000 A
      strain_zone_width     = 50.0000000000000000 A
      vacuum_size           = 100.0000000000000000 A
