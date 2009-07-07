@@ -6097,6 +6097,8 @@ contains
     cellsNb = this%connect%cellsNb
     cellsNc = this%connect%cellsNc
 
+    k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
+
     min_dist = 1.0e38_dp
     closest_atom = 0
     ! Loop over neighbouring cells, applying PBC
