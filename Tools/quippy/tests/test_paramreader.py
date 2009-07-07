@@ -1,7 +1,8 @@
 from quippy.paramreader import *
 import unittest
+from quippytest import *
 
-class TestParamReader(unittest.TestCase):
+class TestParamReader(QuippyTestCase):
 
    def testinitstring(self):
       params = ParamReader("a=1 b=2 c=3")

@@ -1,11 +1,9 @@
 from quippy import *
 import unittest
+from quippytest import *
 
-class TestCluster(unittest.TestCase):
+class TestCluster(QuippyTestCase):
 
-   def assertArrayAlmostEqual(self, a, b, tol=1e-8):
-      self.assert_(all((a - b) < tol))
-   
    def setUp(self):
       self.xml="""
       <SW_params n_types="2" label="PRB_31_plus_H">

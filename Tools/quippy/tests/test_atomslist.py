@@ -1,7 +1,8 @@
 from quippy import *
 import unittest, itertools, sys
+from quippytest import *
 
-class TestAtomsList(unittest.TestCase):
+class TestAtomsList(QuippyTestCase):
 
    def setUp(self):
       self.listsrc = [diamond(5.44+0.01*x, 14) for x in range(5)]
@@ -136,7 +137,7 @@ class TestAtomsList(unittest.TestCase):
 
 
       
-class TestAtomsListCInOutput(unittest.TestCase):
+class TestAtomsListCInOutput(QuippyTestCase):
 
    def setUp(self):
       self.at = supercell(diamond(5.44,14), 2,2,2)
@@ -238,7 +239,7 @@ class TestAtomsListCInOutput(unittest.TestCase):
       self.assertEqual(list(self.al), list(al))      
 
    def testxyzlowlevel(self):
-      cio = CInOutput("test.xyz", OUTPUT)
+      cio = CInOutput("test.xyz", OUTPUT, append=False)
       for a in self.al:
          cio.write(a)
       cio.close()
@@ -268,7 +269,7 @@ class TestAtomsListCInOutput(unittest.TestCase):
       self.assertEqual(list(al), list(self.al))
 
 
-class TestNetCDFAtomsList(unittest.TestCase):
+class TestNetCDFAtomsList(QuippyTestCase):
 
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 2, 2, 2)

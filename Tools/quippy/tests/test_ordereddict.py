@@ -1,7 +1,8 @@
 from quippy.ordereddict import *
 import unittest
+from quippytest import *
 
-class TestOrderedDict(unittest.TestCase):
+class TestOrderedDict(QuippyTestCase):
 
    def setUp(self):
       self.odict = OrderedDict({1:'a',

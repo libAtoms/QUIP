@@ -1,8 +1,9 @@
 from quippy.farray import *
 import numpy
+from quippytest import *
 import unittest
 
-class TestFortranArray(unittest.TestCase):
+class TestFortranArray(QuippyTestCase):
 
    def setUp(self):
       self.z0 =fzeros(0)

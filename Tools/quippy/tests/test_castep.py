@@ -1,9 +1,10 @@
 from quippy import *
 from StringIO import StringIO
+from quippytest import *
 import unittest
 import xml.dom.minidom
 
-class TestCastepCell(unittest.TestCase):
+class TestCastepCell(QuippyTestCase):
    def setUp(self):
       self.cell_lines = """fix_all_cell  TRUE
             
@@ -150,7 +151,7 @@ class TestCastepCell(unittest.TestCase):
                                            '0.000000 0.000000 5.440000'])
 
 
-class TestCastepParam(unittest.TestCase):
+class TestCastepParam(QuippyTestCase):
 
    def setUp(self):
       self.param_str = """#comment line
@@ -339,7 +340,7 @@ develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
          self.assertEqual(a,b)
 
    
-class TestReadGeom(unittest.TestCase):
+class TestReadGeom(QuippyTestCase):
 
    def setUp(self):
       self.geom_string = """ BEGIN header
@@ -430,7 +431,7 @@ class TestReadGeom(unittest.TestCase):
       self.assertEqual(self.at.data, a.data)
 
 
-class TestCastepOutput(unittest.TestCase):
+class TestCastepOutput(QuippyTestCase):
 
    def setUp(self):
       castep_output = """+-------------------------------------------------+
@@ -1140,9 +1141,6 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
    def testabort(self):
       al =  AtomsList(self.lines, format='castep')
       self.assertRaises(ValueError, al.loadall)
-
-   def assertArrayAlmostEqual(self, a, b, tol=1e-8):
-      self.assert_(all((a - b) < tol))
 
    def testfromcluster(self):
       a = Atoms.read(self.lines, format='castep', cluster=self.al[0], abort=False)
