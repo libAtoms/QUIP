@@ -1158,7 +1158,7 @@ contains
     call Print('     ramp_length           = '//this%crack_ramp_length//' A', file=file)
     call Print('     ramp_end_G            = '//this%crack_ramp_end_G//' J/m^2', file=file)
     call Print('     initial_loading_strain= '//this%crack_initial_loading_strain, file=file)
-    call Print('     G_increment           = '//this%crack_G_increment//'J/m^2 per load cycle', file=file)
+    call Print('     G_increment           = '//this%crack_G_increment//' J/m^2 per load cycle', file=file)
     call Print('     seed_length           = '//this%crack_seed_length//' A', file=file)
     call Print('     strain_zone_width     = '//this%crack_strain_zone_width//' A', file=file)
     call Print('     vacuum_size           = '//this%crack_vacuum_size//' A', file=file)
