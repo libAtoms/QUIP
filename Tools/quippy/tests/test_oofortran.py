@@ -1,8 +1,8 @@
 from quippy import *
 import unittest
+from quippytest import *
 
-
-class TestOOFortran(unittest.TestCase):
+class TestOOFortran(QuippyTestCase):
 
    def setUp(self):
       self.dia = diamond(5.44, 14)

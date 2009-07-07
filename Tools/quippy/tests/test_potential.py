@@ -1,7 +1,8 @@
 from quippy import *
 import unittest
+from quippytest import *
 
-class TestPotential(unittest.TestCase):
+class TestPotential(QuippyTestCase):
 
    def setUp(self):
       xml="""
@@ -70,9 +71,6 @@ class TestPotential(unittest.TestCase):
                            [ 0.60925144, -0.36145702, -0.19375487],
                            [-0.02138795, -0.19375487, -0.34640615]])
 
-   def assertArrayAlmostEqual(self, a, b, tol=1e-8):
-      self.assert_(all((a - b) < tol))
-      
    def tearDown(self):
       del self.at
       del self.pot
@@ -219,7 +217,7 @@ class TestPotential(unittest.TestCase):
       self.assertArrayAlmostEqual(self.v, self.v_ref)
       
 
-class TestMetaPotential(unittest.TestCase):
+class TestMetaPotential(QuippyTestCase):
 
    def setUp(self):
 
@@ -291,9 +289,6 @@ class TestMetaPotential(unittest.TestCase):
                             [ -7.14338269e-08,  -2.47515237e-07,  -2.56955271e-07,   1.75895039e-07,   6.84792670e-01,  -2.66885472e-08],
                             [  1.84677402e-09,   1.19759950e-07,   1.49840135e-07,  -9.05991095e-08,  -2.66885472e-08,   6.84793194e-01]])
       
-
-   def assertArrayAlmostEqual(self, a, b, tol=1e-8):
-      self.assert_(all((a - b) < tol))
 
    def testcalc(self):
       v1 = fzeros((3,3))
