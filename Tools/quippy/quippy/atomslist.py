@@ -179,21 +179,23 @@ try:
             self.stop = stop
             self.step = step
 
-         if self.source.got_index:
-            self.__len__ = lambda self: len(self.source)
-            self.__getitem__ = lambda self, idx: self.source[idx]
-
       def __iter__(self):
-         if not self.source.got_index:
-            while True:
-               try:
-                  yield self.source.read()
-               except RuntimeError:
-                  break
-         else:
-            for frame in range(self.start,self.stop,self.step):
-               yield self.source[frame]
+         for frame in range(self.start,self.stop,self.step):
+            yield self.source[frame]
 
+      def __len__(self):
+         return len(source)
+
+      def __getitem__(self, idx):
+         return self.source[idx]
+
+   def CInOutputStdinReader(source):
+      source = CInOutput(source, action=INPUT)
+      while True:
+         try:
+            yield source.read()
+         except RuntimeError:
+            break         
 
    def CInOutputWriter(dest, append=False):
       """Generator to write atoms sequentially to a CInOutput"""
@@ -208,7 +210,7 @@ try:
 
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
    AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
-   AtomsReaders['stdin'] = CInOutputReader
+   AtomsReaders['stdin'] = CInOutputStdinReader
    AtomsWriters['stdout'] = CInOutputWriter
 
    
