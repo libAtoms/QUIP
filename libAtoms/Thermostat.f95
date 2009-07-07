@@ -579,6 +579,10 @@ contains
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
 
+       ! Random numbers may have been used at different rates on different MPI processes:
+       ! we must resync the random number if we want the same numbers on each process.
+       call system_resync_rng()
+
        do i = 1, at%N
           if (at%data%int(prop_index,i) /= value) cycle
           a = sqrt(R/at%mass(i))*ran_normal3()
