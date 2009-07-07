@@ -4224,17 +4224,12 @@ contains
     logical, optional, intent(in)    :: dont_wipe
 
     logical                          :: my_dont_wipe
-    integer                          :: i,j,k,n,cellsNa,cellsNb,cellsNc
-    real(dp), dimension(3)           :: t
+    integer                          :: i,j,k,n
 
     ! Check inputs
     if (.not.this%cells_initialised) call system_abort('Partition_Atoms: Cells have not been initialised')
     my_dont_wipe = .false.
     if (present(dont_wipe)) my_dont_wipe = dont_wipe
-
-    cellsNa = this%cellsNa
-    cellsNb = this%cellsNb
-    cellsNc = this%cellsNc
 
     ! Wipe the cells
     if (.not.my_dont_wipe) call wipe_cells(this)
@@ -4243,40 +4238,50 @@ contains
     call map_into_cell(at)
 
     do n = 1, at%N
-
        if (.not. associated(this%neighbour1(n)%t)) cycle ! not in active subregion
 
-       t = at%g .mult. at%pos(:,n)
-       i = floor(real(cellsNa,dp) * (t(1)+0.5_dp)) + 1
-       j = floor(real(cellsNb,dp) * (t(2)+0.5_dp)) + 1
-       k = floor(real(cellsNc,dp) * (t(3)+0.5_dp)) + 1
-
-       ! Very small numerical errors in the lattice inverse can lead to bad i,j,k values.
-       ! Test for this:
-       if (i < 1) then
-          i = 1
-       else if (i > cellsNa) then
-          i = cellsNa
-       end if
-
-       if (j < 1) then
-          j = 1
-       else if (j > cellsNb) then
-          j = cellsNb
-       end if
-
-       if (k < 1) then
-          k = 1
-       else if (k > cellsNc) then
-          k = cellsNc
-       end if
-
+       call cell_of_pos(this, at%g, at%pos(:,n), i, j, k)
        !Add the atom to this cell
        call append( this%cell(i,j,k), (/n/) )
-
     end do
 
   end subroutine partition_atoms
+
+  subroutine cell_of_pos(this, g, pos, i, j, k)
+    type(Connection), intent(in) :: this
+    real(dp), intent(in) :: g(3,3)
+    real(dp), intent(in) :: pos(3)
+    integer, intent(out) :: i, j, k
+
+    real(dp) :: t(3)
+
+     t = g .mult. pos
+     i = floor(real(this%cellsNa,dp) * (t(1)+0.5_dp)) + 1
+     j = floor(real(this%cellsNb,dp) * (t(2)+0.5_dp)) + 1
+     k = floor(real(this%cellsNc,dp) * (t(3)+0.5_dp)) + 1
+
+     ! Very small numerical errors in the lattice inverse can lead to bad i,j,k values.
+     ! Test for this:
+     if (i < 1) then
+	i = 1
+     else if (i > this%cellsNa) then
+	i = this%cellsNa
+     end if
+
+     if (j < 1) then
+	j = 1
+     else if (j > this%cellsNb) then
+	j = this%cellsNb
+     end if
+
+     if (k < 1) then
+	k = 1
+     else if (k > this%cellsNc) then
+	k = this%cellsNc
+     end if
+
+    end subroutine cell_of_pos
+
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !
@@ -6071,5 +6076,73 @@ contains
       i = i + 1
     end do
   end subroutine atoms_ll_print_xyz
+
+  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist)
+    type(Atoms), intent(in) :: this
+    real(dp), intent(in) :: r(3)
+    integer, intent(in) :: cell_image_Na, cell_image_Nb, cell_image_Nc
+    real(dp), intent(out), optional :: dist
+    integer :: closest_atom
+
+    integer :: i, j, k
+    integer i2, j2, k2, i3, j3, k3, i4, j4, k4, n2, atom_i
+    integer :: cellsNa, cellsNb, cellsNc
+    real(dp) :: pos(3), cur_dist, min_dist
+
+    if (.not. this%connect%initialised) call system_abort("closest_atom must have initialised connection object")
+
+    call cell_of_pos(this%connect, this%g, r, i, j, k)
+
+    cellsNa = this%connect%cellsNa
+    cellsNb = this%connect%cellsNb
+    cellsNc = this%connect%cellsNc
+
+    min_dist = 1.0e38_dp
+    closest_atom = 0
+    ! Loop over neighbouring cells, applying PBC
+    do k2 = -cell_image_Nc, +cell_image_Nc
+
+       ! the stored cell we are in 
+       if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+
+       ! the shift we need to get to the cell image
+       k4 = (k+k2-k3)/cellsNc
+
+       do j2 = -cell_image_Nb, +cell_image_Nb
+	  ! the stored cell we are in                 
+	  if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+
+	  ! the shift we need to get to the cell image
+	  j4 = (j+j2-j3)/cellsNb
+
+	  do i2 = -cell_image_Na, +cell_image_Na
+	     ! the stored cell we are in                 
+	     if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+
+	     ! the shift we need to get to the cell image
+	     i4 = (i+i2-i3)/cellsNa
+
+	     ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
+	     ! with shift (i4,j4,k4)
+	     ! loop over it's atoms and test connectivity if atom1 < atom2
+
+	     do n2 = 1, this%connect%cell(i3,j3,k3)%N
+		atom_i = this%connect%cell(i3,j3,k3)%int(1,n2)
+		pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
+		cur_dist = norm(pos-r)
+		if (cur_dist < min_dist) then
+		  min_dist = cur_dist
+		  closest_atom = atom_i
+		endif
+
+	     end do
+
+	  end do
+       end do
+    end do
+
+    if (present(dist)) dist = min_dist
+
+  end function closest_atom
 
 end module atoms_module
