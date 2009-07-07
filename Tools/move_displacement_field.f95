@@ -4,13 +4,13 @@ program move_displacement_field
 use libatoms_module
 implicit none
   real(dp) :: shift_vec(3)
-  real(dp) :: cutoff
+  real(dp) :: cutoff, dist_tol
   real(dp), allocatable :: new_pos(:,:)
   type(Atoms) :: config, ref_config
   character(len=FIELD_LENGTH) :: config_filename, ref_config_filename
   type(Inoutput) :: config_io, ref_config_io
   type(Dictionary) :: cli_params
-  real(dp) :: shifted_displacement(3)
+  real(dp) :: cur_displacement(3)
   real(dp) :: dist
   integer :: i, shifted_i
   integer :: cell_image_Na, cell_image_Nb, cell_image_Nc
@@ -20,12 +20,22 @@ implicit none
   call param_register(cli_params, "config_filename", PARAM_MANDATORY, config_filename)
   call param_register(cli_params, "ref_config_filename", PARAM_MANDATORY, ref_config_filename)
   call param_register(cli_params, "shift_vec", PARAM_MANDATORY, shift_vec)
-  call param_register(cli_params, "cutoff", "5.0_dp", cutoff)
+  call param_register(cli_params, "cutoff", "5.0", cutoff)
+  call param_register(cli_params, "dist_tol", "0.3", dist_tol)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
     call print("Usage: move_displacement_field config_filename=file ref_config_filename=file shift_vec={x y z}", ERROR)
+    call print("       cutoff=r(5.0) dist_tol=t(0.3)", ERROR)
     call system_abort("confused by command line arguments")
   endif
   call finalise(cli_params)
+
+  call print("parameters:")
+  call print("config_filename " // trim(config_filename))
+  call print("ref_config_filename " // trim(ref_config_filename))
+  call print("shift_vec " // shift_vec)
+  call print("cutoff " // cutoff)
+  call print("dist_tol " // dist_tol)
+  call print("")
 
   call initialise(config_io, config_filename, action=INPUT)
   call read_xyz(config, config_io)
@@ -47,19 +57,32 @@ implicit none
   cell_image_Nb = max(1,(cell_image_Nb+1)/2)
   cell_image_Nc = max(1,(cell_image_Nc+1)/2)
 
-  do i=1, config%N
-    ! atom closest to displaced position
-    shifted_i = closest_atom(ref_config, ref_config%pos(:,i)-shift_vec, cell_image_Na, cell_image_Nb, cell_image_Nc, dist=dist)
+  new_pos(1:3,1:config%N) = config%pos(1:3,1:config%N)
 
-    if (shifted_i > 0 .and. dist < 0.1_dp) then ! found a close match
-      ! current displacement of atom shifted_i
-      shifted_displacement(1:3) = config%pos(:,shifted_i) - ref_config%pos(:,shifted_i)
-      new_pos(:,i) = ref_config%pos(:,i) + shifted_displacement
+  do i=1, config%N
+    if (mod(i,1000) == 1) write (*,'(a,$)') "."
+    ! atom closest to displaced position
+    shifted_i = closest_atom(ref_config, ref_config%pos(:,i)+shift_vec, cell_image_Na, cell_image_Nb, cell_image_Nc, dist=dist)
+
+    if (current_verbosity() >= VERBOSE) then
+      if (shifted_i > 0) then
+	call print("mapping displacement cur " // i // " " // config%pos(:,i) // " to " // shifted_i // " " // config%pos(:,shifted_i) // " dist " // dist)
+      endif
+    endif
+
+    if (shifted_i > 0 .and. dist < dist_tol) then ! found a close match
+      ! current displacement of atom i
+      cur_displacement(1:3) = config%pos(:,i) - ref_config%pos(:,i)
+      ! new position of atom shifted_i from current displacement of atom i
+      new_pos(:,shifted_i) = ref_config%pos(:,shifted_i) + cur_displacement
     else
-      new_pos(:,i) = config%pos(:,shifted_i)
+      if (current_verbosity() >= VERBOSE) then
+	call print("no mapping for " // i // " " // config%pos(:,i))
+      endif
     endif
 
   end do
+  call print("")
 
   config%pos(1:3,1:config%N) = new_pos(1:3,1:config%N)
 
