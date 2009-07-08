@@ -1214,6 +1214,7 @@ contains
     real(dp) :: origin(3), extent(3,3)
     real(dp) :: save_cutoff, save_cutoff_break
     logical :: save_use_uniform_cutoff
+    integer :: old_n
 
     do_nneighb_only = optional_default(.false., nneighb_only)
     do_min_images_only = optional_default(.true., min_images_only)
@@ -1292,6 +1293,9 @@ contains
     ! Add other active atoms using bond hopping from the first atom
     ! in the cluster to find the other active atoms and hence to determine the correct 
     ! periodic shifts
+    !
+    ! This will fail if marked atoms do not form a single connected cluster
+    old_n = activelist%N
     do while (activelist%N < n_region1)
        if (do_hysteretic_connect) then
 	 call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
@@ -1318,6 +1322,11 @@ contains
           end if
        end do
        call append(currentlist, nextlist)
+
+       ! check that cluster is still growing
+       if (activelist%N == old_n) &
+            call system_abort('create_hybrid_weights_args: cluster stopped growing before all marked atoms found - check for split QM region')
+       old_n = activelist%N
     end do
 
     if (distance_ramp) core_CoM = core_CoM/core_mass
@@ -1402,6 +1411,9 @@ contains
        ! Find old embed + buffer atoms using bond hopping from the first atom
        ! in the cluster to find the other buffer atoms and hence to determine the correct 
        ! periodic shifts
+       !
+       ! This will fail if marked atoms do not form a single connected cluster
+       old_n = bufferlist%N
        do while (bufferlist%N < n_region2)
 	  if (do_hysteretic_connect) then
 	    call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
@@ -1414,6 +1426,11 @@ contains
              if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK) call append(bufferlist, nextlist%int(:,j))
           end do
           call append(currentlist, nextlist)
+
+          ! check that cluster is still growing
+          if (bufferlist%N == old_n) &
+               call system_abort('create_hybrid_weights_args: (embed+buffer) cluster stopped growing before all marked atoms found - check for split QM region')
+          old_n = bufferlist%N
        end do
     
        ! Remove marks on all buffer atoms
@@ -1554,6 +1571,7 @@ contains
     integer :: i, j, jj, first_active, shift(3)
     logical :: do_nneighb_only, do_min_images_only
     type(Table) :: currentlist, nextlist, tmpfitlist
+    integer :: old_n
     
     do_nneighb_only = optional_default(.false., nneighb_only)
     do_min_images_only = optional_default(.true., min_images_only)
@@ -1575,6 +1593,9 @@ contains
     ! Add other active atoms using bond hopping from the first atom
     ! in the cluster to find the other active atoms and hence to determine the correct 
     ! periodic shifts
+    !
+    ! This will fail if marked atoms do not form a single connected cluster
+    old_n = embedlist%N
     do while (embedlist%N < n_region1)
        call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
        do j=1,nextlist%N
@@ -1583,6 +1604,11 @@ contains
           if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK) call append(embedlist, nextlist%int(:,j))
        end do
        call append(currentlist, nextlist)
+       
+       ! check that cluster is still growing
+       if (embedlist%N == old_n) &
+            call system_abort('create_embed_and_fit_lists: (embedlist) cluster stopped growing before all marked atoms found - check for split QM region')
+       old_n = embedlist%N
     end do
     
     call wipe(currentlist)
