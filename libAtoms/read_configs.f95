@@ -54,8 +54,8 @@ contains
       call initialise(cfile,trim(my_filename),action=INPUT)
       status = 0
       do while (status == 0) ! loop over frames in this file
-	! write(mainlog%unit,'(4a,i0,a,i0,a,$)') achar(13), 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n),"    "
-	write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+	write(mainlog%unit,'(4a,i0,a,i0,a,$)') achar(13), 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n),"    "
+	! write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
 	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, status=status)
 
 	if (status == 0) then ! we succesfully read a structure
@@ -111,8 +111,8 @@ contains
 	      call atoms_copy_without_connect(structure, structure_in, properties="species:pos:Z")
 	    endif
 	  else ! skip_frame was true, we're skipping
-	    ! write (mainlog%unit,'(a,$)') " skip     "
-	    write (mainlog%unit,'(a)') " skip"
+	    write (mainlog%unit,'(a,$)') " skip     "
+	    ! write (mainlog%unit,'(a)') " skip"
 	  endif ! skip_frame
 	  frame_count = frame_count + decimation
 	endif ! status == 0 for reading this structure
