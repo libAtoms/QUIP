@@ -6057,7 +6057,7 @@ contains
     endif
     if (associated(my_after)) then
       my_after%next => entry
-      entry%prev => my_before
+      entry%prev => my_after
     else
       this%first => entry
     endif
