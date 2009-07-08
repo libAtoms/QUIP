@@ -34,6 +34,7 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
 
 public :: create_cluster_info, create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
+    create_embed_and_buffer_lists_from_hybrid_mark, &
     add_cut_hydrogens, construct_buffer, select_hysteretic_quantum_region
 
 interface create_hybrid_weights
@@ -1573,6 +1574,7 @@ contains
     type(Table) :: currentlist, nextlist, tmpfitlist
     integer :: old_n
     
+    call print('Entered create_embed_and_fit_lists.',VERBOSE)
     do_nneighb_only = optional_default(.false., nneighb_only)
     do_min_images_only = optional_default(.true., min_images_only)
 
@@ -1645,8 +1647,83 @@ contains
     call finalise(currentlist)
     call finalise(nextlist)
     call finalise(tmpfitlist)
+    call print('Leaving create_embed_and_fit_lists.',VERBOSE)
 
   end subroutine create_embed_and_fit_lists
+
+  subroutine create_embed_and_buffer_lists_from_hybrid_mark(at,embedlist,fitlist)
+
+    type(Atoms), intent(in)  :: at
+    type(Table), intent(out) :: embedlist, fitlist
+
+    type(Table)              :: tmpfitlist
+
+    call print('Entered create_embed_and_buffer_lists_from_hybrid_mark.',VERBOSE)
+    call wipe(embedlist)
+    call wipe(fitlist)
+    call wipe(tmpfitlist)
+
+    !build embed list from ACTIVE atoms
+    call update_list(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
+
+    !build fitlist from BUFFER and TRANS atoms
+    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
+    call append(fitlist,tmpfitlist)
+    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
+    call append(fitlist,tmpfitlist)
+    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
+    call append(fitlist,tmpfitlist)
+
+    call wipe(tmpfitlist)
+    call append(tmpfitlist,fitlist)
+
+    ! Sort in order to we are stable to changes in neighbour ordering introduced
+    ! by calc_connect. 
+    call sort(embedlist)
+    call sort(tmpfitlist)
+
+    ! fitlist consists of sorted embedlist followed by sorted list of remainder of fit atoms
+    call wipe(fitlist)
+    call append(fitlist, embedlist)
+    call append(fitlist, tmpfitlist)
+
+    call print('Embedlist:',ANAL)
+    call print(int_part(embedlist,1),ANAL)
+    call print('Fitlist:',ANAL)
+    call print(int_part(fitlist,1),ANAL)
+
+    call finalise(tmpfitlist)
+    call print('Leaving create_embed_and_buffer_lists_from_hybrid_mark.',VERBOSE)
+
+  end subroutine create_embed_and_buffer_lists_from_hybrid_mark
+
+  !helper routine for create_embed_and_buffer_lists_from_hybrid_mark
+  !collects atoms with the *name* property who have value=value
+  subroutine update_list(at,list,name,value)
+
+    type(Atoms), intent(in)    :: at
+    type(Table), intent(inout) :: list
+    character(*), intent(in)   :: name
+    integer,     intent(in)    :: value
+
+    integer                    :: i, pos_indices(3), index
+
+    !find property
+    if (get_value(at%properties,name,pos_indices)) then
+       index = pos_indices(2)
+    else
+       call system_abort('Property "'//name//'" not found')
+    end if
+
+    call wipe(list)
+    
+    do i = 1, at%N
+
+       if (at%data%int(index,i)==value) call append(list,(/i/))
+
+    end do
+
+  end subroutine update_list
 
   !% Return the atoms in a hysteretic quantum region:
   !% To become part of the quantum region, atoms must drift within
