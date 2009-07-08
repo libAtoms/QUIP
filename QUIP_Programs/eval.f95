@@ -24,7 +24,7 @@ implicit none
   real(dp) :: phonons_dx
   logical use_n_minim, do_torque
   real(dp) :: tau(3)
-  character(len=FIELD_LENGTH) :: relax_print_file, linmin_method
+  character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
@@ -101,6 +101,7 @@ implicit none
   call param_register(cli_params, 'init_args_pot1', '', init_args_pot1)
   call param_register(cli_params, 'init_args_pot2', '', init_args_pot2)
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method)
+  call param_register(cli_params, 'minim_method', 'cg', minim_method)
 
   call print("n_args " // cmd_arg_count())
 
@@ -113,6 +114,7 @@ implicit none
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", ERROR)
     call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(NORMAL)] [use_n_minim]", ERROR)
     call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", ERROR)
+    call print("  [minim_method=string(cg)]", ERROR)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
@@ -184,12 +186,12 @@ implicit none
   if (do_relax) then
     if (len(trim(relax_print_file)) > 0) then
       call initialise(relax_io, relax_print_file, OUTPUT)
-      n_iter = minim(metapot, at, 'cg', relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+      n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 	print_inoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
 	eps_guess=relax_eps, use_n_minim = use_n_minim)
       call finalise(relax_io)
     else
-      n_iter = minim(metapot, at, 'cg', relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
+      n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
 	do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim)
     endif
     mainlog%prefix='RELAXED_POS'
