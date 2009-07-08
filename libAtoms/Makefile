@@ -59,6 +59,7 @@ LIBATOMS_F95_FILES = \
   nye_tensor \
   Topology \
   CInOutput \
+  read_configs \
   libAtoms \
   libAtoms_misc_utils
 
