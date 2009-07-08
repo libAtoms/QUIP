@@ -12,12 +12,12 @@ contains
   !% reads a sequence of configurations with cinoutput, optionally skipping every decimation frames,
   !%  ignoring things outside of min_time--max_time, sorting by Time value and eliminating configs with
   !%  duplicate Time values.
-  function read_configs(filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups) result(structure_ll)
+  function read_configs(filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet) result(structure_ll)
     character(len=*), intent(in) :: filename
     logical, intent(in) :: file_is_list
-    integer, intent(in) :: decimation
-    real(dp), intent(in) :: min_time, max_time
-    logical, intent(in), optional :: sort_Time, no_Time_dups
+    integer, intent(in), optional :: decimation
+    real(dp), intent(in), optional :: min_time, max_time
+    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet
     type(atoms_ll) :: structure_ll
 
     integer :: status
@@ -29,16 +29,22 @@ contains
     type(Atoms), pointer :: structure
     logical :: skip_frame
     real(dp) :: cur_time, entry_time, entry_PREV_time
-    logical :: do_sort_Time, do_no_Time_dups
+    integer :: do_decimation
+    real(dp) :: do_min_time, do_max_time
+    logical :: do_sort_Time, do_no_Time_dups, do_quiet
     type(Atoms_ll_entry), pointer :: entry
     logical :: is_a_dup
 
+    do_decimation = optional_default(1, decimation)
+    do_min_time = optional_default(-1.0_dp, min_time)
+    do_max_time = optional_default(-1.0_dp, max_time)
     do_sort_Time = optional_default(.false., sort_Time)
     do_no_Time_dups = optional_default(.false., no_Time_dups)
+    do_quiet = optional_default(.false., quiet)
 
-    if (do_no_Time_dups .and. .not. do_sort_Time) call system_abort("ERROR: read_configs do_no_Times_dups requires do_sort_Time")
+    if (do_no_Time_dups .and. .not. do_sort_Time) call system_abort("ERROR: read_configs no_Times_dups requires sort_Time")
 
-    if (decimation /= 1 .and. do_no_Time_dups) call system_abort("ERROR: read_configs decimation="//decimation//" /= 1 and no_Time_dups=T conflict")
+    if (do_decimation /= 1 .and. do_no_Time_dups) call system_abort("ERROR: read_configs decimation="//do_decimation//" /= 1 and no_Time_dups=T conflict")
 
     status = 0
     if (file_is_list) then
@@ -54,18 +60,20 @@ contains
       call initialise(cfile,trim(my_filename),action=INPUT)
       status = 0
       do while (status == 0) ! loop over frames in this file
-	write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-	! write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+	if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
+	  ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+	! if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
+	!     ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
 	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, status=status)
 
 	if (status == 0) then ! we succesfully read a structure
 	  skip_frame = .false.
 	  is_a_dup = .false.
-	  if (min_time > 0.0_dp .or. max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
+	  if (do_min_time > 0.0_dp .or. do_max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
 	    if (get_value(structure_in%params,"Time",cur_time)) then
-	      if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
+	      if ((do_min_time >= 0.0_dp .and. cur_time < do_min_time) .or. (do_max_time >= 0.0_dp .and. cur_time > do_max_time)) skip_frame = .true.
 	    else
-	      call system_abort("ERROR: min_time="//min_time//" < 0 or max_time="//max_time//" < 0 or do_sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count)
+	      call system_abort("ERROR: min_time="//do_min_time//" < 0 or max_time="//do_max_time//" < 0 or sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count)
 	    endif
 	  endif
 	  if (.not. skip_frame) then ! frame is in appropriate time range
@@ -110,12 +118,12 @@ contains
 	      ! actually copy the structure
 	      call atoms_copy_without_connect(structure, structure_in, properties="species:pos:Z")
 	    endif
-	    write (mainlog%unit,'(a,$)') "          "
+	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "
 	  else ! skip_frame was true, we're skipping
-	    write (mainlog%unit,'(a,$)') " skip     "
-	    ! write (mainlog%unit,'(a)') " skip"
+	    if (.not. do_quiet)write (mainlog%unit,'(a,$)') " skip     "
+	    ! if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
 	  endif ! skip_frame
-	  frame_count = frame_count + decimation
+	  frame_count = frame_count + do_decimation
 	endif ! status == 0 for reading this structure
 
       end do ! while status == 0 for frames in this file
