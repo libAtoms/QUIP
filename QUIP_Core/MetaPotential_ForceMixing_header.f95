@@ -44,7 +44,10 @@
      real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor,  hysteretic_connect_outer_factor
 
      integer :: transition_hops !% Number of bond hops used for transition region. Applies to 'force_mixing' methods only.
+     logical :: use_buffer_for_fitting !% Whether to generate the fit region or just use the buffer as the fit region. Only for method=conserve_momentum
      integer :: fit_hops !% Number of bond hops used for fit region. Applies to 'conserve_momentum' and 'lotf_*' methods only.
+     logical :: add_cut_H_in_fitlist !% Whether to extend the fit region where a cut hydrogen is cut after the fitlist selection.
+                                     !% This will ensure to only include whole water molecules in the fitlist.
      logical :: randomise_buffer !% If true, then positions of outer layer of buffer atoms will be randomised slightly. Default false.
      character(FIELD_LENGTH) :: weight_interpolation !% Weigh interpolation method for transition region, for 'force_mixing' methods.
        !% Should be one of 'hop_ramp' or 'distance_ramp'; default is 'hop_ramp'.
