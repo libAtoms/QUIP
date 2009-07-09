@@ -1136,18 +1136,6 @@ module  atoms_module
 
   end type Atoms
 
-  type atoms_ll
-    type (atoms_ll_entry), pointer :: first => null()
-    type (atoms_ll_entry), pointer :: last => null()
-  end type atoms_ll
-
-  type atoms_ll_entry
-    type(atoms) :: at
-    type(atoms_ll_entry), pointer :: next => null()
-    type(atoms_ll_entry), pointer :: prev => null()
-  end type atoms_ll_entry
-
-
   interface initialise
      module procedure atoms_initialise, connection_initialise
   end interface initialise
@@ -1284,7 +1272,7 @@ module  atoms_module
   !% all types of dictionary entries with the exception, for now, of
   !% complex numbers are supported.
   interface print_xyz
-     module procedure atoms_print_xyz, atoms_print_xyz_filename, atoms_ll_print_xyz
+     module procedure atoms_print_xyz, atoms_print_xyz_filename
   end interface print_xyz
 
   !% Print in AtomEye extended CFG format. Arguments are as for 'print_xyz' above.
@@ -1324,16 +1312,6 @@ module  atoms_module
     module procedure atoms_map_into_cell
     module procedure vec_map_into_cell
   end interface
-
-  !% add new entry to atoms linked list structure
-  interface new_entry
-     module procedure atoms_ll_new_entry
-  end interface new_entry
-
-  !% remove last entry from atoms linked list structure
-  interface remove_last_entry
-     module procedure atoms_ll_remove_last_entry
-  end interface remove_last_entry
 
 
 contains
@@ -6026,72 +6004,6 @@ contains
     deallocate(shifts)
 
   end subroutine coalesce_in_one_periodic_image
-
-  subroutine atoms_ll_new_entry(this, atoms_p, before, after)
-    type(atoms_ll), target, intent(inout) :: this
-    type(atoms), intent(out), pointer :: atoms_p
-    type(atoms_ll_entry), intent(in), target, optional :: before, after
-
-    type(atoms_ll_entry), pointer :: my_before, my_after
-    type(atoms_ll_entry), pointer :: entry
-
-    if (present(before) .and. present(after)) call system_abort("atoms_ll_new_entry got both before and after")
-
-    if (present(before)) then
-      my_before => before
-      my_after => before%prev
-    else if (present(after)) then
-      my_before => after%next
-      my_after => after
-    else
-      my_after => this%last
-      my_before => null()
-    endif
-
-    allocate(entry)
-    if (associated(my_before)) then
-      my_before%prev => entry
-      entry%next => my_before
-    else
-      this%last => entry
-    endif
-    if (associated(my_after)) then
-      my_after%next => entry
-      entry%prev => my_after
-    else
-      this%first => entry
-    endif
-
-    atoms_p => entry%at
-  end subroutine atoms_ll_new_entry
-
-  subroutine atoms_ll_remove_last_entry(this)
-    type(atoms_ll), target, intent(inout) :: this
-
-    if (associated(this%last)) then
-      call finalise(this%last%at)
-      nullify(this%last%prev%next)
-      this%last => this%last%prev
-    endif
-
-  end subroutine atoms_ll_remove_last_entry
-
-  subroutine atoms_ll_print_xyz(this, file)
-    type(atoms_ll), intent(inout), target :: this
-    type(inoutput), optional, intent(inout) :: file
-
-    type(atoms_ll_entry), pointer :: entry
-    integer :: i
-
-    entry => this%first
-    i = 1
-    do while (associated(entry)) 
-      call print("atoms_ll entry # " // i, file=file)
-      call print_xyz(entry%at, xyzfile=file)
-      entry => entry%next
-      i = i + 1
-    end do
-  end subroutine atoms_ll_print_xyz
 
   function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist)
     type(Atoms), intent(in) :: this
