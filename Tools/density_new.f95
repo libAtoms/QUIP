@@ -17,13 +17,15 @@ implicit none
   real(dp) :: Gaussian_sigma
   logical :: sort_Time, no_Time_dups
   real(dp) :: min_p(3), bin_width(3)
-  integer :: n_bins(3)
+  integer :: n_bins(3), min_bin(3), max_bin(3)
   logical :: quiet
+  logical :: autocorrelation
+  integer :: autocorrelation_max_lag
 
   integer :: n_histos
   type(Atoms_ll) :: structure_ll
   integer, allocatable :: histo_count(:,:,:,:)
-  integer :: i, autocorrelation_max_lag
+  integer :: i, i1, i2, i3
   real(dp), allocatable :: v_autocorr(:,:)
 
   call system_initialise(NORMAL)
@@ -38,6 +40,8 @@ implicit none
   call param_register(cli_params, 'min_p', PARAM_MANDATORY, min_p)
   call param_register(cli_params, 'bin_width', PARAM_MANDATORY, bin_width)
   call param_register(cli_params, 'n_bins', PARAM_MANDATORY, n_bins)
+  call param_register(cli_params, 'min_bin', '0 0 0', min_bin)
+  call param_register(cli_params, 'max_bin', '0 0 0', max_bin)
   call param_register(cli_params, 'decimation', '1', decimation)
   call param_register(cli_params, 'min_time', '-1.0', min_time)
   call param_register(cli_params, 'max_time', '-1.0', max_time)
@@ -45,6 +49,7 @@ implicit none
   call param_register(cli_params, 'sigma', '0.0', Gaussian_sigma)
   call param_register(cli_params, 'sort_Time', 'F', sort_Time)
   call param_register(cli_params, 'no_Time_dups', 'F', no_Time_dups)
+  call param_register(cli_params, 'autocorrelation', 'F', autocorrelation)
   call param_register(cli_params, 'autocorrelation_max_lag', '10000', autocorrelation_max_lag)
   call param_register(cli_params, 'quiet', 'F', quiet)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
@@ -57,10 +62,11 @@ implicit none
   call print("outfilename " // trim(outfilename))
   call print("AtomMask " // trim(mask))
   call print("min_p " // min_p // " bin_width " // bin_width // " n_bins " // n_bins)
+  call print("min_bin " // min_bin // " max_bin " // max_bin)
   call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
   call print("Gaussian " // gaussian_smoothing // " sigma " // Gaussian_sigma)
   call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups)
-  call print("autocorrelation_max_lag " // autocorrelation_max_lag)
+  call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
 
   call print("Reading configurations")
   structure_ll = read_configs(infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
@@ -68,15 +74,37 @@ implicit none
   call print("Calculating densities")
   call calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, 0.0_dp)
 
-  call print("Calculating autocorrelations")
-  allocate(v_autocorr(n_bins(1),autocorrelation_max_lag))
-  v_autocorr = autocorrelation_vector(real(histo_count(:,1,1,:),dp), max_lag=autocorrelation_max_lag)
-
-  call print("Printing autocorrelations")
   call initialise(outfile, outfilename, OUTPUT)
-  do i=1, autocorrelation_max_lag
-    call print(i // " " // v_autocorr(1:n_bins(1),i), file=outfile)
-  end do
+
+  if (autocorrelation) then
+    call print("Calculating autocorrelations")
+    allocate(v_autocorr(n_bins(1),autocorrelation_max_lag))
+    v_autocorr = autocorrelation_vector(real(histo_count(:,1,1,:),dp), max_lag=autocorrelation_max_lag)
+
+    call print("Printing autocorrelations")
+    call print("# Autocorrelation", file=outfile)
+    do i=1, autocorrelation_max_lag
+      call print(i // " " // v_autocorr(1:n_bins(1),i), file=outfile)
+    end do
+  endif
+
+  if (any(min_bin /= 0) .or. any (max_bin /= 0)) then
+    if (any(min_bin <= 0) .or. any(min_bin > n_bins) .or. any(max_bin <= 0) .or. any(max_bin > n_bins)) &
+      call system_abort ("bin range  out of range min " // min_bin // " max " // max_bin)
+    if (autocorrelation) then
+      call print("", file=outfile)
+      call print("", file=outfile)
+    endif
+    call print("# Density", file=outfile)
+    do i1=min_bin(1), max_bin(1)
+    do i2=min_bin(2), max_bin(2)
+    do i3=min_bin(3), max_bin(3)
+      call print( (min_p+bin_width*(/ i1-0.5_dp, i2-0.5_dp, i3-0.5_dp /)) // " " // sum(histo_count(i1, i2, i3, :))/real(n_histos,dp), file=outfile)
+    end do
+    end do
+    end do
+  endif
+
   call finalise(outfile)
 
   call system_finalise()
