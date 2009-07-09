@@ -15,6 +15,10 @@ ifeq (${QUIPPY_FCOMPILER},)
 	@exit 1
 endif
 
+ifeq (${QUIPPY_PYTHON},)
+QUIPPY_PYTHON = python
+endif
+
 CONFIG_FC_OPTS = --f90flags="${QUIPPY_F90FLAGS}" --cpp="${QUIPPY_CPP}"
 BUILD_EXT_OPTS = --fcompiler="${QUIPPY_FCOMPILER}"
 
@@ -62,13 +66,13 @@ presetup:
 
 build: atomeyelib presetup
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
-	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
+	${QUIPPY_PYTHON} setup.py ${SETUP_OPTS} build ${BUILD_OPTS}
 
 install: atomeyelib presetup
-	python setup.py ${SETUP_OPTS} build ${BUILD_OPTS} install ${INSTALL_OPTS}
+	${QUIPPY_PYTHON} setup.py ${SETUP_OPTS} build ${BUILD_OPTS} install ${INSTALL_OPTS}
 
 .DEFAULT: 
-	python setup.py ${SETUP_OPTS} $@
+	${QUIPPY_PYTHON} setup.py ${SETUP_OPTS} $@
 
 clean:
 	rm -rf build.${QUIP_ARCH}
