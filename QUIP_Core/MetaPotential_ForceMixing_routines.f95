@@ -247,7 +247,7 @@
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
 
-    call print(this,NERD)
+    if (current_verbosity().ge.NERD) call print(this)
     
     ! Apply the shortcuts
     if (trim(method) == 'force_mixing_abrupt') then
