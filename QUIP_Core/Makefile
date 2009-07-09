@@ -82,6 +82,11 @@ allclean: clean
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
 
+LIBS = -L. -lquip -latoms
+
+cp2k_filepot: % : %.o libatoms.a libquip.a
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
+
 # depend:
 # 	${MAKE} -f Makefile.depend
 
