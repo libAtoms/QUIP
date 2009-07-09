@@ -2381,6 +2381,43 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     
   end subroutine QUIP_combine_forces
 
+  subroutine abrupt_force_mixing(qmmm_forces,mm_forces,combined_forces,my_atoms)
+  ! do not use momentum conservation
+  ! for QM  core:   F_i = F(QM/MM)
+  ! else:           F_i = F(MM)
+
+    real(dp), allocatable, dimension(:,:), intent(in)    :: qmmm_forces
+    real(dp), allocatable, dimension(:,:), intent(in)    :: mm_forces
+    real(dp), allocatable, dimension(:,:), intent(out)   :: combined_forces
+    type(Atoms),                           intent(in)    :: my_atoms
+
+    integer               :: m
+    type(Table)           :: core, fitlist
+
+    if (size(qmmm_forces,2).ne.my_atoms%N.or.size(mm_forces,2).ne.my_atoms%N) call system_abort('combine_forces: the size of QMMM and/or MM forces is different: different number of atoms')
+
+    call get_qm_list_int(my_atoms,1,core)
+
+    allocate(combined_forces(3,my_atoms%N))
+    combined_forces = 0._dp
+
+    combined_forces(1:3,1:my_atoms%N) = mm_forces(1:3,1:my_atoms%N)
+    combined_forces(1:3,int_part(core,1)) = qmmm_forces(1:3,int_part(core,1))
+
+    call print('')
+    call print('No energy after force mixing.')
+!    call verbosity_push_decrement()
+      call print('The forces acting on each atom (eV/A):')
+      call print('atom     F(x)     F(y)     F(z)')
+      do m=1,size(combined_forces,2)
+      call print('  '//m//'    '//combined_forces(1,m)//'  '//combined_forces(2,m)//'  '//combined_forces(3,m))
+      enddo
+!    call verbosity_pop()
+    call print('Sum of the combined forces: '//sum(combined_forces(1,1:my_atoms%N))//' '//sum(combined_forces(2,1:my_atoms%N))//' '//sum(combined_forces(3,1:my_atoms%N)))
+
+    
+  end subroutine abrupt_force_mixing
+
   function spline_force(at, i, my_spline, pot) result(force)
 
     type(Atoms), intent(in)  :: at
