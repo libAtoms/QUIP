@@ -1,5 +1,5 @@
 ! Reads a sequence of configs, optionally with decimation, min_time, max_time, and sorting
-!  by Time as well as eliminating duplicates (basically a driver for read_configs())
+!  by Time as well as eliminating duplicates (basically a driver for atoms_ll_read_xyz_filename())
 
 program clean_traj
 use libatoms_module
@@ -40,7 +40,7 @@ implicit none
   call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
   call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups // " quiet " // quiet)
 
-  structure_ll = read_configs(infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
+  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
 
   call initialise(outfile, outfilename, action=OUTPUT)
   entry => structure_ll%first

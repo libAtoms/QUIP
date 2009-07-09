@@ -69,7 +69,7 @@ implicit none
   call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
 
   call print("Reading configurations")
-  structure_ll = read_configs(infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
+  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
 
   call print("Calculating densities")
   call calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, 0.0_dp)

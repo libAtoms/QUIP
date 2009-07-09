@@ -59,7 +59,7 @@ module libAtoms_module
   use clusters_module
   use Topology_module
   use cinoutput_module
-  use read_configs_module
+  use atoms_ll_module
 
 #ifdef HAVE_NETCDF_F
   use netcdf_module
