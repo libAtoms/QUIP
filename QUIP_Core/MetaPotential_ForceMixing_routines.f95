@@ -37,7 +37,9 @@
     call param_register(params, 'hysteretic_connect_cluster_radius', '20.0', this%hysteretic_connect_cluster_radius)
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', this%hysteretic_connect_inner_factor)
     call param_register(params, 'hysteretic_connect_outer_factor', '1.5', this%hysteretic_connect_outer_factor)
+    call param_register(params, 'use_buffer_for_fitting', 'F', this%use_buffer_for_fitting)
     call param_register(params, 'fit_hops', '3', this%fit_hops)
+    call param_register(params, 'add_cut_H_in_fitlist', 'F', this%add_cut_H_in_fitlist)
     call param_register(params, 'randomise_buffer', 'F', this%randomise_buffer)
     call param_register(params, 'transition_hops', '0', this%transition_hops)
     call param_register(params, 'weight_interpolation', 'hop_ramp', this%weight_interpolation)
@@ -130,7 +132,9 @@
     call Print(' mm_args_str='//trim(this%mm_args_str), file=file)
     call Print(' qm_args_str='//trim(this%qm_args_str), file=file)
     call Print(' buffer_hops='//this%buffer_hops, file=file)
+    call print(' use_buffer_for_fitting'//this%use_buffer_for_fitting)
     call Print(' fit_hops='//this%fit_hops, file=file)
+    call print(' add_cut_H_in_fitlist'//this%add_cut_H_in_fitlist,file=file)
     call Print(' randomise_buffer='//this%randomise_buffer, file=file)
     call Print(' transition_hops='//this%transition_hops, file=file)
     call Print(' weight_interpolation='//trim(this%weight_interpolation), file=file)
@@ -223,7 +227,9 @@
     call param_register(params, 'hysteretic_connect_inner_factor', ''//this%hysteretic_connect_inner_factor, hysteretic_connect_inner_factor)
     call param_register(params, 'hysteretic_connect_outer_factor', ''//this%hysteretic_connect_outer_factor, hysteretic_connect_outer_factor)
     call param_register(params, 'transition_hops', ''//this%transition_hops, transition_hops)
+    call param_register(params, 'use_buffer_for_fitting', ''//this%use_buffer_for_fitting, this%use_buffer_for_fitting)
     call param_register(params, 'fit_hops', ''//this%fit_hops, fit_hops)
+    call param_register(params, 'add_cut_H_in_fitlist', ''//this%add_cut_H_in_fitlist,this%add_cut_H_in_fitlist)
     call param_register(params, 'randomise_buffer', ''//this%randomise_buffer, randomise_buffer)
     call param_register(params, 'weight_interpolation', this%weight_interpolation, weight_interpolation)
     call param_register(params, 'nneighb_only', ''//this%nneighb_only, nneighb_only)
@@ -241,6 +247,7 @@
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
 
+    call print(this,NERD)
     
     ! Apply the shortcuts
     if (trim(method) == 'force_mixing_abrupt') then
@@ -336,9 +343,21 @@
     if (method(1:4) == 'lotf' .or. trim(method) == 'conserve_momentum') then
 
        if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
-          call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
-               nneighb_only=lotf_nneighb_only, min_images_only=.true.)
-       end if
+
+          if (this%use_buffer_for_fitting) then
+             if (trim(method).ne.'conserve_momentum') &
+                call system_abort('use_buffer_for_fitting=T only works for method=conserve_momentum')
+             !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
+             call create_embed_and_buffer_lists_from_hybrid_mark(at,this%embedlist,this%fitlist)
+          else
+             call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
+                  nneighb_only=lotf_nneighb_only, min_images_only=.true.)
+             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
+                  call add_cut_hydrogens(at,this%fitlist)
+             endif
+          end if
+
+       endif
 
        ! Make some convenient arrays of embed and fit list
        allocate(embed(this%embedlist%N))
