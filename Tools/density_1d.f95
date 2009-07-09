@@ -288,7 +288,7 @@ program density_1d
 
        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Processing Frame ',frame_count
 
-	if (prop) call update_list(structure,atom_table,trim(prop_name),prop_val)
+	if (prop) call list_matching_prop(structure,atom_table,trim(prop_name),prop_val)
 
 	call wipe(distances)
 
@@ -530,7 +530,7 @@ contains
 
   end subroutine get_prop_info
 
-  subroutine update_list(at,list,name,value)
+  subroutine list_matching_prop(at,list,name,value)
 
     type(atoms), intent(in)    :: at
     type(table), intent(inout) :: list
@@ -554,7 +554,7 @@ contains
 
     end do
 
-  end subroutine update_list
+  end subroutine list_matching_prop
 
   function Gaussian_histogram(vector,min_x,max_x,Nbin,Gaussian,sigma)
 
