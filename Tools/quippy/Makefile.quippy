@@ -20,6 +20,12 @@ QUIPPY_PYTHON = python
 endif
 
 CONFIG_FC_OPTS = --f90flags="${QUIPPY_F90FLAGS}" --cpp="${QUIPPY_CPP}"
+ifneq (${QUIPPY_OPT},)
+CONFIG_FC_OPTS += --opt="${QUIPPY_OPT}"
+endif
+ifneq (${QUIPPY_F77FLAGS},)
+CONFIG_FC_OPTS += --f77flags="${QUIPPY_F77FLAGS}"
+endif
 BUILD_EXT_OPTS = --fcompiler="${QUIPPY_FCOMPILER}"
 
 BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} ${WRAP} --f2py-opts=--no-wrap-functions
