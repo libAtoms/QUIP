@@ -334,7 +334,7 @@ contains
     real(dp), parameter::delta = 1.0e-4_dp
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r
-    character(len=len(args_str)) :: new_args_str
+    character(len=10240) :: my_args_str, new_args_str
     integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex
     real(dp), pointer, dimension(:) :: weight_region1
     integer, allocatable, dimension(:) :: hybrid_mark_saved
@@ -356,7 +356,13 @@ contains
 
     if (present(err)) err = 0
 
-    call print('potential_calc got args_str "'//trim(args_str)//'"', VERBOSE)
+    if (present(args_str)) then
+      call print('potential_calc got args_str "'//trim(args_str)//'"', VERBOSE)
+      my_args_str = args_str
+    else
+      call print('potential_calc got not args_str', VERBOSE)
+      my_args_str = ""
+    endif
 
     call initialise(params)
     call param_register(params, 'single_cluster', 'F', single_cluster)
@@ -370,8 +376,8 @@ contains
     call param_register(params, 'calc_local_e', 'F', calc_local_e)
     call param_register(params, 'calc_df', 'F', calc_df)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
-      call system_abort("Potential_calc failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.) ) &
+      call system_abort("Potential_calc failed to parse args_str='"//trim(my_args_str)//"'")
     call finalise(params)
 
     if (single_cluster .and. little_clusters) &
@@ -384,7 +390,7 @@ contains
 
        ! must remove "little_clusters" from args_str so that recursion terminates
        call initialise(params)
-       call read_string(params, args_str)
+       call read_string(params, my_args_str)
        call remove_value(params, 'little_clusters')
        new_args_str = write_string(params)
        call finalise(params)
@@ -468,7 +474,7 @@ contains
 
        ! must remove "single_cluster" from args_str so that recursion terminates
        call initialise(params)
-       call read_string(params, args_str)
+       call read_string(params, my_args_str)
        call remove_value(params, 'single_cluster')
        new_args_str = write_string(params)
        call finalise(params)
@@ -674,7 +680,7 @@ contains
 
           ! must remove 'calc_df' from args_str if it's there (and the rest, or properties get overwritten)
           call initialise(params)
-          call read_string(params, args_str)
+          call read_string(params, my_args_str)
           call remove_value(params, 'calc_df')
           call remove_value(params, 'calc_force')
           call remove_value(params, 'calc_energy')
