@@ -1597,7 +1597,7 @@ CONTAINS
     integer:: exit_flag
     integer:: lsteps
     integer:: i, extra_report
-    real(dp), parameter:: stuck_tol = 1e-12_dp
+    real(dp), parameter:: stuck_tol = NUMERICAL_ZERO
     real(dp):: linmin_quality
     real(dp):: eps
     real(dp):: oldeps
@@ -1621,7 +1621,7 @@ CONTAINS
     ! for lbfgs
     real(dp), allocatable :: lbfgs_work(:), lbfgs_diag(:)
     integer :: lbfgs_flag
-    integer, parameter :: lbfgs_M = 100
+    integer, parameter :: lbfgs_M = 40
 
     if (current_verbosity() >= VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
