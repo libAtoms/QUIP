@@ -616,7 +616,7 @@ module system_module
   type(inoutput),target,save      :: errorlog           !% error output, connected to 'stderr' by default
   type(inoutput),target,save      :: mpilog             !% MPI output, written to by each mpi process
   integer,private                  :: idum               ! used in the random generator
-  real(dp),parameter               :: NUMERICAL_ZERO = 1.e-12
+  real(dp),parameter               :: NUMERICAL_ZERO = 1.e-14
 
   ! system dependent variables 
   integer::RAN_MAX
