@@ -1,0 +1,34 @@
+# declarations
+
+F77 = pgf77
+F90 = pgf90
+F95 = pgf90
+CC = pgcc
+CPLUSPLUS = pgCC
+LINKER = pgf90
+
+#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
+DEFAULT_DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
+DEFAULT_OPTIM = -O3
+CDEBUG = -g -DDUMP_CORE_ON_ABORT
+COPTIM = -O3
+
+DEFINES += -DNO_FORTRAN_ISNAN -DNO_F2003_NEW_LINE -DPGI_IOSTAT_FUNCS -DALLOCATABLE_COMPONENT_MANUAL_COPY
+F95FLAGS += -Mpreprocess -Mfree
+F77FLAGS += -Mpreprocess
+CFLAGS +=  -DFORTRAN_UNDERSCORE
+CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
+
+MAKEDEP_ARGS = -lc -suffix .mod
+AR_ADD = src
+
+QUIPPY_FCOMPILER = pgf90
+QUIPPY_F90FLAGS = -Mpreprocess -Mfree
+QUIPPY_CPP = pgf90 -E
+
+# rules
+
+.f95.o:
+	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
+	${F95} ${F95FLAGS} -c $< -o $@
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
