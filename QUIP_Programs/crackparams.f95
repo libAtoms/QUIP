@@ -378,8 +378,18 @@ contains
     this%io_print_all_properties = .false.
     if (allocated(this%io_print_properties)) deallocate(this%io_print_properties)
     allocate(this%io_print_properties(11))
-    this%io_print_properties     = (/"species", "pos","hybrid","hybrid_mark","nn","changed_nn","old_nn", &
-         "md_old_changed_nn","edge_mask","move_mask","load"/)
+    ! arrays of strings must all have the same length, really
+    this%io_print_properties     = (/"species          ", &
+				     "pos              ", &
+				     "hybrid           ", &
+				     "hybrid_mark      ", &
+				     "nn               ", &
+				     "changed_nn       ", &
+				     "old_nn           ", &
+				     "md_old_changed_nn", &
+				     "edge_mask        ", &
+				     "move_mask        ", &
+				     "load             "/)
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
@@ -1224,7 +1234,7 @@ contains
     call Print('     print_all_properties  = '//this%io_print_all_properties,file=file)
     line='     print_properties      = '
     do i=1,size(this%io_print_properties)
-       line=trim(line)//' '//this%io_print_properties(i)
+       line=trim(line)//' '//trim(this%io_print_properties(i))
     end do
     call Print(line,file=file)
 
