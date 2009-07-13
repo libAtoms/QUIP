@@ -163,8 +163,7 @@ program makecrack
      call Print('')
      call Print(params)
 
-     call system_finalise()
-     stop
+     call system_abort("No argument to makecrack")
   end if
 
   call get_cmd_arg(1, stem)
