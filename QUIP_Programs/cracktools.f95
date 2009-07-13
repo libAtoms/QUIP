@@ -393,7 +393,7 @@ contains
     type(Atoms), intent(in) :: at 
     real(dp), intent(in) :: K
     character(*), intent(in), optional :: mode
-    real(dp), allocatable, dimension(:,:), optional, intent(out) :: sig, disp 
+    real(dp), dimension(:,:), optional, intent(out) :: sig, disp 
     logical, optional, intent(in) :: do_sig, do_disp
 
     real(dp), allocatable, dimension(:,:) :: mysig
@@ -430,14 +430,6 @@ contains
 
 
     allocate(mysig(6,at%N))
-
-       if (my_do_sig) then
-          allocate(sig(6, at%N))
-       end if
-
-       if (my_do_disp) then
-          allocate(disp(3, at%N))
-       end if
 
     do i=1,at%N
 
@@ -613,6 +605,9 @@ contains
     real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos
     real (dp), dimension(3,3) :: lattice
     logical :: dummy
+    !NB workaround for pgf90 bug (as of 9.0-1)
+    real(dp) :: t_norm
+    !NB end workaround for pgf90 bug (as of 9.0-1)
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_calc_load_field: "OrigHeight" parameter missing')
@@ -823,7 +818,10 @@ contains
     end do
    
     call print('Displacement field generated. Max disp: '//maxval(load))
-    call print('                              RMS disp: '//sqrt(norm2(reshape(load,(/3*crack_slab%N/)))/(3.0_dp*crack_slab%N)))
+    !NB workaround for pgf90 bug (as of 9.0-1)
+    t_norm = norm(reshape(load,(/3*crack_slab%N/)))
+    !NB end workaround for pgf90 bug (as of 9.0-1)
+    call print('                              RMS disp: '//(t_norm/sqrt(3.0_dp*crack_slab%N)))
    
     if (overwrite_pos) then
        crack_slab%pos = relaxed_pos

@@ -118,6 +118,7 @@ integer :: j,k, atom_i
 logical :: silanol
     type(Table) :: bondH,bondSi
     integer :: bond_H,bond_Si
+
 #endif
 !    integer                             :: qm_flag_index, pos_indices(3)
 !    logical                             :: do_qmmm
@@ -397,8 +398,12 @@ enddo
 
     at%data%str(atom_res_name_index,1:at%N) = cha_res_name(residue_type%int(1,residue_number(1:at%N)))
     at%data%int(atom_res_number_index,1:at%N) = residue_number(1:at%N)
-    at%data%str(atom_type_index,1:at%N) = atom_name(1:at%N)
-    at%data%str(atom_type_index,1:at%N) = adjustl(at%data%str(atom_type_index,1:at%N))
+    !NB workaround for pgf90 bug (as of 9.0-1)
+    ! at%data%str(atom_type_index,1:at%N) = adjustl(atom_name(1:at%N))
+    do i=1, at%N
+      at%data%str(atom_type_index,i) = adjustl(atom_name(i))
+    end do
+    !NB end of workaround for pgf90 bug (as of 9.0-1)
 !
 !    do_qmmm = .true.
 !    if (get_value(at%properties,trim('QM_flag'),pos_indices)) then

@@ -132,9 +132,9 @@
     call Print(' mm_args_str='//trim(this%mm_args_str), file=file)
     call Print(' qm_args_str='//trim(this%qm_args_str), file=file)
     call Print(' buffer_hops='//this%buffer_hops, file=file)
-    call print(' use_buffer_for_fitting'//this%use_buffer_for_fitting)
+    call print(' use_buffer_for_fitting='//this%use_buffer_for_fitting)
     call Print(' fit_hops='//this%fit_hops, file=file)
-    call print(' add_cut_H_in_fitlist'//this%add_cut_H_in_fitlist,file=file)
+    call print(' add_cut_H_in_fitlist='//this%add_cut_H_in_fitlist,file=file)
     call Print(' randomise_buffer='//this%randomise_buffer, file=file)
     call Print(' transition_hops='//this%transition_hops, file=file)
     call Print(' weight_interpolation='//trim(this%weight_interpolation), file=file)
@@ -205,6 +205,9 @@
     integer :: weight_method, buffer_hops, transition_hops, fit_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4
     integer, allocatable, dimension(:) :: embed, fit
+    !NB workaround for pgf90 bug (as of 9.0-1)
+    real(dp) :: t_norm
+    !NB end of workaround for pgf90 bug (as of 9.0-1)
 
     if (present(err)) err = 0
 
@@ -522,7 +525,9 @@
        end do
        df_fit = (df_fit / w_tot) + df
 
-       call print('conserve_momentum: norm(sum of    fit forces) = '//round(norm(sum(df_fit,dim=2)),15))
+       !NB workaround for pgf90 bug (as of 9.0-1)
+       t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15))
+       !NB end of workaround for pgf90 bug (as of 9.0-1)
 
        ! Final forces are classical forces plus corrected QM forces
        f = f_mm

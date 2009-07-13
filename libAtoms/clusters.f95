@@ -400,6 +400,9 @@ contains
 
     real(dp),    dimension(3)                :: diff_ik
     real(dp),    dimension(3)                :: dhat_ij, dhat_jk, H1, H2
+    !NB workaround for pgf90 bug (as of 9.0-1)
+    real(dp) :: t_norm
+    !NB end of workaround for pgf90 bug (as of 9.0-1)
     real(dp)                                 :: r_ij, r_jk, rescale
     logical                                  :: all_in
     logical                                  :: do_terminate, do_periodic(3), do_even_electrons, do_same_lattice, &
@@ -629,7 +632,9 @@ contains
                   call print("create_cluster: proposed hydrogen positions:", ANAL)
                   call print(H1, ANAL)
                   call print(H2, ANAL)
-                  call print("create_cluster: hydrogen distance would be "//norm(H1-H2), ANAL)
+		  !NB workaround for pgf90 bug (as of 9.0-1)
+                  t_norm = norm(H1-H2); call print("create_cluster: hydrogen distance would be "//t_norm, ANAL)
+		  !NB end of workaround for pgf90 bug (as of 9.0-1)
                   ! If i and k are nearest neighbours, or the terminating hydrogens would be very close, then
                   ! include j in the cluster. The H--H checking is conservative, hence the extra factor of 1.2
         
@@ -1579,7 +1584,7 @@ contains
 
     call wipe(currentlist)
     call append(currentlist, activelist)
-call print('create_hybrid_mark: creating transition region')
+! call print('create_hybrid_mark: creating transition region')
     ! create transition region
     if (distance_ramp) call initialise(distances, 1, 1, 0, 0)
     n_trans = 0
