@@ -10,7 +10,8 @@ endif
 
 ifeq (${QUIPPY_FCOMPILER},)
 	@echo
-	@echo "You need to set the QUIPPY_FCOMPILER, QUIPPY_F90FLAGS and QUIPPY_CPP variables
+	@echo "You need to set the QUIPPY_FCOMPILER, QUIPPY_F90FLAGS and QUIPPY_CPP variables"
+	@echo "Optionally also QUIPPY_OPT"
 	@echo
 	@exit 1
 endif
