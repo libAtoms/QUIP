@@ -91,6 +91,7 @@ module cp2k_driver_module
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
   use topology_module,         only: write_psf_file, create_CHARMM, &
+                                     delete_metal_connects, &
                                      write_cp2k_pdb_file, &
                                      NONE_RUN, QS_RUN, MM_RUN, &
                                      QMMM_RUN_CORE, QMMM_RUN_EXTENDED
