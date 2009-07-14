@@ -472,7 +472,8 @@ real(dp) :: pot
           ds%atoms%nneightol = nneightol
           call calc_topology(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
-          call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type=Run_Type_1,intrares_impropers=intrares_impropers)
+          !call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type=Run_Type_1,intrares_impropers=intrares_impropers)
+          call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type_string=trim(Run_Type1),intrares_impropers=intrares_impropers)
           ds%atoms%nneightol = temp
 !       endif
     endif
@@ -645,7 +646,8 @@ real(dp) :: pot
 !           if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
 !           call calc_topology(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
 !           call check_topology(ds%atoms)
-!           call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type=Run_Type_1,intrares_impropers=intrares_impropers)
+!!           call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type=Run_Type_1,intrares_impropers=intrares_impropers)
+!           call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type_string=Run_Type1,intrares_impropers=intrares_impropers)
 !           ds%atoms%nneightol = temp
 !        endif
         if (Thermostat_Type.eq.2) then
