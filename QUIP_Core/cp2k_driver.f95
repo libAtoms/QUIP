@@ -36,7 +36,6 @@
 !S  create_CHARMM(at,do_CHARMM)
 !S  next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,do_CHARMM)
 !S  write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print)
-!S  write_cp2k_pdb_file(at,pdb_file,run_type)
 !S  write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
 !S  read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
 !S  read_convert_back_pos(forces,param,my_atoms,run_type,verbose)
@@ -92,6 +91,7 @@ module cp2k_driver_module
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH
   use topology_module,         only: write_psf_file, create_CHARMM, &
+                                     write_cp2k_pdb_file, &
                                      NONE_RUN, QS_RUN, MM_RUN, &
                                      QMMM_RUN_CORE, QMMM_RUN_EXTENDED
   use units_module,            only: HARTREE, BOHR, HBAR
@@ -125,7 +125,6 @@ module cp2k_driver_module
             check_neighbour_numbers, &
             calc_topology, &
             delete_metal_connects, &
-            write_cp2k_pdb_file, &
             QUIP_combine_forces, &
             spline_force, &
             energy_conversion, &
@@ -1555,6 +1554,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     type(param_cp2k),  intent(in) :: param
     integer,           intent(in) :: run_type, &
                                      PSF_print
+    character(len=FIELD_LENGTH)   :: run_type_string
 
     call system_timer('write_inputs')
 
@@ -1565,9 +1565,12 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
 
     call print('Writing the CP2K input file(s)')
     if (run_type.ne.QS_RUN) then
-       call write_cp2k_pdb_file(my_atoms,trim(param%wenv%working_directory)//'/'//trim(param%wenv%pdb_file),run_type)
+       run_type_string = ''
+       if (run_type.eq.QMMM_RUN_EXTENDED) run_type_string = 'QMMM_EXTENDED'
+       if (run_type.eq.QMMM_RUN_CORE) run_type_string = 'QMMM_CORE'
+       call write_cp2k_pdb_file(my_atoms,trim(param%wenv%working_directory)//'/'//trim(param%wenv%pdb_file),run_type_string=run_type_string)
        if (PSF_print.eq.DRIVER_PRINT_AND_SAVE) then
-          call write_psf_file(my_atoms,param%wenv%psf_file,run_type)
+          call write_psf_file(my_atoms,param%wenv%psf_file,run_type_string=trim(run_type_string))
        endif
     endif
     call write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
@@ -1577,88 +1580,6 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call system_timer('write_inputs')
 
   end subroutine write_cp2k_input_files
-
-  !writes modified PDB format for accurate coordinates and charges, for CP2K
-  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
-  !ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
-  !ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
-  !ATOM      3   HA ALA A   1       0.17600000   1.74100000  13.29800000  0.00  0.00     ALA   H   0.09
-  subroutine write_cp2k_pdb_file(at,pdb_file,run_type)
-
-    character(len=*),  intent(in)  :: pdb_file
-    type(atoms),       intent(in)  :: at
-    integer,           intent(in)  :: run_type
-
-!    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f13.8,2f6.2,10x,a2,2x,f6.4)'
-    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f13.8,2f6.2,5x,a4,1x,a2,2x,f7.4)'
-
-    type(Inoutput)           :: pdb
-    character(103)           :: sor
-    integer                  :: mm
-    character(4)             :: QM_prefix_atom_mol_name
-    integer                  :: qm_flag_index, &
-                                atom_type_index, &
-                                atom_res_name_index, &
-                                atom_mol_name_index, &
-                                atom_res_number_index, &
-                                atom_charge_index
-
-  !Brookhaven PDB format
-  !    character(86)                        :: sor
-  !    character(*), parameter               :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f8.3,2f6.2,10x,a2,2x,f7.3)'
-
-  !CP2K modified PDB format 
-  !       sor(1:6)   = 'ATOM  '
-  !       sor(7:11)  = mm
-  !       sor(13:16) = this%atom_type(mm)
-  !       sor(18:21) = this%res_name(mm)
-  !!      sor(22:22) = ' A'                   !these two are now
-  !       sor(23:26) = residue_number(mm)     !   merged to handle >9999 residues
-  !       sor(31:43) = at%pos(1,mm)
-  !       sor(44:56) = at%pos(2,mm)
-  !       sor(57:69) = at%pos(3,mm)
-  !       sor(70:75) = '  0.00'
-  !       sor(76:81) = '  0.00'
-  !!      sor(87:90) = 'MOL1'
-  !       sor(92:93) = ElementName(at%Z(mm))
-  !       sor(96:)   = this%atom_charge(mm)
-
-    call initialise(pdb,trim(pdb_file),action=OUTPUT)
-    call print('   PDB file: '//trim(pdb%filename))
-!    call print('REMARK'//at%N,file=pdb)
-
-    if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-       qm_flag_index = get_property(at,'QM_flag')
-    endif
-    atom_type_index = get_property(at,'atom_type')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
-
-    do mm=1,at%N
-      ! CP2K needs different name for QM molecules, if use isolated atoms
-       sor = ''
-       QM_prefix_atom_mol_name = ''
-       QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
-       if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
-             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
-!             call print('QM molecule '//QM_prefix_atom_mol_name)
-          endif
-       endif
-!             call print('molecule '//QM_prefix_atom_mol_name)
-!       call print('writing PDB file: atom type '//at%data%str(atom_type_index,mm))
-       write(sor,pdb_format) 'ATOM  ',mm,at%data%str(atom_type_index,mm),at%data%str(atom_res_name_index,mm),at%data%int(atom_res_number_index,mm), &
-                             at%pos(1:3,mm),0._dp,0._dp,QM_prefix_atom_mol_name,ElementName(at%Z(mm)),at%data%real(atom_charge_index,mm)
-!                             at%pos(1:3,mm),0._dp,0._dp,this%atom_res_name(mm),ElementName(at%Z(mm)),this%atom_charge(mm)
-       call print(sor,file=pdb)
-    enddo
-    call print('END',file=pdb)
-    call finalise(pdb)
-
-  end subroutine write_cp2k_pdb_file
-
 
   subroutine write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
 
