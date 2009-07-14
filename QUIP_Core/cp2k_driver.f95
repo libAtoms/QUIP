@@ -124,7 +124,6 @@ module cp2k_driver_module
             read_qmlist, &
             check_neighbour_numbers, &
             calc_topology, &
-            delete_metal_connects, &
             QUIP_combine_forces, &
             spline_force, &
             energy_conversion, &
@@ -1468,78 +1467,6 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
   call system_timer('calc_topology')
 
   end subroutine calc_topology
-
-   ! remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
-  subroutine delete_metal_connects(my_atoms)
-
-    type(Atoms), intent(inout) :: my_atoms
-    integer :: i, j
-
-    do i = 1, my_atoms%N
-       if (any(my_atoms%Z(i).eq.(/1,6,7,8,14,15,16,17/))) cycle
-!       call print('found metal atom '//i)
-       do j = 1, my_atoms%N
-          if (i.ne.j) call delete_bond(my_atoms, i, j)
-       enddo
-    enddo
-
-  end subroutine
-
-   ! removes a bond between i and j, if the bond is present
-  subroutine delete_bond(my_atoms, i, j)
-    type(Atoms), intent(inout) :: my_atoms
-    integer, intent(in) :: i, j
-
-    integer :: ii, jj
-!!    integer :: kk, k, ll, change
-!!    integer, allocatable :: bond_table(:,:)
-
-    if (i.eq.j) return
-
-    if (i.lt.j) then
-       ii = i
-       jj = j
-    else
-       jj = i
-       ii = j
-    endif
-
-    call remove_bond(my_atoms%connect, ii, jj)
-
-!!     allocate (bond_table(4,my_atoms%connect%neighbour1(ii)%N))
-!!     bond_table = int_part(my_atoms%connect%neighbour1(ii))
-!!     kk = find_in_array(bond_table(1,:),jj)
-!!     if (kk.gt.0) then
-!! !       call print('found bond to delete for atoms '//ii//' '//jj)
-!!        call delete(my_atoms%connect%neighbour1(ii),kk)
-!!     endif
-!!     deallocate(bond_table)
-!! 
-!!    ! if I delete a bond from neighbour1, I should update in neighbour2 that
-!!    ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
-!!     if (kk.gt.0) then
-!!        do k = kk, my_atoms%connect%neighbour1(ii)%N     ! k-th neighbour of ii
-!!           ll = my_atoms%connect%neighbour1(ii)%int(1,k)     ! is ll
-!!           allocate (bond_table(4,my_atoms%connect%neighbour2(ll)%N))
-!!           bond_table = int_part(my_atoms%connect%neighbour2(ll))
-!!           change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
-!!           if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
-!!           my_atoms%connect%neighbour2(ll)%int(2,change) = k ! this account is updated now
-!!           deallocate (bond_table)
-!!        enddo
-!!     endif
-!! 
-!!     allocate (bond_table(4,my_atoms%connect%neighbour2(jj)%N))
-!!     bond_table = int_part(my_atoms%connect%neighbour2(jj))
-!!     kk = find_in_array(bond_table(1,:),ii)
-!!     if (kk.gt.0) then
-!! !       call print('found bond to delete for atoms '//jj//' '//ii)
-!!        call delete(my_atoms%connect%neighbour2(jj),kk)
-!!     endif
-!!     deallocate(bond_table)
-
-  end subroutine
-
 
   !!!!! ============================================================================================ !!!!!
   !!!!!                                                                                              !!!!!
