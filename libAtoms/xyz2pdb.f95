@@ -24,7 +24,7 @@ program xyz2pdb
                                      INPUT, OUTPUT, &
                                      SILENT, NORMAL, ANAL, NERD
   use table_module,            only: table, finalise, int_part, delete
-  use topology_module,         only: create_CHARMM, delete_bond, &
+  use topology_module,         only: create_CHARMM, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
                                      MM_RUN
@@ -124,8 +124,8 @@ program xyz2pdb
 
    ! print output PDB and PSF files
     call print('Writing files with CHARMM format...')
-    call write_psf_file(my_atoms,psf_file=trim(psf_name),run_type=MM_RUN,intrares_impropers=intrares_impropers)
-    call write_brookhaven_pdb_file(my_atoms,trim(pdb_name),run_type=MM_RUN)
+    call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers)
+    call write_brookhaven_pdb_file(my_atoms,trim(pdb_name))
     if (Print_XSC) call write_xsc_file(my_atoms,xsc_file=trim(xsc_name))
 
     call finalise(intrares_impropers)
@@ -136,22 +136,6 @@ program xyz2pdb
     call system_finalise
 
 contains
-
-   ! remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
-  subroutine delete_metal_connects(my_atoms)
-
-    type(Atoms), intent(inout) :: my_atoms
-    integer :: i, j
-
-    do i = 1, my_atoms%N
-       if (any(my_atoms%Z(i).eq.(/1,6,7,8,14,15,16,17/))) cycle
-!       call print('found metal atom '//i)
-       do j = 1, my_atoms%N
-          if (i.ne.j) call delete_bond(my_atoms, i, j)
-       enddo
-    enddo
-
-  end subroutine delete_metal_connects
 
   subroutine print_usage
 
