@@ -278,11 +278,11 @@ contains
   !% \hline \hline
   !% Region &  Positon & Load \\
   !% \hline
-  !%   1    &  $x <$ 'l_crack_pos'-'zone_width' & $G$ \\
-  !%   2    &  'l_crack_pos'-'zone_width' $\le x <$ 'l_crack_pos' & $G \to 0$ \\
-  !%   3    &  'l_crack_pos' $< x <$ 'r_crack_pos'& $0$ \\
-  !%   4    &  'r_crack_pos' $< x \le$ 'r_crack_pos'+'zone_width' & $0 \to G$ \\
-  !%   5    &  $x >$ 'r_crack_pos'+'zone_width' & $G$ \\
+  !%   1    &  $x <$ 'l_crack_pos'-'zone_width' & $G$ \\ 
+  !%   2    &  'l_crack_pos'-'zone_width' $\le x <$ 'l_crack_pos' & $G \to 0$ \\ 
+  !%   3    &  'l_crack_pos' $< x <$ 'r_crack_pos'& $0$ \\ 
+  !%   4    &  'r_crack_pos' $< x \le$ 'r_crack_pos'+'zone_width' & $0 \to G$ \\ 
+  !%   5    &  $x >$ 'r_crack_pos'+'zone_width' & $G$ \\ 
   !% \hline 
   !% \hline
   !% \end{tabular}\end{center}
