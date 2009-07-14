@@ -18,15 +18,9 @@ program qmmm_md
 !                                     distance_min_image
 !  use constraints_module,      only: print
 !  use cp2k_driver_module,      only: get_qm_list, &
-!                                     get_property, &
-!                                     QS_RUN, QMMM_RUN_CORE, &
-!                                     QMMM_RUN_EXTENDED, MM_RUN, NONE_RUN, &
-!                                     num_of_bonds, extend_qmlist, &
+!                                     extend_qmlist, &
 !                                     calc_topology, delete_metal_connects, &
 !                                     write_psf_file, &
-!                                     DRIVER_PRINT_AND_SAVE, &
-!                                     CP2K_PRINT_AND_SAVE, &
-!                                     NO_PSF, USE_EXISTING_PSF, &
 !                                     create_centred_qmcore, &
 !                                     read_qmlist, &
 !                                     quip_combine_forces, &
@@ -90,7 +84,6 @@ program qmmm_md
   integer                             :: l
   character(len=FIELD_LENGTH)         :: PSF_Print
   real(dp)                            :: Q_QM, Q_MM, ndof_QM, ndof_MM, temp
-  integer                             :: qm_flag_index, thermostat_region_index
   type(spline_pot)                    :: my_spline
   type(Table)                         :: intrares_impropers
 
@@ -99,8 +92,6 @@ program qmmm_md
   character(len=FIELD_LENGTH),dimension(4) :: Print_PSF_array               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
   character(len=FIELD_LENGTH) :: Run_Type1               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
   character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, or QMMM_CORE
-  integer                     :: Run_Type_1              !type of force calculation: MM_RUN, QS_RUN, QMMM_RUN_CORE or QMMM_RUN_EXTENDED
-  integer                     :: Run_Type_2              !type of second force calculation: NONE_RUN, MM_RUN or QMMM_RUN_CORE
   integer                     :: IO_Rate                 !print coordinates at every n-th step
   integer                     :: Thermostat_Type         !_0_ none, 1 Langevin
   character(len=FIELD_LENGTH) :: Print_PSF               !_NO_PSF_, DRIVER_AT0, CP2K_AT0, EVERY_#,USE_EXIST
@@ -142,8 +133,12 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   integer :: max_n_steps
-integer :: pot_index
 real(dp) :: pot
+logical :: momentum_conservation
+!pointers
+integer, pointer :: qm_flag_p(:), thermostat_region_p(:)
+real(dp), pointer :: pot_p(:)
+
 
     call system_initialise(verbosity=normal,enable_timing=.true.)
     call system_timer('program')
@@ -188,6 +183,7 @@ real(dp) :: pot
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
+      call param_register(params_in, 'momentum_conservation', 'T', momentum_conservation)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
@@ -284,14 +280,6 @@ real(dp) :: pot
       call print('---------------------------------------')
       call print('')
 
-    if (trim(Run_Type1).eq.'QS') Run_Type_1 = QS_RUN
-    if (trim(Run_Type1).eq.'MM') Run_Type_1 = MM_RUN
-    if (trim(Run_Type1).eq.'QMMM_CORE') Run_Type_1 = QMMM_RUN_CORE
-    if (trim(Run_Type1).eq.'QMMM_EXTENDED') Run_Type_1 = QMMM_RUN_EXTENDED
-    Run_Type_2 = NONE_RUN
-    if (trim(Run_Type2).eq.'MM') Run_Type_2 = MM_RUN
-    if (trim(Run_Type2).eq.'QMMM_CORE') Run_Type_2 = QMMM_RUN_CORE
-
 ! starts here
 
     if (is_file_readable(trim(new_coord_file))) then
@@ -383,16 +371,12 @@ real(dp) :: pot
     call set_cutoff(ds%atoms,0._dp)
     call calc_connect(ds%atoms)
     if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
-    call print('Number of bonds found: '//num_of_bonds(ds%atoms))
-  !!!only in case of water!! otherwise ignore warnings
-  !  call check_neighbour_numbers(ds%atoms)
-  !  if (num_of_bonds(ds%atoms)*3.ne.ds%atoms%N*2) call print('calc_connect calculated wrong number of bonds!!')
-  !!!
 
 ! QM LIST + THERMOSTATTING
 
    !QM CORE
-    if (any(Run_Type_1.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
+    if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
+        (trim(Run_Type1).eq.'QMMM_EXTENDED')) then
        if (.not.Continue_it) then
           if (origin_centre) then
              call add_property(ds%atoms,'QM_flag',0)
@@ -422,28 +406,26 @@ real(dp) :: pot
            buffer_general=.false.
        endif
 
-       if (Run_Type_1.eq.QMMM_RUN_EXTENDED) then
+       if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
           list_changed = extend_qmlist(ds%atoms,Inner_QM_Radius,Outer_QM_Radius)
           call set_value(ds%atoms%params,'QM_list_changed',list_changed)
-          if (Thermostat_Type.eq.2) then
-             qm_flag_index = get_property(ds%atoms,'QM_flag')
-             thermostat_region_index = get_property(ds%atoms,'thermostat_region')
+          if (Thermostat_Type.eq.2) then !match thermostat_region to QM_flag property
+             if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
+                call system_abort("couldn't find QM_flag property")
+             if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
+                call system_abort("couldn't find thermostat_region property")
              do i=1,ds%atoms%N
-!                call print('atom '//i//' has QM_flag index '//ds%atoms%data%int(qm_flag_index,i))
-                select case(ds%atoms%data%int(qm_flag_index,i))
+                select case(qm_flag_p(i))
                    case(0)
-!                     call print('atom '//i//' in region 2')
-                     ds%atoms%data%int(thermostat_region_index,i) = 2
-                   case(1)
-!                     call print('atom '//i//' in region 1')
-                     ds%atoms%data%int(thermostat_region_index,i) = 1
-                   case(2)
-!                     call print('atom '//i//' in region 1')
-                     ds%atoms%data%int(thermostat_region_index,i) = 1
+                     thermostat_region_p(i) = 2
+                   case(1,2)
+                     thermostat_region_p(i) = 1
+                   case default
+                     call system_abort('Unknown QM_flag '//qm_flag_p(i))
                 end select
              enddo
           else
-            ! all is in thermostat 1 by default
+            ! all atoms are in thermostat 1 by default
           endif
        endif
        if (origin_centre) then
@@ -465,7 +447,7 @@ real(dp) :: pot
 !TOPOLOGY
 
    ! topology calculation
-    if (Run_Type_1.ne.QS_RUN) then
+    if (trim(Run_Type1).ne.'QS') then
 !       if (.not.Continue_it) then
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
           temp = ds%atoms%nneightol
@@ -477,7 +459,7 @@ real(dp) :: pot
           ds%atoms%nneightol = temp
 !       endif
     endif
-    if (Run_Type_1.eq.QS_RUN) then
+    if (trim(Run_Type1).eq.'QS') then
        call set_value(ds%atoms%params,'Charge',Charge)
     endif
 
@@ -523,8 +505,9 @@ real(dp) :: pot
 !added now
      empty_QM_core = .false.
      if (origin_centre) then
-        qm_flag_index = get_property(ds%atoms,'QM_flag')
-        if (.not.any(ds%atoms%data%int(qm_flag_index,1:ds%atoms%N).eq.1)) empty_QM_core = .true.
+        if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
+           call system_abort("couldn't find QM_flag property")
+        if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
      endif
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
@@ -548,10 +531,11 @@ real(dp) :: pot
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
-	  pot_index = get_property(ds%atoms,'pot')
+          if (.not.(assign_pointer(ds%atoms, "pot", pot_p))) &
+             call system_abort("couldn't find pot property")
 	  do i = 1, ds%atoms%N
 	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=pot)
-	     ds%atoms%data%real(pot_index,i) = pot
+	     pot_p(i) = pot
 	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
 	  enddo
 	call verbosity_pop()
@@ -559,7 +543,7 @@ real(dp) :: pot
      endif
 
     !second force calculation, only for QMMM
-     if (Run_Type_2.ne.NONE_RUN) then
+     if (trim(Run_Type2).ne.'NONE') then
         if (Topology_Print.ne.0) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
 	   args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
@@ -578,7 +562,13 @@ real(dp) :: pot
         if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
            f = sum0(f1)
         else
-           call QUIP_combine_forces(f1,f0,f,ds%atoms)
+           if (momentum_conservation) then
+              call QUIP_combine_forces(f1,f0,f,ds%atoms)
+           else
+              call abrupt_force_mixing(f1,f0,f,ds%atoms)
+              f1=f
+              f = sum0(f1)
+           endif
         endif
      else !no 2nd run, f = f1
         if (origin_centre.and.use_spline) then
@@ -628,7 +618,7 @@ real(dp) :: pot
      n = n + 1
 
    !QM CORE + BUFFER UPDATE + THERMOSTAT REASSIGNMENT
-     if (Run_Type_1.eq.QMMM_RUN_EXTENDED) then
+     if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         if (origin_centre) then
            call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=(/0._dp,0._dp,0._dp/),list_changed=list_changed1)
            if (list_changed1) then
@@ -650,17 +640,19 @@ real(dp) :: pot
 !           call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type_string=Run_Type1,intrares_impropers=intrares_impropers)
 !           ds%atoms%nneightol = temp
 !        endif
-        if (Thermostat_Type.eq.2) then
-           qm_flag_index = get_property(ds%atoms,'QM_flag')
-           thermostat_region_index = get_property(ds%atoms,'thermostat_region')
+        if (Thermostat_Type.eq.2) then !match thermostat_region to QM_flag property
+           if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
+              call system_abort("couldn't find QM_flag property")
+           if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
+              call system_abort("couldn't find thermostat_region property")
            do i=1,ds%atoms%N
-              select case(ds%atoms%data%int(qm_flag_index,i))
+              select case(qm_flag_p(i))
                  case(0)
-                   ds%atoms%data%int(thermostat_region_index,i) = 2
-                 case(1)
-                   ds%atoms%data%int(thermostat_region_index,i) = 1
-                 case(2)
-                   ds%atoms%data%int(thermostat_region_index,i) = 1
+                   thermostat_region_p(i) = 2
+                 case(1,2)
+                   thermostat_region_p(i) = 1
+                 case default
+                   call system_abort('Unknown QM_flag '//qm_flag_p(i))
               end select
            enddo
         else
@@ -675,7 +667,7 @@ real(dp) :: pot
 !added now
      if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
 !added now
-           if (Run_Type_2.ne.QS_RUN) then
+           if (trim(Run_Type2).ne.'QS') then
               call print_title('Recalculate Connectivity & Topology')
               call map_into_cell(ds%atoms)
               call calc_dists(ds%atoms)
@@ -687,8 +679,9 @@ real(dp) :: pot
 
      empty_QM_core = .false.
      if (origin_centre) then
-        qm_flag_index = get_property(ds%atoms,'QM_flag')
-        if (.not.any(ds%atoms%data%int(qm_flag_index,1:ds%atoms%N).eq.1)) empty_QM_core = .true.
+        if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
+           call system_abort("couldn't find QM_flag property")
+        if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
      endif
      if (origin_centre.and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
@@ -707,10 +700,11 @@ real(dp) :: pot
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
 	  allocate(add_force(1:3,1:ds%atoms%N))
-	  pot_index = get_property(ds%atoms,'pot')
+          if (.not.(assign_pointer(ds%atoms, "pot", pot_p))) &
+             call system_abort("couldn't find pot property")
 	  do i = 1, ds%atoms%N
 	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=pot)
-	     ds%atoms%data%real(pot_index,i) = pot
+	     pot_p(i) = pot
 	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
 	  enddo
 	call verbosity_pop()
@@ -718,7 +712,7 @@ real(dp) :: pot
      endif
 
    !FORCE 2 + FORCE MIXING
-     if (Run_Type_2.ne.NONE_RUN) then
+     if (trim(Run_Type2).ne.'NONE') then
         if (Topology_Print.ne.TOPOLOGY_NO_PSF) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
         if (origin_centre.and.empty_QM_core) then
            args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
@@ -737,7 +731,13 @@ real(dp) :: pot
         if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
            f = sum0(f1)
         else
-           call QUIP_combine_forces(f1,f0,f,ds%atoms)
+           if (momentum_conservation) then
+              call QUIP_combine_forces(f1,f0,f,ds%atoms)
+           else
+              call abrupt_force_mixing(f1,f0,f,ds%atoms)
+              f1=f
+              f = sum0(f1)
+           endif
         endif
      else !no 2nd run, f = f1
         if (origin_centre.and.use_spline) then
@@ -925,34 +925,36 @@ end subroutine
 
     type(Atoms), intent(in)      :: my_atoms
   
-    integer,dimension(3) :: pos_indices
-    integer              :: prop_index, res_name_index, i, N
-    logical              :: do_mm
+    integer                                 :: i, N
+    logical                                 :: do_mm
+    integer,                        pointer :: qm_flag_p(:)
+    character(TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
 
     do_mm = .false.
 
-    if (get_value(my_atoms%properties,trim('QM_flag'),pos_indices)) then
-       prop_index = pos_indices(2)
-    else ! MM RUN
+    if (.not.(assign_pointer(my_atoms, "QM_flag", qm_flag_p))) then ! MM RUN
        do_mm = .true.
     end if
 
-    res_name_index = get_property(my_atoms,'atom_res_name')
+    if (.not.(assign_pointer(my_atoms, "atom_res_name", atom_res_name_p))) &
+       call system_abort("couldn't find atom_res_name property")
 
     if (do_mm) then
-       if ( any('H3O'.eq.my_atoms%data%str(res_name_index,1:my_atoms%N)) .or. &
-            any('HYD'.eq.my_atoms%data%str(res_name_index,1:my_atoms%N)) .or. &
-            any('HWP'.eq.my_atoms%data%str(res_name_index,1:my_atoms%N)) ) then
-          call system_abort('wrong topology calculated')
-       endif
+       do i=1, my_atoms%N
+          if ( ('H3O'.eq.trim(atom_res_name_p(i))) .or. &
+               ('HYD'.eq.trim(atom_res_name_p(i))) .or. &
+               ('HWP'.eq.trim(atom_res_name_p(i))) ) then
+             call system_abort('wrong topology calculated')
+          endif
+       enddo
     else
        N = 0
        do i=1,my_atoms%N
-          if ( .not.(my_atoms%data%int(prop_index,i).eq.1) .and. &
-!          if ( .not.any((my_atoms%data%int(prop_index,i).eq.(/1,2/))) .and. &
-               any((/'H3O','HYD','HWP'/).eq.my_atoms%data%str(res_name_index,i))) then
+          if ( .not.(qm_flag_p(i).eq.1) .and. &
+!          if ( .not.any((qm_flag_p(i).eq.(/1,2/))) .and. &
+               any((/'H3O','HYD','HWP'/).eq.trim(atom_res_name_p(i)))) then
             N = N + 1
-            call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//my_atoms%data%str(res_name_index,i))
+            call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(atom_res_name_p(i)))
           endif
        enddo
        if (N.gt.0) call system_abort('wrong topology calculated')
