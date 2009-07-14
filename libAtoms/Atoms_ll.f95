@@ -16,6 +16,7 @@ type atoms_ll_entry
   type(atoms) :: at
   type(atoms_ll_entry), pointer :: next => null()
   type(atoms_ll_entry), pointer :: prev => null()
+  real(dp) :: r_index = -1.0_dp
 end type atoms_ll_entry
 
 public :: initialise, finalise, print_xyz, read_xyz, new_entry, remove_last_entry
@@ -208,6 +209,7 @@ contains
       my_filename = trim(filename)
     endif
 
+    cur_time = 1.0_dp
     last_file_frame_n = 0
     frame_count = 1
     do while (status == 0) ! loop over files
@@ -235,20 +237,26 @@ contains
 	      ! look at LAST entry
 	      if (associated(this%LAST)) then
 		entry => this%LAST
-		if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
+		!NB if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
+		entry_time = entry%r_index
+		!NB
 	      else ! no structure list yet, fake entry_time
 		entry_time = -1.0e38_dp
 	      endif
 	      if (cur_time <= entry_time) then ! new frame is at or BEFORE LAST entry
 		do while (associated(entry))
-		  if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
+		  !NB if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
+		  entry_time = entry%r_index
+		  !NB
 		  if (do_no_Time_dups .and. (cur_time == entry_time)) then ! entries match in time, i.e. duplicates
 		    is_a_dup = .true.
 		    exit
 		  endif
 		  ! check time of PREV entry
 		  if (associated(entry%PREV)) then
-		    if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
+		    !NB if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
+		    entry_PREV_time = entry%PREV%r_index
+		    !NB
 		    ! if cur_time is <= entry, and cur_time > entry%PREV, we want to insert AFTER entry%prev, so decrement entry and exit now
 		    if ((cur_time <= entry_time) .and. (cur_time > entry_PREV_time)) then
 		      entry => entry%PREV
@@ -266,8 +274,10 @@ contains
 	    if (.not. is_a_dup) then
 	      if (associated(entry)) then ! we want to insert AFTER entry
 		call new_entry(this, structure, AFTER=entry)
+		entry%NEXT%r_index = cur_time
 	      else ! entry is unassociated, therefore we insert and the BEGINNING of the list
 		call new_entry(this, structure, BEFORE=this%FIRST)
+		this%FIRST%r_index = cur_time
 	      endif
 	      ! actually copy the structure
 	      call atoms_copy_without_connect(structure, structure_in, properties="species:pos:Z")
