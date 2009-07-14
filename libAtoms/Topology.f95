@@ -32,7 +32,7 @@ module topology_module
 
   implicit none
 
-  private :: next_motif, write_psf_section, create_bond_list
+  private :: next_motif, write_psf_section, create_bond_list, write_psf_file
   private :: create_angle_list, create_dihedral_list
   private :: create_improper_list, get_property
 #ifdef HAVE_DANNY
@@ -41,6 +41,7 @@ module topology_module
 
   public  :: delete_bond, &
              write_brookhaven_pdb_file, &
+             write_cp2k_pdb_file, &
              write_psf_file, &
              create_CHARMM, &
              NONE_RUN, &
@@ -118,7 +119,6 @@ integer :: j,k, atom_i
 logical :: silanol
     type(Table) :: bondH,bondSi
     integer :: bond_H,bond_Si
-
 #endif
 !    integer                             :: qm_flag_index, pos_indices(3)
 !    logical                             :: do_qmmm
@@ -573,23 +573,20 @@ enddo
     
   end subroutine next_motif
 
-  !writes Brookhaven PDB format
-  !charges are printed into the PSF file, too
-  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
+  !writes PDB format using the pdb_format passed as an input
+  !printing charges into the last column of PDB file 
   !ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
   !ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
   !ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
-  subroutine write_brookhaven_pdb_file(at,pdb_file,run_type)
+  subroutine write_pdb_file(at,pdb_file,pdb_format,run_type_string)
 
-    character(len=*),  intent(in)  :: pdb_file
-    type(atoms),       intent(in)  :: at
-    integer, optional, intent(in)  :: run_type
+    character(len=*),           intent(in) :: pdb_file
+    type(Atoms),                intent(in) :: at
+    character(len=*),           intent(in) :: pdb_format
+    character(len=*), optional, intent(in) :: run_type_string
 
-
-!    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f8.3,2f6.2,10x,a2,2x,f7.4)'
-    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f8.3,2f6.2,5x,a4,2x,a2,2x,f7.4)'
     type(Inoutput)           :: pdb
-    character(88)            :: sor
+    character(103)           :: sor !Brookhaven only uses 88
     integer                  :: mm
     character(4)             :: QM_prefix_atom_mol_name
     integer                  :: qm_flag_index, &
@@ -598,7 +595,71 @@ enddo
                                 atom_mol_name_index, &
                                 atom_res_number_index, &
                                 atom_charge_index
-    integer                  :: my_run_type
+    character(len=1024)      :: my_run_type_string
+    integer                  :: run_type
+
+    call system_timer('write_pdb_file')
+    my_run_type_string = optional_default('',run_type_string)
+
+    call initialise(pdb,trim(pdb_file),action=OUTPUT)
+    call print('   PDB file: '//trim(pdb%filename))
+!    call print('REMARK'//at%N,file=pdb)
+!lattice information could be added in a line like this:
+!CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1          
+
+    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
+       qm_flag_index = get_property(at,'QM_flag')
+       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
+       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
+    endif
+    atom_type_index = get_property(at,'atom_type')
+    atom_res_name_index = get_property(at,'atom_res_name')
+    atom_mol_name_index = get_property(at,'atom_mol_name')
+    atom_res_number_index = get_property(at,'atom_res_number')
+    atom_charge_index = get_property(at,'atom_charge')
+
+    do mm=1,at%N
+      ! e.g. CP2K needs different name for QM molecules, if use isolated atoms
+       sor = ''
+       QM_prefix_atom_mol_name = ''
+       QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
+       if ((trim(run_type_string).eq.'QMMM_CORE') .or. &
+           (trim(run_type_string).eq.'QMMM_EXTENDED')) then
+          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
+             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
+!             call print('QM molecule '//QM_prefix_atom_mol_name)
+          endif
+       endif
+!             call print('molecule '//QM_prefix_atom_mol_name)
+!       call print('writing PDB file: atom type '//at%data%str(atom_type_index,mm))
+       write(sor,trim(pdb_format)) 'ATOM  ',mm,at%data%str(atom_type_index,mm),at%data%str(atom_res_name_index,mm),at%data%int(atom_res_number_index,mm), &
+                             at%pos(1:3,mm),0._dp,0._dp,QM_prefix_atom_mol_name,ElementName(at%Z(mm)),at%data%real(atom_charge_index,mm)
+!                             at%pos(1:3,mm),0._dp,0._dp,this%atom_res_name(mm),ElementName(at%Z(mm)),this%atom_charge(mm)
+       call print(sor,file=pdb)
+    enddo
+    call print('END',file=pdb)
+
+    call finalise(pdb)
+
+    call system_timer('write_pdb_file')
+
+  end subroutine write_pdb_file
+
+  !writes Brookhaven PDB format
+  !charges are printed into the PSF file, too
+  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
+  !ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
+  !ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
+  !ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
+  subroutine write_brookhaven_pdb_file(at,pdb_file,run_type_string)
+
+    character(len=*),           intent(in) :: pdb_file
+    type(atoms),                intent(in) :: at
+    character(len=*), optional, intent(in) :: run_type_string
+
+!    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f8.3,2f6.2,10x,a2,2x,f7.4)'
+    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f8.3,2f6.2,5x,a4,2x,a2,2x,f7.4)'
 
   !Brookhaven PDB format
   !       sor(1:6)   = 'ATOM  '
@@ -618,56 +679,57 @@ enddo
 
     call system_timer('write_brookhaven_pdb_file')
 
-    my_run_type = optional_default(MM_RUN,run_type)
-
-    call initialise(pdb,trim(pdb_file),action=OUTPUT)
-    call print('   PDB file: '//trim(pdb%filename))
-!    call print('REMARK'//at%N,file=pdb)
-!lattice information could be added in a line like this:
-!CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1          
-
-    if (any(my_run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-       qm_flag_index = get_property(at,'QM_flag')
-    endif
-    atom_type_index = get_property(at,'atom_type')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
-
-    do mm=1,at%N
-      ! e.g. CP2K needs different name for QM molecules, if use isolated atoms
-       sor = ''
-       QM_prefix_atom_mol_name = ''
-       QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
-       if (any(my_run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.my_run_type) then
-             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
-!             call print('QM molecule '//QM_prefix_atom_mol_name)
-          endif
-       endif
-!             call print('molecule '//QM_prefix_atom_mol_name)
-!       call print('writing PDB file: atom type '//at%data%str(atom_type_index,mm))
-       write(sor,pdb_format) 'ATOM  ',mm,at%data%str(atom_type_index,mm),at%data%str(atom_res_name_index,mm),at%data%int(atom_res_number_index,mm), &
-                             at%pos(1:3,mm),0._dp,0._dp,QM_prefix_atom_mol_name,ElementName(at%Z(mm)),at%data%real(atom_charge_index,mm)
-!                             at%pos(1:3,mm),0._dp,0._dp,this%atom_res_name(mm),ElementName(at%Z(mm)),this%atom_charge(mm)
-       call print(sor,file=pdb)
-    enddo
-    call print('END',file=pdb)
-
-    call finalise(pdb)
+    call write_pdb_file(at,pdb_file,pdb_format,run_type_string)
 
     call system_timer('write_brookhaven_pdb_file')
 
   end subroutine write_brookhaven_pdb_file
 
-  subroutine write_psf_file(at,psf_file,run_type,intrares_impropers,imp_filename)
+  !writes modified PDB format for accurate coordinates and charges, for CP2K
+  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
+  !ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
+  !ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
+  !ATOM      3   HA ALA A   1       0.17600000   1.74100000  13.29800000  0.00  0.00     ALA   H   0.09
+  subroutine write_cp2k_pdb_file(at,pdb_file,run_type_string)
 
-    character(len=*),        intent(in) :: psf_file
-    type(atoms),             intent(in) :: at
-    integer,                 intent(in) :: run_type
-    type(Table),   optional, intent(in) :: intrares_impropers
-    character(80), optional, intent(in) :: imp_filename
+    character(len=*),  intent(in)  :: pdb_file
+    type(atoms),       intent(in)  :: at
+    character(len=*), optional, intent(in) :: run_type_string
+
+!    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f13.8,2f6.2,10x,a2,2x,f6.4)'
+    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f13.8,2f6.2,5x,a4,1x,a2,2x,f7.4)'
+
+  !CP2K modified PDB format 
+  !       sor(1:6)   = 'ATOM  '
+  !       sor(7:11)  = mm
+  !       sor(13:16) = this%atom_type(mm)
+  !       sor(18:21) = this%res_name(mm)
+  !!      sor(22:22) = ' A'                   !these two are now
+  !       sor(23:26) = residue_number(mm)     !   merged to handle >9999 residues
+  !       sor(31:43) = at%pos(1,mm)
+  !       sor(44:56) = at%pos(2,mm)
+  !       sor(57:69) = at%pos(3,mm)
+  !       sor(70:75) = '  0.00'
+  !       sor(76:81) = '  0.00'
+  !!      sor(87:90) = 'MOL1'
+  !       sor(92:93) = ElementName(at%Z(mm))
+  !       sor(96:)   = this%atom_charge(mm)
+
+    call system_timer('write_cp2k_pdb_file')
+
+    call write_pdb_file(at,pdb_file,pdb_format,run_type_string)
+
+    call system_timer('write_cp2k_pdb_file')
+
+  end subroutine write_cp2k_pdb_file
+
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename)
+
+    character(len=*),           intent(in) :: psf_file
+    type(atoms),                intent(in) :: at
+    character(len=*), optional, intent(in) :: run_type_string
+    type(Table),      optional, intent(in) :: intrares_impropers
+    character(80),    optional, intent(in) :: imp_filename
 
     type(Inoutput)          :: psf
     character(103)          :: sor
@@ -685,6 +747,8 @@ enddo
     type(Table)             :: bonds
     type(Table)             :: angles
     type(Table)             :: dihedrals, impropers
+    character(len=1024)     :: my_run_type_string
+    integer                 :: run_type
 
     call system_timer('write_psf_file')
 
@@ -694,8 +758,12 @@ enddo
        call system_abort('Not yet implemented.')
     endif
 
-    if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
+    my_run_type_string = optional_default('',run_type_string)
+    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
        qm_flag_index = get_property(at,'QM_flag')
+       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
+       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
     endif
     atom_type_index = get_property(at,'atom_type')
     atom_res_name_index = get_property(at,'atom_res_name')
@@ -720,8 +788,9 @@ enddo
     do mm=1,at%N
        QM_prefix_atom_mol_name = ''
        QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
-       if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-          if (at%data%int(qm_flag_index,mm).gt.0 .and. at%data%int(qm_flag_index,mm).le.run_type) then
+       if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+           (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
+          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
              QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
 !             call print('QM molecule '//QM_prefix_atom_mol_name)
           endif
