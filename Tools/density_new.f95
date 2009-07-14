@@ -77,7 +77,7 @@ implicit none
   call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
 
   call print("Calculating densities")
-  call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, mask_str)
+  call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, mask_str)
 
   call initialise(outfile, outfilename, OUTPUT)
 
@@ -189,13 +189,15 @@ contains
 
   end function autocorrelation_3array
 
-  subroutine calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, interval, mask_str)
+  subroutine calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, interval, gaussian, gaussian_sigma, mask_str)
     real(dp), intent(inout), allocatable :: histo_count(:,:,:,:)
     integer, intent(out) :: n_histos
     real(dp), intent(in) :: min_p(3), bin_width(3)
     integer, intent(in) :: n_bins(3)
     type(atoms_ll), intent(in) :: structure_ll
     real(dp), intent(in) :: interval
+    logical, intent(in) :: gaussian
+    real(dp), intent(in) :: gaussian_sigma
     character(len=*), optional, intent(in) :: mask_str
     
     real(dp) :: last_time, cur_time
@@ -228,33 +230,70 @@ contains
 	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
 	n_histos = n_histos + 1
 	call reallocate_histos(histo_count, n_histos, n_bins)
-	call accumulate_histo_count(histo_count(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, mask_str)
+	call accumulate_histo_count(histo_count(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian, gaussian_sigma, mask_str)
       endif
       entry => entry%next
     end do
   end subroutine calc_histos
 
-  subroutine accumulate_histo_count(histo_count, at, min_p, bin_width, n_bins, mask_str)
+  subroutine accumulate_histo_count(histo_count, at, min_p, bin_width, n_bins, gaussian, gaussian_sigma, mask_str)
     real(dp), intent(inout) :: histo_count(:,:,:)
     type(Atoms), intent(in) :: at
-    real(dp) :: min_p(3), bin_width(3)
-    integer :: n_bins(3)
+    real(dp), intent(in) :: min_p(3), bin_width(3)
+    integer, intent(in) :: n_bins(3)
+    logical, intent(in) :: gaussian
+    real(dp), intent(in) :: gaussian_sigma
     character(len=*), optional, intent(in) :: mask_str
 
     real(dp) :: min_p_lat(3), bin_width_lat(3), p_lat(3)
     integer :: i, bin(3)
     logical, allocatable :: mask_a(:)
+    integer :: i1, i2, i3
+    real(dp) :: r1, r2, r3, r1_sq, r2_sq, r3_sq
+    integer :: n_samples = 20
+    real(dp) :: p_center(3), p(3)
+    real(dp) :: range
+    real(dp) :: weight, normalization, n_samples_d, sigma_sq
 
     allocate(mask_a(at%N))
     call is_in_mask(mask_a, at, mask_str)
+
+    range = 3.0_dp*gaussian_sigma
+    normalization = ((2.0*range/real(2*n_samples,dp))**3)/(gaussian_sigma*sqrt(PI))**3
+
+    n_samples_d = real(n_samples,dp)
+    sigma_sq = gaussian_sigma**2
 
     min_p_lat = at%g .mult. min_p
     bin_width_lat = at%g .mult. bin_width
     do i=1, at%N
       if (.not. mask_a(i)) cycle
-      p_lat = at%g .mult. at%pos(:,i)
-      bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
-      if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + 1.0_dp
+      if (gaussian) then
+	p_center = at%pos(:,i)
+	do i1=-n_samples, n_samples
+	  r1 = real(i1,dp)/real(n_samples,dp)*range
+	  r1_sq = r1*r1
+	  p(1) = p_center(1) + r1
+	  do i2=-n_samples, n_samples
+	    r2 = real(i2,dp)/real(n_samples,dp)*range
+	    r2_sq = r2*r2
+	    p(2) = p_center(2) + r2
+	    do i3=-n_samples, n_samples
+	      r3 = real(i3,dp)/real(n_samples,dp)*range
+	      r3_sq = r3*r3
+	      p(3) = p_center(3) + r3
+	      p_lat = at%g .mult. p
+	      bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	      weight = normalization*exp(-(r1_sq+r2_sq+r3_sq)/sigma_sq)
+	      if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + weight
+	    end do
+	  end do
+	end do
+      else
+	p_lat = at%g .mult. at%pos(:,i)
+	bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + 1.0_dp
+      endif
     end do
   end subroutine accumulate_histo_count
 
