@@ -39,7 +39,7 @@ module topology_module
   private :: create_pos_dep_charges, calc_fc
 #endif
 
-  public  :: delete_bond, &
+  public  :: delete_metal_connects, &
              write_brookhaven_pdb_file, &
              write_cp2k_pdb_file, &
              write_psf_file, &
@@ -1556,57 +1556,22 @@ enddo
   end subroutine calc_connect_danny
 #endif
 
-   ! removes a bond between i and j, if the bond is present
-  subroutine delete_bond(at, i, j)
+   ! remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
+   ! uses remove_bond in atoms_module 
+  subroutine delete_metal_connects(at)
 
     type(Atoms), intent(inout) :: at
-    integer, intent(in) :: i, j
+    integer :: i, j
 
-    integer :: ii, jj, kk, k, ll, change
-    integer, allocatable :: bond_table(:,:)
-
-    if (i.eq.j) return
-
-    if (i.lt.j) then
-       ii = i
-       jj = j
-    else
-       ii = j
-       jj = i
-    endif
-
-    allocate (bond_table(4,at%connect%neighbour1(ii)%t%N))
-    bond_table = int_part(at%connect%neighbour1(ii)%t)
-    kk = find_in_array(bond_table(1,:),jj)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//ii//' '//jj)
-       call delete(at%connect%neighbour1(ii)%t,kk)
-    endif
-    deallocate(bond_table)
-
-   ! if I delete a bond from neighbour1, I should update in neighbour2 that
-   ! it's the $(n-1)$-th (or the last is now takes the place of the deleted) neighbour from now on
-    if (kk.gt.0) then
-       do k = kk, at%connect%neighbour1(ii)%t%N     ! k-th neighbour of ii
-          ll = at%connect%neighbour1(ii)%t%int(1,k)     ! is ll
-          allocate (bond_table(2,at%connect%neighbour2(ll)%t%N))
-          bond_table = int_part(at%connect%neighbour2(ll)%t)
-          change = find_in_array(bond_table(1,:),ii)    ! ll has an account for ii
-          if (change.eq.0) call system_abort('Found nonsymmetrical connectivity.')
-          at%connect%neighbour2(ll)%t%int(2,change) = k ! this account is updated now
-          deallocate (bond_table)
+    do i = 1, at%N
+       if (any(at%Z(i).eq.(/1,6,7,8,14,15,16,17/))) cycle
+!       call print('found metal atom '//i)
+       do j = 1, at%N
+          if (i.ne.j) &
+             call remove_bond(at%connect, i, j)
        enddo
-    endif
+    enddo
 
-    allocate (bond_table(2,at%connect%neighbour2(jj)%t%N))
-    bond_table = int_part(at%connect%neighbour2(jj)%t)
-    kk = find_in_array(bond_table(1,:),ii)
-    if (kk.gt.0) then
-!       call print('found bond to delete for atoms '//jj//' '//ii)
-       call delete(at%connect%neighbour2(jj)%t,kk)
-    endif
-    deallocate(bond_table)
-
-  end subroutine delete_bond
+  end subroutine delete_metal_connects
 
 end module topology_module
