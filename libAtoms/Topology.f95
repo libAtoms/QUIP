@@ -32,7 +32,7 @@ module topology_module
 
   implicit none
 
-  private :: next_motif, write_psf_section, create_bond_list, write_psf_file
+  private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
   private :: create_angle_list, create_dihedral_list
   private :: create_improper_list, get_property
 #ifdef HAVE_DANNY
