@@ -1,5 +1,5 @@
 from quippy import *
-import unittest, itertools, sys
+import unittest, itertools, sys, quippy
 from quippytest import *
 
 class TestAtomsList(QuippyTestCase):
@@ -128,6 +128,9 @@ class TestAtomsList(QuippyTestCase):
       g = testwriter()
       g.next()
       self.assertEqual(self.listal.write(g), [8, 8, 8, 8, 8])
+
+      g = testwriter()
+      g.next()
       self.assertEqual(self.genal.write(g),  [8, 8, 8, 8, 8])
 
 
@@ -231,6 +234,8 @@ class TestAtomsListCInOutput(QuippyTestCase):
    def testmultixyz(self):
       self.al.write('test.xyz')
       al = AtomsList('test.xyz')
+      self.assertEqual(len(al), 5)
+      self.assertEqual(len(self.al), len(al))
       self.assertEqual(list(self.al), list(al))
 
    def testmultinc(self):
@@ -269,18 +274,51 @@ class TestAtomsListCInOutput(QuippyTestCase):
       self.assertEqual(list(al), list(self.al))
 
 
+class TestPythonNetCDF(QuippyTestCase):
+   def setUp(self):
+      self.at = supercell(diamond(5.44,14), 2,2,2)
+      self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
+      self.al.write('test3.nc', netcdf4=False)
+
+   def tearDown(self):
+      if os.path.exists('test3.nc'): os.remove('test3.nc')
+      if os.path.exists('dataset.nc'): os.remove('dataset.nc')
+
+   def testpupynere_read(self):
+      from pupynere import netcdf_file
+      nc = netcdf_file('test3.nc', 'r')
+      al = AtomsList(nc, format=quippy.netcdf_file)
+      self.assertEqual(list(self.al), list(al))
+      nc.close()
+      
+   def testnetcdf4_read(self):
+      from netCDF4 import Dataset
+      nc = Dataset('test3.nc','r')
+      al = AtomsList(nc)
+      self.assertEqual(list(self.al), list(al))
+      nc.close()
+
+   def testnetcdf4_write(self):
+      from netCDF4 import Dataset
+      nc = Dataset('dataset.nc','w')
+      al2 = AtomsList(self.al)
+      al2.write(nc)
+      nc.close()
+      al = AtomsList('dataset.nc')
+      self.assertEqual(list(self.al), list(al))
+
 class TestNetCDFAtomsList(QuippyTestCase):
 
    def setUp(self):
       self.at = supercell(diamond(5.44, 14), 2, 2, 2)
       self.al = AtomsList(self.at for x in range(5))
-      self.al.write('test.nc')      
+      self.al.write('test.nc')
 
    def tearDown(self):
       os.remove('test.nc')
 
    def testread(self):
-      at = netcdf4_read('test.nc').next()
+      at = netcdf_read('test.nc').next()
       self.assertEqual(at, self.at)
 
    def testgetvars(self):
@@ -292,6 +330,7 @@ def getTestSuite():
    tl = unittest.TestLoader()
    return unittest.TestSuite([tl.loadTestsFromTestCase(TestAtomsList),
                               tl.loadTestsFromTestCase(TestAtomsListCInOutput),
+                              tl.loadTestsFromTestCase(TestPythonNetCDF),
                               tl.loadTestsFromTestCase(TestNetCDFAtomsList)])
 
 if __name__ == '__main__':
