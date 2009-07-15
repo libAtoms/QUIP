@@ -59,11 +59,11 @@ class Atoms(FortranAtoms):
             format = source.__class__
 
       if format in AtomsReaders:
-         source = iter(AtomsReaders[format](source, *args, **kwargs))
+         source = AtomsReaders[format](source, *args, **kwargs)
 
-      if not hasattr(source, 'next'):
-         raise ValueError('Cannot read from source %r - no next() function' % source)
-      at = source.next()
+      if not hasattr(source, '__iter__'):
+         raise ValueError('Cannot read from source %r - not an iterator' % source)
+      at = iter(source).next()
       if not isinstance(at, cls):
          raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
       return at
@@ -84,7 +84,9 @@ class Atoms(FortranAtoms):
          dest = iter(AtomsWriters[format](dest, *args, **kwargs))
          dest.next()
 
-      return dest.send(self)
+      res = dest.send(self)
+      dest.close()
+      return res
 
    def show(self, property=None):
       """Show this Atoms object in AtomEye."""
@@ -403,8 +405,8 @@ from quippy import INPUT, OUTPUT, INOUT
 
 class CInOutput(FortranCInOutput):
 
-   def __init__(self, filename, action=INPUT, append=False):
-      FortranCInOutput.__init__(self, filename, action, append)
+   def __init__(self, filename, action=INPUT, append=False, netcdf4=True):
+      FortranCInOutput.__init__(self, filename, action, append, netcdf4)
 
    def __len__(self):
       return int(self.n_frame)
