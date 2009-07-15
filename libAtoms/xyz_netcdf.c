@@ -377,6 +377,8 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
   if (!atoms->initialised) {
     // get dimension and variable information
 
+    debug("read_netcdf: nc_id = %d\n", nc_id);
+
     // Inquire dimensions
     netcdf_check(nc_inq_dimid(nc_id, "frame", &atoms->frame_dim_id[NETCDF_IN]));
     netcdf_check(nc_inq_dimid(nc_id, "spatial", &atoms->spatial_dim_id[NETCDF_IN]));
@@ -2562,7 +2564,7 @@ int main (int argc, char **argv)
 {
   Atoms at;
   int i, j, k, n, nframes, nsel, res;
-  int ch, cflag, rflag, nflag, aflag, oflag, fflag, pflag, Pflag, Lflag, dflag, zflag, Zflag;
+  int ch, cflag, rflag, nflag, aflag, oflag, fflag, pflag, Pflag, Lflag, dflag, zflag, Zflag, nc3flag;
   int f_start, f_stop, f_step, gotcolon, offset;
   char *start, *stop, *step;
   char linebuffer[LINESIZE], exename[LINESIZE], optstr[LINESIZE];
@@ -2875,10 +2877,13 @@ int main (int argc, char **argv)
       debug("Opening NetCDF file \"%s\" for writing\n", outfilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-      if (nc3flag)
-	netcdf_check(nc_create(outfilename, NC_CLASSIC_MODEL | NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
-      else
+      if (nc3flag) {
+	netcdf_check(nc_set_default_format(NC_FORMAT_64BIT, NULL));
+	netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
+      } else {
+	netcdf_check(nc_set_default_format(NC_FORMAT_NETCDF4, NULL));
 	netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out));
+      }
 #else
       netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #endif
@@ -3031,10 +3036,11 @@ int main (int argc, char **argv)
     debug("Opening NetCDF file \"%s\" for reading\n", infilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-    if (nc3flag)
-      netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in))
-    else
-      netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in);)
+    if (nc3flag) {
+      netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
+    } else {
+      netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in));
+    }
 #else
     netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
@@ -3046,10 +3052,13 @@ int main (int argc, char **argv)
       debug("Opening NetCDF file \"%s\" for writing\n", outfilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-      if (nc3flag)
-	netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out))
-      else
+      if (nc3flag) {
+	netcdf_check(nc_set_default_format(NC_FORMAT_64BIT, NULL));
 	netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
+      } else {
+	netcdf_check(nc_set_default_format(NC_FORMAT_NETCDF4, NULL));
+	netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out));
+      }
 #else
       netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #endif
@@ -3153,14 +3162,15 @@ int main (int argc, char **argv)
 
       debug("Opening NetCDF file \"%s\" for reading\n", infilename);
 #ifdef NETCDF4
-      if (nc3flag) 
-	netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in))
-      else
+      if (nc3flag) {
+	netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
+      } else {
 	netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in));
+      }
 #else
       netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
-      
+
       nframes = read_netcdf(nc_in, &at, 0, atomlist, natomlist, 1, 0, 1, zflag, 0, 0.0);
       if (nframes == 0) pe("Error reading netcdf");
       parse_range(rflag, nframes, offset, gotcolon, start, stop, step, &f_start, &f_stop, &f_step);
@@ -3273,7 +3283,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4,
   if (n_property) *n_property = &((**at).n_property);
   if (got_index) *got_index = &((**at).got_index);
   if (pnetcdf4) *pnetcdf4 = &((**at).netcdf4);
-  
+
   (**at).xyz_in = NULL;
   (**at).xyz_out = NULL;
   (**at).nc_in = -1;
@@ -3389,9 +3399,11 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4,
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
       if ((**at).netcdf4) {
+	netcdf_check(nc_set_default_format(NC_FORMAT_NETCDF4, NULL));
 	netcdf_check(nc_create(filename, NC_NETCDF4 | NC_CLOBBER, &((**at).nc_out)));
       } else {
-	netcdf_check(nc_create(filename, NC_CLASSIC_MODEL | NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
+	netcdf_check(nc_set_default_format(NC_FORMAT_64BIT, NULL));
+	netcdf_check(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
       }
 #else
       netcdf_check(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
