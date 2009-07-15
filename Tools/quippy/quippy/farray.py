@@ -31,13 +31,13 @@ def fzeros(shape,dtype=float):
     """Create an empty FortranArray with Fortran ordering."""
     return FortranArray(numpy.zeros(shape,dtype,order='F'))
 
-def farray(seq):
+def farray(seq, dtype=None):
     """Convert seq to a FortranArray with Fortran ordering.
 
     >>> fa = farray([1,2,3])
 
     A copy of the data in seq will be made if necessary."""
-    na = numpy.array(seq,order='F')
+    na = numpy.array(seq,order='F', dtype=dtype)
     if isinstance(seq,tuple) or isinstance(seq,list):
         na = na.transpose()
     return FortranArray(na)
@@ -451,5 +451,6 @@ class FortranArray(numpy.ndarray):
             return ''.join(self).strip()
         else:
             return farray([''.join(x).strip() for x in self])
+
 
 
