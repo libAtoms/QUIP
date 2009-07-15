@@ -4774,9 +4774,10 @@ contains
       character(len=2048) :: my_properties, prop_names
       character(len=1024) :: tmp_properties(this%properties%N)
       type(Dictionary)    :: use_properties
-      character(len=1024) :: my_real_format
+      character(len=1024) :: my_real_format, my_values_real_format
 
       my_real_format = optional_default('f12.5',real_format)
+      my_values_real_format = optional_default('f18.6',real_format)
 
       do_all_properties = .false.
       if (present(all_properties)) do_all_properties = all_properties
@@ -4870,7 +4871,7 @@ contains
          ! Then the lattice, property names and other parameters
          call set_value(this%params, 'Lattice', reshape(this%lattice, (/9/)))
          call set_value(this%params, 'Properties', prop_names)
-         line = write_string(this%params, real_format='f18.6')
+	 line = write_string(this%params, real_format=my_values_real_format)
 
          ! Finally any optional comment
          if (present(comment)) then 
