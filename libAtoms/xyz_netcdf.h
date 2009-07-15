@@ -71,6 +71,7 @@ typedef struct {
   long frames[XYZ_MAX_FRAMES];
   int atoms[XYZ_MAX_FRAMES];
   int got_index;
+  int netcdf4;
 } Atoms;
 
 // Localise in memory by property

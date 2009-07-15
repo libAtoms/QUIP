@@ -24,19 +24,19 @@ module CInOutput_module
        type(C_PTR), intent(in), value :: at
      end subroutine ciofree
 
-     function cioinit(at, filename, action, append, &
+     function cioinit(at, filename, action, append, netcdf4, &
           n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
           property_name, property_type, property_ncols, property_start, property_filter, &
           param_name, param_type, param_size, param_value, param_int, param_real, param_int_a, &
-          param_real_a, param_filter, lattice, got_index) bind(c)
+          param_real_a, param_filter, lattice, got_index, pnetcdf4) bind(c)
        use iso_c_binding, only: C_INT, C_CHAR, C_PTR, C_LONG
        type(C_PTR), intent(out) :: at
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), intent(in) :: action, append
+       integer(kind=C_INT), intent(in) :: action, append, netcdf4
        type(C_PTR) :: n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
             property_name, property_type, property_ncols, property_start, property_filter, &
             param_name, param_type, param_size, param_value, &
-            param_int, param_real, param_int_a, param_real_a, param_filter, lattice, got_index
+            param_int, param_real, param_int_a, param_real_a, param_filter, lattice, got_index, pnetcdf4
        integer(kind=C_INT) :: cioinit
      end function cioinit
 
@@ -84,10 +84,10 @@ module CInOutput_module
      type(C_PTR) :: c_n_frame, c_n_atom, c_n_int, c_n_real, c_n_str, c_n_logical, c_n_param, c_n_property, &
           c_property_name, c_property_type, c_property_start, c_property_ncols, c_property_filter, &
           c_param_name, c_param_type, c_param_size, c_param_value, c_pint, c_preal, c_pint_a, c_preal_a, &
-          c_param_filter, c_lattice, c_got_index
+          c_param_filter, c_lattice, c_got_index, c_netcdf4
 
      integer(C_SIZE_T), pointer :: n_atom, n_frame
-     integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index
+     integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index, netcdf4
      integer :: current_frame
 
      integer, pointer, dimension(:) :: property_type, property_ncols, property_start, &
@@ -118,6 +118,19 @@ module CInOutput_module
 
   interface read
      !% Read an Atoms object from this CInOutput stream.
+     !%
+     !% Important properties which may be present (non-exhaustive list)
+     !% \begin{itemize}
+     !% \item {\bf species}, str, 1 col -- atomic species, e.g. Si or H
+     !% \item {\bf pos}, real, 3 cols -- cartesian positions, in A
+     !% \item {\bf Z}, int, 1 col -- atomic numbers
+     !% \item {\bf mass}, real, 1 col -- atomic masses, in A,eV,fs units system
+     !% \item {\bf velo}, real, 3 cols -- velocities, in A/fs
+     !% \item {\bf acc}, real, 3 cols -- accelerations, in A/fs$^2$
+     !% \item {\bf hybrid}, int, 1 col -- one for QM atoms and zero for hybrid atoms
+     !% \item {\bf frac_pos}, real, 3 cols -- fractional positions of atoms
+     !% \end{itemize}
+
      module procedure CInOutput_read
      module procedure atoms_read
      module procedure atoms_read_cinoutput
@@ -146,33 +159,38 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4)
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
     logical, intent(in), optional :: append
+    logical, optional, intent(in) :: netcdf4
 
-    integer :: do_append
+    integer :: do_append, do_netcdf4
 
     this%action = optional_default(INPUT, action)
+    do_netcdf4 = 1
+    if (present(netcdf4)) then
+       if (.not. netcdf4) do_netcdf4 = 0
+    end if
     do_append = 0
     if (present(append)) then
        if (append) do_append = 1
     end if
 
     if (present(filename)) then
-       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, &
+       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
             call system_abort("Error opening file "//filename)
     else
-       if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, &
+       if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
             call system_abort("Error allocating C structure")
     end if
 
@@ -185,6 +203,7 @@ contains
     call c_f_pointer(this%c_n_param, this%n_param)
     call c_f_pointer(this%c_n_property, this%n_property)
     call c_f_pointer(this%c_got_index, this%got_index)
+    call c_f_pointer(this%c_netcdf4, this%netcdf4)
 
     call c_f_pointer(this%c_lattice, this%lattice, (/3,3/))
 
