@@ -101,6 +101,47 @@ class ParamReader(OrderedDict):
       f.write(self.asstring(sep='\n'))
 
 
+def parse_properties(prop_str):
+   """Parse a property description string in the format
+   name:ptype:cols:...  and return a 5-tuple of an OrderedDict
+   mapping property names to (ptype,cols) tuples and the number of
+   int, real, string and logical properties"""
+
+   properties = OrderedDict()
+   if prop_str.startswith('pos:R:3'):
+      prop_str = 'species:S:1:'+prop_str
+      
+   fields = prop_str.split(':')
+
+   n_real = 0
+   n_int  = 0
+   n_str = 0
+   n_logical = 0
+   for name, ptype, cols in zip(fields[::3], fields[1::3], map(int,fields[2::3])):
+      if ptype == 'R':
+         start_col = n_real
+         n_real = n_real + cols
+         end_col = n_real
+      elif ptype == 'I':
+         start_col = n_int
+         n_int = n_int + cols
+         end_col = n_int
+      elif ptype == 'S':
+         start_col = n_str
+         n_str = n_str + cols
+         end_col = n_str
+      elif ptype == 'L':
+         start_col = n_logical
+         n_logical = n_logical + cols
+         end_col = n_logical
+      else:
+         raise ValueError('Unknown property type: '+ptype)
+
+      properties[name] = (ptype,slice(start_col,end_col))
+
+   return (properties, n_int, n_real, n_str, n_logical)
+
+
 def args_str(D):
    """Construct args string from file, string or mapping object"""
    return str(ParamReader(D))
