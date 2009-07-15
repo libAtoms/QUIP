@@ -131,7 +131,7 @@ program cp2k_filepot
     forces_p = f0
 
     call initialise(xyz,new_coord_file,action=OUTPUT)
-    call print_xyz(my_atoms,xyz,all_properties=.true.,real_format='f17.10')
+    call print_xyz(my_atoms,xyz,all_properties=.true.,real_format='f20.13')
     call finalise(xyz)
 
     deallocate(f0)
