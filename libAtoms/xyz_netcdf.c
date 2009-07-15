@@ -912,11 +912,13 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
     
 
 #ifdef NETCDF4
-    netcdf_check(nc_def_var_deflate(nc_id, atoms->spatial_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
-    netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_spatial_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
-    netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_angular_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
-    netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_lengths_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
-    netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_angles_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+    if (atoms->netcdf4) {
+      netcdf_check(nc_def_var_deflate(nc_id, atoms->spatial_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+      netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_spatial_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+      netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_angular_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+      netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_lengths_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+      netcdf_check(nc_def_var_deflate(nc_id, atoms->cell_angles_var_id[NETCDF_OUT], shuffle, deflate, deflate_level));
+    }
 #endif
   }
 
@@ -1028,7 +1030,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 
       nc_put_att_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->param_type[i]));
 #ifdef NETCDF4
-      if (newfile || newvar)
+      if (atoms->netcdf4 && (newfile || newvar))
 	netcdf_check(nc_def_var_deflate(nc_id, atoms->param_var_id[i][NETCDF_OUT], shuffle, deflate, deflate_level));
 #endif
     }
@@ -1210,7 +1212,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
       }
       nc_put_att_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->property_type[i]));
 #ifdef NETCDF4
-      if (newfile || newvar)
+      if (atoms->netcdf4 && (newfile || newvar))
 	netcdf_check(nc_def_var_deflate(nc_id, atoms->property_var_id[i][NETCDF_OUT], shuffle, deflate, deflate_level));
 #endif
     }
@@ -1668,12 +1670,12 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int suppress, int override_lattice,
 	      double lattice[3][3]) {
-  int i,n, entry_count,j,k,ncols,m, atidx;
+  int i,n, entry_count,j,k=0,ncols,m, atidx;
   char linebuffer[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
     finalfields[MAX_ENTRY_COUNT][LINESIZE];
   char *p, *p1, tmp_logical;
-  int properties_idx, lattice_idx, nxyz, original_index=0, nfields, idx, offset, error;
+  int properties_idx, lattice_idx, nxyz, original_index=0, nfields=0, idx, offset, error;
   double tmpd;
 
   if (in != stdin && atoms->got_index)
@@ -2449,6 +2451,7 @@ void usage(int nc2xyz, int xyz2nc, int xyz2xyz, int nc2nc, int xyzstat, int ncst
   printf("                   ::2             ::2            entire file, every 3nd frame.\n\n");
   printf("  -a ATOMFILE  Restrict atoms selected to those indices listed in ATOMFILE.\n");
   printf("  -F           Use one-based  (Fortran-style) indexing for frames and atoms\n\n");
+  printf("  -3           Use NetCDF 3 file format\n\n");
 
   printf("\nOptions specific to this variant:\n");
 
@@ -2612,6 +2615,7 @@ int main (int argc, char **argv)
   zflag = 0;
   Zflag = 0;
   offset = 0;
+  nc3flag = 0;
 
   strcpy(intformat, "%8d");
   strcpy(realformat, "%16.8f");
@@ -2619,7 +2623,7 @@ int main (int argc, char **argv)
   strcpy(strformat, "%.10s");
 
   // Build option string
-  strcpy(optstr, "hr:a:F");
+  strcpy(optstr, "hr:a:F3");
   if (xyzstat || ncstat) 
     strcat(optstr, "cfnvpPd:");
   else
@@ -2654,6 +2658,11 @@ int main (int argc, char **argv)
     case 'F':
       offset=1;
       break;
+
+    case '3':
+      nc3flag=1;
+      break;
+
       /* end of general options */
 
     case 'c':
@@ -2866,7 +2875,10 @@ int main (int argc, char **argv)
       debug("Opening NetCDF file \"%s\" for writing\n", outfilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-      netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out));
+      if (nc3flag)
+	netcdf_check(nc_create(outfilename, NC_CLASSIC_MODEL | NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
+      else
+	netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out));
 #else
       netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #endif
@@ -3019,7 +3031,10 @@ int main (int argc, char **argv)
     debug("Opening NetCDF file \"%s\" for reading\n", infilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-    netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in));
+    if (nc3flag)
+      netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in))
+    else
+      netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in);)
 #else
     netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
@@ -3031,7 +3046,10 @@ int main (int argc, char **argv)
       debug("Opening NetCDF file \"%s\" for writing\n", outfilename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-      netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out));
+      if (nc3flag)
+	netcdf_check(nc_create(outfilename, NC_NETCDF4 | NC_CLOBBER, &nc_out))
+      else
+	netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #else
       netcdf_check(nc_create(outfilename, NC_64BIT_OFFSET | NC_CLOBBER, &nc_out));
 #endif
@@ -3135,7 +3153,10 @@ int main (int argc, char **argv)
 
       debug("Opening NetCDF file \"%s\" for reading\n", infilename);
 #ifdef NETCDF4
-      netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in));
+      if (nc3flag) 
+	netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in))
+      else
+	netcdf_check(nc_open(infilename, NC_NOWRITE, &nc_in));
 #else
       netcdf_check(nc_open(infilename, NC_64BIT_OFFSET | NC_NOWRITE, &nc_in));
 #endif
@@ -3206,12 +3227,12 @@ int cioquery(Atoms *at, int *frame) {
   } else return 0;
 }
 
-int cioinit(Atoms **at, char *filename, int *action, int *append,
+int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
 	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice,
-	    int **got_index)
+	    int **got_index, int **pnetcdf4)
 {
   char *p, *q;
   int i, z, *zp;
@@ -3251,6 +3272,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
   if (n_param) *n_param = &((**at).n_param);
   if (n_property) *n_property = &((**at).n_property);
   if (got_index) *got_index = &((**at).got_index);
+  if (pnetcdf4) *pnetcdf4 = &((**at).netcdf4);
   
   (**at).xyz_in = NULL;
   (**at).xyz_out = NULL;
@@ -3346,12 +3368,17 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
     
   NETCDF:
     (**at).got_index = 1;
+    (**at).netcdf4 = *netcdf4;
 #ifdef HAVE_NETCDF
     if (*action == INPUT) {
 
       debug("Opening NetCDF file \"%s\" for reading\n", filename);
 #ifdef NETCDF4
-      netcdf_check(nc_open(filename, NC_NOWRITE, &((**at).nc_in)));
+      if ((**at).netcdf4) {
+	netcdf_check(nc_open(filename, NC_NOWRITE, &((**at).nc_in)));
+      } else {
+	netcdf_check(nc_open(filename, NC_64BIT_OFFSET | NC_NOWRITE, &((**at).nc_in)));
+      }
 #else
       netcdf_check(nc_open(filename, NC_64BIT_OFFSET | NC_NOWRITE, &((**at).nc_in)));
 #endif
@@ -3361,7 +3388,11 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
       debug("Opening NetCDF file \"%s\" for writing\n", filename);
 #ifdef HAVE_NETCDF
 #ifdef NETCDF4
-      netcdf_check(nc_create(filename, NC_NETCDF4 | NC_CLOBBER, &((**at).nc_out)));
+      if ((**at).netcdf4) {
+	netcdf_check(nc_create(filename, NC_NETCDF4 | NC_CLOBBER, &((**at).nc_out)));
+      } else {
+	netcdf_check(nc_create(filename, NC_CLASSIC_MODEL | NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
+      }
 #else
       netcdf_check(nc_create(filename, NC_64BIT_OFFSET | NC_CLOBBER, &((**at).nc_out)));
 #endif
@@ -3371,7 +3402,11 @@ int cioinit(Atoms **at, char *filename, int *action, int *append,
 #endif
     } else if (*action == INOUT) {
 #ifdef NETCDF4
-      netcdf_check(nc_open(filename, NC_WRITE, &((**at).nc_in)));
+      if ((**at).netcdf4) {
+	netcdf_check(nc_open(filename, NC_WRITE, &((**at).nc_in)));
+      } else {
+	netcdf_check(nc_open(filename, NC_64BIT_OFFSET | NC_WRITE, &((**at).nc_in)));
+      }
 #else
       netcdf_check(nc_open(filename, NC_64BIT_OFFSET | NC_WRITE, &((**at).nc_in)));
 #endif
