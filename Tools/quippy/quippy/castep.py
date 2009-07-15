@@ -2,7 +2,7 @@ import sys, string, os, operator, itertools
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
-from quippy import AtomsReaders, AtomsWriters
+from quippy import AtomsReaders, AtomsWriters, atoms_reader, atoms_writer
 
 import xml.dom.minidom
 
@@ -247,10 +247,15 @@ class CastepCell(OrderedDict):
       for i in frange(at.n):
          self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
-   def __iter__(self):
+
+   @staticmethod
+   @atoms_reader('cell')
+   def cellreader(source):
+      self = CastepCell(source)
       yield self.to_atoms()
 
    @staticmethod
+   @atoms_writer('cell')
    def cellwriter(dest):
       """Generator to write single .cell file"""
 
@@ -264,7 +269,7 @@ class CastepCell(OrderedDict):
       yield 1
 
  
-AtomsReaders['cell'] = AtomsReaders[CastepCell] = CastepCell
+AtomsReaders[CastepCell] = CastepCell.cellreader
 AtomsWriters['cell'] = CastepCell.cellwriter
 AtomsWriters[CastepCell] = CastepCell.cellupdater
 
@@ -365,7 +370,7 @@ class CastepParam(OrderedDict):
          paramfile.write('%s = %s\n' % (key, value))
 
 
-
+@atoms_reader('geom')
 def CastepGeomReader(source):
    """Generator to read frames from CASTEP .geom file"""
 
@@ -452,9 +457,8 @@ def CastepGeomReader(source):
 
       yield at
 
-      
-AtomsReaders['geom'] = CastepGeomReader
-
+@atoms_reader('castep')
+@atoms_reader('castep_log')
 def CastepOutputReader(castep_file, cluster=None, abort=True):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
@@ -664,10 +668,6 @@ def CastepOutputReader(castep_file, cluster=None, abort=True):
 
       if eof:
          break
-
-
-AtomsReaders['castep'] = AtomsReaders['castep_log'] = CastepOutputReader
-
 
 
 def get_valid_keywords(castep):
