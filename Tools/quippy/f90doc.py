@@ -702,7 +702,21 @@ class C_module:
                         thisdoc.append({'name':charflag,'doc': 'slen(%s)' % arg.name, 'type': 'integer', 'attributes':[]})
 
 
-            println('subroutine %s(%s)' % (newname,', '.join(newargnames)))
+            def join_and_split_lines(args, max_length=80):
+                args_str = ''
+                line = ''
+                args = args[:] # make a copy
+                while args:
+                    line += args.pop(0)
+                    if args:
+                        line += ', '
+                    if args and len(line) >= max_length:
+                        args_str += '%s&\n%s' % (line, ' '*(indent+3))
+                        line = ''
+                args_str += line
+                return args_str
+
+            println('subroutine %s(%s)' % (newname, join_and_split_lines(newargnames)))
             indent += 3
             for line in arglines:
                 println(line)
@@ -711,9 +725,9 @@ class C_module:
             for var in allocates: println('allocate(%s)' % var)
             
             if hasattr(sub, 'ret_val'):
-                println('%s = my_%s(%s)' % (sub.ret_val.name, sub.name, ', '.join(argnames[:-1])))
+                println('%s = my_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argnames[:-1])))
             else:
-                println('call my_%s(%s)' % (sub.name, ', '.join(argnames)))
+                println('call my_%s(%s)' % (sub.name, join_and_split_lines(argnames)))
 
             if sub.name.lower().endswith('finalise') and len(argnames) > 0 and argnames[0] == 'this':
                 println('deallocate(this)')
