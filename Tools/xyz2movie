@@ -50,7 +50,7 @@ do
       echo load_atom_color `printf ${base}%0${ndigit}d $i`.clr  >> scr_movie_${script_n}
   fi
   echo capture_jpg Jpg/`printf ${base}%0${ndigit}d $i`.jpg  >> scr_movie_${script_n}
-  echo load_config_forward $i >> scr_movie_${script_n}
+  echo load_config_forward >> scr_movie_${script_n}
   n=$((n+1))
   if ((n >= 1000)); then 
       script_n=$((script_n+1))
