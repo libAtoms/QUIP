@@ -90,7 +90,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=carve_cluster=T single_cluster=T cluster_calc_connect=T
  buffer_hops=3
+ use_buffer_for_fitting=F
  fit_hops=3
+ add_cut_H_in_fitlist=F
  randomise_buffer=T
  transition_hops=0
  weight_interpolation=hop_ramp
@@ -139,7 +141,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=carve_cluster=T single_cluster=T cluster_calc_connect=T
  buffer_hops=3
+ use_buffer_for_fitting=F
  fit_hops=3
+ add_cut_H_in_fitlist=F
  randomise_buffer=F
  transition_hops=0
  weight_interpolation=hop_ramp

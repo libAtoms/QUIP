@@ -132,9 +132,9 @@
     call Print(' mm_args_str='//trim(this%mm_args_str), file=file)
     call Print(' qm_args_str='//trim(this%qm_args_str), file=file)
     call Print(' buffer_hops='//this%buffer_hops, file=file)
-    call print(' use_buffer_for_fitting'//this%use_buffer_for_fitting)
+    call print(' use_buffer_for_fitting='//this%use_buffer_for_fitting)
     call Print(' fit_hops='//this%fit_hops, file=file)
-    call print(' add_cut_H_in_fitlist'//this%add_cut_H_in_fitlist,file=file)
+    call print(' add_cut_H_in_fitlist='//this%add_cut_H_in_fitlist,file=file)
     call Print(' randomise_buffer='//this%randomise_buffer, file=file)
     call Print(' transition_hops='//this%transition_hops, file=file)
     call Print(' weight_interpolation='//trim(this%weight_interpolation), file=file)
@@ -346,7 +346,6 @@
     if (method(1:4) == 'lotf' .or. trim(method) == 'conserve_momentum') then
 
        if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
-
           if (this%use_buffer_for_fitting) then
              if (trim(method).ne.'conserve_momentum') &
                 call system_abort('use_buffer_for_fitting=T only works for method=conserve_momentum')

@@ -1597,7 +1597,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=single_cluster=T cluster_calc_connect=T
  buffer_hops=3
+ use_buffer_for_fitting=F
  fit_hops=3
+ add_cut_H_in_fitlist=F
  randomise_buffer=F
  transition_hops=0
  weight_interpolation=hop_ramp
@@ -2249,7 +2251,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=single_cluster=T  cluster_calc_connect=T
  buffer_hops=1
+ use_buffer_for_fitting=F
  fit_hops=3
+ add_cut_H_in_fitlist=F
  randomise_buffer=F
  transition_hops=0
  weight_interpolation=hop_ramp
@@ -2897,7 +2901,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=single_cluster=T cluster_calc_connect=T
  buffer_hops=1
+ use_buffer_for_fitting=F
  fit_hops=3
+ add_cut_H_in_fitlist=F
  randomise_buffer=F
  transition_hops=0
  weight_interpolation=hop_ramp
@@ -3545,7 +3551,9 @@ MetaPotential_FM:
  mm_args_str=
  qm_args_str=single_cluster=T cluster_calc_connect=T
  buffer_hops=1
+ use_buffer_for_fitting=F
  fit_hops=2
+ add_cut_H_in_fitlist=F
  randomise_buffer=F
  transition_hops=0
  weight_interpolation=hop_ramp
@@ -3648,7 +3656,9 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ram
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
+Entered create_embed_and_fit_lists.
 create_embed_and_fit_lists: 17 embed, 66 fit
+Leaving create_embed_and_fit_lists.
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
