@@ -1901,6 +1901,10 @@ contains
 
   end subroutine create_embed_and_fit_lists
 
+  !% Given an Atoms structure with an active region marked in the 'hybrid_mark'
+  !% property using 'HYBRID_ACTIVE_MARK', and buffer region marked using 'HYBRID_BUFFER_MARK',
+  !% 'HYBRID_TRANS_MARK' or 'HYBRID_BUFFER_OUTER_LAYER_MARK', simply returns the embedlist and fitlist
+  !% according to 'hybrid_mark'. It does not take into account periodic shifts.
   subroutine create_embed_and_buffer_lists_from_hybrid_mark(at,embedlist,fitlist)
 
     type(Atoms), intent(in)  :: at
@@ -1914,14 +1918,14 @@ contains
     call wipe(tmpfitlist)
 
     !build embed list from ACTIVE atoms
-    call update_list(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
+    call list_matching_prop(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
 
     !build fitlist from BUFFER and TRANS atoms
-    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
+    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
     call append(fitlist,tmpfitlist)
-    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
+    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
     call append(fitlist,tmpfitlist)
-    call update_list(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
+    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
     call append(fitlist,tmpfitlist)
 
     call wipe(tmpfitlist)
@@ -1946,34 +1950,6 @@ contains
     call print('Leaving create_embed_and_buffer_lists_from_hybrid_mark.',VERBOSE)
 
   end subroutine create_embed_and_buffer_lists_from_hybrid_mark
-
-  !helper routine for create_embed_and_buffer_lists_from_hybrid_mark
-  !collects atoms with the *name* property who have value=value
-  subroutine update_list(at,list,name,value)
-
-    type(Atoms), intent(in)    :: at
-    type(Table), intent(inout) :: list
-    character(*), intent(in)   :: name
-    integer,     intent(in)    :: value
-
-    integer                    :: i, pos_indices(3), index
-
-    !find property
-    if (get_value(at%properties,name,pos_indices)) then
-       index = pos_indices(2)
-    else
-       call system_abort('Property "'//name//'" not found')
-    end if
-
-    call wipe(list)
-    
-    do i = 1, at%N
-
-       if (at%data%int(index,i)==value) call append(list,(/i/))
-
-    end do
-
-  end subroutine update_list
 
   !% Return the atoms in a hysteretic quantum region:
   !% To become part of the quantum region, atoms must drift within
