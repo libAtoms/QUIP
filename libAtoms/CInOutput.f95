@@ -253,18 +253,28 @@ contains
     call cinoutput_close(this)
   end subroutine cinoutput_finalise
 
-  subroutine cinoutput_query(this, frame)
+  subroutine cinoutput_query(this, frame, status)
     type(CInOutput), intent(inout) :: this
     integer, optional, intent(in) :: frame
+    integer, optional, intent(out) :: status
     integer(C_SIZE_T) :: do_frame
+
+    integer :: cioquery_status
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (present(frame) .and. this%got_index == 0) call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed")
 
     do_frame = optional_default(this%current_frame, frame)
 
-    if (cioquery(this%c_at, do_frame) == 0) &
-         call system_abort("Error querying CInOutput file")
+    cioquery_status = cioquery(this%c_at, do_frame)
+    if (cioquery_status == 0) then
+      if (present(status)) then
+	status = 1
+	return
+      else
+        call system_abort("Error querying CInOutput file")
+      endif
+    endif
 
     call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
     call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
@@ -331,13 +341,16 @@ contains
     if (present(zero)) then
        if (zero) do_zero = 1
     end if
-    
+
     if (this%got_index == 1) then
        tmp_do_frame = do_frame
-       call cinoutput_query(this, tmp_do_frame)
+       call cinoutput_query(this, tmp_do_frame, status=status)
     else
-       call cinoutput_query(this)
+       call cinoutput_query(this, status=status)
     end if
+    if (present(status)) then
+      if (status /= 0) return
+    endif
 
     call initialise(properties)
     do i=1,this%n_property
