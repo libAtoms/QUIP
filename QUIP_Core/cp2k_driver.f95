@@ -19,35 +19,36 @@
 !
 !contains the following subroutines and functions:
 !
-!S  create_centred_qmcore(my_atoms,R_inner,R_outer,origin)
+!S  param_initialise(this,at,run_type,cp2k_program,basis_set_file,potential_file,dft_file,cell_file,use_cubic_cell)
+!S  param_finalise(this)
+!S  create_centred_qmcore(my_atoms,R_inner,R_outer,origin,list_changed)
+!S  print_qm_region(at, file)
+!S  construct_buffer_origin(my_atoms,Radius,list,origin)
+!S  read_list_file(this,filename,basis_set,potential)
+!S  go_cp2k(my_atoms,forces,energy,args_str)
 !F  extend_qmlist(my_atoms,R_inner,R_outer) result(list_changed)
 !S  construct_buffer_RADIUS(my_atoms,core,radius,buffer,use_avgpos,verbosity)
-!F  check_qmlist_change(old_qmlist,new_qmlist) result(list_changed)
-!F  num_of_bonds(at) result(bonds)
-!S  param_initialise(this,at,run_type,use_cubic_cell)
 !S  get_qm_list_int(my_atoms,qmflag,qmlist)
-!S  get_qm_list_int_rec(my_atoms,qmflag,qmlist, do_recursive)
-!S  get_qm_list_array(my_atoms,qmflag,qmlist)
+!S  get_qm_list_int_rec(my_atoms,qmflag,qmlist,do_recursive)
+!S  get_qm_list_array(my_atoms,qmflags,qmlist)
 !F  get_property(my_atoms,prop) result(prop_index)
-!S  go_cp2k(my_atoms,forces,energy,args_str)
-!S  read_qmlist(my_atoms,qm_list,qmlistfilename,verbose)
+!S  read_qmlist(my_atoms,qmlistfilename,verbose)
+!F  num_of_bonds(at) result(bonds)
 !S  check_neighbour_numbers(at)
-!S  calc_topology(at,do_CHARMM)
-!S  create_CHARMM(at,do_CHARMM)
-!S  next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,do_CHARMM)
+!F  check_qmlist_change(old_qmlist,new_qmlist) result(list_changed)
 !S  write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print)
 !S  write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
 !S  read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
 !S  read_convert_back_pos(forces,param,my_atoms,run_type,verbose)
-!F  real_feq2(x,y) result(feq)
-!F  matrix_feq2(matrix1,matrix2) result (feq)
-!S  QUIP_combine_forces(qmmm_forces,mm_forces,combined_forces,qmlist,my_atoms)
-!F  spline_force(at, i) result(force)
-!S  combine_forces(qmmm_forces,mm_forces,combined_forces,qmlist,my_atoms)
+!S  QUIP_combine_forces(qmmm_forces,mm_forces,combined_forces,my_atoms)
+!S  abrupt_force_mixing(qmmm_forces,mm_forces,combined_forces,my_atoms)
+!F  spline_force(at, i, my_spline, pot) result(force)
 !S  energy_conversion(energy)
 !S  force_conversion(force)
 !S  velocity_conversion(at)
 !S  velocity_conversion_rev(at)
+!F  real_feq2(x,y) result(feq)
+!F  matrix_feq2(matrix1,matrix2) result (feq)
 
 module cp2k_driver_module
 
@@ -55,7 +56,7 @@ module cp2k_driver_module
 
   use atoms_module,            only: atoms, initialise, finalise, &
                                      read_xyz, add_property, &
-                                     map_into_cell, calc_dists, &
+                                     map_into_cell, &
                                      set_cutoff, set_cutoff_minimum, &
                                      calc_connect, DEFAULT_NNEIGHTOL, &
                                      distance_min_image, &
@@ -124,7 +125,6 @@ module cp2k_driver_module
             go_cp2k, &
             read_qmlist, &
             check_neighbour_numbers, &
-            calc_topology, &
             QUIP_combine_forces, &
             spline_force, &
             energy_conversion, &
@@ -1377,97 +1377,6 @@ contains
     endif
 
   end function check_qmlist_change
-
-  !!!!! ============================================================================================ !!!!!
-  !!!!!                                                                                              !!!!!
-  !!!!! \/ \/ \/ \/ \/ \/ ------------  CHARMM  atom type generation  ------------ \/ \/ \/ \/ \/ \/ !!!!!
-  !!!!! \/ \/ \/ \/ \/ \/ ------------    with average coordinates    ------------ \/ \/ \/ \/ \/ \/ !!!!!
-  !!!!!                                                                                              !!!!!
-  !!!!! ============================================================================================ !!!!!
-! topology calculation using average coordinates
-  subroutine calc_topology(at,do_CHARMM,intrares_impropers)
-
-    type(Atoms),       intent(inout) :: at
-    logical, optional, intent(in)    :: do_CHARMM
-    type(Table), optional, intent(out) :: intrares_impropers
-    type(Atoms)                      :: atoms_for_find_motif
-    integer                          :: pos_indices(3), &
-                                        atom_type_index, &
-                                        atom_res_name_index, &
-                                        atom_mol_name_index, &
-                                        atom_res_number_index, &
-                                        atom_charge_index, &
-                                        atom_type_index2, &
-                                        atom_res_name_index2, &
-                                        atom_mol_name_index2, &
-                                        atom_res_number_index2, &
-                                        atom_charge_index2
-    logical :: my_do_CHARMM
-
-  call system_timer('calc_topology')
-   my_do_CHARMM = optional_default(.true.,do_CHARMM)
-   !this should be only the 3 calls with use_avgpos!
-    call print('Creating CHARMM format...')
-
-    if (.not.get_value(at%properties,'oldpos',pos_indices)) &
-       call system_abort('calc_topology: atoms object does not have oldpos property')
-    if (.not.get_value(at%properties,'avgpos',pos_indices)) &
-       call system_abort('calc_topology: atoms object does not have avgpos property')
-
-    atoms_for_find_motif = at
-    atoms_for_find_motif%oldpos = at%avgpos
-    atoms_for_find_motif%avgpos = at%avgpos
-    atoms_for_find_motif%pos = at%avgpos
-!     call set_cutoff(atoms_for_find_motif,DEFAULT_NNEIGHTOL)
-!    call set_cutoff(atoms_for_find_motif,at%cutoff)
-call set_cutoff(atoms_for_find_motif, 0._dp)
-    call calc_connect(atoms_for_find_motif)
-    call delete_metal_connects(atoms_for_find_motif)
-    call map_into_cell(atoms_for_find_motif)
-    call calc_dists(atoms_for_find_motif)
-    if (my_do_CHARMM.and.present(intrares_impropers)) then
-       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM,intrares_impropers=intrares_impropers)
-    else
-       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM)
-    endif
-
-    atoms_for_find_motif%pos = atoms_for_find_motif%oldpos
-
-   ! copy data to at
-    call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_number',0)
-    call add_property(at,'atom_charge',0._dp)
-
-    atom_type_index = get_property(at,'atom_type')
-    atom_type_index2 = get_property(atoms_for_find_motif,'atom_type')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_res_name_index2 = get_property(atoms_for_find_motif,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_mol_name_index2 = get_property(atoms_for_find_motif,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_res_number_index2 = get_property(atoms_for_find_motif,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
-    atom_charge_index2 = get_property(atoms_for_find_motif,'atom_charge')
-
-    at%data%str(atom_type_index,1:at%N) = atoms_for_find_motif%data%str(atom_type_index2,1:at%N)
-    at%data%str(atom_res_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_res_name_index2,1:at%N)
-    at%data%str(atom_mol_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_mol_name_index2,1:at%N)
-    at%data%int(atom_res_number_index,1:at%N) = atoms_for_find_motif%data%int(atom_res_number_index2,1:at%N)
-    at%data%real(atom_charge_index,1:at%N) = atoms_for_find_motif%data%real(atom_charge_index2,1:at%N)
-
-    if (any(at%data%int(atom_res_number_index,1:at%N).le.0)) &
-       call system_abort('calc_topology: atom_res_number is not >0 for every atom')
-    if (any(at%data%str(atom_type_index,1:at%N).eq.'X')) &
-       call system_abort('calc_topology: atom_type is not saved for at least one atom')
-    if (any(at%data%str(atom_res_name_index,1:at%N).eq.'X')) &
-       call system_abort('calc_topology: atom_res_name is not saved for at least one atom')
-    call print('CHARMM parameters added and stored in atoms object')
-    call finalise(atoms_for_find_motif)
-  call system_timer('calc_topology')
-
-  end subroutine calc_topology
 
   !!!!! ============================================================================================ !!!!!
   !!!!!                                                                                              !!!!!
