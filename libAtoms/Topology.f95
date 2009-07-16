@@ -1,6 +1,8 @@
 module topology_module
 
-  use atoms_module,            only: atoms, print, &
+  use atoms_module,            only: atoms, print, finalise, &
+                                     map_into_cell, calc_dists, &
+                                     assignment(=), &
                                      add_property, &
                                      read_line, parse_line, &
                                      atoms_n_neighbours, atoms_neighbour, &
@@ -43,6 +45,7 @@ module topology_module
              write_brookhaven_pdb_file, &
              write_cp2k_pdb_file, &
              write_psf_file, &
+             calc_topology, &
              create_CHARMM, &
              NONE_RUN, &
              QS_RUN, &
@@ -79,6 +82,93 @@ module topology_module
 #endif
 
 contains
+
+
+! topology calculation using average coordinates
+! invokes create_CHARMM that works on at%pos rather than at%avgpos
+  subroutine calc_topology(at,do_CHARMM,intrares_impropers)
+
+    type(Atoms),       intent(inout) :: at
+    logical, optional, intent(in)    :: do_CHARMM
+    type(Table), optional, intent(out) :: intrares_impropers
+    type(Atoms)                      :: atoms_for_find_motif
+    integer                          :: pos_indices(3), &
+                                        atom_type_index, &
+                                        atom_res_name_index, &
+                                        atom_mol_name_index, &
+                                        atom_res_number_index, &
+                                        atom_charge_index, &
+                                        atom_type_index2, &
+                                        atom_res_name_index2, &
+                                        atom_mol_name_index2, &
+                                        atom_res_number_index2, &
+                                        atom_charge_index2
+    logical :: my_do_CHARMM
+
+  call system_timer('calc_topology')
+   my_do_CHARMM = optional_default(.true.,do_CHARMM)
+   !this should be only the 3 calls with use_avgpos!
+    call print('Creating CHARMM format...')
+
+    if (.not.get_value(at%properties,'oldpos',pos_indices)) &
+       call system_abort('calc_topology: atoms object does not have oldpos property')
+    if (.not.get_value(at%properties,'avgpos',pos_indices)) &
+       call system_abort('calc_topology: atoms object does not have avgpos property')
+
+    atoms_for_find_motif = at
+    atoms_for_find_motif%oldpos = at%avgpos
+    atoms_for_find_motif%avgpos = at%avgpos
+    atoms_for_find_motif%pos = at%avgpos
+!     call set_cutoff(atoms_for_find_motif,DEFAULT_NNEIGHTOL)
+!    call set_cutoff(atoms_for_find_motif,at%cutoff)
+call set_cutoff(atoms_for_find_motif, 0._dp)
+    call calc_connect(atoms_for_find_motif)
+    call delete_metal_connects(atoms_for_find_motif)
+    call map_into_cell(atoms_for_find_motif)
+    call calc_dists(atoms_for_find_motif)
+    if (my_do_CHARMM.and.present(intrares_impropers)) then
+       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM,intrares_impropers=intrares_impropers)
+    else
+       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM)
+    endif
+
+    atoms_for_find_motif%pos = atoms_for_find_motif%oldpos
+
+   ! copy data to at
+    call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH))
+    call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH))
+    call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH))
+    call add_property(at,'atom_res_number',0)
+    call add_property(at,'atom_charge',0._dp)
+
+    atom_type_index = get_property(at,'atom_type')
+    atom_type_index2 = get_property(atoms_for_find_motif,'atom_type')
+    atom_res_name_index = get_property(at,'atom_res_name')
+    atom_res_name_index2 = get_property(atoms_for_find_motif,'atom_res_name')
+    atom_mol_name_index = get_property(at,'atom_mol_name')
+    atom_mol_name_index2 = get_property(atoms_for_find_motif,'atom_mol_name')
+    atom_res_number_index = get_property(at,'atom_res_number')
+    atom_res_number_index2 = get_property(atoms_for_find_motif,'atom_res_number')
+    atom_charge_index = get_property(at,'atom_charge')
+    atom_charge_index2 = get_property(atoms_for_find_motif,'atom_charge')
+
+    at%data%str(atom_type_index,1:at%N) = atoms_for_find_motif%data%str(atom_type_index2,1:at%N)
+    at%data%str(atom_res_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_res_name_index2,1:at%N)
+    at%data%str(atom_mol_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_mol_name_index2,1:at%N)
+    at%data%int(atom_res_number_index,1:at%N) = atoms_for_find_motif%data%int(atom_res_number_index2,1:at%N)
+    at%data%real(atom_charge_index,1:at%N) = atoms_for_find_motif%data%real(atom_charge_index2,1:at%N)
+
+    if (any(at%data%int(atom_res_number_index,1:at%N).le.0)) &
+       call system_abort('calc_topology: atom_res_number is not >0 for every atom')
+    if (any(at%data%str(atom_type_index,1:at%N).eq.'X')) &
+       call system_abort('calc_topology: atom_type is not saved for at least one atom')
+    if (any(at%data%str(atom_res_name_index,1:at%N).eq.'X')) &
+       call system_abort('calc_topology: atom_res_name is not saved for at least one atom')
+    call print('CHARMM parameters added and stored in atoms object')
+    call finalise(atoms_for_find_motif)
+  call system_timer('calc_topology')
+
+  end subroutine calc_topology
 
 
   !Analogous to Steve's create_AMBER_input, could be used mutually if AMBER_instance and param_cp2k were merged into 1 parameter object
