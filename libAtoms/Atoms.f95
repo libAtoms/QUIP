@@ -5861,6 +5861,33 @@ contains
     
   end subroutine list_to_property
 
+  !% Find atoms which have integer property 'prop' with value 'value'
+  !% and return them in a table 'list'.
+  subroutine list_matching_prop(at,list,name,value)
+
+    type(atoms), intent(in)    :: at
+    type(table), intent(inout) :: list
+    character(*), intent(in)   :: name
+    integer,     intent(in)    :: value
+
+    integer                    :: i, pos_indices(3), index
+
+    !find property
+    if (get_value(at%properties,name,pos_indices)) then
+       index = pos_indices(2)
+    else
+       call system_abort('Property "'//name//'" not found')
+    end if
+
+    call wipe(list)
+
+    do i = 1, at%N
+
+       if (at%data%int(index,i)==value) call append(list,(/i/))
+
+    end do
+
+  end subroutine list_matching_prop
 
   !% Return the complement of a list, i.e. all those atoms not included
   !% in list. Result is in outlist on exit.
