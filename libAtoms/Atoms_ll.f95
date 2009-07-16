@@ -167,13 +167,13 @@ contains
   !% reads a sequence of configurations with cinoutput, optionally skipping every decimation frames,
   !%  ignoring things outside of min_time--max_time, sorting by Time value and eliminating configs with
   !%  duplicate Time values.
-  subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
+  subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
     type(atoms_ll) :: this
     character(len=*), intent(in) :: filename
     logical, intent(in) :: file_is_list
     integer, intent(in), optional :: decimation
     real(dp), intent(in), optional :: min_time, max_time
-    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet
+    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index
 
     integer :: status
     integer :: frame_count, last_file_frame_n
@@ -186,7 +186,7 @@ contains
     real(dp) :: cur_time, entry_time, entry_PREV_time
     integer :: do_decimation
     real(dp) :: do_min_time, do_max_time
-    logical :: do_sort_Time, do_no_Time_dups, do_quiet
+    logical :: do_sort_Time, do_no_Time_dups, do_quiet, do_no_compute_index
     type(Atoms_ll_entry), pointer :: entry
     logical :: is_a_dup
 
@@ -196,6 +196,7 @@ contains
     do_sort_Time = optional_default(.false., sort_Time)
     do_no_Time_dups = optional_default(.false., no_Time_dups)
     do_quiet = optional_default(.false., quiet)
+    do_no_compute_index = optional_default(.false., no_compute_index)
 
     if (do_no_Time_dups .and. .not. do_sort_Time) call system_abort("ERROR: atoms_ll_read_xyz no_Times_dups requires sort_Time")
 
@@ -213,7 +214,7 @@ contains
     last_file_frame_n = 0
     frame_count = 1
     do while (status == 0) ! loop over files
-      call initialise(cfile,trim(my_filename),action=INPUT)
+      call initialise(cfile,trim(my_filename),action=INPUT, no_compute_index=do_no_compute_index)
       status = 0
       do while (status == 0) ! loop over frames in this file
 	if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
