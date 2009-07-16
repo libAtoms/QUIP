@@ -533,32 +533,6 @@ contains
 
   end subroutine get_prop_info
 
-  subroutine list_matching_prop(at,list,name,value)
-
-    type(atoms), intent(in)    :: at
-    type(table), intent(inout) :: list
-    character(*), intent(in)   :: name
-    integer,     intent(in)    :: value
-
-    integer                    :: i, pos_indices(3), index
-
-    !find property
-    if (get_value(at%properties,name,pos_indices)) then
-       index = pos_indices(2)
-    else
-       call system_abort('Property "'//name//'" not found')
-    end if
-
-    call wipe(list)
-
-    do i = 1, at%N
-
-       if (at%data%int(index,i)==value) call append(list,(/i/))
-
-    end do
-
-  end subroutine list_matching_prop
-
   function Gaussian_histogram(vector,min_x,max_x,Nbin,Gaussian,sigma)
 
     real(dp), dimension(:), intent(in) :: vector
