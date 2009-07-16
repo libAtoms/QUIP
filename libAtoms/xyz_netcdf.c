@@ -3237,7 +3237,7 @@ int cioquery(Atoms *at, int *frame) {
   } else return 0;
 }
 
-int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
+int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, int *no_compute_index,
 	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
@@ -3328,9 +3328,9 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4,
       } else if (strcmp(filename, "stdout") == 0) {
 	fprintf(stderr, "cannot open stdout for action INPOUT");
 	return 0;
-      }
-      else
+      } else {
 	(**at).xyz_in = fopen(filename, "r");
+      }
       if ((**at).xyz_in == NULL) return 0;
       (**at).format = XYZ_FORMAT;
       if (strcmp(filename, "stdin") != 0) { 
@@ -3367,7 +3367,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4,
 	(**at).xyz_in  = (**at).xyz_out;
       }      
       if ((**at).xyz_out == NULL) return 0;
-    (**at).format = XYZ_FORMAT;
+      (**at).format = XYZ_FORMAT;
       z = 0; zp = &z;  cioquery(*at, zp);
     } else {
       fprintf(stderr,"Bad action %d - should be one of INPUT(%d), OUTPUT(%d) or INOUT (%d)",

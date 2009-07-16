@@ -24,7 +24,7 @@ module CInOutput_module
        type(C_PTR), intent(in), value :: at
      end subroutine ciofree
 
-     function cioinit(at, filename, action, append, netcdf4, &
+     function cioinit(at, filename, action, append, netcdf4, no_compute_index, &
           n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
           property_name, property_type, property_ncols, property_start, property_filter, &
           param_name, param_type, param_size, param_value, param_int, param_real, param_int_a, &
@@ -32,7 +32,7 @@ module CInOutput_module
        use iso_c_binding, only: C_INT, C_CHAR, C_PTR, C_LONG
        type(C_PTR), intent(out) :: at
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), intent(in) :: action, append, netcdf4
+       integer(kind=C_INT), intent(in) :: action, append, netcdf4, no_compute_index
        type(C_PTR) :: n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
             property_name, property_type, property_ncols, property_start, property_filter, &
             param_name, param_type, param_size, param_value, &
@@ -159,14 +159,15 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, netcdf4)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index)
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
     logical, intent(in), optional :: append
     logical, optional, intent(in) :: netcdf4
+    logical, optional, intent(in) :: no_compute_index
 
-    integer :: do_append, do_netcdf4
+    integer :: do_append, do_netcdf4, do_no_compute_index
 
     this%action = optional_default(INPUT, action)
     do_netcdf4 = 1
@@ -177,16 +178,20 @@ contains
     if (present(append)) then
        if (append) do_append = 1
     end if
+    do_no_compute_index = 0
+    if (present(no_compute_index)) then
+       if (no_compute_index) do_no_compute_index = 1
+    end if
 
     if (present(filename)) then
-       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, &
+       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
             call system_abort("Error opening file "//filename)
     else
-       if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, &
+       if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
@@ -300,7 +305,10 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
-    if (present(frame) .and. this%got_index == 0) call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed")
+    if (present(frame) .and. this%got_index == 0) then
+      if (frame /= this%current_frame) &
+	call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " /= this%current_frame " // this%current_frame)
+    endif
 
     do_frame = optional_default(this%current_frame, frame)
 
