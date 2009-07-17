@@ -1845,6 +1845,63 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	}
       }
 
+      // Read parameters, according to definition
+      for (i=0; i<nfields; i++) {
+	if ((p = strchr(finalfields[i],'=')) == NULL)  {
+	  fprintf(stderr,"Badly formed key/value pair %s\n", finalfields[i]);
+	  return 0;
+	}
+	*p = '\0';
+    
+	// Look up key in definition
+	j = atoms_find_param(atoms, finalfields[i]);
+	if (j == -1) {
+	  fprintf(stderr,"Unknown parameter %s", finalfields[i]);
+	  return 0;
+	}
+
+	strcpy(atoms->param_value[j], p+1);
+	if (strcasecmp(atoms->param_key[j], "Lattice") == 0 ||
+	    strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
+
+	strcpy(linebuffer, atoms->param_value[j]);
+	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A) {
+	  k = 0;
+	  p = linebuffer;
+	  while ((p1 = strsep(&p, " ")) != NULL) {
+	    if (*p1 == '\0') continue;
+	    strcpy(fields[k++], p1);
+	  }
+	  if (atoms->param_size[j] != k) {
+	    fprintf(stderr,"Mismatch in number of fields in parameter %s - expected %d but got %d\n", 
+		    atoms->param_key[j], atoms->param_size[j], k);
+	    return 0;
+	  }
+	}
+
+	switch(atoms->param_type[j]) {
+	case(T_INTEGER):
+	  atoms->param_int[j] = strtol(atoms->param_value[j], &p, 10);
+	  break;
+	case(T_REAL):
+	  atoms->param_real[j] = strtod(atoms->param_value[j], &p);
+	  break;
+	case(T_INTEGER_A):
+	  for (m=0; m<k; m++)
+	    atoms->param_int_a[j][m] = strtol(fields[m], &p, 10);
+	  break;
+	case(T_REAL_A):
+	  for (m=0; m<k; m++)
+	    atoms->param_real_a[j][m] = strtod(fields[m], &p);
+	  break;
+	case(T_CHAR):
+	  break;
+	default:
+	  fprintf(stderr,"Unkown param type %d\n", atoms->param_type[j]);
+	  return 0;
+	}
+      }
+
       properties_idx = atoms_find_param(atoms, "Properties");
       if (properties_idx == -1) {
 	fprintf(stderr,"missing properties parameter\n");
@@ -1940,63 +1997,6 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
   } else {
     if (nxyz != atoms->n_atom) {
       fprintf(stderr,"Mismatch in number of atoms - expecting %d but got %d\n", (int)atoms->n_atom, nxyz);
-      return 0;
-    }
-  }
-
-  // Read parameters, according to definition
-  for (i=0; i<nfields; i++) {
-    if ((p = strchr(finalfields[i],'=')) == NULL)  {
-      fprintf(stderr,"Badly formed key/value pair %s\n", finalfields[i]);
-      return 0;
-    }
-    *p = '\0';
-    
-    // Look up key in definition
-    j = atoms_find_param(atoms, finalfields[i]);
-    if (j == -1) {
-      fprintf(stderr,"Unknown parameter %s", finalfields[i]);
-      return 0;
-    }
-
-    strcpy(atoms->param_value[j], p+1);
-    if (strcasecmp(atoms->param_key[j], "Lattice") == 0 ||
-	strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
-
-    strcpy(linebuffer, atoms->param_value[j]);
-    if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A) {
-      k = 0;
-      p = linebuffer;
-      while ((p1 = strsep(&p, " ")) != NULL) {
-	if (*p1 == '\0') continue;
-	strcpy(fields[k++], p1);
-      }
-      if (atoms->param_size[j] != k) {
-	fprintf(stderr,"Mismatch in number of fields in parameter %s - expected %d but got %d\n", 
-		atoms->param_key[j], atoms->param_size[j], k);
-	return 0;
-      }
-    }
-
-    switch(atoms->param_type[j]) {
-    case(T_INTEGER):
-      atoms->param_int[j] = strtol(atoms->param_value[j], &p, 10);
-      break;
-    case(T_REAL):
-      atoms->param_real[j] = strtod(atoms->param_value[j], &p);
-      break;
-    case(T_INTEGER_A):
-      for (m=0; m<k; m++)
-	atoms->param_int_a[j][m] = strtol(fields[m], &p, 10);
-      break;
-    case(T_REAL_A):
-      for (m=0; m<k; m++)
-	atoms->param_real_a[j][m] = strtod(fields[m], &p);
-      break;
-    case(T_CHAR):
-      break;
-    default:
-      fprintf(stderr,"Unkown param type %d\n", atoms->param_type[j]);
       return 0;
     }
   }
