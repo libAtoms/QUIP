@@ -144,10 +144,13 @@ class TestAtomsListCInOutput(QuippyTestCase):
 
    def setUp(self):
       self.at = supercell(diamond(5.44,14), 2,2,2)
+      self.at.params['dummy'] = 1.0
       self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
+      for a in self.al:
+         a.params['dummy'] = 1.0
 
       self.xyz_ref = ['64\n',
-                      'Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1\n',
+                      'dummy=1.00000000 Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1\n',
                       'Si              0.00000000      0.00000000      0.00000000      14\n',
                       'Si              1.36000000      1.36000000      1.36000000      14\n',
                       'Si              2.72000000      2.72000000      0.00000000      14\n',
