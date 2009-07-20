@@ -1139,7 +1139,7 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
 
 
    def testabort(self):
-      al =  AtomsList(self.lines, format='castep')
+      al = AtomsList(self.lines, format='castep')
       self.assertRaises(ValueError, al.loadall)
 
    def testfromcluster(self):
