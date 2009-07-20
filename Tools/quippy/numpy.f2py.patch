@@ -10,22 +10,6 @@ diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./capi_maps.py /us
               'complex_float':'(%g,%g)',
               'complex_double':'(%g,%g)',
               'complex_long_double':'(%Lg,%Lg)',
-diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./numpy.f2py.patch /usr/local/lib/python2.6/site-packages/numpy/f2py/numpy.f2py.patch
---- ./numpy.f2py.patch	2009-06-19 14:45:29.000000000 +0100
-+++ /usr/local/lib/python2.6/site-packages/numpy/f2py/numpy.f2py.patch	1970-01-01 01:00:00.000000000 +0100
-@@ -1,12 +0,0 @@
--diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./capi_maps.py /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py
----- ./capi_maps.py	2008-10-28 11:21:47.000000000 +0000
--+++ /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py	2009-04-08 11:40:40.000000000 +0100
--@@ -200,7 +200,7 @@
--              'unsigned':'%u',
--              'long':'%ld',
--              'unsigned_long':'%lu',
---             'long_long':'%ld',
--+             'long_long':'%Ld',  # changed %ld -> %Ld James Kermode
--              'complex_float':'(%g,%g)',
--              'complex_double':'(%g,%g)',
--              'complex_long_double':'(%Lg,%Lg)',
 diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py
 --- ./rules.py	2008-10-28 11:21:47.000000000 +0000
 +++ /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py	2009-06-19 14:39:03.000000000 +0100
