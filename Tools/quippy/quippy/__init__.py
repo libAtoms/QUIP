@@ -5,7 +5,10 @@ James Kermode <james.kermode@kcl.ac.uk>
 Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 <http://www.libatoms.org>. """
 
-import sys, cPickle, atexit, os, numpy, logging
+import sys
+assert sys.version_info >= (2,4,0)
+
+import cPickle, atexit, os, numpy, logging
 from numpy import *
 
 logging.root.setLevel(logging.WARNING)
