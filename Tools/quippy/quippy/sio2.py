@@ -1,77 +1,84 @@
 from quippy import *
 from math import ceil
-import time, os, itertools
+import time, os, itertools, sys
 from StringIO import StringIO
 
-def write_pos_cel(basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',
-                  species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False):
+class PosCelWriter(object):
 
-   at = yield None
+   def __init__(self, basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',
+                species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False):
+      self.pos = pos
+      self.cel = cel
+      self.force = force
+      self.energy = energy
+      self.stress = stress
+      if basename is not None:
+         basename = os.path.splitext(basename)[0]
+         pos = '%s.pos' % basename
+         cel = '%s.cel' % basename
+         energy = '%s.ene' % basename
+         stress = '%s.str' % basename
+      self.step_name = step_name
+      self.species_map = species_map
+      self.cel_angstrom = cel_angstom
+      self.pos_angstrom = pos_angstrom
+      self.it = 0
 
-   doenergy = hasattr(at, 'energy')
-   doforce  = hasattr(at, 'force')
-   dostress = hasattr(at, 'virial')
+   def write(self, at):
 
-   if basename is not None:
-      basename = os.path.splitext(basename)[0]
-      pos = '%s.pos' % basename
-      cel = '%s.cel' % basename
-      energy = '%s.ene' % basename
-      stress = '%s.str' % basename
+      self.doenergy = hasattr(at, 'energy')
+      self.doforce  = hasattr(at, 'force')
+      self.dostress = hasattr(at, 'virial')
 
-   if isinstance(pos, str): pos = open(pos, 'w')
-   if isinstance(cel, str): cel = open(cel, 'w')
-   if doenergy and isinstance(energy, str): energy = open(energy, 'w')
-   if doforce  and isinstance(force,  str): force  = open(force,  'w')
-   if dostress and isinstance(stress, str): stress = open(stress, 'w')
+      if isinstance(self.pos, str): self.pos = open(self.pos, 'w')
+      if isinstance(self.cel, str): self.cel = open(self.cel, 'w')
+      if self.doenergy and isinstance(self.energy, str): self.energy = open(self.energy, 'w')
+      if self.doforce  and isinstance(self.force,  str): self.force  = open(self.force,  'w')
+      if self.dostress and isinstance(self.stress, str): self.stress = open(self.stress, 'w')
 
-   objind = 1
-   it = 0
+      objind = 1
+      spind = {}
 
-   spind = {}
+      self.pos.write(' %s %d\n' % (self.step_name, self.it))
+      for i in frange(at.n):
+         p = at.pos[i][:]
+         if not self.pos_angstrom: p /= BOHR
+         self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], spind[at.species[i]], objind))
 
-   try:
-      while True:
-         posf.write(' %s %d\n' % (step_name, it))
+      self.cel.write(' %s %d\n' % (self.step_name, self.it))
+      for i in (1,2,3):
+         L = at.lattice[i,:]
+         if not self.cel_angstrom: L /= BOHR
+         self.cel.write('%20.10e%20.10e%20.10e\n' % (L[1], L[2], L[3]))
+
+      if self.doenergy:
+         self.energy.write('%20.10f Ry\n' % at.energy/RYDBERG)
+
+      if self.doforce:
          for i in frange(at.n):
-            p = at.pos[i][:]
-            if not pos_angstrom: p /= BOHR
-            pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], spind[at.species[i]], objind))
+            f = at.force[i]/(HARTREE/BOHR)
+            self.force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], spind[at.species[i]], objind))
 
-         celf.write(' %s %d\n' % (step_name, it))
-         for a in at.lattice:
-            L = a[:]
-            if not cel_angstrom: L /= BOHR
-            cel.write('%20.10e%20.10e%20.10e\n' % (L[1], L[2], L[3]))
+      if self.dostress:
+         self.stress.write('(kbar)\n')
+         for v in at.virial:
+            self.stress.write('%20.10e%20.10e%20.10e' % v*(10.0*GPA))
 
-         if doenergy:
-            energy.write('%20.10f Ry\n' % at.energy/RYDBERG)
+      it += 1
 
-         if doforce:
-            for i in frange(at.n):
-               f = at.force[i]/(HARTREE/BOHR)
-               force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], spind[at.species[i]], objind))
+   def close(self):
+      self.pos.close()
+      self.cel.close()
+      if self.doenergy: self.energy.close()
+      if self.doforce:  self.force.close()
+      if self.dostress: self.stress.close()
 
-         if dostress:
-            stress.write('(kbar)\n')
-            for v in at.virial:
-               stress.write('%20.10e%20.10e%20.10e' % v/(10.0*GPA*HARTREE/(BOHR**3)))
 
-         it += 1
-         at = yield None
-   except GeneratorExit:
-      pos.close()
-      cel.close()
-      if doenergy: energy.close()
-      if doforce:  force.close()
-      if dostress: stress.close()
+AtomsWriters['pos'] = PosCelWriter
                             
-                            
-
-AtomsWriters['pos'] = write_pos_cel
-
-def read_pos_cel(basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in',
-                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False):
+@atoms_reader('pos')
+def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in',
+                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True):
 
    if basename is not None:
       basename = os.path.splitext(basename)[0]
@@ -94,7 +101,7 @@ def read_pos_cel(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
    pos = iter(pos)
    cel = iter(cel)
    if doenergy: energy = iter(energy)
-   if doforce:  force = iter(force)
+   if doforce:  force  = iter(force)
    if dostress: stress = iter(stress)
 
    pos.next()    # throw away blank line at start
@@ -103,13 +110,16 @@ def read_pos_cel(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
    rev_species_map = dict(zip(species_map.values(), species_map.keys()))
 
    while True:
-      
+
       poslines = list(itertools.takewhile(lambda L: L.strip() != '', pos))
       if poslines == []:
          break
-      
+
       cellines = list(itertools.islice(cel, 4))
-      lattice = farray([ [float(x) for x in L.split()] for L in cellines[1:4] ])
+      #lattice = farray([ [float(x) for x in L.split()] for L in cellines[1:4] ]).T
+      lattice = fzeros((3,3))
+      for i in (1,2,3):
+         lattice[i,:] = [float(x) for x in cellines[i].split()]
       if not cel_angstrom: lattice *= BOHR
 
       at = Atoms(n=len(poslines), lattice=lattice)
@@ -120,24 +130,25 @@ def read_pos_cel(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
       at.set_atoms(elements)
 
       if doenergy:
-         at.params['energy'] = float(energy.next().split()[0])*RYDBERG
+         at.params['energy'] = float(energy.next().split()[0])
+         if rydberg:
+            at.params['energy'] *= RYDBERG
 
       if dostress:
          stress_lines = list(itertools.islice(stress, 4))
          at.virial = farray([ [float(x) for x in L.split()] for L in stress_lines[1:4] ])
-         at.virial *= (10.0*GPA*HARTREE/(BOHR**3))
+         at.virial /= (10.0*GPA)
 
       if doforce:
          at.add_property('force', 0.0, n_cols=3)
-         force_lines = list(itertools.takewhile(lambda L: L.strip() != '', pos))
+         force_lines = list(itertools.takewhile(lambda L: L.strip() != '', force))
          if len(force_lines) != at.n:
             raise ValueError("len(force_lines) (%d) != at.n (%d)" % (len(force_lines), at.n))
          at.force[:] = farray([ [float(x) for x in L.split()[0:3] ] for L in force_lines ])
-      
-      yield at
+         if rydberg:
+            at.force[:] *= RYDBERG/BOHR
 
-AtomsReaders['pos'] = read_pos_cel
-   
+      yield at
 
 def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
    """Primitive 9-atom orthorhombic alpha quartz cell"""
@@ -409,7 +420,7 @@ def timing_test():
 
 #################
 
-logical = lambda x: True if x in (1, True, '1', 'True', 't', 'T', '.t.', '.T') else False
+logical = lambda x:  x in (1, True, '1', 'True', 't', 'T', '.t.', '.T')
 real = lambda s: float(s.replace('d', 'e'))
 
 param_format_traj = [
@@ -523,7 +534,7 @@ output_converters = {
    (real, 'triangle(nspecies)'): lambda v: '\n'.join(['%E '*n for n in triangle(inv_trig(len(v)))]) % tuple(v),
    int: lambda v: ' '.join(['%d' % x for x in v]),
    real: lambda v: ' '.join(['%f' % x for x in v]),
-   logical: lambda v: ' '.join(['.t.' if x else '.f.' for x in v]),
+   logical: lambda v: ' '.join([x and '.t.' or '.f.' for x in v]),
    str: lambda v: ' '.join(v)
    }
 
@@ -869,3 +880,92 @@ def try_new_params(gen_file, task='md'):
       raise ValueError('Unknown task %s' % task)
 
 
+def save_ref_config(config_list):
+
+   for at in config_list:
+      at.params['dft_energy'] = at.params['energy'] / HARTREE
+      at.add_property('dft_force', 0.0, n_cols=3)
+      at.dft_force[:] = at.force / (HARTREE/BOHR)
+      at.dft_virial = at.virial[:] / (HARTREE/(BOHR**3))
+
+
+def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447): ## bulk_mod is in kbar
+
+   s = fzeros((3,3))
+
+   normweight = sqrt(wf*wf + ws*ws + we*we)
+   wf /= normweight
+   ws /= normweight
+   we /= normweight
+
+   dist_f = 0.0; norm_f = 0.0
+   dist_e = 0.0; norm_e = 0.0
+   dist_s = 0.0; norm_s = 0.0
+
+   for ati, at in enumerate(config_list):
+      pot.calc(at, virial=s, calc_force=True, calc_energy=True)
+
+      at.params['md_energy'] = at.params['energy'] / HARTREE
+      at.md_virial = s / (HARTREE/(BOHR**3))
+      at.md_force = at.force / (HARTREE/BOHR)
+
+      for i in frange(at.n):
+         for j in (1,2,3):
+            dist_f += (at.md_force[j,i] - at.dft_force[j,i])**2.0
+            norm_f += at.dft_force[j,i]**2.0
+
+      for i in (1,2,3):
+         for j in (1,2,3):
+            dist_s += (at.md_virial[i,j] - at.dft_virial[i,j])**2.0
+            norm_s += bulk_mod**2.0
+
+
+   for i, ati in enumerate(config_list):
+      for j, atj in enumerate(config_list):
+         if j <= i: continue
+
+         diff_md = ati.md_energy - atj.md_energy
+         diff_ai = ati.dft_energy - atj.dft_energy
+         norm_e += diff_ai**2.0
+         dist_e += (diff_md - diff_ai)**2.0
+
+   dist_f = sqrt(dist_f / norm_f)
+   dist_s = sqrt(dist_s / norm_s)
+   dist_e = sqrt(dist_e / norm_e)
+   
+   return config_list, (wf*dist_f + ws*dist_s + we*dist_e, dist_f, dist_s, dist_e)
+
+def test_potential(gen_file, param_file, config_list):
+
+   if isinstance(gen_file, str):
+      gen_file = open(gen_file, 'r')
+   
+   params = default_params.copy()
+   gen_params, opt_vars = read_traj_gen(param_format_gen, gen_file)
+   params.update(gen_params)
+
+   print 'opt_vars = ', opt_vars
+
+   params = update_vars(params, opt_vars, param_file)
+
+   # fix masses
+   params['mass'] = [ElementMass[x]/MASSCONVERT for x in params['species']]
+
+   # fix charges
+   params['z'] = [params['z'], -2.0*params['z']]
+
+   xml = StringIO()
+   param_to_xml(params, xml)
+
+   print xml.getvalue()
+   
+   p = Potential('IP ASAP', xml.getvalue())
+
+   return costfn(config_list, p)
+
+if __name__ == '__main__':
+   al = AtomsList('iter0.pos', pos_angstrom=True)
+
+   save_ref_config(al)
+   
+   al, cost = test_potential('gen.in.01', """-1.3000000E+00  2.4748000E-04  1.9033000E-03 -2.0846000E-03  1.2070920E+01  1.1152300E+01  1.0455170E+01  7.1700500E+00 4.6371000E+00  5.7503800E+00  8.8937800E+00  1.0000000E+00  2.0298900E+00  1.0000000E+00 -1.5043500E+00""", al)

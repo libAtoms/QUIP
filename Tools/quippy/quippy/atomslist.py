@@ -58,7 +58,8 @@ class AtomsList(object):
          for at in self._itersource:
             self._list.append(at)
             yield at
-         self._itersource.close()
+      if hasattr(self._source, 'close'):
+         self._source.close()
       self._randomaccess = True
 
    def __iter__(self):
@@ -145,22 +146,25 @@ class AtomsList(object):
          else:
             update_interval = update_interval or 100
 
+      opened = False
       if format in AtomsWriters:
-         dest = iter(AtomsWriters[format](dest, *args, **kwargs))
-         dest.next()
-
+         dest = AtomsWriters[format](dest, *args, **kwargs)
+         opened = True
+         
       res = []
       for i, a in enumerate(self.iteratoms()):
-         res.append(dest.send(a))
+         res.append(dest.write(a))
          if progress and i % update_interval == 0:
             if self._randomaccess:
                pb(i)
             else:
                print i
-      dest.close()
+
+      if opened:
+         dest.close()
       return res
 
-# Decorators to add readers and writers
+# Decorator to add a new reader
 
 def atoms_reader(source):
    def decorate(func):
@@ -170,11 +174,4 @@ def atoms_reader(source):
       return func
    return decorate
 
-def atoms_writer(dest):
-   def decorate(func):
-      from quippy import AtomsWriters
-      if not dest in AtomsWriters:
-         AtomsWriters[dest] = func
-      return func
-   return decorate
 

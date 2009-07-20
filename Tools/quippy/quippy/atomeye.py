@@ -198,8 +198,10 @@ class AtomEyeView(object):
                 property = '_show'
             else:
                 if isinstance(property, numpy.ndarray):
+                    if theat.has_property('_show'):
+                        theat.remove_property('_show')
                     theat.add_property('_show', property.flat[0],
-                                       1 if len(property.shape) == 1 else property.shape[0])
+                                       len(property.shape) == 1 and 1 or property.shape[0])
                 else:
                     theat.add_property('_show', property)
                 theat._show[...] = property
@@ -438,4 +440,96 @@ def show(obj, property=None, frame=0, window_id=None):
         view.show(obj, property, frame)
 
     return view
+
+
+class AtomEyeCfgWriter(object):
+    """Write atoms in AtomEye extended CFG format. Returns a list of auxiliary properties
+    actually written to CFG file, which may be abbreviated compared to those requested since
+    AtomEye has a maximum of 32 aux props."""
+
+    def __init__(self, cfg=sys.stdout, shift=farray([0.,0.,0.]), properties=None):
+
+        if type(cfg) == type(''):
+            self.cfg = open(cfg, 'w')
+            self.opened = True
+        else:
+            self.cfg = cfg
+            self.opened = False
+
+        self.shift = shift
+        self.properties = properties
+
+    def close(self):
+        if self.opened: self.cfg.close()
+
+    def write(self, at):
+        
+        if self.properties is None:
+            self.properties = at.properties.keys()
+
+        # Header line
+        at.cfg.write('Number of particles = %d\n' % at.n)
+        cfg.write('# '+at.comment(properties)+'\n')
+
+        # Lattice vectors
+        for i in 1,2,3:
+            for j in 1,2,3:
+                cfg.write('H0(%d,%d) = %16.8f\n' % (i, j, at.lattice[j,i]))
+
+        cfg.write('.NO_VELOCITY.\n')
+
+        # Check first property is position-like
+        species = getattr(self,properties[0])
+        if len(species.shape) != 1 or species.dtype.kind != 'S':
+            raise ValueError('First property must be species like')
+
+        pos = getattr(self,properties[1])
+        if pos.shape[1] != 3 or pos.dtype.kind != 'f':
+            raise ValueError('Second property must be position like')
+
+        if not at.properties.has_key('frac_pos'):
+            at.add_property('frac_pos',0.0,ncols=3)
+            at.frac_pos[:] = farray([ numpy.dot(pos[i,:],at.g) + shift for i in range(at.n) ])
+
+        if not at.properties.has_key('mass'):
+            at.add_property('mass', map(ElementMass.get, at.species))
+
+        properties = filter(lambda p: p not in ('pos','frac_pos','mass','species'), properties)
+
+        # AtomEye can handle a maximum of 32 columns, so we might have to throw away
+        # some of the less interesting propeeties
+
+        def count_cols():
+            n_aux = 0
+            for p in properties:
+                s = getattr(self,p).shape
+                if len(s) == 1: n_aux += 1
+                else:           n_aux += s[1]
+            return n_aux
+
+        boring_properties = ['travel','avgpos','oldpos','acc','velo']
+        while count_cols() > 32:
+            if len(boring_properties) == 0:
+                raise ValueError('No boring properties left!')
+            try:
+                next_most_boring = boring_properties.pop(0)
+                del properties[properties.index(next_most_boring)]
+            except IndexError:
+                pass # this boring property isn't in the list: move on to next
+
+        properties = ['species','mass','frac_pos'] + properties
+        data = at.to_recarray(properties)
+
+        cfg.write('entry_count = %d\n' % (len(data.dtype.names)-2))
+
+        # 3 lines per atom: element name, mass and other data
+        format = '%s\n%12.4f\n'
+        for i,name in enumerate(data.dtype.names[2:]):
+            if i > 2: cfg.write('auxiliary[%d] = %s\n' % (i-3,name))
+            format = format + _getfmt(data.dtype.fields[name][0])
+        format = format + '\n'
+
+        for i in range(at.n):
+            cfg.write(format % tuple(data[i]))
+
 

@@ -8,8 +8,8 @@ with NetCDF files. The major advantage of ``scipy.io.netcdf`` over other
 modules is that it doesn't require the code to be linked to the NetCDF
 libraries as the other modules do.
 
-The code is based on the `NetCDF file format specification
-<http://www.unidata.ucar.edu/software/netcdf/guide_15.html>`_. A NetCDF
+The code is based on the NetCDF file format specification
+(http://www.unidata.ucar.edu/software/netcdf/guide_15.html). A NetCDF
 file is a self-describing binary format, with a header followed by
 data. The header contains metadata describing dimensions, variables
 and the position of the data in the file, so access can be done in an
@@ -68,11 +68,7 @@ To read the NetCDF file we just created::
     9
     >>> f.close()
 
-TODO:
- * properly implement ``_FillValue``.
- * implement Jeff Whitaker's patch for masked variables.
- * fix character variables.
- * implement PAGESIZE for Python 2.6?
+TODO: properly implement ``_FillValue``.
 """
 
 __all__ = ['netcdf_file', 'netcdf_variable']
@@ -131,17 +127,14 @@ class netcdf_file(object):
     attribute of the ``netcdf_file`` object.
 
     """
-    def __init__(self, filename, mode='r', mmap=True, version=1):
-        if hasattr(filename, 'seek'):
-            self.fp = filename
-            self.filename = 'None'
-            self.use_mmap = False
-        else:
-            self.filename = filename
-            self.fp = open(self.filename, '%sb' % mode)
-            self.use_mmap = mmap
+    def __init__(self, filename, mode='r', mmap=True):
+        if not __debug__:
+            raise RuntimeError('Current version of pupynere does not ' +
+                               'work with -O option.  We need to update ' +
+                               'to version 1.0.7!')
 
-        self.version_byte = version
+        self.filename = filename
+        self.use_mmap = mmap
 
         assert mode in 'rw', "Mode must be either 'r' or 'w'."
         self.mode = mode
@@ -152,6 +145,8 @@ class netcdf_file(object):
         self._dims = []
         self._recs = 0
         self._recsize = 0
+
+        self.fp = open(self.filename, '%sb' % mode)
 
         self._attributes = {}
 
@@ -199,7 +194,9 @@ class netcdf_file(object):
 
     def _write(self):
         self.fp.write('CDF')
-        self.fp.write(array(self.version_byte, '>b').tostring())
+
+        self.__dict__['version_byte'] = 1
+        self.fp.write(array(1, '>b').tostring())
 
         # Write headers and data.
         self._write_numrecs()
@@ -243,11 +240,17 @@ class netcdf_file(object):
             self.fp.write(NC_VARIABLE)
             self._pack_int(len(self.variables))
 
-            # Sort variables non-recs first, then recs. We use a DSU 
-            # since some people use pupynere with Python 2.3.x.
-            deco = [ (v._shape and not v.isrec, k) for (k, v) in self.variables.items() ]
-            deco.sort()
-            variables = [ k for (unused, k) in deco ][::-1]
+            # Sort variables non-recs first, then recs.
+            variables = self.variables.items()
+            if True: # Backwards compatible with Python versions < 2.4
+                keys = [(v._shape and not v.isrec, k) for k, v in variables]
+                keys.sort()
+                keys.reverse()
+                variables = [k for isrec, k in keys]
+            else: # Python version must be >= 2.4
+                variables.sort(key=lambda (k, v): v._shape and not v.isrec)
+                variables.reverse()
+                variables = [k for (k, v) in variables]
 
             # Set the metadata for all variables.
             for name in variables:
@@ -333,31 +336,10 @@ class netcdf_file(object):
             self.fp.seek(pos0 + var._vsize)
 
     def _write_values(self, values):
-        if hasattr(values, 'dtype'):
-            nc_type = REVERSE[values.dtype.char]
-        else:
-            types = [
-                    (int, NC_INT),
-                    (long, NC_INT),
-                    (float, NC_FLOAT),
-                    (basestring, NC_CHAR),
-                    ]
-            try:
-                sample = values[0]
-            except TypeError:
-                sample = values
-            for class_, nc_type in types:
-                if isinstance(sample, class_): break
+        values = asarray(values) 
+        values = values.astype(values.dtype.newbyteorder('>'))
 
-        typecode, size = TYPEMAP[nc_type]
-        if typecode is 'c':
-            dtype_ = '>c'
-        else:
-            dtype_ = '>%s' % typecode
-            if size > 1: dtype_ += str(size)
-
-        values = asarray(values, dtype=dtype_) 
-
+        nc_type = REVERSE[values.dtype.char]
         self.fp.write(nc_type)
 
         if values.dtype.char == 'S':
@@ -375,8 +357,7 @@ class netcdf_file(object):
 
     def _read(self):
         # Check magic bytes and version
-        magic = self.fp.read(3)
-        assert magic == 'CDF', "Error: %s is not a valid NetCDF 3 file" % self.filename
+        assert self.fp.read(3) == 'CDF', "Error: %s is not a valid NetCDF 3 file" % self.filename
         self.__dict__['version_byte'] = fromstring(self.fp.read(1), '>b')[0]
 
         # Read file headers and set data.
@@ -389,8 +370,7 @@ class netcdf_file(object):
         self.__dict__['_recs'] = self._unpack_int()
 
     def _read_dim_array(self):
-        header = self.fp.read(4)
-        assert header in [ZERO, NC_DIMENSION]
+        assert self.fp.read(4) in [ZERO, NC_DIMENSION]
         count = self._unpack_int()
 
         for dim in range(count):
@@ -404,8 +384,7 @@ class netcdf_file(object):
             self.__setattr__(k, v)
 
     def _read_att_array(self):
-        header = self.fp.read(4)
-        assert header in [ZERO, NC_ATTRIBUTE]
+        assert self.fp.read(4) in [ZERO, NC_ATTRIBUTE]
         count = self._unpack_int()
 
         attributes = {}
@@ -415,8 +394,7 @@ class netcdf_file(object):
         return attributes
 
     def _read_var_array(self):
-        header = self.fp.read(4)
-        assert header in [ZERO, NC_VARIABLE]
+        assert self.fp.read(4) in [ZERO, NC_VARIABLE]
 
         begin = 0
         dtypes = {'names': [], 'formats': []}
@@ -535,14 +513,14 @@ class netcdf_file(object):
     _pack_int32 = _pack_int
 
     def _unpack_int(self):
-        return fromstring(self.fp.read(4), '>i')[0]
+        return int(fromstring(self.fp.read(4), '>i')[0])
     _unpack_int32 = _unpack_int
 
     def _pack_int64(self, value):
         self.fp.write(array(value, '>q').tostring())
 
     def _unpack_int64(self):
-        return fromstring(self.fp.read(8), '>q')[0]
+        return int(fromstring(self.fp.read(8), '>q')[0])
 
     def _pack_string(self, s):
         count = len(s)
@@ -602,7 +580,7 @@ class netcdf_variable(object):
     def shape(self):
         return self.data.shape
     shape = property(shape)
-
+    
     def getValue(self):
         return self.data.item()
 

@@ -1,4 +1,4 @@
-from quippy import atoms_reader, atoms_writer
+from quippy import atoms_reader, AtomsReaders, AtomsWriters
 from atomslist import *
 from farray import *
 import logging
@@ -44,9 +44,6 @@ def get_lattice_params(lattice):
 try:
    from quippy import CInOutput, INPUT, OUTPUT, INOUT
 
-   @atoms_reader('xyz')
-   @atoms_reader('nc')
-   @atoms_reader(CInOutput)
    class CInOutputReader(object):
       """Generator to read atoms sequentially from a CInOutput"""
 
@@ -70,17 +67,19 @@ try:
             self.step = step
 
       def __iter__(self):
-         try:
-            for frame in range(self.start,self.stop,self.step):
-               yield self.source[frame]
-         finally:
-            if self.opened: self.source.close()
+         for frame in range(self.start,self.stop,self.step):
+            yield self.source[frame]
+
+      def close(self):
+         if self.opened: self.source.close()
 
       def __len__(self):
          return len(self.source)
 
       def __getitem__(self, idx):
          return self.source[idx]
+
+   AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
    @atoms_reader('stdin')
    def CInOutputStdinReader(source):
@@ -91,25 +90,24 @@ try:
          except RuntimeError:
             break         
 
-   @atoms_writer('xyz')
-   @atoms_writer('nc')
-   @atoms_writer(CInOutput)
-   @atoms_writer('stdout')
-   def CInOutputWriter(dest, append=False, netcdf4=True):
-      """Generator to write atoms sequentially to a CInOutput"""
+   class CInOutputWriter(object):
+      """Class to write atoms sequentially to a CInOutput stream"""
 
-      opened = False
-      if isinstance(dest, str):
-         opened = True
-         dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
+      def __init__(self, dest, append=False, netcdf4=True):
+         self.opened = False
+         if isinstance(dest, str):
+            self.opened = True
+            self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
+         else:
+            self.dest = dest
 
-      at = yield None
-      try:
-         while True:
-            dest.write(at)
-            at = yield None
-      finally:
-         if opened: dest.close()
+      def write(self, at):
+         self.dest.write(at)
+
+      def close(self):
+         self.dest.close()
+
+   AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = AtomsWriters['stdout'] = CInOutputWriter
 
    
 except ImportError:
@@ -134,7 +132,7 @@ def netcdf_dimlen(obj, name):
 
 @atoms_reader(netcdf_file)
 @atoms_reader('nc')
-def netcdf_read(source, frame=None, start=0, stop=None, step=1):
+def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
 
    opened = False
    if isinstance(source, str):
@@ -171,154 +169,156 @@ def netcdf_read(source, frame=None, start=0, stop=None, step=1):
       if stop is None:
          stop = source.variables['cell_lengths'].shape[0]
             
-   try:
-      for frame in range(start, stop, step):
-         cl = source.variables['cell_lengths'][frame]
-         ca = source.variables['cell_angles'][frame]
-         lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
+   for frame in range(start, stop, step):
+      cl = source.variables['cell_lengths'][frame]
+      ca = source.variables['cell_angles'][frame]
+      lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
 
-         at = Atoms(n=netcdf_dimlen(source, 'atom'), lattice=lattice)
+      at = Atoms(n=netcdf_dimlen(source, 'atom'), lattice=lattice)
 
-         for name, var in source.variables.iteritems():
-            name = remap_names.get(name, name)
+      for name, var in source.variables.iteritems():
+         name = remap_names.get(name, name)
 
-            if name is None:
-               continue
+         if name is None:
+            continue
 
-            if 'frame' in var.dimensions:
-               if 'atom' in var.dimensions:
-                  # It's a property
-                  at.add_property(name, prop_type_to_value[var.type],
-                                 n_cols=prop_dim_to_ncols[var.dimensions])
-                  getattr(at, name.lower())[...] = var[frame].T
+         if 'frame' in var.dimensions:
+            if 'atom' in var.dimensions:
+               # It's a property
+               at.add_property(name, prop_type_to_value[var.type],
+                              n_cols=prop_dim_to_ncols[var.dimensions])
+               getattr(at, name.lower())[...] = var[frame].T
+            else:
+               # It's a param
+               if var.dimensions == ('frame','string'):
+                  # if it's a single string, join it and strip it
+                  at.params[name] = ''.join(var[frame]).strip()
                else:
-                  # It's a param
-                  if var.dimensions == ('frame','string'):
-                     # if it's a single string, join it and strip it
-                     at.params[name] = ''.join(var[frame]).strip()
-                  else:
-                     at.params[name] = var[frame]
+                  at.params[name] = var[frame]
 
-         yield at
-   finally:
-      if opened: source.close()
+      yield at
 
-@atoms_writer(netcdf_file)
-@atoms_writer('nc')
-def netcdf_write(dest, frame=None, append=False, netcdf4=True):
+   def close(self):
+      if self.opened: source.close()
 
-   from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-                       T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                       T_CHAR, T_LOGICAL, T_INTEGER_A,
-                       T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
+class NetCDFWriter(object):
 
-   opened = False
-   if isinstance(dest, str):
-      opened = True
-      try:
-         FORMAT = {True:  'NETCDF4',
-                   False: 'NETCDF3_CLASSIC'}
-         MODE = {True:  'a',
-                 False: 'w'}
-   
-         dest = netcdf_file(dest, MODE[append], format=FORMAT[netcdf4])
-      except ValueError:
-         dest = netcdf_file(dest, 'w')
+   def __init__(self, dest, frame=None, append=False, netcdf4=True):
+      self.opened = False
+      self.frame = frame
+      if isinstance(dest, str):
+         self.opened = True
+         try:
+            FORMAT = {True:  'NETCDF4',
+                      False: 'NETCDF3_CLASSIC'}
+            MODE = {True:  'a',
+                    False: 'w'}
 
-   remap_names_rev = {'pos': 'coordinates',
-                      'velocities': 'velo'}
+            self.dest = netcdf_file(dest, MODE[append], format=FORMAT[netcdf4])
+         except ValueError:
+            self.dest = netcdf_file(dest, 'w')
+      else:
+         self.dest = dest
 
+   def write(self, at):
+      from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
+                          T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                          T_CHAR, T_LOGICAL, T_INTEGER_A,
+                          T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
 
-   prop_type_ncols_to_dtype_dim = {(PROPERTY_INT,3):       ('i', ('frame','atom','spatial')),
-                                   (PROPERTY_REAL,3):     ('d', ('frame','atom','spatial')),
-                                   (PROPERTY_LOGICAL,3):  ('d', ('frame','atom','spatial')),
-                                   (PROPERTY_INT,1):      ('i', ('frame', 'atom')),
-                                   (PROPERTY_REAL, 1):    ('d', ('frame', 'atom')),
-                                   (PROPERTY_LOGICAL, 1): ('i', ('frame', 'atom')),
-                                   (PROPERTY_STR,1):      ('S1', ('frame','atom','label'))}
+      remap_names_rev = {'pos': 'coordinates',
+                         'velocities': 'velo'}
 
 
-   param_type_to_dtype_dim = {T_INTEGER:   ('i', ('frame',)),
-                              T_REAL:      ('d', ('frame',)),
-                              T_CHAR:      ('S1', ('frame', 'string')),
-                              T_LOGICAL:   ('i', ('frame',)),
-                              T_INTEGER_A: ('i', ('frame', 'spatial')),
-                              T_REAL_A:    ('d', ('frame', 'spatial')),
-                              T_LOGICAL_A: ('i', ('frame', 'spatial'))}
-                                            
+      prop_type_ncols_to_dtype_dim = {(PROPERTY_INT,3):       ('i', ('frame','atom','spatial')),
+                                      (PROPERTY_REAL,3):     ('d', ('frame','atom','spatial')),
+                                      (PROPERTY_LOGICAL,3):  ('d', ('frame','atom','spatial')),
+                                      (PROPERTY_INT,1):      ('i', ('frame', 'atom')),
+                                      (PROPERTY_REAL, 1):    ('d', ('frame', 'atom')),
+                                      (PROPERTY_LOGICAL, 1): ('i', ('frame', 'atom')),
+                                      (PROPERTY_STR,1):      ('S1', ('frame','atom','label'))}
 
-   at = yield None
 
-   if dest.dimensions == {}:
-      dest.createDimension('frame', None)
-      dest.createDimension('spatial', 3)
-      dest.createDimension('atom', at.n)
-      dest.createDimension('cell_spatial', 3)
-      dest.createDimension('cell_angular', 3)
-      dest.createDimension('label', 10)
-      dest.createDimension('string', 1024)
+      param_type_to_dtype_dim = {T_INTEGER:   ('i', ('frame',)),
+                                 T_REAL:      ('d', ('frame',)),
+                                 T_CHAR:      ('S1', ('frame', 'string')),
+                                 T_LOGICAL:   ('i', ('frame',)),
+                                 T_INTEGER_A: ('i', ('frame', 'spatial')),
+                                 T_REAL_A:    ('d', ('frame', 'spatial')),
+                                 T_LOGICAL_A: ('i', ('frame', 'spatial'))}
 
-      dest.createVariable('spatial', 'S1', ('spatial',))
-      dest.variables['spatial'][:] = list('xyz')
 
-      dest.createVariable('cell_spatial', 'S1', ('cell_spatial',))
-      dest.variables['cell_spatial'][:] = list('abc')
+      if self.dest.dimensions == {}:
+         self.dest.createDimension('frame', None)
+         self.dest.createDimension('spatial', 3)
+         self.dest.createDimension('atom', at.n)
+         self.dest.createDimension('cell_spatial', 3)
+         self.dest.createDimension('cell_angular', 3)
+         self.dest.createDimension('label', 10)
+         self.dest.createDimension('string', 1024)
 
-      dest.createVariable('cell_angular', 'S1', ('cell_angular', 'label'))
-      dest.variables['cell_angular'][0,:] = list('alpha     ')
-      dest.variables['cell_angular'][1,:] = list('beta      ')
-      dest.variables['cell_angular'][2,:] = list('gamma     ')
+         self.dest.createVariable('spatial', 'S1', ('spatial',))
+         self.dest.variables['spatial'][:] = list('xyz')
 
-      dest.createVariable('cell_lengths', 'd', ('frame', 'spatial'))
-      dest.createVariable('cell_angles', 'd', ('frame', 'spatial'))
-      
-   if frame is None:
-      frame = netcdf_dimlen(dest, 'frame')
-      if frame is None: frame = 0
+         self.dest.createVariable('cell_spatial', 'S1', ('cell_spatial',))
+         self.dest.variables['cell_spatial'][:] = list('abc')
 
-   try:
-      while True:
+         self.dest.createVariable('cell_angular', 'S1', ('cell_angular', 'label'))
+         self.dest.variables['cell_angular'][0,:] = list('alpha     ')
+         self.dest.variables['cell_angular'][1,:] = list('beta      ')
+         self.dest.variables['cell_angular'][2,:] = list('gamma     ')
 
-         assert at.n == netcdf_dimlen(dest, 'atom')
+         self.dest.createVariable('cell_lengths', 'd', ('frame', 'spatial'))
+         self.dest.createVariable('cell_angles', 'd', ('frame', 'spatial'))
 
-         a, b, c, alpha, beta, gamma = get_lattice_params(at.lattice)
-         
-         RAD_TO_DEG = 180.0/pi
-         
-         dest.variables['cell_lengths'][frame] = (a, b, c)
-         dest.variables['cell_angles'][frame] = (alpha*RAD_TO_DEG, beta*RAD_TO_DEG, gamma*RAD_TO_DEG)
+      if self.frame is None:
+         self.frame = netcdf_dimlen(self.dest, 'frame')
+         if self.frame is None: self.frame = 0
 
-         for origname, (ptype, start, stop) in at.properties.iteritems():
-            name = remap_names_rev.get(origname, origname)
-            ncols = stop-start+1
-            dtype, dims = prop_type_ncols_to_dtype_dim[(ptype, ncols)]
-            
-            if not name in dest.variables:
-               dest.createVariable(name, dtype, dims)
-               dest.variables[name].type = ptype
 
-            assert dest.variables[name].dimensions == dims
-            dest.variables[name][frame] = getattr(at, origname.lower()).T
+      assert at.n == netcdf_dimlen(self.dest, 'atom')
 
-         for name in at.params.keys():
-            t, s = at.params.get_type_and_size()
-            dtype, dims = param_type_to_dype_dims[(name, t)]
+      a, b, c, alpha, beta, gamma = get_lattice_params(at.lattice)
 
-            if not name in dest.variables:
-               dest.createVariable(name, dtype, dims)
-               dest.variables[name].type = t
+      RAD_TO_DEG = 180.0/pi
 
-            assert dest.variables.type == t
-            assert dest.variables.dimensions == dims
+      self.dest.variables['cell_lengths'][self.frame] = (a, b, c)
+      self.dest.variables['cell_angles'][self.frame] = (alpha*RAD_TO_DEG, beta*RAD_TO_DEG, gamma*RAD_TO_DEG)
 
-            dest.variables[name][frame] = at.params[name]
-            
-         frame += 1
-         at = yield None
-         
-   finally:
-      if opened: dest.close()
-   
+      for origname, (ptype, start, stop) in at.properties.iteritems():
+         name = remap_names_rev.get(origname, origname)
+         ncols = stop-start+1
+         dtype, dims = prop_type_ncols_to_dtype_dim[(ptype, ncols)]
+
+         if not name in self.dest.variables:
+            self.dest.createVariable(name, dtype, dims)
+            self.dest.variables[name].type = ptype
+
+         assert self.dest.variables[name].dimensions == dims
+         self.dest.variables[name][self.frame] = getattr(at, origname.lower()).T
+
+      for name in at.params.keys():
+         t, s = at.params.get_type_and_size()
+         dtype, dims = param_type_to_dype_dims[(name, t)]
+
+         if not name in self.dest.variables:
+            self.dest.createVariable(name, dtype, dims)
+            self.dest.variables[name].type = t
+
+         assert self.dest.variables.type == t
+         assert self.dest.variables.dimensions == dims
+
+         self.dest.variables[name][self.frame] = at.params[name]
+
+      self.frame += 1
+
+
+   def close(self):
+      if self.opened: self.dest.close()
+
+
+AtomsWriters[netcdf_file] = NetCDFWriter
+if not 'nc' in AtomsWriters: AtomsWriters['nc'] = NetCDFWriter
 
 class NetCDFAtomsList(netcdf_file, AtomsList):
    def __init__(self, source):

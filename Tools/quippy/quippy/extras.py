@@ -1,6 +1,19 @@
 """Various subclasses to add functionality to automatically generated classes."""
 
-import numpy, hashlib, os
+import sys
+
+major, minor = sys.version_info[0:2]
+
+assert (major, minor) >= (2, 4)
+
+if (major, minor) < (2, 5):
+   import md5
+   got_hashlib = False
+else:
+   import hashlib
+   got_hashlib = True
+
+import numpy, os
 from farray import *
 
 from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput
@@ -80,12 +93,14 @@ class Atoms(FortranAtoms):
          else:
             format = dest.__class__
 
+      opened = False
       if format in AtomsWriters:
-         dest = iter(AtomsWriters[format](dest, *args, **kwargs))
-         dest.next()
+         dest = AtomsWriters[format](dest, *args, **kwargs)
+         opened = True
 
-      res = dest.send(self)
-      dest.close()
+      res = dest.write(self)
+      if opened and hasattr(dest, 'close'):
+         dest.close()
       return res
 
    def show(self, property=None):
@@ -258,7 +273,13 @@ class Dictionary(DictMixin, FortranDictionary):
          self._update()
 
    def keys(self):
-      new_hash = hashlib.md5(self._keys).hexdigest()
+      if got_hashlib:
+         new_hash = hashlib.md5(self._keys).hexdigest()
+      else:
+         h = md5.new()
+         h.update(self._keys)
+         new_hash = h.hexdigest()
+         
       if new_hash != self.__dict__.get('_keys_hash', None):
          self._cache_misses = self.__dict__.get('_cache_misses',0) + 1
          self._keys_cache = [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
