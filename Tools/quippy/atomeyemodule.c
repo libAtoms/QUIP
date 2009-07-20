@@ -301,8 +301,8 @@ static int update_atoms_structure(PyObject *pyat)
       PyErr_SetString(PyExc_ValueError, "atoms.data.logical must have shape (atoms.data.logicalsize,atoms.n)");
       goto fail;
     }
-    if (PyArray_TYPE(logicalarray) != NPY_BOOL) {
-      PyErr_SetString(PyExc_ValueError, "atoms.data.logical must have type logical");
+    if (PyArray_TYPE(logicalarray) != NPY_BOOL && PyArray_TYPE(logicalarray) != NPY_INT) {
+      PyErr_SetString(PyExc_ValueError, "atoms.data.logical must have type logical or type int");
       goto fail;
     }
     if (!PyArray_ISFORTRAN(logicalarray)) {
