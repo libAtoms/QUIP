@@ -665,6 +665,7 @@ def add_doc(func, fobj, doc, fullname, name):
    if doc is None:
       func.__doc__ = fobj.__doc__
    else:
+       
       d = fobj.__doc__
       L = d.split('\n')
       arg_lines = L[3:]
@@ -679,20 +680,20 @@ def add_doc(func, fobj, doc, fullname, name):
           indent = max([len(s) for s in arg_lines])
           fmt = '  %%-%ds %%s' % indent
 
-      for arg in doc['args']:
-         name = arg['name'].lower()
-         if name in badnames: name = badnames[name]
-         
-         for i, line in enumerate(arg_lines):
-             if line.startswith('  %s :' % name): break
-         else:
-             raise ValueError('%s not found in lines' % name)
+          for arg in doc['args']:
+             name = arg['name'].lower()
+             if name in badnames: name = badnames[name]
 
-         if arg['type'].startswith('type('):
-            arg_lines[i] = '  %s : %s object' % (name, arg['type'][5:-1])
+             for i, line in enumerate(arg_lines):
+                 if line.startswith('  %s :' % name): break
+             else:
+                 raise ValueError('%s not found in lines %r' % (name, arg_lines))
 
-         if arg['doc'] != '':
-            arg_lines[i] = (fmt % (arg_lines[i].strip(),arg['doc'])).replace('\n','\n   '+indent*' ')
+             if arg['type'].startswith('type('):
+                arg_lines[i] = '  %s : %s object' % (name, arg['type'][5:-1])
+
+             if arg['doc'] != '':
+                arg_lines[i] = (fmt % (arg_lines[i].strip(),arg['doc'])).replace('\n','\n   '+indent*' ')
 
       func.__doc__ = '%s\n\n%s' % ('\n'.join(L[:3]+arg_lines), doc['doc'])
       func.__name__ = fullname

@@ -3,6 +3,15 @@ array indexing."""
 
 import sys, numpy
 
+major, minor = sys.version_info[0:2]
+
+assert (major, minor) >= (2, 4)
+
+if (major, minor) < (2, 5):
+    all = lambda seq: not False in seq
+    any = lambda seq: True in seq
+
+
 def frange(min,max=None,step=1):
     """Fortran equivalent of range() builtin.
 

@@ -1,17 +1,31 @@
-from quippy import atoms_writer
+from quippy import AtomsWriters
 from farray import *
 
-@atoms_writer('pov')
-def write_pov(f, center=(0.0,0.0,0.0), camerapos=(0.0,0.0,-100),
+class PovrayWriter(object):
+
+   def __init__(self, f, center=(0.0,0.0,0.0), camerapos=(0.0,0.0,-100),
               lights=(0.0,0.0,-100), colour=None, rotate=None, radius=1.0,
               skip_hydrogens=False):
 
-   at = yield None
+      if type(f) == type(''):
+         self.opened = True
+         self.f = open(f,'w')
+      else:
+         self.opened = False
+         self.f = f
+         
+      self.center = center
+      self.camerapos = camerapos
+      if len(lights) == 3:
+         lights = (lights,)
+      self.lights = lights
+      self.colour = colour
+      self.rotate = rotate
+      self.radius = radius
+      self.skip_hydrogens = skip_hydrogens
 
-   if type(f) == type(''):
-      f = open(f,'w')
-
-   f.write('''#include "colors.inc"
+   def write(self, at):
+      self.f.write('''#include "colors.inc"
 
 camera
 {
@@ -24,13 +38,11 @@ background
 {
   colour White
 }
-''' % tuple(camerapos))
+''' % tuple(self.camerapos))
 
-   if len(lights) == 3:
-      lights = (lights,)
 
-   for light in lights:
-      f.write('''
+      for light in self.lights:
+         self.f.write('''
 light_source
 {
   <%f,%f,%f>
@@ -38,21 +50,25 @@ light_source
 }
 ''' % tuple(light))
 
-   center = farray(center)
-   f.write('union {\n')
-   for i in frange(at.n):
-      if skip_hydrogens and str(at.species[i]) == 'H': continue
-      p = at.pos[i] - center
-      if colour is not None:
-         c = colour[i]
-      else:
-         c = farray((1.,1.,1.))
-   
-      f.write('sphere { <%f,%f,%f>, %r pigment {color <%f,%f,%f> } finish { phong .8 } }\n' %
-              (p[1],-p[2],p[3],radius,c[1],c[2],c[3]))
+      center = farray(self.center)
+      self.f.write('union {\n')
+      for i in frange(at.n):
+         if self.skip_hydrogens and str(at.species[i]) == 'H': continue
+         p = at.pos[i] - center
+         if self.colour is not None:
+            c = self.colour[i]
+         else:
+            c = farray((1.,1.,1.))
 
-   if rotate is not None:
-      f.write('rotate <%f,%f,%f>\n' % tuple(rotate))
-   f.write('}')
+         self.f.write('sphere { <%f,%f,%f>, %r pigment {color <%f,%f,%f> } finish { phong .8 } }\n' %
+                 (p[1],-p[2],p[3],self.radius,c[1],c[2],c[3]))
 
-   yield None
+      if self.rotate is not None:
+         self.f.write('rotate <%f,%f,%f>\n' % tuple(self.rotate))
+      self.f.write('}')
+
+   def close(self):
+      if self.opened:  self.f.close()
+
+
+AtomsWriters['pov'] = PovrayWriter

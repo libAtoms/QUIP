@@ -2,7 +2,7 @@ import sys, string, os, operator, itertools
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
-from quippy import AtomsReaders, AtomsWriters, atoms_reader, atoms_writer
+from quippy import AtomsReaders, AtomsWriters, atoms_reader
 
 import xml.dom.minidom
 
@@ -254,25 +254,25 @@ class CastepCell(OrderedDict):
       self = CastepCell(source)
       yield self.to_atoms()
 
-   @staticmethod
-   @atoms_writer('cell')
-   def cellwriter(dest):
-      """Generator to write single .cell file"""
+class CastepCellWriter(object):
+   def __init__(self, dest):
+      self.dest = dest
 
-      at = yield None
-      CastepCell(atoms=at).write(dest)
-      yield 1
+   def write(self, at):
+      CastepCell(atoms=at).write(self.dest)
 
-   def cellupdater(self):
-      at = yield None
-      self.update_from_atoms(at)
-      yield 1
+AtomsWriters['cell'] = CastepCellWriter
 
+class CastepCellUpdater(object):
+   def __init__(self, dest):
+      self.dest = dest
+
+   def write(self, at):
+      self.dest.update_from_atoms(at)
+
+AtomsWriters[CastepCell] = CastepCellUpdater
+      
  
-AtomsReaders[CastepCell] = CastepCell.cellreader
-AtomsWriters['cell'] = CastepCell.cellwriter
-AtomsWriters[CastepCell] = CastepCell.cellupdater
-
 class CastepParam(OrderedDict):
    "Class to wrap a CASTEP parameter (.param) file"
 
