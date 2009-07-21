@@ -40,6 +40,13 @@ module CInOutput_module
        integer(kind=C_INT) :: cioinit
      end function cioinit
 
+     function cioskip(at, n_skip) bind(c)
+       use iso_c_binding, only: C_PTR, C_INT, C_LONG, C_SIZE_T
+       type(C_PTR), intent(in), value :: at
+       integer(C_INT), intent(in) :: n_skip
+       integer(C_INT) :: cioskip
+     end function cioskip
+
      function cioquery(at, frame) bind(c)
        use iso_c_binding, only: C_PTR, C_INT, C_LONG, C_SIZE_T
        type(C_PTR), intent(in), value :: at
@@ -259,10 +266,24 @@ contains
     integer, optional, intent(out) :: status
     integer(C_SIZE_T) :: do_frame
 
-    integer :: cioquery_status
+    integer :: cioquery_status, cioskip_status
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
-    if (present(frame) .and. this%got_index == 0) call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed")
+    if (present(frame) .and. this%got_index == 0) then
+      if (frame /= this%current_frame) then
+	if (frame < this%current_frame) &
+	  call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
+	cioskip_status = cioskip(this%c_at, frame-this%current_frame);
+	if (cioskip_status == 0) then
+	  if (present(status)) then
+	    status = 1
+	    return
+	  else
+	    call system_abort("Error querying CInOutput file while skipping to desired frame")
+	  endif
+	endif
+      endif
+    endif
 
     do_frame = optional_default(this%current_frame, frame)
 
@@ -310,14 +331,29 @@ contains
     integer :: do_zero
     integer(C_SIZE_T) :: do_frame
     integer :: tmp_do_frame
+    integer :: n_skip
+    integer :: cioskip_status
 
     if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
     if (present(frame) .and. this%got_index == 0) then
-      if (frame /= this%current_frame) &
-	call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " /= this%current_frame " // this%current_frame)
+      if (frame /= this%current_frame) then
+	if (frame < this%current_frame) &
+	  call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
+	n_skip = frame-this%current_frame
+	cioskip_status = cioskip(this%c_at, n_skip)
+	if (cioskip_status == 0) then
+	  if (present(status)) then
+	    status = 1
+	    return
+	  else
+	    call system_abort("Error querying CInOutput file while skipping to desired frame")
+	  endif
+	endif
+	this%current_frame = this%current_frame + n_skip
+      endif
     endif
 
     do_frame = optional_default(this%current_frame, frame)

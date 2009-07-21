@@ -1669,6 +1669,45 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
   return nframes;
 }
 
+int cioskip (Atoms *atoms, int *n_skip) {
+  int i_skip, i, natoms;
+  char linebuffer[LINESIZE];
+
+  if (atoms->format == XYZ_FORMAT) {
+    if (atoms->got_index) return 1;
+    if (*n_skip < 0) {
+      fprintf(stderr, "cioskip for file without index can't do negative n\n");
+      return 0;
+    }
+    for (i_skip=0; i_skip < *n_skip; i_skip++) {
+      if (fgets(linebuffer, LINESIZE,atoms->xyz_in)) {
+	if (sscanf(linebuffer, "%d", &natoms) != 1) {
+	  fprintf(stderr, "cioskip for file without index can't parse number of atoms from 1st line '%s'\n", linebuffer);
+	  return 0;
+	}
+	if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
+	  fprintf(stderr, "cioskip for file without index can't read comment line\n");
+	  return 0;
+	}
+	for (i=0; i < natoms; i++) {
+	  if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
+	    fprintf(stderr, "cioskip for file without index can't read line for atom %d\n", i);
+	    return 0;
+	  }
+	}
+      } else {
+	fprintf(stderr, "cioskip for file without index can't read number of atoms line\n");
+	return 0;
+      }
+    }
+  } else if (atoms->format == NETCDF_FORMAT) {
+    return 1;
+  } else {
+    fprintf(stderr, "cioskip unknown atoms->format %d\n", atoms->format);
+    return 0;
+  }
+}
+
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int suppress, int override_lattice,
 	      double lattice[3][3]) {
