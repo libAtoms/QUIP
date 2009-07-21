@@ -41,7 +41,7 @@ implicit none
   call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups // " quiet " // quiet)
 
   no_compute_index=.false.
-  if ((decimation == 1) .and. (.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
+  if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
 
   call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
 

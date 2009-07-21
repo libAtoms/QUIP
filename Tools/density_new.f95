@@ -64,7 +64,7 @@ implicit none
     call system_abort("You probably really don't want to do mean and decorrelation with the same parameters, so I won't let you")
 
   no_compute_index=.false.
-  if ((decimation == 1) .and. (.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
+  if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
 
   call print("infile " // trim(infilename) // " infile_is_list " // infile_is_list)
   call print("outfilename " // trim(outfilename))
