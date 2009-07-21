@@ -23,6 +23,7 @@ implicit none
   integer :: autocorrelation_max_lag
   real(dp) :: mean_decorrelation_time
 
+  logical :: no_compute_index
   integer :: n_histos
   type(Atoms_ll) :: structure_ll
   real(dp), allocatable :: histo_raw(:,:,:,:), histo_mean(:,:,:), histo_var(:,:,:)
@@ -62,6 +63,9 @@ implicit none
   if (mean .and. autocorrelation) &
     call system_abort("You probably really don't want to do mean and decorrelation with the same parameters, so I won't let you")
 
+  no_compute_index=.false.
+  if ((decimation == 1) .and. (.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
+
   call print("infile " // trim(infilename) // " infile_is_list " // infile_is_list)
   call print("outfilename " // trim(outfilename))
   call print("AtomMask " // trim(mask_str))
@@ -74,7 +78,7 @@ implicit none
   call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
 
   call print("Reading configurations")
-  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
+  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
 
   call print("Calculating densities")
   call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, mask_str)

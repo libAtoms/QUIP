@@ -12,7 +12,7 @@ implicit none
   type(CInOutput) :: outfile
   integer :: decimation
   real(dp) :: min_time, max_time
-  logical :: sort_Time, no_Time_dups, quiet
+  logical :: sort_Time, no_Time_dups, quiet, no_compute_index
 
   type(Atoms_ll) :: structure_ll
   type(Atoms_ll_entry), pointer :: entry
@@ -40,7 +40,10 @@ implicit none
   call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
   call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups // " quiet " // quiet)
 
-  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet)
+  no_compute_index=.false.
+  if ((decimation == 1) .and. (.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
+
+  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
 
   call initialise(outfile, outfilename, action=OUTPUT)
   entry => structure_ll%first
