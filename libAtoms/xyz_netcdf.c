@@ -1686,7 +1686,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
       return 0;
     }
 
-  if (in != stdin || (in == stdin && query)) {
+  if (query || (in != stdin && atoms->got_index)) {
     if (!fgets(linebuffer,LINESIZE,in)) {
       if (!suppress) fprintf(stderr, "premature file ending - expecting number of atoms\n");
       return 0;
@@ -3267,6 +3267,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 #ifdef HAVE_NETCDF
   int retval;
 #endif
+  int no_index;
 
   *at = malloc(sizeof(Atoms));
   if (*at == NULL) return 0;
@@ -3307,6 +3308,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
   (**at).nc_in = -1;
   (**at).nc_out = -1;
 
+  no_index = (*no_compute_index || (strcmp(filename, "stdin") == 0));
+
   // Guess format from file extension
   if (filename[0] == '\0') {
     (**at).format = NO_FORMAT;
@@ -3328,7 +3331,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
   }
 
   XYZ:
-    if ((*action == INPUT || *action == INOUT) && strcmp(filename, "stdin") != 0) {
+    if ((*action == INPUT || *action == INOUT) && !no_index) {
       **n_frame = xyz_find_frames(filename, (**at).frames, (**at).atoms);
       if (**n_frame == 0) {
 	fprintf(stderr, "Error building XYZ index\n");
@@ -3351,7 +3354,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
       }
       if ((**at).xyz_in == NULL) return 0;
       (**at).format = XYZ_FORMAT;
-      if (strcmp(filename, "stdin") != 0) { 
+      if (!no_index) { 
 	z = 0; zp = &z;  cioquery(*at, zp); 
       }
     } else if (*action == OUTPUT) {
@@ -3386,7 +3389,9 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
       }      
       if ((**at).xyz_out == NULL) return 0;
       (**at).format = XYZ_FORMAT;
-      z = 0; zp = &z;  cioquery(*at, zp);
+      if (!no_index) {
+	z = 0; zp = &z;  cioquery(*at, zp);
+      }
     } else {
       fprintf(stderr,"Bad action %d - should be one of INPUT(%d), OUTPUT(%d) or INOUT (%d)",
 	      *action, INPUT, OUTPUT, INOUT);
