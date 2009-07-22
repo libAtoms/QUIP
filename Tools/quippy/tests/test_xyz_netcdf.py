@@ -93,7 +93,7 @@ if got_cinoutput:
          if os.path.exists('test.xyz'): os.remove('test.xyz')
          if os.path.exists('test.nc'): os.remove('test.nc')
          if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
-         #if os.path.exists('test2.xyz'): os.remove('test2.xyz')
+         if os.path.exists('test2.xyz'): os.remove('test2.xyz')
          if os.path.exists('test2.xyz.idx'): os.remove('test2.xyz.idx')
 
       def testsinglexyz(self):
