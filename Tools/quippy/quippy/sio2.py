@@ -736,9 +736,10 @@ def param_to_str(format, params):
    return format % out_params
 
 
-def param_to_xml(params, output, encoding='iso-8859-1'):
+def param_to_xml(params, encoding='iso-8859-1'):
    from xml.sax.saxutils import XMLGenerator
-
+   from StringIO import StringIO
+   output = StringIO()
    xml = XMLGenerator(output, encoding)
    xml.startDocument()
 
@@ -749,7 +750,13 @@ def param_to_xml(params, output, encoding='iso-8859-1'):
                                     'tolpol': str(params['tolpol']),
                                     'pred_order': str(params['pred_order']),
                                     'yukalpha': str(params['yukalpha']),
-                                    'yuksmoothlength': str(params['yuksmoothlength'])})
+                                    'yuksmoothlength': str(params['yuksmoothlength']),
+                                    'tewald': params['tewald'] and 'T' or 'F',
+                                    'raggio': str(params['raggio']),
+                                    'a_ew': str(params['a_ew']),
+                                    'gcut': str(params['gcut']),
+                                    'iesr': ' '.join([str(x) for x in params.get('iesr', [0,0,0])])
+                                    })
    ti_tj_to_index = {}
    n = 0
    for ti in range(params['nspecies']):
@@ -782,6 +789,7 @@ def param_to_xml(params, output, encoding='iso-8859-1'):
          
    xml.endElement('ASAP_params')
    xml.endDocument()
+   return output.getvalue()
 
 def update_vars(params, opt_vars, param_str):
    out_params = params.copy()
@@ -889,7 +897,7 @@ def save_ref_config(config_list):
       at.dft_virial = at.virial[:] / (HARTREE/(BOHR**3))
 
 
-def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447): ## bulk_mod is in kbar
+def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447):
 
    s = fzeros((3,3))
 
@@ -935,7 +943,7 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
    
    return config_list, (wf*dist_f + ws*dist_s + we*dist_e, dist_f, dist_s, dist_e)
 
-def test_potential(gen_file, param_file, config_list):
+def read_gen_and_param_files(gen_file, param_file):
 
    if isinstance(gen_file, str):
       gen_file = open(gen_file, 'r')
@@ -954,18 +962,5 @@ def test_potential(gen_file, param_file, config_list):
    # fix charges
    params['z'] = [params['z'], -2.0*params['z']]
 
-   xml = StringIO()
-   param_to_xml(params, xml)
+   return params
 
-   print xml.getvalue()
-   
-   p = Potential('IP ASAP', xml.getvalue())
-
-   return costfn(config_list, p)
-
-if __name__ == '__main__':
-   al = AtomsList('iter0.pos', pos_angstrom=True)
-
-   save_ref_config(al)
-   
-   al, cost = test_potential('gen.in.01', """-1.3000000E+00  2.4748000E-04  1.9033000E-03 -2.0846000E-03  1.2070920E+01  1.1152300E+01  1.0455170E+01  7.1700500E+00 4.6371000E+00  5.7503800E+00  8.8937800E+00  1.0000000E+00  2.0298900E+00  1.0000000E+00 -1.5043500E+00""", al)
