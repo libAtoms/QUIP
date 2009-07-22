@@ -1937,7 +1937,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	case(T_CHAR):
 	  break;
 	default:
-	  fprintf(stderr,"Unkown param type %d\n", atoms->param_type[j]);
+	  fprintf(stderr,"Unknown param type %d\n", atoms->param_type[j]);
 	  return 0;
 	}
       }
@@ -3365,8 +3365,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
     }
     if (strcmp(filename, "stdin") == 0) goto XYZ;
     if (strcmp(filename, "stdout") == 0) goto XYZ;
-    fprintf(stderr, "unknown file format: %s\n", filename);
-    return 0;
+    // Unknown file format, assume it's xyz...
+    goto XYZ;
   }
 
   XYZ:
