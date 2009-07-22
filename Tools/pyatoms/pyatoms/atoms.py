@@ -1040,7 +1040,7 @@ def make_lattice(lengths, angles):
 
    lattice = numpy.zeros((3,3),'d')
 
-   if alpha == 90.0 and beta == 90.0 and gamma == 9.0:
+   if alpha == 90.0 and beta == 90.0 and gamma == 90.0:
       lattice[0,0] = a
       lattice[1,1] = b
       lattice[2,2] = c
