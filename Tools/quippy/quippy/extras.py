@@ -71,14 +71,18 @@ class Atoms(FortranAtoms):
          else:
             format = source.__class__
 
+      opened = False
       if format in AtomsReaders:
          source = AtomsReaders[format](source, *args, **kwargs)
+         opened = True
 
       if not hasattr(source, '__iter__'):
          raise ValueError('Cannot read from source %r - not an iterator' % source)
       at = iter(source).next()
       if not isinstance(at, cls):
          raise ValueError('Object %r read from source %r is not Atoms instance' % (at, source))
+      if opened and hasattr(source, 'close'):
+         source.close()
       return at
          
 
@@ -408,15 +412,17 @@ class Table(FortranTable):
 class DynamicalSystem(FortranDynamicalSystem):
    
    def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str=""):
+      self.atoms.calc_connect()
       pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
       for n in range(n_steps):
          self.advance_verlet1(dt, self.atoms.force)
          pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
          self.advance_verlet2(dt, self.atoms.force)
          self.print_status(epot=self.atoms.energy)
-         if n % connect_interval == 0:
+         self.atoms.params['time'] = self.t
+         if connect_interval is not None and n % connect_interval == 0:
             self.atoms.calc_connect()
-         if n % save_interval == 0:
+         if save_interval is not None and n % save_interval == 0:
             yield self.atoms.copy()
       raise StopIteration
 
