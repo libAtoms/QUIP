@@ -10,6 +10,10 @@ implicit none
   logical :: infile_is_list
   character(len=FIELD_LENGTH) :: outfilename
   type(Inoutput) :: outfile
+  character(len=FIELD_LENGTH) :: commandfilename
+  type(Inoutput) :: commandfile
+  character(len=1024) :: args_str
+
   character(len=FIELD_LENGTH) :: mask_str
   integer :: decimation
   real(dp) :: min_time, max_time
@@ -22,6 +26,8 @@ implicit none
   logical :: autocorrelation, mean
   integer :: autocorrelation_max_lag
   real(dp) :: mean_decorrelation_time
+  logical :: have_params
+  integer :: status, arg_line_no
 
   logical :: no_compute_index
   integer :: n_histos
@@ -33,94 +39,126 @@ implicit none
   call system_initialise(NORMAL)
 
   call initialise(cli_params)
-  call param_register(cli_params, 'infile', param_mandatory, infilename)
-  call param_register(cli_params, 'infile_is_list', 'F', infile_is_list)
-  call param_register(cli_params, 'outfile', 'stdout', outfilename)
-
-  mask_str = ""
-  call param_register(cli_params, 'AtomMask', "", mask_str)
-  call param_register(cli_params, 'min_p', PARAM_MANDATORY, min_p)
-  call param_register(cli_params, 'bin_width', PARAM_MANDATORY, bin_width)
-  call param_register(cli_params, 'n_bins', PARAM_MANDATORY, n_bins)
-  call param_register(cli_params, 'decimation', '1', decimation)
-  call param_register(cli_params, 'min_time', '-1.0', min_time)
-  call param_register(cli_params, 'max_time', '-1.0', max_time)
-  call param_register(cli_params, 'gaussian', 'F', gaussian_smoothing)
-  call param_register(cli_params, 'sigma', '0.0', gaussian_sigma)
-  call param_register(cli_params, 'sort_Time', 'F', sort_Time)
-  call param_register(cli_params, 'no_Time_dups', 'F', no_Time_dups)
-  call param_register(cli_params, 'mean', 'T', mean)
-  call param_register(cli_params, 'mean_decorrelation_time', '0.0', mean_decorrelation_time)
-  call param_register(cli_params, 'autocorrelation', 'F', autocorrelation)
-  call param_register(cli_params, 'autocorrelation_max_lag', '10000', autocorrelation_max_lag)
-  call param_register(cli_params, 'quiet', 'F', quiet)
+  call register_cli_params(cli_params,.true., infilename, infile_is_list, outfilename, commandfilename, &
+    mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, sort_Time, &
+    no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
       call print_usage()
     call system_abort('could not parse argument line')
   end if
-  call finalise(cli_params)
-
-  if (mean .and. autocorrelation) &
-    call system_abort("You probably really don't want to do mean and decorrelation with the same parameters, so I won't let you")
-
-  no_compute_index=.false.
-  if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
-
-  call print("infile " // trim(infilename) // " infile_is_list " // infile_is_list)
-  call print("outfilename " // trim(outfilename))
-  call print("AtomMask " // trim(mask_str))
-  call print("min_p " // min_p)
-  call print("bin_width " // bin_width // " n_bins " // n_bins)
-  call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
-  call print("gaussian " // gaussian_smoothing // " sigma " // gaussian_sigma)
-  call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups)
-  call print("mean " // mean // " mean_decorrelation_time " // mean_decorrelation_time)
-  call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
 
   call print("Reading configurations")
   call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
 
-  call print("Calculating densities")
-  call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, mask_str)
-
-  call initialise(outfile, outfilename, OUTPUT)
-
-  if (autocorrelation) then
-    call print("Calculating autocorrelations")
-    allocate(autocorr(n_bins(1),n_bins(2),n_bins(3),autocorrelation_max_lag+1))
-    autocorr = autocorrelation_3array(histo_raw(:,:,:,1:n_histos), max_lag=autocorrelation_max_lag)
-
-    call print("Printing autocorrelations")
-    call print("# Autocorrelation", file=outfile)
-    do i_lag=0, autocorrelation_max_lag
-      call print(i_lag // " " // reshape(autocorr(1:n_bins(1),1:n_bins(2),1:n_bins(3),i_lag+1), &
-					    (/ n_bins(1)*n_bins(2)*n_bins(3) /)),  file=outfile)
-    end do
+  if (len_trim(commandfilename) == 0) then
+    args_str = write_string(cli_params)
+    call finalise(cli_params)
+  else
+    call finalise(cli_params)
+    call print("reading commands from file '"//trim(commandfilename)//"'")
+    call initialise(commandfile, trim(commandfilename), INPUT)
+    arg_line_no = 1
+    args_str = read_line(commandfile)
+    call initialise(cli_params)
+    call print("got arguments line '"//trim(args_str)//"'")
+    call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
+      mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, sort_Time, &
+      no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
+    if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
+      call print_usage()
+      call system_abort("could not parse argument line "//arg_line_no//" from file '"//trim(commandfilename//"'"))
+    end if
+    call finalise(cli_params)
   endif
 
-  if (mean) then
+  have_params = .true.
+  do while (have_params)
+    if (mean .and. autocorrelation) &
+      call system_abort("You probably really don't want to do mean and decorrelation with the same parameters, so I won't let you")
+
+    no_compute_index=.false.
+    if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
+
+    call print("infile " // trim(infilename) // " infile_is_list " // infile_is_list)
+    call print("outfilename " // trim(outfilename))
+    call print("AtomMask " // trim(mask_str))
+    call print("min_p " // min_p)
+    call print("bin_width " // bin_width // " n_bins " // n_bins)
+    call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
+    call print("gaussian " // gaussian_smoothing // " sigma " // gaussian_sigma)
+    call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups)
+    call print("mean " // mean // " mean_decorrelation_time " // mean_decorrelation_time)
+    call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
+
+    call print("Calculating densities")
+    call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, mask_str)
+
+    call initialise(outfile, outfilename, OUTPUT)
+
     if (autocorrelation) then
-      call print("", file=outfile)
-      call print("", file=outfile)
+      call print("Calculating autocorrelations")
+      allocate(autocorr(n_bins(1),n_bins(2),n_bins(3),autocorrelation_max_lag+1))
+      autocorr = autocorrelation_3array(histo_raw(:,:,:,1:n_histos), max_lag=autocorrelation_max_lag)
+
+      call print("Printing autocorrelations")
+      call print("# Autocorrelation", file=outfile)
+      do i_lag=0, autocorrelation_max_lag
+	call print(i_lag // " " // reshape(autocorr(1:n_bins(1),1:n_bins(2),1:n_bins(3),i_lag+1), &
+					      (/ n_bins(1)*n_bins(2)*n_bins(3) /)),  file=outfile)
+      end do
     endif
-    allocate(histo_mean(n_bins(1), n_bins(2), n_bins(3)))
-    allocate(histo_var(n_bins(1), n_bins(2), n_bins(3)))
-    call calc_mean_var_3array(histo_raw(:,:,:,1:n_histos), histo_mean, histo_var)
 
-    call print("# Density", file=outfile)
-    call print("# x y z   mean   var  n_samples", file=outfile)
-    do i1=1,n_bins(1)
-    do i2=1,n_bins(2)
-    do i3=1,n_bins(3)
-      call print( (min_p+bin_width*(/ i1-0.5_dp, i2-0.5_dp, i3-0.5_dp /)) // &
-		  " " // histo_mean(i1, i2, i3) // &
-		  " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
-    end do
-    end do
-    end do
-  end if
+    if (mean) then
+      if (autocorrelation) then
+	call print("", file=outfile)
+	call print("", file=outfile)
+      endif
+      allocate(histo_mean(n_bins(1), n_bins(2), n_bins(3)))
+      allocate(histo_var(n_bins(1), n_bins(2), n_bins(3)))
+      call calc_mean_var_3array(histo_raw(:,:,:,1:n_histos), histo_mean, histo_var)
 
-  call finalise(outfile)
+      call print("# Density", file=outfile)
+      call print("# x y z   mean   var  n_samples", file=outfile)
+      do i1=1,n_bins(1)
+      do i2=1,n_bins(2)
+      do i3=1,n_bins(3)
+	call print( (min_p+bin_width*(/ i1-0.5_dp, i2-0.5_dp, i3-0.5_dp /)) // &
+		    " " // histo_mean(i1, i2, i3) // &
+		    " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
+      end do
+      end do
+      end do
+    end if
+
+    call finalise(outfile)
+
+    if (allocated(histo_raw)) deallocate(histo_raw)
+    if (allocated(autocorr)) deallocate(autocorr)
+    if (allocated(histo_mean)) deallocate(histo_mean)
+    if (allocated(histo_var)) deallocate(histo_var)
+
+    if (len_trim(commandfilename) == 0) then
+      have_params = .false.
+    else
+      arg_line_no = arg_line_no + 1
+      args_str = read_line(commandfile, status=status)
+      if (status == 0) then
+	call print("got arguments line '"//trim(args_str)//"'")
+	call initialise(cli_params)
+	call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
+	  mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, sort_Time, &
+	  no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
+	if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
+	  call print_usage()
+	  call system_abort("could not parse argument line "//arg_line_no//" from file '"//trim(commandfilename//"'"))
+	end if
+	call finalise(cli_params)
+      else
+	have_params = .false.
+      endif
+    endif
+
+  end do
 
   call system_finalise()
 
@@ -137,11 +175,85 @@ contains
     endif
 
     call print("Usage: " // trim(my_exec_name)//" infile=filename [infile_is_list=logical(F)]", ERROR)
-    call print("       outfile=filename [AtomMask=species()] min_p={x y z}", ERROR)
+    call print("       outfile=filename [commandfile=filename()] [AtomMask=species()] min_p={x y z}", ERROR)
     call print("       bin_width={x y z} n_bins={nx ny nz} [decimation=n(1)]", ERROR)
     call print("       [min_time=t(-1.0)] [max_time=t(-1.0)] [gaussian=logical(F)] [sigma=s(1.0)]", ERROR)
-    call print("       [sort_Time(F)] [no_Time_dups(F)] autocorrelation_max_lag=N(10000)", ERROR)
+    call print("       [sort_Time(F)] [no_Time_dups(F)]", ERROR)
+    call print("       [mean=logical(T)] [mean_decorrelation_time=t(0.0)]", ERROR)
+    call print("       [autocorrelation=logical(F)] [autocorrelation_max_lag=N(10000)]", ERROR)
+    call print("       [quiet=logical(F)]", ERROR)
   end subroutine print_usage
+
+  subroutine register_cli_params(cli_params, initial, infilename, infile_is_list, outfilename, commandfilename, &
+    mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, sort_Time, &
+    no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
+    type(Dictionary), intent(inout) :: cli_params
+    logical, intent(in) :: initial
+    character(len=*), intent(inout) :: infilename
+    logical, intent(inout) :: infile_is_list
+    character(len=*), intent(inout) :: outfilename
+    character(len=*), intent(inout) :: commandfilename
+    character(len=*), intent(inout) :: mask_str
+    real(dp), intent(inout) :: min_p(3), bin_width(3)
+    integer, intent(inout) :: n_bins(3), decimation
+    real(dp), intent(inout) :: min_time, max_time
+    logical, intent(inout) :: gaussian_smoothing
+    real(dp), intent(inout) :: gaussian_sigma
+    logical, intent(inout) :: sort_Time, no_Time_dups
+    logical, intent(inout) :: mean
+    real(dp), intent(inout) :: mean_decorrelation_time
+    logical, intent(inout) :: autocorrelation
+    integer, intent(inout) :: autocorrelation_max_lag
+    logical, intent(inout) :: quiet
+    character(len=FIELD_LENGTH) :: t_field
+
+
+    if (initial) then
+      call param_register(cli_params, 'infile', param_mandatory, infilename)
+      call param_register(cli_params, 'infile_is_list', 'F', infile_is_list)
+      call param_register(cli_params, 'outfile', 'stdout', outfilename)
+      mask_str = ""
+      commandfilename = ""
+      call param_register(cli_params, 'commandfile', "", commandfilename)
+      call param_register(cli_params, 'AtomMask', "", mask_str)
+      call param_register(cli_params, 'min_p', PARAM_MANDATORY, min_p)
+      call param_register(cli_params, 'bin_width', PARAM_MANDATORY, bin_width)
+      call param_register(cli_params, 'n_bins', PARAM_MANDATORY, n_bins)
+      call param_register(cli_params, 'decimation', '1', decimation)
+      call param_register(cli_params, 'min_time', '-1.0', min_time)
+      call param_register(cli_params, 'max_time', '-1.0', max_time)
+      call param_register(cli_params, 'gaussian', 'F', gaussian_smoothing)
+      call param_register(cli_params, 'sigma', '0.0', gaussian_sigma)
+      call param_register(cli_params, 'sort_Time', 'F', sort_Time)
+      call param_register(cli_params, 'no_Time_dups', 'F', no_Time_dups)
+      call param_register(cli_params, 'mean', 'T', mean)
+      call param_register(cli_params, 'mean_decorrelation_time', '0.0', mean_decorrelation_time)
+      call param_register(cli_params, 'autocorrelation', 'F', autocorrelation)
+      call param_register(cli_params, 'autocorrelation_max_lag', '10000', autocorrelation_max_lag)
+      call param_register(cli_params, 'quiet', 'F', quiet)
+    else
+      t_field=infilename
+      call param_register(cli_params, 'infile', trim(t_field), infilename)
+      call param_register(cli_params, 'infile_is_list', ""//infile_is_list, infile_is_list)
+      t_field=outfilename
+      call param_register(cli_params, 'outfile', trim(t_field), outfilename)
+      t_field=commandfilename
+      call param_register(cli_params, 'commandfile', trim(t_field), commandfilename)
+      t_field=mask_str
+      call param_register(cli_params, 'AtomMask', trim(t_field), mask_str)
+      call param_register(cli_params, 'min_p', ""//min_p, min_p)
+      call param_register(cli_params, 'bin_width', ""//bin_width, bin_width)
+      call param_register(cli_params, 'n_bins', ""//n_bins, n_bins)
+      call param_register(cli_params, 'min_time', ""//min_time, min_time)
+      call param_register(cli_params, 'max_time', ""//max_time, max_time)
+      call param_register(cli_params, 'gaussian', ""//gaussian_smoothing, gaussian_smoothing)
+      call param_register(cli_params, 'sigma', ""//gaussian_sigma, gaussian_sigma)
+      call param_register(cli_params, 'mean', ""//mean, mean)
+      call param_register(cli_params, 'mean_decorrelation_time', ""//mean_decorrelation_time, mean_decorrelation_time)
+      call param_register(cli_params, 'autocorrelation', ""//autocorrelation, autocorrelation)
+      call param_register(cli_params, 'autocorrelation_max_lag', ""//autocorrelation_max_lag, autocorrelation_max_lag)
+    endif
+  end subroutine register_cli_params
 
   function autocorrelation_scalar(v, max_lag) result(autocorrelation)
     real(dp), intent(in) :: v(:)
