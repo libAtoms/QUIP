@@ -47,6 +47,9 @@ type IPModel_ASAP
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable, dimension(:) :: pol, z
   real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
+  logical :: tewald
+  real :: raggio, a_ew, gcut
+  integer :: iesr(3)
 
   real(dp) :: cutoff(4)
 
@@ -247,7 +250,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
   use changepress
   use metric
   use netquant
-  use universal, only: au_to_kbar
+  use universal, only: au_to_kbar, small
   use initstuff
   use plot_efield
   use polar
@@ -267,7 +270,11 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    character(len=*), optional, intent(in) :: args_str
 
    type(Dictionary) :: params
-   real(dp) :: asap_e, asap_stress(3,3)
+   real(dp) :: asap_e, asap_stress(3,3), a_ew, f_ew
+   logical smlra,smlrc,smlgc,smlrc2,smlrc3,smlrc4
+   logical nsmlra,nsmlrc,nsmlgc
+   real*8 rarec,gcrec,rcrec,root2
+   real*8 raggio_in,rcut_in,gcut_in
    real(dp), allocatable :: asap_f(:,:)
    real(dp), pointer :: dipoles_ptr(:,:)
    integer :: i, ti, tj
@@ -444,7 +451,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       XNOS0  = 0.D0
       VRNOS  = 0.D0 
       
-      it = 0
+      it = 1
 
       c_harm = 0.0_dp
       rmin = 0.0_dp
@@ -462,11 +469,93 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       write(6,'(/," Masses :",2(1x,f10.5))') mass
 
       ! Ewald parameters
-      tewald = .false.
-      raggio = 0.0_dp
-      gcut = 0.0_dp
+      tewald = this%tewald
+      raggio = this%raggio
+      a_ew = this%a_ew
+      gcut = this%gcut
       rcut = this%cutoff
-      ! iesr will be computed later from rcut and cell
+      iesr = this%iesr
+
+      call print('tewald :'//tewald)
+      write(6,'(/," Raggio :",1x,f10.5)') raggio
+      write(6,'(" A_ew   :",1x,e10.5)') a_ew
+      write(6,'(" iesr   :",3i3)') iesr
+      write(6,'(" Gcut   :",1x,f10.5,/)') gcut
+
+      smlgc = gcut.lt.small
+      smlrc = rcut(1).lt.small
+      smlra = raggio.lt.small
+      smlrc2 = rcut(2).lt.small
+      smlrc3 = rcut(3).lt.small
+      smlrc4 = rcut(4).lt.small
+
+      nsmlgc = .not.smlgc      ! iesr will be computed later from rcut and cell
+
+      nsmlrc = .not.smlrc
+      nsmlra = .not.smlra
+
+      f_ew = dsqrt(-1.0d0*log(a_ew))
+      root2 = dsqrt(2.0d0)
+
+      rarec = 0.0d0
+      rcrec = 0.0d0
+      gcrec = 0.0d0
+
+      raggio_in = raggio
+      gcut_in = gcut
+      rcut_in = rcut(1)
+
+      if (smlrc.and.smlgc.and.smlra) then
+       rarec = 3.0d0
+       gcrec = f_ew*root2/rarec
+       rcrec = gcut*rarec*rarec
+      else if (nsmlrc.and.smlgc.and.smlra) then
+       rarec = rcut(1)/f_ew/root2
+       gcrec = f_ew*root2/rarec
+       raggio = rarec
+       gcut = gcrec
+      else if (smlrc.and.nsmlgc.and.smlra) then
+       rarec  = f_ew*root2/gcut
+       rcrec  = gcut*rarec*rarec
+       raggio = rarec
+       rcut(1) = rcrec
+      else if (smlrc.and.smlgc.and.nsmlra) then
+       gcrec = f_ew*dsqrt(2.0d0)/raggio
+       rcrec = gcrec*raggio*raggio
+       gcut = gcrec
+       rcut(1) = rcrec
+      else if (nsmlrc.and.nsmlgc.and.smlra) then
+       rarec = rcut(1)/f_ew/root2
+       gcrec = f_ew*root2/raggio
+       raggio = rarec
+      else if (nsmlrc.and.smlgc.and.nsmlra) then
+       rarec = rcut(1)/f_ew/root2
+       gcrec = f_ew*root2/raggio
+       gcut = gcrec
+      else if (smlrc.and.nsmlgc.and.nsmlra) then
+       gcrec = f_ew*root2/raggio
+       rcrec = gcrec*raggio*raggio
+       rcut(1) = rcrec
+      else if (nsmlrc.and.nsmlgc.and.nsmlra) then
+       write(6,*) 'raggio, rcut, gcut, are all defined!!'
+      endif
+
+      if (smlrc2) rcut(2) = rcut(1)
+      if (smlrc3) rcut(3) = rcut(1)
+      if (smlrc4) rcut(4) = rcut(1)
+
+      write(6,'(/," Input Raggio                : ",f10.5)')raggio_in
+      write(6,'(" Input r-space cutoff        : ",f10.5)')rcut_in
+      write(6,'(" Input g-space cutoff        : ",f10.5)')gcut_in
+      write(6,'(/," Recommended Raggio          : ",f10.5)')rarec
+      write(6,'(" Recommended r-space cutoff  : ",f10.5)')rcrec
+      write(6,'(" Recommended g-space cutoff  : ",f10.5)')gcrec
+      write(6,'(/," Using Raggio                : ",f10.5)')raggio
+      write(6,'(" Using r-space cutoff        : ",f10.5)')rcut(1)
+      write(6,'(" Using g-space cutoff        : ",f10.5)')gcut  
+      write(6,'(/," Secondary r-space cutoff    : ",f10.5)')rcut(2)
+      write(6,'(" Tertiary  r-space cutoff    : ",f10.5)')rcut(3)
+      write(6,'(" Quaternary r-space cutoff   : ",f10.5)')rcut(4)
       
       netcharge = 0.0d0
       do i=1,this%n_types
@@ -552,9 +641,13 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
 
    call inv3(ht,htm1,omega)
 
-   ! given rcut(1) and lattice, compute iesr
-   call fit_box_in_cell(rcut(1),rcut(1),rcut(1), at%lattice, iesr(1), iesr(2), iesr(3))
-   iesr = iesr/2
+   if (all(iesr == -1)) then
+      ! given rcut(1) and lattice, compute iesr
+      call fit_box_in_cell(rcut(1),rcut(1),rcut(1), at%lattice, iesr(1), iesr(2), iesr(3))
+      iesr = iesr/2
+   end if
+
+   call print('iesr = '//iesr)
 
    nesr = (2*iesr(1)+1)*(2*iesr(2)+1)*(2*iesr(3)+1)
    nnatmax = min(nnatmax,nat*nesr)
@@ -742,6 +835,26 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, "yuksmoothlength", value, status)
       if (status == 0) read (value, *) parse_ip%yuksmoothlength
+
+      parse_ip%tewald = .false.
+      call QUIP_FoX_get_value(attributes, "tewald", value, status)
+      if (status == 0) read (value, *), parse_ip%tewald
+
+      parse_ip%raggio = 0.0_dp
+      call QUIP_FoX_get_value(attributes, "raggio", value, status)
+      if (status == 0) read (value, *), parse_ip%raggio
+
+      parse_ip%a_ew = 0.0_dp
+      call QUIP_FoX_get_value(attributes, "a_ew", value, status)
+      if (status == 0) read (value, *), parse_ip%a_ew
+
+      parse_ip%gcut = 0.0_dp
+      call QUIP_FoX_get_value(attributes, "gcut", value, status)
+      if (status == 0) read (value, *), parse_ip%gcut
+
+      parse_ip%iesr = 0
+      call QUIP_FoX_get_value(attributes, "iesr", value, status)
+      if (status == 0) read (value, *), parse_ip%iesr
 
     endif
 
