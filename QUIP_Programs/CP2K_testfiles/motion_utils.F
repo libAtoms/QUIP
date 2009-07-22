@@ -344,9 +344,9 @@ CONTAINS
             WRITE (UNIT=title,FMT="(A,I8,A,F12.3,A,F20.10,A,9F13.8,A)")&
 !              " i = ",it,", time = ",time,", E = ",etot
               '  i="',it,' " time="',time,' " E="',etot, &
-              '" Lattice="',cell%hmat(1,1),cell%hmat(2,1),cell%hmat(3,1), &
-                            cell%hmat(1,2),cell%hmat(2,2),cell%hmat(3,2), &
-                            cell%hmat(1,3),cell%hmat(2,3),cell%hmat(3,3), &
+              '" Lattice="',cell%hmat(1,1)*angstrom,cell%hmat(2,1)*angstrom,cell%hmat(3,1)*angstrom, &
+                            cell%hmat(1,2)*angstrom,cell%hmat(2,2)*angstrom,cell%hmat(3,2)*angstrom, &
+                            cell%hmat(1,3)*angstrom,cell%hmat(2,3)*angstrom,cell%hmat(3,3)*angstrom, &
                '" Properties=species:S:1:'//trim(property)//':R:3'
           ELSE
             WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
