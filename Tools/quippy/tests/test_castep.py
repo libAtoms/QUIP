@@ -137,7 +137,7 @@ class TestCastepCell(QuippyTestCase):
    def testupdate_from_atoms(self):
       a = diamond(5.44, 14)
       c = castep.CastepCell()
-      a.write(c)
+      c.update_from_atoms(a)
       self.assertEqual(c['POSITIONS_ABS'], ['Si 0.000000 0.000000 0.000000',
                                             'Si 1.360000 1.360000 1.360000',
                                             'Si 2.720000 2.720000 0.000000',
@@ -149,6 +149,24 @@ class TestCastepCell(QuippyTestCase):
       self.assertEqual(c['LATTICE_CART'], ['5.440000 0.000000 0.000000',
                                            '0.000000 5.440000 0.000000',
                                            '0.000000 0.000000 5.440000'])
+
+   def testnonorthorhombic(self):
+      import os
+      
+      shear = fidentity(3)
+      shear[1,2] = 0.05
+      a = transform(diamond(5.44, 14), shear)
+      c = castep.CastepCell(atoms=a)
+      a2 = c.to_atoms()
+      self.assertEqual(a, a2)
+
+      c.write('test.cell')
+
+      d = castep.CastepCell('test.cell')
+      a3 = d.to_atoms()
+      self.assertEqual(a, a3)
+      
+      os.remove('test.cell')
 
 
 class TestCastepParam(QuippyTestCase):
@@ -1147,7 +1165,7 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
       self.assertEqual(a.n, self.al[0].n)
       self.assertAlmostEqual(a.energy, self.al[0].energy)
       self.assertArrayAlmostEqual(a.force, self.al[0].force)
-      
+
 
 def getTestSuite():
    tl = unittest.TestLoader()

@@ -17,15 +17,13 @@ if got_cinoutput:
          self.at = supercell(diamond(5.44,14), 2,2,2)
          self.at.params['dummy_real'] = 1.0
          self.at.params['dummy_int'] = 2
-         self.at.params['dummy_logical'] = False
          self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
          for a in self.al:
             a.params['dummy_real'] = 1.0
             a.params['dummy_int'] = 2
-            a.params['dummy_logical'] = False
 
          self.xyz_ref = ['64\n',
-                         'dummy_real=1.00000000 dummy_int=2 dummy_logical=F Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1\n',
+                         'dummy_real=1.00000000 dummy_int=2 Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1\n',
                          'Si              0.00000000      0.00000000      0.00000000      14\n',
                          'Si              1.36000000      1.36000000      1.36000000      14\n',
                          'Si              2.72000000      2.72000000      0.00000000      14\n',
@@ -95,7 +93,7 @@ if got_cinoutput:
          if os.path.exists('test.xyz'): os.remove('test.xyz')
          if os.path.exists('test.nc'): os.remove('test.nc')
          if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
-         if os.path.exists('test2.xyz'): os.remove('test2.xyz')
+         #if os.path.exists('test2.xyz'): os.remove('test2.xyz')
          if os.path.exists('test2.xyz.idx'): os.remove('test2.xyz.idx')
 
       def testsinglexyz(self):
@@ -153,6 +151,21 @@ if got_cinoutput:
          self.assertEqual(list(al), list(self.al))
 
 
+      def testwritecio(self):
+         cio = CInOutput("test2.xyz", OUTPUT)
+         self.al.write(cio)
+         cio.close()
+         al = AtomsList("test2.xyz")
+         self.assertEqual(list(al), list(self.al))
+
+      def testreadcio(self):
+         self.al.write("test.xyz")
+         cio = CInOutput("test.xyz", INPUT)
+         al = AtomsList(cio)
+         self.assertEqual(list(al), list(self.al))
+         cio.close()
+
+      
 try:
    import netCDF4
    got_netcdf4 = True
