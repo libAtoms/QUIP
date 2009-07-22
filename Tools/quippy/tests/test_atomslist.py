@@ -129,11 +129,19 @@ class TestAtomsList(QuippyTestCase):
       g = testwriter()
       self.assertEqual(self.genal.write(g),  [8, 8, 8, 8, 8])
 
-
-   def testfromat(self):
+   def testfrom_at(self):
       nl = AtomsList(self.listal[0])
       self.assertEqual(list(nl), [self.listal[0]])
 
+   def testatomsreader_list(self):
+      ar = AtomsReader(self.listal)
+      self.assertEqual(list(ar), list(self.listal))
+
+   def testatomsreader_gen(self):
+      ar = AtomsReader(self.genal)
+      self.assertEqual(list(ar), list(self.genal))
+
+      
 
 def getTestSuite():
    tl = unittest.TestLoader()
