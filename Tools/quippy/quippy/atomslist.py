@@ -1,6 +1,30 @@
 import sys, os, itertools
 from quippy import Atoms, AtomsReaders, AtomsWriters
 
+def AtomsReader(source, format=None, *args, **kwargs):
+   """Generator to read sucessive frames from source"""
+
+   if format is None:
+      if isinstance(source, str):
+         if source in AtomsReaders:
+            format = source
+         else:
+            base, ext = os.path.splitext(source)
+            format = ext[1:]
+      else:
+         format = source.__class__
+
+   opened = False
+   if format in AtomsReaders:
+      source = iter(AtomsReaders[format](source, *args, **kwargs))
+      opened = True
+
+   for at in source:
+      yield at
+
+   if opened and hasattr(source, 'close'):
+      source.close()
+   
 
 class AtomsList(object):
    """Class for dealing with sequences of Atoms objects"""
