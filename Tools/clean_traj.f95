@@ -13,6 +13,7 @@ implicit none
   integer :: decimation
   real(dp) :: min_time, max_time
   logical :: sort_Time, no_Time_dups, quiet, no_compute_index
+  real(dp) :: scale_lattice, scale_pos
 
   type(Atoms_ll) :: structure_ll
   type(Atoms_ll_entry), pointer :: entry
@@ -29,6 +30,8 @@ implicit none
   call param_register(cli_params, 'sort_Time', 'F', sort_Time)
   call param_register(cli_params, 'no_Time_dups', 'F', no_Time_dups)
   call param_register(cli_params, 'quiet', 'F', quiet)
+  call param_register(cli_params, 'scale_lattice', '1.0', scale_lattice)
+  call param_register(cli_params, 'scale_pos', '1.0', scale_pos)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
       call print_usage()
     call system_abort('could not parse argument line')
@@ -39,6 +42,7 @@ implicit none
   call print("outfilename " // trim(outfilename))
   call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
   call print("sort_Time " // sort_Time // " no_Time_dups " // no_Time_dups // " quiet " // quiet)
+  call print("scale_lattice " // scale_lattice // " scale_pos " // scale_pos)
 
   no_compute_index=.false.
   if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
@@ -48,6 +52,8 @@ implicit none
   call initialise(outfile, outfilename, action=OUTPUT)
   entry => structure_ll%first
   do while (associated(entry))
+    if (scale_lattice /= 1.0_dp) entry%at%lattice = scale_lattice * entry%at%lattice
+    if (scale_pos /= 1.0_dp) entry%at%pos = scale_pos * entry%at%pos
     call write(outfile, entry%at)
     entry => entry%next
   end do
