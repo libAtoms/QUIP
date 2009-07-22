@@ -4,6 +4,7 @@ ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else
   include Makefile.${QUIP_ARCH}
+  include ../../build.${QUIP_ARCH}/Makefile.inc
 endif
 
 .PHONY: clean build install atomeyelib presetup
@@ -31,7 +32,9 @@ BUILD_EXT_OPTS = --fcompiler="${QUIPPY_FCOMPILER}"
 
 BUILD_SRC_OPTS = ${LIBATOMS} ${QUIP_CORE} ${TOOLS} ${ATOMEYE} ${WRAP} --f2py-opts=--no-wrap-functions
 BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
-INSTALL_OPTS = 
+ifneq (${QUIPPY_INSTALL_OPTS},)
+INSTALL_OPTS += ${QUIPPY_INSTALL_OPTS}
+endif
 
 SETUP_OPTS = config_fc ${CONFIG_FC_OPTS} build_ext ${BUILD_EXT_OPTS} build_src ${BUILD_SRC_OPTS}
 
