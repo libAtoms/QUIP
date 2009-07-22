@@ -45,7 +45,7 @@ try:
    from quippy import CInOutput, INPUT, OUTPUT, INOUT
 
    class CInOutputReader(object):
-      """Generator to read atoms sequentially from a CInOutput"""
+      """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
 
       def __init__(self, source, frame=None, start=0, stop=None, step=1):
          if isinstance(source, str):
@@ -82,7 +82,8 @@ try:
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
    @atoms_reader('stdin')
-   def CInOutputStdinReader(source):
+   def CInOutputStdinReader(source='stdin'):
+      assert source == 'stdin'
       source = CInOutput(source, action=INPUT)
       while True:
          try:
