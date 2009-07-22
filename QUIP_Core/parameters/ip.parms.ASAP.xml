@@ -1,0 +1,12 @@
+<!-- Original ASAP parameters, as published in P. Tangney and S. Scandolo, J. Chem. Phys. 117 8898 (2002) -->
+<ASAP_params label="JChemPhys_117_8898" betapol="0.75" cutoff="20.0 22.0 18.0 0.0" n_types="2" yuksmoothlength="0.0" pred_order="2" 
+  maxipol="60" tolpol="0.0005" yukalpha="0.0" tewald="T" >
+
+  <per_type_data atomic_num="8" pol="8.89378" z="-1.38257" type="1" />
+  <per_type_data atomic_num="14" pol="0.0" z="2.76514" type="2" />
+
+  <per_pair_data C_pol="0.0" atnum_j="8" atnum_i="8" D_ms="0.00024748" gamma_ms="12.07092" B_pol="0.0" R_ms="7.17005" /> 
+  <per_pair_data C_pol="-1.50435" atnum_j="8" atnum_i="14" D_ms="0.0019033" gamma_ms="11.1523" B_pol="2.02989" R_ms="4.6371" />
+  <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="-0.0020846" gamma_ms="10.45517" B_pol="0.0" R_ms="5.75038" />
+
+</ASAP_params>
