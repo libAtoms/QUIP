@@ -1,7 +1,7 @@
 import sys, string, os, operator, itertools
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary, HARTREE, BOHR, atomic_number_from_symbol
+from quippy import Atoms, Dictionary, HARTREE, BOHR, GPA, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 
 import xml.dom.minidom
@@ -219,7 +219,7 @@ class CastepCell(OrderedDict):
          raise ValueError('cell is missing POSITIONS_ABS block')
       
       atoms = Atoms(n=len(self['POSITIONS_ABS']),lattice = 
-                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
+                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]).T)
       
       field_list = [line.split() for line in self['POSITIONS_ABS']]
 
@@ -240,7 +240,7 @@ class CastepCell(OrderedDict):
       # Add lattice to cell
       self['LATTICE_CART'] = []
       for i in frange(3):
-         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
+         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[i,:]))
 
       # Add atomic positions to cell
       self['POSITIONS_ABS'] = []
@@ -263,16 +263,6 @@ class CastepCellWriter(object):
 
 AtomsWriters['cell'] = CastepCellWriter
 
-class CastepCellUpdater(object):
-   def __init__(self, dest):
-      self.dest = dest
-
-   def write(self, at):
-      self.dest.update_from_atoms(at)
-
-AtomsWriters[CastepCell] = CastepCellUpdater
-      
- 
 class CastepParam(OrderedDict):
    "Class to wrap a CASTEP parameter (.param) file"
 
@@ -414,7 +404,7 @@ def CastepGeomReader(source):
       # Lattice is next, in units of Bohr
       lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
       lattice = farray([ [float(x)* BOHR for x in row[0:3]]
-                         for row in map(string.split, lattice_lines) ])
+                         for row in map(string.split, lattice_lines) ]).T
 
       # Then optionally virial tensor
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
@@ -459,7 +449,7 @@ def CastepGeomReader(source):
 
 @atoms_reader('castep')
 @atoms_reader('castep_log')
-def CastepOutputReader(castep_file, cluster=None, abort=True):
+def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
       well"""
@@ -519,10 +509,10 @@ def CastepOutputReader(castep_file, cluster=None, abort=True):
       lattice_line = lattice_lines[-1] # last lattice
       
       lattice_lines = castep_output[lattice_line+3:lattice_line+6]
-      R1 = map(float, lattice_lines[0].split()[0:3])
-      R2 = map(float, lattice_lines[1].split()[0:3])
-      R3 = map(float, lattice_lines[2].split()[0:3])
-      lattice = farray([R1,R2,R3])
+      lattice = fzeros((3,3))
+      lattice[1,:] = map(float, lattice_lines[0].split()[0:3])
+      lattice[2,:] = map(float, lattice_lines[1].split()[0:3])
+      lattice[3,:] = map(float, lattice_lines[2].split()[0:3])
 
       cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
       if cell_contents == []:
@@ -621,16 +611,16 @@ def CastepOutputReader(castep_file, cluster=None, abort=True):
             stress_start = castep_output.index(' ***************** Stress Tensor *****************\n')
 
             stress_lines = castep_output[stress_start+6:stress_start+9]
-            virial = zeros((3,3),float)
-            for i in range(3):
-               star1, label, vx, vy, vz, star2 = stress_lines[i].split()
-               virial[:,i] = (vx,vy,vz)
+            virial = fzeros((3,3),float)
+            for i, line in fenumerate(stress_lines):
+               star1, label, vx, vy, vz, star2 = line.split()
+               virial[:,i] = [float(v) for v in (vx,vy,vz) ]
 
             # Convert to libAtoms units and append to comment line
             atoms.params['virial_1'] = virial[1]/GPA
             atoms.params['virial_2'] = virial[2]/GPA
             atoms.params['virial_3'] = virial[3]/GPA
-            atoms.virial = virial
+            atoms.virial = virial/GPA
 
          except ValueError:
             if abort:
@@ -663,6 +653,9 @@ def CastepOutputReader(castep_file, cluster=None, abort=True):
          except ValueError:
             if abort:
                raise ValueError('No populations found in castep file')
+
+      if save_params:
+         atoms.params.update(param)
 
       yield atoms
 
