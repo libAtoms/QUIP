@@ -245,7 +245,7 @@ class CastepCell(OrderedDict):
       # Add lattice to cell
       self['LATTICE_CART'] = []
       for i in range(3):
-         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[i,:]))
+         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
 
       # Add atomic positions to cell
       self['POSITIONS_ABS'] = []
