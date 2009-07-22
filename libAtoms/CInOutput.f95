@@ -426,6 +426,7 @@ contains
 
     do i=1,this%n_param
        namestr = c_array_to_f_string(this%param_name(:,i))
+       if (trim(namestr) == "Lattice" .or. trim(namestr) == "Properties") cycle
        select case(this%param_type(i))
        case(T_INTEGER)
           call set_value(at%params, namestr, this%pint(i))
@@ -437,6 +438,8 @@ contains
           call set_value(at%params, namestr, this%preal_a(:,i))
        case(T_CHAR)
           call set_value(at%params, namestr, c_array_to_f_string(this%param_value(:,i)))
+       case default
+          call system_abort('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i))
        end select
     end do
 
@@ -560,6 +563,8 @@ contains
           call f_string_to_c_array(valuestr, this%param_value(:,n))
           this%param_size(n) = 1
           this%param_type(n) = T_CHAR
+       case default
+          call system_abort('cinoutput_write: unsupported parameter i='//i//' '//trim(at%params%keys(i))//' type='//at%params%entries(i)%type)
        end select
        n = n + 1
     end do
@@ -670,6 +675,8 @@ contains
           call f_string_to_c_array(valuestr, this%param_value(:,n))
           this%param_size(n) = 1
           this%param_type(n) = T_CHAR
+       case default
+          call system_abort('cinoutput_update: unsupported parameter i='//i//' type='//at%params%entries(i)%type//' '//trim(at%params%keys(i)))
        end select
        n = n + 1
     end do
