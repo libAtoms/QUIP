@@ -195,7 +195,7 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
                   # if it's a single string, join it and strip it
                   at.params[name] = ''.join(var[frame]).strip()
                else:
-                  at.params[name] = var[frame]
+                  at.params[name] = var[frame].T
 
       yield at
 
