@@ -24,6 +24,9 @@
 #define T_LOGICAL_A  8
 #define T_CHAR       9
 #define T_CHAR_A     10
+#define T_DATA       11
+#define T_INTEGER_A2 12
+#define T_REAL_A2    13
 
 #define NETCDF_IN  0
 #define NETCDF_OUT 1
@@ -58,6 +61,8 @@ typedef struct {
   double param_real[MAX_PARAM_COUNT];
   int param_int_a[MAX_PARAM_COUNT][3];
   double param_real_a[MAX_PARAM_COUNT][3];
+  int param_int_a2[MAX_PARAM_COUNT][9];
+  double param_real_a2[MAX_PARAM_COUNT][9];
   int param_filter[MAX_ENTRY_COUNT];
   int n_int, n_real, n_str, n_logical;
   int frame_dim_id[2], spatial_dim_id[2], atom_dim_id[2], cell_spatial_dim_id[2],
@@ -110,15 +115,17 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
 int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char *str_format, char *logical_format, int swap);
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int supress, int override_lattice, double lattice[3][3]);
-int cio_init(Atoms **at, char *filename, int *action, int *append,
-	     int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
-	     int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
-	     int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
-	     int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice);
-int cio_query(Atoms *at, int *frame);
-void cio_free(Atoms *at);
-int cio_read(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
+int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, int *no_compute_index,
+	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
+	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
+	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
+	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_int_a2, double **param_real_a2,
+	    int **param_filter, double **lattice, int **got_index, int **pnetcdf4);
+int cioquery(Atoms *at, int *frame);
+void ciofree(Atoms *at);
+int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
 	     int *logical_data, int *zero);
-int cio_write(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
+int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
 	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
 	      int *deflate_level);
+int cioskip (Atoms *atoms, int *n_skip);
