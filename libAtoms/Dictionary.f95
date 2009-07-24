@@ -98,7 +98,7 @@ integer, parameter :: &
   T_NONE = 0, &
   T_INTEGER = 1, T_REAL =2, T_COMPLEX = 3, T_LOGICAL=4, &
   T_INTEGER_A = 5, T_REAL_A = 6, T_COMPLEX_A = 7, T_LOGICAL_A = 8, &
-  T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11  !% OMIT
+  T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13  !% OMIT
 
 
 integer, parameter :: PROPERTY_INT     = 1 !% Property types, used by Atoms and Table
@@ -135,6 +135,9 @@ type DictEntry
   complex(dp), allocatable :: c_a(:)
   logical, allocatable :: l_a(:)
   character(len=value_len), allocatable :: s_a(:)
+
+  integer, allocatable :: i_a2(:,:)
+  real(dp), allocatable :: r_a2(:,:)
 
   type(DictData) :: d
 
@@ -176,6 +179,8 @@ interface set_value
   module procedure dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
   module procedure dictionary_set_value_s, dictionary_set_value_s_a
   module procedure dictionary_set_value_d
+  module procedure dictionary_set_value_i_a2
+  module procedure dictionary_set_value_r_a2
 end interface
 
 !% Get a value from a Dictionary
@@ -188,6 +193,8 @@ interface get_value
   module procedure dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
   module procedure dictionary_get_value_s, dictionary_get_value_s_a
   module procedure dictionary_get_value_d
+  module procedure dictionary_get_value_i_a2
+  module procedure dictionary_get_value_r_a2
 end interface
 
 !% Remove an entry from a Dictionary
@@ -288,6 +295,12 @@ subroutine dictentry_print(this, key, verbosity, file)
     do i=1,size(this%s_a)
        call print(this%s_a(i),verbosity,file)
     end do
+  else if (this%type == T_INTEGER_A2) then
+    call print("Dict entry integer array "//shape(this%i_a2), verbosity,file)
+    call print(this%i_a2, verbosity,file)
+  else if (this%type == T_REAL_A2) then
+    call print("Dict entry real array "//shape(this%r_a2), verbosity,file)
+    call print(this%r_a2, verbosity,file)
   else if (this%type == T_DATA) then
     print '("Dict entry arbitary data ",A,1x,I0)', trim(key), size(this%d%d)
     call print(line, verbosity,file)
@@ -345,19 +358,23 @@ subroutine dictentry_finalise(this)
   if (allocated(this%l_a)) deallocate(this%l_a)
   if (allocated(this%s_a)) deallocate(this%s_a)
   if (allocated(this%d%d)) deallocate(this%d%d)
+  if (allocated(this%i_a2)) deallocate(this%i_a2)
+  if (allocated(this%r_a2)) deallocate(this%r_a2)
 
 end subroutine dictentry_finalise
 
-subroutine dictionary_get_type_and_size(this, key, type, thesize)
+subroutine dictionary_get_type_and_size(this, key, type, thesize, thesize2)
   type(Dictionary), intent(in) :: this
   character(len=*), intent(in) :: key
-  integer, intent(out) :: type, thesize
+  integer, intent(out) :: type, thesize, thesize2(2)
   integer :: entry_i
 
   entry_i = lookup_entry_i(this, key)
 
   if (entry_i <= 0) type = -1
   type = this%entries(entry_i)%type
+  thesize = 0
+  thesize2 = 0
 
   select case(type)
   case(-1)
@@ -374,6 +391,10 @@ subroutine dictionary_get_type_and_size(this, key, type, thesize)
      thesize = size(this%entries(entry_i)%l_a)
   case(T_CHAR_A)
      thesize = size(this%entries(entry_i)%s_a)
+  case(T_INTEGER_A2)
+     thesize2 = shape(this%entries(entry_i)%i_a2)
+  case(T_REAL_A2)
+     thesize2 = shape(this%entries(entry_i)%r_a2)
   end select
 
 end subroutine dictionary_get_type_and_size
@@ -473,6 +494,34 @@ subroutine dictionary_set_value_r_a(this, key, value)
   call add_entry(this, key, entry)
   call finalise(entry)
 end subroutine dictionary_set_value_r_a
+
+subroutine dictionary_set_value_i_a2(this, key, value)
+  type(Dictionary), intent(inout) :: this
+  character(len=*), intent(in) :: key
+  integer, intent(in) :: value(:,:)
+
+  type(DictEntry) entry
+
+  entry%type = T_INTEGER_A2
+  allocate(entry%i_a2(size(value,1),size(value,2)))
+  entry%i_a2 = value
+  call add_entry(this, key, entry)
+  call finalise(entry)
+end subroutine dictionary_set_value_i_a2
+
+subroutine dictionary_set_value_r_a2(this, key, value)
+  type(Dictionary), intent(inout) :: this
+  character(len=*), intent(in) :: key
+  real(dp), intent(in) :: value(:,:)
+
+  type(DictEntry) entry
+
+  entry%type = T_REAL_A2
+  allocate(entry%r_a2(size(value,1),size(value,2)))
+  entry%r_a2 = value
+  call add_entry(this, key, entry)
+  call finalise(entry)
+end subroutine dictionary_set_value_r_a2
 
 subroutine dictionary_set_value_c_a(this, key, value)
   type(Dictionary), intent(inout) :: this
@@ -711,6 +760,65 @@ function dictionary_get_value_r_a(this, key, v, case_sensitive)
     dictionary_get_value_r_a = .false.
   endif
 end function dictionary_get_value_r_a
+
+function dictionary_get_value_i_a2(this, key, v, case_sensitive)
+  type(Dictionary), intent(in) :: this
+  character(len=*) key
+  integer, intent(out) :: v(:,:)
+  logical :: dictionary_get_value_i_a2
+  logical, optional :: case_sensitive
+
+  integer entry_i
+
+  entry_i = lookup_entry_i(this, key, case_sensitive)
+
+  if (entry_i <= 0) then
+    dictionary_get_value_i_a2 = .false.
+    return
+  endif
+
+  if (this%entries(entry_i)%type == T_INTEGER_A2) then
+    if (size(v,1) >= size(this%entries(entry_i)%i_a2,1) .and. &
+        size(v,2) >= size(this%entries(entry_i)%i_a2,2)) then
+      v(1:size(this%entries(entry_i)%i_a2,1),1:size(this%entries(entry_i)%i_a2,2)) = this%entries(entry_i)%i_a2
+      dictionary_get_value_i_a2 = .true.
+    else
+      dictionary_get_value_i_a2 = .false.
+    endif
+  else
+    dictionary_get_value_i_a2 = .false.
+  endif
+end function dictionary_get_value_i_a2
+
+function dictionary_get_value_r_a2(this, key, v, case_sensitive)
+  type(Dictionary), intent(in) :: this
+  character(len=*) key
+  real(dp), intent(out) :: v(:,:)
+  logical :: dictionary_get_value_r_a2
+  logical, optional :: case_sensitive
+
+  integer entry_i
+
+  entry_i = lookup_entry_i(this, key, case_sensitive)
+
+  if (entry_i <= 0) then
+    dictionary_get_value_r_a2 = .false.
+    return
+  endif
+
+  if (this%entries(entry_i)%type == T_REAL_A2) then
+    if (size(v,1) >= size(this%entries(entry_i)%r_a2,1) .and. &
+        size(v,2) >= size(this%entries(entry_i)%r_a2,2) ) then
+      v(1:size(this%entries(entry_i)%r_a2,1),1:size(this%entries(entry_i)%r_a2,2)) = this%entries(entry_i)%r_a2
+      dictionary_get_value_r_a2 = .true.
+    else
+      dictionary_get_value_r_a2 = .false.
+    endif
+  else
+    dictionary_get_value_r_a2 = .false.
+  endif
+end function dictionary_get_value_r_a2
+
 
 function dictionary_get_value_c_a(this, key, v, case_sensitive)
   type(Dictionary), intent(in) :: this
@@ -981,7 +1089,7 @@ end subroutine dictionary_read_binary
 subroutine dictionary_read_string(this, str, append)
   type(Dictionary), intent(inout) :: this
   character(len=*), intent(in) :: str
-  logical, optional, intent (in) :: append !% If true, append to dictionary (default false)
+  logical, optional, intent(in) :: append !% If true, append to dictionary (default false)
 
   logical :: do_append
   character(len=dict_field_length) :: field
@@ -1052,7 +1160,7 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
   logical :: status
 
   character(len=dict_field_length), dimension(dict_n_fields) :: fields
-  character(len=len(strvalue)) :: datastr
+  character(len=len(strvalue)) :: datastr, shapestr, myvalue
   integer :: num_fields, i, j
   real(dp) :: r
   logical :: l, err, all_int, all_real, all_logical
@@ -1060,7 +1168,11 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
   integer, allocatable, dimension(:) :: i_a
   real(dp), allocatable, dimension(:) :: r_a
   logical, allocatable, dimension(:) :: l_a
+  integer, allocatable, dimension(:,:) :: i_a2
+  real(dp), allocatable, dimension(:,:) :: r_a2
   character(1) :: my_char_a_sep
+  logical got_2d
+  integer shape_2d(2)
 
   my_char_a_sep = optional_default(',',char_a_sep)
 
@@ -1085,8 +1197,19 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
      return
   end if
 
+  ! 2D arrays are represented with shape in ()s at beginning of value string
+  got_2d = .false.
+  if (strvalue(1:1) == '(') then
+     got_2d = .true.
+     shapestr = strvalue(2:index(strvalue,')')-1)
+     read (shapestr, *) shape_2d
+     myvalue = strvalue(index(strvalue,')')+1:len_trim(strvalue))
+  else
+     myvalue = strvalue
+  end if
+
   ! Otherwise, start by splitting value into fields
-  call parse_string(strvalue, ' ', fields, num_fields)
+  call parse_string(myvalue, ' ', fields, num_fields)
 
   if (num_fields == 0) then
      ! Nothing there, assume it's logical and true
@@ -1128,7 +1251,7 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
 
      ! Does it contain one or more array separator characters?
      if (scan(fields(1),my_char_a_sep) /= 0) then
-        call parse_string(strvalue, my_char_a_sep, fields, num_fields)
+        call parse_string(myvalue, my_char_a_sep, fields, num_fields)
         call set_value(this,key,fields(1:num_fields))
         status = .true.
         return
@@ -1156,9 +1279,15 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
      end do
 
      if (all_int) then
-        call set_value(this,key,i_a)
+        if (got_2d) then
+           allocate(i_a2(shape_2d(1), shape_2d(2)))
+           i_a2 = reshape(i_a, shape_2d)
+           call set_value(this,key,i_a2)
+        else
+           call set_value(this,key,i_a)
+        end if
         status = .true.
-        deallocate(i_a,r_a,l_a)
+        deallocate(i_a,r_a,l_a,i_a2)
         return
      end if
 
@@ -1192,23 +1321,29 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
      end do
 
      if (all_real) then
-        call set_value(this,key,r_a)
+        if (got_2d) then
+           allocate(r_a2(shape_2d(1), shape_2d(2)))
+           r_a2 = reshape(r_a, shape_2d)
+           call set_value(this,key,r_a2)
+        else
+           call set_value(this,key,r_a)
+        end if
         status = .true.
-        deallocate(i_a,r_a,l_a)
+        deallocate(i_a,r_a,l_a,r_a2)
         return
      end if
 
      ! Add complex array here...
 
      ! We're left with strings. Does it contain array seperator?
-     if (scan(strvalue,my_char_a_sep) /= 0) then
-        call parse_string(strvalue, my_char_a_sep, fields, num_fields)
+     if (scan(myvalue,my_char_a_sep) /= 0) then
+        call parse_string(myvalue, my_char_a_sep, fields, num_fields)
         call set_value(this,key,fields(1:num_fields))
         status = .true.
         return
      else
-        ! Fall back option: treat entire strvalue as single string
-        call set_value(this,key,strvalue)
+        ! Fall back option: treat entire myvalue as single string
+        call set_value(this,key,myvalue)
         status =.true.
         return
      end if
@@ -1283,6 +1418,12 @@ function dictionary_write_string(this, real_format, entry_sep, char_a_sep) resul
            str = trim(str)//trim(this%entries(i)%s_a(j))//my_char_a_sep
         end do
         str = trim(str(1:len(trim(str))-1))//'"'
+
+     case(T_INTEGER_A2)
+        str = trim(str)//'"('//shape(this%entries(i)%i_a2)//') '//reshape(this%entries(i)%i_a2,(/size(this%entries(i)%i_a2)/))//'"'
+
+     case(T_REAL_A2)
+        str = trim(str)//'"('//shape(this%entries(i)%r_a2)//') '//reshape(this%entries(i)%r_a2,(/size(this%entries(i)%r_a2)/))//'"'
 
      case(T_DATA)
         str = trim(str)//'DATA"'//this%entries(i)%d%d//'"'
