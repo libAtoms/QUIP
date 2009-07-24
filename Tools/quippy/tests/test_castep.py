@@ -1147,13 +1147,13 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
       self.al.loadall(progress=False)
      
    def testread(self):
-      self.assertEqual(len(self.al), 2)
+      self.assertEqual(len(self.al), 3)
       self.assertEqual(self.al[0].n, 28)
-      self.assertEqual(self.al[1].n, 28)
+      self.assertEqual(self.al[2].n, 28)
       self.assertAlmostEqual(self.al[0].energy, -2998.58809358)
-      self.assertAlmostEqual(self.al[1].energy, -2999.13124570)
+      self.assertAlmostEqual(self.al[2].energy, -2999.13124570)
       self.assertEqual(self.al[0].force.shape, (3,28))
-      self.assertEqual(self.al[1].force.shape, (3,28))
+      self.assertEqual(self.al[2].force.shape, (3,28))
 
 
    def testabort(self):

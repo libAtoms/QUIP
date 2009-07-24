@@ -411,9 +411,7 @@ def CastepGeomReader(source):
       if stress_lines:
          virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
                            for row in map(string.split, stress_lines) ])
-         params['virial_1'] = virial[1]
-         params['virial_2'] = virial[2]
-         params['virial_3'] = virial[3]
+         params['virial'] = virial
 
       # Find positions and forces
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -424,7 +422,6 @@ def CastepGeomReader(source):
                           % (len(poslines), len(forcelines)))
 
       at = Atoms(n=len(poslines), lattice=lattice, params=params)
-      at.virial = virial
 
       # Now parse the positions, converting from units of Bohr
       field_list = [line.split() for line in poslines]
@@ -458,6 +455,8 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
       castep_file = open(castep_file,'r')
    castep_file = iter(castep_file)
 
+   param = CastepParam()
+
    got_header = False
    eof = False
    while True:
@@ -473,11 +472,15 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
 
          if line == ' |      CCC   AA    SSS  TTTTT  EEEEE  PPPP        |\n':
             if got_header:
+               got_param = True
                break
             else:
                got_header = True
 
          if line.startswith(' Starting BFGS iteration'):
+            break
+
+         if line.startswith(' BFGS: improving iteration'):
             break
          
       # NB: CASTEP doesn't always print 'Total time'
@@ -493,18 +496,23 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
       # Now we should have contents of a valid .castep file in castep_output
 
       # First let's read the user parameters for this run from top of file
-      param = CastepParam()
+      new_param = CastepParam()
       try:
-         param.read_from_castep_output(castep_output)
+         new_param.read_from_castep_output(castep_output)
+         param.update(new_param)
       except ValueError:
-         if abort:
-            raise
+         pass
+         #if abort:
+         #   raise
 
       # Next let's extract the lattice and atomic positions
       lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell\n']
       
       if lattice_lines == []:
-         raise ValueError('No unit cell found in castep file')
+         if abort:
+            raise ValueError('No unit cell found in castep file')
+         else:
+            continue
          
       lattice_line = lattice_lines[-1] # last lattice
       
@@ -616,11 +624,8 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
                star1, label, vx, vy, vz, star2 = line.split()
                virial[:,i] = [float(v) for v in (vx,vy,vz) ]
 
-            # Convert to libAtoms units and append to comment line
-            atoms.params['virial_1'] = virial[1]/GPA
-            atoms.params['virial_2'] = virial[2]/GPA
-            atoms.params['virial_3'] = virial[3]/GPA
-            atoms.virial = virial/GPA
+            # Convert to libAtoms units and add to atoms.params
+            atoms.params['virial'] = virial/GPA
 
          except ValueError:
             if abort:
