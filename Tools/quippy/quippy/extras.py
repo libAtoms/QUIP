@@ -107,11 +107,11 @@ class Atoms(FortranAtoms):
          dest.close()
       return res
 
-   def show(self, property=None):
+   def show(self, property=None, arrows=None, *arrowargs, **arrowkwargs):
       """Show this Atoms object in AtomEye."""
       try:
          import atomeye
-         atomeye.show(self,property=property)
+         atomeye.show(self,property=property, arrows=arrows, *arrowargs, **arrowkwargs)
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
@@ -300,12 +300,12 @@ class Dictionary(DictMixin, FortranDictionary):
       if i == -1: 
          raise KeyError('Key "%s" not found ' % k)
 
-      t, s = self.get_type_and_size(k)
+      t, s, s2 = self.get_type_and_size(k)
 
       from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                           T_CHAR, T_LOGICAL, T_INTEGER_A,
                           T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                          T_LOGICAL_A)
+                          T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 
       if t == T_NONE:
          raise ValueError('Key %s has no associated value' % k)
@@ -335,6 +335,12 @@ class Dictionary(DictMixin, FortranDictionary):
       elif t == T_LOGICAL_A:
          v,p = self._get_value_l_a(k,s)
          v = farray(v)
+      elif t == T_INTEGER_A2:
+         v,p = self._get_value_i_a2(k, s2[0], s2[1])
+         v = farray(v)
+      elif t == T_REAL_A2:
+         v,p = self._get_value_r_a2(k, s2[0], s2[1])
+         v = farray(v)
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
 
@@ -347,7 +353,7 @@ class Dictionary(DictMixin, FortranDictionary):
       return 'Dictionary(%s)' % DictMixin.__repr__(self)
 
    def __eq__(self, other):
-      if self.keys() != other.keys(): return False
+      if sorted(self.keys()) != sorted(other.keys()): return False
 
       for key in self:
          v1, v2 = self[key], other[key]
