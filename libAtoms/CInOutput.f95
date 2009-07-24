@@ -28,7 +28,7 @@ module CInOutput_module
           n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
           property_name, property_type, property_ncols, property_start, property_filter, &
           param_name, param_type, param_size, param_value, param_int, param_real, param_int_a, &
-          param_real_a, param_filter, lattice, got_index, pnetcdf4) bind(c)
+          param_real_a, param_int_a2, param_real_a2, param_filter, lattice, got_index, pnetcdf4) bind(c)
        use iso_c_binding, only: C_INT, C_CHAR, C_PTR, C_LONG
        type(C_PTR), intent(out) :: at
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
@@ -36,7 +36,8 @@ module CInOutput_module
        type(C_PTR) :: n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
             property_name, property_type, property_ncols, property_start, property_filter, &
             param_name, param_type, param_size, param_value, &
-            param_int, param_real, param_int_a, param_real_a, param_filter, lattice, got_index, pnetcdf4
+            param_int, param_real, param_int_a, param_real_a, param_int_a2, param_real_a2, &
+            param_filter, lattice, got_index, pnetcdf4
        integer(kind=C_INT) :: cioinit
      end function cioinit
 
@@ -91,7 +92,7 @@ module CInOutput_module
      type(C_PTR) :: c_n_frame, c_n_atom, c_n_int, c_n_real, c_n_str, c_n_logical, c_n_param, c_n_property, &
           c_property_name, c_property_type, c_property_start, c_property_ncols, c_property_filter, &
           c_param_name, c_param_type, c_param_size, c_param_value, c_pint, c_preal, c_pint_a, c_preal_a, &
-          c_param_filter, c_lattice, c_got_index, c_netcdf4
+          c_pint_a2, c_preal_a2, c_param_filter, c_lattice, c_got_index, c_netcdf4
 
      integer(C_SIZE_T), pointer :: n_atom, n_frame
      integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index, netcdf4
@@ -100,8 +101,10 @@ module CInOutput_module
      integer, pointer, dimension(:) :: property_type, property_ncols, property_start, &
           param_type, param_size, pint, property_filter, param_filter
      integer, pointer, dimension(:,:) :: pint_a
+     integer, pointer, dimension(:,:) :: pint_a2
      real(dp), pointer, dimension(:) :: preal
      real(dp), pointer, dimension(:,:) :: preal_a, lattice
+     real(dp), pointer, dimension(:,:) :: preal_a2
      character(1), dimension(:,:), pointer :: property_name, param_name, param_value
 
   end type CInOutput
@@ -157,12 +160,12 @@ module CInOutput_module
      module procedure CInOutput_query
   end interface
 
-  interface update
-     !% Update C structure from Atoms object
-     module procedure CInOutput_update
-  end interface
+!!$  interface update
+!!$     !% Update C structure from Atoms object
+!!$     module procedure CInOutput_update
+!!$  end interface
 
-  public :: CInOutput, initialise, finalise, close, read, write, query, update
+  public :: CInOutput, initialise, finalise, close, read, write, query
 
 contains
 
@@ -195,14 +198,16 @@ contains
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_pint_a2, this%c_preal_a2, &
+            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
             call system_abort("Error opening file "//filename)
     else
        if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
+            this%c_pint, this%c_preal, this%c_pint_a, this%c_preal_a, this%c_pint_a2, this%c_preal_a2, &
+            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
             call system_abort("Error allocating C structure")
     end if
 
@@ -233,6 +238,9 @@ contains
     call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
     call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
     call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
+    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
+    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
+    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
 
     this%initialised = .true.
@@ -311,6 +319,8 @@ contains
     call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
     call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
     call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
+    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
+    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
 
   end subroutine cinoutput_query
@@ -438,6 +448,10 @@ contains
           call set_value(at%params, namestr, this%preal_a(:,i))
        case(T_CHAR)
           call set_value(at%params, namestr, c_array_to_f_string(this%param_value(:,i)))
+       case(T_INTEGER_A2)
+          call set_value(at%params, namestr, reshape(this%pint_a2(:,i), (/3,3/)))
+       case(T_REAL_A2)
+          call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
        case default
           call system_abort('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i))
        end select
@@ -482,7 +496,8 @@ contains
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
     character(len=VALUE_LEN) :: valuestr
-    integer :: i, lookup(3), extras, n
+    integer :: i, j, k, lookup(3), extras, n, tmp_int_a2(3,3)
+    real(dp) :: tmp_real_a2(3,3)
     integer(C_SIZE_T) :: do_frame
     type(Dictionary) :: selected_properties
     character(len=KEY_LEN) :: do_int_format, do_real_format
@@ -534,6 +549,8 @@ contains
     call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
     call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
     call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
+    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
+    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
     n = 1
     do i=1, at%params%N
@@ -563,6 +580,18 @@ contains
           call f_string_to_c_array(valuestr, this%param_value(:,n))
           this%param_size(n) = 1
           this%param_type(n) = T_CHAR
+       case(T_INTEGER_A2)
+          if (.not. get_value(at%params, at%params%keys(i), tmp_int_a2)) &
+               call system_abort('Bad atoms parameter '//trim(at%params%keys(i))//' should be 3x3 int array')
+          this%pint_a2(:,n) = reshape(tmp_int_a2, (/9/))
+          this%param_size(n) = 9
+          this%param_type(n) = T_INTEGER_A2
+       case (T_REAL_A2)
+          if (.not. get_value(at%params, at%params%keys(i), tmp_real_a2)) &
+               call system_abort('Bad atoms parameter '//trim(at%params%keys(i))//' should be 3x3 real array')
+          this%preal_a2(:,n) = reshape(tmp_real_a2, (/9/))
+          this%param_size(n) = 9
+          this%param_type(n) = T_REAL_A2
        case default
           call system_abort('cinoutput_write: unsupported parameter i='//i//' '//trim(at%params%keys(i))//' type='//at%params%entries(i)%type)
        end select
@@ -620,104 +649,104 @@ contains
   end subroutine cinoutput_write
 
 
-  subroutine cinoutput_update(this, at, atoms_ptr)
-    type(CInOutput), intent(inout) :: this
-    type(Atoms), target, intent(in) :: at
-    integer(SIZEOF_VOID_PTR), intent(out) :: atoms_ptr
-
-    type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
-    logical :: dum
-    character(len=VALUE_LEN) :: valuestr
-    integer :: i, lookup(3), extras, n
-
-    this%n_atom = at%n
-    this%lattice = transpose(at%lattice)
-
-    extras = 0
-    if (has_key(at%params, "Lattice"))    extras = extras + 1
-    if (has_key(at%params, "Properties")) extras = extras + 1
-    
-    this%n_param = at%params%N - extras
-    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-    n = 1
-    do i=1, this%n_param
-       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
-           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
-       call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
-       this%param_filter(n) = 1
-       select case(at%params%entries(i)%type)
-       case(T_INTEGER)
-          dum = get_value(at%params, at%params%keys(i), this%pint(n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_INTEGER
-       case(T_REAL)
-          dum = get_value(at%params, at%params%keys(i), this%preal(n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_REAL
-       case(T_INTEGER_A)
-          dum = get_value(at%params, at%params%keys(i), this%pint_a(:,n))
-          this%param_size(n) = 3
-          this%param_type(n) = T_INTEGER_A
-       case (T_REAL_A)
-          dum = get_value(at%params, at%params%keys(i), this%preal_a(:,n))
-          this%param_size(n) = 3
-          this%param_type(n) = T_REAL_A
-       case(T_CHAR)
-          dum = get_value(at%params, at%params%keys(i), valuestr)
-          call f_string_to_c_array(valuestr, this%param_value(:,n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_CHAR
-       case default
-          call system_abort('cinoutput_update: unsupported parameter i='//i//' type='//at%params%entries(i)%type//' '//trim(at%params%keys(i)))
-       end select
-       n = n + 1
-    end do
-
-    this%n_property = at%properties%N
-    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
-    do i=1,this%n_property
-       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,i))
-       dum = get_value(at%properties, at%properties%keys(i), lookup)
-       this%property_type(i) = lookup(1)
-       this%property_start(i) = lookup(2)-1
-       this%property_ncols(i) = lookup(3)-lookup(2)+1
-       this%property_filter(i) = 1
-    end do
-
-    int_ptr = C_NULL_PTR
-    this%n_int = at%data%intsize
-    if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
-
-    real_ptr = C_NULL_PTR
-    this%n_real = at%data%realsize
-    if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
-    
-    str_ptr = C_NULL_PTR
-    this%n_str = at%data%strsize
-    if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
-
-    log_ptr = C_NULL_PTR
-    this%n_logical = at%data%logicalsize
-    if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
-
-    if (cioupdate(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr) == 0) &
-         call system_abort('error updating C structure')
-
-    atoms_ptr = transfer(this%c_at, atoms_ptr)
-
-  end subroutine cinoutput_update
+!!$  subroutine cinoutput_update(this, at, atoms_ptr)
+!!$    type(CInOutput), intent(inout) :: this
+!!$    type(Atoms), target, intent(in) :: at
+!!$    integer(SIZEOF_VOID_PTR), intent(out) :: atoms_ptr
+!!$
+!!$    type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
+!!$    logical :: dum
+!!$    character(len=VALUE_LEN) :: valuestr
+!!$    integer :: i, lookup(3), extras, n
+!!$
+!!$    this%n_atom = at%n
+!!$    this%lattice = transpose(at%lattice)
+!!$
+!!$    extras = 0
+!!$    if (has_key(at%params, "Lattice"))    extras = extras + 1
+!!$    if (has_key(at%params, "Properties")) extras = extras + 1
+!!$    
+!!$    this%n_param = at%params%N - extras
+!!$    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
+!!$    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
+!!$    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
+!!$    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
+!!$    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
+!!$    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
+!!$    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
+!!$    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
+!!$    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
+!!$    n = 1
+!!$    do i=1, this%n_param
+!!$       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
+!!$           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
+!!$       call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
+!!$       this%param_filter(n) = 1
+!!$       select case(at%params%entries(i)%type)
+!!$       case(T_INTEGER)
+!!$          dum = get_value(at%params, at%params%keys(i), this%pint(n))
+!!$          this%param_size(n) = 1
+!!$          this%param_type(n) = T_INTEGER
+!!$       case(T_REAL)
+!!$          dum = get_value(at%params, at%params%keys(i), this%preal(n))
+!!$          this%param_size(n) = 1
+!!$          this%param_type(n) = T_REAL
+!!$       case(T_INTEGER_A)
+!!$          dum = get_value(at%params, at%params%keys(i), this%pint_a(:,n))
+!!$          this%param_size(n) = 3
+!!$          this%param_type(n) = T_INTEGER_A
+!!$       case (T_REAL_A)
+!!$          dum = get_value(at%params, at%params%keys(i), this%preal_a(:,n))
+!!$          this%param_size(n) = 3
+!!$          this%param_type(n) = T_REAL_A
+!!$       case(T_CHAR)
+!!$          dum = get_value(at%params, at%params%keys(i), valuestr)
+!!$          call f_string_to_c_array(valuestr, this%param_value(:,n))
+!!$          this%param_size(n) = 1
+!!$          this%param_type(n) = T_CHAR
+!!$       case default
+!!$          call system_abort('cinoutput_update: unsupported parameter i='//i//' type='//at%params%entries(i)%type//' '//trim(at%params%keys(i)))
+!!$       end select
+!!$       n = n + 1
+!!$    end do
+!!$
+!!$    this%n_property = at%properties%N
+!!$    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
+!!$    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
+!!$    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
+!!$    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
+!!$    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
+!!$    do i=1,this%n_property
+!!$       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,i))
+!!$       dum = get_value(at%properties, at%properties%keys(i), lookup)
+!!$       this%property_type(i) = lookup(1)
+!!$       this%property_start(i) = lookup(2)-1
+!!$       this%property_ncols(i) = lookup(3)-lookup(2)+1
+!!$       this%property_filter(i) = 1
+!!$    end do
+!!$
+!!$    int_ptr = C_NULL_PTR
+!!$    this%n_int = at%data%intsize
+!!$    if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
+!!$
+!!$    real_ptr = C_NULL_PTR
+!!$    this%n_real = at%data%realsize
+!!$    if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
+!!$    
+!!$    str_ptr = C_NULL_PTR
+!!$    this%n_str = at%data%strsize
+!!$    if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
+!!$
+!!$    log_ptr = C_NULL_PTR
+!!$    this%n_logical = at%data%logicalsize
+!!$    if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
+!!$
+!!$    if (cioupdate(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr) == 0) &
+!!$         call system_abort('error updating C structure')
+!!$
+!!$    atoms_ptr = transfer(this%c_at, atoms_ptr)
+!!$
+!!$  end subroutine cinoutput_update
 
   function c_array_to_f_string(carray) result(fstring)
     !% Convert a null-terminated array of characters in a fixed length buffer

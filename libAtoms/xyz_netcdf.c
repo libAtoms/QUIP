@@ -303,7 +303,7 @@ void lattice_xyz_to_abc(double lattice[3][3], double cell_lengths[3], double cel
 #ifdef HAVE_NETCDF
  
 void replace_fill_values(Atoms *atoms, int irep, double rrep) {
-  int i, j=0, n;
+  int i, j=0, k=0, n;
 
   // parameters
   for (i=0; i<atoms->n_param; i++) {
@@ -327,6 +327,19 @@ void replace_fill_values(Atoms *atoms, int irep, double rrep) {
 	 (absval(atoms->param_real_a[i][j] - NC_FILL_DOUBLE) <= absval(DBL_EPSILON * NC_FILL_DOUBLE)))
 	atoms->param_real_a[i][j] = rrep;
       break;
+    case(T_INTEGER_A2):
+      for (j=0; j<3; j++)
+	for (k=0; k<3; k++)
+	  if (atoms->param_int_a2[i][j*3+k] == NC_FILL_INT)
+	    atoms->param_int_a2[i][j*3+k] = irep;
+      break;
+    case(T_REAL_A2):
+      for (j=0; j<3; j++)
+	for (k=0; k<3; k++)
+	  if (atoms->param_real_a2[i][j*3+k] == NC_FILL_INT)
+	    atoms->param_real_a2[i][j*3+k] = rrep;
+      break;
+
     }
   }
 
@@ -472,6 +485,9 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
 	    // vector per atom property
 	    atoms_add_property(atoms, varname, type, 3, i, NETCDF_IN);
 	  }
+	} else if (dimids[0] == atoms->frame_dim_id[NETCDF_IN] && dimids[1] == atoms->spatial_dim_id[NETCDF_IN] &&
+		   dimids[2] == atoms->spatial_dim_id[NETCDF_IN]) {
+	  atoms_add_param(atoms, varname, type, 9, i, NETCDF_IN);
 	}
 	else {
 	  fprintf(stderr,"Unknown three dimensional variable %s\n", varname);
@@ -607,6 +623,27 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
       count2[1] = 3;
       netcdf_check(nc_get_vara_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, &atoms->param_real_a[i][0]));
       break;
+    case(T_INTEGER_A2):
+      start3[0] = frame;
+      start3[1] = 0;
+      start3[2] = 0;
+      count3[0] = 1;
+      count3[1] = 3;
+      count3[2] = 3;
+      netcdf_check(nc_get_vara_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start3, count3, &atoms->param_int_a2[i][0]));
+      break;
+    case(T_REAL_A2):
+      start3[0] = frame;
+      start3[1] = 0;
+      start3[2] = 0;
+      count3[0] = 1;
+      count3[1] = 3;
+      count3[2] = 3;
+      netcdf_check(nc_get_vara_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start3, count3, &atoms->param_real_a2[i][0]));
+      debug("param_real_a2 = %f %f %f %f %f %f %f %f %f\n", atoms->param_real_a2[i][0*3+0], atoms->param_real_a2[i][1*3+0], atoms->param_real_a2[i][2*3+0],
+	    atoms->param_real_a2[i][0*3+1], atoms->param_real_a2[i][1*3+1], atoms->param_real_a2[i][2*3+1],
+	    atoms->param_real_a2[i][0*3+2], atoms->param_real_a2[i][1*3+2], atoms->param_real_a2[i][2*3+2]);
+      break;      
     default:
       fprintf(stderr,"Unknown parameter %s type %d\n", atoms->param_key[i], atoms->param_type[i]);
       return 0;
@@ -710,29 +747,6 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
 	  //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start2, count2,
 	  //			       &property_int(atoms,i,0,0)));
       } else {
-/* 	for (k=0; k<3; k++) { */
-/* 	  start3[0] = frame; */
-/* 	  start3[1] = 0; */
-/* 	  start3[2] = k; */
-/* 	  count3[0] = 1; */
-/* 	  count3[1] = atoms->n_atom_total; */
-/* 	  count3[2] = 1; */
-/* 	  //if (atomlist) { */
-/* 	    netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3, tmpint)); */
-/* 	    n = 0; */
-/* 	    for (j=0; j<atoms->n_atom_total; j++) { */
-/* 	      if (!atoms->filter[j]) continue; */
-/* 	      //atoms->int_data[(atoms->property_start[i]+k)*atoms->n_atom + n] = tmpint[j]; */
-/* 	      property_int(atoms,i,k,n) = tmpint[j]; */
-/* 	      n++; */
-/* 	    } */
-/* 	    //} */
-/* 	    //else */
-/* 	    //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3,  */
-/* 	    //				 &atoms->int_data[(atoms->property_start[i] + k)*atoms->n_atom])); */
-/* 	    //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3,  */
-/* 	    //				 &property_int(atoms,i,k,0))); */
-/* 	} */
 	start3[0] = frame;
 	start3[1] = 0;
 	start3[2] = 0;
@@ -773,28 +787,6 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
 	  //			       &property_logical(atoms,i,0,0)));
 
       } else {
-/* 	for (k=0; k<3; k++) { */
-/* 	  start3[0] = frame; */
-/* 	  start3[1] = 0; */
-/* 	  start3[2] = k; */
-/* 	  count3[0] = 1; */
-/* 	  count3[1] = atoms->n_atom_total; */
-/* 	  count3[2] = 1; */
-/* 	  //if (atomlist) { */
-/* 	    netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3, tmpint)); */
-/* 	    n = 0; */
-/* 	    for (j=0; j<atoms->n_atom_total; j++) { */
-/* 	      if (!atoms->filter[j]) continue; */
-/* 	      //atoms->logical_data[(atoms->property_start[i]+k)*atoms->n_atom + n] = tmpint[j]; */
-/* 	      property_logical(atoms,i,k,n) = tmpint[j]; */
-/* 	      n++; */
-/* 	    } */
-/* 	    //} */
-/* 	//else */
-/* 	    //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3,  */
-/* 	    //				 &atoms->logical_data[(atoms->property_start[i] + k)*atoms->n_atom])); */
-/* 	    //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_IN], start3, count3,  */
-/* 	//				 &property_logical(atoms,i,k,0))); */
 	start3[0] = frame;
 	start3[1] = 0;
 	start3[2] = 0;
@@ -997,7 +989,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	} else {
 	  netcdf_check(nc_inq_var(nc_id, atoms->param_var_id[i][NETCDF_OUT], varname, &vartype, &ndims, dimids, &natts));
 	  if (ndims != 2) {
-	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 1\n", atoms->param_key[i], ndims);
+	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 2\n", atoms->param_key[i], ndims);
 	    return 0;
 	  }
 	  if (dimids[0] != atoms->frame_dim_id[NETCDF_OUT] || dimids[1] != atoms->spatial_dim_id[NETCDF_OUT])  {
@@ -1015,7 +1007,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	} else {
 	  netcdf_check(nc_inq_var(nc_id, atoms->param_var_id[i][NETCDF_OUT], varname, &vartype, &ndims, dimids, &natts));
 	  if (ndims != 2) {
-	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 1\n", atoms->param_key[i], ndims);
+	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 2\n", atoms->param_key[i], ndims);
 	    return 0;
 	  }
 	  if (dimids[0] != atoms->frame_dim_id[NETCDF_OUT] || dimids[1] != atoms->spatial_dim_id[NETCDF_OUT])  {
@@ -1024,6 +1016,45 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	  }
 	}	
 	break;
+      case(T_INTEGER_A2):
+	dims3[0] = atoms->frame_dim_id[NETCDF_OUT];
+	dims3[1] = atoms->spatial_dim_id[NETCDF_OUT];
+	dims3[2] = atoms->spatial_dim_id[NETCDF_OUT];
+	if (nc_inq_varid(nc_id, atoms->param_key[i], &atoms->param_var_id[i][NETCDF_OUT]) != NC_NOERR) {
+	  netcdf_check(nc_def_var(nc_id, atoms->param_key[i], NC_INT, 3, dims3, &atoms->param_var_id[i][NETCDF_OUT]));
+	  newvar = 1;
+	} else {
+	  netcdf_check(nc_inq_var(nc_id, atoms->param_var_id[i][NETCDF_OUT], varname, &vartype, &ndims, dimids, &natts));
+	  if (ndims != 3) {
+	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 3\n", atoms->param_key[i], ndims);
+	    return 0;
+	  }
+	  if (dimids[0] != atoms->frame_dim_id[NETCDF_OUT] || dimids[1] != atoms->spatial_dim_id[NETCDF_OUT] || dimids[2] != atoms->spatial_dim_id[NETCDF_OUT])  {
+	    fprintf(stderr,"Mismatch in parameter %s - dimension 0 != frame or dimension 1 != spatial or dimension 2 != spatial\n", atoms->param_key[i]);
+	    return 0;
+	  }
+	}	
+	break;
+      case(T_REAL_A2):
+	dims3[0] = atoms->frame_dim_id[NETCDF_OUT];
+	dims3[1] = atoms->spatial_dim_id[NETCDF_OUT];
+	dims3[2] = atoms->spatial_dim_id[NETCDF_OUT];
+	if (nc_inq_varid(nc_id, atoms->param_key[i], &atoms->param_var_id[i][NETCDF_OUT]) != NC_NOERR) {
+	  netcdf_check(nc_def_var(nc_id, atoms->param_key[i], NC_DOUBLE, 3, dims3, &atoms->param_var_id[i][NETCDF_OUT]));
+	  newvar = 1;
+	} else {
+	  netcdf_check(nc_inq_var(nc_id, atoms->param_var_id[i][NETCDF_OUT], varname, &vartype, &ndims, dimids, &natts));
+	  if (ndims != 3) {
+	    fprintf(stderr,"Mismatch in parameter %s - ndims(%d) != 3\n", atoms->param_key[i], ndims);
+	    return 0;
+	  }
+	  if (dimids[0] != atoms->frame_dim_id[NETCDF_OUT] || dimids[1] != atoms->spatial_dim_id[NETCDF_OUT] || dimids[2] != atoms->spatial_dim_id[NETCDF_OUT])  {
+	    fprintf(stderr,"Mismatch in parameter %s - dimension 0 != frame or dimension 1 != spatial or dimension 2 != spatial\n", atoms->param_key[i]);
+	    return 0;
+	  }
+	}	
+	break;
+
       default:
 	fprintf(stderr,"Unknown parameter %s type %d when writing netcdf file\n", atoms->param_key[i],
 		atoms->param_type[i]);
@@ -1308,6 +1339,28 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	count2[1] = 3;
 	netcdf_check(nc_put_vara_double(nc_id, atoms->param_var_id[i][NETCDF_OUT], start2, count2, &atoms->param_real_a[i][0]));
 	break;
+      case(T_INTEGER_A2):
+	start3[0] = frame;
+	start3[1] = 0;
+	start3[2] = 0;
+	count3[0] = 1;
+	count3[1] = 3;
+	count3[2] = 3;
+	netcdf_check(nc_put_vara_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], start3, count3, &atoms->param_int_a2[i][0]));
+	break;
+      case(T_REAL_A2):
+	start3[0] = frame;
+	start3[1] = 0;
+	start3[2] = 0;
+	count3[0] = 1;
+	count3[1] = 3;
+	count3[2] = 3;
+	debug("param_real_a2 = %f %f %f %f %f %f %f %f %f\n", atoms->param_real_a2[i][0*3+0], atoms->param_real_a2[i][1*3+0], atoms->param_real_a2[i][2*3+0],
+	      atoms->param_real_a2[i][0*3+1], atoms->param_real_a2[i][1*3+1], atoms->param_real_a2[i][2*3+1],
+	      atoms->param_real_a2[i][0*3+2], atoms->param_real_a2[i][1*3+2], atoms->param_real_a2[i][2*3+2]);
+	netcdf_check(nc_put_vara_double(nc_id, atoms->param_var_id[i][NETCDF_OUT], start3, count3, &atoms->param_real_a2[i][0]));
+	break;
+
       default:
 	  fprintf(stderr,"Unknown parameter %s type %d when writing netcdf file\n", atoms->param_key[i],
 		  atoms->param_type[i]);
@@ -1336,21 +1389,6 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 				     tmpint));
 
       } else {
-/* 	for (k=0; k<3; k++) { */
-/* 	  start3[0] = frame; */
-/* 	  start3[1] = 0; */
-/* 	  start3[2] = k; */
-/* 	  count3[0] = 1; */
-/* 	  count3[1] = atoms->n_atom; */
-/* 	  count3[2] = 1; */
-/* 	  //netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 	  //			       &atoms->int_data[(atoms->property_start[i] + k)*atoms->n_atom])); */
-/* 	  for (j=0; j<atoms->n_atom; j++) */
-/* 	    tmpint[j] = property_int(atoms, i, k, j); */
-/* 	  netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 				       tmpint)); */
-
-/* 	} */
 	start3[0] = frame;
 	start3[1] = 0;
 	start3[2] = 0;
@@ -1381,21 +1419,6 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 					tmpreal));
 
       } else {
-/* 	for (k=0; k<3; k++) { */
-/* 	  start3[0] = frame; */
-/* 	  start3[1] = 0; */
-/* 	  start3[2] = k; */
-/* 	  count3[0] = 1; */
-/* 	  count3[1] = atoms->n_atom; */
-/* 	  count3[2] = 1; */
-/* 	  //netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 	  //				  &atoms->real_data[(atoms->property_start[i] + k)*atoms->n_atom])); */
-/* 	  for (j=0; j<atoms->n_atom; j++) */
-/* 	    tmpreal[j] = property_real(atoms, i, k, j); */
-/* 	  netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 					  tmpreal)); */
-
-/* 	} */
 	start3[0] = frame;
 	start3[1] = 0;
 	start3[2] = 0;
@@ -1440,21 +1463,6 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2,
 				     tmpint));
       } else {
-/* 	for (k=0; k<3; k++) { */
-/* 	  start3[0] = frame; */
-/* 	  start3[1] = 0; */
-/* 	  start3[2] = k; */
-/* 	  count3[0] = 1; */
-/* 	  count3[1] = atoms->n_atom; */
-/* 	  count3[2] = 1; */
-/* 	  //netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 	  //			       &atoms->logical_data[(atoms->property_start[i] + k)*atoms->n_atom])); */
-/* 	  for (j=0; j<atoms->n_atom; j++) */
-/* 	    tmpint[j] = property_logical(atoms, i, k, j); */
-/* 	  netcdf_check(nc_get_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start3, count3,  */
-/* 				       tmpint)); */
-
-/* 	} */
 	start3[0] = frame;
 	start3[1] = 0;
 	start3[2] = 0;
@@ -1669,45 +1677,6 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
   return nframes;
 }
 
-int cioskip (Atoms *atoms, int *n_skip) {
-  int i_skip, i, natoms;
-  char linebuffer[LINESIZE];
-
-  if (atoms->format == XYZ_FORMAT) {
-    if (atoms->got_index) return 1;
-    if (*n_skip < 0) {
-      fprintf(stderr, "cioskip for file without index can't do negative n\n");
-      return 0;
-    }
-    for (i_skip=0; i_skip < *n_skip; i_skip++) {
-      if (fgets(linebuffer, LINESIZE,atoms->xyz_in)) {
-	if (sscanf(linebuffer, "%d", &natoms) != 1) {
-	  fprintf(stderr, "cioskip for file without index can't parse number of atoms from 1st line '%s'\n", linebuffer);
-	  return 0;
-	}
-	if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
-	  fprintf(stderr, "cioskip for file without index can't read comment line\n");
-	  return 0;
-	}
-	for (i=0; i < natoms; i++) {
-	  if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
-	    fprintf(stderr, "cioskip for file without index can't read line for atom %d\n", i);
-	    return 0;
-	  }
-	}
-      } else {
-	fprintf(stderr, "cioskip for file without index can't read number of atoms line\n");
-	return 0;
-      }
-    }
-  } else if (atoms->format == NETCDF_FORMAT) {
-    return 1;
-  } else {
-    fprintf(stderr, "cioskip unknown atoms->format %d\n", atoms->format);
-    return 0;
-  }
-}
-
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int suppress, int override_lattice,
 	      double lattice[3][3]) {
@@ -1860,14 +1829,32 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	    if (!isblank(fields[j][n]) && !isdigit(fields[j][n])) goto NOT_INT;
 	}
 	
-	atoms->param_type[i] = (k == 1 ? T_INTEGER : T_INTEGER_A);
+ 	if (k==1) 
+	  atoms->param_type[i] = T_INTEGER;
+	else if (k == 3)
+	  atoms->param_type[i] = T_INTEGER_A;
+	else if (k == 9)
+	  atoms->param_type[i] = T_INTEGER_A2;
+	else {
+	  fprintf(stderr, "Bad number of fields %d in parameter %s\n", k, atoms->param_key[i]);
+	  return 0;
+	}
 	continue;
 
       NOT_INT:
 	for (j=0; j<k; j++)
 	  if (strtod(fields[j], &p), strlen(p) != 0) goto NOT_REAL;
 	
-	atoms->param_type[i] = (k == 1 ? T_REAL : T_REAL_A);
+ 	if (k==1) 
+	  atoms->param_type[i] = T_REAL;
+	else if (k == 3)
+	  atoms->param_type[i] = T_REAL_A;
+	else if (k == 9)
+	  atoms->param_type[i] = T_REAL_A2;
+	else {
+	  fprintf(stderr, "Bad number of fields %d in parameter %s\n", k, atoms->param_key[i]);
+	  return 0;
+	}
 	continue;
       
       NOT_REAL:
@@ -1905,7 +1892,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	    strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
 
 	strcpy(linebuffer, atoms->param_value[j]);
-	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A) {
+	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A || atoms->param_type[j] == T_INTEGER_A2 || atoms->param_type[j] == T_REAL_A2) {
 	  k = 0;
 	  p = linebuffer;
 	  while ((p1 = strsep(&p, " ")) != NULL) {
@@ -1933,6 +1920,14 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	case(T_REAL_A):
 	  for (m=0; m<k; m++)
 	    atoms->param_real_a[j][m] = strtod(fields[m], &p);
+	  break;
+	case(T_INTEGER_A2):
+	  for (m=0; m<9; m++)
+	    atoms->param_int_a2[j][m] = strtol(fields[m], &p, 10);
+	  break;
+	case(T_REAL_A2):
+	  for (m=0; m<9; m++)
+	    atoms->param_real_a2[j][m] = strtod(fields[m], &p);
 	  break;
 	case(T_CHAR):
 	  break;
@@ -2290,7 +2285,22 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
 	sprintf(tmpbuf, real_format, atoms->param_real_a[i][j]);
 	strcat(atoms->param_value[i], tmpbuf);
       }
+    } else if (atoms->param_type[i] == T_INTEGER_A2) {
+      sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", int_format, int_format, int_format,
+	      int_format, int_format, int_format, int_format, int_format, int_format);
+      sprintf(atoms->param_value[i], tmpbuf, 
+	      atoms->param_int_a2[i][0], atoms->param_int_a2[i][1], atoms->param_int_a2[i][2],
+	      atoms->param_int_a2[i][3], atoms->param_int_a2[i][4], atoms->param_int_a2[i][5],
+	      atoms->param_int_a2[i][6], atoms->param_int_a2[i][7], atoms->param_int_a2[i][8]);
+    } else if (atoms->param_type[i] == T_REAL_A2) {
+      sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", real_format, real_format, real_format,
+	      real_format, real_format, real_format, real_format, real_format, real_format);
+      sprintf(atoms->param_value[i], tmpbuf, 
+	      atoms->param_real_a2[i][0], atoms->param_real_a2[i][1], atoms->param_real_a2[i][2],
+	      atoms->param_real_a2[i][3], atoms->param_real_a2[i][4], atoms->param_real_a2[i][5],
+	      atoms->param_real_a2[i][6], atoms->param_real_a2[i][7], atoms->param_real_a2[i][8]);
     }
+
     trimmed = atoms->param_value[i];
     while (isblank(trimmed[0])) trimmed++;
 
@@ -2432,6 +2442,24 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
   case(T_REAL_A):
     sprintf(fmt, "%s %s %s %s ", name, realformat, realformat, realformat);
     sprintf(tmpbuf, fmt, at->param_real_a[j][0], at->param_real_a[j][1], at->param_real_a[j][2]);
+    strcat(linebuffer, tmpbuf);
+    break;
+  case(T_INTEGER_A2):
+    sprintf(fmt, "%s %s %s %s %s %s %s %s %s %s ", name, intformat, intformat, intformat,
+	    intformat, intformat, intformat, intformat, intformat, intformat);
+    sprintf(tmpbuf, fmt, 
+	    at->param_int_a2[j][0], at->param_int_a2[j][1], at->param_int_a2[j][2],
+	    at->param_int_a2[j][3], at->param_int_a2[j][4], at->param_int_a2[j][5],
+	    at->param_int_a2[j][6], at->param_int_a2[j][7], at->param_int_a2[j][8]);
+    strcat(linebuffer, tmpbuf);
+    break;
+  case(T_REAL_A2):
+    sprintf(fmt, "%s %s %s %s %s %s %s %s %s %s ", name, realformat, realformat, realformat,
+	    realformat, realformat, realformat, realformat, realformat, realformat);
+    sprintf(tmpbuf, fmt, 
+	    at->param_real_a2[j][0], at->param_real_a2[j][1], at->param_real_a2[j][2],
+	    at->param_real_a2[j][3], at->param_real_a2[j][4], at->param_real_a2[j][5],
+	    at->param_real_a2[j][6], at->param_real_a2[j][7], at->param_real_a2[j][8]);
     strcat(linebuffer, tmpbuf);
     break;
   case(T_CHAR):
@@ -3276,7 +3304,7 @@ int main (int argc, char **argv)
 
 /********************************* FORTRAN API *********************************
  *                                                                             *
- * cioinit(), ciofree(), cioquery(), cioread() and ciowrite()	       *
+ * cioinit(), ciofree(), cioquery(), cioread(), ciowrite() and cioskip()       *
  *									       *
  ********************************* FORTRAN API *********************************/
 
@@ -3298,8 +3326,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
-	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_filter, double **lattice,
-	    int **got_index, int **pnetcdf4)
+	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_int_a2, double **param_real_a2,
+	    int **param_filter, double **lattice, int **got_index, int **pnetcdf4)
 {
   char *p, *q;
   int i, z, *zp;
@@ -3325,8 +3353,10 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
   if (param_value) *param_value = (char *)(**at).param_value;
   if (param_int) *param_int = (**at).param_int;
   if (param_real) *param_real = (**at).param_real;
-  if (param_int) *param_int_a = (int *)(**at).param_int_a;
-  if (param_real) *param_real_a = (double *)(**at).param_real_a;
+  if (param_int_a) *param_int_a = (int *)(**at).param_int_a;
+  if (param_real_a) *param_real_a = (double *)(**at).param_real_a;
+  if (param_int_a2) *param_int_a2 = (int *)(**at).param_int_a2;
+  if (param_real_a2) *param_real_a2 = (double *)(**at).param_real_a2;
   if (param_filter) *param_filter = (**at).param_filter;
 
   if (lattice) *lattice = (double *)(**at).lattice;
@@ -3583,12 +3613,52 @@ int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *l
   } else return 0;
 }
 
-int cioupdate(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data)
-{
-  at->int_data = int_data;
-  at->real_data = real_data;
-  at->str_data = str_data;
-  at->logical_data = logical_data; 
+/* int cioupdate(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data) */
+/* { */
+/*   at->int_data = int_data; */
+/*   at->real_data = real_data; */
+/*   at->str_data = str_data; */
+/*   at->logical_data = logical_data;  */
 
-  return 1;
+/*   return 1; */
+/* } */
+
+int cioskip (Atoms *atoms, int *n_skip) {
+  int i_skip, i, natoms;
+  char linebuffer[LINESIZE];
+
+  if (atoms->format == XYZ_FORMAT) {
+    if (atoms->got_index) return 1;
+    if (*n_skip < 0) {
+      fprintf(stderr, "cioskip for file without index can't do negative n\n");
+      return 0;
+    }
+    for (i_skip=0; i_skip < *n_skip; i_skip++) {
+      if (fgets(linebuffer, LINESIZE,atoms->xyz_in)) {
+	if (sscanf(linebuffer, "%d", &natoms) != 1) {
+	  fprintf(stderr, "cioskip for file without index can't parse number of atoms from 1st line '%s'\n", linebuffer);
+	  return 0;
+	}
+	if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
+	  fprintf(stderr, "cioskip for file without index can't read comment line\n");
+	  return 0;
+	}
+	for (i=0; i < natoms; i++) {
+	  if (!fgets(linebuffer,LINESIZE,atoms->xyz_in)) {
+	    fprintf(stderr, "cioskip for file without index can't read line for atom %d\n", i);
+	    return 0;
+	  }
+	}
+      } else {
+	fprintf(stderr, "cioskip for file without index can't read number of atoms line\n");
+	return 0;
+      }
+    }
+  } else if (atoms->format == NETCDF_FORMAT) {
+    return 1;
+  } else {
+    fprintf(stderr, "cioskip unknown atoms->format %d\n", atoms->format);
+    return 0;
+  }
+  return 0;
 }
