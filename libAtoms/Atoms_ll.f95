@@ -189,6 +189,7 @@ contains
     logical :: do_sort_Time, do_no_Time_dups, do_quiet, do_no_compute_index
     type(Atoms_ll_entry), pointer :: entry
     logical :: is_a_dup
+    integer :: initial_frame_count
 
     do_decimation = optional_default(1, decimation)
     do_min_time = optional_default(-1.0_dp, min_time)
@@ -215,12 +216,13 @@ contains
     frame_count = 1
     do while (status == 0) ! loop over files
       call initialise(cfile,trim(my_filename),action=INPUT, no_compute_index=do_no_compute_index)
+      initial_frame_count = frame_count
       status = 0
       do while (status == 0) ! loop over frames in this file
 	if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
 	  ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-	! if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
-	!     ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+!	if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
+!	     ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
 	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, status=status)
 
 	if (status == 0) then ! we succesfully read a structure
@@ -284,15 +286,20 @@ contains
 	      call atoms_copy_without_connect(structure, structure_in, properties="species:pos:Z")
 	    endif
 	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "
+!	    if (.not. do_quiet) write (mainlog%unit,'(a)') "          "
 	  else ! skip_frame was true, we're skipping
 	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') " skip     "
-	    ! if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
+!	    if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
 	  endif ! skip_frame
 	  frame_count = frame_count + do_decimation
 	endif ! status == 0 for reading this structure
 
       end do ! while status == 0 for frames in this file
-      last_file_frame_n = last_file_frame_n + cfile%n_frame
+      if (cfile%got_index) then
+	last_file_frame_n = last_file_frame_n + cfile%n_frame
+      else
+	last_file_frame_n = last_file_frame_n + cfile%current_frame
+      endif
       ! call print("at end of file, frame_count " // frame_count // " last_file_frame_n " // last_file_frame_n)
       call finalise(cfile)
 
