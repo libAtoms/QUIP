@@ -13,6 +13,9 @@ from numpy import *
 
 logging.root.setLevel(logging.WARNING)
 
+AtomsReaders = {}
+AtomsWriters = {}
+
 try:
    import _quippy
 
@@ -41,32 +44,28 @@ try:
 
    sys.modules[__name__].__dict__.update(params)
 
+   import extras
+   for name, cls in classes:
+      try:
+         new_cls = getattr(extras, name[len(fortran_class_prefix):])
+      except AttributeError:
+         new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
+
+      setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
+      FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
+
+   del classes
+   del routines
+   del params
+   del wrap_all
+   del extras
+   del fortran_class_prefix
+
 except ImportError:
    logging.warning('_quippy extension module not available - falling back on pure python version')
 
    from pupyatoms import *
 
-AtomsReaders = {}
-AtomsWriters = {}
-
-import extras
-for name, cls in classes:
-   try:
-      new_cls = getattr(extras, name[len(fortran_class_prefix):])
-   except AttributeError:
-      new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
-      
-   setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
-   FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
-
-
-del classes
-del routines
-del params
-del wrap_all
-del extras
-del fortran_class_prefix
-                      
 import farray;      from farray import *
 import atomslist;   from atomslist import *
 import periodic;    from periodic import *
