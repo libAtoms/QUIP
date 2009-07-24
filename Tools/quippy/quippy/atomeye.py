@@ -38,7 +38,8 @@ def on_new_window(iw):
     
 
 class AtomEyeView(object):
-    def __init__(self, atoms=None, window_id=None, copy=None, frame=0, delta=1, property=None):
+    def __init__(self, atoms=None, window_id=None, copy=None, frame=0, delta=1, property=None, arrows=None,
+                 *arrowargs, **arrowkwargs):
         self.atoms = atoms
         self.frame = frame
         self.delta = delta
@@ -55,8 +56,8 @@ class AtomEyeView(object):
             self.is_alive = True
             views[self._window_id] = self
 
-        if property is not None:
-            self.redraw(property)
+        if property is not None or arrows is not None:
+            self.redraw(property=property, arrows=arrows, *arrowargs, **arrowkwargs)
             
     def start(self, copy=None):
         if self.is_alive: return
@@ -159,7 +160,7 @@ class AtomEyeView(object):
         self.aux_property_coloring(self.paint_property)
 
 
-    def show(self, obj, property=None, frame=None):
+    def show(self, obj, property=None, frame=None, arrows=None, *arrowargs, **arrowkwargs):
         self.atoms = obj
         if hasattr(obj,'__iter__'):
             if frame is not None:
@@ -171,10 +172,10 @@ class AtomEyeView(object):
                         frame=len(self.atoms)-1
                 self.frame = frame
                 
-        self.redraw(property=property)
+        self.redraw(property=property, arrows=arrows, *arrowargs, **arrowkwargs)
 
     
-    def redraw(self, property=None):
+    def redraw(self, property=None, arrows=None, *arrowargs, **arrowkwargs):
         if not self.is_alive:
             raise RuntimeError('is_alive is False')
 
@@ -222,6 +223,9 @@ class AtomEyeView(object):
 	_atomeye.load_atoms(self._window_id, title, theat)
         if property is not None:
             self.aux_property_coloring(property)
+
+        if arrows is not None:
+            self.draw_arrows(arrows, *arrowargs, **arrowkwargs)
 
     def run_command(self, command):
         if not self.is_alive: 
@@ -415,7 +419,7 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 view = None
 
-def show(obj, property=None, frame=0, window_id=None):
+def show(obj, property=None, frame=0, window_id=None, arrows=None, *arrowargs, **arrowkwargs):
     """Convenience function to show obj in the default AtomEye view
 
     If window_id is not None, then this window will be used. Otherwise
@@ -435,9 +439,9 @@ def show(obj, property=None, frame=0, window_id=None):
             view = views[views.keys()[0]]
             view.show(obj, property, frame)
         else:
-            view = AtomEyeView(obj, property=property, frame=frame)
+            view = AtomEyeView(obj, property=property, frame=frame, arrows=arrows, *arrowargs, **arrowkwargs)
     else:
-        view.show(obj, property, frame)
+        view.show(obj, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
 
     return view
 
