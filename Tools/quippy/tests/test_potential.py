@@ -185,6 +185,12 @@ class TestPotential(QuippyTestCase):
       self.assertAlmostEqual(self.at.energy, self.e_ref)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
+   def testcalc24(self):
+      self.pot.calc(self.at, calc_energy=True, calc_local_e=True, calc_force=True, calc_virial=True)
+      self.assertAlmostEqual(self.at.energy, self.e_ref)
+      self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+      self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
+
    def testcalc_df(self):
       self.pot.calc(self.at, df=self.df)
       self.assertArrayAlmostEqual(self.df, self.f_ref)
@@ -200,7 +206,7 @@ class TestPotential(QuippyTestCase):
 
    def testcalc_all(self):
       self.pot.calc(self.at, f=self.f, df=self.df, e=self.e, local_e=self.le, virial=self.v,
-                    calc_force=True, calc_energy=True, calc_local_e=True, calc_df=True)
+                    calc_force=True, calc_energy=True, calc_local_e=True, calc_df=True, calc_virial=True)
 
       self.assertArrayAlmostEqual(self.f, self.f_ref)
       self.assertArrayAlmostEqual(self.at.force, self.f_ref)
@@ -215,6 +221,8 @@ class TestPotential(QuippyTestCase):
       self.assertAlmostEqual(self.at.energy, self.e_ref)
 
       self.assertArrayAlmostEqual(self.v, self.v_ref)
+      self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
+
       
 
 class TestMetaPotential(QuippyTestCase):
