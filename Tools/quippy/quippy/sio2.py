@@ -136,8 +136,9 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
 
       if dostress:
          stress_lines = list(itertools.islice(stress, 4))
-         at.virial = farray([ [float(x) for x in L.split()] for L in stress_lines[1:4] ])
-         at.virial /= (10.0*GPA)
+         virial = farray([ [float(x) for x in L.split()] for L in stress_lines[1:4] ])
+         virial /= (10.0*GPA)
+         at.params['virial'] = virial
 
       if doforce:
          at.add_property('force', 0.0, n_cols=3)
@@ -894,7 +895,7 @@ def save_ref_config(config_list):
       at.params['dft_energy'] = at.params['energy'] / HARTREE
       at.add_property('dft_force', 0.0, n_cols=3)
       at.dft_force[:] = at.force / (HARTREE/BOHR)
-      at.dft_virial = at.virial[:] / (HARTREE/(BOHR**3))
+      at.params['dft_virial'] = at.virial / (HARTREE/(BOHR**3))
 
 
 def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447):
@@ -914,7 +915,7 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
       pot.calc(at, virial=s, calc_force=True, calc_energy=True)
 
       at.params['md_energy'] = at.params['energy'] / HARTREE
-      at.md_virial = s / (HARTREE/(BOHR**3))
+      at.params['md_virial'] = s / (HARTREE/(BOHR**3))
       at.md_force = at.force / (HARTREE/BOHR)
 
       for i in frange(at.n):
