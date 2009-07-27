@@ -47,7 +47,7 @@ class PosCelWriter(object):
 
       self.cel.write(' %s %d\n' % (self.step_name, self.it))
       for i in (1,2,3):
-         L = at.lattice[i,:]
+         L = at.lattice[:,i]
          if not self.cel_angstrom: L /= BOHR
          self.cel.write('%20.10e%20.10e%20.10e\n' % (L[1], L[2], L[3]))
 
@@ -119,7 +119,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
       #lattice = farray([ [float(x) for x in L.split()] for L in cellines[1:4] ]).T
       lattice = fzeros((3,3))
       for i in (1,2,3):
-         lattice[i,:] = [float(x) for x in cellines[i].split()]
+         lattice[:,i] = [float(x) for x in cellines[i].split()]
       if not cel_angstrom: lattice *= BOHR
 
       at = Atoms(n=len(poslines), lattice=lattice)
