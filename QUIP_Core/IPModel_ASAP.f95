@@ -624,10 +624,10 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    ! ASAP uses atomic units - lengths are in Bohr, energies in Hartree,
    ! forces in Hartree/Bohr and stress in Hartree/Bohr**3
 
-   r(:,:) = at%pos(:,:)/BOHR     !  positions
+   r(:,:) = at%pos(:,:)/BOHR         ! positions
    rm(:,:) = at%pos(:,:)/BOHR
-   htm = at%lattice/BOHR             ! lattice
-   ht = at%lattice/BOHR
+   htm = transpose(at%lattice/BOHR)  ! lattice
+   ht = transpose(at%lattice/BOHR) 
    restart = do_restart   ! reset electric field
    
    objind = 1
