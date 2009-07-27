@@ -37,15 +37,17 @@ def get_lattice_params(lattice):
    a_3 = lattice[:,3]
 
    return (a_1.norm(), a_2.norm(), a_3.norm(),
-           acos(dot(a_2,a_3))/a_2.norm()*a_3.norm(),
-           acos(dot(a_3,a_1))/a_3.norm()*a_1.norm(),
-           acos(dot(a_1,a_2))/a_1.norm()*a_2.norm())
+           acos(dot(a_2,a_3)/(a_2.norm()*a_3.norm())),
+           acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
+           acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
 
 try:
    from quippy import CInOutput, INPUT, OUTPUT, INOUT
 
    class CInOutputReader(object):
       """Class to read atoms from a CInOutput. Supports generator and random access via indexing."""
+
+      lazy = True
 
       def __init__(self, source, frame=None, start=0, stop=None, step=1):
          if isinstance(source, str):
@@ -62,6 +64,7 @@ try:
          else:
             self.start = start
             if stop is None:
+#               print 'len(self.source) = %d' % len(self.source)
                stop = len(self.source)
             self.stop = stop
             self.step = step
@@ -81,7 +84,7 @@ try:
 
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
-   @atoms_reader('stdin')
+   @atoms_reader('stdin', True)
    def CInOutputStdinReader(source='stdin'):
       assert source == 'stdin'
       source = CInOutput(source, action=INPUT)
@@ -131,8 +134,8 @@ def netcdf_dimlen(obj, name):
       return n
 
 
-@atoms_reader(netcdf_file)
-@atoms_reader('nc')
+@atoms_reader(netcdf_file, True)
+@atoms_reader('nc', True)
 def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
 
    opened = False

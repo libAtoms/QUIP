@@ -29,7 +29,7 @@ def AtomsReader(source, format=None, *args, **kwargs):
 class AtomsList(object):
    """Class for dealing with sequences of Atoms objects"""
 
-   def __init__(self, source, format=None, lazy=True, *args, **kwargs):
+   def __init__(self, source, format=None, lazy=None, *args, **kwargs):
 
       if format is None:
          if isinstance(source, str):
@@ -42,6 +42,8 @@ class AtomsList(object):
             format = source.__class__
 
       if format in AtomsReaders:
+         if lazy is None: #and hasattr(AtomsReaders[format], 'lazy'):
+            lazy = AtomsReaders[format].lazy
          self._source = AtomsReaders[format](source, *args, **kwargs)
          self._itersource = iter(self._source)
       else:
@@ -53,9 +55,12 @@ class AtomsList(object):
             self._itersource = iter(self._source)
          
       self._randomaccess = hasattr(self._source, '__getitem__') and hasattr(self._source, '__len__')
+
+      if lazy is None: lazy = True
       if lazy:
          if self._randomaccess:
-            self._list = [None for a in range(len(self._source)) ]
+#            print 'len(self._source) = %d' % len(self._source)
+            self._list = [ None for a in range(len(self._source)) ]
          else:
             self._list = []
       else:
@@ -143,10 +148,10 @@ class AtomsList(object):
             else:
                print i
 
-   def show(self, property=None, frame=0):
+   def show(self, property=None, frame=0, arrows=None, *arrowargs, **arrowkwargs):
       try:
          import atomeye
-         atomeye.show(self, property, frame)
+         atomeye.show(self, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
@@ -188,11 +193,15 @@ class AtomsList(object):
          dest.close()
       return res
 
+   def __getattr__(self, name):
+      return [ getattr(at, name) for at in self ]
+
 # Decorator to add a new reader
 
-def atoms_reader(source):
+def atoms_reader(source, lazy=True):
    def decorate(func):
       from quippy import AtomsReaders
+      func.lazy = lazy
       if not source in AtomsReaders:
          AtomsReaders[source] = func
       return func
