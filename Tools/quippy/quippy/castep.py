@@ -219,7 +219,7 @@ class CastepCell(OrderedDict):
          raise ValueError('cell is missing POSITIONS_ABS block')
       
       atoms = Atoms(n=len(self['POSITIONS_ABS']),lattice = 
-                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]).T)
+                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
       
       field_list = [line.split() for line in self['POSITIONS_ABS']]
 
@@ -240,7 +240,7 @@ class CastepCell(OrderedDict):
       # Add lattice to cell
       self['LATTICE_CART'] = []
       for i in frange(3):
-         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[i,:]))
+         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
 
       # Add atomic positions to cell
       self['POSITIONS_ABS'] = []
@@ -249,7 +249,7 @@ class CastepCell(OrderedDict):
 
 
    @staticmethod
-   @atoms_reader('cell')
+   @atoms_reader('cell', False)
    def cellreader(source):
       self = CastepCell(source)
       yield self.to_atoms()
@@ -360,7 +360,7 @@ class CastepParam(OrderedDict):
          paramfile.write('%s = %s\n' % (key, value))
 
 
-@atoms_reader('geom')
+@atoms_reader('geom', False)
 def CastepGeomReader(source):
    """Generator to read frames from CASTEP .geom file"""
 
@@ -404,7 +404,7 @@ def CastepGeomReader(source):
       # Lattice is next, in units of Bohr
       lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
       lattice = farray([ [float(x)* BOHR for x in row[0:3]]
-                         for row in map(string.split, lattice_lines) ]).T
+                         for row in map(string.split, lattice_lines) ])
 
       # Then optionally virial tensor
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
@@ -444,8 +444,8 @@ def CastepGeomReader(source):
 
       yield at
 
-@atoms_reader('castep')
-@atoms_reader('castep_log')
+@atoms_reader('castep', False)
+@atoms_reader('castep_log', False)
 def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
@@ -518,9 +518,9 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
       
       lattice_lines = castep_output[lattice_line+3:lattice_line+6]
       lattice = fzeros((3,3))
-      lattice[1,:] = map(float, lattice_lines[0].split()[0:3])
-      lattice[2,:] = map(float, lattice_lines[1].split()[0:3])
-      lattice[3,:] = map(float, lattice_lines[2].split()[0:3])
+      lattice[:,1] = map(float, lattice_lines[0].split()[0:3])
+      lattice[:,2] = map(float, lattice_lines[1].split()[0:3])
+      lattice[:,3] = map(float, lattice_lines[2].split()[0:3])
 
       cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
       if cell_contents == []:
@@ -567,7 +567,7 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
          atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
 
       # Calculate cartesian postions from fractional positions
-      atoms.pos[:] = farray([ numpy.dot(atoms.frac_pos[:,i],atoms.lattice) for i in frange(atoms.n) ])
+      atoms.pos[:] = numpy.dot(atoms.lattice, atoms.frac_pos)
 
       if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
          energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
