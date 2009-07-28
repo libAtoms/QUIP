@@ -1601,6 +1601,7 @@ contains
 
     if (present(properties)) then
       call finalise(to%data)
+      call initialise(to%properties)
       call initialise(to%data, max_length=from%data%N)
       last_int_col=0
       last_real_col=0
