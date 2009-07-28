@@ -145,6 +145,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
+  real(dp), dimension(:), allocatable   :: local_e_in
+  real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:), allocatable   :: vec
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer :: d, i, j, k, n, nei_max, jn
@@ -152,11 +154,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   integer, dimension(3) :: shift
 
 #ifdef HAVE_GP
-  type(fourier_so4) :: f_hat
-  type(grad_fourier_so4) :: df_hat
-  type(bispectrum_so4) :: bis
-  type(grad_bispectrum_so4) :: dbis
+  type(fourier_so4), save :: f_hat
+  type(grad_fourier_so4), save :: df_hat
+  type(bispectrum_so4), save :: bis
+  type(grad_bispectrum_so4), save :: dbis
 #endif  
+
+!$omp threadprivate(f_hat,df_hat,bis,dbis)  
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -166,16 +170,21 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      f = 0.0_dp
   end if
 
-  ! no forces or virials for now
-!  if(present(virial)) &
-!       call system_abort('IPModel_GAP_Calc: no virials yet!')
+  if(present(e) .or. present(local_e) ) then
+     allocate(local_e_in(at%N))
+     local_e_in = 0.0_dp
+  endif
+
+  if (present(virial)) then
+     allocate(virial_in(3,3,at%N))
+     virial_in = 0.0_dp
+  endif
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
 #ifdef HAVE_GP
-  call initialise(f_hat,this%j_max,this%z0,this%cutoff)
-  if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
   d = j_max2d(this%j_max)
+  call cg_initialise(this%j_max,2)
 #endif
 
   nei_max = 0
@@ -185,10 +194,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   allocate(vec(d,at%N),jack(d,3*nei_max,at%N))
 
+!$omp parallel 
+#ifdef HAVE_GP
+  call initialise(f_hat,this%j_max,this%z0,this%cutoff)
+  if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
+#endif
+!$omp do private(n)
   do i = 1, at%N
-     if (this%mpi%active) then
-        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
-     endif
 
 #ifdef HAVE_GP
      call fourier_transform(f_hat,at,i)
@@ -203,14 +215,21 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
 #endif
   enddo
+!$omp end do 
+#ifdef HAVE_GP
+  call finalise(f_hat)
+  call finalise(df_hat)
+  call finalise(bis)
+  call finalise(dbis)
+#endif
+!$omp end parallel
     
+!$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
   do i = 1, at%N
      if(present(e) .or. present(local_e)) then
 #ifdef HAVE_GP
-        call gp_predict(gp_data=this%my_gp, mean=e_i,x_star=vec(:,i))
+        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i))
 #endif
-        if(present(e)) e = e + e_i
-        if(present(local_e)) local_e(i) = e_i
      endif
 
      if(present(f).or.present(virial)) then
@@ -224,7 +243,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 #endif
            f_gp = f_gp - f_gp_k
        
-           if( present(virial) ) virial(:,k) = virial(:,k) - f_gp_k*at%pos(:,i)
+           if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
 
            do n = 1, atoms_n_neighbours(at,i)
               j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
@@ -234,7 +253,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 #endif
               !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
               f_gp = f_gp - f_gp_k
-              if( present(virial) ) virial(:,k) = virial(:,k) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
+              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
            enddo
        
            if(present(f)) f(k,i) = f_gp
@@ -242,19 +261,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
   enddo
 
+  if(present(e)) e = sum(local_e_in)
+  if(present(local_e)) local_e = local_e_in
+  if(present(virial)) virial = sum(virial_in,dim=3)
+
+  if(allocated(local_e_in)) deallocate(local_e_in)
+  if(allocated(virial_in)) deallocate(virial_in)
   deallocate(vec,jack)
 
-#ifdef HAVE_GP
-  call finalise(f_hat)
-  call finalise(df_hat)
-  call finalise(bis)
-  call finalise(dbis)
-#endif
-
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
-  if (present(f)) call sum_in_place(this%mpi, f)
 
 end subroutine IPModel_GAP_Calc
 
