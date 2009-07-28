@@ -224,6 +224,7 @@ program density_1d
 
     else ! not fortran I/O, i.e. C
 
+      status = 0
       if (from > 0) then
 	frame_count = from
       else
