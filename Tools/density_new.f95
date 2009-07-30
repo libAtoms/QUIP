@@ -345,6 +345,7 @@ contains
       if (do_this_histo) then
 	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
 	n_histos = n_histos + 1
+	if (mod(n_histos,10) == 0) write (mainlog%unit,'(a,$)') "."
 	call reallocate_histos(histo_count, n_histos, n_bins)
 	call accumulate_histo_count(histo_count(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian, gaussian_sigma, mask_str)
       endif
@@ -361,8 +362,8 @@ contains
     real(dp), intent(in) :: gaussian_sigma
     character(len=*), optional, intent(in) :: mask_str
 
-    real(dp) :: min_p_lat(3), bin_width_lat(3), p_lat(3)
-    integer :: i, bin(3)
+    ! real(dp) :: min_p_lat(3), bin_width_lat(3), p_lat(3)
+    integer :: i, bin(3), bin_1, bin_2, bin_3
     logical, allocatable :: mask_a(:)
     integer :: i1, i2, i3
     real(dp) :: r1, r2, r3, r1_sq, r2_sq, r3_sq
@@ -380,9 +381,10 @@ contains
     n_samples_d = real(n_samples,dp)
     sigma_sq = gaussian_sigma**2
 
-    min_p_lat = at%g .mult. min_p
-    bin_width_lat = at%g .mult. bin_width
+    ! min_p_lat = at%g .mult. min_p
+    ! bin_width_lat = at%g .mult. bin_width
     do i=1, at%N
+if (mod(i,10) == 0) call print("accumulate_histo_count i " // i,ERROR)
       if (.not. mask_a(i)) cycle
       if (gaussian) then
 	p_center = at%pos(:,i)
@@ -390,24 +392,33 @@ contains
 	  r1 = real(i1,dp)/real(n_samples,dp)*range
 	  r1_sq = r1*r1
 	  p(1) = p_center(1) + r1
+	  bin_1 = floor(p(1)-min_p(1)/bin_width(1))+1
+	  if (bin_1 <= 0 .and. bin_1 > n_bins(1)) cycle
 	  do i2=-n_samples, n_samples
 	    r2 = real(i2,dp)/real(n_samples,dp)*range
 	    r2_sq = r2*r2
 	    p(2) = p_center(2) + r2
+	    bin_2 = floor(p(2)-min_p(2)/bin_width(2))+1
+	    if (bin_2 <= 0 .and. bin_2 > n_bins(2)) cycle
 	    do i3=-n_samples, n_samples
 	      r3 = real(i3,dp)/real(n_samples,dp)*range
 	      r3_sq = r3*r3
 	      p(3) = p_center(3) + r3
-	      p_lat = at%g .mult. p
-	      bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	      bin_3 = floor(p(3)-min_p(3)/bin_width(3))+1
+	      if (bin_3 <= 0 .and. bin_3 > n_bins(3)) cycle
+	      ! p_lat = at%g .mult. p
+	      ! bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	      !! bin = floor((p-min_p)/bin_width)+1
 	      weight = normalization*exp(-(r1_sq+r2_sq+r3_sq)/sigma_sq)
-	      if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + weight
+	      !! if (all(bin >= 1) .and. all (bin <= n_bins)) 
+	      histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + weight
 	    end do
 	  end do
 	end do
       else
-	p_lat = at%g .mult. at%pos(:,i)
-	bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	! p_lat = at%g .mult. at%pos(:,i)
+	! bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
+	bin = floor((p-min_p)/bin_width)+1
 	if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + 1.0_dp
       endif
     end do
