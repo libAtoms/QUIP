@@ -114,6 +114,8 @@ program density_1d
     end if
     call print('    from Frame: '//from)
     call print('      to Frame: '//to)
+    call print('      min_time: '//min_time)
+    call print('      max_time: '//max_time)
     call print('       IO_Rate: '//IO_Rate)
     call print('       Density_Time_Evolution_Rate: '//Density_Time_Evolution_Rate)
     if (IO_Rate > 0 .and. Density_Time_Evolution_Rate > 0) then
@@ -210,7 +212,8 @@ program density_1d
         skip_frame = .false.
         if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
           if (get_value(structure_in%params,"Time",cur_time)) then
-            if (cur_time < min_time .or. cur_time > max_time) skip_frame = .true.
+            if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
+	        (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
           else
             call system_abort("ERROR: min_time="//min_time//" > 0.0 or max_time="//max_time//" > 0.0, but Time field wasn't found in config " // frame_count)
           endif
@@ -262,7 +265,8 @@ program density_1d
             skip_frame = .false.
             if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
               if (get_value(structure_in%params,"Time",cur_time)) then
-                if (cur_time < min_time .or. cur_time > max_time) skip_frame = .true.
+                if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
+		    (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
               else
                 call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
               endif
