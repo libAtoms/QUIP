@@ -95,6 +95,9 @@ if 'CASTEP_SAVE_ALL_INPUT_FILES' in os.environ:
 # If set to True, don't actually run CASTEP
 TEST_MODE = False
 
+# If set to True, create a queue of calculations for later execution
+BATCH_MODE = True
+
 # If any force is larger than this threshold, repeat the
 # calculation without checkfile (units: eV/A)
 MAX_FORCE_THRESHOLD = 15.0
@@ -213,7 +216,12 @@ def castep_run(cell, param,  stem, castep, log=None):
       # Simulate making check file
       check_file = open(stem+'.check','w')
       check_file.close()
-      
+
+   elif BATCH_MODE:
+
+      info('batch mode: not running castep')
+      return True
+   
    else:
       # Remove old output file and error files
       try: 
@@ -297,11 +305,16 @@ class ParamError(Exception):
 orig_dir = os.getcwd()
 
 if len(sys.argv) < 3:
-   die('Usage: %s <xyzfile> <outputfile>' % sys.argv[0])
+   die('Usage: [-t] [-b] %s <xyzfile> <outputfile>' % sys.argv[0])
 
 # If first command line option is '-t' set TEST_MODE to true
 if sys.argv[1] == '-t':
    TEST_MODE = True
+   sys.argv.pop(0)
+
+# If first command line option  is '-b' set BATCH_MODE to true
+if sys.argv[1] == '-b':
+   BATCH_MODE = True
    sys.argv.pop(0)
 
 xyzfile = sys.argv[1]
@@ -374,6 +387,14 @@ if os.path.exists(outfile):
 
 if DO_HASH:
    path = WORKING_DIR+'/'+stem+'_'+str(hash_atoms(cluster))
+elif BATCH_MODE:
+   try:
+      batch_id = int(open('castep_driver_batch_id').read())
+   except IOError:
+      batch_id = 0
+   path = '%s/%s-%08d' % (WORKING_DIR, stem, batch_id)
+   batch_id += 1
+   open('castep_driver_batch_id', 'w').write(str(batch_id))
 else:
    path = WORKING_DIR+'/'+stem
 
@@ -508,32 +529,38 @@ try:
          error('castep run failed')
          continue
 
-      try:
-         cluster = castep.read_castep_output(stem+'.castep', cluster)
-      except IOError, message:
-         error('error parsing .castep file: %s' % message)
-         continue
-      except ValueError, message:
-         error('error parsing .castep file: %s' % message)
-         continue
-
-      info('castep completed in %.1f s' % cluster.params['castep_run_time'])
-
-      norm_f = norm(cluster.force)
-      max_force_atom = norm_f.argmax()
-      max_force = norm_f[max_force_atom]
-
-      if hasattr(cluster,'hybrid'):
-         info('max force is %.2f eV/A on atom %d hybrid=%r' % \
-              (max_force,max_force_atom,cluster.hybrid[max_force_atom]))
-      else:
-         info('max force is %.2f eV/A on atom %d' % (max_force,max_force_atom))
-
-      if max_force > MAX_FORCE_THRESHOLD:
-         error('max force is very large - repeating calculation')
-         continue
-      else:
+      if BATCH_MODE:
+         cluster.params['energy'] = 0.0
+         cluster.params['virial'] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+         cluster.add_property('force', 0.0, ncols=3)
          break
+      else:
+         try:
+            cluster = castep.read_castep_output(stem+'.castep', cluster)
+         except IOError, message:
+            error('error parsing .castep file: %s' % message)
+            continue
+         except ValueError, message:
+            error('error parsing .castep file: %s' % message)
+            continue
+
+         info('castep completed in %.1f s' % cluster.params['castep_run_time'])
+
+         norm_f = norm(cluster.force)
+         max_force_atom = norm_f.argmax()
+         max_force = norm_f[max_force_atom]
+
+         if hasattr(cluster,'hybrid'):
+            info('max force is %.2f eV/A on atom %d hybrid=%r' % \
+                 (max_force,max_force_atom,cluster.hybrid[max_force_atom]))
+         else:
+            info('max force is %.2f eV/A on atom %d' % (max_force,max_force_atom))
+
+         if max_force > MAX_FORCE_THRESHOLD:
+            error('max force is very large - repeating calculation')
+            continue
+         else:
+            break
    else:
       raise ParamError
 
