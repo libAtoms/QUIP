@@ -1,4 +1,4 @@
-import sys, string, os, operator, itertools
+import sys, string, os, operator, itertools, logging
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, GPA, atomic_number_from_symbol
@@ -361,12 +361,16 @@ class CastepParam(OrderedDict):
 
 
 @atoms_reader('geom', False)
-def CastepGeomReader(source):
+def CastepGeomReader(source, atoms_ref=None):
    """Generator to read frames from CASTEP .geom file"""
 
    if type(source) == type(''):
       source = open(source, 'r')
    source = iter(source)
+
+   if atoms_ref is not None and not atoms_ref.has_property('frac_pos'):
+      atoms_ref.add_property('frac_pos', 0.0, n_cols=3)
+      atoms_ref.frac_pos[:] = numpy.dot(atoms_ref.g, atoms_ref.pos)
 
    while True:
       lines = []
@@ -403,8 +407,14 @@ def CastepGeomReader(source):
 
       # Lattice is next, in units of Bohr
       lattice_lines = filter(lambda s: s.endswith('<-- h'), lines)
-      lattice = farray([ [float(x)* BOHR for x in row[0:3]]
-                         for row in map(string.split, lattice_lines) ])
+      if lattice_lines != []:
+         lattice = farray([ [float(x)* BOHR for x in row[0:3]]
+                            for row in map(string.split, lattice_lines) ])
+      else:
+         if atoms_ref is None:
+            raise ValueError('No lattice in .geom file and atoms_ref not present')
+         else:
+            lattice = atoms_ref.lattice[:]
 
       # Then optionally virial tensor
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
@@ -417,36 +427,65 @@ def CastepGeomReader(source):
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)
       forcelines = filter(lambda s: s.endswith('<-- F'), lines)
 
-      if len(poslines) != len(forcelines):
-         raise ValueError('Number of pos lines (%d) != force lines (%d)'\
+      if poslines != [] and forcelines != [] and len(poslines) != len(forcelines):
+         raise ValueError('Number of pos lines (%d) != force lines (%d)'
                           % (len(poslines), len(forcelines)))
 
-      at = Atoms(n=len(poslines), lattice=lattice, params=params)
+      n_atoms = max(len(poslines), len(forcelines))
+      if poslines == [] and forcelines == []:
+         if atoms_ref is None:
+            raise ValueError('No positions or forces in .geom file and atoms_ref not present')
+         n_atoms = atoms_ref.n
+         
+      if atoms_ref is not None:
+         # If we were passed in an Atoms object, construct mapping from
+         # CASTEP (element, number) to original atom index
+         assert n_atoms == atoms_ref.n
+         at = atoms_ref.copy()
+         at.set_lattice(lattice)
+         at.params.update(params)
+         species_count = {}
+         lookup = {}
+         for i in frange(at.n):
+            el = at.species[i].stripstrings()
+            if species_count.has_key(el):
+               species_count[el] += 1
+            else:
+               species_count[el] = 1
+            lookup[(el,species_count[el])] = i
+      else:
+         # Otherwise we make a new, empty Atoms object. Atoms will
+         # be ordered as they are in .castep file.
+         lookup = {}
+         at = Atoms(n=n_atoms, lattice=lattice, params=params)
 
       # Now parse the positions, converting from units of Bohr
-      field_list = [line.split() for line in poslines]
+      if poslines != []:
+         for i, line in fenumerate(poslines):
+            el, num, x, y, z, arrow, label = line.split()
+            num = int(num)
+            if not (el,num) in lookup:
+               lookup[(el,num)] = i
+            at.z[lookup[(el,num)]] = atomic_number_from_symbol(el)
+            at.pos[:,lookup[(el,num)]] = [ float(r)* BOHR for r in (x,y,z)]
 
-      elements = [ f[0] for f in field_list]
-
-      # Look up names of elements specified by atomic number
-      elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
-
-      at.set_atoms(elements)
-      at.pos[:,:] = farray([ [float(x)* BOHR for x in row] \
-                         for row in [field[2:5] for field in field_list]])
-
+         at.set_atoms(at.z) # set at.species property to match at.z
+      else:
+         at.pos[:] = numpy.dot(at.lattice, at.frac_pos)
+                
       # And finally the forces, which are in units of hartree/bohr
-      field_list = [line.split() for line in forcelines]
-      force = farray([ [float(x)*HARTREE/BOHR for x in row] \
-                         for row in [field[2:5] for field in field_list]])
-      at.add_property('force', 0.0, n_cols=3)
-      at.force[:] = force
+      if forcelines != []:
+         at.add_property('force', 0.0, n_cols=3)
+         for i, line in fenumerate(forcelines):
+            el, num, fx, fy, fz, arrow, label = line.split()
+            num = int(num)
+            at.force[:,lookup[(el,num)]] = [ float(f)*HARTREE/BOHR for f in (fx, fy, fz) ]
 
       yield at
 
 @atoms_reader('castep', False)
 @atoms_reader('castep_log', False)
-def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False):
+def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=False):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
       well"""
@@ -456,6 +495,10 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
    castep_file = iter(castep_file)
 
    param = CastepParam()
+
+   if atoms_ref is not None and not atoms_ref.has_property('frac_pos'):
+      atoms_ref.add_property('frac_pos', 0.0, n_cols=3)
+      atoms_ref.frac_pos[:] = numpy.dot(atoms_ref.g, atoms_ref.pos)
 
    got_header = False
    eof = False
@@ -484,7 +527,7 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
             break
          
       # NB: CASTEP doesn't always print 'Total time'
-      run_time = -1.0
+      run_time = None
       total_time = filter(lambda s: s.startswith('Total time'), castep_output)
       if total_time == []:
          has_converged = filter(lambda s: s.startswith('Total energy has converged'), castep_output)
@@ -524,20 +567,27 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
 
       cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
       if cell_contents == []:
-         raise ValueError('No cell contents found in castep file')
+         if atoms_ref is None or abort:
+            raise ValueError('No cell contents found in castep file - try passing atoms_ref')
+         else:
+            logging.warning('No cell contents. If this is a variable cell geometry optimisation with fixed ions this is normal')
+            n_atoms = atoms_ref.n
 
-      cell_first_line = cell_contents[-1] # last cell contents line
+      if cell_contents != []:
+         cell_first_line = cell_contents[-1] # last cell contents line
 
-      try:
-         n_atoms = int(castep_output[cell_first_line+2].split()[-1])
-         offset = 10
-      except IndexError:
-         offset = 7
+         try:
+            n_atoms = int(castep_output[cell_first_line+2].split()[-1])
+            offset = 10
+         except IndexError:
+            offset = 7
 
-      if cluster is not None:
+      if atoms_ref is not None:
          # If we were passed in an Atoms object, construct mapping from
          # CASTEP (element, number) to original atom index
-         atoms = cluster.copy()
+         assert n_atoms == atoms_ref.n, 'Number of atoms must match atoms_ref'
+         atoms = atoms_ref.copy()
+         atoms.set_lattice(lattice)
          species_count = {}
          lookup = {}
          for i in frange(atoms.n):
@@ -553,26 +603,28 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
          lookup = {}
          atoms = Atoms(n=n_atoms,lattice=lattice)
 
-      atoms.params['castep_run_time'] = run_time
-      cell_lines = castep_output[cell_first_line+offset:cell_first_line+offset+n_atoms]
+      if cell_contents != []:
+         cell_lines = castep_output[cell_first_line+offset:cell_first_line+offset+n_atoms]
 
-      # Fill in species and fractional positions
-      atoms.add_property('frac_pos',0.0,n_cols=3)
-      for i, line in fenumerate(cell_lines):
-         x1, el, num, u, v, w, x2 = line.split()
-         num = int(num)
-         if not (el,num) in lookup:
-            lookup[(el,num)] = i
-         atoms.set_species(lookup[(el,num)], el)
-         atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
+         # Fill in species and fractional positions
+         atoms.add_property('frac_pos',0.0,n_cols=3)
+         for i, line in fenumerate(cell_lines):
+            x1, el, num, u, v, w, x2 = line.split()
+            num = int(num)
+            if not (el,num) in lookup:
+               lookup[(el,num)] = i
+            atoms.set_species(lookup[(el,num)], el)
+            atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
 
       # Calculate cartesian postions from fractional positions
+      # (correct if we're doing a variable cell geom. opt. with fixed ions)
       atoms.pos[:] = numpy.dot(atoms.lattice, atoms.frac_pos)
 
-      if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
-         energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
+      if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() != 'none':
+         energy_lines = filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), \
                                castep_output)
-      elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
+      elif param.has_key('task') and (param['task'].lower() == 'geometryoptimization' or
+                                      param['task'].lower() == 'geometryoptimisation'):
          energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
       else:
          energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
@@ -661,6 +713,9 @@ def CastepOutputReader(castep_file, cluster=None, abort=True, save_params=False)
 
       if save_params:
          atoms.params.update(param)
+
+      if run_time is not None:
+         atoms.params['castep_run_time'] = run_time
 
       yield atoms
 
