@@ -1287,7 +1287,8 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
            call set_value(this,key,i_a)
         end if
         status = .true.
-        deallocate(i_a,r_a,l_a,i_a2)
+        deallocate(i_a,r_a,l_a)
+        if (allocated(i_a2)) deallocate(i_a2)
         return
      end if
 
@@ -1329,7 +1330,8 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
            call set_value(this,key,r_a)
         end if
         status = .true.
-        deallocate(i_a,r_a,l_a,r_a2)
+        deallocate(i_a,r_a,l_a)
+        if (allocated(r_a2)) deallocate(r_a2)
         return
      end if
 
