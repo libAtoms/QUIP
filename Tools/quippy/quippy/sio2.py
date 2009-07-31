@@ -151,7 +151,27 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
 
       yield at
 
-def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
+quartz_params = {'experiment': {'a': 4.9160,
+                                'c': 5.4054,
+                                'u': 0.4697,
+                                'x': 0.4135,
+                                'y': 0.2669,
+                                'z': 0.1191},
+                 'CASTEP_LDA': {'a': 4.87009,
+                                'c': 5.36255,
+                                'u': 0.46699,
+                                'x': 0.41289,
+                                'y': 0.27198,
+                                'z': 0.11588},
+                 'CASTEP_GGA': {'a': 5.02836,
+                                'c': 5.51192,
+                                'u': 0.48128,
+                                'x': 0.41649, 
+                                'y': 0.24661,
+                                'z': 0.13594}
+                 }
+
+def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3.0):
    """Primitive 9-atom orthorhombic alpha quartz cell"""
 
    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
@@ -167,17 +187,46 @@ def alpha_quartz(a=4.9134,c=5.4052, x1=0.4699, x2=0.4141, y2=0.2681, z2=0.7854):
 
    at.set_atoms((14,14,14,8,8,8,8,8,8))
 
-   at.pos[:,1] =  x1*a1 + 2.0/3.0*a3
-   at.pos[:,2] =  x1*a2 + 1.0/3.0*a3
-   at.pos[:,3] = -x1*a1 - x1*a2
-   at.pos[:,4] =  x2*a1 + y2*a2 + z2*a3
-   at.pos[:,5] = -y2*a1 + (x2-y2)*a2  + (2.0/3.0 + z2)*a3
-   at.pos[:,6] = (y2-x2)*a1 - x2*a2   + (1.0/3.0 + z2)*a3
-   at.pos[:,7] = y2*a1 + x2*a2 - z2*a3
-   at.pos[:,8] = -x2*a1 + (y2-x2)*a2 + (2.0/3.0 - z2)*a3
-   at.pos[:,9] = (x2 - y2)*a1 - y2*a2 + (1.0/3.0 - z2)*a3
+   z += 2.0/3.0
+
+   at.pos[:,1] =  u*a1 + 2.0/3.0*a3
+   at.pos[:,2] =  u*a2 + 1.0/3.0*a3
+   at.pos[:,3] = -u*a1 - u*a2
+   at.pos[:,4] =  x*a1 + y*a2 + z*a3
+   at.pos[:,5] = -y*a1 + (x-y)*a2  + (2.0/3.0 + z)*a3
+   at.pos[:,6] = (y-x)*a1 - x*a2   + (1.0/3.0 + z)*a3
+   at.pos[:,7] = y*a1 + x*a2 - z*a3
+   at.pos[:,8] = -x*a1 + (y-x)*a2 + (2.0/3.0 - z)*a3
+   at.pos[:,9] = (x - y)*a1 - y*a2 + (1.0/3.0 - z)*a3
    
    return at
+
+def get_quartz_params(at):
+
+   assert at.n == 9
+   assert (at.z == 14).count() == 3
+   assert (at.z == 8).count() == 6
+
+   lat_params = get_lattice_params(at.lattice)
+   a, c = lat_params[0], lat_params[2]
+   print 'a      = ', a
+   print 'c      = ', c
+   print 'c/a    = ', c/a
+   print 'V      = ', at.cell_volume()
+   print 'V/SiO2 = ', at.cell_volume()/3.0
+   
+   frac_pos = numpy.dot(at.g, at.pos)
+   u = frac_pos[1,1]
+   x,y,z = frac_pos[:,4]
+   z -= 2.0/3.0
+
+   print 'u      = ', u
+   print 'x      = ', x
+   print 'y      = ', y
+   print 'z      = ', z
+
+   return {'a':a, 'c':c, 'u':u, 'x':x, 'y':y, 'z':z}
+   
 
 def alpha_quartz_cubic(*args, **kwargs):
    """Non-primitive 18-atom cubic quartz cell."""
@@ -198,6 +247,22 @@ def alpha_quartz_cubic(*args, **kwargs):
 
 def beta_quartz():
    pass
+
+def get_bond_lengths(at):
+   """Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths"""
+   at.calc_connect()
+   r_ij = farray(0.0)
+   res = {}
+   for i in frange(at.n):
+      for n in frange(at.n_neighbours(i)):
+         j = at.neighbour(i, n, distance=r_ij)
+         print i, j, at.z[i], at.z[j], r_ij
+         minij, maxij = min((i,j)), max((i,j))
+         key = (str(at.species[minij]), str(at.species[maxij]))
+         if not key in res: res[key] = []
+         res[key].append(r_ij.astype(float))
+   print res
+   return dict((k,farray(v)) for (k,v) in res.iteritems())
 
 def bracket(func, x1, x2, max_iter=50, factor=1.6, **kwargs):
    f1 = func(x1, **kwargs)
