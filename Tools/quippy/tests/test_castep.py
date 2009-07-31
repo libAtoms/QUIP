@@ -1159,8 +1159,8 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
    def testabort(self):
       self.assertRaises(ValueError, AtomsList, self.lines, format='castep')
 
-   def testfromcluster(self):
-      a = Atoms.read(self.lines, format='castep', cluster=self.al[0], abort=False)
+   def testatoms_ref(self):
+      a = Atoms.read(self.lines, format='castep', atoms_ref=self.al[0], abort=False)
       self.assertEqual(a.n, self.al[0].n)
       self.assertAlmostEqual(a.energy, self.al[0].energy)
       self.assertArrayAlmostEqual(a.force, self.al[0].force)
