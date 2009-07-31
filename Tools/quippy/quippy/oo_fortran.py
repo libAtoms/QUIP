@@ -490,6 +490,7 @@ def wrapmod(modobj, moddoc, short_names, params):
       FortranDerivedTypes['type(%s)' % cls.lower()] = new_cls
       classes.append((tcls, new_cls))
 
+      tcls = tcls[len(fortran_class_prefix):]
 
       new_cls._classdoc = moddoc['types'][cls]
       new_cls._moddoc = moddoc
@@ -671,9 +672,13 @@ def add_doc(func, fobj, doc, fullname, name):
       arg_lines = L[3:]
 
       L[0] = L[0].replace(fullname, name)
+      if '.' in name:
+          L[0] = L[0].replace(name[:name.index('.')].lower()+'_', '')
+          L[1] = L[1].replace(name[:name.index('.')].lower()+'_', '')      
       if '=' in L[1]:
           L[1] = L[1][:L[1].index('=')] + L[1][L[1].index('='):].replace(fullname, name)
       else:
+          L[1] = L[1].replace(fullname.lower()+'_', '')
           L[1] = L[1].replace(fullname, name)
 
       if arg_lines:
