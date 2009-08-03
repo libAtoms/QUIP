@@ -421,7 +421,7 @@ def CastepGeomReader(source, atoms_ref=None):
       if stress_lines:
          virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
                            for row in map(string.split, stress_lines) ])
-         params['virial'] = virial
+         params['virial'] = -virial
 
       # Find positions and forces
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -674,7 +674,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             virial = fzeros((3,3),float)
             for i, line in fenumerate(stress_lines):
                star1, label, vx, vy, vz, star2 = line.split()
-               virial[:,i] = [float(v) for v in (vx,vy,vz) ]
+               virial[:,i] = [-float(v) for v in (vx,vy,vz) ]
 
             # Convert to libAtoms units and add to atoms.params
             atoms.params['virial'] = virial/GPA
