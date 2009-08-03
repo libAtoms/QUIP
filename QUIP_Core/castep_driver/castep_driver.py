@@ -96,7 +96,10 @@ if 'CASTEP_SAVE_ALL_INPUT_FILES' in os.environ:
 TEST_MODE = False
 
 # If set to True, create a queue of calculations for later execution
-BATCH_MODE = True
+BATCH_QUEUE = False
+
+# If set to True, read from previously calculated queue
+BATCH_READ  = False
 
 # If any force is larger than this threshold, repeat the
 # calculation without checkfile (units: eV/A)
@@ -217,11 +220,6 @@ def castep_run(cell, param,  stem, castep, log=None):
       check_file = open(stem+'.check','w')
       check_file.close()
 
-   elif BATCH_MODE:
-
-      info('batch mode: not running castep')
-      return True
-   
    else:
       # Remove old output file and error files
       try: 
@@ -305,16 +303,20 @@ class ParamError(Exception):
 orig_dir = os.getcwd()
 
 if len(sys.argv) < 3:
-   die('Usage: [-t] [-b] %s <xyzfile> <outputfile>' % sys.argv[0])
+   die('Usage: [-t|-q|-r] %s <xyzfile> <outputfile>' % sys.argv[0])
 
 # If first command line option is '-t' set TEST_MODE to true
 if sys.argv[1] == '-t':
    TEST_MODE = True
    sys.argv.pop(0)
 
-# If first command line option  is '-b' set BATCH_MODE to true
-if sys.argv[1] == '-b':
-   BATCH_MODE = True
+# If first command line option  is '-q' set BATCH_QUEUE to true
+if sys.argv[1] == '-q':
+   BATCH_QUEUE = True
+   sys.argv.pop(0)
+
+if sys.argv[1] == '-r':
+   BATCH_READ = True
    sys.argv.pop(0)
 
 xyzfile = sys.argv[1]
@@ -387,7 +389,7 @@ if os.path.exists(outfile):
 
 if DO_HASH:
    path = WORKING_DIR+'/'+stem+'_'+str(hash_atoms(cluster))
-elif BATCH_MODE:
+elif BATCH_QUEUE or BATCH_READ:
    try:
       batch_id = int(open('castep_driver_batch_id').read())
    except IOError:
@@ -404,72 +406,73 @@ if not os.path.isdir(path):
 os.chdir(path)
 
 
-# Load up old cluster, if it's there
-if os.path.exists(stem+'.xyz.old'):
-   info('found old cluster in file %s' % stem+'.xyz.old')
+if not BATCH_READ:
+   # Load up old cluster, if it's there
+   if os.path.exists(stem+'.xyz.old'):
+      info('found old cluster in file %s' % stem+'.xyz.old')
+      try:
+         old_cluster = Atoms(stem+'.xyz.old')
+      except IOError:
+         die('error opening old cluster file %s' % stem+'.xyz.old')
+
+      if (all(cluster.lattice == old_cluster.lattice)):
+         info('lattice matches that of previous cluster')
+      else:
+         warn('lattice mismatch with prevous cluster')
+
+      if (cluster.n == old_cluster.n):
+         info('RMS position difference is %.3f A' % rms_diff(cluster, old_cluster))
+      else:
+         warn('number mismatch with previous cluster')
+
+   else:
+      old_cluster = cluster
+
+   # Write lattice and atomic positions into cell object
+   cell.update_from_atoms(cluster)
+
+   # Check pseudopotentials are present and
+   # copy pseudopotential files into working directory
    try:
-      old_cluster = Atoms(stem+'.xyz.old')
-   except IOError:
-      die('error opening old cluster file %s' % stem+'.xyz.old')
+      castep_check_pspots(cluster, cell, params[0][1])
+   except IOError, (errno, msg):
+      die('IO Error reading pseudopotentials (%d,%s)' % (errno,msg))
+   except ValueError, message:
+      die(str(message))
 
-   if (all(cluster.lattice == old_cluster.lattice)):
-      info('lattice matches that of previous cluster')
-   else:
-      warn('lattice mismatch with prevous cluster')
+   # If we only got one parameter set use old mechanism to fork it into
+   # multiple parameter sets - first DM, then EDFT, them DM without reuse,
+   # then EDFT without reuse
+   if len(params) == 1 and params[0][0] == 'default':
+      info('Only default paramater set found: forking it to produce')
+      info(' "standard", "without DM", "without reuse" and "without DM or reuse".')
+      standard_params = params[0][1].copy()
 
-   if (cluster.n == old_cluster.n):
-      info('RMS position difference is %.3f A' % rms_diff(cluster, old_cluster))
-   else:
-      warn('number mismatch with previous cluster')
-   
-else:
-   old_cluster = cluster
+      # Fall back to EDFT if DM fails to converge
+      if standard_params.has_key('metals_method') and \
+             standard_params['metals_method'].lower() == 'dm(edft)':
+         params[0][1]['metals_method'] = 'dm'
+         if 'max_scf_cycles_dm' in standard_params:
+            params[0][1]['max_scf_cycles'] = standard_params['max_scf_cycles_dm']
+         params[1] = ('without DM', standard_params.copy())
+         params[1][1]['metals_method'] = 'edft'
+         if 'max_scf_cycles_edft' in standard_params:
+            params[1][1]['max_scf_cycles'] = standard_params['max_scf_cycles_edft']
 
-# Write lattice and atomic positions into cell object
-cell.update_from_atoms(cluster)
+      # Don't reuse checkpoint file
+      params[2] = ('without reuse', standard_params.copy())
+      params[2][1]['reuse'] = 'NULL'
 
-# Check pseudopotentials are present and
-# copy pseudopotential files into working directory
-try:
-   castep_check_pspots(cluster, cell, params[0][1])
-except IOError, (errno, msg):
-   die('IO Error reading pseudopotentials (%d,%s)' % (errno,msg))
-except ValueError, message:
-   die(str(message))
+      # With neither DM nor checkfile reuse
+      if (standard_params.has_key('metals_method') and
+          standard_params['metals_method'].lower() == 'dm(edft)'):
+         params[3] = ('without DM or reuse', standard_params.copy())
+         params[3][1]['reuse'] = 'NULL'
+         params[3][1]['metals_method'] = 'edft'
+         if 'max_scf_cycles_edft' in standard_params:
+            params[3][1]['max_scf_cycles'] = standard_params['max_scf_cycles_edft']
 
-# If we only got one parameter set use old mechanism to fork it into
-# multiple parameter sets - first DM, then EDFT, them DM without reuse,
-# then EDFT without reuse
-if len(params) == 1 and params[0][0] == 'default':
-   info('Only default paramater set found: forking it to produce')
-   info(' "standard", "without DM", "without reuse" and "without DM or reuse".')
-   standard_params = params[0][1].copy()
 
-   # Fall back to EDFT if DM fails to converge
-   if standard_params.has_key('metals_method') and \
-          standard_params['metals_method'].lower() == 'dm(edft)':
-      params[0][1]['metals_method'] = 'dm'
-      if 'max_scf_cycles_dm' in standard_params:
-         params[0][1]['max_scf_cycles'] = standard_params['max_scf_cycles_dm']
-      params[1] = ('without DM', standard_params.copy())
-      params[1][1]['metals_method'] = 'edft'
-      if 'max_scf_cycles_edft' in standard_params:
-         params[1][1]['max_scf_cycles'] = standard_params['max_scf_cycles_edft']
-
-   # Don't reuse checkpoint file
-   params[2] = ('without reuse', standard_params.copy())
-   params[2][1]['reuse'] = 'NULL'
-
-   # With neither DM nor checkfile reuse
-   if (standard_params.has_key('metals_method') and
-       standard_params['metals_method'].lower() == 'dm(edft)'):
-      params[3] = ('without DM or reuse', standard_params.copy())
-      params[3][1]['reuse'] = 'NULL'
-      params[3][1]['metals_method'] = 'edft'
-      if 'max_scf_cycles_edft' in standard_params:
-         params[3][1]['max_scf_cycles'] = standard_params['max_scf_cycles_edft']
-
-   
 # Main CASTEP invocation loop.
 # Loop goes round as many times as there are parameter sets
 sorted_param_keys = params.keys()[:]
@@ -525,11 +528,16 @@ try:
       if 'max_scf_cycles_edft' in param: del param['max_scf_cycles_edft']
 
       # Run castep
-      if not castep_run(cell, param, stem, CASTEP, log=stem+'.castep_log'):
-         error('castep run failed')
-         continue
+      if not BATCH_READ and not BATCH_QUEUE:
+         if not castep_run(cell, param, stem, CASTEP, log=stem+'.castep_log'):
+            error('castep run failed')
+            continue
 
-      if BATCH_MODE:
+      if BATCH_QUEUE:
+         param.write(stem+'.param')
+         cell.write(stem+'.cell')
+         
+         info('batch queue mode: not running castep')
          cluster.params['energy'] = 0.0
          cluster.params['virial'] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
          cluster.add_property('force', 0.0, ncols=3)
