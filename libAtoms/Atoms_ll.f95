@@ -87,7 +87,7 @@ contains
 
   subroutine atoms_ll_new_entry(this, atoms_p, before, after)
     type(atoms_ll), target, intent(inout) :: this
-    type(atoms), intent(out), pointer :: atoms_p
+    type(atoms), intent(inout), pointer :: atoms_p
     type(atoms_ll_entry), intent(in), target, optional :: before, after
 
     type(atoms_ll_entry), pointer :: my_before, my_after
@@ -295,7 +295,7 @@ contains
 	endif ! status == 0 for reading this structure
 
       end do ! while status == 0 for frames in this file
-      if (cfile%got_index) then
+      if (transfer(cfile%got_index,skip_frame)) then
 	last_file_frame_n = last_file_frame_n + cfile%n_frame
       else
 	last_file_frame_n = last_file_frame_n + cfile%current_frame
