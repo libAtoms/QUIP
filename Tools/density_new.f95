@@ -36,6 +36,9 @@ implicit none
   real(dp), allocatable :: histo_raw(:,:,:,:), histo_mean(:,:,:), histo_var(:,:,:)
   integer :: i_lag, i1, i2, i3
   real(dp), allocatable :: autocorr(:,:,:,:)
+ real(dp) :: density
+ logical, allocatable :: mask_a(:)
+ integer :: num_atoms
 
   call system_initialise(NORMAL)
 
@@ -94,6 +97,14 @@ implicit none
     call print("Calculating densities")
     call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, radial_histo, mask_str)
 
+allocate(mask_a(structure_ll%first%at%N))
+call is_in_mask(mask_a, structure_ll%first%at, mask_str)
+num_atoms = count(mask_a(1:size(mask_a)))
+density = real(num_atoms,dp)/cell_volume(structure_ll%first%at)
+call print('density = '//density)
+deallocate(mask_a)
+histo_raw(:,:,:,:) = histo_raw(:,:,:,:) / density
+
     call initialise(outfile, outfilename, OUTPUT)
 
     if (autocorrelation) then
@@ -135,7 +146,9 @@ implicit none
 		      " " // histo_mean(i1, i2, i3) // &
 		      " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
 	end do
+        call print('', file=outfile)
 	end do
+        call print('', file=outfile)
 	end do
       endif
     end if
@@ -395,7 +408,8 @@ contains
     end do
     do p_i=1, n_p
       phi(p_i) = (p_i-1-floor((n_p-1)/2.0_dp))*PI/real(n_p+1,dp)
-      w(p_i) = cos(phi(p_i))/(real(n_t*n_p,dp)*(gaussian_sigma*sqrt(PI))**3)
+!      w(p_i) = cos(phi(p_i))/(real(n_t*n_p,dp)*(gaussian_sigma*sqrt(PI))**3)
+      w(p_i) = 1._dp/(real(n_t*n_p,dp)*(gaussian_sigma*sqrt(2.0_dp*PI))**3)
     end do
 
     do at_i=1, at%N
@@ -403,15 +417,18 @@ contains
       r = norm(at%pos(:,at_i))
       do bin_i=1, n_bins
 	bin_r = (real(bin_i,dp)-0.5_dp)*bin_width
-	if (abs(r-bin_r) > 4.0_dp*gaussian_sigma) cycle
+!Include all the atoms, density fn won't curve down at the end of the plot
+!	if (abs(r-bin_r) > 4.0_dp*gaussian_sigma) cycle
 	do t_i=1, n_t
 	do p_i=1, n_p
 	  p(1) = bin_r*cos(theta(t_i))*cos(phi(p_i))
 	  p(2) = bin_r*sin(theta(t_i))*cos(phi(p_i))
 	  p(3) = bin_r*sin(phi(p_i))
 	  dist = norm(p-at%pos(:,at_i))
-	  if (dist > 4.0_dp*gaussian_sigma) cycle
-	  histo_count(bin_i) = histo_count(bin_i) + exp(-(dist/gaussian_sigma)**2)*w(p_i)
+!Include all the atoms, slow but minimises error
+!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+!	  histo_count(bin_i) = histo_count(bin_i) + exp(-(dist/gaussian_sigma)**2)*w(p_i)
+          histo_count(bin_i) = histo_count(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(p_i)
 	end do
 	end do
       end do
@@ -460,25 +477,25 @@ if (mod(i,10) == 0) call print("accumulate_histo_count i " // i,ERROR)
 	  r1_sq = r1*r1
 	  p(1) = p_center(1) + r1
 	  bin_1 = floor(p(1)-min_p(1)/bin_width(1))+1
-	  if (bin_1 <= 0 .and. bin_1 > n_bins(1)) cycle
+	  if (bin_1 <= 0 .or. bin_1 > n_bins(1)) cycle
 	  do i2=-n_samples, n_samples
 	    r2 = real(i2,dp)/real(n_samples,dp)*range
 	    r2_sq = r2*r2
 	    p(2) = p_center(2) + r2
 	    bin_2 = floor(p(2)-min_p(2)/bin_width(2))+1
-	    if (bin_2 <= 0 .and. bin_2 > n_bins(2)) cycle
+	    if (bin_2 <= 0 .or. bin_2 > n_bins(2)) cycle
 	    do i3=-n_samples, n_samples
 	      r3 = real(i3,dp)/real(n_samples,dp)*range
 	      r3_sq = r3*r3
 	      p(3) = p_center(3) + r3
 	      bin_3 = floor(p(3)-min_p(3)/bin_width(3))+1
-	      if (bin_3 <= 0 .and. bin_3 > n_bins(3)) cycle
+	      if (bin_3 <= 0 .or. bin_3 > n_bins(3)) cycle
 	      ! p_lat = at%g .mult. p
 	      ! bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
 	      !! bin = floor((p-min_p)/bin_width)+1
 	      weight = normalization*exp(-(r1_sq+r2_sq+r3_sq)/sigma_sq)
 	      !! if (all(bin >= 1) .and. all (bin <= n_bins)) 
-	      histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + weight
+	      histo_count(bin_1,bin_2,bin_3) = histo_count(bin_1,bin_2,bin_3) + weight
 	    end do
 	  end do
 	end do
