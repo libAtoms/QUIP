@@ -66,6 +66,11 @@ implicit none
     deallocate(orig_mass)
   endif
 
+  at%lattice = 0.0_dp
+  at%lattice(1,1) = (maxval(at%pos(1,:)) - minval(at%pos(1,:)))*2.0_dp+5.0_dp
+  at%lattice(2,2) = (maxval(at%pos(2,:)) - minval(at%pos(2,:)))*2.0_dp+5.0_dp
+  at%lattice(3,3) = (maxval(at%pos(3,:)) - minval(at%pos(3,:)))*2.0_dp+5.0_dp
+
   call print("props" // trim(props))
   mainlog%prefix="ALIGNED"
   call print_xyz(at, mainlog, properties=trim(props))
