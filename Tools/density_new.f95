@@ -424,7 +424,7 @@ contains
 	  p(1) = bin_r*cos(theta(t_i))*cos(phi(p_i))
 	  p(2) = bin_r*sin(theta(t_i))*cos(phi(p_i))
 	  p(3) = bin_r*sin(phi(p_i))
-	  dist = norm(p-at%pos(:,at_i))
+	  dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
 !	  histo_count(bin_i) = histo_count(bin_i) + exp(-(dist/gaussian_sigma)**2)*w(p_i)
