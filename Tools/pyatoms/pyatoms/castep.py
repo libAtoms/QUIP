@@ -1,6 +1,7 @@
 import sys, string, numpy, os
 import atoms
 from ordereddict import OrderedDict
+from units import *
 
 import xml.dom.minidom
 
@@ -314,6 +315,8 @@ class CastepParam(OrderedDict):
    def read_from_castep_output(self, castep_output):
       "Read user parameters from .castep output. Input should be filename, file-like object or list of lines"
 
+      value_map = {'T': 'true', 'F': 'false'}
+
       if type(castep_output) == type(''):
          f = open(castep_output, 'r')
          castep_output = f.readlines()
@@ -338,6 +341,7 @@ class CastepParam(OrderedDict):
       while castep_output[i].strip():
          line = castep_output[i]
          key, value = map(string.strip, line[:line.index('#')].split(':',1))
+         value = value_map.get(value, value)
          if not key in param_lookup:
             raise ValueError('Unknown parameter %s in castep output file' % key)
          param_lines.append('%s = %s' % (param_lookup[key], value))
@@ -579,16 +583,19 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    # Have we calculated stress?
    if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
       try:
-         stress_start = castep_output.index(' ***************** Stress Tensor *****************\n')
+         stress_start_lines = [i for i,s in enumerate(castep_output) if s == ' ***************** Stress Tensor *****************\n']
 
+         if stress_start_lines == []: raise ValueError
+
+         stress_start = stress_start_lines[-1]
          stress_lines = castep_output[stress_start+6:stress_start+9]
-         virial = zeros((3,3),float)
+         virial = numpy.zeros((3,3),float)
          for i in range(3):
             star1, label, vx, vy, vz, star2 = stress_lines[i].split()
-            virial[i,:] = numpy.array((vx,vy,vz))
+            virial[i,:] = [-float(v) for v in (vx,vy,vz)]
 
          # Convert to libAtoms units and append to comment line
-         cluster.params['virial'] = ' '.join(map(str, reshape(virial/GPA,9)))
+         cluster.params['virial'] = ' '.join(map(str, numpy.reshape(virial/GPA,9,order='F')))
 
       except ValueError:
          if abort:
