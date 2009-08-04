@@ -24,7 +24,7 @@ AR_ADD = src
 
 QUIPPY_INSTALL_OPTS=--home=${HOME}
 QUIPPY_FCOMPILER = pg
-QUIPPY_OPT = -O0 -g -Mpgicoff
+QUIPPY_OPT = -O3
 QUIPPY_F90FLAGS = -Mpreprocess -Mfree
 QUIPPY_F77FLAGS = -noswitcherror
 QUIPPY_CPP = pgf90 -E
