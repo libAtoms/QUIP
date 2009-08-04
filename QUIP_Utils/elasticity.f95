@@ -18,7 +18,7 @@ module elasticity_module
 
 contains
 
-  subroutine metapot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed)
+  subroutine metapot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed, relax_tol)
     type(MetaPotential), intent(inout) :: this
     type(Atoms), intent(inout) :: at !% Atoms object for which to compute $C_{ij}$
     real(dp), intent(in), optional :: fd !% Finite strain to apply. Default $10^{-3}$.
@@ -27,12 +27,13 @@ contains
     real(dp), intent(out), optional :: c0(6,6) !% Elastic constants (without relaxation)
     logical, optional :: relax_initial !% Should the initial cell be relaxed?
     logical, optional :: return_relaxed !% If true, overwrite 'at' with relaxed positions and lattice (default false)
+    real(dp), optional :: relax_tol !% Relaxation df^2 tolerance. Default 1e-8
 
     logical my_relax_initial, my_return_relaxed
     integer ii, jj
     type(atoms) :: at_bulk
     type(atoms) :: at_t
-    real(dp) :: my_fd
+    real(dp) :: my_fd, my_relax_tol
     real(dp) :: volume
     real(dp) :: Fp(3,3), Fm(3,3)
     real(dp) :: V0p(3,3), V0m(3,3), Vp(3,3), Vm(3,3)
@@ -41,6 +42,7 @@ contains
     real(dp) :: e0, V0(3,3)
 
     my_fd = optional_default(1.0e-3_dp, fd)
+    my_relax_tol = optional_default(1e-8_dp, relax_tol)
     my_relax_initial = optional_default(.true., relax_initial)
     my_return_relaxed = optional_default(.false., return_relaxed)
 
@@ -60,7 +62,7 @@ contains
 
     if (my_relax_initial) then
        call verbosity_push_decrement(VERBOSE)
-       iter = minim(this, at_bulk, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+       iter = minim(this, at_bulk, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
             do_pos=.true., do_lat=.true., args_str=args_str, use_n_minim=.true.)
        call verbosity_pop()
 
@@ -106,7 +108,7 @@ contains
 
           if (present(c)) then
              call verbosity_push_decrement(VERBOSE)
-             iter = minim(this, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+             iter = minim(this, at_t, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
@@ -136,7 +138,7 @@ contains
 
           if (present(c)) then
              call verbosity_push_decrement(VERBOSE)
-             iter = minim(this, at_t, 'cg', 1e-8_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+             iter = minim(this, at_t, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
