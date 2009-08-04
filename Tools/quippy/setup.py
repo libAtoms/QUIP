@@ -257,19 +257,29 @@ if argfilt:
 else:
     do_quippy_extension = False
 
+quip_core_sources = []
+quip_core_dir = None
 argfilt = filter(lambda s: s.startswith('--quip-core-dir'), sys.argv)
 if argfilt:
     quip_core_dir = argfilt[0].split('=')[1]
     del sys.argv[sys.argv.index(argfilt[0])]
-else:
-    do_quippy_extension = False
+# else:
+#     do_quippy_extension = False
 
 argfilt = filter(lambda s: s.startswith('--quip-core-sources'), sys.argv)
 if argfilt:
     quip_core_sources = argfilt[0].split('=')[1].split(':')
     del sys.argv[sys.argv.index(argfilt[0])]
-else:
-    do_quippy_extension = False
+# else:
+#     do_quippy_extension = False
+
+if (quip_core_sources and (quip_core_dir is None)): 
+  print 'Found --quip_core_sources but no --quip-core-dir'
+  sys.exit(1)
+
+if (not (quip_core_dir is None) and not quip_core_sources):
+  print 'Found --quip_core_dir but no --quip-core-sources'
+  sys.exit(1)
 
 cpp = 'cpp'
 argfilt = filter(lambda s: s.startswith('--cpp'), sys.argv)
@@ -330,16 +340,20 @@ if do_quippy_extension:
             'macros': macros
             })
 
-    quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
+    int_libs = ['atoms']
+    build_libraries = [libatoms_lib]
 
-    quip_core_lib = ('quip_core', {
-        'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
-        'include_dirs': [quip_core_dir] + include_dirs,
-        'macros': macros
-        })
+    if quip_core_sources:
+      quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
 
-    int_libs = ['quip_core', 'atoms']
-    build_libraries = [libatoms_lib, quip_core_lib]
+      quip_core_lib = ('quip_core', {
+          'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
+          'include_dirs': [quip_core_dir] + include_dirs,
+          'macros': macros
+          })
+
+      int_libs = ['quip_core'] + int_libs
+      build_libraries = build_libraries + [quip_core_lib]
 
     if tools_sources:
         tools_lib = ('tools', {
