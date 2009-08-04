@@ -295,7 +295,7 @@ contains
 	endif ! status == 0 for reading this structure
 
       end do ! while status == 0 for frames in this file
-      if (transfer(cfile%got_index,skip_frame)) then
+      if (cfile%got_index == 1) then
 	last_file_frame_n = last_file_frame_n + cfile%n_frame
       else
 	last_file_frame_n = last_file_frame_n + cfile%current_frame
