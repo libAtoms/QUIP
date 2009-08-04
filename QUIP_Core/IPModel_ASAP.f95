@@ -682,7 +682,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    ! Convert to {eV, A, fs} units
    if (present(e)) e = asap_e*HARTREE
    if (present(f)) f = asap_f*(HARTREE/BOHR)
-   if (present(virial)) virial = asap_stress*(HARTREE/(BOHR**3))
+   if (present(virial)) virial = asap_stress*(HARTREE/(BOHR**3))*cell_volume(at)
    if (present(local_e)) local_e = 0.0_dp
 
    if (calc_dipoles .and. tpol) then
