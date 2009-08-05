@@ -1670,6 +1670,16 @@ elemental subroutine dictentry_copy(this, from)
     allocate(this%s_a(size(from%s_a)))
     this%s_a = from%s_a
   endif
+  if (allocated(this%i_a2)) deallocate(this%i_a2)
+  if (allocated(from%i_a2)) then
+    allocate(this%i_a2(size(from%i_a2,1),size(from%i_a2,2)))
+    this%i_a2 = from%i_a2
+  endif
+  if (allocated(this%r_a2)) deallocate(this%r_a2)
+  if (allocated(from%r_a2)) then
+    allocate(this%r_a2(size(from%r_a2,1),size(from%r_a2,2)))
+    this%r_a2 = from%r_a2
+  endif
 
   if (allocated(this%d%d)) deallocate(this%d%d)
   if (allocated(from%d%d)) then
