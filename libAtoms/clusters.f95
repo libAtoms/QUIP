@@ -7,6 +7,7 @@ module clusters_module
   use dynamicalsystem_module
   use table_module
   use periodictable_module
+  use cinoutput_module
 
 implicit none
 private
@@ -1350,8 +1351,11 @@ contains
        deallocate(uniqed, tmp_index)
        
        ! check that cluster is still growing
-       if (cluster_list%N == old_n) &
-            call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
+       if (cluster_list%N == old_n) then
+          call write(at, 'create_cluster_abort.xyz')
+          call print(cluster_list)
+          call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
+       end if
        old_n = cluster_list%N
     end do
     deallocate(tmp_index, uniqed)
