@@ -416,12 +416,12 @@ def CastepGeomReader(source, atoms_ref=None):
          else:
             lattice = atoms_ref.lattice[:]
 
-      # Then optionally virial tensor
+      # Then optionally virial tensor - convert stress tensor to libAtoms units, then
+      # divide by cell volume
       stress_lines  = filter(lambda s: s.endswith('<-- S'), lines)
       if stress_lines:
          virial = farray([ [float(x)*(HARTREE/(BOHR**3)) for x in row[0:3]]
                            for row in map(string.split, stress_lines) ])
-         params['virial'] = -virial
 
       # Find positions and forces
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)
@@ -480,6 +480,9 @@ def CastepGeomReader(source, atoms_ref=None):
             el, num, fx, fy, fz, arrow, label = line.split()
             num = int(num)
             at.force[:,lookup[(el,num)]] = [ float(f)*HARTREE/BOHR for f in (fx, fy, fz) ]
+
+      if stress_lines:
+         at.params['virial'] = -virial*at.cell_volume()
 
       yield at
 
@@ -666,18 +669,24 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             raise ValueError('No forces found in castep file %s: ' % m)
 
       # Have we calculated stress?
+      got_virial = False
       if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
          try:
-            stress_start = castep_output.index(' ***************** Stress Tensor *****************\n')
+            for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
+               stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
+               if stress_start_lines != []: break
 
+            if stress_start_lines == []:
+               raise ValueError
+
+            stress_start = stress_start_lines[-1]
             stress_lines = castep_output[stress_start+6:stress_start+9]
             virial = fzeros((3,3),float)
             for i, line in fenumerate(stress_lines):
                star1, label, vx, vy, vz, star2 = line.split()
                virial[:,i] = [-float(v) for v in (vx,vy,vz) ]
 
-            # Convert to libAtoms units and add to atoms.params
-            atoms.params['virial'] = virial/GPA
+            got_virial = True
 
          except ValueError:
             if abort:
@@ -716,6 +725,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
 
       if run_time is not None:
          atoms.params['castep_run_time'] = run_time
+
+      # Convert virial to libAtoms units and add to atoms.params
+      if got_virial:
+         atoms.params['virial'] = virial*atoms.cell_volume()/GPA
 
       yield atoms
 
