@@ -3,7 +3,7 @@ from quippy import *
 if len(sys.argv[1:]) != 3:
    print """Usage: cracktip RADIUS INFILE OUTFILE
 
-RADIUS  - radius around cracktip (defined by <CrackPos,0,0)
+RADIUS  - radius around cracktip (defined by <CrackPos,0,0>)
 INFILE  - input file, in XYZ or NetCDF format
 OUTFILE - output file, in XYZ or NetCDF format
 """
