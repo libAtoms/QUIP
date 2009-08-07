@@ -866,6 +866,10 @@ class Atoms:
       return other
 
 
+   def cell_volume(self):
+      return abs(numpy.dot(numpy.cross(self.lattice[0,:], self.lattice[1,:]),self.lattice[2,:]))
+
+
 def diamond(species, a):
    "Bulk cube of element with lattice constant a"
    at = Atoms(n=8)
