@@ -16,7 +16,8 @@ logging.root.setLevel(logging.WARNING)
 AtomsReaders = {}
 AtomsWriters = {}
 
-try:
+#try:
+if 1:
    import _quippy
 
    from oo_fortran import FortranDerivedType, FortranDerivedTypes, fortran_class_prefix, wrap_all
@@ -61,10 +62,10 @@ try:
    del extras
    del fortran_class_prefix
 
-except ImportError:
-   logging.warning('_quippy extension module not available - falling back on pure python version')
-
-   from pupyatoms import *
+#except ImportError:
+#   logging.warning('_quippy extension module not available - falling back on pure python version')#
+#
+#   from pupyatoms import *
 
 import farray;      from farray import *
 import atomslist;   from atomslist import *
