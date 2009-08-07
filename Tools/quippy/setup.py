@@ -22,7 +22,7 @@ if (major, minor) < (2, 4):
     sys.exit(1)
 
 from numpy.f2py.rules import f2py_version
-if not f2py_version.endswith('patched_JRK'):
+if not f2py_version.endswith('patched_JRK_2009_08_07'):
     sys.stderr.write('\nnumpy.f2py.rules must be patched to use this package; see README for details\n')
     sys.exit(1)
 
