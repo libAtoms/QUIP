@@ -1,5 +1,10 @@
+"""
+
+"""
+
 from quippy import *
 
+# Set up atomic configuation
 s = supercell(diamond(5.44, 14), 2, 2, 2)
 s.set_cutoff(5.0)
 s.calc_connect()
@@ -33,15 +38,17 @@ xml="""
 </SW_params>
 """
 
+# Initialise potential from XML string
 pot = Potential('IP SW', xml)
 
+# Set up dynamical system at 300K
 ds = DynamicalSystem(s)
 ds.rescale_velo(300.0)
 ds.zero_momentum()
 
-al = AtomsList(ds.run(pot, dt=1.0, n_steps=10, save_interval=1))
-
-al.show()
-raw_input()
+traj = AtomsList(ds.run(pot, dt=1.0, n_steps=10, save_interval=1))
+traj.loadall() # Run the dynamics
+traj.show() # Display in AtomEye
+raw_input('Press ENTER to terminate')
 
 

@@ -1,3 +1,12 @@
+"""Plot energy, force and stress convergence from a series of CASTEP calculations.
+
+   (c) James Kermode 2009
+
+   This script produces plots of convergence with respecet to cut_off_energy parameter.
+   CASTEP output from a series of calculations at increasing cutoffs should be concatenated
+   together in one file.
+   """
+
 from quippy import *
 from pylab import *
 import sys, os

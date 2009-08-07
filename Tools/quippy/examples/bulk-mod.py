@@ -1,4 +1,5 @@
 """Fit Birch equation of state to a set of energies at different cell volumes.
+   (c) James Kermode 2009
 
    scipy is required for the least-squares non-linear optimisation routine.
 
