@@ -9,24 +9,11 @@ OUTFILE - output file, in XYZ or NetCDF format
 """
    sys.exit(1)
 
-radius = float(sys.argv[1])
-infile = CInOutput(sys.argv[2], INPUT)
-outfile = CInOutput(sys.argv[3], OUTPUT)
+def filter_cracktip(frames, radius):
+   for at in frames:
+      crackpos = farray([[at.params['CrackPos'],0.0,0.0]])
+      yield at.select(mask=((at.pos - crackpos).norm() < radius))
 
-infile.query()
-
-for fr in range(infile.n_frame):
-   at = infile.read(frame=fr, zero=True)
-
-   crackpos = farray([[at.params['CrackPos'],0.0,0.0]]).T
-   subat = at.select(mask=((at.pos - crackpos).norm() < radius))
-
-   outfile.write(subat)
-
-   sys.stdout.write('%s: frame %d/%d -- selected %d/%d atoms.               \r' % (sys.argv[2], fr, infile.n_frame, subat.n, at.n))
-   sys.stdout.flush()
-
-print
-
-infile.close()
-outfile.close()
+frames    = AtomsList(sys.argv[2])
+tipframes = AtomsList(filter_cracktip(frames, float(sys.argv[1])))
+tipframes.write(sys.argv[3], progress=True)
