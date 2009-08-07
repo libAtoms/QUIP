@@ -555,14 +555,14 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    try:
 
       for fn in ('Forces', 'Symmetrised Forces'):
-         force_start_lines = [s for s in castep_output if s.find('****** %s ******' % fn) != -1]
+         force_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % fn) != -1]
          if force_start_lines != []: break
 
       if force_start_lines == []:
          raise ValueError
 
       # Use last set of forces in file
-      force_start = castep_output.index(force_start_lines[-1])
+      force_start = force_start_lines[-1]
 
       # Extract force lines from .castep file
       force_lines = castep_output[force_start+6:force_start+6+cluster.n]
@@ -583,9 +583,12 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    # Have we calculated stress?
    if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
       try:
-         stress_start_lines = [i for i,s in enumerate(castep_output) if s == ' ***************** Stress Tensor *****************\n']
+         for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
+            stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
+            if stress_start_lines != []: break
 
-         if stress_start_lines == []: raise ValueError
+         if stress_start_lines == []:
+            raise ValueError
 
          stress_start = stress_start_lines[-1]
          stress_lines = castep_output[stress_start+6:stress_start+9]
@@ -594,8 +597,10 @@ def read_castep_output(castep_file, cluster=None, abort=True):
             star1, label, vx, vy, vz, star2 = stress_lines[i].split()
             virial[i,:] = [-float(v) for v in (vx,vy,vz)]
 
+         virial *= cluster.cell_volume()/GPA
+
          # Convert to libAtoms units and append to comment line
-         cluster.params['virial'] = ' '.join(map(str, numpy.reshape(virial/GPA,9,order='F')))
+         cluster.params['virial'] = ' '.join(map(str, numpy.reshape(virial,9,order='F')))
 
       except ValueError:
          if abort:
