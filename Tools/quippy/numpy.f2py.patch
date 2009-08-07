@@ -1,6 +1,38 @@
-diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./capi_maps.py /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py
---- ./capi_maps.py	2008-10-28 11:21:47.000000000 +0000
-+++ /usr/local/lib/python2.6/site-packages/numpy/f2py/capi_maps.py	2009-04-08 11:40:40.000000000 +0100
+diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/auxfuncs.py ./auxfuncs.py
+--- /home/jk2/Code/numpy-1.2.1/numpy/f2py/auxfuncs.py	2008-10-28 11:21:47.000000000 +0000
++++ ./auxfuncs.py	2009-08-07 16:59:31.000000000 +0100
+@@ -41,6 +41,9 @@
+ def debugcapi(var):
+     return 'capi' in debugoptions
+ 
++def pgi_pointer_hack(var):
++    return 'pgi_pointer_hack' in options
++
+ def _isstring(var):
+     return 'typespec' in var and var['typespec']=='character' and (not isexternal(var))
+ 
+@@ -357,6 +360,9 @@
+ def isprivate(var):
+     return 'attrspec' in var and 'private' in var['attrspec']
+ 
++def isderivedtypepointer(var):
++    return 'typename' in var and 'attrspec' in var and 'pointer' in var['attrspec']
++
+ def hasinitvalue(var):
+     return '=' in var
+ 
+@@ -514,6 +520,8 @@
+                 ctype = ctype+'*'
+             if isstring(var) or isarrayofstrings(var):
+                 arg_types2.append('size_t')
++            if pgi_pointer_hack(var) and isderivedtypepointer(var):
++                arg_types2.append('int')
+         arg_types.append(ctype)
+ 
+     proto_args = ','.join(arg_types+arg_types2)
+diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/capi_maps.py ./capi_maps.py
+--- /home/jk2/Code/numpy-1.2.1/numpy/f2py/capi_maps.py	2008-10-28 11:21:47.000000000 +0000
++++ ./capi_maps.py	2009-07-17 18:02:08.000000000 +0100
 @@ -200,7 +200,7 @@
               'unsigned':'%u',
               'long':'%ld',
@@ -10,14 +42,25 @@ diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./capi_maps.py /us
               'complex_float':'(%g,%g)',
               'complex_double':'(%g,%g)',
               'complex_long_double':'(%Lg,%Lg)',
-diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py
---- ./rules.py	2008-10-28 11:21:47.000000000 +0000
-+++ /usr/local/lib/python2.6/site-packages/numpy/f2py/rules.py	2009-06-19 14:39:03.000000000 +0100
+diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/f2py2e.py ./f2py2e.py
+--- /home/jk2/Code/numpy-1.2.1/numpy/f2py/f2py2e.py	2008-10-28 11:21:47.000000000 +0000
++++ ./f2py2e.py	2009-08-07 16:58:49.000000000 +0100
+@@ -209,6 +209,7 @@
+         elif l=='--no-wrap-functions': wrapfuncs=0
+         elif l=='--short-latex': options['shortlatex']=1
+         elif l=='--overwrite-signature': options['h-overwrite']=1
++        elif l=='--pgi-pointer-hack': options['pgi_pointer_hack']=1
+         elif l=='-h': f2=1
+         elif l=='-m': f3=1
+         elif l[:2]=='-v':
+diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py ./rules.py
+--- /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py	2008-10-28 11:21:47.000000000 +0000
++++ ./rules.py	2009-08-07 17:02:29.000000000 +0100
 @@ -75,6 +75,8 @@
  import func2subr
  options={}
  
-+f2py_version += '_patched_JRK'
++f2py_version += '_patched_JRK_2009_08_07'
 +
  sepdict={}
  #for k in ['need_cfuncs']: sepdict[k]=','
@@ -76,17 +119,25 @@ diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/lo
  if (PyErr_Occurred())
    f2py_success = 0;
  #ifdef F2PY_REPORT_ATEXIT
-@@ -751,7 +784,8 @@
+@@ -749,9 +782,15 @@
+     },
+ # Scalars (not complex)
      { # Common
-     'decl':'\t#ctype# #varname# = 0;',
+-    'decl':'\t#ctype# #varname# = 0;',
++    'decl':{l_or(l_not(isoptional), l_not(isderivedtypepointer)): '\t#ctype# #varname# = 0;',
++            l_and(isoptional, isderivedtypepointer): '\t#ctype# #varname# = 0;\n\tvoid *#varname#_nullptr = NULL;'},
      'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",#varname#);'},
 -    'callfortran':{isintent_c:'#varname#,',l_not(isintent_c):'&#varname#,'},
-+    'callfortran':{isintent_c:'#varname#,',l_and(isoptional,l_not(isintent_c)):'#varname#_capi == Py_None ? NULL : &#varname#,',
++    'callfortran':{isintent_c:'#varname#,',
++                   l_and(isoptional,l_not(isintent_c),l_not(isderivedtypepointer)):'#varname#_capi == Py_None ? NULL : &#varname#,',
++                   l_and(isoptional,l_not(isintent_c),isderivedtypepointer):'#varname#_capi == Py_None ? (#ctype#*)&#varname#_nullptr : &#varname#,',
 +                   l_and(l_not(isoptional),l_not(isintent_c)):'&#varname#,'},
++     # JRK: Hack for pgf90 compiler, which appends an integer argument when arg is pointer to derived type
++    'callfortranappend': {l_and(pgi_pointer_hack, isderivedtypepointer): '0,'},
      'return':{isintent_out:',#varname#'},
      '_check':l_and(isscalar,l_not(iscomplex))
      },{
-@@ -818,7 +852,9 @@
+@@ -818,7 +857,9 @@
  # Complex scalars
      { # Common
      'decl':'\t#ctype# #varname#;',
@@ -97,7 +148,7 @@ diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/lo
      'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",#varname#.r,#varname#.i);'},
      'return':{isintent_out:',#varname#_capi'},
      '_check':iscomplex
-@@ -865,7 +901,8 @@
+@@ -865,7 +906,8 @@
      'decl':['\t#ctype# #varname# = NULL;',
              '\tint slen(#varname#);',
              '\tPyObject *#varname#_capi = Py_None;'],
@@ -107,17 +158,18 @@ diff -aurN --exclude='*~' --exclude='*.pyc' --exclude='*.pyo' ./rules.py /usr/lo
      'callfortranappend':'slen(#varname#),',
      'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",slen(#varname#),#varname#);'},
  #    'freemem':'\tSTRINGFREE(#varname#);',
-@@ -909,7 +946,8 @@
+@@ -909,7 +951,9 @@
              '\tPyArrayObject *capi_#varname#_tmp = NULL;',
              '\tint capi_#varname#_intent = 0;',
              ],
 -    'callfortran':'#varname#,',
 +#    'callfortran':'#varname#,',
-+    'callfortran':{isintent_out:'#varname#,', l_not(isintent_out):'#varname#_capi == Py_None ? NULL : #varname#,'},
++    'callfortran':{isintent_out:'#varname#,', l_and(isoptional, l_not(isintent_out)):'#varname#_capi == Py_None ? NULL : #varname#,',
++                   l_and(l_not(isoptional), l_not(isintent_out)): '#varname#,'},
      'return':{isintent_out:',capi_#varname#_tmp'},
      'need':'len..',
      '_check':isarray
-@@ -971,13 +1009,19 @@
+@@ -971,13 +1015,19 @@
                   '\tcapi_#varname#_intent |= #intent#;',
                   {isintent_hide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,Py_None);'},
                   {isintent_nothide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,#varname#_capi);'},
