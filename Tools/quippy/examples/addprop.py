@@ -9,13 +9,10 @@ if len(sys.argv[1:]) != 2:
    print 'Usage: addprop.py <INPUT> <OUTPUT>'
    sys.exit(1)
 
-fr = FrameReader(sys.argv[1])
-outf = CInOutput(sys.argv[2], OUTPUT)
+frames = AtomsList(sys.argv[1])
 
-at0 = fr.next() # first frame
-for at in fr:   # rest of frames
+for at in frames[1:]:
   at.add_property('p', 0.0, n_cols=3)
-  at.p[:] = at0.pos[:]
-  outf.write(at)
+  at.p[:] = frames[0].pos[:]
 
-outf.close()
+(frames[1:]).write(sys.argv[2])
