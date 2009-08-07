@@ -616,8 +616,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             num = int(num)
             if not (el,num) in lookup:
                lookup[(el,num)] = i
-            atoms.set_species(lookup[(el,num)], el)
+            atoms.z[lookup[(el,num)]] = atomic_number_from_symbol(el)
             atoms.frac_pos[:,lookup[(el,num)]] = map(float, (u,v,w))
+
+         atoms.set_atoms(atoms.z) # set at.species from at.z
 
       # Calculate cartesian postions from fractional positions
       # (correct if we're doing a variable cell geom. opt. with fixed ions)
