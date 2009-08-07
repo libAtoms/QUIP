@@ -213,7 +213,7 @@ cp = []
 i = 0
 while sys.argv:
     p = sys.argv.pop(0)
-    if p != '-framework': 
+    if p not in ('-framework', '-Bstatic', '-Bdynamic'): 
         cp.append(p)
         continue
     else:
