@@ -126,7 +126,7 @@ except ImportError:
    logging.warning('netCDF4 not found. falling back on (slower) pupynere.')
 
 def netcdf_dimlen(obj, name):
-   """Return length of dimension 'name'. Works for both netCD4 and pupynere."""
+   """Return length of dimension 'name'. Works for both netCDF4 and pupynere."""
    n = obj.dimensions[name]
    try:
       return len(n)
