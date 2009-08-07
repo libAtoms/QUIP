@@ -53,12 +53,12 @@ LIBATOMS_F95_FILES = \
   ParamReader \
   Spline \
   Sparse \
+  CInOutput \
   clusters \
   Structures \
   frametools\
   nye_tensor \
   Topology \
-  CInOutput \
   Atoms_ll \
   libAtoms \
   libAtoms_misc_utils
