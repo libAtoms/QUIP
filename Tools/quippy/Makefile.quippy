@@ -37,7 +37,12 @@ ifeq (${QUIPPY_NO_TOOLS},)
 BUILD_SRC_OPTS += ${TOOLS} 
 endif
 endif
-BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts=--no-wrap-functions
+
+ifeq (${QUIPPY_FCOMPILER},pg)
+  BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions --pgi-pointer-hack"
+else
+  BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions"
+endif
 
 BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
 ifneq (${QUIPPY_INSTALL_OPTS},)
