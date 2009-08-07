@@ -133,9 +133,6 @@ class Atoms(FortranAtoms):
          raise ValueError('Either mask or list must be present.')
       return out
 
-   def set_species(self, i, species):
-      self.species[i] = [x for x in species] + [' ' for a in range(self.species.shape[0]-len(species))]
-    
    def _update_hook(self):
       # Remove existing pointers
       if hasattr(self, '_props'):
