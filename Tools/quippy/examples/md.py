@@ -1,5 +1,7 @@
 """
+Simple example of molecular dynamics of 64 atoms of bulk silicon at 300K
 
+(c) James Kermode 2009
 """
 
 from quippy import *
