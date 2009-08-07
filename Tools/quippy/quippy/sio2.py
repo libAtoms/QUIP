@@ -62,7 +62,7 @@ class PosCelWriter(object):
       if self.dostress:
          self.stress.write('(kbar)\n')
          for v in at.virial:
-            self.stress.write('%20.10e%20.10e%20.10e' % v*(10.0*GPA))
+            self.stress.write('%20.10e%20.10e%20.10e' % v*(10.0*GPA)/at.cell_volume())
 
       it += 1
 
@@ -137,7 +137,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
       if dostress:
          stress_lines = list(itertools.islice(stress, 4))
          virial = farray([ [float(x) for x in L.split()] for L in stress_lines[1:4] ])
-         virial /= (10.0*GPA)
+         virial *= at.cell_volume()/(10.0*GPA)
          at.params['virial'] = virial
 
       if doforce:
