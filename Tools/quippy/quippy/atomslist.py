@@ -1,8 +1,43 @@
-import sys, os, itertools
+import sys, os, fnmatch, re, itertools
 from quippy import Atoms, AtomsReaders, AtomsWriters
 
+def find_files(filepat, top=None):
+   if top is None:
+      top = os.getcwd()
+      
+   for path, dirlist, filelist in os.walk(top):
+      for name in fnmatch.filter(filelist, filepat):
+         yield os.path.join(path, name)
+
+def label_files(filenames, parampat):
+   for filename in filenames:
+      m = re.search(parampat, filename)
+      value = None
+      if m is not None:
+         value = m.group(1)
+         try:
+            value = float(value)
+         except ValueError:
+            pass
+      yield filename, value
+
+def open_files(filenames, frame=None, param=None, *args, **kwargs):
+   for item in filenames:
+      try:
+         filename, value = item
+      except ValueError:
+         filename = item
+      if frame is None:
+         a = Atoms(filename, *args, **kwargs)
+      else:
+         a = AtomsList(filename, lazy=False, *args, **kwargs)[frame]
+      a.params['filename'] = filename
+      if value is not None:
+         a.params[param] = value
+      yield a
+
 def AtomsReader(source, format=None, *args, **kwargs):
-   """Generator to read sucessive frames from source"""
+   """Generator to read successive frames from source"""
 
    if format is None:
       if isinstance(source, str):
