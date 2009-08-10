@@ -6,22 +6,25 @@ from StringIO import StringIO
 class PosCelWriter(object):
 
    def __init__(self, basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',
-                species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False):
-      self.pos = pos
-      self.cel = cel
-      self.force = force
-      self.energy = energy
-      self.stress = stress
+                species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True):
       if basename is not None:
          basename = os.path.splitext(basename)[0]
          pos = '%s.pos' % basename
          cel = '%s.cel' % basename
          energy = '%s.ene' % basename
          stress = '%s.str' % basename
+         force = '%s.for' % basename
+      self.pos = pos
+      self.cel = cel
+      self.force = force
+      self.energy = energy
+      self.stress = stress
       self.step_name = step_name
       self.species_map = species_map
-      self.cel_angstrom = cel_angstom
+      self.cel_angstrom = cel_angstrom
       self.pos_angstrom = pos_angstrom
+      self.rydberg = rydberg
+      print 'Setting self.rydberg to ', self.rydberg
       self.it = 0
 
    def write(self, at):
@@ -37,34 +40,39 @@ class PosCelWriter(object):
       if self.dostress and isinstance(self.stress, str): self.stress = open(self.stress, 'w')
 
       objind = 1
-      spind = {}
 
-      self.pos.write(' %s %d\n' % (self.step_name, self.it))
+      self.pos.write('\n')# % (self.step_name, self.it))
       for i in frange(at.n):
          p = at.pos[i][:]
          if not self.pos_angstrom: p /= BOHR
-         self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], spind[at.species[i]], objind))
+         self.pos.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (p[1], p[2], p[3], self.species_map[str(at.species[i])], objind))
 
       self.cel.write(' %s %d\n' % (self.step_name, self.it))
       for i in (1,2,3):
-         L = at.lattice[:,i]
+         L = at.lattice[:,i].copy()
          if not self.cel_angstrom: L /= BOHR
          self.cel.write('%20.10e%20.10e%20.10e\n' % (L[1], L[2], L[3]))
 
       if self.doenergy:
-         self.energy.write('%20.10f Ry\n' % at.energy/RYDBERG)
+         e = at.energy
+         if self.rydberg:
+            e /= RYDBERG
+         self.energy.write('%20.10f Ry\n' % e)
 
       if self.doforce:
+         self.force.write('\n')
          for i in frange(at.n):
-            f = at.force[i]/(HARTREE/BOHR)
-            self.force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], spind[at.species[i]], objind))
+            f = at.force[i].copy()
+            if self.rydberg:
+               f /= (RYDBERG/BOHR)
+            self.force.write('%20.10e%20.10e%20.10e%4d%4d X\n' % (f[1], f[2], f[3], self.species_map[str(at.species[i])], objind))
 
       if self.dostress:
          self.stress.write('(kbar)\n')
          for v in at.virial:
-            self.stress.write('%20.10e%20.10e%20.10e' % v*(10.0*GPA)/at.cell_volume())
+            self.stress.write('%20.10e%20.10e%20.10e\n' % tuple(v*(10.0*GPA)/at.cell_volume()))
 
-      it += 1
+      self.it += 1
 
    def close(self):
       self.pos.close()
@@ -960,12 +968,10 @@ def save_ref_config(config_list):
       at.params['dft_energy'] = at.params['energy'] / HARTREE
       at.add_property('dft_force', 0.0, n_cols=3)
       at.dft_force[:] = at.force / (HARTREE/BOHR)
-      at.params['dft_virial'] = at.virial / (HARTREE/(BOHR**3))
+      at.params['dft_stress'] = at.virial/at.cell_volume() / (HARTREE/(BOHR**3))
 
 
 def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447):
-
-   s = fzeros((3,3))
 
    normweight = sqrt(wf*wf + ws*ws + we*we)
    wf /= normweight
@@ -977,10 +983,10 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
    dist_s = 0.0; norm_s = 0.0
 
    for ati, at in enumerate(config_list):
-      pot.calc(at, virial=s, calc_force=True, calc_energy=True)
+      pot.calc(at, calc_virial=True, calc_force=True, calc_energy=True)
 
       at.params['md_energy'] = at.params['energy'] / HARTREE
-      at.params['md_virial'] = s / (HARTREE/(BOHR**3))
+      at.params['md_stress'] = at.virial/at.cell_volume() / (HARTREE/(BOHR**3))
       at.md_force = at.force / (HARTREE/BOHR)
 
       for i in frange(at.n):
@@ -990,7 +996,7 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
 
       for i in (1,2,3):
          for j in (1,2,3):
-            dist_s += (at.md_virial[i,j] - at.dft_virial[i,j])**2.0
+            dist_s += (at.md_stress[i,j] - at.dft_stress[i,j])**2.0
             norm_s += bulk_mod**2.0
 
 
