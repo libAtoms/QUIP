@@ -227,6 +227,8 @@ def get_quartz_params(at):
    u = frac_pos[1,1]
    x,y,z = frac_pos[:,4]
    z -= 2.0/3.0
+   if z < 0.0: z += 1.0
+   if z > 1.0: z -- 1.0
 
    print 'u      = ', u
    print 'x      = ', x
