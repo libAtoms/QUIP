@@ -943,6 +943,14 @@ contains
 	  converged = .false.
 	endif
       end if
+
+     ! Save Wfn if needed
+      if (any(run_type.eq.(/QS_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
+  !       inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn',exist=ex)
+  !       if (ex) &
+	  call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn '//trim(param%wenv%wfn_file))
+      endif
+
     end do
     if (.not. converged) call system_abort('CP2K failed to converge after n_tries='//n_tries//'. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
 
@@ -964,13 +972,6 @@ contains
 !       inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-dump-1.psf',exist=ex)
 !       if (ex) &
         call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-dump-1.psf '//trim(param%wenv%psf_file))
-    endif
-
-   ! Save Wfn if needed
-    if (any(run_type.eq.(/QS_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-!       inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn',exist=ex)
-!       if (ex) &
-        call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn '//trim(param%wenv%wfn_file))
     endif
 
     if (save_output_files) then
