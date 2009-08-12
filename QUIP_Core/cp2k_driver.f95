@@ -798,9 +798,12 @@ contains
 
   character(max_char_length)            :: run_command='', &
                                            fin_command=''
-  logical                               :: clean_up_files
-  integer                               :: status
+  logical                               :: clean_up_files, save_output_files
+  integer                               :: status, error_status
   logical                               :: ex
+  integer :: n_tries, max_n_tries
+  real(dp) :: max_force_warning
+  logical :: converged
 
 
     call system_timer('go_cp2k_start')
@@ -824,6 +827,9 @@ contains
     call param_register(params, 'dft_file', '', dft_file)
     call param_register(params, 'cell_file', '', cell_file)
     call param_register(params, 'clean_up_files', 'T', clean_up_files)
+    call param_register(params, 'save_output_files', 'T', save_output_files)
+    call param_register(params, 'max_n_tries', '2', max_n_tries)
+    call param_register(params, 'max_force_warning', '2.0', max_force_warning)
 
     if (present(args_str)) then
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) &
@@ -904,26 +910,51 @@ contains
   ! Run cp2k MM serial or QM/MM parallel
     call print('Running CP2K...')
 
-    run_command = 'cd '//trim(param%wenv%working_directory)//';'//trim(param%wenv%cp2k_program)//' '//trim(param%wenv%cp2k_input_filename)//' > cp2k_output.out'
+    n_tries = 0
+    converged = .false.
+    do while (.not. converged .and. (n_tries < max_n_tries))
+      n_tries = n_tries + 1
+      run_command = 'cd '//trim(param%wenv%working_directory)//';'//trim(param%wenv%cp2k_program)//' '//trim(param%wenv%cp2k_input_filename)//' >> cp2k_output.out'
 
-    call print(run_command)
-!added status optionally to system_command.
-    call system_timer('go_cp2k_start')
-    call system_timer('system_command(run_command)')
-    call system_command(run_command,status=status)
-    call system_timer('system_command(run_command)')
-    call system_timer('go_cp2k_end')
-    call print_title('...CP2K...')
-    call print('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
-    call system_command('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
-    call system_command('grep -i error '//trim(param%wenv%working_directory)//'/cp2k_output.out')
-    if (status.ne.0) call system_abort('CP2K aborted. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
+      call print(run_command)
+  !added status optionally to system_command.
+      call system_timer('go_cp2k_start')
+      call system_timer('system_command(run_command)')
+      call system_command(run_command,status=status)
+      call system_timer('system_command(run_command)')
+      call system_timer('go_cp2k_end')
+      call print_title('...CP2K...')
+      call print('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
+      call system_command('grep -i warning '//trim(param%wenv%working_directory)//'/cp2k_output.out')
+      call system_command('grep -i error '//trim(param%wenv%working_directory)//'/cp2k_output.out', error_status)
+      if (status /= 0) call system_abort('CP2K had non-zero return status. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
+      if (error_status == 0) call system_abort('CP2K had ERROR in output. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
+
+      call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+      if (status == 0) then
+	call print("WARNING: cp2k_driver failed to converge, trying again",ERROR)
+	converged = .false.
+      else
+	call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+	if (status == 0) then
+	  converged = .true.
+	else
+	  call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",ERROR)
+	  converged = .false.
+	endif
+      end if
+    end do
+    if (.not. converged) call system_abort('CP2K failed to converge after n_tries='//n_tries//'. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
 
   ! Read energy and forces - also re-reordering!
 !    call print('file='//trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file)//',exist=ex')
 !    inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file),exist=ex)
 !    if (ex) call system_abort('CP2K aborted before printing forces. Check the output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
     call read_cp2k_forces(CP2K_forces,CP2K_energy,param,my_atoms,run_type=run_type)
+    if (maxval(abs(CP2K_forces)) > max_force_warning) then
+      call print("WARNING: CP2K_forces maximum component " // maxval(abs(CP2K_forces)) // " at " // maxloc(abs(CP2K_forces)) // &
+		 " exceeds max_force_warning="//max_force_warning, ERROR)
+    endif
 
     if (present(energy)) energy = CP2K_energy
     if (present(forces)) forces = CP2K_forces
@@ -940,6 +971,12 @@ contains
 !       inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn',exist=ex)
 !       if (ex) &
         call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn '//trim(param%wenv%wfn_file))
+    endif
+
+    if (save_output_files) then
+      call system_command('cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%cp2k_input_filename)//'>> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
+                          'cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file)//'>> force_file_log; echo "##############" >> force_file_log;' // &
+                          'cat '//trim(param%wenv%working_directory)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
     endif
 
   ! remove all unnecessary files
