@@ -21,6 +21,7 @@ implicit none
   logical :: gaussian_smoothing
   real(dp) :: gaussian_sigma
   logical :: radial_histo, random_samples
+  real(dp) :: radial_center(3)
   integer :: n_samples(2)
   logical :: sort_Time, no_Time_dups
   real(dp) :: min_p(3), bin_width(3)
@@ -44,7 +45,7 @@ implicit none
   call initialise(cli_params)
   call register_cli_params(cli_params,.true., infilename, infile_is_list, outfilename, commandfilename, &
     mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
-    radial_histo, random_samples, n_samples, &
+    radial_histo, radial_center, random_samples, n_samples, &
     sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
       call print_usage()
@@ -67,7 +68,7 @@ implicit none
     call print("got arguments line '"//trim(args_str)//"'")
     call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
       mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
-      radial_histo, random_samples, n_samples, &
+      radial_histo, radial_center, random_samples, n_samples, &
       sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
     if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
       call print_usage()
@@ -87,6 +88,7 @@ implicit none
     call print("AtomMask " // trim(mask_str))
     call print("radial_histo " // radial_histo)
     if (radial_histo) then
+    call print("radial_center " // radial_center)
       call print("bin_width " // bin_width(1) // " n_bins " // n_bins(1))
       n_bins(2:3) = 1
       call print("random_samples " // random_samples)
@@ -107,7 +109,7 @@ implicit none
     call print("Calculating densities")
     call calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, structure_ll, &
       mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, &
-      radial_histo, random_samples, n_samples, mask_str)
+      radial_histo, radial_center, random_samples, n_samples, mask_str)
 
     call initialise(outfile, outfilename, OUTPUT)
 
@@ -174,7 +176,7 @@ implicit none
 	call initialise(cli_params)
 	call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
 	  mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
-	  radial_histo, random_samples, n_samples, &
+	  radial_histo, radial_center, random_samples, n_samples, &
 	  sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
 	if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
 	  call print_usage()
@@ -209,14 +211,14 @@ contains
     call print("       [autocorrelation=logical(F)] [autocorrelation_max_lag=N(10000)]", ERROR)
     call print("       [decimation=n(1)] [min_time=t(-1.0)] [max_time=t(-1.0)]", ERROR)
     call print("       [gaussian=logical(F)(always true for radial_histo)] [sigma=s(1.0)] [radial_histo=logical(F)]", ERROR)
-    call print("       [random_samples=logical(F)(radial_histo only)] [n_samples={2 4})(component 2 ignored for random)]", ERROR)
+    call print("       [radial_center={x y z}] [random_samples=logical(F)(radial_histo only)] [n_samples={2 4})(component 2 ignored for random)]", ERROR)
     call print("       [sort_Time(F)] [no_Time_dups(F)]", ERROR)
     call print("       [quiet=logical(F)]", ERROR)
   end subroutine print_usage
 
   subroutine register_cli_params(cli_params, initial, infilename, infile_is_list, outfilename, commandfilename, &
     mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
-    radial_histo, random_samples, n_samples, &
+    radial_histo, radial_center, random_samples, n_samples, &
     sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
     type(Dictionary), intent(inout) :: cli_params
     logical, intent(in) :: initial
@@ -231,6 +233,7 @@ contains
     logical, intent(inout) :: gaussian_smoothing
     real(dp), intent(inout) :: gaussian_sigma
     logical, intent(inout) :: radial_histo
+    real(dp), intent(inout) :: radial_center(3)
     logical, intent(inout) :: random_samples
     integer, intent(inout) :: n_samples(2)
     logical, intent(inout) :: sort_Time, no_Time_dups
@@ -259,6 +262,7 @@ contains
       call param_register(cli_params, 'gaussian', 'F', gaussian_smoothing)
       call param_register(cli_params, 'sigma', '1.0', gaussian_sigma)
       call param_register(cli_params, 'radial_histo', 'F', radial_histo)
+      call param_register(cli_params, 'radial_center', '0.0 0.0 0.0', radial_center)
       call param_register(cli_params, 'random_samples', 'F', random_samples)
       call param_register(cli_params, 'n_samples', '2 4', n_samples)
       call param_register(cli_params, 'sort_Time', 'F', sort_Time)
@@ -286,6 +290,7 @@ contains
       call param_register(cli_params, 'gaussian', ""//gaussian_smoothing, gaussian_smoothing)
       call param_register(cli_params, 'sigma', ""//gaussian_sigma, gaussian_sigma)
       call param_register(cli_params, 'radial_histo', ""//radial_histo, radial_histo)
+      call param_register(cli_params, 'radial_center', ""//radial_center, radial_center)
       call param_register(cli_params, 'random_samples', ""//random_samples, random_samples)
       call param_register(cli_params, 'n_samples', '2 4', n_samples)
       call param_register(cli_params, 'mean', ""//mean, mean)
@@ -347,7 +352,7 @@ contains
 
   subroutine calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, &
                          structure_ll, interval, gaussian, gaussian_sigma, &
-                         radial_histo, random_samples, n_samples, mask_str)
+                         radial_histo, radial_center, random_samples, n_samples, mask_str)
     real(dp), intent(inout), allocatable :: histograms(:,:,:,:)
     integer, intent(out) :: n_histos
     real(dp), intent(inout), allocatable :: histo_grid(:,:,:,:)
@@ -358,6 +363,7 @@ contains
     logical, intent(in) :: gaussian
     real(dp), intent(in) :: gaussian_sigma
     logical, intent(in) :: radial_histo
+    real(dp), intent(in) :: radial_center(3)
     logical :: random_samples
     integer :: n_samples(2)
     character(len=*), optional, intent(in) :: mask_str
@@ -411,10 +417,10 @@ contains
 	call reallocate_histos(histograms, n_histos, n_bins)
 	if (radial_histo) then
           if (first_histo) then
-            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, bin_width(1), n_bins(1), gaussian_sigma, &
+            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, radial_center, bin_width(1), n_bins(1), gaussian_sigma, &
               theta, phi, w, mask_str, histo_grid(1,:,1,1))
           else
-            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, bin_width(1), n_bins(1), gaussian_sigma, &
+            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, radial_center, bin_width(1), n_bins(1), gaussian_sigma, &
               theta, phi, w, mask_str)
           endif
 	else ! rectilinear
@@ -496,9 +502,10 @@ contains
 
   end subroutine calc_angular_samples_random
 
-  subroutine sample_radial_mesh_Gaussians(histogram, at, bin_width, n_bins, gaussian_sigma, theta, phi, w, mask_str, histo_grid, accumulate)
+  subroutine sample_radial_mesh_Gaussians(histogram, at, radial_center, bin_width, n_bins, gaussian_sigma, theta, phi, w, mask_str, histo_grid, accumulate)
     real(dp), intent(inout) :: histogram(:)
     type(Atoms), intent(in) :: at
+    real(dp), intent(in) :: radial_center(3)
     real(dp), intent(in) :: bin_width
     integer, intent(in) :: n_bins
     real(dp), intent(in) :: gaussian_sigma, theta(:), phi(:), w(:)
@@ -540,9 +547,9 @@ contains
       do bin_i=1, n_bins
 	bin_r = (bin_i-1)*bin_width
 	do sample_i=1,size(theta)
-	  p(1) = bin_r*cos(phi(sample_i))*cos(theta(sample_i))
-	  p(2) = bin_r*sin(phi(sample_i))*cos(theta(sample_i))
-	  p(3) = bin_r*sin(theta(sample_i))
+	  p(1) = radial_center(1)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
+	  p(2) = radial_center(2)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
+	  p(3) = radial_center(3)+bin_r*sin(theta(sample_i))
 	  dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
