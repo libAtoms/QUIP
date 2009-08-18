@@ -35,7 +35,7 @@ implicit none
   logical :: no_compute_index
   integer :: n_histos
   type(Atoms_ll) :: structure_ll
-  real(dp), allocatable :: histo_raw(:,:,:,:), histo_mean(:,:,:), histo_var(:,:,:)
+  real(dp), allocatable :: histograms(:,:,:,:), histo_grid(:,:,:,:), histo_mean(:,:,:), histo_var(:,:,:)
   integer :: i_lag, i1, i2, i3
   real(dp), allocatable :: autocorr(:,:,:,:)
 
@@ -105,7 +105,8 @@ implicit none
     call print("autocorrelation " // autocorrelation // " autocorrelation_max_lag " // autocorrelation_max_lag)
 
     call print("Calculating densities")
-    call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, &
+    call calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, structure_ll, &
+      mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, &
       radial_histo, random_samples, n_samples, mask_str)
 
     call initialise(outfile, outfilename, OUTPUT)
@@ -113,7 +114,7 @@ implicit none
     if (autocorrelation) then
       call print("Calculating autocorrelations")
       allocate(autocorr(n_bins(1),n_bins(2),n_bins(3),autocorrelation_max_lag+1))
-      autocorr = autocorrelation_3array(histo_raw(:,:,:,1:n_histos), max_lag=autocorrelation_max_lag)
+      autocorr = autocorrelation_3array(histograms(:,:,:,1:n_histos), max_lag=autocorrelation_max_lag)
 
       call print("Printing autocorrelations")
       call print("# Autocorrelation", file=outfile)
@@ -130,13 +131,13 @@ implicit none
       endif
       allocate(histo_mean(n_bins(1), n_bins(2), n_bins(3)))
       allocate(histo_var(n_bins(1), n_bins(2), n_bins(3)))
-      call calc_mean_var_3array(histo_raw(:,:,:,1:n_histos), histo_mean, histo_var)
+      call calc_mean_var_3array(histograms(:,:,:,1:n_histos), histo_mean, histo_var)
 
       if (radial_histo) then
 	call print("# Density (#/vol) ", file=outfile)
 	call print("# r mean var n_samples", file=outfile)
 	do i1=1, n_bins(1)
-	  call print((bin_width(1)*(real(i1,dp)-0.5)) // " " // histo_mean(i1, 1, 1) // " " // &
+	  call print(histo_grid(1,i1,1,1) // " " // histo_mean(i1, 1, 1) // " " // &
 	  histo_var(i1, 1, 1) // " " // n_histos, file=outfile)
 	end do
       else
@@ -145,7 +146,7 @@ implicit none
 	do i1=1,n_bins(1)
 	do i2=1,n_bins(2)
 	do i3=1,n_bins(3)
-	  call print( (min_p+bin_width*(/ i1-0.5_dp, i2-0.5_dp, i3-0.5_dp /)) // &
+	  call print( histo_grid(:,i1,i2,i3) // &
 		      " " // histo_mean(i1, i2, i3) // &
 		      " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
 	end do
@@ -158,7 +159,7 @@ implicit none
 
     call finalise(outfile)
 
-    if (allocated(histo_raw)) deallocate(histo_raw)
+    if (allocated(histograms)) deallocate(histograms)
     if (allocated(autocorr)) deallocate(autocorr)
     if (allocated(histo_mean)) deallocate(histo_mean)
     if (allocated(histo_var)) deallocate(histo_var)
@@ -256,7 +257,7 @@ contains
       call param_register(cli_params, 'min_time', '-1.0', min_time)
       call param_register(cli_params, 'max_time', '-1.0', max_time)
       call param_register(cli_params, 'gaussian', 'F', gaussian_smoothing)
-      call param_register(cli_params, 'sigma', '0.0', gaussian_sigma)
+      call param_register(cli_params, 'sigma', '1.0', gaussian_sigma)
       call param_register(cli_params, 'radial_histo', 'F', radial_histo)
       call param_register(cli_params, 'random_samples', 'F', random_samples)
       call param_register(cli_params, 'n_samples', '2 4', n_samples)
@@ -344,10 +345,12 @@ contains
 
   end function autocorrelation_3array
 
-  subroutine calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, interval, gaussian, gaussian_sigma, radial_histo, &
-    random_samples, n_samples, mask_str)
-    real(dp), intent(inout), allocatable :: histo_count(:,:,:,:)
+  subroutine calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, &
+                         structure_ll, interval, gaussian, gaussian_sigma, &
+                         radial_histo, random_samples, n_samples, mask_str)
+    real(dp), intent(inout), allocatable :: histograms(:,:,:,:)
     integer, intent(out) :: n_histos
+    real(dp), intent(inout), allocatable :: histo_grid(:,:,:,:)
     real(dp), intent(in) :: min_p(3), bin_width(3)
     integer, intent(in) :: n_bins(3)
     type(atoms_ll), intent(in) :: structure_ll
@@ -361,19 +364,27 @@ contains
     
     real(dp) :: last_time, cur_time
     type(atoms_ll_entry), pointer :: entry
-    logical :: do_this_histo
+    logical :: do_this_histo, first_histo
     real(dp), allocatable :: theta(:), phi(:), w(:)
 
     n_histos = 0
-    allocate(histo_count(n_bins(1),n_bins(2),n_bins(3),10))
-    histo_count = 0.0_dp
-
-    if (random_samples) then
-      call calc_samples_random(n_samples(1), theta, phi, w)
+    allocate(histograms(n_bins(1),n_bins(2),n_bins(3),10))
+    if (radial_histo) then
+      allocate(histo_grid(1,n_bins(1),n_bins(2),n_bins(3)))
     else
-      call calc_samples_grid(n_samples(1), n_samples(2), theta, phi, w)
+      allocate(histo_grid(3,n_bins(1),n_bins(2),n_bins(3)))
+    endif
+    histograms = 0.0_dp
+
+    if (radial_histo) then
+      if (random_samples) then
+        call calc_angular_samples_random(n_samples(1), theta, phi, w)
+      else
+        call calc_angular_samples_grid(n_samples(1), n_samples(2), theta, phi, w)
+      endif
     endif
 
+    first_histo = .true.
     entry => structure_ll%first
     cur_time = -1.0_dp
     last_time = -1.0e38_dp
@@ -397,19 +408,36 @@ contains
 	n_histos = n_histos + 1
 	if (mod(n_histos,10) == 0) write (mainlog%unit,'(I1,$)') mod(n_histos/10,10)
 	if (mod(n_histos,1000) == 0) write (mainlog%unit,'(a)') " "
-	call reallocate_histos(histo_count, n_histos, n_bins)
+	call reallocate_histos(histograms, n_histos, n_bins)
 	if (radial_histo) then
-	  call accumulate_radial_histo_count(histo_count(:,1,1,n_histos), entry%at, bin_width(1), n_bins(1), gaussian_sigma, &
-	    theta, phi, w, mask_str)
-	else
-	  call accumulate_histo_count(histo_count(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian, gaussian_sigma, mask_str)
+          if (first_histo) then
+            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, bin_width(1), n_bins(1), gaussian_sigma, &
+              theta, phi, w, mask_str, histo_grid(1,:,1,1))
+          else
+            call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, bin_width(1), n_bins(1), gaussian_sigma, &
+              theta, phi, w, mask_str)
+          endif
+	else ! rectilinear
+          if (gaussian) then
+            if (first_histo) then
+              call sample_rectilinear_mesh_Gaussians(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian_sigma, mask_str, histo_grid(:,:,:,:))
+            else
+              call sample_rectilinear_mesh_Gaussians(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian_sigma, mask_str)
+            endif
+          else
+            if (first_histo) then
+              call calc_histogram(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, mask_str, histo_grid(:,:,:,:))
+            else
+              call calc_histogram(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, mask_str)
+            endif
+          endif
 	endif
       endif
       entry => entry%next
     end do
   end subroutine calc_histos
 
-  subroutine calc_samples_grid(n_t, n_p, theta, phi, w)
+  subroutine calc_angular_samples_grid(n_t, n_p, theta, phi, w)
     integer, intent(in) :: n_t, n_p
     real(dp), allocatable, intent(inout) :: theta(:), phi(:), w(:)
 
@@ -437,9 +465,9 @@ contains
     end do
     end do
     w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
-  end subroutine calc_samples_grid
+  end subroutine calc_angular_samples_grid
 
-  subroutine calc_samples_random(n, theta, phi, w)
+  subroutine calc_angular_samples_random(n, theta, phi, w)
     integer, intent(in) :: n
     real(dp), allocatable, intent(inout) :: theta(:), phi(:), w(:)
 
@@ -466,19 +494,25 @@ contains
     end do
     w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
 
-  end subroutine calc_samples_random
+  end subroutine calc_angular_samples_random
 
-  subroutine accumulate_radial_histo_count(histo_count, at, bin_width, n_bins, gaussian_sigma, theta, phi, w, mask_str)
-    real(dp), intent(inout) :: histo_count(:)
+  subroutine sample_radial_mesh_Gaussians(histogram, at, bin_width, n_bins, gaussian_sigma, theta, phi, w, mask_str, histo_grid, accumulate)
+    real(dp), intent(inout) :: histogram(:)
     type(Atoms), intent(in) :: at
     real(dp), intent(in) :: bin_width
     integer, intent(in) :: n_bins
     real(dp), intent(in) :: gaussian_sigma, theta(:), phi(:), w(:)
     character(len=*), optional, intent(in) :: mask_str
+    real(dp), intent(out), optional :: histo_grid(:)
+    logical, optional, intent(in) :: accumulate
 
+    logical :: my_accumulate
     real(dp) :: bin_r, p(3), dist, r
     logical, allocatable :: mask_a(:)
     integer at_i, sample_i, bin_i
+
+    my_accumulate = optional_default(.false., accumulate)
+    if (.not. my_accumulate) histogram = 0.0_dp
     
     allocate(mask_a(at%N))
     call is_in_mask(mask_a, at, mask_str)
@@ -493,11 +527,18 @@ contains
          (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
       call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
 
+    if (present(histo_grid)) then
+      do bin_i=1, n_bins
+        bin_r = (bin_i-1)*bin_width
+        histo_grid(bin_i) = bin_r
+      end do
+    endif
+
     do at_i=1, at%N
       if (.not. mask_a(at_i)) cycle
       r = norm(at%pos(:,at_i))
       do bin_i=1, n_bins
-	bin_r = (real(bin_i,dp)-0.5_dp)*bin_width
+	bin_r = (bin_i-1)*bin_width
 	do sample_i=1,size(theta)
 	  p(1) = bin_r*cos(phi(sample_i))*cos(theta(sample_i))
 	  p(2) = bin_r*sin(phi(sample_i))*cos(theta(sample_i))
@@ -505,84 +546,120 @@ contains
 	  dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
-          histo_count(bin_i) = histo_count(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+          histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
 	end do ! sample_i
       end do ! bin_i
     end do ! at_i
 
     deallocate(mask_a)
-  end subroutine accumulate_radial_histo_count
+  end subroutine sample_radial_mesh_Gaussians
 
-  subroutine accumulate_histo_count(histo_count, at, min_p, bin_width, n_bins, gaussian, gaussian_sigma, mask_str)
-    real(dp), intent(inout) :: histo_count(:,:,:)
+  subroutine sample_rectilinear_mesh_Gaussians(histogram, at, min_p, sample_dist, n_bins, gaussian_sigma, mask_str, histo_grid, accumulate)
+    real(dp), intent(inout) :: histogram(:,:,:)
     type(Atoms), intent(in) :: at
-    real(dp), intent(in) :: min_p(3), bin_width(3)
+    real(dp), intent(in) :: min_p(3), sample_dist(3)
     integer, intent(in) :: n_bins(3)
-    logical, intent(in) :: gaussian
     real(dp), intent(in) :: gaussian_sigma
     character(len=*), optional, intent(in) :: mask_str
+    real(dp), intent(out), optional :: histo_grid(:,:,:,:)
+    logical, optional, intent(in) :: accumulate
 
-    ! real(dp) :: min_p_lat(3), bin_width_lat(3), p_lat(3)
-    integer :: i, bin(3), bin_1, bin_2, bin_3
+    logical :: my_accumulate
+    integer :: at_i, i1, i2, i3
+    real(dp) :: p(3), w, dist
     logical, allocatable :: mask_a(:)
-    integer :: i1, i2, i3
-    real(dp) :: r1, r2, r3, r1_sq, r2_sq, r3_sq
-    integer :: n_samples = 20
-    real(dp) :: p_center(3), p(3)
-    real(dp) :: range
-    real(dp) :: weight, normalization, n_samples_d, sigma_sq
+
+    my_accumulate = optional_default(.false., accumulate)
+    if (.not. my_accumulate) histogram = 0.0_dp
 
     allocate(mask_a(at%N))
     call is_in_mask(mask_a, at, mask_str)
 
-    range = 3.0_dp*gaussian_sigma
-    normalization = ((2.0*range/real(2*n_samples,dp))**3)/(gaussian_sigma*sqrt(PI))**3
+! ratio of 20/4=5 is bad
+! ratio of 20/3=6.66 is bad
+! ratio of 20/2.5=8 is borderline (2e-4)
+! ratio of 20/2.22=9 is fine  (error 2e-5)
+! ratio of 20/2=10 is fine
+    if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
+         (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
+         (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
+      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
 
-    n_samples_d = real(n_samples,dp)
-    sigma_sq = gaussian_sigma**2
+    w = 1.0_dp / (gaussian_sigma*sqrt(2.0_dp*PI))**3
 
-    ! min_p_lat = at%g .mult. min_p
-    ! bin_width_lat = at%g .mult. bin_width
+    if (present(histo_grid)) then
+      do i1=1, n_bins(1)
+        p(1) = min_p(1) + (i1-1)*sample_dist(1)
+        do i2=1, n_bins(2)
+          p(2) = min_p(2) + (i2-1)*sample_dist(2)
+          do i3=1, n_bins(3)
+            p(3) = min_p(3) + (i3-1)*sample_dist(3)
+            histo_grid(:,i1,i2,i3) = p
+          end do
+        end do
+      end do
+    endif
+
+    do at_i=1, at%N
+      if (.not. mask_a(at_i)) cycle
+      do i1=1, n_bins(1)
+        p(1) = min_p(1) + (i1-1)*sample_dist(1)
+        do i2=1, n_bins(2)
+          p(2) = min_p(2) + (i2-1)*sample_dist(2)
+          do i3=1, n_bins(3)
+            p(3) = min_p(3) + (i3-1)*sample_dist(3)
+            dist = distance_min_image(at,p,at%pos(:,at_i))
+            histogram(i1,i2,i3) = histogram(i1,i2,i3) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w
+          end do ! i3
+        end do ! i2
+      end do ! i1
+    end do ! at_i
+
+    deallocate(mask_a)
+  end subroutine sample_rectilinear_mesh_Gaussians
+
+  subroutine calc_histogram(histogram, at, min_p, bin_width, n_bins, mask_str, histo_grid, accumulate)
+    real(dp), intent(inout) :: histogram(:,:,:)
+    type(Atoms), intent(in) :: at
+    real(dp), intent(in) :: min_p(3), bin_width(3)
+    integer, intent(in) :: n_bins(3)
+    character(len=*), optional, intent(in) :: mask_str
+    real(dp), intent(out), optional :: histo_grid(:,:,:,:)
+    logical, optional, intent(in) :: accumulate
+
+    logical :: my_accumulate
+    integer :: i, bin(3)
+    logical, allocatable :: mask_a(:)
+    real(dp) :: p(3)
+
+    my_accumulate = optional_default(.false., accumulate)
+    if (.not. my_accumulate) histogram = 0.0_dp
+
+    if (present(histo_grid)) then
+      do i1=1, n_bins(1)
+        p(1) = min_p(1) + (real(i1,dp)-0.5_dp)*bin_width(1)
+        do i2=1, n_bins(2)
+          p(2) = min_p(2) + (real(i2,dp)-0.5_dp)*bin_width(2)
+          do i3=1, n_bins(3)
+            p(3) = min_p(3) + (real(i3,dp)-0.5_dp)*bin_width(3)
+            histo_grid(:,i1,i2,i3) = p
+          end do
+        end do
+      end do
+    endif
+
+    allocate(mask_a(at%N))
+    call is_in_mask(mask_a, at, mask_str)
+
     do i=1, at%N
-if (mod(i,10) == 0) call print("accumulate_histo_count i " // i,ERROR)
       if (.not. mask_a(i)) cycle
-      if (gaussian) then
-	p_center = at%pos(:,i)
-	do i1=-n_samples, n_samples
-	  r1 = real(i1,dp)/real(n_samples,dp)*range
-	  r1_sq = r1*r1
-	  p(1) = p_center(1) + r1
-	  bin_1 = floor(p(1)-min_p(1)/bin_width(1))+1
-	  if (bin_1 <= 0 .or. bin_1 > n_bins(1)) cycle
-	  do i2=-n_samples, n_samples
-	    r2 = real(i2,dp)/real(n_samples,dp)*range
-	    r2_sq = r2*r2
-	    p(2) = p_center(2) + r2
-	    bin_2 = floor(p(2)-min_p(2)/bin_width(2))+1
-	    if (bin_2 <= 0 .or. bin_2 > n_bins(2)) cycle
-	    do i3=-n_samples, n_samples
-	      r3 = real(i3,dp)/real(n_samples,dp)*range
-	      r3_sq = r3*r3
-	      p(3) = p_center(3) + r3
-	      bin_3 = floor(p(3)-min_p(3)/bin_width(3))+1
-	      if (bin_3 <= 0 .or. bin_3 > n_bins(3)) cycle
-	      ! p_lat = at%g .mult. p
-	      ! bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
-	      !! bin = floor((p-min_p)/bin_width)+1
-	      weight = normalization*exp(-(r1_sq+r2_sq+r3_sq)/sigma_sq)
-	      !! if (all(bin >= 1) .and. all (bin <= n_bins)) 
-	      histo_count(bin_1,bin_2,bin_3) = histo_count(bin_1,bin_2,bin_3) + weight
-	    end do
-	  end do
-	end do
-      else
-	! p_lat = at%g .mult. at%pos(:,i)
-	! bin = floor((p_lat-min_p_lat)/bin_width_lat)+1
-	bin = floor((p-min_p)/bin_width)+1
-	if (all(bin >= 1) .and. all (bin <= n_bins)) histo_count(bin(1),bin(2),bin(3)) = histo_count(bin(1),bin(2),bin(3)) + 1.0_dp
-      endif
+      bin = floor((at%pos(:,i)-min_p)/bin_width)+1
+      if (all(bin >= 1) .and. all (bin <= n_bins)) histogram(bin(1),bin(2),bin(3)) = histogram(bin(1),bin(2),bin(3)) + 1.0_dp
     end do
-  end subroutine accumulate_histo_count
+
+    deallocate(mask_a)
+
+  end subroutine calc_histogram
 
   subroutine is_in_mask(mask_a, at, mask_str)
     type(Atoms), intent(in) :: at
