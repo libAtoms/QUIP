@@ -38,11 +38,7 @@ BUILD_SRC_OPTS += ${TOOLS}
 endif
 endif
 
-ifeq (${QUIPPY_FCOMPILER},pg)
-  BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions --pgi-pointer-hack"
-else
-  BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions"
-endif
+BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions ${QUIPPY_F2PY_OPTS}"
 
 ifneq (${QUIPPY_DEBUG},) 
   ifneq (${QUIPPY_DEBUG},0)
