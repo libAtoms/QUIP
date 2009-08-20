@@ -24,10 +24,10 @@ AR_ADD = src
 
 QUIPPY_INSTALL_OPTS = --home=${HOME}
 QUIPPY_FCOMPILER = intelem
-QUIPPY_F90FLAGS = -fpp -free -v
+QUIPPY_F90FLAGS = -fpp -free
 QUIPPY_OPT = -O3 -vec-report0
 QUIPPY_CPP = ifort -EP
-QUIPPY_NO_QUIP = 1
+# QUIPPY_NO_QUIP = 1
 QUIPPY_NO_TOOLS = 1
 
 # rules
