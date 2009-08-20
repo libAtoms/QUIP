@@ -25,11 +25,12 @@ AR_ADD = src
 QUIPPY_INSTALL_OPTS=--home=${HOME}
 QUIPPY_FCOMPILER = pg
 QUIPPY_OPT = -O3
-QUIPPY_F90FLAGS = -Mpreprocess -Mfree
+QUIPPY_F90FLAGS = -Mpreprocess -Mfree -Mallocatable=03
 QUIPPY_F77FLAGS = -noswitcherror
 QUIPPY_CPP = pgf90 -E
 QUIPPY_NO_QUIP = 1
 QUIPPY_NO_TOOLS = 1
+QUIPPY_F2PY_OPTS = --pgi-pointer-hack
 
 # rules
 
