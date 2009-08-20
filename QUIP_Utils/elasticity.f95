@@ -230,15 +230,15 @@ contains
   !% to pulling in $l$ direction. Result is dimensionless.
   !% Formula is from W. Brantley, Calculated elastic constants for stress problems associated 
   !% with semiconductor devices. J. Appl. Phys., 44, 534 (1973).
-  function poisson_ratio(c, l, m) result(v)
-    real(dp), intent(in) :: c(6,6)
+  function poisson_ratio(cc, l, m) result(v)
+    real(dp), intent(in) :: cc(6,6)
     real(dp), dimension(3), intent(in) :: l, m
     real(dp) :: v
 
     real(dp) :: s(6,6)
     real(dp), dimension(3) :: lhat, mhat
 
-    call inverse(c, s)
+    call inverse(cc, s)
 
     ! Normalise directions
     lhat = l/norm(l)
