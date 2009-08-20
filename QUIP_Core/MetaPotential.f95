@@ -1068,16 +1068,16 @@ max_atom_rij_change = 1.038_dp
   end subroutine fix_atoms_deform_grad
 
   ! unpack a deformation grad and a pos array from 1-D array into a atoms%pos 2-D array
-  subroutine unpack_pos_dg(x, at, dg, lat_factor)
-    real(dp), intent(in) :: x(:)
+  subroutine unpack_pos_dg(xx, at, dg, lat_factor)
+    real(dp), intent(in) :: xx(:)
     type(Atoms), intent(inout) :: at
     real(dp) :: dg(3,3)
     real(dp), intent(in) :: lat_factor
 
-    if (3*at%N+9 /= size(x)) call system_abort("Called unpack_pos with mismatching sizes x " // size(x) // " at " // at%N)
+    if (3*at%N+9 /= size(xx)) call system_abort("Called unpack_pos with mismatching sizes xx " // size(xx) // " at " // at%N)
 
-    dg = lat_factor*reshape(x(1:9), (/ 3,3 /) )
-    at%pos = reshape(x(10:), (/ 3, at%N /) )
+    dg = lat_factor*reshape(xx(1:9), (/ 3,3 /) )
+    at%pos = reshape(xx(10:), (/ 3, at%N /) )
 
     at%pos = at%pos - (at%lattice .mult. at%travel)
   end subroutine
