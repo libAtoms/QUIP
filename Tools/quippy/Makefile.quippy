@@ -44,7 +44,13 @@ else
   BUILD_SRC_OPTS += ${ATOMEYE} ${WRAP} --f2py-opts="--no-wrap-functions"
 endif
 
-BUILD_OPTS = --build-base=build.${QUIP_ARCH} --debug ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
+ifneq (${QUIPPY_DEBUG},) 
+  ifneq (${QUIPPY_DEBUG},0)
+    QUIPPY_DEBUG_OPT=--debug
+  endif
+endif
+
+BUILD_OPTS = --build-base=build.${QUIP_ARCH} ${QUIPPY_DEBUG_OPT} ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
 ifneq (${QUIPPY_INSTALL_OPTS},)
 INSTALL_OPTS += ${QUIPPY_INSTALL_OPTS}
 endif
