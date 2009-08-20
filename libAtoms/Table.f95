@@ -2021,7 +2021,8 @@ contains
 
     !First check none of the requested rows/columns are out of bounds
 
-    if (any(rows > this%N)) call system_abort('subtable: Row out of range')
+    if (any(rows > this%N)) &
+      call system_abort('subtable: Row out of range size(rows) ' // size(rows) // ' minval ' // minval(rows) // ' maxval ' // maxval(rows) // ' this%N ' // this%N)
     
     if(present(intcols)) then
        if(any(intcols > 0 .and. intcols > this%intsize)) call system_abort('subtable: Integer column out of range')
