@@ -33,6 +33,7 @@ use QUIP_Common_module
 
 #ifdef HAVE_GP
 use bispectrum_module
+use qw_continous_module
 use gp_sparse_module
 #endif
 
@@ -47,15 +48,27 @@ include 'IPModel_interface.h'
 
 public :: IPModel_GAP
 type IPModel_GAP
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
-  real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
+  integer :: n_types = 0                                       !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:) !% Atomic number dimensioned as \texttt{n_types}.
+  real(dp) :: cutoff = 0.0_dp                                  !% Cutoff for computing connection.
+
+  ! bispectrum parameters
   integer :: j_max = 0
   real(dp) :: z0 = 0.0_dp
 
-  character(len=256) datafile !% File name containing the GAP database
+  ! qw parameters
+  integer :: qw_dim = 0
+  integer, allocatable :: qw_type(:)
+  integer, allocatable :: qw_l(:)
+  real(dp), allocatable :: qw_cutoff(:)
+  real(dp), allocatable :: qw_wf_char_length(:)
+  integer, allocatable :: qw_wf_type(:)
+  logical, allocatable :: qw_do_weight(:)
 
-  character(len=FIELD_LENGTH) label
+  character(len=256) :: datafile                               !% File name containing the GAP database
+  character(len=value_len) :: datafile_coordinates             !% Coordinate system used in GAP database
+
+  character(len=FIELD_LENGTH) :: label
   type(mpi_context) :: mpi
 
 #ifdef HAVE_GP
@@ -91,6 +104,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params, my_dictionary
+  integer :: i
 
   call Finalise(this)
 
@@ -106,16 +120,45 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
 
   ! now initialise the potential
 
-#ifdef HAVE_GP
-  call gp_read_binary(this%my_gp,'gp.dat')
-  call read_string(my_dictionary,this%my_gp%comment)
-#endif  
+  !call IPModel_GAP_read_params_xml(this, param_str)
 
-  if( .not. ( get_value(my_dictionary,'cutoff',this%cutoff) .and. &
-            & get_value(my_dictionary,'j_max',this%j_max) .and. &
-            & get_value(my_dictionary,'z0',this%z0) ) ) &
-  & call system_abort('Did not find bispectrum parameters in gp.dat file, &
-  & might be old version or format not correct')
+#ifdef HAVE_GP
+  !call gp_read_binary(this%my_gp, 'this%datafile')
+  this%datafile = 'gp.dat'
+  call gp_read_binary(this%my_gp, 'gp.dat')
+  call read_string(my_dictionary, this%my_gp%comment)
+#endif
+
+  this%datafile_coordinates = ''
+  if (.not. get_value(my_dictionary, 'coordinates', this%datafile_coordinates)) &
+     this%datafile_coordinates = 'bispectrum'
+
+  if (trim(this%datafile_coordinates) == 'bispectrum') then
+     if( .not. ( get_value(my_dictionary,'cutoff',this%cutoff) .and. &
+               & get_value(my_dictionary,'j_max',this%j_max) .and. &
+               & get_value(my_dictionary,'z0',this%z0) ) ) &
+     & call system_abort('Did not find bispectrum parameters in gp.dat file, &
+     & might be old version or format not correct')
+  elseif (trim(this%datafile_coordinates) == 'qw') then
+     if (.not. get_value(my_dictionary, 'qw_dim', this%qw_dim)) &
+        call system_abort('Did not find qw dimensionality')
+
+     allocate(this%qw_type(this%qw_dim), this%qw_l(this%qw_dim), this%qw_cutoff(this%qw_dim), &
+              this%qw_wf_char_length(this%qw_dim), this%qw_wf_type(this%qw_dim), this%qw_do_weight(this%qw_dim))
+
+     do i = 1, this%qw_dim
+        if (.not. (get_value(my_dictionary, 'qw_type_' // i, this%qw_type(i)) .and. &
+                   get_value(my_dictionary, 'qw_l_' // i, this%qw_l(i)) .and. &
+                   get_value(my_dictionary, 'qw_cutoff_' // i, this%qw_cutoff(i)) .and. &
+                   get_value(my_dictionary, 'qw_wf_char_length_' // i, this%qw_wf_char_length(i)) .and. &
+                   get_value(my_dictionary, 'qw_wf_type_' // i, this%qw_wf_type(i)) .and. &
+                   get_value(my_dictionary, 'qw_do_weight_' // i, this%qw_do_weight(i)))) &
+           call system_abort('Did not find qw parameters in')
+     enddo
+
+     this%cutoff = maxval(this%qw_cutoff)
+  endif
+
   call finalise(my_dictionary)
 
 end subroutine IPModel_GAP_Initialise_str
@@ -127,7 +170,21 @@ subroutine IPModel_GAP_Finalise(this)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
 
   this%n_types = 0
+
+  if (allocated(this%qw_type)) deallocate(this%qw_type)
+  if (allocated(this%qw_l)) deallocate(this%qw_l)
+  if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
+  if (allocated(this%qw_wf_char_length)) deallocate(this%qw_wf_char_length)
+  if (allocated(this%qw_wf_type)) deallocate(this%qw_wf_type)
+  if (allocated(this%qw_do_weight)) deallocate(this%qw_do_weight)
+
+  this%qw_dim = 0
+
+  this%datafile = ''
+  this%datafile_coordinates = ''
+
   this%label = ''
+
 end subroutine IPModel_GAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -149,7 +206,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:), allocatable   :: vec
   real(dp), dimension(:,:,:), allocatable   :: jack
-  integer :: d, i, j, k, n, nei_max, jn
+  integer :: d, i, j, k, l, n, nei_max, jn
+
+  real(dp) :: qw_in(this%qw_dim), qw_prime_in(this%qw_dim,3)
 
   integer, dimension(3) :: shift
 
@@ -163,12 +222,15 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 !$omp threadprivate(f_hat,df_hat,bis,dbis)  
 
   if (present(e)) e = 0.0_dp
-  if (present(local_e)) local_e = 0.0_dp
-  if (present(virial)) virial = 0.0_dp
+  if (present(local_e)) then
+     call check_size('Local_E',local_e,(/at%N/),'IPModel_GAP_Calc')
+     local_e = 0.0_dp
+  endif
   if (present(f)) then 
      call check_size('Force',f,(/3,at%N/),'IPModel_GAP_Calc')
      f = 0.0_dp
   end if
+  if (present(virial)) virial = 0.0_dp
 
   if(present(e) .or. present(local_e) ) then
      allocate(local_e_in(at%N))
@@ -181,6 +243,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   endif
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
+
+  if (trim(this%datafile_coordinates) == 'bispectrum') then
 
 #ifdef HAVE_GP
   d = j_max2d(this%j_max)
@@ -261,18 +325,80 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
   enddo
 
+  deallocate(vec,jack)
+
+  elseif (trim(this%datafile_coordinates) == 'qw') then
+
+#ifdef HAVE_GP
+
+  do i = 1, at%N
+     if (present(f) .or. present(virial)) then
+        do j = 1, this%qw_dim
+           if (this%qw_type(j) == 1) then
+              call calc_qw(at, i, this%qw_l(j), q = qw_in(j), grad_q = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
+                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+           elseif (this%qw_type(j) == 2) then
+              call calc_qw(at, i, this%qw_l(j), w = qw_in(j), grad_w = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
+                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+           endif
+        enddo
+     elseif ((.not. (present(f) .or. present(virial))) .and. (present(e) .or. present(local_e))) then 
+        do j = 1, this%qw_dim
+           if (this%qw_type(j) == 1) then
+              call calc_qw(at, i, this%qw_l(j), q = qw_in(j), cutoff = this%qw_cutoff(j), &
+                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+           elseif (this%qw_type(j) == 2) then
+              call calc_qw(at, i, this%qw_l(j), w = qw_in(j), cutoff = this%qw_cutoff(j), &
+                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+           endif
+        enddo
+     endif
+
+     if (present(e) .or. present(local_e)) local_e_in(i) = gp_mean(this%my_gp, qw_in)
+
+     if (present(f) .or. present(virial)) then
+        do j = 1, 3
+           f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
+
+           if (present(f)) f(j,i) = f_gp_k
+           if (present(virial)) virial_in(:,j,i) = 0.0_dp
+        enddo
+
+        do k = 1, atoms_n_neighbours(at, i)
+           l = atoms_neighbour(at, i, k)
+
+           do j = 1, this%qw_dim
+              if (this%qw_type(j) == 1) then
+                 call calc_qw(at, l, this%qw_l(j), q = qw_in(j), grad_q = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
+                              wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+              elseif (this%qw_type(j) == 2) then
+                 call calc_qw(at, l, this%qw_l(j), w = qw_in(j), grad_w = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
+                              wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
+              endif
+           enddo
+
+           do j = 1, 3
+              f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
+
+              if (present(f)) f(j,i) = f(j,i) + f_gp_k
+              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) + 0.0_dp
+           enddo
+        enddo
+     endif
+  enddo
+
+#endif
+
+  endif
+
   if(present(e)) e = sum(local_e_in)
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3)
 
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
-  deallocate(vec,jack)
-
 
 end subroutine IPModel_GAP_Calc
-
-
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X 
@@ -285,6 +411,7 @@ end subroutine IPModel_GAP_Calc
 !%> </GAP_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=*), intent(in)   :: URI  
   character(len=*), intent(in)   :: localname
@@ -403,13 +530,11 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
 
 end subroutine IPModel_GAP_read_params_xml
 
-
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X 
 !% Printing of GAP parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 
 subroutine IPModel_GAP_Print (this, file)
   type(IPModel_GAP), intent(in) :: this
