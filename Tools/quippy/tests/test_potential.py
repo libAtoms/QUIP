@@ -324,10 +324,11 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.at.lattice, self.lat_ref)
          self.assertArrayAlmostEqual(self.at.pos, self.pos_ref)
 
-      def testelastic_constants(self):
-         self.metapot.calc_elastic_constants(self.at, c=self.c, c0=self.c0, relax_initial=True)
-         self.assertArrayAlmostEqual(self.c, self.c_ref)
-         self.assertArrayAlmostEqual(self.c0, self.c0_ref)
+      if hasattr(MetaPotential, 'calc_elastic_constants'):
+         def testelastic_constants(self):
+            self.metapot.calc_elastic_constants(self.at, c=self.c, c0=self.c0, relax_initial=True)
+            self.assertArrayAlmostEqual(self.c, self.c_ref)
+            self.assertArrayAlmostEqual(self.c0, self.c0_ref)
 
 
 
