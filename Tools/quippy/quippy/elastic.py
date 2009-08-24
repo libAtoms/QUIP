@@ -126,7 +126,9 @@ strain_patterns = {
      [ farray([1,0,0,0,0,0]), [(1,1), (2,1), (3,1), (4,1), (5,1)]],
    
      # strain pattern e3 + e4, yields C33, C44
-     [ farray([0,0,1,1,0,0]), [(3,3), (4,4)] ]
+     [ farray([0,0,1,1,0,0]), [(3,3), (4,4)] ],
+
+     [ farray([0,0,0,0,0,1]), [(6,6)] ]
    ],
 
    'tetragonal': [
@@ -349,7 +351,7 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
             C_labels[i,j] = ' C%d%d' % Cij_rev_map[index]
             C_err[i,j] = Cij_err[index]
          elif index < 0:
-            C[i,j] = Cijs[-index]
+            C[i,j] = -Cijs[-index]
             C_err[i,j] = Cij_err[-index]
             C_labels[i,j] = '-C%d%d' % Cij_rev_map[-index]
 
