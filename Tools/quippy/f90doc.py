@@ -447,14 +447,7 @@ class C_module:
         # Add uses clauses for types used in this module
         dep_types = []
         for sub in subts + functs:
-            args = sub.arguments
-            if hasattr(sub,'ret_val'):
-                ret_val = sub.ret_val
-                ret_val.name = 'ret_'+ret_val.name
-                ret_val.attributes.append('intent(out)')
-                args.append(ret_val)
-
-            for arg in args:
+            for arg in sub.arguments:
                 if arg.type.startswith('type'):
                     t = arg.type[arg.type.index('(')+1:arg.type.index(')')].lower()
                     if t not in dep_types: dep_types.append(t)
@@ -509,6 +502,15 @@ class C_module:
 
         for sub in subts + functs:
 
+            # Add argument for return value, after last non-optional argument
+            if hasattr(sub,'ret_val'):
+                ret_val = sub.ret_val
+                ret_val.name = 'ret_'+ret_val.name
+                ret_val.attributes.append('intent(out)')
+                ret_val.is_ret_val = True
+                sub.arguments = ([ arg for arg in sub.arguments if not 'optional' in arg.attributes ] + [ret_val] +
+                                 [ arg for arg in sub.arguments if 'optional' in arg.attributes ])
+
             args = sub.arguments
             argnames = [x.name for x in args]
             newargnames = argnames[:]
@@ -559,6 +561,7 @@ class C_module:
                     f2py_docs[shortname.lower()]['interfaces'][intf.name.lower()]['routines'].append(sub.name.lower())
             
             allocates = []
+
             for arg in args:
 
                 # Replace all type args with pointers
@@ -725,7 +728,8 @@ class C_module:
             for var in allocates: println('allocate(%s)' % var)
             
             if hasattr(sub, 'ret_val'):
-                println('%s = my_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argnames[:-1])))
+                argfilt = [ arg.name for arg in args if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
+                println('%s = my_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
             else:
                 println('call my_%s(%s)' % (sub.name, join_and_split_lines(argnames)))
 
