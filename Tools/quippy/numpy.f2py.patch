@@ -1,6 +1,6 @@
 diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/auxfuncs.py ./auxfuncs.py
 --- /home/jk2/Code/numpy-1.2.1/numpy/f2py/auxfuncs.py	2008-10-28 11:21:47.000000000 +0000
-+++ ./auxfuncs.py	2009-08-07 16:59:31.000000000 +0100
++++ ./auxfuncs.py	2009-08-13 12:38:39.000000000 +0100
 @@ -41,6 +41,9 @@
  def debugcapi(var):
      return 'capi' in debugoptions
@@ -21,15 +21,28 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
  def hasinitvalue(var):
      return '=' in var
  
-@@ -514,6 +520,8 @@
+@@ -494,7 +500,7 @@
+         outmess('warning: callstatement is defined without callprotoargument\n')
+         return
+     from capi_maps import getctype
+-    arg_types,arg_types2 = [],[]
++    arg_types,arg_types2,arg_types3 = [],[],[]
+     if l_and(isstringfunction,l_not(isfunction_wrap))(rout):
+         arg_types.extend(['char*','size_t'])
+     for n in rout['args']:
+@@ -514,9 +520,11 @@
                  ctype = ctype+'*'
              if isstring(var) or isarrayofstrings(var):
                  arg_types2.append('size_t')
 +            if pgi_pointer_hack(var) and isderivedtypepointer(var):
-+                arg_types2.append('int')
++                arg_types3.append('int')
          arg_types.append(ctype)
  
-     proto_args = ','.join(arg_types+arg_types2)
+-    proto_args = ','.join(arg_types+arg_types2)
++    proto_args = ','.join(arg_types+arg_types3+arg_types2)
+     if not proto_args:
+         proto_args = 'void'
+     #print proto_args
 diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/capi_maps.py ./capi_maps.py
 --- /home/jk2/Code/numpy-1.2.1/numpy/f2py/capi_maps.py	2008-10-28 11:21:47.000000000 +0000
 +++ ./capi_maps.py	2009-07-17 18:02:08.000000000 +0100
@@ -55,7 +68,7 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
          elif l[:2]=='-v':
 diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py ./rules.py
 --- /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py	2008-10-28 11:21:47.000000000 +0000
-+++ ./rules.py	2009-08-07 17:02:29.000000000 +0100
++++ ./rules.py	2009-08-13 12:34:08.000000000 +0100
 @@ -75,6 +75,8 @@
  import func2subr
  options={}
@@ -119,6 +132,15 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
  if (PyErr_Occurred())
    f2py_success = 0;
  #ifdef F2PY_REPORT_ATEXIT
+@@ -316,7 +349,7 @@
+                       'latexdocstrreq':'\n','latexdocstropt':'\n',
+                       'latexdocstrout':'\n','latexdocstrcbs':'\n',
+                       },
+-    'kwlist':'','kwlistopt':'','callfortran':'','callfortranappend':'',
++    'kwlist':'','kwlistopt':'','callfortran':'','callfortranappend':'', 'callfortranpreappend':'',
+     'docsign':'','docsignopt':'','decl':'/*decl*/',
+     'freemem':'/*freemem*/',
+     'docsignshort':'','docsignoptshort':'',
 @@ -749,9 +782,15 @@
      },
  # Scalars (not complex)
@@ -133,7 +155,7 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
 +                   l_and(isoptional,l_not(isintent_c),isderivedtypepointer):'#varname#_capi == Py_None ? (#ctype#*)&#varname#_nullptr : &#varname#,',
 +                   l_and(l_not(isoptional),l_not(isintent_c)):'&#varname#,'},
 +     # JRK: Hack for pgf90 compiler, which appends an integer argument when arg is pointer to derived type
-+    'callfortranappend': {l_and(pgi_pointer_hack, isderivedtypepointer): '0,'},
++    'callfortranpreappend': {l_and(pgi_pointer_hack, isderivedtypepointer): '0,'},
      'return':{isintent_out:',#varname#'},
      '_check':l_and(isscalar,l_not(iscomplex))
      },{
@@ -191,3 +213,15 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
  {hasinitvalue:[
      {isintent_nothide:'\tif (#varname#_capi == Py_None) {'},
      {isintent_hide:'\t{'},
+@@ -1337,7 +1387,10 @@
+                                          })
+     rd['latexdocsignatureshort']=rd['docsignatureshort'].replace('_','\\_')
+     rd['latexdocsignatureshort']=rd['latexdocsignatureshort'].replace(',',', ')
+-    cfs=stripcomma(replace('#callfortran##callfortranappend#',{'callfortran':rd['callfortran'],'callfortranappend':rd['callfortranappend']}))
++    cfs=stripcomma(replace('#callfortran##callfortranpreappend##callfortranappend#',
++                           {'callfortran':rd['callfortran'],
++                            'callfortranpreappend': rd['callfortranpreappend'],
++                            'callfortranappend':rd['callfortranappend']}))
+     if len(rd['callfortranappend'])>1:
+         rd['callcompaqfortran']=stripcomma(replace('#callfortran# 0,#callfortranappend#',{'callfortran':rd['callfortran'],'callfortranappend':rd['callfortranappend']}))
+     else:
