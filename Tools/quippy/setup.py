@@ -11,7 +11,7 @@ from distutils.util import get_platform
 from numpy import get_include
 from distutils.command.clean import clean as _clean
 import sys, os, cPickle, glob, stat, subprocess
-import f90doc
+import f90doc, f2py_wrapper_gen
 from unittest import TestLoader, TextTestRunner
 
 print sys.argv
@@ -159,8 +159,7 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
             
             wrapperf = open(wrapper, 'w')
             tmpf = open('tmp.out','w')
-            mod.f2py(type_map, fortran_spec, tmpf,
-                     kindlines=kindlines)
+            f2py_wrapper_gen.wrap_mod(mod, type_map, fortran_spec, tmpf, kindlines=kindlines)
             tmpf.close()
             cpp_process = subprocess.Popen(cpp + cpp_opt + ['tmp.out'], stdout=wrapperf)
             cpp_process.communicate()
