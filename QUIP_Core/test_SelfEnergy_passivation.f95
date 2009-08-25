@@ -443,8 +443,8 @@ DIE
 
   Gii_exact = tbc_bulk%GF%G(1)%data_z(1)%data(i_min:i_max,i_min:i_max)
 
-call print ("after exact calc")
-call system("ps auxw | egrep 'MEM|test_SE' | grep -v grep")
+ call print ("after exact calc")
+ call system("ps auxw | egrep 'MEM|test_SE' | grep -v grep")
 ! not terminated
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -482,17 +482,17 @@ call Print("")
       Goo(i,i) = Goo(i,i) + Aoo_diag_inv_vec(i)
     end do
 
-call print ("starting matmul approx2 pole " // ip)
+ call print ("starting matmul approx2 pole " // ip)
     call matrix_product_sub(tt, Aio, Goo)
     call matrix_product_sub(SEii(ip)%data_z(1)%data, tt, Aoi)
-call print ("done matmul approx2 pole " // ip)
+ call print ("done matmul approx2 pole " // ip)
     do i=1, size(SEii(ip)%data_z(1)%data,1)
     do j=1, size(SEii(ip)%data_z(1)%data,2)
       SEii(ip)%data_z(1)%data(i,j) = -SEii(ip)%data_z(1)%data(i,j)
     end do
     end do
     ! call Print ("got SE " // ip)
-call print ("done approx2 pole " // ip)
+ call print ("done approx2 pole " // ip)
   end do
   deallocate(Aoo_diag_inv_vec)
   deallocate(Aoo_offdiag)
@@ -517,8 +517,8 @@ call Print("")
     SEii(ip)%data_z(1)%data = - SEii(ip)%data_z(1)%data
     ! call Print ("got SE " // ip)
   end do
-call print("onsite SE(1)")
-call print(SEii(1)%data_z(1)%data(1:4,1:4))
+ call print("onsite SE(1)")
+ call print(SEii(1)%data_z(1)%data(1:4,1:4))
   GF_E_i = calc_GF(tbc_SE_i, at_i, .true., af%Fermi_E, 0.1_dp, band_width, SelfEnergy=SEii, local_e = local_e_i_SE)
   call print_G_dev(at_i, tbc_SE_i%tbsys, tbc_SE_i%GF%G(1)%data_z(1)%data, Gii_exact, "exact SE")
   call print_local_e_dev(bulk, at_i, local_e, local_e_i_SE, "exact SE")
