@@ -231,10 +231,11 @@ function reciprocal_lattice(lattice)
 
 end function reciprocal_lattice
 
-subroutine KPoints_Initialise_density(this, lattice, k_space_density, mpi_obj)
+subroutine KPoints_Initialise_density(this, lattice, k_space_density, monkhorst_pack, mpi_obj)
   type(KPoints), intent(inout) :: this
   real(dp), intent(in) :: lattice(3,3)
   real(dp), intent(in) :: k_space_density
+  logical, intent(in), optional :: monkhorst_pack
   type(MPI_context), intent(in), optional :: mpi_obj
 
   integer :: n(3)
@@ -255,13 +256,12 @@ subroutine KPoints_Initialise_density(this, lattice, k_space_density, mpi_obj)
     where (n > 1)
       n = n + mod(n,2)
     end where
-    call initialise(this, n, .false., mpi_obj)
   else
     n = 1
-    call initialise(this, n, .false., mpi_obj)
   endif
+  call initialise(this, n, monkhorst_pack, mpi_obj)
 
-end subroutine
+end subroutine KPoints_initialise_density
 
 subroutine KPoints_Initialise_mesh(this, n, monkhorst_pack, mpi_obj)
   type(KPoints), intent(inout) :: this
@@ -269,10 +269,11 @@ subroutine KPoints_Initialise_mesh(this, n, monkhorst_pack, mpi_obj)
   logical, intent(in), optional :: monkhorst_pack
   type(MPI_context), intent(in), optional :: mpi_obj
 
-  integer i1, i2, i3, ik
-  integer NN(3), min(3), max(3)
-  logical shift(3)
-  real(dp) shiftv(3)
+  integer :: i, i1, i2, i3, ik
+  integer :: min(3), max(3), step(3)
+  real(dp) :: denom(3)
+  logical :: shift(3)
+  real(dp), allocatable :: mesh_wt(:,:,:)
 
   call Finalise(this)
 
@@ -280,59 +281,103 @@ subroutine KPoints_Initialise_mesh(this, n, monkhorst_pack, mpi_obj)
 
   if (maxval(n) > 1) then
     shift = .false.
-    shiftv = 0.0_dp
     if (present(monkhorst_pack)) then
       if (monkhorst_pack .and. mod(n(1),2) == 0) then
 	shift(1) = .true.
-	shiftv(1) = -0.5_dp/real(n(1),dp)
       end if
       if (monkhorst_pack .and. mod(n(2),2) == 0) then
 	shift(2) = .true.
-	shiftv(2) = -0.5_dp/real(n(2),dp)
       end if
       if (monkhorst_pack .and. mod(n(3),2) == 0) then
 	shift(3) = .true.
-	shiftv(3) = -0.5_dp/real(n(3),dp)
       end if
     endif
 
     this%N = 0
+    do i=1, 3
+      if (shift(i)) then
+        if (mod(n(i),2) == 0) then
+          min(i) = -(n(i)-1)
+          max(i) = n(i)-1
+          step(i) = 2
+          denom(i) = 2*n(i)
+        else
+          call system_abort("kpoints_initialise_mesh tried to Monkhorst-Pack shift odd dimension " // i)
+        endif
+      else
+        if (mod(n(i),2) == 0) then
+          min(i) = -n(i)/2+1
+          max(i) = n(i)/2
+          step(i) = 1
+          denom(i) = n(i)
+        else
+          if (n(i) == 1) then
+            min(i) = 0
+            max(i) = 0
+            step(i) = 1
+            denom(i) = 1
+          else
+            min(i) = -(n(i)-1)/2
+            max(i) = (n(i)-1)/2
+            step(i) = 1
+            denom(i) = n(i)
+          end if
+        end if
+      endif
+    end do
 
-    where(shift) ! M-P shift can be done
-      NN = n/2
-      min = 1
-      max = NN
-    else where
-      NN = n/2+1
-      min = 0
-      max = NN-1
-    end where
+    allocate(mesh_wt(min(1):max(1),min(2):max(2),min(3):max(3)))
+    mesh_wt = 1.0_dp
+    do i1=min(1), max(1), step(1)
+    do i2=min(2), max(2), step(2)
+    do i3=min(3), max(3), step(3)
+      if (-i1 >= min(1) .and. -i1 <= max(1) .and. &
+          -i2 >= min(2) .and. -i2 <= max(2) .and. &
+          -i3 >= min(3) .and. -i3 <= max(3)) then ! reflected k-point is in range
+        if ((i1 /= 0 .or. i2 /= 0 .or. i3 /= 0) .and. & 
+            (mesh_wt(i1,i2,i3) > 0.0_dp .and. mesh_wt(-i1,-i2,-i3) > 0.0_dp)) then ! not gamma and both points have weight
+          mesh_wt(-i1,-i2,-i3) = mesh_wt(-i1,-i2,-i3) + mesh_wt(i1,i2,i3)
+          mesh_wt(i1,i2,i3) = 0.0_dp
+        endif
+      endif
+    end do
+    end do
+    end do
 
-    this%N = NN(1)*NN(2)*NN(3)
+    this%N = 0
+    do i1=min(1), max(1), step(1)
+    do i2=min(2), max(2), step(2)
+    do i3=min(3), max(3), step(3)
+      if (mesh_wt(i1,i2,i3) > 0.0_dp) this%N = this%N + 1
+    end do
+    end do
+    end do
     allocate(this%k_pts(3,this%N))
     allocate(this%weights(this%N))
+
     ik = 1
-    do i1=min(1), max(1)
-    do i2=min(2), max(2)
-    do i3=min(3), max(3)
-      this%k_pts(1,ik) = real(i1,dp)/n(1)+shiftv(1)
-      this%k_pts(2,ik) = real(i2,dp)/n(2)+shiftv(2)
-      this%k_pts(3,ik) = real(i3,dp)/n(3)+shiftv(3)
-      this%weights(ik) = 1.0_dp
-      if (shift(1) .or. (mod(n(1),2) == 0 .and. i1 /= 0 .and. i1 /= max(1)) .or. &
-          (mod(n(1),2) /= 0 .and. i1 /= 0) ) this%weights(ik) = this%weights(ik) * 2.0_dp
-      if (shift(2) .or. (mod(n(2),2) == 0 .and. i2 /= 0 .and. i2 /= max(2)) .or. &
-          (mod(n(2),2) /= 0 .and. i2 /= 0) ) this%weights(ik) = this%weights(ik) * 2.0_dp
-      if (shift(3) .or. (mod(n(3),2) == 0 .and. i3 /= 0 .and. i3 /= max(3)) .or. &
-          (mod(n(3),2) /= 0 .and. i3 /= 0) ) this%weights(ik) = this%weights(ik) * 2.0_dp
-      ik = ik + 1
+    do i1=min(1), max(1), step(1)
+    do i2=min(2), max(2), step(2)
+    do i3=min(3), max(3), step(3)
+      if (mesh_wt(i1,i2,i3) > 0.0_dp) then
+        this%k_pts(1,ik) = real(i1,dp)/denom(1)
+        this%k_pts(2,ik) = real(i2,dp)/denom(2)
+        this%k_pts(3,ik) = real(i3,dp)/denom(3)
+        this%weights(ik) = mesh_wt(i1,i2,i3)
+        ik = ik + 1
+      endif
     end do
     end do
     end do
 
-  else
+    deallocate(mesh_wt)
+  else ! maxval(n) <= 1
     this%non_gamma = .false.
-    this%N = 0
+    this%N = 1
+    allocate(this%k_pts(3,this%N))
+    allocate(this%weights(this%N))
+    this%k_pts = 0.0_dp
+    this%weights = 1.0_dp
   endif
 
   call finish_initialise(this, mpi_obj)

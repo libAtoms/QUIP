@@ -270,13 +270,14 @@ subroutine TB_Print(this, file)
 
 end subroutine TB_Print
 
-subroutine TB_Setup_atoms(this, at, is_noncollinear)
+subroutine TB_Setup_atoms(this, at, is_noncollinear, args_str)
   type(TB_type), intent(inout) :: this
   type(Atoms), intent(in) :: at
   logical, intent(in), optional :: is_noncollinear
+  character(len=*), intent(in), optional :: args_str
 
   call wipe(this%tbsys)
-  call setup_atoms(this%tbsys, at, is_noncollinear)
+  call setup_atoms(this%tbsys, at, is_noncollinear, args_str, this%mpi)
 
   this%at = at
   call set_cutoff(this%at, this%tbsys%tbmodel%cutoff)
@@ -535,7 +536,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
     use_prev_charge = .false.
     do_at_local_N = .false.
   endif
-  call setup_atoms(this, at, noncollinear)
+  call setup_atoms(this, at, noncollinear, args_str)
 
   if(current_verbosity() > NERD) then
      call initialise(atomslog, "tb_calc_atomslog.xyz", action=OUTPUT, append=.true.)

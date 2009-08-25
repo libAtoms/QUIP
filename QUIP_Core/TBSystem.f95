@@ -153,6 +153,8 @@ type TBSystem
   type(TBMatrix) :: dS(3)
 
   ! k points
+  logical :: kpoints_generate_dynamically = .false., kpoints_generate_next_dynamically = .false., kpoints_use_mp = .true.
+  real(dp) :: kpoints_k_space_density = 1.0_dp
   type(KPoints) :: kpoints
 
   ! self consistency
@@ -183,7 +185,7 @@ end interface Initialise
 
 public :: Setup_atoms
 interface Setup_atoms
-  module procedure TBSystem_Setup_atoms, TBSystem_Setup_atoms_from_tbsys, TBSystem_setup_atoms_from_arrays
+  module procedure TBSystem_Setup_atoms_from_atoms, TBSystem_Setup_atoms_from_tbsys, TBSystem_setup_atoms_from_arrays
 end interface Setup_atoms
 
 public :: Setup_deriv_matrices
@@ -317,8 +319,12 @@ end interface scf_set_global_N
 
 public :: add_term_d2SCFE_dgNdn, add_term_dscf_e_correction_dgN, add_term_d2SCFE_dn2_times_vec, add_term_dscf_e_correction_dn
 
-contains
+public :: initialise_kpoints
+interface initialise_kpoints
+  module procedure TBSystem_initialise_kpoints
+end interface initialise_kpoints
 
+contains
 subroutine TBSystem_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj)
   type(TBSystem), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
@@ -331,15 +337,15 @@ subroutine TBSystem_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_o
 
   if (present(kpoints_obj)) then
     call Initialise(this%kpoints, kpoints_obj, mpi_obj)
+    call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
   else
-    call Initialise(this%kpoints, param_str, mpi_obj)
+    call initialise_kpoints(this, args_str, param_str, mpi_obj, from_tbsystem_initialise=.true.)
   endif
 
   call Initialise(this%scf, args_str, param_str)
   call Initialise(this%dipole_model, args_str, param_str)
   call Initialise(this%SO, args_str, param_str)
 
-  call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
 end subroutine TBSystem_Initialise_str
 
 subroutine check_dipole_model_consistency(dipole_model, tbm, Z)
@@ -397,6 +403,10 @@ subroutine TBSystem_Initialise_from_tbsys(this, from, mpi_obj)
   this%noncollinear = from%noncollinear
 
   this%kpoints = from%kpoints
+  this%kpoints_generate_dynamically = from%kpoints_generate_dynamically
+  this%kpoints_generate_next_dynamically = from%kpoints_generate_next_dynamically
+  this%kpoints_use_mp = from%kpoints_use_mp
+  this%kpoints_k_space_density = from%kpoints_k_space_density
   call init_mpi(this%kpoints, mpi_obj)
 
   call initialise_tbsystem_k_dep_stuff(this, mpi_obj)
@@ -498,14 +508,22 @@ function TBSystem_n_elec(this, at, w_n)
   end do
 end function TBSystem_n_elec
 
-subroutine TBSystem_Setup_atoms(this, at, noncollinear)
+subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj)
   type(TBSystem), intent(inout) :: this
   type(Atoms), intent(in) :: at
   logical, intent(in), optional :: noncollinear
+  character(len=*), intent(in), optional :: args_str
+  type(MPI_context), intent(in), optional :: mpi_obj
 
+  call initialise_kpoints(this, args_str=args_str, mpi_obj=mpi_obj)
+  if (this%kpoints_generate_dynamically) then
+    call initialise(this%kpoints, at%lattice, this%kpoints_k_space_density, this%kpoints_use_mp, mpi_obj)
+    call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
+    this%kpoints_generate_dynamically = this%kpoints_generate_next_dynamically
+  endif
   call setup_atoms(this, at%N, at%Z, noncollinear)
 
-end subroutine TBSystem_Setup_atoms
+end subroutine TBSystem_Setup_atoms_from_atoms
 
 subroutine TBSystem_Setup_atoms_from_tbsys(this, from)
   type(TBSystem), intent(inout) :: this
@@ -3678,5 +3696,93 @@ subroutine get_SO_block(this, tbm, Z, block_SO)
   end do
 
 end subroutine get_SO_block
+
+subroutine tbsystem_initialise_kpoints(this, args_str, param_str, mpi_obj, from_tbsystem_initialise)
+  type(TBSystem), intent(inout) :: this
+  character(len=*), intent(in), optional :: args_str
+  character(len=*), intent(in), optional :: param_str
+  type(MPI_context), intent(in), optional :: mpi_obj
+  logical, intent(in), optional :: from_tbsystem_initialise
+
+  type(Dictionary) :: params
+  logical :: use_k_density, use_k_density_once, k_use_mp
+  integer :: k_mesh(3)
+  logical :: my_from_tbsystem_initialise
+  real(dp) :: k_density
+
+  my_from_tbsystem_initialise = optional_default(.false., from_tbsystem_initialise)
+
+  if (present(args_str)) then
+    call initialise(params)
+    call param_register(params, "k_density", "-1.0", k_density)
+    call param_register(params, "use_k_density", "F", use_k_density)
+    call param_register(params, "use_k_density_once", "F", use_k_density_once)
+    call param_register(params, "k_mesh", "-1 -1 -1", k_mesh)
+    call param_register(params, "k_use_mp", ""//this%kpoints_use_mp, k_use_mp)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+      call system_abort("tbsystem_initialise_kpoints failed to parse args_str='"//trim(args_str)//"'")
+    endif
+    call finalise(params)
+  else
+    use_k_density = .false.
+    use_k_density = .false.
+    k_mesh = (/ -1, -1, -1 /)
+    k_use_mp = .true.
+  endif
+
+  if (use_k_density .and. use_k_density_once) then
+    call system_abort("tbsystem_initialise_kpoints confused because user passed both use_k_density and use_k_density_once")
+  endif
+
+  if (.not. my_from_tbsystem_initialise .and. use_k_density_once) then
+    call system_abort("tbsystem_initialise_kp[oints use_k_density_once can only be passed from tbsystem_initialise")
+  endif
+
+  if ((use_k_density .or. use_k_density_once) .and. any(k_mesh > 0)) then
+    call system_abort("tbsystem_initialise_kpoints confused by having both use_k_density ("//use_k_density// &
+                      ") or use_k_density_once("//use_k_density_once//") and signs of intent to use k_mesh ("//k_mesh//")")
+  endif
+
+  if (my_from_tbsystem_initialise) then
+    if (use_k_density .or. use_k_density_once) then
+       this%kpoints_generate_dynamically = .true.
+       this%kpoints_generate_next_dynamically = .not. use_k_density_once
+       this%kpoints_use_mp = k_use_mp
+       if (k_density >= 0.0_dp) then
+         this%kpoints_k_space_density = k_density
+       else if (this%tbmodel%has_default_k_density) then
+         this%kpoints_k_space_density = this%tbmodel%default_k_density
+       else
+         this%kpoints_k_space_density = -1.0_dp
+       endif
+    else if (any(k_mesh > 0)) then
+      call initialise(this%kpoints, k_mesh, k_use_mp, mpi_obj)
+      call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
+    else
+      if (present(param_str)) then
+        call initialise(this%kpoints, param_str, mpi_obj)
+        call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
+      endif
+    endif
+  else ! not from tbsystem_initialise
+    if (use_k_density) then
+       this%kpoints_generate_dynamically = .true.
+       this%kpoints_generate_next_dynamically = .true.
+       this%kpoints_use_mp = k_use_mp
+       if (k_density >= 0.0_dp) then
+         this%kpoints_k_space_density = k_density
+       else if (this%tbmodel%has_default_k_density) then
+         this%kpoints_k_space_density = this%tbmodel%default_k_density
+       else
+         this%kpoints_k_space_density = -1.0_dp
+       endif
+    else if (any(k_mesh > 0)) then
+      call initialise(this%kpoints, k_mesh, k_use_mp, mpi_obj)
+      call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
+    endif
+  endif
+
+
+end subroutine tbsystem_initialise_kpoints
 
 end module TBSystem_module
