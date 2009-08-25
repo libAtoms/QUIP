@@ -56,6 +56,9 @@ module MetaPotential_module
      type(Potential), pointer :: pot => null()
 
 
+     logical :: is_sum
+     type(MetaPotential_Sum), pointer :: sum => null()
+
      logical :: is_forcemixing
      type(MetaPotential_FM), pointer :: forcemixing => null()
 
@@ -70,29 +73,40 @@ module MetaPotential_module
 #endif
   end type MetaPotential
 
+  public :: MetaPotential_Sum
+  type MetaPotential_Sum
+     type(MPI_context) :: mpi
+
+     type(Potential), pointer :: pot1 => null() 
+     type(Potential), pointer :: pot2 => null() 
+
+     logical  :: subtract_pot1
+     logical  :: subtract_pot2
+  end type MetaPotential_Sum
+
   public :: Initialise
   interface Initialise
-     module procedure MetaPotential_initialise
+     module procedure MetaPotential_Initialise, MetaPotential_Sum_Initialise
   end interface
 
   public :: Finalise
   interface Finalise
-     module procedure MetaPotential_Finalise
+     module procedure MetaPotential_Finalise, MetaPotential_Sum_Finalise
   end interface
 
   public :: Print
   interface Print
-     module procedure MetaPotential_Print
+     module procedure MetaPotential_Print, MetaPotential_Sum_Print
   end interface
 
   public :: Cutoff
   interface Cutoff
-     module procedure MetaPotential_Cutoff
+     module procedure MetaPotential_Cutoff, MetaPotential_Sum_Cutoff
   end interface
 
   public :: Calc
   interface Calc
-     module procedure MetaPotential_Calc
+     module procedure MetaPotential_Calc, MetaPotential_Sum_Calc
   end interface
 
   public :: Minim
@@ -147,7 +161,7 @@ module MetaPotential_module
 
 subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_obj)
   type(MetaPotential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Simple', 'ForceMixing', 'Local_E_Mix' and 'ONIOM'
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Simple', 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM'
   type(Potential), intent(in), target :: pot !% Potential upon which this MetaPotential is based
   type(Potential), optional, intent(in), target :: pot2 !% Optional second potential
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
@@ -159,6 +173,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   call finalise(this)
   call initialise(params)
   call param_register(params, 'Simple', 'false', this%is_simple)
+  call param_register(params, 'Sum', 'false', this%is_sum)
   call param_register(params, 'ForceMixing', 'false', this%is_forcemixing)
 #ifdef HAVE_LOCAL_E_MIX
   call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix)
@@ -174,7 +189,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
   if (present(mpi_obj)) this%mpi = mpi_obj
 
-  if (count( (/this%is_simple, this%is_forcemixing &
+  if (count( (/this%is_simple, this%is_sum, this%is_forcemixing &
 #ifdef HAVE_LOCAL_E_MIX
           , this%is_local_e_mix &
 #endif HAVE_LOCAL_E_MIX
@@ -190,6 +205,15 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     if (present(bulk_scale)) call print("MetaPotential_initialise Simple ignoring bulk_scale passed in", ERROR)
 
     this%pot => pot
+
+  else if (this%is_sum) then
+    if (present(bulk_scale)) call print("MetaPotential_initialise Sum ignoring bulk_scale passed in", ERROR)
+
+    if (.not. present(pot2)) &
+      call system_abort('MetaPotential_initialise: two potentials needs for sum metapotential')
+
+    allocate(this%sum)
+    call initialise(this%sum, args_str, pot, pot2, mpi_obj)
 
   else if (this%is_forcemixing) then
 
@@ -226,6 +250,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     if (this%is_simple) then
        nullify(this%pot)
+    else if (this%is_sum) then
+       call finalise(this%sum)
+       deallocate(this%sum)
     else if (this%is_forcemixing) then
        call finalise(this%forcemixing)
        deallocate(this%forcemixing)
@@ -242,6 +269,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     end if
 
     this%is_simple = .false.
+    this%is_sum = .false.
     this%is_forcemixing = .false.
 #ifdef HAVE_LOCAL_E_MIX
     this%is_local_e_mix = .false.
@@ -268,6 +296,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     if (this%is_simple) then
        call Calc(this%pot, at, e, local_e, f, df, virial, args_str, err)
+    else if (this%is_sum) then
+       call Calc(this%sum, at, e, local_e, f, df, virial, args_str, err)
     else if (this%is_forcemixing) then
        call Calc(this%forcemixing, at, e, local_e, f, virial, args_str, err)
 #ifdef HAVE_LOCAL_E_MIX
@@ -291,6 +321,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     if (this%is_simple) then
        call Print('MetaPotential containing potential')
        call Print(this%pot, file=file)
+    else if (this%is_sum) then
+       call Print(this%sum, file=file)
     else if (this%is_forcemixing) then
        call Print(this%forcemixing, file=file)
 #ifdef HAVE_LOCAL_E_MIX
@@ -313,6 +345,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     if (this%is_simple) then
        metapotential_cutoff = cutoff(this%pot)
+    else if (this%is_sum) then
+       metapotential_cutoff = cutoff(this%sum)
     else if (this%is_forcemixing) then
        metapotential_cutoff = cutoff(this%forcemixing)
 #ifdef HAVE_LOCAL_E_MIX
@@ -1115,6 +1149,169 @@ max_atom_rij_change = 1.038_dp
 
   end subroutine
 
+  !*************************************************************************
+  !*
+  !*  MetaPotential_Sum routines
+  !*
+  !*************************************************************************
+
+  subroutine MetaPotential_Sum_Initialise(this, args_str, pot1, pot2, mpi)
+    type(MetaPotential_Sum), intent(inout) :: this
+    character(len=*), intent(in) :: args_str
+    type(Potential), intent(in), target :: pot1, pot2
+    type(MPI_Context), intent(in), optional :: mpi
+
+    type(Dictionary) :: params
+
+    call finalise(this)
+
+    call initialise(params)
+    call param_register(params, 'subtract_pot1', 'F', this%subtract_pot1)
+    call param_register(params, 'subtract_pot2', 'F', this%subtract_pot2)
+
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+       call system_abort('MetaPotential_Sum_Initialise failed to parse args_str="'//trim(args_str)//'"')
+    end if
+
+    call finalise(params)
+
+    this%pot1 => pot1
+    this%pot2 => pot2
+
+    if (present(mpi)) this%mpi = mpi
+
+  end subroutine MetaPotential_Sum_Initialise
+
+  subroutine MetaPotential_Sum_Finalise(this)
+    type(MetaPotential_Sum), intent(inout) :: this
+    
+    nullify(this%pot1)
+    nullify(this%pot2)
+
+    this%subtract_pot1 = .false.
+    this%subtract_pot2 = .false.
+
+  end subroutine MetaPotential_Sum_Finalise
+
+  subroutine MetaPotential_Sum_Print(this, file)
+    type(MetaPotential_Sum), intent(inout) :: this
+    type(Inoutput), intent(inout), optional :: file
+
+    call print('MetaPotential_Sum:', file=file)
+    call print(' subtract_pot1=' // this%subtract_pot1, file=file)
+    call print(' subtract_pot2=' // this%subtract_pot2, file=file)
+    call print('', file=file)
+    if (associated(this%pot1)) then
+       call print('Potential 1:', file=file)
+       call print(this%pot1, file=file)
+       call print('', file=file)
+    else
+       call print('Potential 1 not initialised', file=file)
+       call print('', file=file)
+    end if
+    if (associated(this%pot2)) then
+       call print('Potential 2:', file=file)
+       call Print(this%pot2, file=file)
+       call print('', file=file)
+    else
+       call print('Potential 2 not initialised', file=file)
+       call print('', file=file)
+    end if
+
+  end subroutine MetaPotential_Sum_Print
+
+  subroutine MetaPotential_Sum_Calc(this, at, e, local_e, f, df, virial, args_str, err)
+    type(MetaPotential_Sum), intent(inout) :: this
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(out), optional :: e
+    real(dp), intent(out), optional :: local_e(:)
+    real(dp), intent(out), optional :: f(:,:)
+    real(dp), intent(out), optional :: df(:,:)
+    real(dp), intent(out), optional :: virial(3,3)
+    character(*), intent(in), optional :: args_str
+    integer, intent(out), optional :: err
+
+    real(dp) :: my_e_1, my_e_2
+    real(dp), allocatable :: my_local_e_1(:), my_local_e_2(:)
+    real(dp), allocatable :: my_f_1(:,:), my_f_2(:,:)
+    real(dp), allocatable :: my_df_1(:,:), my_df_2(:,:)
+    real(dp) :: my_virial_1(3,3), my_virial_2(3,3)
+    integer :: my_err_1, my_err_2
+
+    if (present(local_e)) allocate(my_local_e_1(size(local_e)), my_local_e_2(size(local_e)))
+    if (present(f)) allocate(my_f_1(size(f, 1),size(f, 2)), my_f_2(size(f, 1),size(f, 2)))
+    if (present(df)) allocate(my_df_1(size(df, 1),size(df, 2)), my_df_2(size(df, 1),size(df, 2)))
+
+    call calc(this%pot1, at, e, local_e, f, df, virial, args_str, err)
+
+    if (present(err)) then
+      if (err /= 0) then
+        return
+      end if
+    end if
+
+    if (present(e)) my_e_1 = e
+    if (present(local_e)) my_local_e_1 = local_e
+    if (present(f)) my_f_1 = f
+    if (present(df)) my_df_1 = df
+    if (present(virial)) my_virial_1 = virial
+    if (present(err)) my_err_1 = err
+
+    if (this%subtract_pot1) then
+      if (present(e)) my_e_1 = - my_e_1
+      if (present(local_e)) my_local_e_1 = - my_local_e_1
+      if (present(f)) my_f_1 = - my_f_1
+      if (present(df)) my_df_1 = - my_df_1
+      if (present(virial)) my_virial_1 = - my_virial_1
+    end if
+
+    call calc(this%pot2, at, e, local_e, f, df, virial, args_str, err)
+
+    if (present(err)) then
+      if (err /= 0) then
+        return
+      end if
+    end if
+
+    if (present(e)) my_e_2 = e
+    if (present(local_e)) my_local_e_2 = local_e
+    if (present(f)) my_f_2 = f
+    if (present(df)) my_df_2 = df
+    if (present(virial)) my_virial_2 = virial
+    if (present(err)) my_err_2 = err
+
+    if (this%subtract_pot2) then
+      if (present(e)) my_e_2 = - my_e_2
+      if (present(local_e)) my_local_e_2 = - my_local_e_2
+      if (present(f)) my_f_2 = - my_f_2
+      if (present(df)) my_df_2 = - my_df_2
+      if (present(virial)) my_virial_2 = - my_virial_2
+    end if
+
+    if (present(e)) e = my_e_1 + my_e_2
+    if (present(local_e)) local_e = my_local_e_1 + my_local_e_2
+    if (present(f)) f = my_f_1 + my_f_2
+    if (present(df)) df = my_df_1 + my_df_2
+    if (present(virial)) virial = my_virial_1 + my_virial_2
+
+    if (present(local_e)) deallocate(my_local_e_1, my_local_e_2)
+    if (present(f)) deallocate(my_f_1, my_f_2)
+    if (present(df)) deallocate(my_df_1, my_df_2)
+  
+  end subroutine MetaPotential_Sum_Calc
+
+  function MetaPotential_Sum_Cutoff(this)
+    type(MetaPotential_Sum), intent(in) :: this
+    real(dp) :: metapotential_sum_cutoff
+
+    if(associated(this%pot1) .and. associated(this%pot2)) then
+       metapotential_sum_cutoff = max(cutoff(this%pot1), cutoff(this%pot2))
+    else
+       metapotential_sum_cutoff = 0.0_dp
+    endif
+
+  end function MetaPotential_Sum_Cutoff
+
 
 #include "MetaPotential_ForceMixing_routines.f95"
 
@@ -1128,4 +1325,3 @@ max_atom_rij_change = 1.038_dp
 #include "MetaPotential_Hybrid_utils.f95"
 
 end module MetaPotential_module
-
