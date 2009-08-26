@@ -575,6 +575,7 @@ module paramreader_module
       character(len=1024) :: command_line
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
+      integer :: eq_loc, this_len
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
 
@@ -595,7 +596,17 @@ module paramreader_module
       command_line = ''
       do i=1, size(xargs)
          call get_cmd_arg(xargs(i), this_arg)
-         command_line = trim(command_line)//' '//trim(this_arg)
+         if (index(trim(this_arg),' ') /= 0) then
+           if (index(trim(this_arg),'=') /= 0) then
+             eq_loc = index(trim(this_arg),'=')
+             this_len = len_trim(this_arg)
+             command_line = trim(command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
+           else
+             command_line = trim(command_line)//' "'//trim(this_arg)//'"'
+           endif
+         else
+           command_line = trim(command_line)//' '//trim(this_arg)
+         endif
       end do
 
       call print("param_read_args got command_line '"//trim(command_line)//"'", VERBOSE)
