@@ -832,7 +832,7 @@ contains
     call param_register(params, 'max_force_warning', '2.0', max_force_warning)
 
     if (present(args_str)) then
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='go_cp2k args_str')) &
       call system_abort("Potential_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     else
       call system_abort("Potential_Initialise_str failed to parse args_str, no args_str")

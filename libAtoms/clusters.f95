@@ -1054,7 +1054,7 @@ contains
     call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3))
     call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) &
       call system_abort("carve_cluster failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
@@ -1279,7 +1279,7 @@ contains
     call param_register(params, 'cluster_same_lattice', 'F', same_lattice)
     call param_register(params, 'termination_clash_check','F', termination_clash_check)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) &
       call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
@@ -1412,7 +1412,7 @@ contains
     call param_register(params, 'hysteretic_connect_cluster_radius', '1.2', hysteretic_connect_cluster_radius)
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor)
     call param_register(params, 'hysteretic_connect_outer_factor', '1.5', hysteretic_connect_outer_factor)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights_args_str args_str') ) &
       call system_abort("create_hybrid_weights_args_str failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 

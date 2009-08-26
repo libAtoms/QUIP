@@ -60,7 +60,7 @@ program cp2k_filepot
     call param_register(params_in, 'clean_up_files', 'T', clean_up_files)
 !    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
 
-    if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.)) then
+    if (.not.param_read_args(params_in, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot args_str')) then
       call system_abort('could not parse argument line')
     end if
 

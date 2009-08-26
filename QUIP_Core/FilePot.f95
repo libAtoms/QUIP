@@ -127,7 +127,7 @@ subroutine FilePot_Initialise(this, args_str, mpi)
   call param_register(params, 'command', PARAM_MANDATORY, command)
   call param_register(params, 'property_list', 'pos', property_list)
   call param_register(params, 'min_cutoff', '0.0', min_cutoff)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
     call system_abort("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'")
   endif
   call finalise(params)

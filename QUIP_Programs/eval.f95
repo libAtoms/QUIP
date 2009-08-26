@@ -54,6 +54,25 @@ implicit none
 
   call system_initialise()
 
+  call initialise(cli_params)
+  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
+  if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
+    call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
+  end if
+  select case(verbosity)
+    case ("NORMAL")
+      call verbosity_push(NORMAL)
+    case ("VERBOSE")
+      call verbosity_push(VERBOSE)
+    case ("NERD")
+      call verbosity_push(NERD)
+    case ("ANAL")
+      call verbosity_push(ANAL)
+    case default
+      call system_abort("confused by verbosity " // trim(verbosity))
+  end select
+  call finalise(cli_params)
+
   call enable_timing()
 
   init_args = ''
@@ -103,7 +122,7 @@ implicit none
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method)
   call param_register(cli_params, 'minim_method', 'cg', minim_method)
 
-  if (.not. param_read_args(cli_params, do_check = .true.)) then
+  if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_parms.xml)",ERROR)
     call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [torque]", ERROR)
     call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", ERROR)
@@ -138,19 +157,6 @@ implicit none
       no_parallel=do_parallel_phonons)
     call Initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
   endif
-
-  select case(verbosity)
-    case ("NORMAL")
-      call verbosity_push(NORMAL)
-    case ("VERBOSE")
-      call verbosity_push(VERBOSE)
-    case ("NERD")
-      call verbosity_push(NERD)
-    case ("ANAL")
-      call verbosity_push(ANAL)
-    case default
-      call system_abort("confused by verbosity " // trim(verbosity))
-  end select
 
   call set_cutoff(at, cutoff(metapot)+0.5_dp)
 

@@ -522,7 +522,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
     call param_register(params, 'use_prev_charge', 'F', use_prev_charge) ! use previous charge (local or global) as initial guess for current SCF step (only works if local_dN value or local_N property are present
     call param_register(params, 'do_at_local_N', 'F', do_at_local_N) ! compute local charge and store in at property local_N if it exists
     call param_register(params, 'do_evecs', 'F', do_evecs) ! do we need to do evecs
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TB_Calc args_str')) then
       call system_abort("TB_calc failed to parse args_str='"//trim(args_str)//"'")
     endif
     call finalise(params)

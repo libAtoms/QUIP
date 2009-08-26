@@ -1340,7 +1340,7 @@ subroutine TB_Spin_Orbit_Coupling_Initialise_str(this, args_str, param_str)
 
   call initialise(params)
   call param_register(params, 'spin_orbit_coupling', 'F', this%active)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TB_Spin_Orbit_Coupling_Initialise_str args_str')) then
     call system_abort("TB_Spin_Orbit_Coupling_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
   call finalise(params)
@@ -1372,7 +1372,7 @@ subroutine Self_Consistency_set_type_str(this, args_str)
   call param_register(params, 'SCF_MAX_ITER', ''//this%max_iter, this%max_iter)
   call param_register(params, 'SCF_MIX_SIMPLE', 'F', this%mix_simple)
   call param_register(params, 'SCF_CONV_TOL', ''//this%conv_tol, this%conv_tol)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Self_Consistency_set_type_str args_str')) then
     call system_abort("Self_Consistency_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
   call finalise(params)
@@ -3719,7 +3719,7 @@ subroutine tbsystem_initialise_kpoints(this, args_str, param_str, mpi_obj, from_
     call param_register(params, "use_k_density_once", "F", use_k_density_once)
     call param_register(params, "k_mesh", "-1 -1 -1", k_mesh)
     call param_register(params, "k_use_mp", ""//this%kpoints_use_mp, k_use_mp)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBSystem_Initialise_KPoints')) then
       call system_abort("tbsystem_initialise_kpoints failed to parse args_str='"//trim(args_str)//"'")
     endif
     call finalise(params)

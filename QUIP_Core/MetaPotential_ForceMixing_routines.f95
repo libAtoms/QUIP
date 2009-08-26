@@ -68,7 +68,7 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_initialise args_str')) then
        call system_abort('MetaPotential_FM_initialise failed to parse args_str="'//trim(args_str)//'"')
     end if
 
@@ -263,8 +263,8 @@
        weight_interpolation = 'distance_ramp'
     end if
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
-      call system_abort("MetaPotential_FM_calc_energy failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_Calc args_str') ) &
+      call system_abort("MetaPotential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) &

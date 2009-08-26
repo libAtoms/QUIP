@@ -182,7 +182,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   call param_register(params, 'ONIOM', 'false', this%is_oniom)
 #endif HAVE_ONIOM
 
-  if(.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Initialise args_str')) then
     call system_abort("MetaPotential_initialise failed to parse args_str='"//trim(args_str)//"'")
   end if
   call finalise(params)
@@ -1169,7 +1169,7 @@ max_atom_rij_change = 1.038_dp
     call param_register(params, 'subtract_pot1', 'F', this%subtract_pot1)
     call param_register(params, 'subtract_pot2', 'F', this%subtract_pot2)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Sum_Initialise args_str')) then
        call system_abort('MetaPotential_Sum_Initialise failed to parse args_str="'//trim(args_str)//'"')
     end if
 

@@ -39,7 +39,7 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Local_E_Mix_initialise args_str') ) &
       call system_abort("MetaPotential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
@@ -128,7 +128,7 @@
     call param_register(params, "core_hops", "0", core_hops)
     call param_register(params, "transition_hops", "0", transition_hops)
     call param_register(params, "buffer_hops", "0", buffer_hops)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Local_E_Mix_Calc args_str') ) &
       call system_abort("MetaPotential_Local_E_Mix_calc_energy failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
