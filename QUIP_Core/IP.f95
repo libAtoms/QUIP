@@ -221,7 +221,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   ! Add new IPs here
   call param_register(params, 'Template', 'false', is_template)
 
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IP_Initialise_str args_str')) then
     call system_abort("IP_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
   call finalise(params)

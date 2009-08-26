@@ -323,6 +323,8 @@ module paramreader_module
       entry%N = N
       entry%param_type = param_type
 
+! call print("parser register entry " // trim(key) // " value " // trim(value), ERROR)
+
       if (present(has_value_target)) then
 	entry%has_value => has_value_target
       else
@@ -417,11 +419,12 @@ module paramreader_module
     !% Read and parse line and update the key/value pairs stored by
     !% in a Dictionary object. Returns false if an error is encountered parsing
     !% the line.
-    function param_read_line(dict, myline, ignore_unknown) result(status)
+    function param_read_line(dict, myline, ignore_unknown, task) result(status)
 
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       character(len=*), intent(in) :: myline  !% Line to parse
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
+      character(len=*), intent(in), optional :: task
       logical :: status
 
       character(len=FIELD_LENGTH) :: field
@@ -432,6 +435,8 @@ module paramreader_module
       type(ParamEntry) :: entry
       type(DictData) :: data
       logical :: my_ignore_unknown
+      integer :: entry_i
+      logical, allocatable :: my_has_value(:)
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
 
@@ -460,6 +465,9 @@ module paramreader_module
 
       allocate(data%d(size(transfer(entry,data%d))))
 
+      allocate(my_has_value(dict%N))
+      my_has_value = .false.
+
       ! zero out has_value pointers for entire dictionary
       do i=1, dict%N
 	entry = transfer(dict%entries(i)%d%d,entry)
@@ -468,6 +476,11 @@ module paramreader_module
 	endif
       end do
 
+      if (present(task)) then
+        call print("parser doing "//trim(task), VERBOSE)
+      else
+        call print("parser doing UNKNOWN", VERBOSE)
+      endif
       ! Set the new entries
       do i=1,num_pairs
 	 field = final_fields(i)
@@ -492,7 +505,7 @@ module paramreader_module
          end if
            
          ! Extract this value
-         if (.not. get_value(dict, key, data)) then
+         if (.not. get_value(dict, key, data, i=entry_i)) then
 	    if (.not. my_ignore_unknown) then
 	      call print("param_read_line: unknown key "//trim(key))
 	      status = .false.
@@ -501,9 +514,11 @@ module paramreader_module
 	 else
 	   entry = transfer(data%d,entry)
 	   entry%value = value
+           my_has_value(entry_i) = .true.
 	   if (associated(entry%has_value)) then
 	     entry%has_value = .true.
 	   endif
+           call print ("parser got: " // trim(paramentry_write_string(key, entry)), VERBOSE)
 	   status = param_parse_value(entry)
 	   if (.not. status) then
 	      call Print('Error parsing value '//trim(entry%value))
@@ -515,6 +530,15 @@ module paramreader_module
 	   call set_value(dict,key,data)
          end if
       end do
+
+      if (current_verbosity() >= VERBOSE) then
+        do i=1, dict%N
+          entry = transfer(dict%entries(i)%d%d,entry)
+          if (.not. my_has_value(i)) then
+            call print ("parser defaulted: "//trim(paramentry_write_string(dict%keys(i),entry)), VERBOSE)
+          endif
+        end do
+      endif
       
       if (allocated(data%d)) deallocate(data%d)
       status = .true. ! signal success to caller
@@ -527,10 +551,11 @@ module paramreader_module
     !% 'do_check' is true then finish by checking if all mandatory values have
     !% been specified. Returns false if there was a problem reading the file, or
     !% if the check for mandatory parameters fails.
-    function param_read_file(dict, file, do_check) result(status)
+    function param_read_file(dict, file, do_check,task) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       type(Inoutput), intent(in) :: file !% File to read from
       logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      character(len=*), intent(in), optional :: task
       logical :: status
 
       integer :: file_status
@@ -541,7 +566,7 @@ module paramreader_module
          if (file_status /= 0) exit  ! Check for end of file
          ! Discard empty and comment lines, otherwise parse the line
          if (len_trim(myline) > 0 .and. myline(1:1) /= '#') then 
-            status = param_read_line(dict, myline)
+            status = param_read_line(dict, myline, task=task)
             if (.not. status) then
                call print('Error reading line: '//myline)
                return
@@ -563,11 +588,12 @@ module paramreader_module
     !% arguments that we should look at, in order, if it's not given we look
     !% at all arguments.  Returns false if fails, or if optional check that
     !% all mandatory values have been specified fails.
-    function param_read_args(dict, args, do_check,ignore_unknown) result(status)
+    function param_read_args(dict, args, do_check,ignore_unknown,task) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       integer, dimension(:), intent(in), optional :: args !% Argument indices to use
       logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
+      character(len=*), intent(in), optional :: task
       logical :: status
 
       integer :: i, nargs
@@ -614,7 +640,7 @@ module paramreader_module
       deallocate(xargs)
 
       ! Then parse this string, and return success or failure
-      status =  param_read_line(dict, command_line,ignore_unknown=my_ignore_unknown)
+      status = param_read_line(dict, command_line,ignore_unknown=my_ignore_unknown, task=task)
       if (.not. status) return
 
       status = .true.
@@ -630,11 +656,12 @@ module paramreader_module
     !% parsing their values into 'dict'. Non option arguments
     !% are returned in the array non_opt_args. Optionally check that
     !% all mandatory parameters have been specified.
-    function process_arguments(dict, non_opt_args, n_non_opt_args, do_check) result(status)
+    function process_arguments(dict, non_opt_args, n_non_opt_args, do_check, task) result(status)
       type(Dictionary) :: dict !% Dictionary of registered key/value pairs
       character(len=*), dimension(:), intent(out) :: non_opt_args !% On exit, contains non option arguments
       integer, intent(out) :: n_non_opt_args !% On exit, number of non option arguments
       logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
+      character(len=*), intent(in), optional :: task
       logical :: status
 
       character(len=255) :: args(100)
@@ -698,7 +725,7 @@ module paramreader_module
       do i=1,opt_inds%N
          options = trim(options)//' '//trim(args(opt_inds%int(1,i)))
       end do
-      status = param_read_line(dict, options)
+      status = param_read_line(dict, options, task=task)
       if (.not. status) return
 
       status = .true.
@@ -754,13 +781,32 @@ module paramreader_module
 
     end subroutine param_print
 
+    function paramentry_write_string(key,entry) result(s)
+      character(len=*) :: key
+      type(ParamEntry), intent(in) :: entry
+      character(len=2048) :: s
+
+      ! Print value in brackets if it contains any spaces
+      if (index(trim(entry%value), ' ') /= 0) then
+         write (s, '(a,a,a,a)')  &
+              trim(key), '={', trim(entry%value),'} '
+      else
+         if (len(trim(entry%value)) == 0 .and. entry%param_type == PARAM_LOGICAL) then
+           write (s, '(a,a,a,a)')  &
+                trim(key), '=', 'T', ' '
+         else
+           write (s, '(a,a,a,a)')  &
+                trim(key), '=', trim(entry%value), ' '
+         endif
+      end if
+    end function paramentry_write_string
+
     !% Return string representation of param dictionary, i.e.
     !% 'key1=value1 key2=value2 quotedkey="quoted value"'
     function param_write_string(dict) result(s)
       type(Dictionary), intent(in) :: dict !% Dictionary of registered key/value pairs
       character(2048) :: s
 
-      character(2048) :: tmp
       type(ParamEntry) :: entry
       integer :: i
 
@@ -771,15 +817,7 @@ module paramreader_module
          if (.not. get_value(dict, dict%keys(i), data)) &
               call system_abort('param_print: Key '//dict%keys(i)//' missing')
          entry = transfer(data%d,entry)
-         ! Print value in quotes if it contains any spaces
-         if (index(trim(entry%value), ' ') /= 0) then
-            write (tmp, '(a,a,a,a)')  &
-                 trim(dict%keys(i)), ' = "', trim(entry%value),'" '
-         else
-            write (tmp, '(a,a,a,a)')  &
-                 trim(dict%keys(i)), ' = ', trim(entry%value), ' '
-         end if
-         s = trim(s)//trim(tmp)
+         s = trim(s)//trim(paramentry_write_string(dict%keys(i),entry))
       end do
 
       deallocate(data%d)

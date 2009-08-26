@@ -165,7 +165,7 @@ subroutine TBModel_Initialise_str(this, args_str, param_str)
   call param_register(params, 'fermi_T', '0.0', str_fermi_T, has_str_fermi_T)
   call param_register(params, 'band_width', '0.0', str_band_width, has_str_band_width)
   call param_register(params, 'k_density', '0.0', str_k_density, has_str_k_density)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_Initialise_str args_str')) then
     call system_abort("TBModel_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
   call finalise(params)
@@ -548,7 +548,7 @@ function TBModel_has_Fermi_E(out_Fermi_E, this, Fermi_E, args_str)
     if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'fermi_e', ''//out_fermi_E, out_fermi_E, has_str_fermi_e)
-      if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_E args_str')) then
 	call system_abort("TBModel_has_fermi_e failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
@@ -580,7 +580,7 @@ function TBModel_has_Fermi_T(out_Fermi_T, this, Fermi_T, args_str)
     if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'fermi_T', ''//out_fermi_T, out_fermi_T, has_str_fermi_T)
-      if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_T args_str')) then
 	call system_abort("TBModel_has_fermi_T failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
@@ -612,7 +612,7 @@ function TBModel_has_band_width(out_band_width, this, band_width, args_str)
     if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'band_width', ''//out_band_width, out_band_width, has_str_band_width)
-      if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_band_width args_str')) then
 	call system_abort("TBModel_has_band_width failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
@@ -644,7 +644,7 @@ function TBModel_has_k_density(out_k_density, this, k_density, args_str)
     if (present(args_str)) then
       call initialise(params)
       call param_register(params, 'k_density', ''//out_k_density, out_k_density, has_str_k_density)
-      if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_k_density args_str')) then
 	call system_abort("TBModel_has_k_density failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)

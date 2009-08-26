@@ -581,16 +581,18 @@ end subroutine dictionary_set_value_d
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-function dictionary_get_value_i(this, key, v, case_sensitive)
+function dictionary_get_value_i(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   integer, intent(out) :: v
   logical :: dictionary_get_value_i
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_i = .false.
@@ -605,16 +607,18 @@ function dictionary_get_value_i(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_i
 
-function dictionary_get_value_r(this, key, v, case_sensitive)
+function dictionary_get_value_r(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   real(dp), intent(out) :: v
   logical :: dictionary_get_value_r
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_r = .false.
@@ -630,16 +634,18 @@ function dictionary_get_value_r(this, key, v, case_sensitive)
 end function dictionary_get_value_r
 
 
-function dictionary_get_value_c(this, key, v, case_sensitive)
+function dictionary_get_value_c(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   complex(dp), intent(out) :: v
   logical :: dictionary_get_value_c
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_c = .false.
@@ -654,16 +660,18 @@ function dictionary_get_value_c(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_c
 
-function dictionary_get_value_l(this, key, v, case_sensitive)
+function dictionary_get_value_l(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   logical, intent(out) :: v
   logical :: dictionary_get_value_l
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_l = .false.
@@ -679,16 +687,18 @@ function dictionary_get_value_l(this, key, v, case_sensitive)
 end function dictionary_get_value_l
 
 
-function dictionary_get_value_s(this, key, v, case_sensitive)
+function dictionary_get_value_s(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   character(len=value_len), intent(out) :: v
   logical :: dictionary_get_value_s
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_s = .false.
@@ -705,16 +715,18 @@ end function dictionary_get_value_s
 
 
 
-function dictionary_get_value_i_a(this, key, v, case_sensitive)
+function dictionary_get_value_i_a(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   integer, intent(out) :: v(:)
   logical :: dictionary_get_value_i_a
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_i_a = .false.
@@ -733,16 +745,18 @@ function dictionary_get_value_i_a(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_i_a
 
-function dictionary_get_value_r_a(this, key, v, case_sensitive)
+function dictionary_get_value_r_a(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   real(dp), intent(out) :: v(:)
   logical :: dictionary_get_value_r_a
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_r_a = .false.
@@ -761,16 +775,18 @@ function dictionary_get_value_r_a(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_r_a
 
-function dictionary_get_value_i_a2(this, key, v, case_sensitive)
+function dictionary_get_value_i_a2(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   integer, intent(out) :: v(:,:)
   logical :: dictionary_get_value_i_a2
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_i_a2 = .false.
@@ -790,16 +806,18 @@ function dictionary_get_value_i_a2(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_i_a2
 
-function dictionary_get_value_r_a2(this, key, v, case_sensitive)
+function dictionary_get_value_r_a2(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   real(dp), intent(out) :: v(:,:)
   logical :: dictionary_get_value_r_a2
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_r_a2 = .false.
@@ -820,16 +838,18 @@ function dictionary_get_value_r_a2(this, key, v, case_sensitive)
 end function dictionary_get_value_r_a2
 
 
-function dictionary_get_value_c_a(this, key, v, case_sensitive)
+function dictionary_get_value_c_a(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   complex(dp), intent(out) :: v(:)
   logical :: dictionary_get_value_c_a
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_c_a = .false.
@@ -848,16 +868,18 @@ function dictionary_get_value_c_a(this, key, v, case_sensitive)
   endif
 end function dictionary_get_value_c_a
 
-function dictionary_get_value_l_a(this, key, v, case_sensitive)
+function dictionary_get_value_l_a(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   logical, intent(out) :: v(:)
   logical :: dictionary_get_value_l_a
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_l_a = .false.
@@ -877,16 +899,18 @@ function dictionary_get_value_l_a(this, key, v, case_sensitive)
 end function dictionary_get_value_l_a
 
 
-function dictionary_get_value_s_a(this, key, v, case_sensitive)
+function dictionary_get_value_s_a(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   character(len=value_len), intent(out) :: v(:)
   logical :: dictionary_get_value_s_a
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_s_a = .false.
@@ -907,16 +931,18 @@ end function dictionary_get_value_s_a
 
 
 
-function dictionary_get_value_d(this, key, v, case_sensitive)
+function dictionary_get_value_d(this, key, v, case_sensitive, i)
   type(Dictionary), intent(in) :: this
   character(len=*) key
   type(DictData), intent(out) :: v
   logical :: dictionary_get_value_d
   logical, optional :: case_sensitive
+  integer, optional :: i
 
   integer entry_i
 
   entry_i = lookup_entry_i(this, key, case_sensitive)
+  if (present(i)) i = entry_i
 
   if (entry_i <= 0) then
     dictionary_get_value_d = .false.

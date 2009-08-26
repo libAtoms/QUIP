@@ -255,7 +255,7 @@ contains
     call param_register(params, 'IP', 'false', is_IP)
     call param_register(params, 'FilePot', 'false', is_FilePot)
     call param_register(params, 'wrapper', 'false', is_wrapper)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise_str args_str')) then
       call system_abort("Potential_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     endif
     call finalise(params)
@@ -377,7 +377,7 @@ contains
     call param_register(params, 'calc_df', 'F', calc_df)
     call param_register(params, 'calc_virial', 'F', calc_virial)
 
-    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.) ) &
+    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Calc_str args_str') ) &
       call system_abort("Potential_calc failed to parse args_str='"//trim(my_args_str)//"'")
     call finalise(params)
 

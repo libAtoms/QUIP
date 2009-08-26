@@ -97,7 +97,7 @@ subroutine IPModel_Brenner_Screened_Initialise_str(this, args_str, param_str, mp
   call initialise(params)
   this%label=''
   call param_register(params, 'label', '', this%label)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.)) then
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Brenner_Screened_Initialise_str args_str')) then
     call system_abort("IPModel_Brenner_Screened_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
