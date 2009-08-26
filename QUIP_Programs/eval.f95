@@ -103,8 +103,6 @@ implicit none
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method)
   call param_register(cli_params, 'minim_method', 'cg', minim_method)
 
-  call print("n_args " // cmd_arg_count())
-
   if (.not. param_read_args(cli_params, do_check = .true.)) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_parms.xml)",ERROR)
     call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [torque]", ERROR)
@@ -351,8 +349,6 @@ implicit none
 	endif
       endif
     endif
-  
-    call print(metapot)
 
     if (do_E) then
       call print ("Energy " // E0)
@@ -426,6 +422,8 @@ implicit none
   endif
 
   if (.not. did_something) call system_abort("Nothing to be calculated")
+
+  call print(metapot)
 
   mainlog%prefix = "AT"
   call print_xyz(at, mainlog, all_properties=.true., real_format='f13.8')
