@@ -68,7 +68,7 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
          elif l[:2]=='-v':
 diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py ./rules.py
 --- /home/jk2/Code/numpy-1.2.1/numpy/f2py/rules.py	2008-10-28 11:21:47.000000000 +0000
-+++ ./rules.py	2009-08-13 12:34:08.000000000 +0100
++++ ./rules.py	2009-08-26 09:35:00.000000000 +0100
 @@ -75,6 +75,8 @@
  import func2subr
  options={}
@@ -170,17 +170,18 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
      'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",#varname#.r,#varname#.i);'},
      'return':{isintent_out:',#varname#_capi'},
      '_check':iscomplex
-@@ -865,7 +906,8 @@
+@@ -865,7 +906,9 @@
      'decl':['\t#ctype# #varname# = NULL;',
              '\tint slen(#varname#);',
              '\tPyObject *#varname#_capi = Py_None;'],
 -    'callfortran':'#varname#,',
 +#    'callfortran':'#varname#,',
-+    'callfortran':{isintent_out:'#varname#,', l_not(isintent_out):'#varname#_capi == Py_None ? NULL : #varname#,'},
++    'callfortran': {isintent_out:'#varname#,', l_and(isoptional, l_not(isintent_out)):'#varname#_capi == Py_None ? NULL : #varname#,',
++                   l_and(l_not(isoptional), l_not(isintent_out)): '#varname#,'},
      'callfortranappend':'slen(#varname#),',
      'pyobjfrom':{debugcapi:'\tfprintf(stderr,"#vardebugshowvalue#\\n",slen(#varname#),#varname#);'},
  #    'freemem':'\tSTRINGFREE(#varname#);',
-@@ -909,7 +951,9 @@
+@@ -909,7 +952,9 @@
              '\tPyArrayObject *capi_#varname#_tmp = NULL;',
              '\tint capi_#varname#_intent = 0;',
              ],
@@ -191,7 +192,7 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
      'return':{isintent_out:',capi_#varname#_tmp'},
      'need':'len..',
      '_check':isarray
-@@ -971,13 +1015,19 @@
+@@ -971,13 +1016,19 @@
                   '\tcapi_#varname#_intent |= #intent#;',
                   {isintent_hide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,Py_None);'},
                   {isintent_nothide:'\tcapi_#varname#_tmp = array_from_pyobj(#atype#,#varname#_Dims,#varname#_Rank,capi_#varname#_intent,#varname#_capi);'},
@@ -213,7 +214,7 @@ diff -aurN --exclude='*.pyc' --exclude='*.pyo' --exclude='*~' /home/jk2/Code/num
  {hasinitvalue:[
      {isintent_nothide:'\tif (#varname#_capi == Py_None) {'},
      {isintent_hide:'\t{'},
-@@ -1337,7 +1387,10 @@
+@@ -1337,7 +1388,10 @@
                                           })
      rd['latexdocsignatureshort']=rd['docsignatureshort'].replace('_','\\_')
      rd['latexdocsignatureshort']=rd['latexdocsignatureshort'].replace(',',', ')
