@@ -51,7 +51,7 @@ contains
 
     if (current_verbosity() > VERBOSE) then
        call verbosity_push_decrement(NERD)
-       call calc(this, at_bulk, e=e0, virial=v0)
+       call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
        call verbosity_pop()
        call print("initial config")
        call print_xyz(at_bulk, mainlog)
@@ -68,7 +68,7 @@ contains
 
        if (current_verbosity() >= VERBOSE) then
           call verbosity_push_decrement(VERBOSE)
-          call calc(this, at_bulk, e=e0, virial=v0)
+          call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
           call verbosity_pop()
           call print("relaxed config")
           call print_xyz(at_bulk, mainlog)
@@ -97,7 +97,7 @@ contains
           call set_lattice(at_t, Fp .mult. at_t%lattice)
           at_t%pos = Fp .mult. at_t%pos
           call calc_connect(at_t)
-          call calc(this, at_t, e=e0, virial=V0p)
+          call calc(this, at_t, e=e0, virial=V0p, args_str=args_str)
           call verbosity_push_decrement(VERBOSE)
           call print("plus perturbed config")
           call print_xyz(at_t, mainlog)
@@ -113,7 +113,7 @@ contains
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(this, at_t, e=e0, virial=Vp)
+             call calc(this, at_t, e=e0, virial=Vp, args_str=args_str)
              call verbosity_push_decrement(VERBOSE)
              call print("plus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
@@ -127,7 +127,7 @@ contains
           call set_lattice(at_t, Fm .mult. at_t%lattice)
           at_t%pos = Fm .mult. at_t%pos
           call calc_connect(at_t)
-          call calc(this, at_t, e=e0, virial=V0m)
+          call calc(this, at_t, e=e0, virial=V0m, args_str=args_str)
           call verbosity_push_decrement(VERBOSE)
           call print("minus perturbed config")
           call print_xyz(at_t, mainlog)
@@ -143,7 +143,7 @@ contains
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(this, at_t, e=e0, virial=Vm)
+             call calc(this, at_t, e=e0, virial=Vm, args_str=args_str)
              call verbosity_push_decrement(VERBOSE)
              call print("minus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
@@ -258,9 +258,10 @@ contains
   !% parameter 'a' using the MetaPotential 'metapot'. On exit, 'poisson'
   !% will contain the in plane poisson ratio (dimensionless) and 'young' the
   !% in plane Young's modulus (GPa).
-  subroutine Graphene_Elastic(metapot, a, poisson, young, cb)
+  subroutine Graphene_Elastic(metapot, a, poisson, young, args_str, cb)
     type(MetaPotential), intent(inout) :: metapot
     real(dp), intent(out) :: a, poisson, young
+    character(len=*), intent(in), optional :: args_str !% arg_str for metapotential_calc
     real(dp), intent(out), optional :: cb
 
     type(Atoms) :: cube, at, at2, tube
@@ -289,7 +290,7 @@ contains
     ! Set a to average of x and y lattice constants
     a = 0.5_dp*(at%lattice(1,1)/(3.0_dp*nx) + at%lattice(2,2)/(sqrt(3.0_dp)*ny))
 
-    call calc(metapot, at, e=graphene_e_per_atom)
+    call calc(metapot, at, e=graphene_e_per_atom, args_str=args_str)
     graphene_e_per_atom = graphene_e_per_atom/at%N
 
     cube = Graphene_Cubic(a)
@@ -337,7 +338,7 @@ contains
              i = minim(metapot, tube, 'cg', 1e-5_dp, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false.)
              
-             call calc(metapot, tube, e=energy)
+             call calc(metapot, tube, e=energy, args_str=args_str)
 
              tube_r(tube_i) = tube_radius(tube)
              tube_energy(tube_i) = energy/tube%N - graphene_e_per_atom
@@ -367,9 +368,10 @@ contains
   end subroutine inverse_square
 
 
-  function einstein_frequencies(metapot, at, i, delta) result(w_e)
+  function einstein_frequencies(metapot, at, args_str, i, delta) result(w_e)
     type(MetaPotential), intent(inout) :: metapot  !% MetaPotential to use
     type(Atoms), intent(in) :: at            !% Atoms structure - should be equilibrium bulk configuation
+    character(len=*), intent(in), optional :: args_str !% arg_str for metapotential_calc
     integer, optional, intent(in) :: i       !% The atom to displace (default 1)
     real(dp), optional, intent(in) :: delta  !% How much to displace it (default 1e-4_dp)
     real(dp), dimension(3) :: w_e
@@ -398,7 +400,7 @@ contains
        myatoms%pos = at%pos
        myatoms%pos(j,myi) = myatoms%pos(j,myi) + mydelta
        call calc_connect(myatoms)
-       call calc(metapot, myatoms, f=f)
+       call calc(metapot, myatoms, f=f, args_str=args_str)
        w_e(j) = sqrt(-f(j,myi)/(mass*mydelta))*ONESECOND
     end do
 
