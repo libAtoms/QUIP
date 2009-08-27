@@ -59,7 +59,6 @@ if 1:
    del routines
    del params
    del wrap_all
-   del extras
    del fortran_class_prefix
 
 #except ImportError:
@@ -71,7 +70,7 @@ import farray;      from farray import *
 import atomslist;   from atomslist import *
 import periodic;    from periodic import *
 import xyz_netcdf;  from xyz_netcdf import *
-import paramreader; from paramreader import *
+import util;        from util import *
 
 try:
    import atomeye
