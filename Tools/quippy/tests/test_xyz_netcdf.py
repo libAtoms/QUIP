@@ -210,6 +210,40 @@ class TestPythonNetCDF(QuippyTestCase):
          al = AtomsList('dataset.nc')
          self.assertEqual(list(self.al), list(al))
 
+class TestPuPyXYZ(QuippyTestCase):
+
+   def setUp(self):
+      self.at = supercell(diamond(5.44, 14), 2, 2, 2)
+      self.at.add_property('log', False)
+      self.at.params['dummy_real'] = 1.0
+      self.at.params['dummy_int'] = 2
+      self.at.params['dummy_int_a'] = [1,2,3]
+      self.at.params['dummy_real_a'] = [1.0,2.0,3.0]
+      self.at.params['dummy_int_a2'] = farray([1,2,3,4,5,6,7,8,9]).reshape(3,3)
+      self.at.params['dummy_real_a2'] = farray([1.0,2,3,4,5,6,7,8,9]).reshape(3,3)
+      self.al = AtomsList(self.at for x in range(5))
+      self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
+      for a in self.al:
+         a.params.update(self.at.params)
+         a.add_property('log', False)
+
+
+   def tearDown(self):
+      os.remove('test.xyz')
+
+   def testsinglexyz(self):
+      self.at.write(PuPyXYZWriter('test.xyz'))
+      at = Atoms(PuPyXYZReader('test.xyz'))
+      self.assertEqual(at, self.at)
+
+   def testmultixyz(self):
+      self.al.write(PuPyXYZWriter('test.xyz'))
+      al = AtomsList(PuPyXYZReader('test.xyz'), lazy=False)
+      self.assertEqual(len(al), 5)
+      self.assertEqual(len(self.al), len(al))
+      self.assertEqual(list(self.al), list(al))
+
+
 class TestNetCDFAtomsList(QuippyTestCase):
 
    def setUp(self):
@@ -239,6 +273,7 @@ def getTestSuite():
    tl = unittest.TestLoader()
    return unittest.TestSuite([tl.loadTestsFromTestCase(TestAtomsListCInOutput),
                               tl.loadTestsFromTestCase(TestPythonNetCDF),
+                              tl.loadTestsFromTestCase(TestPuPyXYZ),
                               tl.loadTestsFromTestCase(TestNetCDFAtomsList)])
 
 if __name__ == '__main__':
