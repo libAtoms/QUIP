@@ -1,0 +1,79 @@
+*** /home/bernstei/src/work/CP2K/cp2k_cvs/cp2k/src/topology_pdb.F	2008-12-31 06:16:37.000000000 -0500
+--- topology_pdb.F	2009-07-22 12:44:32.000000000 -0400
+***************
+*** 1,6 ****
+  !-----------------------------------------------------------------------------!
+  !   CP2K: A general program to perform molecular dynamics simulations         !
+! !   Copyright (C) 2000 - 2009  CP2K developers group                          !
+  !-----------------------------------------------------------------------------!
+  
+  ! *****************************************************************************
+--- 1,6 ----
+  !-----------------------------------------------------------------------------!
+  !   CP2K: A general program to perform molecular dynamics simulations         !
+! !   Copyright (C) 2000 - 2008  CP2K developers group                          !
+  !-----------------------------------------------------------------------------!
+  
+  ! *****************************************************************************
+***************
+*** 147,167 ****
+         CASE ("ATOM","HETATM") 
+            atom_info%label_molname(natom) = TRIM(root_mol_name)
+            READ(line(13:16),*) atom_info%label_atmname(natom)
+!           READ(line(18:20),*,IOSTAT=istat) atom_info%label_resname(natom)
+            READ(line(23:26),*,IOSTAT=istat) atom_info%label_resid(natom)
+!           READ(line(31:38),*,IOSTAT=istat) atom_info%r(1,natom)
+!           READ(line(39:46),*,IOSTAT=istat) atom_info%r(2,natom)
+!           READ(line(47:54),*,IOSTAT=istat) atom_info%r(3,natom)
+!           READ(line(55:60),*,IOSTAT=istat) atom_info%occup(natom)
+!           READ(line(61:66),*,IOSTAT=istat) atom_info%beta(natom)
+!           READ(line(73:76),*,IOSTAT=istat) atom_info%label_molname(natom)
+!           READ(line(77:78),*,IOSTAT=istat) atom_info%element(natom)
+            atom_info%atm_mass(natom)  = 0.0_dp
+            atom_info%atm_charge(natom)= -HUGE(0.0_dp)
+            IF(topology%charge_occup) atom_info%atm_charge(natom) = atom_info%occup(natom)
+            IF(topology%charge_beta)  atom_info%atm_charge(natom) = atom_info%beta(natom)
+            IF(topology%charge_extended) THEN
+!              READ(line(81:),*,IOSTAT=istat) atom_info%atm_charge(natom)
+            END IF
+  
+            IF (TRIM(atom_info%element(natom))=="") THEN
+--- 147,167 ----
+         CASE ("ATOM","HETATM") 
+            atom_info%label_molname(natom) = TRIM(root_mol_name)
+            READ(line(13:16),*) atom_info%label_atmname(natom)
+!           READ(line(18:21),*,IOSTAT=istat) atom_info%label_resname(natom)
+            READ(line(23:26),*,IOSTAT=istat) atom_info%label_resid(natom)
+!           READ(line(31:43),*,IOSTAT=istat) atom_info%r(1,natom)
+!           READ(line(44:56),*,IOSTAT=istat) atom_info%r(2,natom)
+!           READ(line(57:69),*,IOSTAT=istat) atom_info%r(3,natom)
+!           READ(line(70:75),*,IOSTAT=istat) atom_info%occup(natom)
+!           READ(line(76:81),*,IOSTAT=istat) atom_info%beta(natom)
+!           READ(line(87:90),*,IOSTAT=istat) atom_info%label_molname(natom)
+!           READ(line(92:93),*,IOSTAT=istat) atom_info%element(natom)
+            atom_info%atm_mass(natom)  = 0.0_dp
+            atom_info%atm_charge(natom)= -HUGE(0.0_dp)
+            IF(topology%charge_occup) atom_info%atm_charge(natom) = atom_info%occup(natom)
+            IF(topology%charge_beta)  atom_info%atm_charge(natom) = atom_info%beta(natom)
+            IF(topology%charge_extended) THEN
+!              READ(line(96:),*,IOSTAT=istat) atom_info%atm_charge(natom)
+            END IF
+  
+            IF (TRIM(atom_info%element(natom))=="") THEN
+***************
+*** 173,179 ****
+               ! use the resname for the molname
+               atom_info%label_molname(natom) =  atom_info%label_resname(natom)
+            END IF          
+!           IF(iw>0) WRITE(iw,*) natom,line(13:16),line(77:78)
+            IF(iw>0) WRITE(iw,'(5X,A4,5X,A2,3F8.3,A4,I4)') &
+                 TRIM(atom_info%label_atmname(natom)),&
+                 TRIM(atom_info%element(natom)),&
+--- 173,179 ----
+               ! use the resname for the molname
+               atom_info%label_molname(natom) =  atom_info%label_resname(natom)
+            END IF          
+!           IF(iw>0) WRITE(iw,*) natom,line(13:16),line(92:93)
+            IF(iw>0) WRITE(iw,'(5X,A4,5X,A2,3F8.3,A4,I4)') &
+                 TRIM(atom_info%label_atmname(natom)),&
+                 TRIM(atom_info%element(natom)),&
