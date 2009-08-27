@@ -106,6 +106,7 @@ class FortranArray(numpy.ndarray):
 
         if isinstance(input_array,tuple) or isinstance(input_array,list):
             self = self.transpose()
+            transpose_on_print = True
 
         self = self.view(FortranArray)
         
@@ -461,5 +462,14 @@ class FortranArray(numpy.ndarray):
         else:
             return farray([''.join(x).strip() for x in self])
 
+
+
+def padded_str_array(d, length):
+    """Return FortranArray with shape (length, len(d)), filled with rows from d padded with spaces"""
+    res = fzeros((length, len(d)), 'S')
+    res[...] = ' '
+    for i, line in fenumerate(d):
+        res[1:len(line),i] = list(line)
+    return res
 
 
