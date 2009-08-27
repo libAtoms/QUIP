@@ -1,5 +1,12 @@
-from quippy import atoms_reader, AtomsReaders, AtomsWriters
+from quippy import (atoms_reader, AtomsReaders, AtomsWriters, TABLE_STRING_LENGTH,
+                    PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
+                    T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                    T_CHAR, T_LOGICAL, T_INTEGER_A,
+                    T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
+
 from atomslist import *
+from ordereddict import *
+from quippy import Dictionary
 from farray import *
 import logging
 from math import pi
@@ -41,6 +48,294 @@ def get_lattice_params(lattice):
            acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
            acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
 
+
+def _props_dtype(props):
+   "Return a record array dtype for the specified properties (default all)"
+
+   result = []
+   fmt_map = {PROPERTY_REAL:'d',
+              PROPERTY_INT: 'i',
+              PROPERTY_STR: 'S' + str(TABLE_STRING_LENGTH),
+              PROPERTY_LOGICAL: 'bool'}
+
+   for prop in props:
+      ptype, col_start, col_stop = props[prop]
+      if col_start == col_stop:
+         result.append((prop,fmt_map[ptype]))
+      else:
+         for c in range(col_stop-col_start+1):
+            result.append((prop+str(c),fmt_map[ptype]))
+
+   return numpy.dtype(result)
+
+
+def PuPyXYZReader(xyz):
+   "Read from extended XYZ filename or open file."
+   from quippy import Table
+
+   def parse_properties(prop_str):
+      """Parse a property description string in the format
+      name:ptype:cols:...  and return a 5-tuple of an OrderedDict
+      mapping property names to (ptype,col_start,col_end) tuples and the number of
+      int, real, string and logical properties"""
+
+      from quippy import (PROPERTY_INT,
+                          PROPERTY_REAL,
+                          PROPERTY_STR,
+                          PROPERTY_LOGICAL)
+
+      pmap = {'I': PROPERTY_INT,
+              'R': PROPERTY_REAL,
+              'S': PROPERTY_STR,
+              'L': PROPERTY_LOGICAL}
+
+      properties = OrderedDict()
+      if prop_str.startswith('pos:R:3'):
+         prop_str = 'species:S:1:'+prop_str
+
+      fields = prop_str.split(':')
+
+      n_real = 0
+      n_int  = 0
+      n_str = 0
+      n_logical = 0
+      for name, ptype, cols in zip(fields[::3], fields[1::3], map(int,fields[2::3])):
+         if ptype == 'R':
+            start_col = n_real
+            n_real = n_real + cols
+            end_col = n_real
+         elif ptype == 'I':
+            start_col = n_int
+            n_int = n_int + cols
+            end_col = n_int
+         elif ptype == 'S':
+            start_col = n_str
+            n_str = n_str + cols
+            end_col = n_str
+         elif ptype == 'L':
+            start_col = n_logical
+            n_logical = n_logical + cols
+            end_col = n_logical
+         else:
+            raise ValueError('Unknown property type: '+ptype)
+
+         properties[name] = (pmap[ptype],start_col+1,end_col)
+
+      return properties, n_int, n_real, n_str, n_logical
+
+
+   def table_update_from_recarray(self, props, data):
+      for prop in props:
+         ptype, col_start, col_stop = props[prop]
+         if ptype == PROPERTY_REAL:
+            if col_start == col_stop:
+               self.real[col_start,:] = data[prop]
+            else:
+               for c in range(col_stop-col_start+1):
+                  self.real[col_start+c,:] = data[prop+str(c)]
+         elif ptype == PROPERTY_INT:
+            if col_start == col_stop:
+               self.int[col_start,:] = data[prop]
+            else:
+               for c in range(col_stop-col_start+1):
+                  self.int[col_start+c,:] = data[prop+str(c)]
+         elif ptype == PROPERTY_STR:
+            if col_start == col_stop:
+               self.str[:,col_start,:] = padded_str_array(data[prop], TABLE_STRING_LENGTH)
+            else:
+               for c in range(col_stop-col_start+1):
+                  self.str[:,col_start+c,:] = padded_str_array(data[prop+str(c)], TABLE_STRING_LENGTH)
+         elif ptype == PROPERTY_LOGICAL:
+            if col_start == col_stop:
+               self.logical[col_start,:] = data[prop]
+            else:
+               for c in range(col_stop-col_start+1):
+                  self.logical[col_start+c,:] = data[prop+str(c)]
+         else: 
+            raise ValueError('Bad property type : '+str(ptype))
+
+   def _getconv(dtype):
+       typ = dtype.type
+       if issubclass(typ, numpy.bool_):
+          return lambda x: {'T' : True, 'F' : False, 'True' : True, 'False' : False}.get(x)
+       if issubclass(typ, numpy.integer):
+           return int
+       elif issubclass(typ, numpy.floating):
+           return float
+       elif issubclass(typ, numpy.complex):
+           return complex
+       else:
+           return str
+
+   opened = False
+   if type(xyz) == type(''):
+      xyz = open(xyz,'r')
+      opened = True
+
+   while True:
+      line = xyz.next()
+      if not line: raise StopIteration
+
+      n = int(line.strip())
+      comment = (xyz.next()).strip()
+
+      # Parse comment line
+      params = Dictionary(comment)
+
+      if not 'Properties' in params:
+         raise ValueError('Properties missing from comment line')
+
+      properties, n_int, n_real, n_str, n_logical = parse_properties(params['Properties'])
+      del params['Properties']
+
+      # Get lattice
+      if not 'Lattice' in params:
+         raise ValueError('No lattice found in xyz file')
+
+      lattice = numpy.reshape(params['Lattice'], (3,3), order='F')
+      del params['Lattice']
+
+      props_dtype = _props_dtype(properties)
+
+      converters = [_getconv(props_dtype.fields[name][0]) \
+                    for name in props_dtype.names]
+
+      X = []
+      for i,line in enumerate(xyz):
+         vals = line.split()
+         row = tuple([converters[j](val) for j,val in enumerate(vals)])
+         X.append(row)
+         if i == n-1: break # Only read self.n lines
+
+      try:
+         data = numpy.array(X,props_dtype)
+      except TypeError:
+         raise IOError('Badly formatted data, or end of file reached before end of frame')
+
+      tab = Table(n_int,n_real,n_str,n_logical)
+      tab.append(blank_rows=n)
+      table_update_from_recarray(tab, properties, data)
+
+      yield Atoms(n=n,lattice=lattice, properties=properties, params=params, data=tab)
+
+   if opened: xyz.close()
+
+
+class PuPyXYZWriter(object):
+   "Write atoms in extended XYZ format. xyz can be a filename or open file"
+
+   def __init__(self, xyz):
+      self.opened = False
+      if type(xyz) == type(''):
+         self.xyz = open(xyz, 'w')
+         self.opened = True
+      else:
+         self.xyz = xyz
+
+   def write(self, at, properties=None):
+
+      def _getfmt(dtype):
+         typ = dtype.type
+         if issubclass(typ, numpy.bool_):
+            return ' %.1s '
+         if issubclass(typ, numpy.integer):
+            return '%8d '
+         elif issubclass(typ, numpy.floating):
+            return '%16.8f'
+         elif issubclass(typ, numpy.complex):
+            return '(%f,%f)'
+         else:
+            return '%s '
+
+      def comment(self, properties=None):
+         if properties is None:
+            props = self.properties.keys()
+         else:
+            props = properties
+
+         pmap = { PROPERTY_INT: 'I',
+                  PROPERTY_REAL: 'R',
+                  PROPERTY_STR: 'S',
+                  PROPERTY_LOGICAL: 'L'}
+
+         lattice_str = 'Lattice="' + ' '.join(map(str, numpy.reshape(self.lattice,9,order='F'))) + '"'
+
+         props_str = 'Properties=' + ':'.join(map(':'.join,
+                                                  zip(props,
+                                                      [pmap[self.properties[k][1]] for k in props],
+                                                      [str(self.properties[k][3]-self.properties[k][2]+1) for k in props])))
+
+         return lattice_str+' '+props_str+' '+str(self.params)
+
+
+      def table_to_recarray(self, props):
+         # Create empty record array with correct dtype
+         data = numpy.zeros(self.n, _props_dtype(props))
+
+         # Copy cols from self.real and self.int into data recarray
+         for prop in props:
+            ptype, col_start, col_stop = props[prop]
+            if ptype == PROPERTY_REAL:
+               if col_start == col_stop:
+                  data[prop] = self.real[col_start,:]
+               else:
+                  for c in range(col_stop-col_start+1):
+                     data[prop+str(c)] = self.real[col_start+c,:]
+            elif ptype == PROPERTY_INT:
+               if col_start == col_stop:
+                  data[prop] = self.int[col_start,:]
+               else:
+                  for c in range(col_stop-col_start+1):
+                     data[prop+str(c)] = self.int[col_start+c,:]
+            elif ptype == PROPERTY_STR:
+               if col_start == col_stop:
+                  data[prop] = self.str[col_start,:].stripstrings()
+               else:
+                  for c in range(col_stop-col_start+1):
+                     data[prop+str(c)] = self.str[col_start+c,:].stripstrings()
+            elif ptype == PROPERTY_LOGICAL:
+               if col_start == col_stop:
+                  data[prop] = self.logical[col_start,:]
+               else:
+                  for c in range(col_stop-col_start+1):
+                     data[prop+str(c)] = self.logical[col_start+c,:]
+            else:
+               raise ValueError('Bad property type : '+str(ptype))
+
+         return data
+
+      if properties is None:
+         props = at.properties.keys()
+
+      if 'species' in props:
+         i = props.index('species')
+         props[0], props[i] = props[i], props[0]
+
+      if 'pos' in props:
+         i = props.index('pos')
+         props[1], props[i] = props[i], props[1]
+
+      species = getattr(at, props[0].lower())
+      if species.shape != (TABLE_STRING_LENGTH, at.n) or species.dtype.kind != 'S':
+         raise ValueError('First property must be species like')
+
+      pos = getattr(at, props[1].lower())
+      if pos.shape != (3, at.n) or pos.dtype.kind != 'f':
+         raise ValueError('Second property must be position like')
+
+      subprops = OrderedDict.frompairs([(k, at.properties[k]) for k in props])
+      data = table_to_recarray(at.data, subprops)
+      format = ''.join([_getfmt(data.dtype.fields[name][0]) for name in data.dtype.names])+'\n'
+
+
+      self.xyz.write('%d\n' % at.n)
+      self.xyz.write('%s\n' % comment(at, props))
+      for i in range(at.n):
+         self.xyz.write(format % tuple(data[i]))
+
+   def close(self, at):
+      if self.opened: self.xyz.close()
+
 try:
    from quippy import CInOutput, INPUT, OUTPUT, INOUT
 
@@ -64,7 +359,6 @@ try:
          else:
             self.start = start
             if stop is None:
-#               print 'len(self.source) = %d' % len(self.source)
                stop = len(self.source)
             self.stop = stop
             self.step = step
@@ -116,7 +410,8 @@ try:
    
 except ImportError:
    logging.warning('CInOutput not found - falling back on (slower) pure python I/O')
-
+   AtomsReaders['xyz'] = PyPyXYZReader
+   AtomsWrtiters['xyz'] = PuPyXYZWriter
 
 try:
    from netCDF4 import Dataset
@@ -144,10 +439,6 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
       source = netcdf_file(source)
 
    from quippy import Atoms
-   from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-                       T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                       T_CHAR, T_LOGICAL, T_INTEGER_A,
-                       T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
 
    DEG_TO_RAD = pi/180.0
 
@@ -225,11 +516,6 @@ class NetCDFWriter(object):
          self.dest = dest
 
    def write(self, at):
-      from quippy import (PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
-                          T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                          T_CHAR, T_LOGICAL, T_INTEGER_A,
-                          T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
-
       remap_names_rev = {'pos': 'coordinates',
                          'velocities': 'velo'}
 
