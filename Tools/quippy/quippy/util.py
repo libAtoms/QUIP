@@ -2,7 +2,7 @@
 
 def args_str(D):
    """Construct args string from file, string or mapping object"""
-   from quippy.pupyatoms import Dictionary
-   return str(Dictionary(D))
+   from dictmixin import PuPyDictionary
+   return str(PuPyDictionary(D))
 
 
