@@ -47,7 +47,6 @@ class TestTable(QuippyTestCase):
       t.append('str3')
       t.append('str4')
       self.assertEqual(list(t.str[:,1,:].stripstrings()), ['str1', 'str2', 'str3', 'str4'])
-      self.assertEqual(list(t.str_part(1, t.n).T.stripstrings()), ['str1', 'str2', 'str3', 'str4'])
 
    def testsinglelogical(self):
       t = Table()
