@@ -5,7 +5,7 @@ from arraydata import arraydata
 from farray import *
 import numpy
 from types import MethodType
-from paramreader import args_str
+from util import args_str
 
 major, minor = sys.version_info[0:2]
 
@@ -145,9 +145,12 @@ def process_results(res, args, kwargs, inargs, outargs):
    if res is not None:
        for r, spec in zip(res,outargs):
           if spec['type'].startswith('type'):
-             newres.append(FortranDerivedTypes[spec['type'].lower()](fpointer=r,finalise=True))
+              newres.append(FortranDerivedTypes[spec['type'].lower()](fpointer=r,finalise=True))
+          elif isinstance(r, numpy.ndarray):
+              # Convert to one-based FortranArray
+              newres.append(farray(r))
           else:
-             newres.append(r)
+              newres.append(r)
 
    # update any objects in args or kwargs affected by this call
    for arg, spec in zip(args, inargs):
