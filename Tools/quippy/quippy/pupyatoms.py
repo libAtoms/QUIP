@@ -1,5 +1,32 @@
-from paramreader import *
+from ordereddict import OrderedDict
+from dictmixin import ParamReaderMixin
 from farray import *
+
+TABLE_STRING_LENGTH = 10
+PROPERTY_INT = 1
+PROPERTY_REAL = 2
+PROPERTY_STR = 3
+PROPERTY_LOGICAL = 4
+
+class Dictionary(OrderedDict, ParamReaderMixin):
+   """Subclass of OrderedDict for reading key/value pairs from strings or files.
+      The original order of items is maintained. Values that looks like floats or ints
+      or lists of floats or ints are automatically converted on reading."""
+   
+   def __init__(self, source=None):
+      OrderedDict.__init__(self)
+      if source is not None:
+         self.read(source)
+
+   def __repr__(self):
+      return ParamReaderMixin.__repr__(self)
+
+   def __str__(self):
+      return ParamReaderMixin.__str__(self)
+
+   def copy(self):
+      return Dictionary(OrderedDict.copy(self))
+
 
 class Table:
    """Pure python Table class"""
@@ -16,10 +43,8 @@ class Table:
       self.logical = fzeros((0,0),bool)
       self.realloc(nint, nreal, nstr, nlogical, max_length)
 
-   def realloc(self, nint=None, nreal=None, nstr=None, nlogical=None, max_length=None):
+   def allocate(self, nint=None, nreal=None, nstr=None, nlogical=None, max_length=None):
 
-      TABLE_STRING_LENGTH = 10
-   
       if nint is not None:       self.intsize = nint
       if nreal is not None:      self.realsize = nreal
       if nstr is not None:       self.strsize = nstr
@@ -78,8 +103,7 @@ class Atoms:
          self.read(filename)
 
    def alloc(self, n=0, n_int=0, n_real=3, n_str=1, n_logical=0, use_libatoms=False, atomsptr=None, properties=None, \
-                lattice=numpy.array([[100.,0.,0.],[0.,100.,0.],[0.,0.,100.]]), \
-                params=ParamReader(),element='Si'):
+                lattice=None, params=None,element='Si'):
 
       if use_libatoms or atomsptr is not None:
          if atomsptr is None:
@@ -99,7 +123,7 @@ class Atoms:
          self.logical = numpy.zeros((self.n,n_logical),dtype=bool)
 
          if properties is None:
-            self.properties = OrderedDict({'species':('S',slice(0,1)),'pos':('R',slice(0,3))})
+            self.properties = Dictionary({'species':('S',slice(0,1)),'pos':('R',slice(0,3))})
          else:
             self.properties = properties
             
@@ -312,222 +336,6 @@ class Atoms:
             raise ValueError('Bad property type :'+str(self.properties[prop]))
 
 
-   def comment(self, properties=None):
-      "Return the comment line for this Atoms object"
-
-      if properties is None:
-         props = self.properties.keys()
-      else:
-         props = properties
-         
-      lattice_str = 'Lattice="' + ' '.join(map(str, numpy.reshape(self.lattice,9))) + '"'
-      
-      props_str = 'Properties=' + ':'.join(map(':'.join, \
-               zip(props, \
-                   [self.properties[k][0] for k in props], \
-                   [str(self.properties[k][1].stop-self.properties[k][1].start) for k in props])))
-
-      return lattice_str+' '+props_str+' '+str(self.params)
-
-
-   def _props_dtype(self, props=None):
-      "Return a record array dtype for the specified properties (default all)"
-
-      if props is None:
-         props = self.properties.keys()
-
-      result = []
-      fmt_map = {'R':'d','I':'i','S':'S10','L':'bool'}
-
-      for prop in props:
-         ptype, cols = self.properties[prop]
-         if cols.start == cols.stop-1:
-            result.append((prop,fmt_map[ptype]))
-         else:
-            for c in range(cols.stop-cols.start):
-               result.append((prop+str(c),fmt_map[ptype]))
-
-      return numpy.dtype(result)
-
-
-   def to_recarray(self, props=None):
-      "Return a record array contains specified properties in order (defaults to all properties)"
-
-      if props is None:
-         props = self.properties.keys()
-
-      # Create empty record array with correct dtype
-      data = numpy.zeros(self.n,self._props_dtype(props))
-
-      # Copy cols from self.real and self.int into data recarray
-      for prop in props:
-         ptype, cols = self.properties[prop]
-         if ptype == 'R':
-            if cols.start == cols.stop-1:
-               data[prop] = self.real[:,cols.start]
-            else:
-               for c in range(cols.stop-cols.start):
-                  data[prop+str(c)] = self.real[:,cols.start+c]
-         elif ptype == 'I':
-            if cols.start == cols.stop-1:
-               data[prop] = self.int[:,cols.start]
-            else:
-               for c in range(cols.stop-cols.start):
-                  data[prop+str(c)] = self.int[:,cols.start+c]
-         elif ptype == 'S':
-            if cols.start == cols.stop-1:
-               data[prop] = self.str[:,cols.start]
-            else:
-               for c in range(cols.stop-cols.start):
-                  data[prop+str(c)] = self.str[:,cols.start+c]
-         elif ptype == 'L':
-            if cols.start == cols.stop-1:
-               data[prop] = self.logical[:,cols.start]
-            else:
-               for c in range(cols.stop-cols.start):
-                  data[prop+str(c)] = self.logical[:,cols.start+c]
-         else:
-            raise ValueError('Bad property type :'+str(self.properties[prop][1]))
-
-      return data
-
-
-   def update_from_recarray(self, data, props=None):
-      """Update Atoms data from a record array. By default all properties
-      are updated; use the props argument to update only a subset"""
-
-      if props is None:
-         props = self.properties.keys()
-
-      if data.dtype != self._props_dtype(props) or data.shape != (self.n,):
-         raise ValueError('Data shape is incorrect')
-
-      # Copy cols from data recarray into self.real and self.int
-      for prop in props:
-         ptype, cols = self.properties[prop]
-         if ptype == 'R':
-            if cols.start == cols.stop-1:
-               self.real[:,cols.start] = data[prop]
-            else:
-               for c in range(cols.stop-cols.start):
-                  self.real[:,cols.start+c] = data[prop+str(c)]
-         elif ptype == 'I':
-            if cols.start == cols.stop-1:
-               self.int[:,cols.start] = data[prop]
-            else:
-               for c in range(cols.stop-cols.start):
-                  self.int[:,cols.start+c] = data[prop+str(c)]
-         elif ptype == 'S':
-            if cols.start == cols.stop-1:
-               self.str[:,cols.start] = data[prop]
-            else:
-               for c in range(cols.stop-cols.start):
-                  self.str[:,cols.start+c] = data[prop+str(c)]
-         elif ptype == 'L':
-            if cols.start == cols.stop-1:
-               self.logical[:,cols.start] = data[prop]
-            else:
-               for c in range(cols.stop-cols.start):
-                  self.logical[:,cols.start+c] = data[prop+str(c)]
-         else:
-            raise ValueError('Bad property type :'+str(self.properties[prop][1]))
-
-
-   def read_xyz(self, xyz):
-      "Read from extended XYZ filename or open file."
-
-      opened = False
-      if type(xyz) == type(''):
-         xyz = open(xyz,'r')
-         opened = True
-
-      line = xyz.next()
-      if not line: return False
-
-      n = int(line.strip())
-      comment = (xyz.next()).strip()
-
-      # Parse comment line
-      params = ParamReader(comment)
-
-      if not 'Properties' in params:
-         raise ValueError('Properties missing from comment line')
-
-      properties, n_int, n_real, n_str, n_logical = _parse_properties(params['Properties'])
-      del params['Properties']
-
-      # Get lattice
-      if not 'Lattice' in params:
-         raise ValueError('No lattice found in xyz file')
-
-      lattice = numpy.reshape(params['Lattice'], (3,3))
-      del params['Lattice']
-
-      self.alloc(n=n,lattice=lattice,properties=properties,params=params,\
-                 n_int=n_int,n_real=n_real,n_str=n_str,n_logical=n_logical)
-
-      props_dtype = self._props_dtype()
-      
-      converters = [_getconv(props_dtype.fields[name][0]) \
-                    for name in props_dtype.names]
-
-      X = []
-      for i,line in enumerate(xyz):
-         vals = line.split()
-         row = tuple([converters[j](val) for j,val in enumerate(vals)])
-         X.append(row)
-         if i == self.n-1: break # Only read self.n lines
-
-      try:
-         data = numpy.array(X,props_dtype)
-      except TypeError:
-         raise IOError('End of file reached before end of frame')
-
-      if opened: xyz.close()
-
-      try:
-         self.update_from_recarray(data)
-      except ValueError:
-         # got a partial frame, must be end of file
-         return False
-      else:
-         return True
-
-   def write_xyz(self, xyz=sys.stdout, properties=None):
-      "Write atoms in extended XYZ format. xyz can be a filename or open file"
-
-      if properties is None:
-         # Sort by original order
-         props = self.properties.keys()
-      else:
-         props = properties
-
-      species = getattr(self,props[0])
-      if len(species.shape) != 1 or species.dtype.kind != 'S':
-         raise ValueError('First property must be species like')
-
-      pos = getattr(self,props[1])
-      if pos.shape[1] != 3 or pos.dtype.kind != 'f':
-         raise ValueError('Second property must be position like')
-
-      data = self.to_recarray(props)
-      format = ''.join([_getfmt(data.dtype.fields[name][0]) for name in data.dtype.names])+'\n'
-
-      opened = False
-      if type(xyz) == type(''):
-         xyz = open(xyz, 'w')
-         opened = True
-      
-      xyz.write('%d\n' % self.n)
-      xyz.write(self.comment(properties)+'\n')
-      for i in range(self.n):
-         xyz.write(format % tuple(data[i]))
-
-      if opened: xyz.close()
-
-
-
-
    def filter(self, mask):
       "Return smaller Atoms with only the elements where mask is true"
 
@@ -592,34 +400,6 @@ class Atoms:
       self.logical = self.logical[keep]
       self.repoint()
 
-   @staticmethod
-   def _getfmt(dtype):
-      typ = dtype.type
-      if issubclass(typ, numpy.bool_):
-         return '%s'
-      if issubclass(typ, numpy.integer):
-         return '%8d'
-      elif issubclass(typ, numpy.floating):
-         return '%16.8f'
-      elif issubclass(typ, numpy.complex):
-         return '(%f,%f)'
-      else:
-         return '%s '
-
-   @staticmethod
-   def _getconv(dtype):
-       typ = dtype.type
-       if issubclass(typ, numpy.bool_):
-           return lambda x: bool(x)
-       if issubclass(typ, numpy.integer):
-           return int
-       elif issubclass(typ, numpy.floating):
-           return float
-       elif issubclass(typ, numpy.complex):
-           return complex
-       else:
-           return str
-
 def diamond(a, z):
    "Bulk cube of element with lattice constant a"
    at = Atoms(n=8)
@@ -664,4 +444,6 @@ def supercell(self, n1, n2, n3):
 
    other.repoint()
    return other
+
+
 
