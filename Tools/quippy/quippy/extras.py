@@ -19,6 +19,7 @@ from farray import *
 from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput
 from quippy import AtomsReaders, AtomsWriters
 
+
 class Atoms(FortranAtoms):
    """
    Thin pythonic wrapper over auto-generated FortranAtoms class
@@ -56,6 +57,10 @@ class Atoms(FortranAtoms):
    def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
                 data=None, properties=None, params=None, *readargs, **readkwargs):
       if source is None:
+         if params is not None and not isinstance(params, Dictionary):
+            params = Dictionary(params)
+         if properties is not None and not isinstance(properties, Dictionary):
+            properties = Dictionary(properties)
          FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
                                data=data, properties=properties, params=params)
 
@@ -262,16 +267,18 @@ class Atoms(FortranAtoms):
       return not self.__eq__(other)
       
 
-from dictmixin import DictMixin
-class Dictionary(DictMixin, FortranDictionary):
+from dictmixin import DictMixin, ParamReaderMixin
+class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
-   def __init__(self, *args, **kwargs):
+   def __init__(self, D=None, *args, **kwargs):
       FortranDictionary.__init__(self, *args, **kwargs)
       if 'keys' in self._arrays:
          self._arrays['_keys'] = self._arrays['keys']
          del self._arrays['keys']
          del self.keys
          self._update()
+      if D is not None:
+         self.read(D) # copy from D
 
    def keys(self):
       if got_hashlib:
@@ -282,15 +289,9 @@ class Dictionary(DictMixin, FortranDictionary):
          new_hash = h.hexdigest()
          
       if new_hash != self.__dict__.get('_keys_hash', None):
-         self._cache_misses = self.__dict__.get('_cache_misses',0) + 1
          self._keys_cache = [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
-      else:
-         self._cache_hits = self.__dict__.get('_cache_hits',0) + 1
       self._keys_hash = new_hash
       return self._keys_cache
-
-   def slowkeys(self):
-      return [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
 
    def __getitem__(self, k):
       i = self.lookup_entry_i(k)
@@ -317,6 +318,7 @@ class Dictionary(DictMixin, FortranDictionary):
          v = v.strip()
       elif t == T_LOGICAL:
          v,p = self._get_value_l(k)
+         v = bool(v)
       elif t == T_INTEGER_A:
          v,p = self._get_value_i_a(k,s)
          v = farray(v)
@@ -331,12 +333,12 @@ class Dictionary(DictMixin, FortranDictionary):
          v = [''.join(line).strip() for line in a]
       elif t == T_LOGICAL_A:
          v,p = self._get_value_l_a(k,s)
-         v = farray(v)
+         v = farray(v, dtype=bool)
       elif t == T_INTEGER_A2:
-         v,p = self._get_value_i_a2(k, s2[0], s2[1])
+         v,p = self._get_value_i_a2(k, s2[1], s2[2])
          v = farray(v)
       elif t == T_REAL_A2:
-         v,p = self._get_value_r_a2(k, s2[0], s2[1])
+         v,p = self._get_value_r_a2(k, s2[1], s2[2])
          v = farray(v)
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
@@ -346,8 +348,14 @@ class Dictionary(DictMixin, FortranDictionary):
    def __setitem__(self, k, v):
       self.set_value(k, v)
 
+   def __delitem__(self, k):
+      i = self.lookup_entry_i(k)
+      if i == -1:
+         raise KeyError('Key %s not found in Dictionary' % k)
+      self.remove_entry(i)
+
    def __repr__(self):
-      return 'Dictionary(%s)' % DictMixin.__repr__(self)
+      return ParamReaderMixin.__repr__(self)
 
    def __eq__(self, other):
       if sorted(self.keys()) != sorted(other.keys()): return False
@@ -360,9 +368,14 @@ class Dictionary(DictMixin, FortranDictionary):
             if v1 != v2: return False
       return True
          
-
    def __ne__(self, other):
       return not self.__eq__(other)
+
+   def __str__(self):
+      return ParamReaderMixin.__str__(self)
+
+   def copy(self):
+      return Dictionary(self)
 
 
 class Table(FortranTable):
