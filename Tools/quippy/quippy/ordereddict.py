@@ -7,6 +7,13 @@ class OrderedDict(dict):
       if D is not None:
          self.update(D)
 
+   @staticmethod
+   def frompairs(seq):
+      d = OrderedDict()
+      for (k,v) in seq:
+         d[k] = v
+      return d
+
    def __delitem__(self, key):
       dict.__delitem__(self, key)
       self._keys.remove(key)
