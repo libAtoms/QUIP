@@ -22,9 +22,9 @@ frms   = [ sqrt(a.force.norm2().mean()) for a in al ]
 fone   = [ a.force[1,1] for a in al ]
 
 if hasattr(al[0], 'virial'):
-   sigma_xx = [ a.virial[1,1] for a in al ]
-   sigma_yy = [ a.virial[2,2] for a in al ]
-   sigma_zz = [ a.virial[3,3] for a in al ]
+   sigma_xx = [ a.virial[1,1]/a.cell_volume() for a in al ]
+   sigma_yy = [ a.virial[2,2]/a.cell_volume() for a in al ]
+   sigma_zz = [ a.virial[3,3]/a.cell_volume() for a in al ]
 
 figure (1)
 title('Energy convergence');
