@@ -171,4 +171,24 @@ class ParamReaderMixin:
     def write(self, f):
         f.write(self.asstring(sep='\n'))
 
+from ordereddict import OrderedDict
+
+class PuPyDictionary(OrderedDict, ParamReaderMixin):
+   """Subclass of OrderedDict for reading key/value pairs from strings or files.
+      The original order of items is maintained. Values that looks like floats or ints
+      or lists of floats or ints are automatically converted on reading."""
+   
+   def __init__(self, source=None):
+      OrderedDict.__init__(self)
+      if source is not None:
+         self.read(source)
+
+   def __repr__(self):
+      return ParamReaderMixin.__repr__(self)
+
+   def __str__(self):
+      return ParamReaderMixin.__str__(self)
+
+   def copy(self):
+      return PuPyDictionary(OrderedDict.copy(self))
 
