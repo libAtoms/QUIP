@@ -146,7 +146,7 @@ module paramreader_module
   integer, parameter :: VALUE_LENGTH = 1023  !% Length of parameter value strings
   integer, parameter :: FIELD_LENGTH = 1023  !% Maximum field width during parsing
   integer, parameter :: STRING_LENGTH = 1023 !% Maximum length of string parameters
-  integer, parameter :: N_FIELDS = 30       !% Maximum number of fields during parsing
+  integer, parameter, private :: MAX_N_FIELDS = 30       !% Maximum number of fields during parsing
 
   integer, parameter :: PARAM_NO_VALUE = 0 !% Special parameter type that doesn't get parsed
   integer, parameter :: PARAM_REAL = 1 !% Real (double precision) parameter
@@ -429,7 +429,7 @@ module paramreader_module
 
       character(len=FIELD_LENGTH) :: field
       integer equal_pos
-      character(len=FIELD_LENGTH), dimension(N_FIELDS) :: fields, sub_fields, final_fields
+      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: fields, sub_fields, final_fields
       character(len=FIELD_LENGTH) :: key, value
       integer :: num_fields, i, j,  k, num_sub_fields, num_pairs
       type(ParamEntry) :: entry
@@ -440,28 +440,7 @@ module paramreader_module
 
       my_ignore_unknown=optional_default(.false., ignore_unknown)
 
-      ! First split by '"', then odd fields are outside of quoted strings
-      call parse_string(myline, "''"//'""'//'{}', fields, num_fields, matching=.true.)
-
-      k = 1 ! Index into final_fields
-      do i=1,num_fields
-         if (mod(i,2) == 1) then ! Odd fields need further splitting
-            ! Split field into sub fields by ' '
-            call parse_string(fields(i), ' ', sub_fields, num_sub_fields)
-            do j = 1,num_sub_fields
-               final_fields(k) = sub_fields(j)
-               k = k + 1
-            end do
-         else
-            ! Copy across quoted field without further parsing
-	    if (index(final_fields(k-1),'=') /= len(trim(final_fields(k-1)))) then
-	      call system_abort("param_read_line found a quoted string that doesn't follow an '=', prev_field='" &
-	      // trim(final_fields(k-1)) // "'")
-	    endif
-	    final_fields(k-1) = trim(final_fields(k-1))//trim(fields(i))
-         end if
-      end do
-      num_pairs = k-1  ! Number of pairs is number of fields read
+      call split_string(myline," ,","''"//'""'//'{}', final_fields, num_pairs, matching=.true.)
 
       allocate(data%d(size(transfer(entry,data%d))))
 
@@ -626,9 +605,17 @@ module paramreader_module
            if (index(trim(this_arg),'=') /= 0) then
              eq_loc = index(trim(this_arg),'=')
              this_len = len_trim(this_arg)
-             command_line = trim(command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
+	     if (scan(this_arg(eq_loc+1:eq_loc+1),"'{"//'"') <= 0) then
+	       command_line = trim(command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
+	     else
+	       command_line = trim(command_line)//' '//trim(this_arg)
+	     endif
            else
-             command_line = trim(command_line)//' "'//trim(this_arg)//'"'
+	     if (scan(this_arg(1:1),"{'"//'"') <= 0) then
+	       command_line = trim(command_line)//' "'//trim(this_arg)//'"'
+	     else
+	       command_line = trim(command_line)//' '//trim(this_arg)
+	     endif
            endif
          else
            command_line = trim(command_line)//' '//trim(this_arg)
@@ -832,7 +819,7 @@ module paramreader_module
       type(ParamEntry) :: entry
       logical :: status
 
-      character(len=FIELD_LENGTH), dimension(N_FIELDS) :: fields
+      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: fields
       integer :: num_fields, j
 
       if (entry%param_type == PARAM_NO_VALUE .or. &
