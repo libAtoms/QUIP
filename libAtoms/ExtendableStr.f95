@@ -139,7 +139,7 @@ subroutine extendable_str_print(this,verbosity,out)
 
   call print ("extendable_str, len " // this%len // " size " // size(this%s), verbosity, out)
   if (allocated(this%s)) then
-    do i=1, size(this%s)
+    do i=1, this%len
       call print (this%s(i), verbosity, out)
     end do
   endif
@@ -193,6 +193,8 @@ subroutine extendable_str_concat(this, str)
 
     this%len = this%len + str_len
  endif
+
+ if (this%len > 0 .and. this%cur <= 0) this%cur = 1
 
 end subroutine extendable_str_concat
 
