@@ -803,7 +803,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     end if
 
     call print("energy_func using am%minim_at", NERD)
-    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f10.6")
+    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
 
     call calc(am%minim_metapot, am%minim_at, e = energy_func, args_str = am%minim_args_str)
     call print ("energy_func got energy " // energy_func, NERD)
@@ -869,8 +869,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
       call calc_dists(am%minim_at)
     end if
 
-    call print("gradient_func using am%minim_at", NERD)
-    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f10.6")
+    if (current_verbosity() >= NERD) call add_property(am%minim_at, "force", 0.0_dp, 3)
 
     allocate(f(3,am%minim_at%N))
     f = 0.0_dp
@@ -882,6 +881,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     else
       call calc(am%minim_metapot, am%minim_at, virial = virial, args_str = am%minim_args_str)
     endif
+
+    call print("gradient_func used am%minim_at, got forces", NERD)
+    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
 
     ! zero forces if fixed by metapotential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_metapot", fixed_metapot)) then
