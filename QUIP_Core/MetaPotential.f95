@@ -749,8 +749,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
   end subroutine print_hook
 
-  function dummy_energy_func(x, am_data)
-    real(dp) :: x(:)
+  function dummy_energy_func(xx, am_data)
+    real(dp) :: xx(:)
     character, optional :: am_data(:)
     real(dp) :: dummy_energy_func
 
