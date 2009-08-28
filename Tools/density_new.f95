@@ -109,7 +109,7 @@ implicit none
     call print("Calculating densities")
     call calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, structure_ll, &
       mean_decorrelation_time, gaussian_smoothing, gaussian_sigma, &
-      radial_histo, radial_center, random_samples, n_samples, mask_str)
+      radial_histo, radial_center, random_samples, n_samples, mask_str, quiet)
 
     call initialise(outfile, outfilename, OUTPUT)
 
@@ -162,6 +162,7 @@ implicit none
     call finalise(outfile)
 
     if (allocated(histograms)) deallocate(histograms)
+    if (allocated(histo_grid)) deallocate(histo_grid)
     if (allocated(autocorr)) deallocate(autocorr)
     if (allocated(histo_mean)) deallocate(histo_mean)
     if (allocated(histo_var)) deallocate(histo_var)
@@ -352,7 +353,7 @@ contains
 
   subroutine calc_histos(histograms, n_histos, histo_grid, min_p, bin_width, n_bins, &
                          structure_ll, interval, gaussian, gaussian_sigma, &
-                         radial_histo, radial_center, random_samples, n_samples, mask_str)
+                         radial_histo, radial_center, random_samples, n_samples, mask_str, quiet)
     real(dp), intent(inout), allocatable :: histograms(:,:,:,:)
     integer, intent(out) :: n_histos
     real(dp), intent(inout), allocatable :: histo_grid(:,:,:,:)
@@ -367,12 +368,15 @@ contains
     logical :: random_samples
     integer :: n_samples(2)
     character(len=*), optional, intent(in) :: mask_str
+    logical, optional :: quiet
     
     real(dp) :: last_time, cur_time
     type(atoms_ll_entry), pointer :: entry
     logical :: do_this_histo, first_histo
     real(dp), allocatable :: theta(:), phi(:), w(:)
+    logical :: my_quiet
 
+    my_quiet = optional_default(.false., quiet)
     n_histos = 0
     allocate(histograms(n_bins(1),n_bins(2),n_bins(3),10))
     if (radial_histo) then
@@ -412,8 +416,11 @@ contains
       if (do_this_histo) then
 	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
 	n_histos = n_histos + 1
-	if (mod(n_histos,10) == 0) write (mainlog%unit,'(I1,$)') mod(n_histos/10,10)
-	if (mod(n_histos,1000) == 0) write (mainlog%unit,'(a)') " "
+        if (.not. my_quiet) then
+          if (mod(n_histos,1000) == 1) write (mainlog%unit,'(I4,a)') floor(n_histos/1000)," "
+          if (mod(n_histos,10) == 0) write (mainlog%unit,'(I1,$)') mod(n_histos/10,10)
+          if (mod(n_histos,1000) == 0) write (mainlog%unit,'(a)') " "
+        endif
 	call reallocate_histos(histograms, n_histos, n_bins)
 	if (radial_histo) then
           if (first_histo) then
