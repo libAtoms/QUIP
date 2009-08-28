@@ -1837,7 +1837,12 @@ contains
     call print('#    &VELOCITY',file=input_file)
     call print('#    &END VELOCITY',file=input_file)
     call print('    &TOPOLOGY',file=input_file)
-    call print('      CENTER_COORDINATES',file=input_file)
+    ! this is for an older version of CP2K.  uncomment, and comment out next two lines, if your
+    ! version is older and complains about this statement in the input file
+    ! call print('      CENTER_COORDINATES',file=input_file)
+    call print('      &CENTER_COORDINATES T',file=input_file)
+    call print('      &END CENTER_COORDINATES',file=input_file)
+    !
     call print('    &END TOPOLOGY',file=input_file)
   else
     call print('#    &COORD',file=input_file)
