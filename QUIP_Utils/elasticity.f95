@@ -368,11 +368,11 @@ contains
   end subroutine inverse_square
 
 
-  function einstein_frequencies(metapot, at, args_str, i, delta) result(w_e)
+  function einstein_frequencies(metapot, at, args_str, ii, delta) result(w_e)
     type(MetaPotential), intent(inout) :: metapot  !% MetaPotential to use
     type(Atoms), intent(in) :: at            !% Atoms structure - should be equilibrium bulk configuation
     character(len=*), intent(in), optional :: args_str !% arg_str for metapotential_calc
-    integer, optional, intent(in) :: i       !% The atom to displace (default 1)
+    integer, optional, intent(in) :: ii       !% The atom to displace (default 1)
     real(dp), optional, intent(in) :: delta  !% How much to displace it (default 1e-4_dp)
     real(dp), dimension(3) :: w_e
 
@@ -382,7 +382,7 @@ contains
     real(dp), allocatable, dimension(:,:) :: f
 
     myatoms = at
-    myi = optional_default(1, i)
+    myi = optional_default(1, ii)
     mydelta = optional_default(1e-4_dp, delta)
 
     if (has_property(at, 'mass')) then
