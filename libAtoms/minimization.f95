@@ -1303,6 +1303,7 @@ CONTAINS
        end if
     end if
 
+
     eps1 = 0.0_dp
     eps2 = epsilon
     old_eps = 0.0_dp
@@ -1834,7 +1835,6 @@ CONTAINS
           call verbosity_pop()
 	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
 
-          
           !**********************************************************************
           !*
           !*  check the result of linmin
@@ -1847,6 +1847,8 @@ CONTAINS
              extra_report = extra_report + 1
              hdir = -1.0 * grad_f
              eps = my_eps_guess
+
+	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              
              bad_iter_counter = bad_iter_counter + 1
              if(bad_iter_counter .EQ. max_bad_iter) then  
@@ -1928,6 +1930,7 @@ CONTAINS
              call print("*** Minim is not going down at step " // main_counter //" ==> eps /= 10")
              eps = oldeps / 10.0_dp
 
+	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              if(current_verbosity() >= NERD .and. .not. do_linmin_deriv) then     
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!!")
@@ -1957,6 +1960,7 @@ CONTAINS
                 extra_report = extra_report + 1
              end if
       
+	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              !**********************************************************************
              !*
              !* do gradient test if we need to
@@ -2956,6 +2960,56 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
     final_E = E_i
 
 end function n_minim
+
+subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
+  real(dp)::x0(:)  !% Starting vector
+  real(dp)::xdir(:)!% Search direction
+  INTERFACE 
+     function func(x,data)
+       use system_module
+       real(dp)::x(:)
+       character,optional::data(:)
+       real(dp)::func
+     end function func
+  END INTERFACE
+  logical :: use_func
+  INTERFACE 
+     function dfunc(x,data)
+       use system_module
+       real(dp)::x(:)
+       character,optional::data(:)
+       real(dp)::dfunc(size(x))
+     end function dfunc
+  END INTERFACE
+  character, optional::data(:)
+
+  integer :: i
+  real(dp) :: new_eps
+  real(dp) :: fn, dirdx_new
+  real(dp), allocatable :: xn(:), dxn(:)
+
+  allocate(xn(size(x0)))
+  allocate(dxn(size(x0)))
+
+  fn = 0.0_dp
+  call print('line scan:', NORMAL)
+  new_eps = 1.0e-5_dp
+  do i=1,50
+     xn = x0 + new_eps*xdir
+     call verbosity_push_decrement()
+     if (use_func) fn = func(xn,data)
+     dxn = dfunc(xn,data)
+     call verbosity_pop()
+     dirdx_new = xdir .DOT. dxn
+
+     call print('LINE_SCAN ' // new_eps//' '//fn// ' '//dirdx_new, NORMAL)
+
+     new_eps = new_eps*1.15
+  enddo
+
+  deallocate(xn)
+
+end subroutine line_scan
 
 end module minimization_module
 
