@@ -1233,6 +1233,116 @@ contains
     if(my_status == 0) call parse_string(local_line,delimiters,fields,num_fields)    
   end subroutine inoutput_parse_line
 
+
+
+  !% split a string at separators, making sure not to break up bits that
+  !% are in quotes (possibly matching opening and closing quotes), and
+  !% also strip one level of quotes off, sort of like a shell would when
+  !% tokenizing
+  subroutine split_string(this, separators, quotes, fields, num_fields, matching)
+    character(len=*), intent(in) :: this
+    character(len=*), intent(in) :: separators, quotes
+    character(len=*), intent(inout) :: fields(:)
+    integer, intent(out) :: num_fields
+    logical, intent(in), optional :: matching
+
+    integer :: i, last_start, length
+    integer :: n_quotes
+    character(len=len(quotes)) :: opening_quotes, closing_quotes
+    integer :: opening_quote_index, closing_quote_pos
+    logical :: do_matching
+    character(len=len(fields(1))) :: tmp_field
+    integer :: tmp_field_last, t_start
+    logical :: in_token
+
+    do_matching = optional_default(.false., matching)
+
+    if (do_matching) then
+      if (mod(len(quotes),2) == 0) then
+	do i=1, len(quotes)/2
+	  opening_quotes(i:i) = quotes(2*(i-1)+1:2*(i-1)+1)
+	  closing_quotes(i:i) = quotes(2*(i-1)+2:2*(i-1)+2)
+	end do
+	n_quotes = len(quotes)/2
+      else
+	call system_abort("parse_string called with matching=.true. but odd number of quotes " // (len(quotes)))
+      endif
+    else
+      n_quotes = len(quotes)
+      opening_quotes(1:n_quotes) = quotes(1:n_quotes)
+      closing_quotes(1:n_quotes) = quotes(1:n_quotes)
+    endif
+
+    length = len_trim(this)
+    num_fields = 0
+    tmp_field = ""
+    tmp_field_last = 0
+    in_token = .false.
+    i = 1
+    do
+      if (i > length) then ! last character
+	if (in_token) then
+	  num_fields = num_fields + 1
+	  if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+	  if (tmp_field_last > 0) then
+	    if (t_start <= length) then
+	      fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:length)
+	    else
+	      fields(num_fields) = tmp_field(1:tmp_field_last)
+	    endif
+	  else
+	    if (t_start <= length) then
+	      fields(num_fields) = this(t_start:length)
+	    else
+	    endif
+	  endif
+	endif
+	exit
+      else if (scan(this(i:i),opening_quotes(1:n_quotes)) /= 0) then ! found an opening quote
+	opening_quote_index = index(opening_quotes,this(i:i))
+	closing_quote_pos = find_closing_delimiter(this(i+1:length), closing_quotes(opening_quote_index:opening_quote_index), &
+						   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
+	if (closing_quote_pos <= 0) then
+	  call print("splitting string '"//trim(this)//"'", ERROR)
+	  call system_abort("split_line couldn't find closing quote matching opening at char " // i)
+	endif
+	if (in_token) then
+	  tmp_field = tmp_field(1:tmp_field_last) // this(t_start:i-1)
+	  tmp_field_last = tmp_field_last + (i-1 - t_start + 1)
+	endif
+	if (tmp_field_last > 0) then
+	  if (i+closing_quote_pos-1 >= i+1) tmp_field = tmp_field(1:tmp_field_last) // this(i+1:i+closing_quote_pos-1)
+	else
+	  if (i+closing_quote_pos-1 >= i+1) tmp_field = this(i+1:i+closing_quote_pos-1)
+	endif
+	tmp_field_last = tmp_field_last + closing_quote_pos - 1
+	in_token = .true.
+	i = i + closing_quote_pos + 1
+	t_start = i
+      else if (scan(this(i:i),separators) /= 0) then ! found a separator
+	if (in_token) then ! prev char wasn't a separator
+	  num_fields = num_fields + 1
+	  if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+	  if (tmp_field_last > 0) then
+	    fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:i-1)
+	  else
+	    fields(num_fields) = this(t_start:i-1)
+	  endif
+	  tmp_field = ""
+	  tmp_field_last = 0
+	endif
+	in_token = .false.
+	i = i + 1
+      else ! plain character
+	if (.not. in_token) then
+	  t_start = i
+	endif
+	in_token = .true.
+	i = i + 1
+      endif
+    end do
+  end subroutine split_string
+
   !% Parse a string into fields delimited by certain characters. On exit
   !% the 'fields' array will contain one field per entry and 'num_fields'
   !% gives the total number of fields. 'status' will be given the error status
@@ -1345,21 +1455,30 @@ contains
     pos = 0
 
     do
-      first_matching_closing_delim = scan(this, closing_delim)
+      if (matching) then
+	first_matching_closing_delim = scan(this, closing_delim)
+      else
+	first_matching_closing_delim = scan(this, closing_delims)
+      endif
       first_opening_delim = scan(this, opening_delims)
       if ((first_opening_delim /= 0) .and. (first_opening_delim < first_matching_closing_delim)) then
 	length = len(this)
 	if (matching) then
 	  opening_delim = this(first_opening_delim:first_opening_delim)
 	  opening_delim_index = index(opening_delims, opening_delim)
-	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), closing_delims(opening_delim_index:opening_delim_index), opening_delims, closing_delims, matching)
+	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+	    closing_delims(opening_delim_index:opening_delim_index), opening_delims, closing_delims, matching)
 	else
-	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), closing_delims, opening_delims, closing_delims, matching)
+	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+	    closing_delims, opening_delims, closing_delims, matching)
 	endif
 	if (substring_end_pos == 0) &
-	  call system_abort("find_closing_delimiter failed to find substring closing delimiter '"//closing_delims(opening_delim_index:opening_delim_index)//"' in string '"//this//"' for substring starting at "//(first_opening_delim+1))
+	  call system_abort("find_closing_delimiter failed to find substring closing delimiter '"// &
+	    closing_delims(opening_delim_index:opening_delim_index)//"' in string '"//this// &
+	    "' for substring starting at "//(first_opening_delim+1))
 	substring_end_pos = substring_end_pos + first_opening_delim+1 - 1
-	pos = find_closing_delimiter(this(substring_end_pos+1:length), closing_delim, opening_delims, closing_delims, matching) + substring_end_pos+1 - 1
+	pos = find_closing_delimiter(this(substring_end_pos+1:length), closing_delim, opening_delims, &
+	  closing_delims, matching) + substring_end_pos+1 - 1
 	return
       else
 	pos=first_matching_closing_delim
