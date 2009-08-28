@@ -1108,7 +1108,7 @@ max_atom_rij_change = 1.038_dp
     real(dp) :: dg(3,3)
     real(dp), intent(in) :: lat_factor
 
-    if (3*at%N+9 /= size(xx)) call system_abort("Called unpack_pos with mismatching sizes xx " // size(xx) // " at " // at%N)
+    if (3*at%N+9 /= size(xx)) call system_abort("Called unpack_pos with mismatching sizes x " // size(xx) // " at " // at%N)
 
     dg = lat_factor*reshape(xx(1:9), (/ 3,3 /) )
     at%pos = reshape(xx(10:), (/ 3, at%N /) )
