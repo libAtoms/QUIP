@@ -5059,7 +5059,7 @@ contains
       real(dp), dimension(9)              :: tmplattice
       integer, dimension(9)               :: tmp_int_lattice
       real(dp), dimension(3,3)            :: lattice
-      logical                             :: lattice_found, properties_found, Z_found
+      logical                             :: lattice_found, properties_found, Z_found, species_found
       real(dp)                            :: max_dist
       character(len=1024) :: filename
 
@@ -5147,11 +5147,13 @@ contains
 
       call parse_string(prop_names,':',fields,num_fields)
       Z_found = .false.
+      species_found = .false.
       do i=1,num_fields,3
          n_cols = string_to_int(fields(i+2))
          req_num_fields = req_num_fields + n_cols
 
          if (trim(fields(i)) == 'Z') Z_found = .true.
+         if (trim(fields(i)) == 'species') species_found = .true.
 
          select case(trim(fields(i+1)))
             case('I')
@@ -5221,6 +5223,9 @@ contains
       ! Set Z from species if we didn't read a Z property from file
       if (.not. Z_found) then
          call print('Atoms_read_xyz: Setting Z from species', VERBOSE)
+         if (.not. species_found) then
+           call system_abort("Neither Z nor species found")
+         endif
          do i=1,this%N
             this%species(i) = ElementFormat(this%species(i))
             this%Z(i) = Atomic_Number(this%species(i))
