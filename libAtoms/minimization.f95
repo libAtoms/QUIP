@@ -1712,6 +1712,18 @@ CONTAINS
     grad_f = dfunc(x,data)
     call verbosity_pop()
 
+    if (my_hook_print_interval > 0) then
+      if (present(hook)) then 
+	call hook(x, grad_f, f, done, .true., data)
+	if (done) then
+	  call print('hook reports that minim finished, exiting.', NORMAL)
+	  exit_flag = 1
+	end if
+      else
+	call print("hook is not present", VERBOSE)
+      end if
+    endif
+
 
     grad_f_old = grad_f
     gdir = (-1.0_dp)*grad_f
