@@ -930,19 +930,24 @@ contains
       if (status /= 0) call system_abort('CP2K had non-zero return status. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
       if (error_status == 0) call system_abort('CP2K had ERROR in output. See output file '//trim(param%wenv%working_directory)//'/cp2k_output.out')
 
-      call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
-      if (status == 0) then
-	call print("WARNING: cp2k_driver failed to converge, trying again",ERROR)
-	converged = .false.
-      else
-	call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+      call system_command('egrep "FORCE_EVAL.* QS " '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+      if (status == 0) then ! QS or QMMM run
+	call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
 	if (status == 0) then
-	  converged = .true.
-	else
-	  call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",ERROR)
+	  call print("WARNING: cp2k_driver failed to converge, trying again",ERROR)
 	  converged = .false.
-	endif
-      end if
+	else
+	  call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+	  if (status == 0) then
+	    converged = .true.
+	  else
+	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",ERROR)
+	    converged = .false.
+	  endif
+	end if
+      else ! MM run
+	converged = .true.
+      endif
 
      ! Save Wfn if needed
       if (any(run_type.eq.(/QS_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
