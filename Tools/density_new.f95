@@ -417,7 +417,7 @@ contains
 	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
 	n_histos = n_histos + 1
         if (.not. my_quiet) then
-          if (mod(n_histos,1000) == 1) write (mainlog%unit,'(I4,a)') floor(n_histos/1000)," "
+          if (mod(n_histos,1000) == 1) write (mainlog%unit,'(I4,a)') int(n_histos/1000)," "
           if (mod(n_histos,10) == 0) write (mainlog%unit,'(I1,$)') mod(n_histos/10,10)
           if (mod(n_histos,1000) == 0) write (mainlog%unit,'(a)') " "
         endif
