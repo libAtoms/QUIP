@@ -1130,24 +1130,7 @@ subroutine dictionary_read_string(this, str, append)
      call initialise(this)
   end if
 
-  ! First split by '"', then odd fields are outside of quoted strings
-  call parse_string(str, '""'//"''"//'{}', fields, num_fields, matching=.true.)
-
-  k = 1 ! Index into final_fields
-  do i=1,num_fields
-     if (mod(i,2) == 1) then ! Odd fields need further splitting
-        ! Split field into sub fields by ' '
-        call parse_string(fields(i), ' ', sub_fields, num_sub_fields)
-        do j = 1,num_sub_fields
-           final_fields(k) = sub_fields(j)
-           k = k + 1
-        end do
-     else
-        ! Copy across quoted field without further parsing
-        final_fields(k-1) = trim(final_fields(k-1))//trim(fields(i))
-     end if
-  end do
-  num_pairs = k-1  ! Number of pairs is number of fields read
+  call split_string(str, ' ,', '""'//"''"//'{}', final_fields, num_pairs, matching=.true.)
 
   ! Set the new entries
   do i=1,num_pairs
