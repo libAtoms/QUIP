@@ -1252,7 +1252,8 @@ contains
     integer :: opening_quote_index, closing_quote_pos
     logical :: do_matching
     character(len=len(fields(1))) :: tmp_field
-    integer :: tmp_field_last, t_start
+    character :: c
+    integer :: tmp_field_last, t_start, dist
     logical :: in_token
 
     do_matching = optional_default(.false., matching)
@@ -1298,7 +1299,7 @@ contains
 	  endif
 	endif
 	exit
-      else if (scan(this(i:i),opening_quotes(1:n_quotes)) /= 0) then ! found an opening quote
+      else if (scan(this(i:i),opening_quotes(1:n_quotes)) > 0) then ! found an opening quote
 	opening_quote_index = index(opening_quotes,this(i:i))
 	closing_quote_pos = find_closing_delimiter(this(i+1:length), closing_quotes(opening_quote_index:opening_quote_index), &
 						   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
@@ -1306,33 +1307,67 @@ contains
 	  call print("splitting string '"//trim(this)//"'", ERROR)
 	  call system_abort("split_line couldn't find closing quote matching opening at char " // i)
 	endif
-	if (in_token) then
-	  tmp_field = tmp_field(1:tmp_field_last) // this(t_start:i-1)
+	if (in_token) then ! add string from t_start to tmp_field
+          if (tmp_field_last > 0) then
+            tmp_field = tmp_field(1:tmp_field_last) // this(t_start:i-1)
+          else
+            tmp_field = this(t_start:i-1)
+          endif
 	  tmp_field_last = tmp_field_last + (i-1 - t_start + 1)
 	endif
-	if (tmp_field_last > 0) then
+	if (tmp_field_last > 0) then ! add contents of quote to tmp_field
 	  if (i+closing_quote_pos-1 >= i+1) tmp_field = tmp_field(1:tmp_field_last) // this(i+1:i+closing_quote_pos-1)
 	else
 	  if (i+closing_quote_pos-1 >= i+1) tmp_field = this(i+1:i+closing_quote_pos-1)
 	endif
+        ! update tmp_field_last
 	tmp_field_last = tmp_field_last + closing_quote_pos - 1
 	in_token = .true.
 	i = i + closing_quote_pos + 1
+        ! reset t_start
 	t_start = i
-      else if (scan(this(i:i),separators) /= 0) then ! found a separator
-	if (in_token) then ! prev char wasn't a separator
-	  num_fields = num_fields + 1
-	  if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
-	  if (tmp_field_last > 0) then
-	    fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:i-1)
-	  else
-	    fields(num_fields) = this(t_start:i-1)
-	  endif
-	  tmp_field = ""
-	  tmp_field_last = 0
-	endif
-	in_token = .false.
-	i = i + 1
+      else if (scan(this(i:i),separators) > 0) then ! found a separator
+        if (next_non_separator(this, i+1, length, separators, dist) == '=') then
+          if (in_token) then
+            ! add string from t_start to tmp_field
+            if (tmp_field_last > 0) then
+              tmp_field = tmp_field(1:tmp_field_last) // this(t_start:i-1)//'='
+            else
+              tmp_field = this(t_start:i-1)//'='
+            endif
+            tmp_field_last = tmp_field_last + (i-1)-t_start+1+1
+          else
+            tmp_field = '='
+            tmp_field_last = 1
+          endif
+          in_token = .true.
+          ! update i and t_start to be after '='
+          i = i + dist + 1
+          t_start = i 
+          if (i <= length) then
+            ! look for next non separator
+            c = next_non_separator(this, i, length, separators, dist)
+            if (dist > 0) then
+              i = i + dist-1
+              t_start = i
+            endif
+          endif
+        else
+          if (in_token) then ! we were in a token before finding this separator
+            num_fields = num_fields + 1
+            if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+            ! add string from t_start and tmp_field to fields(num_fields)
+            if (tmp_field_last > 0) then
+              fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:i-1)
+            else
+              fields(num_fields) = this(t_start:i-1)
+            endif
+            tmp_field = ""
+            tmp_field_last = 0
+          endif
+          in_token = .false.
+          i = i + 1
+        endif
       else ! plain character
 	if (.not. in_token) then
 	  t_start = i
@@ -1342,6 +1377,28 @@ contains
       endif
     end do
   end subroutine split_string
+
+  function next_non_separator(this, start, end, separators, dist) result(c)
+    character(len=*), intent(in) :: this
+    integer, intent(in) :: start, end
+    character(len=*) :: separators
+    integer, intent(out) :: dist
+    character :: c
+
+    integer i
+
+! call print("finding next_non_sep in '"//this(start:end)//"'")
+    c=''
+    dist = 0
+    do i=start, end
+      if (scan(this(i:i), separators) == 0) then ! found a non-separator
+        c = this(i:i)
+        dist = i-start+1
+        exit
+      endif
+    end do
+! call print("returning c='"//c//"' and dist "//dist)
+  end function next_non_separator
 
   !% Parse a string into fields delimited by certain characters. On exit
   !% the 'fields' array will contain one field per entry and 'num_fields'
@@ -1461,7 +1518,7 @@ contains
 	first_matching_closing_delim = scan(this, closing_delims)
       endif
       first_opening_delim = scan(this, opening_delims)
-      if ((first_opening_delim /= 0) .and. (first_opening_delim < first_matching_closing_delim)) then
+      if ((first_opening_delim > 0) .and. (first_opening_delim < first_matching_closing_delim)) then
 	length = len(this)
 	if (matching) then
 	  opening_delim = this(first_opening_delim:first_opening_delim)
