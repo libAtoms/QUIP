@@ -195,7 +195,7 @@ module cp2k_driver_module
   type param_global_nml
     character(20) :: project != 'cp2k'
     character(20) :: runtype != 'MD'
-    character(len=value_len) :: cell_file
+    character(len=value_len) :: cell_file, global_file
   end type param_global_nml
 
   type param_md_nml
@@ -251,13 +251,13 @@ contains
   !!!!! ============================================================================================ !!!!!
 
   subroutine param_initialise(this,at,run_type,cp2k_program,basis_set_file,potential_file,&
-    dft_file,cell_file,use_cubic_cell)
+    dft_file,cell_file,global_file,use_cubic_cell)
 
   type(param_cp2k),  intent(out) :: this
   type(atoms),       intent(inout) :: at
   integer,           intent(in)  :: run_type
   character(len=*),  intent(in)  :: cp2k_program
-  character(len=*),  intent(in)  :: basis_set_file, potential_file, dft_file, cell_file
+  character(len=*),  intent(in)  :: basis_set_file, potential_file, dft_file, cell_file,global_file
   logical, optional, intent(in)  :: use_cubic_cell
 
   real(dp), dimension(3)         :: QM_maxdist
@@ -508,6 +508,7 @@ contains
     this%global%project = 'cp2k'
     this%global%runtype = 'MD'
     this%global%cell_file = trim(cell_file)
+    this%global%global_file = trim(global_file)
 
     this%md%ensemble = 'NVE'
     this%md%steps = 0
@@ -581,6 +582,7 @@ contains
     this%qmmm%radius_Na = 0._dp
     this%qmmm%radius_Si = 0._dp
     this%global%cell_file = ''
+    this%global%global_file = ''
     this%global%project = ''
     this%global%runtype = ''
     this%md%ensemble = ''
@@ -794,7 +796,7 @@ contains
   character(len=FIELD_LENGTH)           :: cp2k_program
   character(len=FIELD_LENGTH)           :: run_type_str, psf_print_str
   character(len=FIELD_LENGTH)           :: fileroot_str
-  character(len=FIELD_LENGTH)           :: basis_set_file, potential_file, dft_file, cell_file
+  character(len=FIELD_LENGTH)           :: basis_set_file, potential_file, dft_file, cell_file,global_file
 
   character(max_char_length)            :: run_command='', &
                                            fin_command=''
@@ -817,6 +819,7 @@ contains
     potential_file=''
     dft_file=''
     cell_file=''
+    global_file=''
     call initialise(params)
     call param_register(params, 'Run_Type', 'MM', run_type_str)
     call param_register(params, 'PSF_Print', 'NO_PSF', psf_print_str)
@@ -826,6 +829,7 @@ contains
     call param_register(params, 'potential_file', '', potential_file)
     call param_register(params, 'dft_file', '', dft_file)
     call param_register(params, 'cell_file', '', cell_file)
+    call param_register(params, 'global_file', '', global_file)
     call param_register(params, 'clean_up_files', 'T', clean_up_files)
     call param_register(params, 'save_output_files', 'T', save_output_files)
     call param_register(params, 'max_n_tries', '2', max_n_tries)
@@ -844,6 +848,7 @@ contains
       if (len_trim(potential_file) == 0) potential_file=trim(fileroot_str)//'.potential'
       if (len_trim(dft_file) == 0) dft_file=trim(fileroot_str)//'.dft'
       if (len_trim(cell_file) == 0) cell_file=trim(fileroot_str)//'.cell'
+      if (len_trim(global_file) == 0) global_file=trim(fileroot_str)//'.global'
     end if
 
     select case(trim(psf_print_str))
@@ -901,7 +906,7 @@ contains
     endif
 
   ! set params, CHARMM formats and create working directory
-    call param_initialise(param,my_atoms,run_type,cp2k_program,basis_set_file,potential_file,dft_file,cell_file)
+    call param_initialise(param,my_atoms,run_type,cp2k_program,basis_set_file,potential_file,dft_file,cell_file,global_file)
 
   ! check CHARMM topology
   ! Write the coordinate file and the QM/MM or MM input file
@@ -1481,7 +1486,7 @@ contains
     integer                          :: charge
     character(len=value_len)         :: basis_set, potential
     integer                          :: stat
-    type(inoutput)                   :: dft_in_io, cell_in_io
+    type(inoutput)                   :: dft_in_io, cell_in_io, global_in_io
     character(len=1024)              :: line
 
     if (.not.any(run_type.eq.(/QS_RUN,MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) &
@@ -1928,6 +1933,15 @@ contains
     call print('  PROJECT '//trim(param%global%project),file=input_file)
     call print('  RUN_TYPE '//trim(param%global%runtype),file=input_file)
     call print('  PRINT_LEVEL LOW',file=input_file)
+    if (len(trim(param%global%global_file)) > 0) then
+       call initialise(global_in_io,trim(param%global%global_file), INPUT)
+       stat = 0
+       do while (stat == 0)
+         line = read_line(global_in_io, stat)
+         if (stat == 0) call print(trim(line), file=input_file)
+       end do
+       call finalise(global_in_io)
+    endif
     call print('&END GLOBAL',file=input_file)
     call print('&MOTION',file=input_file)
     call print('  &PRINT',file=input_file)
