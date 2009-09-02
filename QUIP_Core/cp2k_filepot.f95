@@ -37,7 +37,7 @@ program cp2k_filepot
     character(len=FIELD_LENGTH)   :: new_coord_file
     character(len=FIELD_LENGTH)   :: cp2k_program
     character(len=FIELD_LENGTH)   :: fileroot_str
-    character(len=FIELD_LENGTH)   :: basis_set_file, potential_file, dft_file, cell_file
+    character(len=FIELD_LENGTH)   :: basis_set_file, potential_file, dft_file, global_file, cell_file
   logical                               :: clean_up_files
 !  logical                     :: Delete_Metal_Connections
 
@@ -47,6 +47,10 @@ program cp2k_filepot
 
     !read parameters
     call initialise(params_in)
+    basis_set_file=''
+    cell_file=''
+    dft_file=''
+    global_file=''
     call param_register(params_in, 'Run_Type', 'MM', Run_Type)
     call param_register(params_in, 'PSF_Print', 'NO_PSF', Print_PSF)
     call param_register(params_in, 'coord_file', 'filepot.0.xyz',coord_file) 
@@ -56,6 +60,7 @@ program cp2k_filepot
     call param_register(params_in, 'basis_set_file', '', basis_set_file)
     call param_register(params_in, 'potential_file', '', potential_file)
     call param_register(params_in, 'dft_file', '', dft_file)
+    call param_register(params_in, 'global_file', '', global_file)
     call param_register(params_in, 'cell_file', '', cell_file)
     call param_register(params_in, 'clean_up_files', 'T', clean_up_files)
 !    call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
@@ -77,6 +82,7 @@ program cp2k_filepot
     call print('  basis_set_file '//trim(basis_set_file))
     call print('  potential_file '//trim(potential_file))
     call print('  dft_file '//trim(dft_file))
+    call print('  global_file '//trim(global_file))
     call print('  cell_file '//trim(cell_file))
     call print('---------------------------------------')
     call print('')
@@ -107,6 +113,7 @@ program cp2k_filepot
     if (trim(basis_set_file).ne.'') args_str = trim(args_str)//' basis_set_file='//trim(basis_set_file)
     if (trim(potential_file).ne.'') args_str = trim(args_str)//' potential_file='//trim(potential_file)
     if (trim(dft_file).ne.'') args_str = trim(args_str)//' dft_file='//trim(dft_file)
+    if (trim(global_file).ne.'') args_str = trim(args_str)//' global_file='//trim(global_file)
     if (trim(cell_file).ne.'') args_str = trim(args_str)//' cell_file='//trim(cell_file)
     if (clean_up_files) then
        args_str = trim(args_str)//' clean_up_files=T'
