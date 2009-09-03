@@ -60,6 +60,50 @@ metapot_test
 
 Calls to system_timer will do nothing by default
 
+parser doing Potential_Initialise_str args_str
+parser got: IP=T
+parser defaulted: TB=false
+parser defaulted: FilePot=false
+parser defaulted: wrapper=false
+parser doing IP_Initialise_str args_str
+parser got: SW=T
+parser defaulted: GAP=false
+parser defaulted: LJ=false
+parser defaulted: Tersoff=false
+parser defaulted: EAM_ErcolAd=false
+parser defaulted: Brenner=false
+parser defaulted: FB=false
+parser defaulted: Si_MEAM=false
+parser defaulted: FS=false
+parser defaulted: BOP=false
+parser defaulted: Brenner_Screened=false
+parser defaulted: Brenner_2002=false
+parser defaulted: ASAP=false
+parser defaulted: Template=false
+parser doing IPModel_SW_Initialise_str args_str
+parser got: label=PRB_31_plus_H
+parser doing Potential_Initialise_str args_str
+parser got: IP=T
+parser defaulted: TB=false
+parser defaulted: FilePot=false
+parser defaulted: wrapper=false
+parser doing IP_Initialise_str args_str
+parser got: SW=T
+parser defaulted: GAP=false
+parser defaulted: LJ=false
+parser defaulted: Tersoff=false
+parser defaulted: EAM_ErcolAd=false
+parser defaulted: Brenner=false
+parser defaulted: FB=false
+parser defaulted: Si_MEAM=false
+parser defaulted: FS=false
+parser defaulted: BOP=false
+parser defaulted: Brenner_Screened=false
+parser defaulted: Brenner_2002=false
+parser defaulted: ASAP=false
+parser defaulted: Template=false
+parser doing IPModel_SW_Initialise_str args_str
+parser got: label=eps_2.6
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -85,6 +129,20 @@ embed list
       483        0        0        0
 WARNING: atoms_add_property - pointers invalidated
 single_cluster
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -94,9 +152,31 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
 WARNING: atoms_add_property - pointers invalidated
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T"
+parser doing Potential_Calc_str args_str
+parser got: single_cluster=T
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=147
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
@@ -104,6 +184,19 @@ cluster hopping: got 41 atoms, of which 41 are unique.
 cluster hopping: got 83 atoms, of which 83 are unique.
 cluster hopping: got 147 atoms, of which 147 are unique.
 carve_cluster got args_str "cluster_calc_connect=T"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -116,6 +209,17 @@ carve_cluster: carved cluster with 295 atoms
 carve_cluster: Cluster dimensions are     28.000    28.000    28.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -631,7 +735,32 @@ Matrix_Print: printing matrix transpose
        0.0000000000       0.0000000000       0.0000000000
 little_clusters
 potential_calc got args_str "little_clusters=T cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser got: little_clusters=T
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 1
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -640,11 +769,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -657,7 +810,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 2
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -666,11 +844,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 2, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -683,7 +885,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 3
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -692,11 +919,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 3, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -709,7 +960,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 5
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -718,11 +994,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 5, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -735,7 +1035,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 7
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -744,11 +1069,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 7, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -761,7 +1110,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 29
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -770,11 +1144,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 29, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -787,7 +1185,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 31
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -796,11 +1219,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 31, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -813,7 +1260,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 99
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -822,11 +1294,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 99, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -839,7 +1335,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 103
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -848,11 +1369,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 103, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -865,7 +1410,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 127
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -874,11 +1444,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 127, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -891,7 +1485,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 128
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -900,11 +1519,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 128, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -917,7 +1560,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 387
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -926,11 +1594,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 387, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -943,7 +1635,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 389
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -952,11 +1669,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 389, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -969,7 +1710,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 413
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -978,11 +1744,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 413, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -995,7 +1785,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 414
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -1004,11 +1819,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 414, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1021,7 +1860,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 483
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -1030,11 +1894,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 483, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1047,7 +1935,32 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing little_cluster around atom 484
+parser doing create_hybrid_weights_args_str args_str
+parser got: buffer_hops=3
+parser defaulted: min_images_only=F
+parser defaulted: mark_buffer_outer_layer=T
+parser defaulted: transition_hops=0
+parser defaulted: nneighb_only=T
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=1.2
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=F mark_buffer_outer_layer=T
   hysteretic_buffer=F hysteretic_buffer_inner_radius=5.0000000000000000
@@ -1056,11 +1969,35 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 484, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: randomise_buffer=T
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1073,6 +2010,17 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -1586,8 +2534,53 @@ Matrix_Print: printing matrix transpose
        0.0000000000       0.0000000000       0.0000000000
        0.0000000000       0.0000000000       0.0000000000
        0.0000000000       0.0000000000       0.0000000000
-embedding test force error .0000000000000000  .0000000000000003
+embedding test force error 0.0000000000000000 0.0000000000000004
 force_mixing
+parser doing MetaPotential_Initialise args_str
+parser got: ForceMixing=T
+parser defaulted: Simple=false
+parser defaulted: Sum=false
+parser doing MetaPotential_FM_initialise args_str
+parser got: method=force_mixing
+parser got: buffer_hops=3
+parser got: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: mm_reweight=1.0
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: transition_hops=0
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: minimise_bulk=F
+parser defaulted: do_rescale_r=F
+parser defaulted: do_tb_defaults=F
+parser defaulted: minim_mm_method=cg
+parser defaulted: minim_mm_tol=1e-6
+parser defaulted: minim_mm_eps_guess=1e-4
+parser defaulted: minim_mm_max_steps=1000
+parser defaulted: minim_mm_linminroutine=FAST_LINMIN
+parser defaulted: minim_mm_do_pos=T
+parser defaulted: minim_mm_do_lat=F
+parser defaulted: minim_mm_do_print=F
+parser defaulted: minim_mm_use_n_minim=F
+parser defaulted: minim_mm_args_str=
 MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
@@ -1612,8 +2605,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=.0000010000000000
- minim_mm_eps_guess=.0001000000000000
+ minim_mm_tol=0.0000010000000000
+ minim_mm_eps_guess=0.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -1628,14 +2621,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -1643,14 +2636,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -1663,14 +2656,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -1678,20 +2671,55 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
+parser doing MetaPotential_FM_Calc args_str
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: method=force_mixing
+parser defaulted: mm_reweight=1.0000000000000000
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: buffer_hops=3
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0000000000000000
+parser defaulted: hysteretic_buffer_outer_radius=7.0000000000000000
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0000000000000000
+parser defaulted: hysteretic_connect_inner_factor=1.2000000000000000
+parser defaulted: hysteretic_connect_outer_factor=1.5000000000000000
+parser defaulted: transition_hops=0
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: do_rescale_r=F
+parser defaulted: lotf_do_init=T
+parser defaulted: lotf_do_map=F
+parser defaulted: lotf_do_qm=T
+parser defaulted: lotf_do_fit=T
+parser defaulted: lotf_do_interp=F
+parser defaulted: lotf_interp=0.0
 MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
@@ -1701,11 +2729,44 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
 potential_calc got args_str ""
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser got: single_cluster=T
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=147
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
@@ -1713,6 +2774,19 @@ cluster hopping: got 41 atoms, of which 41 are unique.
 cluster hopping: got 83 atoms, of which 83 are unique.
 cluster hopping: got 147 atoms, of which 147 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser got: randomise_buffer=F
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -1725,6 +2799,17 @@ carve_cluster: carved cluster with 295 atoms
 carve_cluster: Cluster dimensions are     28.000    28.000    28.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=3 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -2147,7 +3232,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106089      -0.6022746841
+      -0.0473394799      -0.4079106088      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -2242,6 +3327,51 @@ Matrix_Print: printing matrix transpose
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
 force_mixing_smooth
+parser doing MetaPotential_Initialise args_str
+parser got: ForceMixing=T
+parser defaulted: Simple=false
+parser defaulted: Sum=false
+parser doing MetaPotential_FM_initialise args_str
+parser got: method=force_mixing_smooth
+parser got: buffer_hops=1
+parser got: qm_args_str={single_cluster=T  cluster_calc_connect=T}
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: mm_reweight=1.0
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: transition_hops=0
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: minimise_bulk=F
+parser defaulted: do_rescale_r=F
+parser defaulted: do_tb_defaults=F
+parser defaulted: minim_mm_method=cg
+parser defaulted: minim_mm_tol=1e-6
+parser defaulted: minim_mm_eps_guess=1e-4
+parser defaulted: minim_mm_max_steps=1000
+parser defaulted: minim_mm_linminroutine=FAST_LINMIN
+parser defaulted: minim_mm_do_pos=T
+parser defaulted: minim_mm_do_lat=F
+parser defaulted: minim_mm_do_print=F
+parser defaulted: minim_mm_use_n_minim=F
+parser defaulted: minim_mm_args_str=
 MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
@@ -2266,8 +3396,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=.0000010000000000
- minim_mm_eps_guess=.0001000000000000
+ minim_mm_tol=0.0000010000000000
+ minim_mm_eps_guess=0.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -2282,14 +3412,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2297,14 +3427,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2317,14 +3447,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -2332,20 +3462,55 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
+parser doing MetaPotential_FM_Calc args_str
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: method=force_mixing_smooth
+parser defaulted: mm_reweight=1.0000000000000000
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: qm_args_str={single_cluster=T  cluster_calc_connect=T}
+parser defaulted: buffer_hops=1
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0000000000000000
+parser defaulted: hysteretic_buffer_outer_radius=7.0000000000000000
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0000000000000000
+parser defaulted: hysteretic_connect_inner_factor=1.2000000000000000
+parser defaulted: hysteretic_connect_outer_factor=1.5000000000000000
+parser defaulted: transition_hops=0
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: do_rescale_r=F
+parser defaulted: lotf_do_init=T
+parser defaulted: lotf_do_map=F
+parser defaulted: lotf_do_qm=T
+parser defaulted: lotf_do_fit=T
+parser defaulted: lotf_do_interp=F
+parser defaulted: lotf_interp=0.0
 MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
@@ -2355,16 +3520,62 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser got: single_cluster=T
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser got: randomise_buffer=F
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -2377,6 +3588,17 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -2796,7 +4018,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106089      -0.6022746841
+      -0.0473394799      -0.4079106088      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -2890,8 +4112,53 @@ Matrix_Print: printing matrix transpose
        0.2974871598       0.3188808666      -0.0703750046
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
-force_mixing_smooth force error .0006667513914028  .0098193171391806
+force_mixing_smooth force error 0.0006667513914028 0.0098193171391810
 force_mixing_super_smooth
+parser doing MetaPotential_Initialise args_str
+parser got: ForceMixing=T
+parser defaulted: Simple=false
+parser defaulted: Sum=false
+parser doing MetaPotential_FM_initialise args_str
+parser got: method=force_mixing_super_smooth
+parser got: buffer_hops=1
+parser got: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: mm_reweight=1.0
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: transition_hops=0
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: minimise_bulk=F
+parser defaulted: do_rescale_r=F
+parser defaulted: do_tb_defaults=F
+parser defaulted: minim_mm_method=cg
+parser defaulted: minim_mm_tol=1e-6
+parser defaulted: minim_mm_eps_guess=1e-4
+parser defaulted: minim_mm_max_steps=1000
+parser defaulted: minim_mm_linminroutine=FAST_LINMIN
+parser defaulted: minim_mm_do_pos=T
+parser defaulted: minim_mm_do_lat=F
+parser defaulted: minim_mm_do_print=F
+parser defaulted: minim_mm_use_n_minim=F
+parser defaulted: minim_mm_args_str=
 MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
@@ -2916,8 +4183,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=.0000010000000000
- minim_mm_eps_guess=.0001000000000000
+ minim_mm_tol=0.0000010000000000
+ minim_mm_eps_guess=0.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -2932,14 +4199,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2947,14 +4214,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2967,14 +4234,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -2982,20 +4249,55 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
+parser doing MetaPotential_FM_Calc args_str
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: method=force_mixing_super_smooth
+parser defaulted: mm_reweight=1.0000000000000000
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: buffer_hops=1
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0000000000000000
+parser defaulted: hysteretic_buffer_outer_radius=7.0000000000000000
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0000000000000000
+parser defaulted: hysteretic_connect_inner_factor=1.2000000000000000
+parser defaulted: hysteretic_connect_outer_factor=1.5000000000000000
+parser defaulted: transition_hops=0
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=3
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: do_rescale_r=F
+parser defaulted: lotf_do_init=T
+parser defaulted: lotf_do_map=F
+parser defaulted: lotf_do_qm=T
+parser defaulted: lotf_do_fit=T
+parser defaulted: lotf_do_interp=F
+parser defaulted: lotf_interp=0.0
 MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=distance_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
@@ -3005,16 +4307,62 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=distanc
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser got: single_cluster=T
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser got: randomise_buffer=F
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -3027,6 +4375,17 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 Matrix_Print: printing matrix transpose
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -3446,7 +4805,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106089      -0.6022746841
+      -0.0473394799      -0.4079106088      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -3540,8 +4899,53 @@ Matrix_Print: printing matrix transpose
        0.2974871598       0.3188808666      -0.0703750046
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
-force_mixing_super_smooth force error .0006667513914028  .0098193171391806
+force_mixing_super_smooth force error 0.0006667513914028 0.0098193171391810
 conserve_momentum
+parser doing MetaPotential_Initialise args_str
+parser got: ForceMixing=T
+parser defaulted: Simple=false
+parser defaulted: Sum=false
+parser doing MetaPotential_FM_initialise args_str
+parser got: method=conserve_momentum
+parser got: fit_hops=2
+parser got: buffer_hops=1
+parser got: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: mm_reweight=1.0
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0
+parser defaulted: hysteretic_buffer_outer_radius=7.0
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0
+parser defaulted: hysteretic_connect_inner_factor=1.2
+parser defaulted: hysteretic_connect_outer_factor=1.5
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: transition_hops=0
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: minimise_bulk=F
+parser defaulted: do_rescale_r=F
+parser defaulted: do_tb_defaults=F
+parser defaulted: minim_mm_method=cg
+parser defaulted: minim_mm_tol=1e-6
+parser defaulted: minim_mm_eps_guess=1e-4
+parser defaulted: minim_mm_max_steps=1000
+parser defaulted: minim_mm_linminroutine=FAST_LINMIN
+parser defaulted: minim_mm_do_pos=T
+parser defaulted: minim_mm_do_lat=F
+parser defaulted: minim_mm_do_print=F
+parser defaulted: minim_mm_use_n_minim=F
+parser defaulted: minim_mm_args_str=
 MetaPotential_FM:
  minimise_mm=F
  calc_weights=T
@@ -3566,8 +4970,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=.0000010000000000
- minim_mm_eps_guess=.0001000000000000
+ minim_mm_tol=0.0000010000000000
+ minim_mm_eps_guess=0.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -3582,14 +4986,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -3597,14 +5001,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -3617,14 +5021,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 .0000000000000000
+IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 0.0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -3632,20 +5036,55 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 2 Zi Zj Zk 14 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 
+parser doing MetaPotential_FM_Calc args_str
+parser defaulted: minimise_mm=F
+parser defaulted: calc_weights=T
+parser defaulted: method=conserve_momentum
+parser defaulted: mm_reweight=1.0000000000000000
+parser defaulted: conserve_momentum_weight_method=uniform
+parser defaulted: mm_args_str=
+parser defaulted: qm_args_str={single_cluster=T cluster_calc_connect=T}
+parser defaulted: buffer_hops=1
+parser defaulted: hysteretic_buffer=F
+parser defaulted: hysteretic_buffer_inner_radius=5.0000000000000000
+parser defaulted: hysteretic_buffer_outer_radius=7.0000000000000000
+parser defaulted: hysteretic_connect=F
+parser defaulted: hysteretic_connect_cluster_radius=20.0000000000000000
+parser defaulted: hysteretic_connect_inner_factor=1.2000000000000000
+parser defaulted: hysteretic_connect_outer_factor=1.5000000000000000
+parser defaulted: transition_hops=0
+parser defaulted: use_buffer_for_fitting=F
+parser defaulted: fit_hops=2
+parser defaulted: add_cut_H_in_fitlist=F
+parser defaulted: randomise_buffer=F
+parser defaulted: weight_interpolation=hop_ramp
+parser defaulted: nneighb_only=T
+parser defaulted: lotf_spring_hops=2
+parser defaulted: lotf_interp_order=linear
+parser defaulted: lotf_interp_space=F
+parser defaulted: lotf_nneighb_only=T
+parser defaulted: save_forces=T
+parser defaulted: do_rescale_r=F
+parser defaulted: lotf_do_init=T
+parser defaulted: lotf_do_map=F
+parser defaulted: lotf_do_qm=T
+parser defaulted: lotf_do_fit=T
+parser defaulted: lotf_do_interp=F
+parser defaulted: lotf_interp=0.0
 MetaPotential_FM_calc: got 17 active atoms.
 create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ramp
   nneighb_only=T min_images_only=T mark_buffer_outer_layer=F
@@ -3655,19 +5094,65 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ram
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
 potential_calc got args_str ""
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 Entered create_embed_and_fit_lists.
 create_embed_and_fit_lists: 17 embed, 66 fit
 Leaving create_embed_and_fit_lists.
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser got: single_cluster=T
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 potential_calc: constructing single_cluster
 potential_calc: carving cluster
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing create_cluster_info_from_hybrid_mark args_str
+parser defaulted: terminate=T
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: even_electrons=F
+parser defaulted: cluster_nneighb_only=T
+parser defaulted: cluster_allow_modification=T
+parser defaulted: hysteretic_connect=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: termination_clash_check=F
 Growing cluster starting from atom 1, n_cluster=41
 cluster hopping: got 5 atoms, of which 5 are unique.
 cluster hopping: got 17 atoms, of which 17 are unique.
 cluster hopping: got 41 atoms, of which 41 are unique.
 carve_cluster got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing carve_cluster arg_str
+parser got: cluster_calc_connect=T
+parser got: randomise_buffer=F
+parser defaulted: terminate=T
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: print_clusters=F
+parser defaulted: cluster_same_lattice=F
+parser defaulted: cluster_periodic_x=F
+parser defaulted: cluster_periodic_y=F
+parser defaulted: cluster_periodic_z=F
+parser defaulted: cluster_vacuum=10.0
+parser defaulted: hysteretic_connect=F
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
 WARNING: atoms_add_property - pointers invalidated
@@ -3680,9 +5165,20 @@ carve_cluster: carved cluster with 101 atoms
 carve_cluster: Cluster dimensions are     22.000    22.000    22.000
 carve_cluster: doing calc_connect
 potential_calc got args_str "cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
+parser doing Potential_Calc_str args_str
+parser defaulted: single_cluster=F
+parser defaulted: carve_cluster=T
+parser defaulted: little_clusters=F
+parser defaulted: do_rescale_r=F
+parser defaulted: r_scale=1.0
+parser defaulted: calc_force=F
+parser defaulted: calc_energy=F
+parser defaulted: calc_local_e=F
+parser defaulted: calc_df=F
+parser defaulted: calc_virial=F
 Conserving momentum using fit list with 83 atoms
-conserve_momentum: norm(sum of target forces) = .134158971527074
-conserve_momentum: norm(sum of    fit forces) = .000000000000000
+conserve_momentum: norm(sum of target forces) = 0.134158971527074
+conserve_momentum: norm(sum of    fit forces) = 0.000000000000000
 Matrix_Print: printing matrix transpose
        0.4270785085      -1.4627721014      -0.5021788398
        0.1042996079       1.3001073632       0.5796324965
@@ -4102,7 +5598,7 @@ Matrix_Print: printing matrix transpose
        0.4157178686      -0.6188849066       0.7671302707
        0.3668628023       0.4848588297       0.0845144476
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106089      -0.6022746841
+      -0.0473394799      -0.4079106088      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5718785948       1.1973036406      -0.8424727117
       -0.8658728688       0.1685743372      -0.3093141628
@@ -4196,7 +5692,7 @@ Matrix_Print: printing matrix transpose
        0.2981132959       0.3175261901      -0.0697541443
        0.4421377803       0.1122262095      -0.2914376236
       -0.9093006761      -0.4827778579       0.4768171344
-conserve_momentum force error .0007685613560578  .0111739935800209
+conserve_momentum force error 0.0007685613560578 0.0111739935800214
 
 --->clusters.xyz---
 295
