@@ -1,15 +1,58 @@
 Modified CP2K source files (06 Dec 2008!!):
-topology_pdb.F
-motion_utils.F
+  topology_pdb.F
+  motion_utils.F
+More robust are 
+  topology_pdb.F.patch
+  motion_utils.F.patch
+Use them by going to the CP2K cp2k/src directory, and running
+  patch < path_to_your_QUIP_Core/cp2k_driver/topology_pdb.F.patch
+  patch < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
+If you want to enable exyz reading in cp2k, also do
+  patch < path_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch
+You will need to tell the compiler to add
+  -Ipath_to_your_QUIP/build.QUIP_ARCH
+at compile time (add to FCFLAGS and FCFLAGS2 in the relevant file in the arch/ CP2K directory).
+and
+  -Lpath_to_your_QUIP/build.QUIP_ARCH -latoms
+at link time (add to LIBS in the relevant file in the arch/ CP2K directory).
 
 Add to your path the cp2k programs:
-serial: cp2k_serial 
-parallel: cp2k_popt (the driver runs it with 4 proc: mpirun -np 4 cp2k_popt)
+  serial: cp2k_serial 
+  parallel: cp2k_popt (the driver runs it with 4 proc: mpirun -np 4 cp2k_popt)
+Or just pass the cp2k_program=path_to_your_program/cp2k.sopt argument to the filepot
 
 Files needed for CP2K runs:
-POTENTIAL
-MM_POTENTIAL
-BASIS_SETS
-charmm.pot : force field
-all_res.CHARMM.lib: motif library
+  POTENTIAL
+  MM_POTENTIAL
+  BASIS_SETS
+  charmm.pot : force field
+  all_res.CHARMM.lib: motif library
 
+To use exyz file for MM, just set COORD_FILE_FORMAT to EXYZ.
+The EXYZ file support converts from various EXYZ fields to CP2K atom properties as follows:
+  CP2K atname from:
+    EXYZ atmname if defined
+    EXYZ species if defined
+    EXYZ Z if defined
+    one of those 3 is required
+  CP2K pos from EXYZ pos
+  CP2K molname from:
+    EXYZ molname if defined
+    CP2K atmname // cp2k_atom_number
+  CP2K resname from:
+    EXYZ resname if defined
+    CP2K molname
+  CP2K resid from EXYZ resid (default 1)
+  CP2K element from:
+    EXYZ element if defined
+    EXYZ species if defined
+    EXYZ Z if defined
+    one of those 3 is required
+  CP2K atm_mass from EXYZ atm_mass (default HUGE(0.0_dp))
+  CP2K atm_charge from EXYZ atm_charge (default -HUGE(0.0_dp))
+  CP2K occup from EXYZ occup (default -HUGE(0.0_dp))
+  CP2K beta from EXYZ beta (default -HUGE(0.0_dp))
+
+like PDB, if you set the CHARGE_OCCUP flag, occup will override atm_charge
+like PDB, if you set the CHARGE_BETA flag, beta will override atm_charge
+CHARGE_EXTENDED flag is ignored
