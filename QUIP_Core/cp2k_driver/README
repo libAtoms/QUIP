@@ -1,3 +1,5 @@
+Patches tested against CP2K cvs version 31 Aug 2009 (NB).
+
 Modified CP2K source files (06 Dec 2008!!):
   topology_pdb.F
   motion_utils.F
