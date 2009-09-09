@@ -2024,7 +2024,11 @@ CONTAINS
 
        if(.not. do_lbfgs) then
           hdirgrad_after = hdir.DOT.grad_f 
-          linmin_quality = hdirgrad_before/hdirgrad_after
+          if (hdirgrad_after /= 0.0_dp) then
+            linmin_quality = hdirgrad_before/hdirgrad_after
+          else
+            linmin_quality = HUGE(1.0_dp)
+          endif
        end if
 
        norm2grad_f_old = norm2grad_f
