@@ -10,7 +10,7 @@ endif
 
 OBJS = 
 
-PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_new clean_traj file_rewrite
+PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_new clean_traj file_rewrite find_space_minim
 
 LIBS =  -L. -lquiputils -lquip -latoms 
 LIBFILES = libatoms.a libquip.a libquiputils.a
