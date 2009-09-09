@@ -32,7 +32,7 @@ Files needed for CP2K runs:
 
 To use exyz file for MM, just set COORD_FILE_FORMAT to EXYZ.
 The EXYZ file support converts from various EXYZ fields to CP2K atom properties as follows:
-  CP2K atname from:
+  CP2K atmname from:
     EXYZ atmname if defined
     EXYZ species if defined
     EXYZ Z if defined
