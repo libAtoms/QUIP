@@ -45,6 +45,9 @@ ts_calculation: % :  %.o ${LIBFILES}
 QMMM_CP2K_md: % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
+annealing: % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
+
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS}
 
