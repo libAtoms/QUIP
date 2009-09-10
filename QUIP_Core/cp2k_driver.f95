@@ -985,9 +985,11 @@ contains
     endif
 
     if (save_output_files) then
-      call system_command('cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%cp2k_input_filename)//'>> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
-                          'cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file)//'>> force_file_log; echo "##############" >> force_file_log;' // &
-                          'cat '//trim(param%wenv%working_directory)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
+      call system_command('cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%cp2k_input_filename)// &
+        ' >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
+        ' cat '//trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file)// &
+        ' >> cp2k_force_file_log; echo "##############" >> cp2k_force_file_log;' // &
+        ' cat '//trim(param%wenv%working_directory)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
     endif
 
   ! remove all unnecessary files
