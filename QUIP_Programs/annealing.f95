@@ -260,7 +260,8 @@ real(dp) :: QQ
 
     if (abs(real(k,dp)*Time_Step-annealing_time_step).lt.epsilon(0._dp)) then
        if (abs(Simulation_Temperature-max_temp).gt.epsilon(0._dp) .and. Simulation_Temperature.lt.max_temp) then
-          call print('Rescaling velocities, stepping in temperature at time '//ds%t//' from '//Simulation_Temperature//' K  to '//Simulation_Temperature+Temp_step//' K.')
+          call print('Rescaling velocities, stepping in temperature at time '//ds%t//' from '//Simulation_Temperature// &
+                     ' K  to '//(Simulation_Temperature+Temp_step)//' K.')
           k = 0
           Simulation_Temperature = Simulation_Temperature + Temp_step
           call rescale_velo(ds,Simulation_Temperature)
@@ -285,8 +286,10 @@ real(dp) :: QQ
 
      if (with_restraints) then
         call restrain_to_ref(ds%atoms,reference,harmonic,f0)
+call print("BOB 20")
         f = sum0(f1+f0)
      else
+call print("BOB 30")
         f = sum0(f1)
      endif
 
@@ -404,6 +407,7 @@ contains
 
 !    allocate(force0(size(force,1),size(force,2)))
 
+    ff = 0.0_dp
     do i = 1, at%N
        if (at%Z(i).eq.1) cycle
        !extra potential is E(x,y,z) = harmonic * [(x-x_ref)**2.0 + (y-y_ref)**2.0 + (z-z_ref)**2.0 ]
@@ -418,34 +422,25 @@ contains
   function sum0(force) result(force0)
 
     real(dp), dimension(:,:), intent(in) :: force
-    real(dp), allocatable, dimension(:,:) :: force0
+    real(dp) :: force0(size(force,1),size(force,2))
     integer :: i
     real(dp) :: sumF(3)
 
-    allocate(force0(size(force,1),size(force,2)))
+    sumF = sum(force,2)
+    call print('Sum of the forces is '//sumF(1:3))
 
-    do i = 1, size(force,2)
-       sumF(1) = sum(force(1,1:size(force,2)))
-       sumF(2) = sum(force(2,1:size(force,2)))
-       sumF(3) = sum(force(3,1:size(force,2)))
-    enddo
-    if ((sumF(1).feq.0.0_dp).and.(sumF(2).feq.0.0_dp).and.(sumF(3).feq.0.0_dp)) then
-       call print('Sum of the forces are zero.')
-       force0(1:3,1:size(force,2)) = force(1:3,1:size(force,2))
+    if ((sumF(1) .feq. 0.0_dp) .and.  (sumF(2) .feq. 0.0_dp) .and.  (sumF(3) .feq. 0.0_dp)) then
+       call print('Sum of the forces is zero.')
+       force0 = force
+    else
+      sumF = sumF / size(force,2)
+
+      force0(1,:) = force(1,:) - sumF(1)
+      force0(2,:) = force(2,:) - sumF(2)
+      force0(3,:) = force(3,:) - sumF(3)
     endif
 
-    call print('Sum of the forces was '//sumF(1:3))
-    sumF = sumF / size(force,2)
-
-    do i = 1, size(force,2)
-       force0(1:3,i) = force(1:3,i) - sumF(1:3)
-    enddo
-
-    do i = 1, size(force0,2)
-       sumF(1) = sum(force0(1,1:size(force0,2)))
-       sumF(2) = sum(force0(2,1:size(force0,2)))
-       sumF(3) = sum(force0(3,1:size(force0,2)))
-    enddo
+    sumF = sum(force0,2)
     call print('Sum of the forces after mom.cons.: '//sumF(1:3))
 
   end function sum0
