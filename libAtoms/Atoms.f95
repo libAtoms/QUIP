@@ -3827,11 +3827,16 @@ contains
   end subroutine remove_bond
 
 
-  !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
-  !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
-  !% in which the unit cell is big enough. In narrow directions, the unit cell is replicated on the fly to collect
-  !% neighbours that are images of the stored atoms. For very small unit cells, there is only one subcell, so the routine
-  !% is equivalent to the standard $O(N^2)$ method.
+  !%  As for 'calc_connect', but perform the connectivity update
+  !%  hystertically: atoms must come within 'cutoff' to be considered
+  !%  neighbours, and then will remain connect until them move apart
+  !%  further than 'cutoff_break'.
+  !%
+  !%  Typically 'alt_connect' should be set to the
+  !%  'hysteretic_connect' attribute. 'origin' and 'extent'
+  !%  vectors can be used to restrict the hysteretic region to only
+  !%  part of the entire system -- the 'estimate_origin_extent()'
+  !%  routine in clusters.f95 can be used to guess suitable values.
   subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour)
     type(Atoms), intent(inout), target           :: this
     type(Connection), intent(inout), target, optional :: alt_connect
@@ -4046,8 +4051,7 @@ contains
 
   !% Fast $O(N)$ connectivity calculation routine. It divides the unit cell into similarly shaped subcells,
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
-  !% in which the unit cell is big enough. In narrow directions, the unit cell is replicated on the fly to collect
-  !% neighbours that are images of the stored atoms. For very small unit cells, there is only one subcell, so the routine
+  !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
   subroutine calc_connect(this, own_neighbour)
     type(Atoms), intent(inout)           :: this
