@@ -29,6 +29,7 @@ QUIPPY_OPT = -O3 -vec-report0
 QUIPPY_CPP = ifort -EP
 # QUIPPY_NO_QUIP = 1
 QUIPPY_NO_TOOLS = 1
+QUIPPY_NO_CRACK = 1
 
 # rules
 
