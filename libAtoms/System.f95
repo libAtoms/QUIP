@@ -1252,7 +1252,7 @@ contains
     integer :: opening_quote_index, closing_quote_pos
     logical :: do_matching
     character(len=len(fields(1))) :: tmp_field
-    character :: c
+    character(1) :: c
     integer :: tmp_field_last, t_start, dist
     logical :: in_token
 
@@ -1383,7 +1383,7 @@ contains
     integer, intent(in) :: start, end
     character(len=*) :: separators
     integer, intent(out) :: dist
-    character :: c
+    character(1) :: c
 
     integer i
 
