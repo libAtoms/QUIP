@@ -34,6 +34,7 @@ ATOMEYE_LIBS = -lm -L/usr/X11/lib/ -lXpm -lXext -lX11 -lmpi \
 #   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libreadline.a \
 #   -framework vecLib
 
+# QUIPPY_INSTALL_OPTS = --home=${HOME}
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
