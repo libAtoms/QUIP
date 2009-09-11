@@ -5,9 +5,12 @@ from numpy.distutils.ccompiler import new_compiler
 
 # Compile simple C program to find sizeof(void *) on this arch
 print 'Calculating sizeof(void *)...', 
-if not os.path.exists('./sizeof_void_ptr'):
-    cc = new_compiler()
-    cc.link_executable(cc.compile(['sizeof_void_ptr.c']),'sizeof_void_ptr')
+if os.path.exists('./sizeof_void_ptr'):
+    os.remove('./sizeof_void_ptr')
+if os.path.exists('./sizeof_void_ptr.o'):
+    os.remove('./sizeof_void_ptr.o')
+cc = new_compiler()
+cc.link_executable(cc.compile(['sizeof_void_ptr.c']),'sizeof_void_ptr')
 sizeof_void_ptr = int(os.popen('./sizeof_void_ptr').read())
 print sizeof_void_ptr, 'bytes.'
 
