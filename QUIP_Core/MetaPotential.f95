@@ -372,7 +372,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
 
   function metapotential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, hook_print_interval)
+       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, hook_print_interval, status)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Metapotential), intent(inout), target :: this !% metapotential to evaluate energy/forces with
     character(*), intent(in)    :: method !% passed to minim()
@@ -390,6 +390,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     logical, intent(in), optional :: use_fire   !% if true, use fire_minim instead of minim
     logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
+    integer, intent(out), optional :: status !% set to 1 if an error occurred during minimisation
     integer::metapotential_minim
 
     integer n_iter, n_iter_tot
@@ -418,6 +419,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     call calc_connect(at)
     am%minim_at => at
     am%pos_lat_preconditioner_factor = am%minim_pos_lat_preconditioner*am%minim_at%N
+
+    if (present(status)) status = 0
 
     if (present(args_str)) then
       am%minim_args_str = args_str
@@ -485,7 +488,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     am_data = transfer(am, am_data)
     if (my_use_n_minim) then
        n_iter = n_minim(x, both_func, initial_E, final_E, my_eps_guess, max_steps, convergence_tol, print_hook, &
-            hook_print_interval=hook_print_interval, data=am_data)
+            hook_print_interval=hook_print_interval, data=am_data, status=status)
     else if (my_use_fire) then
        if (has_property(at, 'mass')) then
           mass = at%mass(1)
@@ -493,10 +496,10 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
           mass = ElementMass(at%Z(1))
        end if
        n_iter = fire_minim(x, mass, dummy_energy_func, gradient_func, 1.0_dp, convergence_tol, max_steps, &
-            print_hook, hook_print_interval=hook_print_interval, data=am_data)
+            print_hook, hook_print_interval=hook_print_interval, data=am_data, status=status)
     else
        n_iter = minim(x, energy_func, gradient_func, method, convergence_tol, max_steps, linminroutine, &
-            print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data)
+            print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
     endif
     call print("minim relax w.r.t. both n_iter " // n_iter, VERBOSE)
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
