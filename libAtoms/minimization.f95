@@ -1537,7 +1537,7 @@ CONTAINS
 
 
   function minim(x_in,func,dfunc,method,convergence_tol,max_steps, linminroutine, hook, hook_print_interval,  &
-		 eps_guess, always_do_test_gradient, data)
+		 eps_guess, always_do_test_gradient, data, status)
     real(dp),     intent(inout) :: x_in(:) !% Starting position
     INTERFACE 
        function func(x,data)
@@ -1584,6 +1584,7 @@ CONTAINS
     real(dp), intent(in), optional :: eps_guess
     logical, intent(in), optional :: always_do_test_gradient
     character, optional, intent(inout) :: data(:)
+    integer, optional, intent(out) :: status
 
     !%RV Returns number of gradient descent steps taken during minimisation
 
@@ -1642,6 +1643,7 @@ CONTAINS
          grad_f(size(x)), grad_f_old(size(x)))
 
     extra_report = 0
+    if (present(status)) status = 0
 
     call print("Welcome to minim()", NORMAL)
     call print("space is "//size(x)//" dimensional", NORMAL)
@@ -1868,6 +1870,7 @@ CONTAINS
                 call print("*** BAD linmin counter reached maximum, exiting " // max_bad_iter)
                 
                 exit_flag = 1
+                if (present(status)) status = 1
              end if
 
              cycle !continue
@@ -1935,6 +1938,7 @@ CONTAINS
              if( abs(obj-obj_new) < abs(stuck_tol*obj_new))then ! are we stuck ?
                 call print("*** Minim is stuck, exiting")
                 exit_flag = 1
+                if (present(status)) status = 0
                 cycle !continue 
              end if
              
@@ -1983,6 +1987,7 @@ CONTAINS
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!! Exiting linmin!")
                    exit_flag = 1
+                   if (present(status)) status = 1
                    cycle !continue
                 end if
              end if
@@ -1996,6 +2001,7 @@ CONTAINS
           if(bad_iter_counter == max_bad_iter)then
              call print("*** BAD iteration counter reached maximum " // max_bad_iter // " exiting")
              exit_flag = 1
+             if (present(status)) status = 1
              cycle !continue
           end if
        end if ! .not. do_bfgs
@@ -2105,6 +2111,7 @@ CONTAINS
           if(lbfgs_flag < 0) then ! internal LBFGS error
              call print('LBFGS returned error code '//lbfgs_flag//', exiting')
              exit_flag = 1
+             if (present(status)) status = 1
              cycle
           end if
        else
@@ -2401,7 +2408,7 @@ CONTAINS
 
   !% FIRE MD minimizer from Bitzek et al., \emph{Phys. Rev. Lett.} {\bfseries 97} 170201.
   !% Beware, this algorithm is patent pending in the US.
-  function fire_minim(x, mass, func, dfunc, dt0, tol, max_steps, hook, hook_print_interval, data)
+  function fire_minim(x, mass, func, dfunc, dt0, tol, max_steps, hook, hook_print_interval, data, status)
     real(dp), intent(inout), dimension(:) :: x
     real(dp), intent(in) :: mass
     interface 
@@ -2435,6 +2442,7 @@ CONTAINS
     end interface
     integer, optional :: hook_print_interval
     character,optional::data(:)
+    integer, optional, intent(out) :: status
     integer :: fire_minim
 
     integer  :: my_hook_print_interval
@@ -2443,6 +2451,8 @@ CONTAINS
     real(dp) :: f, df2, alpha_start, alpha, P, dt, dt_max
     integer :: i, Pcount
     logical :: done
+
+    if (present(status)) status = 0
 
     if (current_verbosity() >= VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
@@ -2525,6 +2535,7 @@ CONTAINS
     if(i == max_steps) then
        write (line, '(a,i0,a)') 'fire_minim: Failed to converge in ', i, ' steps.'
        call Print(line, ERROR)
+       if (present(status)) status = 1
     end if
 
     fire_minim = i
@@ -2813,7 +2824,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 end subroutine n_linmin
 
 function n_minim(x_i, bothfunc, initial_E, final_E, &
-    expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data) result(N_evals)
+    expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, status) result(N_evals)
     real(dp) :: x_i(:)
     interface 
        subroutine bothfunc(x,E,f,my_error,data)
@@ -2844,6 +2855,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
     end interface
     integer, optional :: hook_print_interval
     character,optional::data(:)
+    integer, optional, intent(out) :: status
 
     real(dp) :: E_i, E_ip1
 
@@ -2860,6 +2872,8 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 
     integer :: error
     integer :: my_hook_print_interval
+
+    if (present(status)) status = 0
 
     if (current_verbosity() >= VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
@@ -2916,6 +2930,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	if (N_evals > max_N_evals) then
 	  call print ("n_minim error: Ran out of iterations in linmin", ERROR)
 	  final_E = E_i
+          if (present(status)) status = 1
 	  return
 	endif
 
