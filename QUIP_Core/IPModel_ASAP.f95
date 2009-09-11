@@ -647,8 +647,6 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       iesr = iesr/2
    end if
 
-   call print('iesr = '//iesr)
-
    nesr = (2*iesr(1)+1)*(2*iesr(2)+1)*(2*iesr(3)+1)
    nnatmax = min(nnatmax,nat*nesr)
    nnatmax = nnatmax + 10
