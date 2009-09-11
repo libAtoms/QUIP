@@ -972,6 +972,72 @@ contains
 
   end subroutine graphite
 
+
+  !%  Primitive 9-atom trigonal alpha quartz cell
+  subroutine alpha_quartz(at, a, c, u, x, y, z)
+    type(Atoms), intent(out) :: at
+    real(dp), intent(in) :: a, c, u, x, y, z
+
+    real(dp) :: lattice(3,3), a1(3), a2(3), a3(3)
+
+    lattice = 0.0_dp
+    a1 = (/ 0.5_dp*a, -0.5_dp*sqrt(3.0_dp)*a, 0.0_dp /)
+    a2 = (/ 0.5_dp*a,  0.5_dp*sqrt(3.0_dp)*a, 0.0_dp /)
+    a3 = (/ 0.0_dp,    0.0_dp,                c /)
+    lattice(:,1) = a1 
+    lattice(:,2) = a2 
+    lattice(:,3) = a3
+   
+    call initialise(at, n=9, lattice=lattice)
+    call set_atoms(at, (/14,14,14,8,8,8,8,8,8 /))
+
+    at%pos(:,1) =  u*a1 + 2.0_dp/3.0_dp*a3
+    at%pos(:,2) =  u*a2 + 1.0_dp/3.0_dp*a3
+    at%pos(:,3) = -u*a1 - u*a2
+    at%pos(:,4) =  x*a1 + y*a2 + (z + 2.0_dp/3.0_dp)*a3
+    at%pos(:,5) = -y*a1 + (x-y)*a2  + (4.0_dp/3.0_dp + z)*a3
+    at%pos(:,6) = (y-x)*a1 - x*a2   + (1.0_dp+ z)*a3
+    at%pos(:,7) = y*a1 + x*a2 - (2.0_dp/3.0_dp + z)*a3
+    at%pos(:,8) = -x*a1 + (y-x)*a2  - z*a3
+    at%pos(:,9) = (x - y)*a1 - y*a2 - (1.0_dp/3.0_dp + z)*a3
+    
+ end subroutine alpha_quartz
+
+ !%  Non-primitive 18-atom cubic quartz cell
+ subroutine alpha_quartz_cubic(at, a, c, u, x, y, z)
+   type(Atoms), intent(out) :: at
+   real(dp), intent(in) :: a, c, u, x, y, z
+
+   type(Atoms) :: a0, a1
+   real(dp) :: lattice(3,3), g(3,3), t(3)
+   logical, allocatable, dimension(:) :: unit_cell
+   integer :: i
+
+   call alpha_quartz(a0, a, c, u, x, y, z)
+   call supercell(a1, a0, 4, 4, 1)
+   call map_into_cell(a1)
+
+   lattice = 0.0_dp
+   lattice(1,1) = a0%lattice(1,1)*2.0_dp
+   lattice(2,2) = a0%lattice(2,2)*2.0_dp
+   lattice(3,3) = a0%lattice(3,3)
+   call matrix3x3_inverse(lattice,g)
+
+   allocate(unit_cell(a1%n))
+   unit_cell = .false.
+   do i=1,a1%n
+      t = g .mult. a1%pos(:,i)
+      if (all(t >= -0.5) .and. all(t < 0.5)) unit_cell(i) = .true.
+   end do
+
+   call select(at, a1, mask=unit_cell)
+   call set_lattice(at, lattice)
+
+   deallocate(unit_cell)
+
+ end subroutine alpha_quartz_cubic
+
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Given a lattice type ('P','I','F','A','B','C') and a motif,
