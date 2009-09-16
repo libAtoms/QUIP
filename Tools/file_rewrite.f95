@@ -54,7 +54,7 @@ contains
       my_exec_name=EXEC_NAME
     endif
 
-    call print("Usage: " // trim(my_exec_name)//" infile=filename(stdin) outfile=filename(stdout) [netcdf4 (for output)]", ERROR)
+    call print("Usage: " // trim(my_exec_name)//" infile=filename(stdin) outfile=filename(stdout)[=file.nc for NETCDF] [netcdf4 (for output)]", ERROR)
   end subroutine print_usage
 
 end program file_rewrite
