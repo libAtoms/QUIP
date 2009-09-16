@@ -16,7 +16,9 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+
+sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('../quippy'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -46,7 +48,7 @@ copyright = u'2009, James Kermode'
 #
 # The short X.Y version.
 import os
-version=os.popen('svnversion -n ..').read(),
+version=os.popen('svnversion -n ..').read()
 # The full version, including alpha/beta/rc tags.
 release = version
 
