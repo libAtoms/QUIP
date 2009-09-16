@@ -1439,10 +1439,6 @@ contains
   !% HYBRID_TRANS_MARK. Further hopping is done 'buffer_width' times
   !% and atoms are marked with HYBRID_BUFFER_MARK and given weight
   !% zero.
-  !%
-  !% Optionally we return a Table 'clusterlist' which includes the indices
-  !% and periodic shifts relative to the first marked atom of all atoms in
-  !% the cluster. This is suitable for passing to create_cluster.
   subroutine create_hybrid_weights_args(at, trans_width, buffer_width, weight_interpolation, &
        nneighb_only, min_images_only, mark_buffer_outer_layer, hysteretic_buffer, &
        hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius, &
