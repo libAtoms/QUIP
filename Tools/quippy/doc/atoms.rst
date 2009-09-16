@@ -421,6 +421,10 @@ Atoms Objects
 Structure generation routines
 -----------------------------
 
+.. function:: supercell(a, nx, ny, nz)
+
+   Return an Atoms object containing :math:`n_x \times n_y \times n_z` periodic images of ``a``.
+
 .. function:: diamond(a[, z])
 
    Return an 8-atom diamond-structure with cubic lattice constant ``a`` and
