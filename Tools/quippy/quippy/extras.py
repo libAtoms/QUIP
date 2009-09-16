@@ -41,7 +41,7 @@ class Atoms(FortranAtoms):
       """
       Initialise an Atoms object.
 
-      The arugments, n, lattice, fpointer, finalise, data, properties and params are passed on
+      The arguments, n, lattice, fpointer, finalise, data, properties and params are passed on
       to the FortranAtoms constructor.
 
       If source is given, Atoms.read(source, frame=frame) is called.
@@ -132,6 +132,7 @@ class Atoms(FortranAtoms):
          out = Atoms(n=mask.count(),lattice=self.lattice)
          FortranAtoms.select(out, self, mask=mask)
       elif list is not None:
+         list = farray(list)
          out = Atoms(n=list.size(), lattice=self.lattice)
          FortranAtoms.select(out, self, list=list)
       else:
@@ -195,6 +196,7 @@ class Atoms(FortranAtoms):
       other = Atoms(n=self.n, lattice=self.lattice, data=self.data, 
                     properties=self.properties, params=self.params)
       return other
+
 
    def calc_bonds(self):
       if hasattr(self, '_bonds'): return
