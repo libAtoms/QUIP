@@ -1,4 +1,4 @@
-"""Contains FortranArray class and utility functions for handling one-based
+"""Contains :class:`FortranArray` class and utility functions for handling one-based
 array indexing."""
 
 import sys, numpy
@@ -13,14 +13,13 @@ if (major, minor) < (2, 5):
 
 
 def frange(min,max=None,step=1):
-    """Fortran equivalent of range() builtin.
+    """Fortran equivalent of :func:`range` builtin.
 
-    Returns an iterator for integers from min to max inclusive, increasing by
-    step each time.
+    Returns an iterator for integers from ``min`` to ``max`` **inclusive**, increasing by
+    ``step`` each time.
 
     >>> list(frange(3))
     [1, 2, 3]
-
     >>> list(frange(3,6,2))
     [3, 5]
     """
@@ -37,11 +36,11 @@ def fenumerate(seq):
         i += 1
 
 def fzeros(shape,dtype=float):
-    """Create an empty FortranArray with Fortran ordering."""
+    """Create an empty :class:`FortranArray` with Fortran ordering."""
     return FortranArray(numpy.zeros(shape,dtype,order='F'))
 
 def farray(seq, dtype=None):
-    """Convert seq to a FortranArray with Fortran ordering.
+    """Convert ``seq`` to a :class:`FortranArray` with Fortran ordering.
 
     >>> fa = farray([1,2,3])
 
@@ -52,21 +51,26 @@ def farray(seq, dtype=None):
     return FortranArray(na)
 
 def fidentity(n):
-    """Return the n dimensional identity matrix."""
+    """Return the ``n`` dimensional identity matrix as a :class:`FortranArray`."""
 
     return farray(numpy.identity(n))
 
 def fvar(seq):
     """
-    Create rank-0 FortranArrays and inject them into the global namespace.
+    Create one or more rank-0 instances of :class:`FortranArray` and
+    inject them into the global namespace.
 
-    >>> fvar("abc")
-    >>> a, b, c = fvar(['a','b','c'])
-    
     This is a convenience function useful for making arrays to use
     as intent(in,out) arguments to a Fortran function. A single
     string argument causes variables with one-letter names to be
-    created. The new arrays are also returned. """
+    created. The new arrays are also returned.
+    
+    The following examples are equivalent::
+
+       >>> fvar("abc")
+       (FortranArray(0.0), FortranArray(0.0), FortranArray(0.0))
+       >>> a, b, c = fvar(['a','b','c'])
+    """
     
     import inspect
     frame = inspect.currentframe().f_back
@@ -79,14 +83,14 @@ def fvar(seq):
         del frame
 
 class FortranArray(numpy.ndarray):
-    """Subclass of ndarray which uses Fortran-style one-based indexing.
+    """Subclass of :class:`numpy.ndarray` which uses Fortran-style one-based indexing.
 
     The first element is numbered one rather than zero and
-    trying to access element zero will raise an IndexError
+    trying to access element zero will raise an :exc:`IndexError`
     exception. Negative indices are unchanged; -1 still refers to the
     highest index along a dimension. Slices are also Fortran-style,
     i.e. inclusive on the second element so 1:2 includes the one-based
-    elements 1 and 2, equivalent to a C-style slice of 0:2. The self.flat
+    elements 1 and 2, equivalent to a C-style slice of 0:2. The ``self.flat``
     iterator is still indexed from zero."""
 
     def __array_finalize__(self, obj):
@@ -375,9 +379,9 @@ class FortranArray(numpy.ndarray):
                 return str(numpy.asarray(self).view(numpy.ndarray))
 
     def __iter__(self):
-        """Iterate over this FortranArray treating first dimension as fastest varying.
+        """Iterate over this :class:`FortranArray` treating first dimension as fastest varying.
 
-        Calls fast ndarray.__iter__ for a 1D array."""
+        Calls fast :meth:`ndarray.__iter__` for a 1D array."""
 
         if len(self.shape) > 1:
             return self.col_iter()
@@ -386,7 +390,7 @@ class FortranArray(numpy.ndarray):
 
 
     def row_iter(self):
-        """Iterate over this FortranArray treating first dimension as fastest varying"""
+        """Iterate over this :class:`FortranArray` treating first dimension as fastest varying"""
         if self.shape == ():
             yield self.item()
         else:
@@ -420,11 +424,11 @@ class FortranArray(numpy.ndarray):
             
 
     def norm(self):
-       "Return sqrt(norm2(a))"
+       "Return ``sqrt(norm2(self))``"
        return numpy.sqrt(self.norm2())
 
     def col_iter(self):
-        """Iterator for MxN arrays to return cols [...,i] for i=1,N one by one as Mx1 arrays."""
+        """Iterator for ``MxN`` arrays to return ``cols [...,i]`` for ``i=1,N`` one by one as ``Mx1`` arrays."""
         if self.shape == ():
             yield self.item()
         else:
@@ -433,6 +437,8 @@ class FortranArray(numpy.ndarray):
                 yield obj
 
     def all(self, axis=None, out=None):
+        """One-based analogue of :meth:`numpy.ndarray.all`"""
+        
 	if axis is not None and axis > 0:
 	    axis -= 1
 	obj = numpy.ndarray.all(self, axis, out).view(FortranArray)
@@ -441,6 +447,8 @@ class FortranArray(numpy.ndarray):
         return obj
 
     def any(self, axis=None, out=None):
+        """One-based analogue of :meth:`numpy.ndarray.any`"""
+        
 	if axis is not None and axis > 0:
 	    axis -= 1
 	obj = numpy.ndarray.any(self, axis, out).view(FortranArray)
@@ -449,9 +457,9 @@ class FortranArray(numpy.ndarray):
         return obj
 
     def stripstrings(self):
-        """Return string or array of strings with trailing spaces removed
+        """Return string or array of strings with trailing spaces removed.
 
-        Raises ValueError if this FortranArray does not have a string datatype.
+        Raises :exc:`ValueError` if this :class:`FortranArray` does not have a string datatype.
         """
 
         if self.dtype.kind != 'S': raise ValueError('dtype.kind must be "S"')
@@ -465,7 +473,8 @@ class FortranArray(numpy.ndarray):
 
 
 def padded_str_array(d, length):
-    """Return FortranArray with shape (length, len(d)), filled with rows from d padded with spaces"""
+    """Return :class:`FortranArray` with shape ``(length, len(d))``,
+       filled with rows from ``d`` padded with spaces"""
     res = fzeros((length, len(d)), 'S')
     res[...] = ' '
     for i, line in fenumerate(d):
