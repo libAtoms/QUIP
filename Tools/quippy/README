@@ -1,78 +1,15 @@
-quippy
-------
+The aim of quippy is to make all the functions, subroutines and types
+defined in QUIP available from Python scripts. 
 
-This package is a Python interface to libAtoms (and optionally, also
-to QUIP). To use it you must have Python >= 2.4 installed as well as
-the numpy extension (http://www.scipy.org/numpy). ipython
-(http://ipython.scipy.org/) makes using python interactively
-much more productive.
+Quick-start:
+ $ make
+ $ make install
+ $ cd tests
+ $ python run_all.py
 
-Installation
-------------
+For more details, see documentation in doc/ subdirectory, which is in
+reStructredText format.
 
-Before installing, there's a patch file which needs to be applied to
-numpy. This gets optional arguments to work correctly between python
-and fortran, and I've only tested it with gfortran. It was created
-against numpy-1.2.1. To apply the patch, you need to find where
-numpy is installed:
-
-$ python
->>> import numpy
->>> print numpy.__file__
-
-Then go to this directory, and change to the f2py subdirectory.
-Apply the patch as:
-
-$ patch -p0 < ~/Code/pyatomf/numpy.f2py.patch
-
-To compile quippy, run
-
-$ make QUIP_ARCH=arch -I ../../Makefiles -I ../../build.${QUIP_ARCH} install
-
-This should build everything and install the Python modules in
-~/lib/python. If you're not using gfortran you'll also have to edit
-the SETUP_OPTS variable in the Makefile. Run the command 'python
-setup.py config_fc --help-fcompiler' for a list of detected fortran
-compilers.
-
-To check everything is working try the following:
-
-$ python
->>> import quippy
-
-If you are using gfortran, the QUIP bindings require a recent svn
-version of gfortran to compile (with 4.3.2 or earlier you run into
-this bug, reported by Steve and now fixed:
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735)
-
-
-Usage
------
-
-quippy tries to expose all the libAtoms and QUIP functions
-in an object-oriented way. Here is some sample code that loads
-an Atoms object from a NetCDF file and writes it to a new XYZ
-file.
-
->>> from quippy import *
->>> a = Atoms.read('file.nc')
->>> a.write('newfile.xyz')
-
-Since Python is case-sensitive, and Fortran is not, all variable
-and functions names are converted to lower case. The only exception
-is type names which are wrapped by classes with the same capitalisation
-as the type definition in Fortran (e.g. Atoms, NetCDFFile above).
-
-If you're using ipython, the full documentation strings for each class
-and function can be seen by typing the name of the thing you're
-interested in, followed by a ?. For example "Atoms ?", "a.n ?" or
-"Atoms.lattice ?" (if you're using standard python, you can get the
-same information by typing help(object), e.g.  help(Atoms)).
-
-There's an ipython profile called quippy which you can install by
-copying the files ipythonrc-quippy and quippy_load.py to
-${HOME}/.ipythonrc.  Then you can invoke ipython as "ipython -p
-quippy" to automatically load numpy, matplotlib and quippy and drop
-you straight into an interactive shell.
-
+If you have sphinx (http://sphinx.pocoo.org) installed, 'make html'
+from 'doc/' will build HTML documentation.
 
