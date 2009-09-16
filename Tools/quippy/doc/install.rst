@@ -5,7 +5,7 @@ The aim of quippy is to make all the functions, subroutines and types
 defined in QUIP available from Python scripts. We do this by creating
 a Python extension which wraps all of these routines automatically
 using `f2py <http://www.scipy.org/F2py>`_, part of 
-`numpy <http://www.scipy.org/numpy>`_. f2py is a very useful tool, but it does
+`numpy <http://www.scipy.org/Download>`_. f2py is a very useful tool, but it does
 not yet support Fortran 90 extensions such as derived types, so quippy
 has to do a little more work to allow us to use them transparently.
 
