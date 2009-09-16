@@ -46,7 +46,7 @@ ifneq (${QUIPPY_DEBUG},)
   endif
 endif
 
-BUILD_OPTS = --build-base=build.${QUIP_ARCH} ${QUIPPY_DEBUG_OPT} ${INCLUDES} ${DEFINES} -UHAVE_LOTF ${SYSLIBS} 
+BUILD_OPTS = --build-base=build.${QUIP_ARCH} ${QUIPPY_DEBUG_OPT} ${INCLUDES} ${DEFINES} -DHAVE_LOTF ${SYSLIBS} 
 ifneq (${QUIPPY_INSTALL_OPTS},)
 INSTALL_OPTS += ${QUIPPY_INSTALL_OPTS}
 endif
@@ -93,7 +93,7 @@ endif
 WRAP=--wrap-sources="${WRAP_SOURCES_LIST}"
 
 
-ifeq (${HAVE_ATOMEYE},1)
+ifeq (${QUIPPY_HAVE_ATOMEYE},1)
   ATOMEYE_DIR=../AtomEye
   ATOMEYE=--atomeye-dir=${ATOMEYE_DIR} --atomeye-libs="${ATOMEYE_LIBS}"
 atomeyelib:
@@ -115,6 +115,15 @@ install: atomeyelib presetup
 
 .DEFAULT: 
 	${QUIPPY_PYTHON} setup.py ${SETUP_OPTS} $@
+
+dump_setup_opts:
+	echo ${SETUP_OPTS}
+
+dump_build_opts:
+	echo ${BUILD_OPTS}
+
+dump_install_opts:
+	echo ${INSTALL_OPTS}
 
 clean:
 	rm -rf build.${QUIP_ARCH}
