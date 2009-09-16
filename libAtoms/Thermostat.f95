@@ -41,7 +41,8 @@ module thermostat_module
   integer, parameter :: NONE                 = 0, &
                         LANGEVIN             = 1, &
                         NOSE_HOOVER          = 2, &
-                        NOSE_HOOVER_LANGEVIN = 3
+                        NOSE_HOOVER_LANGEVIN = 3, &
+                        LANGEVIN_NPT         = 4
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
@@ -54,15 +55,22 @@ module thermostat_module
 
   type thermostat
 
-     integer  :: type  = NONE   !% One of the types listed above
-     real(dp) :: gamma = 0.0_dp !% Friction coefficient in Langevin and Nose-Hoover-Langevin
-     real(dp) :: eta   = 0.0_dp !% $\eta$ variable in Nose-Hoover
-     real(dp) :: p_eta = 0.0_dp !% $p_\eta$ variable in Nose-Hoover and Nose-Hoover-Langevin 
-     real(dp) :: f_eta = 0.0_dp !% The force on the Nose-Hoover(-Langevin) conjugate momentum
-     real(dp) :: Q     = 0.0_dp !% Thermostat mass in Nose-Hoover and Nose-Hoover-Langevin
-     real(dp) :: T     = 0.0_dp !% Target temperature
-     real(dp) :: Ndof  = 0.0_dp !% The number of degrees of freedom of atoms attached to this thermostat
-     real(dp) :: work  = 0.0_dp !% Work done by this thermostat
+     integer  :: type  = NONE     !% One of the types listed above
+     real(dp) :: gamma = 0.0_dp   !% Friction coefficient in Langevin and Nose-Hoover-Langevin
+     real(dp) :: eta   = 0.0_dp   !% $\eta$ variable in Nose-Hoover
+     real(dp) :: p_eta = 0.0_dp   !% $p_\eta$ variable in Nose-Hoover and Nose-Hoover-Langevin 
+     real(dp) :: f_eta = 0.0_dp   !% The force on the Nose-Hoover(-Langevin) conjugate momentum
+     real(dp) :: Q     = 0.0_dp   !% Thermostat mass in Nose-Hoover and Nose-Hoover-Langevin
+     real(dp) :: T     = 0.0_dp   !% Target temperature
+     real(dp) :: Ndof  = 0.0_dp   !% The number of degrees of freedom of atoms attached to this thermostat
+     real(dp) :: work  = 0.0_dp   !% Work done by this thermostat
+     real(dp) :: p = 0.0_dp       !% External pressure
+     real(dp) :: gamma_p = 0.0_dp !% Friction coefficient for cell in Langevin NPT
+     real(dp) :: W_p = 0.0_dp     !% Fictious cell mass in Langevin NPT
+     real(dp) :: epsilon_v = 0.0_dp !% Velocity of barostat variable
+     real(dp) :: epsilon_f = 0.0_dp !% Force on barostat variable
+     real(dp) :: epsilon_f1 = 0.0_dp !% Force on barostat variable
+     real(dp) :: epsilon_f2 = 0.0_dp !% Force on barostat variable
 
   end type thermostat
 
@@ -110,13 +118,16 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine thermostat_initialise(this,type,T,gamma,Q)
+  subroutine thermostat_initialise(this,type,T,gamma,Q,p,gamma_p,W_p)
 
     type(thermostat),   intent(inout) :: this
     integer,            intent(in)    :: type
     real(dp), optional, intent(in)    :: T
     real(dp), optional, intent(in)    :: gamma
     real(dp), optional, intent(in)    :: Q
+    real(dp), optional, intent(in)    :: p
+    real(dp), optional, intent(in)    :: gamma_p
+    real(dp), optional, intent(in)    :: W_p
 
     if (present(T)) then
        if (T < 0.0_dp) call system_abort('initialise: Temperature must be >= 0')
@@ -130,6 +141,11 @@ contains
     this%eta = 0.0_dp
     this%p_eta = 0.0_dp
     this%f_eta = 0.0_dp
+    this%epsilon_v = 0.0_dp
+    this%epsilon_f = 0.0_dp
+    this%epsilon_f1 = 0.0_dp
+    this%epsilon_f2 = 0.0_dp
+    this%p = 0.0_dp
 
     select case(this%type)
 
@@ -165,6 +181,17 @@ contains
        this%gamma = gamma
        this%Q = Q
        
+    case(LANGEVIN_NPT)
+       
+       if (.not.present(gamma) .and. .not.present(gamma_p) .and. .not.present(W_p) ) &
+       & call system_abort('initialise: gamma, gamma_p, W_p are required for Langevin NPT baro-thermostat')
+       this%T = T
+       this%gamma = gamma
+       this%Q = 0.0_dp
+       this%p = p
+       this%gamma_p = gamma_p
+       this%W_p = W_p
+       
     end select
     
   end subroutine thermostat_initialise
@@ -182,6 +209,13 @@ contains
     this%T     = 0.0_dp
     this%Ndof  = 0.0_dp
     this%work  = 0.0_dp
+    this%p     = 0.0_dp
+    this%gamma_p = 0.0_dp
+    this%W_p = 0.0_dp
+    this%epsilon_v = 0.0_dp
+    this%epsilon_f = 0.0_dp
+    this%epsilon_f1 = 0.0_dp
+    this%epsilon_f2 = 0.0_dp
     
   end subroutine thermostat_finalise
 
@@ -198,6 +232,13 @@ contains
     to%T     = from%T     
     to%Ndof  = from%Ndof
     to%work  = from%work  
+    to%p     = from%p
+    to%gamma_p = from%gamma_p
+    to%W_p = from%W_p
+    to%epsilon_v = from%epsilon_v
+    to%epsilon_f = from%epsilon_f
+    to%epsilon_f1 = from%epsilon_f1
+    to%epsilon_f2 = from%epsilon_f2
 
   end subroutine thermostat_assignment
 
@@ -236,13 +277,16 @@ contains
 
   end subroutine thermostats_finalise
 
-  subroutine thermostats_add_thermostat(this,type,T,gamma,Q)
+  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p)
 
     type(thermostat), allocatable, intent(inout) :: this(:)
     integer,                       intent(in)    :: type
     real(dp), optional,            intent(in)    :: T
     real(dp), optional,            intent(in)    :: gamma
     real(dp), optional,            intent(in)    :: Q
+    real(dp), optional,            intent(in)    :: p
+    real(dp), optional,            intent(in)    :: gamma_p
+    real(dp), optional,            intent(in)    :: W_p
 
     type(thermostat), allocatable                :: temp(:)
     integer                                      :: i, l, u, la(1), ua(1)
@@ -269,7 +313,7 @@ contains
        call finalise(temp)
     end if
 
-    call initialise(this(u+1),type,T,gamma,Q)
+    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p)
 
   end subroutine thermostats_add_thermostat
 
@@ -301,6 +345,11 @@ contains
             ' eV fs^2, gamma = '//round(this%gamma,5)//' fs^-1, eta = '//round(this%eta,5)//&
             ' , p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV',file=file)
        
+    case(LANGEVIN_NPT)
+       call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, work = '// &
+            & round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            & round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au',file=file)
+
     end select
     
   end subroutine thermostat_print
@@ -391,7 +440,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine thermostat1(this,at,f,dt,property,value)
+  subroutine thermostat1(this,at,f,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
@@ -399,8 +448,10 @@ contains
     real(dp),         intent(in)    :: dt
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
+    real(dp), dimension(3,3), intent(in), optional :: virial
 
-    real(dp) :: decay, K
+    real(dp) :: decay, K, volume_p
+    real(dp), dimension(3,3) :: lattice_p
     integer  :: i, prop_index, pos_indices(3)
 
     if (get_value(at%properties,property,pos_indices)) then
@@ -488,6 +539,38 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X LANGEVIN NPT
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    case(LANGEVIN_NPT)
+              
+       if( .not. present(virial) ) call system_abort('thermostat1: NPT &
+       & simulation, but virial has not been passed')
+
+       volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
+       lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
+       call set_lattice(at,lattice_p)
+
+       this%epsilon_f1 = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
+       & - 3.0_dp * volume_p * this%p
+
+       this%epsilon_f = this%epsilon_f1 + this%epsilon_f2
+       this%epsilon_v = this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p
+
+       !Decay the velocity for dt/2. The random force will have been added to acc during the
+       !previous timestep.
+
+       decay = exp(-0.5_dp*dt*(this%gamma+(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+       at%pos = at%pos*( 1.0_dp + this%epsilon_v * dt )
+       !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
+
     end select
 
   end subroutine thermostat1
@@ -574,7 +657,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    case(LANGEVIN)
+    case(LANGEVIN,LANGEVIN_NPT)
      
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
@@ -617,7 +700,7 @@ contains
 
   end subroutine thermostat3
   
-  subroutine thermostat4(this,at,f,dt,property,value)
+  subroutine thermostat4(this,at,f,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
@@ -625,8 +708,10 @@ contains
     real(dp),         intent(in)    :: dt
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
+    real(dp), dimension(3,3), intent(in), optional :: virial
 
-    real(dp) :: decay, K
+    real(dp) :: decay, K, volume_p, f_cell
+    real(dp), dimension(3,3) :: lattice_p
     integer  :: i, prop_index, pos_indices(3)
 
     if (get_value(at%properties,property,pos_indices)) then
@@ -724,6 +809,32 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+    case(LANGEVIN_NPT)
+
+       if( .not. present(virial) ) call system_abort('thermostat4: NPT &
+       & simulation, but virial has not been passed')
+
+       f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
+
+       !Decay the velocities for dt/2 again
+       decay = exp(-0.5_dp*dt*(this%gamma+(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+       
+       this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
+       & - 3.0_dp * volume_p * this%p + f_cell
+
+       this%epsilon_v = ( this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p ) / &
+       & ( 1.0_dp + 0.5_dp * dt * this%gamma_p )
+
+       volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
+       lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
+       call set_lattice(at,lattice_p)
+
+       this%epsilon_f2 = f_cell - this%epsilon_v*this%W_p*this%gamma_p
+
     end select
 
   end subroutine thermostat4
@@ -813,5 +924,19 @@ contains
     end do
 
   end subroutine thermostats_file_read
+
+  function kinetic_virial(this)
+     type(atoms), intent(in) :: this
+     real(dp), dimension(3,3) :: kinetic_virial
+     integer :: i
+
+     kinetic_virial = 0.0_dp
+
+     do i = 1, this%N
+        kinetic_virial = kinetic_virial + this%mass(i)*( this%velo(:,i) .outer. this%velo(:,i) )
+     enddo
+     kinetic_virial = kinetic_virial / cell_volume(this)
+
+  endfunction kinetic_virial
 
 end module thermostat_module
