@@ -1,14 +1,14 @@
 """
 Elastic constant calculation. (c) James Kermode 2009
 
-Some code adapted from elastics.py script, available from
+Code adapted from elastics.py script, available from
 http://github.com/djw/elastic-constants
 Copyright (c) 2007-2008 Dan Wilson. All rights reserved.
 """
 
 from scipy import stats
-from pylab import *
-from quippy import *
+import pylab
+from farray import *
 
 def strain_matrix(strain_vector):
    e1, e2, e3, e4, e5, e6 = strain_vector
@@ -191,17 +191,18 @@ def generate_strained_configs(at0, symmetry='triclinic', N_steps=5, delta=1e-2):
 
    for pindex, (pattern, fit_pairs) in fenumerate(strain_patterns[symmetry]):
       for step in frange(N_steps):
-         strain = where(pattern == 1, delta*(step-(N_steps+1)/2.0), 0.0)
+         strain = numpy.where(pattern == 1, delta*(step-(N_steps+1)/2.0), 0.0)
          at = at0.copy()
          T = strain_matrix(strain)
-         at.set_lattice(dot(T,at.lattice))
-         at.pos[:] = dot(T,at.pos)
+         at.set_lattice(numpy.dot(T,at.lattice))
+         at.pos[:] = numpy.dot(T,at.pos)
          at.params['strain'] = T
          yield at
 
 
 def calc_stress(configs, metapot, relax=False, relax_tol=1e-3, relax_steps=100):
    """Given a sequence of configs, calculate stress on each one"""
+   from quippy import GPA
    for at in configs:
       at2 = at.copy()
       at2.calc_connect()
@@ -234,22 +235,22 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
 
       if graphics:
          # position this plot in a 6x6 grid
-         sp = subplot(6,6,6*(index1-1)+index2)
+         sp = pylab.subplot(6,6,6*(index1-1)+index2)
          sp.set_axis_on()
 
          # change the labels on the axes
          xlabels = sp.get_xticklabels()
-         setp(xlabels,'rotation',90,fontsize=7)
+         pylab.setp(xlabels,'rotation',90,fontsize=7)
          ylabels = sp.get_yticklabels()
-         setp(ylabels,fontsize=7)
+         pylab.setp(ylabels,fontsize=7)
 
          # colour the plot depending on the strain pattern
          colourDict = {1: '#BAD0EF', 2:'#FFCECE', 3:'#BDF4CB', 4:'#EEF093',5:'#FFA4FF',6:'#75ECFD'}
          sp.set_axis_bgcolor(colourDict[patt])
 
          # plot the data
-         plot([strain[1,index2],strain[-1,index2]],[cijFitted*strain[1,index2]+intercept,cijFitted*strain[-1,index2]+intercept])
-         plot(strain[:,index2],stress[:,index1],'ro')
+         pylab.plot([strain[1,index2],strain[-1,index2]],[cijFitted*strain[1,index2]+intercept,cijFitted*strain[-1,index2]+intercept])
+         pylab.plot(list(strain[:,index2]),list(stress[:,index1]),'ro')
 
       return cijFitted, stderr
 
@@ -284,16 +285,17 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
    strain = fzeros((N_pattern, N_steps, 6))
    stress = fzeros((N_pattern, N_steps, 6))
 
-   fig = figure(num=1, figsize=(9.5,8),facecolor='white')
-   fig.clear()
-   fig.subplots_adjust(left=0.07,right=0.97,top=0.97,bottom=0.07,wspace=0.5,hspace=0.5)
-
-   for index1 in range(6):
-       for index2 in range(6):
-           # position this plot in a 6x6 grid
-           sp = subplot(6,6,6*(index1)+index2+1)
-           sp.set_axis_off()
-           text(0.4,0.4, "n/a")
+   if graphics:
+      fig = pylab.figure(num=1, figsize=(9.5,8),facecolor='white')
+      fig.clear()
+      fig.subplots_adjust(left=0.07,right=0.97,top=0.97,bottom=0.07,wspace=0.5,hspace=0.5)
+      
+      for index1 in range(6):
+         for index2 in range(6):
+            # position this plot in a 6x6 grid
+            sp = pylab.subplot(6,6,6*(index1)+index2+1)
+            sp.set_axis_off()
+            pylab.text(0.4,0.4, "n/a")
 
    # Fill in strain and stress arrays from config Atoms list
    for pindex, (pattern, fit_pairs) in fenumerate(strain_patterns[symmetry]):
@@ -329,16 +331,16 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
 
    # Convert lists to mean
    for k in Cijs:
-      Cijs[k] = mean(Cijs[k])
+      Cijs[k] = numpy.mean(Cijs[k])
 
    # Combine statistical errors
    for k, v in Cij_err.iteritems():
-      Cij_err[k] = sqrt(sum(farray(v)**2))/sqrt(len(v))
+      Cij_err[k] = numpy.sqrt(numpy.sum(farray(v)**2))/numpy.sqrt(len(v))
 
    if symmetry.startswith('trigonal'):
       # Special case for trigonal lattice: C66 = (C11 - C12)/2
       Cijs[Cij_map[(6,6)]] = 0.5*(Cijs[Cij_map[(1,1)]]-Cijs[Cij_map[(1,2)]])
-      Cij_err[Cij_map[(6,6)]] = sqrt(Cij_err[Cij_map[(1,1)]]**2 + Cij_err[Cij_map[(1,2)]]**2)
+      Cij_err[Cij_map[(6,6)]] = numpy.sqrt(Cij_err[Cij_map[(1,1)]]**2 + Cij_err[Cij_map[(1,2)]]**2)
 
    # Generate the 6x6 matrix of elastic constants 
    # - negative values signify a symmetry relation
@@ -356,9 +358,9 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
             C_labels[i,j] = '-C%d%d' % Cij_rev_map[-index]
 
    if verbose:
-      print array2string(C_labels).replace("'","")
+      print numpy.array2string(C_labels).replace("'","")
       print '\n = \n'
-      print array2string(C, suppress_small=True, precision=2)
+      print numpy.array2string(C, suppress_small=True, precision=2)
       print
 
       # Summarise the independent components of C_ij matrix
