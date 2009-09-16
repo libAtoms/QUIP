@@ -58,6 +58,14 @@ class TestOOFortran(QuippyTestCase):
       self.assertRaises(ValueError, self.dia._get_n)
       self.assertRaises(ValueError, self.dia._set_n, 0)
 
+   def testabort(self):
+      self.assertRaises(RuntimeError, self.dia.read_xyz, '')
+
+   def testoptional(self):
+      self.dia.calc_connect() # without optional argument
+      self.dia.calc_connect(1) # optional argument by position
+      self.dia.calc_connect(own_neighbour=1)
+
 
 def getTestSuite():
    return unittest.TestSuite(unittest.TestLoader().loadTestsFromTestCase(TestOOFortran))
