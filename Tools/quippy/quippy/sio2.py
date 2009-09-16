@@ -1,7 +1,11 @@
-from quippy import *
 from math import ceil
 import time, os, itertools, sys
 from StringIO import StringIO
+from farray import *
+
+from quippy import (Atoms, AtomsReaders, AtomsWriters, atoms_reader,
+                    ElementMass, MASSCONVERT, BOHR, HARTREE, RYDBERG, GPA,
+                    atomic_number_from_symbol)
 
 class PosCelWriter(object):
 
@@ -182,6 +186,8 @@ quartz_params = {'experiment': {'a': 4.9160,
 def alpha_quartz(a=4.9134,c=5.4052, u=0.4699, x=0.4141, y=0.2681, z=0.7854-2.0/3.0):
    """Primitive 9-atom orthorhombic alpha quartz cell"""
 
+   from math import sqrt
+
    a1 = farray((0.5*a, -0.5*sqrt(3.0)*a, 0.0))
    a2 = farray((0.5*a,  0.5*sqrt(3.0)*a, 0.0))
    a3 = farray((0.0,    0.0,             c))
@@ -215,6 +221,8 @@ def get_quartz_params(at):
    assert (at.z == 14).count() == 3
    assert (at.z == 8).count() == 6
 
+   from quippy import get_lattice_params
+
    lat_params = get_lattice_params(at.lattice)
    a, c = lat_params[0], lat_params[2]
    print 'a      = ', a
@@ -240,6 +248,9 @@ def get_quartz_params(at):
 
 def alpha_quartz_cubic(*args, **kwargs):
    """Non-primitive 18-atom cubic quartz cell."""
+
+   from quippy import supercell
+   
    a0 = alpha_quartz(*args, **kwargs)
    at = supercell(a0, 4, 4, 1)
    at.map_into_cell()
@@ -249,14 +260,11 @@ def alpha_quartz_cubic(*args, **kwargs):
    lattice[2,2] = a0.lattice[2,2]*2.0
    lattice[3,3] = a0.lattice[3,3]
 
-   g = linalg.inv(lattice)
-   t = dot(g, at.pos)
-   cubic = at.select(logical_and(t >= -0.5, t < 0.5).all(axis=1))
+   g = numpy.linalg.inv(lattice)
+   t = numpy.dot(g, at.pos)
+   cubic = at.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
    cubic.set_lattice(lattice)
    return cubic
-
-def beta_quartz():
-   pass
 
 def get_bond_lengths(at):
    """Return a dictionary mapping tuples (Species1, Species2) to an farray of bond-lengths"""
@@ -869,7 +877,10 @@ def param_to_xml(params, encoding='iso-8859-1'):
 
 def update_vars(params, opt_vars, param_str):
    out_params = params.copy()
-   opt_values = [real(x) for x in param_str.split()]
+   if isinstance(param_str, str):
+      opt_values = [real(x) for x in param_str.split()]
+   else:
+      opt_values = param_str
 
    assert(len(opt_values) == len(opt_vars))
 
@@ -893,75 +904,6 @@ default_params = {'species': ['O', 'Si'],
 
 type_map['species'] = (str, output_converters[str])
 type_map['pred_order'] = (int, output_converters[int])
-
-
-def try_new_params(gen_file, task='md'):
-
-   if isintance(gen_file, str):
-      gen_file = open(gen_file, 'r')
-   
-   params = default_params.copy()
-   gen_params, opt_vars = read_traj_gen(param_format_gen, gen_file)
-   params.update(gen_params)
-
-   print 'opt_vars = ', opt_vars
-
-   params = update_vars(params, opt_vars, open('parameters').read())
-
-   # fix masses
-   params['mass'] = [ElementMass[x]/MASSCONVERT for x in params['species']]
-
-   # fix charges
-   params['z'] = [params['z'], -2.0*params['z']]
-
-   xml = StringIO()
-   param_to_xml(params, xml)
-
-   print xml.getvalue()
-   
-   p = Potential('IP ASAP', xml.getvalue())
-
-   a = supercell(alpha_quartz_cubic(), 2, 1, 2)
-   a.calc_connect()
-
-   e = farray(0.0)
-   f = fzeros((3,a.n))
-   v = fzeros((3,3))
-   dip = fzeros((3,a.n))
-
-   if task == 'md':
-      ds = DynamicalSystem(a)
-      ds.rescale_velo(300.0)
-      ds.zero_momentum()
-
-      traj = ds.run(p, dt=1.0, n_steps=100, save_interval=1, calc_dipoles=True)
-      return AtomsList(traj)
-   elif task == 'minim':
-
-      mp = MetaPotential('Simple', p)
-      cio = CInOutput('minim.xyz', OUTPUT)
-
-      verbosity_push(VERBOSE)
-      nsteps = mp.minim(a, 'cg', 1e-3, 100, do_pos=True, do_lat=True, do_print=True,
-                        print_cinoutput=cio, calc_force=True, calc_dipoles=True)
-      verbosity_pop()
-
-      p.calc(a,e=e,f=f,virial=v, calc_dipoles=True)
-      a.add_property('force', 0.0, n_cols=3)
-      a.force[:] = f
-      a.params['e'] = e
-
-      return a, v
-
-   elif task == 'singlepoint':
-
-      p.print_()
-      p.calc(a, calc_energy=True, calc_force=True, calc_dipoles=True)
-
-      return a
-      
-   else:
-      raise ValueError('Unknown task %s' % task)
 
 
 def save_ref_config(config_list):
@@ -1037,4 +979,23 @@ def read_gen_and_param_files(gen_file, param_file):
    params['z'] = [params['z'], -2.0*params['z']]
 
    return params
+
+
+def read_minimisation_progress(file):
+   if isinstance(file, str):
+      file = open(file)
+
+   params = []
+   costs = []
+   while True:
+      try:
+         line = file.next() # skip blank line
+         if not line:
+            break
+         costs.append([float(x) for x in file.next().split()[1:]])
+         params.append([float(x) for x in (file.next() + file.next()).split()])
+      except StopIteration:
+         break
+
+   return farray(costs), farray(params)
 
