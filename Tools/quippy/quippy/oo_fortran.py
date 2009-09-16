@@ -183,7 +183,6 @@ class FortranDerivedType(object):
    _arrays = {}
    _interfaces = {}
    _elements = {}
-   _elements = {}
 
    def __init__(self, *args, **kwargs):
 
