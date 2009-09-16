@@ -727,6 +727,7 @@ contains
     
     call Initialise(unittube, sheet%N, lattice)
     unittube%Z = sheet%Z
+    unittube%species = sheet%species
 
     if (has_property(unittube,'mass')) &
          forall(i=1:unittube%N) unittube%mass(i) = ElementMass(unittube%Z(i))
@@ -755,13 +756,11 @@ contains
 
     call initialise(water,3,make_lattice(3.129058333_dp))
 
-    water%Z(1) = 8
-    water%Z(2) = 1
-    water%Z(3) = 1
-
     water%pos(:,1) = (/0.0_dp,0.0_dp,0.0_dp/)
     water%pos(:,2) = (/0.9572_dp,0.0_dp,0.0_dp/)
     water%pos(:,3) = (/-0.2399872084_dp,0.9266272065_dp,0.0_dp/)
+
+    call set_atoms(water, (/8, 1, 1/))
     
   end function water
 
