@@ -13,17 +13,13 @@ from distutils.command.clean import clean as _clean
 import sys, os, cPickle, glob, stat, subprocess
 import f90doc, f2py_wrapper_gen
 from unittest import TestLoader, TextTestRunner
+import patch_f2py
 
 print sys.argv
 
 major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
     sys.stderr.write('Python 2.4 or later is needed to use this package\n')
-    sys.exit(1)
-
-from numpy.f2py.rules import f2py_version
-if not f2py_version.endswith('patched_JRK_2009_08_07'):
-    sys.stderr.write('\nnumpy.f2py.rules must be patched to use this package; see README for details\n')
     sys.exit(1)
 
 class clean(_clean):
@@ -159,7 +155,8 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
             
             wrapperf = open(wrapper, 'w')
             tmpf = open('tmp.out','w')
-            f2py_wrapper_gen.wrap_mod(mod, type_map, fortran_spec, tmpf, kindlines=kindlines)
+            new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines)
+            fortran_spec.update(new_spec)
             tmpf.close()
             cpp_process = subprocess.Popen(cpp + cpp_opt + ['tmp.out'], stdout=wrapperf)
             cpp_process.communicate()
