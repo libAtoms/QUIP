@@ -393,6 +393,7 @@ module dynamicalsystem_module
    integer, parameter :: TYPE_ATOM        = 1
    integer, parameter :: TYPE_CONSTRAINED = 2
    integer, parameter :: TYPE_RIGID       = 3
+   real(dp), parameter :: min_ext_p = 1.0e-4_dp / GPA
 
    type DynamicalSystem 
 
@@ -1041,7 +1042,7 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,p)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -1049,13 +1050,28 @@ contains
      real(dp), optional,    intent(in)    :: gamma
      real(dp), optional,    intent(in)    :: Q
      real(dp), optional,    intent(in)    :: tau
+     real(dp), optional,    intent(in)    :: p
+
+     real(dp) :: w, cell_gamma, mass1,mass2
 
      if (present(gamma) .and. present(tau)) call system_abort('add_thermostat: Both gamma and tau cannot be present')
      
+     if(present(p)) then
+        if (present(tau)) cell_gamma = 1/(10.0_dp*tau)
+        if (present(gamma)) cell_gamma = gamma * 0.1_dp
+
+        mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((cell_gamma*2*PI)**2)
+        mass2 = (this%Ndof+3.0_dp)*T/((cell_gamma*2*PI)**2)
+
+        w = max(mass1,mass2)
+     endif
+
      if (present(tau)) then
-        call add_thermostat(this%thermostat,type,T,1.0_dp/tau,Q)
+        w = 9.0_dp*1.0_dp*cell_volume(this%atoms)*tau**2
+        call add_thermostat(this%thermostat,type,T,1.0_dp/tau,Q,p,0.1_dp/tau,w)
      else
-        call add_thermostat(this%thermostat,type,T,gamma,Q)
+        w = 9.0_dp*1.0_dp*cell_volume(this%atoms)/gamma**2
+        call add_thermostat(this%thermostat,type,T,gamma,Q,p,gamma*0.1_dp,w)
      end if
      
    end subroutine ds_add_thermostat
@@ -1595,11 +1611,12 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     
-   subroutine advance_verlet1(this,dt,f,parallel,store_constraint_force)
+   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
      real(dp),              intent(in)     :: f(:,:)
+     real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force
 
@@ -1671,7 +1688,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      do i = 1, ntherm
-        call thermostat1(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i)
+        call thermostat1(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i,virial)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1884,11 +1901,12 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine advance_verlet2(this,dt,f,parallel,store_constraint_force)
+   subroutine advance_verlet2(this,dt,f,virial,parallel,store_constraint_force)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
      real(dp),              intent(in)     :: f(:,:)
+     real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force
 
@@ -2053,7 +2071,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      do i = 1, ntherm
-        call thermostat4(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i)
+        call thermostat4(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i,virial)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2088,11 +2106,12 @@ contains
 
    !% Calls advance_verlet2 followed by advance_verlet1. Outside this routine the
    !% velocities will be half-stepped.
-   subroutine advance_verlet(ds,dt,f,parallel,store_constraint_force)
+   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force)
 
      type(dynamicalsystem), intent(inout) :: ds
      real(dp),              intent(in)    :: dt
      real(dp),              intent(in)    :: f(:,:)
+     real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)    :: parallel
      logical, optional,     intent(in)    :: store_constraint_force
      logical, save                        :: first_call = .true.
@@ -2103,8 +2122,8 @@ contains
         call print_title('=')
         first_call = .false.
      end if
-     call advance_verlet2(ds,dt,f,parallel,store_constraint_force)
-     call advance_verlet1(ds,dt,f,parallel,store_constraint_force)
+     call advance_verlet2(ds,dt,f,virial,parallel,store_constraint_force)
+     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force)
 
    end subroutine advance_verlet
 
