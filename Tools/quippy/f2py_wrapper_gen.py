@@ -1,7 +1,9 @@
 from f90doc import *
 
-def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
+def wrap_mod(mod, type_map, out=None, kindlines=[]):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
+   spec = {}
+
 
    def println(*args):
       out.write('%s%s\n' % ((' '*indent),' '.join(args)))
@@ -153,7 +155,7 @@ def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
       println()
       indent += 3
 
-   f2py_docs[shortname.lower()] = {'doc': '\n'.join(mod.doc),
+   spec[shortname.lower()] = {'doc': '\n'.join(mod.doc),
                                   'routines': {},
                                   'types': {},
                                   'interfaces': {},
@@ -163,7 +165,7 @@ def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
    # when importing module. For now, let's just copy them into python dictionary
    for el in mod.elements:
       if 'parameter' in el.attributes:
-          f2py_docs[shortname.lower()]['parameters'].append((el.name, el.type, el.attributes, el.value))
+          spec[shortname.lower()]['parameters'].append((el.name, el.type, el.attributes, el.value))
 
    for sub in subts + functs:
 
@@ -210,20 +212,20 @@ def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
       #else:
       #    newname = 'too_many_types_%s' % basename
 
-      f2py_docs[shortname.lower()]['routines'][newname.lower()] = \
+      spec[shortname.lower()]['routines'][newname.lower()] = \
           {'doc': '\n'.join(sub.doc),'args':[]}
-      thisdoc = f2py_docs[shortname.lower()]['routines'][newname.lower()]['args']
+      thisdoc = spec[shortname.lower()]['routines'][newname.lower()]['args']
 
       # See if this routine is in any interfaces
       for intf in mod.interfaces:
           subnames = [x.name.lower() for x in intf.subts + intf.functs]
           if sub.name.lower() in subnames:
-              if not intf.name.lower() in f2py_docs[shortname.lower()]['interfaces']:
-                  f2py_docs[shortname.lower()]['interfaces'][intf.name.lower()] = \
+              if not intf.name.lower() in spec[shortname.lower()]['interfaces']:
+                  spec[shortname.lower()]['interfaces'][intf.name.lower()] = \
                       {'doc': intf.doc,
                        'routines': []}
 
-              f2py_docs[shortname.lower()]['interfaces'][intf.name.lower()]['routines'].append(sub.name.lower())
+              spec[shortname.lower()]['interfaces'][intf.name.lower()]['routines'].append(sub.name.lower())
 
       allocates = []
 
@@ -411,8 +413,8 @@ def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
    subnames = [x.name for x in subts+functs]
    for t in mod.types:
 
-      f2py_docs[shortname.lower()]['types'][t.name] = {'doc': '\n'.join(t.doc), 'elements':{}}
-      thisdoc = f2py_docs[shortname.lower()]['types'][t.name]['elements']
+      spec[shortname.lower()]['types'][t.name] = {'doc': '\n'.join(t.doc), 'elements':{}}
+      thisdoc = spec[shortname.lower()]['types'][t.name]['elements']
       for el in t.elements:
 
           #f2py misparses arguments that are called "type"
@@ -578,6 +580,8 @@ def wrap_mod(mod, type_map, f2py_docs, out=None, kindlines=[]):
    indent -= 6
    println('end module',shortname)
    println()
+
+   return spec
 
         
 
