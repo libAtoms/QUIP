@@ -42,16 +42,16 @@ This module defines a single function:
    :param kindlines: list of strings
    :rtype: dictionary
       
-   Write a Fortran 90 wrapper file for the module ``mod`` to the file ``out``. 
+   Write a Fortran 90 wrapper file for the module `mod` to the file `out`. 
    Returns a specification dictionary describing the interface which has been
    created.
 
-   ``type_map`` should be a dictionary mapping Fortran derived-type
+   `type_map` should be a dictionary mapping Fortran derived-type
    names to the names of the Fortran modules in which they are defined.
 
-   ``kind_lines`` is a list of strings to be included near the top of
+   `kind_lines` is a list of strings to be included near the top of
    the generated module to import any Fortran kind definitions that are needed
    from other modules.
 
-   The ``spec`` dictionary returned by this function is combined with those
+   The `spec` dictionary returned by this function is combined with those
    of other modules and saved to disk by quippy's :file:`setup.py` script.

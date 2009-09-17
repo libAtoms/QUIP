@@ -16,55 +16,55 @@ them behave more like a Python programmer would expect.
 
      Thin Pythonic wrapper over auto-generated :class:`FortranAtoms` class.
 
-     If ``source`` is not ``None`` then :meth:`Atoms.read` is invoked 
-     with arguments ``(source, *readargs, **readkwargs)`` to initialise the
-     :class:`Atoms` object. Otherwise, the arguments ``n``, ``lattice``,
-     ``data``, ``properties`` and ``params`` are passed on to
+     If `source` is not `None` then :meth:`Atoms.read` is invoked 
+     with arguments `(source, *readargs, **readkwargs)` to initialise the
+     :class:`Atoms` object. Otherwise, the arguments `n`, `lattice`,
+     `data`, `properties` and `params` are passed on to
      the :class:`FortranAtoms` constructor.
      
      Important additional method are:
 
      .. method:: read(cls, source[, format, *args, **kwargs])
 
-	Class method to read an Atoms object from ``source``. If
-	``format`` is ``None`` then it is inferred automatically, either
-	from the file extension if ``source`` is a filename, or from
-	the class of ``source``. 
+	Class method to read an Atoms object from `source`. If
+	`format` is `None` then it is inferred automatically, either
+	from the file extension if `source` is a filename, or from
+	the class of `source`. 
 
-	If ``source`` corresponds to a known format then it used
+	If `source` corresponds to a known format then it used
 	to construct an appropriate iterator from the :attr:`AtomsReader`
 	dictionary.
 
-	If ``source`` corresponds to an unknown format then it is
+	If `source` corresponds to an unknown format then it is
 	expected to be an iterator returning :class:`Atoms` objects.
 
 
      .. method:: write(dest[, format, *args, **kwargs])
       
-      	Write this :class:`Atoms` object to ``dest``. If ``format``
+      	Write this :class:`Atoms` object to `dest`. If `format`
 	is absent it is inferred from the file extension or type of
-	``dest``, as described for the :meth:`read` method.
+	`dest`, as described for the :meth:`read` method.
 
      .. method:: show([property, arrows])
 
         Show this :class:`Atoms` object in AtomEye using the quippy
-	:mod:`atomeye` module.  If ``property`` is present it should
+	:mod:`atomeye` module.  If `property` is present it should
 	be the name of a scalar property (e.g. ``"local_energy"``) or a
-	rank one array of length ``self.n`` to be used to colour the
-	atoms. If ``arrows`` is present it should be the name of a
+	rank one array of length `self.n` to be used to colour the
+	atoms. If `arrows` is present it should be the name of a
 	vector property (e.g. ``"force"``) or a rank two array with shape
-	``(3, self.n)`` to be used to draw arrows originating from each
+	(3, `self.n`) to be used to draw arrows originating from each
 	atom.
 
 
      .. method:: select([mask, list])
 
         Return an :class:`Atoms` object containing a subset of the
-	atoms in this object.  One of either ``mask`` or ``list``
-	should be present. If ``mask`` is given it should be a rank
-	one array of length ``self.n``. In this case atoms
-	corresponding to true values in ``mask`` will be included in
-	the result.  If ``list`` is present it should be an arry of
+	atoms in this object.  One of either `mask` or `list`
+	should be present. If `mask` is given it should be a rank
+	one array of length `self.n`. In this case atoms
+	corresponding to true values in `mask` will be included in
+	the result.  If `list` is present it should be an arry of
 	list containing atom indices to include in the result.
 
 
@@ -91,10 +91,10 @@ them behave more like a Python programmer would expect.
    .. method:: run(pot, [dt, n_steps, save_interval, connect_interval, args_str])
 
       Generator to return snapshots from a trajectory. For each step,
-      forces are evaluated using the :class:`Potential` ``pot`` and
-      the DynamicalSystem is advanced by a time ``dt`` (default 1 fs).
-      ``n_steps`` (default 10 steps) are carried out in total, with
-      the generator yielding a result every ``save_interval``
+      forces are evaluated using the :class:`Potential` `pot` and
+      the DynamicalSystem is advanced by a time `dt` (default 1 fs).
+      `n_steps` (default 10 steps) are carried out in total, with
+      the generator yielding a result every `save_interval`
       steps. The connectivity is recalculated every
-      ``connect_interval`` steps.  ``args_str`` can be used to supply
+      `connect_interval` steps.  `args_str` can be used to supply
       extra arguments to :meth:`Potential.calc`.

@@ -26,3 +26,4 @@ instances:
 
 .. autofunction:: padded_str_array
 
+.. autofunction:: fplot
