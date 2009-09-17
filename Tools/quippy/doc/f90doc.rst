@@ -58,15 +58,15 @@ structures in the Fortran code.
 
 .. function:: read_files(in_files)
    
-   Read Fortran 90 sources from the list of filenames ``in_files``, and return
-   a tuple ``(programs, modules, functs, subts)``. 
+   Read Fortran 90 sources from the list of filenames `in_files`, and return
+   a tuple `(programs, modules, functs, subts)`. 
 
-   ``programs`` is a list of pairs of instances of :class:`f90doc.C_prog` and program names,
-   ``modules`` is a list of pairs of instances of :class:`f90doc.C_module` and module names,
-   ``functs`` is a list of pairs of instances of :class:`f90doc.C_funct` and function names
-   ``subts`` is a list of pairs of instances of :class:`f90doc.C_subt` and subroutine names
+   `programs` is a list of pairs of instances of :class:`f90doc.C_prog` and program names,
+   `modules` is a list of pairs of instances of :class:`f90doc.C_module` and module names,
+   `functs` is a list of pairs of instances of :class:`f90doc.C_funct` and function names
+   `subts` is a list of pairs of instances of :class:`f90doc.C_subt` and subroutine names
 
-   For example, to print the names of all modules defined in a list of filenames ``in_files``::
+   For example, to print the names of all modules defined in a list of filenames `in_files`::
 
        programs, modules, functs, subts = f90doc.read_files(in_files)
        for mod, name in modules:

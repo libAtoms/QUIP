@@ -18,30 +18,30 @@ Atoms Objects
    are used for intensive variables e.g. temperature or total
    energy.
 
-   When constructing an :class:`Atoms` object, if the ``source``
+   When constructing an :class:`Atoms` object, if the `source`
    argument is present then :meth:`Atoms.read` is invoked to
-   initialise the :class:`Atoms` object from ``source`` which would
+   initialise the :class:`Atoms` object from `source` which would
    typically be a filename, for example::
 
       >>> at = Atoms('input.xyz')
 
-   Otherwise, the arguments ``n``, ``lattice``, ``data``,
-   ``properties`` and ``params`` are used to initialise the
-   object. ``n`` (default value 0) sets the number of atoms and
-   ``lattice`` (default identity matrix) the lattice vectors. To create
+   Otherwise, the arguments `n`, `lattice`, `data`,
+   `properties` and `params` are used to initialise the
+   object. `n` (default value 0) sets the number of atoms and
+   `lattice` (default identity matrix) the lattice vectors. To create
    an :class:`Atoms` object to store 10 atoms with a cubic unit cell
    of dimensions 10 x 10 x 10 A, you would write::
 
        >>> at = Atoms(n=10, lattice=10.0*fidentity(3))
 
    (The :func:`fidentity` function creates a :class:`FortranArray`
-   representing an identity matrix). The optional arguments ``data``,
-   ``properties`` and ``parameters`` can be used to initialise
-   attributes of the object. If one of ``data`` or ``properties`` is
+   representing an identity matrix). The optional arguments `data`,
+   `properties` and `parameters` can be used to initialise
+   attributes of the object. If one of `data` or `properties` is
    present then so must the other.
 
    Important attributes and methods are listed below. In the example
-   code ``at`` refers to an :class:`Atoms` instance.
+   code `at` refers to an :class:`Atoms` instance.
 
    .. attribute:: n
    
@@ -76,7 +76,7 @@ Atoms Objects
    .. attribute:: cutoff
 
       Should be set using :meth:`set_cutoff` or :meth:`set_cutoff_factor`.
-      If :attr:`use_uniform_cutoff` is true, ``cutoff`` is the cutoff
+      If :attr:`use_uniform_cutoff` is true, `cutoff` is the cutoff
       distance in Angstrom.  Otherwise, it's a multiplier for
       ``bond_length(Zi,Zj)``.
 
@@ -84,13 +84,13 @@ Atoms Objects
    .. attribute:: cutoff_break
 
       If connectivity is being calculated hysteretically, a bond will
-      be considered to have broken when it exceeds ``cutoff_break``.
+      be considered to have broken when it exceeds `cutoff_break`.
 
    .. attribute:: nneightol
 
       Two atoms count as nearest neighbours if they are closer than
       the sum of their covalent radii multiplied by
-      ``nneightol``. Default is 1.2.
+      `nneightol`. Default is 1.2.
       
 
    .. attribute:: params
@@ -103,7 +103,7 @@ Atoms Objects
    .. attribute:: properties
 
       :class:`Dictionary` of atomic properties. A property is an array
-      of shape ``(m,n)`` where ``n`` is the number of atoms and ``m`` is
+      of shape (`m`,`n`) where `n` is the number of atoms and `m` is
       either one (for scalar properties) or three (vector
       properties). Properties can be integer, real, string or logical.
       String properties have a fixed length of 10 characters.
@@ -111,7 +111,7 @@ Atoms Objects
       Each property is automatically visible as a
       :class:`FortranArray` attribute of the :class:`Atoms` object,
       for example the atomic positions are stored in a real vector
-      property called ``pos``, and can be accessed as ``at.pos``.
+      property called `pos`, and can be accessed as ``at.pos``.
 
       Properties can be added with the :meth:`add_property` method and
       removed with :meth:`remove_property`.
@@ -134,49 +134,49 @@ Atoms Objects
 
       :class:`Table` object storing the data for all of the atomic
       properties.  No need to access directly; use the automatically
-      created view arrays such as ``pos``, ``z``, ``velo``, etc.
+      created view arrays such as `pos`, `z`, `velo`, etc.
 
 
    .. method:: read(source[, format, *args, **kwargs])
 
-      Class method to read an :class:`Atoms` object from ``source``. If
-      ``format`` is ``None`` then it is inferred automatically, either
-      from the file extension if ``source`` is a filename, or from
-      the class of ``source``. 
+      Class method to read an :class:`Atoms` object from `source`. If
+      `format` is ``None`` then it is inferred automatically, either
+      from the file extension if `source` is a filename, or from
+      the class of `source`. 
 
-      If ``source`` corresponds to a known format then it used
+      If `source` corresponds to a known format then it used
       to construct an appropriate iterator from the :attr:`AtomsReader`
       dictionary.
 
-      If ``source`` corresponds to an unknown format then it is
+      If `source` corresponds to an unknown format then it is
       expected to be an iterator returning :class:`Atoms` objects.
 
 
    .. method:: write(dest[, format, *args, **kwargs])
 
-      Write this :class:`Atoms` object to ``dest``. If ``format``
+      Write this :class:`Atoms` object to `dest`. If `format`
       is absent it is inferred from the file extension or type of
-      ``dest``, as described for the :meth:`read` method.
+      `dest`, as described for the :meth:`read` method.
 
    .. method:: show(property, arrows])
 
       Show this :class:`Atoms` object in AtomEye using the quippy
-      :mod:`atomeye` module.  If ``property`` is present it should
+      :mod:`atomeye` module.  If `property` is present it should
       be the name of a scalar property (e.g. ``"local_energy"``) or a
       rank one array of length ``at.n`` to be used to colour the
-      atoms. If ``arrows`` is present it should be the name of a
+      atoms. If `arrows` is present it should be the name of a
       vector property (e.g. ``"force"``) or a rank two array with shape
-      ``(3, at.n)`` to be used to draw arrows originating from each
+      (3, ``at.n``) to be used to draw arrows originating from each
       atom.
 
 
    .. method:: select([mask, list])
 
       Return an :class:`Atoms` containing a subset of the atoms in
-      this object. One of either ``mask`` or ``list`` should be
-      present. If ``mask`` is given it should be a rank one array of
-      length ``self.n``. In this case atoms corresponding to true
-      values in ``mask`` will be included in the result.  If ``list``
+      this object. One of either `mask` or `list` should be
+      present. If `mask` is given it should be a rank one array of
+      length `self.n`. In this case atoms corresponding to true
+      values in `mask` will be included in the result.  If `list`
       is present it should be an arry of list containing atom indices
       to include in the result.
 
@@ -189,24 +189,24 @@ Atoms Objects
    .. method:: add_atoms(pos, z[, mass, velo, acc, travel, data])
 
       Add one ore more atoms to an :class:`Atoms` object. To add a
-      single atom, ``pos`` should be an array of size 3 and ``z`` a
+      single atom, `pos` should be an array of size 3 and `z` a
       single integer. To add multiple atoms either arrays of length
-      ``n_new`` should be passed, or ``data`` should be given as a
+      `n_new` should be passed, or `data` should be given as a
       :class:`Table` object with all new atomic data in the same
       format as the existing :attr:`data` table
 
       
    .. method:: has_property(name)
 
-      Return true if property ``name`` exists. Property names
+      Return true if property `name` exists. Property names
       are case-insensitive.
 
 
    .. method:: add_property(name, value[, n_cols])
 
-      Add a new property called ``name`` to this :class:`Atoms`
-      object. The type is deduced from ``value`` which should be
-      either integer, real, string (length 10) or logical. If ``n_cols``
+      Add a new property called `name` to this :class:`Atoms`
+      object. The type is deduced from `value` which should be
+      either integer, real, string (length 10) or logical. If `n_cols`
       is present it should be one (scalar properties) or three
       (vector properties) -- the default is one.
 
@@ -221,18 +221,18 @@ Atoms Objects
       
    .. method:: remove_property(name)
 
-      Remove the property ``name``.
+      Remove the property `name`.
 
    .. method:: remove_atoms(remove_list)
 
-      Remove one or more atoms. ``remove_list`` can be either a single
+      Remove one or more atoms. `remove_list` can be either a single
       integer or a list of atom indices to be removed.
 
 
    .. method:: distance(i, j, shift)
 
-      Return distance between atoms with indices ``i`` and ``j`` if
-      they are separated by ``shift`` periodic cells:
+      Return distance between atoms with indices `i` and `j` if
+      they are separated by `shift` periodic cells:
 
       .. math::
 
@@ -245,16 +245,16 @@ Atoms Objects
 
       Return minimum image distance between two atoms or positions.
       End points can be specified by any combination of atoms indices
-      ``i`` and ``j`` and absolute coordinates ``u`` and ``w``.
+      `i` and `j` and absolute coordinates `u` and `w`.
 
-      If ``shift`` is present it should be a vector giving the number of 
+      If `shift` is present it should be a vector giving the number of 
       periodic cells separating the end points in each dimension.
 
      
    .. method:: diff(i, j, shift)
 
       Return difference vector between atoms `i` and `j` if they are separated
-      by ``shift`` periodic cells:
+      by `shift` periodic cells:
 
       .. math::
 
@@ -267,8 +267,8 @@ Atoms Objects
 
       Return the minimum image difference vector between two atoms or
       positions. End points can be specified by any combination of
-      atoms indices ``i`` and ``j`` and absolute coordinates ``u`` and
-      ``w``.
+      atoms indices `i` and `j` and absolute coordinates `u` and
+      `w`.
 
    .. method:: cosine(i, j, k)
 
@@ -277,26 +277,26 @@ Atoms Objects
 
    .. method:: cosine_neighbour(i, n, m)
 
-      Return cosine of the angle n--i--m where ``n`` and ``m`` are 
-      the nth and  mth neighbours of atom ``i``
+      Return cosine of the angle n--i--m where `n` and `m` are 
+      the nth and  mth neighbours of atom `i`
 
 
    .. method:: direction_cosines(i, j, shift)
 
-      Given two atoms ``i`` and ``j`` and a ``shift``, return the direction
-      cosines of the difference vector from ``i`` to ``j``.
+      Given two atoms `i` and `j` and a `shift`, return the direction
+      cosines of the difference vector from `i` to `j`.
 
 
    .. method:: direction_cosines(i, j)
 
       Direction cosines of of the minimum image difference
-      vector from ``i`` to ``j``.
+      vector from `i` to `j`.
       
 
    .. method:: set_atoms(z[, mass])
 
-      Set atomic numbers (in the ``z`` integer property), species names
-      (in ``species`` string property) and optionally masses (if ``mass``
+      Set atomic numbers (in the `z` integer property), species names
+      (in `species` string property) and optionally masses (if `mass`
       property exists in :class:`Atoms` object).
       
 
@@ -315,7 +315,7 @@ Atoms Objects
       small unit cells, there is only one subcell, so the routine is
       equivalent to the standard :math:`O(N^2)` method.
 
-      If ``own_neighbour`` is true, atoms can be neighbours with their
+      If `own_neighbour` is true, atoms can be neighbours with their
       own periodic images.
 
 
@@ -326,8 +326,8 @@ Atoms Objects
       neighbours, and then will remain connect until them move apart
       further than :attr:`cutoff_break`.
 
-      Typically ``alt_connect`` should be set to the
-      :attr:`hysteretic_connect` attribute. ``origin`` and ``extent``
+      Typically `alt_connect` should be set to the
+      :attr:`hysteretic_connect` attribute. `origin` and `extent`
       vectors can be used to restrict the hysteretic region to only
       part of the entire system -- the :func:`estimate_origin_extent`
       can be used to guess suitable values.
@@ -342,25 +342,25 @@ Atoms Objects
 
    .. method:: n_neighbours(i[, max_dist, max_factor, alt_connect])
 
-      Return the number of neighbours that atom ``i`` has. If
-      ``max_dist`` or ``max_factor`` is specified, then only neighbour closer
-      than this cutoff are included. ``alt_connect`` can be set to another
+      Return the number of neighbours that atom `i` has. If
+      `max_dist` or `max_factor` is specified, then only neighbour closer
+      than this cutoff are included. `alt_connect` can be set to another
       :class:`Connection` object to use alternative connectivity information, for
       example :attr:`hysteretic_connect`.
 
 
    .. method:: neighbour(i, n[, distance, diff, cosines, shift, index_bn, max_dist, jn, alt_connect])
 
-      Return the index of the nth neighbour of atom ``i``. Together
+      Return the index of the nth neighbour of atom `i`. Together
       with :meth:`n_neighbours`, this facilites a loop over the
-      neighbours of atom ``i``. Optionally, we return other geometric
+      neighbours of atom `i`. Optionally, we return other geometric
       information, such as distance, direction cosines and difference
       vector, and also a direct index into the neighbour tables. If
       :math:`i \le j`, this is an index into
       ``connect.neighbour1[i]``, otherwise it is an index into
       ``connect.neighbour1[j]``. 
 
-      Here's a typical loop construct. Note how ``r`` and ``u`` are
+      Here's a typical loop construct. Note how `r` and `u` are
       created before the loop: arguments which are both optional and
       ``intent(out)`` in Fortran are converted to ``intent(in,out)``
       for quippy.::
@@ -372,7 +372,7 @@ Atoms Objects
 		j = at.neighbour(at, i, n, distance=r, diff=u)
     
       If ``distance > max_dist``, we return 0, and do not waste time
-      calculating other quantities. ``alt_connect`` has the same meaning as
+      calculating other quantities. `alt_connect` has the same meaning as
       in :meth:`n_neighbours`.
 
       
@@ -389,72 +389,68 @@ Atoms Objects
    .. method:: centre_of_mass([index_list, origin])
 
       Calculate the centre of mass of an atoms object, using the
-      closest images to the ``origin`` atom, or first atom if this is
-      not specified.  If an ``index_list`` is present, just calculate it
-      for that subset of atoms (then the ``origin`` atom is the first in
+      closest images to the `origin` atom, or first atom if this is
+      not specified.  If an `index_list` is present, just calculate it
+      for that subset of atoms (then the `origin` atom is the first in
       this list unless it is specified separately).
     
       .. note:: 
 
 	 Because the origin can be specified separately it need not
-	 be one of the atoms in ``index_list``.
+	 be one of the atoms in `index_list`.
 
     
    .. method:: realpos(i)
 
-      Return real position of atom ``i``, taking into account the
+      Return real position of atom `i`, taking into account the
       stored travel across the periodic boundary conditions.
 
    .. method:: set_cutoff(cutoff[, cutoff_break])
 
       Specify a uniform cutoff throughout the system. Optionally set
-      ``cutoff_break`` for :meth:`calc_connect_hysteretic` at the same time.
+      `cutoff_break` for :meth:`calc_connect_hysteretic` at the same time.
 
 
    .. method:: set_cutoff_factor(factor[, factor_break])
 
       Specify the neighbour cutoff to be a multiple of the bond length
-      of the two atoms' types. Optional argument ``factor_break`` is
+      of the two atoms' types. Optional argument `factor_break` is
       used by :meth:`calc_connect_hysteretic`.
 
       
 Structure generation routines
 -----------------------------
 
-.. function:: supercell(a, nx, ny, nz)
-
-   Return an Atoms object containing :math:`n_x \times n_y \times n_z` periodic images of ``a``.
-
 .. function:: diamond(a[, z])
 
-   Return an 8-atom diamond-structure with cubic lattice constant ``a`` and
-   atomic number ``z``, e.g.::
+   Return an 8-atom diamond-structure with cubic lattice constant `a` and
+   atomic number `z`, e.g.::
 
       a = diamond(5.44, 14)  # Silicon unit cell
 
 
 .. function:: bcc(a[, z])
 
-   Return a 2-atom bcc structure with cubic lattice constant ``a`` and
-   atomic number ``z``.
+   Return a 2-atom bcc structure with cubic lattice constant `a` and
+   atomic number `z`.
 
 
 .. function:: fcc(a[, z])
 
-   Return a 4-atom fcc-structure with cubic lattice constant ``a`` and
-   atomic number ``z``.
+   Return a 4-atom fcc-structure with cubic lattice constant `a` and
+   atomic number `z`.
  
 
 .. function:: a15(a[, z])
 
-   Return an 8-atom a15-structure with cubic lattice constant ``a`` and
-   atomic number ``z``.
+   Return an 8-atom a15-structure with cubic lattice constant `a` and
+   atomic number `z`.
 
 
 .. function:: alpha_quartz(a, c, u, x, y, z)
 
    Return 9-atom primitve trigonal alpha-quartz unit cell, with lattice constants
-   ``a`` and ``c`` and internal coordinates ``u`` (Si), ``x``, ``y`` and ``z`` (O).
+   `a` and `c` and internal coordinates `u` (Si), `x`, `y` and `z` (O).
 
 
 .. function:: alpha_quartz_cubic(a, c, u, x, y, z)
@@ -464,26 +460,26 @@ Structure generation routines
 
 .. function:: graphene_cubic(a)
 
-   Return cubic graphene unit cell with lattice parameter ``a``.
+   Return cubic graphene unit cell with lattice parameter `a`.
 
 .. function:: graphene_sheet(a, n, m, rep_x, repy_y)
 
-   Return a graphene sheet with index ``(n,m)`` and lattice constant
-   ``a``, with ``rep_x`` repeat units in the x-direction and ``rep_y``
+   Return a graphene sheet with index `(n,m)` and lattice constant
+   `a`, with `rep_x` repeat units in the x-direction and `rep_y`
    in the y-direction.
 
 .. function:: graphene_tube(a, n, m, nz)
 
-   Construct a ``(n,m)`` nanotube with lattice parameter ``a`` and ``nz``
-   unit cells along the tube length. Return a tuple ``(tube, radius)``
-   where ``tube`` is the new :class:`Atoms` object and ``radius`` is the
+   Construct a `(n,m)` nanotube with lattice parameter `a` and `nz`
+   unit cells along the tube length. Return a tuple `(tube, radius)`
+   where `tube` is the new :class:`Atoms` object and `radius` is the
    radius of the nanotube. Example usage::
 
       >>> tube, r = graphene_tube(1.42, 6, 6, 1) # (6,6) nanotube, 1 unit cell long in z direction
 
 .. function:: tube_radius(at)
 
-   Return average radius of the nanotube ``at``.
+   Return average radius of the nanotube `at`.
 
 
 .. function:: slab_nx_ny_nz(axes, a, nx, ny, nz[, atnum, lat_type])
@@ -493,28 +489,29 @@ Structure generation routines
    axes[:,2]`` and ``z = axes[:,3]``).  The extent of the slab is
    ``(nx, ny, nz)`` unit cells.
 
-   ``atnum`` can be used to initialise the ``z`` and ``species`` properties. 
-   ``lat_type`` should be  of ``"diamond"``, ``"fcc"``, or ``"bcc"`` (default is ``"diamond"``)
+   `atnum` can be used to initialise the `z` and `species` properties.
+   `lat_type` should be of ``"diamond"```, ``"fcc"``, or ``"bcc"``
+   (default is ``"diamond"``)
 
 .. function:: slab_width_height_nz(axes, a, width, height, nz[, atnum, lat_type])
 
    As :func:`slab_nx_ny_nz`, except that the extent of the slab in the x-y plane
-   is given by ``width`` and ``height``, measured in Angstrom. ``nz`` is the number
+   is given by `width` and `height`, measured in Angstrom. `nz` is the number
    of unit cells in the z direction.
 
       
-.. function supercell(at, n1, n2, n3)
+.. function:: supercell(at, n1, n2, n3)
 
-   Replicates the unit cell ``at`` ``n1 x n2 x n3`` times along its
+   Replicates the unit cell `at` `n1` x `n2` x `n3` times along its
    lattice vectors.
 
-.. function transform(at, t)
+.. function:: transform(at, t)
 
-   Transform cell and lattice coordinates by the 3 x 3 matrix ``t`` and
+   Transform cell and lattice coordinates by the 3 x 3 matrix `t` and
    return a new :class:`Atoms` object.
 
 
-.. function water()
+.. function:: water()
 
    Return an :class:`Atoms` object containing one TIP3P water molecule in a box
    giving the correct density at 300K
@@ -526,39 +523,39 @@ Cluster carving routines
 
 .. function:: create_hybrid_weights_args(at,trans_width,buffer_width,[weight_interpolation,nneighb_only,min_images_only,mark_buffer_outer_layer,hysteretic_buffer,hysteretic_buffer_inner_radius,hysteretic_buffer_outer_radius,hysteretic_connect,hysteretic_connect_cluster_radius,hysteretic_connect_inner_factor,hysteretic_connect_outer_factor])
 
-   Given an atoms structure with a ``hybrid_mark`` property, this
-   routine creates a ``weight_region1`` property, whose values are
+   Given an atoms structure with a `hybrid_mark` property, this
+   routine creates a `weight_region1` property, whose values are
    between 0 and 1. Atoms marked with ``HYBRID_ACTIVE_MARK`` in
-   ``hybrid_mark`` get weight 1, the neighbourhopping is done
-   ``trans_width`` times, during which the weight linearly decreases
-   to zero (either with hop count if ``weight_interpolation=hop_ramp``
+   `hybrid_mark` get weight 1, the neighbourhopping is done
+   `trans_width` times, during which the weight linearly decreases
+   to zero (either with hop count if ``weight_interpolation="hop_ramp"``
    or with distance from the centre of mass of the embed region if
-   ``weight_interpolation=distance_ramp``) decreases and atoms are
+   ``weight_interpolation="distance_ramp"``) decreases and atoms are
    marked with ``HYBRID_TRANS_MARK``. Further hopping is done
-   ``buffer_width`` times and atoms are marked with
+   `buffer_width` times and atoms are marked with
    ``HYBRID_BUFFER_MARK`` and given weight zero.
 
 
 .. function:: create_hybrid_weights_args_str(at, args_str)
 
-   ``args_str`` version of :func:`create_hybrid_weights_args`.
+   `args_str` version of :func:`create_hybrid_weights_args`.
 
 
 .. function:: create_cluster_info_from_hybrid_mark(at, args_str[, cut_bonds])
 
    Create a cluster using the 'hybrid_mark' property and options in
-   ``args_str``.  All atoms that are marked with anything other than
+   `args_str`.  All atoms that are marked with anything other than
    ``HYBRID_NO_MARK`` will be included in the cluster; this includes
    active, transition and buffer atoms.
 
    Optionally return a list of the bonds cut when making the cluster in the 
-   :class:`Table` ``cut_bonds``.
+   :class:`Table` `cut_bonds`.
 
 
 .. function:: carve_cluster(at, args_str, cluster_info)
 
-   Carve a cluster from ``at`` using the information in the
-   :class:`Table` ``cluster_info``, which should be generated by a
+   Carve a cluster from `at` using the information in the
+   :class:`Table` `cluster_info`, which should be generated by a
    call to :func:`create_cluster_info_from_hybrid_mark`.
 
    The output cluster contains all properties of the initial atoms object, and
@@ -583,16 +580,16 @@ Cluster carving routines
 .. function:: construct_buffer(at, core, radius[, use_avgpos, verbosity])
    
    Given an atoms object, and a list of core atoms in the first
-   integer of the ``core`` table, fill the ``buffer`` table with all atoms
-   within ``radius`` of any core atom (which can be reached by
+   integer of the `core` table, fill the `buffer` table with all atoms
+   within `radius` of any core atom (which can be reached by
    connectivity hopping).  Optionally use the time averaged positions.
 
 
 .. function:: create_embed_and_fit_list(at, fit_hops,[nneighb_only,min_images_only])
 
    Given an Atoms structure with an active region marked in the
-   ``hybrid_mark`` property using ``HYBRID_ACTIVE_MARK``, grow the embed
-   region by ``fit_hops`` bond hops to form a fit region. 
+   `hybrid_mark` property using ``HYBRID_ACTIVE_MARK``, grow the embed
+   region by `fit_hops` bond hops to form a fit region. 
 
    Returns the  embedlist and fitlist as :class:`Table` objects
    with correct periodic shifts.
@@ -600,9 +597,9 @@ Cluster carving routines
 
 .. function:: estimate_origin_extent(at, active, cluster_radius)
 
-   Return estimated ``(origin, extent)`` for hysteretic connectivity 
-   calculator to include all atoms within a distance ``cluster_radius``
-   of an atom in the ``active`` array.
+   Return estimated `(origin, extent)` for hysteretic connectivity 
+   calculator to include all atoms within a distance `cluster_radius`
+   of an atom in the `active` array.
 
 
 Miscellaneous routines
@@ -611,9 +608,9 @@ Miscellaneous routines
 .. function:: elastic_fields(at, a, c11, c12, c44)
 
    Calculate atom resolved local strain and stress for all
-   fourfold-coordinated atoms in ``at``. Crystal structure should be
+   fourfold-coordinated atoms in `at`. Crystal structure should be
    diamond.
 
-   Properties are added to ``at``. ``a`` should be the relaxed lattice
-   constant in A, and ``c11``, ``c12`` and ``c44`` are the independent
+   Properties are added to `at`. `a` should be the relaxed lattice
+   constant in A, and `c11`, `c12` and `c44` are the independent
    elastic constants for the diamond structure, in GPa.
