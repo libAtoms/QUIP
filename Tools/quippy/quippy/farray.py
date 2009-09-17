@@ -456,6 +456,15 @@ class FortranArray(numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
 
+    def sum(self, axis=None, dtype=None, out=None):
+        """One-based analogue of :meth:`numpy.ndarray.sum`"""
+	if axis is not None and axis > 0:
+	    axis -= 1
+	obj = numpy.ndarray.sum(self, axis, out).view(FortranArray)
+        if isinstance(obj, numpy.ndarray):
+            obj = obj.view(FortranArray)
+        return obj
+
     def stripstrings(self):
         """Return string or array of strings with trailing spaces removed.
 
@@ -482,3 +491,29 @@ def padded_str_array(d, length):
     return res
 
 
+def fplot(*args, **kwargs):
+    """Wrapper around :func:`pylab.plot`, to convert :class:`FortranArray`
+       objects into plain :class:`numpy.ndarray` objects for plotting."""
+    
+    from pylab import plot
+
+    nargs = []
+    for a in args:
+        if isinstance(a, FortranArray):
+            nargs.append(a.view(numpy.ndarray))
+        else:
+            nargs.append(a)
+    
+    nkwargs = {}
+    for k, v in kwargs.iteritems():
+        if isinstance(v, FortranArray):
+            nkwargs[k] = v.view(numpy.ndarray)
+        else:
+            nkwargs[k] = v
+
+    nargs = tuple(nargs)
+    plot(*nargs, **nkwargs)
+
+
+        
+    
