@@ -419,11 +419,12 @@ module paramreader_module
     !% Read and parse line and update the key/value pairs stored by
     !% in a Dictionary object. Returns false if an error is encountered parsing
     !% the line.
-    function param_read_line(dict, myline, ignore_unknown, task) result(status)
+    function param_read_line(dict, myline, ignore_unknown, do_check, task) result(status)
 
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       character(len=*), intent(in) :: myline  !% Line to parse
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
+      logical, intent(in), optional :: do_check !% If true, check for missing mandatory parameters
       character(len=*), intent(in), optional :: task
       logical :: status
 
@@ -518,10 +519,14 @@ module paramreader_module
           endif
         end do
       endif
-      
+
       if (allocated(data%d)) deallocate(data%d)
       status = .true. ! signal success to caller
 
+      if (present(do_check)) then
+         if (do_check) status = param_check(dict)
+      end if
+      
     end function param_read_line
     
 
