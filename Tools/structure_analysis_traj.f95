@@ -1,0 +1,725 @@
+! do various structural analysis to a trajcetory, save an intermediate file
+! to be postprocessed (mean, variance, correlation, etc)
+! #/vol density on a radial mesh
+! #/vol density on a grid
+! to be added: RDF, ADF
+
+module structure_analysis_module
+use libatoms_module
+implicit none
+private
+
+
+type analysis
+  logical :: density_radial, density_grid
+  character(len=FIELD_LENGTH) :: outfilename
+  character(len=FIELD_LENGTH) :: mask_str
+
+  integer :: n_configs = 0
+
+  real(dp) :: min_time, max_time
+  integer :: min_frame, max_frame
+
+  ! radial density stuff
+  real(dp) :: radial_min_p, radial_bin_width
+  integer :: radial_n_bins
+  real(dp) :: radial_center(3)
+  real(dp) :: radial_gaussian_sigma
+  logical :: radial_random_angular_samples
+  integer :: radial_n_angular_samples(2)
+  real(dp), allocatable :: radial_histograms(:,:)
+  real(dp), allocatable :: radial_pos(:)
+  real(dp), allocatable :: radial_theta(:), radial_phi(:), radial_w(:)
+
+  ! density grid stuff
+  real(dp) :: grid_min_p(3), grid_bin_width(3)
+  integer :: grid_n_bins(3)
+  logical :: grid_gaussian_smoothing
+  real(dp) :: grid_gaussian_sigma
+  real(dp), allocatable :: grid_histograms(:,:,:,:)
+  real(dp), allocatable :: grid_pos(:,:,:,:)
+
+end type analysis
+
+public :: analysis, analysis_read, check_analyses, do_analyses, print_analyses
+
+interface reallocate_histos
+  module procedure reallocate_histos_1d, reallocate_histos_3d
+end interface reallocate_histos
+
+contains
+
+subroutine analysis_read(this, prev, args_str)
+  type(analysis), intent(inout) :: this
+  type(analysis), intent(in), optional :: prev
+  character(len=*), optional, intent(in) :: args_str
+
+  type(Dictionary) :: params
+
+  call initialise(params)
+  if (.not. present(prev)) then
+    ! general
+    this%outfilename=''
+    this%mask_str = ''
+    call param_register(params, 'outfile', 'stdout', this%outfilename)
+    call param_register(params, 'AtomMask', '', this%mask_str)
+    call param_register(params, 'min_time', '-1.0', this%min_time)
+    call param_register(params, 'max_time', '-1.0', this%max_time)
+    call param_register(params, 'min_frame', '-1', this%min_frame)
+    call param_register(params, 'max_frame', '-1', this%max_frame)
+    call param_register(params, 'density_radial', 'F', this%density_radial)
+    call param_register(params, 'density_grid', 'F', this%density_grid)
+
+    ! radial density
+    call param_register(params, 'radial_min_p', "0.0", this%radial_min_p)
+    call param_register(params, 'radial_bin_width', '-1.0', this%radial_bin_width)
+    call param_register(params, 'radial_n_bins', '-1', this%radial_n_bins)
+    call param_register(params, 'radial_center', '0.0 0.0 0.0', this%radial_center)
+    call param_register(params, 'radial_sigma', '1.0', this%radial_gaussian_sigma)
+    call param_register(params, 'radial_random_angular_samples', 'F', this%radial_random_angular_samples)
+    call param_register(params, 'radial_n_angular_samples', '2 4', this%radial_n_angular_samples)
+
+    ! grid density
+    call param_register(params, 'grid_min_p', '0.0 0.0 0.0', this%grid_min_p)
+    call param_register(params, 'grid_bin_width', '-1.0 -1.0 -1.0', this%grid_bin_width)
+    call param_register(params, 'grid_n_bins', '-1 -1 -1', this%grid_n_bins)
+    call param_register(params, 'grid_gaussian', 'F', this%grid_gaussian_smoothing)
+    call param_register(params, 'grid_sigma', '1.0', this%grid_gaussian_sigma)
+  else
+    ! general
+    call param_register(params, 'outfile', trim(prev%outfilename), this%outfilename)
+    call param_register(params, 'AtomMask', trim(prev%mask_str), this%mask_str)
+    call param_register(params, 'min_time', ''//prev%min_time, this%min_time)
+    call param_register(params, 'max_time', ''//prev%max_time, this%max_time)
+    call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame)
+    call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame)
+    call param_register(params, 'density_radial', ''//prev%density_radial, this%density_radial)
+    call param_register(params, 'density_grid', ''//prev%density_grid, this%density_grid)
+
+    ! radial density
+    call param_register(params, 'radial_min_p', ''//this%radial_min_p, this%radial_min_p)
+    call param_register(params, 'radial_bin_width', ''//this%radial_bin_width, this%radial_bin_width)
+    call param_register(params, 'radial_n_bins', ''//this%radial_n_bins, this%radial_n_bins)
+    call param_register(params, 'radial_center', ''//prev%radial_center, this%radial_center)
+    call param_register(params, 'radial_sigma', ''//prev%radial_gaussian_sigma, this%radial_gaussian_sigma)
+    call param_register(params, 'radial_random_angular_samples', ''//prev%radial_random_angular_samples, this%radial_random_angular_samples)
+    call param_register(params, 'radial_n_angular_samples', ''//prev%radial_n_angular_samples, this%radial_n_angular_samples)
+
+    ! grid density
+    call param_register(params, 'grid_min_p', ''//prev%grid_min_p, this%grid_min_p)
+    call param_register(params, 'grid_bin_width', ''//prev%grid_bin_width, this%grid_bin_width)
+    call param_register(params, 'grid_n_bins', ''//prev%grid_n_bins, this%grid_n_bins)
+    call param_register(params, 'grid_gaussian', ''//prev%grid_gaussian_smoothing, this%grid_gaussian_smoothing)
+    call param_register(params, 'grid_sigma', ''//prev%grid_gaussian_sigma, this%grid_gaussian_sigma)
+  endif
+
+  if (present(args_str)) then
+    if (.not. param_read_line(params, trim(args_str), ignore_unknown=.false.)) &
+      call system_abort("analysis_read failed to parse string '"//trim(args_str)//"'")
+  else
+    if (.not. param_read_args(params, do_check=.true.)) &
+      call system_abort("analysis_read failed to parse command line arguments")
+  endif
+
+  if (count ( (/ this%density_radial, this%density_grid /) ) /= 1) &
+    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid /) )//" types of analysis.  Possiblities: density_radial, density_grid")
+  
+end subroutine analysis_read
+
+subroutine check_analyses(a)
+  type(analysis), intent(inout) :: a(:)
+
+  integer :: i_a
+
+  do i_a=1, size(a)
+    if (a(i_a)%density_radial) then
+      if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
+      if (a(i_a)%radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%radial_n_bins//" <= 0")
+      if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
+    else if (a(i_a)%density_grid) then
+      if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
+      if (any(a(i_a)%grid_n_bins <= 0)) call system_abort("analysis " // i_a // " has grid_n_bins="//a(i_a)%grid_n_bins//" <= 0")
+      if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
+    else
+      call system_abort("check_analyses: no type of analysis set for " // i_a)
+    endif
+  end do
+end subroutine check_analyses
+
+subroutine do_analyses(a, time, frame, at)
+  type(analysis), intent(inout) :: a(:)
+  real(dp), intent(in) :: time
+  integer, intent(in) :: frame
+  type(Atoms), intent(in) :: at
+
+  integer :: i_a
+
+  do i_a=1, size(a)
+
+    if (do_this_analysis(a(i_a), time, frame)) then
+
+      a(i_a)%n_configs = a(i_a)%n_configs + 1
+
+      if (a(i_a)%density_radial) then
+        call reallocate_histos(a(i_a)%radial_histograms, a(i_a)%n_configs, a(i_a)%radial_n_bins)
+        if (a(i_a)%radial_random_angular_samples) then
+          call calc_angular_samples_random(a(i_a)%radial_n_angular_samples(1)*a(i_a)%radial_n_angular_samples(2), a(i_a)%radial_theta, a(i_a)%radial_phi, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
+        endif
+        if (a(i_a)%n_configs == 1) then
+          if (.not. a(i_a)%radial_random_angular_samples) &
+            call calc_angular_samples_grid(a(i_a)%radial_n_angular_samples(1), a(i_a)%radial_n_angular_samples(2), a(i_a)%radial_theta, a(i_a)%radial_phi, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
+          allocate(a(i_a)%radial_pos(a(i_a)%radial_n_bins))
+          call sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, a(i_a)%radial_center, a(i_a)%radial_bin_width, a(i_a)%radial_n_bins, a(i_a)%radial_gaussian_sigma, &
+            a(i_a)%radial_theta, a(i_a)%radial_phi, a(i_a)%radial_w, a(i_a)%mask_str, a(i_a)%radial_pos)
+        else
+          call sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, a(i_a)%radial_center, a(i_a)%radial_bin_width, a(i_a)%radial_n_bins, a(i_a)%radial_gaussian_sigma, &
+            a(i_a)%radial_theta, a(i_a)%radial_phi, a(i_a)%radial_w, a(i_a)%mask_str)
+        endif
+      else if (a(i_a)%density_grid) then
+        call reallocate_histos(a(i_a)%grid_histograms, a(i_a)%n_configs, a(i_a)%grid_n_bins)
+        if (a(i_a)%grid_gaussian_smoothing) then
+          if (a(i_a)%n_configs == 1) then
+            allocate(a(i_a)%grid_pos(3,a(i_a)%grid_n_bins(1),a(i_a)%grid_n_bins(2),a(i_a)%grid_n_bins(3)))
+            call sample_rectilinear_mesh_Gaussians(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%grid_gaussian_sigma, a(i_a)%mask_str, a(i_a)%grid_pos)
+          else
+            call sample_rectilinear_mesh_Gaussians(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%grid_gaussian_sigma, a(i_a)%mask_str)
+          endif
+        else
+          if (a(i_a)%n_configs == 1) then
+            allocate(a(i_a)%grid_pos(3,a(i_a)%grid_n_bins(1),a(i_a)%grid_n_bins(2),a(i_a)%grid_n_bins(3)))
+            call calc_histogram(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%mask_str, a(i_a)%grid_pos)
+          else
+            call calc_histogram(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%mask_str)
+          endif
+        endif
+      else 
+        call system_abort("do_analyses: no type of analysis set for " // i_a)
+      endif
+    end if ! do this analysis
+  end do
+end subroutine do_analyses
+
+function do_this_analysis(this, time, frame)
+  type(analysis), intent(in) :: this
+  real(dp), intent(in), optional :: time
+  integer, intent(in), optional :: frame
+  logical :: do_this_analysis
+
+call print("do_this_frame time " // time // " frame " // frame)
+call print("  time " // this%min_time // " " // this%max_time // " frame " // this%min_frame // " " // this%max_frame)
+  do_this_analysis = .true.
+
+  if (this%min_time > 0.0_dp) then
+    if (.not. present(time)) call system_abort("analysis has non-zero min_time, but no time specified")
+    if (time < 0.0_dp) call system_abort("analysis has non-zero min_time, but invalid time < 0")
+    if (time < this%min_time) then
+      do_this_analysis = .false.
+    endif
+  endif
+  if (this%max_time > 0.0_dp) then
+    if (.not. present(time)) call system_abort("analysis has non-zero max_time, but no time specified")
+    if (time < 0.0_dp) call system_abort("analysis has non-zero max_time, but invalid time < 0")
+    if (time > this%max_time) then
+      do_this_analysis = .false.
+    endif
+  endif
+
+  if (this%min_frame > 0) then
+    if (.not. present(frame)) call system_abort("analysis has non-zero min_frame, but no frame specified")
+    if (frame < 0) call system_abort("analysis has non-zero min_frame, but invalid frame < 0")
+    if (frame < this%min_frame) then
+      do_this_analysis = .false.
+    endif
+  endif
+  if (this%max_frame > 0) then
+    if (.not. present(frame)) call system_abort("analysis has non-zero max_frame, but no frame specified")
+    if (frame < 0) call system_abort("analysis has non-zero max_frame, but invalid frame < 0")
+    if (frame > this%max_frame) then
+      do_this_analysis = .false.
+    endif
+  endif
+
+end function do_this_analysis
+
+subroutine print_analyses(a)
+  type(analysis), intent(inout) :: a(:)
+
+  type(inoutput) :: outfile
+  integer :: i, i1, i2, i3, i_a
+
+  do i_a=1, size(a)
+    call initialise(outfile, a(i_a)%outfilename, OUTPUT)
+    if (a(i_a)%outfilename == "stdout") then
+      outfile%prefix="ANALYSIS_"//i_a
+    endif
+
+    if (a(i_a)%n_configs <= 0) then
+      call print("# NO DATA", file=outfile)
+    else
+      if (a(i_a)%density_radial) then
+        call print("# radial density histogram", file=outfile)
+        call print("n_bins="//a(i_a)%radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%radial_n_bins
+          call print(a(i_a)%radial_pos(i), file=outfile)
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(a(i_a)%radial_histograms(:,i), file=outfile)
+        end do
+      else if (a(i_a)%density_grid) then
+        call print("# grid density histogram", file=outfile)
+        call print("n_bins="//a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3)//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%grid_n_bins(1)
+        do i2=1, a(i_a)%grid_n_bins(2)
+        do i3=1, a(i_a)%grid_n_bins(3)
+          call print(""//a(i_a)%grid_pos(:,i1,i2,i3), file=outfile)
+        end do
+        end do
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(""//reshape(a(i_a)%grid_histograms(:,:,:,i), (/ a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3) /) ), file=outfile)
+        end do
+      else
+        call system_abort("print_analyses: no type of analysis set for " // i_a)
+      endif
+    endif
+    call finalise(outfile)
+  end do
+end subroutine print_analyses
+
+subroutine calc_angular_samples_grid(n_t, n_p, theta, phi, w, gaussian_sigma)
+  integer, intent(in) :: n_t, n_p
+  real(dp), allocatable, intent(inout) :: theta(:), phi(:), w(:)
+  real(dp), intent(in) :: gaussian_sigma
+
+  integer :: t_i, p_i, ii
+
+  if (allocated(theta)) deallocate(theta)
+  if (allocated(phi)) deallocate(phi)
+  if (allocated(w)) deallocate(w)
+  allocate(theta(n_t*n_p))
+  allocate(phi(n_t*n_p))
+  allocate(w(n_t*n_p))
+
+  ii = 1
+  do t_i=1, n_t
+  do p_i=1, n_p
+    phi(ii) = (p_i-1)*2.0_dp*PI/real(n_p,dp)
+    if (mod(n_t,2) == 0) then
+      theta(ii) = (t_i-1.5_dp-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+    else
+      theta(ii) = (t_i-1-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+    endif
+    ! not oversample top and bottom of spehre
+    w(ii) = cos(theta(ii))
+    ii = ii + 1
+  end do
+  end do
+  w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
+end subroutine calc_angular_samples_grid
+
+subroutine calc_angular_samples_random(n, theta, phi, w, gaussian_sigma)
+  integer, intent(in) :: n
+  real(dp), allocatable, intent(inout) :: theta(:), phi(:), w(:)
+  real(dp), intent(in) :: gaussian_sigma
+
+  integer :: ii
+  real(dp) :: p(3), p_norm
+
+  if (allocated(theta)) deallocate(theta)
+  if (allocated(phi)) deallocate(phi)
+  if (allocated(w)) deallocate(w)
+  allocate(theta(n))
+  allocate(phi(n))
+  allocate(w(n))
+
+  do ii = 1, n
+    p_norm = 2.0_dp
+    do while (p_norm > 1.0_dp)
+      p = 0.0_dp
+      call randomise(p, 2.0_dp)
+      p_norm = norm(p)
+    end do
+    phi(ii) = atan2(p(2),p(1))
+    theta(ii) = acos(p(3)/p_norm)
+    w(ii) = 1.0_dp
+  end do
+  w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
+
+end subroutine calc_angular_samples_random
+
+subroutine sample_radial_mesh_Gaussians(histogram, at, radial_center, bin_width, n_bins, gaussian_sigma, theta, phi, w, mask_str, histo_grid, accumulate)
+  real(dp), intent(inout) :: histogram(:)
+  type(Atoms), intent(in) :: at
+  real(dp), intent(in) :: radial_center(3)
+  real(dp), intent(in) :: bin_width
+  integer, intent(in) :: n_bins
+  real(dp), intent(in) :: gaussian_sigma, theta(:), phi(:), w(:)
+  character(len=*), optional, intent(in) :: mask_str
+  real(dp), intent(out), optional :: histo_grid(:)
+  logical, optional, intent(in) :: accumulate
+
+  logical :: my_accumulate
+  real(dp) :: bin_r, p(3), dist, r
+  logical, allocatable :: mask_a(:)
+  integer at_i, sample_i, bin_i
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+  
+  allocate(mask_a(at%N))
+  call is_in_mask(mask_a, at, mask_str)
+
+! ratio of 20/4=5 is bad
+! ratio of 20/3=6.66 is bad
+! ratio of 20/2.5=8 is borderline (2e-4)
+! ratio of 20/2.22=9 is fine  (error 2e-5)
+! ratio of 20/2=10 is fine
+  if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
+  if (present(histo_grid)) then
+    do bin_i=1, n_bins
+      bin_r = (bin_i-1)*bin_width
+      histo_grid(bin_i) = bin_r
+    end do
+  endif
+
+  do at_i=1, at%N
+    if (.not. mask_a(at_i)) cycle
+    r = norm(at%pos(:,at_i))
+    do bin_i=1, n_bins
+      bin_r = (bin_i-1)*bin_width
+      do sample_i=1,size(theta)
+        p(1) = radial_center(1)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
+        p(2) = radial_center(2)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
+        p(3) = radial_center(3)+bin_r*sin(theta(sample_i))
+        dist = distance_min_image(at,p,at%pos(:,at_i))
+!Include all the atoms, slow but minimises error
+!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+        histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+      end do ! sample_i
+    end do ! bin_i
+  end do ! at_i
+
+  deallocate(mask_a)
+end subroutine sample_radial_mesh_Gaussians
+
+subroutine sample_rectilinear_mesh_Gaussians(histogram, at, min_p, sample_dist, n_bins, gaussian_sigma, mask_str, histo_grid, accumulate)
+  real(dp), intent(inout) :: histogram(:,:,:)
+  type(Atoms), intent(in) :: at
+  real(dp), intent(in) :: min_p(3), sample_dist(3)
+  integer, intent(in) :: n_bins(3)
+  real(dp), intent(in) :: gaussian_sigma
+  character(len=*), optional, intent(in) :: mask_str
+  real(dp), intent(out), optional :: histo_grid(:,:,:,:)
+  logical, optional, intent(in) :: accumulate
+
+  logical :: my_accumulate
+  integer :: at_i, i1, i2, i3
+  real(dp) :: p(3), w, dist
+  logical, allocatable :: mask_a(:)
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+
+  allocate(mask_a(at%N))
+  call is_in_mask(mask_a, at, mask_str)
+
+! ratio of 20/4=5 is bad
+! ratio of 20/3=6.66 is bad
+! ratio of 20/2.5=8 is borderline (2e-4)
+! ratio of 20/2.22=9 is fine  (error 2e-5)
+! ratio of 20/2=10 is fine
+  if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
+  w = 1.0_dp / (gaussian_sigma*sqrt(2.0_dp*PI))**3
+
+  if (present(histo_grid)) then
+    do i1=1, n_bins(1)
+      p(1) = min_p(1) + (i1-1)*sample_dist(1)
+      do i2=1, n_bins(2)
+        p(2) = min_p(2) + (i2-1)*sample_dist(2)
+        do i3=1, n_bins(3)
+          p(3) = min_p(3) + (i3-1)*sample_dist(3)
+          histo_grid(:,i1,i2,i3) = p
+        end do
+      end do
+    end do
+  endif
+
+  do at_i=1, at%N
+    if (.not. mask_a(at_i)) cycle
+    do i1=1, n_bins(1)
+      p(1) = min_p(1) + (i1-1)*sample_dist(1)
+      do i2=1, n_bins(2)
+        p(2) = min_p(2) + (i2-1)*sample_dist(2)
+        do i3=1, n_bins(3)
+          p(3) = min_p(3) + (i3-1)*sample_dist(3)
+          dist = distance_min_image(at,p,at%pos(:,at_i))
+          histogram(i1,i2,i3) = histogram(i1,i2,i3) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w
+        end do ! i3
+      end do ! i2
+    end do ! i1
+  end do ! at_i
+
+  deallocate(mask_a)
+end subroutine sample_rectilinear_mesh_Gaussians
+
+subroutine calc_histogram(histogram, at, min_p, bin_width, n_bins, mask_str, histo_grid, accumulate)
+  real(dp), intent(inout) :: histogram(:,:,:)
+  type(Atoms), intent(in) :: at
+  real(dp), intent(in) :: min_p(3), bin_width(3)
+  integer, intent(in) :: n_bins(3)
+  character(len=*), optional, intent(in) :: mask_str
+  real(dp), intent(out), optional :: histo_grid(:,:,:,:)
+  logical, optional, intent(in) :: accumulate
+
+  logical :: my_accumulate
+  integer :: i, i1, i2, i3, bin(3)
+  logical, allocatable :: mask_a(:)
+  real(dp) :: p(3)
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+
+  if (present(histo_grid)) then
+    do i1=1, n_bins(1)
+      p(1) = min_p(1) + (real(i1,dp)-0.5_dp)*bin_width(1)
+      do i2=1, n_bins(2)
+        p(2) = min_p(2) + (real(i2,dp)-0.5_dp)*bin_width(2)
+        do i3=1, n_bins(3)
+          p(3) = min_p(3) + (real(i3,dp)-0.5_dp)*bin_width(3)
+          histo_grid(:,i1,i2,i3) = p
+        end do
+      end do
+    end do
+  endif
+
+  allocate(mask_a(at%N))
+  call is_in_mask(mask_a, at, mask_str)
+
+  do i=1, at%N
+    if (.not. mask_a(i)) cycle
+    bin = floor((at%pos(:,i)-min_p)/bin_width)+1
+    if (all(bin >= 1) .and. all (bin <= n_bins)) histogram(bin(1),bin(2),bin(3)) = histogram(bin(1),bin(2),bin(3)) + 1.0_dp
+  end do
+
+  deallocate(mask_a)
+
+end subroutine calc_histogram
+
+subroutine is_in_mask(mask_a, at, mask_str)
+  type(Atoms), intent(in) :: at
+  logical, intent(out) :: mask_a(at%N)
+  character(len=*), optional, intent(in) :: mask_str
+
+  integer :: i
+  integer :: Zmask
+  type(Table) :: atom_indices
+
+  if (.not. present(mask_str)) then
+    mask_a = .true.
+    return
+  endif
+
+  if (len_trim(mask_str) == 0) then
+    mask_a = .true.
+    return
+  endif
+
+  mask_a = .false.
+  if (mask_str(1:1)=='@') then
+    call parse_atom_mask(mask_str,atom_indices)
+    do i=1, atom_indices%N
+      mask_a(atom_indices%int(1,i)) = .true.
+    end do
+  else if (scan(mask_str,'=')/=0) then
+    call system_abort("property type mask not supported yet")
+  else
+    Zmask = Atomic_Number(mask_str)
+    do i=1, at%N
+      if (at%Z(i) == Zmask) mask_a(i) = .true.
+    end do
+  end if
+end subroutine is_in_mask
+
+subroutine reallocate_histos_1d(histos, n, n_bins)
+  real(dp), allocatable, intent(inout) :: histos(:,:)
+  integer, intent(in) :: n, n_bins
+
+  integer :: new_size
+  real(dp), allocatable :: t_histos(:,:)
+
+  if (allocated(histos)) then
+    if (n <= size(histos,2)) return
+    allocate(t_histos(size(histos,1),size(histos,2)))
+    t_histos = histos
+    deallocate(histos)
+    if (size(t_histos,2) <= 0) then
+      new_size = 10
+    else if (size(t_histos,2) < 1000) then
+      new_size = 2*size(t_histos,2)
+    else
+      new_size = floor(1.25*size(t_histos,2))
+    endif
+    allocate(histos(size(t_histos,1), new_size))
+    histos(1:size(t_histos,1),1:size(t_histos,2)) = t_histos(1:size(t_histos,1),1:size(t_histos,2))
+    histos(1:size(t_histos,1),size(t_histos,2)+1:size(histos,2)) = 0.0_dp
+    deallocate(t_histos)
+  else
+    allocate(histos(n_bins, n))
+  endif
+end subroutine reallocate_histos_1d
+
+subroutine reallocate_histos_3d(histos, n, n_bins)
+  real(dp), allocatable, intent(inout) :: histos(:,:,:,:)
+  integer, intent(in) :: n, n_bins(3)
+
+  integer :: new_size
+  real(dp), allocatable :: t_histos(:,:,:,:)
+
+  if (allocated(histos)) then
+    if (n <= size(histos,4)) return
+    allocate(t_histos(size(histos,1),size(histos,2),size(histos,3),size(histos,4)))
+    t_histos = histos
+    deallocate(histos)
+    if (size(t_histos,4) <= 0) then
+      new_size = 10
+    else if (size(t_histos,4) < 1000) then
+      new_size = 2*size(t_histos,4)
+    else
+      new_size = floor(1.25*size(t_histos,4))
+    endif
+    allocate(histos(size(t_histos,1), size(t_histos,2), size(t_histos,3), new_size))
+    histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),1:size(t_histos,4)) = &
+      t_histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),1:size(t_histos,4))
+    histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),size(t_histos,4)+1:size(histos,4)) = 0.0_dp
+    deallocate(t_histos)
+  else
+    allocate(histos(n_bins(1), n_bins(2), n_bins(3), n))
+  endif
+end subroutine reallocate_histos_3d
+
+end module structure_analysis_module
+
+program structure_analysis
+use libatoms_module
+use structure_analysis_module
+implicit none
+
+  type(Dictionary) :: cli_params
+
+  character(len=FIELD_LENGTH) :: infilename
+  type(Inoutput) :: list_infile
+  type (CInoutput) :: infile
+  logical :: infile_is_list
+  logical :: quiet
+
+  character(len=FIELD_LENGTH) :: commandfilename
+  type(Inoutput) :: commandfile
+
+  character(len=1024) :: args_str, myline
+  integer :: n_analysis_a
+  type(analysis), allocatable :: analysis_a(:)
+
+  logical :: more_files
+  integer :: status, arg_line_no
+  real(dp) :: time
+
+  integer :: i_a, frame_count
+  type(Atoms) :: structure
+  logical :: do_verbose
+
+  call system_initialise(NORMAL)
+
+  call initialise(cli_params)
+  call param_register(cli_params, "verbose", "F", do_verbose)
+  if (.not. param_read_args(cli_params, ignore_unknown=.true.)) &
+    call system_abort("Impossible failure to parse verbosity")
+  call finalise(cli_params)
+  if (do_verbose) then
+    call system_initialise(verbosity=VERBOSE)
+  endif
+
+  call initialise(cli_params)
+  commandfilename=''
+  call param_register(cli_params, "commandfile", '', commandfilename)
+  call param_register(cli_params, "infilefile", "stdin", infilename)
+  call param_register(cli_params, "infile_is_line", "F", infile_is_list)
+  call param_register(cli_params, "quiet", "F", quiet)
+  if (.not. param_read_args(cli_params, ignore_unknown = .true., task="CLI")) then
+    call system_abort("Failed to parse CLI")
+  endif
+  if (len_trim(commandfilename) == 0) then
+    allocate(analysis_a(1))
+    call analysis_read(analysis_a(1))
+  else
+    call initialise(commandfile, trim(commandfilename), INPUT)
+    arg_line_no = 1
+    myline = read_line(commandfile)
+    read (unit=myline,fmt=*) n_analysis_a
+    allocate(analysis_a(n_analysis_a))
+    do i_a=1, n_analysis_a
+      args_str = read_line(commandfile)
+      if (i_a == 1) then
+        call analysis_read(analysis_a(i_a), args_str=args_str)
+      else
+        call analysis_read(analysis_a(i_a), analysis_a(i_a-1), args_str)
+      endif
+    end do
+  endif
+  call finalise(cli_params)
+
+  call check_analyses(analysis_a)
+
+  more_files = .true.
+  if (infile_is_list) then
+    call initialise(list_infile, infilename, INPUT)
+    infilename = read_line(list_infile, status)
+    more_files = .false.
+    if (status == 0) more_files = .true.
+  endif
+
+  frame_count = 0
+  do while (more_files)
+
+    call initialise(infile, infilename, INPUT)
+    call read(structure, infile, status=status)
+    do while (status == 0)
+      frame_count = frame_count + 1
+      if (.not. quiet) then
+        if (mod(frame_count,1000) == 1) write (mainlog%unit,'(I4,a)') int(frame_count/1000)," "
+        if (mod(frame_count,10) == 0) write (mainlog%unit,'(I1,$)') mod(frame_count/10,10)
+        if (mod(frame_count,1000) == 0) write (mainlog%unit,'(a)') " "
+      endif
+
+      if (.not. get_value(structure%params,"Time",time)) then
+        time = -1.0_dp
+      endif
+      call do_analyses(analysis_a, time, frame_count, structure)
+
+      ! get ready for next structure
+      call read(structure, infile, status=status)
+    end do
+
+    ! get ready for next file
+    more_files = .false.
+    call finalise(infile)
+    if (infile_is_list) then
+      infilename = read_line(list_infile, status)
+      if (status == 0) then
+        more_files = .true.
+        call initialise(infile, infilename, INPUT)
+      endif
+    endif
+  end do
+  if (infile_is_list) call finalise(list_infile)
+
+  call print_analyses(analysis_a)
+
+end program structure_analysis
