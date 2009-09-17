@@ -429,7 +429,8 @@ class Table(FortranTable):
 
 class DynamicalSystem(FortranDynamicalSystem):
    
-   def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str=""):
+   def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str="",
+           out=None, write_interval=10):
       self.atoms.calc_connect()
       pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
       for n in range(n_steps):
@@ -440,6 +441,8 @@ class DynamicalSystem(FortranDynamicalSystem):
          self.atoms.params['time'] = self.t
          if connect_interval is not None and n % connect_interval == 0:
             self.atoms.calc_connect()
+         if out is not None and n % write_interval == 0:
+            out.write(self.atoms)
          if save_interval is not None and n % save_interval == 0:
             yield self.atoms.copy()
       raise StopIteration
