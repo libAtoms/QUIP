@@ -42,7 +42,7 @@ type analysis
   ! rdfd stuff
   real(dp), allocatable :: rdfds(:,:,:)
   real(dp) :: rdfd_zone_center(3)
-  character(FIELD_LENGTH) :: rdfd_center_mask_str
+  character(FIELD_LENGTH) :: rdfd_center_mask_str, rdfd_neighbour_mask_str
   real(dp) :: rdfd_zone_width, rdfd_bin_width
   integer :: rdfd_n_zones, rdfd_n_bins
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
@@ -110,6 +110,8 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'rdfd_n_zones', '1', this%rdfd_n_zones)
     this%rdfd_center_mask_str=''
     call param_register(params, 'rdfd_center_mask', '', this%rdfd_center_mask_str)
+    this%rdfd_neighbour_mask_str=''
+    call param_register(params, 'rdfd_neighbour_mask', '', this%rdfd_neighbour_mask_str)
 
   else
     ! general
@@ -146,6 +148,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'rdfd_zone_width', ''//prev%rdfd_zone_width, this%rdfd_zone_width)
     call param_register(params, 'rdfd_n_zones', ''//prev%rdfd_n_zones, this%rdfd_n_zones)
     call param_register(params, 'rdfd_center_mask', trim(prev%rdfd_center_mask_str), this%rdfd_center_mask_str)
+    call param_register(params, 'rdfd_neighbour_mask', trim(prev%rdfd_neighbour_mask_str), this%rdfd_neighbour_mask_str)
   endif
 
   if (present(args_str)) then
@@ -246,10 +249,10 @@ subroutine do_analyses(a, time, frame, at)
           allocate(a(i_a)%rdfd_bin_pos(a(i_a)%rdfd_n_bins))
           allocate(a(i_a)%rdfd_zone_pos(a(i_a)%rdfd_n_zones))
           call bin_rdfd(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
-            a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_center_mask_str, a(i_a)%mask_str, a(i_a)%rdfd_bin_pos, a(i_a)%rdfd_zone_pos)
+            a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str, a(i_a)%mask_str, a(i_a)%rdfd_bin_pos, a(i_a)%rdfd_zone_pos)
         else
           call bin_rdfd(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
-            a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_center_mask_str, a(i_a)%mask_str)
+            a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str, a(i_a)%mask_str)
         endif
       else 
         call system_abort("do_analyses: no type of analysis set for " // i_a)
@@ -479,23 +482,25 @@ subroutine sample_radial_mesh_Gaussians(histogram, at, radial_center, bin_width,
   deallocate(mask_a)
 end subroutine sample_radial_mesh_Gaussians
 
-subroutine bin_rdfd(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zones, center_mask_str, mask_str, bin_pos, zone_pos)
+subroutine bin_rdfd(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zones, center_mask_str, neighbour_mask_str, mask_str, bin_pos, zone_pos)
   real(dp), intent(inout) :: rdfd(:,:)
   type(Atoms), intent(in) :: at
   real(dp), intent(in) :: zone_center(3), bin_width, zone_width
   integer, intent(in) :: n_bins, n_zones
-  character(len=*), intent(in) :: center_mask_str, mask_str
+  character(len=*), intent(in) :: center_mask_str, neighbour_mask_str, mask_str
   real(dp), intent(inout), optional :: bin_pos(:), zone_pos(:)
 
-  logical, allocatable :: mask_a(:), center_mask_a(:)
+  logical, allocatable :: mask_a(:), center_mask_a(:), neighbour_mask_a(:)
   integer :: i_at, j_at, i_bin, i_zone
   integer, allocatable :: n_in_zone(:)
   real(dp) :: r, bin_inner_rad, bin_outer_rad
 
   allocate(mask_a(at%N))
   allocate(center_mask_a(at%N))
+  allocate(neighbour_mask_a(at%N))
   call is_in_mask(mask_a, at, mask_str)
   call is_in_mask(center_mask_a, at, center_mask_str)
+  call is_in_mask(neighbour_mask_a, at, neighbour_mask_str)
 
   allocate(n_in_zone(n_zones))
   n_in_zone = 0
@@ -517,8 +522,7 @@ subroutine bin_rdfd(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zone
 
   rdfd = 0.0_dp
   do i_at=1, at%N
-    if (.not. center_mask_a(i_at)) cycle
-    if (.not. mask_a(i_at)) cycle
+    if (.not. mask_a(i_at) .or. .not. center_mask_a(i_at)) cycle
 
 ! call print("doing center atom " // i_at)
     if (zone_width > 0.0_dp) then
@@ -535,7 +539,7 @@ subroutine bin_rdfd(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zone
 
     do j_at=1, at%N
       if (j_at == i_at) cycle
-      if (.not. mask_a(j_at)) cycle
+      if (.not. mask_a(j_at) .or. .not. neighbour_mask_a(j_at)) cycle
       r = distance_min_image(at, i_at, j_at)
       i_bin = int(r/bin_width)+1
 ! call print("  doing j atom " // j_at // " r " // r // " bin " // i_bin)
@@ -549,11 +553,10 @@ subroutine bin_rdfd(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zone
     rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
   end do
 
-call print("n_in_zone " // n_in_zone, ERROR)
   do i_zone=1, n_zones
     if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
   end do
-  rdfd = rdfd / (count(center_mask_a .and. mask_a)/cell_volume(at))
+  rdfd = rdfd / (count(mask_a)/cell_volume(at))
 
 end subroutine bin_rdfd
 
@@ -669,9 +672,11 @@ subroutine is_in_mask(mask_a, at, mask_str)
   logical, intent(out) :: mask_a(at%N)
   character(len=*), optional, intent(in) :: mask_str
 
-  integer :: i
+  integer :: i_at, i_Z
   integer :: Zmask
   type(Table) :: atom_indices
+  character(len=4) :: species(128)
+  integer :: n_species
 
   if (.not. present(mask_str)) then
     mask_a = .true.
@@ -686,15 +691,18 @@ subroutine is_in_mask(mask_a, at, mask_str)
   mask_a = .false.
   if (mask_str(1:1)=='@') then
     call parse_atom_mask(mask_str,atom_indices)
-    do i=1, atom_indices%N
-      mask_a(atom_indices%int(1,i)) = .true.
+    do i_at=1, atom_indices%N
+      mask_a(atom_indices%int(1,i_at)) = .true.
     end do
   else if (scan(mask_str,'=')/=0) then
     call system_abort("property type mask not supported yet")
   else
-    Zmask = Atomic_Number(mask_str)
-    do i=1, at%N
-      if (at%Z(i) == Zmask) mask_a(i) = .true.
+    call split_string(mask_str, ' ,', '""', species, n_species)
+    do i_Z=1, n_species
+      Zmask = Atomic_Number(species(i_Z))
+      do i_at=1, at%N
+        if (at%Z(i_at) == Zmask) mask_a(i_at) = .true.
+      end do
     end do
   end if
 end subroutine is_in_mask
@@ -803,7 +811,7 @@ implicit none
   character(len=FIELD_LENGTH) :: commandfilename
   type(Inoutput) :: commandfile
 
-  character(len=1024) :: args_str, myline
+  character(len=10240) :: args_str, myline
   integer :: n_analysis_a
   type(analysis), allocatable :: analysis_a(:)
 
