@@ -94,7 +94,7 @@ implicit none
     myline = "# bin_label"
   endif
   if (do_mean) myline = trim(myline) //" mean"
-  if (do_var) myline = trim(myline) //" var"
+  if (do_var) myline = trim(myline) //" var N "
 
   call print(trim(myline), file=outfile)
 
@@ -106,7 +106,7 @@ implicit none
         myline = trim(bin_labels(i))
       endif
       if (do_mean) myline = trim(myline) //" " // data_mean(i)
-      if (do_var) myline = trim(myline) //" " // data_var(i)
+      if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
       call print(trim(myline), file=outfile)
     end do
   end if
