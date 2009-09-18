@@ -1204,7 +1204,7 @@ contains
 
     type(Inoutput), intent(in)     :: this
     integer, optional, intent(out) :: status
-    character(1024)                :: inoutput_read_line
+    character(10240)                :: inoutput_read_line
     integer                        :: my_status
 
     if (this%action == OUTPUT) call system_abort('read_line: Cannot read from an output file ('//trim(adjustl(this%filename))//')')

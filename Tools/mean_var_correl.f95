@@ -10,7 +10,7 @@ implicit none
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_correl
   character(len=FIELD_LENGTH) :: infile_name, outfile_name
-  character(len=1024) :: myline
+  character(len=10240) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:)
   integer :: reduction_index, other_index, sz, correlation_max_lag, i_lag, n_correl_print
