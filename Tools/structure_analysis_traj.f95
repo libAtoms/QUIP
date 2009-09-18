@@ -9,7 +9,6 @@ use libatoms_module
 implicit none
 private
 
-
 type analysis
   logical :: density_radial, density_grid, rdfd
   character(len=FIELD_LENGTH) :: outfilename
@@ -40,11 +39,11 @@ type analysis
   real(dp), allocatable :: grid_pos(:,:,:,:)
 
   ! rdfd stuff
-  real(dp), allocatable :: rdfds(:,:,:)
   real(dp) :: rdfd_zone_center(3)
   character(FIELD_LENGTH) :: rdfd_center_mask_str, rdfd_neighbour_mask_str
   real(dp) :: rdfd_zone_width, rdfd_bin_width
   integer :: rdfd_n_zones, rdfd_n_bins
+  real(dp), allocatable :: rdfds(:,:,:)
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
 
 end type analysis
@@ -173,15 +172,12 @@ subroutine check_analyses(a)
     if (a(i_a)%density_radial) then
       if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
       if (a(i_a)%radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%radial_n_bins//" <= 0")
-      if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
     else if (a(i_a)%density_grid) then
       if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
       if (any(a(i_a)%grid_n_bins <= 0)) call system_abort("analysis " // i_a // " has grid_n_bins="//a(i_a)%grid_n_bins//" <= 0")
-      if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
     else if (a(i_a)%rdfd) then
       if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_bins <= 0) call system_abort("analysis " // i_a // " has rdfd_n_bins="//a(i_a)%rdfd_n_bins//" <= 0")
-      if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_zones <= 0) call system_abort("analysis " // i_a // " has rdfd_n_zones="//a(i_a)%rdfd_n_zones//" <= 0")
     else
       call system_abort("check_analyses: no type of analysis set for " // i_a)
