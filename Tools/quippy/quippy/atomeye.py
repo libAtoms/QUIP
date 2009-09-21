@@ -1,4 +1,5 @@
-"""High-level interface to atomeye. Low-level interface is in _atomeye extension module."""
+"""This module provides a high-level interface between quippy and the AtomEye extension module
+   :mod:`quippy._atomeye`. """
 
 import _atomeye, sys, numpy, time
 from math import ceil, log10
@@ -38,7 +39,7 @@ def on_new_window(iw):
     
 
 class AtomEyeView(object):
-    def __init__(self, atoms=None, window_id=None, copy=None, frame=0, delta=1, property=None, arrows=None,
+    def __init__(self, atoms=None, window_id=None, copy=None, frame=1, delta=1, property=None, arrows=None,
                  *arrowargs, **arrowkwargs):
         self.atoms = atoms
         self.frame = frame
@@ -55,6 +56,10 @@ class AtomEyeView(object):
             self._window_id = window_id
             self.is_alive = True
             views[self._window_id] = self
+
+        global view
+        if view is None:
+            view = self
 
         if property is not None or arrows is not None:
             self.redraw(property=property, arrows=arrows, *arrowargs, **arrowkwargs)
@@ -91,7 +96,7 @@ class AtomEyeView(object):
             time.sleep(0.1)
         time.sleep(0.3)
         _atomeye.set_title(self._window_id, title)
-        self.set(default_settings)
+        self.update(default_settings)
 
     def on_click(self, idx):
         if self.atoms is None: return
@@ -126,18 +131,18 @@ class AtomEyeView(object):
         elif mode == 'backward':
             self.frame -= self.delta
         elif mode == 'first':
-            self.frame = 0
+            self.frame = 1
         elif mode == 'last':
-            self.frame = len(self.atoms)-1
+            self.frame = len(self.atoms)
 
-        if self.frame >= len(self.atoms):
+        if self.frame > len(self.atoms):
             try:
                 self.atoms[self.frame]
             except IndexError:
-                self.frame = self.frame % len(self.atoms)
+                self.frame = ((self.frame-1) % len(self.atoms)) + 1
                 
-        if self.frame < 0:
-                self.frame = self.frame % len(self.atoms)
+        if self.frame < 1:
+            self.frame = ((self.frame-1) % len(self.atoms)) + 1
         self.redraw()
 
 
@@ -238,18 +243,15 @@ class AtomEyeView(object):
     def close(self):
         self.run_command('close')
 
-    def set(self, key, value=None):
-        if hasattr(key,'__getitem__'):
-            for k, v in key.iteritems():
-                self.run_command("set %s %s" % (str(k), str(v)))
-        else:
-            self.run_command("set %s %s" % (str(key), str(value)))
+    def update(self, D):
+        for k, v in D.iteritems():
+            self.run_command("set %s %s" % (str(k), str(v)))
 
     def save(self, filename):
         self.run_command("save %s" % str(filename))
 
-    def load_script(self, arg):
-        self.run_command("load_script %s" % str(arg))
+    def load_script(self, filename):
+        self.run_command("load_script %s" % str(filename))
 
     def key(self, key):
         self.run_command("key %s" % key)
@@ -419,7 +421,7 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 view = None
 
-def show(obj, property=None, frame=0, window_id=None, arrows=None, *arrowargs, **arrowkwargs):
+def show(obj, property=None, frame=1, window_id=None, arrows=None, *arrowargs, **arrowkwargs):
     """Convenience function to show obj in the default AtomEye view
 
     If window_id is not None, then this window will be used. Otherwise

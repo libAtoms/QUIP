@@ -1,5 +1,6 @@
 import sys, os, fnmatch, re, itertools
 from quippy import Atoms, AtomsReaders, AtomsWriters
+from farray import *
 
 def find_files(filepat, top=None):
    if top is None:
@@ -95,7 +96,7 @@ class AtomsList(object):
       if lazy:
          if self._randomaccess:
 #            print 'len(self._source) = %d' % len(self._source)
-            self._list = [ None for a in range(len(self._source)) ]
+            self._list = [ None for a in frange(len(self._source)) ]
          else:
             self._list = []
       else:
@@ -111,12 +112,14 @@ class AtomsList(object):
       return len(self._list)
 
    def __delitem__(self, frame):
+      if frame == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
+      if frame > 0: frame -= 1
       a = self._list[frame]
       self._list[frame] = None
       del a
 
    def iteratoms(self):
-      for frame in range(len(self._list)):
+      for frame in frange(len(self._list)):
          yield self[frame]
       if not self._randomaccess:
          for at in self._itersource:
@@ -132,7 +135,7 @@ class AtomsList(object):
    def __reversed__(self):
       if not self._randomaccess:
          raise ValueError('Cannot reverse AtomsList with generator source. Call loadall() then try again')
-      for frame in reversed(range(len(self._list))):
+      for frame in reversed(frange(len(self._list))):
          yield self[frame]
 
    def __getslice__(self, first, last):
@@ -140,14 +143,24 @@ class AtomsList(object):
 
    def __getitem__(self, frame):
       if isinstance(frame, int):
+
+         if frame == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
+         if frame > 0: frame -= 1
          if frame < 0: frame = frame + len(self._list)
          if not self._randomaccess and frame >= len(self._list):
             self._list.extend(list(itertools.islice(self._itersource, frame-len(self._list)+1)))
          if self._list[frame] is None:
-            self._list[frame] = self._source[frame]
+            if isinstance(self._source, AtomsList):
+               self._list[frame] = self._source[frame+1]
+            else:
+               self._list[frame] = self._source[frame]
          return self._list[frame]
 
       elif isinstance(frame, slice):
+
+         if frame.start == 0: raise ValueError('invalid slice index 0 -- AtomsList indices are one-based')
+         if frame.start is not None and frame.start > 0:  frame = slice(frame.start - 1, frame.stop, frame.step)
+         
          if not self._randomaccess and frame.stop >= len(self._list):
             self._list.extend(list(itertools.islice(self._itersource, frame.stop != sys.maxint and frame.stop-len(self._list)+1 or None)))
          allatoms = range(len(self._list))
@@ -155,16 +168,24 @@ class AtomsList(object):
          res = []
          for f in subatoms:
             if self._list[f] is None:
-               self._list[f] = self._source[f]
+               if isinstance(self._source, AtomsList):
+                  self._list[f] = self._source[f+1]
+               else:
+                  self._list[f] = self._source[f]
             res.append(self._list[f])
          return AtomsList(res, lazy=False)
+
       else:
          raise TypeError('frame should be either an integer or a slice')
 
    def __setslice__(self, i, j, value):
+      if i == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
+      if i > 0: i -= 1
       self._list[i:j] = value
 
    def __setitem__(self, i, value):
+      if i == 0: raise ValueError('invalid index 0 -- AtomsList indices are one-based')
+      if i > 0: i -= 1
       self._list[i] = value
 
    def loadall(self, progress=False, progress_width=80, update_interval=None, show_value=True):
@@ -176,14 +197,14 @@ class AtomsList(object):
          else:
             update_interval = update_interval or 100
       
-      for i, a in enumerate(self.iteratoms()):
+      for i, a in fenumerate(self.iteratoms()):
          if progress and i % update_interval == 0:
             if self._randomaccess:
                pb(i)
             else:
                print i
 
-   def show(self, property=None, frame=0, arrows=None, *arrowargs, **arrowkwargs):
+   def show(self, property=None, frame=1, arrows=None, *arrowargs, **arrowkwargs):
       try:
          import atomeye
          atomeye.show(self, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
@@ -216,7 +237,7 @@ class AtomsList(object):
          opened = True
          
       res = []
-      for i, a in enumerate(self.iteratoms()):
+      for i, a in fenumerate(self.iteratoms()):
          res.append(dest.write(a))
          if progress and i % update_interval == 0:
             if self._randomaccess:
@@ -229,7 +250,24 @@ class AtomsList(object):
       return res
 
    def __getattr__(self, name):
-      return [ getattr(at, name) for at in self ]
+
+      numeric_types = [int, float ]
+      array_types = [ FortranArray, numpy.ndarray ]
+      numeric_dtype_kinds = [ 'i', 'f' ]
+      
+      seq = [ getattr(at, name) for at in self ]
+      if seq == []: return seq
+
+      s = seq[0]
+      if type(s) in numeric_types:
+         return farray(seq)
+      elif type(s) in array_types and s.dtype.kind in numeric_dtype_kinds:
+         if len(s.shape) == 2:
+            return farray(numpy.dstack(seq))
+         else:
+            return farray(seq)
+      else:
+         return seq
 
 # Decorator to add a new reader
 
