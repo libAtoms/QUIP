@@ -1528,7 +1528,51 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
 
 #include <libgen.h>
 
-int xyz_find_frames(char *fname, long *frames, int *atoms) {
+void realloc_frames(long **frames, int **atoms, int *frames_array_size, int new_frames_array_size) {
+  long *t_frames;
+  int *t_atoms;
+  int i;
+
+  if (new_frames_array_size <= *frames_array_size) {
+    return;
+  }
+
+  // if there's nothing, probably starting out, so assume a small array
+  if (*frames_array_size == 0) {
+    new_frames_array_size = (new_frames_array_size <= 0) ? 100 : new_frames_array_size;
+  } else { // otherwise, need to expand
+    if (new_frames_array_size <= 1.5*(*frames_array_size)) { // at least by factor of 1.5
+      new_frames_array_size = 1.5*(*frames_array_size);
+    }
+  }
+
+  // if there's data in current arrays
+  if (*frames_array_size > 0) {
+    // allocate temporaries
+    t_frames = (long *) malloc (*frames_array_size * sizeof(long));
+    t_atoms = (int *) malloc (*frames_array_size * sizeof(int));
+    // copy data into temporaries
+    for (i=0; i < *frames_array_size; i++) {
+      t_frames[i] = (*frames)[i];
+      t_atoms[i] = (*atoms)[i];
+    }
+    // free preexisting arrays
+    free (*frames);
+    free (*atoms);
+  }
+  // allocate new arrays
+  *frames = (long *) malloc (new_frames_array_size * sizeof(long));
+  *atoms = (int *) malloc (new_frames_array_size * sizeof(int));
+  // copy data from temporaries
+  for (i=0; i < *frames_array_size; i++) {
+    (*frames)[i] = t_frames[i];
+    (*atoms)[i] = t_atoms[i];
+  }
+  // update frames_array_size
+  *frames_array_size = new_frames_array_size;
+}
+
+int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_size) {
   FILE *in, *index;
   char *bname;
   char indexname[LINESIZE], linebuffer[LINESIZE], buf1[LINESIZE], buf2[LINESIZE];
@@ -1571,22 +1615,24 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
       return 0;
     }
     sscanf(linebuffer, "%d", &nframes);
-    if (nframes+1 >= XYZ_MAX_FRAMES) {
-      fprintf(stderr,"nframes(%d)+1 >= XYZ_MAX_FRAMES(%d)\n",nframes,XYZ_MAX_FRAMES);
-      return 0;
-    }
+    realloc_frames(frames, atoms, frames_array_size, nframes+1);
+    // if (nframes+1 >= XYZ_MAX_FRAMES) {
+      // fprintf(stderr,"nframes(%d)+1 >= XYZ_MAX_FRAMES(%d)\n",nframes,XYZ_MAX_FRAMES);
+      // return 0;
+    // }
     for (i=0; i<=nframes; i++) {
       if (!fgets(linebuffer,LINESIZE,index)) {
 	fprintf(stderr,"Premature end of indexfile %s\n",indexname);
 	return 0;
       }
-      sscanf(linebuffer, "%ld %d", &frames[i], &atoms[i]);
+      sscanf(linebuffer, "%ld %d", &(*frames)[i], &(*atoms)[i]);
     }
     fclose(index);
   }
 
+
 /*   for (i=0; i<nframes+1; i++) { */
-/*     printf("%d: %ld\n", i, frames[i]); */
+/*     printf("%d: %ld\n", i, (*frames)[i]); */
 /*   } */
 
   if (from_scratch || do_update) {
@@ -1599,10 +1645,10 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
 
       // Try to seek past last frame, and check this looks
       // like the start of a new frame
-      if (fseek(in,frames[nframes],SEEK_SET) != 0 ||
+      if (fseek(in,(*frames)[nframes],SEEK_SET) != 0 ||
 	  !fgets(linebuffer,LINESIZE,in) ||
 	  sscanf(linebuffer, "%d", &natoms) != 1 ||
-	  natoms != atoms[nframes]) {
+	  natoms != (*atoms)[nframes]) {
 	// Seek failed, we'll have to rebuild index from start
 	fseek(in,0,SEEK_SET);
 	nframes = 0;
@@ -1610,7 +1656,7 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
       }
       else {
 	// Rewind to start of frame
-	fseek(in,frames[nframes],SEEK_SET);
+	fseek(in,(*frames)[nframes],SEEK_SET);
       }
 
       // TODO - improve check - fails if number of atoms has changed
@@ -1619,30 +1665,33 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
     debug("starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
 
     while (fgets(linebuffer,LINESIZE,in)) {
-      frames[nframes] = ftell(in)-strlen(linebuffer);
+      realloc_frames(frames, atoms, frames_array_size, nframes+1);
+      (*frames)[nframes] = ftell(in)-strlen(linebuffer);
+      /*
       if (nframes+1 > XYZ_MAX_FRAMES) {
 	fprintf(stderr,"nframes(%d)+1 > XYZ_MAX_FRAMES(%d)\n",nframes,XYZ_MAX_FRAMES);
 	return 0;
       }
+      */
       if (sscanf(linebuffer, "%d", &natoms) != 1) {
 	fprintf(stderr,"Malformed XYZ file %s at frame %d\n",fname,nframes);
 	return 0;
       }
 
-      atoms[nframes] = natoms;
+      (*atoms)[nframes] = natoms;
       nframes++;
 
       // Skip the whole frame, as quickly as possible
       for (i=0; i<natoms+1; i++)
 	if (!fgets(linebuffer,LINESIZE,in)) {
-	  fseek(in, frames[nframes], SEEK_SET); // return file pointer to beginning of frame
+	  fseek(in, (*frames)[nframes], SEEK_SET); // return file pointer to beginning of frame
 	  nframes--; // incomplete last frame
 	  goto XYZ_END;
 	}
     }
   XYZ_END:
-    frames[nframes] = ftell(in); // end of last frame in file
-    atoms[nframes] = natoms;
+    (*frames)[nframes] = ftell(in); // end of last frame in file
+    (*atoms)[nframes] = natoms;
     index = fopen(indexname, "w");
     if (index == NULL) {
       // Try to write in current dir instead
@@ -1663,13 +1712,13 @@ int xyz_find_frames(char *fname, long *frames, int *atoms) {
       debug("Writing index to %s\n", indexname);
     fprintf(index, "%d\n", nframes);
     for (i=0; i<=nframes; i++)
-      fprintf(index, "%ld %d\n", frames[i], atoms[i]);
+      fprintf(index, "%ld %d\n", (*frames)[i], (*atoms)[i]);
     fclose(in);
     fclose(index);
   }
 
 /*   for (i=0; i<nframes+1; i++) { */
-/*     printf("%d: %ld\n", i, frames[i]); */
+/*     printf("%d: %ld\n", i, (*frames)[i]); */
 /*   } */
 
   debug("xyz_find_frames %s: found %d complete frames\n", fname, nframes);
@@ -2907,7 +2956,7 @@ int main (int argc, char **argv)
       // or if explicity asked to with "xyzstat" command
       at.got_index = 0;
       if (xyzstat || rflag) {
-	nframes = xyz_find_frames(infilename, at.frames, at.atoms);
+	nframes = xyz_find_frames(infilename, &(at.frames), &(at.atoms), &(at.frames_array_size));
 	if (nframes == 0) pe("Error building frame index");
 	at.got_index = 1;
 	parse_range(rflag, nframes, offset, gotcolon, start, stop, step, &f_start, &f_stop, &f_step);
@@ -3401,7 +3450,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 
   XYZ:
     if ((*action == INPUT || *action == INOUT) && !no_index) {
-      **n_frame = xyz_find_frames(filename, (**at).frames, (**at).atoms);
+      **n_frame = xyz_find_frames(filename, &((**at).frames), &((**at).atoms), &((**at).frames_array_size));
       if (**n_frame == 0) {
 	fprintf(stderr, "Error building XYZ index\n");
 	return 0;
