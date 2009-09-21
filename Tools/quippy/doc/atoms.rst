@@ -158,16 +158,16 @@ Atoms Objects
       is absent it is inferred from the file extension or type of
       `dest`, as described for the :meth:`read` method.
 
-   .. method:: show(property, arrows])
+   .. method:: show([property, arrows])
 
       Show this :class:`Atoms` object in AtomEye using the quippy
-      :mod:`atomeye` module.  If `property` is present it should
-      be the name of a scalar property (e.g. ``"local_energy"``) or a
-      rank one array of length ``at.n`` to be used to colour the
-      atoms. If `arrows` is present it should be the name of a
-      vector property (e.g. ``"force"``) or a rank two array with shape
-      (3, ``at.n``) to be used to draw arrows originating from each
-      atom.
+      :mod:`~quippy.atomeye` module.  If `property` is present it
+      should be the name of a scalar property
+      (e.g. ``"local_energy"``) or a rank one array of length ``at.n``
+      to be used to colour the atoms. If `arrows` is present it should
+      be the name of a vector property (e.g. ``"force"``) or a rank
+      two array with shape (3, ``at.n``) to be used to draw arrows
+      originating from each atom.
 
 
    .. method:: select([mask, list])
