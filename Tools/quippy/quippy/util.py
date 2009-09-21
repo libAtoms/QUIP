@@ -6,3 +6,15 @@ def args_str(D):
    return str(PuPyDictionary(D))
 
 
+
+try:
+   from pylab import plot
+
+   from farray import convert_farray_to_ndarray
+   plot = convert_farray_to_ndarray(plot)
+
+except ImportError:
+   pass
+
+        
+    
