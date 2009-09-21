@@ -1,5 +1,4 @@
 
-#define XYZ_MAX_FRAMES 100000
 #define LINESIZE 1024
 
 #define MAX_ENTRY_COUNT 100
@@ -73,8 +72,9 @@ typedef struct {
   int nc_in, nc_out;
   FILE *xyz_in, *xyz_out;
   int format;
-  long frames[XYZ_MAX_FRAMES];
-  int atoms[XYZ_MAX_FRAMES];
+  int frames_array_size;
+  long *frames;
+  int *atoms;
   int got_index;
   int netcdf4;
 } Atoms;
@@ -107,7 +107,7 @@ int atoms_find_property(Atoms *atoms, char *key);
 int atoms_find_param(Atoms *atoms, char *key);
 void lattice_abc_to_xyz(double cell_lengths[3], double cell_angles[3], double lattice[3][3]);
 void lattice_xyz_to_abc(double lattice[3][3], double cell_lengths[3], double cell_angles[3]);
-int xyz_find_frames(char *fname, long *frames, int *atoms);
+int xyz_find_frames(char *fname, long **frames, int **atoms, int *n_frames);
 int read_netcdf (int ncid, Atoms *atoms, int frame, int *atomlist, int natomlist, int query, 
 		 int redefine, int realloc, int replacefill, int irep, double rrep);
 int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
