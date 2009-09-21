@@ -3,8 +3,12 @@ Tutorial
 
 .. currentmodule:: quippy
 
-This tutorial assumes you've successfully installed quippy and that all the
-tests pass. If not, see :ref:`installation`. 
+This tutorial assumes you've successfully installed quippy and that
+all the tests pass. If not, see :ref:`installation`. We make use
+`matplotlib <http://matplotlib.sourceforge.net>`_, `scipy
+<http://www.scipy.org>`_ and the quippy :mod:`atomeye` extension
+module in this tutorial, but you can skip other these sections if you
+don't have these components installed.
 
 If you're new to Python, you might like to start with the `offical
 Python tutorial
@@ -163,7 +167,7 @@ can be used for indexing::
    ...
 
 Secondly, it's also possible to specify a list of indices, and to use
-negative numbers to count backwards fromt the end of an array::
+negative numbers to count backwards from the end of an array::
 
    >>> print aq.pos[:, [1,-1]]   # positions of first and last atoms
    [[ 1.155462   -2.00131889  3.6       ]
@@ -218,22 +222,22 @@ An :class:`AtomsList` is essentially nothing more than a list of
 :class:`Atoms` objects. You can access the component objects by
 indexing, e.g. ``al[i]`` is the ith Atoms object within ``al``.
 
-.. note:: 
+.. warning:: 
 
-  :class:`AtomsList` indices start from zero, not from one like for the
-  :class:`FortranArray` objects used to represent atomic properties. This is
-  to make them compatible with standard Python lists which are always indexed
-  from zero up to ``len(L)-1``.
+  :class:`AtomsList` indices start from one and run up to ``len(al)``,
+  like the :class:`FortranArray` objects used to represent atomic
+  properties. This is not compatible with standard Python lists which
+  are always indexed from zero up to ``len(L)-1``.
 
-Let's check the convservation of the total energy in this simulation.
+Let's check the conservation of the total energy in this simulation.
 The first frame in the data we've loaded has the following properties
 and parameters::
 
-   >>> print al[0].properties.keys()
+   >>> print al[1].properties.keys()
    ['species', 'pos', 'Z', 'travel', 'mass', 'move_mask', 'damp_mask', 
     'thermostat_region', 'avg_ke', 'velo', 'acc', 'avgpos', 'oldpos', 'force']
 
-   >>> print al[0].params.keys()
+   >>> print al[1].params.keys()
    ['energy', 'time']
 
 The ``energy`` is the total potential energy of each configuration,
@@ -250,10 +254,21 @@ Method 1 uses used a Python feature called `list comprehension
 <http://docs.python.org/tutorial/datastructures.html#list-comprehensions>`_
 to build a list with one entry for each frame in our
 :class:`AtomsList`. The second method works in the same way but saves
-typing by automatically constructing the loop for us. To plot the
-potential energy as a function of time (assuming :mod:`matplotlib` is
-available, and imported via ``from pylab import *``), run the
-commands::
+typing by automatically constructing the loop for us, returning a
+:class:`FortranArray` with the last dimension (i.e. slowest varying)
+corresponding to the frame index. In this way, ``al.velo`` gives an
+array with the first axis corresponding to the spatial dimension
+(length 3), the second the atom number (length 216 here) and the third
+to the frame within the file (length 100 here). ::
+
+   >>> print al.velo.shape
+   (3, 216, 100)
+   >>> print all(al.velo[1] == al[1].velo)
+   True
+
+To plot the potential energy as a function of time (assuming
+:mod:`matplotlib` is available, and imported with ``from pylab import
+*``), run the commands::
 
    >>> plot(al.time, al.energy)
    >>> xlabel('Time / fs')
@@ -272,23 +287,26 @@ list comprehension::
 
    >>> ke = [.5*sum(at.mass*at.velo.norm2()) for at in al]
 
-Let's add plots of the kinetic and total energies to our graph. Here
-we run into a slight hurdle: since the ``ke`` and ``al.energy``
-objects are Python lists, adding them together won't add element-wise as we want
-(rather it will concatentate the two lists, one after the other). Instead
-we need to convert to arrays first::
+Alternatively, we could compute the kinetic energy using array
+arithmetic::
+
+   >>> ke = sum(.5*al.mass*sum(al.velo**2,axis=1), axis=1)
+
+Note the partial sums: the inner sum is over the first axis of
+``al.velo`` which is the spatial dimension, and the outer sum is over
+the first axis of ``.5*al.mass*sum(al.velo**2,axis=1)`` which is the
+atom number (here of length 216). Let's add plots of the kinetic and
+total energies to our graph::
 
    >>> plot(al.time, ke)                              # Plot kinetic energy
-   >>> plot(al.time, ke + al.energy)                  # Wrong: raises ValueError exception
-   >>> plot(al.time, array(ke) + array(al.energy)     # with numpy zero-based arrays
-   >>> fplot(al.time, farray(ke) + farray(al.energy)  # with one-based FortranArrays
+   >>> plot(al.time, ke + al.energy)                  # Plot total energy
 
 .. note:: 
 
-   There's an alternative plotting function :func:`fplot` specifically for use with
-   :class:`FortranArrays`. This does nothing apart from converting the arrays to 
-   the standard numpy zero-based form and then invoking the standard :func:`pylab.plot`
-   function.
+   When invoked after importing quippy, the :func:`plot` function
+   automatically converts arrays from :class:`FortranArray` to the
+   standard numpy zero-based form before running the standard
+   :func:`pylab.plot` function.
 
 Here's the graph we get after adding a legend with. 
 
@@ -315,9 +333,12 @@ The following function implements this distribution::
 
 In this function `v` can be either a scalar or an array of
 velocities. The first line of the function after the declaration is a
-documentation string ("doc string" for short), used for providing
-online help. We can plot the expected distribution at a temperature of
-500 K like this::
+documentation string (or `docstring`), used for providing online
+help. According to the principle of equipartition of energy, we expect
+half of the initial kinetic energy to be converted to potential
+energy, so that after thermalisation the temperature of our system
+should be close to 500K. We can plot the expected distribution at a
+temperature of 500K like this::
 
    >>> vs = linspace(0.0,0.02,100)  # min, max, number of points
    >>> plot(vs, max_bolt(at.mass[1], 500.0, vs))
@@ -613,15 +634,7 @@ equation of state <http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_stat
 
    B = B_0 + B'_0 P
 
-The equation of state is given by
-
-.. math::
-
-   P(v) = \frac{3 B_0}{2} \left[ \left(\frac{V_0}{V}\right)^{7/3} - \left(\frac{V_0}{V}\right)^{5/3} \right]
-	\left\{ 1 + \frac{3}{4} (B'_0 - 4) \left[ \left(\frac{V_0}{V}\right)^{2/3} - 1 \right] \right\}
-
-
-and the energy as a function of volume can be obtained from this by integration, yielding
+The energy as a function of volume is
 
 .. math::
 
@@ -633,22 +646,16 @@ and the energy as a function of volume can be obtained from this by integration,
 
 Here are Python functions which implement these two relations::
 
-  def birch_pressure(vo,bo,bop,v):
-     return 3.0*bo/2.0*((vo/v)**(7.0/3.0) - (vo/v)**(5.0/3.0))*(1.0 + 0.75*(bop-4.0)*((vo/v)**(2.0/3.0)-1))
-
   def birch_energy(vo,eo,bo,bop,v):
      t = (vo/v)**.6666666666666667 - 1.0
      e = eo + 1.125*bo*vo*t*t*(1.0+0.5*(bop-4.0)*t)
      return e
 
-We want to calculate the energy and pressure for a variety of cell
-volumes. We can get the pressure from the trace of the stress tensor,
-which is in turn related to the virial tensor. The routine below takes
-an initial configuration `at0` and first compresses and then expands
-it in increments of `eps`. If `relax` is true we then minimise with
-respect to the internal degrees of freedom (the atom
-positions). Finally, we calculate the energy and virial, and use the
-latter to compute the pressure. ::
+We want to calculate the energy for a variety of cell volumes. The
+routine below takes an initial configuration `at0` and first
+compresses and then expands it in increments of `eps`. If `relax` is
+true we then minimise with respect to the internal degrees of freedom
+(the atom positions). Finally, we calculate the energy. ::
 
    def compress_expand(at0, metapot, eps=1e-3, relax=False):
       for i in frange(-5,5):
@@ -658,8 +665,7 @@ latter to compute the pressure. ::
          at.calc_connect()
          if relax:
             metapot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-         metapot.calc(at, calc_energy=True, calc_virial=True)
-         at.pressure = at.virial.trace()*at.cell_volume()/(3.0*GPA)
+         metapot.calc(at, calc_energy=True)
          at.volume   = at.cell_volume()
          yield at
 
@@ -679,9 +685,10 @@ We can repeat with internal relaxation turned on::
 .. image:: energyvolume1.png
    :align: center
 
-Fitting the equation of state requires the :mod:`scipy.optimize` module. We also
-need to define an error function, which will make use of the :func:`birch_energy`
-routine defined above. ::
+Fitting the equation of state requires the :mod:`scipy.optimize`
+module, so you need `scipy <http://www.scipy.org>`_ installed to run
+this example. We need to define an error function, which will make use
+of the :func:`birch_energy` routine defined above. ::
 
    from scipy.optimize import leastsq
 
@@ -711,6 +718,8 @@ Here's a function to estimate initial values for the four parameters `eo`, `vo`,
       print 'dP/dV (P=0) bop = ', bop
 
       return (vo, eo, bo, bop)
+
+We can carry out the fit by calling this function::
 
    >>> vo, eo, bo, bop = birch_fit(configs.energy, configs.volume)
    Volume vo = 160.177976999 A^3

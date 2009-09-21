@@ -26,4 +26,10 @@ instances:
 
 .. autofunction:: padded_str_array
 
-.. autofunction:: fplot
+.. autofunction:: convert_farray_to_ndarray
+
+.. autofunction:: convert_ndarray_to_farray
+
+.. autofunction:: n2f
+
+.. autofunction:: f2n

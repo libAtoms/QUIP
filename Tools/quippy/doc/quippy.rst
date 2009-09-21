@@ -24,3 +24,4 @@ The most important classes in quippy are:
    farray.rst
    atoms.rst
    dictionary.rst
+   atomeye.rst
