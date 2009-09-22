@@ -42,23 +42,23 @@ module CInOutput_module
      end function cioinit
 
      function cioskip(at, n_skip) bind(c)
-       use iso_c_binding, only: C_PTR, C_INT, C_LONG, C_SIZE_T
+       use iso_c_binding, only: C_PTR, C_INT, C_LONG
        type(C_PTR), intent(in), value :: at
        integer(C_INT), intent(in) :: n_skip
        integer(C_INT) :: cioskip
      end function cioskip
 
      function cioquery(at, frame) bind(c)
-       use iso_c_binding, only: C_PTR, C_INT, C_LONG, C_SIZE_T
+       use iso_c_binding, only: C_PTR, C_INT, C_LONG
        type(C_PTR), intent(in), value :: at
-       integer(C_SIZE_T), intent(in) :: frame
+       integer(C_INT), intent(in) :: frame
        integer(C_INT) :: cioquery
      end function cioquery
 
      function cioread(at, frame, int_data, real_data, str_data, logical_data, zero) bind(c)
-       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_SIZE_T
+       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_INT
        type(C_PTR), intent(in), value :: at
-       integer(C_SIZE_T), intent(in) :: frame
+       integer(C_INT), intent(in) :: frame
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
        integer(C_INT), intent(in) :: zero
        integer(C_INT) :: cioread
@@ -66,11 +66,11 @@ module CInOutput_module
 
      function ciowrite(at, int_data, real_data, str_data, logical_data, intformat, realformat, frame, &
        shuffle, deflate, deflate_level) bind(c)
-       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_SIZE_T
+       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_INT
        type(C_PTR), intent(in), value :: at
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: intformat, realformat
-       integer(C_SIZE_T) :: frame
+       integer(C_INT) :: frame
        integer(C_INT) :: shuffle, deflate, deflate_level
        integer(C_INT) :: ciowrite
      end function ciowrite
@@ -94,7 +94,7 @@ module CInOutput_module
           c_param_name, c_param_type, c_param_size, c_param_value, c_pint, c_preal, c_pint_a, c_preal_a, &
           c_pint_a2, c_preal_a2, c_param_filter, c_lattice, c_got_index, c_netcdf4
 
-     integer(C_SIZE_T), pointer :: n_atom, n_frame
+     integer, pointer :: n_atom, n_frame
      integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index, netcdf4
      integer :: current_frame
 
@@ -272,7 +272,7 @@ contains
     type(CInOutput), intent(inout) :: this
     integer, optional, intent(in) :: frame
     integer, optional, intent(out) :: status
-    integer(C_SIZE_T) :: do_frame
+    integer(C_INT) :: do_frame
 
     integer :: cioquery_status, cioskip_status
 
@@ -326,7 +326,7 @@ contains
   end subroutine cinoutput_query
 
   subroutine cinoutput_read(this, at, frame, zero, status)
-    use iso_c_binding, only: C_SIZE_T
+    use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
@@ -339,7 +339,7 @@ contains
     integer :: i
     character(len=KEY_LEN) :: namestr
     integer :: do_zero
-    integer(C_SIZE_T) :: do_frame
+    integer(C_INT) :: do_frame
     integer :: tmp_do_frame
     integer :: n_skip
     integer :: cioskip_status
@@ -498,7 +498,7 @@ contains
     character(len=VALUE_LEN) :: valuestr
     integer :: i, j, k, lookup(3), extras, n, tmp_int_a2(3,3)
     real(dp) :: tmp_real_a2(3,3)
-    integer(C_SIZE_T) :: do_frame
+    integer(C_INT) :: do_frame
     type(Dictionary) :: selected_properties
     character(len=KEY_LEN) :: do_int_format, do_real_format
     integer :: do_shuffle, do_deflate
