@@ -568,10 +568,10 @@ def convert_ndarray_to_farray(func):
    return nfunc
 
 def f2n(x):
-    """Return x.view(numpy.ndarray)"""
+    """Return ``x.view(numpy.ndarray)``"""
     return x.view(numpy.ndarray)
 
 def n2f(x):
-    """Return x.view(FortranArray)"""
+    """Return ``x.view(FortranArray)``"""
     return x.view(FortranArray)
     
