@@ -601,10 +601,8 @@ contains
     type(CInOutput) :: movie
     real(dp), allocatable :: relaxed_pos(:,:), initial_pos(:,:), new_pos(:,:)
     integer :: i, k, steps
-    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, width1, height1, G2
-    real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos
-    real (dp), dimension(3,3) :: lattice
-    logical :: dummy
+    real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, width1, height1
+    real(dp) :: K1, r, l_crack_pos, crack_pos_2, crack_pos_3, r_crack_pos, crack_pos
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end workaround for pgf90 bug (as of 9.0-1)
@@ -658,9 +656,13 @@ contains
     if (params%crack_relax_loading_field) then
       ! Geometry optimise
        steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
-         max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
-         do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-             print_cinoutput=movie)
+            max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
+            do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
+            print_cinoutput=movie)
+
+       crack_pos_2 = crack_find_crack_pos(crack_slab, params)
+       if (abs(crack_pos-crack_pos_2) > 1.0_dp) &
+            call print_warning('Crack tip moved during minimisation - check output carefully!')
     end if
 
     ! Save relaxed positions 
@@ -807,6 +809,10 @@ contains
             max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
             do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
             print_cinoutput=movie)
+
+       crack_pos_3 = crack_find_crack_pos(crack_slab, params)
+       if (abs(crack_pos-crack_pos_3) > 1.0_dp) &
+            call print_warning('Crack tip moved during second minimisation - check output carefully!')
     end if
     
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
@@ -816,7 +822,7 @@ contains
     do i=1,crack_slab%N
        load(:,i) = crack_slab%pos(:,i) - relaxed_pos(:,i)
     end do
-   
+
     call print('Displacement field generated. Max disp: '//maxval(load))
     !NB workaround for pgf90 bug (as of 9.0-1)
     t_norm = norm(reshape(load,(/3*crack_slab%N/)))
@@ -833,6 +839,7 @@ contains
     deallocate(relaxed_pos, new_pos)
     deallocate(u_disp, k_disp)
     call finalise(movie)
+    call finalise(crack_slab1)
     
   end subroutine crack_calc_load_field
 
@@ -845,7 +852,7 @@ contains
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain, crack_pos
-    integer :: i, k, j
+    integer :: i, k
     logical :: dummy
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
@@ -974,8 +981,8 @@ contains
        call system_abort('Unknown loading type '//trim(params%crack_loading))
     end if
 
-    !deallocate(u_disp) 
-    !deallocate(k_disp) 
+    deallocate(u_disp) 
+    deallocate(k_disp) 
 
   end subroutine crack_make_seed
 

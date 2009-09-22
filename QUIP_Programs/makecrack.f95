@@ -133,7 +133,7 @@ program makecrack
   real (dp), dimension(3,3) :: lattice
 
   real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, G, &
-       width, height, a, E, v, v2, uij(3), energy
+       width, height, a, E, v, v2, uij(3), energy, crack_pos
 
   integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
 
@@ -327,6 +327,9 @@ program makecrack
   end if
 
   call Print_title('Initialising QM region')
+
+  crack_pos = crack_find_crack_pos(crack_slab, params)
+  call set_value(crack_slab%params, 'CrackPos', crack_pos)
 
   call crack_setup_marks(crack_slab, params)
   call crack_print(crack_slab, xyzfilename, params, mpi_glob)
