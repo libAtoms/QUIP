@@ -10,19 +10,7 @@ def find_files(filepat, top=None):
       for name in fnmatch.filter(filelist, filepat):
          yield os.path.join(path, name)
 
-def label_files(filenames, parampat):
-   for filename in filenames:
-      m = re.search(parampat, filename)
-      value = None
-      if m is not None:
-         value = m.group(1)
-         try:
-            value = float(value)
-         except ValueError:
-            pass
-      yield filename, value
-
-def open_files(filenames, frame=None, param=None, *args, **kwargs):
+def read_files(filenames, frame=None, *args, **kwargs):
    for item in filenames:
       try:
          filename, value = item
@@ -33,8 +21,6 @@ def open_files(filenames, frame=None, param=None, *args, **kwargs):
       else:
          a = AtomsList(filename, lazy=False, *args, **kwargs)[frame]
       a.params['filename'] = filename
-      if value is not None:
-         a.params[param] = value
       yield a
 
 def AtomsReader(source, format=None, *args, **kwargs):
