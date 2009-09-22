@@ -7,7 +7,7 @@ use libatoms_misc_utils_module
 implicit none
 private
 
-public phonons, eval_frozen_phonon
+public phonons, phonons_fine, eval_frozen_phonon
 
 contains
 
@@ -125,8 +125,6 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
     endif
   endif
 
-  pos0 = at%pos
-
   if (dx == 0.0_dp) &
     call system_abort("phonons called with dx == 0.0")
 
@@ -137,6 +135,9 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 
   call set_cutoff(at, cutoff(metapot))
   call calc_connect(at)
+  
+  pos0 = at%pos
+
   ! calculate dynamical matrix with finite differences
   ind = -1
   do i=1, at%N
@@ -342,4 +343,204 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 
 end subroutine phonons
 
-end module phonons_module
+subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_parallel)
+
+  type(MetaPotential), intent(inout) :: metapot
+  type(Atoms), intent(inout) :: at_in
+  real(dp), intent(in) :: dx
+  character(len=*), intent(in), optional :: calc_args
+  logical, intent(in), optional :: do_parallel
+  integer, dimension(3), intent(in), optional :: phonon_supercell
+
+  type(Atoms) :: at
+  integer :: i, ii, j, k, l, alpha, beta, nk, n1, n2, n3, jn, ni, nj, nj_orig, &
+  & ni1, ni2, ni3, nj1, nj2, nj3
+  integer, dimension(3) :: do_phonon_supercell, shift
+
+  real(dp), dimension(3) :: pp, diff_ij, diff_1k, diff_i1, diff_jk
+  real(dp), dimension(:,:), allocatable :: evals
+  real(dp), dimension(:,:), allocatable :: dm, q, pos0
+  real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0
+  complex(dp), dimension(:,:), allocatable :: dmft
+  complex(dp), dimension(:,:,:), allocatable :: evecs
+
+
+  do_phonon_supercell = optional_default((/2,2,2/),phonon_supercell)
+
+  call supercell(at,at_in,do_phonon_supercell(1),do_phonon_supercell(2),do_phonon_supercell(3))
+
+  nk = product(do_phonon_supercell)
+  allocate(q(3,nk)) 
+
+  i = 0
+  do n1 = 0, do_phonon_supercell(1)-1
+     do n2 = 0, do_phonon_supercell(2)-1
+        do n3 = 0, do_phonon_supercell(3)-1
+           i = i + 1
+
+           q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell ), at_in%g )
+        enddo
+     enddo
+  enddo
+
+  allocate(evals(at_in%N*3,nk), evecs(at_in%N*3,at_in%N*3,nk)) !, dm(at%N*3,at%N*3))
+  allocate(pos0(3,at%N))
+
+  if (dx == 0.0_dp) &
+    call system_abort("phonons called with dx == 0.0")
+
+  call set_cutoff(at, cutoff(metapot)+0.5_dp)
+  call calc_connect(at)
+  pos0 = at%pos
+
+  ! calculate dynamical matrix with finite differences
+!  do i=1, at%N
+!    do alpha=1,3
+!
+!      at%pos = pos0
+!      at%pos(alpha,i) = at%pos(alpha,i) + dx
+!      call calc_dists(at)
+!      call calc(metapot, at, f=fp, args_str=calc_args)
+!
+!      at%pos = pos0
+!      at%pos(alpha,i) = at%pos(alpha,i) - dx
+!      call calc_dists(at)
+!      call calc(metapot, at, f=fm, args_str=calc_args)
+!
+!      do j=1, at%N
+!	do beta=1,3
+!	  dm((i-1)*3+alpha,(j-1)*3+beta) = -((fp(beta,j)-fm(beta,j))/(2.0_dp*dx))
+!	end do
+!      end do
+!
+!    end do
+!  end do
+
+  ! that works for perfect diamond cells only
+  allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
+
+  do i = 1, at_in%N
+     do alpha = 1, 3
+        at%pos = pos0
+        at%pos(alpha,i) = at%pos(alpha,i) + dx
+        call calc_dists(at)
+        call calc(metapot, at, f=fp0(:,:,alpha,i), args_str=calc_args)
+
+        at%pos = pos0
+        at%pos(alpha,i) = at%pos(alpha,i) - dx
+        call calc_dists(at)
+        call calc(metapot, at, f=fm0(:,:,alpha,i), args_str=calc_args)
+     enddo
+  enddo
+
+  at%pos = pos0
+  call calc_dists(at)
+
+!  do i = 1, at_in%N  ! move atom i
+!
+!     do ni1 = 0, do_phonon_supercell(1)-1
+!        do ni2 = 0, do_phonon_supercell(2)-1
+!           do ni3= 0, do_phonon_supercell(3)-1
+!              ni = ((ni1*do_phonon_supercell(2)+ni2)*do_phonon_supercell(3)+ni3)*at_in%N+i
+!           
+!              do alpha = 1, 3
+!                 do j = 1, at_in%N  ! force on atom j
+!                    do nj1 = 0, do_phonon_supercell(1)-1
+!                       do nj2 = 0, do_phonon_supercell(2)-1
+!                          do nj3= 0, do_phonon_supercell(3)-1
+!                             shift = (/nj1,nj2,nj3/) - (/ni1,ni2,ni3/) + do_phonon_supercell
+!                             shift(1) = mod(shift(1),do_phonon_supercell(1))
+!                             shift(2) = mod(shift(2),do_phonon_supercell(2))
+!                             shift(3) = mod(shift(3),do_phonon_supercell(3))
+!                             nj = ((nj1*do_phonon_supercell(2)+nj2)*do_phonon_supercell(3)+nj3)*at_in%N+j
+!                             nj_orig = ((shift(1)*do_phonon_supercell(2)+shift(2))*do_phonon_supercell(3)+shift(3))*at_in%N+j
+!	                     do beta = 1, 3
+!                                dm((ni-1)*3+alpha,(nj-1)*3+beta) = &
+!                                & -((fp0(beta,nj_orig,alpha,i)-fm0(beta,nj_orig,alpha,i))/(2.0_dp*dx))
+!                             enddo
+!                          enddo
+!                       enddo
+!                    enddo
+!                 enddo
+!              enddo
+!           enddo
+!        enddo
+!     enddo
+!  enddo
+              
+!  deallocate(fp0,fm0)
+
+  at%pos = pos0
+  call calc_dists(at)
+  deallocate(pos0)
+
+  ! transform from generalized eigenproblem to regular eigenproblem
+!  do i = 1, at%N
+!    do j = 1, at%N
+!      dm((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = dm((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) / &
+!					sqrt(ElementMass(at%Z(i))*ElementMass(at%Z(j)))
+!    enddo
+!  enddo
+
+  ! symmetrize dynamical matrix exactly
+!  do i = 1, 3*at%N
+!    do j = i+1, 3*at%N
+!      dm(i,j) = dm(j,i)
+!    enddo
+!  enddo
+
+!$omp parallel private(dmft)
+  allocate(dmft(at_in%N*3,at_in%N*3))
+!$omp do private(k,i,j,alpha,beta,diff_ij,n1,n2,n3,pp,jn)
+  do k = 1, nk
+     dmft = CPLX_ZERO
+     do i = 1, at_in%N
+        do alpha = 1, 3
+           do j = 1, at_in%N
+              diff_ij = at_in%pos(:,j) - at_in%pos(:,i) 
+              do beta = 1, 3
+  
+                 do n1 = 0, do_phonon_supercell(1)-1
+                    do n2 = 0, do_phonon_supercell(2)-1
+                       do n3= 0, do_phonon_supercell(3)-1
+
+                          pp = at_in%lattice .mult. (/n1,n2,n3/)
+                          jn = ((n1*do_phonon_supercell(2)+n2)*do_phonon_supercell(3)+n3)*at_in%N+j
+
+                          dmft((i-1)*3+alpha,(j-1)*3+beta) = dmft((i-1)*3+alpha,(j-1)*3+beta) &
+                          & - ((fp0(beta,jn,alpha,i)-fm0(beta,jn,alpha,i))/(2.0_dp*dx)) / &
+                          & sqrt(ElementMass(at_in%Z(i))*ElementMass(at_in%Z(j))) &
+                          & * exp( CPLX_IMAG * dot_product(q(:,k),(diff_ij+pp)) )
+
+                       enddo
+                    enddo
+                 enddo
+              enddo
+           enddo
+        enddo
+     enddo
+     do i = 1, 3*at_in%N
+       dmft(i,i) = CPLX_ONE*real(dmft(i,i))
+       do j = i+1, 3*at_in%N
+         dmft(i,j) = conjg(dmft(j,i))
+       enddo
+     enddo
+     call diagonalise(dmft, evals(:,k), evecs(:,:,k))
+  enddo
+!$omp end do
+deallocate(dmft)
+!$omp end parallel  
+  
+  do k = 1, nk
+!     call print('q: '//q(:,k)*a/(2*PI))
+     print'(a,3f10.5)','q: ',q(:,k)
+     !call print(sqrt(abs(evals(k)))/2.0_dp/PI*1000.0_dp)
+     !call print(evecs(:,:,k))
+     print'(6f15.9)',sqrt(abs(evals(:,k)))/2.0_dp/PI*1000.0_dp
+  enddo
+
+  deallocate(q, evals, evecs)
+  call finalise(at)
+
+endsubroutine phonons_fine
+endmodule phonons_module
