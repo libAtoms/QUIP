@@ -68,7 +68,7 @@ typedef struct {
     cell_angular_dim_id[2], label_dim_id[2], string_dim_id[2];
   int cell_lengths_var_id[2], cell_angles_var_id[2], spatial_var_id[2],
     cell_spatial_var_id[2], cell_angular_var_id[2];
-  size_t n_frame, n_atom, n_label, n_string, n_atom_total;
+  int n_frame, n_atom, n_label, n_string, n_atom_total;
   int nc_in, nc_out;
   FILE *xyz_in, *xyz_out;
   int format;

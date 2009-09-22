@@ -386,6 +386,7 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
   int *tmpint, *tmpint3, original_index=0, type;
   double *tmpreal, *tmpreal3;
   char *tmpchar;
+  size_t tmp_sizet;
 
   if (!atoms->initialised) {
     // get dimension and variable information
@@ -402,10 +403,14 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
     netcdf_check(nc_inq_dimid(nc_id, "string", &atoms->string_dim_id[NETCDF_IN]));
 
     // Sizes of dimensions
-    netcdf_check(nc_inq_dimlen(nc_id, atoms->frame_dim_id[NETCDF_IN], &atoms->n_frame));
-    netcdf_check(nc_inq_dimlen(nc_id, atoms->atom_dim_id[NETCDF_IN], &atoms->n_atom_total));
-    netcdf_check(nc_inq_dimlen(nc_id, atoms->label_dim_id[NETCDF_IN], &atoms->n_label));
-    netcdf_check(nc_inq_dimlen(nc_id, atoms->string_dim_id[NETCDF_IN], &atoms->n_string));
+    netcdf_check(nc_inq_dimlen(nc_id, atoms->frame_dim_id[NETCDF_IN], &tmp_sizet));
+    atoms->n_frame = (int)tmp_sizet;
+    netcdf_check(nc_inq_dimlen(nc_id, atoms->atom_dim_id[NETCDF_IN], &tmp_sizet));
+    atoms->n_atom_total = (int)tmp_sizet;
+    netcdf_check(nc_inq_dimlen(nc_id, atoms->label_dim_id[NETCDF_IN], &tmp_sizet));
+    atoms->n_label = (int)tmp_sizet;
+    netcdf_check(nc_inq_dimlen(nc_id, atoms->string_dim_id[NETCDF_IN], &tmp_sizet));
+    atoms->n_string = (int)tmp_sizet;
 
     // Check string lengths (fixed at compile time for now...)
     if (atoms->n_label != PROPERTY_STRING_LENGTH) {
