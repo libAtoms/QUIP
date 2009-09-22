@@ -18,7 +18,8 @@ implicit none
 
   character(len=FIELD_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, do_hybrid, &
-	     do_phonons, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption
+	     do_phonons, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
+             & do_fine_phonons
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
@@ -34,6 +35,7 @@ implicit none
   real(dp) :: absorption_freq_range(3), absorption_gamma
   real(dp), allocatable :: absorption_freqs(:), absorption_v(:)
   integer :: freq_i
+  integer, dimension(3) :: phonon_supercell
 
   real(dp) :: E0
   real(dp), allocatable :: local_E0(:)
@@ -104,6 +106,7 @@ implicit none
   call param_register(cli_params, 'absorption_freq_range', '0.1 1.0 0.1', absorption_freq_range)
   call param_register(cli_params, 'absorption_gamma', '0.01', absorption_gamma)
   call param_register(cli_params, 'phonons_dx', '0.001', phonons_dx)
+  call param_register(cli_params, 'phonon_supercell', '3 3 3', phonon_supercell,do_fine_phonons)
   call param_register(cli_params, 'test', 'F', do_test)
   call param_register(cli_params, 'n_test', 'F', do_n_test)
   call param_register(cli_params, 'test_dir_field', '', test_dir_field)
@@ -304,6 +307,11 @@ implicit none
     if (do_dipole_moment) then
       deallocate(IR_intensities)
     endif
+  endif
+  if (do_fine_phonons) then
+    did_something = .true.
+    call phonons_fine(metapot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+    & phonon_supercell=phonon_supercell)
   endif
 
   if (do_F) allocate(F0(3,at%N))
