@@ -3,9 +3,6 @@
 
 .. currentmodule:: quippy
 
-Atoms Objects
--------------
-
 .. class:: Atoms([source, n, lattice, data, properties, params, *readargs, **readkwargs])
 
    An :class:`Atoms` object is used to store and manipulate a
@@ -146,7 +143,8 @@ Atoms Objects
 
       If `source` corresponds to a known format then it used
       to construct an appropriate iterator from the :attr:`AtomsReader`
-      dictionary.
+      dictionary. See :ref:`fileformats` for a list of supported
+      file formats. 
 
       If `source` corresponds to an unknown format then it is
       expected to be an iterator returning :class:`Atoms` objects.
@@ -154,9 +152,10 @@ Atoms Objects
 
    .. method:: write(dest[, format, *args, **kwargs])
 
-      Write this :class:`Atoms` object to `dest`. If `format`
-      is absent it is inferred from the file extension or type of
-      `dest`, as described for the :meth:`read` method.
+      Write this :class:`Atoms` object to `dest`. If `format` is
+      absent it is inferred from the file extension or type of `dest`,
+      as described for the :meth:`read` method. See
+      :ref:`fileformats` for a list of supported file formats.
 
    .. method:: show([property, arrows])
 

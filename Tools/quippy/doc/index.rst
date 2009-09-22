@@ -15,6 +15,7 @@ Contents:
    install.rst
    tutorial.rst
    quippy.rst
+   filetypes.rst
    fortran_wrapper.rst
    
 
