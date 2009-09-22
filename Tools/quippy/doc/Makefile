@@ -86,3 +86,6 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) _build/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in _build/doctest/output.txt."
+
+upload:
+	scp -r _build/html/* sphinx:~/www.jrk33.co.uk_html/quippy

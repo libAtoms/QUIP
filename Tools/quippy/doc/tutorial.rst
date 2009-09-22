@@ -10,17 +10,24 @@ all the tests pass. If not, see :ref:`installation`. We make use
 module in this tutorial, but you can skip other these sections if you
 don't have these components installed.
 
-If you're new to Python, you might like to start with the `offical
-Python tutorial
-<http://docs.python.org/dev/tutorial/index.html>`_. There's also a
-good `introductory tutorial
-<https://wiki.fysik.dtu.dk/ase/python.html>`_ as part of the ASE
-documentation. The numpy project also provides an (unfinished)
-`tutorial <http://www.scipy.org/Tentative_NumPy_Tutorial>`_. If you
-follow this tutorial, be aware that quippy's :class:`FortranArray`
-class uses one- rather than zero-based indexing, in order to fit in
-better with Fortran. numpy also has an online `reference manual
-<http://docs.scipy.org/doc/numpy/reference/index.html>`_
+Other tutorials that may be useful:
+
+#. If you're new to Python, you might like to start with the `offical
+   Python tutorial <http://docs.python.org/dev/tutorial/index.html>`_. 
+
+#. There's a good `introductory tutorial
+   <https://wiki.fysik.dtu.dk/ase/python.html>`_ as part of the ASE
+   documentation. 
+
+#. The numpy project also provides an (unfinished) `tutorial
+   <http://www.scipy.org/Tentative_NumPy_Tutorial>`_. If you follow
+   this tutorial, be aware that quippy's :class:`FortranArray` class
+   uses one- rather than zero-based indexing, in order to fit in
+   better with Fortran. numpy also has an online `reference manual
+   <http://docs.scipy.org/doc/numpy/reference/index.html>`_
+
+#. `Numpy for Matlab Users <http://www.scipy.org/NumPy_for_Matlab_Users>`_
+   may be useful if you're familiar with MatLab.
 
 There's a couple of different ways you can use quippy: either by
 typing commands interactively in Python (or, better, `ipython
@@ -108,8 +115,8 @@ square brackets are used::
 You can also do fancier indexing as we'll see below.
 
 
-Manipulating :class:`Atoms`
----------------------------
+Manipulating Atoms
+------------------
 
 Let's make a more complex structure to play with, a :func:`supercell`
 of 3 x 3 x 3 alpha quartz unit cells::
@@ -382,8 +389,8 @@ and legends, we get the figure shown below.
 
 .. _moleculardynamics:
 
-:class:`Potential` and :class:`DynamicalSystem`
------------------------------------------------
+Potentials and DynamicalSystems
+-------------------------------
 
 Now let's look at how to run simulations entirely using quippy. This
 will only be practical for small systems which run quickly, but can be
@@ -453,18 +460,6 @@ the connectivity). ::
     >>> print energy
     -936.325908705
 
-.. note::
-   
-   Note that we had to create a rank-0 array `energy` to store the
-   results of this calculation. This is necessary whenever the
-   underlying Fortran argument is both ``optional`` and ``intent(out)``.
-   In this particular case we can avoid this inconvenience using
-   the `calc_energy` argument to :meth:`Potential.calc`, which stores
-   the result in a paramter of our Atoms object::
-
-      >>> pot.calc(s, calc_energy=True)
-      >>> print s.energy
-      -936.325908705
 
 If we now calculate forces for our crystal, we find their all almost
 zero by symmetry in the unperturbed bulk configuration::
@@ -571,13 +566,14 @@ etc.
    <http://www.dabeaz.com/generators-uk/index.html>`_ by David Beazley
    for (much!) more about generators.
 
+.. _geomopt:
 
-:class:`MetaPotential` and structural optimisation
---------------------------------------------------
+MetaPotentials and structural optimisation
+------------------------------------------
 
 If you want to optimise the positions and/or the lattice of an atomic
 configuration, you'll need to use the :class:`MetaPotential` class.  A
-MetaPotential is a generalised of a :class:`Potential`, where the
+MetaPotential is a generalised :class:`Potential`, where the
 requirement for the forces to be the derivative of a single
 Hamiltonian is relaxed - this is needed for QM/MM force-mixing,
 amongst other things. Think of it as a way to calculate forces,
