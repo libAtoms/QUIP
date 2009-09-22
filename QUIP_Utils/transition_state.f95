@@ -263,11 +263,12 @@
             else
               forces = forces + forces_spring
             endif
-          endif
 
-          !do im=1, this%cos%N 
-          !  call print('NEB: image ' // im // ' parallel spring ' // (sqrt(sum(forces_spring(im,:,:)*forces_spring(im,:,:) )) ), NORMAL) 
-          !enddo
+            do im=1, this%cos%N 
+              call print('NEB: image ' // im // ' parallel spring ' // (sqrt(sum(forces_spring(im,:,:)*forces_spring(im,:,:) )) ), NORMAL) 
+            enddo
+
+          endif
 
           forces2 = forces * forces
 
