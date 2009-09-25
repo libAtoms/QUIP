@@ -3104,7 +3104,8 @@ int main (int argc, char **argv)
 	  }
 	}
       } else {
-	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1, Lflag, lattice))) {
+	while ((res = read_xyz(infile, &at, atomlist, natomlist, 0, 1, allow_redefine, 1, 1, Lflag, lattice))) {
+          res = read_xyz(infile, &at, atomlist, natomlist, 0, 0, allow_redefine, 1, 1, Lflag, lattice);
 	  debug("read frame %d\n", n);
 	  
 	  if (pflag) {
