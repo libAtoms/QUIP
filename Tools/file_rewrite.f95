@@ -26,7 +26,7 @@ implicit none
 
   call print("infile " // trim(infilename) // " outfile " // trim(outfilename) // " netcdf4 " // netcdf4)
 
-  call initialise(infile, infilename, action=INPUT)
+  call initialise(infile, infilename, action=INPUT, no_compute_index=.true.)
   call initialise(outfile, outfilename, action=OUTPUT, netcdf4=netcdf4)
 
   i = 1
