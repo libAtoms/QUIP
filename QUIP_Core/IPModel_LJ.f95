@@ -135,6 +135,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
   integer i, ji, j, ti, tj
   real(dp) :: dr(3), dr_mag
   real(dp) :: de, de_dr
+  logical :: i_is_min_image
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -146,27 +147,37 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
-  do i=1, at%N
+  do i = 1, at%N
+    i_is_min_image = is_min_image(at,i)
+
     if (this%mpi%active) then
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
     endif
-    do ji=1, atoms_n_neighbours(at, i)
+
+    do ji = 1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, ji, dr_mag, cosines = dr)
+      
       if (dr_mag .feq. 0.0_dp) cycle
-      if (i < j) cycle
+      if ((i < j) .and. i_is_min_image) cycle
+
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       tj = get_type(this%type_of_atomic_num, at%Z(j))
+
       if (present(e) .or. present(local_e)) then
 	de = IPModel_LJ_pairenergy(this, ti, tj, dr_mag)
 	if (present(local_e)) then
 	  local_e(i) = local_e(i) + 0.5_dp*de
-	  local_e(j) = local_e(j) + 0.5_dp*de
+          if(i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
 	endif
 	if (present(e)) then
 	  if (associated(w_e)) then
 	    de = de*0.5_dp*(w_e(i)+w_e(j))
 	  endif
-	  e = e + de
+          if(i_is_min_image) then
+             e = e + de
+          else
+             e = e + 0.5_dp*de
+          endif
 	endif
       endif
       if (present(f) .or. present(virial)) then
@@ -174,12 +185,16 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
 	if (associated(w_e)) then
 	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
 	endif
-	if (present(f) .and. i /= j) then
+	if (present(f)) then
 	  f(:,i) = f(:,i) + de_dr*dr
-	  f(:,j) = f(:,j) - de_dr*dr
+	  if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
 	endif
 	if (present(virial)) then
-	  virial = virial - de_dr*(dr .outer. dr)*dr_mag
+	  if(i_is_min_image) then
+             virial = virial - de_dr*(dr .outer. dr)*dr_mag
+          else
+             virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*dr_mag
+          endif
 	endif
       endif
     end do
