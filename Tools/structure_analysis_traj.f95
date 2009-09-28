@@ -264,14 +264,12 @@ subroutine do_analyses(a, time, frame, at)
               a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, a(i_a)%rdfd_gaussian_sigma)
           allocate(a(i_a)%rdfd_bin_pos(a(i_a)%rdfd_n_bins))
           allocate(a(i_a)%rdfd_zone_pos(a(i_a)%rdfd_n_zones))
-call print("calling rdfd_calc_start for analysis " // i_a // " first time", ERROR)
           call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str, &
             a(i_a)%rdfd_bin_pos, a(i_a)%rdfd_zone_pos)
         else
-call print("calling rdfd_calc_start for analysis " // i_a // " not first time", ERROR)
           call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, &
@@ -545,7 +543,6 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   integer, allocatable :: n_in_zone(:)
   real(dp) :: r, bin_inner_rad, bin_outer_rad
 
-call print("rdfd_calc start", ERROR)
   allocate(center_mask_a(at%N))
   allocate(neighbour_mask_a(at%N))
   call is_in_mask(center_mask_a, at, center_mask_str)
@@ -571,7 +568,6 @@ call print("rdfd_calc start", ERROR)
 
   if (gaussian_smoothing) then
     call set_cutoff(at, n_bins*bin_width)
-call print("  setting cutoff to " // (n_bins*bin_width))
     call calc_connect(at)
   endif
 
