@@ -6113,4 +6113,34 @@ contains
 
   end function closest_atom
 
+  function is_min_image(this, i) 
+    type(Atoms), intent(in) :: this
+    integer, intent(in) ::i
+    logical :: is_min_image
+    integer :: n, NN
+
+    is_min_image = .true.
+    ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
+    if (this%connect%initialised) then
+       NN = this%connect%neighbour1(i)%t%N
+       do n = 1, NN-1
+          if( count(this%connect%neighbour1(i)%t%int(1,n) == this%connect%neighbour1(i)%t%int(1,n+1:NN)) > 0 .or. &
+          &  (this%connect%neighbour1(i)%t%int(1,n) == i) ) then
+              is_min_image = .false.
+              return
+          endif
+       enddo
+       NN = this%connect%neighbour2(i)%t%N
+       do n = 1, NN-1
+          if( (count(this%connect%neighbour2(i)%t%int(1,n) == this%connect%neighbour2(i)%t%int(1,n+1:NN)) > 0) ) then
+              is_min_image = .false.
+              return
+          endif
+       enddo
+    else
+       call system_abort('is_min_image: Atoms structure has no connectivity data. Call calc_connect first.')
+    end if
+
+  endfunction is_min_image 
+
 end module atoms_module
