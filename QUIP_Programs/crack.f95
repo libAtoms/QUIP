@@ -263,7 +263,7 @@ program crack
 
   ! Objects
   type(InOutput) :: xmlfile, checkfile
-  type(CInOutput) :: movie, crackin
+  type(CInOutput) :: movie, crackin, movie_backup
   type(DynamicalSystem), target :: ds, ds_save
   type(Atoms) :: crack_slab, fd_start, fd_end, bulk
   type(CrackParams) :: params
@@ -272,7 +272,7 @@ program crack
   type(Dictionary) :: metapot_params
 
   ! Pointers into Atoms data table
-  real(dp), pointer, dimension(:,:) :: load, k_disp, u_disp
+  real(dp), pointer, dimension(:,:) :: load
   integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark
 
@@ -281,12 +281,12 @@ program crack
   real(dp), pointer :: dr_prop(:,:), f_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit
+  integer :: movie_n, nargs, i, state, steps, iunit, n
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
-       last_md_interval_time, time, temp, crack_pos, orig_crack_pos, &
-       G, orig_width, crackpos_last_load, G_last_load
+       last_md_interval_time, time, temp, crack_pos(3), orig_crack_pos, &
+       G, orig_width
   character(STRING_LENGTH) :: stem, movie_name, xyzfilename, xmlfilename
   character(value_len) :: state_string
 
@@ -518,7 +518,10 @@ end if
         call print('Setting up movie output file '//movie_name)
         call initialise(movie, movie_name, action=OUTPUT)
      else
-        if (.not. movie%initialised) call initialise(movie, trim(stem)//'.nc', action=OUTPUT)
+        if (.not. movie%initialised) then
+           call initialise(movie, trim(stem)//'.nc', action=OUTPUT)
+           call initialise(movie_backup, trim(stem)//'_backup.nc', action=OUTPUT)
+        endif
      end if
   endif
 
@@ -567,6 +570,7 @@ end if
 
   ! Print a frame before we start
   call crack_print(ds%atoms, movie, params, mpi_glob)
+  call crack_print(ds%atoms, movie_backup, params, mpi_glob)
 
   if (.not. params%simulation_classical) then
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
@@ -668,8 +672,8 @@ end if
         state = STATE_MD_LOADING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
-        dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
-        crack_pos = orig_crack_pos
+        dummy = get_value(ds%atoms%params, 'CrackPosx', orig_crack_pos)
+        crack_pos(1) = orig_crack_pos
 
      else if (state_string(1:11) == 'MD_CRACKING') then
         state = STATE_MD_CRACKING
@@ -767,31 +771,31 @@ end if
         case(STATE_MD_LOADING)
            ! If tip has moved by more than smooth_loading_tip_move_tol then
            ! turn off loading. 
-           dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
+           dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
            dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
 
-           if ((crack_pos - orig_crack_pos) > params%md_smooth_loading_tip_move_tol) then
+           if ((crack_pos(1) - orig_crack_pos) > params%md_smooth_loading_tip_move_tol) then
               call print_title('Crack Moving')
               call print('STATE changing MD_LOADING -> MD_CRACKING')
               state = STATE_MD_CRACKING
               last_state_change_time = ds%t
-              orig_crack_pos = crack_pos
+              orig_crack_pos = crack_pos(1)
               call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
            else
-              call print('STATE: crack is not moving (crack_pos='//crack_pos//')')
+              call print('STATE: crack is not moving (crack_pos='//crack_pos(1)//')')
            end if
 
         case(STATE_MD_CRACKING)
            ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
            ! time smooth_loading_arrest_time then switch back to loading
            if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
-              dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
+              dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos(1))
               dummy = get_value(ds%atoms%params, 'OrigWidth', orig_width)
               dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
               
-              if ((crack_pos - orig_crack_pos) < params%md_smooth_loading_tip_move_tol) then
+              if ((crack_pos(1) - orig_crack_pos) < params%md_smooth_loading_tip_move_tol) then
 
-                 if ((orig_width/2.0_dp - crack_pos) < params%md_smooth_loading_tip_edge_tol) then
+                 if ((orig_width/2.0_dp - crack_pos(1)) < params%md_smooth_loading_tip_edge_tol) then
                     call print_title('Cracked Through')
                     exit
                  else
@@ -805,7 +809,7 @@ end if
                  call print('STATE: crack is moving (crack_pos='//crack_pos//')')
               end if
               last_state_change_time = ds%t
-              orig_crack_pos = crack_pos
+              orig_crack_pos = crack_pos(1) 
               call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
            end if
 
@@ -1004,7 +1008,14 @@ end if
            call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
            call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
            call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
-           call crack_print(ds%atoms, movie, params, mpi_glob)
+           n = ds%t/params%io_print_interval
+           if (mod(n,2).eq.0) then
+              call crack_print(ds%atoms, movie, params, mpi_glob)
+              call print('writing .nc file '//trim(stem)//'.nc')
+           else
+              call crack_print(ds%atoms, movie_backup, params, mpi_glob)
+              call print('writing .nc file '//trim(stem)//'_backup.nc')
+           endif
         end if
 
         ! Write binary checkpoint file
@@ -1162,9 +1173,9 @@ end if
      call crack_update_connect(ds%atoms, params)
 
      dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
-     crack_pos = orig_crack_pos
+     crack_pos(1) = orig_crack_pos
 
-     do while (abs(crack_pos - orig_crack_pos) < params%quasi_static_tip_move_tol)
+     do while (abs(crack_pos(1) - orig_crack_pos) < params%quasi_static_tip_move_tol)
 
         if (params%simulation_classical) then
            steps = minim(simple_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
@@ -1185,7 +1196,7 @@ end if
            crack_pos = crack_find_crack_pos(ds%atoms, params)
         else
            call crack_update_selection(ds%atoms, params)
-           dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos)
+           dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
         end if
 
         ! Apply loading field
