@@ -52,23 +52,23 @@ module MetaPotential_module
   type MetaPotential
      type(MPI_context) :: mpi
      
-     logical :: is_simple
+     logical :: is_simple = .false.
      type(Potential), pointer :: pot => null()
 
 
-     logical :: is_sum
+     logical :: is_sum = .false.
      type(MetaPotential_Sum), pointer :: sum => null()
 
-     logical :: is_forcemixing
+     logical :: is_forcemixing = .false.
      type(MetaPotential_FM), pointer :: forcemixing => null()
 
 #ifdef HAVE_LOCAL_E_MIX
-     logical :: is_local_e_mix
+     logical :: is_local_e_mix = .false.
      type(MetaPotential_Local_E_Mix), pointer :: local_e_mix => null()
 #endif
 
 #ifdef HAVE_ONIOM
-     logical :: is_oniom
+     logical :: is_oniom = .false.
      type(MetaPotential_ONIOM), pointer :: oniom => null()
 #endif
   end type MetaPotential
