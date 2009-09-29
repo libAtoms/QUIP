@@ -7,7 +7,7 @@ Core :mod:`quippy` module reference
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
 
-This secction contains library reference material for the core quippy
+This section contains library reference material for the core quippy
 classes and modules. 
 
 .. toctree::
