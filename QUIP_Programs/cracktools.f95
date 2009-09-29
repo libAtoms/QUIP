@@ -548,7 +548,7 @@ contains
     type(CrackParams) :: params
 
     integer :: i
-    real(dp), dimension(3) :: crack_pos
+    real(dp), dimension(2) :: crack_pos
 
     ! Pointers into Atoms data structure
     real(dp), pointer, dimension(:,:) :: load!, k_disp, u_disp
@@ -608,7 +608,7 @@ contains
     real(dp), allocatable :: relaxed_pos(:,:), initial_pos(:,:), new_pos(:,:)
     integer :: i, k, steps
     real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, width1, height1
-    real(dp) :: K1, r, l_crack_pos, crack_pos_2, crack_pos_3, r_crack_pos, crack_pos(2)
+    real(dp) :: K1, r, l_crack_pos, crack_pos_2(2), crack_pos_3(2), r_crack_pos, crack_pos(2)
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end workaround for pgf90 bug (as of 9.0-1)
@@ -675,7 +675,7 @@ contains
                    print_cinoutput=movie)
 
           crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-          if (abs(crack_pos-crack_pos_2) > 1.0_dp) &
+          if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
                call print_warning('Crack tip moved during minimisation - check output carefully!')
           end if
 
@@ -701,7 +701,7 @@ contains
                    print_cinoutput=movie)
 
              crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos-crack_pos_2) > 1.0_dp) &
+             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
                   call print_warning('Crack tip moved during minimisation - check output carefully!')
           endif
 
@@ -739,7 +739,7 @@ contains
                  print_cinoutput=movie)
 
              crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos-crack_pos_2) > 1.0_dp) &
+             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
                   call print_warning('Crack tip moved during minimisation - check output carefully!')
          end if
          relaxed_pos = crack_slab%pos  
@@ -797,7 +797,7 @@ contains
                  print_cinoutput=movie)
 
              crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos-crack_pos_2) > 1.0_dp) &
+             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
                   call print_warning('Crack tip moved during minimisation - check output carefully!')
 
          end if
@@ -849,7 +849,7 @@ contains
                print_cinoutput=movie)
 
           crack_pos_3 = crack_find_crack_pos(crack_slab, params)
-          if (abs(crack_pos-crack_pos_3) > 1.0_dp) &
+          if (abs(crack_pos(1)-crack_pos_3(1)) > 1.0_dp) &
                call print_warning('Crack tip moved during second minimisation - check output carefully!')
        end if
     
@@ -1552,7 +1552,7 @@ contains
   function crack_find_crack_pos(at, params) result(crack_pos)
     type(Atoms), intent(inout) :: at
     type(CrackParams) :: params
-    real(dp), dimension(3) :: crack_pos
+    real(dp), dimension(2) :: crack_pos
 
     integer :: i, crack_tip_atom
     integer, pointer, dimension(:) :: nn, edge_mask
@@ -1578,8 +1578,6 @@ contains
           crack_tip_atom = i
        end if
     end do
-
-    crack_pos(3) = 0.0_dp 
 
     call Print('Crack position = '//crack_pos//' near atom '//crack_tip_atom)
     call set_value(at%params, 'CrackPosx', crack_pos(1))
