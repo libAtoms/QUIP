@@ -508,7 +508,6 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       end do ! bin_i
     end do ! at_i
   else ! no center_pos, have center_i
-! call print("density_sample_radial_mesh_Gaussians with cetner_i, n_neighbours="//atoms_n_neighbours(at, center_i), ERROR)
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index)
       do bin_i=1, n_bins
@@ -573,6 +572,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
 
   rdfd = 0.0_dp
   do i_at=1, at%N
+! call print("rdfd center i_at " // i_at, ERROR)
     if (.not. center_mask_a(i_at)) cycle
 
     if (zone_width > 0.0_dp) then
@@ -923,7 +923,7 @@ implicit none
 
   more_files = .true.
   if (infile_is_list) then
-    call initialise(list_infile, infilename, INPUT)
+    call initialise(list_infile, trim(infilename), INPUT)
     infilename = read_line(list_infile, status)
     more_files = .false.
     if (status == 0) more_files = .true.
@@ -962,7 +962,6 @@ implicit none
       infilename = read_line(list_infile, status)
       if (status == 0) then
         more_files = .true.
-        call initialise(infile, infilename, INPUT)
       endif
     endif
   end do
