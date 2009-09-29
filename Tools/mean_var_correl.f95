@@ -28,7 +28,7 @@ implicit none
   call param_register(cli_params, "over_bins", "F", over_bins)
   call param_register(cli_params, "over_time", "F", over_time)
   if (.not.param_read_args(cli_params, do_check=.true.)) &
-    call system_abort("Usage: "//trim(EXEC_NAME)//" mean=F variance=F correlation=F correlation_max_lag=1000 over_bins=F over_time=T")
+    call system_abort("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F correlation_max_lag=1000 over_bins=F over_time=T")
   call finalise(cli_params)
 
   if (over_bins .and. over_time) &
