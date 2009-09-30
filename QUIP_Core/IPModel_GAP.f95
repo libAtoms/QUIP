@@ -361,7 +361,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
            f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
 
            if (present(f)) f(j,i) = f_gp_k
-           if (present(virial)) virial_in(:,j,i) = 0.0_dp
+           if (present(virial)) virial_in(:,j,i) = - f_gp_k * at%pos(:,i)
         enddo
 
         do k = 1, atoms_n_neighbours(at, i)
@@ -381,7 +381,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
               f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
 
               if (present(f)) f(j,i) = f(j,i) + f_gp_k
-              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) + 0.0_dp
+              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) - f_gp_k * at%pos(:,i)
            enddo
         enddo
      endif
