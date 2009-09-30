@@ -16,6 +16,7 @@ implicit none
   character(len=1024) :: args_str
 
   character(len=FIELD_LENGTH) :: mask_str
+  character(len=FIELD_LENGTH) :: mask_center
   integer :: decimation
   real(dp) :: min_time, max_time
   logical :: gaussian_smoothing
@@ -50,7 +51,7 @@ implicit none
 
   call initialise(cli_params)
   call register_cli_params(cli_params,.true., infilename, infile_is_list, outfilename, commandfilename, &
-    mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
+    mask_str, mask_center, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
     radial_histo, random_samples, n_samples, do_distance_dependence, nth_snapshots, &
     sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
@@ -73,7 +74,7 @@ implicit none
     call initialise(cli_params)
     call print("got arguments line '"//trim(args_str)//"'")
     call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
-      mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
+      mask_str, mask_center, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
       radial_histo, random_samples, n_samples, do_distance_dependence, nth_snapshots, &
       sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
     if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
@@ -92,6 +93,7 @@ implicit none
     call print("outfilename " // trim(outfilename))
     call print("decimation " // decimation // " min_time " // min_time // " max_time " // max_time)
     call print("AtomMask " // trim(mask_str))
+    call print("CentMask " // trim(mask_center))
     call print("radial_histo " // radial_histo)
     if (radial_histo) then
       do i1 = 1, 3
@@ -119,7 +121,7 @@ implicit none
     call print("Calculating angle distributions")
     call calc_histos(histo_raw, n_histos, min_p, bin_width, n_bins, structure_ll, mean_decorrelation_time, &
                      gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
-                     radial_histo, random_samples, n_samples, mask_str, do_distance_dependence, nth_snapshots)
+                     radial_histo, random_samples, n_samples, mask_str, mask_center, do_distance_dependence, nth_snapshots)
 
     call initialise(outfile, outfilename, OUTPUT)
 
@@ -203,7 +205,7 @@ implicit none
 	call print("got arguments line '"//trim(args_str)//"'")
 	call initialise(cli_params)
 	call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
-	  mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
+	  mask_str, mask_center, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
 	  radial_histo, random_samples, n_samples, do_distance_dependence, nth_snapshots, &
 	  sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
 	if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
@@ -245,7 +247,7 @@ contains
   end subroutine print_usage
 
   subroutine register_cli_params(cli_params, initial, infilename, infile_is_list, outfilename, commandfilename, &
-    mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
+    mask_str, mask_center, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
     radial_histo, random_samples, n_samples, do_distance_dependence, nth_snapshots, &
     sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
     type(Dictionary), intent(inout) :: cli_params
@@ -255,6 +257,7 @@ contains
     character(len=*), intent(inout) :: outfilename
     character(len=*), intent(inout) :: commandfilename
     character(len=*), intent(inout) :: mask_str
+    character(len=*), intent(inout) :: mask_center
     real(dp), intent(inout) :: min_p(3), bin_width(3)
     integer, intent(inout) :: n_bins(3), decimation
     real(dp), intent(inout) :: min_time, max_time
@@ -281,9 +284,11 @@ contains
       call param_register(cli_params, 'infile_is_list', 'F', infile_is_list)
       call param_register(cli_params, 'outfile', 'stdout', outfilename)
       mask_str = ""
+      mask_center = ""
       commandfilename = ""
       call param_register(cli_params, 'commandfile', "", commandfilename)
-      call param_register(cli_params, 'AtomMask', "", mask_str)
+      call param_register(cli_params, 'AtomMask', "O", mask_str)
+      call param_register(cli_params, 'CentMask', "O", mask_center)
       call param_register(cli_params, 'min_p', "0.0 0.0 0.0", min_p)
       call param_register(cli_params, 'bin_width', PARAM_MANDATORY, bin_width)
       call param_register(cli_params, 'n_bins', PARAM_MANDATORY, n_bins)
@@ -315,7 +320,9 @@ contains
       t_field=commandfilename
       call param_register(cli_params, 'commandfile', trim(t_field), commandfilename)
       t_field=mask_str
+      t_field=mask_center
       call param_register(cli_params, 'AtomMask', trim(t_field), mask_str)
+      call param_register(cli_params, 'CentMask', trim(t_field), mask_center)
       call param_register(cli_params, 'min_p', ""//min_p, min_p)
       call param_register(cli_params, 'bin_width', ""//bin_width, bin_width)
       call param_register(cli_params, 'n_bins', ""//n_bins, n_bins)
@@ -389,7 +396,7 @@ contains
 
   subroutine calc_histos(histo_count, n_histos, min_p, bin_width, n_bins, structure_ll, interval, gaussian, &
                          gaussian_sigma, gaussian_angle_sigma, sampling_sigma, radial_histo, &
-                         random_samples, n_samples, mask_str, do_distance_dependence, nth_snapshots)
+                         random_samples, n_samples, mask_str, mask_center, do_distance_dependence, nth_snapshots)
     real(dp), intent(inout), allocatable :: histo_count(:,:,:,:)
     integer, intent(out) :: n_histos
     real(dp), intent(in) :: min_p(3), bin_width(3)
@@ -404,6 +411,7 @@ contains
     logical :: random_samples
     integer :: n_samples(2)
     character(len=*), optional, intent(in) :: mask_str
+    character(len=*), optional, intent(in) :: mask_center
     logical, intent(in) :: do_distance_dependence    
     integer, intent(in) :: nth_snapshots
 
@@ -443,8 +451,8 @@ contains
 	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
 	n_histos = n_histos + 1
 	if (mod(n_histos,10) == 0) then
-          if(mod(n_histos,100) == 0) then
-            write (mainlog%unit,'(I1)') n_histos
+          if(mod(n_histos,50) == 0) then
+            write (mainlog%unit,'(i0)') n_histos
           else
             write (mainlog%unit,'(a,$)') '|'
           end if
@@ -456,11 +464,10 @@ contains
 	if (radial_histo) then
           call calc_connect(entry%at)
           cell_vol = cell_volume(entry%at%lattice)
-          part_dens = (entry%at%N/3)/cell_vol
 	  call accumulate_radial_histo_count(histo_count(:,:,:,n_histos), entry%at, bin_width(1), bin_width(2), bin_width(3), &
                                              n_bins(1), n_bins(2), n_bins(3), &
                                              gaussian, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
-                                             theta, phi, w, mask_str, do_distance_dependence)
+                                             theta, phi, w, mask_str, mask_center, do_distance_dependence)
 	endif
       endif
       entry => entry%next
@@ -528,7 +535,7 @@ contains
 
   subroutine accumulate_radial_histo_count(histo_count, at, bin_width, dbin_width, sbin_width, n_bins, dn_bins, sn_bins, &
                                            gaussian, gaussian_sigma, gaussian_angle_sigma, sampling_sigma, &
-                                           theta, phi, w, mask_str, do_distance_dependence)
+                                           theta, phi, w, mask_str, mask_center, do_distance_dependence)
     real(dp), intent(inout) :: histo_count(:,:,:)
     type(Atoms), intent(in) :: at
     real(dp), intent(in)    :: bin_width, dbin_width, sbin_width
@@ -536,13 +543,15 @@ contains
     logical,intent(in)      :: gaussian
     real(dp), intent(in)    :: gaussian_sigma, gaussian_angle_sigma, sampling_sigma, theta(:), phi(:), w(:)
     character(len=*), optional, intent(in) :: mask_str
+    character(len=*), optional, intent(in) :: mask_center
     logical,intent(in)      :: do_distance_dependence
 
     real(dp) :: bin_r, bin_a, bin_s, p(3), dist, r, d, sdist, distw, ang, v1(3), v2(3), m_bin_width
-    logical, allocatable :: mask_a(:)
-    integer at_i, at_j, sample_i, bin_i, bin_j, bin_k, n, i, k, m
-    real(dp) :: my_histo_count, myNorm, fotPI, oostPI, sina, cosa, shell, sample_shell
+    logical, allocatable :: mask_a(:), mask_c(:)
+    integer at_i, at_j, sample_i, bin_i, bin_j, bin_k, i, k, m
+    real(dp) :: myNorm, fotPI, oostPI, sina, shell, sample_shell
     integer  :: myCount, sample_size
+    real(dp) :: mycent(3)
 
     if(sbin_width == 0.0_dp) then
       sample_size = 1
@@ -552,6 +561,28 @@ contains
     
     allocate(mask_a(at%N))
     call is_in_mask(mask_a, at, mask_str)
+    allocate(mask_c(at%N))
+    call is_in_mask(mask_c, at, mask_center)
+
+    m = 0
+    do i = 1, at%N
+     if (mask_a(i)) m=m+1
+    end do
+    part_dens=real(m,dp)/cell_vol
+
+    m=0
+    do i = 1, at%N
+     if(mask_c(i)) then
+       m=m+1
+       k=i
+     end if
+    end do
+
+    if(m==1) then
+      mycent=at%pos(:,k)
+    else
+      mycent=(/0.0_dp,0.0_dp,0.0_dp/)
+    end if
 
     myNorm = 1/(gaussian_angle_sigma*sqrt(2*PI))
     if(bin_width == 0.0_dp) then
@@ -578,9 +609,7 @@ contains
    if(gaussian) then
      myCount=0
      do at_i=1, at%N
-     !do at_i=991, 991
-       if(.not. mask_a(at_i)) cycle
-       if(.not. at%Z(at_i) == 8) cycle
+       if(.not. mask_c(at_i)) cycle
        myCount = myCount+1
        do bin_i = 1, n_bins !angles
        bin_a = PI - (real(bin_i,dp)-0.5)*m_bin_width
@@ -588,7 +617,7 @@ contains
            bin_r = 1.8_dp +(real(bin_j,dp)-0.5)*dbin_width
            shell = fotPI*( (bin_r+1.5_dp*gaussian_sigma)**3 - (max(0.0_dp,(bin_r-1.5_dp*gaussian_sigma)**3)) )*part_dens
            do at_j = 1, at%N
-             if((at_j == at_i) .or. (at%Z(at_j) .ne. 8)) cycle
+             if((at_j == at_i) .or. .not. mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
              dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
               do i = 1, atoms_n_neighbours(at,at_j)
                 k = atoms_neighbour(at,at_j,i)
@@ -605,9 +634,9 @@ contains
               v2 = at%pos(:,at_j) - at%pos(:,k)
               ang = angle(v1,v2)
               sina = sin(PI-ang)
-              !cosa = cos(PI-ang)
+              if(sina .lt. 1.0E-10) sina=1.0E-10
               ang = myNorm*exp(-0.5_dp*((ang-bin_a)/gaussian_angle_sigma)**2)
-              ang = ang/(2.0*PI*sina) !*sqrt(sina**2+cosa**2))
+              ang = ang/(2.0*PI*sina)
               histo_count(bin_i,bin_j,1) = histo_count(bin_i,bin_j,1) + &
                                            (ang*exp(-0.5_dp*((dist-bin_r)/gaussian_sigma)**2)*( (oostPI/gaussian_sigma) / shell ))
            end do !at_j
@@ -622,17 +651,15 @@ contains
    else if(.not. gaussian) then !use radial bins, weighted down by volume (assuming homogenous density)
     myCount = 0
     do at_i=1, at%N
-    !do at_i=991, 991
       myCount = myCount+1
-      if(.not. mask_a(at_i)) cycle
-      if(at%Z(at_i) .ne. 8) cycle !for oxygens only
+      if(.not. mask_c(at_i)) cycle
       do bin_i = 1, n_bins !angles
         bin_a = PI - (real(bin_i,dp)-0.5_dp)*m_bin_width
         do bin_j = 1, dn_bins !distances
           bin_r = 1.8_dp + ((real(bin_j,dp)-0.5_dp)*dbin_width)
           shell = fotPI*((bin_r+0.5_dp*dbin_width)**3 - (bin_r-0.5_dp*dbin_width)**3)*part_dens
           do at_j = 1, at%N
-            if((at_j == at_i) .or. (at%Z(at_j) .ne. 8)) cycle
+            if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
             dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
             if( (dist > (bin_r-(dbin_width*0.5_dp))) .and. (dist < (bin_r+(dbin_width*0.5_dp))) ) then
               do i = 1, atoms_n_neighbours(at,at_j)
@@ -650,7 +677,6 @@ contains
               v2 = at%pos(:,at_j) - at%pos(:,k)
               ang = angle(v1,v2)
               sina=sin(PI-ang)
-              !cosa=cos(PI-ang)
               if( (ang > (bin_a-(m_bin_width*0.5_dp))) .and. (ang < (bin_a+(m_bin_width*0.5_dp))) ) then
                 histo_count(bin_i,bin_j,1) = histo_count(bin_i,bin_j,1) + (1.0_dp/(2.0*PI*sina))/shell
               end if !angle bin
@@ -667,26 +693,24 @@ contains
    end if !no gaussian smoothing  
   else !distance dependence
    if(gaussian) then
-     myCount = 0
     do bin_k = 1, sn_bins
       bin_s = (real(bin_k,dp)-0.5_dp)*sbin_width
      do at_i=1, at%N
-       if(.not. mask_a(at_i)) cycle
-       if(.not. at%Z(at_i) == 8) cycle
+       if(.not. mask_c(at_i)) cycle
          do sample_i = 1, sample_size 
-           p(1) = bin_s*cos(theta(sample_i))*cos(phi(sample_i))
-           p(2) = bin_s*cos(theta(sample_i))*sin(phi(sample_i))
-           p(3) = bin_s*sin(theta(sample_i))
+           p(1) = mycent(1)+bin_s*cos(theta(sample_i))*cos(phi(sample_i))
+           p(2) = mycent(2)+bin_s*cos(theta(sample_i))*sin(phi(sample_i))
+           p(3) = mycent(3)+bin_s*sin(theta(sample_i))
            sdist = distance_min_image(at,p,at%pos(:,at_i))
            if( sdist < 3.0_dp*sampling_sigma) then
             distw = w(sample_i)*exp(-0.5_dp*(sdist/sampling_sigma)**2)
             do bin_i = 1, n_bins !angles
             bin_a = PI - (real(bin_i,dp)-0.5)*m_bin_width
               do bin_j = 1, dn_bins !distances
-                bin_r = 1.8_dp +(real(bin_j,dp)-0.5)*dbin_width
+                bin_r = 1.8_dp +(real(bin_j,dp)-0.5_dp)*dbin_width
                 shell = fotPI*( (bin_r+1.5_dp*gaussian_sigma)**3 - (max(0.0_dp,(bin_r-1.5_dp*gaussian_sigma)**3)) )*part_dens
                 do at_j = 1, at%N
-                  if((at_j == at_i) .or. (at%Z(at_j) .ne. 8)) cycle
+                  if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !.or. (at%Z(at_j) .ne. 8)) cycle
                   dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
                    do i = 1, atoms_n_neighbours(at,at_j)
                      k = atoms_neighbour(at,at_j,i)
@@ -703,9 +727,9 @@ contains
                    v2 = at%pos(:,at_j) - at%pos(:,k)
                    ang = angle(v1,v2)
                    sina=sin(PI-ang)
-                   !cosa=cos(PI-ang)
+                   if(sina .lt. 1.0E-10) sina=1.0E-10
                    ang = myNorm*exp(-0.5_dp*((ang-bin_a)/gaussian_angle_sigma)**2)
-                   ang = ang/(2.0*PI*sina)
+                   ang = ang/(2.0_dp*PI*sina)
                    histo_count(bin_i,bin_j,bin_k) = histo_count(bin_i,bin_j,bin_k) + &
                                                 (ang*exp(-0.5_dp*((dist-bin_r)/gaussian_sigma)**2)*( (oostPI/gaussian_sigma) / shell )*distw)
                 end do !at_j
@@ -722,8 +746,8 @@ contains
       sample_shell = fotPI*((bin_s+0.5_dp*sbin_width)**3 - (bin_s-0.5_dp*sbin_width)**3)*part_dens
       do at_i=1, at%N
       !do at_i=991, 991
-        if(.not. mask_a(at_i)) cycle
-        if(at%Z(at_i) .ne. 8) cycle !for oxygens only
+        if(.not. mask_c(at_i)) cycle
+        !if(at%Z(at_i) .ne. 8) cycle !for oxygens only
         sdist = distance_min_image(at,(/0.0_dp,0.0_dp,0.0_dp/),at%pos(:,at_i))
         if( sdist > (bin_s-0.5_dp*sbin_width) .and. sdist < (bin_s+0.5_dp*sbin_width)) then
          do bin_i = 1, n_bins !angles
@@ -732,7 +756,7 @@ contains
              bin_r = 1.8_dp + ((real(bin_j,dp)-0.5_dp)*dbin_width)
              shell = fotPI*((bin_r+0.5_dp*dbin_width)**3 - (bin_r-0.5_dp*dbin_width)**3)*part_dens
              do at_j = 1, at%N
-               if((at_j == at_i) .or. (at%Z(at_j) .ne. 8)) cycle
+               if((at_j == at_i) .or. .not.mask_a(at_j)) cycle !(at%Z(at_j) .ne. 8)) cycle
                dist = distance_min_image(at,at%pos(:,at_i),at%pos(:,at_j))
                if( (dist > (bin_r-(dbin_width*0.5_dp))) .and. (dist < (bin_r+(dbin_width*0.5_dp))) ) then
                  do i = 1, atoms_n_neighbours(at,at_j)
