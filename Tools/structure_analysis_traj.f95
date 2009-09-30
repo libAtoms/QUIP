@@ -28,7 +28,7 @@ type analysis
   integer :: radial_n_angular_samples(2)
   real(dp), allocatable :: radial_histograms(:,:)
   real(dp), allocatable :: radial_pos(:)
-  real(dp), allocatable :: radial_phi(:), radial_theta(:), radial_w(:)
+  real(dp), allocatable :: radial_dr(:,:), radial_w(:)
 
   ! density grid stuff
   real(dp) :: grid_min_p(3), grid_bin_width(3)
@@ -47,7 +47,7 @@ type analysis
   real(dp) :: rdfd_gaussian_sigma
   logical :: rdfd_random_angular_samples
   integer :: rdfd_n_angular_samples(2)
-  real(dp), allocatable :: rdfd_phi(:), rdfd_theta(:), rdfd_w(:)
+  real(dp), allocatable :: rdfd_dr(:,:), rdfd_w(:)
   real(dp), allocatable :: rdfds(:,:,:)
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
 
@@ -216,20 +216,20 @@ subroutine do_analyses(a, time, frame, at)
         call reallocate_data(a(i_a)%radial_histograms, a(i_a)%n_configs, a(i_a)%radial_n_bins)
         if (a(i_a)%radial_random_angular_samples) then
           call calc_angular_samples_random(a(i_a)%radial_n_angular_samples(1)*a(i_a)%radial_n_angular_samples(2), &
-            a(i_a)%radial_phi, a(i_a)%radial_theta, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
+            a(i_a)%radial_dr, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
         endif
         if (a(i_a)%n_configs == 1) then
           if (.not. a(i_a)%radial_random_angular_samples) &
             call calc_angular_samples_grid(a(i_a)%radial_n_angular_samples(1), a(i_a)%radial_n_angular_samples(2), &
-              a(i_a)%radial_phi, a(i_a)%radial_theta, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
+              a(i_a)%radial_dr, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
           allocate(a(i_a)%radial_pos(a(i_a)%radial_n_bins))
           call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
             bin_width=a(i_a)%radial_bin_width, n_bins=a(i_a)%radial_n_bins, gaussian_sigma=a(i_a)%radial_gaussian_sigma, &
-            phi=a(i_a)%radial_phi, theta=a(i_a)%radial_theta, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%radial_pos)
+            dr=a(i_a)%radial_dr, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%radial_pos)
         else
           call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
             bin_width=a(i_a)%radial_bin_width, n_bins=a(i_a)%radial_n_bins, gaussian_sigma= a(i_a)%radial_gaussian_sigma, &
-            phi=a(i_a)%radial_phi, theta=a(i_a)%radial_theta, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str)
+            dr=a(i_a)%radial_dr, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str)
         endif
       else if (a(i_a)%density_grid) then
         call reallocate_data(a(i_a)%grid_histograms, a(i_a)%n_configs, a(i_a)%grid_n_bins)
@@ -256,23 +256,23 @@ subroutine do_analyses(a, time, frame, at)
         call reallocate_data(a(i_a)%rdfds, a(i_a)%n_configs, (/ a(i_a)%rdfd_n_bins, a(i_a)%rdfd_n_zones /) )
         if (a(i_a)%rdfd_random_angular_samples) then
           call calc_angular_samples_random(a(i_a)%rdfd_n_angular_samples(1)*a(i_a)%rdfd_n_angular_samples(2), &
-            a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, a(i_a)%rdfd_gaussian_sigma)
+            a(i_a)%rdfd_dr, a(i_a)%rdfd_w, a(i_a)%rdfd_gaussian_sigma)
         endif
         if (a(i_a)%n_configs == 1) then
           if (.not. a(i_a)%rdfd_random_angular_samples) &
             call calc_angular_samples_grid(a(i_a)%rdfd_n_angular_samples(1), a(i_a)%rdfd_n_angular_samples(2), &
-              a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, a(i_a)%rdfd_gaussian_sigma)
+              a(i_a)%rdfd_dr, a(i_a)%rdfd_w, a(i_a)%rdfd_gaussian_sigma)
           allocate(a(i_a)%rdfd_bin_pos(a(i_a)%rdfd_n_bins))
           allocate(a(i_a)%rdfd_zone_pos(a(i_a)%rdfd_n_zones))
           call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
-            a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, &
+            a(i_a)%rdfd_dr, a(i_a)%rdfd_w, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str, &
             a(i_a)%rdfd_bin_pos, a(i_a)%rdfd_zone_pos)
         else
           call rdfd_calc(a(i_a)%rdfds(:,:,a(i_a)%n_configs), at, a(i_a)%rdfd_zone_center, a(i_a)%rdfd_bin_width, a(i_a)%rdfd_n_bins, &
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
-            a(i_a)%rdfd_phi, a(i_a)%rdfd_theta, a(i_a)%rdfd_w, &
+            a(i_a)%rdfd_dr, a(i_a)%rdfd_w, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
         endif
       else 
@@ -383,50 +383,50 @@ subroutine print_analyses(a)
   end do
 end subroutine print_analyses
 
-subroutine calc_angular_samples_grid(n_t, n_p, phi, theta, w, gaussian_sigma)
+subroutine calc_angular_samples_grid(n_t, n_p, dr, w, gaussian_sigma)
   integer, intent(in) :: n_t, n_p
-  real(dp), allocatable, intent(inout) :: phi(:), theta(:), w(:)
+  real(dp), allocatable, intent(inout) :: dr(:,:), w(:)
   real(dp), intent(in) :: gaussian_sigma
 
   integer :: t_i, p_i, ii
+  real(dp) :: phi, theta
 
-  if (allocated(theta)) deallocate(theta)
-  if (allocated(phi)) deallocate(phi)
+  if (allocated(dr)) deallocate(dr)
   if (allocated(w)) deallocate(w)
-  allocate(theta(n_t*n_p))
-  allocate(phi(n_t*n_p))
+  allocate(dr(3,n_t*n_p))
   allocate(w(n_t*n_p))
 
   ii = 1
   do t_i=1, n_t
   do p_i=1, n_p
-    phi(ii) = (p_i-1)*2.0_dp*PI/real(n_p,dp)
+    phi = (p_i-1)*2.0_dp*PI/real(n_p,dp)
     if (mod(n_t,2) == 0) then
-      theta(ii) = (t_i-1.5_dp-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+      theta = (t_i-1.5_dp-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
     else
-      theta(ii) = (t_i-1-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+      theta = (t_i-1-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
     endif
     ! not oversample top and bottom of spehre
-    w(ii) = cos(theta(ii))
+    w(ii) = cos(theta)
+    dr(1,ii) = cos(phi)*cos(theta)
+    dr(2,ii) = sin(phi)*cos(theta)
+    dr(3,ii) = sin(theta)
     ii = ii + 1
   end do
   end do
   w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
 end subroutine calc_angular_samples_grid
 
-subroutine calc_angular_samples_random(n, phi, theta, w, gaussian_sigma)
+subroutine calc_angular_samples_random(n, dr, w, gaussian_sigma)
   integer, intent(in) :: n
-  real(dp), allocatable, intent(inout) :: phi(:), theta(:), w(:)
+  real(dp), allocatable, intent(inout) :: dr(:,:), w(:)
   real(dp), intent(in) :: gaussian_sigma
 
   integer :: ii
   real(dp) :: p(3), p_norm
 
-  if (allocated(theta)) deallocate(theta)
-  if (allocated(phi)) deallocate(phi)
+  if (allocated(dr)) deallocate(dr)
   if (allocated(w)) deallocate(w)
-  allocate(theta(n))
-  allocate(phi(n))
+  allocate(dr(3,n))
   allocate(w(n))
 
   do ii = 1, n
@@ -436,28 +436,28 @@ subroutine calc_angular_samples_random(n, phi, theta, w, gaussian_sigma)
       call randomise(p, 2.0_dp)
       p_norm = norm(p)
     end do
-    phi(ii) = atan2(p(2),p(1))
-    theta(ii) = acos(p(3)/p_norm)
+    p = p/p_norm
+    dr(:,ii) = p
     w(ii) = 1.0_dp
   end do
   w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
 
 end subroutine calc_angular_samples_random
 
-subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, bin_width, n_bins, gaussian_sigma, phi, theta, w, mask_str, radial_pos, accumulate)
+subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, bin_width, n_bins, gaussian_sigma, dr, w, mask_str, radial_pos, accumulate)
   real(dp), intent(inout) :: histogram(:)
-  type(Atoms), intent(in) :: at
+  type(Atoms), intent(inout) :: at
   real(dp), intent(in), optional :: center_pos(3)
   integer, intent(in), optional :: center_i
   real(dp), intent(in) :: bin_width
   integer, intent(in) :: n_bins
-  real(dp), intent(in) :: gaussian_sigma, phi(:), theta(:), w(:)
+  real(dp), intent(in) :: gaussian_sigma, dr(:,:), w(:)
   character(len=*), optional, intent(in) :: mask_str
   real(dp), intent(out), optional :: radial_pos(:)
   logical, optional, intent(in) :: accumulate
 
   logical :: my_accumulate
-  real(dp) :: bin_r, p(3), dist, r
+  real(dp) :: bin_r, p(3), dist, r, t_center(3), exp_arg
   logical, allocatable :: mask_a(:)
   integer at_i, at_i_index, sample_i, bin_i
 
@@ -473,67 +473,87 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   allocate(mask_a(at%N))
   call is_in_mask(mask_a, at, mask_str)
 
+  if (present(radial_pos)) then
+    do bin_i=1, n_bins
+      bin_r = (bin_i-1)*bin_width
+      radial_pos(bin_i) = bin_r
+    end do
+  endif
+
+  if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
   if (present(center_pos)) then
+
   ! ratio of 20/4=5 is bad
   ! ratio of 20/3=6.66 is bad
   ! ratio of 20/2.5=8 is borderline (2e-4)
   ! ratio of 20/2.22=9 is fine  (error 2e-5)
   ! ratio of 20/2=10 is fine
-    if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
-         (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
-         (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
-      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
-
-    if (present(radial_pos)) then
-      do bin_i=1, n_bins
-        bin_r = (bin_i-1)*bin_width
-        radial_pos(bin_i) = bin_r
-      end do
-    endif
 
     do at_i=1, at%N
       if (.not. mask_a(at_i)) cycle
       r = norm(at%pos(:,at_i))
       do bin_i=1, n_bins
         bin_r = (bin_i-1)*bin_width
-        do sample_i=1,size(theta)
-          p(1) = center_pos(1)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
-          p(2) = center_pos(2)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
-          p(3) = center_pos(3)+bin_r*sin(theta(sample_i))
+        do sample_i=1,size(dr,2)
+          p(:) = center_pos(:)+bin_r*dr(:,sample_i)
           dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
-          histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+          exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
+          if (exp_arg > -20.0_dp) then ! good to about 1e-8
+            histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+          endif
         end do ! sample_i
       end do ! bin_i
     end do ! at_i
-  else ! no center_pos, have center_i
+
+  else ! no center_pos, must have center_i
+
+    t_center=at%pos(:,center_i)
+    do at_i=1, at%N
+      at%pos(:,at_i) = at%pos(:,at_i) - t_center
+    end do
+    at%connect%initialised = .false.
+    call atoms_map_into_cell(at)
+    at%connect%initialised = .true.
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index)
       do bin_i=1, n_bins
         bin_r = (bin_i-1)*bin_width
-        do sample_i=1,size(theta)
-          p(1) = at%pos(1,center_i)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
-          p(2) = at%pos(2,center_i)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
-          p(3) = at%pos(3,center_i)+bin_r*sin(theta(sample_i))
-          dist = distance_min_image(at,p,at%pos(:,at_i))
-          histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+        do sample_i=1,size(dr,2)
+          p(:) = at%pos(:,center_i)+bin_r*dr(:,sample_i)
+          dist = norm(p-at%pos(:,at_i))
+          exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
+          if (exp_arg > -20.0_dp) then ! good to about 1e-8
+            histogram(bin_i) = histogram(bin_i) + exp(exp_arg)*w(sample_i)
+          endif
         end do ! sample_i
       end do ! bin_i
     end do
-  end if
+    do at_i=1, at%N
+      at%pos(:,at_i) = at%pos(:,at_i) - t_center
+    end do
+    at%connect%initialised = .false.
+    call atoms_map_into_cell(at)
+    at%connect%initialised = .true.
+
+  end if ! present(center_pos)
 
   deallocate(mask_a)
 end subroutine density_sample_radial_mesh_Gaussians
 
 subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zones, gaussian_smoothing, gaussian_sigma, &
-                     phi, theta, w, center_mask_str, neighbour_mask_str, bin_pos, zone_pos)
+                     dr, w, center_mask_str, neighbour_mask_str, bin_pos, zone_pos)
   real(dp), intent(inout) :: rdfd(:,:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: zone_center(3), bin_width, zone_width
   integer, intent(in) :: n_bins, n_zones
   logical, intent(in) :: gaussian_smoothing
-  real(dp), intent(in) :: gaussian_sigma, phi(:), theta(:), w(:)
+  real(dp), intent(in) :: gaussian_sigma, dr(:,:), w(:)
   character(len=*), intent(in) :: center_mask_str, neighbour_mask_str
   real(dp), intent(inout), optional :: bin_pos(:), zone_pos(:)
 
@@ -587,7 +607,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
 
     if (gaussian_smoothing) then
       call density_sample_radial_mesh_Gaussians(rdfd(:,i_zone), at, center_i=i_at, bin_width=bin_width, n_bins=n_bins, &
-        gaussian_sigma=gaussian_sigma, phi=phi, theta=theta, w=w, mask_str=neighbour_mask_str)
+        gaussian_sigma=gaussian_sigma, dr=dr, w=w, mask_str=neighbour_mask_str)
     else
       do j_at=1, at%N
         if (j_at == i_at) cycle
