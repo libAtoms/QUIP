@@ -1055,7 +1055,7 @@ contains
      real(dp) :: w_p, cell_gamma, mass1,mass2
      real(dp) :: gamma_eff
 
-     if (count( (/present(gamma), present(tau) )/ ) ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
+     if (count( (/present(gamma), present(tau) /) ) /= 1 ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
 
      if (present(gamma)) then
        gamma_eff = gamma
