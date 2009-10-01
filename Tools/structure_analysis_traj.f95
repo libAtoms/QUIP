@@ -480,18 +480,18 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     end do
   endif
 
-  if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
-       (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
-       (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
-    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
-
-  if (present(center_pos)) then
 
   ! ratio of 20/4=5 is bad
   ! ratio of 20/3=6.66 is bad
   ! ratio of 20/2.5=8 is borderline (2e-4)
   ! ratio of 20/2.22=9 is fine  (error 2e-5)
   ! ratio of 20/2=10 is fine
+  if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
+       (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
+  if (present(center_pos)) then
 
     do at_i=1, at%N
       if (.not. mask_a(at_i)) cycle
@@ -505,7 +505,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
-            histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
+            histogram(bin_i) = histogram(bin_i) + exp(exp_arg)*w(sample_i)
           endif
         end do ! sample_i
       end do ! bin_i
@@ -513,6 +513,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 
   else ! no center_pos, must have center_i
 
+    ! shift center_i to origin, and map into cell without updating travel or shift, etc
     t_center=at%pos(:,center_i)
     do at_i=1, at%N
       at%pos(:,at_i) = at%pos(:,at_i) - t_center
@@ -522,6 +523,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     at%connect%initialised = .true.
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index)
+      if (.not. mask_a(at_i)) cycle
       do bin_i=1, n_bins
         bin_r = (bin_i-1)*bin_width
         do sample_i=1,size(dr,2)
@@ -534,6 +536,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
         end do ! sample_i
       end do ! bin_i
     end do
+    ! shift center_i back to original position, and map into cell without updating travel or shift, etc
     do at_i=1, at%N
       at%pos(:,at_i) = at%pos(:,at_i) - t_center
     end do
@@ -591,8 +594,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   endif
 
   rdfd = 0.0_dp
-  do i_at=1, at%N
-! call print("rdfd center i_at " // i_at, ERROR)
+  do i_at=1, at%N ! loop over center atoms
     if (.not. center_mask_a(i_at)) cycle
 
     if (zone_width > 0.0_dp) then
@@ -894,7 +896,7 @@ implicit none
   integer :: status, arg_line_no
   real(dp) :: time
 
-  integer :: i_a, frame_count
+  integer :: i_a, frame_count, raw_frame_count
   type(Atoms) :: structure
   logical :: do_verbose
 
@@ -949,16 +951,14 @@ implicit none
     if (status == 0) more_files = .true.
   endif
 
+  raw_frame_count = decimation
   frame_count = 0
   do while (more_files)
 
     call initialise(infile, infilename, INPUT)
-    call read(structure, infile, status=status)
+    call read(structure, infile, status=status, frame=raw_frame_count)
     do while (status == 0)
       frame_count = frame_count + 1
-      if (decimation > 1) then
-        if (mod(frame_count,decimation) /= 0) cycle
-      endif
       if (.not. quiet) then
         if (mod(frame_count,1000) == 1) write (mainlog%unit,'(I4,a)') int(frame_count/1000)," "
         if (mod(frame_count,10) == 0) write (mainlog%unit,'(I1,$)') mod(frame_count/10,10)
@@ -971,8 +971,9 @@ implicit none
       call do_analyses(analysis_a, time, frame_count, structure)
       call finalise(structure)
 
+      raw_frame_count = raw_frame_count + decimation
       ! get ready for next structure
-      call read(structure, infile, status=status)
+      call read(structure, infile, status=status, frame=raw_frame_count)
     end do
 
     ! get ready for next file
