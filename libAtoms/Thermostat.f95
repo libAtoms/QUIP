@@ -183,7 +183,7 @@ contains
        
     case(LANGEVIN_NPT)
        
-       if (.not.present(gamma) .and. .not.present(gamma_p) .and. .not.present(W_p) ) &
+       if (.not.present(gamma) .or. .not.present(gamma_p) .or. .not.present(W_p) ) &
        & call system_abort('initialise: gamma, gamma_p, W_p are required for Langevin NPT baro-thermostat')
        this%T = T
        this%gamma = gamma
