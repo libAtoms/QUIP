@@ -1067,10 +1067,8 @@ contains
      endif
 
      if (present(tau)) then
-        w = 9.0_dp*1.0_dp*cell_volume(this%atoms)*tau**2
         call add_thermostat(this%thermostat,type,T,1.0_dp/tau,Q,p,0.1_dp/tau,w)
      else
-        w = 9.0_dp*1.0_dp*cell_volume(this%atoms)/gamma**2
         call add_thermostat(this%thermostat,type,T,gamma,Q,p,gamma*0.1_dp,w)
      end if
      
