@@ -229,7 +229,7 @@ contains
 	  skip_frame = .false.
 	  is_a_dup = .false.
 	  if (do_min_time > 0.0_dp .or. do_max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
-	    if (get_value(structure_in%params,"Time",cur_time)) then
+	    if (get_value(structure_in%params,"Time",cur_time, case_sensitive=.false.)) then
 	      if ((do_min_time >= 0.0_dp .and. cur_time < do_min_time) .or. (do_max_time >= 0.0_dp .and. cur_time > do_max_time)) skip_frame = .true.
 	    else
 	      call system_abort("ERROR: min_time="//do_min_time//" < 0 or max_time="//do_max_time//" < 0 or sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count)
@@ -240,7 +240,7 @@ contains
 	      ! look at LAST entry
 	      if (associated(this%LAST)) then
 		entry => this%LAST
-		!NB if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
+		!NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
 		entry_time = entry%r_index
 		!NB
 	      else ! no structure list yet, fake entry_time
@@ -248,7 +248,7 @@ contains
 	      endif
 	      if (cur_time <= entry_time) then ! new frame is at or BEFORE LAST entry
 		do while (associated(entry))
-		  !NB if (.not. get_value(entry%at%params, "Time", entry_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
+		  !NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
 		  entry_time = entry%r_index
 		  !NB
 		  if (do_no_Time_dups .and. (cur_time == entry_time)) then ! entries match in time, i.e. duplicates
@@ -257,7 +257,7 @@ contains
 		  endif
 		  ! check time of PREV entry
 		  if (associated(entry%PREV)) then
-		    !NB if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
+		    !NB if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
 		    entry_PREV_time = entry%PREV%r_index
 		    !NB
 		    ! if cur_time is <= entry, and cur_time > entry%PREV, we want to insert AFTER entry%prev, so decrement entry and exit now
