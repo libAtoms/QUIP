@@ -1052,25 +1052,27 @@ contains
      real(dp), optional,    intent(in)    :: tau
      real(dp), optional,    intent(in)    :: p
 
-     real(dp) :: w, cell_gamma, mass1,mass2
+     real(dp) :: w_p, cell_gamma, mass1,mass2
+     real(dp) :: gamma_eff
 
-     if (present(gamma) .and. present(tau)) call system_abort('add_thermostat: Both gamma and tau cannot be present')
-     
+     if (count( (/present(gamma), present(tau) )/ ) ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
+
+     if (present(gamma)) then
+       gamma_eff = gamma
+     else
+       gamma_eff = 1.0_dp/tau
+     endif
+
      if(present(p)) then
-        if (present(tau)) cell_gamma = 1/(10.0_dp*tau)
-        if (present(gamma)) cell_gamma = gamma * 0.1_dp
+        cell_gamma = gamma_eff * 0.1_dp
 
         mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((cell_gamma*2*PI)**2)
         mass2 = (this%Ndof+3.0_dp)*T/((cell_gamma*2*PI)**2)
 
-        w = max(mass1,mass2)
+        w_p = max(mass1,mass2)
      endif
 
-     if (present(tau)) then
-        call add_thermostat(this%thermostat,type,T,1.0_dp/tau,Q,p,0.1_dp/tau,w)
-     else
-        call add_thermostat(this%thermostat,type,T,gamma,Q,p,gamma*0.1_dp,w)
-     end if
+     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,0.1_dp*gamma_eff,w_p)
      
    end subroutine ds_add_thermostat
 
