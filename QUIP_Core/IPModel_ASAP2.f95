@@ -223,7 +223,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield, args_str)
 end subroutine asap_rs_charges
 
 
-!% Charge-dipole and dipole-dipole interactions, screeened by Yukawa function
+!% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
 subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_str)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
@@ -237,7 +237,8 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
    integer i, j, m, ti, tj, k
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
    real(dp) :: dforce, expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj
-   real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1
+   real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1, dist3, dist5
+   real(dp) :: const1, const2, factork, de_sr, df_sr(3), gij, dgijdrij, bij, cij
    logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
 
    do i=1, at%n
@@ -306,17 +307,47 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
             de_dd = (pp - 3.0_dp*pri*prj*gamjir2)*gamjir3
             de_qd = -(qi*prj - qj*pri)*gamjir3
 
+            de_sr = 0.0_dp
+            df_sr = 0.0_dp
+            if (this%tdip_sr) then
+
+               bij = this%b_pol(ti, tj)
+               cij = this%c_pol(ti, tj)
+         
+               dist3 = 1.0_dp/(r_ij**3.0_dp)
+               dist5 = 1.0_dp/(r_ij**5.0_dp)
+
+               gij = 0.0_dp
+               factork = cij*exp(-bij*r_ij)
+               do k=1,4
+                  gij = gij + factork 
+                  factork = factork*bij*r_ij/float(k)
+               enddo
+               gij = gij + factork
+               dgijdrij = -bij*factork
+
+               const1 = gij*dist3
+               const2 = (qj*pri-qi*prj) &
+                    * (r_ij*dgijdrij-3.0_dp*gij)*dist5
+
+               de_sr = -(qi*prj - qj*pri)*gij*dist3
+
+               df_sr = ((qj*dipi-qi*dipj)*const1 + u_ij*const2) &
+                    *expfactor*fc  &
+                    -de_sr*(this%yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij
+            end if
+
             if (present(e)) then
                if (i_is_min_image) then
-                  e = e + (de_dd + de_qd)*expfactor*fc
+                  e = e + (de_dd + de_qd + de_sr)*expfactor*fc
                else
-                  e = e + 0.5_dp*(de_dd + de_qd)*expfactor*fc
+                  e = e + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
                end if
             end if
 
             if (present(local_e)) then
-               local_e(i) = local_e(i) + 0.5_dp*(de_dd + de_qd)*expfactor*fc
-               if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*(de_dd + de_qd)*expfactor*fc
+               local_e(i) = local_e(i) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+               if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
             end if
 
             if (present(f) .or. present(virial)) then
@@ -335,15 +366,15 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
                end if
 
                if (present(f)) then
-                  f(:,i) = f(:,i) + dfqdip + dfdipdip
-                  if (i_is_min_image) f(:,j) = f(:,j) - (dfqdip + dfdipdip)
+                  f(:,i) = f(:,i) + dfqdip + dfdipdip + df_sr
+                  if (i_is_min_image) f(:,j) = f(:,j) - (dfqdip + dfdipdip + df_sr)
                end if
 
                if (present(virial)) then
                   if (i_is_min_image) then
-                     virial = virial - ((dfqdip+dfdipdip) .outer. u_ij)
+                     virial = virial - ((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   else
-                     virial = virial - 0.5_dp*((dfqdip+dfdipdip) .outer. u_ij)
+                     virial = virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   end if
                end if
 
@@ -356,6 +387,54 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
 
 end subroutine asap_rs_dipoles
 
+
+subroutine asap_short_range_dipole_moments(this, at, dip_sr)
+  type(IPModel_ASAP2), intent(inout) :: this
+  type(Atoms), intent(inout) :: at
+  real(dp), dimension(:,:), intent(out) :: dip_sr
+
+  integer :: i, ti, m, j, tj, k
+  real(dp) :: r_ij, u_ij(3), qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr
+  integer, parameter :: nk = 4
+
+  dip_sr = 0.0_dp
+  do i=1, at%n
+     ti = get_type(this%type_of_atomic_num, at%Z(i))
+     if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
+
+     do m = 1, atoms_n_neighbours(at, i)
+         
+         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_ms*BOHR))
+         if (j <= 0) cycle
+         if (r_ij .feq. 0.0_dp) cycle
+
+         r_ij = r_ij/BOHR
+         u_ij = u_ij/BOHR
+
+         tj = get_type(this%type_of_atomic_num, at%Z(j))
+         qj = this%z(tj)
+         bij = this%b_pol(ti, tj)
+         cij = this%c_pol(ti, tj)
+
+         dist3 = r_ij**3.0_dp
+         dist5 = r_ij**5.0_dp
+         
+         gij = 0.0_dp
+         factork = cij*exp(-bij*r_ij)
+         do k=1,nk
+            gij = gij + factork 
+            factork = factork*bij*r_ij/real(k,dp)
+         enddo
+         gij = gij + factork
+         
+         expfactor = exp(-this%yukalpha*r_ij)
+         call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, this%yuksmoothlength, fc, dfc_dr)
+         dip_sr(:,i) = dip_sr(:,i) - this%pol(ti)*qj*u_ij*gij/dist3*expfactor*fc
+  
+      end do
+  end do
+
+end subroutine asap_short_range_dipole_moments
 
 !% Morse-stretch potential, defined by
 !% \begin{displaymath}
@@ -454,7 +533,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    type(Dictionary) :: params
    logical :: save_efield, save_dipoles, restart
-   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_charge(:,:), efield_dipole(:,:)
+   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
    real(dp), pointer :: efield(:,:), dipoles(:,:)
    real(dp), pointer, dimension(:,:) :: efield_old1, efield_old2, efield_old3
    real(dp) :: diff, diff_old
@@ -550,6 +629,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       call asap_rs_charges(this, at, e, local_e, f, virial, efield_charge, args_str)
    end if
 
+   allocate(dip_sr(3,at%n))
+   dip_sr = 0.0_dp
+   if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, dip_sr)
+
    if (maxval(abs(this%pol)) > 0.0_dp) then
       ! Self-consistent determination of dipole moments
       diff_old = 1.0_dp
@@ -566,7 +649,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          ! Calculate dipole moment in response to total efield
          do i=1,at%n
             ti = get_type(this%type_of_atomic_num, at%Z(i))
-            dipoles(:,i) = efield(:,i)*this%pol(ti) ! + dir_sr
+            dipoles(:,i) = efield(:,i)*this%pol(ti) + dip_sr(:,i)
          end do
 
          ! Calculate new efield and measure of convergence
@@ -616,6 +699,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    if (allocated(thedipoles)) deallocate(thedipoles)
    deallocate(efield_charge)
    deallocate(efield_dipole)
+   deallocate(dip_sr)
 
 end subroutine IPModel_ASAP2_Calc
 
