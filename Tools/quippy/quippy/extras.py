@@ -195,6 +195,10 @@ class Atoms(FortranAtoms):
    def copy(self):
       other = Atoms(n=self.n, lattice=self.lattice, data=self.data, 
                     properties=self.properties, params=self.params)
+      other.use_uniform_cutoff = self.use_uniform_cutoff
+      other.cutoff = self.cutoff
+      other.cutoff_break = self.cutoff_break
+      other.nneightol = self.nneightol
       return other
 
 
