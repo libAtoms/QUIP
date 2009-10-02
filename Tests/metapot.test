@@ -79,6 +79,7 @@ parser defaulted: BOP=false
 parser defaulted: Brenner_Screened=false
 parser defaulted: Brenner_2002=false
 parser defaulted: ASAP=false
+parser defaulted: ASAP2=false
 parser defaulted: Template=false
 parser doing IPModel_SW_Initialise_str args_str
 parser got: label=PRB_31_plus_H
@@ -101,6 +102,7 @@ parser defaulted: BOP=false
 parser defaulted: Brenner_Screened=false
 parser defaulted: Brenner_2002=false
 parser defaulted: ASAP=false
+parser defaulted: ASAP2=false
 parser defaulted: Template=false
 parser doing IPModel_SW_Initialise_str args_str
 parser got: label=eps_2.6
@@ -150,7 +152,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
 WARNING: atoms_add_property - pointers invalidated
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
+subroutine create_hybrid_weights_args: DONE
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T"
 parser doing Potential_Calc_str args_str
 parser got: single_cluster=T
@@ -767,7 +774,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -842,7 +854,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -917,7 +934,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -992,7 +1014,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1067,7 +1094,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1142,7 +1174,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1217,7 +1254,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1292,7 +1334,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1367,7 +1414,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1442,7 +1494,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1517,7 +1574,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1592,7 +1654,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1667,7 +1734,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1742,7 +1814,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1817,7 +1894,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1892,7 +1974,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -1967,7 +2054,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=1.2000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 1 region 1, 0 transition, 40 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 create_cluster_info_from_hybrid_mark got args_str "cluster_calc_connect=T buffer_hops=3"
 parser doing create_cluster_info_from_hybrid_mark args_str
 parser defaulted: terminate=T
@@ -2534,7 +2626,7 @@ Matrix_Print: printing matrix transpose
        0.0000000000       0.0000000000       0.0000000000
        0.0000000000       0.0000000000       0.0000000000
        0.0000000000       0.0000000000       0.0000000000
-embedding test force error 0.0000000000000000 0.0000000000000004
+embedding test force error .0000000000000000  .0000000000000003
 force_mixing
 parser doing MetaPotential_Initialise args_str
 parser got: ForceMixing=T
@@ -2605,8 +2697,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=0.0000010000000000
- minim_mm_eps_guess=0.0001000000000000
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -2621,14 +2713,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2636,14 +2728,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -2656,14 +2748,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -2671,14 +2763,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -2727,7 +2819,12 @@ create_hybrid_weights: trans_width=0 buffer_width=3 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 17 region 1, 0 transition, 130 region 2, 147 in total
+subroutine create_hybrid_weights_args: DONE
 potential_calc got args_str ""
 parser doing Potential_Calc_str args_str
 parser defaulted: single_cluster=F
@@ -3232,7 +3329,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106088      -0.6022746841
+      -0.0473394799      -0.4079106089      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -3396,8 +3493,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=0.0000010000000000
- minim_mm_eps_guess=0.0001000000000000
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -3412,14 +3509,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -3427,14 +3524,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -3447,14 +3544,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -3462,14 +3559,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -3518,7 +3615,12 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 potential_calc got args_str ""
 parser doing Potential_Calc_str args_str
 parser defaulted: single_cluster=F
@@ -4018,7 +4120,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106088      -0.6022746841
+      -0.0473394799      -0.4079106089      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -4112,7 +4214,7 @@ Matrix_Print: printing matrix transpose
        0.2974871598       0.3188808666      -0.0703750046
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
-force_mixing_smooth force error 0.0006667513914028 0.0098193171391810
+force_mixing_smooth force error .0006667513914028  .0098193171391806
 force_mixing_super_smooth
 parser doing MetaPotential_Initialise args_str
 parser got: ForceMixing=T
@@ -4183,8 +4285,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=0.0000010000000000
- minim_mm_eps_guess=0.0001000000000000
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -4199,14 +4301,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -4214,14 +4316,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -4234,14 +4336,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -4249,14 +4351,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -4305,7 +4407,12 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=distanc
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 potential_calc got args_str ""
 parser doing Potential_Calc_str args_str
 parser defaulted: single_cluster=F
@@ -4805,7 +4912,7 @@ Matrix_Print: printing matrix transpose
        0.4150917325      -0.6175302302       0.7665094103
        0.3662366662       0.4862135062       0.0838935872
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106088      -0.6022746841
+      -0.0473394799      -0.4079106089      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5712524588       1.1986583170      -0.8430935721
       -0.8658728688       0.1685743372      -0.3093141628
@@ -4899,7 +5006,7 @@ Matrix_Print: printing matrix transpose
        0.2974871598       0.3188808666      -0.0703750046
        0.4415116443       0.1135808859      -0.2920584839
       -0.9099268121      -0.4814231815       0.4761962741
-force_mixing_super_smooth force error 0.0006667513914028 0.0098193171391810
+force_mixing_super_smooth force error .0006667513914028  .0098193171391806
 conserve_momentum
 parser doing MetaPotential_Initialise args_str
 parser got: ForceMixing=T
@@ -4970,8 +5077,8 @@ MetaPotential_FM:
  lotf_nneighb_only=T
 
  minim_mm_method=cg
- minim_mm_tol=0.0000010000000000
- minim_mm_eps_guess=0.0001000000000000
+ minim_mm_tol=.0000010000000000
+ minim_mm_eps_guess=.0001000000000000
  minim_mm_max_steps=1000
  minim_mm_linminroutine=FAST_LINMIN
  minim_mm_do_pos=T
@@ -4986,14 +5093,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -5001,14 +5108,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.1671999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.1675000000000000
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.1675000000000000
@@ -5021,14 +5128,14 @@ IPModel_SW : Stillinger-Weber
 IPModel_SW : n_types = 2 cutoff = 5.0000000000000000
 IPModel_SW : type 1 atomic_num 1
 IPModel_SW : pair interaction ti tj 1 1 Zi Zj 1 1
-IPModel_SW : pair 0.0000000000000000 0.0000000000000000 0.0000000000000000 0.0000000000000000 5.0000000000000000
-IPModel_SW :      1.0000000000000000 0.0000000000000000
+IPModel_SW : pair .0000000000000000 .0000000000000000 .0000000000000000 .0000000000000000 5.0000000000000000
+IPModel_SW :      1.0000000000000000 .0000000000000000
 IPModel_SW : triplet interaction ti tj 1 1 1 Zi Zj Zk 1 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 1 2 Zi Zj Zk 1 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 1 2 Zi Zj 1 14
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 1 2 1 Zi Zj Zk 1 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -5036,14 +5143,14 @@ IPModel_SW : triplet interaction ti tj 1 2 2 Zi Zj Zk 1 14 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : type 2 atomic_num 14
 IPModel_SW : pair interaction ti tj 2 1 Zi Zj 14 1
-IPModel_SW : pair 8.5812139999999992 0.0327827000000000 4.0000000000000000 0.0000000000000000 1.2500000000000000
+IPModel_SW : pair 8.5812139999999992 .0327827000000000  4.0000000000000000 .0000000000000000 1.2500000000000000
 IPModel_SW :      2.5378840000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 1 Zi Zj Zk 14 1 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 1 2 Zi Zj Zk 14 1 14
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
 IPModel_SW : pair interaction ti tj 2 2 Zi Zj 14 14
-IPModel_SW : pair 7.0495562769999998 0.6022245584000000 4.0000000000000000 0.0000000000000000 1.8000000000000000
+IPModel_SW : pair 7.0495562769999998 .6022245584000000  4.0000000000000000 .0000000000000000 1.8000000000000000
 IPModel_SW :      2.0951000000000000 2.2999999999999998
 IPModel_SW : triplet interaction ti tj 2 2 1 Zi Zj Zk 14 14 1
 IPModel_SW : triplet 21.0000000000000000 1.2000000000000000 2.2999999999999998
@@ -5092,7 +5199,12 @@ create_hybrid_weights: trans_width=0 buffer_width=1 weight_interpolation=hop_ram
   hysteretic_buffer_outer_radius=7.0000000000000000
   hysteretic_connect=F hysteretic_connect_cluster_radius=20.0000000000000000
   hysteretic_connect_inner_factor=1.2000000000000000 hysteretic_connect_outer_factor=1.5000000000000000
+trans_width 0
+region 1 done
+doing region 2
+region 2 done, non hysteretic buffer
 create_hybrid_weights: 17 region 1, 0 transition, 24 region 2, 41 in total
+subroutine create_hybrid_weights_args: DONE
 potential_calc got args_str ""
 parser doing Potential_Calc_str args_str
 parser defaulted: single_cluster=F
@@ -5107,7 +5219,12 @@ parser defaulted: calc_df=F
 parser defaulted: calc_virial=F
 MetaPotential_FM_Calc: reweighting classical forces by 1.0000000000000000 in active region
 Entered create_embed_and_fit_lists.
+total number of hybrid atoms17
+expand quantum region starting from 1 atom
+number of atoms in the embedlist is 17
 create_embed_and_fit_lists: 17 embed, 66 fit
+embedlist does not contain repeated atom indices :-)
+fitlist does not contain repeated atom indices :-)
 Leaving create_embed_and_fit_lists.
 potential_calc got args_str "single_cluster=T cluster_calc_connect=T buffer_hops=1 randomise_buffer=F"
 parser doing Potential_Calc_str args_str
@@ -5177,8 +5294,8 @@ parser defaulted: calc_local_e=F
 parser defaulted: calc_df=F
 parser defaulted: calc_virial=F
 Conserving momentum using fit list with 83 atoms
-conserve_momentum: norm(sum of target forces) = 0.134158971527074
-conserve_momentum: norm(sum of    fit forces) = 0.000000000000000
+conserve_momentum: norm(sum of target forces) = .134158971527074
+conserve_momentum: norm(sum of    fit forces) = .000000000000000
 Matrix_Print: printing matrix transpose
        0.4270785085      -1.4627721014      -0.5021788398
        0.1042996079       1.3001073632       0.5796324965
@@ -5598,7 +5715,7 @@ Matrix_Print: printing matrix transpose
        0.4157178686      -0.6188849066       0.7671302707
        0.3668628023       0.4848588297       0.0845144476
        0.3556368710      -0.7141544912       0.1890028983
-      -0.0473394799      -0.4079106088      -0.6022746841
+      -0.0473394799      -0.4079106089      -0.6022746841
        0.1466401973      -0.0769152284       1.1159721885
        0.5718785948       1.1973036406      -0.8424727117
       -0.8658728688       0.1685743372      -0.3093141628
@@ -5692,7 +5809,7 @@ Matrix_Print: printing matrix transpose
        0.2981132959       0.3175261901      -0.0697541443
        0.4421377803       0.1122262095      -0.2914376236
       -0.9093006761      -0.4827778579       0.4768171344
-conserve_momentum force error 0.0007685613560578 0.0111739935800214
+conserve_momentum force error .0007685613560578  .0111739935800209
 
 --->clusters.xyz---
 295
