@@ -342,10 +342,10 @@ Displacement field generated. Max disp: .2292878566958372
 
 ============================= Initialising QM region ===========================
 
-Crack position = 98.6643340163316225 near atom 3485
+Crack position =   0.9866433401633162E+02 -0.4216995203213221E+02 near atom 3485
 Recalculating connectivity
 Recalculating nearest neighbour table
-Crack position = -8.6624054620902449 near atom 1609
+Crack position =  -0.8662405462090245E+01 -0.1808975408115931E+01 near atom 1609
 Seeded embed region with 3 atoms.
 Building QM selection zone...
 count(changed_nn /= 0) = 3
@@ -353,11 +353,12 @@ Got 0 old embed atoms
   Selecting changed_nn age 1
 Surface 1 Now embedding 39 atoms
 Embedding 39 atoms.
-Crack position = -3.8353491170382132
+Crack position x = -8.6624054620902449 near atom 1609
+Crack position y = -1.8089754081159313 near atom 1609
 
 --->crack.xyz---
 3600
-OrigWidth=198.43725606 OrigHeight=91.71514268 YoungsModulus=142.78943482 PoissonRatio_yx=0.26527316 PoissonRatio_yz=0.26527316 CrackPos=-3.83534912 OrigCrackPos=-6.71862803 G=3.00000000 Lattice="299.545844 0.000000 0.000000 0.000000 194.066813 0.000000 0.000000 0.000000 3.840262" Properties=species:S:1:pos:R:3:Z:I:1:travel:I:3:hybrid:I:1:hybrid_mark:I:1:changed_nn:I:1:move_mask:I:1:nn:I:1:old_nn:I:1:md_old_changed_nn:I:1:edge_mask:I:1:load:R:3
+OrigWidth=198.43725606 OrigHeight=91.71514268 YoungsModulus=142.78943482 PoissonRatio_yx=0.26527316 PoissonRatio_yz=0.26527316 CrackPosx=-8.66240546 CrackPosy=-1.80897541 OrigCrackPos=-6.71862803 G=3.00000000 Lattice="299.545844 0.000000 0.000000 0.000000 194.066813 0.000000 0.000000 0.000000 3.840262" Properties=species:S:1:pos:R:3:Z:I:1:travel:I:3:hybrid:I:1:hybrid_mark:I:1:changed_nn:I:1:move_mask:I:1:nn:I:1:old_nn:I:1:md_old_changed_nn:I:1:edge_mask:I:1:load:R:3
 Si            -95.33856995    -41.79532950     -0.96006539      14       0       0       0       0       0       0       1       4       4       0       1      0.00000000     -0.22928786      0.00000000
 Si            -98.66433402    -41.79532950      0.96006539      14       0       0       0       0       0       0       1       3       3       0       1      0.00000000     -0.22928786      0.00000000
 Si            -97.55574599    -42.57921961     -0.96006539      14       0       0       0       0       0       0       1       4       4       0       1      0.00000000     -0.22928786      0.00000000
