@@ -1166,15 +1166,7 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
       self.assertArrayAlmostEqual(a.force, self.al[1].force)
 
 
-def getTestSuite():
-   tl = unittest.TestLoader()
-   return unittest.TestSuite([tl.loadTestsFromTestCase(TestCastepCell),
-                              tl.loadTestsFromTestCase(TestCastepParam),
-                              tl.loadTestsFromTestCase(TestReadGeom),
-                              tl.loadTestsFromTestCase(TestCastepOutput)])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()
 
 

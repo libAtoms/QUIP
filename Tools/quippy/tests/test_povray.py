@@ -44,14 +44,8 @@ sphere { <1.360000,-4.080000,4.080000>, 1.0 pigment {color <1.000000,1.000000,1.
       self.assertEqual(self.pov_ref, self.s.getvalue())
 
 
-def getTestSuite():
-   tl = unittest.TestLoader()
-   return unittest.TestSuite([tl.loadTestsFromTestCase(TestPovray)])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
-
+   unittest.main()
 
 
 

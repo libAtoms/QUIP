@@ -158,10 +158,5 @@ class TestTable(QuippyTestCase):
       self.assertEqual(t.intsize, 1)
       
       
-def getTestSuite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestTable)
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
-
+   unittest.main()

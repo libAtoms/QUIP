@@ -84,9 +84,5 @@ c=44""")
       self.assertEqual(' '.join(sorted(arg.split())), 'a=1 b=T c=F')
       
 
-def getTestSuite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestDictionary)
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()

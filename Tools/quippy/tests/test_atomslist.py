@@ -142,11 +142,5 @@ class TestAtomsList(QuippyTestCase):
       self.assertEqual(list(ar), list(self.genal))
 
       
-
-def getTestSuite():
-   tl = unittest.TestLoader()
-   return unittest.TestSuite(tl.loadTestsFromTestCase(TestAtomsList))
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()
