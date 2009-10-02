@@ -349,7 +349,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       tpow = .false.
       tgmin = .false.
       testewald = .false.
-      ttime = .false.
+      ttime = .true.
       tforcetest = .false. 
       tscaled = .false.
       tangstrom = .false.
