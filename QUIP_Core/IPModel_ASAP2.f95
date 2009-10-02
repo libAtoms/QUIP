@@ -47,13 +47,12 @@ type IPModel_ASAP2
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable, dimension(:) :: pol, z
   real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
-  integer :: iesr(3)
 
   real(dp) :: cutoff_coulomb, cutoff_ms
 
   character(len=FIELD_LENGTH) :: label
   type(mpi_context) :: mpi
-  logical :: initialised
+  logical :: initialised, tdip_sr
 
 end type IPModel_ASAP2
 
@@ -145,26 +144,30 @@ subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
 end subroutine smooth_cutoff
 
 
-subroutine asap_rs_charges(this, at, e, local_e, f, virial, field, args_str)
+!% Charge-charge interactions, screened by Yukawa function
+subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield, args_str)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
-   real(dp), intent(out), optional :: field(:,:)
+   real(dp), intent(out), optional :: efield(:,:)
    character(len=*), optional, intent(in) :: args_str
 
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
    real(dp) :: de, dforce, expfactor
+   logical :: i_is_min_image
 
    do i=1, at%n
+      i_is_min_image = is_min_image(at,i)
       ti = get_type(this%type_of_atomic_num, at%Z(i))
-      do m = 1, atoms_n_neighbours(at, i, max_dist=this%cutoff_coulomb)
+      do m = 1, atoms_n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=this%cutoff_coulomb)
+         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
+         if (i < j .and. i_is_min_image) cycle
 
          r_ij = r_ij/BOHR
          tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -181,31 +184,176 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, field, args_str)
          de = gamjir
 
          if (present(e) .or. present(local_e)) then
-            if (present(e))       e = e + 0.5_dp*de*expfactor*fc
-            if (present(local_e)) local_e(i) = local_e(i) + 0.5_dp*de*expfactor*fc
+            if (present(e)) then
+               if (i_is_min_image) then
+                  e = e + de*expfactor*fc
+               else
+                  e = e + 0.5_dp*de*expfactor*fc
+               end if
+            end if
+            if (present(local_e)) then
+               local_e(i) = local_e(i) + 0.5_dp*de*expfactor*fc
+               if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de*expfactor*fc
+            end if
          end if
 
-         if (present(f) .or. present(virial) .or. present(field)) then
+         if (present(f) .or. present(virial) .or. present(efield)) then
             dforce = gamjir3*expfactor*fc*r_ij + de*(this%yukalpha*fc - dfc_dr)*expfactor
 
-            if (present(f))      f(:,i) = f(:,i) - dforce*u_ij
-            if (present(virial)) virial = virial + 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
-            if (present(field))  field(:,i) = field(:,i) + gamjir3*expfactor*fc*r_ij/this%z(ti)
+            if (present(f)) then
+               f(:,i) = f(:,i) - dforce*u_ij
+               if (i_is_min_image) f(:,j) = f(:,j) + dforce*u_ij
+            end if
+
+            if (present(virial)) then
+               if (i_is_min_image) then
+                  virial = virial + dforce*(u_ij .outer. u_ij)*r_ij
+               else
+                  virial = virial + 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
+               end if
+            end if
+
+            if (present(efield)) then
+               efield(:,i) = efield(:,i) - gamjir3*expfactor*fc*u_ij*r_ij/this%z(ti)
+               if (i_is_min_image) efield(:,j) = efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
+            end if
          end if
       end do
    end do
 end subroutine asap_rs_charges
 
 
-subroutine asap_rs_dipoles(this, at, e, local_e, f, virial, args_str)
+!% Charge-dipole and dipole-dipole interactions, screeened by Yukawa function
+subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_str)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
+   real(dp), intent(in)            :: dip(:,:)
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
+   real(dp), intent(out), optional :: efield(:,:)
    character(len=*), optional, intent(in) :: args_str
 
-   
+   integer i, j, m, ti, tj, k
+   real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
+   real(dp) :: dforce, expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj
+   real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1
+   logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
+
+   do i=1, at%n
+      i_is_min_image = is_min_image(at,i)
+      ti = get_type(this%type_of_atomic_num, at%Z(i))
+
+      qi = this%z(ti)
+      dipi = dip(:,i)
+      tpoli = abs(this%pol(ti)) > 0.0_dp
+
+      ! Induced contribution to energy
+      if ((present(e) .or. present(local_e)) .and. tpoli) then
+         de_ind = 0.5_dp*(dipi .dot. dipi)/this%pol(ti)
+         if (present(e))       e = e + de_ind
+         if (present(local_e)) local_e(i) = local_e(i) + de_ind
+      end if
+
+      do m = 1, atoms_n_neighbours(at, i)
+         
+         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
+         if (j <= 0) cycle
+         if (r_ij .feq. 0.0_dp) cycle
+         if (i < j .and. i_is_min_image) cycle
+
+         r_ij = r_ij/BOHR
+         u_ij = u_ij/BOHR
+         tj = get_type(this%type_of_atomic_num, at%Z(j))
+
+         qj = this%z(tj)
+         dipj = dip(:,j)
+         tpolj = abs(this%pol(tj)) > 0.0_dp
+
+         qipj = (abs(qi) > 0.0_dp) .and. tpolj
+         qjpi = (abs(qj) > 0.0_dp) .and. tpoli
+         pipj = tpoli .and. tpolj
+
+         if (.not. (pipj .or. qipj .or. qjpi)) cycle
+        
+         gamjir2 = 1.0_dp/r_ij**2.0_dp
+         gamjir3 = gamjir2/r_ij
+         factor1 = 3.0_dp*gamjir2*gamjir3
+
+         expfactor = exp(-this%yukalpha*r_ij)
+
+         call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, &
+              this%yuksmoothlength, fc, dfc_dr)
+
+         pp = 0.0_dp
+         if (pipj)  pp  = dipi .dot. dipj
+         pri = 0.0_dp
+         if (tpoli) pri = dipi .dot. u_ij
+
+         prj = 0.0_dp
+         if (tpolj) prj = dipj .dot. u_ij
+
+         if (present(efield)) then
+            efield(:,i) = efield(:,i) + &
+                 (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            if (i_is_min_image) &
+                 efield(:,j) = efield(:,j) + &
+                 (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+         end if
+
+         if (present(e) .or. present(local_e) .or. present(virial) .or. present(f)) then
+
+            de_dd = (pp - 3.0_dp*pri*prj*gamjir2)*gamjir3
+            de_qd = -(qi*prj - qj*pri)*gamjir3
+
+            if (present(e)) then
+               if (i_is_min_image) then
+                  e = e + (de_dd + de_qd)*expfactor*fc
+               else
+                  e = e + 0.5_dp*(de_dd + de_qd)*expfactor*fc
+               end if
+            end if
+
+            if (present(local_e)) then
+               local_e(i) = local_e(i) + 0.5_dp*(de_dd + de_qd)*expfactor*fc
+               if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*(de_dd + de_qd)*expfactor*fc
+            end if
+
+            if (present(f) .or. present(virial)) then
+               dfqdip = .0_dp
+               if (qipj .or. qjpi) then
+                  dfqdip = ((qj*dipi(:) - qi*dipj(:) &
+                       - 3.0_dp*(qj*pri-qi*prj)*u_ij*gamjir2)*gamjir3)*expfactor*fc &
+                       - de_qd*(this%yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij
+               end if
+
+               dfdipdip = 0.0_dp
+               if (pipj) then
+                  dfdipdip = (-(pp*u_ij + dipj(:)*pri+dipi(:)*prj &
+                       - 5.0_dp*prj*pri*u_ij(:)*gamjir2)*factor1)*expfactor*fc &
+                       - de_dd*(this%yukalpha*fc - dfc_dr)*expfactor/r_ij*u_ij(:)
+               end if
+
+               if (present(f)) then
+                  f(:,i) = f(:,i) + dfqdip + dfdipdip
+                  if (i_is_min_image) f(:,j) = f(:,j) - (dfqdip + dfdipdip)
+               end if
+
+               if (present(virial)) then
+                  if (i_is_min_image) then
+                     virial = virial - ((dfqdip+dfdipdip) .outer. u_ij)
+                  else
+                     virial = virial - 0.5_dp*((dfqdip+dfdipdip) .outer. u_ij)
+                  end if
+               end if
+
+            end if
+
+         end if
+
+      end do
+   end do
+
 end subroutine asap_rs_dipoles
 
 
@@ -227,6 +375,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
    real(dp) :: exponentms, factorms, phi, de
    real(dp) :: dforce
    real(dp) :: elimitij(this%n_types, this%n_types)
+   logical :: i_is_min_image
 
    ! Evaluate potential at cutoff. Will be subtracted from total energy.
    elimitij = 0.0_dp
@@ -238,12 +387,14 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
    end do
  
    do i=1, at%n
+      i_is_min_image = is_min_image(at,i)
       ti = get_type(this%type_of_atomic_num, at%Z(i))
-      do m = 1, atoms_n_neighbours(at, i, max_dist=this%cutoff_ms)
+      do m = 1, atoms_n_neighbours(at, i)
          
-         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=this%cutoff_ms)
+         j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
+         if (i < j .and. i_is_min_image) cycle
 
          r_ij = r_ij/BOHR
          tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -259,15 +410,33 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
          if (present(e) .or. present(local_e)) then
             de = dms*(phi-2.0_dp*sqrt(phi)) - elimitij(ti, tj)
 
-            if (present(e))       e = e + 0.5_dp*de
-            if (present(local_e)) local_e(i) = local_e(i) + 0.5_dp*de
+            if (present(e)) then
+               if (i_is_min_image) then
+                  e = e + de
+               else
+                  e = e + 0.5_dp*de
+               end if
+            end if
+            if (present(local_e)) then
+               local_e(i) = local_e(i) + 0.5_dp*de
+               if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
+            end if
          end if
 
          if (present(f) .or. present(virial)) then
             dforce  = -dms*(factorms*phi - factorms*dsqrt(phi))
 
-            if (present(f))      f(:,i) = f(:,i) + dforce*u_ij
-            if (present(virial)) virial = virial - 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
+            if (present(f)) then
+               f(:,i) = f(:,i) + dforce*u_ij
+               if (i_is_min_image) f(:,j) = f(:,j) - dforce*u_ij
+            end if
+            if (present(virial)) then
+               if (i_is_min_image) then
+                  virial = virial - dforce*(u_ij .outer. u_ij)*r_ij
+               else
+                  virial = virial - 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
+               end if
+            end if
          end if
       end do
    end do
@@ -284,15 +453,20 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    character(len=*), optional, intent(in) :: args_str
 
    type(Dictionary) :: params
-   logical :: restart, calc_dipoles, calc_field
-   real(dp), allocatable, target :: thefield(:,:)
-   real(dp), pointer :: field(:,:)
-   
+   logical :: save_efield, save_dipoles, restart
+   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_charge(:,:), efield_dipole(:,:)
+   real(dp), pointer :: efield(:,:), dipoles(:,:)
+   real(dp), pointer, dimension(:,:) :: efield_old1, efield_old2, efield_old3
+   real(dp) :: diff, diff_old
+   integer :: n_efield_old
+   integer :: i, npol, ti
+
+   real, parameter :: difftol = 500.0_dp
 
    call initialise(params)
+   call param_register(params, 'save_efield', 'T', save_efield)
+   call param_register(params, 'save_dipoles', 'T', save_dipoles)
    call param_register(params, 'restart', 'F', restart)
-   call param_register(params, 'calc_dipoles', 'F', calc_dipoles)
-   call param_register(params, 'calc_field', 'F', calc_field)
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
       call system_abort("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str))
    endif
@@ -303,27 +477,145 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(local_e)) local_e = 0.0_dp
    if (present(virial)) virial = 0.0_dp
 
-   if (calc_field) then
-      if (.not. has_property(at, 'field')) call add_property(at, 'field', 0.0_dp, n_cols=3)
-      if (.not. assign_pointer(at, 'field', field)) &
-           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "field" property')
+   allocate(efield_charge(3,at%n), efield_dipole(3,at%n))
+
+   ! Add properties
+   if (save_efield .and. .not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
+   if (save_dipoles .and. .not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
+
+   ! Assign pointers
+   if (save_efield) then
+      if (.not. assign_pointer(at, 'efield', efield)) &
+           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield" property')
    else
-      allocate(thefield(3,at%n))
-      field => thefield
+      allocate(theefield(3,at%n))
+      efield => theefield
    end if
 
-   field = 0.0_dp
-   call asap_rs_charges(this, at, e, local_e, f, virial, field, args_str)
-   call asap_rs_dipoles(this, at, e, local_e, f, virial, args_str)
+   if (save_dipoles) then
+      if (.not. assign_pointer(at, 'dipoles', dipoles)) &
+           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "dipoles" property')
+   else
+      allocate(thedipoles(3,at%n))
+      dipoles => thedipoles
+   end if
+
+   if (.not. assign_pointer(at, 'efield_old1', efield_old1)) &
+        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property')
+   if (.not. assign_pointer(at, 'efield_old2', efield_old2)) &
+        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old2" property')
+   if (.not. assign_pointer(at, 'efield_old3', efield_old3)) &
+        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old3" property')
+
+   if (.not. get_value(at%params, 'n_efield_old', n_efield_old)) n_efield_old = 0
+      
+
+   if (restart) then
+      efield_old1(:,:) = 0.0_dp
+      efield_old2(:,:) = 0.0_dp
+      efield_old3(:,:) = 0.0_dp
+   end if
+
+   efield = 0.0_dp
+   dipoles = 0.0_dp
+
+   ! Extrapolate from the old electric efield
+   if (this%pred_order == 0) then
+      if (n_efield_old >= 1) efield = efield_old1(:,:)
+
+   else if (this%pred_order == 1) then
+
+      if (n_efield_old >= 2) &
+           efield = 2.0_dp*efield_old1(:,:) - efield_old2(:,:)
+
+      efield_old2(:,:) = efield_old1(:,:)
+   else if (this%pred_order == 2) then
+        
+      if (n_efield_old >= 3) &
+           efield = 3.0_dp*efield_old1(:,:) - 3.0_dp*efield_old2(:,:) + efield_old3(:,:)
+
+      efield_old3(:,:) = efield_old2(:,:)
+      efield_old2(:,:) = efield_old1(:,:)
+   end if
+
+   call set_value(at%params, 'n_efield_old', min(n_efield_old+1,3))
+
+   efield_dipole = 0.0_dp
+   efield_charge = 0.0_dp
+
+   if (maxval(abs(this%z)) > 0.0_dp) then
+      call asap_rs_charges(this, at, e, local_e, f, virial, efield_charge, args_str)
+   end if
+
+   if (maxval(abs(this%pol)) > 0.0_dp) then
+      ! Self-consistent determination of dipole moments
+      diff_old = 1.0_dp
+      npol = 1
+      do 
+         ! Mix current and previous total efields
+         if (npol == 1) then
+            efield = efield_dipole + efield_charge
+         else
+            efield = this%betapol*efield_dipole + &
+                 (1.0_dp - this%betapol)*efield_old1(:,:) + efield_charge
+         end if
+
+         ! Calculate dipole moment in response to total efield
+         do i=1,at%n
+            ti = get_type(this%type_of_atomic_num, at%Z(i))
+            dipoles(:,i) = efield(:,i)*this%pol(ti) ! + dir_sr
+         end do
+
+         ! Calculate new efield and measure of convergence
+         efield_old1(:,:) = efield_dipole
+         efield_dipole = 0.0_dp
+         call asap_rs_dipoles(this, at, dipoles, efield=efield_dipole, args_str=args_str)
+
+         diff = 0.0_dp
+         do i=1,at%n
+            ti = get_type(this%type_of_atomic_num, at%Z(i))
+            diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))* &
+                 this%pol(ti)*this%pol(ti)
+         end do
+         diff = sqrt(diff/at%n)
+         
+         if (current_verbosity() >= NORMAL) then
+            write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
+            call print(line, NORMAL)
+         end if
+
+         if (diff > difftol) &
+              call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
+      
+         if (abs(diff - diff_old) < this%tolpol) exit
+
+         diff_old = diff
+         npol = npol + 1
+         if (npol >= this%maxipol) &
+              call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+      end do
+
+      ! Compute final energy, local energies, forces, virial and electric efield
+      efield = efield_charge
+      call asap_rs_dipoles(this, at, dipoles, e, local_e, f, virial, efield, args_str)
+   end if
+
+   ! Finally, add the short-range contribution
    call asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
 
-   ! Unit conversion
+      ! Unit conversion
    if (present(e)) e = e*HARTREE
    if (present(local_e)) local_e = local_e*HARTREE
    if (present(f)) f = f*(HARTREE/BOHR)
    if (present(virial)) virial = virial*HARTREE
 
-   if (allocated(thefield)) deallocate(thefield)
+   if (allocated(theefield)) deallocate(theefield)
+   if (allocated(thedipoles)) deallocate(thedipoles)
+   deallocate(efield_charge)
+   deallocate(efield_dipole)
 
 end subroutine IPModel_ASAP2_Calc
 
@@ -395,7 +687,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   integer ti, tj, Zi, Zj
 
-  if (name == 'ASAP_params') then ! new ASAP2 stanza
+  if (name == 'ASAP_params') then ! new ASAP stanza
 
     if (parse_matched_label) return ! we already found an exact match for this label
 
@@ -468,6 +760,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, "yuksmoothlength", value, status)
       if (status == 0) read (value, *) parse_ip%yuksmoothlength
+
+      parse_ip%tdip_sr = .true.
+      call QUIP_FoX_get_value(attributes, "tdip_sr", value, status)
+      if (status == 0) read (value, *), parse_ip%tdip_sr
 
     endif
 
