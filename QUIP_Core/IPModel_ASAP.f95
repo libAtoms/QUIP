@@ -47,7 +47,7 @@ type IPModel_ASAP
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
   real(dp), allocatable, dimension(:) :: pol, z
   real(dp), allocatable, dimension(:,:) :: D_ms, gamma_ms, R_ms, B_pol, C_pol
-  logical :: tewald
+  logical :: tewald, tdip_sr
   real :: raggio, a_ew, gcut
   integer :: iesr(3)
 
@@ -611,7 +611,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       ! Yukawa parameters
       yukalpha = this%yukalpha
       yuksmoothlength = this%yuksmoothlength
-      tdip_sr = .true.
+      tdip_sr = this%tdip_sr
       
       asap_initialised = .true.
    end if
@@ -837,6 +837,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%tewald = .false.
       call QUIP_FoX_get_value(attributes, "tewald", value, status)
       if (status == 0) read (value, *), parse_ip%tewald
+
+      parse_ip%tdip_sr = .true.
+      call QUIP_FoX_get_value(attributes, "tdip_sr", value, status)
+      if (status == 0) read (value, *), parse_ip%tdip_sr
 
       parse_ip%raggio = 0.0_dp
       call QUIP_FoX_get_value(attributes, "raggio", value, status)
