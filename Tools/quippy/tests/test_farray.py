@@ -396,12 +396,5 @@ class TestFortranArray(QuippyTestCase):
       self.assertEqual(list((self.f2 > 2).any(axis=2)), [True, True, True])      
       
       
-   
-
-def getTestSuite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestFortranArray)
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
-
+   unittest.main()

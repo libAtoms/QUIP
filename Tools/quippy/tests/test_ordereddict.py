@@ -91,10 +91,5 @@ class TestOrderedDict(QuippyTestCase):
       self.assertEqual(odict_copy.values(), ['a','b','c','d'])
                                           
 
-
-def getTestSuite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestOrderedDict)
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()

@@ -331,18 +331,5 @@ if hasattr(quippy, 'Potential'):
             self.assertArrayAlmostEqual(self.c0, self.c0_ref)
 
 
-
-
-   def getTestSuite():
-      return unittest.TestSuite([unittest.TestLoader().loadTestsFromTestCase(TestPotential),
-                                 unittest.TestLoader().loadTestsFromTestCase(TestMetaPotential)])
-
-else:
-   
-   def getTestSuite():
-      return unittest.TestSuite([])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
-
+   unittest.main()

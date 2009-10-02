@@ -215,15 +215,5 @@ if hasattr(quippy, 'Potential') and got_scipy:
 
          self.assertArrayAlmostEqual(C, self.C_ref_relaxed, tol=0.2)
 
-   def getTestSuite():
-      tl = unittest.TestLoader()
-      return unittest.TestSuite(tl.loadTestsFromTestCase(TestElastic))
-
-else:
-
-   def getTestSuite():
-      return unittest.TestSuite([])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()

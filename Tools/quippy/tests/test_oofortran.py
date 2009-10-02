@@ -67,10 +67,5 @@ class TestOOFortran(QuippyTestCase):
       self.dia.calc_connect(own_neighbour=1)
 
 
-def getTestSuite():
-   return unittest.TestSuite(unittest.TestLoader().loadTestsFromTestCase(TestOOFortran))
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
-
+   unittest.main()

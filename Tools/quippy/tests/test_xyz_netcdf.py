@@ -269,13 +269,5 @@ class TestNetCDFAtomsList(QuippyTestCase):
       self.assertEqual(nc.variables.keys(), ['dummy_real', 'coordinates', 'dummy_int_a2', 'dummy_real_a2', 'dummy_int', 'cell_angular', 'cell_lengths', 'dummy_real_a', 'dummy_int_a', 'spatial', 'cell_spatial', 'Z', 'cell_angles', 'species'])
       
 
-def getTestSuite():
-   tl = unittest.TestLoader()
-   return unittest.TestSuite([tl.loadTestsFromTestCase(TestAtomsListCInOutput),
-                              tl.loadTestsFromTestCase(TestPythonNetCDF),
-                              tl.loadTestsFromTestCase(TestPuPyXYZ),
-                              tl.loadTestsFromTestCase(TestNetCDFAtomsList)])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()

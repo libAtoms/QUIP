@@ -279,10 +279,5 @@ class TestCluster(QuippyTestCase):
       cluster3 = carve_cluster(self.at, args_str(self.args), cluster_info)
       self.assert_(cluster3.z.sum() % 2 == 0)
 
-def getTestSuite():
-   tl = unittest.TestLoader()
-   return unittest.TestSuite([tl.loadTestsFromTestCase(TestCluster)])
-
 if __name__ == '__main__':
-   suite = getTestSuite()
-   unittest.TextTestRunner(verbosity=2).run(suite)
+   unittest.main()
