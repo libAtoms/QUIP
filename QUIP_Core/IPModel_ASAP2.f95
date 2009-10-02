@@ -145,19 +145,20 @@ end subroutine smooth_cutoff
 
 
 !% Charge-charge interactions, screened by Yukawa function
-subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield, args_str)
+subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
-   character(len=*), optional, intent(in) :: args_str
 
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
    real(dp) :: de, dforce, expfactor
    logical :: i_is_min_image
+
+   call system_timer('asap_rs_charges')
 
    do i=1, at%n
       i_is_min_image = is_min_image(at,i)
@@ -220,11 +221,14 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield, args_str)
          end if
       end do
    end do
+
+   call system_timer('asap_rs_charges')
+
 end subroutine asap_rs_charges
 
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
-subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_str)
+subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(in)            :: dip(:,:)
@@ -232,7 +236,6 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
-   character(len=*), optional, intent(in) :: args_str
 
    integer i, j, m, ti, tj, k
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
@@ -240,6 +243,8 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
    real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1, dist3, dist5
    real(dp) :: const1, const2, factork, de_sr, df_sr(3), gij, dgijdrij, bij, cij
    logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
+
+   call system_timer('asap_rs_dipoles')
 
    do i=1, at%n
       i_is_min_image = is_min_image(at,i)
@@ -385,7 +390,79 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield, args_st
       end do
    end do
 
+   call system_timer('asap_rs_dipoles')
+
 end subroutine asap_rs_dipoles
+
+
+subroutine asap_rs_dipoles_fast(this, at, dip, efield)
+   type(IPModel_ASAP2), intent(inout):: this
+   type(Atoms), intent(inout)      :: at
+   real(dp), intent(in)            :: dip(:,:)
+   real(dp), intent(out) :: efield(:,:)
+
+   integer i, j, m, ti, tj, k
+   real(dp) :: r_ij, u_ij(3), zv2, gamjir2, fc, dfc_dr
+   real(dp) :: expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj
+   logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
+
+   call system_timer('asap_rs_dipoles_fast')
+
+   do i=1, at%n
+      i_is_min_image = is_min_image(at,i)
+      ti = get_type(this%type_of_atomic_num, at%Z(i))
+
+      qi = this%z(ti)
+      dipi = dip(:,i)
+      tpoli = abs(this%pol(ti)) > 0.0_dp
+
+      do m = 1, atoms_n_neighbours(at, i)
+         
+         j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
+         if (j <= 0) cycle
+         if (r_ij .feq. 0.0_dp) cycle
+         if (i < j .and. i_is_min_image) cycle
+
+         r_ij = r_ij/BOHR
+         u_ij = u_ij/BOHR
+         tj = get_type(this%type_of_atomic_num, at%Z(j))
+
+         qj = this%z(tj)
+         dipj = dip(:,j)
+         tpolj = abs(this%pol(tj)) > 0.0_dp
+
+         qipj = (abs(qi) > 0.0_dp) .and. tpolj
+         qjpi = (abs(qj) > 0.0_dp) .and. tpoli
+         pipj = tpoli .and. tpolj
+
+         if (.not. (pipj .or. qipj .or. qjpi)) cycle
+        
+         gamjir2 = 1.0_dp/(r_ij**2.0_dp)
+
+         expfactor = exp(-this%yukalpha*r_ij)
+
+         call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, &
+              this%yuksmoothlength, fc, dfc_dr)
+
+         pp = 0.0_dp
+         if (pipj)  pp  = dipi .dot. dipj
+         pri = 0.0_dp
+         if (tpoli) pri = dipi .dot. u_ij
+
+         prj = 0.0_dp
+         if (tpolj) prj = dipj .dot. u_ij
+
+         efield(:,i) = efield(:,i) + &
+              (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+         if (i_is_min_image) &
+              efield(:,j) = efield(:,j) + &
+              (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+      end do
+   end do
+
+   call system_timer('asap_rs_dipoles_fast')
+
+ end subroutine asap_rs_dipoles_fast
 
 
 subroutine asap_short_range_dipole_moments(this, at, dip_sr)
@@ -396,6 +473,8 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
   integer :: i, ti, m, j, tj, k
   real(dp) :: r_ij, u_ij(3), qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr
   integer, parameter :: nk = 4
+
+  call system_timer('asap_short_range_dipole_moments')
 
   dip_sr = 0.0_dp
   do i=1, at%n
@@ -434,6 +513,8 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
       end do
   end do
 
+  call system_timer('asap_short_range_dipole_moments')
+
 end subroutine asap_short_range_dipole_moments
 
 !% Morse-stretch potential, defined by
@@ -441,13 +522,12 @@ end subroutine asap_short_range_dipole_moments
 !% U_ij = D_ij \left[ e^{\gamma_{ij}\left( 1 - r_{ij}/r^0_{ij} \right)} 
 !%                  - 2 e^{\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
 !% \end{displaymath}
-subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
+subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
-   character(len=*), optional, intent(in) :: args_str
 
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), dms, gammams, rms
@@ -455,6 +535,8 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
    real(dp) :: dforce
    real(dp) :: elimitij(this%n_types, this%n_types)
    logical :: i_is_min_image
+
+   call system_timer('asap_morse_stretch')
 
    ! Evaluate potential at cutoff. Will be subtracted from total energy.
    elimitij = 0.0_dp
@@ -520,7 +602,22 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
       end do
    end do
 
+   call system_timer('asap_morse_stretch')
+
 end subroutine asap_morse_stretch
+
+subroutine IPModel_ASAP2_prepare_atoms(this, at)
+   type(IPModel_ASAP2), intent(inout):: this
+   type(Atoms), intent(inout)      :: at
+
+   ! Add properties to Atoms object - it's not safe to do this from within calc()
+   if (.not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
+   if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
+
+end subroutine IPModel_ASAP2_prepare_atoms
 
 
 subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
@@ -533,7 +630,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    type(Dictionary) :: params
    logical :: save_efield, save_dipoles, restart
-   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
+   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:) 
+   real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
    real(dp), pointer :: efield(:,:), dipoles(:,:)
    real(dp), pointer, dimension(:,:) :: efield_old1, efield_old2, efield_old3
    real(dp) :: diff, diff_old
@@ -541,6 +639,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    integer :: i, npol, ti
 
    real, parameter :: difftol = 500.0_dp
+
+   call system_timer('asap_calc')
 
    call initialise(params)
    call param_register(params, 'save_efield', 'T', save_efield)
@@ -557,13 +657,6 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(virial)) virial = 0.0_dp
 
    allocate(efield_charge(3,at%n), efield_dipole(3,at%n))
-
-   ! Add properties
-   if (save_efield .and. .not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
-   if (save_dipoles .and. .not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
 
    ! Assign pointers
    if (save_efield) then
@@ -626,7 +719,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    efield_charge = 0.0_dp
 
    if (maxval(abs(this%z)) > 0.0_dp) then
-      call asap_rs_charges(this, at, e, local_e, f, virial, efield_charge, args_str)
+      call asap_rs_charges(this, at, e, local_e, f, virial, efield_charge)
    end if
 
    allocate(dip_sr(3,at%n))
@@ -637,6 +730,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       ! Self-consistent determination of dipole moments
       diff_old = 1.0_dp
       npol = 1
+      call system_timer('asap_self_consistent_dipoles')
       do 
          ! Mix current and previous total efields
          if (npol == 1) then
@@ -655,7 +749,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          ! Calculate new efield and measure of convergence
          efield_old1(:,:) = efield_dipole
          efield_dipole = 0.0_dp
-         call asap_rs_dipoles(this, at, dipoles, efield=efield_dipole, args_str=args_str)
+         call asap_rs_dipoles_fast(this, at, dipoles, efield=efield_dipole)
 
          diff = 0.0_dp
          do i=1,at%n
@@ -680,14 +774,15 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          if (npol >= this%maxipol) &
               call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
       end do
+      call system_timer('asap_self_consistent_dipoles')
 
       ! Compute final energy, local energies, forces, virial and electric efield
       efield = efield_charge
-      call asap_rs_dipoles(this, at, dipoles, e, local_e, f, virial, efield, args_str)
+      call asap_rs_dipoles(this, at, dipoles, e, local_e, f, virial, efield)
    end if
 
    ! Finally, add the short-range contribution
-   call asap_morse_stretch(this, at, e, local_e, f, virial, args_str)
+   call asap_morse_stretch(this, at, e, local_e, f, virial)
 
       ! Unit conversion
    if (present(e)) e = e*HARTREE
@@ -697,9 +792,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    if (allocated(theefield)) deallocate(theefield)
    if (allocated(thedipoles)) deallocate(thedipoles)
-   deallocate(efield_charge)
-   deallocate(efield_dipole)
-   deallocate(dip_sr)
+   if (allocated(efield_charge)) deallocate(efield_charge)
+   if (allocated(efield_dipole)) deallocate(efield_dipole)
+   if (allocated(dip_sr)) deallocate(dip_sr)
+
+   call system_timer('asap_calc')
 
 end subroutine IPModel_ASAP2_Calc
 
