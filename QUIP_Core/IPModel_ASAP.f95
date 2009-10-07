@@ -379,9 +379,6 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       tplot_efield = .false.
       tfirst_efield_plot = .true.
       tewald = .false.
-      calc_ewald = .false.
-      write_ewald = .false. 
-      read_ewald = .false.
       write_sr = .false.
       read_sr= .false.
       calc_sr=.false.
@@ -403,6 +400,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
       tz=.false.
       hafta=.false.
       tbegin = .true.
+      tyukawa = .true.
       
       sumewald = .true.
       allocate(spind(nat),objind(nat),numobj(nobj),numobjsp(nobj,nsp))
