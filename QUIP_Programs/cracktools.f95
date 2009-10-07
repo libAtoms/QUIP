@@ -107,64 +107,6 @@ contains
 
   end subroutine crack_parse_name
 
-
-  !% Convert a string representation of the material to
-  !% an atomic number array suitable for passing to 'diamond()', \emph{e.g.}
-  !% 'Si' $\to$ '14', 'C' $\to$ '6' and 'SiC' $\to$ '(/14,6/)'.
-  subroutine crack_parse_atomic_numbers(str, Z)
-    character(len=*), intent(in) :: str
-    integer, intent(out) :: Z(:)
-
-    integer i, p
-
-    i = 0
-    p=1
-    do while (p <= len(trim(str)))
-       i = i + 1
-       if (i > size(Z)) call system_abort("Too many elements in str='"//trim(str)//"' for size(Z)="//size(Z))
-       if (len(trim(str)) > p .and. scan(str(p+1:p+1),'abcdefghijklmnopqrstuvwxzy') == 1)  then ! 2 letter element
-          Z(i) = Atomic_Number(str(p:p+1))
-          p = p + 1
-       else
-          Z(i) = Atomic_Number(str(p:p))
-       endif
-       p = p + 1
-    end do
-
-    if (i == 0) then
-       call system_abort("parse_atomic_numbers failed to parse anything, str='"//trim(str)//"'")
-    else if (i == 1) then
-       Z(2:) = Z(1)
-    else
-       if (i /= size(Z)) then
-          call system_abort("parse_atomic_numbers found "//i//" elements, but size(Z)="//size(Z))
-       endif
-    endif
-  end subroutine crack_parse_atomic_numbers
-
-
-  !% Find the distinct elements in the array 'at_Z' and
-  !% return a list of them in the array 'Z'.
-  subroutine crack_find_elements(at_Z, Z)
-    integer, intent(in) :: at_Z(:)
-    integer, intent(out), allocatable :: Z(:)
-
-    integer :: i, ii
-    integer :: Zs(size(ElementName))
-
-    Zs = 0
-    Zs(at_Z) = 1
-
-    allocate(Z(sum(Zs)))
-    ii = 1
-    do i=1, size(Zs)
-       if (Zs(i) /= 0) then
-          Z(ii) = i
-          ii = ii + 1
-       end if
-    end do
-  end subroutine crack_find_elements
-
   !% Calculate energy release rate $G$ from strain using 
   !% $$G = \frac{1}{2} \frac{E}{1-\nu^2} \epsilon^2 h$$
   !% from thin strip result. Quantities are:
@@ -874,7 +816,7 @@ contains
        end if
 
 
-    call calc_connect(crack_slab)
+    call calc_connect(crack_slab, store_is_min_image=.true.)
 
     deallocate(relaxed_pos, new_pos)
     deallocate(u_disp, k_disp)
@@ -929,12 +871,12 @@ contains
           call print_title('Seed crack - Uniform Load')
 
           G = params%crack_G
-          call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
           call set_value(crack_slab%params, 'G', G)
           call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
           call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
           call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+          call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
 
           if(params%crack_rescale_x_z) then
              !  Rescale in x direction by v and in z direction by v2
@@ -1224,7 +1166,7 @@ contains
 
     if (first_time .or. (max_disp > params%md_recalc_connect_factor*params%md_crust)) then
        call print('Recalculating connectivity')
-       call calc_connect(at)
+       call calc_connect(at, store_is_min_image=.true.)
        stored_pos = at%pos ! Save positions for next time
     end if
 
@@ -1282,7 +1224,7 @@ contains
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
-    integer :: p, i, j, surface, age
+    integer :: p, i, j, surface, age, ti
     type(Table) :: old_embed, selectlist(2), tmp_select, embedlist, temptable
     type(Table), dimension(2) :: new_embed
     integer, allocatable, dimension(:) :: sindex
@@ -1511,7 +1453,9 @@ contains
     crack_tip_atom = 0
     do j=1,embedlist%N
        i = embedlist%int(1,j)
-       if (nn(i) >= params%md_eqm_coordination) cycle
+       ti = find_in_array(params%crack_z, at%z(i))
+       if (ti == 0) call system_abort('Bad atom type i='//i//' z='//at%z(i))
+       if (nn(i) >= params%md_eqm_coordination(ti)) cycle
        if (edge_mask(i) == 1) cycle
        if (at%pos(1,i) > crack_pos(1)) then
           crack_pos(1) = at%pos(1,i)
@@ -1554,7 +1498,7 @@ contains
     type(CrackParams) :: params
     real(dp), dimension(2) :: crack_pos
 
-    integer :: i, crack_tip_atom
+    integer :: i, crack_tip_atom, ti
     integer, pointer, dimension(:) :: nn, edge_mask
     real(dp) :: orig_width
 
@@ -1570,7 +1514,8 @@ contains
     crack_pos(1) = -orig_width
     crack_tip_atom = 0
     do i=1,at%N
-       if (nn(i) >= params%md_eqm_coordination) cycle 
+       ti = find_in_array(params%crack_z, at%z(i))
+       if (nn(i) >= params%md_eqm_coordination(ti)) cycle
        if (edge_mask(i) == 1) cycle
        if (at%pos(1,i) > crack_pos(1)) then
           crack_pos(1) = at%pos(1,i)
@@ -1654,7 +1599,7 @@ contains
   type(inoutput) :: infile
   type(Atoms) :: crack_layer
   real (dp), dimension(3,3) :: axes, lattice
-  integer :: i, Z(2)
+  integer :: i
   real(dp), dimension(6,6) :: c, c0
   type(Metapotential) :: simple_metapot
 
@@ -1733,45 +1678,64 @@ contains
      crack_slab = crack_layer
 
      call atoms_set_cutoff(crack_slab, cutoff(classicalpot)+params%md_crust)
-     call calc_connect(crack_slab)
+     call calc_connect(crack_slab, store_is_min_image=.true.)
 
      call Print('Graphene sheet contains '//crack_slab%N//' atoms.')
 
-  else if (trim(params%crack_structure) == 'diamond'.or.trim(params%crack_structure) == 'bcc'.or.trim(params%crack_structure) == 'fcc') then
+  else if (trim(params%crack_structure) == 'diamond'.or.trim(params%crack_structure) == 'bcc' &
+       .or.trim(params%crack_structure) == 'fcc' .or. trim(params%crack_structure) == 'alpha_quartz' ) then
 
-     call crack_parse_atomic_numbers(params%crack_element, Z)
      if(trim(params%crack_structure) == 'diamond') then
        call print_title('Diamond Structure Crack')
-       call diamond(bulk, params%crack_lattice_guess, Z)
+       call diamond(bulk, params%crack_lattice_guess, params%crack_z)
      elseif(trim(params%crack_structure) == 'bcc') then
        call print_title('BCC Structure Crack')
-       call bcc(bulk, params%crack_lattice_guess, Z(1))
+       call bcc(bulk, params%crack_lattice_guess, params%crack_z(1))
        call set_cutoff(bulk, cutoff(simple))
      elseif(trim(params%crack_structure) == 'fcc') then
        call print_title('FCC Structure Crack')
-       call fcc(bulk, params%crack_lattice_guess, Z(1))
+       call fcc(bulk, params%crack_lattice_guess, params%crack_z(1))
+       call set_cutoff(bulk, cutoff(simple))
+     elseif(trim(params%crack_structure) == 'alpha_quartz') then
+       call print_title('Alpha Quartz Crack')
+       call alpha_quartz(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u, &
+            x=params%crack_lattice_x, y=params%crack_lattice_y, z=params%crack_lattice_z)
        call set_cutoff(bulk, cutoff(simple))
      endif
-     simple_metapot = simple
-     call calc_elastic_constants(simple_metapot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
 
-     call print('Relaxed elastic constants (GPa):')
-     call print(c*GPA)
-     call print('')
-     call print('Unrelaxed elastic constants (GPa):')
-     call print(c0*GPA)
-     call print('')
-
-     call print('Relaxed lattice')
-     call print(bulk%lattice)
-     a = bulk%lattice(1,1)
-
-     call Print(trim(params%crack_element)//' crack: atomic number Z='//Z//&
-          ', lattice constant a = '//a)
-     call Print('Crack name '//params%crack_name)
+     if (params%elastic_read) then
+        c = params%elastic_cij/GPA
+     else
+        simple_metapot = simple
+        call calc_elastic_constants(simple_metapot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+        
+        call print('Relaxed elastic constants (GPa):')
+        call print(c*GPA)
+        call print('')
+        call print('Unrelaxed elastic constants (GPa):')
+        call print(c0*GPA)
+        call print('')
+     
+        call print('Relaxed lattice')
+        call print(bulk%lattice)
+     end if
 
      ! Parse crack name and make crack slab
-     call crack_parse_name(params%crack_name, axes)
+     if (trim(params%crack_structure) == 'alpha_quartz') then
+        
+        a = params%crack_lattice_a
+        axes = reshape((/1.0_dp, 0.0_dp, 0.0_dp, &
+                         0.0_dp, 0.0_dp, 1.0_dp, &
+                         0.0_dp, 1.0_dp, 0.0_dp/), (/3,3/))
+     else
+        a = bulk%lattice(1,1)
+
+        call Print(trim(params%crack_element)//' crack: atomic number Z='//params%crack_z//&
+             ', lattice constant a = '//a)
+        call Print('Crack name '//params%crack_name)
+        
+        call crack_parse_name(params%crack_name, axes)
+     end if
 
      ! Get elastic constants relevant for a pull in y direction
      E = Youngs_Modulus(C, axes(:,2))*GPA
@@ -1789,13 +1753,14 @@ contains
         call print('Reading atoms from input file')
         call read_xyz(crack_slab, infile)
      else
-        call slab(crack_layer, axes,  a, params%crack_width, params%crack_height, 1, Z, &
-             trim(params%crack_structure))
+        call slab(crack_layer, axes, width=params%crack_width, height=params%crack_height, nz=1, atnum=params%crack_z, &
+             lat_type=trim(params%crack_structure), a=a, c=params%crack_lattice_c, u=params%crack_lattice_u, &
+             x=params%crack_lattice_x, y=params%crack_lattice_y, z=params%crack_lattice_z)
         call atoms_set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
         call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
      endif
 
-     call calc_connect(crack_slab)
+     call calc_connect(crack_slab, store_is_min_image=.true.)
 
      call Print('Slab contains '//crack_slab%N//' atoms.')
 
