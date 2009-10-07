@@ -370,9 +370,9 @@ function IP_cutoff(this)
   case (FF_Brenner_2002)
      IP_cutoff = this%ip_brenner_2002%cutoff
   case (FF_ASAP)
-     IP_cutoff = maxval(this%ip_asap%cutoff)
+     IP_cutoff = maxval(this%ip_asap%cutoff)*BOHR
   case (FF_ASAP2)
-     IP_cutoff = max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)
+     IP_cutoff = max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_template%cutoff
