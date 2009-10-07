@@ -360,15 +360,16 @@ contains
  !
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
- subroutine unit_slab(myatoms, axes, a, atnum, lat_type)
+ subroutine unit_slab(myatoms, axes, a, atnum, lat_type, c, u, x, y, z)
    type(Atoms), intent(OUT) :: myatoms
    real(dp), intent(IN), dimension(3,3) :: axes
    real(dp), intent(IN) :: a ! Lattice vector
+   real(dp), intent(IN), optional :: c, u, x, y, z ! Lattice vector
    integer, intent(in), optional :: atnum(:) ! atomic numbers
    character(len=*), intent(inout), optional :: lat_type  ! lattice type (diamond, bcc, fcc)
 
    integer :: i, Nrep(3) ! Number of repeats in x,y and z
-   real(dp), dimension(3) :: x, y, z, t, d
+   real(dp), dimension(3) :: a1, a2, a3, t, d
    real(dp), dimension(3,3) :: rot
    type(Atoms) :: at
    character(20) :: my_lat_type
@@ -393,11 +394,15 @@ contains
       call bcc(at, a, atnum(1))
    elseif(trim(my_lat_type).eq.'fcc') then
       call fcc(at, a, atnum(1))
+   elseif(trim(my_lat_type) .eq. 'alpha_quartz') then
+      if (.not. present(c) .or. .not. present(u) .or. .not. present(x) &
+           .or. .not. present(y) .or. .not. present(z)) call system_abort('unit_slab: alpha_quartz missing c, u, x, y or z')
+      call alpha_quartz_cubic(at, a, c, u, x, y, z)
    else
       call system_abort('unit_slab: unknown lattice type '//my_lat_type)
    endif
-   x = axes(:,1);   y = axes(:,2);    z = axes(:,3)
-   rot(1,:) = x/norm(x);  rot(2,:) = y/norm(y);  rot(3,:) = z/norm(z)
+   a1 = axes(:,1);   a2 = axes(:,2);    a3 = axes(:,3)
+   rot(1,:) = a1/norm(a1);  rot(2,:) = a2/norm(a2);  rot(3,:) = a3/norm(a3)
 
    ! Rotate atom positions and lattice
    at%pos = rot .mult. at%pos
@@ -443,10 +448,11 @@ contains
  !
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
- subroutine slab_width_height_nz(myslab, axes, a, width, height, nz, atnum, lat_type)
+ subroutine slab_width_height_nz(myslab, axes, a, width, height, nz, atnum, lat_type, c, u, x, y, z)
    type(Atoms), intent(out) :: myslab
    real(dp), intent(in), dimension(3,3) :: axes
    real(dp), intent(in) :: a, width, height
+   real(dp), intent(IN), optional :: c, u, x, y, z ! Lattice vector
    integer, intent(in) :: nz ! Number of layers
    integer, intent(in), optional :: atnum(:) ! atomic numbers to use
    character(len=*),   optional  ::  lat_type 
@@ -454,7 +460,7 @@ contains
    type(Atoms) :: unit, layer
    integer nx, ny
 
-   call unit_slab(unit, axes, a, atnum, lat_type)
+   call unit_slab(unit, axes, a, atnum, lat_type, c, u, x, y, z)
 
    nx = int(floor(width/unit%lattice(1,1)))
    ny = int(floor(height/unit%lattice(2,2)))
@@ -480,17 +486,18 @@ contains
  !
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
- subroutine slab_nx_ny_nz(myslab, axes, a, nx, ny, nz, atnum, lat_type)
+ subroutine slab_nx_ny_nz(myslab, axes, a, nx, ny, nz, atnum, lat_type, c, u, x, y, z)
    type(Atoms), intent(out) :: myslab
    real(dp), intent(in), dimension(3,3) :: axes
    real(dp), intent(in) :: a
+   real(dp), intent(IN), optional :: c, u, x, y, z
    integer, intent(in) :: nx, ny, nz
    integer, intent(in), optional :: atnum(:)
    character(len=*), intent(inout), optional ::   lat_type
 
    type(Atoms) :: unit, layer
 
-   call unit_slab(unit, axes, a, atnum, lat_type)
+   call unit_slab(unit, axes, a, atnum, lat_type, c, u, x, y, z)
    call supercell(layer, unit, nx, ny, 1)
    ! z layers last for symmetrise
    call supercell(myslab, layer, 1, 1, nz)
