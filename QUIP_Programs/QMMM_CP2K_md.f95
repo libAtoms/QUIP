@@ -123,6 +123,9 @@ program qmmm_md
   real(dp)                    :: avg_time
   integer                     :: Seed
   logical                     :: origin_centre
+  integer                     :: atom_centre
+  logical                     :: qm_zone_cartesian_centre
+  real(dp)                    :: atom_centre_hysteresis, qm_zone_centre(3)
   character(len=FIELD_LENGTH) :: print_prop
   logical                     :: Delete_Metal_Connections
   real(dp)                    :: nneightol
@@ -172,6 +175,8 @@ real(dp), pointer :: pot_p(:)
       call param_register(params_in, 'avg_time', '100.0', avg_time)
       call param_register(params_in, 'Seed', '-1', Seed)
       call param_register(params_in, 'origin_centre', 'F', origin_centre)
+      call param_register(params_in, 'atom_centre', '0', atom_centre)
+      call param_register(params_in, 'atom_centre_hysteresis', '0.75', atom_centre_hysteresis)
       call param_register(params_in, 'print_prop', 'all', print_prop)
       call param_register(params_in, 'nneightol', '1.2', nneightol)
       call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
@@ -188,6 +193,10 @@ real(dp), pointer :: pot_p(:)
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
       end if
+
+      if (origin_centre .and. atom_centre /= 0) &
+        call system_abort("parsed both origin_centre="//origin_centre//" and non-zero atom_centre="//atom_centre)
+      qm_zone_cartesian_centre = origin_centre .or. (atom_centre /= 0)
 
       if (Seed.gt.0) call system_reseed_rng(Seed)
 !      call hello_world(seed, common_seed)
@@ -251,8 +260,13 @@ real(dp), pointer :: pot_p(:)
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
       call print('  coord_file '//coord_file) 
       call print('  new_coord_file '//new_coord_file) 
-      if (origin_centre) then
-         call print('  QM core is centred around origin')
+      if (qm_zone_cartesian_centre) then
+         if (origin_centre) then
+           call print('  QM core is centred around origin')
+         else
+           call print('  QM core is centred around atom ' // atom_centre)
+           call print('    hysteresis ' // atom_centre_hysteresis)
+         endif
          call print('  Inner_Core_Radius '//round(Inner_Core_Radius,3))
          call print('  Outer_Core_Radius '//round(Outer_Core_Radius,3))
          call print('  use_spline '//use_spline)
@@ -302,6 +316,20 @@ real(dp), pointer :: pot_p(:)
     !use if there are CP2K velocities in the coord file, converts CP2K units to libAtoms units
     !call velocity_conversion(my_atoms)
 
+    if (origin_centre) then
+      qm_zone_centre = 0.0_dp
+      call print("origin_centred qm_zone, initial qm_zone_centre " // qm_zone_centre)
+    else if (atom_centre /= 0) then
+      if (atom_centre < 0) call system_abort("atom_centre="//atom_centre//" < 0")
+      if (atom_centre > my_atoms%N) call system_abort("atom_centre="//atom_centre//" > atoms%N="//my_atoms%N)
+      if (.not. get_value(my_atoms%params,'qm_zone_centre', qm_zone_centre)) then
+        qm_zone_centre = my_atoms%pos(:,atom_centre)
+        call print("atom_centred qm zone, initial qm_zone_centre from atom pos " // qm_zone_centre)
+      else
+        call print("atom_centred qm zone, initial qm_zone_centre from input file value " // qm_zone_centre)
+      endif
+    endif
+
     N_constraints = 0
     if (Use_Constraints) then
        call print('Reading in the constraints from file '//trim(constraint_file)//'...')
@@ -333,7 +361,7 @@ real(dp), pointer :: pot_p(:)
           call print('Estimated ndof MM: '//ndof_MM)
           Q_QM = nose_hoover_mass(Ndof=ndof_QM,T=Simulation_Temperature,tau=74._dp)
           Q_MM = nose_hoover_mass(Ndof=ndof_MM,T=Simulation_Temperature,tau=74._dp)
-          call add_thermostat(ds,type=NOSE_HOOVER,T=Simulation_Temperature,Q=Q_QM)
+          call add_thermostat(ds,type=NOSE_HOOVER,T=Simulation_Temperature,tau=Tau,Q=Q_QM)
           call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=Simulation_Temperature,tau=Tau,Q=Q_MM)
        endif
     endif
@@ -378,11 +406,12 @@ real(dp), pointer :: pot_p(:)
     if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
         (trim(Run_Type1).eq.'QMMM_EXTENDED')) then
        if (.not.Continue_it) then
-          if (origin_centre) then
+          if (qm_zone_cartesian_centre) then
              call add_property(ds%atoms,'QM_flag',0)
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
-             call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=(/0._dp,0._dp,0._dp/),list_changed=list_changed1)
+             if (atom_centre > 0) call update_qm_zone_centre(ds%atoms, atom_centre, atom_centre_hysteresis, qm_zone_centre)
+             call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=qm_zone_centre,list_changed=list_changed1)
 
               if (list_changed1) then
                  call print('Core has changed')
@@ -428,17 +457,18 @@ real(dp), pointer :: pot_p(:)
             ! all atoms are in thermostat 1 by default
           endif
        endif
-       if (origin_centre) then
-         ! no centering needed: QM is centred around the origin
-       else
+       if (.not.Continue_it) then
+         if (qm_zone_cartesian_centre) then
+               call center_atoms(ds%atoms,p=qm_zone_centre)
+               call finalise(embedlist)
+            endif
+         else
          ! ev
          !center the whole system around the first QM atom, otherwise CP2K has difficulties with finding
          !the centre of QM box => QM atoms will be on the edges, nothing in the middle!
-          if (.not.Continue_it) then
-             call get_qm_list(ds%atoms,1,embedlist)
-             call center_atoms(ds%atoms,embedlist%int(1,1))
-             call finalise(embedlist)
-          endif
+           call get_qm_list(ds%atoms,1,embedlist)
+           call center_atoms(ds%atoms,center_i=embedlist%int(1,1))
+           call finalise(embedlist)
        endif
     endif
     call map_into_cell(ds%atoms)
@@ -504,12 +534,12 @@ real(dp), pointer :: pot_p(:)
      if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
 !added now
      empty_QM_core = .false.
-     if (origin_centre) then
+     if (qm_zone_cartesian_centre) then
         if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
            call system_abort("couldn't find QM_flag property")
         if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
      endif
-     if (origin_centre.and.empty_QM_core) then
+     if ((qm_zone_cartesian_centre).and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
         args_str=trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='// &
         trim(PSF_Print)
@@ -526,7 +556,7 @@ real(dp), pointer :: pot_p(:)
      if (Topology_Print.eq.TOPOLOGY_NO_PSF) PSF_Print='NO_PSF'
 
     !spline force calculation, if needed
-     if (origin_centre.and.use_spline) then
+     if ((qm_zone_cartesian_centre).and.use_spline) then
         allocate(add_force(1:3,1:ds%atoms%N))
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
@@ -545,7 +575,7 @@ real(dp), pointer :: pot_p(:)
     !second force calculation, only for QMMM
      if (trim(Run_Type2).ne.'NONE') then
         if (Topology_Print.ne.0) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
-        if (origin_centre.and.empty_QM_core) then
+        if ((qm_zone_cartesian_centre).and.empty_QM_core) then
 	   args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
         else
 	   args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
@@ -554,12 +584,12 @@ real(dp), pointer :: pot_p(:)
            call print_qm_region(ds%atoms)
         endif
         call calc(my_metapotential,ds%atoms,e=energy,f=f0,args_str=trim(args_str))
-        if (origin_centre.and.use_spline) then
+        if ((qm_zone_cartesian_centre).and.use_spline) then
            f1 = f1 + add_force
            f0 = f0 + add_force
            deallocate(add_force)
         endif
-        if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
+        if ((qm_zone_cartesian_centre).and.empty_QM_core) then !no 2nd run, f = f1
            f = sum0(f1)
         else
            if (momentum_conservation) then
@@ -571,7 +601,7 @@ real(dp), pointer :: pot_p(:)
            endif
         endif
      else !no 2nd run, f = f1
-        if (origin_centre.and.use_spline) then
+        if ((qm_zone_cartesian_centre).and.use_spline) then
            f = sum0(f1+add_force)
            deallocate(add_force)
         else
@@ -619,8 +649,9 @@ real(dp), pointer :: pot_p(:)
 
    !QM CORE + BUFFER UPDATE + THERMOSTAT REASSIGNMENT
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
-        if (origin_centre) then
-           call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=(/0._dp,0._dp,0._dp/),list_changed=list_changed1)
+        if (qm_zone_cartesian_centre) then
+           if (atom_centre > 0) call update_qm_zone_centre(ds%atoms, atom_centre, atom_centre_hysteresis, qm_zone_centre)
+           call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=qm_zone_centre,list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
               ! do nothing: both core and buffer belong to the QM of QM/MM
@@ -678,12 +709,12 @@ real(dp), pointer :: pot_p(:)
      endif
 
      empty_QM_core = .false.
-     if (origin_centre) then
+     if (qm_zone_cartesian_centre) then
         if (.not.(assign_pointer(ds%atoms, "QM_flag", qm_flag_p))) &
            call system_abort("couldn't find QM_flag property")
         if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
      endif
-     if (origin_centre.and.empty_QM_core) then
+     if ((qm_zone_cartesian_centre).and.empty_QM_core) then
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
 	args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
      else
@@ -695,7 +726,7 @@ real(dp), pointer :: pot_p(:)
      call calc(my_metapotential,ds%atoms,e=energy,f=f1,args_str=trim(args_str))
 
     !spline force calculation, if needed
-     if (origin_centre.and.use_spline) then
+     if ((qm_zone_cartesian_centre).and.use_spline) then
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
@@ -714,7 +745,7 @@ real(dp), pointer :: pot_p(:)
    !FORCE 2 + FORCE MIXING
      if (trim(Run_Type2).ne.'NONE') then
         if (Topology_Print.ne.TOPOLOGY_NO_PSF) PSF_Print = 'USE_EXISTING_PSF'  !use existing PSF
-        if (origin_centre.and.empty_QM_core) then
+        if ((qm_zone_cartesian_centre).and.empty_QM_core) then
            args_str = trim(cp2k_calc_args) // ' Run_Type=MM PSF_Print='//trim(PSF_Print)
         else
            args_str = trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(PSF_Print)
@@ -723,12 +754,12 @@ real(dp), pointer :: pot_p(:)
 	   call print_qm_region(ds%atoms)
         endif
         call calc(my_metapotential,ds%atoms,e=energy,f=f0,args_str=trim(args_str))
-        if (origin_centre.and.use_spline) then
+        if ((qm_zone_cartesian_centre).and.use_spline) then
            f1 = f1 + add_force
            f0 = f0 + add_force
            deallocate(add_force)
         endif
-        if (origin_centre.and.empty_QM_core) then !no 2nd run, f = f1
+        if ((qm_zone_cartesian_centre).and.empty_QM_core) then !no 2nd run, f = f1
            f = sum0(f1)
         else
            if (momentum_conservation) then
@@ -740,7 +771,7 @@ real(dp), pointer :: pot_p(:)
            endif
         endif
      else !no 2nd run, f = f1
-        if (origin_centre.and.use_spline) then
+        if ((qm_zone_cartesian_centre).and.use_spline) then
            f = sum0(f1+add_force)
            deallocate(add_force)
         else
@@ -824,16 +855,23 @@ subroutine write_cp2k_info(ds)
 
 end subroutine
 
-  subroutine center_atoms(at,this)
+  subroutine center_atoms(at,center_i,p)
 
     type(atoms), intent(inout) :: at
-    integer, intent(in)        :: this
+    integer, intent(in), optional        :: center_i
+    real(dp), intent(in), optional        :: p(3)
     integer                    :: i
     real(dp)                   :: shift(3)
 
-    if (this.gt.at%N.or.this.lt.1) call system_abort('center_atoms: no atom '//this//'in atoms: 1 - '//at%N)
 
-    shift = 0.0_dp - at%pos(1:3,this)
+    if (present(center_i)) then
+      if (center_i.gt.at%N.or.center_i.lt.1) &
+        call system_abort('center_atoms: no atom '//center_i//'in atoms: 1 - '//at%N)
+      shift = 0.0_dp - at%pos(1:3,center_i)
+    else
+      if (.not. present(p)) call system_abort("center_atoms called with neither center_i nor p(3)")
+      shift = -p
+    endif
 
     do i=1,at%N
        at%pos(1:3,i) = at%pos(1:3,i) + shift
@@ -997,5 +1035,22 @@ end subroutine
     call print('Sum of the forces after mom.cons.: '//sumF(1:3))
 
   end function sum0
+
+  subroutine update_qm_zone_centre(at, at_i, hyster, p)
+    type(Atoms), intent(inout) :: at
+    integer, intent(in) :: at_i
+    real(dp), intent(in) :: hyster
+    real(dp), intent(inout) :: p(3)
+
+    real(dp) :: dist
+
+    dist = distance_min_image(at, at_i, p)
+    if (dist > hyster) then
+      call print("updating qm_zone_centre, prev pos was " // p // " new pos of atom " // at_i //" is " // at%pos(:,at_i))
+      p = at%pos(:,at_i)
+      call set_value(at%params, 'qm_zone_centre', p)
+    endif
+  end subroutine update_qm_zone_centre
+
 
 end program qmmm_md
