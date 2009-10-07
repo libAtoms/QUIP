@@ -97,10 +97,12 @@ module CrackParams_module
 
      ! Crack parameters (used only by makecrack)
      character(STRING_LENGTH) :: crack_structure !% Structure: so far 'diamond' and 'graphene' are supported
-     character(STRING_LENGTH) :: crack_element !% Element to make slab from. Supported so far: Si, C and SiC
+     character(STRING_LENGTH) :: crack_element !% Element to make slab from. Supported so far: Si, C, SiC, SiO
+     integer :: crack_z(2)  !% Initialised automatically from crack element
      character(STRING_LENGTH) :: crack_name !% Crack name, in format '(abc)[def]' with negative indices 
                                           !% denoted by a trailing 'b' (for bar), e.g. '(111)[11b0]'.
      real(dp) :: crack_lattice_guess      !% Guess at bulk lattice parameter, used to obtain accurate result. Unit:~\AA{}.
+     real(dp) :: crack_lattice_a, crack_lattice_c, crack_lattice_u, crack_lattice_x, crack_lattice_y, crack_lattice_z
      real(dp) :: crack_width              !% Width of crack slab, in \AA{}.
      real(dp) :: crack_height             !% Height of crack slab, in \AA{}.
      integer  :: crack_num_layers         !% Number of primitive cells in $z$ direction
@@ -146,7 +148,7 @@ module CrackParams_module
      real(dp) :: md_crust                 !% Distance by which 'Atoms' cutoff should exceed that of MM potential, in \AA{}.
      real(dp) :: md_recalc_connect_factor !% Maximum atom movement as a fraction of 'md_crust' before connectivity is recalculated.
      real(dp) :: md_nneigh_tol            !% Nearest neighbour tolerance, as a fraction of sum of covalant radii.
-     integer  :: md_eqm_coordination      !% Equilibrium coordination number of bulk (used for finding crack tip).
+     integer  :: md_eqm_coordination(2)   !% Equilibrium coordination number of bulk (used for finding crack tip).
      real(dp) :: md_sim_temp              !% Target temperature for Langevin thermostat, in Kelvin.
      real(dp) :: md_avg_time              !% Averaging time for bonding/nearest neighbours etc. Unit:~fs.
      real(dp) :: md_thermalise_tau        !% Thermostat time constant during thermalisiation. Unit:~fs.
@@ -194,6 +196,7 @@ module CrackParams_module
      character(STRING_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing 
                                                     !%lots of I/O to a network drive. Default is current directory.
      logical :: io_mpi_print_all !% Print output on all nodes. Useful for debugging. Default .false.
+     logical :: io_backup
 
      ! Selection parameters
      integer  :: selection_max_qm_atoms   !% Maximum number of QM atoms to select
@@ -259,6 +262,10 @@ module CrackParams_module
      ! Quasi-static loading parameters
      real(dp) :: quasi_static_tip_move_tol !% How far cracktip must advance before we consider fracture to have occurred.
 
+     ! Elastic constants C_ij
+     logical :: elastic_read
+     real(dp), dimension(6,6) :: elastic_cij
+
      ! Finally, nasty hacks
      logical :: hack_qm_zero_z_force       !% Zero $z$ component of all forces (used for graphene)
      logical  :: hack_fit_on_eqm_coordination_only !% Only include fit atoms that have coordination 
@@ -287,6 +294,41 @@ module CrackParams_module
   
 
 contains
+
+  !% Convert a string representation of the material to
+  !% an atomic number array suitable for passing to 'diamond()', \emph{e.g.}
+  !% 'Si' $\to$ '14', 'C' $\to$ '6' and 'SiC' $\to$ '(/14,6/)'.
+  subroutine crack_parse_atomic_numbers(str, Z)
+    character(len=*), intent(in) :: str
+    integer, intent(out) :: Z(:)
+
+    integer i, p
+
+    i = 0
+    p=1
+    do while (p <= len(trim(str)))
+       i = i + 1
+       if (i > size(Z)) call system_abort("Too many elements in str='"//trim(str)//"' for size(Z)="//size(Z))
+       if (len(trim(str)) > p .and. scan(str(p+1:p+1),'abcdefghijklmnopqrstuvwxzy') == 1)  then ! 2 letter element
+          Z(i) = Atomic_Number(str(p:p+1))
+          p = p + 1
+       else
+          Z(i) = Atomic_Number(str(p:p))
+       endif
+       p = p + 1
+    end do
+
+    if (i == 0) then
+       call system_abort("parse_atomic_numbers failed to parse anything, str='"//trim(str)//"'")
+    else if (i == 1) then
+       Z(2:) = Z(1)
+    else
+       if (i /= size(Z)) then
+          call system_abort("parse_atomic_numbers found "//i//" elements, but size(Z)="//size(Z))
+       endif
+    endif
+  end subroutine crack_parse_atomic_numbers
+
   
   !% Initialise this CrackParams structure and set default
   !% values for all parameters. WARNING: many of these defaults are
@@ -299,6 +341,15 @@ contains
     this%crack_element           = 'Si'
     this%crack_name              = '(111)[11b0]'
     this%crack_lattice_guess     = 5.43_dp  ! Angstrom, correct for Si
+
+    ! Default lattice parameters for alpha quartz
+    this%crack_lattice_a         = 4.87009_dp
+    this%crack_lattice_c         = 5.36254_dp
+    this%crack_lattice_u         = 0.46699_dp
+    this%crack_lattice_x         = 0.41288_dp
+    this%crack_lattice_y         = 0.27198_dp
+    this%crack_lattice_z         = 0.11588_dp
+
     this%crack_width             = 200.0_dp ! Angstrom
     this%crack_height            = 100.0_dp ! Angstrom
     this%crack_num_layers        = 1        ! number
@@ -340,7 +391,8 @@ contains
     this%md_crust                = 2.0_dp   ! Angstrom
     this%md_recalc_connect_factor = 0.8_dp  ! fraction of md_crust
     this%md_nneigh_tol           = 1.3_dp   ! fraction of sum of covalent radii
-    this%md_eqm_coordination     = 4
+    this%md_eqm_coordination(1)  = 4        ! eqm coordination for element 1 (e.g. Si)
+    this%md_eqm_coordination(2)  = 2        ! eqm coordination for element 2 (e.g. O)
     this%md_sim_temp             = 300.0_dp ! Kelvin
     this%md_avg_time             = 50.0_dp  ! fs
     this%md_thermalise_tau       = 50.0_dp  ! fs
@@ -375,7 +427,7 @@ contains
     this%io_verbosity            = NORMAL
     this%io_netcdf               = .false.
     this%io_print_interval       = 10.0_dp  ! fs
-    this%io_print_all_properties = .false.
+    this%io_print_all_properties = .true.
     if (allocated(this%io_print_properties)) deallocate(this%io_print_properties)
     allocate(this%io_print_properties(11))
     ! arrays of strings must all have the same length, really
@@ -393,6 +445,7 @@ contains
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
+    this%io_backup               = .true. 
 
      ! Selection parameters
     this%selection_max_qm_atoms   = 200
@@ -441,6 +494,9 @@ contains
 
     ! Quasi static loading 
     this%quasi_static_tip_move_tol  = 5.0_dp ! Angstrom
+
+    this%elastic_read = .false.
+    this%elastic_cij = 0.0_dp
 
     ! Nasty hack
     this%hack_qm_zero_z_force        = .false.
@@ -498,7 +554,7 @@ contains
     character(len=1024) :: value
 
     logical             :: got_species
-    integer             :: n_properties, i
+    integer             :: n_properties, i, j
     character(len=1024) :: tmp_properties(MAX_PROPERTIES)
 
     if (name == 'crack_params') then ! new crack_params stanza
@@ -515,6 +571,7 @@ contains
        call QUIP_FoX_get_value(attributes, "element", value, status)
        if (status == 0) then
           parse_cp%crack_element = value
+          call crack_parse_atomic_numbers(parse_cp%crack_element, parse_cp%crack_z)
        end if
 
        call QUIP_FoX_get_value(attributes, "name", value, status)
@@ -527,6 +584,36 @@ contains
           read (value, *) parse_cp%crack_lattice_guess
        end if
        
+       call QUIP_FoX_get_value(attributes, "lattice_a", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_a
+       end if
+
+       call QUIP_FoX_get_value(attributes, "lattice_c", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_c
+       end if
+
+       call QUIP_FoX_get_value(attributes, "lattice_u", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_u
+       end if
+
+       call QUIP_FoX_get_value(attributes, "lattice_x", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_x
+       end if
+
+       call QUIP_FoX_get_value(attributes, "lattice_y", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_y
+       end if
+
+       call QUIP_FoX_get_value(attributes, "lattice_z", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_lattice_z
+       end if
+
        call QUIP_FoX_get_value(attributes, "width", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_width
@@ -920,6 +1007,11 @@ contains
           read (value, *) parse_cp%io_mpi_print_all
        end if
 
+       call QUIP_FoX_get_value(attributes, "backup", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%io_backup
+       end if
+
     elseif (parse_in_crack .and. name == 'selection') then
 
        call QUIP_FoX_get_value(attributes, "max_qm_atoms", value, status)
@@ -1115,6 +1207,23 @@ contains
           read (value, *) parse_cp%quasi_static_tip_move_tol
        end if
 
+    elseif (parse_in_crack .and. name == 'elastic') then
+       
+       call QUIP_FoX_get_value(attributes, "read", value, status)
+       if (status == 0) then
+          read(value, *) parse_cp%elastic_read
+       end if
+
+       do i=1,6
+          do j=1,6
+             call QUIP_FoX_get_value(attributes, "c_"//i//j, value, status)
+             if (status == 0) then
+                read(value, *) parse_cp%elastic_cij(i,j)
+             end if
+          end do
+       end do
+          
+
     elseif (parse_in_crack .and. name == 'hack') then
 
        call QUIP_FoX_get_value(attributes, "qm_zero_z_force", value, status)
@@ -1157,6 +1266,12 @@ contains
     call Print('     structure             = '//trim(this%crack_structure),file=file)
     call Print('     element               = '//trim(this%crack_element),file=file)
     call Print('     lattice_guess         = '//this%crack_lattice_guess//' A',file=file)
+    call Print('     lattice_a             = '//this%crack_lattice_a//' A',file=file)
+    call Print('     lattice_c             = '//this%crack_lattice_c//' A',file=file)
+    call Print('     lattice_u             = '//this%crack_lattice_u//' A',file=file)
+    call Print('     lattice_x             = '//this%crack_lattice_x//' A',file=file)
+    call Print('     lattice_y             = '//this%crack_lattice_y//' A',file=file)
+    call Print('     lattice_z             = '//this%crack_lattice_z//' A',file=file)
     call Print('     name                  = '//trim(this%crack_name),file=file)
     call Print('     width                 = '//this%crack_width//' A', file=file)
     call Print('     height                = '//this%crack_height//' A', file=file)
@@ -1241,6 +1356,7 @@ contains
     call Print('     checkpoint_interval   = '//this%io_checkpoint_interval//' fs',file=file)
     call Print('     checkpoint_path       = '//this%io_checkpoint_path,file=file)
     call Print('     mpi_print_all         = '//this%io_mpi_print_all,file=file)
+    call Print('     backup                = '//this%io_backup, file=file)
     call Print('',file=file)
     call Print('  Selection parameters:',file=file)
     call Print('     max_qm_atoms          = '//this%selection_max_qm_atoms,file=file)
@@ -1289,6 +1405,9 @@ contains
     call Print('  Quasi static loading parameters',file=file)
     call Print('     tip_move_tol          = '//this%quasi_static_tip_move_tol,file=file)
     call Print('',file=file)
+    call Print('  Elastic constants')
+    call Print('     read                  = '//this%elastic_read,file=file)
+    if (this%elastic_read) call Print(this%elastic_cij, file=file)
     call Print('  Nasty hacks:',file=file)
     call Print('     qm_zero_z_force       = '//this%hack_qm_zero_z_force,file=file)
     call Print('     fit_on_eqm_coordination_only = '//this%hack_fit_on_eqm_coordination_only)
