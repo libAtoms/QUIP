@@ -285,7 +285,7 @@ program crack
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
-       last_md_interval_time, time, temp, crack_pos(3), orig_crack_pos, &
+       last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, orig_width
   character(STRING_LENGTH) :: stem, movie_name, xyzfilename, xmlfilename
   character(value_len) :: state_string
@@ -483,6 +483,7 @@ end if
   call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
   call add_property(ds%atoms, 'qm_force', 0.0_dp, n_cols=3)
   call add_property(ds%atoms, 'mm_force', 0.0_dp, n_cols=3)
+
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
 
@@ -520,7 +521,9 @@ end if
      else
         if (.not. movie%initialised) then
            call initialise(movie, trim(stem)//'.nc', action=OUTPUT)
-           call initialise(movie_backup, trim(stem)//'_backup.nc', action=OUTPUT)
+
+           if (params%io_backup) &
+                call initialise(movie_backup, trim(stem)//'_backup.nc', action=OUTPUT)
         endif
      end if
   endif
@@ -529,7 +532,7 @@ end if
   call atoms_set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
   call print('Neighbour crust is '//params%md_crust// ' A.')
 
-  call calc_connect(ds%atoms)
+  call calc_connect(ds%atoms, store_is_min_image=.true.)
 
 !!$  call table_allocate(embedlist, 4, 0, 0, 0) 
 !!$  call table_allocate(fitlist, 4, 0, 0, 0)   
@@ -570,7 +573,8 @@ end if
 
   ! Print a frame before we start
   call crack_print(ds%atoms, movie, params, mpi_glob)
-  call crack_print(ds%atoms, movie_backup, params, mpi_glob)
+  if (params%io_backup .and. params%io_netcdf) &
+       call crack_print(ds%atoms, movie_backup, params, mpi_glob)
 
   if (.not. params%simulation_classical) then
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
@@ -1009,13 +1013,18 @@ end if
            call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
            call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
            n = ds%t/params%io_print_interval
-           if (mod(n,2).eq.0) then
-              call crack_print(ds%atoms, movie, params, mpi_glob)
-              call print('writing .nc file '//trim(stem)//'.nc')
+
+           if (params%io_backup .and. params%io_netcdf) then
+              if (mod(n,2).eq.0) then
+                 call crack_print(ds%atoms, movie, params, mpi_glob)
+                 call print('writing .nc file '//trim(stem)//'.nc')
+              else
+                 call crack_print(ds%atoms, movie_backup, params, mpi_glob)
+                 call print('writing .nc file '//trim(stem)//'_backup.nc')
+              endif
            else
-              call crack_print(ds%atoms, movie_backup, params, mpi_glob)
-              call print('writing .nc file '//trim(stem)//'_backup.nc')
-           endif
+              call crack_print(ds%atoms, movie, params, mpi_glob)
+           end if
         end if
 
         ! Write binary checkpoint file
@@ -1083,7 +1092,7 @@ end if
      do i=0,params%force_integration_n_steps
 
         ds%atoms%pos = fd_start%pos + dr*real(i,dp)
-        call calc_connect(ds%atoms)
+        call calc_connect(ds%atoms, store_is_min_image=.true.)
 
         if (params%simulation_classical) then
            call calc(simple_metapot, ds%atoms, f=f, e=energy, args_str=params%classical_args_str)
