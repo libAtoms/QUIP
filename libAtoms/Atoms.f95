@@ -1049,6 +1049,8 @@ module  atoms_module
 
      type(table), allocatable, dimension(:,:,:) :: cell    !% For the linear scaling connection calculator
 
+     logical, allocatable, dimension(:) :: is_min_image   !% True if i is a minimum image
+
   end type Connection
 
 
@@ -2523,9 +2525,9 @@ contains
     integer,  optional, intent(out) :: jn
     type(Connection), optional, intent(in), target :: alt_connect
 
-    real(dp)::mydiff(3)
+    real(dp)::mydiff(3), norm_mydiff
     integer ::myshift(3)
-    integer ::i_n1n, j_n1n, i_njn
+    integer ::i_n1n, j_n1n, i_njn, k, m
     type(Connection), pointer :: use_connect
 
     if (present(alt_connect)) then
@@ -2614,11 +2616,16 @@ contains
        if(present(shift)) shift = myshift
 
        if(present(diff) .or. present(cosines)) then
-          mydiff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
+          !mydiff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
+          mydiff = this%pos(:,j) - this%pos(:,i)
+          do m=1,3
+             forall(k=1:3) mydiff(k) = mydiff(k) + this%lattice(k,m) * myshift(m)
+          end do
           if(present(diff)) diff = mydiff
           if(present(cosines)) then
-	    if (norm(mydiff) > 0.0_dp) then
-	      cosines = mydiff / norm(mydiff)
+            norm_mydiff = sqrt(mydiff(1)*mydiff(1) + mydiff(2)*mydiff(2) + mydiff(3)*mydiff(3))
+	    if (norm_mydiff > 0.0_dp) then
+	      cosines = mydiff / norm_mydiff
 	    else
 	      cosines = 0.0_dp
 	    endif
@@ -3459,6 +3466,8 @@ contains
     if(allocated(this%neighbour1)) deallocate(this%neighbour1)
     if(allocated(this%neighbour2)) deallocate(this%neighbour2)
 
+    if (allocated(this%is_min_image)) deallocate(this%is_min_image)
+
     call connection_cells_finalise(this)
 
     this%initialised = .false.
@@ -3603,23 +3612,22 @@ contains
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
-    logical, intent(in), optional :: check_for_dup
+    logical, intent(in) :: check_for_dup
 
-    logical                    :: do_check_for_dup
-    integer                    :: index
-    real(dp)                   :: d
+    integer                    :: index, m, k
+    real(dp)                   :: d, dd(3)
     real(dp)                   :: use_cutoff
 
     if (i > j) return
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
-    do_check_for_dup = optional_default(.false., check_for_dup)
-
+#ifdef DEBUG
     if(current_verbosity() >= ANAL) then
        call print('Entering test_form_bond, i = '//i//' j = '//j, ANAL)
        call print('use_uniform_cutoff = '//use_uniform_cutoff, ANAL)
     end if
+#endif
 
     !Determine what cutoff distance to use
     if (use_uniform_cutoff) then
@@ -3628,23 +3636,36 @@ contains
        use_cutoff = bond_length(Z(i),Z(j)) * cutoff
     end if
 
-    d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+    !d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+    !OPTIM
+    dd = pos(:,j) - pos(:,i)
+    do m=1,3
+       forall(k=1:3) dd(k) = dd(k) + lattice(k,m) * shift(m)
+    end do
+    d = sqrt(dd(1)*dd(1) + dd(2)*dd(2) + dd(3)*dd(3))
 
-    if (do_check_for_dup) then
+    if (check_for_dup) then
       index = find(this%neighbour1(i)%t, (/ j, shift /)) 
       if (index /= 0) then ! bond is already in table
+#ifdef DEBUG
 	if (current_verbosity() >= ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', ANAL)
+#endif
 	this%neighbour1(i)%t%real(1,index) = d
 	return
       endif
     endif
 
+#ifdef DEBUG
     if(current_verbosity() >= ANAL)  call print('d = '//d, ANAL)
+#endif
+
     if (d < use_cutoff) then
        call add_bond(this, pos, lattice, i, j, shift, d)
     end if
 
+#ifdef DEBUG
     if(current_verbosity() >= ANAL) call print('Leaving test_form_bond', ANAL)
+#endif
 
   end subroutine test_form_bond
 
@@ -3669,10 +3690,12 @@ contains
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
+#ifdef DEBUG
     if(current_verbosity() >= ANAL) then
        call print('Entering test_break_bond, i = '//i//' j = '//j, ANAL)
        call print('use_uniform_cutoff = '//use_uniform_cutoff // " cutoff_break = "// cutoff_break, ANAL)
     end if
+#endif
 
     !Determine what cutoff distance to use
     if (use_uniform_cutoff) then
@@ -3682,14 +3705,20 @@ contains
     end if
 
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
+#ifdef DEBUG
     if(current_verbosity() >= ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, ANAL)
+#endif
     if (d > cutoff) then
-	if(current_verbosity() >= ANAL) call print('removing bond from tables', ANAL)
+#ifdef DEBUG
+       if(current_verbosity() >= ANAL) call print('removing bond from tables', ANAL)
+#endif
        call remove_bond(this, i, j, shift)
        test_break_bond = .true.
     end if
 
+#ifdef DEBUG
     if(current_verbosity() >= ANAL) call print('Leaving test_break_bond', ANAL)
+#endif
 
   end function test_break_bond
 
@@ -3837,17 +3866,17 @@ contains
   !%  vectors can be used to restrict the hysteretic region to only
   !%  part of the entire system -- the 'estimate_origin_extent()'
   !%  routine in clusters.f95 can be used to guess suitable values.
-  subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour)
+  subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour, store_is_min_image)
     type(Atoms), intent(inout), target           :: this
     type(Connection), intent(inout), target, optional :: alt_connect
     real(dp), optional :: origin(3), extent(3,3)
-    logical, optional, intent(in) :: own_neighbour
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
     real(dp)                             :: cutoff
     integer :: ji, s_ij(3)
-    logical my_own_neighbour
+    logical my_own_neighbour, my_store_is_min_image
     type(Connection), pointer :: use_connect
 
     if (present(alt_connect)) then
@@ -3857,6 +3886,7 @@ contains
     endif
 
     my_own_neighbour = optional_default(.false., own_neighbour)
+    my_store_is_min_image = optional_default(.false., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
@@ -4024,6 +4054,14 @@ contains
        end do ! j
     end do ! k
 
+    if (my_store_is_min_image) then
+       if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
+       allocate(this%connect%is_min_image(this%n))
+       do i=1,this%n
+          this%connect%is_min_image(i) = is_min_image(this, i)
+       end do
+    end if
+
   end subroutine calc_connect_hysteretic
 
   subroutine connection_remove_atom(this, i)
@@ -4053,18 +4091,17 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine calc_connect(this, own_neighbour)
+  subroutine calc_connect(this, own_neighbour, store_is_min_image)
     type(Atoms), intent(inout)           :: this
-    logical, optional, intent(in) :: own_neighbour
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
     real(dp)                             :: cutoff
-    logical my_own_neighbour
+    logical my_own_neighbour, my_store_is_min_image
 
     my_own_neighbour = optional_default(.false., own_neighbour)
-
-    my_own_neighbour = optional_default(.false., own_neighbour)
+    my_store_is_min_image = optional_default(.false., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
@@ -4180,7 +4217,7 @@ contains
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
                             call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
-			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/))
+			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false.)
 
                          end do
 
@@ -4193,6 +4230,14 @@ contains
           end do
        end do
     end do
+
+    if (my_store_is_min_image) then
+       if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
+       allocate(this%connect%is_min_image(this%n))
+       do i=1,this%n
+          this%connect%is_min_image(i) = is_min_image(this, i)
+       end do
+    end if
 
   end subroutine calc_connect
 
@@ -6117,26 +6162,40 @@ contains
     type(Atoms), intent(in) :: this
     integer, intent(in) ::i
     logical :: is_min_image
-    integer :: n, NN
+    integer :: n, m, NN
 
     is_min_image = .true.
     ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
     if (this%connect%initialised) then
-       NN = this%connect%neighbour1(i)%t%N
-       do n = 1, NN-1
-          if( count(this%connect%neighbour1(i)%t%int(1,n) == this%connect%neighbour1(i)%t%int(1,n+1:NN)) > 0 .or. &
-          &  (this%connect%neighbour1(i)%t%int(1,n) == i) ) then
-              is_min_image = .false.
-              return
-          endif
-       enddo
-       NN = this%connect%neighbour2(i)%t%N
-       do n = 1, NN-1
-          if( (count(this%connect%neighbour2(i)%t%int(1,n) == this%connect%neighbour2(i)%t%int(1,n+1:NN)) > 0) ) then
-              is_min_image = .false.
-              return
-          endif
-       enddo
+
+       nn = this%connect%neighbour1(i)%t%N
+       do n=1,nn
+          if (this%connect%neighbour1(i)%t%int(1,n) == i) then
+             is_min_image = .false.
+             return
+          end if
+          do m=n+1,nn
+             if (this%connect%neighbour1(i)%t%int(1,n) == this%connect%neighbour1(i)%t%int(1,m)) then
+                is_min_image = .false.
+                return
+             end if
+          end do
+       end do
+
+       nn = this%connect%neighbour2(i)%t%N
+       do n=1,nn
+          if (this%connect%neighbour2(i)%t%int(1,n) == i) then
+             is_min_image = .false.
+             return
+          end if
+          do m=n+1,nn
+             if (this%connect%neighbour2(i)%t%int(1,n) == this%connect%neighbour2(i)%t%int(1,m)) then
+                is_min_image = .false.
+                return
+             end if
+          end do
+       end do
+
     else
        call system_abort('is_min_image: Atoms structure has no connectivity data. Call calc_connect first.')
     end if
