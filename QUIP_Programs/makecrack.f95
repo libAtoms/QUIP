@@ -220,6 +220,14 @@ program makecrack
   call add_property(crack_slab, 'md_old_changed_nn', 0)
   call add_property(crack_slab, 'edge_mask', 0)
 
+  if (trim(params%crack_structure) == 'alpha_quartz') then
+   call add_property(crack_slab, 'efield', 0.0_dp, n_cols=3)
+   call add_property(crack_slab, 'dipoles', 0.0_dp, n_cols=3)
+   call add_property(crack_slab, 'efield_old1', 0.0_dp, n_cols=3)
+   call add_property(crack_slab, 'efield_old2', 0.0_dp, n_cols=3)
+   call add_property(crack_slab, 'efield_old3', 0.0_dp, n_cols=3)
+  end if
+
   call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
 
