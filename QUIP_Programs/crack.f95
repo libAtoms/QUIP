@@ -413,7 +413,7 @@ end if
      call set_value(metapot_params, 'mm_args_str', params%classical_args_str)
 
      call set_value(metapot_params, 'qm_args_str', &
-          '{ little_clusters='//params%qm_small_clusters// &
+          ' little_clusters='//params%qm_small_clusters// &
           '  single_cluster='//(.not. params%qm_small_clusters)// &
           '  terminate='//params%qm_terminate// &
           '  even_electrons='//params%qm_even_electrons// &
@@ -425,8 +425,7 @@ end if
           '  hysteretic_connect='//params%qm_hysteretic_connect//&
           '  nneighb_only='//(.not. params%qm_hysteretic_connect)//&
           '  cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-	  '  ' //trim(params%qm_args_str) &
-	  //' }')
+	  '  '//trim(params%qm_args_str))
 
      if (params%qm_rescale_r) then
         call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
