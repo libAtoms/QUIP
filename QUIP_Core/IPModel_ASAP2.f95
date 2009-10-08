@@ -572,7 +572,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    type(Dictionary) :: params
    logical :: save_efield, save_dipoles, restart
-   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:) 
+   real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_int_old(:,:)
    real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
    real(dp), pointer :: efield(:,:), dipoles(:,:)
    real(dp), pointer, dimension(:,:) :: efield_old1, efield_old2, efield_old3
@@ -599,7 +599,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(local_e)) local_e = 0.0_dp
    if (present(virial)) virial = 0.0_dp
 
-   allocate(efield_charge(3,at%n), efield_dipole(3,at%n))
+   allocate(efield_charge(3,at%n), efield_dipole(3,at%n), efield_int_old(3,at%n))
 
    ! Assign pointers
    if (save_efield) then
@@ -634,31 +634,33 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       efield_old3(:,:) = 0.0_dp
    end if
 
-   efield = 0.0_dp
+   efield_dipole = 0.0_dp
    dipoles = 0.0_dp
 
    ! Extrapolate from the old electric efield
-   if (this%pred_order == 0) then
-      if (n_efield_old >= 1) efield = efield_old1(:,:)
+   if (this%pred_order == 0 .or. n_efield_old < 2) then
+      efield_dipole = efield_old1(:,:)
+   end if
 
-   else if (this%pred_order == 1) then
+   if (this%pred_order == 1 .and. n_efield_old >= 2) then
+      efield_dipole = 2.0_dp*efield_old1(:,:) - efield_old2(:,:)
+   end if
 
-      if (n_efield_old >= 2) &
-           efield = 2.0_dp*efield_old1(:,:) - efield_old2(:,:)
+   if (this%pred_order == 2 .and. n_efield_old >= 3) then
+      efield_dipole = 3.0_dp*efield_old1(:,:) - 3.0_dp*efield_old2(:,:) + efield_old3(:,:)
+   end if
 
-      efield_old2(:,:) = efield_old1(:,:)
-   else if (this%pred_order == 2) then
-        
-      if (n_efield_old >= 3) &
-           efield = 3.0_dp*efield_old1(:,:) - 3.0_dp*efield_old2(:,:) + efield_old3(:,:)
-
-      efield_old3(:,:) = efield_old2(:,:)
-      efield_old2(:,:) = efield_old1(:,:)
+   if (this%pred_order /= 0) then
+      if (this%pred_order == 1) then
+         efield_old2 = efield_old1
+      else if (this%pred_order == 2) then
+         efield_old3 = efield_old2
+         efield_old2 = efield_old1
+      end if
    end if
 
    call set_value(at%params, 'n_efield_old', min(n_efield_old+1,3))
 
-   efield_dipole = 0.0_dp
    efield_charge = 0.0_dp
 
    if (maxval(abs(this%z)) > 0.0_dp) then
@@ -668,6 +670,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    allocate(dip_sr(3,at%n))
    dip_sr = 0.0_dp
    if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, dip_sr)
+
+   efield_int_old = 0.0_dp
 
    if (maxval(abs(this%pol)) > 0.0_dp) then
       ! Self-consistent determination of dipole moments
@@ -680,7 +684,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
             efield = efield_dipole + efield_charge
          else
             efield = this%betapol*efield_dipole + &
-                 (1.0_dp - this%betapol)*efield_old1(:,:) + efield_charge
+                 (1.0_dp - this%betapol)*efield_int_old + efield_charge
          end if
 
          ! Calculate dipole moment in response to total efield
@@ -690,7 +694,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          end do
 
          ! Calculate new efield and measure of convergence
-         efield_old1(:,:) = efield_dipole
+         efield_int_old = efield_dipole
          efield_dipole = 0.0_dp
          call asap_rs_dipoles(this, at, dipoles, efield=efield_dipole)
 
@@ -701,6 +705,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
                  this%pol(ti)*this%pol(ti)
          end do
          diff = sqrt(diff/at%n)
+
+         efield_old1 = efield_dipole
          
          if (vv >= NORMAL) then
             write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
@@ -716,12 +722,16 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          npol = npol + 1
          if (npol >= this%maxipol) &
               call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+
       end do
       call system_timer('asap_self_consistent_dipoles')
 
       ! Compute final energy, local energies, forces, virial and electric efield
       efield = efield_charge
       call asap_rs_dipoles(this, at, dipoles, e, local_e, f, virial, efield)
+
+      ! Save final dipole field for next time
+      efield_old1 = efield_dipole
    end if
 
    ! Finally, add the short-range contribution
@@ -738,6 +748,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    if (allocated(efield_charge)) deallocate(efield_charge)
    if (allocated(efield_dipole)) deallocate(efield_dipole)
    if (allocated(dip_sr)) deallocate(dip_sr)
+   deallocate(efield_int_old)
 
    call system_timer('asap_calc')
 
