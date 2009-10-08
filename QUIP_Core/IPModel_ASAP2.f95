@@ -585,14 +585,20 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    call system_timer('asap_calc')
    vv = current_verbosity()
 
-   call initialise(params)
-   call param_register(params, 'save_efield', 'T', save_efield)
-   call param_register(params, 'save_dipoles', 'T', save_dipoles)
-   call param_register(params, 'restart', 'F', restart)
-   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
-      call system_abort("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str))
-   endif
-   call finalise(params)
+   if (present(args_str)) then
+      call initialise(params)
+      call param_register(params, 'save_efield', 'T', save_efield)
+      call param_register(params, 'save_dipoles', 'T', save_dipoles)
+      call param_register(params, 'restart', 'F', restart)
+      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
+         call system_abort("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str))
+      endif
+      call finalise(params)
+   else
+      save_efield = .true.
+      save_dipoles = .true.
+      restart = .false.
+   end if
 
    if (present(e)) e = 0.0_dp
    if (present(f)) f = 0.0_dp
