@@ -5,6 +5,7 @@ import sys
 
 if len(sys.argv[1:]) < 2:
    print 'Usage: param2xml gen.in Minimisation_progress [xml_file]'
+   sys.exit(1)
 
 xml_file = sys.stdout
 if len(sys.argv[1:]) >  2:
