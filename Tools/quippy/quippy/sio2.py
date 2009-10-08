@@ -28,7 +28,6 @@ class PosCelWriter(object):
       self.cel_angstrom = cel_angstrom
       self.pos_angstrom = pos_angstrom
       self.rydberg = rydberg
-      print 'Setting self.rydberg to ', self.rydberg
       self.it = 0
 
    def write(self, at):
@@ -526,7 +525,7 @@ param_format_traj = [
    [('gamma_ms', real, 'triangle(nspecies)', False)],
    [('r_ms', real, 'triangle(nspecies)', False)],
    [('pol', real, 'nspecies', False)],
-   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False), ('pred_order', int, 1, False)],
+   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False), ('pred_order', int, 1, False), ('tdip_sr', logical, 1, False)],
    [('bpol', real, 'triangle(nspecies)', False)],
    [('cpol', real, 'triangle(nspecies)', False)],
    [('taimsp', logical, 'nspecies', False),('xgmin', real, 1, False),('xgmax', real, 1, False)],
@@ -545,7 +544,7 @@ param_format_traj = [
    [('c_harm',  real, 'triangle(nspecies)', False)],
    [('rmin', real, 'triangle(nspecies)', False)],
    [('a_s', real, 1, False),('n_s', real, 1, False),('smooth', logical, 1, False)],
-   [('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False),('tdip_sr', logical, 1, False)]
+   [('tyukawa', logical, 1, False), ('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False)]
    ]
 
 
@@ -580,7 +579,7 @@ param_format_gen = [
    [('gamma_ms', real, 'triangle(nspecies)', True)],
    [('r_ms', real, 'triangle(nspecies)', True)],
    [('pol', real, 'nspecies', True)],
-   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False)],
+   [('betapol', real, 1, False),('maxipol', int, 1, False),('tolpol', real, 1, False), ('tdip_sr', logical, 1, False)],
    [('bpol', real, 'triangle(nspecies)', True)],
    [('cpol', real, 'triangle(nspecies)', True)],
    [('taimsp', logical, 'nspecies', False),('xgmin', real, 1, False),('xgmax', real, 1, False)],
@@ -599,7 +598,7 @@ param_format_gen = [
    [('c_harm',  real, 'triangle(nspecies)', True)],
    [('rmin', real, 'triangle(nspecies)', False)],
    [('a_s', real, 1, False),('n_s', real, 1, False),('smooth', logical, 1, False)],
-   [('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False),('tdip_sr', logical, 1, False)]
+   [('tyukawa', logical, 1, False), ('yukalpha', real, 1, False),('yuksmoothlength', real, 1, False)]
    ]
 
 def triangle(n):
@@ -875,7 +874,7 @@ def param_to_xml(params, encoding='iso-8859-1'):
    xml.endDocument()
    return output.getvalue()
 
-def update_vars(params, opt_vars, param_str):
+def update_vars(params, opt_vars, param_str, verbose=False):
    out_params = params.copy()
    if isinstance(param_str, str):
       opt_values = [real(x) for x in param_str.split()]
@@ -887,12 +886,12 @@ def update_vars(params, opt_vars, param_str):
    for var, value in zip(opt_vars, opt_values):
       if isinstance(var, str):
          if var not in out_params: raise ValueError('var %s missing' % var)
-         print '%s   %f -> %f' % (var, params[var], value)
+         if verbose: print '%s   %f -> %f' % (var, params[var], value)
          out_params[var] = value
       else:
          key, idx = var
          if key not in out_params: raise ValueError('var %s missing' % key)
-         print '%s[%d] %f -> %f' % (key, idx, params[key][idx], value)
+         if verbose: print '%s[%d] %f -> %f' % (key, idx, params[key][idx], value)
          out_params[key][idx] = value
 
    return out_params
@@ -959,7 +958,7 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
    
    return config_list, (wf*dist_f + ws*dist_s + we*dist_e, dist_f, dist_s, dist_e)
 
-def read_gen_and_param_files(gen_file, param_file):
+def read_gen_and_param_files(gen_file, param_file, verbose=True):
 
    if isinstance(gen_file, str):
       gen_file = open(gen_file, 'r')
@@ -968,9 +967,9 @@ def read_gen_and_param_files(gen_file, param_file):
    gen_params, opt_vars = read_traj_gen(param_format_gen, gen_file)
    params.update(gen_params)
 
-   print 'opt_vars = ', opt_vars
+   if verbose: print 'opt_vars = ', opt_vars
 
-   params = update_vars(params, opt_vars, param_file)
+   params = update_vars(params, opt_vars, param_file, verbose=verbose)
 
    # fix masses
    params['mass'] = [ElementMass[x]/MASSCONVERT for x in params['species']]
