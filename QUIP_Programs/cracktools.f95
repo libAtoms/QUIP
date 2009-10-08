@@ -550,7 +550,7 @@ contains
     real(dp), allocatable :: relaxed_pos(:,:), initial_pos(:,:), new_pos(:,:)
     integer :: i, k, steps
     real(dp) :: G, G1, E, v, v2, Orig_Width, Orig_Height, width1, height1
-    real(dp) :: K1, r, l_crack_pos, crack_pos_2(2), crack_pos_3(2), r_crack_pos, crack_pos(2)
+    real(dp) :: K1, r, l_crack_pos, r_crack_pos, crack_pos(2)
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end workaround for pgf90 bug (as of 9.0-1)
@@ -614,11 +614,7 @@ contains
              steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-                   print_cinoutput=movie)
-
-          crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-          if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
-               call print_warning('Crack tip moved during minimisation - check output carefully!')
+               print_cinoutput=movie)
           end if
 
           ! Save relaxed positions 
@@ -640,11 +636,7 @@ contains
              steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
-                   print_cinoutput=movie)
-
-             crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
-                  call print_warning('Crack tip moved during minimisation - check output carefully!')
+               print_cinoutput=movie)
           endif
 
           ! Save relaxed positions 
@@ -673,16 +665,11 @@ contains
           end do
 
          if (params%crack_relax_loading_field) then
-  
-            ! now relax
+              ! now relax
             steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                  do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                  print_cinoutput=movie)
-
-             crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
-                  call print_warning('Crack tip moved during minimisation - check output carefully!')
          end if
          relaxed_pos = crack_slab%pos  
 
@@ -737,11 +724,6 @@ contains
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                  do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                  print_cinoutput=movie)
-
-             crack_pos_2 = crack_find_crack_pos(crack_slab, params)
-             if (abs(crack_pos(1)-crack_pos_2(1)) > 1.0_dp) &
-                  call print_warning('Crack tip moved during minimisation - check output carefully!')
-
          end if
          relaxed_pos = crack_slab%pos  
 
@@ -789,10 +771,6 @@ contains
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                print_cinoutput=movie)
-
-          crack_pos_3 = crack_find_crack_pos(crack_slab, params)
-          if (abs(crack_pos(1)-crack_pos_3(1)) > 1.0_dp) &
-               call print_warning('Crack tip moved during second minimisation - check output carefully!')
        end if
     
        call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
