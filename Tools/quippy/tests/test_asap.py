@@ -35,6 +35,12 @@ if got_asap2:
          df2 = fzeros((3, at.n))
          local_e2 = fzeros((at.n,))
 
+         at.add_property('efield', 0.0, n_cols=3)
+         at.add_property('dipoles', 0.0, n_cols=3)
+         at.add_property('efield_old1', 0.0, n_cols=3)
+         at.add_property('efield_old2', 0.0, n_cols=3)
+         at.add_property('efield_old3', 0.0, n_cols=3)
+
          at1 = at.copy()
          at1.set_cutoff(self.cutoff)
          at1.calc_connect()
@@ -84,6 +90,12 @@ if got_asap2:
          df = fzeros((3, at.n))
          local_e = fzeros((at.n,))
 
+         at.add_property('efield', 0.0, n_cols=3)
+         at.add_property('dipoles', 0.0, n_cols=3)
+         at.add_property('efield_old1', 0.0, n_cols=3)
+         at.add_property('efield_old2', 0.0, n_cols=3)
+         at.add_property('efield_old3', 0.0, n_cols=3)
+
          at.calc_connect()
          self.p2.calc(at, e=e, f=f, virial=v, local_e=local_e)
 
@@ -131,10 +143,11 @@ if got_asap2:
          """This test fails due to round-off errors in original ASAP implementation
             If two atoms' positions differ by exactly half a unit cell, i.e. |s_i - s_j| = 0.5,
             then conversion from scaled to absolute coordinates is unstable.
-            (short_range.f:232, nnlist.f:83)"""
+            (short_range.f:229, nnlist.f:48)"""
          quartz = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
          bigquartz = supercell(quartz, 2, 1, 1)
          bigquartz.set_cutoff(self.cutoff)
+
          if do_compare_p1_p2:
             self.compare_p1_p2(bigquartz, debug=self.debug)
          else:
@@ -276,8 +289,8 @@ if got_asap2:
          if do_compare_p1_p2:
             self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
-         self.cutoff = 18.0/BOHR
-         self.debug = True
+         self.cutoff = 18.0*BOHR
+         self.debug = False
 
 
 
@@ -389,8 +402,8 @@ if got_asap2:
    """
          self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
-         self.cutoff = 20.0/BOHR
-         self.debug = True
+         self.cutoff = 20.0*BOHR
+         self.debug = False
 
 
    class TestDipoleLongRange(QuippyTestCase, PotTestMixin):
@@ -502,8 +515,8 @@ if got_asap2:
    """
          self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
-         self.cutoff = 20.0/BOHR
-         self.debug = True
+         self.cutoff = 20.0*BOHR
+         self.debug = False
 
 
    class TestDipoleShortRange(QuippyTestCase, PotTestMixin):
@@ -615,8 +628,132 @@ if got_asap2:
    """
          self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
-         self.cutoff = 20.0/BOHR
+         self.cutoff = 20.0*BOHR
          self.debug = False
+
+
+   if do_compare_p1_p2:
+      class TestMD(QuippyTestCase):
+
+         def setUp(self):
+            self.xml = """<ASAP_params 
+        betapol="0.75" 
+        cutoff="20.0 18.0 18.0 18.0"
+        cutoff_ms="18.0"
+        cutoff_coulomb="20.0"
+        tolpol="1e-5" 
+        yuksmoothlength="10.0" 
+        iesr="2 2 2" 
+        a_ew="1e-06" 
+        n_types="2" 
+        gcut="0.0" 
+        pred_order="2" 
+        maxipol="60" 
+        raggio="0.0" 
+        tewald="F" 
+        yukalpha="0.1"
+        tdip_sr="T">
+
+        <per_type_data atomic_num="8" pol="14.131863" z="-1.4295594" type="1" />
+        <per_type_data atomic_num="14" pol="0.0" z="2.8591188" type="2" />
+
+        <per_pair_data C_pol="0.44302622" atnum_j="8" atnum_i="8" D_ms="0.00030700577" gamma_ms="12.165654" B_pol="1.1221903" R_ms="7.0252019" />
+        <per_pair_data C_pol="-1.5003213" atnum_j="8" atnum_i="14" D_ms="0.0020129372" gamma_ms="11.350477" B_pol="1.973181" R_ms="4.5780828" />
+        <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
+      </ASAP_params>
+      """
+            self.p1 = Potential('IP ASAP', self.xml)
+            self.p2 = Potential('IP ASAP2', self.xml)
+
+            self.p1.print_()
+            self.p2.print_()
+
+            self.at = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
+            self.at.cutoff = 20.0*BOHR
+
+            self.at.add_property('efield', 0.0, n_cols=3)
+            self.at.add_property('dipoles', 0.0, n_cols=3)
+            self.at.add_property('efield_old1', 0.0, n_cols=3)
+            self.at.add_property('efield_old2', 0.0, n_cols=3)
+            self.at.add_property('efield_old3', 0.0, n_cols=3)
+
+            self.ds1 = DynamicalSystem(self.at)
+            self.ds1.rescale_velo(300.0)
+            self.ds1.zero_momentum()
+            self.ds1.atoms.calc_connect()
+            self.ds1.avg_temp = 0.0
+
+            self.ds2 = DynamicalSystem(self.ds1.atoms.copy())
+            self.ds2.atoms.calc_connect()
+            self.ds2.avg_temp = 0.0
+
+
+         def test_md_1step(self):
+
+            self.p1.calc(self.ds1.atoms, calc_force=True)
+            self.p2.calc(self.ds2.atoms, calc_force=True)
+
+            self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
+
+            self.ds1.advance_verlet1(1.0, self.ds1.atoms.force)
+            self.ds2.advance_verlet1(1.0, self.ds2.atoms.force)
+
+            self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
+
+            self.p1.calc(self.ds1.atoms, calc_force=True)
+            self.p2.calc(self.ds2.atoms, calc_force=True)
+
+            self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
+
+            self.ds1.advance_verlet2(1.0, self.ds1.atoms.force)
+            self.ds2.advance_verlet2(1.0, self.ds1.atoms.force)
+
+            self.assertArrayAlmostEqual(self.ds1.atoms.velo, self.ds2.atoms.velo)
+
+            self.ds1.print_status()
+            self.ds2.print_status()
+
+
+         def test_md_2step(self):
+
+            self.p1.calc(self.ds1.atoms, calc_force=True)
+            self.p2.calc(self.ds2.atoms, calc_force=True)
+
+            self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
+
+            for i in range(2):
+               self.ds1.advance_verlet1(1.0, self.ds1.atoms.force)
+               self.ds2.advance_verlet1(1.0, self.ds2.atoms.force)
+
+               self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
+
+               self.p1.calc(self.ds1.atoms, calc_force=True)
+               self.p2.calc(self.ds2.atoms, calc_force=True)
+
+               self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
+
+               self.ds1.advance_verlet2(1.0, self.ds1.atoms.force)
+               self.ds2.advance_verlet2(1.0, self.ds1.atoms.force)
+
+               self.ds1.print_status()
+               self.ds2.print_status()
+
+               self.assertArrayAlmostEqual(self.ds1.atoms.velo, self.ds2.atoms.velo)
+
+
+         def test_md_10step(self):
+
+            traj1 = self.ds1.run(self.p1, dt=0.5, n_steps=10, save_interval=1)
+            traj2 = self.ds2.run(self.p2, dt=0.5, n_steps=10, save_interval=1)
+
+            import itertools
+
+            for i, (at1, at2) in enumerate(itertools.izip(traj1, traj2)):
+               self.assertArrayAlmostEqual(at1.force, at2.force)
+               self.assertArrayAlmostEqual(at1.pos, at2.pos)
+
+         
+   
 
 
 if __name__ == '__main__':
