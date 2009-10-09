@@ -714,9 +714,9 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
          efield_old1 = efield_dipole
          
-         if (vv >= NORMAL) then
+         if (vv >= VERBOSE) then
             write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
-            call print(line, NORMAL)
+            call print(line, VERBOSE)
          end if
 
          if (diff > difftol) &
