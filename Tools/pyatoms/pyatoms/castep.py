@@ -536,8 +536,9 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    # Calculate cartesian postions from fractional positions
    cluster.pos[:] = numpy.array([ numpy.dot(cluster.frac_pos[i,:],cluster.lattice)for i in range(cluster.n) ])
 
-   if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'true':
-      energy_lines = filter(lambda s: s.startswith('Total energy corrected for finite basis set'), \
+   if param.has_key('finite_basis_corr') and ( param['finite_basis_corr'].lower() == 'automatic' or
+         param['finite_basis_corr'].lower() == 'manual' ):
+      energy_lines = filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), \
                             castep_output)
    elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
       energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
