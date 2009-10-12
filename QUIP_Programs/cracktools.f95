@@ -599,15 +599,15 @@ contains
        allocate(u_disp(3, crack_slab%N))
        allocate(initial_pos(3,crack_slab%N))
 
+       !save initial positions of crack_slab
+       initial_pos = crack_slab%pos
+
        !create a bulk slab
        call crack_make_slab(params, classicalpot, metapot, crack_slab1, width1, height1, E, v, v2, bulk)
 
        ! Apply loading field   
        if (trim(load_method) == 'saved') then
  
-          !save initial positions of crack_slab 
-          initial_pos = crack_slab%pos
-
           !relax the positions of the original slab 
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
@@ -627,9 +627,6 @@ contains
 
        else if (trim(load_method) == 'uniform') then
  
-          !save initial positions of crack_slab 
-          initial_pos = crack_slab%pos
-
           !relax the positions of the original slab 
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
