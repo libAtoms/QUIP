@@ -714,13 +714,14 @@ enddo
        sor = ''
        QM_prefix_atom_mol_name = ''
        QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
-       if ((trim(run_type_string).eq.'QMMM_CORE') .or. &
-           (trim(run_type_string).eq.'QMMM_EXTENDED')) then
-          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
-             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
-!             call print('QM molecule '//QM_prefix_atom_mol_name)
-          endif
-       endif
+!does not work for contiguous molecules, e.g. silica
+!!!       if ((trim(run_type_string).eq.'QMMM_CORE') .or. &
+!!!           (trim(run_type_string).eq.'QMMM_EXTENDED')) then
+!!!          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
+!!!             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
+!!!!             call print('QM molecule '//QM_prefix_atom_mol_name)
+!!!          endif
+!!!       endif
 !             call print('molecule '//QM_prefix_atom_mol_name)
 !       call print('writing PDB file: atom type '//at%data%str(atom_type_index,mm))
        write(sor,trim(pdb_format)) 'ATOM  ',mm,at%data%str(atom_type_index,mm),at%data%str(atom_res_name_index,mm),at%data%int(atom_res_number_index,mm), &
@@ -878,13 +879,14 @@ enddo
     do mm=1,at%N
        QM_prefix_atom_mol_name = ''
        QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
-       if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
-           (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
-          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
-             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
-!             call print('QM molecule '//QM_prefix_atom_mol_name)
-          endif
-       endif
+!does not work for contiguous molecules, e.g. silica
+!!!       if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+!!!           (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
+!!!          if (at%data%int(qm_flag_index,mm).ge.QMMM_RUN_CORE .and. at%data%int(qm_flag_index,mm).le.run_type) then
+!!!             QM_prefix_atom_mol_name = 'QM'//trim(at%data%str(atom_mol_name_index,mm))
+!!!!             call print('QM molecule '//QM_prefix_atom_mol_name)
+!!!          endif
+!!!       endif
 !       call print('molecule '//QM_prefix_atom_mol_name)
 !       call print('writing PSF file: atom type '//at%data%str(atom_type_index,mm))
        write(sor,psf_format) mm, QM_prefix_atom_mol_name, at%data%int(atom_res_number_index,mm), &
@@ -1620,6 +1622,7 @@ enddo
     integer :: i,j,n, neighbours
     real(dp) :: distance
 
+call system_abort('SHOULDNT HAVE ENTERED THIS ROUTINE')
     !Add every distance within cut_3body(=2.8 A)
     call set_cutoff(at,cut_3body)
     call calc_connect(at)
