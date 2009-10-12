@@ -281,7 +281,7 @@ program crack
   real(dp), pointer :: dr_prop(:,:), f_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit, n
+  integer :: movie_n, nargs, i, state, steps, iunit, n, k
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
@@ -425,7 +425,7 @@ end if
           '  hysteretic_connect='//params%qm_hysteretic_connect//&
           '  nneighb_only='//(.not. params%qm_hysteretic_connect)//&
           '  cluster_nneighb_only='//(.not. params%qm_hysteretic_connect)//&
-	  '  '//trim(params%qm_args_str))
+	  '  ' //trim(params%qm_args_str) )
 
      if (params%qm_rescale_r) then
         call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
@@ -523,9 +523,11 @@ end if
 
            if (params%io_backup) &
                 call initialise(movie_backup, trim(stem)//'_backup.nc', action=OUTPUT)
+                k=0 
         endif
      end if
   endif
+
 
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot)+params%md_crust)//' A.')
   call atoms_set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
@@ -792,7 +794,7 @@ end if
            ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
            ! time smooth_loading_arrest_time then switch back to loading
            if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
-              dummy = get_value(ds%atoms%params, 'CrackPos', crack_pos(1))
+              dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
               dummy = get_value(ds%atoms%params, 'OrigWidth', orig_width)
               dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
               
@@ -1011,10 +1013,9 @@ end if
            call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
            call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
            call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
-           n = ds%t/params%io_print_interval
-
            if (params%io_backup .and. params%io_netcdf) then
-              if (mod(n,2).eq.0) then
+              k=k+1           
+              if (mod(k,2).eq.0) then
                  call crack_print(ds%atoms, movie, params, mpi_glob)
                  call print('writing .nc file '//trim(stem)//'.nc')
               else
@@ -1180,7 +1181,7 @@ end if
 
      call crack_update_connect(ds%atoms, params)
 
-     dummy = get_value(ds%atoms%params, 'CrackPos', orig_crack_pos)
+     dummy = get_value(ds%atoms%params, 'CrackPosx', orig_crack_pos)
      crack_pos(1) = orig_crack_pos
 
      do while (abs(crack_pos(1) - orig_crack_pos) < params%quasi_static_tip_move_tol)
