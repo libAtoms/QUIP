@@ -108,7 +108,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   integer :: i, n_species
   integer, dimension(:), allocatable :: Z
   real(dp), dimension(:), allocatable :: w
-  integer :: i
 
   call Finalise(this)
 
@@ -123,7 +122,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   this%datafile = 'gp.dat'
   call gp_read_binary(this%my_gp, 'gp.dat')
   call read_string(my_dictionary, this%my_gp%comment)
-#endif
 
   this%datafile_coordinates = ''
   if (.not. get_value(my_dictionary, 'coordinates', this%datafile_coordinates)) &
