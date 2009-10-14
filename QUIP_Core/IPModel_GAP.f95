@@ -55,6 +55,7 @@ type IPModel_GAP
   ! bispectrum parameters
   integer :: j_max = 0
   real(dp) :: z0 = 0.0_dp
+  real(dp), dimension(:), allocatable :: w_Z
 
   ! qw parameters
   integer :: qw_dim = 0
@@ -103,18 +104,13 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   character(len=*), intent(in) :: args_str, param_str
   type(mpi_context), intent(in), optional :: mpi
 
-  type(Dictionary) :: params, my_dictionary
+  type(Dictionary) :: my_dictionary
+  integer :: i, n_species
+  integer, dimension(:), allocatable :: Z
+  real(dp), dimension(:), allocatable :: w
   integer :: i
 
   call Finalise(this)
-
-  !call initialise(params)
-  !this%label = ''
-  !call param_register(params, 'label', '', this%label)
-  !if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_GAP_Initialise_str args_str')) then
-  !  call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
-  !endif
-  !call finalise(params)
 
   if (present(mpi)) this%mpi = mpi
 
@@ -159,7 +155,22 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
      this%cutoff = maxval(this%qw_cutoff)
   endif
 
+
+  if( get_value(my_dictionary,'n_species',n_species) ) then
+     allocate( Z(n_species), w(n_species) )
+     if( .not. ( get_value(my_dictionary,'Z',Z) .and. get_value(my_dictionary,'w',w) ) ) &
+     & call system_abort('')
+     allocate(this%w_Z(maxval(Z)))
+     do i = 1, n_species
+        this%w_Z(Z(i)) = w(i)
+     enddo
+  endif
+     
   call finalise(my_dictionary)
+#endif  
+
+  if( allocated(Z) ) deallocate(Z)
+  if( allocated(w) ) deallocate(w)
 
 end subroutine IPModel_GAP_Initialise_str
 
@@ -202,7 +213,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
-  real(dp), dimension(:), allocatable   :: local_e_in
+  real(dp), dimension(:), allocatable   :: local_e_in, w
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:), allocatable   :: vec
   real(dp), dimension(:,:,:), allocatable   :: jack
@@ -244,6 +255,15 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  allocate(w(at%N))
+  if( allocated(this%w_Z) ) then
+     do i = 1, at%N
+        w(i) = this%w_Z(at%Z(i))
+     enddo
+  else
+     w = 1.0_dp
+  endif
+
   if (trim(this%datafile_coordinates) == 'bispectrum') then
 
 #ifdef HAVE_GP
@@ -267,12 +287,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   do i = 1, at%N
 
 #ifdef HAVE_GP
-     call fourier_transform(f_hat,at,i)
+     call fourier_transform(f_hat,at,i,w)
      call calc_bispectrum(bis,f_hat)
      call bispectrum2vec(bis,vec(:,i))
      if(present(f).or.present(virial)) then
         do n = 0, atoms_n_neighbours(at,i)
-           call fourier_transform(df_hat,at,i,n)
+           call fourier_transform(df_hat,at,i,n,w)
            call calc_bispectrum(dbis,f_hat,df_hat)
            call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
         enddo
@@ -312,12 +332,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
            do n = 1, atoms_n_neighbours(at,i)
               j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
+!              if(jn==i)cycle              
 #ifdef HAVE_GP
               call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j))
 #endif
               !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
               f_gp = f_gp - f_gp_k
-              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
+              !if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
+              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
            enddo
        
            if(present(f)) f(k,i) = f_gp
@@ -397,6 +419,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
+  deallocate(w)
 
 end subroutine IPModel_GAP_Calc
 
