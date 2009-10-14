@@ -470,8 +470,8 @@ module linearalgebra_module
   !% multiplication. Can be changed at runtime. The default is true.
 
   type LA_Matrix
-     real(dp), dimension(:,:), allocatable :: matrix, factor
-     real(dp), dimension(:), allocatable :: s
+     real(qp), dimension(:,:), allocatable :: matrix, factor
+     real(qp), dimension(:), allocatable :: s
      integer :: n
      logical :: initialised = .false.
      logical :: equilibrated = .false.
@@ -559,6 +559,7 @@ module linearalgebra_module
 
   !% Matrix product with the diagonal matrix constructed from a vector in subroutine form,
   !% with no return value allocated on the stack
+  private :: matrix_product_vect_asdiagonal_sub_qqq
   private :: matrix_product_vect_asdiagonal_sub_ddd
   private :: matrix_product_vect_asdiagonal_sub_zzd
   private :: matrix_product_vect_asdiagonal_sub_zdz
@@ -568,6 +569,9 @@ module linearalgebra_module
   private :: vect_asdiagonal_product_matrix_sub_zdz
   private :: vect_asdiagonal_product_matrix_sub_zzz
   interface matrix_product_vect_asdiagonal_sub
+#ifdef HAVE_QP  
+    module procedure matrix_product_vect_asdiagonal_sub_qqq
+#endif
     module procedure matrix_product_vect_asdiagonal_sub_ddd
     module procedure matrix_product_vect_asdiagonal_sub_zzd
     module procedure matrix_product_vect_asdiagonal_sub_zdz
@@ -643,6 +647,9 @@ module linearalgebra_module
   private :: outer, z_outer_zz
   interface operator(.outer.)
      module procedure outer, z_outer_zz
+#ifdef HAVE_QP  
+    module procedure outer_qq
+#endif
   end interface
 
   !% Interface to return the real outer product. Usage is 'x .realouter. y'.
@@ -685,6 +692,9 @@ module linearalgebra_module
   private :: matrix_trace
   interface trace
      module procedure matrix_trace
+#ifdef HAVE_QP  
+    module procedure matrix_trace_q
+#endif
   end interface
 
   private :: matrix_trace_mult
@@ -719,6 +729,9 @@ module linearalgebra_module
   private :: vector_norm2, array_norm2
   interface norm2
      module procedure vector_norm2, array_norm2
+#ifdef HAVE_QP  
+    module procedure vector_norm2_q
+#endif
   end interface
 
   !% Randomise the elements of an array. Uniformly distributed random quantities in the range 
@@ -976,6 +989,19 @@ CONTAINS
    ! subroutine form of m(:,:) .multd. v(:) for real = real * real
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
+   subroutine matrix_product_vect_asdiagonal_sub_qqq(lhs, matrix, vect) 
+    real(qp), dimension(:,:), intent(out) :: lhs
+    real(qp), dimension(:,:), intent(in) :: matrix
+    real(qp), dimension(:), intent(in) :: vect
+
+    integer  :: i
+     
+    do i = 1, size(vect)
+       lhs(:,i) = vect(i) * matrix(:,i)
+    enddo
+     
+   endsubroutine matrix_product_vect_asdiagonal_sub_qqq
+
    subroutine matrix_product_vect_asdiagonal_sub_ddd(lhs, matrix, vect) 
     real(dp), dimension(:,:), intent(out) :: lhs
     real(dp), dimension(:,:), intent(in) :: matrix
@@ -1658,6 +1684,20 @@ CONTAINS
 
   end function matrix_trace
 
+  function matrix_trace_q(matrix) result(tr)
+    real(qp),intent(in), dimension(:,:) ::matrix
+    real(qp)::tr
+    integer::i,N
+
+    N = min(size(matrix,1),size(matrix,2))
+   
+    tr=0.0_qp
+    do i=1,N
+       tr=tr+matrix(i,i)
+    end do
+
+  end function matrix_trace_q
+
   !returns trace of the result matrix
   function matrix_trace_mult(matrixA, matrixB) result(trm)
     real(dp),intent(in), dimension(:,:) ::matrixA, matrixB
@@ -2251,12 +2291,12 @@ CONTAINS
   subroutine LA_Matrix_Initialise(this,matrix)
 
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:,:), intent(in) :: matrix
+     real(qp), dimension(:,:), intent(in) :: matrix
 
      if(this%initialised) call finalise(this)
 
-     if( .not. is_square(matrix) ) &
-     & call system_abort('LA_Matrix_Initialise: matrix not square')
+     !if( .not. is_square(matrix) ) &
+     !& call system_abort('LA_Matrix_Initialise: matrix not square')
 
      this%n = size(matrix,1)
      allocate(this%matrix(this%n,this%n), this%factor(this%n,this%n), this%s(this%n) )
@@ -2285,22 +2325,22 @@ CONTAINS
   subroutine LA_Matrix_Factorise(this,factor)
 
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:,:), intent(out), optional :: factor
+     real(qp), dimension(:,:), intent(out), optional :: factor
 
      integer :: i, j, info
      real(dp) :: scond, amax
 
      if(.not. this%initialised) call system_abort('LA_Matrix_Factorise: Initialise first')
 
-     this%s = 1.0_dp
+     this%s = 1.0_qp
 
      do i = 1, this%n
-        this%s(i) = 1.0_dp / sqrt(this%matrix(i,i))
+        this%s(i) = 1.0_qp / sqrt(this%matrix(i,i))
      enddo
      scond = maxval(this%s) / minval(this%s)
      amax = maxval(this%matrix)
 
-     this%equilibrated = ( scond < 0.1_dp )
+     this%equilibrated = ( scond < 0.1_qp )
 
      if( this%equilibrated ) then
         do i = 1, this%n
@@ -2310,22 +2350,24 @@ CONTAINS
         this%factor = this%matrix
      endif
 
-     call dpotrf('U', this%n, this%factor, this%n, info)
-     do i = 1, this%n
-        do j = i+1, this%n
-           this%factor(j,i) = 0.0_dp
-        enddo
-     enddo
+     !call dpotrf('U', this%n, this%factor, this%n, info)
+     call my_potrf(this%factor,info)
+
+!     do i = 1, this%n
+!        do j = i+1, this%n
+!           this%factor(j,i) = 0.0_qp
+!        enddo
+!     enddo
 
      if( info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, error: '//info)
      this%factorised = .true.
 
      if( present(factor) ) then
-        call check_size('factor',factor,shape(this%matrix),'LA_Matrix_Factorise')
+        !call check_size('factor',factor,shape(this%matrix),'LA_Matrix_Factorise')
         if( this%equilibrated ) then
-           factor = 0.0_dp
+           factor = 0.0_qp
            do i = 1, this%n
-              do j = 1, i
+              do j = 1, this%n
                  factor(j,i) = this%factor(j,i) / this%s(i)
               enddo
            enddo
@@ -2336,18 +2378,88 @@ CONTAINS
         
   endsubroutine LA_Matrix_Factorise
 
+  subroutine my_potrf(this,info)
+     real(qp), dimension(:,:), intent(inout) :: this
+     integer, intent(out), optional :: info
+     real(qp), dimension(:), allocatable :: v, w
+
+     integer :: i, j, k, p, mu, n
+
+     n = size(this,1)
+
+     if(present(info)) info = 0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!     another implementation
+!     this(:,1) = this(:,1) / sqrt(this(1,1))
+!     do j = 2, n
+!        this(j:n,j) = this(j:n,j) - matmul( this(j:n,1:j-1), this(j,1:j-1) )
+!        if(this(j,j)<0.0_qp) then
+!           if(present(info)) then
+!              info = j
+!              return
+!           else
+!              call system_abort('my_potrf: trouble')
+!           endif
+!        endif
+!        this(j:n,j) = this(j:n,j)/sqrt(this(j,j))
+!     enddo
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+     p = 1
+     mu = 1
+
+!$omp parallel private(mu,v,w) shared(info)
+!$ p=omp_get_num_threads()
+!$ mu=omp_get_thread_num()+1
+     allocate(v(n),w(n))
+     do k = 1, n
+        if( mu == 1 ) then
+           v(k:n) = this(k:n,k)
+           if(v(k)<0.0_qp) then
+              if(present(info)) then
+                 info = k
+!                 return
+              else
+                 call system_abort('my_potrf: trouble')
+              endif
+           endif
+           v(k:n) = v(k:n) / sqrt(v(k))
+           this(k:n,k) = v(k:n)
+        endif
+!$omp barrier        
+        v(k+1:n) = this(k+1:n,k)
+        do j = k+mu,n,p
+           w(j:n) = this(j:n,j)
+           w(j:n) = w(j:n) - v(j)*v(j:n)
+           this(j:n,j) = w(j:n)
+        enddo
+!$omp barrier        
+     enddo
+     deallocate(v,w)
+!$omp end parallel
+           
+     do i = 2, n
+        do j = 1, i
+           this(j,i) = this(i,j)
+        enddo
+     enddo
+
+  endsubroutine my_potrf
+
   subroutine LA_Matrix_Inverse(this,inverse)
 
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:,:), intent(out) :: inverse
+     real(qp), dimension(:,:), intent(out) :: inverse
      integer :: i, j, info
 
      if( .not. this%factorised ) call LA_Matrix_Factorise(this)
-     call check_size('inverse',inverse,shape(this%matrix),'LA_Matrix_Inverse')
+     !call check_size('inverse',inverse,shape(this%matrix),'LA_Matrix_Inverse')
 
      inverse = this%factor
 
-     call dpotri('U', this%n, inverse, this%n, info)
+     !call dpotri('U', this%n, inverse, this%n, info)
+     call my_potri(inverse); info = 0
 
      do i = 1, this%n
         do j = i+1, this%n
@@ -2365,14 +2477,32 @@ CONTAINS
      
   endsubroutine LA_Matrix_Inverse
 
+  subroutine my_potri(this)
+
+     real(qp), dimension(:,:), intent(inout) :: this
+     real(qp), dimension(:,:), allocatable :: one
+     integer :: i, n
+
+     n = size(this,1)
+     allocate(one(n,n))
+     one = 0.0_qp
+     do i = 1, n
+        one(i,i) = 1.0_qp
+     enddo
+     call my_potrs(this,one)
+     this = one
+     deallocate(one)
+     
+  endsubroutine my_potri
+
   subroutine LA_Matrix_Solve_Vector(this,b,x,refine)
 
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:), intent(in) :: b
-     real(dp), dimension(:), intent(out) :: x
+     real(qp), dimension(:), intent(in) :: b
+     real(qp), dimension(:), intent(out) :: x
      logical, intent(in), optional :: refine
 
-     real(dp), dimension(:,:), allocatable :: my_x
+     real(qp), dimension(:,:), allocatable :: my_x
 
      if( (size(b) /= this%n) .or. (size(x) /= this%n) ) &
      & call system_abort('LA_Matrix_Solve_Vector: length of b or x is not n')
@@ -2387,18 +2517,18 @@ CONTAINS
   subroutine LA_Matrix_Solve_Matrix(this,b,x,refine)
 
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:,:), intent(in) :: b
-     real(dp), dimension(:,:), intent(out) :: x
+     real(qp), dimension(:,:), intent(in) :: b
+     real(qp), dimension(:,:), intent(out) :: x
      logical, intent(in), optional :: refine
 
-     real(dp), dimension(:,:), allocatable :: my_b, my_x
-     real(dp), dimension(:), allocatable :: work, ferr, berr
+     real(qp), dimension(:,:), allocatable :: my_b, my_x
+     real(qp), dimension(:), allocatable :: work, ferr, berr
      integer, dimension(:), allocatable :: iwork
      integer :: i, m, info
 
      logical :: my_refine
 
-     call check_size('solution vector', b, shape(x), 'LA_Matrix_Solve_Matrix')
+     !call check_size('solution vector', b, shape(x), 'LA_Matrix_Solve_Matrix')
 
      if( size(b,1) /= this%n ) &
      & call system_abort('LA_Matrix_Solve_Matrix: first dimension of b is not n')
@@ -2407,7 +2537,7 @@ CONTAINS
 
      if( .not. this%factorised ) call LA_Matrix_Factorise(this)
      m = size(b,2)
-     allocate(my_b(this%n,m),my_x(this%n,m), work(3*this%n),iwork(this%n),ferr(m), berr(m))
+     allocate(my_b(this%n,m),my_x(this%n,m)) !, work(3*this%n),iwork(this%n),ferr(m), berr(m))
 
      if( this%equilibrated ) then
         do i = 1, m
@@ -2419,10 +2549,11 @@ CONTAINS
         my_b = my_x
      endif
 
-     call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, info )
+     !call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, info )
+     call my_potrs( this%factor, my_x ); info = 0
 
-     if( my_refine ) call dporfs( 'U', this%n, m, this%matrix, this%n, this%factor, &
-     & this%n, my_b, this%n, my_x, this%n, ferr, berr, work, iwork, info )
+!     if( my_refine ) call dporfs( 'U', this%n, m, this%matrix, this%n, this%factor, &
+!     & this%n, my_b, this%n, my_x, this%n, ferr, berr, work, iwork, info )
 
      if( this%equilibrated ) then
         do i = 1, m
@@ -2433,9 +2564,33 @@ CONTAINS
      endif
 
      if( info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, error: '//info)
-     deallocate(my_x,my_b,work, iwork, ferr, berr)
+     deallocate(my_x,my_b) !,work, iwork, ferr, berr)
 
   endsubroutine LA_Matrix_Solve_Matrix
+
+  subroutine my_potrs(factor,x)
+    real(qp), dimension(:,:), intent(in) ::factor
+    real(qp), dimension(:,:), intent(inout) :: x
+    integer :: n, m, i, j
+
+    n = size(factor,1)
+    m = size(x,2)
+!$omp parallel do    
+    do i = 1, m
+       do j = 1, n-1
+          x(j,i) = x(j,i)/factor(j,j)
+          x(j+1:n,i) = x(j+1:n,i) - x(j,i)*factor(j+1:n,j)
+       enddo
+       x(n,i) = x(n,i)/factor(n,n)
+
+       do j = n, 2, -1
+          x(j,i) = x(j,i)/factor(j,j)
+          x(1:j-1,i) = x(1:j-1,i) - x(j,i)*factor(1:j-1,j)
+       enddo
+       x(1,i) = x(1,i)/factor(1,1)
+    enddo
+
+  endsubroutine my_potrs
 
   function LA_Matrix_LogDet(this)
 
@@ -2815,7 +2970,7 @@ CONTAINS
     integer                                     :: i, n, w
     logical                                     :: t
     character(200)                              :: format
-    integer                                     :: max_size = 5
+    integer                                     :: max_size = 6
 
     if (size(this,2) > max_size .and. size(this,1) <= max_size) then
        w = size(this,1)
@@ -2960,6 +3115,15 @@ CONTAINS
 
   end function vector_norm2
 
+  pure function vector_norm2_q(vector) result(norm2) 
+
+    real(qp), intent(in), dimension(:) :: vector
+    real(qp)             :: norm2
+   
+    norm2 = dot_product(vector,vector)
+
+  end function vector_norm2_q
+
   ! norm()
   ! returns SQRT((X.dot.X))
   pure function vector_norm(vector) result(norm)
@@ -3018,6 +3182,19 @@ CONTAINS
     end do
   
   end function outer
+
+  function outer_qq(vector1,vector2) result(outr)
+    real(qp),intent(in), dimension(:) ::vector1,vector2
+    real(qp), dimension(size(vector1),size(vector2)) ::outr
+    integer::i,j
+     
+    do j=1,size(vector2)
+       do i=1,size(vector1)
+          outr(i,j)=vector1(i)*vector2(j)
+       end do
+    end do
+  
+  end function outer_qq
 
   ! x .outer. y 
   function d_outer_zz(vector1,vector2) result(outr)
