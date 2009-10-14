@@ -574,6 +574,12 @@ module system_module
   use mpi_module
   implicit none
 
+#ifdef HAVE_QP
+  integer, parameter :: qp = 16 
+#else
+  integer, parameter :: qp = 8
+#endif
+  
 #ifdef QUAD_PRECISION
   integer, parameter :: dp = 16 ! kind(1.0d0)
 #else
