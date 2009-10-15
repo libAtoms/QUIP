@@ -659,55 +659,59 @@ contains
        call print('create_cluster: Finished checking for termination clashes',NERD)
        call print("create_cluster: cluster list:", NERD)
        call print(cluster_info, NERD)
-    end if ! allow_cluster_mod
 
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
-    !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
-    !x and taking all its neighbors IN if it has not only single bonds                                      x
-    !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
-    !x                             \OH  \NH                                                                 x
-    !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    !Go through the cluster atoms and find cut bonds. If the bond is to
-    !hydrogen, then include the hydrogen in the cluster list (since AMBER
-    !doesn't cap a bond to hydrogen with a link atom)
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
+       !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
+       !x and taking all its neighbors IN if it has not only single bonds                                      x
+       !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
+       !x                             \OH  \NH                                                                 x
+       !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       !Go through the cluster atoms and find cut bonds. If the bond is to
+       !hydrogen, then include the hydrogen in the cluster list (since AMBER
+       !doesn't cap a bond to hydrogen with a link atom)
 
-   if(do_termination_clash_check) then
+       if(do_termination_clash_check) then
     
-    call table_allocate(extra_atoms,6,4,1,0,100)
-    !call table_allocate(to_delete,6,4,1,0,100)
-    call table_allocate(buffer,6,4,1,0,100)
-    call table_allocate(extra_atoms,6,4,1,0,100)
-    call table_allocate(extra_atoms,6,4,1,0,100)
+          call table_allocate(extra_atoms,6,4,1,0,100)
+          !call table_allocate(to_delete,6,4,1,0,100)
+          call table_allocate(buffer,6,4,1,0,100)
+          call table_allocate(extra_atoms,6,4,1,0,100)
+          call table_allocate(extra_atoms,6,4,1,0,100)
+      
+          more_atoms = .true.
+          call Print('create_cluster_info: checking for hydrogens',NERD)
+          do while(more_atoms)
+      
+             more_atoms = .false.
+      
+             do m = 1, cluster_info%N
+      
+                j = cluster_info%int(1,m)
+                call wipe(centre)
+                jshift = cluster_info%int(2:4,m)
+                call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
+!!!!!!!                call append(centre, (/j,jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), &
+!!!!!!!                                    (/ hybrid_mark_name(hybrid_mark(j)) /) )
 
-    more_atoms = .true.
-    call Print('create_cluster_info: checking for hydrogens',NERD)
-    do while(more_atoms)
-
-       more_atoms = .false.
-
-       do m = 1, cluster_info%N
-
-          j = cluster_info%int(1,m)
-          call wipe(centre)
-          jshift = cluster_info%int(2:4,m)
-          call append(centre, (/j,jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), &
-                              (/ hybrid_mark_name(hybrid_mark(j)) /) )
-
-          call bfs_step(this,centre,bonds,nneighb_only=.true.)
-          call Print('create_cluster: going for atom '//j//' as centre in checking for cut H bonds',NERD)
-          do nn = 1, bonds%N
-
-             k = bonds%int(1,nn) !k is an atom which j is bonded to
-             kshift = bonds%int(2:4,nn)
-             if (find(cluster_info,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
-             if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
+                call bfs_step(this,centre,bonds,nneighb_only=.true.)
+                call Print('create_cluster: going for atom '//j//' as centre in checking for cut H bonds',NERD)
+                do nn = 1, bonds%N
+      
+                   k = bonds%int(1,nn) !k is an atom which j is bonded to
+                   kshift = bonds%int(2:4,nn)
+                   if (find(cluster_info,(/k,kshift,this%Z(k),0/), atom_mask)/=0) cycle
+                   if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
+!                   if (find(cluster_info,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
+!                   if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
 
              !If we get to this point then the bond j--k is being cut.
              !Add k to extra_atoms if j or k are hydrogen (Z=1)
              if (this%Z(j)==1 .or. this%Z(k)==1) then
-                call append(extra_atoms,(/k,jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
+!                call append(extra_atoms,(/k,jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
+                      call append(extra_atoms,(/k,kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
+call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/)',VERBOSE)
                 more_atoms = .true.
              end if
              !call Print('construct_qm_region: went for bond '//nn)
@@ -717,6 +721,7 @@ contains
 
        !Add any extra atoms to the cluster list then wipe it
        call append(cluster_info,extra_atoms)
+
        call wipe(extra_atoms)
 
     end do
@@ -768,7 +773,8 @@ contains
              l3 = (.not. is_nearest_neighbour(this,j, p))
              if (l1 .or. l2 .or. l3) cycle
              !So k is an IN nearest neighbour of j.
-            if(find(cluster_info,(/j,ishift+jshift/)) == 0) &
+!            if(find(cluster_info,(/j,ishift+jshift/)) == 0) &
+                  if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) == 0) &
                call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
             ! j is now included in the cluster_info, so we can exit this do loop (over p)
             ! only include j's hydrogen neighbours
@@ -779,10 +785,10 @@ contains
                 l2 = (this%Z(q) == 1)
                 if(l1 .AND. l2) call append(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
               end if
-             end do
-           end do
-         end do
-         n = n + 1
+            end do
+          end do
+       end do
+       n = n + 1
     end do
 
     !If in >C=O O is out, include it. Do it also for C=N-C motif for N.
@@ -892,10 +898,16 @@ contains
     call finalise(buffer)
     call finalise(centre) 
 
+       call print('create_cluster: Finished checking for bio valence termination clashes',NERD)
+       call print("create_cluster: cluster list:", NERD)
+       call print(cluster_info, NERD)
+
    end if !do_termination_clash_check
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     !x End of biochem related part x
     !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    end if ! allow_cluster_mod
 
     !So now cluster_info contains all the atoms that are going to be in the cluster.
     !If do_terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
@@ -1202,7 +1214,7 @@ contains
                       exit
                    end if
                 enddo
-              end do
+             end do
              if (in_outer_layer) then
                 hybrid_mark(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
                 cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
@@ -1459,10 +1471,10 @@ contains
     logical :: dummy
     logical :: do_nneighb_only, do_min_images_only, do_mark_buffer_outer_layer, distance_ramp, hop_ramp, do_hysteretic_buffer, do_hysteretic_connect
     character(FIELD_LENGTH) :: do_weight_interpolation
-    type(Table) :: activelist, currentlist, nextlist, distances, oldbuffer, bufferlist, buffer_inner, buffer_outer, embedlist
+    type(Table) :: activelist, currentlist, nextlist, distances, oldbuffer, bufferlist, buffer_inner, buffer_outer
     real(dp) :: core_CoM(3), core_mass, mass, do_hysteretic_buffer_inner_radius, do_hysteretic_buffer_outer_radius
     integer :: list_1, old_nextlist_N, hybrid_number 
-    type(Table) :: totallist 
+    type(Table) :: total_embedlist 
      
     real(dp) :: do_hysteretic_connect_cluster_radius, do_hysteretic_connect_inner_factor, do_hysteretic_connect_outer_factor
     real(dp) :: origin(3), extent(3,3)
@@ -1517,122 +1529,134 @@ contains
     n_region1 = count(hybrid_mark == HYBRID_ACTIVE_MARK)
     list_1 = 0  
     call allocate(activelist, 4,0,0,0)
-    call allocate(totallist, 4,0,0,0) 
+    call allocate(total_embedlist, 4,0,0,0) 
 
-    do while (totallist%N < n_region1)
+    do while (total_embedlist%N < n_region1)
 
        call wipe(currentlist)
        call wipe(activelist)
        call wipe(nextlist)    
   
-    call append(activelist, (/first_active,0,0,0/))
-    call append(currentlist, activelist)
-    weight_region1(first_active) = 1.0_dp
-
-    if (distance_ramp) then
-       if (has_property(at, 'mass')) then
-          core_mass = at%mass(first_active)
-       else
-          core_mass = ElementMass(at%Z(first_active))
+       call append(activelist, (/first_active,0,0,0/))
+       call append(currentlist, activelist)
+       weight_region1(first_active) = 1.0_dp
+   
+       if (distance_ramp) then
+          if (has_property(at, 'mass')) then
+             core_mass = at%mass(first_active)
+          else
+             core_mass = ElementMass(at%Z(first_active))
+          end if
+          core_CoM =core_mass*at%pos(:,first_active) ! we're taking this as reference atom so no shift needed here
        end if
-       core_CoM =core_mass*at%pos(:,first_active) ! we're taking this as reference atom so no shift needed here
-    end if
-
-    if (do_hysteretic_connect) then
-      call system_timer('hysteretic_connect')
-      call estimate_origin_extent(at, hybrid_mark == HYBRID_ACTIVE_MARK, do_hysteretic_connect_cluster_radius, origin, extent)
-      save_use_uniform_cutoff = at%use_uniform_cutoff
-      save_cutoff = at%cutoff
-      save_cutoff_break = at%cutoff_break
-      call set_cutoff_factor(at, do_hysteretic_connect_inner_factor, do_hysteretic_connect_outer_factor)
-      call calc_connect_hysteretic(at, at%hysteretic_connect, origin, extent)
-      if (save_use_uniform_cutoff) then
-	call set_cutoff(at, save_cutoff, save_cutoff_break)
-      else
-	call set_cutoff_factor(at, save_cutoff, save_cutoff_break)
-      endif
-      call system_timer('hysteretic_connect')
-    endif
-
-    ! Add other active atoms using bond hopping from the first atom
-    ! in the cluster to find the other active atoms and hence to determine the correct 
-    ! periodic shifts
-    hybrid_number = 1
-    do while (hybrid_number .ne. 0)
+   
        if (do_hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
-       else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+         call system_timer('hysteretic_connect')
+         call estimate_origin_extent(at, hybrid_mark == HYBRID_ACTIVE_MARK, do_hysteretic_connect_cluster_radius, origin, extent)
+         save_use_uniform_cutoff = at%use_uniform_cutoff
+         save_cutoff = at%cutoff
+         save_cutoff_break = at%cutoff_break
+         call set_cutoff_factor(at, do_hysteretic_connect_inner_factor, do_hysteretic_connect_outer_factor)
+         call calc_connect_hysteretic(at, at%hysteretic_connect, origin, extent)
+         if (save_use_uniform_cutoff) then
+           call set_cutoff(at, save_cutoff, save_cutoff_break)
+         else
+           call set_cutoff_factor(at, save_cutoff, save_cutoff_break)
+         endif
+         call system_timer('hysteretic_connect')
        endif
-       hybrid_number = 0 
-       do j=1,nextlist%N
-          jj = nextlist%int(1,j)
-          shift = nextlist%int(2:4,j)
-          if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK) then
-             hybrid_number = hybrid_number+1 
-             call append(activelist, nextlist%int(:,j))
-             weight_region1(jj) = 1.0_dp
 
-             if (distance_ramp) then
-                if (has_property(at, 'mass')) then
-                   mass = at%mass(jj)
-                else
-                   mass = ElementMass(at%Z(jj))
+       ! Add other active atoms using bond hopping from the first atom
+       ! in the cluster to find the other active atoms and hence to determine the correct 
+       ! periodic shifts
+       hybrid_number = 1
+       do while (hybrid_number .ne. 0)
+          if (do_hysteretic_connect) then
+            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
+          else
+            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+          endif
+          hybrid_number = 0 
+          do j=1,nextlist%N
+             jj = nextlist%int(1,j)
+             shift = nextlist%int(2:4,j)
+             if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK) then
+                hybrid_number = hybrid_number+1 
+                call append(activelist, nextlist%int(:,j))
+                weight_region1(jj) = 1.0_dp
+   
+                if (distance_ramp) then
+                   if (has_property(at, 'mass')) then
+                      mass = at%mass(jj)
+                   else
+                      mass = ElementMass(at%Z(jj))
+                   end if
+                   core_CoM = core_CoM + mass*(at%pos(:,jj) + (at%lattice .mult. (shift)))
+                   core_mass = core_mass + mass
                 end if
-                core_CoM = core_CoM + mass*(at%pos(:,jj) + (at%lattice .mult. (shift)))
-                core_mass = core_mass + mass
+   
              end if
-
-          end if
-       end do
-       call append(currentlist, nextlist)
-    enddo
-    list_1 = list_1 + activelist%N
-    call append(totallist, activelist)    
-
-    if (distance_ramp) core_CoM = core_CoM/core_mass
-
-    call wipe(currentlist)
-    call append(currentlist, activelist)
-! call print('create_hybrid_mark: creating transition region')
-    ! create transition region
-    if (distance_ramp) call initialise(distances, 1, 1, 0, 0)
-    n_trans = 0
-    call print ("trans_width "//trans_width)
-    do i = 0,trans_width-2
-       call print("hysteretic_connect = "//do_hysteretic_connect)
-       call print("min_images_only = "//do_min_images_only)
-       if (do_hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
-       else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
-       endif
+          end do
+          call append(currentlist, nextlist)
+       enddo
+       list_1 = list_1 + activelist%N
+       call append(total_embedlist, activelist)    
+   
+       if (distance_ramp) core_CoM = core_CoM/core_mass
+   
        call wipe(currentlist)
-       do j = 1,nextlist%N
-          jj = nextlist%int(1,j)
-          if(hybrid_mark(jj) == HYBRID_NO_MARK) then
-             call append(currentlist, nextlist%int(:,j))
-             if (hop_ramp) weight_region1(jj) = 1.0_dp - real(i+1)/real(trans_width) ! linear transition
-             if (distance_ramp) &        ! Save distance, weight will be calculated later
-                call append(distances, jj, distance_min_image(at, core_CoM, jj))
-             hybrid_mark(jj) = HYBRID_TRANS_MARK
-             n_trans = n_trans+1
-          end if
-       end do
-    end do
+       call append(currentlist, activelist)
 
+       ! create transition region
+       call print('create_hybrid_mark: creating transition region',VERBOSE)
+       if (distance_ramp) call initialise(distances, 1, 1, 0, 0)
+       n_trans = 0
+       call print ("trans_width "//trans_width)
+       do i = 0,trans_width-2
+          call print("hysteretic_connect = "//do_hysteretic_connect)
+          call print("min_images_only = "//do_min_images_only)
+          if (do_hysteretic_connect) then
+            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
+          else
+            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+          endif
+          call wipe(currentlist)
+          do j = 1,nextlist%N
+             jj = nextlist%int(1,j)
+             if(hybrid_mark(jj) == HYBRID_NO_MARK) then
+                call append(currentlist, nextlist%int(:,j))
+                if (hop_ramp) weight_region1(jj) = 1.0_dp - real(i+1)/real(trans_width) ! linear transition
+                if (distance_ramp) &        ! Save distance, weight will be calculated later
+                   call append(distances, jj, distance_min_image(at, core_CoM, jj))
+                hybrid_mark(jj) = HYBRID_TRANS_MARK
+                n_trans = n_trans+1
+             end if
+          end do
+       end do
+   
+       if (distance_ramp) then
+          ! Normalise distances from core_CoM so that maximum distance is equal to 1
+          distances%real(1,1:distances%N) = distances%real(1,1:distances%N)/maxval(real_part(distances,1))
+          ! Fill in the weights
+          do i=1,distances%N
+             weight_region1(jj) = 1.0_dp - distances%real(1,i)
+          end do
+          call finalise(distances)
+       end if
+   
+       if (list_1 .lt. n_region1) then
+          call print('searching for a new quantum zone as found '//list_1//' atoms, need to get to '//n_region1)
+          do i =1, at%N
+             if (hybrid_mark(i) == HYBRID_ACTIVE_MARK .and. .not. Is_in_Array(total_embedlist%int(1,1:total_embedlist%N), i)) then
+                first_active = i
+                exit
+             endif
+          enddo
+       endif
+   
+    enddo
     call print("region 1 done")
-
-    if (distance_ramp) then
-       ! Normalise distances from core_CoM so that maximum distance is equal to 1
-       distances%real(1,1:distances%N) = distances%real(1,1:distances%N)/maxval(real_part(distances,1))
-       ! Fill in the weights
-       do i=1,distances%N
-          weight_region1(jj) = 1.0_dp - distances%real(1,i)
-       end do
-       call finalise(distances)
-    end if
-
+ 
     call print("doing region 2")
     ! create region2 (buffer region) 
     if (.not. do_hysteretic_buffer) then
@@ -1661,7 +1685,8 @@ contains
        call print("region 2 done, non hysteretic buffer")
     else
 
-       call wipe(oldbuffer)
+       call initialise(oldbuffer, 1,0,0,0)
+       !call wipe(oldbuffer)
        call append(oldbuffer, find(hybrid_mark /= HYBRID_NO_MARK))
 
        call wipe(currentlist)
@@ -1677,6 +1702,8 @@ contains
        ! in the cluster to find the other buffer atoms and hence to determine the correct 
        ! periodic shifts
        !
+       ! This will fail if marked atoms do not form connected clusters around the active atoms
+       old_n = bufferlist%N
        do while (bufferlist%N < n_region2)
 	  if (do_hysteretic_connect) then
 	    call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
@@ -1686,11 +1713,14 @@ contains
           do j=1,nextlist%N
              jj = nextlist%int(1,j)
              shift = nextlist%int(2:4,j)
-             if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK) call append(bufferlist, nextlist%int(:,j))
+             if (hybrid_mark(jj) /= HYBRID_NO_MARK) call append(bufferlist, nextlist%int(:,j))
           end do
           call append(currentlist, nextlist)
 
           ! check that cluster is still growing
+          if (bufferlist%N == old_n) &
+               call system_abort('create_hybrid_weights_args: buffer cluster stopped growing before all marked atoms found - check for split buffer region')
+          old_n = bufferlist%N
        end do
     
        ! Remove marks on all buffer atoms
@@ -1701,8 +1731,8 @@ contains
        end do
 
        ! Construct inner and outer buffer lists
-       call construct_buffer(at, embedlist, do_hysteretic_buffer_inner_radius, buffer_inner, has_property(at, 'avgpos'))
-       call construct_buffer(at, embedlist, do_hysteretic_buffer_outer_radius, buffer_outer, has_property(at, 'avgpos'))
+       call construct_buffer(at, total_embedlist, do_hysteretic_buffer_inner_radius, buffer_inner, has_property(at, 'avgpos'))
+       call construct_buffer(at, total_embedlist, do_hysteretic_buffer_outer_radius, buffer_outer, has_property(at, 'avgpos'))
 
        call print('bufferlist=')
        call print(bufferlist)
@@ -1716,6 +1746,7 @@ contains
        call select_hysteretic_quantum_region(at, buffer_inner, buffer_outer, bufferlist)
 
        ! Mark new buffer region, leaving core QM region alone
+       ! at the moment only ACTIVE and NO marks are present, because hybrid_mark was set to =hybrid
        do i=1,bufferlist%N
           if (hybrid_mark(bufferlist%int(1,i)) == HYBRID_NO_MARK) & 
                hybrid_mark(bufferlist%int(1,i)) = HYBRID_BUFFER_MARK
@@ -1729,7 +1760,7 @@ contains
        call finalise(buffer_outer)
        call finalise(bufferlist)
        call finalise(oldbuffer)
-       call finalise(embedlist)
+!       call finalise(embedlist)
     
     call print("region 2 done, hysteretic buffer")   
     end if
@@ -1755,27 +1786,16 @@ contains
     !call print('create_hybrid_weights: '//n_region1//' region 1, '//n_trans//' transition, '//n_region2//&
     !     ' region 2, '//count(hybrid_mark /= HYBRID_NO_MARK)//' in total', VERBOSE)
 
-    if (list_1 .lt. n_region1) then
-       call print('searching for a new quantum zone as found '//list_1//' atoms, need to get to '//n_region1)
-       do i =1, at%N
-          if (hybrid_mark(i) == HYBRID_ACTIVE_MARK .and. .not. Is_in_Array(totallist%int(1,1:totallist%N), i)) then
-             first_active = i
-             exit
-          endif
-       enddo
-    endif
-   
- 
-    enddo
     call print("subroutine create_hybrid_weights_args: DONE")
- 
-    call sort(totallist)
 
+!    call sort(total_embedlist)
+ 
 
     call finalise(activelist)
     call finalise(currentlist)
     call finalise(nextlist)
     call finalise(distances)
+    call finalise(total_embedlist)
     
   end subroutine create_hybrid_weights_args
 
@@ -1941,6 +1961,7 @@ contains
 
 
     ! create region2 (fit region)
+    call initialise(tmpfitlist,4,0,0,0,0)
     n_region2 = 0
     do i = 0,fit_hops-1
        call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
@@ -1965,22 +1986,24 @@ contains
     call append(fitlist, embedlist)
     call append(fitlist, tmpfitlist)
 
-    if (multiple_images(embedlist)) then
-       call print('embedlist contains repeated atom indices :-(')
-       call discard_non_min_images(embedlist)
-       call print('multiple images discarded')
-    else
-       call print('embedlist does not contain repeated atom indices :-)')
-    endif
-
-
-    if (multiple_images(fitlist)) then
-       call print('fitlist contains repeated atom indices :-(')
-       call discard_non_min_images(fitlist)
-       call print('multiple images discarded')
-
-    else
-       call print('fitlist does not contain repeated atom indices :-)')
+    if (do_min_images_only) then
+       if (multiple_images(embedlist)) then
+          call print('embedlist contains repeated atom indices :-(')
+          call discard_non_min_images(embedlist)
+          call print('multiple images discarded')
+       else
+          call print('embedlist does not contain repeated atom indices :-)')
+       endif
+   
+   
+       if (multiple_images(fitlist)) then
+          call print('fitlist contains repeated atom indices :-(')
+          call discard_non_min_images(fitlist)
+          call print('multiple images discarded')
+   
+       else
+          call print('fitlist does not contain repeated atom indices :-)')
+       endif
     endif
 
     call finalise(currentlist)
@@ -1988,6 +2011,7 @@ contains
     call finalise(tmpfitlist)
   
     call print('Leaving create_embed_and_fit_lists.',VERBOSE)
+
   end subroutine create_embed_and_fit_lists
 
   !% Given an Atoms structure with an active region marked in the 'hybrid_mark'
