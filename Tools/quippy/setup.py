@@ -371,7 +371,7 @@ if do_quippy_extension:
                                                [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
                                                cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                     'dictionary_t':'FoX_sax'}], 
-                                               kindlines=['use system_module, only: dp',
+                                               kindlines=['use system_module, only: dp, qp',
                                                           'use iso_c_binding, only: C_SIZE_T'],
                                                short_names={'dynamicalsystem':'ds',
                                                             'metapotential': 'metapot'})
