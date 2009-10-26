@@ -226,10 +226,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   type(grad_fourier_so4), save :: df_hat
   type(bispectrum_so4), save :: bis
   type(grad_bispectrum_so4), save :: dbis
+
+  !$omp threadprivate(f_hat,df_hat,bis,dbis)  
+
 #endif  
-
-!$omp threadprivate(f_hat,df_hat,bis,dbis)  
-
   if (present(e)) e = 0.0_dp
   if (present(local_e)) then
      call check_size('Local_E',local_e,(/at%N/),'IPModel_GAP_Calc')
