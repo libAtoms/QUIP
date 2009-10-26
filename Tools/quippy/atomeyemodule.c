@@ -350,18 +350,19 @@ static int update_atoms_structure(PyObject *pyat)
 }
 
 static char atomeye_open_window_doc[]=
-  "iw = _atomeye.open_window(copy=-1,atoms=None) -- open a new AtomEye window";
+  "iw = _atomeye.open_window(copy=-1,atoms=None,nowindow=) -- open a new AtomEye window";
 
 static PyObject*
 atomeye_open_window(PyObject *self, PyObject *args)
 {
-  int icopy = -1, iw;
+  int icopy = -1, iw, argc;
   char outstr[255];
-  char *argv[2];
+  char *argv[3];
   PyObject *pyat = NULL;
   static int atomeye_initialised = 0;
+  int nowindow = 0;
 
-  if (!PyArg_ParseTuple(args, "|iO", &icopy, &pyat))
+  if (!PyArg_ParseTuple(args, "|iOi", &icopy, &pyat, &nowindow))
     return NULL;
 
   if (!atomeye_initialised) {
@@ -373,12 +374,17 @@ atomeye_open_window(PyObject *self, PyObject *args)
     argv[1] = (char *)malloc(20);
     strcpy(argv[0], "A");
     strcpy(argv[1], "-nostdin");
+    argc = 2;
+    if (nowindow) {
+      strcpy(argv[2], "-nowindow");
+      argc = 3;
+    }
   
     if (pyat != NULL && pyat != Py_None) {
       if (!update_atoms_structure(pyat)) return NULL;
-      atomeyelib_init(2, argv, (void *)atomeye_atoms);
+      atomeyelib_init(argc, argv, (void *)atomeye_atoms);
     } else
-      atomeyelib_init(2, argv, NULL);
+      atomeyelib_init(argc, argv, NULL);
 
     atomeyelib_set_handlers(&on_click_atom, &on_close, &on_advance, &on_new);
 
@@ -523,6 +529,18 @@ atomeye_set_title(PyObject *self, PyObject *args)
   return Py_None;
 }
 
+static PyObject*
+atomeye_wait(PyObject *self, PyObject *args)
+{
+  int iw;
+
+  if (!PyArg_ParseTuple(args, "i", &iw))
+    return NULL;
+  
+  atomeyelib_wait(iw);
+  return Py_None;
+}
+
 
 static PyMethodDef atomeye_methods[] = {
   {"open_window", atomeye_open_window, METH_VARARGS, atomeye_open_window_doc},
@@ -531,6 +549,7 @@ static PyMethodDef atomeye_methods[] = {
   {"run_command", atomeye_run_command, METH_VARARGS, atomeye_run_command_doc},
   {"load_atoms", atomeye_load_atoms, METH_VARARGS, atomeye_load_atoms_doc},
   {"set_title", atomeye_set_title, METH_VARARGS, atomeye_set_title_doc},
+  {"wait", atomeye_wait, METH_VARARGS, atomeye_wait},
   {NULL, NULL}
 };
 
