@@ -1,7 +1,7 @@
 """This module provides a high-level interface between quippy and the AtomEye extension module
    :mod:`quippy._atomeye`. """
 
-import _atomeye, sys, numpy, time
+import _atomeye, sys, numpy, time, os
 from math import ceil, log10
 from farray import *
 
@@ -39,7 +39,7 @@ def on_new_window(iw):
     
 
 class AtomEyeView(object):
-    def __init__(self, atoms=None, window_id=None, copy=None, frame=1, delta=1, property=None, arrows=None,
+    def __init__(self, atoms=None, window_id=None, copy=None, frame=1, delta=1, property=None, arrows=None, nowindow=0,
                  *arrowargs, **arrowkwargs):
         self.atoms = atoms
         self.frame = frame
@@ -51,7 +51,7 @@ class AtomEyeView(object):
         self.is_alive = False
 
         if window_id is None:
-            self.start(copy)
+            self.start(copy, nowindow)
         else:
             self._window_id = window_id
             self.is_alive = True
@@ -64,7 +64,7 @@ class AtomEyeView(object):
         if property is not None or arrows is not None:
             self.redraw(property=property, arrows=arrows, *arrowargs, **arrowkwargs)
             
-    def start(self, copy=None):
+    def start(self, copy=None, nowindow=0):
         if self.is_alive: return
         
         if self.atoms is None:
@@ -90,7 +90,7 @@ class AtomEyeView(object):
                 raise TypeError('copy should be either an int or an AtomEye instance')
 
         self.is_alive = False
-        self._window_id = _atomeye.open_window(icopy,theat)
+        self._window_id = _atomeye.open_window(icopy,theat,nowindow)
         views[self._window_id] = self
         while not self.is_alive:
             time.sleep(0.1)
@@ -412,8 +412,63 @@ class AtomEyeView(object):
         else:
             self.run_command('draw_arrows %s %f %f %f %f %f %f' %
                              (str(property), scale_factor, head_height, head_width, up[0], up[1], up[2]))
-    
-    
+
+    def wait(self):
+        """Sleep until this AtomEye viewer has finished processing all queued events."""
+        if not self.is_alive: 
+            raise RuntimeError('is_alive is False')
+        _atomeye.wait(self._window_id)
+
+
+    def make_movie(self, atomsseq, moviefilename, progress=True,
+                   movieencoder='ffmpeg -i %s -r 25 -b 30M %s', movieplayer='mplayer %s', cleanup=True,
+                   postprocess=None, nframes=None):
+        """Make a movie using configurations from `atomsseq`. A sequence of JPEG files are
+        written and then encoded using `movieencoder` to form an MPEG - the default
+        command is ``fmpeg -i %s -r 25 -b 30M %s``. Optional arguments `start`, `stop` and `step`
+        can be used to limit the frames used for the movie. A textual progress bar will be
+        drawn unless `progress` is set to false. The intermediate JPEG files are cleared up
+        after the movie is made."""
+
+        from quippy.progbar import ProgressBar
+
+        ndigit = 5
+        if nframes is not None: ndigit = int(ceil(log10(nframes)))
+        
+        basename, ext = os.path.splitext(moviefilename)
+        fmt = '%s%%0%dd.jpg' % (basename, ndigit)
+        progress = progress and nframes is not None
+
+        imgs = []
+        if progress: pb = ProgressBar(0,nframes,80,showValue=True)
+        try:
+            if progress: print 'Rendering frames...'
+            for i, at in enumerate(atomsseq):
+                filename = fmt % i
+                
+                self.show(at)
+                self.capture(filename)
+                self.wait()
+                if postprocess is not None:
+                    postprocess(at, i, filename)
+                imgs.append(filename)
+                if progress: pb(i+1)
+            if progress: print
+
+            if movieencoder is not None:
+                if progress: print 'Encoding movie'
+                os.system(movieencoder % (fmt, moviefilename))
+
+            if movieplayer is not None:
+                if progress: print 'Playing movie'
+                os.system(movieplayer % moviefilename)
+           
+        finally:
+            if cleanup:
+                self.wait()
+                for img in imgs:
+                    if os.path.exists(img): os.remove(img)
+
 
 views = {}
 _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
@@ -421,7 +476,7 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 view = None
 
-def show(obj, property=None, frame=1, window_id=None, arrows=None, *arrowargs, **arrowkwargs):
+def show(obj, property=None, frame=1, window_id=None, nowindow=False, arrows=None, *arrowargs, **arrowkwargs):
     """Convenience function to show obj in the default AtomEye view
 
     If window_id is not None, then this window will be used. Otherwise
@@ -441,7 +496,7 @@ def show(obj, property=None, frame=1, window_id=None, arrows=None, *arrowargs, *
             view = views[views.keys()[0]]
             view.show(obj, property, frame)
         else:
-            view = AtomEyeView(obj, property=property, frame=frame, arrows=arrows, *arrowargs, **arrowkwargs)
+            view = AtomEyeView(obj, property=property, frame=frame, nowindow=nowindow, arrows=arrows, *arrowargs, **arrowkwargs)
     else:
         view.show(obj, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
 
