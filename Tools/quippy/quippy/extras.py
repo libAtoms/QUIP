@@ -457,14 +457,15 @@ from quippy import INPUT, OUTPUT, INOUT
 
 class CInOutput(FortranCInOutput):
 
-   def __init__(self, filename, action=INPUT, append=False, netcdf4=True):
+   def __init__(self, filename, action=INPUT, append=False, netcdf4=True, zero=False):
       FortranCInOutput.__init__(self, filename, action, append, netcdf4)
+      self.zero = zero
 
    def __len__(self):
       return int(self.n_frame)
 
    def __getitem__(self, index):
-      return self.read(frame=index)
+      return self.read(frame=index, zero=self.zero)
 
    def __setitem__(self, index, value):
       self.write(value, frame=index)
