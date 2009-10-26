@@ -337,6 +337,21 @@ class PuPyXYZWriter(object):
       if self.opened: self.xyz.close()
 
 try:
+   from netCDF4 import Dataset
+   netcdf_file = Dataset
+except ImportError:
+   from pupynere import netcdf_file
+   logging.warning('netCDF4 not found. falling back on (slower) pupynere.')
+
+def netcdf_dimlen(obj, name):
+   """Return length of dimension 'name'. Works for both netCDF4 and pupynere."""
+   n = obj.dimensions[name]
+   try:
+      return len(n)
+   except TypeError:
+      return n
+
+try:
    from quippy import CInOutput, INPUT, OUTPUT, INOUT
 
    class CInOutputReader(object):
@@ -344,13 +359,18 @@ try:
 
       lazy = True
 
-      def __init__(self, source, frame=None, start=0, stop=None, step=1):
+      def __init__(self, source, frame=None, start=0, stop=None, step=1, zero=False):
          if isinstance(source, str):
             self.opened = True
-            self.source = CInOutput(source, action=INPUT, append=False)
+            self.source = CInOutput(source, action=INPUT, append=False, zero=zero)
+            try:
+               self.netcdf_file = netcdf_file(source)
+            except RuntimeError:
+               self.netcdf_file = None
          else:
             self.opened = False
             self.source = source
+            self.netcdf_file = None
 
          if frame is not None:
             self.start = frame
@@ -375,6 +395,23 @@ try:
 
       def __getitem__(self, idx):
          return self.source[idx]
+
+      def __getattr__(self, name):
+         if self.netcdf_file is not None:
+            try:
+               return self.netcdf_file.__getattr__(name)
+            except AttributeError:
+               try:
+                  return farray(self.netcdf_file.variables[name][:])
+               except KeyError:
+                  raise AttributeError('Attribute %s not found' % name)
+
+#      def __setattr__(self, name, value):
+#         if name.startswith('_'):
+#            self.__dict__[name] = value
+#         else:
+#            self.netcdf_file.__setattr__(name, value)
+
 
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
 
@@ -412,21 +449,6 @@ except ImportError:
    logging.warning('CInOutput not found - falling back on (slower) pure python I/O')
    AtomsReaders['xyz'] = PyPyXYZReader
    AtomsWrtiters['xyz'] = PuPyXYZWriter
-
-try:
-   from netCDF4 import Dataset
-   netcdf_file = Dataset
-except ImportError:
-   from pupynere import netcdf_file
-   logging.warning('netCDF4 not found. falling back on (slower) pupynere.')
-
-def netcdf_dimlen(obj, name):
-   """Return length of dimension 'name'. Works for both netCDF4 and pupynere."""
-   n = obj.dimensions[name]
-   try:
-      return len(n)
-   except TypeError:
-      return n
 
 
 @atoms_reader(netcdf_file, True)
@@ -611,12 +633,18 @@ AtomsWriters[netcdf_file] = NetCDFWriter
 if not 'nc' in AtomsWriters: AtomsWriters['nc'] = NetCDFWriter
 
 class NetCDFAtomsList(netcdf_file, AtomsList):
-   def __init__(self, source):
-      AtomsList.__init__(self, source)
+   def __init__(self, source, *args, **kwargs):
+      AtomsList.__init__(self, source, *args, **kwargs)
       netcdf_file.__init__(self, source)
 
    def __getattr__(self, name):
-      return netcdf_file.__getattr__(self,name)
+      try:
+         return netcdf_file.__getattr__(self,name)
+      except AttributeError:
+         try:
+            return farray(self.variables[name][:])
+         except KeyError:
+            raise AttributeError('Attribute %s not found' % name)
 
    def __setattr__(self, name, value):
       if name.startswith('_'):
