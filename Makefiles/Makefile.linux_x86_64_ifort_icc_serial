@@ -8,7 +8,7 @@ CPLUSPLUS = icpc -Kc++
 LINKER = ifort
 
 DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
-DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP -p
+DEFAULT_OPTIM = -O3 -vec-report0 -unroll -xP
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
@@ -21,6 +21,11 @@ MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
 # rules
+
+QUIPPY_FCOMPILER = intelem
+QUIPPY_F90FLAGS = -fpp -free -warn unused
+QUIPPY_CPP = ifort -EP
+QUIPPY_NO_CRACK = 1
 
 .f95.o:
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
