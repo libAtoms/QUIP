@@ -224,11 +224,11 @@ subroutine do_analyses(a, time, frame, at)
               a(i_a)%radial_dr, a(i_a)%radial_w, a(i_a)%radial_gaussian_sigma)
           allocate(a(i_a)%radial_pos(a(i_a)%radial_n_bins))
           call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
-            bin_width=a(i_a)%radial_bin_width, n_bins=a(i_a)%radial_n_bins, gaussian_sigma=a(i_a)%radial_gaussian_sigma, &
+            rad_bin_width=a(i_a)%radial_bin_width, n_rad_bins=a(i_a)%radial_n_bins, gaussian_sigma=a(i_a)%radial_gaussian_sigma, &
             dr=a(i_a)%radial_dr, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%radial_pos)
         else
           call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
-            bin_width=a(i_a)%radial_bin_width, n_bins=a(i_a)%radial_n_bins, gaussian_sigma= a(i_a)%radial_gaussian_sigma, &
+            rad_bin_width=a(i_a)%radial_bin_width, n_rad_bins=a(i_a)%radial_n_bins, gaussian_sigma= a(i_a)%radial_gaussian_sigma, &
             dr=a(i_a)%radial_dr, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str)
         endif
       else if (a(i_a)%density_grid) then
@@ -444,22 +444,22 @@ subroutine calc_angular_samples_random(n, dr, w, gaussian_sigma)
 
 end subroutine calc_angular_samples_random
 
-subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, bin_width, n_bins, gaussian_sigma, dr, w, mask_str, radial_pos, accumulate)
+subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, dr, w, mask_str, radial_pos, accumulate)
   real(dp), intent(inout) :: histogram(:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in), optional :: center_pos(3)
   integer, intent(in), optional :: center_i
-  real(dp), intent(in) :: bin_width
-  integer, intent(in) :: n_bins
+  real(dp), intent(in) :: rad_bin_width
+  integer, intent(in) :: n_rad_bins
   real(dp), intent(in) :: gaussian_sigma, dr(:,:), w(:)
   character(len=*), optional, intent(in) :: mask_str
   real(dp), intent(out), optional :: radial_pos(:)
   logical, optional, intent(in) :: accumulate
 
   logical :: my_accumulate
-  real(dp) :: bin_r, p(3), dist, r, t_center(3), exp_arg
+  real(dp) :: rad_sample_r, p(3), dist, r, t_center(3), exp_arg, diff(3)
   logical, allocatable :: mask_a(:)
-  integer at_i, at_i_index, sample_i, bin_i
+  integer at_i, at_i_index, ang_sample_i, rad_sample_i
 
   if (present(center_pos) .and. present(center_i)) &
     call system_abort("density_sample_radial_mesh_Gaussians got both center_pos and center_i")
@@ -474,9 +474,9 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   call is_in_mask(mask_a, at, mask_str)
 
   if (present(radial_pos)) then
-    do bin_i=1, n_bins
-      bin_r = (bin_i-1)*bin_width
-      radial_pos(bin_i) = bin_r
+    do rad_sample_i=1, n_rad_bins
+      rad_sample_r = (rad_sample_i-1)*rad_bin_width
+      radial_pos(rad_sample_i) = rad_sample_r
     end do
   endif
 
@@ -496,19 +496,19 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     do at_i=1, at%N
       if (.not. mask_a(at_i)) cycle
       r = norm(at%pos(:,at_i))
-      do bin_i=1, n_bins
-        bin_r = (bin_i-1)*bin_width
-        do sample_i=1,size(dr,2)
-          p(:) = center_pos(:)+bin_r*dr(:,sample_i)
+      do rad_sample_i=1, n_rad_bins
+        rad_sample_r = (rad_sample_i-1)*rad_bin_width
+        do ang_sample_i=1,size(dr,2)
+          p(:) = center_pos(:)+rad_sample_r*dr(:,ang_sample_i)
           dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
 !	  if (dist > 4.0_dp*gaussian_sigma) cycle
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
-            histogram(bin_i) = histogram(bin_i) + exp(exp_arg)*w(sample_i)
+            histogram(rad_sample_i) = histogram(rad_sample_i) + exp(exp_arg)*w(ang_sample_i)
           endif
-        end do ! sample_i
-      end do ! bin_i
+        end do ! ang_sample_i
+      end do ! rad_sample_i
     end do ! at_i
 
   else ! no center_pos, must have center_i
@@ -522,23 +522,24 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     call atoms_map_into_cell(at)
     at%connect%initialised = .true.
     do at_i_index=1, atoms_n_neighbours(at, center_i)
-      at_i = atoms_neighbour(at, center_i, at_i_index)
+      at_i = atoms_neighbour(at, center_i, at_i_index, diff=diff)
+      if (at_i == center_i) cycle
       if (.not. mask_a(at_i)) cycle
-      do bin_i=1, n_bins
-        bin_r = (bin_i-1)*bin_width
-        do sample_i=1,size(dr,2)
-          p(:) = at%pos(:,center_i)+bin_r*dr(:,sample_i)
-          dist = norm(p-at%pos(:,at_i))
+      do rad_sample_i=1, n_rad_bins
+        rad_sample_r = (rad_sample_i-1)*rad_bin_width
+        do ang_sample_i=1,size(dr,2)
+          p(:) = at%pos(:,center_i)+rad_sample_r*dr(:,ang_sample_i)
+          dist = norm(p-(at%pos(:,center_i)+diff))
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
-            histogram(bin_i) = histogram(bin_i) + exp(exp_arg)*w(sample_i)
+            histogram(rad_sample_i) = histogram(rad_sample_i) + exp(exp_arg)*w(ang_sample_i)
           endif
-        end do ! sample_i
-      end do ! bin_i
+        end do ! ang_sample_i
+      end do ! rad_sample_i
     end do
     ! shift center_i back to original position, and map into cell without updating travel or shift, etc
     do at_i=1, at%N
-      at%pos(:,at_i) = at%pos(:,at_i) - t_center
+      at%pos(:,at_i) = at%pos(:,at_i) + t_center
     end do
     at%connect%initialised = .false.
     call atoms_map_into_cell(at)
@@ -584,12 +585,16 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   endif
   if (present(bin_pos)) then
     do i_bin=1, n_bins
-      bin_pos(i_bin) = (real(i_bin,dp)-0.5_dp)*bin_width
+      if (gaussian_smoothing) then
+        bin_pos(i_bin) = (i_bin-1)*bin_width
+      else
+        bin_pos(i_bin) = (real(i_bin,dp)-0.5_dp)*bin_width
+      endif
     end do
   endif
 
   if (gaussian_smoothing) then
-    call set_cutoff(at, n_bins*bin_width)
+    call set_cutoff(at, n_bins*bin_width+5.0_dp*gaussian_sigma)
     call calc_connect(at)
   endif
 
@@ -608,8 +613,8 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     n_in_zone(i_zone) = n_in_zone(i_zone) + 1
 
     if (gaussian_smoothing) then
-      call density_sample_radial_mesh_Gaussians(rdfd(:,i_zone), at, center_i=i_at, bin_width=bin_width, n_bins=n_bins, &
-        gaussian_sigma=gaussian_sigma, dr=dr, w=w, mask_str=neighbour_mask_str)
+      call density_sample_radial_mesh_Gaussians(rdfd(:,i_zone), at, center_i=i_at, rad_bin_width=bin_width, n_rad_bins=n_bins, &
+        gaussian_sigma=gaussian_sigma, dr=dr, w=w, mask_str=neighbour_mask_str, accumulate = .true.)
     else
       do j_at=1, at%N
         if (j_at == i_at) cycle
@@ -621,18 +626,20 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     endif ! gaussian_smoothing
   end do ! i_at
 
-  do i_bin=1, n_bins
-    bin_inner_rad = real(i_bin-1,dp)*bin_width
-    bin_outer_rad = real(i_bin,dp)*bin_width
-    rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
-  end do
+  if (.not. gaussian_smoothing) then
+    do i_bin=1, n_bins
+      bin_inner_rad = real(i_bin-1,dp)*bin_width
+      bin_outer_rad = real(i_bin,dp)*bin_width
+      rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
+    end do
+  endif
 
-  do i_zone=1, n_zones
-    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
-  end do
   if (count(neighbour_mask_a) > 0) then
     rdfd = rdfd / (count(neighbour_mask_a)/cell_volume(at))
   endif
+  do i_zone=1, n_zones
+    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
+  end do
 
 end subroutine rdfd_calc
 
@@ -951,7 +958,7 @@ implicit none
     if (status == 0) more_files = .true.
   endif
 
-  raw_frame_count = decimation
+  raw_frame_count = decimation-1
   frame_count = 0
   do while (more_files)
 
