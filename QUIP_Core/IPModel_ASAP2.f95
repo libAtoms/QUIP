@@ -186,6 +186,10 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
   !$omp do schedule(runtime)
 #endif
    do i=1, at%n
+      if (this%mpi%active) then
+         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      endif
+
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
       else
@@ -299,6 +303,14 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
    !$omp end parallel
 #endif
 
+   if (this%mpi%active) then
+      if (present(e)) e = sum(this%mpi, e) 
+      if (present(local_e)) call sum_in_place(this%mpi, local_e)
+      if (present(f)) call sum_in_place(this%mpi, f)
+      if (present(virial)) call sum_in_place(this%mpi, virial)
+      if (present(efield)) call sum_in_place(this%mpi, efield)
+   end if
+
    call system_timer('asap_rs_charges')
 
 end subroutine asap_rs_charges
@@ -354,6 +366,10 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
   !$omp do schedule(runtime)
 #endif
    do i=1, at%n
+      if (this%mpi%active) then
+         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      endif
+
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
       else
@@ -554,6 +570,14 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
    !$omp end parallel
 #endif
 
+   if (this%mpi%active) then
+      if (present(e)) e = sum(this%mpi, e) 
+      if (present(local_e)) call sum_in_place(this%mpi, local_e)
+      if (present(f)) call sum_in_place(this%mpi, f)
+      if (present(virial)) call sum_in_place(this%mpi, virial)
+      if (present(efield)) call sum_in_place(this%mpi, efield)
+   end if
+
    call system_timer('asap_rs_dipoles')
 
 end subroutine asap_rs_dipoles
@@ -584,6 +608,10 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
   !$omp do schedule(runtime)
 #endif
   do i=1, at%n
+     if (this%mpi%active) then
+        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     endif
+
      ti = get_type(this%type_of_atomic_num, at%Z(i))
      if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
 
@@ -632,6 +660,10 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
 #endif
 
   !$omp end parallel
+
+  if (this%mpi%active) then
+     call sum_in_place(this%mpi, dip_sr)
+  end if
 
   call system_timer('asap_short_range_dipole_moments')
 
@@ -692,6 +724,10 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
   !$omp do schedule(runtime)
 #endif
    do i=1, at%n
+      if (this%mpi%active) then
+         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      endif
+
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
       else
@@ -789,6 +825,13 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
 
    !$omp end parallel
 #endif
+
+   if (this%mpi%active) then
+      if (present(e)) e = sum(this%mpi, e) 
+      if (present(local_e)) call sum_in_place(this%mpi, local_e)
+      if (present(f)) call sum_in_place(this%mpi, f)
+      if (present(virial)) call sum_in_place(this%mpi, virial)
+   end if
 
    call system_timer('asap_morse_stretch')
 
