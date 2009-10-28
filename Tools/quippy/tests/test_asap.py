@@ -400,7 +400,8 @@ if got_asap2:
      <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
    </ASAP_params>
    """
-         self.p1 = Potential('IP ASAP', self.xml)
+         if do_compare_p1_p2:
+            self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
          self.cutoff = 20.0*BOHR
          self.debug = False
@@ -513,7 +514,8 @@ if got_asap2:
      <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
    </ASAP_params>
    """
-         self.p1 = Potential('IP ASAP', self.xml)
+         if do_compare_p1_p2:
+            self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
          self.cutoff = 20.0*BOHR
          self.debug = False
@@ -626,7 +628,8 @@ if got_asap2:
      <per_pair_data atnum_i="14" atnum_j="14" C_pol="0.0"         D_ms="0.0" gamma_ms="4.5784138" B_pol="0.0"        R_ms="13.113727" />
    </ASAP_params>
    """
-         self.p1 = Potential('IP ASAP', self.xml)
+         if do_compare_p1_p2:
+            self.p1 = Potential('IP ASAP', self.xml)
          self.p2 = Potential('IP ASAP2', self.xml)
          self.cutoff = 20.0*BOHR
          self.debug = False
@@ -662,7 +665,8 @@ if got_asap2:
         <per_pair_data C_pol="0.0" atnum_j="14" atnum_i="14" D_ms="0.33967532" gamma_ms="-0.17694797" B_pol="0.0" R_ms="-0.085202834" />
       </ASAP_params>
       """
-            self.p1 = Potential('IP ASAP', self.xml)
+            if do_compare_p1_p2:
+               self.p1 = Potential('IP ASAP', self.xml)
             self.p2 = Potential('IP ASAP2', self.xml)
 
             self.p1.print_()
