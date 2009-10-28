@@ -123,7 +123,6 @@ subroutine IPModel_ASAP2_Finalise(this)
 end subroutine IPModel_ASAP2_Finalise
 
 !% Smooth cutoff function from D.J. Cole \emph{et al.}, J. Chem. Phys. {\bf 127}, 204704 (2007).
-
 subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
 
   real(dp) x,R,D,fc,dfc_dx
@@ -248,6 +247,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
                if (i_is_min_image) private_efield(:,j) = private_efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
             end if
          end if
+
       end do
    end do
 
@@ -463,13 +463,10 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
                      private_virial = private_virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   end if
                end if
-
             end if
-
          end if
 
       end do
-
    end do
    !$omp end do
 
