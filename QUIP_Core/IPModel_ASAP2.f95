@@ -123,6 +123,7 @@ subroutine IPModel_ASAP2_Finalise(this)
 end subroutine IPModel_ASAP2_Finalise
 
 !% Smooth cutoff function from D.J. Cole \emph{et al.}, J. Chem. Phys. {\bf 127}, 204704 (2007).
+
 subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
 
   real(dp) x,R,D,fc,dfc_dx
@@ -157,9 +158,33 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
    real(dp) :: de, dforce, expfactor
    logical :: i_is_min_image
+#ifdef _OPENMP
+   real(dp) :: private_virial(3,3), private_e
+   real(dp), allocatable :: private_f(:,:), private_efield(:,:), private_local_e(:)
+#endif
 
    call system_timer('asap_rs_charges')
 
+#ifdef _OPENMP
+   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
+
+   if (present(e)) private_e = 0.0_dp
+   if (present(local_e)) then
+      allocate(private_local_e(at%N))
+      private_local_e = 0.0_dp
+   endif
+   if (present(f)) then
+      allocate(private_f(3,at%N))
+      private_f = 0.0_dp
+   endif
+   if (present(efield)) then
+      allocate(private_efield(3,at%N))
+      private_efield = 0.0_dp
+   end if
+   if (present(virial)) private_virial = 0.0_dp
+  
+  !$omp do schedule(runtime)
+#endif
    do i=1, at%n
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
@@ -190,15 +215,28 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
 
          if (present(e) .or. present(local_e)) then
             if (present(e)) then
+#ifdef _OPENMP
+               if (i_is_min_image) then
+                  private_e = private_e + de*expfactor*fc
+               else
+                  private_e = private_e + 0.5_dp*de*expfactor*fc
+               end if
+#else
                if (i_is_min_image) then
                   e = e + de*expfactor*fc
                else
                   e = e + 0.5_dp*de*expfactor*fc
                end if
+#endif
             end if
             if (present(local_e)) then
+#ifdef _OPENMP
+               private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
+               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
+#else
                local_e(i) = local_e(i) + 0.5_dp*de*expfactor*fc
                if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de*expfactor*fc
+#endif
             end if
          end if
 
@@ -206,25 +244,60 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
             dforce = gamjir3*expfactor*fc*r_ij + de*(this%yukalpha*fc - dfc_dr)*expfactor
 
             if (present(f)) then
+#ifdef _OPENMP
+               private_f(:,i) = private_f(:,i) - dforce*u_ij
+               if (i_is_min_image) private_f(:,j) = private_f(:,j) + dforce*u_ij
+#else
                f(:,i) = f(:,i) - dforce*u_ij
                if (i_is_min_image) f(:,j) = f(:,j) + dforce*u_ij
+#endif
             end if
 
             if (present(virial)) then
+#ifdef _OPENMP
+               if (i_is_min_image) then
+                  private_virial = private_virial + dforce*(u_ij .outer. u_ij)*r_ij
+               else
+                  private_virial = private_virial + 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
+               end if
+#else
                if (i_is_min_image) then
                   virial = virial + dforce*(u_ij .outer. u_ij)*r_ij
                else
                   virial = virial + 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
                end if
+#endif
             end if
 
             if (present(efield)) then
+#ifdef _OPENMP
+               private_efield(:,i) = private_efield(:,i) - gamjir3*expfactor*fc*u_ij*r_ij/this%z(ti)
+               if (i_is_min_image) private_efield(:,j) = private_efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
+#else
                efield(:,i) = efield(:,i) - gamjir3*expfactor*fc*u_ij*r_ij/this%z(ti)
                if (i_is_min_image) efield(:,j) = efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
+
+#endif
             end if
          end if
       end do
    end do
+
+#ifdef _OPENMP
+   !$omp critical
+   if (present(e)) e = e + private_e
+   if (present(f)) f = f + private_f
+   if (present(local_e)) local_e = local_e + private_local_e
+   if (present(virial)) virial = virial + private_virial
+   if (present(efield)) efield = efield + private_efield
+   !$omp end critical 
+
+   if (allocated(private_f)) deallocate(private_f)
+   if (allocated(private_local_e)) deallocate(private_local_e)
+   if (allocated(private_efield)) deallocate(private_efield)
+
+   !$omp end parallel
+#endif
 
    call system_timer('asap_rs_charges')
 
@@ -233,6 +306,10 @@ end subroutine asap_rs_charges
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
 subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
+#ifdef _OPENMP
+   use omp_lib
+#endif
+
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(in)            :: dip(:,:)
@@ -248,9 +325,41 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
    real(dp) :: const1, const2, factork, de_sr, df_sr(3), gij, dgijdrij, bij, cij
    logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
 
+#ifdef _OPENMP
+  real(dp) :: private_virial(3,3), private_e
+  real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
+  real(dp) :: t1,t2,t3,t4
+#endif
+
    call system_timer('asap_rs_dipoles')
 
+#ifdef _OPENMP
+
+   
+   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield) shared(t1, t2, t3, t4)
+
+   if (omp_get_thread_num() == 0) t1 = omp_get_wtime()
+
+   if (present(e)) private_e = 0.0_dp
+   if (present(local_e)) then
+      allocate(private_local_e(at%N))
+      private_local_e = 0.0_dp
+   endif
+   if (present(f)) then
+      allocate(private_f(3,at%N))
+      private_f = 0.0_dp
+   endif
+   if (present(efield)) then
+      allocate(private_efield(3,at%N))
+      private_efield = 0.0_dp
+   end if
+   if (present(virial)) private_virial = 0.0_dp
+
+  !$omp do schedule(runtime)
+#endif
    do i=1, at%n
+!!$      if (omp_get_thread_num() == 0) t2 = omp_get_wtime()
+  
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
       else
@@ -265,8 +374,14 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
       ! Induced contribution to energy
       if ((present(e) .or. present(local_e)) .and. tpoli) then
          de_ind = 0.5_dp*(dipi .dot. dipi)/this%pol(ti)
+
+#ifdef _OPENMP
+         if (present(e))       private_e = private_e + de_ind
+         if (present(local_e)) private_local_e(i) = private_local_e(i) + de_ind
+#else
          if (present(e))       e = e + de_ind
          if (present(local_e)) local_e(i) = local_e(i) + de_ind
+#endif
       end if
 
       do m = 1, atoms_n_neighbours(at, i)
@@ -308,11 +423,13 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
          if (tpolj) prj = dipj .dot. u_ij
 
          if (present(efield)) then
-            efield(:,i) = efield(:,i) + &
-                 (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
-            if (i_is_min_image) &
-                 efield(:,j) = efield(:,j) + &
-                 (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+#ifdef _OPENMP
+            private_efield(:,i) = private_efield(:,i) + (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            if (i_is_min_image) private_efield(:,j) = private_efield(:,j) + (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+#else
+            efield(:,i) = efield(:,i) + (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            if (i_is_min_image) efield(:,j) = efield(:,j) + (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+#endif
          end if
 
          if (present(e) .or. present(local_e) .or. present(virial) .or. present(f)) then
@@ -351,16 +468,29 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
             end if
 
             if (present(e)) then
+#ifdef _OPENMP
+               if (i_is_min_image) then
+                  private_e = private_e + (de_dd + de_qd + de_sr)*expfactor*fc
+               else
+                  private_e = private_e + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+               end if
+#else
                if (i_is_min_image) then
                   e = e + (de_dd + de_qd + de_sr)*expfactor*fc
                else
                   e = e + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
                end if
+#endif
             end if
 
             if (present(local_e)) then
+#ifdef _OPENMP
+               private_local_e(i) = private_local_e(i) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+#else
                local_e(i) = local_e(i) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
                if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+#endif
             end if
 
             if (present(f) .or. present(virial)) then
@@ -379,16 +509,29 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
                end if
 
                if (present(f)) then
+#ifdef _OPENMP
+                  private_f(:,i) = private_f(:,i) + dfqdip + dfdipdip + df_sr
+                  if (i_is_min_image) private_f(:,j) = private_f(:,j) - (dfqdip + dfdipdip + df_sr)
+#else
                   f(:,i) = f(:,i) + dfqdip + dfdipdip + df_sr
                   if (i_is_min_image) f(:,j) = f(:,j) - (dfqdip + dfdipdip + df_sr)
+#endif
                end if
 
                if (present(virial)) then
+#ifdef _OPENMP
+                  if (i_is_min_image) then
+                     private_virial = private_virial - ((dfqdip+dfdipdip+df_sr) .outer. u_ij)
+                  else
+                     private_virial = private_virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
+                  end if
+#else
                   if (i_is_min_image) then
                      virial = virial - ((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   else
                      virial = virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   end if
+#endif
                end if
 
             end if
@@ -396,7 +539,36 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
          end if
 
       end do
+
+!!$      if (omp_get_thread_num() == 0) then
+!!$         t3 = omp_get_wtime()
+!!$         call print('t3-t2 '//(t3-t2))
+!!$      end if
+
    end do
+   !$omp end do
+
+
+#ifdef _OPENMP
+   !$omp critical
+   if (present(e)) e = e + private_e
+   if (present(f)) f = f + private_f
+   if (present(local_e)) local_e = local_e + private_local_e
+   if (present(virial)) virial = virial + private_virial
+   if (present(efield)) efield = efield + private_efield
+   !$omp end critical 
+
+   if (allocated(private_f)) deallocate(private_f)
+   if (allocated(private_local_e)) deallocate(private_local_e)
+   if (allocated(private_efield)) deallocate(private_efield)
+
+   if (omp_get_thread_num() == 0) t4 = omp_get_wtime()
+
+   !$omp end parallel
+#endif
+
+   call print('t2-t1 '//(t2-t1))
+   call print('t4-t3 '//(t4-t3))
 
    call system_timer('asap_rs_dipoles')
 
@@ -411,10 +583,22 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
   integer :: i, ti, m, j, tj, k
   real(dp) :: r_ij, u_ij(3), qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr
   integer, parameter :: nk = 4
+#ifdef _OPENMP
+  real(dp), allocatable :: private_dip_sr(:,:)
+#endif
 
   call system_timer('asap_short_range_dipole_moments')
 
   dip_sr = 0.0_dp
+
+#ifdef _OPENMP 
+  !$omp parallel default(none) shared(this, at, dip_sr) private(ti, m, j, tj, k, r_ij, u_ij, qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr, private_dip_sr)
+
+  allocate(private_dip_sr(size(dip_sr,1),size(dip_sr,2)))
+  private_dip_sr = 0.0_dp
+
+  !$omp do schedule(runtime)
+#endif
   do i=1, at%n
      ti = get_type(this%type_of_atomic_num, at%Z(i))
      if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
@@ -446,10 +630,24 @@ subroutine asap_short_range_dipole_moments(this, at, dip_sr)
          
          expfactor = exp(-this%yukalpha*r_ij)
          call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, this%yuksmoothlength, fc, dfc_dr)
-         dip_sr(:,i) = dip_sr(:,i) - this%pol(ti)*qj*u_ij*gij/dist3*expfactor*fc
-  
+
+#ifdef _OPENMP
+         private_dip_sr(:,i) = private_dip_sr(:,i) - this%pol(ti)*qj*u_ij*gij/dist3*expfactor*fc
+#else
+         dip_sr(:,i) = dip_sr(:,i) - this%pol(ti)*qj*u_ij*gij/dist3*expfactor*fc         
+#endif  
       end do
   end do
+  !$omp end do
+  
+#ifdef _OPENMP  
+  !$omp critical
+  dip_sr = dip_sr + private_dip_sr
+  !$omp end critical
+  deallocate(private_dip_sr)
+#endif
+
+  !$omp end parallel
 
   call system_timer('asap_short_range_dipole_moments')
 
@@ -461,6 +659,9 @@ end subroutine asap_short_range_dipole_moments
 !%                  - 2 e^{\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
 !% \end{displaymath}
 subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
+#ifdef _OPENMP
+   use omp_lib
+#endif
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
@@ -473,6 +674,11 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
    real(dp) :: dforce
    real(dp) :: elimitij(this%n_types, this%n_types)
    logical :: i_is_min_image
+#ifdef _OPENMP
+   real(dp) :: private_virial(3,3), private_e
+   real(dp), allocatable :: private_f(:,:), private_local_e(:)
+#endif
+
 
    call system_timer('asap_morse_stretch')
 
@@ -485,6 +691,22 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
       end do
    end do
  
+#ifdef _OPENMP
+   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, private_virial, private_e, private_f, private_local_e)
+
+   if (present(e)) private_e = 0.0_dp
+   if (present(local_e)) then
+      allocate(private_local_e(at%N))
+      private_local_e = 0.0_dp
+   endif
+   if (present(f)) then
+      allocate(private_f(3,at%N))
+      private_f = 0.0_dp
+   endif
+   if (present(virial)) private_virial = 0.0_dp
+  
+  !$omp do schedule(runtime)
+#endif
    do i=1, at%n
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
@@ -514,15 +736,28 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
             de = dms*(phi-2.0_dp*sqrt(phi)) - elimitij(ti, tj)
 
             if (present(e)) then
+#ifdef _OPENMP
+               if (i_is_min_image) then
+                  private_e = private_e + de
+               else
+                  private_e = private_e + 0.5_dp*de
+               end if
+#else
                if (i_is_min_image) then
                   e = e + de
                else
                   e = e + 0.5_dp*de
                end if
+#endif
             end if
             if (present(local_e)) then
+#ifdef _OPENMP
+               private_local_e(i) = private_local_e(i) + 0.5_dp*de
+               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
+#else
                local_e(i) = local_e(i) + 0.5_dp*de
                if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
+#endif
             end if
          end if
 
@@ -530,19 +765,46 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
             dforce  = -dms*(factorms*phi - factorms*dsqrt(phi))
 
             if (present(f)) then
+#ifdef _OPENMP
+               private_f(:,i) = private_f(:,i) + dforce*u_ij
+               if (i_is_min_image) private_f(:,j) = private_f(:,j) - dforce*u_ij
+#else
                f(:,i) = f(:,i) + dforce*u_ij
                if (i_is_min_image) f(:,j) = f(:,j) - dforce*u_ij
+#endif
             end if
             if (present(virial)) then
+#ifdef _OPENMP
+               if (i_is_min_image) then
+                  private_virial = private_virial - dforce*(u_ij .outer. u_ij)*r_ij
+               else
+                  private_virial = private_virial - 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
+               end if
+#else
                if (i_is_min_image) then
                   virial = virial - dforce*(u_ij .outer. u_ij)*r_ij
                else
                   virial = virial - 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
                end if
+#endif
             end if
          end if
       end do
    end do
+
+#ifdef _OPENMP
+   !$omp critical
+   if (present(e)) e = e + private_e
+   if (present(f)) f = f + private_f
+   if (present(local_e)) local_e = local_e + private_local_e
+   if (present(virial)) virial = virial + private_virial
+   !$omp end critical 
+
+   if (allocated(private_f)) deallocate(private_f)
+   if (allocated(private_local_e)) deallocate(private_local_e)
+
+   !$omp end parallel
+#endif
 
    call system_timer('asap_morse_stretch')
 
