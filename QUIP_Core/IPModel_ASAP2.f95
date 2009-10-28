@@ -328,17 +328,13 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 #ifdef _OPENMP
   real(dp) :: private_virial(3,3), private_e
   real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
-  real(dp) :: t1,t2,t3,t4
 #endif
 
    call system_timer('asap_rs_dipoles')
 
 #ifdef _OPENMP
-
    
-   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield) shared(t1, t2, t3, t4)
-
-   if (omp_get_thread_num() == 0) t1 = omp_get_wtime()
+   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -358,8 +354,6 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
   !$omp do schedule(runtime)
 #endif
    do i=1, at%n
-!!$      if (omp_get_thread_num() == 0) t2 = omp_get_wtime()
-  
       if (allocated(at%connect%is_min_image)) then
          i_is_min_image = at%connect%is_min_image(i)
       else
@@ -540,11 +534,6 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 
       end do
 
-!!$      if (omp_get_thread_num() == 0) then
-!!$         t3 = omp_get_wtime()
-!!$         call print('t3-t2 '//(t3-t2))
-!!$      end if
-
    end do
    !$omp end do
 
@@ -562,13 +551,8 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
    if (allocated(private_local_e)) deallocate(private_local_e)
    if (allocated(private_efield)) deallocate(private_efield)
 
-   if (omp_get_thread_num() == 0) t4 = omp_get_wtime()
-
    !$omp end parallel
 #endif
-
-   call print('t2-t1 '//(t2-t1))
-   call print('t4-t3 '//(t4-t3))
 
    call system_timer('asap_rs_dipoles')
 
