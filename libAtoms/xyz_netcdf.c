@@ -2631,7 +2631,7 @@ void usage(int nc2xyz, int xyz2nc, int xyz2xyz, int nc2nc, int xyzstat, int ncst
     printf("  -R REALFMT   printf(1) format string used to print real variables.\n");
     printf("               The default is \"%%16.8f\".\n");
   }
-  if (ncstat || nc2nc || nc2xyz) {
+  if (ncstat || nc2nc || xyz2nc) {
     printf("  -z           Replace missing numerical values in NetCDF input with zeros.\n");
     printf("  -Z LEVEL     Set zlib deflate level of output file (0=No compression, 9=max).\n");
     printf("               Default is level 6.\n");
@@ -2764,7 +2764,7 @@ int main (int argc, char **argv)
     strcat(optstr, "o");
   if (nc2xyz || xyz2xyz || ncstat || xyzstat)
     strcat(optstr, "I:R:");
-  if (nc2nc || nc2xyz || ncstat)
+  if (nc2nc || xyz2nc || ncstat)
     strcat(optstr, "zZ:");
 
   while ((ch = getopt(argc, argv, optstr)) != -1) {
@@ -2936,6 +2936,7 @@ int main (int argc, char **argv)
   }
 
   atoms_init(&at);
+  at.netcdf4 = !nc3flag;
 
   if (xyz2xyz || xyz2nc || xyzstat) {
 
