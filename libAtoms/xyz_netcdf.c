@@ -1534,8 +1534,8 @@ int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
 #include <libgen.h>
 
 void realloc_frames(long **frames, int **atoms, int *frames_array_size, int new_frames_array_size) {
-  long *t_frames;
-  int *t_atoms;
+  long *t_frames = NULL;
+  int *t_atoms = NULL;
   int i;
 
   if (new_frames_array_size <= *frames_array_size) {
@@ -1575,6 +1575,12 @@ void realloc_frames(long **frames, int **atoms, int *frames_array_size, int new_
   }
   // update frames_array_size
   *frames_array_size = new_frames_array_size;
+
+  // free temporaries
+  if (t_frames != NULL) {
+    free(t_frames);
+    free(t_atoms);
+  }
 }
 
 int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_size) {
@@ -2937,6 +2943,7 @@ int main (int argc, char **argv)
 
   atoms_init(&at);
   at.netcdf4 = !nc3flag;
+  at.frames_array_size = 0;  
 
   if (xyz2xyz || xyz2nc || xyzstat) {
 
@@ -3432,6 +3439,7 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
   (**at).xyz_out = NULL;
   (**at).nc_in = -1;
   (**at).nc_out = -1;
+  (**at).frames_array_size = 0;
 
   no_index = (*no_compute_index || (strcmp(filename, "stdin") == 0));
 
