@@ -95,6 +95,8 @@ void atoms_init(Atoms *atoms) {
   atoms->initialised = 0;
   atoms->nc_in = -1;
   atoms->nc_out = -1;
+  atoms->frames = NULL;
+  atoms->atoms = NULL;
 }
 
 void atoms_alloc(Atoms *atoms) {
@@ -129,6 +131,15 @@ void atoms_free(Atoms *atoms) {
     free(atoms->logical_data);
     atoms->logical_data = NULL;
   }
+  if (atoms->frames != NULL) {
+    free(atoms->frames);
+    atoms->frames = NULL;
+  }
+  if (atoms->atoms != NULL) {
+    free(atoms->atoms);
+    atoms->atoms = NULL;
+  }  
+
 }
 
 void atoms_realloc(Atoms *atoms) {
