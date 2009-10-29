@@ -95,6 +95,7 @@ void atoms_init(Atoms *atoms) {
   atoms->initialised = 0;
   atoms->nc_in = -1;
   atoms->nc_out = -1;
+  atoms->frames_array_size = 0;  
   atoms->frames = NULL;
   atoms->atoms = NULL;
 }
@@ -131,6 +132,9 @@ void atoms_free(Atoms *atoms) {
     free(atoms->logical_data);
     atoms->logical_data = NULL;
   }
+}
+
+void atoms_free_frames(Atoms *atoms) {
   if (atoms->frames != NULL) {
     free(atoms->frames);
     atoms->frames = NULL;
@@ -139,8 +143,9 @@ void atoms_free(Atoms *atoms) {
     free(atoms->atoms);
     atoms->atoms = NULL;
   }  
-
+  atoms->frames_array_size = 0;
 }
+
 
 void atoms_realloc(Atoms *atoms) {
   atoms_free(atoms);
@@ -2954,7 +2959,6 @@ int main (int argc, char **argv)
 
   atoms_init(&at);
   at.netcdf4 = !nc3flag;
-  at.frames_array_size = 0;  
 
   if (xyz2xyz || xyz2nc || xyzstat) {
 
@@ -3364,6 +3368,7 @@ int main (int argc, char **argv)
 
   if (aflag) free(atomlist);
   atoms_free(&at);
+  atoms_free_frames(&at);
   if (at.filter != NULL) {
     free(at.filter);
     at.filter = NULL;
@@ -3641,6 +3646,7 @@ void ciofree(Atoms *at) {
 #endif
   }
   free(at->filter);
+  atoms_free_frames(at);
   free(at);
 }
 
