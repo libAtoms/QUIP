@@ -207,6 +207,9 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      xyzfile="filepot."//this%mpi%my_proc//".xyz"
      outfile="filepot."//this%mpi%my_proc//".out"
 
+     call system_command("rm -f "//trim(outfile), status=status)
+     if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", ERROR)
+
      call initialise(xyzio, xyzfile, action=OUTPUT)
 
      ! Do we need to replicate cell to exceed min_cutoff ?
