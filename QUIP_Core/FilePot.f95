@@ -190,6 +190,9 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   integer :: my_err
   integer :: status
 
+  type(Dictionary) :: cli
+  logical :: FilePot_log
+
   if (present(energy)) energy = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(forces)) forces = 0.0_dp
@@ -197,6 +200,12 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   if (present(err)) err = 0
   my_args_str = ''
   if (present(args_str)) my_args_str = args_str
+
+  call initialise(cli)
+  call param_register(cli, "FilePot_log", "F", FilePot_log)
+  if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) &
+    call system_abort("FilePot_calc failed to parse args_str='"//trim(args_str)//"'")
+  call finalise(cli)
 
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
@@ -228,6 +237,16 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      end if
      call finalise(xyzio)
 
+     if (FilePot_log) then
+       call initialise(xyzio, "FilePot_pos_log.xyz", action=OUTPUT, append=.true.)
+       if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
+          call print_xyz(sup, xyzio, properties=trim(this%property_list),real_format='f17.10')
+        else
+          call print_xyz(at, xyzio, properties=trim(this%property_list),real_format='f17.10')
+        endif
+       call finalise(xyzio)
+     endif
+
 !     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
 !          trim(outfile)//" on "//at%N//" atoms...")
      call print("FilePot: invoking external command "//trim(this%command)//' '//trim(xyzfile)//" "// &
@@ -238,7 +257,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call system_command(trim(this%command)//' '//trim(xyzfile)//" "//trim(outfile)//" "//trim(my_args_str),status=status)
 
      ! read back output from external command
-     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, my_err)
+     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log=FilePot_log, err=my_err)
   end if
 
   if (this%mpi%active) then
@@ -260,7 +279,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
 end subroutine FilePot_calc
 
-subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, err)
+subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log, err)
   character(len=*), intent(in) :: outfile
   type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
@@ -268,6 +287,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp), intent(out), target, optional :: local_e(:)
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
+  logical, intent(in), optional :: filepot_log
   integer, intent(out), optional :: err
 
   integer :: i
@@ -277,6 +297,9 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp) :: virial_1d(9)
   real(dp), pointer :: local_e_p(:), forces_p(:,:)
   real(dp),dimension(3)          :: QM_cell
+  logical :: my_filepot_log
+
+  my_filepot_log = optional_default(.false., filepot_log)
 
   call initialise(outio, outfile)
   call read_xyz(at_out, outio)
@@ -388,6 +411,12 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (get_value(at_out%params,'QM_cell',QM_cell)) then
      call set_value(at%params,'QM_cell',QM_cell)
   endif
+
+   if (my_filepot_log) then
+     call initialise(outio, "FilePot_force_log.xyz", action=OUTPUT, append=.true.)
+     call print_xyz(at_out, outio, all_properties=.true.)
+     call finalise(outio)
+   endif
 
   call finalise(at_out)
 
