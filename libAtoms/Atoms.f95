@@ -3603,7 +3603,7 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup)
+  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, private_neighbour1, private_neighbour2)
 
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff
@@ -3613,6 +3613,7 @@ contains
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     logical, intent(in) :: check_for_dup
+    type(table_pointer), allocatable, dimension(:), intent(inout), optional :: private_neighbour1, private_neighbour2
 
     integer                    :: index, m, k
     real(dp)                   :: d, dd(3)
@@ -3660,7 +3661,7 @@ contains
 #endif
 
     if (d < use_cutoff) then
-       call add_bond(this, pos, lattice, i, j, shift, d)
+       call add_bond(this, pos, lattice, i, j, shift, d, private_neighbour1, private_neighbour2)
     end if
 
 #ifdef DEBUG
@@ -3745,12 +3746,13 @@ contains
     end do
   end subroutine set_bonds
 
-  subroutine add_bond(this, pos, lattice, i, j, shift, d)
+  subroutine add_bond(this, pos, lattice, i, j, shift, d, private_neighbour1, private_neighbour2)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     real(dp), intent(in), optional :: d
+    type(table_pointer), dimension(:), allocatable, intent(inout), optional :: private_neighbour1, private_neighbour2
 
     real(dp) :: dd
     integer :: ii, jj, index
@@ -3779,14 +3781,24 @@ contains
     endif
 
     ! Add full details to neighbour1 for smaller of i and j
-    call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
-    if(ii .ne. jj) then		
-       index = this%neighbour1(min(ii,jj))%t%N
-       ! Put a reference to this in neighbour2 for larger of i and j
-       call append(this%neighbour2(jj)%t, (/ ii, index/))
+    if (present(private_neighbour1)) then
+       call append(private_neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+       if(ii .ne. jj) then		
+          index = private_neighbour1(min(ii,jj))%t%N
+          ! Put a reference to this in neighbour2 for larger of i and j
+          call append(private_neighbour2(jj)%t, (/ ii, index/))
+       end if       
+    else
+       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+       if(ii .ne. jj) then		
+          index = this%neighbour1(min(ii,jj))%t%N
+          ! Put a reference to this in neighbour2 for larger of i and j
+          call append(this%neighbour2(jj)%t, (/ ii, index/))
+       end if
     end if
 
   end subroutine add_bond
+
 
   subroutine remove_bond(this, i, j, shift)
     type(Connection), intent(inout) :: this
@@ -3830,6 +3842,7 @@ contains
 	endif
       else ! r_index /= 0
 	n_removed = n_removed + 1
+
 	call delete(this%neighbour1(ii)%t, r_index, keep_order = .true.)
 	! remove entry from neighbour2(jj)
 	if (ii /= jj) then
@@ -4040,7 +4053,7 @@ contains
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
                             call test_form_bond(use_connect, this%cutoff, this%use_uniform_cutoff, &
-			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .true.)
+                                 this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .true.)
 
                          end do ! n2
 
@@ -4099,6 +4112,13 @@ contains
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
     real(dp)                             :: cutoff
     logical my_own_neighbour, my_store_is_min_image
+
+#ifdef _OPENMP
+    integer, allocatable, dimension(:,:,:) :: cell_thread_id
+    integer :: thread, nthread, tile_end, n0
+    type(table_pointer), allocatable, dimension(:) :: private_neighbour1, private_neighbour2
+    real(dp) :: t1, t2
+#endif
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.false., store_is_min_image)
@@ -4167,12 +4187,94 @@ contains
     ! Go through each cell and update the connectivity between atoms in this cell and neighbouring cells
     ! N.B. test_form_bond updates both atoms i and j, so only update if i <= j to avoid doubling processing
 
+#ifdef _OPENMP
+    allocate(cell_thread_id(cellsNa,cellsNb,cellsNc))
+    cell_thread_id = 0
+
+    nthread = omp_get_max_threads()
+    if (nthread > 1) then
+       if (max(cellsNa,cellsNb,cellsNc) == cellsNa) then
+          call print('calc_connect: OpenMP tiling along x direction with '//nthread//' strips')
+
+          thread = 0
+          do i=1, cellsNa-mod(cellsNa, nthread), cellsNa/nthread
+             if (thread == nthread-1) then
+                tile_end = cellsNa
+             else
+                tile_end = i+cellsNa/nthread-1
+             end if
+             cell_thread_id(i:tile_end,:,:) = thread
+             thread = thread + 1
+          end do
+
+       else if (max(cellsNa, cellsNb, cellsNc) == cellsNb) then
+          call print('calc_connect: OpenMP tiling along y direction with '//nthread//' strips')
+          
+          thread = 0
+          do j=1, cellsNb-mod(cellsNb, nthread), cellsNb/nthread
+             if (thread == nthread-1) then
+                tile_end = cellsNb
+             else
+                tile_end = j+cellsNb/nthread-1
+             end if
+             cell_thread_id(:,j:tile_end,:) = thread
+             thread = thread + 1
+          end do
+          
+       else
+          call print('calc_connect: OpenMP tiling along z direction with '//nthread//' strips')
+
+          thread = 0
+          do k=1, cellsNa-mod(cellsNc, nthread), cellsNc/nthread
+             if (thread == nthread-1) then
+                tile_end = cellsNc
+             else
+                tile_end = k+cellsNc/nthread-1
+             end if
+             cell_thread_id(:,:,k:tile_end) = thread
+             thread = thread + 1
+          end do
+       end if
+    end if
+
+    n0 = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*this%N/cell_volume(this%lattice)/nthread)
+
+    !$omp parallel default(none) shared(this, cell_thread_id, cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, my_own_neighbour, n0) private(k, j, i, k3, k4, j3, j4, i3, i4, n1, atom1, atom2, thread, private_neighbour1,  private_neighbour2, t1, t2)
+    
+    thread = omp_get_thread_num()
+    t1 = omp_get_wtime()
+
+    call print('calc_connect: OpenMP thread '//thread//' got '//count(cell_thread_id == thread)//' cells  out of '//(cellsNa*cellsNb*cellsNc))
+
+    allocate(private_neighbour1(this%n))
+    allocate(private_neighbour2(this%n))
+    do i=1,this%n
+       allocate(private_neighbour1(i)%t)
+       call allocate(private_neighbour1(i)%t,4,1, 0, 0, max(n0, 1))
+       private_neighbour1(i)%t%increment = max(n0/2, 1)
+
+       allocate(private_neighbour2(i)%t)
+       call allocate(private_neighbour2(i)%t,2,0, 0, 0, max(n0, 1))
+       private_neighbour2(i)%t%increment = max(n0/2, 1)
+    end do
+
+    t2 = omp_get_wtime()
+    call print('alloc thread '//thread//' time '//(t2 - t1))
+
+    t1 = omp_get_wtime()
+#endif
+
     ! defaults for cellsNx = 1
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
+
     ! Loop over all cells
     do k = 1, cellsNc
+       !$omp do schedule(guided)
        do j = 1, cellsNb
           do i = 1, cellsNa
+!#ifdef _OPENMP
+!             if (cell_thread_id(i,j,k) /= thread) cycle
+!#endif
 
              !Loop over atoms in cell(i,j,k)
              do n1 = 1, this%connect%cell(i,j,k)%N
@@ -4216,9 +4318,15 @@ contains
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
+#ifdef _OPENMP
+                            call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
+			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false., &
+                              private_neighbour1, private_neighbour2)
+#else
                             call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
 			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false.)
 
+#endif
                          end do
 
                       end do
@@ -4229,7 +4337,38 @@ contains
 
           end do
        end do
+       !$omp end do nowait
     end do
+
+#ifdef _OPENMP
+    t2 = omp_get_wtime()
+    call print('test thread '//thread//' time '//(t2 - t1))
+
+    t1 = omp_get_wtime()
+
+    do i=1,this%n
+       !$omp critical
+       call append(this%connect%neighbour1(i)%t, private_neighbour1(i)%t)
+       call append(this%connect%neighbour2(i)%t, private_neighbour2(i)%t)
+       !$omp end critical
+    end do
+
+    do i=1,this%n
+       call finalise(private_neighbour1(i)%t)
+       call finalise(private_neighbour2(i)%t)
+       deallocate(private_neighbour1(i)%t)
+       deallocate(private_neighbour2(i)%t)
+    end do
+
+    deallocate(private_neighbour1)
+    deallocate(private_neighbour2)
+
+    t2 = omp_get_wtime()
+    call print('append thread '//thread//' time '//(t2 - t1))
+
+    !$omp end parallel
+    deallocate(cell_thread_id)
+#endif
 
     if (my_store_is_min_image) then
        if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
