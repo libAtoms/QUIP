@@ -14,6 +14,7 @@ implicit none
   real(dp) :: min_time, max_time
   logical :: sort_Time, no_Time_dups, quiet, no_compute_index
   real(dp) :: scale_lattice, scale_pos
+  character(len=FIELD_LENGTH) :: properties
 
   type(Atoms_ll) :: structure_ll
   type(Atoms_ll_entry), pointer :: entry
@@ -32,6 +33,8 @@ implicit none
   call param_register(cli_params, 'quiet', 'F', quiet)
   call param_register(cli_params, 'scale_lattice', '1.0', scale_lattice)
   call param_register(cli_params, 'scale_pos', '1.0', scale_pos)
+  properties = ""
+  call param_register(cli_params, 'properties', 'species:pos:Z', properties)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
       call print_usage()
     call system_abort('could not parse argument line')
@@ -47,7 +50,7 @@ implicit none
   no_compute_index=.false.
   if ((.not. sort_Time) .and. (.not. no_Time_dups)) no_compute_index=.true.
 
-  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
+  call read_xyz(structure_ll, infilename, infile_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index, properties=properties)
 
   call initialise(outfile, outfilename, action=OUTPUT)
   entry => structure_ll%first
