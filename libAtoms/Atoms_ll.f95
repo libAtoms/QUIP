@@ -167,13 +167,15 @@ contains
   !% reads a sequence of configurations with cinoutput, optionally skipping every decimation frames,
   !%  ignoring things outside of min_time--max_time, sorting by Time value and eliminating configs with
   !%  duplicate Time values.
-  subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index)
+  subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index, &
+                                        properties, all_properties)
     type(atoms_ll) :: this
     character(len=*), intent(in) :: filename
     logical, intent(in) :: file_is_list
     integer, intent(in), optional :: decimation
     real(dp), intent(in), optional :: min_time, max_time
-    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index
+    character(len=*), intent(in), optional :: properties
+    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties
 
     integer :: status
     integer :: frame_count, last_file_frame_n
@@ -188,9 +190,12 @@ contains
     real(dp) :: do_min_time, do_max_time
     logical :: do_sort_Time, do_no_Time_dups, do_quiet, do_no_compute_index
     type(Atoms_ll_entry), pointer :: entry
-    logical :: is_a_dup
+    logical :: is_a_dup, do_all_properties
+    character(len=1024) :: my_properties
     integer :: initial_frame_count
 
+    my_properties = optional_default("species:pos:Z", properties)
+    do_all_properties = optional_default(.false., all_properties)
     do_decimation = optional_default(1, decimation)
     do_min_time = optional_default(-1.0_dp, min_time)
     do_max_time = optional_default(-1.0_dp, max_time)
@@ -283,7 +288,11 @@ contains
 		this%FIRST%r_index = cur_time
 	      endif
 	      ! actually copy the structure
-	      call atoms_copy_without_connect(structure, structure_in, properties="species:pos:Z")
+              if (do_all_properties) then
+                call atoms_copy_without_connect(structure, structure_in)
+              else
+                call atoms_copy_without_connect(structure, structure_in, properties=my_properties)
+              endif
 	    endif
 	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "
 !	    if (.not. do_quiet) write (mainlog%unit,'(a)') "          "
