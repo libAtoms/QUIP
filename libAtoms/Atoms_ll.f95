@@ -250,6 +250,7 @@ contains
 		!NB
 	      else ! no structure list yet, fake entry_time
 		entry_time = -1.0e38_dp
+                nullify(entry)
 	      endif
 	      if (cur_time <= entry_time) then ! new frame is at or BEFORE LAST entry
 		do while (associated(entry))
