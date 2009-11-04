@@ -80,6 +80,8 @@ contains
     call print("       outfile=filename [decimation=n(1)]", ERROR)
     call print("       [min_time=t(-1.0)] [max_time=t(-1.0)]", ERROR)
     call print("       [sort_Time(F)] [no_Time_dups(F)] [quiet(F)]", ERROR)
+    call print("       [scale_lattice=scale(1.0)] [scale_pos=scale(1.0)]", ERROR)
+    call print("       [properties=prop1:prop2...(species:pos:Z,use blank for all props.)]", ERROR)
   end subroutine print_usage
 
 end program clean_traj

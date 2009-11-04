@@ -204,6 +204,11 @@ contains
     do_quiet = optional_default(.false., quiet)
     do_no_compute_index = optional_default(.false., no_compute_index)
 
+    if (len_trim(my_properties) == 0) then
+      call print("WARNING: len_trim(my_properties) == 0, doing all_properties")
+      do_all_properties=.true.
+    endif
+
     if (do_no_Time_dups .and. .not. do_sort_Time) call system_abort("ERROR: atoms_ll_read_xyz no_Times_dups requires sort_Time")
 
     if (do_decimation /= 1 .and. do_no_Time_dups) call system_abort("ERROR: atoms_ll_read_xyz decimation="//do_decimation//" /= 1 and no_Time_dups=T conflict")
