@@ -132,7 +132,7 @@ implicit none
       end do
     endif
 
-    call print("# correl")
+    call print("# correl", file=outfile)
     if (over_bins) then
       n_correl_print = n_data
     else
