@@ -156,7 +156,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
    real(dp) :: de, dforce, expfactor
-   logical :: i_is_min_image
+   logical :: i_is_min_image, j_is_min_image
    real(dp) :: private_virial(3,3), private_e
    real(dp), allocatable :: private_f(:,:), private_efield(:,:), private_local_e(:)
 
@@ -196,7 +196,14 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
          j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
-         if (i < j .and. i_is_min_image) cycle
+
+         if (allocated(at%connect%is_min_image)) then
+            j_is_min_image = at%connect%is_min_image(j)
+         else
+            j_is_min_image = is_min_image(at, j)
+         end if
+
+         if (i < j .and. i_is_min_image .and. j_is_min_image) cycle
 
          r_ij = r_ij/BOHR
          tj = get_type(this%type_of_atomic_num, at%Z(j))
@@ -214,7 +221,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
 
          if (present(e) .or. present(local_e)) then
             if (present(e)) then
-               if (i_is_min_image) then
+               if (i_is_min_image .and. j_is_min_image) then
                   private_e = private_e + de*expfactor*fc
                else
                   private_e = private_e + 0.5_dp*de*expfactor*fc
@@ -222,7 +229,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
             end if
             if (present(local_e)) then
                private_local_e(i) = private_local_e(i) + 0.5_dp*de*expfactor*fc
-               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de*expfactor*fc
             end if
          end if
 
@@ -231,11 +238,11 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
 
             if (present(f)) then
                private_f(:,i) = private_f(:,i) - dforce*u_ij
-               if (i_is_min_image) private_f(:,j) = private_f(:,j) + dforce*u_ij
+               if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) + dforce*u_ij
             end if
 
             if (present(virial)) then
-               if (i_is_min_image) then
+               if (i_is_min_image .and. j_is_min_image) then
                   private_virial = private_virial + dforce*(u_ij .outer. u_ij)*r_ij
                else
                   private_virial = private_virial + 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
@@ -244,7 +251,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
 
             if (present(efield)) then
                private_efield(:,i) = private_efield(:,i) - gamjir3*expfactor*fc*u_ij*r_ij/this%z(ti)
-               if (i_is_min_image) private_efield(:,j) = private_efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
+               if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + gamjir3*expfactor*fc*u_ij*r_ij/this%z(tj)
             end if
          end if
 
@@ -297,7 +304,7 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
    real(dp) :: expfactor, dipi(3), dipj(3), qj, qi, pp, pri, prj
    real(dp) :: de_ind, de_dd, de_qd, dfqdip(3), dfdipdip(3), factor1, dist3, dist5
    real(dp) :: const1, const2, factork, de_sr, df_sr(3), gij, dgijdrij, bij, cij
-   logical :: i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
+   logical :: i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj
 
   real(dp) :: private_virial(3,3), private_e
   real(dp), allocatable :: private_f(:,:), private_local_e(:), private_efield(:,:)
@@ -350,7 +357,14 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
          j = atoms_neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
-         if (i < j .and. i_is_min_image) cycle
+
+         if (allocated(at%connect%is_min_image)) then
+            j_is_min_image = at%connect%is_min_image(j)
+         else
+            j_is_min_image = is_min_image(at, j)
+         end if
+
+         if (i < j .and. i_is_min_image .and. j_is_min_image) cycle
 
          r_ij = r_ij/BOHR
          u_ij = u_ij/BOHR
@@ -385,7 +399,7 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 
          if (present(efield)) then
             private_efield(:,i) = private_efield(:,i) + (3.0_dp*prj*u_ij*gamjir2 - dipj)*gamjir2*dsqrt(gamjir2)*expfactor*fc
-            if (i_is_min_image) private_efield(:,j) = private_efield(:,j) + (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
+            if (i_is_min_image .and. j_is_min_image) private_efield(:,j) = private_efield(:,j) + (3.0_dp*pri*u_ij*gamjir2 - dipi)*gamjir2*dsqrt(gamjir2)*expfactor*fc
          end if
 
          if (present(e) .or. present(local_e) .or. present(virial) .or. present(f)) then
@@ -424,7 +438,7 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
             end if
 
             if (present(e)) then
-               if (i_is_min_image) then
+               if (i_is_min_image .and. j_is_min_image) then
                   private_e = private_e + (de_dd + de_qd + de_sr)*expfactor*fc
                else
                   private_e = private_e + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
@@ -433,7 +447,7 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 
             if (present(local_e)) then
                private_local_e(i) = private_local_e(i) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
-               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*(de_dd + de_qd + de_sr)*expfactor*fc
             end if
 
             if (present(f) .or. present(virial)) then
@@ -453,11 +467,11 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 
                if (present(f)) then
                   private_f(:,i) = private_f(:,i) + dfqdip + dfdipdip + df_sr
-                  if (i_is_min_image) private_f(:,j) = private_f(:,j) - (dfqdip + dfdipdip + df_sr)
+                  if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) - (dfqdip + dfdipdip + df_sr)
                end if
 
                if (present(virial)) then
-                  if (i_is_min_image) then
+                  if (i_is_min_image .and. j_is_min_image) then
                      private_virial = private_virial - ((dfqdip+dfdipdip+df_sr) .outer. u_ij)
                   else
                      private_virial = private_virial - 0.5_dp*((dfqdip+dfdipdip+df_sr) .outer. u_ij)
@@ -591,7 +605,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
    real(dp) :: exponentms, factorms, phi, de
    real(dp) :: dforce
    real(dp) :: elimitij(this%n_types, this%n_types)
-   logical :: i_is_min_image
+   logical :: i_is_min_image, j_is_min_image
 
    real(dp) :: private_virial(3,3), private_e
    real(dp), allocatable :: private_f(:,:), private_local_e(:)
@@ -606,7 +620,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
          elimitij(ti,tj) = this%d_ms(ti,tj)*(phi - 2.0_dp*sqrt(phi))
       end do
    end do
- 
+
    !$omp parallel default(none) shared(this, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, private_virial, private_e, private_f, private_local_e)
 
    if (present(e)) private_e = 0.0_dp
@@ -635,11 +649,20 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
       do m = 1, atoms_n_neighbours(at, i)
          
          j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
+         
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
-         if (i < j .and. i_is_min_image) cycle
+
+         if (allocated(at%connect%is_min_image)) then
+            j_is_min_image = at%connect%is_min_image(j)
+         else
+            j_is_min_image = is_min_image(at, j)
+         end if
+
+         if (i < j .and. i_is_min_image .and. j_is_min_image) cycle
 
          r_ij = r_ij/BOHR
+
          tj = get_type(this%type_of_atomic_num, at%Z(j))
 
          dms = this%d_ms(ti,tj)
@@ -654,15 +677,16 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
             de = dms*(phi-2.0_dp*sqrt(phi)) - elimitij(ti, tj)
 
             if (present(e)) then
-               if (i_is_min_image) then
+               if (i_is_min_image .and. j_is_min_image) then
                   private_e = private_e + de
                else
                   private_e = private_e + 0.5_dp*de
                end if
             end if
+            
             if (present(local_e)) then
                private_local_e(i) = private_local_e(i) + 0.5_dp*de
-               if (i_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
+               if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
             end if
          end if
 
@@ -671,10 +695,10 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
 
             if (present(f)) then
                private_f(:,i) = private_f(:,i) + dforce*u_ij
-               if (i_is_min_image) private_f(:,j) = private_f(:,j) - dforce*u_ij
+               if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) - dforce*u_ij
             end if
             if (present(virial)) then
-               if (i_is_min_image) then
+               if (i_is_min_image .and. j_is_min_image) then
                   private_virial = private_virial - dforce*(u_ij .outer. u_ij)*r_ij
                else
                   private_virial = private_virial - 0.5_dp*dforce*(u_ij .outer. u_ij)*r_ij
@@ -791,12 +815,12 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
         call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old3" property')
 
    if (.not. get_value(at%params, 'n_efield_old', n_efield_old)) n_efield_old = 0
-      
 
    if (restart) then
       efield_old1(:,:) = 0.0_dp
       efield_old2(:,:) = 0.0_dp
       efield_old3(:,:) = 0.0_dp
+      n_efield_old = 0
    end if
 
    efield_dipole = 0.0_dp
