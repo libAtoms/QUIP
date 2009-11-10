@@ -368,7 +368,7 @@
 	u = fzeros(3)    
 	for i in frange(at.n):
 	    for n in frange(at.n_neighbours(i)):
-		j = at.neighbour(at, i, n, distance=r, diff=u)
+		j = at.neighbour(i, n, distance=r, diff=u)
     
       If ``distance > max_dist``, we return 0, and do not waste time
       calculating other quantities. `alt_connect` has the same meaning as
