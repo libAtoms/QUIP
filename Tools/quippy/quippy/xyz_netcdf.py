@@ -171,6 +171,8 @@ def PuPyXYZReader(xyz):
    if type(xyz) == type(''):
       xyz = open(xyz,'r')
       opened = True
+   else:
+      xyz = iter(xyz)
 
    while True:
       line = xyz.next()
@@ -447,8 +449,11 @@ try:
    
 except ImportError:
    logging.warning('CInOutput not found - falling back on (slower) pure python I/O')
-   AtomsReaders['xyz'] = PyPyXYZReader
+   AtomsReaders['xyz'] = PuPyXYZReader
    AtomsWrtiters['xyz'] = PuPyXYZWriter
+
+AtomsReaders['pupyxyz'] = PuPyXYZReader
+AtomsWriters['pupyxyz'] = PuPyXYZWriter
 
 
 @atoms_reader(netcdf_file, True)
