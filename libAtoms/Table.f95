@@ -336,6 +336,10 @@ module table_module
 
   integer, parameter :: TABLE_STRING_LENGTH = 10
 
+#ifdef DEBUG
+  integer :: table_realloc_count = 0
+#endif
+
   type Table
      integer,allocatable, dimension(:,:)  :: int  !% (intsize,N) array of integer data
      real(dp),allocatable, dimension(:,:) :: real !% (realsize,N) array of real data
@@ -806,6 +810,10 @@ contains
     if(allocated(this%int) .or. allocated(this%real) .or. &
          allocated(this%str) .or. allocated(this%logical)) then
        if(this%N+1 > this%max_length) then ! we need more memory
+#ifdef DEBUG
+          !$omp atomic
+          table_realloc_count = table_realloc_count + 1
+#endif
           call table_allocate(this,max_length=this%N+this%increment)
        end if
     else
