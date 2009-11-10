@@ -4370,26 +4370,47 @@ CONTAINS
      integer, intent(in), dimension(:,:) :: this
      integer, intent(in), dimension(:) :: val
      logical, optional, intent(in), dimension(:) :: mask ! if this exists, we only compare elements where this is 1
-     integer             :: i, n
+     integer             :: i, j, n
+     logical :: match
 
      if(present(mask)) then
         if (size(val) /= size(mask)) &
              call system_abort('Table_Find_Row: mask and row size mismatch')
      end if
 
-     do i = 1,size(this,2)
-        if(present(mask)) then
-             if(any((this(:,i) /= val) .and. mask)) cycle
-        else
-           if(any(this(:,i) /= val)) cycle
-        endif
-        n = i
-        return
-     end do
+     if (present(mask)) then
+        do i = 1,size(this,2)
+           match = .true.
+           do j=1,size(this,1)
+              if (.not. mask(j)) cycle
+              if (this(j,i) /= val(j)) then
+                 match = .false.
+                 exit
+              end if
+           end do
+           if (.not. match) cycle
+           n = i
+           return
+        end do
+     else
+        do i = 1,size(this,2)
+           match = .true.
+           do j=1,size(this,1)
+              if (this(j,i) /= val(j)) then
+                 match = .false.
+                 exit
+              end if
+           end do
+           if (.not. match) cycle
+           n = i
+           return
+        end do
+     end if
 
      ! not found
      n = 0
    end function find_in_array_row
+
 
    !% Return a copy of the integer array 'array' with duplicate
    !% elements removed. 'uniq' assumes the input array is sorted
