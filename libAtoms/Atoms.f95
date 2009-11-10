@@ -3295,44 +3295,36 @@ contains
   !% If the optional Atoms argument is present then we calculate
   !% the atomic density to initialise the default lengths of the neighbour
   !% list for efficient memory usage.
-   subroutine connection_initialise(this,N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
+   subroutine connection_initialise(this,N, pos, lattice, g,  origin, extent, nn_guess, fill)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
-    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3), cutoff
-    logical, optional, intent(in) :: use_uniform_cutoff
+    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
+    integer, optional, intent(in) :: nn_guess
+    logical, optional, intent(in) :: fill
 
-    ! If already initialised, destroy the existing data an start again
+    logical :: do_fill
+
+    do_fill = optional_default(.true., fill)
+
+    ! If already initialised, destroy the existing data and start again
     if (this%initialised) call connection_finalise(this)
 
-    call connection_fill(this, N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
+    if (do_fill) call connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess)
   end subroutine connection_initialise
 
-  subroutine connection_fill(this, N, pos, lattice, g, cutoff, use_uniform_cutoff, origin, extent)
+  subroutine connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
-    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3), cutoff
-    logical, optional, intent(in) :: use_uniform_cutoff
+    real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
+    integer, optional, intent(in) :: nn_guess
 
-    integer                           :: i, n0
-    real(dp)                          :: mycutoff, extent_inv(3,3), subregion_center(3)
+    integer                           :: i, do_nn_guess
+    real(dp)                          :: extent_inv(3,3), subregion_center(3)
     logical :: do_subregion
 
-    ! If we're given at atoms structure then use density N/V to work
-    ! out roughtly how many neighbours to expect within sphere of radius
-    ! cutoff. Assume half of these belong in neighbour1 and half in 
-    ! neighbour2. Increment is set to n0/2.
-    if (present(lattice) .and. present(cutoff) .and. present(use_uniform_cutoff)) then
-       if(use_uniform_cutoff) then
-          mycutoff = cutoff
-       else
-          mycutoff = 3.0_dp*cutoff
-       endif
-       n0 = int(0.5_dp*4.0_dp/3.0_dp*PI*mycutoff**3*N/Cell_Volume(lattice))
-    else
-       n0 = 5
-    end if
+    do_nn_guess = optional_default(5, nn_guess)
 
     if (present(origin) .and. present(extent)) then
       if (.not.present(lattice) .or. .not.present(g)) &
@@ -3361,12 +3353,12 @@ contains
        endif
        if (.not. associated(this%neighbour1(i)%t)) then
 	 allocate(this%neighbour1(i)%t)
-	 call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(n0, 1))
-	 this%neighbour1(i)%t%increment = max(n0/2, 1)
+	 call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
+	 this%neighbour1(i)%t%increment = max(do_nn_guess/2, 1)
 
 	 allocate(this%neighbour2(i)%t)
-	 call allocate(this%neighbour2(i)%t,2,0, 0, 0, max(n0, 1))
-	 this%neighbour2(i)%t%increment = max(n0/2, 1)
+	 call allocate(this%neighbour2(i)%t,2,0, 0, 0, max(do_nn_guess, 1))
+	 this%neighbour2(i)%t%increment = max(do_nn_guess/2, 1)
        endif
     end do
 
@@ -3603,7 +3595,7 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, private_neighbour1, private_neighbour2)
+  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup)
 
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff
@@ -3613,7 +3605,6 @@ contains
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     logical, intent(in) :: check_for_dup
-    type(table_pointer), allocatable, dimension(:), intent(inout), optional :: private_neighbour1, private_neighbour2
 
     integer                    :: index, m, k
     real(dp)                   :: d, dd(3)
@@ -3643,6 +3634,13 @@ contains
     do m=1,3
        forall(k=1:3) dd(k) = dd(k) + lattice(k,m) * shift(m)
     end do
+
+    if (.not. check_for_dup) then
+       do m=1,3
+          if (dd(m) > use_cutoff) return
+       end do
+    end if
+
     d = sqrt(dd(1)*dd(1) + dd(2)*dd(2) + dd(3)*dd(3))
 
     if (check_for_dup) then
@@ -3661,7 +3659,7 @@ contains
 #endif
 
     if (d < use_cutoff) then
-       call add_bond(this, pos, lattice, i, j, shift, d, private_neighbour1, private_neighbour2)
+       call add_bond(this, pos, lattice, i, j, shift, d)
     end if
 
 #ifdef DEBUG
@@ -3746,13 +3744,12 @@ contains
     end do
   end subroutine set_bonds
 
-  subroutine add_bond(this, pos, lattice, i, j, shift, d, private_neighbour1, private_neighbour2)
+  subroutine add_bond(this, pos, lattice, i, j, shift, d)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     real(dp), intent(in), optional :: d
-    type(table_pointer), dimension(:), allocatable, intent(inout), optional :: private_neighbour1, private_neighbour2
 
     real(dp) :: dd
     integer :: ii, jj, index
@@ -3781,20 +3778,11 @@ contains
     endif
 
     ! Add full details to neighbour1 for smaller of i and j
-    if (present(private_neighbour1)) then
-       call append(private_neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
-       if(ii .ne. jj) then		
-          index = private_neighbour1(min(ii,jj))%t%N
-          ! Put a reference to this in neighbour2 for larger of i and j
-          call append(private_neighbour2(jj)%t, (/ ii, index/))
-       end if       
-    else
-       call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
-       if(ii .ne. jj) then		
-          index = this%neighbour1(min(ii,jj))%t%N
-          ! Put a reference to this in neighbour2 for larger of i and j
-          call append(this%neighbour2(jj)%t, (/ ii, index/))
-       end if
+    call append(this%neighbour1(ii)%t, (/jj, sign(1,jj-ii)*shift /), (/ dd /))
+    if(ii .ne. jj) then		
+       index = this%neighbour1(min(ii,jj))%t%N
+       ! Put a reference to this in neighbour2 for larger of i and j
+       call append(this%neighbour2(jj)%t, (/ ii, index/))
     end if
 
   end subroutine add_bond
@@ -3888,7 +3876,7 @@ contains
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
     real(dp)                             :: cutoff
-    integer :: ji, s_ij(3)
+    integer :: ji, s_ij(3), nn_guess
     logical my_own_neighbour, my_store_is_min_image
     type(Connection), pointer :: use_connect
 
@@ -3899,7 +3887,7 @@ contains
     endif
 
     my_own_neighbour = optional_default(.false., own_neighbour)
-    my_store_is_min_image = optional_default(.false., store_is_min_image)
+    my_store_is_min_image = optional_default(.true., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
@@ -3946,18 +3934,33 @@ contains
          (cellsNb /= use_connect%cellsNb) .or. &
          (cellsNc /= use_connect%cellsNc)) call connection_cells_finalise(use_connect)
 
+    ! figure out how many unit cell images we will need to loop over in each direction
+    call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
+    ! cell_image_N{a,b,c} apply to a box of side 2*cutoff. Since we loop from -cell_image_N to
+    ! +cell_image_N we can reduce them as follows
+
+    cell_image_Na = max(1,(cell_image_Na+1)/2)
+    cell_image_Nb = max(1,(cell_image_Nb+1)/2)
+    cell_image_Nc = max(1,(cell_image_Nc+1)/2)
+
+    ! Estimate number of neighbours of each atom. Factor of 1/2 assumes
+    ! half will go in neighbour1, half in neighbour2.
+    nn_guess = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*this%N/cell_volume(this%lattice)*cell_image_na*cell_image_nb*cell_image_nc)
+
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, NERD)
+
     ! Allocate space for the connection object if needed
     if (present(origin) .and. present(extent)) then
       if (.not.use_connect%initialised) then
-	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff, origin, extent)
+	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, origin, extent, nn_guess)
       else
-	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff, origin, extent)
+	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, origin, extent, nn_guess)
       end if
     else
       if (.not.use_connect%initialised) then
-	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
+	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, nn_guess=nn_guess)
       else
-	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
+	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, nn_guess=nn_guess)
       end if
     endif
 
@@ -3968,17 +3971,6 @@ contains
     ! Partition the atoms into cells
     call partition_atoms(use_connect, this)
 
-
-    ! figure out how many unit cell images we will need to loop over in each direction
-    call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
-    ! cell_image_N{a,b,c} apply to a box of side 2*cutoff. Since we loop from -cell_image_N to
-    ! +cell_image_N we can reduce them as follows
-
-    cell_image_Na = max(1,(cell_image_Na+1)/2)
-    cell_image_Nb = max(1,(cell_image_Nb+1)/2)
-    cell_image_Nc = max(1,(cell_image_Nc+1)/2)
-
-    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, NERD)
 
     ! look for bonds that have been broken, and remove them
     do i=1, this%N
@@ -4109,19 +4101,12 @@ contains
     logical, optional, intent(in) :: own_neighbour, store_is_min_image
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
-    integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
-    real(dp)                             :: cutoff
-    logical my_own_neighbour, my_store_is_min_image
-
-#ifdef _OPENMP
-    integer, allocatable, dimension(:,:,:) :: cell_thread_id
-    integer :: thread, nthread, tile_end, n0
-    type(table_pointer), allocatable, dimension(:) :: private_neighbour1, private_neighbour2
-    real(dp) :: t1, t2
-#endif
+    integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
+    real(dp)                             :: cutoff, density, volume_per_cell
+    logical my_own_neighbour, my_store_is_min_image, do_fill
 
     my_own_neighbour = optional_default(.false., own_neighbour)
-    my_store_is_min_image = optional_default(.false., store_is_min_image)
+    my_store_is_min_image = optional_default(.true., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
@@ -4147,30 +4132,16 @@ contains
        cutoff = (2.0_dp * cutoff) * this%cutoff
     end if
 
-    call print("calc_connect: cutoff calc_connect " // cutoff, NERD)
+    call print("calc_connect: cutoff calc_connect " // cutoff, VERBOSE)
 
     call divide_cell(this%lattice, cutoff, cellsNa, cellsNb, cellsNc)
 
-    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, NERD)
+    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, VERBOSE)
 
     ! If the lattice has changed, then the cells need de/reallocating
     if ((cellsNa /= this%connect%cellsNa) .or. &
          (cellsNb /= this%connect%cellsNb) .or. &
          (cellsNc /= this%connect%cellsNc)) call connection_finalise(this%connect)
-
-    ! Allocate space for the connection object if needed
-    if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this%pos, this%lattice, this%g, this%cutoff, this%use_uniform_cutoff)
-    else
-       ! otherwise just wipe the connection table
-       call wipe(this%connect)
-    end if
-
-    if (.not.this%connect%cells_initialised) &
-         call connection_cells_initialise(this%connect, cellsNa, cellsNb, cellsNc,this%N)
-
-    ! Partition the atoms into cells
-    call partition_atoms(this%connect, this)
 
     ! figure out how many unit cell images we will need to loop over in each direction
     call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
@@ -4181,100 +4152,59 @@ contains
     cell_image_Nb = max(1,(cell_image_Nb+1)/2)
     cell_image_Nc = max(1,(cell_image_Nc+1)/2)
 
-    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, NERD)
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, VERBOSE)
+
+    ! Allocate space for the connection object if needed
+    if (.not.this%connect%initialised) then
+       call connection_initialise(this%connect, this%N, this%pos, this%lattice, this%g, fill=.false.)
+       do_fill = .true.
+    else
+       ! otherwise just wipe the connection table
+       call wipe(this%connect)
+       do_fill = .false.
+    end if
+
+    if (.not.this%connect%cells_initialised) &
+         call connection_cells_initialise(this%connect, cellsNa, cellsNb, cellsNc,this%N)
+
+    ! Partition the atoms into cells
+    call partition_atoms(this%connect, this)
+
+    if (do_fill) then
+       volume_per_cell = cell_volume(this%lattice)/real(cellsNa*cellsNb*cellsNc,dp)
+       
+       ! Count the occupied cells so vacuum does not contribute to average number density
+       n_occ = 0
+       do k=1,cellsNc
+          do j=1,cellsNb
+             do i=1,cellsNa
+                if (this%connect%cell(i,j,k)%n /= 0) n_occ = n_occ + 1
+             end do
+          end do
+       end do
+       density = this%n/(n_occ*volume_per_cell)
+
+       ! Sphere of radius "cutoff", assume roughly half neighbours in neighbour1 and half in neighbour2
+       ! Appends are very expensive, so 1.2 is fudge factor to account for large first peak in most crystal RDFs
+       nn_guess = int(4.0_dp/3.0_dp*PI*cutoff**3*density)/2
+
+       call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), VERBOSE)
+       call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, VERBOSE)
+
+       call connection_fill(this%connect, this%n, this%pos, this%lattice, this%g, nn_guess=nn_guess)
+    end if
 
     ! Here is the main loop:
     ! Go through each cell and update the connectivity between atoms in this cell and neighbouring cells
     ! N.B. test_form_bond updates both atoms i and j, so only update if i <= j to avoid doubling processing
-
-#ifdef _OPENMP
-    allocate(cell_thread_id(cellsNa,cellsNb,cellsNc))
-    cell_thread_id = 0
-
-    nthread = omp_get_max_threads()
-    if (nthread > 1) then
-       if (max(cellsNa,cellsNb,cellsNc) == cellsNa) then
-          call print('calc_connect: OpenMP tiling along x direction with '//nthread//' strips')
-
-          thread = 0
-          do i=1, cellsNa-mod(cellsNa, nthread), cellsNa/nthread
-             if (thread == nthread-1) then
-                tile_end = cellsNa
-             else
-                tile_end = i+cellsNa/nthread-1
-             end if
-             cell_thread_id(i:tile_end,:,:) = thread
-             thread = thread + 1
-          end do
-
-       else if (max(cellsNa, cellsNb, cellsNc) == cellsNb) then
-          call print('calc_connect: OpenMP tiling along y direction with '//nthread//' strips')
-          
-          thread = 0
-          do j=1, cellsNb-mod(cellsNb, nthread), cellsNb/nthread
-             if (thread == nthread-1) then
-                tile_end = cellsNb
-             else
-                tile_end = j+cellsNb/nthread-1
-             end if
-             cell_thread_id(:,j:tile_end,:) = thread
-             thread = thread + 1
-          end do
-          
-       else
-          call print('calc_connect: OpenMP tiling along z direction with '//nthread//' strips')
-
-          thread = 0
-          do k=1, cellsNa-mod(cellsNc, nthread), cellsNc/nthread
-             if (thread == nthread-1) then
-                tile_end = cellsNc
-             else
-                tile_end = k+cellsNc/nthread-1
-             end if
-             cell_thread_id(:,:,k:tile_end) = thread
-             thread = thread + 1
-          end do
-       end if
-    end if
-
-    n0 = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*this%N/cell_volume(this%lattice)/nthread)
-
-    !$omp parallel default(none) shared(this, cell_thread_id, cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, my_own_neighbour, n0) private(k, j, i, k3, k4, j3, j4, i3, i4, n1, atom1, atom2, thread, private_neighbour1,  private_neighbour2, t1, t2)
-    
-    thread = omp_get_thread_num()
-    t1 = omp_get_wtime()
-
-    call print('calc_connect: OpenMP thread '//thread//' got '//count(cell_thread_id == thread)//' cells  out of '//(cellsNa*cellsNb*cellsNc))
-
-    allocate(private_neighbour1(this%n))
-    allocate(private_neighbour2(this%n))
-    do i=1,this%n
-       allocate(private_neighbour1(i)%t)
-       call allocate(private_neighbour1(i)%t,4,1, 0, 0, max(n0, 1))
-       private_neighbour1(i)%t%increment = max(n0/2, 1)
-
-       allocate(private_neighbour2(i)%t)
-       call allocate(private_neighbour2(i)%t,2,0, 0, 0, max(n0, 1))
-       private_neighbour2(i)%t%increment = max(n0/2, 1)
-    end do
-
-    t2 = omp_get_wtime()
-    call print('alloc thread '//thread//' time '//(t2 - t1))
-
-    t1 = omp_get_wtime()
-#endif
 
     ! defaults for cellsNx = 1
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
 
     ! Loop over all cells
     do k = 1, cellsNc
-       !$omp do schedule(guided)
        do j = 1, cellsNb
           do i = 1, cellsNa
-!#ifdef _OPENMP
-!             if (cell_thread_id(i,j,k) /= thread) cycle
-!#endif
 
              !Loop over atoms in cell(i,j,k)
              do n1 = 1, this%connect%cell(i,j,k)%N
@@ -4318,57 +4248,19 @@ contains
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
-#ifdef _OPENMP
-                            call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
-			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false., &
-                              private_neighbour1, private_neighbour2)
-#else
                             call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
 			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false.)
 
-#endif
                          end do
 
                       end do
                    end do
                 end do
-
              end do
 
           end do
        end do
-       !$omp end do nowait
     end do
-
-#ifdef _OPENMP
-    t2 = omp_get_wtime()
-    call print('test thread '//thread//' time '//(t2 - t1))
-
-    t1 = omp_get_wtime()
-
-    do i=1,this%n
-       !$omp critical
-       call append(this%connect%neighbour1(i)%t, private_neighbour1(i)%t)
-       call append(this%connect%neighbour2(i)%t, private_neighbour2(i)%t)
-       !$omp end critical
-    end do
-
-    do i=1,this%n
-       call finalise(private_neighbour1(i)%t)
-       call finalise(private_neighbour2(i)%t)
-       deallocate(private_neighbour1(i)%t)
-       deallocate(private_neighbour2(i)%t)
-    end do
-
-    deallocate(private_neighbour1)
-    deallocate(private_neighbour2)
-
-    t2 = omp_get_wtime()
-    call print('append thread '//thread//' time '//(t2 - t1))
-
-    !$omp end parallel
-    deallocate(cell_thread_id)
-#endif
 
     if (my_store_is_min_image) then
        if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
@@ -4390,7 +4282,7 @@ contains
     type(Atoms), intent(inout) :: at
     logical, optional, intent(in)    :: dont_wipe
 
-    logical                          :: my_dont_wipe
+    logical                          :: my_dont_wipe, neighbour1_allocated
     integer                          :: i,j,k,n
 
     ! Check inputs
@@ -4404,8 +4296,12 @@ contains
     ! Make sure all atomic positions are within the cell
     call map_into_cell(at)
 
+    neighbour1_allocated = allocated(this%neighbour1)
+
     do n = 1, at%N
-       if (.not. associated(this%neighbour1(n)%t)) cycle ! not in active subregion
+       if (neighbour1_allocated) then
+          if (.not. associated(this%neighbour1(n)%t)) cycle ! not in active subregion
+       end if
 
        call cell_of_pos(this, at%g, at%pos(:,n), i, j, k)
        !Add the atom to this cell
