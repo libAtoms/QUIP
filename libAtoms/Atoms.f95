@@ -4185,7 +4185,6 @@ contains
        density = this%n/(n_occ*volume_per_cell)
 
        ! Sphere of radius "cutoff", assume roughly half neighbours in neighbour1 and half in neighbour2
-       ! Appends are very expensive, so 1.2 is fudge factor to account for large first peak in most crystal RDFs
        nn_guess = int(4.0_dp/3.0_dp*PI*cutoff**3*density)/2
 
        call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), VERBOSE)
