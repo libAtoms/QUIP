@@ -640,7 +640,7 @@ The energy as a function of volume is
    \left[\left(\frac{V_0}{V}\right)^\frac{2}{3}-1\right]^2
    \left[6-4\left(\frac{V_0}{V}\right)^\frac{2}{3}\right]\right\}.
 
-Here are Python functions which implement these two relations::
+Here is a Python function which implements this relation::
 
   def birch_energy(vo,eo,bo,bop,v):
      t = (vo/v)**.6666666666666667 - 1.0
