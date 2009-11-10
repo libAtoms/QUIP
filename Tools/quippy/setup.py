@@ -91,7 +91,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 	chomp();
 	print $_." ".$last_subrt."\n";
     }
-    else { s/^\s*private/!private/; print; }
+    else { s/^\s*private\s*$/!private/; s/^\s*private([ :])/!private$1/; print; }
 }' %s > tmp.out; %s %s tmp.out | grep -v '^#' >  %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
 #}' %s | %s %s - | perl -ne 'print if !/^$/' > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))
         else:
