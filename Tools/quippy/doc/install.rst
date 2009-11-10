@@ -201,8 +201,34 @@ tree to avoid importing the uncompiled version::
    Type "help", "copyright", "credits" or "license" for more information.
    >>> import quippy
 
-If you get an :exc:`ImportError` with a message about unresolved dependancies then
-something went wrong with the linking process. 
+
+Common Problems
+---------------
+
+If, after installing quippy, you get the error shown below when you
+try to import it for the first time, then you are a victim of a bug in
+early versions of Python 2.6.
+
+::
+
+   >>> import quippy
+   Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "/home/ab686/QUIP/Tools/quippy/quippy/__init__.py", line 31, in
+   <module>
+      _quippy.system.verbosity_push(0)
+   RuntimeError: more argument specifiers than keyword list entries
+   (remaining format:'|:_quippy.system.verbosity_push')
+
+The solution is either to compile your own Python from the current svn
+snapshot, or to update numpy to workaround the fix. This can be done
+either by compiling numpy from source from an up-to-date svn snapshot,
+or by applying `the patch manually
+<http://projects.scipy.org/numpy/changeset/6193>`_.
+
+If you get an :exc:`ImportError` with a message about unresolved
+dependancies then something went wrong with the linking process -
+check that all the libraries you're linking against are correct.
 
 
 Running the test suite
