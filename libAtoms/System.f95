@@ -3510,4 +3510,20 @@ contains
   end subroutine DEALLOC_TRACE
 
 
+#ifdef _OPENMP
+  function system_omp_get_num_threads()
+    use omp_lib
+    integer :: system_omp_get_num_threads
+
+    system_omp_get_num_threads = omp_get_num_threads()
+  end function system_omp_get_num_threads
+
+  subroutine system_omp_set_num_threads(threads)
+    use omp_lib
+    integer, intent(in) :: threads
+
+    call omp_set_num_threads(threads)
+  end subroutine system_omp_set_num_threads
+#endif  
+
 end module system_module
