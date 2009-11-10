@@ -162,7 +162,7 @@ subroutine asap_rs_charges(this, at, e, local_e, f, virial, efield)
 
    call system_timer('asap_rs_charges')
 
-   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
+   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -311,7 +311,7 @@ subroutine asap_rs_dipoles(this, at, dip, e, local_e, f, virial, efield)
 
    call system_timer('asap_rs_dipoles')
 
-   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
+   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -621,7 +621,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
       end do
    end do
 
-   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, private_virial, private_e, private_f, private_local_e)
+   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
