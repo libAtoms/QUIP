@@ -367,7 +367,7 @@ try:
             self.source = CInOutput(source, action=INPUT, append=False, zero=zero)
             try:
                self.netcdf_file = netcdf_file(source)
-            except RuntimeError:
+            except (RuntimeError, AssertionError):
                self.netcdf_file = None
          else:
             self.opened = False
