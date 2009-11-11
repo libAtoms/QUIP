@@ -534,9 +534,8 @@ deallocate(dmft)
   do k = 1, nk
 !     call print('q: '//q(:,k)*a/(2*PI))
      print'(a,3f10.5)','q: ',q(:,k)
-     !call print(sqrt(abs(evals(k)))/2.0_dp/PI*1000.0_dp)
      !call print(evecs(:,:,k))
-     print'(6f15.9)',sqrt(abs(evals(:,k)))/2.0_dp/PI*1000.0_dp
+     print'('//at_in%N*3//'f15.9)',sign(sqrt(abs(evals(:,k))),evals(:,k))/2.0_dp/PI*1000.0_dp
   enddo
 
   deallocate(q, evals, evecs)
