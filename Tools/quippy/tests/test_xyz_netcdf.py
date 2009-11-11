@@ -134,6 +134,18 @@ if got_cinoutput:
             a.append(cio.read())
          self.assertEqual(a, list(self.al))      
 
+      def testxyzlowlevel2(self):
+         cio = CInOutput("test.xyz", OUTPUT, append=False)
+         for a in self.al:
+            a.write(cio)
+         cio.close()
+
+         cio = CInOutput("test.xyz")
+         a = []
+         for i in range(5):
+            a.append(cio.read())
+         self.assertEqual(a, list(self.al))      
+
       def testnclowlevel(self):
          cio = CInOutput("test.nc", OUTPUT)
          for a in self.al:

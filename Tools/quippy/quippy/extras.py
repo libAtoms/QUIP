@@ -92,8 +92,10 @@ class Atoms(FortranAtoms):
          
 
    def write(self, dest, format=None, *args, **kwargs):
+      opened = False
       if format is None:
          if isinstance(dest, str):
+            opened = True
             if dest in AtomsWriters:
                format = dest
             else:
@@ -102,10 +104,8 @@ class Atoms(FortranAtoms):
          else:
             format = dest.__class__
 
-      opened = False
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
-         opened = True
 
       res = dest.write(self)
       if opened and hasattr(dest, 'close'):
