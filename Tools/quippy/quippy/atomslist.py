@@ -26,8 +26,10 @@ def read_files(filenames, frame=None, *args, **kwargs):
 def AtomsReader(source, format=None, *args, **kwargs):
    """Generator to read successive frames from source"""
 
+   opened = False
    if format is None:
       if isinstance(source, str):
+         opened = True
          if source in AtomsReaders:
             format = source
          else:
@@ -36,10 +38,8 @@ def AtomsReader(source, format=None, *args, **kwargs):
       else:
          format = source.__class__
 
-   opened = False
    if format in AtomsReaders:
       source = iter(AtomsReaders[format](source, *args, **kwargs))
-      opened = True
 
    for at in source:
       yield at
@@ -232,8 +232,10 @@ class AtomsList(object):
 
    def write(self, dest, format=None, progress=False, progress_width=80, update_interval=None,
              show_value=True, *args, **kwargs):
+      opened = False
       if format is None:
          if isinstance(dest, str):
+            opened = True
             if dest in AtomsWriters:
                format = dest
             else:
@@ -250,10 +252,8 @@ class AtomsList(object):
          else:
             update_interval = update_interval or 100
 
-      opened = False
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
-         opened = True
          
       res = []
       for i, a in fenumerate(self.iteratoms()):
