@@ -1182,6 +1182,7 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
   character(1) :: my_char_a_sep
   logical got_2d
   integer shape_2d(2)
+  integer :: parse_status
 
   my_char_a_sep = optional_default(',',char_a_sep)
 
@@ -1218,9 +1219,14 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
   end if
 
   ! Otherwise, start by splitting value into fields
-  call parse_string(myvalue, ' ', fields, num_fields)
+  call parse_string(myvalue, ' ', fields, num_fields, status=parse_status)
 
-  if (num_fields == 0) then
+  if (parse_status /= 0) then
+      ! parsing failed, treat as string
+      call set_value(this,key,myvalue)
+      status = .true.
+      return
+  else if (num_fields == 0) then
      ! Nothing there, assume it's logical and true
      l = .true.
      call set_value(this, key, l)

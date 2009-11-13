@@ -1236,7 +1236,8 @@ contains
 
     local_line = read_line(this,my_status)
     if(present(status)) status = my_status
-    if(my_status == 0) call parse_string(local_line,delimiters,fields,num_fields)    
+    if(my_status == 0) call parse_string(local_line,delimiters,fields,&
+      num_fields,status=status)
   end subroutine inoutput_parse_line
 
 
@@ -1272,7 +1273,7 @@ contains
 	end do
 	n_quotes = len(quotes)/2
       else
-	call system_abort("parse_string called with matching=.true. but odd number of quotes " // (len(quotes)))
+	call system_abort("split_string called with matching=.true. but odd number of quotes " // (len(quotes)))
       endif
     else
       n_quotes = len(quotes)
@@ -1290,7 +1291,7 @@ contains
       if (i > length) then ! last character
 	if (in_token) then
 	  num_fields = num_fields + 1
-	  if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+	  if (num_fields > size(fields)) call system_abort("split_string ran out of space for fields")
 	  if (tmp_field_last > 0) then
 	    if (t_start <= length) then
 	      fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:length)
@@ -1361,7 +1362,7 @@ contains
         else
           if (in_token) then ! we were in a token before finding this separator
             num_fields = num_fields + 1
-            if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+            if (num_fields > size(fields)) call system_abort("split_string ran out of space for fields")
             ! add string from t_start and tmp_field to fields(num_fields)
             if (tmp_field_last > 0) then
               fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:i-1)
@@ -1410,13 +1411,14 @@ contains
   !% the 'fields' array will contain one field per entry and 'num_fields'
   !% gives the total number of fields. 'status' will be given the error status
   !% (if present) and so can be used to tell if an end-of-file occurred.
-  subroutine parse_string(this, delimiters, fields, num_fields, matching)
+  subroutine parse_string(this, delimiters, fields, num_fields, matching, status)
 
     character(*),               intent(in)    :: this
     character(*),               intent(in)    :: delimiters
     character(*), dimension(:), intent(inout) :: fields
     integer,                    intent(out)   :: num_fields
     logical, optional,          intent(in)    :: matching
+    integer, optional,          intent(out)   :: status
 
     integer                                   :: field_start, length
     integer :: delim_pos
@@ -1427,6 +1429,8 @@ contains
     logical :: do_matching
 
     do_matching = optional_default(.false., matching)
+
+    if (present(status)) status = 0
 
     field_start = 1
     num_fields = 0
@@ -1440,7 +1444,13 @@ contains
 	end do
 	n_delims = len(delimiters)/2
       else
-	call system_abort("parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)))
+        if (present(status)) then 
+          call print("ERROR: parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)), ERROR)
+          status = 1
+          return
+        else
+          call system_abort("parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)))
+        endif
       endif
     else
       n_delims = len(delimiters)
@@ -1457,7 +1467,15 @@ contains
 	else !otherwise, there's one field left to get
 	  if (length >= field_start) then
 	    num_fields = num_fields + 1
-	    if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+	    if (num_fields > size(fields)) then
+              if (present(status)) then
+                call print("ERROR: parse_string ran out of space for fields", ERROR)
+                status = 1
+                return
+              else
+                call system_abort("parse_string ran out of space for fields")
+              endif
+            endif
 	    fields(num_fields) = this(field_start:length)
 	  endif
 	  return
@@ -1469,7 +1487,15 @@ contains
 	! save text in a field, and jump over it
 	if (delim_pos-1 >= field_start) then
 	  num_fields = num_fields + 1
-	  if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+          if (num_fields > size(fields)) then
+            if (present(status)) then
+              call print("ERROR: parse_string ran out of space for fields", ERROR)
+              status = 1
+              return
+            else
+              call system_abort("parse_string ran out of space for fields")
+            endif
+          endif
 	  fields(num_fields) = this(field_start:delim_pos-1)
 	end if
 	field_start = delim_pos
@@ -1486,7 +1512,13 @@ contains
 	if (do_matching) then
 	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), ERROR)
 	  call print("parse_string string='"//this//"'", ERROR)
-	  call system_abort("parse_string failed to find closing delimiter")
+          if (present(status)) then
+            call print("ERROR: parse_string failed to find closing delimiter", ERROR)
+            status = 1
+            return
+          else
+            call system_abort("parse_string failed to find closing delimiter")
+          endif
 	else
 	  delim_pos = length-field_start+2
 	endif
@@ -1494,7 +1526,15 @@ contains
       delim_pos = delim_pos + field_start - 1
       if (delim_pos-1 >= field_start) then
 	num_fields = num_fields + 1
-	if (num_fields > size(fields)) call system_abort("parse_string ran out of space for fields")
+        if (num_fields > size(fields)) then
+          if (present(status)) then
+            call print("ERROR: parse_string ran out of space for fields", ERROR)
+            status = 1
+            return
+          else
+            call system_abort("parse_string ran out of space for fields")
+          endif
+        endif
 	fields(num_fields) = this(field_start:delim_pos-1)
       endif
       field_start = delim_pos+1
