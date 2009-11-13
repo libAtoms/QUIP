@@ -1846,6 +1846,9 @@ CONTAINS
           else
              lsteps = linmin(x, hdir, y, eps, func,data)
           end if
+          if ((oldeps .fne. my_eps_guess) .and. (eps > oldeps*2.0_dp)) then
+            eps = oldeps*2.0_dp
+          endif
           call verbosity_pop()
 	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
 
@@ -2825,7 +2828,7 @@ end subroutine n_linmin
 
 function n_minim(x_i, bothfunc, initial_E, final_E, &
     expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, status) result(N_evals)
-    real(dp) :: x_i(:)
+    real(dp), intent(inout) :: x_i(:)
     interface 
        subroutine bothfunc(x,E,f,my_error,data)
          use system_module
@@ -2836,10 +2839,10 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	 character,optional::data(:)
        end subroutine bothfunc
     end interface 
-    real(dp) initial_E, final_E
-    real(dp) expected_reduction
-    integer max_N_evals
-    real(dp) accuracy
+    real(dp), intent(out) :: initial_E, final_E
+    real(dp), intent(inout) :: expected_reduction
+    integer, intent(in) :: max_N_evals
+    real(dp), intent(in) :: accuracy
     optional :: hook
     integer :: N_evals
     interface 
