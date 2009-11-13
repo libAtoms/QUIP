@@ -21,15 +21,15 @@ function func(x,data)
 
   integer :: i
   type(Atoms) :: at
-  real(dp) :: r_mag, offset
+  real(dp) :: r_mag
 
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minim_mod func needs x(1:3)")
 
   at = transfer(data, at)
+! call print("BOB 00", ERROR)
   call atoms_repoint(at)
-
-  offset = 1 + rad*PI/(2.0_dp*width)
+! call print("JOE 00", ERROR)
 
   func = 0.0_dp
   do i=1, at%N
@@ -49,16 +49,15 @@ function dfunc(x,data)
 
   integer :: i
   type(Atoms) :: at
-  real(dp) :: offset
   real(dp) :: r(3), r_mag
 
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minifind_space_minimeds x(1:3)")
 
   at = transfer(data, at)
+! call print("BOB 10", ERROR)
   call atoms_repoint(at)
-
-  offset = 1 + rad*PI/(2.0_dp*width)
+! call print("JOE 10", ERROR)
 
   dfunc = 0.0_dp
   do i=1, at%N
@@ -71,6 +70,40 @@ function dfunc(x,data)
 
 
 end function dfunc
+
+subroutine bothfunc(x,E,f,my_error,data)
+  real(dp) :: x(:), E, f(:)
+  integer :: my_error
+  character, optional :: data(:)
+
+  integer :: i
+  type(Atoms) :: at
+  real(dp) :: r(3), r_mag
+
+  my_error = 0
+
+  if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
+  if (size(x) /= 3) call system_abort("find_space_minim_mod bothfunc needs x(1:3)")
+
+  at = transfer(data, at)
+! call print("BOB 00", ERROR)
+  call atoms_repoint(at)
+! call print("JOE 00", ERROR)
+
+  f = 0.0_dp
+  E = 0.0_dp
+  do i=1, at%N
+    r = diff_min_image(at, i, x(1:3))
+    r_mag = norm(r)
+    if (r_mag < rad) then
+      E = E + (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag))
+      f = f + ( (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag)) * (-0.1_dp/(rad-r_mag)**2) - (1.0_dp/r_mag**2) * exp(-0.1_dp/(rad-r_mag)) ) * r/r_mag
+    endif
+  end do
+
+  my_error = 0
+
+end subroutine bothfunc
 
 subroutine hook(x,dx,E,done,do_print,data)
   use system_module
@@ -131,14 +164,17 @@ use libatoms_module
 use find_space_minim_mod
 implicit none
 
-  real(dp) :: r(3), prev_r(3)
-  integer :: closest_list(30)
+  real(dp) :: r(3), prev_r(3), orig_r(3)
+  integer :: closest_list(100)
   type(Atoms) :: at, closest_at
   character(len=128) :: arg
   integer :: data_size
   character, allocatable :: data(:)
   integer :: i_r, n_iter
   real(dp) :: prev_val, final_val, prev_rad
+  integer :: i_at
+real(dp) :: vi, vf
+  real(dp) :: expected_red
 
   call system_initialise()
   call read_xyz(at, "stdin")
@@ -148,6 +184,13 @@ implicit none
   read (unit=arg, fmt=*) r(2)
   call get_cmd_arg(3, arg)
   read (unit=arg, fmt=*) r(3)
+
+  do i_at=1, at%N
+    at%pos(1:3,i_at) = at%pos(1:3,i_at) - r(1:3)
+  end do
+  call map_into_cell(at)
+  orig_r = r
+  r = 0.0_dp
 
   call find_closest(at, r, closest_list)
   call select(closest_at, at, list=closest_list)
@@ -166,13 +209,21 @@ implicit none
     prev_val = final_val
     rad = i_r*0.1_dp
     call verbosity_push(SILENT)
-    n_iter = minim(r, func, dfunc, 'cg', 1.0e-6_dp, 1000, 'NR_LINMIN', eps_guess=1e-3_dp, hook=hook, data=data)
+    ! n_iter = minim(r, func, dfunc, 'cg', 1.0e-6_dp, 1000, 'NR_LINMIN', eps_guess=1e-3_dp, hook=hook, data=data)
+    expected_red = 1.0e-2_dp
+    n_iter = n_minim(r, bothfunc, vi, vf, expected_red, 1000, 1e-8_dp, hook=hook, data=data)
     final_val = func(r, data)
     call verbosity_pop()
     call find_closest(at, r, closest_list(1:1))
     call print("rad " // rad// " n_iter " // n_iter // " relaxed val " // func(r, data) // " relaxed r" // r &
       // " radius " // distance_min_image(at,closest_list(1),r))
     i_r = i_r + 1
+  end do
+
+  r = r + orig_r
+  prev_r = prev_r + orig_r
+  do i_at=1, at%N
+    at%pos(1:3,i_at) = at%pos(1:3,i_at) + orig_r(1:3)
   end do
 
   if (i_r == 2) then
