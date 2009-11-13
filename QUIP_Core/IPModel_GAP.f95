@@ -65,6 +65,7 @@ type IPModel_GAP
   real(dp), allocatable :: qw_wf_char_length(:)
   integer, allocatable :: qw_wf_type(:)
   logical, allocatable :: qw_do_weight(:)
+  real(dp) :: energy_difference = 0.0_dp
 
   character(len=256) :: datafile                               !% File name containing the GAP database
   character(len=value_len) :: datafile_coordinates             !% Coordinate system used in GAP database
@@ -149,6 +150,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
                    get_value(my_dictionary, 'qw_do_weight_' // i, this%qw_do_weight(i)))) &
            call system_abort('Did not find qw parameters in')
      enddo
+
+     if (.not. get_value(my_dictionary, 'energy_difference', this%energy_difference)) this%energy_difference = 0.0_dp
 
      this%cutoff = maxval(this%qw_cutoff)
   endif
@@ -374,7 +377,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
         enddo
      endif
 
-     if (present(e) .or. present(local_e)) local_e_in(i) = gp_mean(this%my_gp, qw_in)
+     if (present(e) .or. present(local_e)) local_e_in(i) = gp_mean(this%my_gp, qw_in) + this%energy_difference
 
      if (present(f) .or. present(virial)) then
         do j = 1, 3
@@ -385,7 +388,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
         enddo
 
         do k = 1, atoms_n_neighbours(at, i)
-           l = atoms_neighbour(at, i, k)
+           l = atoms_neighbour(at, i, k, shift = shift)
 
            do j = 1, this%qw_dim
               if (this%qw_type(j) == 1) then
@@ -401,7 +404,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
               f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
 
               if (present(f)) f(j,i) = f(j,i) + f_gp_k
-              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) - f_gp_k * at%pos(:,i)
+              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) - f_gp_k * (at%pos(:,i) - matmul(at%lattice, shift))
            enddo
         enddo
      endif
