@@ -21,7 +21,7 @@ energy = [ a.energy for a in al ]
 frms   = [ sqrt(a.force.norm2().mean()) for a in al ]
 fone   = [ a.force[1,1] for a in al ]
 
-if hasattr(al[0], 'virial'):
+if hasattr(al[1], 'virial'):
    sigma_xx = [ a.virial[1,1]/a.cell_volume() for a in al ]
    sigma_yy = [ a.virial[2,2]/a.cell_volume() for a in al ]
    sigma_zz = [ a.virial[3,3]/a.cell_volume() for a in al ]
@@ -38,7 +38,7 @@ figure(3)
 title('Force (1,1) convergence')
 plot(cutoff, fone, 'x-')
 
-if hasattr(al[0], 'virial'):
+if hasattr(al[1], 'virial'):
    figure(4)
    clf()
    title(r'Stress convergence')
