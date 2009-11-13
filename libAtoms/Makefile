@@ -96,6 +96,9 @@ ${LIBATOMS_C_OBJS}  : %.o : %.c
 md:  libatoms.a md.o
 	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
+xyz2pdb:  libatoms.a xyz2pdb.o
+	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
+
 xyz2xyz: xyz_netcdf.c
 	${CC} ${CFLAGS} $< -o $@ ${LINKOPTS} -lm -DMAIN_PROGRAM
 
