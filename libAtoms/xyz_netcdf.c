@@ -889,6 +889,8 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
   netcdf_check(nc_inq(nc_id, &ndims, &nvars, &ngatts, &unlimdimid));
   newfile = ndims == 0;
 
+  debug("entering write_netcdf nc_id=%d frame=%d\n", nc_id, frame);
+
   if (newfile) { // it's a new file
     // set dimension and variable information
 
@@ -1082,7 +1084,8 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	return 0;
       }
 
-      nc_put_att_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->param_type[i]));
+      if (newfile || newvar)
+	nc_put_att_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->param_type[i]));
 #ifdef NETCDF4
       if (atoms->netcdf4 && (newfile || newvar))
 	netcdf_check(nc_def_var_deflate(nc_id, atoms->param_var_id[i][NETCDF_OUT], shuffle, deflate, deflate_level));
@@ -1264,7 +1267,8 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 		  pname);
 	  return 0;
       }
-      nc_put_att_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->property_type[i]));
+      if (newfile || newvar)
+	nc_put_att_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], "type", NC_INT, 1, &(atoms->property_type[i]));
 #ifdef NETCDF4
       if (atoms->netcdf4 && (newfile || newvar))
 	netcdf_check(nc_def_var_deflate(nc_id, atoms->property_var_id[i][NETCDF_OUT], shuffle, deflate, deflate_level));
@@ -1402,11 +1406,11 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	start2[1] = 0;
 	count2[0] = 1;
 	count2[1] = atoms->n_atom;
-	//netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2, 
-	//			     &atoms->int_data[(atoms->property_start[i])*atoms->n_atom]));	
+	//netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2,
+	//			     &atoms->int_data[(atoms->property_start[i])*atoms->n_atom]));
 	for (j=0; j<atoms->n_atom; j++)
 	  tmpint[j] = property_int(atoms, i, 0, j);
-	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2, 
+	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2,
 				     tmpint));
 
       } else {
@@ -1421,7 +1425,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	  tmpint3[3*j+1] = property_int(atoms, i, 1, j);
 	  tmpint3[3*j+2] = property_int(atoms, i, 2, j);
 	}
-	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], 
+	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT],
 				     start3, count3, tmpint3));
       }
       break;
@@ -1432,11 +1436,11 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	start2[1] = 0;
 	count2[0] = 1;
 	count2[1] = atoms->n_atom;
-	//netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2, 
+	//netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2,
 	//				&atoms->real_data[atoms->property_start[i]*atoms->n_atom]));
 	for (j=0; j<atoms->n_atom; j++)
 	  tmpreal[j] = property_real(atoms, i, 0, j);
-	netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2, 
+	netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], start2, count2,
 					tmpreal));
 
       } else {
@@ -1451,7 +1455,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	  tmpreal3[3*j+1] = property_real(atoms, i, 1, j);
 	  tmpreal3[3*j+2] = property_real(atoms, i, 2, j);
 	}
-	netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT], 
+	netcdf_check(nc_put_vara_double(nc_id, atoms->property_var_id[i][NETCDF_OUT],
 				     start3, count3, tmpreal3));
       }
       break;
@@ -1495,14 +1499,14 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	  tmpint3[3*j+1] = property_logical(atoms, i, 1, j);
 	  tmpint3[3*j+2] = property_logical(atoms, i, 2, j);
 	}
-	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT], 
+	netcdf_check(nc_put_vara_int(nc_id, atoms->property_var_id[i][NETCDF_OUT],
 				     start3, count3, tmpint3));
 
       }
       break;
 
     default:
-      fprintf(stderr,"Unknown property type %d for property %s\n", atoms->property_type[i], 
+      fprintf(stderr,"Unknown property type %d for property %s\n", atoms->property_type[i],
 	      atoms->property_name[i]);
       return 0;
     }
@@ -3280,7 +3284,7 @@ int main (int argc, char **argv)
 	linebuffer[0] = '\0';
 	if (fflag) sprintf(linebuffer, "frame %d ", i+offset);
 	if (nflag) {
-	  sprintf(tmpbuf, "n_atom %ld ", at.n_atom);
+	  sprintf(tmpbuf, "n_atom %d ", at.n_atom);
 	  strcat(linebuffer, tmpbuf);
 	}
 	  
