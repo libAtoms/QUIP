@@ -117,7 +117,7 @@ if not already_patched:
       else:
          return '-l' + lib
 
-   import numpy.distutils.fcompiler.intel
-   numpy.distutils.fcompiler.intel.BaseIntelFCompiler.library_option = library_option
+   import numpy.distutils.fcompiler
+   numpy.distutils.fcompiler.FCompiler.library_option = library_option
 
    
