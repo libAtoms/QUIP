@@ -201,8 +201,10 @@ type_map = {}
 
 include_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-I')]
 library_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-L')]
-libraries = [s[2:] for s in sys.argv if s.startswith('-l')]
-sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l')]
+libraries = [s for s in sys.argv if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl')]
+libraries = [ s.startswith('-l') and s[2:] or s for s in libraries ]
+sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l') and not s == '-Bstatic'
+             and not s == '-Bdynamic' and not s.startswith('-Wl')]
 
 # Silently ignore framework options
 cp = []
@@ -383,12 +385,6 @@ if do_quippy_extension:
                 'define_macros': macros
                 }
 
-    lapack_opt = get_info('lapack_opt')
-    if not lapack_opt:
-        print 'No lapack_opt resources found in system'
-        sys.exit(1)
-    dict_append(ext_args,**lapack_opt)
-
     quippy_ext = Extension(**ext_args)
 
     exts = [arraydata_ext, quippy_ext]
@@ -422,4 +418,4 @@ setup(name='quippy',
       description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',
-      url='http://www.libatoms.org')
+      url='http://www.jrkermode.co.uk/quippy')

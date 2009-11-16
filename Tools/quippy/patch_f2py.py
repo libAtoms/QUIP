@@ -111,4 +111,11 @@ if not already_patched:
    \t\t#varname# = (#ctype# *)(capi_#varname#_tmp->data);
    """})
 
+   def library_option(self, lib):
+      if lib[0] == '-':
+         return lib
+      else:
+         return '-l' + lib
 
+   import numpy.distutils.fcompiler.intel
+   numpy.distutils.fcompiler.intel.IntelEM64TFCompiler.library_option = library_option
