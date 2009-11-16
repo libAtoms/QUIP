@@ -5,8 +5,8 @@ F90 = gfortran -m32
 F95 = gfortran -m32
 CC = gcc -m32
 CPLUSPLUS = g++ -m32
-LINKER = gfortran -m32
-#LINKER = gfortran -m32 -static-libgfortran -static-libgcc
+#LINKER = gfortran -m32
+LINKER = gfortran -m32 -static #-static-libgfortran -static-libgcc
 
 DEFAULT_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 DEFAULT_OPTIM = -O3
@@ -19,16 +19,10 @@ CFLAGS +=  -fPIC
 MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
 
-ATOMEYE_LIBS = -L/usr/lib  -Wl,-Bstatic -lm \
-   -lutil  -Wl,-Bdynamic -lXpm -lXext -lX11 -ljpeg -lpthread   \
-    -Wl,-Bstatic -lreadline -lpng  -lncurses -lz -L/home/jk2/Code/netcdf-32/lib -lnetcdf   -L/home/jk2/Code/hdf5-32/lib -lhdf5_hl -lhdf5 \
-   -L/home/jk2/Code/atlas-32/lib -llapack -lf77blas -lcblas -latlas -Wl,-Bdynamic
-
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
 QUIPPY_CFLAGS =
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_HAVE_ATOMEYE = 1
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 
