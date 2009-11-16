@@ -119,3 +119,6 @@ if not already_patched:
 
    import numpy.distutils.fcompiler.intel
    numpy.distutils.fcompiler.intel.IntelEM64TFCompiler.library_option = library_option
+   numpy.distutils.fcompiler.intel.IntelFCompiler.library_option = library_option
+
+   
