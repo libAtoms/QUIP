@@ -79,7 +79,11 @@ module cp2k_driver_module
   use structures_module,       only: find_motif
   use system_module,           only: dp, inoutput, initialise, finalise, &
                                      INPUT, OUTPUT, INOUT, &
-                                     system_timer, system_command, system_abort, &
+                                     system_timer, &
+                                     system_command, &
+#ifndef HAVE_QUIPPY
+                                     system_abort, &
+#endif                               
                                      optional_default, &
                                      print, print_title, &
                                      string_to_int, string_to_real, round, &
@@ -101,20 +105,19 @@ module cp2k_driver_module
 !  use quantumselection_module
   implicit none
 
-  private :: &
-            param_initialise, &
-            finalise, &
-            construct_buffer_RADIUS, &
-            get_qm_list_array, &
-            get_qm_list_int, &
-            get_qm_list_int_rec, &
-            read_cp2k_forces, &
-            read_convert_back_pos, &
-            real_feq2, &
-            matrix_feq2, &
-            write_cp2k_input_files, &
-            write_cp2k_input_file
-!            combine_forces, &
+  private :: param_initialise
+  private :: finalise
+  private :: construct_buffer_RADIUS
+  private :: get_qm_list_array
+  private :: get_qm_list_int
+  private :: get_qm_list_int_rec
+  private :: read_cp2k_forces
+  private :: read_convert_back_pos
+  private :: real_feq2
+  private :: matrix_feq2
+  private :: write_cp2k_input_files
+  private :: write_cp2k_input_f
+! private :: combine_forces
 
   public :: create_centred_qmcore, &
             extend_qmlist, &
