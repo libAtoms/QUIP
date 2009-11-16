@@ -11,5 +11,8 @@ For more details, see documentation in doc/ subdirectory, which is in
 reStructredText format.
 
 If you have sphinx (http://sphinx.pocoo.org) installed, 'make html'
-from 'doc/' will build HTML documentation.
+from 'doc/' will build HTML documentation, 
+
+The documentation is also available online at
+<http://www.jrkermode.co.uk/quippy>.
 
