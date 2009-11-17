@@ -3725,7 +3725,7 @@ subroutine tbsystem_initialise_kpoints(this, args_str, param_str, mpi_obj, from_
     call finalise(params)
   else
     use_k_density = .false.
-    use_k_density = .false.
+    use_k_density_once = .false.
     k_mesh = (/ -1, -1, -1 /)
     k_use_mp = .true.
   endif
