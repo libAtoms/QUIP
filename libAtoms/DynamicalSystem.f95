@@ -1611,16 +1611,16 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     
-   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force)
+   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
      real(dp),              intent(in)     :: f(:,:)
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
-     logical, optional,     intent(in)     :: store_constraint_force
+     logical, optional,     intent(in)     :: store_constraint_force, do_calc_dists
 
-     logical                               :: do_parallel, do_store
+     logical                               :: do_parallel, do_store, my_do_calc_dists
      integer                               :: i, j, g, n, ntherm
      real(dp), allocatable                 :: therm_ndof(:)
 
@@ -1632,6 +1632,7 @@ contains
      
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
+     my_do_calc_dists = optional_default(.true., do_calc_dists)
      call check_size('Force',f,(/3,this%N/),'advance_verlet1')
 
      this%dW = 0.0_dp
@@ -1873,7 +1874,7 @@ contains
      end if
 #endif
 
-     call calc_dists(this%atoms,parallel=do_parallel)
+     if (my_do_calc_dists) call calc_dists(this%atoms,parallel=do_parallel)
 
    end subroutine advance_verlet1
 
@@ -2106,14 +2107,14 @@ contains
 
    !% Calls advance_verlet2 followed by advance_verlet1. Outside this routine the
    !% velocities will be half-stepped.
-   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force)
+   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
 
      type(dynamicalsystem), intent(inout) :: ds
      real(dp),              intent(in)    :: dt
      real(dp),              intent(in)    :: f(:,:)
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)    :: parallel
-     logical, optional,     intent(in)    :: store_constraint_force
+     logical, optional,     intent(in)    :: store_constraint_force, do_calc_dists
      logical, save                        :: first_call = .true.
 
      if (first_call) then
@@ -2123,7 +2124,7 @@ contains
         first_call = .false.
      end if
      call advance_verlet2(ds,dt,f,virial,parallel,store_constraint_force)
-     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force)
+     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
 
    end subroutine advance_verlet
 
