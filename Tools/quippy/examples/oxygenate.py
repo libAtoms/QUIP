@@ -6,11 +6,10 @@ def oxygenate(at):
    at.calc_connect()
 
    add_pos = []
+   rem_list = []
    
    for i in frange(at.n):
-
-      # Only consider silicon atoms
-      if at.z[i] != 14: continue
+      if at.z[i] != 14: continue # Only consider silicon atoms
 
       neighb = at.neighbours[i]
       
@@ -48,11 +47,17 @@ def oxygenate(at):
 
          add_pos.append(o1)
          add_pos.append(o2)
+      elif len(neighb) <= 1:
+         rem_list.append(i)
+         
 
    if len(add_pos) > 0:
       add_z = [8]*len(add_pos)
       add_pos = farray(add_pos)
       at.add_atoms(add_pos, add_z)
+
+   if len(rem_list) > 0:
+      at.remove_atoms(rem_list)
 
    at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
    
