@@ -1,6 +1,11 @@
+#!/usr/bin/env python
+
 from quippy import *
+import sys
 
 def oxygenate(at):
+   """Add oxygen atoms to undercoorindated silicons to complete tetrahedra."""
+   
    saved_cutoff, saved_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
    at.set_cutoff_factor(1.2)
    at.calc_connect()
@@ -15,6 +20,7 @@ def oxygenate(at):
       
       if len(neighb) == 4:
          continue
+      
       elif len(neighb) == 3:
          # add single O atom to complete SiO4 tetrahedron
          
@@ -29,6 +35,7 @@ def oxygenate(at):
          if dot(n,neighb[1].diff) > 0.0: n = -n
 
          add_pos.append(at.pos[:,i]+length*n)
+         
       elif len(neighb) == 2:
          # add two O atoms to complete SiO4 tetrahedron
 
@@ -61,3 +68,14 @@ def oxygenate(at):
 
    at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
    
+
+if __name__ == '__main__':
+
+   if len(sys.argv[1:]) != 2:
+      print 'Usage: oxygenate.py <infile> <outfile>'
+      sys.exit(1)
+      
+   a = Atoms(sys.argv[1])
+   oxygenate(a)
+
+   a.write(sys.argv[2])
