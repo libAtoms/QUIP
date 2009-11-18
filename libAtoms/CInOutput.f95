@@ -408,6 +408,10 @@ contains
     ! get C routine to read directly into final Atoms structure to save copying.
     call allocate(data, this%n_int, this%n_real, this%n_str, this%n_logical, int(this%n_atom))
     call append(data, blank_rows=int(this%n_atom))
+    this%lattice = 0.0_dp
+    this%lattice(1,1) = 1.0_dp
+    this%lattice(2,2) = 1.0_dp
+    this%lattice(3,3) = 1.0_dp
     call initialise(at, int(this%n_atom), transpose(this%lattice), data, properties)
 
     int_ptr = C_NULL_PTR
