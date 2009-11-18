@@ -13,12 +13,62 @@ else:
    import hashlib
    got_hashlib = True
 
-import numpy, os
+import numpy, os, weakref
 from farray import *
 
 from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput
 from quippy import AtomsReaders, AtomsWriters
 
+class NeighbourInfo(object):
+   __slots__ = ('j','distance','diff','cosines','shift')
+
+   def __init__(self, j, distance, diff, cosines, shift):
+      self.j = j
+      self.distance = float(distance)
+      self.diff = diff.copy()
+      self.cosines = cosines.copy()
+      self.shift = shift.copy()
+
+   def __int__(self):
+      return self.j
+
+   def __repr__(self):
+      return 'NeighbourInfo(j=%d, distance=%f, diff=%s, cosines=%s, shift=%s)' % (self.j, self.distance, self.diff, self.cosines, self.shift)
+
+class Neighbours(object):
+
+   def __init__(self, at):
+      self.atref = weakref.ref(at)
+
+   def __repr__(self):
+      return 'Neighbours(at=%s)' % self.atref()
+
+   def __iter__(self):
+      return self.iterneighbours()
+
+   def iterneighbours(self):
+      at = self.atref()
+
+      for i in frange(at.n):
+         yield self[i]
+
+   def __getitem__(self, i):
+
+      at = self.atref()
+      if not at.connect.initialised:
+         at.calc_connect()
+      
+      distance = farray(0.0)
+      diff = fzeros(3)
+      cosines = fzeros(3)
+      shift = fzeros(3,dtype=int)
+
+      res = []
+      for n in frange(at.n_neighbours(i)):
+         j = at.neighbour(i, n, distance, diff, cosines, shift)
+         res.append(NeighbourInfo(j,distance,diff,cosines,shift))
+
+      return farray(res) # to give 1-based indexing
 
 class Atoms(FortranAtoms):
    """
@@ -63,6 +113,7 @@ class Atoms(FortranAtoms):
             properties = Dictionary(properties)
          FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
                                data=data, properties=properties, params=params)
+         self.neighbours = Neighbours(self)
 
    @classmethod
    def read(cls, source, format=None, *args, **kwargs):
@@ -271,7 +322,7 @@ class Atoms(FortranAtoms):
 
    def __ne__(self, other):
       return not self.__eq__(other)
-      
+
 
 from dictmixin import DictMixin, ParamReaderMixin
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):

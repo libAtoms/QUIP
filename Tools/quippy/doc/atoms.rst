@@ -134,6 +134,25 @@
       created view arrays such as `pos`, `z`, `velo`, etc.
 
 
+   .. attribute:: neighbours
+
+      A :class:`Neighbours` object, which should be indexed with an
+      integer `i` from 1 to `at.n` to give an array of
+      :class:`NeighbourInfo` objects, each of which corresponds to a
+      particular pair `(i,j)`. If connectivity information has not
+      already been calculated :meth:`calc_connect` will be called
+      automatically. The code to loop over the neighbours of all atoms
+      is quite idiomatic::
+      
+        for i in frange(at.n):
+	    for neighb in at.neighbours[i]:
+		print (neighb.j, neighb.distance, neighb.diff, neighb.cosines, neighb.shift)
+
+      Note that this attribute provides a more Pythonic interface to
+      the atomic connectivity information than the wrapped Fortran
+      functions :meth:`n_neighbours` and :meth:`neighbour` described
+      below.
+
    .. method:: read(source[, format, *args, **kwargs])
 
       Class method to read an :class:`Atoms` object from `source`. If
