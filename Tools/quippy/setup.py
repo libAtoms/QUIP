@@ -399,7 +399,6 @@ if do_quippy_extension:
                     'define_macros': macros
                     }
 
-        dict_append(ext_args, **lapack_opt)
         atomeye_ext = Extension(**ext_args)
         exts.append(atomeye_ext)
 else:
