@@ -1,9 +1,7 @@
 from quippy import *
 
 def oxygenate(at):
-
-   # should save cutoff here ...
-
+   saved_cutoff, saved_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
    at.set_cutoff_factor(1.2)
    at.calc_connect()
 
@@ -51,9 +49,10 @@ def oxygenate(at):
          add_pos.append(o1)
          add_pos.append(o2)
 
-   add_z = [8]*len(add_pos)
-   add_pos = farray(add_pos)
-   at.add_atoms(add_pos, add_z)
+   if len(add_pos) > 0:
+      add_z = [8]*len(add_pos)
+      add_pos = farray(add_pos)
+      at.add_atoms(add_pos, add_z)
 
-
-   # ... and restore it here
+   at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
+   
