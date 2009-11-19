@@ -93,7 +93,7 @@ contains
 
 
   !% Execute one Breadth-First-Search move on the atomic connectivity graph.
-  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, alt_connect)
+  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, alt_connect, property)
     type(Atoms),        intent(in), target      :: this  !% The atoms structure to perform the step on.
     type(Table),        intent(in)      :: input !% Table with intsize 4. First integer column is indices of atoms
                                                  !% already in the region, next 3 are shifts.
@@ -111,6 +111,7 @@ contains
     !% minimum shift image of those found will be included. Default is false.
 
     type(Connection), intent(in), optional, target :: alt_connect
+    integer, pointer, intent(in), optional:: property(:)
 
     !local
     logical                             :: do_nneighb_only, do_min_images_only
@@ -157,6 +158,10 @@ contains
           if (find(output,(/j,ishift+jshift/)) > 0) cycle
 
           if (do_nneighb_only .and. .not. is_nearest_neighbour(this, i, n, alt_connect=use_connect)) cycle
+
+          if (present(property)) then
+             if (.not. property(j)) cycle
+          endif
 
           ! Everything checks out ok, so add j to the output table
           ! with correct shift
@@ -660,38 +665,38 @@ contains
        call print("create_cluster: cluster list:", NERD)
        call print(cluster_info, NERD)
 
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-       !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
-       !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
-       !x and taking all its neighbors IN if it has not only single bonds                                      x
-       !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
-       !x                             \OH  \NH                                                                 x
-       !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-       !Go through the cluster atoms and find cut bonds. If the bond is to
-       !hydrogen, then include the hydrogen in the cluster list (since AMBER
-       !doesn't cap a bond to hydrogen with a link atom)
+    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
+    !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
+    !x and taking all its neighbors IN if it has not only single bonds                                      x
+    !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
+    !x                             \OH  \NH                                                                 x
+    !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
+    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    !Go through the cluster atoms and find cut bonds. If the bond is to
+    !hydrogen, then include the hydrogen in the cluster list (since AMBER
+    !doesn't cap a bond to hydrogen with a link atom)
 
-       if(do_termination_clash_check) then
+   if(do_termination_clash_check) then
     
-          call table_allocate(extra_atoms,6,4,1,0,100)
-          !call table_allocate(to_delete,6,4,1,0,100)
-          call table_allocate(buffer,6,4,1,0,100)
-          call table_allocate(extra_atoms,6,4,1,0,100)
-          call table_allocate(extra_atoms,6,4,1,0,100)
-      
-          more_atoms = .true.
-          call Print('create_cluster_info: checking for hydrogens',NERD)
-          do while(more_atoms)
-      
-             more_atoms = .false.
-      
-             do m = 1, cluster_info%N
-      
-                j = cluster_info%int(1,m)
-                call wipe(centre)
-                jshift = cluster_info%int(2:4,m)
-                call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
+    call table_allocate(extra_atoms,6,4,1,0,100)
+    !call table_allocate(to_delete,6,4,1,0,100)
+    call table_allocate(buffer,6,4,1,0,100)
+    call table_allocate(extra_atoms,6,4,1,0,100)
+    call table_allocate(extra_atoms,6,4,1,0,100)
+
+    more_atoms = .true.
+    call Print('create_cluster_info: checking for hydrogens',NERD)
+    do while(more_atoms)
+
+       more_atoms = .false.
+
+       do m = 1, cluster_info%N
+
+          j = cluster_info%int(1,m)
+          call wipe(centre)
+          jshift = cluster_info%int(2:4,m)
+          call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
 !!!!!!!                call append(centre, (/j,jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), &
 !!!!!!!                                    (/ hybrid_mark_name(hybrid_mark(j)) /) )
 
@@ -721,7 +726,6 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
 
        !Add any extra atoms to the cluster list then wipe it
        call append(cluster_info,extra_atoms)
-
        call wipe(extra_atoms)
 
     end do
@@ -785,10 +789,10 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
                 l2 = (this%Z(q) == 1)
                 if(l1 .AND. l2) call append(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
               end if
-            end do
-          end do
-       end do
-       n = n + 1
+             end do
+           end do
+         end do
+         n = n + 1
     end do
 
     !If in >C=O O is out, include it. Do it also for C=N-C motif for N.
@@ -1214,7 +1218,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
                       exit
                    end if
                 enddo
-             end do
+              end do
              if (in_outer_layer) then
                 hybrid_mark(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
                 cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
@@ -1524,7 +1528,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        call system_abort('create_hybrid_weights: atoms structure has no "hybrid_mark" property')
 
     ! Add first marked atom to activelist. shifts will be relative to this atom
-    first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK)
+    first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK) 
 
     n_region1 = count(hybrid_mark == HYBRID_ACTIVE_MARK)
     list_1 = 0  
@@ -1537,15 +1541,15 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        call wipe(activelist)
        call wipe(nextlist)    
   
-       call append(activelist, (/first_active,0,0,0/))
-       call append(currentlist, activelist)
-       weight_region1(first_active) = 1.0_dp
-   
-       if (distance_ramp) then
-          if (has_property(at, 'mass')) then
-             core_mass = at%mass(first_active)
-          else
-             core_mass = ElementMass(at%Z(first_active))
+    call append(activelist, (/first_active,0,0,0/))
+    call append(currentlist, activelist)
+    weight_region1(first_active) = 1.0_dp
+
+    if (distance_ramp) then
+       if (has_property(at, 'mass')) then
+          core_mass = at%mass(first_active)
+       else
+          core_mass = ElementMass(at%Z(first_active))
           end if
           core_CoM =core_mass*at%pos(:,first_active) ! we're taking this as reference atom so no shift needed here
        end if
@@ -1574,7 +1578,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
           if (do_hysteretic_connect) then
             call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
           else
-            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+            call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, property =hybrid_mark)
           endif
           hybrid_number = 0 
           do j=1,nextlist%N
@@ -1600,6 +1604,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
           call append(currentlist, nextlist)
        enddo
        list_1 = list_1 + activelist%N
+       call print('added '//activelist%N//' atoms to the list')
        call append(total_embedlist, activelist)    
    
        if (distance_ramp) core_CoM = core_CoM/core_mass
@@ -1652,6 +1657,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
                 exit
              endif
           enddo
+          call print('new first active is'//first_active)  !CHIARA
        endif
    
     enddo
@@ -1708,7 +1714,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
 	  if (do_hysteretic_connect) then
 	    call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, alt_connect=at%hysteretic_connect)
 	  else
-	    call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+	    call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, property =hybrid_mark)
 	  endif
           do j=1,nextlist%N
              jj = nextlist%int(1,j)
@@ -1916,7 +1922,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     
       hybrid_number = 1 
       do while (hybrid_number .ne. 0) 
-       call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only)
+       call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, property =hybrid_mark)
 
        hybrid_number = 0 
        do j=1,nextlist%N
