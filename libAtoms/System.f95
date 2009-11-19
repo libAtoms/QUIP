@@ -725,6 +725,11 @@ module system_module
     module procedure inoutput_read_line
   end interface read_line
 
+  private :: inoutput_read_file
+  interface read_file
+    module procedure inoutput_read_file
+  end interface read_file
+
   private :: inoutput_parse_line
   interface parse_line
      module procedure inoutput_parse_line
@@ -1225,6 +1230,72 @@ contains
 
   end function inoutput_read_line
 
+  subroutine inoutput_read_file(this,line_array, n_lines, status)
+    type(Inoutput), intent(in) :: this
+    character(len=*), allocatable, intent(inout) :: line_array(:)
+    integer, intent(out) :: n_lines
+    integer, optional, intent(out) :: status
+
+    integer my_status
+    integer :: line_no
+
+    line_no = 0
+    my_status = 0
+
+    do while (my_status == 0) 
+      line_no = line_no + 1
+      if (line_no > size(line_array)) call extend_char_array(line_array, 1.5_dp, 10)
+      line_array(line_no) = read_line(this, my_status)
+    end do
+
+    n_lines = line_no - 1
+
+    if (my_status > 0) then
+      if (present(status)) then
+	status = my_status
+	return
+      else
+	call system_abort("ERROR inoutput_read_file reading file '"//trim(adjustl(this%filename))//"' status " // my_status)
+      endif
+    endif
+
+  end subroutine inoutput_read_file
+
+  subroutine extend_char_array(line_array, factor, minlen)
+    character(len=*), allocatable, intent(inout) :: line_array(:)
+    real(dp), intent(in), optional :: factor
+    integer, intent(in), optional :: minlen
+
+    real(dp) :: my_factor
+    integer :: my_minlen
+    character, allocatable :: t_line_array(:,:)
+    integer old_n, i, j
+
+    my_minlen = optional_default(10, minlen)
+    my_factor = optional_default(1.5_dp, factor)
+
+    if (.not. allocated(line_array)) then
+      allocate(line_array(my_minlen))
+      return
+    endif
+
+    old_n = size(line_array)
+    allocate(t_line_array(len(line_array(1)), old_n))
+    do i=1, old_n
+      do j=1, len(line_array(1))
+	t_line_array(j,i) = line_array(i)(j:j)
+      end do
+    end do
+    deallocate(line_array)
+    allocate(line_array(int(old_n*my_factor)))
+    do i=1, old_n
+      do j=1, len(line_array(1))
+	line_array(i)(j:j) = t_line_array(j,i)
+      end do
+    end do
+    deallocate(t_line_array)
+  end subroutine extend_char_array
+
   !% Call parse_string on the next line from a file
   subroutine inoutput_parse_line(this,delimiters,fields,num_fields,status)
     type(inoutput),             intent(in)    :: this
@@ -1253,7 +1324,7 @@ contains
     integer, intent(out) :: num_fields
     logical, intent(in), optional :: matching
 
-    integer :: i, last_start, length
+    integer :: i, length
     integer :: n_quotes
     character(len=len(quotes)) :: opening_quotes, closing_quotes
     integer :: opening_quote_index, closing_quote_pos
