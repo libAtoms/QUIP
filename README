@@ -16,6 +16,10 @@ define an environmental variable QUIP_ARCH, e.g.
    Note how the `make' command has to be executed from the top level
    directory, even for targets of subdirectories. 
 
+   Most useful progname include
+    eval : evaluate energies, forces, minimize energy etc
+    md : basic md program
+
 The Makefile will create a build directory, build.${QUIP_ARCH}, and all
 the building happen there. First it will ask you some questions about
 where you keep libraries and other stuff, if you don't use something it
