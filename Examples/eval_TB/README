@@ -1,0 +1,11 @@
+Input file (geometry): dia.xyz
+Input file (parameters): tightbind.parms.NRL_TB.C.xml
+
+eval:
+  evaluate energy, force, virial
+  relax w.r.t. forces, virial
+
+Example run
+  ./eval E F relax init_args='{TB NRL-TB}' param_file=tightbind.parms.NRL_TB.C.xml < dia.xyz 
+For brief usage message, do:
+  ./eval
