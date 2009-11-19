@@ -1,11 +1,11 @@
 Input file (geometry): dia.xyz
-Input file (parameters): tightbind.parms.NRL_TB.C.xml
+Input file (parameters): quip_params.xml
 
 eval:
   evaluate energy, force, virial
   relax w.r.t. forces, virial
 
 Example run
-  ../../build.${QUIP_ARCH}/eval E F relax init_args='{TB NRL-TB}' param_file=tightbind.parms.NRL_TB.C.xml < dia.xyz 
+  ../../build.${QUIP_ARCH}/eval E F relax init_args='{TB NRL-TB}' param_file=quip_params.xml < dia.xyz 
 For brief usage message, do:
   ../../build.${QUIP_ARCH}/eval
