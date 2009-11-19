@@ -1,3 +1,12 @@
+<quip_params>
+
+<KPoints N="4"> 
+<point weight="1.0"> 0.25 0.25 0.25 </point>
+<point weight="1.0"> -0.25 0.25 0.25 </point>
+<point weight="1.0"> 0.25 -0.25 0.25 </point>
+<point weight="1.0"> -0.25 -0.25 0.25 </point>
+</KPoints>
+
 <NRL_TB_params header_str="NN00001" label="Carbon">
 <defaults fermi_T="0.001"/>
   <header is_orthogonal="F" is_magnetic="F" has_pair_repulsion="F" overlap_zero_limit="T" force_harrison_signs="F"/>
@@ -35,3 +44,5 @@
       </S_coeff>
   </per_pair_data>
 </NRL_TB_params>
+
+</quip_params>
