@@ -60,7 +60,7 @@ contains
       run_type = ""
       call param_register(cli, "Run_Type", PARAM_MANDATORY, run_type)
       cp2k_template_file = ""
-      call param_register(cli, "cp2k_template_file", "cp2k_template", cp2k_template_file)
+      call param_register(cli, "cp2k_template_file", "cp2k_input.template", cp2k_template_file)
       psf_print = ""
       call param_register(cli, "PSF_print", "NO_PSF", psf_print)
       cp2k_program = ""
