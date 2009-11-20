@@ -111,7 +111,7 @@ contains
     !% minimum shift image of those found will be included. Default is false.
 
     type(Connection), intent(in), optional, target :: alt_connect
-    integer, pointer, intent(in), optional:: property(:)
+    integer, intent(in), optional:: property(:)
 
     !local
     logical                             :: do_nneighb_only, do_min_images_only
@@ -160,7 +160,7 @@ contains
           if (do_nneighb_only .and. .not. is_nearest_neighbour(this, i, n, alt_connect=use_connect)) cycle
 
           if (present(property)) then
-             if (.not. property(j)) cycle
+             if (property(j) == 0) cycle
           endif
 
           ! Everything checks out ok, so add j to the output table
