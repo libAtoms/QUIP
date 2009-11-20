@@ -116,7 +116,7 @@ module cp2k_driver_module
   private :: real_feq2
   private :: matrix_feq2
   private :: write_cp2k_input_files
-  private :: write_cp2k_input_f
+  private :: write_cp2k_input_file
 ! private :: combine_forces
 
   public :: create_centred_qmcore, &
