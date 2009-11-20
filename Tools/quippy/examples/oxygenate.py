@@ -3,7 +3,7 @@
 from quippy import *
 import sys
 
-def oxygenate(at):
+def oxygenate(at, edge_only=False):
    """Add oxygen atoms to undercoorindated silicons to complete tetrahedra."""
    
    saved_cutoff, saved_use_uniform_cutoff = at.cutoff, at.use_uniform_cutoff
@@ -11,11 +11,13 @@ def oxygenate(at):
    at.calc_connect()
 
    add_pos = []
+   add_i = []
    rem_list = []
    
    for i in frange(at.n):
       if at.z[i] != 14: continue # Only consider silicon atoms
-
+      if edge_only and at.edge_mask[i] != 1: continue  
+	
       neighb = at.neighbours[i]
       
       if len(neighb) == 4:
@@ -35,6 +37,8 @@ def oxygenate(at):
          if dot(n,neighb[1].diff) > 0.0: n = -n
 
          add_pos.append(at.pos[:,i]+length*n)
+         add_i.append(i)
+         at.move_mask[at.n] = at.move_mask[i]
          
       elif len(neighb) == 2:
          # add two O atoms to complete SiO4 tetrahedron
@@ -54,6 +58,8 @@ def oxygenate(at):
 
          add_pos.append(o1)
          add_pos.append(o2)
+         add_i.append(i)
+         add_i.append(i)
       elif len(neighb) <= 1:
          rem_list.append(i)
          
@@ -61,7 +67,14 @@ def oxygenate(at):
    if len(add_pos) > 0:
       add_z = [8]*len(add_pos)
       add_pos = farray(add_pos)
+
+      nat = at.n
       at.add_atoms(add_pos, add_z)
+
+      for i in frange(nat+1, nat+add_pos.shape[1]):
+         source = add_i.pop(0)
+         at.move_mask[i] = at.move_mask[source]
+         at.edge_mask[i] = at.edge_mask[source]
 
    if len(rem_list) > 0:
       at.remove_atoms(rem_list)
