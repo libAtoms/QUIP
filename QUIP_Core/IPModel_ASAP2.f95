@@ -911,8 +911,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
          diff_old = diff
          npol = npol + 1
-         if (npol >= this%maxipol) &
-              call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+         if (npol >= this%maxipol)  then
+            call write(at, 'ipmodel_asap_polarisation_not_converged.xyz')
+            call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+         endif
 
       end do
       call system_timer('asap_self_consistent_dipoles')
