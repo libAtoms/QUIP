@@ -485,7 +485,7 @@ real(dp), pointer :: pot_p(:)
           call calc_topology(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
           !call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type=Run_Type_1,intrares_impropers=intrares_impropers)
-          call write_psf_file(ds%atoms,psf_file='psf.CHARMM.psf',run_type_string=trim(Run_Type1),intrares_impropers=intrares_impropers)
+          call write_psf_file(ds%atoms,psf_file='quip_cp2k.psf',run_type_string=trim(Run_Type1),intrares_impropers=intrares_impropers)
           ds%atoms%nneightol = temp
 !       endif
     endif
