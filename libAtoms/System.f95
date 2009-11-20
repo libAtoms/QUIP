@@ -2641,7 +2641,7 @@ contains
            & int(sign(0.5_dp,real(mainlog%default_real_precision,dp)-0.5_dp)+0.5_dp) &
            & + max(0,mainlog%default_real_precision)
 
-#ifdef __GFORTRAN__
+#ifdef GFORTRAN_ZERO_HACK
        !gfortran hack - 0.0000... is printed as .00000000
        if (r == 0.0) len = len - 1
 #endif
