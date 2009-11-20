@@ -902,8 +902,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
             call print(line, VERBOSE)
          end if
 
-         if (diff > difftol) &
-              call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
+         if (diff > difftol) then
+            call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
+            call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
+         end if
       
          if (abs(diff - diff_old) < this%tolpol) exit
 
