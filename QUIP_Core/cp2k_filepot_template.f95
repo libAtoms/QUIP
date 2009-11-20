@@ -38,7 +38,7 @@ program cp2k_filepot_template
 
     !call CP2K
     allocate(f0(3,my_atoms%N))
-    call go_cp2k_template(at=my_atoms, f=f0, e=energy, args_str=args_str)
+    call do_cp2k_calc(at=my_atoms, f=f0, e=energy, args_str=args_str)
     !momentum conservation
     call sum0(f0)
 

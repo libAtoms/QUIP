@@ -4,12 +4,12 @@ implicit none
 
 private
 
-public :: go_cp2k_template
+public :: do_cp2k_calc
 
 
 contains
 
-  subroutine go_cp2k_template(at, f, e, args_str)
+  subroutine do_cp2k_calc(at, f, e, args_str)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
     character(len=*), intent(in) :: args_str
@@ -25,10 +25,8 @@ contains
     character(len=128) :: method
 
     type(Inoutput) :: template_io
-    integer :: template_n_lines, additions_n_lines, combined_n_lines
+    integer :: template_n_lines
     character(len=1024), allocatable :: cp2k_template_a(:)
-    character(len=1024), allocatable :: cp2k_template_additions(:)
-    character(len=1024), allocatable :: cp2k_template_combined(:)
 
     character(len=1024) :: run_dir
 
@@ -46,10 +44,17 @@ contains
     logical :: use_QM, use_MM, use_QMMM
 
     integer, pointer :: isolated_atom(:)
-    integer i, atno
+    integer i, atno, insert_pos
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
 
-    call system_timer('go_cp2k_template')
+    type(Atoms) :: at_cp2k
+
+    character(len=TABLE_STRING_LENGTH), pointer :: from_str(:), to_str(:)
+    character(len=TABLE_STRING_LENGTH) :: dummy_s
+    real(dp), pointer :: from_dp(:), to_dp(:)
+    integer, pointer :: from_i(:), to_i(:)
+
+    call system_timer('do_cp2k_calc')
 
     call initialise(cli)
       run_type = ""
@@ -75,7 +80,7 @@ contains
     call read_file(template_io, cp2k_template_a, template_n_lines)
     call finalise(template_io)
 
-    call prefix_sections(cp2k_template_a(1:template_n_lines))
+    call prefix_cp2k_input_sections(cp2k_template_a(1:template_n_lines))
 
     if ( (trim(psf_print) /= 'NO_PSF') .and. &
          (trim(psf_print) /= 'CP2K_PRINT_AND_SAVE') .and. &
@@ -123,10 +128,9 @@ contains
       call create_CHARMM(at,do_CHARMM=.true.)
     endif
 
-    additions_n_lines = 0
-
     ! put in method
-    call append_line(cp2k_template_additions, "&FORCE_EVAL METHOD "//trim(method), additions_n_lines)
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL METHOD "//trim(method), after_line = insert_pos, n_l = template_n_lines)
 
     ! get qm_list
     if (use_QMMM) then
@@ -157,16 +161,17 @@ contains
 	call system_abort("Unknown run_type '"//trim(run_type)//"' with use_QMMM true")
       endif
 
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM &CELL", additions_n_lines)
+      insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
+      if (insert_pos == 0) &
+	call system_abort("Couldn't find or make &FORCE_EVAL&QMMM &CELL section")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
 			' Angstrom around the QM atoms.')
       call print('WARNING! Please check if your cell is centered around the QM region!',ERROR)
       call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',ERROR)
       call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',ERROR)
       cur_qmmm_qm_abc = qmmm_qm_abc(at, run_type_i, qm_vacuum)
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, additions_n_lines)
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", additions_n_lines)
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM &END CELL", additions_n_lines)
+      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
+      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
 
       if (get_value(at%params, "QM_cell", old_qmmm_qm_abc)) then
 	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
@@ -176,25 +181,18 @@ contains
 	if (qm_list_changed) can_reuse_wfn = .false.
       endif
 
-call print("qm_list_a " // qm_list_a, ERROR)
-call print("at%Z " // at%Z, ERROR)
-call print("at%Z min max " // minval(at%Z) // " " //  maxval(at%Z), ERROR)
-
       counter = 0
       do atno=minval(at%Z), maxval(at%Z)
-call print("looking for QM_KIND Z="//atno, ERROR)
 	if (any(at%Z(qm_list_a) == atno)) then
-call print("    found at least one atom", ERROR)
-	  call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM &QM_KIND "//ElementName(atno), additions_n_lines)
+	  insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&QM_KIND "//ElementName(atno))
 	  do i=1, qm_list%N
 	    if (at%Z(qm_list_a(i)) == atno) then
-call print("    adding atom " // qm_list_a(i), ERROR)
-	      call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM&QM_KIND-"//trim(ElementName(atno))// &
-							" MM_INDEX "//qm_list_a(i), additions_n_lines)
+	      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&QM_KIND-"//trim(ElementName(atno))// &
+							" MM_INDEX "//qm_list_a(i), after_line = insert_pos, n_l = template_n_lines)
+	      insert_pos = insert_pos + 1
 	      counter = counter + 1
 	    endif
 	  end do
-	  call append_line(cp2k_template_additions, "&FORCE_EVAL&QMMM &END QM_KIND", additions_n_lines)
 	end if
       end do
       if (size(qm_list_a) /= counter) &
@@ -204,88 +202,66 @@ call print("    adding atom " // qm_list_a(i), ERROR)
     ! put in things needed for QM
     if (use_QM) then
       if (try_reuse_wfn .and. can_reuse_wfn) then 
-	call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn", additions_n_lines)
-	call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT &SCF", additions_n_lines)
-	call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", additions_n_lines)
-	call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT &END SCF", additions_n_lines)
+	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
+	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	! insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
+	! call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
       call calc_charge_lsd(at, qm_list, charge, do_lsd)
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT CHARGE "//charge, additions_n_lines)
-      if (do_lsd) call append_line(cp2k_template_additions, "&FORCE_EVAL&DFT LSD", additions_n_lines)
+      insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
+      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      if (do_lsd) call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT LSD ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     endif
 
     ! put in unit cell
-    call append_line(cp2k_template_additions, "&FORCE_EVAL &SUBSYS", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS &CELL", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&CELL A " // at%lattice(:,1), additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&CELL B " // at%lattice(:,2), additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&CELL C " // at%lattice(:,3), additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS &END CELL", additions_n_lines)
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&SUBSYS")
+
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&CELL")
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL A " // at%lattice(:,1), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL B " // at%lattice(:,2), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&CELL C " // at%lattice(:,3), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
     ! put in topology
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS &TOPOLOGY", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &DUMP_PSF", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &END DUMP_PSF", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &DUMP_PDB", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &END DUMP_PDB", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &GENERATE", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE REORDER F", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE CREATE_MOLECULES F", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE &ISOLATED_ATOMS", additions_n_lines)
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&TOPOLOGY")
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&DUMP_PSF")
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&DUMP_PDB")
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY", "&GENERATE")
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE REORDER F", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE CREATE_MOLECULES F", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE", "&ISOLATED_ATOMS")
     if (use_QMMM) then
       do i=1, size(qm_list_a)
-	call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS " // qm_list_a(i), additions_n_lines)
+	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS LIST " // qm_list_a(i), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       end do
     endif
     if (assign_pointer(at, "isolated_atom", isolated_atom)) then
       do i=1, at%N
 	if (isolated_atom(i) /= 0) then
-	  call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS " // i, additions_n_lines)
+	  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE&ISOLATED_ATOMS LIST " // i, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 	endif
       end do
     endif
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY&GENERATE &END ISOLATED_ATOMS", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY &END GENERATE", additions_n_lines)
 
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORD_FILE_NAME quip_cp2k.exyz", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE EXYZ", additions_n_lines)
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&SUBSYS", "&TOPOLOGY")
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORD_FILE_NAME quip_cp2k.xyz", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY COORDINATE EXYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE" .or. trim(psf_print) == "USE_EXISTING_PSF") then
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME quip_cp2k.psf", additions_n_lines)
-      call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_FORMAT PSF", additions_n_lines)
+      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_NAME ../quip_cp2k.psf", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&SUBSYS&TOPOLOGY CONN_FILE_FORMAT PSF", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     endif
-    call append_line(cp2k_template_additions, "&FORCE_EVAL&SUBSYS &END TOPOLOGY", additions_n_lines)
-    call append_line(cp2k_template_additions, "&FORCE_EVAL &END SUBSYS", additions_n_lines)
 
     ! put in global stuff to run a single force evalution, print out appropriate things
-    call append_line(cp2k_template_additions, " &GLOBAL", additions_n_lines)
-    call append_line(cp2k_template_additions, "&GLOBAL   PROJECT quip", additions_n_lines)
-    call append_line(cp2k_template_additions, "&GLOBAL   RUN_TYPE MD", additions_n_lines)
-    call append_line(cp2k_template_additions, " &END GLOBAL", additions_n_lines)
-    call append_line(cp2k_template_additions, " &MOTION", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION   &PRINT", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION   &END PRINT", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION&PRINT     &FORCES", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION&PRINT     &END FORCES", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION&PRINT&FORCES       FORMAT XMOL", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION   &MD", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION   &END MD", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION&MD     ENSEMBLE NVE", additions_n_lines)
-    call append_line(cp2k_template_additions, "&MOTION&MD     STEPS 0", additions_n_lines)
-    call append_line(cp2k_template_additions, " &END MOTION", additions_n_lines)
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&GLOBAL")
+    call insert_cp2k_input_line(cp2k_template_a, "&GLOBAL   PROJECT quip", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&GLOBAL   RUN_TYPE MD", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
-call print("cp2k_template_additions")
-do i=1, additions_n_lines
-  call print(trim(cp2k_template_additions(i)), ERROR)
-end do
-
-    ! merge template and QUIP stuff
-    call merge_templates(cp2k_template_a(1:template_n_lines), cp2k_template_additions(1:additions_n_lines), &
-      cp2k_template_combined, combined_n_lines)
-
-call print("cp2k_template_combined")
-do i=1, combined_n_lines
-  call print(trim(cp2k_template_combined(i)), ERROR)
-end do
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&MOTION")
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION", "&PRINT")
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION&PRINT", "&FORCES")
+    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&PRINT&FORCES       FORMAT XMOL", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&MOTION", "&MD")
+    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
@@ -295,9 +271,44 @@ end do
 
     run_dir = make_run_directory()
 
-    call write_cp2k_input_file(cp2k_template_combined(1:combined_n_lines), trim(run_dir)//'/cp2k_input.inp')
+    call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
-    call run_cp2k(trim(cp2k_program), trim(run_dir), max_n_tries)
+    call atoms_copy_without_connect(at_cp2k, at, properties="species:pos")
+    dummy_s = ""
+    call add_property(at_cp2k, "atmname", dummy_s, n_cols=1)
+    call add_property(at_cp2k, "molname", dummy_s, n_cols=1)
+    call add_property(at_cp2k, "resname", dummy_s, n_cols=1)
+    call add_property(at_cp2k, "resid", 0, n_cols=1)
+    call add_property(at_cp2k, "atm_charge", 0.0_dp, n_cols=1)
+
+    if (.not. assign_pointer(at_cp2k, "atmname", to_str)) &
+      call system_abort("impossible failure to set pointer to at_cp2k%atmname")
+    if (.not. assign_pointer(at, "atom_type", from_str)) &
+      call system_abort("failed to set pointer to at%atom_type")
+    to_str = from_str
+    if (.not. assign_pointer(at_cp2k, "molname", to_str)) &
+      call system_abort("impossible failure to set pointer to at_cp2k%molname")
+    if (.not. assign_pointer(at, "atom_mol_name", from_str)) &
+      call system_abort("failed to set pointer to at%atom_mol_name")
+    to_str = from_str
+    if (.not. assign_pointer(at_cp2k, "resname", to_str)) &
+      call system_abort("impossible failure to set pointer to at_cp2k%resname")
+    if (.not. assign_pointer(at, "atom_res_name", from_str)) &
+      call system_abort("failed to set pointer to at%atom_res_name")
+    to_str = from_str
+    if (.not. assign_pointer(at_cp2k, "resid", to_i)) &
+      call system_abort("impossible failure to set pointer to at_cp2k%resid")
+    if (.not. assign_pointer(at, "atom_res_number", from_i)) &
+      call system_abort("failed to set pointer to at%atom_res_number")
+    to_i = from_i
+    if (.not. assign_pointer(at_cp2k, "atm_charge", to_dp)) &
+      call system_abort("impossible failure to set pointer to at_cp2k%atm_charge")
+    if (.not. assign_pointer(at, "atom_charge", from_dp)) &
+      call system_abort("failed to set pointer to at%atom_charge")
+    to_dp = from_dp
+    call print_xyz(at_cp2k, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
+
+    call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     !! parse output
     call read_energy_forces(at, qm_list, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
@@ -312,7 +323,7 @@ end do
       call system_command('cp '//trim(run_dir)//'/quip-dump-1.psf quip_cp2k.psf')
 
     if (use_QM) &
-      call system_command('cp '//trim(run_dir)//'quip-RESTART.wfn wfn.restart.wfn')
+      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn')
 
     if (save_output_files) then
       call system_command('cat '//trim(run_dir)//'/cp2k_input.inp'// &
@@ -324,9 +335,74 @@ end do
 
     if (clean_up_files) call system_command('rm -rf '//trim(run_dir))
 
-    call system_timer('go_cp2k_template')
+    call system_timer('do_cp2k_calc')
 
-  end subroutine go_cp2k_template
+  end subroutine do_cp2k_calc
+
+  function find_make_cp2k_input_section(l_a, n_l, base_sec, new_sec) result(line_n)
+    character(len=*), allocatable, intent(inout) :: l_a(:)
+    integer, intent(inout) :: n_l
+    character(len=*), intent(in) :: base_sec, new_sec
+    integer :: line_n
+
+    integer :: i, pamp, pspc
+    character(len=1024) :: sec, word, arg, base_sec_root, base_sec_tail, new_sec_end
+
+    line_n = 0
+
+    do i=1, n_l
+      call split_cp2k_input_line(trim(l_a(i)), sec, word, arg)
+
+      if (trim(sec) == trim(base_sec) .and. trim(word) == trim(new_sec)) then
+	line_n = i
+	return
+      endif
+    end do
+
+    if (len_trim(base_sec) == 0) then
+      i = n_l
+      call insert_cp2k_input_line(l_a, " "//trim(new_sec), after_line=i, n_l=n_l); i = i + 1
+      pspc = index(trim(new_sec)," ")
+      if (pspc == 0) then
+	new_sec_end = "&END " // new_sec(2:len_trim(new_sec))
+      else
+	new_sec_end = "&END " // new_sec(2:pspc-1)
+      endif
+      call insert_cp2k_input_line(l_a, " " // trim(new_sec_end), after_line=i, n_l=n_l); i = i + 1
+      line_n = n_l-1
+      return
+    endif
+
+    pamp = index(base_sec,"&", back=.true.)
+    if (pamp <= 1) then
+      base_sec_root = ""
+      base_sec_tail = trim(base_sec)
+    else
+      base_sec_root = base_sec(1:pamp-1)
+      base_sec_tail = base_sec(pamp:len_trim(base_sec))
+    endif
+
+
+    do i=1, n_l
+      call split_cp2k_input_line(trim(l_a(i)), sec, word, arg)
+      if (trim(sec) == trim(base_sec_root) .and. trim(word) == trim(base_sec_tail)) then
+	call insert_cp2k_input_line(l_a, trim(base_sec)//" "//trim(new_sec), after_line=i, n_l=n_l)
+	pspc = index(trim(new_sec)," ")
+	if (pspc == 0) then
+	  new_sec_end = "&END " // new_sec(2:len_trim(new_sec))
+	else
+	  new_sec_end = "&END " // new_sec(2:pspc-1)
+	endif
+	call insert_cp2k_input_line(l_a, trim(base_sec)//" " // trim(new_sec_end), after_line=i+1, n_l=n_l)
+	line_n = i+1
+	return
+      endif
+    end do
+
+    if (line_n == 0) &
+      call system_abort("Could not find or make section '"//trim(new_sec)//" in base section '"//trim(base_sec))
+
+  end function find_make_cp2k_input_section
 
   subroutine read_energy_forces(at, qm_list, cur_qmmm_qm_abc, run_dir, proj, e, f)
     type(Atoms), intent(in) :: at
@@ -346,8 +422,7 @@ end do
     f = f_xyz%pos
 
     e = e * HARTREE
-    f  = f * HARTREE/BOHR
-
+    f  = f * HARTREE/BOHR 
     call reorder_if_necessary(at, qm_list, cur_qmmm_qm_abc, p_xyz%pos, f)
 
     call print('')
@@ -387,23 +462,26 @@ end do
 
     do i=1, at%N
       do j=1, size(new_p,2)
-	if (norm(at%pos(:,i)+shift-new_p(:,j)) .feq. 0.0_dp) oldpos(i) = j
+	if (norm(at%pos(:,i)+shift-new_p(:,j)) <= 1.0e-4_dp) then
+	  oldpos(i) = j
+	  cycle
+	endif
       end do
     end do
 
-    ! try again with shift of a/2 b/2 c/2 in case TOPOLOGY%CENTER_COORDINATES is set
     if (any(oldpos == 0)) then
+      ! try again with shift of a/2 b/2 c/2 in case TOPOLOGY%CENTER_COORDINATES is set
       shift = sum(at%lattice(:,:),2)/2.0_dp - &
 	      (minval(at%pos(:,:),2)+maxval(at%pos(:,:),2))/2.0_dp
       do i=1, at%N
 	do j=1, size(new_p,2)
-	  if (norm(at%pos(:,i) + shift- new_p(:,j)) .feq. 0.0_dp) oldpos(i) = j
+	  if (norm(at%pos(:,i) + shift - new_p(:,j)) <= 1.0e-4_dp) oldpos(i) = j
 	end do
       end do
     endif
 
     if (any(oldpos == 0)) &
-      call system_abort("Could not match 2 atom objects")
+      call system_abort("Could not match orig and read in atom objects")
 
     new_f(1,oldpos(:)) = new_f(1,:)
     new_f(2,oldpos(:)) = new_f(2,:)
@@ -411,7 +489,7 @@ end do
 
   end subroutine reorder_if_necessary
 
-  subroutine run_cp2k(cp2k_program, run_dir, max_n_tries)
+  subroutine run_cp2k_program(cp2k_program, run_dir, max_n_tries)
     character(len=*), intent(in) :: cp2k_program, run_dir
     integer, intent(in) :: max_n_tries
 
@@ -462,7 +540,7 @@ end do
     if (.not. converged) &
       call system_abort('cp2k failed to converge after n_tries='//n_tries//'. see output file '//trim(run_dir)//'/cp2k_output.out')
 
-  end subroutine run_cp2k
+  end subroutine run_cp2k_program
 
   function make_run_directory() result(dir)
     integer i
@@ -501,52 +579,6 @@ end do
 
   end subroutine write_cp2k_input_file
 
-  subroutine merge_templates(base, additions, combined, combined_n_lines)
-    character(len=*), intent(in) :: base(:), additions(:)
-    character(len=*), allocatable, intent(inout) :: combined(:)
-    integer, intent(out) :: combined_n_lines
-
-    integer :: i, j, sec_end
-    logical :: already_present
-    character(len=1024) :: sec_c, word_c, arg_c, sec_a, word_a, arg_a
-
-    ! copy base template into combined
-    combined_n_lines = 0
-    do i=1, size(base)
-      call append_line(combined, trim(base(i)), combined_n_lines)
-    end do
-
-    ! for each line in additions
-    do i=1, size(additions)
-call print("merging line '"//trim(additions(i)), ERROR)
-      call split_cp2k_input_line(trim(additions(i)), sec_a, word_a, arg_a)
-      already_present = .false.
-      do j=1, combined_n_lines
-	call split_cp2k_input_line(trim(combined(j)), sec_c, word_c, arg_c)
-	if (trim(sec_a) == trim(sec_c) .and. trim(word_a) == trim(word_c)) then
-	  if (trim(arg_a) == trim(arg_c)) then 
-	    already_present = .true.
-!	  else
-!	    if (word_a(1:1) /= "&") &
-!	      call system_abort("ERROR: QUIP inserting line '"//trim(additions(i))//"' already present with different argument in template '"//trim(combined(j)))
-	  endif
-	endif
-      end do
-      if (already_present) cycle
-
-      if (len_trim(sec_a) == 0) then ! top level
-	call append_line(combined, trim(additions(i)), combined_n_lines)
-      else ! within an section
-	sec_end = find_section_end(combined(1:combined_n_lines), sec_a)
-	if (sec_end <= 0) &
-	  call system_abort("merge_templates failed to find section '"//trim(sec_a)//"'")
-
-	call insert_line(combined, trim(additions(i)), after_line=sec_end, n_l=combined_n_lines)
-      endif
-    end do
-
-  end subroutine merge_templates
-
   subroutine split_cp2k_input_line(l, sec, word, arg)
     character(len=*) :: l, sec, word, arg
 
@@ -577,55 +609,9 @@ call print("merging line '"//trim(additions(i)), ERROR)
     word = adjustl(word)
     arg = adjustl(arg)
 
-! call print("splitting '"//trim(l) // " into '" // trim(sec) // "' '" // trim(word)//"' '"//trim(arg)//"'", ERROR)
   end subroutine split_cp2k_input_line
 
-  function find_section_end(l_a, sec) result(line)
-    character(len=*), intent(in) :: l_a(:)
-    character(len=*) :: sec
-    integer :: line
-
-    character(len=1024) :: sec_base, sec_tail, l_sec, l_word
-    integer :: i, j, pamp, pspc
-
-call print("find_section_end sec '"//trim(sec)//"'", ERROR)
-    pamp = index(trim(sec), "&", back=.true.)
-    if (pamp == 1) then
-      sec_base=""
-    else
-      sec_base = sec(1:pamp-1)
-    endif
-    sec_tail=sec(pamp:len_trim(sec))
-
-call print(" sec_base '"//trim(sec_base)//"'", ERROR)
-call print(" sec_tail '"//trim(sec_tail)//"'", ERROR)
-
-    line = 0
-
-    do i=size(l_a), 1, -1
-call print("check line '"//trim(l_a(i))//"'")
-      if (l_a(i)(1:len_trim(sec)) == trim(sec)) then
-call print("found last line that matches this section " // i // " '"//trim(l_a(i))//"'", ERROR)
-	line = i
-	return
-      endif
-      pspc = index(l_a(i), " ")
-      l_sec = l_a(i)(1:pspc-1)
-      l_word = trim(adjustl(l_a(i)(pspc+1:len_trim(l_a(i)))))
-      do j=1, len_trim(l_word)
-	if (l_word(j:j) == " ") l_word(j:j) = "-"
-      end do
-call print ("this line's section is '"//trim(l_sec)//"' and word '"//trim(l_word), ERROR)
-      if (trim(l_sec) == trim(sec_base) .and. trim(l_word) == trim(sec_tail)) then
-call print("found section beginning", ERROR)
-	line = i
-	return
-      endif
-    end do
-
-  end function find_section_end
-
-  subroutine insert_line(l_a, l, after_line, n_l)
+  subroutine insert_cp2k_input_line(l_a, l, after_line, n_l)
     character(len=*), allocatable, intent(inout) :: l_a(:)
     character(len=*), intent(in) :: l
     integer, intent(in) :: after_line
@@ -640,9 +626,9 @@ call print("found section beginning", ERROR)
     end do
     l_a(after_line+1) = trim(l)
     n_l = n_l + 1
-  end subroutine insert_line
+  end subroutine insert_cp2k_input_line
 
-  subroutine prefix_sections(l_a)
+  subroutine prefix_cp2k_input_sections(l_a)
     character(len=*), intent(inout) :: l_a(:)
 
     integer :: pamp
@@ -670,19 +656,6 @@ call print("found section beginning", ERROR)
       section_str = new_section_str
     end do
   end subroutine
-
-  subroutine append_line(l_a, l, n_l)
-    character(len=*), allocatable, intent(inout) :: l_a(:)
-    character(len=*), intent(in) :: l
-    integer, intent(inout) :: n_l
-
-    if (.not. allocated(l_a)) call extend_char_array(l_a)
-    if (n_l+1 > size(l_a)) call extend_char_array(l_a)
-
-    l_a(n_l+1) = trim(l)
-    n_l = n_l + 1
-
-  end subroutine append_line
 
   subroutine get_qm_list(at,qmflag,qm_list,do_union)
     type(Atoms), intent(in)  :: at

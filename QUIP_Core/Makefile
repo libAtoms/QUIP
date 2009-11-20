@@ -30,8 +30,8 @@ POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 ALL_F95_FILES = ${BASE_F95_SOURCES} ${TB_F95_SOURCES} ${IP_F95_SOURCES}
 QUIP_OBJS = ${BASE_F95_OBJS} ${TB_F95_OBJS} ${IP_F95_OBJS} 
 ifeq (${HAVE_CP2K},1)
-  QUIP_OBJS += cp2k_driver.o 
-  ALL_F95_FILES += cp2k_driver.f95
+  QUIP_OBJS += cp2k_driver.o  cp2k_driver_template.o
+  ALL_F95_FILES += cp2k_driver.f95 cp2k_driver_template.f95
 endif
 QUIP_OBJS += ${POT_F95_OBJS}
 ALL_F95_FILES += ${POT_F95_SOURCES}
@@ -85,6 +85,9 @@ quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 LIBS = -L. -lquip -latoms
 
 cp2k_filepot: % : %.o libatoms.a libquip.a
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
+
+cp2k_filepot_template: % : %.o libatoms.a libquip.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 # depend:
