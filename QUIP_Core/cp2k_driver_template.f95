@@ -75,6 +75,17 @@ contains
 	call system_abort('could not parse argument line')
     call finalise(cli)
 
+    call print("do_cp2k_calc command line arguments")
+    call print("  Run_Type " // Run_Type)
+    call print("  cp2k_template_file " // cp2k_template_file)
+    call print("  PSF_print " // PSF_print)
+    call print("  clean_up_files " // clean_up_files)
+    call print("  save_output_files " // save_output_files)
+    call print("  max_n_tries " // max_n_tries)
+    call print("  max_force_warning " // max_force_warning)
+    call print("  qm_vacuum " // qm_vacuum)
+    call print("  try_reuse_wfn " // try_reuse_wfn)
+
     ! read template file
     call initialise(template_io, trim(cp2k_template_file), INPUT)
     call read_file(template_io, cp2k_template_a, template_n_lines)
@@ -140,7 +151,7 @@ contains
     endif
 
     if (qm_list%N == at%N) then
-      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead")
+      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", ERROR)
       run_type='QS'
       use_QM = .true.
       use_MM = .false.
@@ -162,8 +173,6 @@ contains
       endif
 
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
-      if (insert_pos == 0) &
-	call system_abort("Couldn't find or make &FORCE_EVAL&QMMM &CELL section")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
 			' Angstrom around the QM atoms.')
       call print('WARNING! Please check if your cell is centered around the QM region!',ERROR)
@@ -263,6 +272,8 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
+    ! write psf file if necessary
+
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
 	call write_psf_file(at, "quip_cp2k.psf", run_type_string=trim(run_type))
@@ -273,14 +284,16 @@ contains
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
+    ! prepare xyz file for input to cp2k
+
     call atoms_copy_without_connect(at_cp2k, at, properties="species:pos")
     dummy_s = ""
+    ! hopefully no need for this once topology.f95 and cp2k patch agree on property names
     call add_property(at_cp2k, "atmname", dummy_s, n_cols=1)
     call add_property(at_cp2k, "molname", dummy_s, n_cols=1)
     call add_property(at_cp2k, "resname", dummy_s, n_cols=1)
     call add_property(at_cp2k, "resid", 0, n_cols=1)
     call add_property(at_cp2k, "atm_charge", 0.0_dp, n_cols=1)
-
     if (.not. assign_pointer(at_cp2k, "atmname", to_str)) &
       call system_abort("impossible failure to set pointer to at_cp2k%atmname")
     if (.not. assign_pointer(at, "atom_type", from_str)) &
@@ -308,16 +321,18 @@ contains
     to_dp = from_dp
     call print_xyz(at_cp2k, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
 
+    ! actually run cp2k
+
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
-    !! parse output
+    ! parse output
     call read_energy_forces(at, qm_list, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
 
     if (maxval(abs(f)) > max_force_warning) &
       call print('WARNING cp2k forces max component ' // maxval(abs(f)) // ' at ' // maxloc(abs(f)) // &
 		 ' exceeds warning threshold ' // max_force_warning, ERROR)
 
-    !! save output
+    ! save output
 
     if (trim(psf_print) == "CP2K_PRINT_AND_SAVE") &
       call system_command('cp '//trim(run_dir)//'/quip-dump-1.psf quip_cp2k.psf')
@@ -332,6 +347,8 @@ contains
         ' >> cp2k_force_file_log; echo "##############" >> cp2k_force_file_log;' // &
         ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
     endif
+
+    ! clean up
 
     if (clean_up_files) call system_command('rm -rf '//trim(run_dir))
 
