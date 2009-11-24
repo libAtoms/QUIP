@@ -29,7 +29,8 @@ The default is to output all parameters.
 For XYZ output these parameters are in addition to the special
 parameters "Lattice" and "Properties" which are always written.
 The original order of parameters in the input file is preserved.""")
-p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz""")
+p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz
+Supported formats: cell, nc, pos, pov, xyz.""")
  
 
 opt, args = p.parse_args()
