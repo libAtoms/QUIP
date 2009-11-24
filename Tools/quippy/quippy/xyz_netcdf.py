@@ -26,11 +26,11 @@ def make_lattice(a, b=None, c=None, alpha=pi/2.0, beta=pi/2.0, gamma=pi/2.0):
    
    lattice[1,1] = a
 
-   lattice[2,1] = b * cos_gamma
+   lattice[1,2] = b * cos_gamma
    lattice[2,2] = b * sin_gamma
 
-   lattice[3,1] = c * cos_beta
-   lattice[3,2] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma
+   lattice[1,3] = c * cos_beta
+   lattice[2,3] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma
    lattice[3,3] = c * numpy.sqrt(1.0 - (cos2_alpha + cos2_beta - 2.0*cos_alpha*cos_beta*cos_gamma)/ sin2_gamma)
 
    return lattice
@@ -229,8 +229,11 @@ class PuPyXYZWriter(object):
    def __init__(self, xyz):
       self.opened = False
       if type(xyz) == type(''):
-         self.xyz = open(xyz, 'w')
-         self.opened = True
+         if xyz == 'stdout':
+            xyz = sys.stdout
+         else:
+            self.xyz = open(xyz, 'w')
+            self.opened = True
       else:
          self.xyz = xyz
 
@@ -438,8 +441,8 @@ try:
          else:
             self.dest = dest
 
-      def write(self, at):
-         self.dest.write(at)
+      def write(self, at, frame=None, properties=None):
+         self.dest.write(at, frame=frame, properties=properties)
 
       def close(self):
          self.dest.close()

@@ -1,5 +1,6 @@
 from quippy import AtomsWriters
 from farray import *
+import sys
 
 class PovrayWriter(object):
 
@@ -8,8 +9,12 @@ class PovrayWriter(object):
               skip_hydrogens=False):
 
       if type(f) == type(''):
-         self.opened = True
-         self.f = open(f,'w')
+         if f == 'stdout':
+            self.f = sys.stdout
+            self.opened = False
+         else:
+            self.opened = True
+            self.f = open(f,'w')
       else:
          self.opened = False
          self.f = f

@@ -11,7 +11,9 @@ class PosCelWriter(object):
 
    def __init__(self, basename=None, pos='pos.in', cel='cel.in', force='force.in', energy='energy.in', stress='stress.in', step_name='',
                 species_map={'O':1, 'Si':2}, cel_angstrom=False, pos_angstrom=False, rydberg=True):
-      if basename is not None:
+      if basename == 'stdout':
+         pos = cel = energy = stress = force = sys.stdout
+      elif basename is not None:
          basename = os.path.splitext(basename)[0]
          pos = '%s.pos' % basename
          cel = '%s.cel' % basename
@@ -78,11 +80,11 @@ class PosCelWriter(object):
       self.it += 1
 
    def close(self):
-      self.pos.close()
-      self.cel.close()
-      if self.doenergy: self.energy.close()
-      if self.doforce:  self.force.close()
-      if self.dostress: self.stress.close()
+      if self.pos != sys.stdout: self.pos.close()
+      if self.cel != sys.stdout: self.cel.close()
+      if self.doenergy and self.energy != sys.stdout: self.energy.close()
+      if self.doforce  and self.force  != sys.stdout: self.force.close()
+      if self.dostress and self.stress != sys.stdout: self.stress.close()
 
 
 AtomsWriters['pos'] = PosCelWriter
