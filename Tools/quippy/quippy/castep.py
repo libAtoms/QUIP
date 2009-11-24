@@ -3,6 +3,8 @@ from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, HARTREE, BOHR, GPA, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
+from quippy.xyz_netcdf import make_lattice, get_lattice_params
+from math import pi
 
 import xml.dom.minidom
 
@@ -212,19 +214,46 @@ class CastepCell(OrderedDict):
 
 
    def to_atoms(self):
-      if not self.has_key('LATTICE_CART'):
-         raise ValueError('self is missing LATTICE_CART block')
+      if not self.has_key('LATTICE_CART') and not self.has_key('LATTICE_ABC'):
+         raise ValueError('cell is missing LATTICE_CART and LATTICE_ABC blocks')
 
-      if not self.has_key('POSITIONS_ABS'):
-         raise ValueError('cell is missing POSITIONS_ABS block')
-      
-      atoms = Atoms(n=len(self['POSITIONS_ABS']),lattice = 
-                farray([ [float(x) for x in row] for row in map(string.split, self['LATTICE_CART'])]))
-      
-      field_list = [line.split() for line in self['POSITIONS_ABS']]
+      if self.has_key('LATTICE_CART') and self.has_key('LATTICE_ABC'):
+         raise ValueError('cell has both LATTICE_CART and LATTICE_ABC')
 
+      if not self.has_key('POSITIONS_ABS') and not self.has_key('POSITIONS_FRAC'):
+         raise ValueError('cell is missing POSITIONS_ABS and POSITIONS_FRAC blocks')
+
+      if self.has_key('POSITIONS_ABS') and self.has_key('POSITIONS_FRAC'):
+         raise ValueError('cell has both POSITIONS_ABS and POSITIONS_FRAC')
+
+      if self.has_key('POSITIONS_ABS'): pos_block = self['POSITIONS_ABS']
+      else:                             pos_block = self['POSITIONS_FRAC']
+
+      if self.has_key('LATTICE_CART'):
+         block = self['LATTICE_CART']
+         if len(block) == 4:
+            if block[0].lower() != 'ang':
+               raise ValueError("Don't know how to convert from units of %s" % block[0])
+            block = block[1:]
+        
+         lattice = farray([ [float(x) for x in row] for row in map(string.split, block) ])
+      else:
+         block = self['LATTICE_ABC']
+         if len(block) == 3:
+            if block[0].lower() != 'ang':
+               raise ValueError("Don't know how to convert from units of %s" % block[0])
+            block = block[1:]
+
+         a, b, c = [float(x) for x in block[0].split()]
+         alpha, beta, gamma = [float(x)*pi/180.0 for x in block[1].split()]
+
+         lattice = make_lattice(a,b,c,alpha,beta,gamma)
+      
+      atoms = Atoms(n=len(pos_block),lattice=lattice)
+
+      field_list = [line.split() for line in pos_block]
       elements = map(operator.itemgetter(0), field_list)
-
+         
       # Look up names of elements specified by atomic number
       elements = [ not el.isdigit() and atomic_number_from_symbol(el) or el for el in elements ]
 
@@ -233,19 +262,35 @@ class CastepCell(OrderedDict):
       atoms.pos[:,:] = farray([ [float(x) for x in row] \
                                 for row in [field[1:4] for field in field_list]])
 
+      # Convert from fractional to real positions
+      if self.has_key('POSITIONS_FRAC'):
+         atoms.pos[:,:] = numpy.dot(atoms.lattice, atoms.pos)
+
       return atoms
 
-   def update_from_atoms(self, at):
+   def update_from_atoms(self, at, frac_pos=False, lattice_abc=False):
       
       # Add lattice to cell
-      self['LATTICE_CART'] = []
-      for i in frange(3):
-         self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
+      if lattice_abc:
+         self['LATTICE_ABC'] = []
+         a, b, c, alpha, beta, gamma = get_lattice_params(at.lattice)
+         self['LATTICE_ABC'].append('%f %f %f' % (a,b,c))
+         self['LATTICE_ABC'].append('%f %f %f' % (alpha*180.0/pi,beta*180.0/pi,gamma*180.0/pi))
+         
+      else:
+         self['LATTICE_CART'] = []
+         for i in frange(3):
+            self['LATTICE_CART'].append('%f %f %f' % tuple(at.lattice[:,i]))
 
       # Add atomic positions to cell
-      self['POSITIONS_ABS'] = []
-      for i in frange(at.n):
-         self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
+      if frac_pos:
+         self['POSITIONS_FRAC'] = []
+         for i in frange(at.n):
+            self['POSITIONS_FRAC'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(numpy.dot(at.g,at.pos[:,i])))
+      else:
+         self['POSITIONS_ABS'] = []
+         for i in frange(at.n):
+            self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
 
    @staticmethod
@@ -256,6 +301,7 @@ class CastepCell(OrderedDict):
 
 class CastepCellWriter(object):
    def __init__(self, dest):
+      if dest == 'stdout': dest = sys.stdout
       self.dest = dest
 
    def write(self, at):

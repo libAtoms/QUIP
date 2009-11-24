@@ -134,6 +134,42 @@ class TestCastepCell(QuippyTestCase):
       del self.cell['POSITIONS_ABS']
       self.assertRaises(ValueError, self.cell.to_atoms)
 
+   def test_to_atoms_frac_pos(self):
+      c = castep.CastepCell("""%block lattice_cart
+ang
+2.4866946  -4.3070816   0.0000000
+2.4866946   4.3070816   0.0000000
+0.0000000   0.0000000   5.4621192
+%endblock lattice_cart
+
+%block positions_frac
+O     0.414382   0.259186   0.792179
+O    -0.259186   0.155196   1.458845
+O    -0.155196  -0.414382   1.125512
+O     0.259186   0.414382  -0.792179
+O    -0.414382  -0.155196  -0.125512
+O     0.155196  -0.259186  -0.458845
+Si    0.474452   0.000000   0.666667
+Si    0.000000   0.474452   0.333333
+Si   -0.474452  -0.474452   0.000000
+%endblock positions_frac""".split('\n'))
+
+      a = c.to_atoms()
+      self.assertEqual(a.n, 9)
+      self.assertEqual(list(a.z), [ 8,  8,  8,  8,  8,  8, 14, 14, 14])
+      self.assertArrayAlmostEqual(a.pos, FortranArray([[ 1.67495791, -0.66844184,  4.32697613],
+                                                       [-0.25859137,  1.78477709,  7.96838528],
+                                                       [-1.41636654, -1.11633525,  6.14768071],
+                                                       [ 1.67495791,  0.66844184, -4.32697613],
+                                                       [-1.41636654,  1.11633525, -0.68556151],
+                                                       [-0.25859137, -1.78477709, -2.50626608],
+                                                       [ 1.17981723, -2.04350348,  3.64141462],
+                                                       [ 1.17981723,  2.04350348,  1.82070458],
+                                                       [-2.35963445,  0.        ,  0.        ]]))
+      c2 = castep.CastepCell()
+      c2.update_from_atoms(a, frac_pos=True)
+      self.assertEqual([x.split() for x in c['POSITIONS_FRAC']], [x.split() for x in c2['POSITIONS_FRAC']])
+
    def testupdate_from_atoms(self):
       a = diamond(5.44, 14)
       c = castep.CastepCell()
