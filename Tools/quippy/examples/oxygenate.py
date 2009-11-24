@@ -79,8 +79,29 @@ def oxygenate(at, edge_only=False):
    if len(rem_list) > 0:
       at.remove_atoms(rem_list)
 
+   # Now check if any of the new oxygens are too close to one another
+   at.calc_connect()
+
+   rem_list = []
+   for i in frange(at.n):
+      if at.z[i] != 8: continue
+      if edge_only and at.edge_mask[i] != 1: continue
+
+      neighb = at.neighbours[i]
+      oxy_neighb = [pair.j for pair in neighb if at.z[pair.j] == 8]
+
+      if len(oxy_neighb) != 0:
+         print i, oxy_neighb
+         for j in oxy_neighb:
+            if i < j: rem_list.append(j)
+         print i, rem_list
+
+   if len(rem_list) > 0:
+      print 'Removing %r' % rem_list
+      at.remove_atoms(rem_list)
+      
    at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
-   
+  
 
 if __name__ == '__main__':
 
