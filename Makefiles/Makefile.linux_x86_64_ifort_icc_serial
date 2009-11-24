@@ -14,7 +14,7 @@ COPTIM = -O3
 
 F95FLAGS += -fpp -free -DGETARG_F2003 -warn unused
 F77FLAGS += -fpp -fixed
-CFLAGS +=  -DFORTRAN_UNDERSCORE
+CFLAGS +=  -fPIC -DFORTRAN_UNDERSCORE
 CPLUSPLUSFLAGS +=  -DFORTRAN_UNDERSCORE 
 
 MAKEDEP_ARGS = -lc -suffix .mod
@@ -26,6 +26,7 @@ QUIPPY_FCOMPILER = intelem
 QUIPPY_F90FLAGS = -fpp -free -warn unused
 QUIPPY_CPP = ifort -EP
 QUIPPY_NO_CRACK = 1
+QUIPPY_NO_TOOLS = 1
 
 .f95.o:
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
