@@ -48,6 +48,25 @@ def AtomsReader(source, format=None, *args, **kwargs):
       source.close()
    
 
+def AtomsWriter(dest, format=None, *args, **kwargs):
+   """Return a file-like object capable of writing Atoms in the specified format.
+      If `format` is not given it is inferred from the file extension of `dest`."""
+   if format is None:
+      if isinstance(dest, str):
+         if dest in AtomsWriters:
+            format = dest
+         else:
+            base, ext = os.path.splitext(dest)
+            format = ext[1:]
+      else:
+         format = dest.__class__
+
+   if format in AtomsWriters:
+      return AtomsWriters[format](dest, *args, **kwargs)
+   else:
+      raise ValueError("Don't know how to write Atoms to format %r" % format)
+
+
 class AtomsList(object):
    """Class for dealing with sequences of Atoms objects"""
 
