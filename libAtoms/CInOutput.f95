@@ -65,13 +65,13 @@ module CInOutput_module
      end function cioread
 
      function ciowrite(at, int_data, real_data, str_data, logical_data, intformat, realformat, frame, &
-       shuffle, deflate, deflate_level) bind(c)
+       shuffle, deflate, deflate_level, swap) bind(c)
        use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_INT
        type(C_PTR), intent(in), value :: at
        type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: intformat, realformat
        integer(C_INT) :: frame
-       integer(C_INT) :: shuffle, deflate, deflate_level
+       integer(C_INT) :: shuffle, deflate, deflate_level, swap
        integer(C_INT) :: ciowrite
      end function ciowrite
 
@@ -506,7 +506,7 @@ contains
     type(Dictionary) :: selected_properties
     character(len=KEY_LEN) :: do_int_format, do_real_format
     integer :: do_shuffle, do_deflate
-    integer :: do_deflate_level
+    integer :: do_deflate_level, do_swap
 
     if (present(status)) status = 0
 
@@ -521,6 +521,7 @@ contains
     do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
     do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
+    do_swap = transfer(.not. present(properties), do_swap)
     
     call initialise(selected_properties)
     if (.not. present(properties)) then
@@ -608,17 +609,28 @@ contains
     call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
     call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
     call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
-    do i=1,this%n_property
-       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,i))
-       dum = get_value(at%properties, at%properties%keys(i), lookup)
+
+    ! First add the selected properties in the order they were specified...
+    do i=1,selected_properties%n
+       j = lookup_entry_i(at%properties, selected_properties%keys(i))
+       call f_string_to_c_array(at%properties%keys(j), this%property_name(:,i))
+       dum = get_value(at%properties, at%properties%keys(j), lookup)
        this%property_type(i) = lookup(1)
        this%property_start(i) = lookup(2)-1
        this%property_ncols(i) = lookup(3)-lookup(2)+1
-       if (has_key(selected_properties, at%properties%keys(i))) then
-          this%property_filter(i) = 1
-       else
-          this%property_filter(i) = 0
-       end if
+       this%property_filter(i) = 1
+    end do
+    ! ... then the non-selected ones
+    j = selected_properties%n+1
+    do i=1,at%properties%n
+       if (has_key(selected_properties, at%properties%keys(i))) cycle
+       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,j))
+       dum = get_value(at%properties, at%properties%keys(i), lookup)
+       this%property_type(j) = lookup(1)
+       this%property_start(j) = lookup(2)-1
+       this%property_ncols(j) = lookup(3)-lookup(2)+1
+       this%property_filter(j) = 0
+       j = j +1
     end do
 
     int_ptr = C_NULL_PTR
@@ -639,7 +651,7 @@ contains
 
     if (ciowrite(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
          trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
-         do_shuffle, do_deflate, do_deflate_level) == 0) then
+         do_shuffle, do_deflate, do_deflate_level, do_swap) == 0) then
        if (present(status)) then
           status = 1
        else

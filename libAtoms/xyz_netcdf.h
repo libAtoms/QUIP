@@ -127,5 +127,5 @@ int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_d
 	     int *logical_data, int *zero);
 int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
 	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
-	      int *deflate_level);
+	     int *deflate_level, int *swap);
 int cioskip (Atoms *atoms, int *n_skip);
