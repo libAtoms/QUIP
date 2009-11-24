@@ -40,9 +40,6 @@ class Neighbours(object):
    def __init__(self, at):
       self.atref = weakref.ref(at)
 
-   def __repr__(self):
-      return 'Neighbours(at=%s)' % self.atref()
-
    def __iter__(self):
       return self.iterneighbours()
 
@@ -338,17 +335,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          self.read(D) # copy from D
 
    def keys(self):
-      if got_hashlib:
-         new_hash = hashlib.md5(self._keys).hexdigest()
-      else:
-         h = md5.new()
-         h.update(self._keys)
-         new_hash = h.hexdigest()
-         
-      if new_hash != self.__dict__.get('_keys_hash', None):
-         self._keys_cache = [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
-      self._keys_hash = new_hash
-      return self._keys_cache
+      return [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
 
    def __getitem__(self, k):
       i = self.lookup_entry_i(k)
@@ -520,5 +507,18 @@ class CInOutput(FortranCInOutput):
 
    def __setitem__(self, index, value):
       self.write(value, frame=index)
+
+   def write(self, at, properties=None, int_format=None, real_format=None, frame=None,
+             shuffle=None, deflate=None, deflate_level=None, status=None):
+
+      if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
+         properties = padded_str_array(properties, max([len(x) for x in properties])).T
+      
+      FortranCInOutput.write(self, at, properties, int_format, real_format, frame,
+                             shuffle, deflate, deflate_level, status)
+                             
+      
+             
+             
 
 
