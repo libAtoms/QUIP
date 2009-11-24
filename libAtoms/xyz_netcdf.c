@@ -2315,8 +2315,11 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
     // Move pos to second property
     pos_idx = atoms_find_property(atoms, "pos");
     if (pos_idx == -1) {
-      fprintf(stderr,"No pos property, cannot write XYZ file\n");
-      return 0;
+      pos_idx = atoms_find_property(atoms, "frac_pos");
+      if (pos_idx == -1) {
+	fprintf(stderr,"No pos or frac_pos properties, cannot write XYZ file\n");
+	return 0;
+      }
     }
     atoms_swap_properties(atoms, pos_idx, 1);
   }
@@ -3677,7 +3680,7 @@ int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_d
 
 int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
 	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
-	      int *deflate_level)
+	     int *deflate_level, int *swap)
 {
   at->int_data = int_data;
   at->real_data = real_data;
@@ -3688,7 +3691,7 @@ int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *l
     if (at->xyz_out == NULL) return 0;
     if (at->xyz_out != stdout && fseek(at->xyz_out, 0, SEEK_END) != 0) return 0;
 
-    if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5s", 1))
+    if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5s", *swap))
       return 0;
     if (at->xyz_out == stdout) fflush(at->xyz_out);
     return 1;
