@@ -128,7 +128,7 @@ program makecrack
        old_nn, hybrid, hybrid_mark
 
   
-  real(dp), allocatable :: f(:,:), u_disp(:,:), k_disp(:,:)
+  real(dp), allocatable :: f(:,:)
   real(dp), dimension(6,6) :: c
   real (dp), dimension(3,3) :: lattice
 
@@ -319,7 +319,7 @@ program makecrack
      end do
   end if
 
-  call crack_make_seed(crack_slab, params, u_disp, k_disp)
+  call crack_make_seed(crack_slab, params)
   !call crack_setup_marks(crack_slab, params) 
 
   if (params%crack_apply_initial_load) then

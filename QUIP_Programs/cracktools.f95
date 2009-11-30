@@ -800,11 +800,11 @@ contains
     
   end subroutine crack_calc_load_field
 
-  subroutine crack_make_seed(crack_slab, params, u_disp, k_disp) 
+  subroutine crack_make_seed(crack_slab, params) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
-    real(dp), allocatable, dimension(:,:), optional, intent(out):: k_disp, u_disp 
 
+    real(dp), allocatable, dimension(:,:):: k_disp, u_disp 
     real(dp), pointer, dimension(:,:) :: load
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
