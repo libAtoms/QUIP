@@ -23,6 +23,9 @@ mass = [ 0.0, 1.00794, 4.00260, 6.941, 9.012187, 10.811, 12.0107, 14.00674, 15.9
 
 # Mapping of element name to mass
 ElementMass = dict(zip(ElementName, mass))
+
+# Also include z -> massx
+ElementMass.update(dict(zip(range(116), mass)))
 del mass
 
 covrad = [ 0.0, 0.320,0.310,1.630,0.900,0.820,0.770,0.750,0.730,0.720,0.710,1.540,1.360,1.180,1.110,1.060,1.020,     
@@ -35,6 +38,9 @@ covrad = [ 0.0, 0.320,0.310,1.630,0.900,0.820,0.770,0.750,0.730,0.720,0.710,1.54
 
 # Mapping of element name to covalent radii
 ElementCovRad = dict(zip(ElementName, covrad))
+
+# Also include z -> covrad
+ElementCovRad.update(dict(zip(range(116), covrad)))
 del covrad
 
 def atomic_number_from_symbol(atomic_symbol):
