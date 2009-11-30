@@ -374,7 +374,7 @@ class AtomEyeView(object):
         self.run_command("xtal_origin_goto %f %f %f" % (s[0], s[1], s[2]))
 
     def find_atom(self, i):
-        self.run_command("find_atom %d" % i-1)
+        self.run_command("find_atom %d" % (i-1))
 
     def resize(self, width, height):
         self.run_command("resize %d %d" % (width, height))
