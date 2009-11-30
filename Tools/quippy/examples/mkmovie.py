@@ -13,6 +13,10 @@ p.add_option('-n', '--nowindow', action='store_true', help='Disable AtomEye view
 p.add_option('-e', '--encoder', action='store', help='Movie encoder command', default='ffmpeg -i %s -r 25 -b 30M %s')
 p.add_option('-p', '--player', action='store', help='Movie player command', default='mplayer %s')
 p.add_option('-v', '--viewfile', action='store', help='AtomEye command script for initial view')
+p.add_option('-g', '--graph', action='store', help='Enable graph plotting')
+p.add_option('-x', '--xdata', action='store', help='Data for x axis of graph')
+p.add_option('-y', '--ydata', action='store', help='Data for y axis of graph')
+p.add_option('--y2data', action='store', help='Data for y2 axis of graph')
 
 opt, args = p.parse_args()
 
@@ -52,9 +56,13 @@ if not opt.nowindow:
 
 fillvalue = 9.969209968386869e+36
 
-xdata = hstack([s.Time for s in sources])[opt.range]
-ydata  = hstack([s.Temp for s in sources])[opt.range]
-y2data = hstack([s.G for s in sources])[opt.range]
+if opt.xdata == 'frame':
+   xdata = farray(frange(nframes))
+else:
+   xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
+ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
+if opt.y2data is not None:
+   y2data = hstack([getattr(s,opt.y2data) for s in sources])[opt.range]
 
 fig = Figure(figsize=(8,2))
 canvas = FigureCanvas(fig)
@@ -63,20 +71,22 @@ ax1 = fig.add_axes([0.1,0.2,0.8,0.65])
 ax1.set_xlim(xdata.min(), xdata.max())
 ax1.set_ylim(ydata.min(), ydata.max())
 l1, = ax1.plot([], [], 'b-', scalex=False, scaley=False, label='Temp')
-ax1.set_xlabel('Time / fs ')
-ax1.set_ylabel('Temp / K')
+ax1.set_xlabel(opt.xdata)
+ax1.set_ylabel(opt.ydata)
 
-ax2 = ax1.twinx()
-ax2.set_ylim(y2data.min(), y2data.max())
-ax2.yaxis.tick_right()
-l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
-ax2.set_ylabel('G / Jm$^{-2}$')
+if opt.y2data is not None:
+   ax2 = ax1.twinx()
+   ax2.set_ylim(y2data.min(), y2data.max())
+   ax2.yaxis.tick_right()
+   l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
+   ax2.set_ylabel(opt.y2data)
 
 
 def add_plot(at, i, filename):
 
    l1.set_data(xdata[:i], ydata[:i])
-   l2.set_data(xdata[:i], y2data[:i])
+   if opt.y2data is not None:
+      l2.set_data(xdata[:i], y2data[:i])
 
    basename, ext = os.path.splitext(filename)
 
