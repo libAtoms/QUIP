@@ -170,6 +170,41 @@ Si   -0.474452  -0.474452   0.000000
       c2.update_from_atoms(a, frac_pos=True)
       self.assertEqual([x.split() for x in c['POSITIONS_FRAC']], [x.split() for x in c2['POSITIONS_FRAC']])
 
+   def test_to_atoms_unit_bohr(self):
+      c = castep.CastepCell("""%block lattice_cart
+bohr
+ 4.69917141  -8.13920403   0.       
+ 4.69917141   8.13920403   0.       
+ 0.           0.          10.3219086
+%endblock lattice_cart
+
+%block positions_abs
+bohr
+O    3.16521149  -1.26317191   8.17679924
+O   -0.48866684   3.37273965  15.05806476
+O   -2.67654465  -2.10956774  11.617432  
+O    3.16521149   1.26317191  -8.17679924
+O   -2.67654465   2.10956774  -1.29552339
+O   -0.48866684  -3.37273965  -4.73615615
+Si   2.22953127  -3.86166163   6.88127584
+Si   2.22953127   3.86166163   3.44063276
+Si  -4.45906255   0.           0.        
+%endblock positions_abs""".split('\n'))
+
+      a = c.to_atoms()
+      self.assertEqual(a.n, 9)
+      self.assertEqual(list(a.z), [ 8,  8,  8,  8,  8,  8, 14, 14, 14])
+      self.assertArrayAlmostEqual(a.pos, FortranArray([[ 1.67495791, -0.66844184,  4.32697613],
+                                                       [-0.25859137,  1.78477709,  7.96838528],
+                                                       [-1.41636654, -1.11633525,  6.14768071],
+                                                       [ 1.67495791,  0.66844184, -4.32697613],
+                                                       [-1.41636654,  1.11633525, -0.68556151],
+                                                       [-0.25859137, -1.78477709, -2.50626608],
+                                                       [ 1.17981723, -2.04350348,  3.64141462],
+                                                       [ 1.17981723,  2.04350348,  1.82070458],
+                                                       [-2.35963445,  0.        ,  0.        ]]))
+
+
    def testupdate_from_atoms(self):
       a = diamond(5.44, 14)
       c = castep.CastepCell()

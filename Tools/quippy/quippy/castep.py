@@ -10,6 +10,11 @@ import xml.dom.minidom
 
 # Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 4.3.
 
+castep_units = {
+   'ang' : 1,
+   'bohr' : BOHR
+   }
+
 valid_cell_keywords = ['lattice_cart', 'lattice_abc', 'positions_frac', 'positions_abs', 
                        'symmetry_generate', 'symmetry_tol', 'ionic_constraints', 'fix_com', 
                        'cell_constraints', 'external_pressure', 'fix_all_ions', 'fix_all_cell',
@@ -232,22 +237,35 @@ class CastepCell(OrderedDict):
       if self.has_key('LATTICE_CART'):
          block = self['LATTICE_CART']
          if len(block) == 4:
-            if block[0].lower() != 'ang':
+            unit = block[0].lower()
+            if unit not in castep_units:
                raise ValueError("Don't know how to convert from units of %s" % block[0])
             block = block[1:]
+         else:
+            unit = 'ang'
         
-         lattice = farray([ [float(x) for x in row] for row in map(string.split, block) ])
+         lattice = farray([ [float(x) for x in row] for row in map(string.split, block) ])*castep_units[unit]
       else:
          block = self['LATTICE_ABC']
          if len(block) == 3:
-            if block[0].lower() != 'ang':
+            unit = block[0].lower()
+            if unit not in castep_units:
                raise ValueError("Don't know how to convert from units of %s" % block[0])
             block = block[1:]
+         else:
+            unit = 'ang'
 
-         a, b, c = [float(x) for x in block[0].split()]
+         a, b, c = [float(x)*castep_units[unit] for x in block[0].split()]
          alpha, beta, gamma = [float(x)*pi/180.0 for x in block[1].split()]
 
          lattice = make_lattice(a,b,c,alpha,beta,gamma)
+
+      # Check if first line in position block is a valid unit
+      unit = pos_block[0].lower()
+      if unit in castep_units:
+         pos_block = pos_block[1:]
+      else:
+         unit = 'ang'
       
       atoms = Atoms(n=len(pos_block),lattice=lattice)
 
@@ -259,7 +277,7 @@ class CastepCell(OrderedDict):
 
       # Set the element and pos data
       atoms.set_atoms(elements)
-      atoms.pos[:,:] = farray([ [float(x) for x in row] \
+      atoms.pos[:,:] = farray([ [float(x)*castep_units[unit] for x in row] \
                                 for row in [field[1:4] for field in field_list]])
 
       # Convert from fractional to real positions
