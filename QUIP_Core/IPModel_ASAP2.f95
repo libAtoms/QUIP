@@ -754,11 +754,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    character(len=*), optional, intent(in) :: args_str
 
    type(Dictionary) :: params
-   logical :: save_efield, save_dipoles, restart
+   logical :: save_efield, save_dipoles, restart, applied_efield
    real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_int_old(:,:)
    real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
-   real(dp), pointer :: efield(:,:), dipoles(:,:)
-   real(dp), pointer, dimension(:,:) :: efield_old1, efield_old2, efield_old3
+   real(dp), pointer, dimension(:,:) :: efield, dipoles, efield_old1, efield_old2, efield_old3, ext_efield
    real(dp) :: diff, diff_old
    integer :: n_efield_old
    integer :: i, npol, ti, vv
@@ -773,6 +772,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       call param_register(params, 'save_efield', 'T', save_efield)
       call param_register(params, 'save_dipoles', 'T', save_dipoles)
       call param_register(params, 'restart', 'F', restart)
+      call param_register(params, 'applied_efield', 'F', applied_efield)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          call system_abort("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str))
       endif
@@ -781,6 +781,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       save_efield = .true.
       save_dipoles = .true.
       restart = .false.
+      applied_efield = .false.
    end if
 
    if (present(e)) e = 0.0_dp
@@ -807,6 +808,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       dipoles => thedipoles
    end if
 
+   if (applied_efield) then
+      if (.not. assign_pointer(at, 'ext_efield', ext_efield)) &
+           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "ext_efield" property')
+   end if
+
    if (.not. assign_pointer(at, 'efield_old1', efield_old1)) &
         call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property')
    if (.not. assign_pointer(at, 'efield_old2', efield_old2)) &
@@ -821,6 +827,12 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       efield_old2(:,:) = 0.0_dp
       efield_old3(:,:) = 0.0_dp
       n_efield_old = 0
+      
+!!$      if (applied_efield) then
+!!$         efield_old1(:,:) = ext_efield
+!!$         efield_old2(:,:) = ext_efield
+!!$         efield_old3(:,:) = ext_efield
+!!$      end if
    end if
 
    efield_dipole = 0.0_dp
@@ -874,6 +886,13 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          else
             efield = this%betapol*efield_dipole + &
                  (1.0_dp - this%betapol)*efield_int_old + efield_charge
+         end if
+
+         ! Add external field if present
+         if (applied_efield) then
+            do i=1,at%n
+               efield(:,i) = efield(:,i) + ext_efield(:,i)
+            end do
          end if
 
          ! Calculate dipole moment in response to total efield
