@@ -361,10 +361,10 @@ contains
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
  subroutine unit_slab(myatoms, axes, a, atnum, lat_type, c, u, x, y, z)
-   type(Atoms), intent(OUT) :: myatoms
-   real(dp), intent(IN), dimension(3,3) :: axes
-   real(dp), intent(IN) :: a ! Lattice vector
-   real(dp), intent(IN), optional :: c, u, x, y, z ! Lattice vector
+   type(Atoms), intent(out) :: myatoms
+   real(dp), intent(in), dimension(3,3) :: axes
+   real(dp), intent(in) :: a ! Lattice vector
+   real(dp), intent(in), optional :: c, u, x, y, z ! Lattice vector
    integer, intent(in), optional :: atnum(:) ! atomic numbers
    character(len=*), intent(inout), optional :: lat_type  ! lattice type (diamond, bcc, fcc)
 
@@ -448,7 +448,7 @@ contains
  !
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
- subroutine slab_width_height_nz(myslab, axes, a, width, height, nz, atnum, lat_type, c, u, x, y, z)
+ subroutine slab_width_height_nz(myslab, axes, a, width, height, nz, atnum, lat_type, c, u, x, y, z, even_nx, even_ny)
    type(Atoms), intent(out) :: myslab
    real(dp), intent(in), dimension(3,3) :: axes
    real(dp), intent(in) :: a, width, height
@@ -456,19 +456,40 @@ contains
    integer, intent(in) :: nz ! Number of layers
    integer, intent(in), optional :: atnum(:) ! atomic numbers to use
    character(len=*),   optional  ::  lat_type 
+   logical, optional, intent(in) :: even_nx, even_ny ! round nx or ny to even numbers
 
    type(Atoms) :: unit, layer
    integer nx, ny
+   logical :: do_even_nx, do_even_ny
+
+   ! even_nx and even_ny default to true for lat_type="alpha_quartz", otherwise they default to false
+   if (present(lat_type)) then
+      if (trim(lat_type) == 'alpha_quartz') then
+         do_even_nx = optional_default(.true., even_nx)
+         do_even_ny = optional_default(.true., even_ny)
+      else
+         do_even_nx = optional_default(.false., even_nx)
+         do_even_ny = optional_default(.false., even_ny)
+      end if
+   else
+      do_even_nx = optional_default(.false., even_nx)
+      do_even_ny = optional_default(.false., even_ny)
+   end if
 
    call unit_slab(unit, axes, a, atnum, lat_type, c, u, x, y, z)
 
    nx = int(floor(width/unit%lattice(1,1)))
    ny = int(floor(height/unit%lattice(2,2)))
 
+   if (do_even_nx .and. mod(nx, 2) == 1) nx = nx - 1
+   if (do_even_ny .and. mod(ny, 2) == 1) ny = ny - 1
+
    if (.not. (nx > 0 .and. ny > 0 .and. nz > 0)) then
       write(line,'(a, i0, i0, i0)') 'Error in slab: nx,ny,nz = ', nx, ny, nz
       call system_abort(line)
    end if
+
+   call print('slab_width_height_nz: nx='//nx//' ny='//ny//' nz='//nz, VERBOSE)
 
    call supercell(layer, unit, nx, ny, 1)
    ! z layers last for symmetrise
