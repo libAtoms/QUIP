@@ -101,15 +101,23 @@ def oxygenate(at, edge_only=False):
       at.remove_atoms(rem_list)
       
    at.cutoff, at.use_uniform_cutoff = saved_cutoff, saved_use_uniform_cutoff
-  
+
 
 if __name__ == '__main__':
 
-   if len(sys.argv[1:]) != 2:
-      print 'Usage: oxygenate.py <infile> <outfile>'
-      sys.exit(1)
-      
-   a = Atoms(sys.argv[1])
-   oxygenate(a)
+   import optparse
+   p = optparse.OptionParser(usage='%prog [-e|--edge-only] <infile> <outfile>')
+   p.add_option('-e', '--edge-only', action='store_true', help='Only add oxygens in region where edge-mask == 1')
+   p.add_option('-r', '--remove', action='store', help='Also remove the given property (e.g. load)')
+   opt, args = p.parse_args()
 
-   a.write(sys.argv[2])
+   if len(args) != 2:
+      p.error()
+      
+   a = Atoms(args[0])
+   oxygenate(a, edge_only=opt.edge_only)
+
+   if opt.remove is not None:
+      a.remove_property(opt.remove)
+
+   a.write(args[1])
