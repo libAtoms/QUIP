@@ -321,6 +321,18 @@ class Atoms(FortranAtoms):
       return not self.__eq__(other)
 
 
+   def density(self):
+      from quippy import ElementMass, N_A, MASSCONVERT
+      
+      """Density in units of :math:`g/m^3`. If `mass` property exists, use that, otherwise we use `z`"""
+      if hasattr(self, 'mass'):
+         mass = sum(self.mass)/MASSCONVERT/1.0e3
+      else:
+         mass = sum(ElementMass[z] for z in self.z)/1.0e3
+
+      return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
+
+
 from dictmixin import DictMixin, ParamReaderMixin
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
