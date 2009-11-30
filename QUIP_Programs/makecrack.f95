@@ -129,13 +129,12 @@ program makecrack
 
   
   real(dp), allocatable :: f(:,:)
-  real(dp), dimension(6,6) :: c
   real (dp), dimension(3,3) :: lattice
 
-  real (dp) :: maxy, miny, maxx, minabsy, shift, ydiff, mindiff, G, &
-       width, height, a, E, v, v2, uij(3), energy, crack_pos(2)
+  real (dp) :: maxy, miny, maxx, &
+       width, height, E, v, v2, energy, crack_pos(2)
 
-  integer :: i, j,  n_fixed, atom1, atom2, n, Z(2), nargs
+  integer :: i,  n_fixed, nargs
 
   character(len=STRING_LENGTH) :: stem, xmlfilename, xyzfilename
 
@@ -251,73 +250,6 @@ program makecrack
   end do
   call Print(crack_slab%N//' atoms. '//n_fixed//' fixed atoms.')
   
-  call print_title('Aligning Seed Crack at y=0')
-
-  ! Find an atom close to y=0
-  minabsy = 1000.0_dp
-  atom1 = -1; atom2 = -1
-  mindiff = 1000.0_dp
-  do i=1, crack_slab%N
-     if (abs(crack_slab%pos(2,i)) < minabsy) then
-        minabsy = abs(crack_slab%pos(2,i))
-        atom1 = i
-     end if
-  end do
-
-  ! Apply shift to centre the seed crack in the right place
-  if (trim(params%crack_name) == '(111)[11b0]') then
-     ! Find atom1's closest neighbour vertically above or below it (x and z equal, not y)
-     do n = 1, atoms_n_neighbours(crack_slab, atom1)
-        j = atoms_neighbour(crack_slab, atom1, n, diff=uij) ! nth neighbour of atom1
-        if (abs(uij(1)) < 1e-4_dp .and. & 
-            abs(uij(2)) > 1e-4_dp .and. &
-            abs(uij(3)) < 1e-4_dp) then
-
-	    ydiff = abs(crack_slab%pos(2,atom1)-crack_slab%pos(2,j))
-	    if (ydiff < mindiff) then
-	      mindiff = ydiff
-	      atom2 = j
-	    end if
-         end if
-      end do
-      
-      if (atom1 == -1 .or. atom2 == -1) &
-           call system_abort('Failed to find a pair of atoms vertically aligned!')
-
-      ! Align y=0 to centre line of atom1-atom2 bond
-      shift = (crack_slab%pos(2,atom1) + crack_slab%pos(2,atom2))/2.0_dp
-
-      call Print('Centering on (atom '//atom1//')--(atom '//atom2//') bond')
-      call print('  Atom 1 pos = '//crack_slab%pos(:,atom1))
-      call print('  Atom 2 pos = '//crack_slab%pos(:,atom2))
-      call Print('Shifting atoms vertically by '//shift)
-      do i=1,crack_slab%N
-         crack_slab%pos(2,i) = crack_slab%pos(2,i) + shift
-      end do
-
-  else if(trim(params%crack_name) == '(110)[11b0]') then
-     ! Align y=0 to atom1
-     shift = -crack_slab%pos(2,atom1)
-     
-     call Print('Centering on atom '//atom1)
-     call print('  Atom 1 pos = '//crack_slab%pos(:,atom1))
-     call Print('Shifting atoms vertically by '//shift)
-     do i=1,crack_slab%N
-        crack_slab%pos(2,i) = crack_slab%pos(2,i) + shift
-     end do
-
-  else if (trim(params%crack_name) == '(110)[001b]') then
-     ! Do nothing - correctly aligned already
-  else if (trim(params%crack_name) == '(100)(010)') then
-     ! Do nothing - correctly aligned already
-  else if (trim(params%crack_structure) == 'graphene') then
-     ! Do nothing - correctly aligned already
-  else
-     ! Get shift from params
-     do i=1,crack_slab%N
-        crack_slab%pos(2,i) = crack_slab%pos(2,i) + params%crack_y_shift
-     end do
-  end if
 
   call crack_make_seed(crack_slab, params)
   !call crack_setup_marks(crack_slab, params) 
