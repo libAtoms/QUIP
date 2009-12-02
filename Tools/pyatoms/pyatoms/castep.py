@@ -108,7 +108,7 @@ valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'chec
                              'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step', 'pspot_beta_phi_type', 
                              'grid_scale', 'fine_grid_scale', 'fine_gmax', 
                              'mix_charge_gmax', 'mix_spin_gmax', 'devel_code',
-                             'max_scf_cycles_dm', 'max_scf_cycles_edft']
+                             'max_scf_cycles_dm', 'max_scf_cycles_edft','extcharge_file']
 
 class CastepCell(OrderedDict):
    """Class to wrap a CASTEP cell (.cell) file"""
