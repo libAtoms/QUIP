@@ -6,7 +6,7 @@ F95 = gfortran -m32
 CC = gcc -m32
 CPLUSPLUS = g++ -m32
 #LINKER = gfortran -m32
-LINKER = gfortran -m32 -static #-static-libgfortran -static-libgcc
+LINKER = gfortran -m32 -static-libgfortran -static-libgcc
 
 DEFAULT_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 DEFAULT_OPTIM = -O3
