@@ -262,8 +262,8 @@ program crack
        (/"THERMALISE", "MD", "MD_LOADING", "MD_CRACKING", "DAMPED_MD", "MICROCANONICAL"/)
 
   ! Objects
-  type(InOutput) :: xmlfile, checkfile
-  type(CInOutput) :: movie, crackin, movie_backup
+  type(InOutput) :: xmlfile
+  type(CInOutput) :: movie, crackin, movie_backup, checkfile
   type(DynamicalSystem), target :: ds, ds_save
   type(Atoms) :: crack_slab, fd_start, fd_end, bulk
   type(CrackParams) :: params
@@ -281,13 +281,13 @@ program crack
   real(dp), pointer :: dr_prop(:,:), f_prop(:,:)
 
   ! Scalars
-  integer :: movie_n, nargs, i, state, steps, iunit, n, k
+  integer :: movie_n, nargs, i, state, steps, iunit, k
   logical :: mismatch, movie_exist, periodic_clusters(3), dummy, texist
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, orig_width
-  character(STRING_LENGTH) :: stem, movie_name, xyzfilename, xmlfilename
+  character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix
   character(value_len) :: state_string
 
   type(mpi_context) :: mpi_glob
@@ -310,31 +310,30 @@ program crack
   call system_timer('initialisation')
   call initialise(params)
 
-if (.not. mpi_glob%active) then
-  ! Print usage information if no arguments given
-  if (nargs /= 1) then
-     call print('Usage: crack <stem>')
-     call print('')
-     call print('Where stem.xyz and stem.xml are the crack slab XYZ file')
-     call print('and parameter file respectively')
-     call print('')
-     call print('Available parameters and their default values are:')
-     call print('')
-     call print(params)
+  if (.not. mpi_glob%active) then
+     ! Print usage information if no arguments given
+     if (nargs /= 1) then
+        call print('Usage: crack <stem>')
+        call print('')
+        call print('Where stem.xyz and stem.xml are the crack slab XYZ file')
+        call print('and parameter file respectively')
+        call print('')
+        call print('Available parameters and their default values are:')
+        call print('')
+        call print(params)
 
-     call system_finalise
-     stop
+        call system_finalise
+        stop
+     end if
   end if
-end if
 
   ! 1st argument contains stem for input xyz or binary checkfile and parameter files
-if (.not. mpi_glob%active) then
-  call get_cmd_arg(1, stem)
-else
-  stem = 'crack' ! Some MPIs can't handle command line arguments
-end if
-
-  xyzfilename = trim(stem)//'.xyz'
+  if (.not. mpi_glob%active) then
+     call get_cmd_arg(1, stem)
+  else
+     stem = 'crack' ! Some MPIs can't handle command line arguments
+  end if
+  
   xmlfilename = trim(stem)//'.xml'
 
   call print_title('Initialisation')
@@ -454,25 +453,53 @@ end if
 
   end if
 
-  ! Read atoms from file <stem>.xyz, <stem>.nc or from binary <stem>.check
+  ! Look for input file. Check for the following, in order
+  ! <stem>_check.nc
+  ! <stem>_check.xyz
+  ! <stem>.nc
+  ! <stem>.xyz
 
-  if (params%simulation_restart) then
-      if (params%io_netcdf) then
-        call Print('Restarting from NetCDF trajectory '//trim(stem)//'.nc')
-        call initialise(movie, trim(stem)//'.nc', action=INOUT, append=.true.)
-        call read(movie, crack_slab, frame=int(movie%n_frame)-1) ! Read last frame
-      else
-        call Print('Restarting from checkfile '//trim(params%io_checkpoint_path)//trim(stem)//'.check')
-        call initialise(checkfile, trim(params%io_checkpoint_path)//trim(stem)//'.check', &
-             INPUT, isformatted=.false.)
-        call read_binary(crack_slab, checkfile)
-        call finalise(checkfile)
-      end if
-  else
-     call print('Reading atoms from input file '//trim(stem)//'.xyz')
-     call initialise(crackin, trim(stem)//'.xyz', action=INPUT)
-     call read(crackin, crack_slab)
+  if (params%io_netcdf) then
+     inquire(file=trim(stem)//'_check.nc', exist=texist)
+     if (texist) then
+        call print('Reading atoms from input file '//trim(stem)//'_check.nc')
+        call initialise(crackin, trim(stem)//'_check.nc', action=INPUT)
+        call read(crackin, crack_slab)
+        call finalise(crackin)
+     endif
   end if
+
+  if (.not. texist) then
+     inquire(file=trim(stem)//'_check.xyz', exist=texist)
+     if (texist) then
+        call print('Reading atoms from input file '//trim(stem)//'_check.xyz')
+        call initialise(crackin, trim(stem)//'_check.xyz', action=INPUT)
+        call read(crackin, crack_slab)
+        call finalise(crackin)
+     endif
+  end if
+
+  if (params%io_netcdf .and. .not. texist) then
+     inquire(file=trim(stem)//'.nc', exist=texist)
+     if (texist) then
+        call print('Reading atoms from input file '//trim(stem)//'.nc')
+        call initialise(crackin, trim(stem)//'.nc', action=INPUT)
+        call read(crackin, crack_slab)
+        call finalise(crackin)
+     endif     
+  end if
+
+  if (.not. texist) then
+     inquire(file=trim(stem)//'.xyz', exist=texist)
+     if (texist) then
+        call print('Reading atoms from input file '//trim(stem)//'.xyz')
+        call initialise(crackin, trim(stem)//'.xyz', action=INPUT)
+        call read(crackin, crack_slab)
+        call finalise(crackin)
+     endif
+  end if
+  
+  if (.not. texist) call system_abort('No input file found - checked for <stem>_check.nc, <stem>_check.xyz, <stem>.nc and <stem>.xyz')
 
   call initialise(ds, crack_slab)
   call finalise(crack_slab)
@@ -504,28 +531,24 @@ end if
        call system_abort('io_netcdf = .true. but NetCDF support not compiled in')
 #endif 
 
+  if (params%io_netcdf) then
+     suffix = '.nc'
+  else
+     suffix = '.xyz'
+  end if
+  
   if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
-     if (.not. params%io_netcdf) then
-        ! Avoid overwriting movie file from previous runs by suffixing a number
-        movie_n = 1
-        movie_exist = .true.
-        do while (movie_exist)
-           write (movie_name, '(a,i0,a)') trim(stem)//'_movie_', movie_n, '.xyz'
-           inquire (file=movie_name, exist=movie_exist)
-           movie_n = movie_n + 1
-        end do
-        
-        call print('Setting up movie output file '//movie_name)
-        call initialise(movie, movie_name, action=OUTPUT)
-     else
-        if (.not. movie%initialised) then
-           call initialise(movie, trim(stem)//'.nc', action=OUTPUT)
-
-           if (params%io_backup) &
-                call initialise(movie_backup, trim(stem)//'_backup.nc', action=OUTPUT)
-                k=0 
-        endif
-     end if
+     ! Avoid overwriting movie file from previous runs by suffixing a number
+     movie_n = 1
+     movie_exist = .true.
+     do while (movie_exist)
+        write (movie_name, '(a,i0,a)') trim(stem)//'_movie_', movie_n, trim(suffix)
+        inquire (file=movie_name, exist=movie_exist)
+        movie_n = movie_n + 1
+     end do
+     
+     call print('Setting up movie output file '//movie_name)
+     call initialise(movie, movie_name, action=OUTPUT)
   endif
 
 
@@ -573,9 +596,9 @@ end if
   end if
 
   ! Print a frame before we start
-  call crack_print(ds%atoms, movie, params, mpi_glob)
+  call crack_print(ds%atoms, movie, params)
   if (params%io_backup .and. params%io_netcdf) &
-       call crack_print(ds%atoms, movie_backup, params, mpi_glob)
+       call crack_print(ds%atoms, movie_backup, params)
 
   if (.not. params%simulation_classical) then
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
@@ -618,7 +641,8 @@ end if
 
      if (.not. get_value(ds%atoms%params, 'Temp', temp)) temp = 0.0_dp
 
-     if (.not. params%simulation_restart) then
+     ! If velocities are zero, randomise them at correct temperature
+     if (maxval(abs(ds%atoms%velo)) < 1e-5_dp) then
         call rescale_velo(ds, temp)
         call zero_momentum(ds)
 	ds%cur_temp = temperature(ds, instantaneous=.true.)
@@ -869,7 +893,7 @@ end if
               end if
 
               ! advance the dynamics
-              call advance_verlet(ds, params%md_time_step, f)
+              call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
               if (params%simulation_classical) then
                  call ds_print_status(ds, 'E', epot=energy)
               else
@@ -880,8 +904,12 @@ end if
               if (state == STATE_MD_LOADING) then
                  ! increment the load
                  if (has_property(ds%atoms, 'load')) then
+                    call system_timer('load_increment')
                     call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
+                    call system_timer('load_increment')
+                    call system_timer('calc_dists')
                     call calc_dists(ds%atoms)
+                    call system_timer('calc_dists')
                     if (.not. get_value(ds%atoms%params, 'G', G)) call system_abort('No G in ds%atoms%params')
                  else
                     call print('No load field found - not increasing load.')
@@ -929,7 +957,7 @@ end if
                  end if
 
                  ! advance the dynamics
-                 call advance_verlet(ds, params%md_time_step, f)
+                 call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
                  call ds_print_status(ds, 'I')
                  if (params%qm_calc_force_error) call print('I err '//ds%t//' '//rms_diff(f, f_fm)//' '//maxval(abs(f_fm-f)))
 
@@ -980,7 +1008,7 @@ end if
            end if
 
            call print_title('Advance Verlet')
-           call advance_verlet(ds, params%md_time_step, f)
+           call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
            call ds_print_status(ds, 'D')
 
            if (trim(params%simulation_task) == 'damped_md') &
@@ -1001,40 +1029,46 @@ end if
         end if ! params%extrapolate_steps /= 1
 
 
-        ! Print movie
+        ! Do I/O only on master node
+        if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
 
-        if (ds%t - last_print_time >=  params%io_print_interval) then
-           last_print_time = ds%t
            call set_value(ds%atoms%params, 'Time', ds%t)
            call set_value(ds%atoms%params, 'Temp', temperature(ds))
            call set_value(ds%atoms%params, 'LastStateChangeTime', last_state_change_time)
            call set_value(ds%atoms%params, 'LastMDIntervalTime', last_md_interval_time)
-           call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
-           call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
            call set_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)
            call set_value(ds%atoms%params, 'State', STATE_NAMES(state))
-           if (params%io_backup .and. params%io_netcdf) then
-              k=k+1           
-              if (mod(k,2).eq.0) then
-                 call crack_print(ds%atoms, movie, params, mpi_glob)
-                 call print('writing .nc file '//trim(stem)//'.nc')
-              else
-                 call crack_print(ds%atoms, movie_backup, params, mpi_glob)
-                 call print('writing .nc file '//trim(stem)//'_backup.nc')
-              endif
-           else
-              call crack_print(ds%atoms, movie, params, mpi_glob)
-           end if
-        end if
 
-        ! Write binary checkpoint file
-        if (ds%t - last_checkpoint_time >=  params%io_checkpoint_interval .and. .not. params%io_netcdf) then
-           last_checkpoint_time = ds%t
-           call initialise(checkfile, trim(params%io_checkpoint_path)//trim(stem)//'.check', &
-                OUTPUT, isformatted=.false.)
-           call write_binary(ds%atoms, checkfile)
-           call finalise(checkfile)
-        endif
+           ! Print movie
+           if (ds%t - last_print_time >=  params%io_print_interval) then
+              
+              last_print_time = ds%t
+              call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
+
+              if (params%io_backup .and. params%io_netcdf) then
+                 k=k+1           
+                 if (mod(k,2).eq.0) then
+                    call crack_print(ds%atoms, movie, params)
+                    call print('writing .nc file '//trim(stem)//'.nc')
+                 else
+                    call crack_print(ds%atoms, movie_backup, params)
+                    call print('writing .nc file '//trim(stem)//'_backup.nc')
+                 endif
+              else
+                 call crack_print(ds%atoms, movie, params)
+              end if
+           end if
+
+           ! Write checkpoint file
+           if (ds%t - last_checkpoint_time >=  params%io_checkpoint_interval) then
+              last_checkpoint_time = ds%t
+              call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
+
+              call initialise(checkfile, trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix, OUTPUT)
+              call write(ds%atoms, checkfile)
+              call finalise(checkfile)
+           endif
+        end if
 
         ! Recalculate connectivity and nearest neighbour tables
         if (ds%t - last_calc_connect_time >= params%md_calc_connect_interval) then
@@ -1120,7 +1154,7 @@ end if
            write (line, '(i15,a15,f15.4,f15.4)') i, '----', f_dr, integral
         end if
         call print(line)
-        call crack_print(ds%atoms, movie, params, mpi_glob)
+        call crack_print(ds%atoms, movie, params)
      end do
 
      write (line, '(a,f15.8,a)') 'Energy difference = ', fd_e0 - energy, ' eV'
@@ -1159,7 +1193,7 @@ end if
 
   if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
      call crack_update_connect(ds%atoms, params)
-     call crack_print(ds%atoms, movie, params, mpi_glob)
+     call crack_print(ds%atoms, movie, params)
   end if
 
 
@@ -1212,7 +1246,7 @@ end if
         call print_title('Applying load')
         call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
         
-        call crack_print(ds%atoms, movie, params, mpi_glob)
+        call crack_print(ds%atoms, movie, params)
      end do
 
   else
