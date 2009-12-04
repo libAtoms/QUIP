@@ -1505,46 +1505,19 @@ contains
 
   end function crack_find_crack_pos
 
-!!$  subroutine crack_print_xyz_name(at, xyzfilename, params)
-!!$    type(Atoms), intent(inout) :: at
-!!$    character(len=*), intent(in) :: xyzfilename
-!!$    type(CrackParams), intent(in) :: params
-!!$
-!!$    if (params%io_print_all_properties) then
-!!$       call print_xyz(at, xyzfilename, all_properties=.true.)
-!!$    else
-!!$       call print_xyz(at, xyzfilename, properties=params%io_print_properties)
-!!$    end if
-!!$  end subroutine crack_print_xyz_name
-!!$
-!!$  subroutine crack_print_xyz_file(at, xyzfile, params)
-!!$    type(Atoms), intent(inout) :: at
-!!$    type(inoutput), intent(inout) :: xyzfile
-!!$    type(CrackParams), intent(in) :: params
-!!$
-!!$    if (params%io_print_all_properties) then
-!!$       call print_xyz(at, xyzfile, all_properties=.true.)
-!!$    else
-!!$       call print_xyz(at, xyzfile, properties=params%io_print_properties)
-!!$    end if
-!!$  end subroutine crack_print_xyz_file
-
-  subroutine crack_print_cio(at, cio, params, mpi)
+  subroutine crack_print_cio(at, cio, params)
     type(Atoms), intent(inout) :: at
     type(CInoutput), intent(inout) :: cio
     type(CrackParams), intent(in) :: params
-    type(MPI_context) :: mpi
 
-    if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-       if (params%io_print_all_properties) then
-          call write(cio, at)
-       else
-          call write(cio, at, properties=params%io_print_properties)
-       end if
+    if (params%io_print_all_properties) then
+       call write(cio, at)
+    else
+       call write(cio, at, properties=params%io_print_properties)
     end if
   end subroutine crack_print_cio
 
-  subroutine crack_print_filename(at, filename, params, mpi)
+  subroutine crack_print_filename(at, filename, params)
     type(Atoms), intent(inout) :: at
     character(*), intent(in) :: filename
     type(CrackParams), intent(in) :: params
@@ -1552,14 +1525,14 @@ contains
 
     type(CInOutput) :: cio
 
-    if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-       call initialise(cio, filename, action=OUTPUT)
-       if (params%io_print_all_properties) then
-          call write(cio, at)
-       else
-          call write(cio, at, properties=params%io_print_properties)
-       end if
+    call initialise(cio, filename, action=OUTPUT)
+    if (params%io_print_all_properties) then
+       call write(cio, at)
+    else
+       call write(cio, at, properties=params%io_print_properties)
     end if
+    call finalise(cio)
+
   end subroutine crack_print_filename
 
   subroutine crack_make_slab(params, classicalpot, simple, crack_slab,width, height, E, v, v2, bulk)

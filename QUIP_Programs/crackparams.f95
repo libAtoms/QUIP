@@ -138,7 +138,6 @@ module CrackParams_module
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
      integer  :: simulation_seed          !% Random number seed. Use zero for a random seed, or a particular value to repeat a previous run.
-     logical  :: simulation_restart       !% Restart from checkfile containing velocites of all atoms.
      logical  :: simulation_classical     !% Perform a purely classical simulation
      logical  :: simulation_force_initial_load_step !% Force a load step at beginning of simulation
 
@@ -381,7 +380,6 @@ contains
     ! Basic simulation parameters
     this%simulation_task         = 'md'
     this%simulation_seed         = 0
-    this%simulation_restart      = .false.
     this%simulation_classical    = .false.
     this%simulation_force_initial_load_step = .false.
 
@@ -427,21 +425,13 @@ contains
     this%io_verbosity            = NORMAL
     this%io_netcdf               = .false.
     this%io_print_interval       = 10.0_dp  ! fs
-    this%io_print_all_properties = .true.
+    this%io_print_all_properties = .false.
     if (allocated(this%io_print_properties)) deallocate(this%io_print_properties)
-    allocate(this%io_print_properties(11))
+    allocate(this%io_print_properties(3))
     ! arrays of strings must all have the same length, really
     this%io_print_properties     = (/"species          ", &
 				     "pos              ", &
-				     "hybrid           ", &
-				     "hybrid_mark      ", &
-				     "nn               ", &
-				     "changed_nn       ", &
-				     "old_nn           ", &
-				     "md_old_changed_nn", &
-				     "edge_mask        ", &
-				     "move_mask        ", &
-				     "load             "/)
+				     "hybrid_mark      "/)
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
@@ -750,11 +740,6 @@ contains
        call QUIP_FoX_get_value(attributes, "seed", value, status)
        if (status == 0) then
           read (value, *) parse_cp%simulation_seed
-       end if
-
-       call QUIP_FoX_get_value(attributes, "restart", value, status)
-       if (status == 0) then
-          read (value, *) parse_cp%simulation_restart
        end if
 
        call QUIP_FoX_get_value(attributes, "classical", value, status)
@@ -1302,7 +1287,6 @@ contains
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
     call Print('     seed                  = '//this%simulation_seed,file=file)
-    call Print('     restart               = '//this%simulation_restart,file=file)
     call Print('     classical             = '//this%simulation_classical,file=file)
     call Print('     force_initial_load_step = '//this%simulation_force_initial_load_step,file=file)
     call Print('',file=file)
