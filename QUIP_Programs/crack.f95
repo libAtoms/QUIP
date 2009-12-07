@@ -549,8 +549,11 @@ program crack
      
      call print('Setting up movie output file '//movie_name)
      call initialise(movie, movie_name, action=OUTPUT)
+     if (params%io_backup) then 
+        write (movie_name, '(a,i0,a)') trim(stem)//'_movie_backup_', movie_n, trim(suffix)
+        call initialise(movie_backup, movie_name, action=OUTPUT)
+     end if
   endif
-
 
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot)+params%md_crust)//' A.')
   call atoms_set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
@@ -597,7 +600,7 @@ program crack
 
   ! Print a frame before we start
   call crack_print(ds%atoms, movie, params)
-  if (params%io_backup .and. params%io_netcdf) &
+  if (params%io_backup) &
        call crack_print(ds%atoms, movie_backup, params)
 
   if (.not. params%simulation_classical) then
@@ -1045,7 +1048,7 @@ program crack
               last_print_time = ds%t
               call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
 
-              if (params%io_backup .and. params%io_netcdf) then
+              if (params%io_backup) then
                  k=k+1           
                  if (mod(k,2).eq.0) then
                     call crack_print(ds%atoms, movie, params)
