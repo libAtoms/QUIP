@@ -1,9 +1,10 @@
+#!/usr/bin/env python
+
 from quippy import *
 import sys, optparse, shutil
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 
 p = optparse.OptionParser(usage='%prog [options] <input file>...')
 
@@ -13,10 +14,12 @@ p.add_option('-n', '--nowindow', action='store_true', help='Disable AtomEye view
 p.add_option('-e', '--encoder', action='store', help='Movie encoder command', default='ffmpeg -i %s -r 25 -b 30M %s')
 p.add_option('-p', '--player', action='store', help='Movie player command', default='mplayer %s')
 p.add_option('-v', '--viewfile', action='store', help='AtomEye command script for initial view')
-p.add_option('-g', '--graph', action='store', help='Enable graph plotting')
+p.add_option('-g', '--graph', action='store_true', help='Enable graph plotting')
 p.add_option('-x', '--xdata', action='store', help='Data for x axis of graph')
 p.add_option('-y', '--ydata', action='store', help='Data for y axis of graph')
 p.add_option('--y2data', action='store', help='Data for y2 axis of graph')
+p.add_option('-t', '--text', action='store', help="""Annotate images with text. Argument should be a Python
+expression which evaluates to a string, e.g. '"G = %f" % at.G'""")
 
 opt, args = p.parse_args()
 
@@ -54,55 +57,59 @@ if opt.viewfile is not None:
 if not opt.nowindow:
    raw_input('Arrange AtomEye view then press enter...')
 
-fillvalue = 9.969209968386869e+36
+postprocess = None
 
-if opt.xdata == 'frame':
-   xdata = farray(frange(nframes))
-else:
-   xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
-ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
-if opt.y2data is not None:
-   y2data = hstack([getattr(s,opt.y2data) for s in sources])[opt.range]
+if opt.graph is not None:
 
-fig = Figure(figsize=(8,2))
-canvas = FigureCanvas(fig)
+   def add_plot(at, i, filename):
 
-ax1 = fig.add_axes([0.1,0.2,0.8,0.65])
-ax1.set_xlim(xdata.min(), xdata.max())
-ax1.set_ylim(ydata.min(), ydata.max())
-l1, = ax1.plot([], [], 'b-', scalex=False, scaley=False, label='Temp')
-ax1.set_xlabel(opt.xdata)
-ax1.set_ylabel(opt.ydata)
+      l1.set_data(xdata[:i], ydata[:i])
+      if opt.y2data is not None:
+         l2.set_data(xdata[:i], y2data[:i])
 
-if opt.y2data is not None:
-   ax2 = ax1.twinx()
-   ax2.set_ylim(y2data.min(), y2data.max())
-   ax2.yaxis.tick_right()
-   l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
-   ax2.set_ylabel(opt.y2data)
+      basename, ext = os.path.splitext(filename)
 
-
-def add_plot(at, i, filename):
-
-   l1.set_data(xdata[:i], ydata[:i])
-   if opt.y2data is not None:
-      l2.set_data(xdata[:i], y2data[:i])
-
-   basename, ext = os.path.splitext(filename)
-
-   try:
-      fig.savefig(basename+'.1.png')
-      os.system('montage -geometry +0+0 -tile 1x2 %s %s %s' % (filename, basename+'.1.png', basename+'.2.jpg'))
-      shutil.move(basename+'.2.jpg', filename)
-   finally:
-      os.remove(basename+'.1.png')
-
+      try:
+         fig.savefig(basename+'.1.png')
+         os.system('montage -geometry +0+0 -tile 1x2 %s %s %s' % (filename, basename+'.1.png', basename+'.2.jpg'))
+         shutil.move(basename+'.2.jpg', filename)
+      finally:
+         os.remove(basename+'.1.png')
    
+   postprocess = add_plot
+   if opt.xdata == 'frame':
+      xdata = farray(frange(nframes))
+   else:
+      xdata = hstack([getattr(s,opt.xdata) for s in sources])[opt.range]
+   ydata  = hstack([getattr(s,opt.ydata) for s in sources])[opt.range]
+   if opt.y2data is not None:
+      y2data = hstack([getattr(s,opt.y2data) for s in sources])[opt.range]
 
-def add_text(at, i, filename):
-   s = 'G = %.3f' % at.G
-   os.system('mogrify -gravity SouthWest -annotate 0x0+0+0 "%s" -font Helvetica -pointsize 32 %s' % (s, filename))
+   fig = Figure(figsize=(8,2))
+   canvas = FigureCanvas(fig)
 
-view.make_movie(atomseq, opt.outfile, postprocess=add_plot,
+   ax1 = fig.add_axes([0.1,0.2,0.8,0.65])
+   ax1.set_xlim(xdata.min(), xdata.max())
+   ax1.set_ylim(ydata.min(), ydata.max())
+   l1, = ax1.plot([], [], 'b-', scalex=False, scaley=False, label='Temp')
+   ax1.set_xlabel(opt.xdata)
+   ax1.set_ylabel(opt.ydata)
+
+   if opt.y2data is not None:
+      ax2 = ax1.twinx()
+      ax2.set_ylim(y2data.min(), y2data.max())
+      ax2.yaxis.tick_right()
+      l2, = ax2.plot([], [], 'r-', scalex=False, scaley=False, label='G')
+      ax2.set_ylabel(opt.y2data)
+
+if opt.text is not None:
+
+   def add_text(at, i, filename):
+      s = eval(opt.text)
+      os.system('mogrify -gravity SouthWest -annotate 0x0+0+0 "%s" -font Helvetica -pointsize 32 %s' % (s, filename))
+
+   postprocess = add_text
+
+view.make_movie(atomseq, opt.outfile, postprocess=postprocess,
                 movieencoder=opt.encoder, movieplayer=opt.player, nframes=nframes, cleanup=True)
 
