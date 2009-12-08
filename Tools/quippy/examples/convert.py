@@ -3,7 +3,7 @@
 from quippy import *
 import sys, optparse, itertools
 
-p = optparse.OptionParser(usage='%prog [options] <input file> <output file>')
+p = optparse.OptionParser(usage='%prog [options] <input file> [<output file>]')
 
 p.add_option('-r', '--range', action='store', help="""Range of frames to include. Should be either a single frame
 number or a slice [start]:[stop][:step]. If -r is omitted,
@@ -31,14 +31,21 @@ parameters "Lattice" and "Properties" which are always written.
 The original order of parameters in the input file is preserved.""")
 p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz
 Supported formats: cell, nc, pos, pov, xyz.""")
- 
+p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
+p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
+p.add_option('-e', '--exec_code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
+available as `at`.""")
 
 opt, args = p.parse_args()
 
-if len(args) != 2:
-   p.error('One input and one output file must be specified.')
+if len(args) != 1 and len(args) != 2:
+   p.error('One input file must be specified. Output file is optional.')
 
-infile, outfile = args
+try:
+   infile, outfile = args
+except ValueError:
+   infile, = args
+   outfile = None
 
 if infile == '-':  outfile = 'stdin'
 if outfile == '-': outfile = 'stdout'
@@ -46,6 +53,17 @@ if outfile == '-': outfile = 'stdout'
 class SliceParser(object):
    def __getitem__(self, idx):
       return idx
+
+def parse_comma_colon_list(L):
+   if ':' in L:
+      L = L.split(':')
+   elif ',' in L:
+      L = L.split(',')
+   else:
+      L = [L]
+
+   return [k.lower() for k in L]
+
 
 if opt.range is not None:
    try:
@@ -69,26 +87,18 @@ if opt.lattice is not None:
 
 
 if opt.properties is not None:
-   if ':' in opt.properties:
-      opt.properties = opt.properties.split(':')
-   elif ',' in opt.properties:
-      opt.properties = opt.properties.split(',')
-   else:
-      opt.properties = [opt.properties]
-
-   opt.properties = [k.lower() for k in opt.properties]
-
+   opt.properties = parse_comma_colon_list(opt.properties)
 
 if opt.params is not None:
-   if ':' in opt.params:
-      opt.params = opt.params.split(':')
-   elif ',' in opt.params:
-      opt.params = opt.params.split(',')
+   opt.params = parse_comma_colon_list(opt.params)
+
+if opt.merge is not None:
+   merge_config = Atoms(opt.merge)
+
+   if opt.merge_properties is not None:
+      opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
    else:
-      opt.params = [opt.params]
-
-   opt.params = [k.lower() for k in opt.params]
-
+      opt.merge_properties = merge_config.properties.keys()
 
 def process(at):
    # Override lattice
@@ -102,31 +112,41 @@ def process(at):
          if not k in opt.params:
             del at.params[k]
 
+   # Merge from merge_config
+   if opt.merge:
+      for k in opt.merge_properties:
+         at.add_property(k, getattr(merge_config, k))
 
-   # Do the writing
-   if opt.properties is None:
-      outfile.write(at)
-   else:
-
-      # Convert from frac_pos to pos
-      if 'frac_pos' in opt.properties and not at.has_property('frac_pos'):
-         at.add_property('frac_pos', 0.0, n_cols=3)
-         at.frac_pos[:] = dot(at.g, at.pos)
-
-      # or vice-versa
-      if 'pos' in opt.properties and not at.has_property('pos'):
-         at.add_property('pos', 0.0, n_cols=3)
-         at.pos[:] = dot(at.lattice, at.frac_pos)
+   # Execute user code
+   if opt.exec_code is not None:
+      exec(opt.exec_code)
       
-      try:
-         # Try to do the filtering at the writing stage
-         outfile.write(at, properties=opt.properties)
-      except TypeError:
-         p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
+   # Do the writing
+   if outfile is not None:
+      if opt.properties is None:
+         outfile.write(at)
+      else:
+
+         # Convert from frac_pos to pos
+         if 'frac_pos' in opt.properties and not at.has_property('frac_pos'):
+            at.add_property('frac_pos', 0.0, n_cols=3)
+            at.frac_pos[:] = dot(at.g, at.pos)
+
+         # or vice-versa
+         if 'pos' in opt.properties and not at.has_property('pos'):
+            at.add_property('pos', 0.0, n_cols=3)
+            at.pos[:] = dot(at.lattice, at.frac_pos)
+
+         try:
+            # Try to do the filtering at the writing stage
+            outfile.write(at, properties=opt.properties)
+         except TypeError:
+            p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
 all_configs = AtomsList(infile)
-outfile = AtomsWriter(outfile, format=opt.format)
+if outfile is not None:
+   outfile = AtomsWriter(outfile, format=opt.format)
 
 if len(all_configs) == 1:
    opt.range = 1
@@ -137,7 +157,7 @@ if isinstance(opt.range, slice):
    from quippy.progbar import ProgressBar
    pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
    
-   for i, at in fenumerate(all_configs[opt.range]):
+   for i, at in fenumerate(itertools.islice(all_configs, opt.range.start+1, opt.range.stop, opt.range.step)):
       process(at)
       pb(i)
 
@@ -147,8 +167,9 @@ else:
    # single frame
    process(AtomsList(infile)[opt.range])
 
-try:
-   outfile.close()
-except AttributeError:
-   pass
+if outfile is not None:
+   try:
+      outfile.close()
+   except AttributeError:
+      pass
 
