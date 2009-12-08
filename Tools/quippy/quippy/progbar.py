@@ -64,9 +64,9 @@ class ProgressBar:
         return str(self.progBar)
 
     def __call__(self, value):
-        """ Updates the amount, and writes to stdout. Prints a carriage return
+        """ Updates the amount, and writes to stderr. Prints a carriage return
             first, so it will overwrite the current line in stdout."""
-        print '\r',
+        sys.stderr.write('\r')
         self.updateAmount(value)
-        sys.stdout.write(str(self))
-        sys.stdout.flush()
+        sys.stderr.write(str(self))
+        sys.stderr.flush()
