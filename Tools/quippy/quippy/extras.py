@@ -333,6 +333,60 @@ class Atoms(FortranAtoms):
       return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
 
+   def add_property(self, name, value, n_cols=1):
+      """
+      Add a new property to this Atoms object.
+
+      `name` is the name of the new property and `value` should be
+      either a scalar or an array representing the value, which should
+      be either integer, real, logical or string.
+
+      If a scalar is given for `value` it is copied to every element
+      in the new property.  `n_cols` can be specified to create a 2D
+      property from a scalar initial value - the default is 1 which
+      creates a 1D property.
+
+      If an array is given for `value` it should either have shape
+      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
+      property.  In this case `n_cols` is inferred from the shape of
+      the `value` and shouldn't be passed as an argument.
+
+      If property with the same type is already present then no error
+      occurs. A warning is printed if the verbosity level is VERBOSE
+      or higher. The value will be overwritten with that given in
+      `value`.
+      """
+      
+      if hasattr(value, 'shape'):
+         # some kind of array:
+         if len(value.shape) == 1:
+            if value.shape[0] != self.n:
+               raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
+                                % (value.shape[0], self.n))
+            n_cols = 1
+            value_ref = value[1]
+         elif len(value.shape) == 2:
+            if value.shape[1] != self.n:
+               raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
+                                % (value.shape[1], self.n))
+            value_ref = value[1,1]
+            if value.dtype.kind == 'S':
+               n_cols = 1
+            else:
+               n_cols = value.shape[0]
+         else:
+            raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
+      else:
+         # some kind of scalar
+         value_ref = value
+
+      FortranAtoms.add_property(self, name, value_ref, n_cols)
+      
+      if hasattr(value, 'shape'):
+         getattr(self, name)[:] = value
+            
+
+
 from dictmixin import DictMixin, ParamReaderMixin
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 

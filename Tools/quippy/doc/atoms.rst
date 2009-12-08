@@ -222,20 +222,41 @@
 
    .. method:: add_property(name, value[, n_cols])
 
-      Add a new property called `name` to this :class:`Atoms`
-      object. The type is deduced from `value` which should be
-      either integer, real, string (length 10) or logical. If `n_cols`
-      is present it should be one (scalar properties) or three
-      (vector properties) -- the default is one.
+      Add a new property to this Atoms object.
+
+      `name` is the name of the new property and `value` should be
+      either a scalar or an array representing the value, which should
+      be either integer, real, logical or string.
+
+      If a scalar is given for `value` it is copied to every element
+      in the new property.  `n_cols` can be specified to create a 2D
+      property from a scalar initial value - the default is 1 which
+      creates a 1D property.
+
+      If an array is given for `value` it should either have shape
+      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
+      property.  In this case `n_cols` is inferred from the shape of
+      the `value` and shouldn't be passed as an argument.
+
+      If property with the same type is already present then no error
+      occurs. A warning is printed if the verbosity level is VERBOSE
+      or higher. The value will be overwritten with that given in
+      `value`.
 
       Here are some examples::
 
 	  a = Atoms(n=10, lattice=10.0*fidentity(3))
+
 	  a.add_property('mark', 1)                  # Scalar integer
 	  a.add_property('bool', False)              # Scalar logical
 	  a.add_property('local_energy', 0.0)        # Scalar real
 	  a.add_property('force', 0.0, n_cols=3)     # Vector real
 	  a.add_property('label', '')                # Scalar string
+
+	  a.add_property('count', [1,2,3,4,5,6,7,8,9,10])  # From list
+	  a.add_property('norm_pos', a.pos.norm())         # From 1D array
+	  a.add_property('pos', new_pos)                   # Overwrite positions with array new_pos
+	                                                   # which should have shape (3,10)
       
    .. method:: remove_property(name)
 
@@ -434,6 +455,12 @@
       Specify the neighbour cutoff to be a multiple of the bond length
       of the two atoms' types. Optional argument `factor_break` is
       used by :meth:`calc_connect_hysteretic`.
+
+   .. method:: density()
+
+      Return density in units of :math:`g/m^3`. If a `mass` property
+      exists, use that, otherwise we use `z` and `ElementMass` to
+      calculate the total mass of the cell.
 
       
 Structure generation routines
