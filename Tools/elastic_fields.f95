@@ -4,9 +4,11 @@ module elastic_module
 
 contains
 
-  subroutine elastic_fields(at, a, C11, C12, C44)
+  subroutine elastic_fields(at, a, C11, C12, C44, Cij)
     type(Atoms), intent(inout) :: at
-    real(dp), intent(in) :: a, C11, C12, C44
+    real(dp), intent(in) :: a
+    real(dp), intent(in), optional :: C11, C12, C44
+    real(dp), intent(in), optional :: Cij(6,6)
 
     real(dp) :: C(6,6), strain(6), stress(6)
     real(dp), dimension(3) :: n1,n2,n3, d
@@ -29,11 +31,17 @@ contains
     rotXYZ(3,1) = 1.0_dp
 
     ! Elastic constants matrix C_{ij}
-    C = 0.0_dp
-    C(1,1) = C11; C(2,2) = C11; C(3,3) = C11;
-    C(4,4) = C44; C(5,5) = C44; C(6,6) = C44;
-    C(1,2) = C12; C(1,3) = C12; C(2,3) = C12;
-    C(2,1) = C12; C(3,1) = C12; C(3,2) = C12;
+    if (present(C11) .and. present(C12) .and. present(C44)) then
+       C = 0.0_dp
+       C(1,1) = C11; C(2,2) = C11; C(3,3) = C11;
+       C(4,4) = C44; C(5,5) = C44; C(6,6) = C44;
+       C(1,2) = C12; C(1,3) = C12; C(2,3) = C12;
+       C(2,1) = C12; C(3,1) = C12; C(3,2) = C12;
+    else if (present(Cij)) then
+       C = Cij
+    else
+       call system_abort('elastic_fields: either C11, C12 and C44 (for cubic cell) or full Cij matrix must be present')
+    end if
 
 
     ! Create properties and assign pointers
@@ -179,13 +187,13 @@ contains
           call print('RtE:', VERBOSE);  call print(RtE, VERBOSE)
           call print('RtSR:', VERBOSE); call print(SS, VERBOSE)
 
-          ! Strain(1:6) = (/eps11,eps22,eps33,eps12,eps13,eps23/)
+          ! Strain(1:6) = (/eps11,eps22,eps33,eps23,eps13,eps12/)
           strain(1) = SS(1,1) - 1.0_dp
           strain(2) = SS(2,2) - 1.0_dp
           strain(3) = SS(3,3) - 1.0_dp
-          strain(4) = SS(1,2)
-          strain(5) = SS(1,3)
-          strain(6) = SS(2,3)
+          strain(4) = 2.0_dp*SS(2,3)
+          strain(5) = 2.0_dp*SS(1,3)
+          strain(6) = 2.0_dp*SS(1,2)
        else
           strain = 0.0_dp
           S = 0.0_dp
@@ -194,18 +202,20 @@ contains
 
        stress = C .mult. strain
 
-       ! Now stress(1:6) = (/sig11,sig22,sig33,sig12,sig13,sig23/)
+       ! Now stress(1:6) = (/sig11,sig22,sig33,sig23,sig13,sig12/)
 
        sig = 0.0_dp
        sig(1,1) = stress(1)
        sig(2,2) = stress(2)
        sig(3,3) = stress(3)
-       sig(1,2) = stress(4)
+
+       sig(1,2) = stress(6)
        sig(1,3) = stress(5)
-       sig(2,3) = stress(6)
-       sig(2,1) = stress(4)
+       sig(2,3) = stress(4)
+
+       sig(2,1) = stress(6)
        sig(3,1) = stress(5)
-       sig(3,2) = stress(6)
+       sig(3,2) = stress(4)
 
        von_mises_stress(i) = sqrt(0.5*((stress(1) - stress(2))**2.0_dp + &
             (stress(2) - stress(3))**2.0_dp + &
@@ -222,12 +232,15 @@ contains
        call symmetrise(RSigRt)
        call diagonalise(RSigRt,D,SigEvecs)
 
+       ! Return strain in such a way that vector (S_xx_sub1, S_yy_sub1, S_zz_sub1, S_yz, S_xz, S_xy)
+       ! yields (sig_xx, sig_yy, sig_zz, sig_yz, sig_xz, sig_xy) when multiplied by C_ij matrix
+       ! i.e. we return (e1,e2,e3,e4,e5,e6) according to compressed Voigt notation.
        S_xx_sub1(i) = S(1,1) - 1.0_dp
        S_yy_sub1(i) = S(2,2) - 1.0_dp
        S_zz_sub1(i) = S(3,3) - 1.0_dp
-       S_yz(i)      = S(2,3)
-       S_xz(i)      = S(1,3)
-       S_xy(i)      = S(1,2)
+       S_yz(i)      = 2.0_dp*S(2,3)
+       S_xz(i)      = 2.0_dp*S(1,3)
+       S_xy(i)      = 2.0_dp*S(1,2)
 
        Sig_xx(i)    = RSigRt(1,1)
        Sig_yy(i)    = RSigRt(2,2)
