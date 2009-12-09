@@ -111,7 +111,7 @@ class AtomEyeView(object):
         d = theat[idx]
         for k in sorted(d):
             v = d[k]
-            if isinstance(v, FortranArray) and v.dtype.kind == 'f':
+            if isinstance(v, FortranArray) and v.dtype.kind == 'f' and len(v) > 1:
                 print '%s = %s (norm %f)' % (k, v, v.norm())
             else:
                 print '%s = %s' % (k, v)
