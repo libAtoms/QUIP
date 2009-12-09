@@ -23,9 +23,9 @@ def stress_matrix(stress_vector):
                   [s5, s4, s3]])
 
 def strain_vector(strain_matrix):
-   return farray([strain_matrix[1,1],
-                  strain_matrix[2,2],
-                  strain_matrix[3,3],
+   return farray([strain_matrix[1,1] - 1.0,
+                  strain_matrix[2,2] - 1.0,
+                  strain_matrix[3,3] - 1.0,
                   2.0*strain_matrix[2,3],
                   2.0*strain_matrix[1,3],
                   2.0*strain_matrix[1,2]])
