@@ -6043,9 +6043,9 @@ contains
 
     integer :: i, ji, jji, j, shift(3), delta_shift(3), jj, k, ki
     integer :: n_neighbours, max_n_neighbours
-    integer, allocatable :: shifts(:,:,:)
-    logical, allocatable :: touched(:)
-    integer :: seed_val
+    integer, allocatable :: shifts(:,:,:), cluster_list(:)
+    logical, allocatable :: touched(:), is_in_cluster(:)
+    integer :: seed_val, last_n_in_cluster
 
     seed_val=optional_default(1, seed)
 
@@ -6057,6 +6057,32 @@ contains
     allocate(shifts(3,max_n_neighbours,this%N))
     shifts = 0
 
+    ! find which atoms are in cluster that includes seed
+    allocate(is_in_cluster(this%N))
+    is_in_cluster = .false.
+    last_n_in_cluster = 0
+    is_in_cluster(seed_val) = .true.
+    do while (count(is_in_cluster) /= last_n_in_cluster)
+      last_n_in_cluster = count(is_in_cluster)
+      do i=1, this%N
+	if (is_in_cluster(i)) then
+	  do ji=1, atoms_n_neighbours(this, i)
+	    j = atoms_neighbour(this, i, ji, shift=shift)
+	    is_in_cluster(j) = .true.
+	  end do
+	end if
+      end do
+    end do
+    allocate(cluster_list(count(is_in_cluster)))
+    ji = 0
+    do i=1, this%N
+      if (is_in_cluster(i)) then
+	ji = ji + 1
+	cluster_list(ji) = i
+      endif
+    end do
+
+    ! initialize shifts
     do i=1, this%N
       do ji=1, atoms_n_neighbours(this, i)
 	j = atoms_neighbour(this, i, ji, shift=shift)
@@ -6068,9 +6094,10 @@ contains
     touched = .false.
     touched(seed_val) = .true.
 
-    do while (any(shifts /= 0))
+    do while (any(shifts(:,:,cluster_list(:)) /= 0))
       ! look for atoms i that have been touched
       do i=1, this%N
+	if (.not. is_in_cluster(i)) cycle
 	if (touched(i)) then
 	  ! look at neighbors of i
 	  do ji=1, atoms_n_neighbours(this,i)
@@ -6119,6 +6146,8 @@ contains
 
     deallocate(touched)
     deallocate(shifts)
+    deallocate(is_in_cluster)
+    deallocate(cluster_list)
 
   end subroutine coalesce_in_one_periodic_image
 
