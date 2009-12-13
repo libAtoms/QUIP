@@ -120,7 +120,6 @@ program makecrack
   type(MPI_context) :: mpi_glob
   type(Inoutput) :: xmlfile
   type(CInoutput) :: netcdf
-  type(Inoutput) :: checkfile
 
   ! Pointers into Atoms data structure
   real(dp), pointer, dimension(:,:) :: load
@@ -204,7 +203,10 @@ program makecrack
   ! Open x and y surfaces, remain periodic in z direction (normal to plane)
   if (trim(params%crack_structure) /= 'graphene') then
      lattice = crack_slab%lattice
-     lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
+     
+     if (.not. params%crack_double_ended) then
+        lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
+     end if
      lattice(2,2) = lattice(2,2) + params%crack_vacuum_size
      call atoms_set_lattice(crack_slab, lattice)
   end if
@@ -273,18 +275,18 @@ program makecrack
   call set_value(crack_slab%params, 'CrackPosy', crack_pos(2))
 
   call crack_setup_marks(crack_slab, params)
-  call crack_print(crack_slab, xyzfilename, params, mpi_glob)
+
+  params%io_print_all_properties = .true.
+
+  if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
+     call crack_print(crack_slab, xyzfilename, params)
+  end if
 
   if (params%io_netcdf) then
      call initialise(netcdf, trim(stem)//'.nc', action=OUTPUT)
-     call crack_print(crack_slab, netcdf, params, mpi_glob)
+     if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) &     
+          call crack_print(crack_slab, netcdf, params)
      call finalise(netcdf)
-  else
-     if (.not. mpi_glob%active .or. (mpi_glob%active .and. mpi_glob%my_proc == 0)) then
-        call initialise(checkfile, trim(stem)//'.check', OUTPUT, isformatted=.false.)
-        call write_binary(crack_slab, checkfile)
-        call finalise(checkfile)
-     end if
   end if
 
   call verbosity_pop() ! Return to default verbosity
