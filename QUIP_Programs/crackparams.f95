@@ -134,6 +134,7 @@ module CrackParams_module
      real(dp) :: crack_graphene_notch_height !% Height of graphene notch. Unit:~\AA{}.
      character(STRING_LENGTH) :: crack_slab_filename !%Input file to use instead of generating slabs.
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
+     logical :: crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
  
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -370,6 +371,7 @@ contains
     this%crack_y_shift           = 0.0_dp   ! Angstrom
     this%crack_seed_embed_tol    = 3.0_dp   ! Angstrom
     this%crack_dislo_seed        = 0
+    this%crack_double_ended     = .false.
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -727,6 +729,11 @@ contains
        call QUIP_FoX_get_value(attributes, "dislo_seed", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_dislo_seed
+       end if
+
+       call QUIP_FoX_get_value(attributes, "double_ended", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_double_ended
        end if
 
 
@@ -1283,6 +1290,7 @@ contains
     call Print('     graphene_notch_height = '//this%crack_graphene_notch_height//' A', file=file)
     call Print('     slab_filename         = '//this%crack_slab_filename, file=file)
     call Print('     dislo_seed            = '//this%crack_dislo_seed, file=file)
+    call Print('     doubled_ended         = '//this%crack_double_ended, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)

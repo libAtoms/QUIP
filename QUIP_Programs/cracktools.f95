@@ -592,7 +592,11 @@ contains
           end if
        end if
 
-       l_crack_pos = -orig_width
+       if (params%crack_double_ended) then
+          l_crack_pos = -params%crack_seed_length
+       else
+          l_crack_pos = -orig_width
+       end if
 
        allocate(relaxed_pos(3,crack_slab%N), new_pos(3,crack_slab%N))
        allocate(k_disp(3, crack_slab%N))  
@@ -833,8 +837,13 @@ contains
     allocate(u_disp(3,crack_slab%N))
 
     ! Determine position of seed crack
-    l_crack_pos = -orig_width ! single ended crack
-    r_crack_pos = -orig_width/2.0_dp + params%crack_seed_length
+    if (.not. params%crack_double_ended) then
+       l_crack_pos = -orig_width ! single ended crack
+       r_crack_pos = -orig_width/2.0_dp + params%crack_seed_length
+    else
+       l_crack_pos = -params%crack_seed_length/2.0_dp
+       r_crack_pos = params%crack_seed_length/2.0_dp
+    end if
 
 !!$    if (trim(params%crack_structure) == 'graphene') then
 !!$       r_crack_pos = -orig_width

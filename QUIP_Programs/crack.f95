@@ -599,9 +599,11 @@ program crack
   end if
 
   ! Print a frame before we start
-  call crack_print(ds%atoms, movie, params)
-  if (params%io_backup) &
-       call crack_print(ds%atoms, movie_backup, params)
+  if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
+     call crack_print(ds%atoms, movie, params)
+     if (params%io_backup) &
+          call crack_print(ds%atoms, movie_backup, params)
+  end if
 
   if (.not. params%simulation_classical) then
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
