@@ -1095,6 +1095,8 @@ contains
     at%pos(:,7) = y*a1 + x*a2 - (2.0_dp/3.0_dp + z)*a3
     at%pos(:,8) = -x*a1 + (y-x)*a2  - z*a3
     at%pos(:,9) = (x - y)*a1 - y*a2 - (1.0_dp/3.0_dp + z)*a3
+
+    call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6,7,8,9 /))
     
  end subroutine alpha_quartz
 
