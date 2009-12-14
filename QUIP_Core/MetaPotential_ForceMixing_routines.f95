@@ -30,9 +30,10 @@
     call param_register(params, 'mm_args_str', '', this%mm_args_str)
     call param_register(params, 'qm_args_str', '', this%qm_args_str)
     call param_register(params, 'buffer_hops', '0', this%buffer_hops)
-    call param_register(params, 'hysteretic_buffer', 'F', this%hysteretic_buffer)
-    call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', this%hysteretic_buffer_inner_radius)
-    call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', this%hysteretic_buffer_outer_radius)
+!    call param_register(params, 'hysteretic_buffer', 'F', this%hysteretic_buffer)
+    call param_register(params, 'buffer_inner_radius', '5.0', this%buffer_inner_radius)
+    call param_register(params, 'buffer_outer_radius', '7.0', this%buffer_outer_radius)
+    call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', this%construct_buffer_use_only_heavy_atoms)
     call param_register(params, 'hysteretic_connect', 'F', this%hysteretic_connect)
     call param_register(params, 'hysteretic_connect_cluster_radius', '20.0', this%hysteretic_connect_cluster_radius)
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', this%hysteretic_connect_inner_factor)
@@ -132,7 +133,11 @@
     call Print(' mm_args_str='//trim(this%mm_args_str), file=file)
     call Print(' qm_args_str='//trim(this%qm_args_str), file=file)
     call Print(' buffer_hops='//this%buffer_hops, file=file)
+!    call print(' hysteretic_buffer'//this%hysteretic_buffer)
+    call print(' buffer_inner_radius'//this%buffer_inner_radius)
+    call print(' buffer_outer_radius'//this%buffer_outer_radius)
     call print(' use_buffer_for_fitting='//this%use_buffer_for_fitting)
+    call print(' construct_buffer_use_only_heavy_atoms'//this%construct_buffer_use_only_heavy_atoms)
     call Print(' fit_hops='//this%fit_hops, file=file)
     call print(' add_cut_H_in_fitlist='//this%add_cut_H_in_fitlist,file=file)
     call Print(' randomise_buffer='//this%randomise_buffer, file=file)
@@ -199,7 +204,7 @@
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
          AP_method, weight_interpolation, lotf_interp_order
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
-    real(dp) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
+    real(dp) :: buffer_inner_radius, buffer_outer_radius
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
 
     integer :: weight_method, buffer_hops, transition_hops, fit_hops, lotf_spring_hops
@@ -208,6 +213,7 @@
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end of workaround for pgf90 bug (as of 9.0-1)
+    logical :: construct_buffer_use_only_heavy_atoms
 
     if (present(err)) err = 0
 
@@ -222,9 +228,10 @@
     call param_register(params, 'mm_args_str', this%mm_args_str, mm_args_str)
     call param_register(params, 'qm_args_str', this%qm_args_str, qm_args_str)
     call param_register(params, 'buffer_hops', ''//this%buffer_hops, buffer_hops)
-    call param_register(params, 'hysteretic_buffer', ''//this%hysteretic_buffer, hysteretic_buffer)
-    call param_register(params, 'hysteretic_buffer_inner_radius', ''//this%hysteretic_buffer_inner_radius, hysteretic_buffer_inner_radius)
-    call param_register(params, 'hysteretic_buffer_outer_radius', ''//this%hysteretic_buffer_outer_radius, hysteretic_buffer_outer_radius)
+!    call param_register(params, 'hysteretic_buffer', ''//this%hysteretic_buffer, hysteretic_buffer)
+    call param_register(params, 'buffer_inner_radius', ''//this%buffer_inner_radius, buffer_inner_radius)
+    call param_register(params, 'buffer_outer_radius', ''//this%buffer_outer_radius, buffer_outer_radius)
+    call param_register(params, 'construct_buffer_use_only_heavy_atoms', ''//this%construct_buffer_use_only_heavy_atoms, construct_buffer_use_only_heavy_atoms)
     call param_register(params, 'hysteretic_connect', ''//this%hysteretic_connect, hysteretic_connect)
     call param_register(params, 'hysteretic_connect_cluster_radius', ''//this%hysteretic_connect_cluster_radius, hysteretic_connect_cluster_radius)
     call param_register(params, 'hysteretic_connect_inner_factor', ''//this%hysteretic_connect_inner_factor, hysteretic_connect_inner_factor)
@@ -263,6 +270,11 @@
        weight_interpolation = 'distance_ramp'
     end if
 
+    hysteretic_buffer = .false.
+    if (buffer_inner_radius.gt.epsilon(0._dp)) hysteretic_buffer = .true.
+    if (hysteretic_buffer.and.buffer_hops.gt.0) call system_abort('only 1 of buffer_inner_radius ('//buffer_inner_radius//') and buffer_hops ('//buffer_hops//') can be > 0. ')
+    if (hysteretic_buffer.and.(buffer_outer_radius.lt.buffer_inner_radius)) call system_abort('the inner radius for the (hysteretic) buffer selection must not be larger than the outer radius.')
+
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_Calc args_str') ) &
       call system_abort("MetaPotential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
@@ -285,8 +297,16 @@
        if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
             call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
 
-       hybrid_mark = HYBRID_NO_MARK
-       where(hybrid /= 0) hybrid_mark = HYBRID_ACTIVE_MARK
+       if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) call system_abort('MetaPotential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).')
+       if (hysteretic_buffer) then
+          !update only the active region, the buffer region will be updated in create_hybrid_weights
+          where(hybrid_mark.eq.HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
+          where(hybrid.eq.HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
+       else
+          !no hysteresis, rebuild hybrid_markfrom scratch
+          hybrid_mark = HYBRID_NO_MARK
+          where(hybrid /= 0) hybrid_mark = HYBRID_ACTIVE_MARK
+       endif
 
        call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.')
 
@@ -296,12 +316,13 @@
        call create_hybrid_weights(at, trans_width=transition_hops, buffer_width=buffer_hops, &
             weight_interpolation=weight_interpolation, nneighb_only=nneighb_only, min_images_only=.true., &
             mark_buffer_outer_layer=randomise_buffer, hysteretic_buffer=hysteretic_buffer, &
-            hysteretic_buffer_inner_radius=hysteretic_buffer_inner_radius, &
-            hysteretic_buffer_outer_radius=hysteretic_buffer_outer_radius, &
+            hysteretic_buffer_inner_radius=buffer_inner_radius, &
+            hysteretic_buffer_outer_radius=buffer_outer_radius, &
             hysteretic_connect=hysteretic_connect, &
             hysteretic_connect_cluster_radius=hysteretic_connect_cluster_radius, &
             hysteretic_connect_inner_factor=hysteretic_connect_inner_factor, &
-            hysteretic_connect_outer_factor=hysteretic_connect_outer_factor)
+            hysteretic_connect_outer_factor=hysteretic_connect_outer_factor, &
+            construct_buffer_use_only_heavy_atoms=construct_buffer_use_only_heavy_atoms)
 
        ! reassign pointers
        
@@ -342,31 +363,7 @@
        f_mm(:,i) = mm_reweight*f_mm(:,i)
     end do
 
-    ! Make embed and fit lists if we need them
-    if (method(1:4) == 'lotf' .or. trim(method) == 'conserve_momentum') then
-
-       if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
-          if (this%use_buffer_for_fitting) then
-             if (trim(method).ne.'conserve_momentum') &
-                call system_abort('use_buffer_for_fitting=T only works for method=conserve_momentum')
-             !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
-             call create_embed_and_buffer_lists_from_hybrid_mark(at,this%embedlist,this%fitlist)
-          else
-             call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
-                  nneighb_only=lotf_nneighb_only, min_images_only=.true.)
-             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
-                  call add_cut_hydrogens(at,this%fitlist)
-             endif
-          end if
-
-       endif
-
-       ! Make some convenient arrays of embed and fit list
-       allocate(embed(this%embedlist%N))
-       embed = int_part(this%embedlist,1)
-       allocate(fit(this%fitlist%N))
-       fit = int_part(this%fitlist,1)
-    end if
+    !Fitlist construction has been moved to after the cluster carving in case the cluster is used as the fitlist.
 
     ! Do the expensive QM calculation. For the LOTF methods we only do this if lotf_do_qm is true
     if (method(1:4) /= 'lotf' .or. (method(1:4) == 'lotf' .and. lotf_do_qm)) then
@@ -394,7 +391,38 @@
        ! nodes.
        call calc(this%qmpot, at, f=f_qm, err=err, args_str=qm_args_str, mpi_obj=this%mpi)
     end if
-    
+
+    !Fitlist construction has been moved here.
+
+    ! Make embed and fit lists if we need them
+    if (method(1:4) == 'lotf' .or. trim(method) == 'conserve_momentum') then
+
+       if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
+          if (this%use_buffer_for_fitting) then
+             if (trim(method).ne.'conserve_momentum') &
+                call system_abort('use_buffer_for_fitting=T only works for method=conserve_momentum')
+             !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
+             call create_embed_and_fit_lists_from_cluster_mark(at,this%embedlist,this%fitlist)
+!             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
+!                  call add_cut_hydrogens(at,this%fitlist)
+!             endif
+          else
+             call create_embed_and_fit_lists(at, fit_hops, this%embedlist, this%fitlist, &
+                  nneighb_only=lotf_nneighb_only, min_images_only=.true.)
+             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
+                  call add_cut_hydrogens(at,this%fitlist)
+             endif
+          end if
+
+       endif
+
+       ! Make some convenient arrays of embed and fit list
+       allocate(embed(this%embedlist%N))
+       embed = int_part(this%embedlist,1)
+       allocate(fit(this%fitlist%N))
+       fit = int_part(this%fitlist,1)
+    end if
+
     if (method(1:4) == 'lotf') then
        
 #ifdef HAVE_LOTF
