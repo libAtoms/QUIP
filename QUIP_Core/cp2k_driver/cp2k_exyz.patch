@@ -47,7 +47,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_
               enum_desc=s2a(&
               "Coordinates read in the &COORD section of the input file",&
               "Coordinates provided through a PDB file format",&
---- 1557,1563 ----
+--- 1557,1565 ----
               variants=s2a("COORDINATE"),&
               description="Set up the way in which coordinates will be read.",&
               usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
