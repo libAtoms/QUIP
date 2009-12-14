@@ -1236,15 +1236,19 @@ contains
     integer, intent(out) :: n_lines
     integer, optional, intent(out) :: status
 
-    integer my_status
-    integer :: line_no
+    integer :: my_status, line_no, line_array_size
 
     line_no = 0
     my_status = 0
 
     do while (my_status == 0) 
       line_no = line_no + 1
-      if (line_no > size(line_array)) call extend_char_array(line_array, 1.5_dp, 10)
+      if (allocated(line_array)) then
+	line_array_size = size(line_array)
+      else
+	line_array_size = 0
+      endif
+      if (line_no > line_array_size) call extend_char_array(line_array, 1.5_dp, 10)
       line_array(line_no) = read_line(this, my_status)
     end do
 
@@ -1279,7 +1283,11 @@ contains
       return
     endif
 
-    old_n = size(line_array)
+    if (allocated(line_array)) then
+      old_n = size(line_array)
+    else
+      old_n = 0
+    end if
     allocate(t_line_array(len(line_array(1)), old_n))
     do i=1, old_n
       do j=1, len(line_array(1))
