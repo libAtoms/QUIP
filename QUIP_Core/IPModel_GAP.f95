@@ -30,6 +30,7 @@ use libatoms_module
 
 use mpi_context_module
 use QUIP_Common_module
+use IPEwald_module
 
 #ifdef HAVE_GP
 use bispectrum_module
@@ -48,14 +49,20 @@ include 'IPModel_interface.h'
 
 public :: IPModel_GAP
 type IPModel_GAP
-  integer :: n_types = 0                                       !% Number of atomic types.
+
+  integer :: n_types = 0
+
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:) !% Atomic number dimensioned as \texttt{n_types}.
   real(dp) :: cutoff = 0.0_dp                                  !% Cutoff for computing connection.
 
   ! bispectrum parameters
   integer :: j_max = 0
   real(dp) :: z0 = 0.0_dp
-  real(dp), dimension(:), allocatable :: w_Z
+  integer :: n_species = 0                                       !% Number of atomic types.
+  integer, dimension(:), allocatable :: Z
+  logical :: do_ewald = .false.
+  real(dp), dimension(116) :: z_eff = 0.0_dp
+  real(dp), dimension(116) :: w_Z = 1.0_dp
 
   ! qw parameters
   integer :: qw_dim = 0
@@ -107,8 +114,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
 
   type(Dictionary) :: my_dictionary
   integer :: i, n_species
-  integer, dimension(:), allocatable :: Z
-  real(dp), dimension(:), allocatable :: w
+  real(dp), dimension(:), allocatable :: w, z_eff
 
   call Finalise(this)
 
@@ -156,22 +162,28 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
      this%cutoff = maxval(this%qw_cutoff)
   endif
 
-
   if( get_value(my_dictionary,'n_species',n_species) ) then
-     allocate( Z(n_species), w(n_species) )
-     if( .not. ( get_value(my_dictionary,'Z',Z) .and. get_value(my_dictionary,'w',w) ) ) &
-     & call system_abort('')
-     allocate(this%w_Z(maxval(Z)))
+     allocate( this%Z(n_species), w(n_species), z_eff(n_species) )
+     if( n_species == 1 ) then
+        if( .not. ( get_value(my_dictionary,'Z',this%Z(1)) .and. get_value(my_dictionary,'w',w(1)) .and. &
+        & get_value(my_dictionary,'z_eff',z_eff(1)) ) ) call system_abort('')
+     else
+        if( .not. ( get_value(my_dictionary,'Z',this%Z) .and. get_value(my_dictionary,'w',w) .and. &
+        & get_value(my_dictionary,'z_eff',z_eff) ) ) call system_abort('')
+     endif
+     
+     this%w_Z = 0.0_dp
+     this%z_eff = 0.0_dp
      do i = 1, n_species
-        this%w_Z(Z(i)) = w(i)
+        this%w_Z(this%Z(i)) = w(i)
+        this%z_eff(this%Z(i)) = z_eff(i)
      enddo
+     deallocate(w, z_eff)
   endif
+  if( .not. get_value(my_dictionary,'do_ewald',this%do_ewald) ) call system_abort('')
      
   call finalise(my_dictionary)
 #endif  
-
-  if( allocated(Z) ) deallocate(Z)
-  if( allocated(w) ) deallocate(w)
 
 end subroutine IPModel_GAP_Initialise_str
 
@@ -214,13 +226,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
-  real(dp), dimension(:), allocatable   :: local_e_in, w
+  real(dp), dimension(:), allocatable   :: local_e_in, w, charge
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  real(dp), dimension(:,:), allocatable   :: vec
+  real(dp), dimension(:,:), allocatable   :: vec, f_ewald
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer :: d, i, j, k, l, n, nei_max, jn
 
-  real(dp) :: qw_in(this%qw_dim), qw_prime_in(this%qw_dim,3)
+  real(dp) :: qw_in(this%qw_dim), qw_prime_in(this%qw_dim,3), e_ewald
+  real(dp), dimension(3,3) :: virial_ewald
 
   integer, dimension(3) :: shift
 
@@ -231,18 +244,26 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   type(grad_bispectrum_so4), save :: dbis
 
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
-
 #endif  
-  if (present(e)) e = 0.0_dp
+
+  if (present(e)) then
+     e = 0.0_dp
+     e_ewald = 0.0_dp
+  endif
+
   if (present(local_e)) then
      call check_size('Local_E',local_e,(/at%N/),'IPModel_GAP_Calc')
      local_e = 0.0_dp
   endif
+
   if (present(f)) then 
      call check_size('Force',f,(/3,at%N/),'IPModel_GAP_Calc')
      f = 0.0_dp
   end if
-  if (present(virial)) virial = 0.0_dp
+  if (present(virial)) then
+     virial = 0.0_dp
+     virial_ewald = 0.0_dp
+  endif
 
   if(present(e) .or. present(local_e) ) then
      allocate(local_e_in(at%N))
@@ -257,14 +278,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
   allocate(w(at%N))
-  if( allocated(this%w_Z) ) then
-     do i = 1, at%N
-        w(i) = this%w_Z(at%Z(i))
-     enddo
-  else
-     w = 1.0_dp
-  endif
-
+  do i = 1, at%N
+     w(i) = this%w_Z(at%Z(i))
+  enddo
+  
   if (trim(this%datafile_coordinates) == 'bispectrum') then
 
 #ifdef HAVE_GP
@@ -313,7 +330,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   do i = 1, at%N
      if(present(e) .or. present(local_e)) then
 #ifdef HAVE_GP
-        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i))
+        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i))
 #endif
      endif
 
@@ -324,7 +341,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
        
            !call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,kk,i))
 #ifdef HAVE_GP
-           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i))
+           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i))
 #endif
            f_gp = f_gp - f_gp_k
        
@@ -335,7 +352,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
        
 !              if(jn==i)cycle              
 #ifdef HAVE_GP
-              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j))
+              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j),Z=at%Z(j))
 #endif
               !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
               f_gp = f_gp - f_gp_k
@@ -414,13 +431,35 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   endif
 
-  if(present(e)) e = sum(local_e_in)
+  if( this%do_ewald ) then
+     allocate(charge(at%N))
+     if(present(f)) allocate(f_ewald(3,at%N))
+     do i = 1, at%N
+        charge(i) = this%z_eff(at%Z(i))
+     enddo
+
+     if( present(e) .and. .not.present(f) .and. .not.present(virial)) call Ewald_calc(at,e=e_ewald,charge=charge)
+     if( present(f) .and. .not.present(e) .and. .not.present(virial)) call Ewald_calc(at,f=f_ewald,charge=charge)
+     if( present(virial) .and. .not.present(e) .and. .not.present(f)) call Ewald_calc(at,virial=virial_ewald,charge=charge)
+
+     if( present(e) .and. present(f) .and. .not.present(virial)) call Ewald_calc(at,e=e_ewald,f=f_ewald,charge=charge)
+     if( present(e) .and. present(virial) .and. .not.present(f)) call Ewald_calc(at,e=e_ewald,virial=virial_ewald,charge=charge)
+     if( present(f) .and. present(virial) .and. .not.present(e)) call Ewald_calc(at,f=f_ewald,virial=virial_ewald,charge=charge)
+
+     if( present(e) .and. present(f) .and. present(virial)) call Ewald_calc(at,e=e_ewald,f=f_ewald,virial=virial_ewald,charge=charge)
+     
+     if(present(f)) f = f + f_ewald
+     deallocate(charge)
+     if(allocated(f_ewald)) deallocate(f_ewald)
+  endif
+
+  if(present(e)) e = sum(local_e_in) + e_ewald
   if(present(local_e)) local_e = local_e_in
-  if(present(virial)) virial = sum(virial_in,dim=3)
+  if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald
 
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
-  deallocate(w)
+  if(allocated(w)) deallocate(w)
 
 end subroutine IPModel_GAP_Calc
 
