@@ -970,6 +970,55 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
+  ! hcp(myatoms, a, Z)
+  !
+  !% Creates a 2-atom hcp lattice with lattice constants of 'a'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine hcp(myatoms, a, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 2, &
+         reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.0_dp,   0.0_dp,                a*sqrt(8.0_dp/3.0_dp) /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/        0.0_dp,        0.0_dp, 0.0_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.5_dp /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine hcp
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! sc(myatoms, a, Z)
+  !
+  !% Creates a 1-atom simple cubic lattice with lattice constants of 'a'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine sc(myatoms, a, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 1, &
+         reshape( (/     a, 0.0_dp, 0.0_dp, &
+                  & 0.0_dp,      a, 0.0_dp, &
+                  & 0.0_dp, 0.0_dp,      a /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine sc
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
   ! bcc(myatoms, a, Z)
   !
   !% Creates a 2-atom bcc-structure with cubic lattice constant of 'a'
@@ -990,6 +1039,92 @@ contains
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine bcc
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! bcc1(myatoms, a, Z)
+  !
+  !% Creates a 1-atom primitive bcc-structure with cubic lattice constant of 'a'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ 
+  subroutine bcc1(myatoms, a, Z)
+    type(Atoms), intent(out) :: myatoms
+    real(dp)                 :: a
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 1, &
+    & 0.5_dp*a*reshape( (/1.0_dp,-1.0_dp, 1.0_dp, &
+                        & 1.0_dp, 1.0_dp,-1.0_dp, &
+                        &-1.0_dp, 1.0_dp, 1.0_dp/),(/3,3/)))
+    
+    myatoms%pos(:,1) = (/0.00_dp, 0.00_dp, 0.00_dp/)
+ 
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine bcc1
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! zincblende2(myatoms, a, Z1, Z2)
+  !
+  !% Creates a 2-atom zincblende lattice with lattice constants of 'a'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine zincblende(myatoms, a, Z1, Z2)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a
+    integer, intent(in), optional :: Z1, Z2
+
+    call atoms_initialise(myatoms, 2, &
+         reshape( (/0.0_dp,   0.5_dp*a, 0.5_dp*a, &
+                  & 0.5_dp*a, 0.0_dp,   0.5_dp*a, &
+                  & 0.5_dp*a, 0.5_dp*a, 0.0_dp /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp, 0.00_dp, 0.00_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp, 0.25_dp /))
+
+    if (present(Z1).and.present(Z2)) call set_atoms(myatoms,(/Z1,Z2/))
+    if (present(Z1).and. .not.present(Z2)) call set_atoms(myatoms,Z1)
+    if (.not. present(Z1).and. present(Z2)) call set_atoms(myatoms,Z2)
+
+  end subroutine zincblende
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! wurtzite(myatoms, a, Z1, Z2)
+  !
+  !% Creates a 4-atom wurtzite lattice with lattice constants of 'a' and 'c'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine wurtzite(myatoms, a, c, Z1, Z2, u)
+    type(Atoms), intent(out)       :: myatoms
+    real(dp), intent(in)           :: a
+    real(dp), intent(in), optional :: c, u
+    integer, intent(in), optional  :: Z1, Z2
+
+    real(dp) :: my_c, my_u
+
+    my_c = optional_default(sqrt(8.0_dp/3.0_dp)*a,c)
+    my_u = optional_default(3.0_dp/8.0_dp,u)
+
+    call atoms_initialise(myatoms, 4, &
+         reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.0_dp,   0.0_dp,                my_c/),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.00_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 2.0_dp/3.0_dp, 1.0_dp/3.0_dp, 0.50_dp /))
+    myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, my_u    /))
+    myatoms%pos(:,4) = matmul(myatoms%lattice, (/ 2.0_dp/3.0_dp, 1.0_dp/3.0_dp, 0.50_dp+my_u /))
+
+    if (present(Z1).and.present(Z2)) call set_atoms(myatoms,(/Z1,Z1,Z2,Z2/))
+    if (present(Z1).and. .not.present(Z2)) call set_atoms(myatoms,Z1)
+    if (.not. present(Z1).and. present(Z2)) call set_atoms(myatoms,Z2)
+
+  end subroutine wurtzite
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
