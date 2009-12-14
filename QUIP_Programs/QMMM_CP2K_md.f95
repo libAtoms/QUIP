@@ -291,6 +291,7 @@ real(dp), pointer :: pot_p(:)
       call print('  avg_time '//avg_time)
       call print('  Seed '//Seed)
       call print('  Properties to print '//trim(print_prop))
+      call print('  cp2k_calc_args: '//trim(cp2k_calc_args))
       call print('---------------------------------------')
       call print('')
 
