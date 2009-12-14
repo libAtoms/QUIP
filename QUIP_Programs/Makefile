@@ -28,6 +28,15 @@ LIBFILES = libatoms.a libquip.a libquiputils.a
 ${PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
+test_CASTEP_MM_buffer_crack: % :  ${OBJS} %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
+
+test_CASTEP_water_chain: % :  ${OBJS} %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
+
+test_CASTEP_water_bulk: % :  ${OBJS} %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
+
 test: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
@@ -43,6 +52,9 @@ ts_calculation: % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
 QMMM_CP2K_md: % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
+
+QMMM_md_buf: % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
 
 annealing: % :  %.o ${LIBFILES}
