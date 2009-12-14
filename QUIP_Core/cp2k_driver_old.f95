@@ -4,8 +4,8 @@
 !   or pass to calc in args_str (see below)
 !the format is for H and O (for example):
 !2                  !number of lines
-!1 DZVP-GTH-PADE    !atomic number and basis set
-!8 DZVP-GTH-PADE
+!1 DZVP-GTH-BLYP    !atomic number and basis set
+!8 DZVP-GTH-BLYP
 !
 !arguments to be passed to go_cp2k in the args_str:
 !    Run_Type, default: 'MM', also understands 'QS', 'QMMM_CORE', and 'QMMM_EXTENDED'
@@ -35,7 +35,7 @@
 !S  read_qmlist(my_atoms,qmlistfilename,verbose)
 !F  num_of_bonds(at) result(bonds)
 !S  check_neighbour_numbers(at)
-!F  check_qmlist_change(old_qmlist,new_qmlist) result(list_changed)
+!F  check_list_change(old_list,new_list) result(list_changed)
 !S  write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print)
 !S  write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
 !S  read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
@@ -62,10 +62,10 @@ module cp2k_driver_module
                                      distance_min_image, &
                                      read_line, parse_line, &
                                      assignment(=), atoms_n_neighbours, remove_bond, &
-				     assign_pointer, print_xyz
+				     assign_pointer, print_xyz, atoms_neighbour, is_nearest_neighbour
   use clusters_module,         only: bfs_step,&
-                                     construct_buffer, &
-                                     select_hysteretic_quantum_region, &
+                                     construct_hysteretic_region, &
+                                     !select_hysteretic_quantum_region, &
                                      add_cut_hydrogens
   use dictionary_module,       only: dictionary, initialise, finalise, &
                                      get_value, set_value, &
@@ -107,7 +107,7 @@ module cp2k_driver_module
 
   private :: param_initialise
   private :: finalise
-  private :: construct_buffer_RADIUS
+!  private :: construct_buffer_RADIUS
   private :: get_qm_list_array
   private :: get_qm_list_int
   private :: get_qm_list_int_rec
@@ -120,8 +120,8 @@ module cp2k_driver_module
 ! private :: combine_forces
 
   public :: create_centred_qmcore, &
-            extend_qmlist, &
-            check_qmlist_change, &
+            !extend_qmlist, &
+            check_list_change, &
             num_of_bonds, &
             get_qm_list, &
             get_property, &
@@ -164,7 +164,7 @@ module cp2k_driver_module
     character(len=value_len) :: file
     real(dp)      :: mgrid_cutoff != 300.0_dp
     character(20) :: scf_guess != 'atomic'
-    character(20) :: xc_functional !!= 'PADE'
+    character(20) :: xc_functional !!= 'BLYP'
   end type param_dft_nml
 
   type param_mm_forcefield_nml
@@ -211,6 +211,7 @@ module cp2k_driver_module
   type working_env
     character(80) :: working_directory    !directory for temporary files used by cp2k
     character(80) :: pdb_file
+    character(80) :: exyz_file
     character(80) :: psf_file
     character(80) :: wfn_file
     character(80) :: cp2k_input_filename !='cp2k_input.inp'
@@ -253,6 +254,9 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
+  !% Initialise parameters to run CP2K: basis set; potential; DFT parameters; cell; global settings.
+  !% If these are empty, set some default.
+  !
   subroutine param_initialise(this,at,run_type,cp2k_program,basis_set_file,potential_file,&
     dft_file,cell_file,global_file,use_cubic_cell)
 
@@ -287,7 +291,7 @@ contains
     this%dft%mgrid_cutoff = 280.0_dp
     if (run_type.eq.QS_RUN .and. any(at%Z(1:at%N).eq.17)) this%dft%mgrid_cutoff = 300._dp
     this%dft%scf_guess = 'atomic'
-    this%dft%xc_functional = 'PADE' !can be B3LYP,PBE0,BLYP,BP,PADE,PBE,TPSS,HTCH120,OLYP,NO_SHORTCUT,NONE
+    this%dft%xc_functional = 'BLYP' !can be B3LYP,PBE0,BLYP,BP,PADE,PBE,TPSS,HTCH120,OLYP,NO_SHORTCUT,NONE
   endif
   if (any(run_type.eq.(/MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
     this%mm_forcefield%parmtype = 'CHM'
@@ -310,15 +314,18 @@ contains
     if (any(at%Z(int_part(fitlist,1)).gt.8)) this%dft%mgrid_cutoff = 300._dp
 
 ! whole numbers => to use wavefunction extrapolation later
-    QM_maxdist = 0
-    do i=1,fitlist%N
-      do j=i+1,fitlist%N
-         QM_maxdist(1) = max(QM_maxdist(1),distance_min_image(at,(/at%pos(1,i),0._dp,0._dp/),(/at%pos(1,j),0._dp,0._dp/)))
-         QM_maxdist(2) = max(QM_maxdist(2),distance_min_image(at,(/0._dp,at%pos(2,i),0._dp/),(/0._dp,at%pos(2,j),0._dp/)))
-         QM_maxdist(3) = max(QM_maxdist(3),distance_min_image(at,(/0._dp,0._dp,at%pos(3,i)/),(/0._dp,0._dp,at%pos(3,j)/)))
-!         call print('QM_maxdist: '//round(QM_maxdist(1),3)//' '//round(QM_maxdist(2),3)//' '//round(QM_maxdist(3),3))
-      enddo
-    enddo
+    QM_maxdist = 0._dp
+    QM_maxdist(1) = maxval(at%pos(1,fitlist%int(1,1:fitlist%N))) - minval(at%pos(1,fitlist%int(1,1:fitlist%N))) 
+    QM_maxdist(2) = maxval(at%pos(2,fitlist%int(1,1:fitlist%N))) - minval(at%pos(2,fitlist%int(1,1:fitlist%N))) 
+    QM_maxdist(3) = maxval(at%pos(3,fitlist%int(1,1:fitlist%N))) - minval(at%pos(3,fitlist%int(1,1:fitlist%N))) 
+!    do i=1,fitlist%N
+!      do j=i+1,fitlist%N
+!         QM_maxdist(1) = max(QM_maxdist(1),distance_min_image(at,(/at%pos(1,i),0._dp,0._dp/),(/at%pos(1,j),0._dp,0._dp/)))
+!         QM_maxdist(2) = max(QM_maxdist(2),distance_min_image(at,(/0._dp,at%pos(2,i),0._dp/),(/0._dp,at%pos(2,j),0._dp/)))
+!         QM_maxdist(3) = max(QM_maxdist(3),distance_min_image(at,(/0._dp,0._dp,at%pos(3,i)/),(/0._dp,0._dp,at%pos(3,j)/)))
+!!         call print('QM_maxdist: '//round(QM_maxdist(1),3)//' '//round(QM_maxdist(2),3)//' '//round(QM_maxdist(3),3))
+!      enddo
+!    enddo
 
     if (cubic) then
        QM_maxdist(1) = maxval(QM_maxdist(1:3))
@@ -358,20 +365,22 @@ contains
        this%qmmm%reuse_wfn = .false.
        call print('did not find QM_cell property in at%params, will not reuse wfn', VERBOSE)
        call set_value(at%params,'QM_cell',this%qmmm%qmmm_cell(1:3))
+       call print('set_value QM_cell :'//this%qmmm%qmmm_cell(1:3))
     endif
    ! only in case of extended run also QM buffer zone change counts
     if (Run_Type.eq.QMMM_RUN_EXTENDED) then
        ex = .false.
        ex = get_value(at%params,'QM_list_changed',QM_list_changed)
        if (ex) then
-       this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
-       if (QM_list_changed) then
-          call print('QM list changed, will not use wfn', VERBOSE)
-       else
-         call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
-       endif
+          this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
+          if (QM_list_changed) then
+             call print('QM list changed, will not use wfn', VERBOSE)
+          else
+             call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
+          endif
        else
           this%qmmm%reuse_wfn = .false.
+          call print('could not find QM_list_changed in the atoms object. reuse_wfn? '//this%qmmm%reuse_wfn) 
        endif
        if (this%qmmm%reuse_wfn) then
           this%dft%scf_guess = 'RESTART'
@@ -427,84 +436,84 @@ contains
 
 ! add default basis sets and potentials:
     if (.not.get_value(this%basis_set,'H',bs_pot_string).and.find_in_array(at%Z(1:at%N),1).gt.0) then
-       call print('Added default basis set for H: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'H','DZVP-GTH-PADE')
+       call print('Added default basis set for H: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'H','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'H',bs_pot_string).and.find_in_array(at%Z(1:at%N),1).gt.0) then
-       call print('Added default potential for H: GTH-PADE-q1')
-       call set_value(this%potential,'H','GTH-PADE-q1')
+       call print('Added default potential for H: GTH-BLYP-q1')
+       call set_value(this%potential,'H','GTH-BLYP-q1')
     endif
     if (.not.get_value(this%basis_set,'O',bs_pot_string).and.find_in_array(at%Z(1:at%N),8).gt.0) then
-       call print('Added default basis set for O: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'O','DZVP-GTH-PADE')
+       call print('Added default basis set for O: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'O','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'O',bs_pot_string).and.find_in_array(at%Z(1:at%N),8).gt.0) then
-       call print('Added default potential for O: GTH-PADE-q6')
-       call set_value(this%potential,'O','GTH-PADE-q6')
+       call print('Added default potential for O: GTH-BLYP-q6')
+       call set_value(this%potential,'O','GTH-BLYP-q6')
     endif
     if (.not.get_value(this%basis_set,'C',bs_pot_string).and.find_in_array(at%Z(1:at%N),6).gt.0) then
-       call print('Added default basis set for C: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'C','DZVP-GTH-PADE')
+       call print('Added default basis set for C: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'C','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'C',bs_pot_string).and.find_in_array(at%Z(1:at%N),6).gt.0) then
-       call print('Added default potential for C: GTH-PADE-q4')
-       call set_value(this%potential,'C','GTH-PADE-q4')
+       call print('Added default potential for C: GTH-BLYP-q4')
+       call set_value(this%potential,'C','GTH-BLYP-q4')
     endif
     if (.not.get_value(this%basis_set,'N',bs_pot_string).and.find_in_array(at%Z(1:at%N),7).gt.0) then
-       call print('Added default basis set for N: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'N','DZVP-GTH-PADE')
+       call print('Added default basis set for N: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'N','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'N',bs_pot_string).and.find_in_array(at%Z(1:at%N),7).gt.0) then
-       call print('Added default potential for N: GTH-PADE-q5')
-       call set_value(this%potential,'N','GTH-PADE-q5')
+       call print('Added default potential for N: GTH-BLYP-q5')
+       call set_value(this%potential,'N','GTH-BLYP-q5')
     endif
     if (.not.get_value(this%basis_set,'S',bs_pot_string).and.find_in_array(at%Z(1:at%N),16).gt.0) then
-       call print('Added default basis set for S: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'S','DZVP-GTH-PADE')
+       call print('Added default basis set for S: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'S','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'S',bs_pot_string).and.find_in_array(at%Z(1:at%N),16).gt.0) then
-       call print('Added default potential for S: GTH-PADE-q6')
-       call set_value(this%potential,'S','GTH-PADE-q6')
+       call print('Added default potential for S: GTH-BLYP-q6')
+       call set_value(this%potential,'S','GTH-BLYP-q6')
     endif
     if (.not.get_value(this%basis_set,'Cl',bs_pot_string).and.find_in_array(at%Z(1:at%N),17).gt.0) then
-       call print('Added default basis set for Cl: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'Cl','DZVP-GTH-PADE')
+       call print('Added default basis set for Cl: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'Cl','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'Cl',bs_pot_string).and.find_in_array(at%Z(1:at%N),17).gt.0) then
-       call print('Added default potential for Cl: GTH-PADE-q7')
-       call set_value(this%potential,'Cl','GTH-PADE-q7')
+       call print('Added default potential for Cl: GTH-BLYP-q7')
+       call set_value(this%potential,'Cl','GTH-BLYP-q7')
     endif
     if (.not.get_value(this%basis_set,'F',bs_pot_string).and.find_in_array(at%Z(1:at%N),9).gt.0) then
-       call print('Added default basis set for F: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'F','DZVP-GTH-PADE')
+       call print('Added default basis set for F: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'F','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'F',bs_pot_string).and.find_in_array(at%Z(1:at%N),9).gt.0) then
-       call print('Added default potential for F: GTH-PADE-q7')
-       call set_value(this%potential,'F','GTH-PADE-q7')
+       call print('Added default potential for F: GTH-BLYP-q7')
+       call set_value(this%potential,'F','GTH-BLYP-q7')
     endif
     if (.not.get_value(this%basis_set,'Na',bs_pot_string).and.find_in_array(at%Z(1:at%N),11).gt.0) then
-       call print('Added default basis set for Na: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'Na','DZVP-GTH-PADE')
+       call print('Added default basis set for Na: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'Na','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'Na',bs_pot_string).and.find_in_array(at%Z(1:at%N),11).gt.0) then
-       call print('Added default potential for Na: GTH-PADE-q1')
-       call set_value(this%potential,'Na','GTH-PADE-q1')
+       call print('Added default potential for Na: GTH-BLYP-q1')
+       call set_value(this%potential,'Na','GTH-BLYP-q1')
     endif
     if (.not.get_value(this%basis_set,'Fe',bs_pot_string).and.find_in_array(at%Z(1:at%N),26).gt.0) then
-       call print('Added default basis set for Fe: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'Fe','DZVP-GTH-PADE')
+       call print('Added default basis set for Fe: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'Fe','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'Fe',bs_pot_string).and.find_in_array(at%Z(1:at%N),26).gt.0) then
-       call print('Added default potential for Fe: GTH-PADE-q16')
-       call set_value(this%potential,'Fe','GTH-PADE-q16')
+       call print('Added default potential for Fe: GTH-BLYP-q16')
+       call set_value(this%potential,'Fe','GTH-BLYP-q16')
     endif
     if (.not.get_value(this%basis_set,'Si',bs_pot_string).and.find_in_array(at%Z(1:at%N),14).gt.0) then
-       call print('Added default basis set for Si: DZVP-GTH-PADE')
-       call set_value(this%basis_set,'Si','DZVP-GTH-PADE')
+       call print('Added default basis set for Si: DZVP-GTH-BLYP')
+       call set_value(this%basis_set,'Si','DZVP-GTH-BLYP')
     endif
     if (.not.get_value(this%potential,'Si',bs_pot_string).and.find_in_array(at%Z(1:at%N),14).gt.0) then
-       call print('Added default potential for Si: GTH-PADE-q4')
-       call set_value(this%potential,'Si','GTH-PADE-q4')
+       call print('Added default potential for Si: GTH-BLYP-q4')
+       call set_value(this%potential,'Si','GTH-BLYP-q4')
     endif
   endif
 
@@ -538,6 +547,7 @@ contains
     call print('the working directory: '//trim(dir))
     this%wenv%working_directory = trim(dir)
     this%wenv%pdb_file = 'pdb.CHARMM.pdb'
+    this%wenv%exyz_file = 'exyz.CHARMM.xyz'
     this%wenv%psf_file = 'psf.CHARMM.psf'
     this%wenv%wfn_file = 'wfn.restart.wfn'
     this%wenv%cp2k_input_filename = 'cp2k_input.inp'
@@ -555,6 +565,8 @@ contains
 
   end subroutine param_initialise
 
+  !% Finalise CP2K parameter set
+  !
   subroutine param_finalise(this)
 
   type(param_cp2k),  intent(out) :: this
@@ -594,6 +606,7 @@ contains
     this%md%temperature = 0._dp
     this%wenv%working_directory = ''
     this%wenv%pdb_file = ''
+    this%wenv%exyz_file = ''
     this%wenv%psf_file = ''
     this%wenv%wfn_file = ''
     this%wenv%cp2k_input_filename = ''
@@ -607,75 +620,17 @@ contains
 
   end subroutine param_finalise
 
- ! updates the core QM flags (=1), where an atom leaves becomes part of buffer (QM_flag=2)
-  subroutine create_centred_qmcore(my_atoms,R_inner,R_outer,origin,list_changed)
-
-    type(Atoms),        intent(inout) :: my_atoms
-    real(dp),           intent(in)    :: R_inner
-    real(dp),           intent(in)    :: R_outer
-    real(dp), optional, intent(in)    :: origin(3)
-
-    type(Atoms) :: atoms_for_add_cut_hydrogens
-    logical     :: list_changed
-    type(Table) :: inner_list, outer_list, core, core1, ext_qmlist
-    integer     :: qm_flag_index, i
-    real(dp)    :: my_origin(3)
-
-    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
-
-    call map_into_cell(my_atoms)
-
-    call allocate(core,4,0,0,0,0)
-    call get_qm_list_int(my_atoms,1,core1)
-    call get_qm_list_int(my_atoms,1,core)
-    call get_qm_list_int_rec(my_atoms,2,ext_qmlist, do_recursive=.true.)
-
-    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
-    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
-
-    call select_hysteretic_quantum_region(my_atoms,inner_list,outer_list,core)
-    call finalise(inner_list)
-    call finalise(outer_list)
-
-!TO BE OPTIMIZED : add avgpos to add_cut_hydrogen
-   ! add cut hydrogens, according to avgpos
-    atoms_for_add_cut_hydrogens = my_atoms
-    atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
-    atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
-    atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
-    call set_cutoff(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
-    call calc_connect(atoms_for_add_cut_hydrogens)
-    call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
-    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
-    !do i=1,core%N
-    !   call print(core%int(1,i))
-    !enddo
-    call finalise(atoms_for_add_cut_hydrogens)
-
-   ! check changes in QM list and set the new QM list
-    list_changed = check_qmlist_change(old_qmlist=core1,new_qmlist=core)
-    if (list_changed)  call print('QM list around the origin  has changed')
-
-   ! update QM_flag of my_atoms
-    qm_flag_index = get_property(my_atoms,'QM_flag')
-    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
-    my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
-    my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
-
-    call finalise(core)
-    call finalise(core1)
-    call finalise(ext_qmlist)
-
-  end subroutine create_centred_qmcore
-
+  !%Prints the quantum region mark with the cluster_mark property (/=0).
+  !%If file is given, into file, otherwise to the standard io.
+  !
   subroutine print_qm_region(at, file)
     type(Atoms), intent(inout) :: at
     type(Inoutput), optional :: file
 
     integer, pointer :: qm_flag(:)
 
-    if (.not.(assign_pointer(at, "QM_flag", qm_flag))) &
-      call system_abort("print_qm_region couldn't find QM_flag property")
+    if (.not.(assign_pointer(at, "cluster_mark", qm_flag))) &
+      call system_abort("print_qm_region couldn't find cluster_mark property")
 
     if (present(file)) then
       file%prefix="QM_REGION"
@@ -688,28 +643,14 @@ contains
     end if
   end subroutine print_qm_region
 
-  subroutine construct_buffer_origin(my_atoms,Radius,list,origin)
-
-    type(Atoms),        intent(inout) :: my_atoms
-    real(dp),           intent(in)    :: Radius
-    type(Table),        intent(out)   :: list
-    real(dp), optional, intent(in)    :: origin(3)
-
-    integer  :: i
-    real(dp) :: my_origin(3)
-
-    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
-
-    call initialise(list,4,0,0,0,0)
-
-    do i = 1,my_atoms%N
-       if (my_atoms%Z(i).eq.1) cycle
-       if (distance_min_image(my_atoms,i,my_origin(1:3)).lt.Radius) call append(list,(/i,0,0,0/))
-    enddo
-
-  end subroutine construct_buffer_origin
-
- ! to read BASIS_SET and POTENTIAL from external file 
+  !% Subroutine to read the BASIS_SET and the POTENTIAL from external files.
+  !% Used by param_initialise.
+  !
+  !% The format is (e.g. for H and O):
+  !% 2                  !number of lines
+  !% 1 DZVP-GTH-BLYP    !atomic number and basis set
+  !% 8 DZVP-GTH-BLYP    !atomic number and basis set
+  !
   subroutine read_list_file(this,filename,basis_set,potential)
 
     type(param_cp2k),  intent(inout) :: this
@@ -781,12 +722,18 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
-  subroutine go_cp2k(my_atoms,forces,energy,args_str)
+  !% Main subroutine to run CP2K. The input parameters (program name, basis set, potential,
+  !% run type, whether to print a PSF file, dft parameters, cell size) are read from args_str.
+  !% Optionally outputs the forces and/or the energy.
+  !% Optionally reads the intrares_impropers that will be used to print a PSF file.
+  !
+  subroutine go_cp2k(my_atoms,forces,energy,args_str,intrares_impropers)
 
   type(Atoms),                        intent(inout)  :: my_atoms
   real(dp), dimension(:,:), optional, intent(out) :: forces
   real(dp),                 optional, intent(out) :: energy
   character(len=*),         optional, intent(in)  :: args_str
+    type(Table),      optional, intent(in) :: intrares_impropers
 
   type(param_cp2k)                      :: param
   type(Table)                           :: qmlist
@@ -801,7 +748,7 @@ contains
   character(len=FIELD_LENGTH)           :: fileroot_str
   character(len=FIELD_LENGTH)           :: basis_set_file, potential_file, dft_file, cell_file,global_file
 
-  character(max_char_length)            :: run_command='', &
+  character(len=FIELD_LENGTH)            :: run_command='', &
                                            fin_command=''
   logical                               :: clean_up_files, save_output_files
   integer                               :: status, error_status
@@ -809,7 +756,7 @@ contains
   integer :: n_tries, max_n_tries
   real(dp) :: max_force_warning
   logical :: converged
-
+  logical :: have_silica_potential
 
     call system_timer('go_cp2k_start')
     call print_title('Setting up the CP2K run')
@@ -837,6 +784,7 @@ contains
     call param_register(params, 'save_output_files', 'T', save_output_files)
     call param_register(params, 'max_n_tries', '2', max_n_tries)
     call param_register(params, 'max_force_warning', '2.0', max_force_warning)
+    call param_register(params, 'have_silica_potential', 'F', have_silica_potential)
 
     if (present(args_str)) then
     if (.not. param_read_line(params, args_str, ignore_unknown=.true., task='go_cp2k args_str')) &
@@ -913,7 +861,7 @@ contains
 
   ! check CHARMM topology
   ! Write the coordinate file and the QM/MM or MM input file
-    call write_cp2k_input_files(my_atoms,qmlist,param=param,run_type=run_type,PSF_print=PSF_print)
+    call write_cp2k_input_files(my_atoms,qmlist,param=param,run_type=run_type,PSF_print=PSF_print,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
 
   ! Run cp2k MM serial or QM/MM parallel
     call print('Running CP2K...')
@@ -1012,184 +960,25 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
-  function extend_qmlist(my_atoms,R_inner,R_outer) result(list_changed)
-
-  type(Atoms),           intent(inout) :: my_atoms
-  real(dp),    optional, intent(in)    :: R_inner, R_outer  !! to select hysteretic quantum region
-
-  real(dp)    :: inner, outer
-  type(Table) :: inner_buffer, outer_buffer
-  type(Table) :: core, ext_qmlist, old_ext_qmlist
-  type(Atoms) :: fake, atoms_for_add_cut_hydrogens
-  integer     :: qm_flag_index, i
-  logical     :: list_changed,buffer_general,do_general
-
-  ! checking the optional inputs
-    if (present(R_inner)) then
-       inner = R_inner
-       if (present(R_outer)) then
-          outer = R_outer
-          call print('Updating QM_flag properties according to R_inner = '//round(R_inner,3)//', R_outer = '//round(R_outer,3))
-       else
-          call print('Warning: extend_qmlist: R_inner present, but not R_outer! Use R_outer=R_inner!')
-          outer = R_inner
-       endif
-    else
-       if (present(R_outer)) then
-          call print('Warning: extend_qmlist: R_outer present, but not R_inner! Use R_inner=R_outer!')
-          inner = R_outer
-          outer = R_outer
-       else
-          call print('Warning: extend_qmlist: R_inner and R_outer not present! qm_list will not be extended!')
-          return
-       endif
-    endif
-
-    call get_qm_list_int(my_atoms,1,core)
-    call get_qm_list_int_rec(my_atoms,2,ext_qmlist, do_recursive=.true.)
-    call get_qm_list_int_rec(my_atoms,2,old_ext_qmlist, do_recursive=.true.)
-
-!TO BE OPTIMIZED:
-  ! extend the qm region > ext_qmlist
-  !this should go without fake atoms and with use_avgpos! but not the cluster making, only the add_cut_hydrogen!
-    fake=my_atoms
-!    cutoff_old = my_atoms%cutoff
-    call set_cutoff_minimum(fake,outer*(maxval(ElementCovRad(fake%Z(1:fake%N)))/ElementCovRad(8))) ! to find everything like O
-    call calc_connect(fake)
-
-    if (get_value(my_atoms%params,'Buffer_general',do_general)) then
-        call print('Found Buffer_general in atoms%params'//do_general)
-        buffer_general=do_general
-    else
-        buffer_general=.false.
-    endif
-
-    if (buffer_general) then
-       call print('Not element specific buffer selection')
-       call construct_buffer(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       !call print('Atoms in inner buffer:')
-       !do i=1,inner_buffer%N
-       !   call print(inner_buffer%int(1,i))
-       !enddo
-       call construct_buffer(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       !call print('Atoms in outer buffer:')
-       !do i=1,outer_buffer%N
-       !   call print(outer_buffer%int(1,i))
-       !enddo
-       !call print('Atoms in the quantum region before updating:')
-       !do i=1,ext_qmlist%N
-       !   call print(ext_qmlist%int(1,i))
-       !enddo
-    else
-       call print('Element specific buffer selection, only heavy atoms count')
-       call construct_buffer_RADIUS(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       !call print('Atoms in inner buffer:')
-       !do i=1,inner_buffer%N
-       !   call print(inner_buffer%int(1,i))
-       !enddo
-       call construct_buffer_RADIUS(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
-       !call print('Atoms in outer buffer:')
-       !do i=1,outer_buffer%N
-       !   call print(outer_buffer%int(1,i))
-       !enddo
-       !call print('Atoms in the quantum region before updating:')
-       !do i=1,ext_qmlist%N
-       !   call print(ext_qmlist%int(1,i))
-       !enddo
-    endif
-    call select_hysteretic_quantum_region(fake,inner_buffer,outer_buffer,ext_qmlist,verbosity=NORMAL)
-    !call print('Atoms in hysteretic quantum region:')
-    !do i=1,ext_qmlist%N
-    !   call print(ext_qmlist%int(1,i))
-    !enddo
-    call finalise(fake)
-    call finalise(inner_buffer)
-    call finalise(outer_buffer)
-
-   ! add cut hydrogens, according to avgpos
-    atoms_for_add_cut_hydrogens = my_atoms
-    atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
-    atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
-    atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
-    call set_cutoff(atoms_for_add_cut_hydrogens,0._dp)
-    call calc_connect(atoms_for_add_cut_hydrogens)
-    call add_cut_hydrogens(atoms_for_add_cut_hydrogens,ext_qmlist)
-    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
-    !do i=1,ext_qmlist%N
-    !   call print(ext_qmlist%int(1,i))
-    !enddo
-    call finalise(atoms_for_add_cut_hydrogens)
-
-   ! check changes in QM list and set the new QM list
-    list_changed = check_qmlist_change(old_qmlist=old_ext_qmlist,new_qmlist=ext_qmlist)
-
-   ! update QM_flag of my_atoms
-    qm_flag_index = get_property(my_atoms,'QM_flag')
-    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
-    my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
-    my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
-
-    call finalise(core)
-    call finalise(ext_qmlist)
-    call finalise(old_ext_qmlist)
-
-  end function extend_qmlist
-
-  subroutine construct_buffer_RADIUS(my_atoms,core,radius,buffer,use_avgpos,verbosity)
-
-    type(Atoms),       intent(in)  :: my_atoms
-    real(dp),          intent(in)  :: radius
-    type(Table),       intent(in)  :: core
-    type(Table),       intent(out) :: buffer
-    logical, optional, intent(in)  :: use_avgpos
-    integer, optional, intent(in)  :: verbosity
-
-    integer :: i,j
-    logical :: delete_it
-
-    call construct_buffer(my_atoms,core,(radius*maxval(ElementCovRad(my_atoms%Z(1:my_atoms%N)))/ElementCovRad(8)),buffer,use_avgpos=use_avgpos,verbosity=verbosity)
-    !call print('Atoms in buffer:')
-    !do i=1,buffer%N
-    !   call print(buffer%int(1,i))
-    !enddo
-
-    i = 1
-    do while (i.le.buffer%N)
-       delete_it = .true.
-       if (any(buffer%int(1,i).eq.core%int(1,1:core%N))) then ! keep core
-          delete_it = .false.
-       else
-          if (my_atoms%Z(buffer%int(1,i)).ne.1) then ! delete Hs from buffer
-             do j=1,core%N
-                if (my_atoms%Z(core%int(1,j)).eq.1) cycle ! only consider nonH -- nonH distances
-                if (distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)).le. &
-                   radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j))))) then
-                   delete_it = .false.
-                   !call print('Atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//' is within element specific buffer distance '//round(distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)),3)//' < '//round(radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j)))),3))
-                endif
-             enddo
-          endif
-       endif
-       if (delete_it) then
-          !call print('delete atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//'from buffer')
-          call delete(buffer,i)
-          i = i - 1
-       endif
-       i = i + 1
-    enddo
-
-  end subroutine construct_buffer_RADIUS
-
-  subroutine get_qm_list_int(my_atoms,qmflag,qmlist)
+  !% Returns a $qmlist$ table with the atom indices whose $cluster_mark$
+  !% (or optionally any $int_property$) property takes exactly $qmflag$ value.
+  !
+  subroutine get_qm_list_int(my_atoms,qmflag,qmlist,int_property)
 
     type(Atoms), intent(in)  :: my_atoms
     integer,     intent(in)  :: qmflag
     type(Table), intent(out) :: qmlist
+    character(len=*), optional, intent(in) :: int_property
   
     integer              :: i
     integer              :: qm_flag_index
 
-    qm_flag_index = get_property(my_atoms,'QM_flag')
+!    qm_flag_index = get_property(my_atoms,'QM_flag')
+    if (present(int_property)) then
+       qm_flag_index = get_property(my_atoms,int_property)
+    else
+       qm_flag_index = get_property(my_atoms,'cluster_mark')
+    endif
 
     call initialise(qmlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
     do i=1,my_atoms%N
@@ -1197,23 +986,32 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag,verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=SILENT)
 
   end subroutine get_qm_list_int
 
-  subroutine get_qm_list_int_rec(my_atoms,qmflag,qmlist,do_recursive)
+  !% Returns a $qmlist$ table with the atom indices whose $cluster_mark$
+  !% (or optionally any $int_property$) property takes no greater than $qmflag$ positive value.
+  !
+  subroutine get_qm_list_int_rec(my_atoms,qmflag,qmlist,do_recursive,int_property)
 
     type(Atoms), intent(in)  :: my_atoms
     integer,     intent(in)  :: qmflag
     type(Table), intent(out) :: qmlist
     logical, intent(in) :: do_recursive
+    character(len=*), optional, intent(in) :: int_property
   
     integer              :: i
     integer              :: qm_flag_index
     logical              :: my_do_recursive
 
 !    my_do_recursive = optional_default(.true.,do_recursive)
-    qm_flag_index = get_property(my_atoms,'QM_flag')
+!    qm_flag_index = get_property(my_atoms,'QM_flag')
+    if (present(int_property)) then
+       qm_flag_index = get_property(my_atoms,int_property)
+    else
+       qm_flag_index = get_property(my_atoms,'cluster_mark')
+    endif
 
     call initialise(qmlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
 !    if (my_do_recursive) then
@@ -1230,20 +1028,29 @@ contains
        enddo
     endif
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflag,verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=SILENT)
 
   end subroutine get_qm_list_int_rec
 
-  subroutine get_qm_list_array(my_atoms,qmflags,qmlist)
+  !% Returns a $qmlist$ table with the atom indices whose $cluster_mark$
+  !% (or optionally any $int_property$) property takes any value from the $qmflag$ array.
+  !
+  subroutine get_qm_list_array(my_atoms,qmflags,qmlist,int_property)
 
     type(Atoms), intent(in)  :: my_atoms
     integer,     intent(in)  :: qmflags(:)
     type(Table), intent(out) :: qmlist
+    character(len=*), optional, intent(in) :: int_property
   
     integer              :: i
     integer              :: qm_flag_index
 
-    qm_flag_index = get_property(my_atoms,'QM_flag')
+!    qm_flag_index = get_property(my_atoms,'QM_flag')
+    if (present(int_property)) then
+       qm_flag_index = get_property(my_atoms,int_property)
+    else
+       qm_flag_index = get_property(my_atoms,'cluster_mark')
+    endif
 
     call initialise(qmlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
     do i=1,my_atoms%N
@@ -1251,10 +1058,13 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with QM_flag '//qmflags(1:size(qmflags)),verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflags(1:size(qmflags)),verbosity=SILENT)
 
   end subroutine get_qm_list_array
 
+  !% Returns the index of the first column of a property $prop$.
+  !% Aborts if the property cannot be found in the atoms object.
+  !
   function get_property(my_atoms,prop) result(prop_index)
 
     type(Atoms), intent(in)      :: my_atoms
@@ -1278,6 +1088,9 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
+  !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
+  !% marking the QM atoms with 1, otherwise 0.
+  !
   subroutine read_qmlist(my_atoms,qmlistfilename,verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
@@ -1341,10 +1154,17 @@ contains
     if ((size(int_part(qm_list,1)).gt.my_atoms%N).or.(size(int_part(qm_list,1)).lt.1)) &
        call system_abort("read_qmlist: QM atoms' number is <1 or >"//my_atoms%N)
 
-    call add_property(my_atoms,'QM_flag',0)
-    qm_flag_index = get_property(my_atoms,'QM_flag')
+    call add_property(my_atoms,'hybrid',0)
+    qm_flag_index = get_property(my_atoms,'hybrid')
     my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
     my_atoms%data%int(qm_flag_index,int_part(qm_list,1)) = 1
+call print('Added '//count(my_atoms%data%int(qm_flag_index,1:my_atoms%N).eq.1)//' qm atoms.')
+
+    call add_property(my_atoms,'hybrid_mark',0)
+    qm_flag_index = get_property(my_atoms,'hybrid_mark')
+    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+    my_atoms%data%int(qm_flag_index,int_part(qm_list,1)) = 1
+call print('Added '//count(my_atoms%data%int(qm_flag_index,1:my_atoms%N).eq.1)//' qm atoms.')
 
     if (my_verbose) call print('Finished. '//qm_list%N//' QM atoms have been read successfully.')
     call finalise(qm_list)
@@ -1358,8 +1178,9 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
-  !calculates number of bonds generated during connectivity generation
-  !bonds2 checks if symmetric
+  !% Calculates number of bonds generated during connectivity generation.
+  !% Double checks if the connection table is symmetric.
+  !
   function num_of_bonds(at) result(bonds)
 
     type(atoms),intent(in) :: at
@@ -1378,8 +1199,10 @@ contains
 
   end function num_of_bonds
 
-!prints the number of neighbours, if not: 1 for H, 2 for O.
-!the two H of a flexible water molecule can get too close => correct it!
+  !% Very simple routine to check the number of neighbours.
+  !% It prints the number of neighbours, unless it is 1 for H, or 2 for O.
+  !% May be useful for water, biomolecules only.
+  !
   subroutine check_neighbour_numbers(at)
 
     type(atoms),intent(in) :: at
@@ -1404,32 +1227,34 @@ contains
 
   end subroutine check_neighbour_numbers
 
-  function check_qmlist_change(old_qmlist,new_qmlist) result(list_changed)
+  !% Checks and reports the changes between two tables, $old_qmlist$ and $new_qmlist$.
+  !
+  function check_list_change(old_list,new_list) result(list_changed)
 
-    type(Table), intent(in) :: old_qmlist, new_qmlist
+    type(Table), intent(in) :: old_list, new_list
     integer :: i
     logical :: list_changed
 
     list_changed = .false.
-    if (old_qmlist%N.ne.new_qmlist%N) then
-       call print ('fitlist has changed: new number of qm atoms: '//new_qmlist%N//' instead of '//old_qmlist%N)
+    if (old_list%N.ne.new_list%N) then
+       call print ('list has changed: new number of atoms is: '//new_list%N//', was: '//old_list%N)
        list_changed = .true.
     else
-       if (any(int_part(old_qmlist,2).ne.int_part(new_qmlist,2))) then
-           do i=1,old_qmlist%N
-              if (.not.find_in_array(int_part(old_qmlist,1),(new_qmlist%int(1,i))).gt.0) then
-                 call print('fitlist has changed: atom '//new_qmlist%int(1,i)//' has entered QM zone')
+       if (any(old_list%int(1,1:old_list%N).ne.new_list%int(1,1:new_list%N))) then
+           do i=1,old_list%N
+              if (.not.find_in_array(int_part(old_list,1),(new_list%int(1,i))).gt.0) then
+                 call print('list has changed: atom '//new_list%int(1,i)//' has entered the region')
                  list_changed = .true.
               endif
-              if (.not.find_in_array(int_part(new_qmlist,1),(old_qmlist%int(1,i))).gt.0) then
-                 call print('fitlist has changed: atom '//old_qmlist%int(1,i)//' has left QM zone')
+              if (.not.find_in_array(int_part(new_list,1),(old_list%int(1,i))).gt.0) then
+                 call print('list has changed: atom '//old_list%int(1,i)//' has left the region')
                  list_changed = .true.
               endif
            enddo
        endif
     endif
 
-  end function check_qmlist_change
+  end function check_list_change
 
   !!!!! ============================================================================================ !!!!!
   !!!!!                                                                                              !!!!!
@@ -1437,16 +1262,28 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
-  subroutine write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print)
+  !% Writes all the input files for CP2K: the actual input file, the coordinate file (PDB)
+  !% and the topology file (PSF).
+  !% If the intraresidual improper angles are given in $intrares_impropers$,
+  !% they will be included in the PSF file. This is needed for a meaningful
+  !% biochemical calculation.
+  !
+  subroutine write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print,have_silica_potential,intrares_impropers)
 
-    type(Atoms),       intent(in) :: my_atoms
+    type(Atoms),       intent(inout) :: my_atoms
     type(Table),       intent(in) :: qm_list
     type(param_cp2k),  intent(in) :: param
     integer,           intent(in) :: run_type, &
                                      PSF_print
+    logical, optional, intent(in) :: have_silica_potential
+    type(Table), optional, intent(in) :: intrares_impropers
     character(len=FIELD_LENGTH)   :: run_type_string
+logical :: do_have_silica_potential
+type(InOutput) :: exyz
 
     call system_timer('write_inputs')
+
+    do_have_silica_potential = optional_default(.false.,have_silica_potential)
 
     if (.not.any(run_type.eq.(/QS_RUN,MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) &
        call system_abort('write_cp2k_input_files: Run type is not recognized: '//run_type)
@@ -1458,12 +1295,20 @@ contains
        run_type_string = ''
        if (run_type.eq.QMMM_RUN_EXTENDED) run_type_string = 'QMMM_EXTENDED'
        if (run_type.eq.QMMM_RUN_CORE) run_type_string = 'QMMM_CORE'
-       call write_cp2k_pdb_file(my_atoms,trim(param%wenv%working_directory)//'/'//trim(param%wenv%pdb_file),run_type_string=run_type_string)
+!Print extended xyz instead of pdb format.
+!       call write_cp2k_pdb_file(my_atoms,trim(param%wenv%working_directory)//'/'//trim(param%wenv%pdb_file),run_type_string=run_type_string)
+       call initialise(exyz,trim(param%wenv%working_directory)//'/'//trim(param%wenv%exyz_file),action=OUTPUT)
+       call print_xyz(my_atoms,exyz,properties='species:pos:atom_type:atom_res_name:atom_mol_name:atom_res_number:atom_charge',real_format='f17.10')
+       call finalise(exyz)
        if (PSF_print.eq.DRIVER_PRINT_AND_SAVE) then
-          call write_psf_file(my_atoms,param%wenv%psf_file,run_type_string=trim(run_type_string))
+          if (present(intrares_impropers)) then
+             call write_psf_file(my_atoms,param%wenv%psf_file,run_type_string=trim(run_type_string),intrares_impropers=intrares_impropers,add_silica_23body=do_have_silica_potential)
+          else
+             call write_psf_file(my_atoms,param%wenv%psf_file,run_type_string=trim(run_type_string),add_silica_23body=do_have_silica_potential)
+          endif
        endif
     endif
-    call write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
+    call write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print,do_have_silica_potential)
     call print ('Finished. Input files are ready for the run.')
     if (PSF_print.eq.USE_EXISTING_PSF) call print('Use already existing PSF file '//param%wenv%psf_file)
 
@@ -1471,13 +1316,18 @@ contains
 
   end subroutine write_cp2k_input_files
 
-  subroutine write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
+  !% Writes the CP2K input file. If cell, basis set, potential, global
+  !% and dft files are present in $param$, the CP2K parameter file,
+  !% use those to construct the input file, otherwise use some defaults.
+  !
+  subroutine write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print,have_silica_potential)
 
     type(Atoms),       intent(in) :: my_atoms
     type(Table),       intent(in) :: qm_list
     type(param_cp2k),  intent(in) :: param
     integer,           intent(in) :: run_type, &
                                      PSF_print
+    logical, optional, intent(in) :: have_silica_potential
 
     type(Inoutput)                   :: input_file 
     integer,allocatable,dimension(:) :: list   !in order to separate QM atom indices for H and O
@@ -1493,13 +1343,21 @@ contains
     integer                          :: stat
     type(inoutput)                   :: dft_in_io, cell_in_io, global_in_io
     character(len=1024)              :: line
+type(Table) :: cut_bonds
+integer, pointer :: cut_bonds_p(:,:)
+integer :: i_inner, i_outer
+logical :: do_have_silica_potential
+integer :: ineigh,nneigh
+type(Table) :: bond_constraints
+logical :: constrain_all_HSI
 
     if (.not.any(run_type.eq.(/QS_RUN,MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) &
        call system_abort('write_cp2k_input_file: Run type is not recognized: '//run_type)
 
     if (any(run_type.eq.(/MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
        if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
-          qm_flag_index = get_property(my_atoms,'QM_flag')
+          !qm_flag_index = get_property(my_atoms,'QM_flag')
+          qm_flag_index = get_property(my_atoms,'cluster_mark')
        endif
        atom_type_index = get_property(my_atoms,'atom_type')
        atom_res_name_index = get_property(my_atoms,'atom_res_name')
@@ -1508,14 +1366,18 @@ contains
 
     if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
        call get_qm_list_int_rec(my_atoms,run_type,qm_list_check, do_recursive=.true.)
-       if (qm_list_check%N.ne.qm_list%N) call system_abort ('qm_list is different from Atoms QM_flag!!')
+       if (qm_list_check%N.ne.qm_list%N) call system_abort ('qm_list is different from Atoms cluster_mark!!')
        do i = 1, qm_list_check%N
-          if (.not.any(qm_list_check%int(1,i).eq.qm_list%int(1,1:qm_list%N))) call system_abort ('qm_list is different from Atoms QM_flag!!')
+          if (.not.any(qm_list_check%int(1,i).eq.qm_list%int(1,1:qm_list%N))) call system_abort ('qm_list is different from Atoms cluster_mark!!')
        enddo
        do i = 1, qm_list%N
-          if (.not.any(qm_list%int(1,i).eq.qm_list_check%int(1,1:qm_list_check%N))) call system_abort ('qm_list is different from Atoms QM_flag!!')
+          if (.not.any(qm_list%int(1,i).eq.qm_list_check%int(1,1:qm_list_check%N))) call system_abort ('qm_list is different from Atoms cluster_mark!!')
        enddo
     endif
+
+    do_have_silica_potential = optional_default(.false.,have_silica_potential)
+    constrain_all_HSI = .false.
+    if (do_have_silica_potential) constrain_all_HSI = .true.
 
 !    call print_title('Writing CP2K input file')
 
@@ -1669,14 +1531,14 @@ contains
     call print('    &FORCEFIELD',file=input_file)
     call print('      PARMTYPE '//trim(param%mm_forcefield%parmtype),file=input_file)
     call print('      PARM_FILE_NAME ../'//trim(param%mm_forcefield%parm_file_name),file=input_file) ! charmm.pot
-#ifdef HAVE_DANNY
-    call print('      DANNY T',file=input_file)
-    call print('      DANNY_CUTOFF 5.5',file=input_file)
-    call print('      &SPLINE',file=input_file)
-    call print('        EMAX_SPLINE 0.5',file=input_file)
-    call print('        EMAX_ACCURACY 0.1',file=input_file)
-    call print('      &END SPLINE',file=input_file)
-#endif
+    if (do_have_silica_potential) then
+       call print('      DANNY T',file=input_file)
+       call print('      DANNY_CUTOFF 5.5',file=input_file)
+       call print('      &SPLINE',file=input_file)
+       call print('        EMAX_SPLINE 0.5',file=input_file)
+       call print('        EMAX_ACCURACY 0.1',file=input_file)
+       call print('      &END SPLINE',file=input_file)
+    endif
 
 !!for old CP2K, QM/MM
 !    if (any(my_atoms%data%str(atom_type_index,1:my_atoms%N).eq.'CCL') .and. any(my_atoms%data%str(atom_type_index,1:my_atoms%N).eq.'CLA')) then
@@ -1746,6 +1608,56 @@ contains
 !       call print('      UNIT '//trim(param%qmmm%qmmm_cell_unit),file=input_file)   !in Angstroms
        call print('      PERIODIC XYZ',file=input_file)   !in Angstroms
        call print('    &END CELL',file=input_file)
+
+!!!!!!***********
+!       call print('Writing QM/MM links...')
+
+!	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
+!	   call system_abort("potential_calc failed to assing pointer for cut_bonds pointer")
+       if (assign_pointer(my_atoms,'cut_bonds',cut_bonds_p)) then
+          call initialise(cut_bonds,2,0,0,0,0)
+          do i_inner=1,my_atoms%N
+             do j=1,4 !MAX_CUT_BONDS
+                i_outer = cut_bonds_p(j,i_inner)
+                if (i_outer .eq. 0) exit
+                call append(cut_bonds,(/i_inner,i_outer/))
+             enddo
+          enddo
+
+          do i=1,cut_bonds%N   !for each cut bond
+             i_inner = cut_bonds%int(1,i)
+             i_outer = cut_bonds%int(2,i)
+             call print('    &LINK',file=input_file)
+             call print('#      ALPHA_IMOMM',file=input_file)
+             call print('#      CORR_RADIUS',file=input_file)
+             call print('#      FIST_SCALE_FACTOR 1.0',file=input_file)
+             call print('      LINK_TYPE IMOMM',file=input_file)
+             call print('      MM_INDEX '//i_outer,file=input_file)
+             call print('      QMMM_SCALE_FACTOR 1.0',file=input_file)
+             call print('      QM_INDEX '//i_inner,file=input_file)
+             call print('      QM_KIND H',file=input_file)
+             call print('#      RADIUS',file=input_file)
+             !call print('      &ADD_MM_CHARGE',file=input_file)
+             !call print('        ALPHA',file=input_file)
+             !call print('        ATOM_INDEX_1',file=input_file)
+             !call print('        ATOM_INDEX_2',file=input_file)
+             !call print('        CHARGE',file=input_file)
+             !call print('        CORR_RADIUS',file=input_file)
+             !call print('        RADIUS',file=input_file)
+             !call print('      &END ADD_MM_CHARGE',file=input_file)
+             !call print('      &MOVE_MM_CHARGE',file=input_file)
+             !call print('        ALPHA',file=input_file)
+             !call print('        ATOM_INDEX_1',file=input_file)
+             !call print('        ATOM_INDEX_2',file=input_file)
+             !call print('        CORR_RADIUS',file=input_file)
+             !call print('        RADIUS',file=input_file)
+             !call print('      &END MOVE_MM_CHARGE',file=input_file)
+             call print('    &END LINK',file=input_file)
+          enddo
+	 call finalise(cut_bonds)
+       endif
+!!!!!!***********
+
        call print('    ECOUPL '//trim(param%qmmm%ecoupl),file=input_file) !QMMM electrostatic coupling, can be NONE,COULOMB,GAUSS,S-WAVE
      
 !       call print('Writing decoupling section...')
@@ -1901,8 +1813,10 @@ contains
 
     call print('      &END GENERATE',file=input_file)
     call print('      CHARGE_EXTENDED',file=input_file)
-    call print('      COORD_FILE_NAME '//param%wenv%pdb_file,file=input_file)
-    call print('      COORDINATE PDB',file=input_file)
+!    call print('      COORD_FILE_NAME '//param%wenv%pdb_file,file=input_file)
+!    call print('      COORDINATE PDB',file=input_file)
+    call print('      COORDINATE EXYZ',file=input_file)
+    call print('      COORD_FILE_NAME '//trim(param%wenv%exyz_file),file=input_file)
     if (any(PSF_print.eq.(/DRIVER_PRINT_AND_SAVE,USE_EXISTING_PSF/))) then
        call print('      CONN_FILE_NAME ../'//trim(param%wenv%psf_file),file=input_file)
        call print('      CONN_FILE_FORMAT PSF',file=input_file)
@@ -1929,6 +1843,22 @@ contains
           endif
        enddo
     endif
+
+if (constrain_all_HSI) then
+  call initialise(bond_constraints,2,0,0,0,0)
+  do i=1,my_atoms%N
+     if (trim(my_atoms%data%str(atom_type_index,i)).eq.'HSI') then
+        nneigh = atoms_n_neighbours(my_atoms,i)
+!        if (nneigh.ne.1) call system_abort('HSI has '//nneigh//' neighbours')
+        do ineigh=1,nneigh
+           j = atoms_neighbour(my_atoms,i,ineigh)
+           if (is_nearest_neighbour(my_atoms,i,ineigh)) &
+           call append(bond_constraints,(/i,j/))
+        enddo
+     endif
+  enddo
+endif
+
     call print('  &END SUBSYS',file=input_file)
     call print('&END FORCE_EVAL',file=input_file)
      
@@ -1949,6 +1879,16 @@ contains
     endif
     call print('&END GLOBAL',file=input_file)
     call print('&MOTION',file=input_file)
+
+if (constrain_all_HSI) then
+    call print('  &CONSTRAINT',file=input_file)
+    call print('    &HBONDS',file=input_file)
+    call print('      ATOM_TYPE OSI',file=input_file)
+    call print('      TARGETS [angstrom] 0.978',file=input_file)
+    call print('    &END HBONDS',file=input_file)
+    call print('  &END CONSTRAINT',file=input_file)
+endif
+
     call print('  &PRINT',file=input_file)
     call print('    &FORCES',file=input_file)
     call print('      FORMAT XMOL',file=input_file)
@@ -1978,6 +1918,9 @@ contains
   !!!!!                                                                                              !!!!!
   !!!!! ============================================================================================ !!!!!
 
+  !% Read the forces and the energy from the CP2K output file.
+  !% Check for reordering, and converts the energy units into eV, the forces to eV/A.
+  !
   subroutine read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
 
     real(dp),allocatable,dimension(:,:),intent(out) :: forces
@@ -2053,8 +1996,13 @@ contains
 
   end subroutine read_cp2k_forces
 
-!recommended:
-!correct forces according to new *-pos-* file, no need to hack cp2k!!
+  !% Re-reordering algorithm. CP2K shifts the atomic coordinates, occasionally
+  !% reorders the atoms, too. To keep this under control, the positions are read
+  !% and compared with the atoms object.
+  !% Calculates the shift the same way CP2K does.
+  !% As an output the forces are in the same order as the atoms in the original
+  !% atoms object.
+  !
   subroutine read_convert_back_pos(forces,param,my_atoms,run_type,verbose)
 
     real(dp), allocatable, dimension(:,:), intent(inout) :: forces
@@ -2071,6 +2019,8 @@ contains
     real(dp), allocatable, dimension(:,:) :: tforces
     integer                               :: i, j, status
     logical                               :: my_verbose
+integer, pointer :: cut_bonds_p(:,:)
+integer :: i_inner, i_outer
 
     if (.not.any(run_type.eq.(/QS_RUN,MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) &
        call system_abort('read_convert_back_matrix: Run type is not recognized: '//run_type)
@@ -2095,6 +2045,16 @@ contains
    ! shifted cell in case of QMMM (cp2k/src/topology_coordinate_util.F)
     if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
        call get_qm_list_int_rec(my_atoms,run_type,qm_list,do_recursive=.true.)
+       !add links to the qm list, if there is any:
+       if (assign_pointer(my_atoms,'cut_bonds',cut_bonds_p)) then
+          do i_inner=1,my_atoms%N
+             do j=1,4 !MAX_CUT_BONDS
+                i_outer = cut_bonds_p(j,i_inner)
+                if (i_outer .eq. 0) exit
+                call append(qm_list,(/i_outer,0,0,0/))
+             enddo
+          enddo
+       endif
        do i=1,3
          shift(i) = 0.5_dp * param%qmmm%qmmm_cell(i) &
                     - ( MINVAL(my_atoms%pos(i,int_part(qm_list,1))) + &
@@ -2151,6 +2111,9 @@ contains
     deallocate(oldpos)
   end subroutine read_convert_back_pos
 
+  !% Force mixing with energy conservation. The fitlist includes the core and buffer atoms.
+  !% Mass weights are used.
+  !
   subroutine QUIP_combine_forces(qmmm_forces,mm_forces,combined_forces,my_atoms)
   ! use momentum conservation DOES NOT ASSUME that SUM(F(MM)) = 0._dp:
   ! for  fitlist:   F_i = F(MM)    - m_i * SUMcore(F_i) / SUMfitlist(m_i)
@@ -2206,6 +2169,9 @@ contains
     
   end subroutine QUIP_combine_forces
 
+  !% Abrupt force mixing. The fitlist includes the core and buffer atoms.
+  !% Uniform weights are used.
+  !
   subroutine abrupt_force_mixing(qmmm_forces,mm_forces,combined_forces,my_atoms)
   ! do not use momentum conservation
   ! for QM  core:   F_i = F(QM/MM)
@@ -2243,6 +2209,9 @@ contains
     
   end subroutine abrupt_force_mixing
 
+  !% Calculates the force on the $i$th atom due to an external potential that has
+  !% the form of a spline, $my_spline$.
+  !
   function spline_force(at, i, my_spline, pot) result(force)
 
     type(Atoms), intent(in)  :: at
@@ -2316,6 +2285,8 @@ contains
 !    
 !  end subroutine combine_forces
 
+  !% Energy conversion from hartree (used by CP2K) to eV.
+  !
   subroutine energy_conversion(energy)
 
     real(dp), intent(inout) :: energy
@@ -2324,6 +2295,8 @@ contains
 
   end subroutine energy_conversion
 
+  !% Force conversion from hartree/bohr (used by CP2K) to eV/A.
+  !
   subroutine force_conversion(force)
 
     real(dp), dimension(:,:), intent(inout) :: force
@@ -2338,6 +2311,8 @@ contains
 
   end subroutine force_conversion
 
+  !% Velocity conversion from hartree*bohr/hbar (used by CP2K) to A/fs.
+  !
   subroutine velocity_conversion(at)
 
     type(Atoms), intent(inout) :: at
@@ -2351,6 +2326,8 @@ contains
 
   end subroutine velocity_conversion
 
+  !% Velocity conversion from A/fs to hartree*bohr/hbar (used by CP2K).
+  !
   subroutine velocity_conversion_rev(at)
 
     type(Atoms), intent(inout) :: at
@@ -2364,10 +2341,9 @@ contains
 
   end subroutine velocity_conversion_rev
 
-   ! a .feq. b
+   !% Floating point logical comparison used by read_convert_back_pos,
+   !% to compare atoms objects positions.
    !
-   ! floating point logical comparison
-   ! used to compare atoms objects
    function real_feq2(x,y) result(feq)
 
      real(dp), intent(in) :: x, y
@@ -2381,10 +2357,9 @@ contains
      
    end function real_feq2
 
-   ! m1 .feq. m2
+   !% Matrix floating point logical comparison used by read_convert_back_pos,
+   !% to compare atoms objects positions.
    !
-   ! matrix floating point comparison 
-   ! used to compare atoms objects
    function matrix_feq2(matrix1,matrix2) result (feq)
      real(dp),intent(in), dimension(:) :: matrix1
      real(dp),intent(in), dimension(:) :: matrix2
@@ -2403,5 +2378,291 @@ contains
      end do
      
    end function matrix_feq2
+
+  !!!!! ============================================================================================ !!!!!
+  !!!!!                                                                                              !!!!!
+  !!!!! \/ \/ \/ \/ \/ \/ -------------------  create  region  ------------------- \/ \/ \/ \/ \/ \/ !!!!!
+  !!!!!                                                                                              !!!!!
+  !!!!! ============================================================================================ !!!!!
+
+
+  !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
+  !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$, that is
+  !% the centre of the QM region.
+  !
+  subroutine create_centred_qmcore(my_atoms,R_inner,R_outer,origin,list_changed)
+
+    type(Atoms),        intent(inout) :: my_atoms
+    real(dp),           intent(in)    :: R_inner
+    real(dp),           intent(in)    :: R_outer
+    real(dp), optional, intent(in)    :: origin(3)
+    logical,  optional, intent(out)   :: list_changed
+
+    type(Atoms) :: atoms_for_add_cut_hydrogens
+    type(Table) :: inner_list, outer_list, core, core1, ext_qmlist
+    integer     :: qm_flag_index, i
+    real(dp)    :: my_origin(3)
+
+    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
+
+    call map_into_cell(my_atoms)
+
+    call allocate(core,4,0,0,0,0)
+    call get_qm_list_int(my_atoms,1,core1,int_property='hybrid_mark')
+    call get_qm_list_int(my_atoms,1,core,int_property='hybrid_mark')
+    call get_qm_list_int_rec(my_atoms,2,ext_qmlist, do_recursive=.true.,int_property='hybrid_mark')
+
+!Build the hysteretic QM core:
+  call construct_hysteretic_region(at=my_atoms,region=core,inner_radius=R_inner,outer_radius=R_outer,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false.,simply_loop_over_atoms=.true.)
+!    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
+!    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
+!    call construct_region(my_atoms,R_inner,inner_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
+!    call construct_region(my_atoms,R_outer,outer_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
+
+!    call select_hysteretic_quantum_region(my_atoms,inner_list,outer_list,core)
+!    call finalise(inner_list)
+!    call finalise(outer_list)
+
+!TO BE OPTIMIZED : add avgpos to add_cut_hydrogen
+   ! add cut hydrogens, according to avgpos
+    atoms_for_add_cut_hydrogens = my_atoms
+    atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
+    atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
+    atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
+    call set_cutoff(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
+    call calc_connect(atoms_for_add_cut_hydrogens)
+    call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
+    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
+    !do i=1,core%N
+    !   call print(core%int(1,i))
+    !enddo
+    call finalise(atoms_for_add_cut_hydrogens)
+
+   ! check changes in QM list and set the new QM list
+    if (present(list_changed)) then
+       list_changed = check_list_change(old_list=core1,new_list=core)
+       if (list_changed)  call print('QM list around the origin  has changed')
+    endif
+
+   ! update QM_flag of my_atoms
+    qm_flag_index = get_property(my_atoms,'hybrid_mark')
+    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+    my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
+    my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
+
+   ! update hybrid property of my_atoms
+    qm_flag_index = get_property(my_atoms,'hybrid')
+    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+    my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
+
+    call finalise(core)
+    call finalise(core1)
+    call finalise(ext_qmlist)
+
+  end subroutine create_centred_qmcore
+
+
+!  subroutine construct_buffer_origin(my_atoms,Radius,list,origin)
+!
+!    type(Atoms),        intent(inout) :: my_atoms
+!    real(dp),           intent(in)    :: Radius
+!    type(Table),        intent(out)   :: list
+!    real(dp), optional, intent(in)    :: origin(3)
+!
+!    integer  :: i
+!    real(dp) :: my_origin(3)
+!    logical :: buffer_general, do_general
+!
+!    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
+!
+!    call initialise(list,4,0,0,0,0)
+!
+!    if (get_value(my_atoms%params,'Buffer_general',do_general)) then
+!        call print('Found Buffer_general in atoms%params'//do_general)
+!        buffer_general=do_general
+!    else
+!        call print('not Found Buffer_general in atoms%params set to F')
+!        buffer_general=.false.
+!    endif
+!
+!    do i = 1,my_atoms%N
+!       if (.not.buffer_general) then
+!          if (my_atoms%Z(i).eq.1) cycle
+!       endif
+!       if (distance_min_image(my_atoms,i,my_origin(1:3)).lt.Radius) call append(list,(/i,0,0,0/))
+!    enddo
+!
+!  end subroutine construct_buffer_origin
+!
+!
+!  function extend_qmlist(my_atoms,R_inner,R_outer) result(list_changed)
+!
+!  type(Atoms),           intent(inout) :: my_atoms
+!  real(dp),    optional, intent(in)    :: R_inner, R_outer  !! to select hysteretic quantum region
+!
+!  real(dp)    :: inner, outer
+!  type(Table) :: inner_buffer, outer_buffer
+!  type(Table) :: core, ext_qmlist, old_ext_qmlist
+!  type(Atoms) :: fake, atoms_for_add_cut_hydrogens
+!  integer     :: qm_flag_index, i
+!  logical     :: list_changed,buffer_general,do_general
+!
+!  ! checking the optional inputs
+!    if (present(R_inner)) then
+!       inner = R_inner
+!       if (present(R_outer)) then
+!          outer = R_outer
+!          call print('Updating QM_flag properties according to R_inner = '//round(R_inner,3)//', R_outer = '//round(R_outer,3))
+!       else
+!          call print('Warning: extend_qmlist: R_inner present, but not R_outer! Use R_outer=R_inner!')
+!          outer = R_inner
+!       endif
+!    else
+!       if (present(R_outer)) then
+!          call print('Warning: extend_qmlist: R_outer present, but not R_inner! Use R_inner=R_outer!')
+!          inner = R_outer
+!          outer = R_outer
+!       else
+!          call print('Warning: extend_qmlist: R_inner and R_outer not present! qm_list will not be extended!')
+!          return
+!       endif
+!    endif
+!
+!    call get_qm_list_int(my_atoms,1,core)
+!    call get_qm_list_int_rec(my_atoms,2,ext_qmlist, do_recursive=.true.)
+!    call get_qm_list_int_rec(my_atoms,2,old_ext_qmlist, do_recursive=.true.)
+!
+!!TO BE OPTIMIZED:
+!  ! extend the qm region > ext_qmlist
+!  !this should go without fake atoms and with use_avgpos! but not the cluster making, only the add_cut_hydrogen!
+!    fake=my_atoms
+!!    cutoff_old = my_atoms%cutoff
+!    call set_cutoff_minimum(fake,outer*(maxval(ElementCovRad(fake%Z(1:fake%N)))/ElementCovRad(8))) ! to find everything like O
+!    call calc_connect(fake)
+!
+!    if (get_value(my_atoms%params,'Buffer_general',do_general)) then
+!        call print('Found Buffer_general in atoms%params'//do_general)
+!        buffer_general=do_general
+!    else
+!        call print('not Found Buffer_general in atoms%params set to F')
+!        buffer_general=.false.
+!    endif
+!
+!    if (buffer_general) then
+!       call print('Not element specific buffer selection')
+!       call construct_buffer(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       !call print('Atoms in inner buffer:')
+!       !do i=1,inner_buffer%N
+!       !   call print(inner_buffer%int(1,i))
+!       !enddo
+!       call construct_buffer(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       !call print('Atoms in outer buffer:')
+!       !do i=1,outer_buffer%N
+!       !   call print(outer_buffer%int(1,i))
+!       !enddo
+!       !call print('Atoms in the quantum region before updating:')
+!       !do i=1,ext_qmlist%N
+!       !   call print(ext_qmlist%int(1,i))
+!       !enddo
+!    else
+!       call print('Element specific buffer selection, only heavy atoms count')
+!       call construct_buffer_RADIUS(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       !call print('Atoms in inner buffer:')
+!       !do i=1,inner_buffer%N
+!       !   call print(inner_buffer%int(1,i))
+!       !enddo
+!       call construct_buffer_RADIUS(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       !call print('Atoms in outer buffer:')
+!       !do i=1,outer_buffer%N
+!       !   call print(outer_buffer%int(1,i))
+!       !enddo
+!       !call print('Atoms in the quantum region before updating:')
+!       !do i=1,ext_qmlist%N
+!       !   call print(ext_qmlist%int(1,i))
+!       !enddo
+!    endif
+!    call select_hysteretic_quantum_region(fake,inner_buffer,outer_buffer,ext_qmlist,verbosity=NORMAL)
+!    !call print('Atoms in hysteretic quantum region:')
+!    !do i=1,ext_qmlist%N
+!    !   call print(ext_qmlist%int(1,i))
+!    !enddo
+!    call finalise(fake)
+!    call finalise(inner_buffer)
+!    call finalise(outer_buffer)
+!
+!   ! add cut hydrogens, according to avgpos
+!    atoms_for_add_cut_hydrogens = my_atoms
+!    atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
+!    atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
+!    atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
+!    call set_cutoff(atoms_for_add_cut_hydrogens,0._dp)
+!    call calc_connect(atoms_for_add_cut_hydrogens)
+!    call add_cut_hydrogens(atoms_for_add_cut_hydrogens,ext_qmlist)
+!    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
+!    !do i=1,ext_qmlist%N
+!    !   call print(ext_qmlist%int(1,i))
+!    !enddo
+!    call finalise(atoms_for_add_cut_hydrogens)
+!
+!   ! check changes in QM list and set the new QM list
+!    list_changed = check_list_change(old_list=old_ext_qmlist,new_list=ext_qmlist)
+!
+!   ! update QM_flag of my_atoms
+!    qm_flag_index = get_property(my_atoms,'QM_flag')
+!    my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+!    my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
+!    my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
+!
+!    call finalise(core)
+!    call finalise(ext_qmlist)
+!    call finalise(old_ext_qmlist)
+!
+!  end function extend_qmlist
+!
+!
+!  subroutine construct_buffer_RADIUS(my_atoms,core,radius,buffer,use_avgpos,verbosity)
+!
+!    type(Atoms),       intent(in)  :: my_atoms
+!    real(dp),          intent(in)  :: radius
+!    type(Table),       intent(in)  :: core
+!    type(Table),       intent(out) :: buffer
+!    logical, optional, intent(in)  :: use_avgpos
+!    integer, optional, intent(in)  :: verbosity
+!
+!    integer :: i,j
+!    logical :: delete_it
+!
+!    call construct_buffer(my_atoms,core,(radius*maxval(ElementCovRad(my_atoms%Z(1:my_atoms%N)))/ElementCovRad(8)),buffer,use_avgpos=use_avgpos,verbosity=verbosity)
+!    !call print('Atoms in buffer:')
+!    !do i=1,buffer%N
+!    !   call print(buffer%int(1,i))
+!    !enddo
+!
+!    i = 1
+!    do while (i.le.buffer%N)
+!       delete_it = .true.
+!       if (any(buffer%int(1,i).eq.core%int(1,1:core%N))) then ! keep core
+!          delete_it = .false.
+!       else
+!          if (my_atoms%Z(buffer%int(1,i)).ne.1) then ! delete Hs from buffer
+!             do j=1,core%N
+!                if (my_atoms%Z(core%int(1,j)).eq.1) cycle ! only consider nonH -- nonH distances
+!                if (distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)).le. &
+!                   radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j))))) then
+!                   delete_it = .false.
+!                   !call print('Atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//' is within element specific buffer distance '//round(distance_min_image(my_atoms,buffer%int(1,i),core%int(1,j)),3)//' < '//round(radius / (ElementCovrad(8) + ElementCovRad(8)) * (ElementCovRad(my_atoms%Z(buffer%int(1,i))) + ElementCovRad(my_atoms%Z(core%int(1,j)))),3))
+!                endif
+!             enddo
+!          endif
+!       endif
+!       if (delete_it) then
+!          !call print('delete atom '//ElementName(my_atoms%Z(buffer%int(1,i)))//buffer%int(1,i)//'from buffer')
+!          call delete(buffer,i)
+!          i = i - 1
+!       endif
+!       i = i + 1
+!    enddo
+!
+!  end subroutine construct_buffer_RADIUS
 
 end module cp2k_driver_module
