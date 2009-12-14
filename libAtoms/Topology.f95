@@ -1,11 +1,11 @@
 module topology_module
 
-  use atoms_module,            only: atoms, print, finalise, &
+  use atoms_module,            only: atoms, connection, print, finalise, &
                                      map_into_cell, calc_dists, &
                                      assignment(=), &
-                                     add_property, &
+                                     add_property, has_property, &
                                      read_line, parse_line, &
-                                     atoms_n_neighbours, atoms_neighbour, &
+                                     atoms_n_neighbours, atoms_neighbour, bond_length, &
                                      distance_min_image, &
                                      DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect
   use clusters_module,         only: bfs_step, add_cut_hydrogens
@@ -37,9 +37,7 @@ module topology_module
   private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
   private :: create_angle_list, create_dihedral_list
   private :: create_improper_list, get_property
-#ifdef HAVE_DANNY
   private :: create_pos_dep_charges, calc_fc
-#endif
 
   public  :: delete_metal_connects, &
              write_brookhaven_pdb_file, &
@@ -67,7 +65,9 @@ module topology_module
   integer,  parameter, private :: MAX_ATOMS_PER_RES = 50   !Maximum number of atoms in one residue
   integer,  parameter, private :: MAX_IMPROPERS_PER_RES = 12   !Maximum number of impropers in one residue
 
-#ifdef HAVE_DANNY
+  real(dp), parameter, public :: SILICA_CUTOFF = 2.8_dp
+  real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 5.5_dp
+
   real(dp), parameter, private :: Danny_R_q = 2.0_dp
   real(dp), parameter, private :: Danny_Delta_q = 0.1_dp
 
@@ -79,13 +79,14 @@ module topology_module
   real(dp), parameter, private :: Danny_O_O_cutoff = 0._dp
   real(dp), parameter, private :: Danny_O_H_cutoff = 1.0_dp
   real(dp), parameter, private :: Danny_H_H_cutoff = 0._dp
-#endif
 
 contains
 
 
-! topology calculation using average coordinates
-! invokes create_CHARMM that works on at%pos rather than at%avgpos
+  !% Topology calculation using average coordinates.
+  !% Invokes create_CHARMM that works on at%pos rather than at%avgpos.
+  !% Optionally outputs the intraresidual impropers.
+  !
   subroutine calc_topology(at,do_CHARMM,intrares_impropers)
 
     type(Atoms),       intent(inout) :: at
@@ -171,12 +172,24 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
   end subroutine calc_topology
 
 
-  !Analogous to Steve's create_AMBER_input, could be used mutually if AMBER_instance and param_cp2k were merged into 1 parameter object
-  subroutine create_CHARMM(at,do_CHARMM,intrares_impropers)
+  !% Topology calculation. Recognize residues and save atomic names, residue names etc. in the atoms object.
+  !% Generally useable for AMBER and CHARMM force fields, in case of CHARMM, the MM charges are assigned here, too.
+  !% do_CHARMM=.true. is the default
+  !% Optionally outputs the intraresidual impropers.
+  !% The algorithm will fail if the Residue_Library is not present in atoms%params or in the directory.
+  !% Optionally use hysteretic_connect if passed as alt_connect.
+  !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
+  !% alt_connect were the same as at%cutoff(_break).
+  !%
+  subroutine create_CHARMM(at,do_CHARMM,intrares_impropers, alt_connect) !, hysteretic_neighbours)
 
-    type(Atoms),           intent(inout) :: at
+    type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
+    type(Connection), intent(in), optional, target :: alt_connect
+!    logical, optional, intent(in) :: hysteretic_neighbours
+
+    character(*), parameter  :: me = 'create_CHARMM: '
 
     type(Inoutput)                       :: lib
     character(4)                         :: cha_res_name(MAX_KNOWN_RESIDUES), Cres_name
@@ -202,18 +215,29 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     integer, allocatable                 :: imp_atoms(:,:)
     real(dp)                             :: mol_charge_sum
     logical                              :: found_residues
-#ifdef HAVE_DANNY
-    type(Table)                          :: atom_Si, atom_SiO, SiO_list
+    type(Table)                          :: atom_Si, atom_SiO, SiOH_list
     real(dp), dimension(:), allocatable  :: charge
 integer :: j,k, atom_i
 logical :: silanol
     type(Table) :: bondH,bondSi
     integer :: bond_H,bond_Si
-#endif
 !    integer                             :: qm_flag_index, pos_indices(3)
 !    logical                             :: do_qmmm
+    type(Connection), pointer :: use_connect
+!    logical :: use_hysteretic_neighbours
+type(Table) :: O_atom, O_neighb
+!integer :: hydrogen
 
     call system_timer('create_CHARMM')
+
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => at%connect
+    endif
+    if (.not.use_connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
+!    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
 
     my_do_charmm = .true.
     if (present(do_CHARMM)) my_do_charmm = do_CHARMM
@@ -262,7 +286,7 @@ logical :: silanol
 
        ! Search the atom structure for this residue
        call print('|-Looking for '//cres_name//'...',verbosity=ANAL)
-       call find_motif(at,motif,list,mask=unidentified)
+       call find_motif(at,motif,list,mask=unidentified,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
           
@@ -308,7 +332,6 @@ logical :: silanol
    ! check if residue library is empty
     if (.not.found_residues) call system_abort('Residue library '//trim(lib%filename)//' does not contain any residues!')
 
-#ifdef HAVE_DANNY
 !>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
 
    ! SIO residue for Danny potential if Si atom is present in the atoms structure
@@ -331,7 +354,7 @@ logical :: silanol
        enddo
        call print(atom_Si%N//' Si atoms found in total')
        !2 cluster carving steps, to include OSI and HSI atoms
-       call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.)
+       call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
        call print(atom_SiO%N//' O atoms found in total')
        do i=1,atom_SiO%N
            if (at%Z(atom_SiO%int(1,i)).eq.1) then
@@ -339,12 +362,12 @@ logical :: silanol
               bond_H = atom_SiO%int(1,i)
               call initialise(bondH,4,0,0,0,0)
               call append(bondH,(/bond_H,0,0,0/))
-              call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.)
+              call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
               do j = 1,bondSi%N
                  if (at%Z(bondSi%int(1,i)).eq.14) then
                     bond_Si = bondSi%int(1,i)
                     call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
-                    call remove_bond(at%connect,bond_H,bond_Si)
+                    call remove_bond(use_connect,bond_H,bond_Si)
                  endif
               enddo
            endif
@@ -352,7 +375,7 @@ logical :: silanol
        enddo
 !       if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
    !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
-       call add_cut_hydrogens(at,atom_SiO)
+       call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
        call print(atom_SiO%N//' O/H atoms found in total')
        !check if none of these atoms are identified yet
        if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
@@ -373,80 +396,70 @@ logical :: silanol
        !add atom, residue and molecule names
        do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
           atom_i = atom_Si%int(1,i)
-!!          if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.8) .or. &
-!!               any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.8) ) then
-             atom_name(atom_i) = 'SIO'
-!!!             call print('Found SIO silica oxygen.'//atom_i)
-!!          else
-!!             atom_name(atom_i) = 'SIB'
-!!!             call print('Found SIB bulk silicon.'//atom_i)
-!!          endif
-!if (atoms_n_neighbours(at,atom_i).ne.4) call system_abort('More than 4 neighbours of Si '//atom_i)
+          atom_name(atom_i) = 'SIO'
+          !if (atoms_n_neighbours(at,atom_i).ne.4) call system_abort('More than 4 neighbours of Si '//atom_i)
        enddo
        do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
           atom_i = atom_SiO%int(1,i)
           if (at%Z(atom_i).eq.8) then
-!             silanol = .false.
-!             do k = 1, atoms_n_neighbours(at,atom_i)
-!                j = atoms_neighbour(at,atom_i,k)
-!                if (at%Z(j).eq.1) silanol = .true.
-!             enddo
-!             if (silanol) then
-!                atom_name(atom_i) = 'OSI'
-!                call print('Found OH silanol oxygen.'//atom_i)
-!             else
-!                atom_name(atom_i) = 'OSB'
-!                call print('Found OB bridging oxygen.'//atom_i)
-!             endif
-             if ( any(at%Z(at%connect%neighbour1(atom_i)%t%int(1,1:at%connect%neighbour1(atom_i)%t%N)).eq.1) .or. &
-                  any(at%Z(at%connect%neighbour2(atom_i)%t%int(1,1:at%connect%neighbour2(atom_i)%t%N)).eq.1) ) then
-                atom_name(atom_i) = 'OSI'
+             call initialise(O_neighb,4,0,0,0)
+             call initialise(O_atom,4,0,0,0)
+             call append(O_atom,(/atom_i,0,0,0/))
+             call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+             if (find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1).ne.0) then
+!call print('ATOM OSI '//atom_i//' has '//O_neighb%N//' neighbours')
+!hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
+!call print('ATOMS '//atom_i//' '//O_neighb%int(1,hydrogen))
+!call print(O_neighb%int(1,1:O_neighb%N))
+!             if ( any(at%Z(use_connect%neighbour1(atom_i)%t%int(1,1:use_connect%neighbour1(atom_i)%t%N)).eq.1) .or. &
+!                  any(at%Z(use_connect%neighbour2(atom_i)%t%int(1,1:use_connect%neighbour2(atom_i)%t%N)).eq.1) ) then !has a H neighbour
+                atom_name(atom_i) = 'OSI' !silanol O
 !                call print('Found OH silanol oxygen.'//atom_SiO%int(1,i))
              else
-                atom_name(atom_i) = 'OSB'
+                atom_name(atom_i) = 'OSB' !bridging O
 !                call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
              endif
-!if (atoms_n_neighbours(at,atom_i).ne.2) call system_abort('More than 4 neighbours of Si '//atom_i)
+             !if (atoms_n_neighbours(at,atom_i).ne.2) call system_abort('More than 2 neighbours of O '//atom_i)
+             call finalise(O_atom)
+             call finalise(O_neighb)
           endif
           if (at%Z(atom_SiO%int(1,i)).eq.1)  atom_name(atom_SiO%int(1,i)) = 'HSI'
+          !if (atoms_n_neighbours(at,atom_i).ne.1) call system_abort('More than 1 neighbours of H '//atom_i)
        enddo
-!call print(at%connect)
 
-       residue_number(atom_Si%int(1,1:atom_Si%N)) = nres
-       residue_number(atom_SiO%int(1,1:atom_SiO%N)) = nres
-!this should be fine, added later:       cha_res_name(atom_SiO%int(1,1:atom_SiO%N)) = 'SIO2'
-       atom_charge(atom_Si%int(1,1:atom_Si%N)) = 0._dp
-       atom_charge(atom_SiO%int(1,1:atom_SiO%N)) = 0._dp
+       !add all the silica atoms together:
+
    !calc charges, to compare with CP2K calc charges
-!!!!
-!!!!
-!!!!
       ! collect the whole molecule
-       call initialise(SiO_list,4,0,0,0,0)
-       do i = 1, atom_Si%N
-          call append (SiO_list,atom_Si%int(1:4,i))
-       enddo
-       do i = 1, atom_SiO%N
-          call append (SiO_list,atom_SiO%int(1:4,i))
-       enddo
+!       do i = 1, atom_Si%N
+!          call append (SiOH_list,atom_Si%int(1:4,i))
+!       enddo
+!       do i = 1, atom_SiO%N
+!          call append (SiOH_list,atom_SiO%int(1:4,i))
+!       enddo
 
       ! calc charges for the whole molecule
-       call create_pos_dep_charges(at,SiO_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+       call initialise(SiOH_list,4,0,0,0,0)
+       call append (SiOH_list,atom_Si)
+       call append (SiOH_list,atom_SiO)
 
-      ! add charges to the CHARMM charges
-       atom_charge(SiO_list%int(1,1:SiO_list%N)) = charge(SiO_list%int(1,1:SiO_list%N))
-      do i=1,at%N
-         call print('atom '//i//' has charge '//atom_charge(i),verbosity=ANAL)
-      enddo
-!!!!
-!!!!
-!!!!
+      ! add charges and res numbers
+       residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
+
+       call create_pos_dep_charges(at,SiOH_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+
+       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
+       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
+       call print('Atomic charges: ',ANAL)
+       call print('   ATOM     CHARGE',ANAL)
+       do i=1,at%N
+          call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
+       enddo
        call finalise(atom_Si)
        call finalise(atom_SiO)
-       call finalise(SiO_list)
+       call finalise(SiOH_list)
     endif
 
-#endif
 
     call print('Finished.')
     call print(nres//' residues found in total')
@@ -510,13 +523,13 @@ enddo
 !          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'MCL','SOD','CLA','CES','POT','Rb+','CAL','MEF','FLA','HYD','HWP','H3O'/))) then
              at%data%str(atom_mol_name_index,i) = at%data%str(atom_res_name_index,i)
           endif
-#ifdef HAVE_DANNY
+!#ifdef HAVE_DANNY
           if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'FLEX','TIP3','SIO2'/)).or. &
                  (trim(at%data%str(atom_res_name_index,i)).eq.'TIP')) then
-#else
-          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'FLEX','TIP3'/)).or. &
-                 (trim(at%data%str(atom_res_name_index,i)).eq.'TIP')) then
-#endif
+!#else
+!          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'FLEX','TIP3'/)).or. &
+!                 (trim(at%data%str(atom_res_name_index,i)).eq.'TIP')) then
+!#endif
              at%data%str(atom_mol_name_index,i) = at%data%str(atom_res_name_index,i)
           endif
           if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'MG','ZN'/))) then
@@ -555,9 +568,10 @@ enddo
 
   end subroutine create_CHARMM
 
-  !Used by create_CHARMM, can read also from AMBER residue library
-  !Can be used as Steve's next_motif, if do_CHARMM=.false. specified
-  !do_CHARMM=.true. is the default
+  !% This is the subroutine that reads residues from a library.
+  !% Used by create_CHARMM, can read from CHARMM and AMBER residue libraries.
+  !% do_CHARMM=.true. is the default
+  !
   subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,n_impr,imp_atoms,do_CHARMM)
     
     type(Inoutput),                   intent(in)  :: library
@@ -663,11 +677,13 @@ enddo
     
   end subroutine next_motif
 
-  !writes PDB format using the pdb_format passed as an input
-  !printing charges into the last column of PDB file 
-  !ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
-  !ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
-  !ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
+  !% Writes PDB format using the pdb_format passed as an input
+  !% printing charges into the last column of PDB file 
+  !% Sample lines:
+  !%ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
+  !%ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
+  !%ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
+  !
   subroutine write_pdb_file(at,pdb_file,pdb_format,run_type_string)
 
     character(len=*),           intent(in) :: pdb_file
@@ -699,7 +715,7 @@ enddo
 
     if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
         (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
-       qm_flag_index = get_property(at,'QM_flag')
+       qm_flag_index = get_property(at,'cluster_mark')
        if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
        if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
     endif
@@ -737,12 +753,14 @@ enddo
 
   end subroutine write_pdb_file
 
-  !writes Brookhaven PDB format
-  !charges are printed into the PSF file, too
-  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
-  !ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
-  !ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
-  !ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
+  !% Writes Brookhaven PDB format
+  !% charges are printed into the PSF file, too
+  !% use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file
+  !% Sample line:
+  !%ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
+  !%ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
+  !%ATOM      3   HA ALA A   1       0.176   1.741  13.298  0.00  0.00     ALA   H   0.0900
+  !
   subroutine write_brookhaven_pdb_file(at,pdb_file,run_type_string)
 
     character(len=*),           intent(in) :: pdb_file
@@ -776,11 +794,13 @@ enddo
 
   end subroutine write_brookhaven_pdb_file
 
-  !writes modified PDB format for accurate coordinates and charges, for CP2K
-  !use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
-  !ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
-  !ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
-  !ATOM      3   HA ALA A   1       0.17600000   1.74100000  13.29800000  0.00  0.00     ALA   H   0.09
+  !% Writes modified PDB format for accurate coordinates and charges, for CP2K
+  !% Use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
+  !% Sample line:
+  !%ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
+  !%ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
+  !%ATOM      3   HA ALA A   1       0.17600000   1.74100000  13.29800000  0.00  0.00     ALA   H   0.09
+  !
   subroutine write_cp2k_pdb_file(at,pdb_file,run_type_string)
 
     character(len=*),  intent(in)  :: pdb_file
@@ -814,13 +834,18 @@ enddo
 
   end subroutine write_cp2k_pdb_file
 
-  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename)
+  !% Writes PSF topology file, to be used with the PDB coordinate file.
+  !% PSF contains the list of atoms, bonds, angles, impropers, dihedrals.
+  !
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,alt_connect)
 
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(in) :: at
     character(len=*), optional, intent(in) :: run_type_string
     type(Table),      optional, intent(in) :: intrares_impropers
     character(80),    optional, intent(in) :: imp_filename
+    logical,          optional, intent(in) :: add_silica_23body
+    type(Connection), intent(in), optional, target :: alt_connect
 
     type(Inoutput)          :: psf
     character(103)          :: sor
@@ -840,6 +865,7 @@ enddo
     type(Table)             :: dihedrals, impropers
     character(len=1024)     :: my_run_type_string
     integer                 :: run_type
+    logical                 :: do_add_silica_23body
 
     call system_timer('write_psf_file')
 
@@ -849,10 +875,15 @@ enddo
        call system_abort('Not yet implemented.')
     endif
 
+    do_add_silica_23body = optional_default(.false.,add_silica_23body)
+    if (do_add_silica_23body) then !!xxx there must be a SIO2 residue?
+       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+    endif
+
     my_run_type_string = optional_default('',run_type_string)
     if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
         (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
-       qm_flag_index = get_property(at,'QM_flag')
+       qm_flag_index = get_property(at,'cluster_mark')
        if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
        if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
     endif
@@ -895,15 +926,16 @@ enddo
        call print(sor,file=psf)
     enddo
     call print('',file=psf)
-
+call print('PSF| '//at%n//' atoms',VERBOSE)
    ! BOND section
-    call create_bond_list(at,bonds)
+    call create_bond_list(at,bonds,do_add_silica_23body,alt_connect=alt_connect)
     if (any(bonds%int(1:2,1:bonds%N).le.0) .or. any(bonds%int(1:2,1:bonds%N).gt.at%N)) &
        call system_abort('write_psf_file: element(s) of bonds not within (0;at%N]')
     call write_psf_section(data_table=bonds,psf=psf,section='BOND',int_format=int_format,title_format=title_format)
+call print('PSF| '//bonds%n//' bonds',VERBOSE)
 
    ! ANGLE section
-    call create_angle_list(at,bonds,angles)
+    call create_angle_list(at,bonds,angles,do_add_silica_23body,alt_connect=alt_connect)
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
@@ -912,18 +944,21 @@ enddo
        call system_abort('write_psf_file: element(s) of angles not within (0;at%N]')
     endif
     call write_psf_section(data_table=angles,psf=psf,section='THETA',int_format=int_format,title_format=title_format)
+call print('PSF| '//angles%n//' angles')
 
    ! DIHEDRAL section
-    call create_dihedral_list(at,angles,dihedrals)
+    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,alt_connect=alt_connect)
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
        call system_abort('write_psf_file: element(s) of dihedrals not within (0;at%N]')
     call write_psf_section(data_table=dihedrals,psf=psf,section='PHI',int_format=int_format,title_format=title_format)
+call print('PSF| '//dihedrals%n//' dihedrals')
 
    ! IMPROPER section
     call create_improper_list(at,angles,impropers,intrares_impropers=intrares_impropers)
     if (any(impropers%int(1:4,1:impropers%N).le.0) .or. any(impropers%int(1:4,1:impropers%N).gt.at%N)) &
        call system_abort('write_psf_file: element(s) of impropers not within (0;at%N]')
     call write_psf_section(data_table=impropers,psf=psf,section='IMPHI',int_format=int_format,title_format=title_format)
+call print('PSF| '//impropers%n//' impropers')
 
    !empty DON, ACC and NNB sections
     write(sor,title_format) 0,'!NDON'
@@ -947,9 +982,16 @@ enddo
     call finalise(psf)
 
     call system_timer('write_psf_file')
+!call print('psf written. stop.')
+!stop
 
   end subroutine write_psf_file
 
+  !% Writes a section of the PSF topology file.
+  !% Given a $section$ (name of the section) and a table $data_table$ with the data,
+  !% it writes them into $psf$ file with $int_format$ format.
+  !% Used by write_psf_file.
+  !
   subroutine write_psf_section(data_table,psf,section,int_format,title_format)
 
     type(Table),      intent(in) :: data_table
@@ -1016,10 +1058,19 @@ enddo
 
   end subroutine write_psf_section
 
-  subroutine create_bond_list(at,bonds)
+  !% Subroutine to create a $bonds$ table with all the nearest neighbour bonds
+  !% according to the connectivity. If $add_silica_23body$ is true, include
+  !% atom pairs that have SIO2 molecule type up to the silica_cutoff distance.
+  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
+  !
+  subroutine create_bond_list(at,bonds,add_silica_23body,alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(out) :: bonds
+  logical,     intent(in)  :: add_silica_23body
+    type(Connection), intent(in), optional, target :: alt_connect
+
+    character(*), parameter  :: me = 'create_bond_list: '
 
   type(Table) :: atom_a,atom_b
   integer     :: i,j
@@ -1028,15 +1079,15 @@ enddo
 !  integer,dimension(3) :: pos_indices
 !  integer              :: qm_flag_index
   integer              :: atom_mol_name_index
+  logical :: add_bond
 
     call system_timer('create_bond_list')
 
-    if (.not. at%connect%initialised) &
-       call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
 
-#ifdef HAVE_DANNY
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-#endif
+    if (add_silica_23body) then
+       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+       atom_mol_name_index = get_property(at,'atom_mol_name')
+    endif
     call initialise(bonds,2,0,0,0,0)
 
 !    do_qmmm = .true.
@@ -1049,11 +1100,11 @@ enddo
     do i=1,at%N
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/i,0,0,0/))
-#ifdef HAVE_DANNY
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
-#else
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
-#endif
+       if (add_silica_23body) then
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+       else
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+       endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.gt.i) then
@@ -1069,21 +1120,30 @@ enddo
 !!                   call print('added '//i//' (QM flag '//at%data%int(qm_flag_index,i)//') -- '//atom_j//' (QM flag '//at%data%int(qm_flag_index,atom_j)//')')
 !                endif
 !             endif
-#ifdef HAVE_DANNY
-            ! do not include H2O -- SiO2 bonds
-             if ((trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i)))) then
-                call print ('Check if add '//atom_j//'--'//i//' from molecules '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)),verbosity=VERBOSE)
-             !call print('Check if add '//trim(at%data%str(atom_mol_name_index,atom_j))//'--'//trim(at%data%str(atom_mol_name_index,i)))
-!                call print ('  Yes, if '//distance_min_image(at,atom_j,i)//' < '//(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol)
-!                call print ((distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) )
-!             call print(.not.( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i))) .and. &
-!                        (distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) ))
+
+             add_bond = .true.
+
+             if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
+                if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).ne.'SIO2')) .or. &
+                     ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) ) then !silica -- something
+!call system_abort('should have not got here')
+                   !add only nearest neighbours
+                   if (.not.(are_nearest_neighbours(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
+                elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) then !silica -- silica
+                   !add atom pairs within SILICA_CUTOFF
+!call system_abort('what not?')
+                   if (.not.are_silica_2body_neighbours(at,i,atom_j,alt_connect=alt_connect)) add_bond = .false. !SILICA_CUTOFF for Si-Si and Si-O, nearest neighbours otherwise(Si-H,O-O,O-H,H-H)
+                else
+!call system_abort('should have not got here')
+                   !add only nearest neighbours
+                   if (.not.(are_nearest_neighbours(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
+                endif
              endif
-             if (.not.( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,i))) .and. &
-                        (distance_min_image(at,atom_j,i).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(i)))*at%nneightol) )) &
-#endif
-             call append(bonds,(/i,atom_j/))
-!             call print('added '//i//' -- '//atom_j)
+
+             if (add_bond) then
+                call append(bonds,(/i,atom_j/))
+             endif
+
           else
 !             call print('not added '//i//' -- '//atom_j)
           endif
@@ -1099,94 +1159,280 @@ enddo
 
   end subroutine create_bond_list
 
-  subroutine create_angle_list(at,bonds,angles)
+  !% Test if atom $j$ is a nearest neighbour of atom $i$.
+  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
+  !%
+  function are_nearest_neighbours(this,i,j, alt_connect)
+
+    type(Atoms), intent(in), target :: this
+    integer,     intent(in) :: i,j
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical                 :: are_nearest_neighbours
+
+    real(dp)                :: d
+    integer :: neigh, j2
+
+    are_nearest_neighbours = .false.
+
+    do neigh = 1, atoms_n_neighbours(this,i)
+       j2 = atoms_neighbour(this, i, neigh, distance=d, alt_connect=alt_connect)
+       if (j2.eq.j) then
+          if (d < (bond_length(this%Z(i),this%Z(j))*this%nneightol)) &
+             are_nearest_neighbours = .true.
+          return
+       endif
+    enddo
+
+    call system_abort('are_nearest_neighbours: atom '//j//'is not a neighbour of atom '//i)
+
+  end function are_nearest_neighbours
+
+  !% Test if atom $j$ is a neighbour of atom $i$ for the silica 2 body terms.
+  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
+  !%
+  function are_silica_2body_neighbours(this,i,j,alt_connect)
+
+    type(Atoms), intent(in), target :: this
+    integer,     intent(in) :: i,j
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical                 :: are_silica_2body_neighbours
+
+    real(dp)                :: d
+    integer :: neigh, Z_i, Z_j, j2
+
+    are_silica_2body_neighbours = .false.
+
+    do neigh = 1, atoms_n_neighbours(this,i)
+       j2 = atoms_neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
+       if (j2.eq.j) then
+          Z_i = this%Z(i)
+          Z_j = this%Z(j)
+          if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
+               ((Z_i.eq. 8).and.(Z_j.eq.14)) .or. & !O--Si
+               ((Z_i.eq. 8).and.(Z_j.eq. 8)) ) then !O--O
+             if (d < SILICA_2BODY_CUTOFF) &
+                are_silica_2body_neighbours = .true.
+          elseif ((Z_i.eq.14).and.(Z_j.eq.14))  then !Si--Si
+             if (d < SILICA_CUTOFF) &
+                are_silica_2body_neighbours = .true.
+!call print(i//'--'//j//': '//d//' < 2.8? '//are_silica_2body_neighbours)
+          else !Si--H, O--H, O--O, H--H
+             if (d < (bond_length(Z_i,Z_j)*this%nneightol)) &
+                are_silica_2body_neighbours = .true.
+!call print(i//'--'//j//': '//d//' < nneigh_tol? '//are_silica_2body_neighbours)
+          endif
+          return
+       endif
+    enddo
+
+    call system_abort('are_silica_2body_neighbours: atom '//j//'is not a neighbour of atom '//i)
+
+  end function are_silica_2body_neighbours
+
+  !% Test if atom $j$ is a nearest neighbour of atom $i$ for the silica 3 body terms.
+  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
+  !%
+  function are_silica_nearest_neighbours(this,i,j,alt_connect)
+
+    type(Atoms), intent(in), target :: this
+    integer,     intent(in) :: i,j
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical                 :: are_silica_nearest_neighbours
+
+    real(dp)                :: d
+    integer :: neigh, Z_i, Z_j, j2
+
+    are_silica_nearest_neighbours = .false.
+
+    do neigh = 1, atoms_n_neighbours(this,i)
+       j2 = atoms_neighbour(this,i,neigh,distance=d,alt_connect=alt_connect)
+       if (j2.eq.j) then
+          Z_i = this%Z(i)
+          Z_j = this%Z(j)
+          if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
+               ((Z_i.eq. 8).and.(Z_j.eq.14)) .or. & !O--Si
+               ((Z_i.eq.14).and.(Z_j.eq.14)) ) then !Si--Si
+             if (d < SILICA_CUTOFF) &
+                are_silica_nearest_neighbours = .true.
+!call print(i//'--'//j//': '//d//' < 2.8? '//are_silica_nearest_neighbours)
+          else !Si--H, O--H, O--O, H--H
+             if (d < (bond_length(Z_i,Z_j)*this%nneightol)) &
+                are_silica_nearest_neighbours = .true.
+!call print(i//'--'//j//': '//d//' < nneigh_tol? '//are_silica_nearest_neighbours)
+          endif
+          return
+       endif
+    enddo
+
+    call system_abort('are_silica_nearest_neighbours: atom '//j//'is not a neighbour of atom '//i)
+
+  end function are_silica_nearest_neighbours
+
+  !% Test if an atom's $n$th neighbour is one if its nearest neighbours for the silica 3body terms.
+  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
+  !%
+  function is_silica_nearest_neighbour(this,i,n, alt_connect)
+
+    type(Atoms), intent(in), target :: this
+    integer,     intent(in) :: i,n
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical                 :: is_silica_nearest_neighbour
+
+    real(dp)                :: d
+    integer :: j, Z_i, Z_j
+
+    is_silica_nearest_neighbour = .false.
+    if (.not.has_property(this,'Z')) call system_abort('is_silica_nearest_neighbour: could not find Z property.')
+
+    j = atoms_neighbour(this, i, n, distance=d, alt_connect=alt_connect)
+    Z_i = this%Z(i)
+    Z_j = this%Z(j)
+    if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
+         ((Z_i.eq.14).and.(Z_j.eq.14)) ) then !Si--Si
+       if (d < SILICA_CUTOFF) &
+          is_silica_nearest_neighbour = .true.
+    else !Si--H, O--H, O--O, H--H
+       if (d < (bond_length(Z_i,Z_j)*this%nneightol)) &
+          is_silica_nearest_neighbour = .true.
+    endif
+
+  end function is_silica_nearest_neighbour
+
+  !% Subroutine to create an $angles$ table with all the angles,
+  !% according to the connectivity nearest neighbours. If $add_silica_23body$ is true, include
+  !% atom triplets that have SIO2 molecule type and the distances are smaller than the cutoff
+  !% for the corresponding 3 body cutoff.
+  !% Optionally use hysteretic_connect if passed as alt_connect.
+  !
+  subroutine create_angle_list(at,bonds,angles,add_silica_23body,alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: bonds
   type(Table), intent(out) :: angles
+  logical,     intent(in)  :: add_silica_23body
+    type(Connection), intent(in), optional, target :: alt_connect
+
+    character(*), parameter  :: me = 'create_angle_list: '
 
   integer     :: i,j
   type(Table) :: atom_a, atom_b
-  integer     :: atom_j
-#ifdef HAVE_DANNY
-  logical     :: keep_it
+  integer     :: atom_j, atom_1, atom_2
+  logical     :: add_angle
   integer     :: atom_type_index
   integer     :: atom_mol_name_index
-#endif
 
     call system_timer('create_angle_list')
 
-    if (.not. at%connect%initialised) &
-       call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
 
-#ifdef HAVE_DANNY
-    atom_type_index = get_property(at,'atom_type')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-#endif
+    if (add_silica_23body) then
+       atom_type_index = get_property(at,'atom_type') !different cutoff to define angles for different atom types
+       atom_mol_name_index = get_property(at,'atom_mol_name')
+    endif
+
     call initialise(angles,3,0,0,0,0)
 
     do i=1,bonds%N
+
+       atom_1 = bonds%int(1,i)
+       atom_2 = bonds%int(2,i)
+
       ! look for one more to the beginning: ??--1--2 where ??<2
        call initialise(atom_a,4,0,0,0,0)
-       call append(atom_a,(/bonds%int(1,i),0,0,0/))
-#ifdef HAVE_DANNY
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
-#else
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
-#endif
-       do j = 1,atom_b%N
-          atom_j = atom_b%int(1,j)
-#ifdef HAVE_DANNY
-         ! we kept 2.8 A cutoff for Si-Si and Si-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
-          if (any(at%Z(atom_j)*1000000+at%Z(bonds%int(1,i))*1000+at%Z(bonds%int(2,i)).eq.(/14008014,8014008,14008001,1008014/))) then
-             keep_it =  (distance_min_image(at,atom_j,bonds%int(1,i)).le.2.6_dp).and. &
-                        (distance_min_image(at,bonds%int(2,i),bonds%int(1,i)).le.2.6_dp)
-             !call print('keeping '//trim(at%data%str(atom_type_index,atom_j))//atom_j//'--'//trim(at%data%str(atom_type_index,bonds%int(1,i)))//bonds%int(1,i)//'--'//trim(at%data%str(atom_type_index,bonds%int(2,i)))//bonds%int(2,i)//' ? '//keep_it)
-          else
-             keep_it = .true.
-          endif
-         ! we still have a 2.6 A cutoff even for intermolecular Si-O. Decrease it to nearest neighbour tolerance
-          if ( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,bonds%int(1,i)))) .and. &
-               (distance_min_image(at,atom_j,bonds%int(1,i)).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(bonds%int(1,i))))*at%nneightol) ) &
-             keep_it = .false.
+       call append(atom_a,(/atom_1,0,0,0/))
 
-          if (keep_it.and.(atom_j.lt.bonds%int(2,i))) &
-#else
-          if (atom_j.lt.bonds%int(2,i)) &
-#endif
-             call append(angles,(/atom_j,bonds%int(1,i),bonds%int(2,i)/))
+       if (add_silica_23body) then
+!call system_abort('stop!')
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+       else
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+       endif
+
+       do j = 1,atom_b%N
+!call print('atom '//j//' out of '//atom_b%N//' which is atom '//atom_j)
+          atom_j = atom_b%int(1,j)
+          if (atom_j.ge.atom_2) cycle
+
+          add_angle = .true.
+
+          if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
+             if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).ne.'SIO2')) .or. &
+                  ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) ) then !silica -- something
+                !add only nearest neighbours
+                if (.not.(are_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
+             elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) then !silica -- silica
+                !add atom pairs within SILICA_CUTOFF
+                if (.not.are_silica_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect)) add_angle = .false.
+
+                ! we kept 2.8 A cutoff for Si-Si and 5.5 A for Si-O and O-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
+                if (add_angle) then
+                    if (any(at%Z(atom_j)*1000000+at%Z(atom_1)*1000+at%Z(atom_2).eq.(/14008014,8014008,14008001,1008014/))) then
+                       add_angle =  (distance_min_image(at,atom_j,atom_1).le.2.6_dp).and. &
+                                  (distance_min_image(at,atom_1,atom_2).le.2.6_dp)
+                    elseif (any(at%Z(atom_j)*1000000+at%Z(atom_1)*1000+at%Z(atom_2).eq.(/14008008,8008014,1008008,8008001,8008008/))) then
+                       add_angle = .false.
+                    endif
+                endif
+             else !something -- something, neither are silica
+                !add only nearest neighbours
+                if (.not.(are_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
+             endif
+          endif
+
+
+!          if (add_angle.and.(atom_j.lt.atom_2)) &
+          if (add_angle) & !.and.(atom_j.lt.atom_2)) &
+                call append(angles,(/atom_j,atom_1,atom_2/))
+
        enddo
+
        call finalise(atom_a)
        call finalise(atom_b)
+
       ! look for one more to the end: 1--2--?? where 1<??
        call initialise(atom_a,4,0,0,0,0)
-       call append(atom_a,(/bonds%int(2,i),0,0,0/))
-#ifdef HAVE_DANNY
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.)
-#else
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
-#endif
-       do j = 1,atom_b%N
-          atom_j = atom_b%int(1,j)
-#ifdef HAVE_DANNY
-         ! we kept 2.8 A cutoff for Si-Si and Si-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
-          if (any(at%Z(atom_j)*1000000+at%Z(bonds%int(2,i))*1000+at%Z(bonds%int(1,i)).eq.(/14008014,8014008,14008001,1008014/))) then
-             keep_it =  (distance_min_image(at,atom_j,bonds%int(2,i)).le.2.6_dp).and. &
-                        (distance_min_image(at,bonds%int(2,i),bonds%int(1,i)).le.2.6_dp)
-             !call print('keeping '//trim(at%data%str(atom_type_index,bonds%int(1,i)))//bonds%int(1,i)//'--'//trim(at%data%str(atom_type_index,bonds%int(2,i)))//bonds%int(2,i)//'--'//trim(at%data%str(atom_type_index,atom_j))//atom_j//' ? '//keep_it)
-          else
-             keep_it = .true.
-          endif
-         ! we still have a 2.6 A cutoff even for intermolecular Si-O. Decrease it to nearest neighbour tolerance
-          if ( (trim(at%data%str(atom_mol_name_index,atom_j)).ne.trim(at%data%str(atom_mol_name_index,bonds%int(2,i)))) .and. &
-               (distance_min_image(at,atom_j,bonds%int(2,i)).gt.(ElementCovRad(at%Z(atom_j))+ElementCovRad(at%Z(bonds%int(2,i))))*at%nneightol) ) &
-             keep_it = .false.
+       call append(atom_a,(/atom_2,0,0,0/))
 
-          if (keep_it.and.(atom_j.lt.bonds%int(1,i))) &
-#else
-          if (atom_j.lt.bonds%int(1,i)) &
-#endif
-             call append(angles,(/bonds%int(1,i),bonds%int(2,i),atom_j/))
+       if (add_silica_23body) then
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+       else
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+       endif
+
+       do j = 1,atom_b%N
+
+          atom_j = atom_b%int(1,j)
+          if (atom_j.ge.atom_1) cycle
+
+          add_angle = .true.
+
+          if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
+             if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).ne.'SIO2')) .or. &
+                  ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) ) then !silica -- something
+                !add only nearest neighbours
+                if (.not.(are_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
+             elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) then !silica -- silica
+                !add atom pairs within SILICA_CUTOFF
+                if (.not.are_silica_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect)) add_angle = .false.
+
+                ! we kept 2.8 A cutoff for Si-Si and 5.5 A for Si-O and O-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
+                if (add_angle) then
+                    if (any(at%Z(atom_j)*1000000+at%Z(atom_2)*1000+at%Z(atom_1).eq.(/14008014,8014008,14008001,1008014/))) then
+                       add_angle =  (distance_min_image(at,atom_j,atom_2).le.2.6_dp).and. &
+                                  (distance_min_image(at,atom_1,atom_2).le.2.6_dp)
+                    elseif (any(at%Z(atom_j)*1000000+at%Z(atom_2)*1000+at%Z(atom_1).eq.(/14008008,8008014,1008008,8008001,8008008/))) then
+                       add_angle = .false.
+                    endif
+                endif
+             else !something -- something, neither are silica
+                !add only nearest neighbours
+                if (.not.(are_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
+             endif
+          endif
+
+!          if (add_angle.and.(atom_j.lt.atom_1)) &
+          if (add_angle) & !.and.(atom_j.lt.atom_1)) &
+             call append(angles,(/atom_1,atom_2,atom_j/))
+
        enddo
        call finalise(atom_a)
        call finalise(atom_b)
@@ -1205,11 +1451,20 @@ enddo
 
   end subroutine create_angle_list
 
-  subroutine create_dihedral_list(at,angles,dihedrals)
+  !% Create $dihedrals$ table simply use the $angles$ table and
+  !% the connectivity nearest neighbours. If $add_silica_23body$ is true
+  !% skip any dihedrals with Si atoms, as there are only 2 and 3 body terms.
+  !% Optionally use hysteretic_connect if passed as alt_connect.
+  !
+  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: angles
   type(Table), intent(out) :: dihedrals
+  logical,     intent(in)  :: add_silica_23body
+    type(Connection), intent(in), optional, target :: alt_connect
+
+    character(*), parameter  :: me = 'create_angle_list: '
 
   integer     :: i,j
   type(Table) :: atom_a, atom_b
@@ -1217,27 +1472,27 @@ enddo
 
     call system_timer('create_dihedral_list')
 
-    if (.not. at%connect%initialised) &
-       call system_abort('create_bond_list: connectivity not initialised, call calc_connect first')
 
     call initialise(dihedrals,4,0,0,0,0)
 
     do i=1,angles%N
-#ifdef HAVE_DANNY
-       if (any(at%Z(angles%int(1:3,i)).eq.14)) cycle
-#endif
+
+       if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
+          if (any(at%Z(angles%int(1:3,i)).eq.14)) cycle
+       endif
+
       ! look for one more to the beginning: ??--1--2--3
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(1,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
             ! make sure it's not included twice -- no need to O(N^2) check at the end
              if (atom_j.lt.angles%int(3,i)) then
-#ifdef HAVE_DANNY
-                if (at%Z(atom_j).eq.14) cycle
-#endif
+                if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
+                   if (at%Z(atom_j).eq.14) cycle
+                endif
                 call append(dihedrals,(/atom_j,angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
              endif
           endif
@@ -1248,21 +1503,22 @@ enddo
       ! look for one more to the end: 1--2--3--??
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(3,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
             ! make sure it's not included twice -- no need to O(N^2) check at the end
              if (atom_j.lt.angles%int(1,i)) then
-#ifdef HAVE_DANNY
-                if (at%Z(atom_j).eq.14) cycle
-#endif
+                if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
+                   if (at%Z(atom_j).eq.14) cycle
+                endif
                 call append(dihedrals,(/angles%int(1,i),angles%int(2,i),angles%int(3,i),atom_j/))
              endif
           endif
        enddo
        call finalise(atom_a)
        call finalise(atom_b)
+
     enddo
 
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
@@ -1272,6 +1528,10 @@ enddo
 
   end subroutine create_dihedral_list
   
+  !% Create $impropers$ table simply use the $angles$ table.
+  !% For intraresidual impropers, use the input table,
+  !% the backbone residues can be calculated.
+  !
   subroutine create_improper_list(at,angles,impropers,intrares_impropers)
 
   type(Atoms),           intent(in)  :: at
@@ -1465,6 +1725,9 @@ enddo
 
   end subroutine create_improper_list
 
+  !% Returns the index of the first column of a property $prop$.
+  !% Aborts if the property cannot be found in the atoms object.
+  !
   function get_property(at,prop) result(prop_index)
 
     type(Atoms),      intent(in) :: at
@@ -1481,19 +1744,27 @@ enddo
 
   end function get_property
 
-#ifdef HAVE_DANNY
+  !% Calculates the position dependent charges for a silica molecule.
+  !% See: Cole et al., J. Chem. Phys. 127 204704--204712 (2007)
+  !
   subroutine create_pos_dep_charges(at,SiOH_list,charge,residue_names)
 
     type(Atoms), intent(in) :: at
     type(Table), intent(in) :: SiOH_list
     real(dp), allocatable, dimension(:), intent(out) :: charge
-    character(4),dimension(:), intent(in) :: residue_names
+    character(4), dimension(:), intent(in) :: residue_names
 
     real(dp) :: rij, fcq
     integer :: iatom, jatom
     integer :: atom_i, atom_j, jj
 
+    call system_timer('create_pos_dep_charges')
+
     if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
+
+    if (at%cutoff.lt.SILICA_CUTOFF) call print('WARNING! The connection cutoff value '//at%cutoff// &
+       ' is less than the silica_cutoff. The charges can be totally wrong. Check your connection object.',ERROR)
+
     allocate(charge(at%N))
     charge = 0._dp
 
@@ -1521,14 +1792,14 @@ enddo
          !silanol endings (O--H and H--O)
           if (at%Z(atom_i).eq.1) then
              !call print('Found H--X for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
-             if (rij.lt.1.0_dp) then
+             if (rij.lt.1.2_dp*(ElementCovRad(1)+ElementCovRad(8))) then
                 charge(atom_i) = 0.2_dp
                 charge(atom_j) = charge(atom_j) - 0.2_dp
              endif
           else
              if (at%Z(atom_j).eq.1) then
                 !call print('Found X--H for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
-                if (rij.lt.1.0_dp) then
+                if (rij.lt.1.2_dp*(ElementCovRad(1)+ElementCovRad(8))) then
                    charge(atom_i) = charge(atom_i) - 0.2_dp
                    charge(atom_j) = 0.2_dp
                 endif
@@ -1561,10 +1832,12 @@ enddo
        call print ('   atom '//jj//': '//charge(jj),verbosity=ANAL)
     enddo
 
+    call system_timer('create_pos_dep_charges')
 
   end subroutine create_pos_dep_charges
 
-! helper function
+  !% Cutoff function. Used by create_pos_dep_charges
+  !
   function calc_fc(rij) result(fc)
 
     real(dp), intent(in) :: rij
@@ -1588,7 +1861,9 @@ enddo
 
   end function calc_fc
 
-! code = 1000 * Z(atom_i) + Z(atom_j)
+  !% Calculate silica cutoff for 2 body terms.
+  !% The input $code$ = 1000 * Z(atom_i) + Z(atom_j)
+  !
   function danny_cutoff(code) result(cutoff)
 
     integer, intent(in) :: code
@@ -1615,6 +1890,10 @@ enddo
 
   end function danny_cutoff
 
+#ifdef HAVE_DANNY
+  !% Connectivity calculation for silica.
+  !% Applies the 3 body cutoff for silica, and then removes the unwanted connections.
+  !
   subroutine calc_connect_danny(at,cut_3body)
 
     type(Atoms), intent(inout) :: at
@@ -1649,8 +1928,9 @@ call system_abort('SHOULDNT HAVE ENTERED THIS ROUTINE')
   end subroutine calc_connect_danny
 #endif
 
-   ! remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
-   ! uses remove_bond in atoms_module 
+  !% Remove bonds for metal ions - everything but H, C, N, O, Si, P, S, Cl
+  !% Uses remove_bond in atoms_module.
+  !
   subroutine delete_metal_connects(at)
 
     type(Atoms), intent(inout) :: at
