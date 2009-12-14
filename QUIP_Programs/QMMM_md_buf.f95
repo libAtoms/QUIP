@@ -572,7 +572,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
         qm_args_str=trim(cp2k_calc_args) // &
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)// &
-          ' single_cluster=T check_qm_region_change=T carve_cluster='//do_carve_cluster//' allow_modify_hybrid_mark=F cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
+          ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
           ' clean_up_files=F' !// &
 !next 2lines are for playing with silica carving
 !            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster// &
@@ -769,7 +769,7 @@ enddo
         qm_args_str=trim(cp2k_calc_args) // &
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)// &
-          ' single_cluster=T check_qm_region_change=T carve_cluster='//do_carve_cluster//' allow_modify_hybrid_mark=F cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
+          ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
           ' clean_up_files=F' !// &
 !next 2lines are for playing with silica carving
 !            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
