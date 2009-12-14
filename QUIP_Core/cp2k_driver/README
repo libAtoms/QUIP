@@ -7,10 +7,9 @@ More robust are
   topology_pdb.F.patch
   motion_utils.F.patch
 Use them by going to the CP2K cp2k/src directory, and running
-  patch < path_to_your_QUIP_Core/cp2k_driver/topology_pdb.F.patch
-  patch < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
+  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
 If you want to enable exyz reading in cp2k, also do
-  patch < path_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch
+  patch -l -F 4 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch 
 You will need to tell the compiler to add
   -Ipath_to_your_QUIP/build.QUIP_ARCH
 at compile time (add to FCFLAGS and FCFLAGS2 in the relevant file in the arch/ CP2K directory).
