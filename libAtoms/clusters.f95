@@ -35,8 +35,8 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
 
 public :: create_cluster_info, create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
-    create_embed_and_buffer_lists_from_hybrid_mark, &
-    add_cut_hydrogens, construct_buffer, select_hysteretic_quantum_region
+    create_embed_and_fit_lists_from_cluster_mark, &
+    add_cut_hydrogens, construct_hysteretic_region !, construct_region, select_hysteretic_quantum_region
 
 interface create_hybrid_weights
    module procedure create_hybrid_weights_args
@@ -547,9 +547,7 @@ contains
                 !If all j's nearest neighbours are IN then add it
                 if (all_in) then
                    call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
-                   if(current_verbosity() .ge. NERD) then
-		      call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
-                   end if
+		   call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
                 end if
 
              end if
@@ -665,38 +663,38 @@ contains
        call print("create_cluster: cluster list:", NERD)
        call print(cluster_info, NERD)
 
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
-    !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
-    !x and taking all its neighbors IN if it has not only single bonds                                      x
-    !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
-    !x                             \OH  \NH                                                                 x
-    !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    !Go through the cluster atoms and find cut bonds. If the bond is to
-    !hydrogen, then include the hydrogen in the cluster list (since AMBER
-    !doesn't cap a bond to hydrogen with a link atom)
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
+       !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
+       !x and taking all its neighbors IN if it has not only single bonds                                      x
+       !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
+       !x                             \OH  \NH                                                                 x
+       !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       !Go through the cluster atoms and find cut bonds. If the bond is to
+       !hydrogen, then include the hydrogen in the cluster list (since AMBER
+       !doesn't cap a bond to hydrogen with a link atom)
 
-   if(do_termination_clash_check) then
+       if(do_termination_clash_check) then
     
-    call table_allocate(extra_atoms,6,4,1,0,100)
-    !call table_allocate(to_delete,6,4,1,0,100)
-    call table_allocate(buffer,6,4,1,0,100)
-    call table_allocate(extra_atoms,6,4,1,0,100)
-    call table_allocate(extra_atoms,6,4,1,0,100)
-
-    more_atoms = .true.
-    call Print('create_cluster_info: checking for hydrogens',NERD)
-    do while(more_atoms)
-
-       more_atoms = .false.
-
-       do m = 1, cluster_info%N
-
-          j = cluster_info%int(1,m)
-          call wipe(centre)
-          jshift = cluster_info%int(2:4,m)
-          call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
+          call table_allocate(extra_atoms,6,4,1,0,100)
+          !call table_allocate(to_delete,6,4,1,0,100)
+          call table_allocate(buffer,6,4,1,0,100)
+          call table_allocate(extra_atoms,6,4,1,0,100)
+          call table_allocate(extra_atoms,6,4,1,0,100)
+      
+          more_atoms = .true.
+          call Print('create_cluster_info: checking for hydrogens',NERD)
+          do while(more_atoms)
+      
+             more_atoms = .false.
+      
+             do m = 1, cluster_info%N
+      
+                j = cluster_info%int(1,m)
+                call wipe(centre)
+                jshift = cluster_info%int(2:4,m)
+                call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
 !!!!!!!                call append(centre, (/j,jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), &
 !!!!!!!                                    (/ hybrid_mark_name(hybrid_mark(j)) /) )
 
@@ -711,205 +709,205 @@ contains
 !                   if (find(cluster_info,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
 !                   if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
 
-             !If we get to this point then the bond j--k is being cut.
-             !Add k to extra_atoms if j or k are hydrogen (Z=1)
-             if (this%Z(j)==1 .or. this%Z(k)==1) then
-!                call append(extra_atoms,(/k,jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
+                   !If we get to this point then the bond j--k is being cut.
+                   !Add k to extra_atoms if j or k are hydrogen (Z=1)
+                   if (this%Z(j)==1 .or. this%Z(k)==1) then
+!                      call append(extra_atoms,(/k,jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
                       call append(extra_atoms,(/k,kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
-call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/)',VERBOSE)
-                more_atoms = .true.
-             end if
-             !call Print('construct_qm_region: went for bond '//nn)
-          end do
-
-       end do
-
-       !Add any extra atoms to the cluster list then wipe it
-       call append(cluster_info,extra_atoms)
-       call wipe(extra_atoms)
-
-    end do
-
-    !if by accident a single atom is included, that is part of a larger entity (not ion)
-    !then delete it from the list as it will cause error in SCF (e.g. C=O oxygen)
-    !call allocate(to_delete,4,0,0,0,1)
-    !do n = 1, cluster%N
-    !        i = cluster%int(1,n)
-    !        is_alone = .true.
-    !        do j = 1, atoms_n_neighbours(at,i)
-    !                k = atoms_neighbour(at,i,j)
-    !                if(find(cluster_info,(/k,shift/)) /= 0) then
-    !                   if(is_nearest_neighbour(at,i,j)) GOTO 120
-    !                else
-    !                   if(is_nearest_neighbour(at,i,j)) is_alone = .false.
-    !                end if
-    !        end do
-    !        if(.not. is_alone) call append(to_delete,(/i,shift/))
-    !   120  cycle
-    !end do
-
-    !do i = 1, to_delete%N
-    ! call delete(cluster_info,to_delete%int(:,i))
-    !end do
-
-    !check for IN-OUT-IN motifs after adding heavy atoms bonded to cluster H-s
-    ! H-s bonded to cluster heavy atoms
-    n = 1
-    do while (n <= cluster_info%N)
-       i = cluster_info%int(1,n)     ! index of atom in the cluster_info
-       ishift = cluster_info%int(2:4,n)
-       !Loop over atom i's neighbours
-       do m = 1, atoms_n_neighbours(this,i)
-          j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
-
-          !If j is IN the cluster_info, or not a nearest neighbour then try the next neighbour
-          l1 = find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) /= 0
-          l2 = .not.(is_nearest_neighbour(this, i, m))
-          if (l1 .or. l2) cycle
-          !So j is an OUT nearest neighbour of i.
-          !Do a loop over j's nearest neighbours
-          do p = 1, atoms_n_neighbours(this,j)
-             k = atoms_neighbour(this, j, p, shift=kshift, distance=r_jk, alt_connect=use_connect)
-             !If k is OUT of the cluster_info or k == i or it is not a nearest neighbour of j
-             !then try the next neighbour
-             l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
-             l2 = (k == i)
-             l3 = (.not. is_nearest_neighbour(this,j, p))
-             if (l1 .or. l2 .or. l3) cycle
-             !So k is an IN nearest neighbour of j.
-!            if(find(cluster_info,(/j,ishift+jshift/)) == 0) &
-                  if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) == 0) &
-               call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
-            ! j is now included in the cluster_info, so we can exit this do loop (over p)
-            ! only include j's hydrogen neighbours
-            do s = 1, atoms_n_neighbours(this,j)
-              q = atoms_neighbour(this, j, s, shift=hshift, distance=r_ij, alt_connect=use_connect)
-              if(is_nearest_neighbour( this, j, s )) then
-                l1 = find(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/)) == 0
-                l2 = (this%Z(q) == 1)
-                if(l1 .AND. l2) call append(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
-              end if
-             end do
-           end do
-         end do
-         n = n + 1
-    end do
-
-    !If in >C=O O is out, include it. Do it also for C=N-C motif for N.
-    !In  general: if a heavy atom is not on its maximal coordination, take its neighbours
-
-    call wipe(extra_atoms)
-    more_atoms = .true.
-    !call Print('Checking for double bonds, cluster size: '//cluster%N)
-    do while(more_atoms)
-
-       more_atoms = .false.
-
-       do n = 1, cluster_info%N
-
-          i = cluster_info%int(1,n)
-          ishift = cluster_info%int(2:4,n)
-          nnearest = 0 ! will be the number of nearest neighbours of atom i
-          do m = 1, atoms_n_neighbours(this,i)
-            if(is_nearest_neighbour(this,i,m)) nnearest = nnearest + 1
-          end do
-
-          if(ElementValence(this%Z(i)) .ne. -1 .and. (nnearest .ne. ElementValence(this%Z(i)) )  ) then
-              !the ith atom has 'double bond'
-              !call Print('QMCut_Create_Cluster: Atom nr'//cluster_info%int(1,n)//' was found to have a double bond, checking...')
-              do m = 1, atoms_n_neighbours(this,i)
-                 j = atoms_neighbour(this,i,m,shift=jshift,alt_connect=use_connect)
-                if(.NOT. is_nearest_neighbour(this,i,m)) cycle
-                if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/))/=0) cycle
-                if (find(extra_atoms,(/j,ishift+jshift,this%Z(j),0/)) /= 0) cycle
-
-
-                call append(extra_atoms,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"group     "/))
-                !also append j's H neighbours, if any, to the list
-                do p = 1, atoms_n_neighbours(this,j)
-                  k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
-                  if(is_nearest_neighbour(this,j,p)) then
-                    l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
-                    l2 = (this%Z(k) == 1)
-                    if(l1 .AND. l2) then
-
-                      if(find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0 .AND. find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0) &
-                         call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
-                    end if
-                  end if
+                      call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/)',VERBOSE)
+                      more_atoms = .true.
+                   end if
+                   !call Print('construct_qm_region: went for bond '//nn)
                 end do
-                more_atoms = .true.
-
-                !now check for changed IN-OUT-IN motifs
+      
+             end do
+      
+             !Add any extra atoms to the cluster list then wipe it
+             call append(cluster_info,extra_atoms)
+             call wipe(extra_atoms)
+      
+          end do
+     
+          !if by accident a single atom is included, that is part of a larger entity (not ion)
+          !then delete it from the list as it will cause error in SCF (e.g. C=O oxygen)
+          !call allocate(to_delete,4,0,0,0,1)
+          !do n = 1, cluster%N
+          !        i = cluster%int(1,n)
+          !        is_alone = .true.
+          !        do j = 1, atoms_n_neighbours(at,i)
+          !                k = atoms_neighbour(at,i,j)
+          !                if(find(cluster_info,(/k,shift/)) /= 0) then
+          !                   if(is_nearest_neighbour(at,i,j)) GOTO 120
+          !                else
+          !                   if(is_nearest_neighbour(at,i,j)) is_alone = .false.
+          !                end if
+          !        end do
+          !        if(.not. is_alone) call append(to_delete,(/i,shift/))
+          !   120  cycle
+          !end do
+      
+          !do i = 1, to_delete%N
+          ! call delete(cluster_info,to_delete%int(:,i))
+          !end do
+      
+          !check for IN-OUT-IN motifs after adding heavy atoms bonded to cluster H-s
+          ! H-s bonded to cluster heavy atoms
+          n = 1
+          do while (n <= cluster_info%N)
+             i = cluster_info%int(1,n)     ! index of atom in the cluster_info
+             ishift = cluster_info%int(2:4,n)
+             !Loop over atom i's neighbours
+             do m = 1, atoms_n_neighbours(this,i)
+                j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
+      
+                !If j is IN the cluster_info, or not a nearest neighbour then try the next neighbour
+                l1 = find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) /= 0
+                l2 = .not.(is_nearest_neighbour(this, i, m))
+                if (l1 .or. l2) cycle
+                !So j is an OUT nearest neighbour of i.
+                !Do a loop over j's nearest neighbours
                 do p = 1, atoms_n_neighbours(this,j)
-
-                  k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
-
-                  !If k is IN the cluster, or not a nearest neighbour then try the next neighbour
-                  l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) /= 0
-                  l2 = .not.(is_nearest_neighbour(this,j,p))
-                  if (l1 .or. l2) cycle
-                  !So k is an OUT nearest neighbour of j.
-                  !Do a loop over j's nearest neighbours
-                  do q = 1, atoms_n_neighbours(this,k)
-
-                    l = atoms_neighbour(this,k,q,shift=lshift,alt_connect=use_connect)
-                    !If l is OUT of the cluster or l == j or it is not a nearest neighbour of v
-                    !then try the next neighbour
-                    l1 = find(cluster_info,(/l,ishift+jshift+kshift+lshift,this%Z(l),0/)) == 0
-                    l2 = (l == j)
-                    l3 = (.not. is_nearest_neighbour(this,k,q))
-                    if (l1 .or. l2 .or. l3) cycle
-                    !So q is an IN nearest neighbour of v.
-
-                    if(find(cluster_info,(/k,ishift+kshift+kshift/)) == 0 .AND. &
-                       find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0) &
-                           call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
-                    ! k is now included in the cluster, so we can exit this do loop (over q)
-                    !also include v's hydrogen neighbours
-
-                    do s = 1, atoms_n_neighbours(this,k)
-                      w = atoms_neighbour(this,k,s,shift=hshift,alt_connect=use_connect)
-                      if(is_nearest_neighbour(this,k,s)) then
-                        l1 = find(cluster_info,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/)) == 0
-                        l2 = (this%Z(w) == 1)
-                        if(l1 .AND. l2) then
-
-                          if(find(extra_atoms,(/w,hshift/)) == 0 .AND. &
-                             find(cluster_info,(/w,ishift+jshift+kshift+hshift/)) == 0) &
-                                 call append(extra_atoms,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/),&
-                                             (/this%pos(:,w),1.0_dp/),(/"group     "/))
-                        end if
+                   k = atoms_neighbour(this, j, p, shift=kshift, distance=r_jk, alt_connect=use_connect)
+                   !If k is OUT of the cluster_info or k == i or it is not a nearest neighbour of j
+                   !then try the next neighbour
+                   l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
+                   l2 = (k == i)
+                   l3 = (.not. is_nearest_neighbour(this,j, p))
+                   if (l1 .or. l2 .or. l3) cycle
+                   !So k is an IN nearest neighbour of j.
+!                  if(find(cluster_info,(/j,ishift+jshift/)) == 0) &
+                   if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) == 0) &
+                      call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
+                   ! j is now included in the cluster_info, so we can exit this do loop (over p)
+                   ! only include j's hydrogen neighbours
+                   do s = 1, atoms_n_neighbours(this,j)
+                      q = atoms_neighbour(this, j, s, shift=hshift, distance=r_ij, alt_connect=use_connect)
+                      if(is_nearest_neighbour( this, j, s )) then
+                         l1 = find(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/)) == 0
+                         l2 = (this%Z(q) == 1)
+                         if(l1 .AND. l2) call append(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
                       end if
                    end do
                 end do
-              end do
+             end do
+             n = n + 1
+          end do
+      
+          !If in >C=O O is out, include it. Do it also for C=N-C motif for N.
+          !In  general: if a heavy atom is not on its maximal coordination, take its neighbours
+      
+          call wipe(extra_atoms)
+          more_atoms = .true.
+          !call Print('Checking for double bonds, cluster size: '//cluster%N)
+          do while(more_atoms)
+      
+             more_atoms = .false.
+      
+             do n = 1, cluster_info%N
+      
+                i = cluster_info%int(1,n)
+                ishift = cluster_info%int(2:4,n)
+                nnearest = 0 ! will be the number of nearest neighbours of atom i
+                do m = 1, atoms_n_neighbours(this,i)
+                  if(is_nearest_neighbour(this,i,m)) nnearest = nnearest + 1
+                end do
+      
+                if(ElementValence(this%Z(i)) .ne. -1 .and. (nnearest .ne. ElementValence(this%Z(i)) )  ) then
+                   !the ith atom has 'double bond'
+                   !call Print('QMCut_Create_Cluster: Atom nr'//cluster_info%int(1,n)//' was found to have a double bond, checking...')
+                   do m = 1, atoms_n_neighbours(this,i)
+                      j = atoms_neighbour(this,i,m,shift=jshift,alt_connect=use_connect)
+                      if(.NOT. is_nearest_neighbour(this,i,m)) cycle
+                      if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/))/=0) cycle
+                      if (find(extra_atoms,(/j,ishift+jshift,this%Z(j),0/)) /= 0) cycle
+      
+      
+                      call append(extra_atoms,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"group     "/))
+                      !also append j's H neighbours, if any, to the list
+                      do p = 1, atoms_n_neighbours(this,j)
+                         k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
+                         if(is_nearest_neighbour(this,j,p)) then
+                            l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
+                            l2 = (this%Z(k) == 1)
+                            if(l1 .AND. l2) then
+      
+                               if(find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0 .AND. find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0) &
+                                  call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
+                            end if
+                         end if
+                      end do
+                      more_atoms = .true.
+      
+                      !now check for changed IN-OUT-IN motifs
+                      do p = 1, atoms_n_neighbours(this,j)
+      
+                         k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
+      
+                         !If k is IN the cluster, or not a nearest neighbour then try the next neighbour
+                         l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) /= 0
+                         l2 = .not.(is_nearest_neighbour(this,j,p))
+                         if (l1 .or. l2) cycle
+                         !So k is an OUT nearest neighbour of j.
+                         !Do a loop over j's nearest neighbours
+                         do q = 1, atoms_n_neighbours(this,k)
+      
+                            l = atoms_neighbour(this,k,q,shift=lshift,alt_connect=use_connect)
+                            !If l is OUT of the cluster or l == j or it is not a nearest neighbour of v
+                            !then try the next neighbour
+                            l1 = find(cluster_info,(/l,ishift+jshift+kshift+lshift,this%Z(l),0/)) == 0
+                            l2 = (l == j)
+                            l3 = (.not. is_nearest_neighbour(this,k,q))
+                            if (l1 .or. l2 .or. l3) cycle
+                            !So q is an IN nearest neighbour of v.
+             
+                            if(find(cluster_info,(/k,ishift+kshift+kshift/)) == 0 .AND. &
+                               find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0) &
+                               call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
+                            ! k is now included in the cluster, so we can exit this do loop (over q)
+                            !also include v's hydrogen neighbours
+             
+                            do s = 1, atoms_n_neighbours(this,k)
+                               w = atoms_neighbour(this,k,s,shift=hshift,alt_connect=use_connect)
+                               if(is_nearest_neighbour(this,k,s)) then
+                                  l1 = find(cluster_info,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/)) == 0
+                                  l2 = (this%Z(w) == 1)
+                                  if(l1 .AND. l2) then
+             
+                                     if(find(extra_atoms,(/w,hshift/)) == 0 .AND. &
+                                        find(cluster_info,(/w,ishift+jshift+kshift+hshift/)) == 0) &
+                                     call append(extra_atoms,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/),&
+                                                (/this%pos(:,w),1.0_dp/),(/"group     "/))
+                                  end if
+                               end if
+                            end do
+                         end do
+                      end do
+      
+                   end do
+                end if
+      
+             end do
+      
+             !Add any extra atoms to the cluster list then wipe it
+             call append(cluster_info,extra_atoms)
+             call wipe(extra_atoms)
+          end do
+      
+          !Free up tables
+          !call finalise(to_delete)
+          call finalise(extra_atoms)
+          call finalise(bonds)
+          call finalise(buffer)
+          call finalise(centre) 
 
-           end do
-         end if
+          call print('create_cluster: Finished checking for bio valence termination clashes',NERD)
+          call print("create_cluster: cluster list:", NERD)
+          call print(cluster_info, NERD)
 
-       end do
-
-          !Add any extra atoms to the cluster list then wipe it
-       call append(cluster_info,extra_atoms)
-       call wipe(extra_atoms)
-    end do
-
-    !Free up tables
-    !call finalise(to_delete)
-    call finalise(extra_atoms)
-    call finalise(bonds)
-    call finalise(buffer)
-    call finalise(centre) 
-
-       call print('create_cluster: Finished checking for bio valence termination clashes',NERD)
-       call print("create_cluster: cluster list:", NERD)
-       call print(cluster_info, NERD)
-
-   end if !do_termination_clash_check
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    !x End of biochem related part x
-    !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       end if !do_termination_clash_check
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+       !x End of biochem related part x
+       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     end if ! allow_cluster_mod
 
@@ -1218,7 +1216,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
                       exit
                    end if
                 enddo
-              end do
+             end do
              if (in_outer_layer) then
                 hybrid_mark(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
                 cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
@@ -1413,6 +1411,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     integer :: buffer_hops, transition_hops
     character(FIELD_LENGTH) :: weight_interpolation
+    logical :: construct_buffer_use_only_heavy_atoms
     
     call initialise(params)
     call param_register(params, 'min_images_only', 'F', min_images_only) 
@@ -1424,6 +1423,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     call param_register(params, 'hysteretic_buffer', 'F', hysteretic_buffer)
     call param_register(params, 'hysteretic_buffer_inner_radius', '5.0', hysteretic_buffer_inner_radius)
     call param_register(params, 'hysteretic_buffer_outer_radius', '7.0', hysteretic_buffer_outer_radius)
+    call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
     call param_register(params, 'hysteretic_connect_cluster_radius', '1.2', hysteretic_connect_cluster_radius)
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor)
@@ -1439,7 +1439,8 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
          hysteretic_buffer_outer_radius=hysteretic_buffer_outer_radius, &
          hysteretic_connect=hysteretic_connect, hysteretic_connect_cluster_radius=hysteretic_connect_cluster_radius, &
 	 hysteretic_connect_inner_factor=hysteretic_connect_inner_factor, &
-         hysteretic_connect_outer_factor=hysteretic_connect_outer_factor)
+         hysteretic_connect_outer_factor=hysteretic_connect_outer_factor, &
+         construct_buffer_use_only_heavy_atoms=construct_buffer_use_only_heavy_atoms)
 
     
   end subroutine create_hybrid_weights_args_str
@@ -1459,7 +1460,8 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        nneighb_only, min_images_only, mark_buffer_outer_layer, hysteretic_buffer, &
        hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius, &
        hysteretic_connect, hysteretic_connect_cluster_radius, &
-       hysteretic_connect_inner_factor, hysteretic_connect_outer_factor)
+       hysteretic_connect_inner_factor, hysteretic_connect_outer_factor, &
+       construct_buffer_use_only_heavy_atoms)
     type(Atoms), intent(inout) :: at
     integer, intent(in) :: trans_width, buffer_width
     character(len=*), optional, intent(in) :: weight_interpolation
@@ -1467,6 +1469,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     real(dp), optional, intent(in) :: hysteretic_buffer_inner_radius, hysteretic_buffer_outer_radius
     real(dp), optional, intent(in) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
     !logical :: terminate
+    logical, optional, intent(in) :: construct_buffer_use_only_heavy_atoms
 
     integer, pointer :: hybrid_mark(:)
     real(dp), pointer :: weight_region1(:)
@@ -1485,6 +1488,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     real(dp) :: save_cutoff, save_cutoff_break
     logical :: save_use_uniform_cutoff
     integer :: old_n
+    logical :: do_construct_buffer_use_only_heavy_atoms
 
     do_nneighb_only = optional_default(.false., nneighb_only)
     do_min_images_only = optional_default(.true., min_images_only) 
@@ -1493,6 +1497,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     do_hysteretic_buffer = optional_default(.false., hysteretic_buffer)
     do_hysteretic_buffer_inner_radius = optional_default(5.0_dp, hysteretic_buffer_inner_radius)
     do_hysteretic_buffer_outer_radius = optional_default(7.0_dp, hysteretic_buffer_outer_radius)
+    do_construct_buffer_use_only_heavy_atoms = optional_default(.false.,construct_buffer_use_only_heavy_atoms)
     do_hysteretic_connect = optional_default(.false., hysteretic_connect)
     do_hysteretic_connect_cluster_radius = optional_default(30.0_dp, hysteretic_connect_cluster_radius)
     do_hysteretic_connect_inner_factor = optional_default(1.2_dp, hysteretic_connect_inner_factor)
@@ -1528,7 +1533,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        call system_abort('create_hybrid_weights: atoms structure has no "hybrid_mark" property')
 
     ! Add first marked atom to activelist. shifts will be relative to this atom
-    first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK) 
+    first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK)
 
     n_region1 = count(hybrid_mark == HYBRID_ACTIVE_MARK)
     list_1 = 0  
@@ -1541,15 +1546,15 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        call wipe(activelist)
        call wipe(nextlist)    
   
-    call append(activelist, (/first_active,0,0,0/))
-    call append(currentlist, activelist)
-    weight_region1(first_active) = 1.0_dp
-
-    if (distance_ramp) then
-       if (has_property(at, 'mass')) then
-          core_mass = at%mass(first_active)
-       else
-          core_mass = ElementMass(at%Z(first_active))
+       call append(activelist, (/first_active,0,0,0/))
+       call append(currentlist, activelist)
+       weight_region1(first_active) = 1.0_dp
+   
+       if (distance_ramp) then
+          if (has_property(at, 'mass')) then
+             core_mass = at%mass(first_active)
+          else
+             core_mass = ElementMass(at%Z(first_active))
           end if
           core_CoM =core_mass*at%pos(:,first_active) ! we're taking this as reference atom so no shift needed here
        end if
@@ -1736,20 +1741,12 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
               hybrid_mark(oldbuffer%int(1,i)) = HYBRID_NO_MARK
        end do
 
-       ! Construct inner and outer buffer lists
-       call construct_buffer(at, total_embedlist, do_hysteretic_buffer_inner_radius, buffer_inner, has_property(at, 'avgpos'))
-       call construct_buffer(at, total_embedlist, do_hysteretic_buffer_outer_radius, buffer_outer, has_property(at, 'avgpos'))
+       !construct the hysteretic buffer region:
+       call construct_hysteretic_region(at,region=bufferlist,inner_radius=do_hysteretic_buffer_inner_radius,outer_radius=do_hysteretic_buffer_outer_radius,core=total_embedlist,use_avgpos=.false.,add_only_heavy_atoms=do_construct_buffer_use_only_heavy_atoms,simply_loop_over_atoms=.false.)
 
-       call print('bufferlist=')
-       call print(bufferlist)
+       call print('bufferlist=',VERBOSE)
+       call print(bufferlist,VERBOSE)
 
-       call print('buffer_inner=')
-       call print(buffer_inner)
-
-       call print('buffer_outer=')
-       call print(buffer_outer)
-
-       call select_hysteretic_quantum_region(at, buffer_inner, buffer_outer, bufferlist)
 
        ! Mark new buffer region, leaving core QM region alone
        ! at the moment only ACTIVE and NO marks are present, because hybrid_mark was set to =hybrid
@@ -1762,30 +1759,27 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
 
        end do
 
-       call finalise(buffer_inner)
-       call finalise(buffer_outer)
        call finalise(bufferlist)
        call finalise(oldbuffer)
 !       call finalise(embedlist)
-    
-    call print("region 2 done, hysteretic buffer")   
+       
+       call print("region 2 done, hysteretic buffer")   
     end if
-      
 
-       ! this is commented out for now, terminations are controlled in create_cluster only
-       ! create terminations
-       !n_term = 0
-       !if(terminate) then
-       !   call BFS_step(at, currentlist, nextlist, nneighb_only = .true., min_images_only = .true.)
-       !   do j = 1,nextlist%N
-       !      jj = nextlist%int(1,j)
-       !      if(hybrid_mark(jj) == HYBRID_NO_MARK) then
-       !         weight_region1(jj) = 0.0_dp
-       !         hybrid_mark(jj) = HYBRID_TERM_MARK
-       !         n_term = n_term+1
-       !      end if
-       !   end do
-       !end do
+    ! this is commented out for now, terminations are controlled in create_cluster only
+    ! create terminations
+    !n_term = 0
+    !if(terminate) then
+    !   call BFS_step(at, currentlist, nextlist, nneighb_only = .true., min_images_only = .true.)
+    !   do j = 1,nextlist%N
+    !      jj = nextlist%int(1,j)
+    !      if(hybrid_mark(jj) == HYBRID_NO_MARK) then
+    !         weight_region1(jj) = 0.0_dp
+    !         hybrid_mark(jj) = HYBRID_TERM_MARK
+    !         n_term = n_term+1
+    !      end if
+    !   end do
+    !end do
 
     call print('create_hybrid_weights: '//list_1//' region 1, '//n_trans//' transition, '//n_region2//&
          ' region 2, '//count(hybrid_mark /= HYBRID_NO_MARK)//' in total', VERBOSE)
@@ -1795,7 +1789,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     call print("subroutine create_hybrid_weights_args: DONE")
 
 !    call sort(total_embedlist)
- 
+
 
     call finalise(activelist)
     call finalise(currentlist)
@@ -2024,27 +2018,31 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
   !% property using 'HYBRID_ACTIVE_MARK', and buffer region marked using 'HYBRID_BUFFER_MARK',
   !% 'HYBRID_TRANS_MARK' or 'HYBRID_BUFFER_OUTER_LAYER_MARK', simply returns the embedlist and fitlist
   !% according to 'hybrid_mark'. It does not take into account periodic shifts.
-  subroutine create_embed_and_buffer_lists_from_hybrid_mark(at,embedlist,fitlist)
+  subroutine create_embed_and_fit_lists_from_cluster_mark(at,embedlist,fitlist)
 
     type(Atoms), intent(in)  :: at
     type(Table), intent(out) :: embedlist, fitlist
 
     type(Table)              :: tmpfitlist
 
-    call print('Entered create_embed_and_buffer_lists_from_hybrid_mark.',VERBOSE)
+    call print('Entered create_embed_and_fit_lists_from_cluster_mark.',VERBOSE)
     call wipe(embedlist)
     call wipe(fitlist)
     call wipe(tmpfitlist)
 
     !build embed list from ACTIVE atoms
-    call list_matching_prop(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
+    !call list_matching_prop(at,embedlist,'hybrid_mark',HYBRID_ACTIVE_MARK)
+    call list_matching_prop(at,embedlist,'cluster_mark',HYBRID_ACTIVE_MARK)
 
     !build fitlist from BUFFER and TRANS atoms
-    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
+    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_MARK)
+    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_BUFFER_MARK)
     call append(fitlist,tmpfitlist)
-    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
+    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_TRANS_MARK)
+    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_TRANS_MARK)
     call append(fitlist,tmpfitlist)
-    call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
+    !call list_matching_prop(at,tmpfitlist,'hybrid_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
+    call list_matching_prop(at,tmpfitlist,'cluster_mark',HYBRID_BUFFER_OUTER_LAYER_MARK)
     call append(fitlist,tmpfitlist)
 
     call wipe(tmpfitlist)
@@ -2066,18 +2064,17 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     call print(int_part(fitlist,1),ANAL)
 
     call finalise(tmpfitlist)
-    call print('Leaving create_embed_and_buffer_lists_from_hybrid_mark.',VERBOSE)
+    call print('Leaving create_embed_and_fit_lists_from_cluster_mark.',VERBOSE)
 
-  end subroutine create_embed_and_buffer_lists_from_hybrid_mark
+  end subroutine create_embed_and_fit_lists_from_cluster_mark
 
-  !% Return the atoms in a hysteretic quantum region:
-  !% To become part of the quantum region, atoms must drift within
-  !% 'inner' of any core atom. To leave the quantum region, an atom
-  !% must drift further than 'outer; from any core atom.
+  !% Return the atoms in a hysteretic region:
+  !% To become part of the 'list' region, atoms must drift within the
+  !% 'inner' list. To leave the 'list' region, an atom
+  !% must drift further than 'outer'.
   !% Optionally use time averaged positions
   !
-
-  subroutine select_hysteretic_quantum_region(at,inner,outer,list,verbosity)
+  subroutine update_hysteretic_region(at,inner,outer,list,verbosity)
 
     type(Atoms),       intent(in)    :: at
     type(Table),       intent(inout) :: inner, outer
@@ -2094,7 +2091,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
     end if
 
     if ((list%intsize /= inner%intsize) .or. (list%intsize /= outer%intsize)) &
-       call system_abort('select_hysteretic_quantum_region: inner, outer and list must have the same intsize')
+       call system_abort('update_hysteretic_region: inner, outer and list must have the same intsize')
 
     ! Speed up searching
     call sort(outer)
@@ -2123,133 +2120,335 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
 
     if (my_verbosity >= NORMAL) call print(list%N//' atoms selected for quantum treatment')
 
-  end subroutine select_hysteretic_quantum_region
+  end subroutine update_hysteretic_region
+
 
   !
-  !% Given an atoms object, and a list of core atoms in the first integer of
+  !% Given an atoms object, and a point 'centre' or a list of atoms 'core',
+  !% fill the 'region' table with all atoms hysteretically within 'inner_radius -- outer_radius'
+  !% of the 'centre' or any 'core' atom, which can be reached by connectivity hopping.
+  !% In the case of building the 'region' around 'centre', simply_loop_over_atoms loops instead of
+  !% bond hopping.
+  !% Optionally use the time averaged positions.
+  !% Optionally use only heavy atom selection.
+  !
+  subroutine construct_hysteretic_region(at,region,inner_radius,outer_radius,core,centre,use_avgpos,add_only_heavy_atoms,simply_loop_over_atoms)
+
+    type(Atoms),           intent(in)    :: at
+    type(Table),           intent(inout) :: region
+    real(dp),              intent(in)    :: inner_radius
+    real(dp),              intent(in)    :: outer_radius
+    type(Table), optional, intent(in)    :: core
+    real(dp),    optional, intent(in)    :: centre(3)
+    logical,     optional, intent(in)    :: use_avgpos
+    logical,     optional, intent(in)    :: add_only_heavy_atoms
+    logical,     optional, intent(in)    :: simply_loop_over_atoms
+
+    type(Table)                          :: inner_region
+    type(Table)                          :: outer_region
+    logical                              :: no_hysteresis
+
+    !check the input arguments only in construct_region.
+    if (inner_radius.lt.0._dp) call system_abort('inner_radius must be > 0 and it is '//inner_radius)
+    if (outer_radius.lt.inner_radius) call system_abort('outer radius ('//outer_radius//') must not be smaller than inner radius ('//inner_radius//').')
+
+    no_hysteresis = .false.
+    if ((outer_radius-inner_radius).lt.epsilon(0._dp)) no_hysteresis = .true.
+    if (no_hysteresis) call print('WARNING! construct_hysteretic_region: inner_buffer=outer_buffer. no hysteresis applied: outer_region = inner_region used.',ERROR)
+
+    call construct_region(at,radius=inner_radius,region=inner_region,core=core,centre=centre,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,simply_loop_over_atoms=simply_loop_over_atoms)
+    if (no_hysteresis) then
+       call initialise(outer_region,4,0,0,0,0)
+       call append(outer_region,inner_region)
+    else
+       call construct_region(at,radius=outer_radius,region=outer_region,core=core,centre=centre,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,simply_loop_over_atoms=simply_loop_over_atoms)
+    endif
+
+       call print('construct_hysteretic_region: old region list:',VERBOSE)
+       call print(region,VERBOSE)
+
+    call update_hysteretic_region(at,inner_region,outer_region,region)
+
+       call print('construct_hysteretic_region: inner_region list:',VERBOSE)
+       call print(inner_region,VERBOSE)
+
+       call print('construct_hysteretic_region: outer_region list:',VERBOSE)
+       call print(outer_region,VERBOSE)
+
+       call print('construct_hysteretic_region: new region list:',VERBOSE)
+       call print(region,VERBOSE)
+
+    call finalise(inner_region)
+    call finalise(outer_region)
+
+  end subroutine construct_hysteretic_region
+
+  !
+  !% Given an atoms object, and a point or a list of atoms in the first integer of
   !% the 'core' table, fill the 'buffer' table with all atoms within 'radius'
-  !% of any core atom (which can be reached by connectivity hopping). 
-  !% Optionally use the time averaged positions. 
+  !% of any core atom (which can be reached by connectivity hopping) or the point
+  !%(with bond hopping or simply looping once over the atoms).
+  !% Optionally use the time averaged positions (only for the radius).
+  !% Optionally use a heavy atom based selection (applying to both the core and the region atoms).
+  !% Alternatively use the hysteretic connection, only nearest neighbours and/or min_images (only for the n_connectivity_hops).
   !
-  subroutine construct_buffer(at,core,radius,buffer,use_avgpos,verbosity)
+  subroutine construct_region(at,radius,region,core,centre,use_avgpos,add_only_heavy_atoms,simply_loop_over_atoms,n_connectivity_hops,nneighb_only,min_images_only,alt_connect)
 
-    type(Atoms),       intent(in)  :: at
-    type(Table),       intent(in)  :: core
-    real(dp),          intent(in)  :: radius
-    type(Table),       intent(out) :: buffer
-    logical, optional, intent(in)  :: use_avgpos
-    integer, optional, intent(in)  :: verbosity
+    type(Atoms),           intent(in)  :: at
+    type(Table),           intent(out) :: region
+    real(dp),    optional, intent(in)  :: radius
+    integer,     optional, intent(in)  :: n_connectivity_hops
+    type(Table), optional, intent(in)  :: core
+    real(dp),    optional, intent(in)  :: centre(3)
+    logical,     optional, intent(in)  :: use_avgpos
+    logical,     optional, intent(in)  :: add_only_heavy_atoms
+    logical,     optional, intent(in)  :: simply_loop_over_atoms
+    logical,     optional, intent(in)  :: nneighb_only
+    logical,     optional, intent(in)  :: min_images_only
+    type(Connection), optional,intent(in) :: alt_connect
 
-    logical                             :: do_use_avgpos, more_atoms, add_atom
-    integer                             :: buffer_atoms_guess, i(4), j(4), n, nn, my_verbosity
+    logical                             :: do_use_avgpos
+    logical                             :: do_loop_no_hops
+    logical                             :: do_add_only_heavy_atoms
+    integer                             :: i, nhops
+    logical                             :: do_nneighb_only
+    logical                             :: do_min_images_only
+    type(Table)                         :: currentlist, nextlist
+    logical :: build_around_list
+
+    logical                             :: more_atoms, add_atom
+    integer                             :: region_atoms_guess, ii(4), jj(4), n, nn
     type(Table)                         :: cluster, extra_atoms
     integer,  allocatable, dimension(:) :: append_row_int
     real(dp), allocatable, dimension(:) :: append_row_real
-    integer :: lookup(3)
-    
+    integer :: lookup(3), shift_i(3)
+    type(Table) :: my_core
+    integer :: first_atom, first_shift(3)
+    real(dp) :: first_distance, dist_i
     !Check the input arguments
-    if (.not.at%connect%initialised) call system_abort('Construct_Buffer: Atomic connectivity data required')
-    if (core%intsize < 1) call system_abort('Construct_Buffer: Core table must have at least one integer')
-    if (radius < 0.0_dp) call system_abort('Construct_Buffer: Buffer radius must be positive')
-    do_use_avgpos = .false.
-    if (present(use_avgpos)) do_use_avgpos = use_avgpos
-    my_verbosity = NORMAL
-    if (present(verbosity)) my_verbosity = verbosity
+
+    !Around point or list?
+    if ((present(core).and.present(centre)) .or. (.not.present(core).and..not.present(centre))) call system_abort('canstruct_region: Exactly one of centre or core must be present.')
+    if (present(core)) then
+       build_around_list = .true.
+       if (core%intsize < 1) call system_abort('Construct_Buffer: Core table must have at least one integer')
+    else
+       build_around_list = .false.
+    !   call system_abort('canstruct_region: not yet implemented.')   !**********
+    endif
+
+    !Optional looping over atoms, no hopping
+    do_loop_no_hops = optional_default(.false.,simply_loop_over_atoms)
+    if (do_loop_no_hops) then
+       if (present(core)) call system_abort('Building around a list only goes with connectivity hops.')
+       if (radius.lt.epsilon(0._dp)) call system_abort('If looping around atoms, the radius must be > 0.')
+    endif
+
+    !Optional use of average positions
+    do_use_avgpos = optional_default(.false.,use_avgpos)
+    if (do_use_avgpos.and.do_loop_no_hops) call system_abort('avg_pos when loops not yet implemented.')   !***********
     if (do_use_avgpos .and. .not. get_value(at%properties, 'avgpos', lookup)) &
          call system_abort('Construct_Buffer: Average positions are not present in atoms structure')
 
-    if (my_verbosity == ANAL) call print('In Construct_Buffer:')
+    !Optional only heavy atom selection
+    do_add_only_heavy_atoms = optional_default(.false.,add_only_heavy_atoms)
+    if (do_add_only_heavy_atoms) then
+       if (.not. has_property(at,'Z')) call system_abort("construct_region: atoms has no Z property")
+    endif
 
-    !Guess the number of buffer atoms we'll add from the average number density and radius
-    buffer_atoms_guess = int(10 * at%N * radius*radius*radius / Cell_Volume(at))
+    !Number of hops
+    nhops = optional_default(0,n_connectivity_hops)
+    do_min_images_only = optional_default(.true.,min_images_only)
+    do_nneighb_only = optional_default(.true.,nneighb_only)
+    nhops = optional_default(0,n_connectivity_hops)
+    if (nhops.gt.0) then
+       if (radius.gt.epsilon(0._dp)) call system_abort('Only one of n_connectivity_hops and radius can be > 0.')
+       if (do_loop_no_hops) call system_abort('nhops cannot be > 0 if loop_over_atoms is true.')
+    elseif (nhops.eq.0) then
+       if (radius < epsilon(0.0_dp)) call system_abort('Construct_Buffer: Buffer radius must be positive')
+       if (present(min_images_only).or.present(nneighb_only)) call system_abort('min_images_only and nneighb_only are only meaningful in case of n_connectivity_hop > 0.')
+    endif
 
-    !Set up the output table and append rows
-    call allocate(buffer,core%intsize,core%realsize,0,0,buffer_atoms_guess)
-    allocate(append_row_int(core%intsize),append_row_real(core%realsize))
-    append_row_int = 0
-    append_row_real = 0.0_dp
+call print('skip?'//do_loop_no_hops)
+    !If only loop over the atoms, no hopping
+    if (do_loop_no_hops) then ! around centre, loop over atoms
+       call print('WARNING: check if your cell is greater than the radius, looping only works in that case.',ERROR)
+       if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) call system_abort('too small cell')
+       call initialise(region,4,0,0,0,0)
+       do i = 1,at%N
+          if (do_add_only_heavy_atoms .and. at%Z(i).eq.1) cycle
+          if (distance_min_image(at,i,centre(1:3),shift_i(1:3)).lt.Radius) call append(region,(/i,shift_i(1:3)/))
+       enddo
+       return
+    endif
 
-    !Add the core atoms
-    do n = 1, core%N
-       append_row_int = core%int(:,n)
-       if (core%realsize > 0) then
-          call append(buffer,append_row_int,append_row_real)
-       else
-          call append(buffer,append_row_int)
-       end if       
-    end do
+    !Connectivity hopping, no radius
+    if (.not.at%connect%initialised) call system_abort('Construct_Buffer: Atomic connectivity data required')
+    !If we did not want to check the stopping of the region growth, we could simply call bfs_grow_list
+    if (nhops.gt.0) then
+       call initialise(currentlist,4,0,0,0,0)
+       call append(currentlist,core)
 
-    !Loop through the neighbours and add them to the cluster if they are close enough.
-    !If we add any atoms this way, trigger an additional neighbour search       
+       do i = 0,nhops-1
+          call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only,alt_connect=alt_connect)
+          if (nextlist%N.eq.0) then
+             call print('WARNING! region stopped growing after '//i//'hops.',ERROR)
+             exit
+          endif
+          call append(currentlist, nextlist)
+       end do
+       call initialise(region,4,0,0,0,0)
+       call append(region, currentlist)
+    else
+    !Connectivity hopping, up to radius -- here nneighb_only=F to hop between molecules, min_images=T
+    !can use average positions
+       if (radius>at%cutoff) then
+          call print('WARNING! the connect_cutoff '//at%cutoff//' is smaller than the radius '//radius,ERROR)
+          call print('WARNING! watch out if you have molecules instead of a crystal.',ERROR)
+       endif
 
-    more_atoms = .true.
-    
-    do while(more_atoms)
-       
-       more_atoms = .false.
-       
-       call wipe(cluster)
-       call append(cluster,core)
-       call append(cluster,buffer)
+       if (.not.build_around_list) call system_abort('test it, implemented.')    !**********
 
-       !Find the neighbours of all the current cluster atoms 
-       if (my_verbosity == ANAL) call print('Searching for neighbours...')
-       call bfs_step(at,cluster,extra_atoms,nneighb_only=.false.,min_images_only=.true.)
 
-       if (my_verbosity == ANAL) then
-          write(line,'(a,i0,a)')'Found ',extra_atoms%N,' neighbours'
-          call print(line)
-       end if
-          
-       !Now go through the found atoms and see if they are within 'radius' of ANY core atom
-       do n = 1, extra_atoms%N
-          
-          add_atom = .false.
 
-          i = extra_atoms%int(:,n)
-          
-          do nn = 1, core%N
-             
-             j = core%int(:,nn)
-             
-             if (do_use_avgpos) then
-                if (norm(diff_min_image(at,at%avgpos(:,i(1)),at%avgpos(:,j(1))) + &
-                          (at%lattice .mult. (j(2:4)-i(2:4)))) < radius) then
-                   append_row_int = i
-                   add_atom = .true.
-                end if
+
+       call print('In Construct_Buffer:',ANAL)
+   
+       !Build up the core
+       if (build_around_list) then !use the list
+          call initialise(my_core,core%intsize,core%realsize,0,0,core%N)
+          call append(my_core,core)
+       else !find the closest atom
+          call initialise(my_core,4,0,0,0,1)
+          first_atom = 0
+          first_distance = huge(0._dp)
+          do n=1,at%N
+             dist_i = distance_min_image(at,n,centre,shift_i(1:3))
+             if (dist_i.lt.first_distance) then
+                first_atom = n
+                first_distance = dist_i
+                first_shift(1:3) = shift_i(1:3)
+              endif
+          enddo
+          if (first_atom.eq.0 .or. first_distance.gt.radius) call system_abort('construct_region: No atoms are within radius around the given centre.')
+          call append(my_core,(/first_atom,first_shift(1:3)/))
+       endif
+   
+       !Guess the number of region atoms we'll add from the average number density and radius
+       region_atoms_guess = int(10 * at%N * radius*radius*radius / Cell_Volume(at))
+   
+       !Set up the output table and append rows
+       call allocate(region,my_core%intsize,core%realsize,0,0,region_atoms_guess)
+       allocate(append_row_int(my_core%intsize),append_row_real(my_core%realsize))
+       append_row_int = 0
+       append_row_real = 0.0_dp
+   
+       !Add the core atoms
+       do n = 1, my_core%N
+          append_row_int = my_core%int(:,n)
+          if (build_around_list) then
+             if (core%realsize > 0) then
+                call append(region,append_row_int,append_row_real)
              else
-                if (distance(at,i(1),j(1),j(2:4)-i(2:4)) < radius) then
-                   append_row_int = i
-                   add_atom = .true.
-                end if
+                call append(region,append_row_int)
              end if
+          else
+                call append(region,append_row_int)
+          endif
+       end do
+   
+       !Loop through the neighbours and add them to the cluster if they are close enough.
+       !If we add any atoms this way, trigger an additional neighbour search.
+   
+       more_atoms = .true.
+       
+       do while(more_atoms)
+          
+          more_atoms = .false.
+          
+          call wipe(cluster)
+          call append(cluster,core)
+          call append(cluster,region)
+   
+          !Find the neighbours of all the current cluster atoms 
+          call print('Searching for neighbours...',ANAL)
+          call bfs_step(at,cluster,extra_atoms,nneighb_only=.false.,min_images_only=.true.)
+   
+          call print('Found '//extra_atoms%N//' neighbours',ANAL)
+             
+          !Now go through the found atoms and see if they are within 'radius' of ANY core atom/the centre
+          do n = 1, extra_atoms%N
+             
+             add_atom = .false.
+   
+             ii(1:4) = extra_atoms%int(1:4,n)
+   
+             if (do_add_only_heavy_atoms .and. (at%Z(ii(1)).eq.1)) cycle
+   
+             if (build_around_list) then !around the core atoms
+   
+                do nn = 1, core%N
+                   
+                   jj = core%int(1:4,nn)
 
-             if (add_atom) then
-                if (core%realsize > 0) then
-                   call append(buffer,append_row_int,append_row_real)
+!add only_heavy_atoms: only heavy atoms around heavy atoms
+                   if (do_add_only_heavy_atoms .and. (at%Z(jj(1)).eq.1)) cycle
+                   
+                   if (do_use_avgpos) then
+                      if (norm(diff_min_image(at,at%avgpos(:,ii(1)),at%avgpos(:,jj(1))) + &
+                                (at%lattice .mult. (jj(2:4)-ii(2:4)))) < radius) then
+                         append_row_int = ii(1:4)
+                         add_atom = .true.
+                      end if
+                   else
+                      if (distance(at,ii(1),jj(1),jj(2:4)-ii(2:4)) < radius) then
+                         append_row_int = ii(1:4)
+                         add_atom = .true.
+                      end if
+                   end if
+      
+                   if (add_atom) exit
+      
+                end do
+   
+             else !around the centre !******* needs testing!!!!
+                if (do_use_avgpos) then
+                   if (norm(diff_min_image(at,at%avgpos(:,ii(1)),centre(1:3)) + &
+                           (at%lattice .mult. (-ii(2:4)))) < radius) then
+                      append_row_int = ii
+                      add_atom = .true.
+                   end if
                 else
-                   call append(buffer,append_row_int)
+!                   if (distance(at,ii(1),centre(1:3),(-ii(1:4))) < radius) then
+                   if (norm(at%pos(1:3,ii(1))+(at%lattice .mult. ii(2:4)) - centre(1:3)) < radius) then
+                      append_row_int = ii
+                      add_atom = .true.
+                   end if
+                end if
+             endif
+   
+             if (add_atom) then
+                if (my_core%realsize > 0) then
+                   call append(region,append_row_int,append_row_real)
+                else
+                   call append(region,append_row_int)
                 end if
                 more_atoms = .true. !Trigger another neighbour search
-                if (my_verbosity == ANAL) then                 
-                   call print('Adding atom '//i)
-                end if
+                call print('Adding atom '//ii,ANAL)
                 exit !Don't check other core atoms
              end if
-
           end do
-          
+   
        end do
+   
+       call finalise(cluster)
+       call finalise(extra_atoms)
+   
+       call print('Leaving Construct_Buffer',ANAL)
 
-    end do
+    endif
 
-    call finalise(cluster)
-    call finalise(extra_atoms)
-
-    if (my_verbosity == ANAL) call print('Leaving Construct_Buffer')
-
-  end subroutine construct_buffer
+  end subroutine construct_region
 
   
   subroutine update_active(this, nneightol, avgpos, reset)
@@ -2328,16 +2527,25 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
   !% bonds which have been cut and include the other atom of 
   !% the pair in the quantum list.
   !
-  subroutine add_cut_hydrogens(this,qmlist,verbosity)
+  subroutine add_cut_hydrogens(this,qmlist,verbosity,alt_connect)
 
-    type(Atoms),       intent(in)    :: this
-    type(Table),       intent(inout) :: qmlist
-    integer, optional, intent(in)    :: verbosity
+    type(Atoms),       intent(in),          target :: this
+    type(Table),       intent(inout)               :: qmlist
+    integer, optional, intent(in)                  :: verbosity
+    type(Connection), intent(in), optional, target :: alt_connect
     
     type(Table)                :: neighbours, bonds, centre
     logical                    :: more_atoms
     integer                    :: i, j, n, nn, added
+    type(Connection), pointer :: use_connect
     
+    ! Check for atomic connectivity
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
+
     more_atoms = .true.
     added = 0
     call allocate(centre,4,0,0,0,1)
@@ -2348,7 +2556,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
        more_atoms = .false.
 
        !Find nearest neighbours of the cluster
-       call bfs_step(this,qmlist,neighbours,nneighb_only=.true.,min_images_only=.true.)
+       call bfs_step(this,qmlist,neighbours,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
 
        !Loop over neighbours
        do n = 1, neighbours%N
@@ -2359,7 +2567,7 @@ call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos
           call append(centre,(/i,0,0,0/))
 
           ! Find atoms bonded to this neighbour
-          call bfs_step(this,centre,bonds,nneighb_only=.true.,min_images_only=.true.)
+          call bfs_step(this,centre,bonds,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
           
           !Loop over these bonds
           do nn = 1, bonds%N
