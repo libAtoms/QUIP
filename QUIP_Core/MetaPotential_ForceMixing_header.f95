@@ -38,10 +38,11 @@
      character(FIELD_LENGTH) :: mm_args_str !% Args string to be passed to 'calc' method of 'mmpot'
      character(FIELD_LENGTH) :: qm_args_str !% Args string to be passed to 'calc' method of 'qmpot'
      integer :: buffer_hops !% Number of bond hops used for buffer region. Applies to 'force_mixing' methods only.
-     logical :: hysteretic_buffer !% Turn on hysteretic selection algorithm for buffer region
-     real(dp) :: hysteretic_buffer_inner_radius,  hysteretic_buffer_outer_radius
+!     logical :: hysteretic_buffer !% Turn on hysteretic selection algorithm for buffer region
+     real(dp) :: buffer_inner_radius,  buffer_outer_radius !% Turn on hysteretic selection algorithm for buffer region
      logical :: hysteretic_connect !% Turn on hysteretic selection algorithm for connection used for buffer region
      real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor,  hysteretic_connect_outer_factor
+     logical :: construct_buffer_use_only_heavy_atoms !% Whether to consider only the heavy atoms radius when constructing the hysteretic buffer
 
      integer :: transition_hops !% Number of bond hops used for transition region. Applies to 'force_mixing' methods only.
      logical :: use_buffer_for_fitting !% Whether to generate the fit region or just use the buffer as the fit region. Only for method=conserve_momentum
