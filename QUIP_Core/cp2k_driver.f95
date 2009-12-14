@@ -241,8 +241,8 @@ contains
       if (try_reuse_wfn .and. can_reuse_wfn) then 
 	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
 	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
-	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
+	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
       call calc_charge_lsd(at, qm_list, charge, do_lsd)
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
