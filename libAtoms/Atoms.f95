@@ -4860,7 +4860,7 @@ contains
       type(Dictionary)    :: use_properties
       character(len=1024) :: my_real_format, my_values_real_format
 
-      my_real_format = optional_default('f12.5',real_format)
+      my_real_format = optional_default('f14.7',real_format)
       my_values_real_format = optional_default('f18.6',real_format)
 
       do_all_properties = .false.
