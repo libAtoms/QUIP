@@ -1319,13 +1319,18 @@ contains
   !% 'mask' allows individual atoms to be selected for searching, e.g. for preventing a water
   !% molecule from being re-identified as an OH, and then later as two hydrogens.
   !%
-  subroutine find_motif(at,motif,matches,start,end,mask)
+  !% The routine could optionally find hysteretically defined connections between neighbours,
+  !% if the alt_connect's cutoff were the same as at%cutoff(_break)
+  !%
+  subroutine find_motif(at,motif,matches,start,end,mask,alt_connect) !,hysteretic_neighbours)
 
-    type(atoms),       intent(in)  :: at           !% The atoms structure to search
+    type(atoms),       intent(in), target  :: at           !% The atoms structure to search
     integer,           intent(in)  :: motif(:,:)   !% The motif to search for
     type(table),       intent(out) :: matches      !% All matches
     integer, optional, intent(in)  :: start, end   !% Start and End atomic indices for search
     logical, optional, intent(in)  :: mask(:)      !% If present only masked atoms are searched
+    type(Connection), intent(in), optional, target :: alt_connect
+!    logical, optional, intent(in) :: hysteretic_neighbours
 
     character(*), parameter  :: me = 'find_motif: '
 
@@ -1336,6 +1341,9 @@ contains
     type(table)              :: neighbours, core, num_species_at, num_species_motif
 
     integer                  :: discards(7)
+    type(Connection), pointer :: use_connect
+!    logical :: use_hysteretic_neighbours
+    real(dp) :: cutoff
 
     discards = 0
 
@@ -1345,8 +1353,16 @@ contains
 
     ! Check atomic numbers
     if (any(motif(:,1)<1)) call system_abort(me//'Bad atomic numbers ('//motif(:,1)//')')
+
     ! Check for atomic connectivity
-    if (.not.at%connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => at%connect
+    endif
+    if (.not.use_connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
+!    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
+!
     if (size(motif,1).eq.0) call system_abort(me//'zero motif size')
 
     ! Build adjacency matrix from motif
@@ -1432,7 +1448,7 @@ contains
 
        ! Check if the real atom's neighbours can be matched with those in the motif
 
-       if (.not.atoms_compatible(at,i,A,Z,opt_atom)) then
+       if (.not.atoms_compatible(at,i,A,Z,opt_atom,alt_connect=use_connect)) then
           discards(2) = discards(2) + 1
           cycle
        end if
@@ -1442,7 +1458,7 @@ contains
        ! Grow a cluster around the real atom i which is  max_depth hops deep
        call wipe(core)
        call append(core,(/i,0,0,0/))
-       call bfs_grow(at,core,max_depth,nneighb_only = .true., min_images_only = .true.)
+       call bfs_grow(at,core,max_depth,nneighb_only = .true., min_images_only = .true.,alt_connect=use_connect)
 
        !XXXXXXXXXXXXXXXXXXXX
        !X ESCAPE ROUTE 3
@@ -1508,6 +1524,19 @@ contains
           k = core%int(1,p)
           do q = p+1, core%N
              j = core%int(1,q)
+!             !Optionally takes into account the hysteretic nearest neighbours.
+!             !Only works if the alt_connect's cutoff is the same as the at%cutoff(_break)
+!             !Determine what cutoff distance to use
+!             if (use_hysteretic_neighbours) then
+!                if (at%use_uniform_cutoff) then
+!                   cutoff = at%cutoff_break
+!                else
+!                   cutoff = bond_length(at%Z(k),at%Z(j)) * at%cutoff_break
+!                end if
+!             else
+!                cutoff = bond_length(at%Z(k),at%Z(j))*at%nneightol
+!             endif
+!             if (distance_min_image(at,k,j) < cutoff) then
              if (distance_min_image(at,k,j) < bond_length(at%Z(k),at%Z(j))*at%nneightol) then
                 B(p,q) = 1
                 B(q,p) = 1
@@ -1548,7 +1577,7 @@ contains
           do p = 1, N
              if (p==opt_atom) cycle
              if (depth_real(q) == depth(p)) then
-                if (atoms_compatible(at,core%int(1,q),A,Z,p)) M0(p,q) = 1
+                if (atoms_compatible(at,core%int(1,q),A,Z,p,alt_connect=use_connect)) M0(p,q) = 1
              end if
           end do
        end do
@@ -1800,13 +1829,15 @@ contains
 
   !% OMIT
   ! Used by find_motif
-  function atoms_compatible(at,i,A,Z,j)
+  ! Added alt_connect.
+  function atoms_compatible(at,i,A,Z,j,alt_connect)
 
-    type(atoms),             intent(in) :: at !the atoms structure
+    type(atoms),             intent(in), target :: at !the atoms structure
     integer,                 intent(in) :: i  !the atom in the atoms structure we are testing
     integer, dimension(:,:), intent(in) :: A  !the adjacency matrix of the motif
     integer, dimension(:),   intent(in) :: Z  !the atomic number of the motif
     integer,                 intent(in) :: j  !the atom in the motif we are testing
+    type(Connection), intent(in), optional, target :: alt_connect
     logical                             :: atoms_compatible
 
     type(table)                        :: core, neighbours
@@ -1814,6 +1845,7 @@ contains
     integer, allocatable, dimension(:) :: neighbour_Z
     integer                            :: p,q
     logical                            :: match, found
+    type(Connection), pointer :: use_connect
 
     ! First check the atomic numbers of the two atoms to test
     if (at%Z(i) /= Z(j)) then
@@ -1821,10 +1853,16 @@ contains
        return
     end if
 
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => at%connect
+    endif
+
     ! find nearest neighbours of real atom
     call allocate(core,4,0,0,0,1)
     call append(core,(/i,0,0,0/))
-    call bfs_step(at,core,neighbours,nneighb_only=.true.,min_images_only=.true.)
+    call bfs_step(at,core,neighbours,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
 
     allocate(neighbour_used(neighbours%N))
     neighbour_used = .false.
