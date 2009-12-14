@@ -54,6 +54,10 @@ contains
     real(dp), pointer :: from_dp(:), to_dp(:)
     integer, pointer :: from_i(:), to_i(:)
 
+    integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
+    logical :: dummy, have_silica_potential
+    type(Table) :: intrares_impropers
+
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
@@ -71,6 +75,7 @@ contains
       call param_register(cli, "max_force_warning", "2.0", max_force_warning)
       call param_register(cli, "qm_vacuum", "6.0", qm_vacuum)
       call param_register(cli, "try_reuse_wfn", "T", try_reuse_wfn)
+      call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.false.,task='cp2k_filepot_template args_str')) &
 	call system_abort('could not parse argument line')
     call finalise(cli)
@@ -85,6 +90,7 @@ contains
     call print("  max_force_warning " // max_force_warning)
     call print("  qm_vacuum " // qm_vacuum)
     call print("  try_reuse_wfn " // try_reuse_wfn)
+    call print('  have_silica_potential '//have_silica_potential)
 
     ! read template file
     call initialise(template_io, trim(cp2k_template_file), INPUT)
@@ -130,13 +136,17 @@ contains
 
     ! prepare CHARMM params if necessary
     if (use_MM) then
-      call set_cutoff(at,0._dp)
+      if (have_silica_potential) then
+        call set_cutoff(at,SILICA_2body_CUTOFF)
+      else
+        call set_cutoff(at,0._dp)
+      endif
       call calc_connect(at)
 
       call map_into_cell(at)
       call calc_dists(at)
 
-      call create_CHARMM(at,do_CHARMM=.true.)
+      call create_CHARMM(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
     endif
 
     ! put in method
@@ -186,9 +196,27 @@ contains
 	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
       endif
 
-      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
-	if (qm_list_changed) can_reuse_wfn = .false.
-      endif
+      !check if QM list changed: compare cluster_mark and old_cluster_mark
+!      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
+!       if (qm_list_changed) can_reuse_wfn = .false.
+!      endif
+       if (.not.has_property(at, 'cluster_mark')) call system_abort('no cluster_mark found in atoms object')
+       if (.not.has_property(at, 'old_cluster_mark')) call system_abort('no old_cluster_mark found in atoms object')
+       dummy = assign_pointer(at, 'old_cluster_mark', old_cluster_mark_p)
+       dummy = assign_pointer(at, 'cluster_mark', cluster_mark_p)
+
+       qm_list_changed = .false.
+       do i=1,at%N
+          !only hybrid_no_mark matters
+          if (old_cluster_mark_p(i).ne.cluster_mark_p(i) .and. &
+              any((/old_cluster_mark_p(i),cluster_mark_p(i)/).eq.HYBRID_NO_MARK)) then
+              qm_list_changed = .true.
+          endif
+       enddo
+       call set_value(at%params,'QM_list_changed',qm_list_changed)
+       call print('set_value QM_list_changed '//qm_list_changed)
+
+       if (qm_list_changed) can_reuse_wfn = .false.
 
       counter = 0
       do atno=minval(at%Z), maxval(at%Z)
@@ -213,8 +241,8 @@ contains
       if (try_reuse_wfn .and. can_reuse_wfn) then 
 	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
 	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
-	! insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
-	! call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
+	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
       call calc_charge_lsd(at, qm_list, charge, do_lsd)
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
@@ -276,7 +304,7 @@ contains
 
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	call write_psf_file(at, "quip_cp2k.psf", run_type_string=trim(run_type))
+	call write_psf_file(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
       endif
     endif
 
@@ -286,40 +314,43 @@ contains
 
     ! prepare xyz file for input to cp2k
 
-    call atoms_copy_without_connect(at_cp2k, at, properties="species:pos")
-    dummy_s = ""
-    ! hopefully no need for this once topology.f95 and cp2k patch agree on property names
-    call add_property(at_cp2k, "atmname", dummy_s, n_cols=1)
-    call add_property(at_cp2k, "molname", dummy_s, n_cols=1)
-    call add_property(at_cp2k, "resname", dummy_s, n_cols=1)
-    call add_property(at_cp2k, "resid", 0, n_cols=1)
-    call add_property(at_cp2k, "atm_charge", 0.0_dp, n_cols=1)
-    if (.not. assign_pointer(at_cp2k, "atmname", to_str)) &
-      call system_abort("impossible failure to set pointer to at_cp2k%atmname")
-    if (.not. assign_pointer(at, "atom_type", from_str)) &
-      call system_abort("failed to set pointer to at%atom_type")
-    to_str = from_str
-    if (.not. assign_pointer(at_cp2k, "molname", to_str)) &
-      call system_abort("impossible failure to set pointer to at_cp2k%molname")
-    if (.not. assign_pointer(at, "atom_mol_name", from_str)) &
-      call system_abort("failed to set pointer to at%atom_mol_name")
-    to_str = from_str
-    if (.not. assign_pointer(at_cp2k, "resname", to_str)) &
-      call system_abort("impossible failure to set pointer to at_cp2k%resname")
-    if (.not. assign_pointer(at, "atom_res_name", from_str)) &
-      call system_abort("failed to set pointer to at%atom_res_name")
-    to_str = from_str
-    if (.not. assign_pointer(at_cp2k, "resid", to_i)) &
-      call system_abort("impossible failure to set pointer to at_cp2k%resid")
-    if (.not. assign_pointer(at, "atom_res_number", from_i)) &
-      call system_abort("failed to set pointer to at%atom_res_number")
-    to_i = from_i
-    if (.not. assign_pointer(at_cp2k, "atm_charge", to_dp)) &
-      call system_abort("impossible failure to set pointer to at_cp2k%atm_charge")
-    if (.not. assign_pointer(at, "atom_charge", from_dp)) &
-      call system_abort("failed to set pointer to at%atom_charge")
-    to_dp = from_dp
-    call print_xyz(at_cp2k, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
+!    call atoms_copy_without_connect(at_cp2k, at, properties="species:pos")
+!    dummy_s = ""
+!    ! hopefully no need for this once topology.f95 and cp2k patch agree on property names
+!!    if (run_type /= "QS") then
+!      call add_property(at_cp2k, "atmname", dummy_s, n_cols=1)
+!      call add_property(at_cp2k, "molname", dummy_s, n_cols=1)
+!      call add_property(at_cp2k, "resname", dummy_s, n_cols=1)
+!      call add_property(at_cp2k, "resid", 0, n_cols=1)
+!      call add_property(at_cp2k, "atm_charge", 0.0_dp, n_cols=1)
+!      if (.not. assign_pointer(at_cp2k, "atmname", to_str)) &
+!        call system_abort("impossible failure to set pointer to at_cp2k%atmname")
+!      if (.not. assign_pointer(at, "atom_type", from_str)) &
+!        call system_abort("failed to set pointer to at%atom_type")
+!      to_str = from_str
+!      if (.not. assign_pointer(at_cp2k, "molname", to_str)) &
+!        call system_abort("impossible failure to set pointer to at_cp2k%molname")
+!      if (.not. assign_pointer(at, "atom_mol_name", from_str)) &
+!        call system_abort("failed to set pointer to at%atom_mol_name")
+!      to_str = from_str
+!      if (.not. assign_pointer(at_cp2k, "resname", to_str)) &
+!        call system_abort("impossible failure to set pointer to at_cp2k%resname")
+!      if (.not. assign_pointer(at, "atom_res_name", from_str)) &
+!        call system_abort("failed to set pointer to at%atom_res_name")
+!      to_str = from_str
+!      if (.not. assign_pointer(at_cp2k, "resid", to_i)) &
+!        call system_abort("impossible failure to set pointer to at_cp2k%resid")
+!      if (.not. assign_pointer(at, "atom_res_number", from_i)) &
+!        call system_abort("failed to set pointer to at%atom_res_number")
+!      to_i = from_i
+!      if (.not. assign_pointer(at_cp2k, "atm_charge", to_dp)) &
+!        call system_abort("impossible failure to set pointer to at_cp2k%atm_charge")
+!      if (.not. assign_pointer(at, "atom_charge", from_dp)) &
+!        call system_abort("failed to set pointer to at%atom_charge")
+!      to_dp = from_dp
+!!    endif
+!    call print_xyz(at_cp2k, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
+    call print_xyz(at, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
 
     ! actually run cp2k
 
@@ -674,21 +705,29 @@ contains
     end do
   end subroutine
 
-  subroutine get_qm_list(at,qmflag,qm_list,do_union)
+  subroutine get_qm_list(at,qmflag,qm_list,do_union,int_property)
     type(Atoms), intent(in)  :: at
     integer,     intent(in)  :: qmflag
     type(Table), intent(out) :: qm_list
     logical, intent(in), optional :: do_union
+    character(len=*), optional, intent(in) :: int_property
   
     integer :: i
     integer, pointer :: QM_flag(:)
     logical              :: my_do_union
     integer :: qmflag_min
+    character(STRING_LENGTH) :: my_int_property
 
     my_do_union = optional_default(.false.,do_union)
 
-    if (.not.(assign_pointer(at, "QM_flag", QM_flag))) &
-      call system_abort("get_qm_list couldn't find QM_flag field")
+    my_int_property = ''
+    if (present(int_property)) then
+       my_int_property = trim(int_property)
+    else
+       my_int_property = "cluster_mark"
+    endif
+    if (.not.(assign_pointer(at, trim(my_int_property), QM_flag))) &
+      call system_abort("get_qm_list couldn't find "//trim(my_int_property)//" field")
 
     if (my_do_union) then
       qmflag_min = 1
@@ -719,9 +758,9 @@ contains
     qm_maxdist = 0.0_dp
     do i=1, qm_list%N
     do j=1, qm_list%N
-      qm_maxdist(1) = max(qm_maxdist(1), distance_min_image(at, (/ at%pos(1,i), 0.0_dp, 0.0_dp /), (/at%pos(1,j), 0.0_dp, 0.0_dp /) ))
-      qm_maxdist(2) = max(qm_maxdist(2), distance_min_image(at, (/ 0.0_dp, at%pos(2,i), 0.0_dp /), (/0.0_dp, at%pos(2,j), 0.0_dp /)))
-      qm_maxdist(3) = max(qm_maxdist(3), distance_min_image(at, (/ 0.0_dp, 0.0_dp, at%pos(3,i) /), (/ 0.0_dp, 0.0_dp, at%pos(3,j) /)))
+      qm_maxdist(1) = max(qm_maxdist(1), at%pos(1,i)-at%pos(1,j))
+      qm_maxdist(2) = max(qm_maxdist(2), at%pos(2,i)-at%pos(2,j))
+      qm_maxdist(3) = max(qm_maxdist(3), at%pos(3,i)-at%pos(3,j))
     end do
     end do
 
