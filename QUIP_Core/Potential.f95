@@ -350,6 +350,8 @@ contains
     real(dp), pointer :: e_ptr, virial_ptr(:,:)
     real(dp), target :: my_e, my_virial(3,3)
     logical :: calc_force, calc_energy, calc_local_e, calc_df, calc_virial, do_calc_force, do_calc_energy, do_calc_local_e, do_calc_df, do_calc_virial
+    integer, pointer :: cluster_mark_p(:)
+    integer, pointer :: old_cluster_mark_p(:)
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -442,6 +444,7 @@ contains
 	    call print_xyz(cluster, mainlog, all_properties=.true.)
 	    mainlog%prefix=prefix_save
 	  endif
+call print('ARGS0 | '//new_args_str,VERBOSE)
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)
@@ -499,6 +502,7 @@ contains
 	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
 	      call system_abort('potential_calc: cluster is missing termindex property')
 	 allocate(f_cluster(3,cluster%N))
+call print('ARGS1 | '//new_args_str,VERBOSE)
 	 call calc(this, cluster, f=f_cluster, args_str=new_args_str)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
 
@@ -519,9 +523,74 @@ contains
        else ! not do_carve_cluster
 	 call print('potential_calc: not carving cluster', VERBOSE)
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str, cut_bonds)
+
+         !save cluster in cluster_mark property
+         call add_property(at,'cluster_mark',HYBRID_NO_MARK)
+         call add_property(at,'old_cluster_mark',HYBRID_NO_MARK)
+	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
+	   call system_abort("potential_calc failed to assing pointer for cluster_mark pointer")
+	 if (.not. assign_pointer(at, 'old_cluster_mark', old_cluster_mark_p)) &
+	   call system_abort("potential_calc failed to assing pointer for old_cluster_mark pointer")
+         old_cluster_mark_p = cluster_mark_p
+         cluster_mark_p = HYBRID_NO_MARK
+!**** old_cluster_mark
+         do i=1,cluster_info%N
+            select case (cluster_info%str(1,i))
+            case ('h_active  ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_ACTIVE_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('h_buffer  ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('h_outer_l ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('hollow    ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('clash     ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('group     ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case ('term      ')
+              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
+                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_TERM_MARK
+              else
+                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
+              endif
+            case default
+              call system_abort('unknown mark: '//cluster_info%str(1,i))
+            end select
+!            mark_i = hybrid_mark_from_name(cluster_info%str(i))
+!            if (mark_i.ne.HYBRID_NO_MARK) cluster_mark_p(i) = mark_i
+         enddo
+
+         !save cut bonds in cut_bonds property
 	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)
 	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
 	   call system_abort("potential_calc failed to assing pointer for cut_bonds pointer")
+         !zero it
+         cut_bonds_p = 0
 	 do i=1, cut_bonds%N
 	   i_inner = cut_bonds%int(1,i)
 	   i_outer = cut_bonds%int(2,i)
@@ -544,6 +613,7 @@ contains
 	   call print_xyz(at, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
 	 endif
+call print('ARGS2 | '//new_args_str,VERBOSE)
 	 call calc(this, at, f=f, args_str=new_args_str)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
