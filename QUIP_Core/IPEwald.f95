@@ -22,7 +22,7 @@ contains
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in,e,f,virial,error,use_ewald_cutoff)
+  subroutine Ewald_calc(at_in,e,f,virial,error,use_ewald_cutoff,charge)
 
     type(Atoms), intent(in), target    :: at_in
 
@@ -31,6 +31,7 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), intent(in), optional                    :: error
     logical, intent(in), optional                     :: use_ewald_cutoff
+    real(dp), dimension(:), intent(in), optional, target :: charge
 
     integer  :: i, j, k, n, n1, n2, n3, not_needed !for reciprocal force
     integer, dimension(3) :: nmax !how many reciprocal vectors are to be taken
@@ -48,12 +49,10 @@ contains
     real(dp), dimension(:,:,:), allocatable   :: energy_factor
     real(dp), dimension(:,:,:), allocatable   :: mod2_k  !square of length of reciprocal vectors
 
-    real(dp), dimension(:), pointer :: charge
+    real(dp), dimension(:), pointer :: my_charge
 
     type(Atoms), target :: my_at
     type(Atoms), pointer :: at
-
-    call system_timer('ewald_startup')
 
     identity3x3 = 0.0_dp
     call add_identity(identity3x3)
@@ -100,8 +99,12 @@ contains
     prefac = 4.0_dp * PI / v
     infac  = - 1.0_dp / (4.0_dp * alpha**2.0_dp) 
 
-    if( .not. assign_pointer(at, 'charge', charge) ) &
-    & call system_abort('Ewald_calc: charge property not present in atoms object')
+    if( present(charge) ) then
+       call check_size('charge',charge,(/at%N/),'IPEwald')
+       my_charge => charge
+    elseif( .not. assign_pointer(at, 'charge', my_charge) ) then
+       call system_abort('Ewald_calc: no charge property is present in atoms object and no charge argument has been given')
+    endif
 
     allocate( k_vec(3,-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1)), &
             & mod2_k(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ),  &
@@ -152,8 +155,8 @@ contains
 
                 if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
                    arg = dot_product(at%pos(:,i), k_vec(:,n3,n2,n1))
-                   coskr(n3,n2,n1,i) = cos(arg)*charge(i)
-                   sinkr(n3,n2,n1,i) = sin(arg)*charge(i)
+                   coskr(n3,n2,n1,i) = cos(arg)*my_charge(i)
+                   sinkr(n3,n2,n1,i) = sin(arg)*my_charge(i)
 
                 endif
              enddo
@@ -165,41 +168,32 @@ contains
     if(present(f)) f  = 0.0_dp
     if(present(virial)) virial  = 0.0_dp
 
-    call system_timer('ewald_startup')
-    call system_timer('ewald_real')
-
     do i=1,at%N
        !Loop over neighbours
        do n = 1, atoms_n_neighbours(at,i)
           j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
            
-          if(j<i) cycle ! count images
-
           erfc_ar = erfc(r_ij*alpha)/r_ij
 
-          if( present(e) ) e = e + charge(i)*charge(j)*erfc_ar
+          if( present(e) ) e = e + 0.5_dp * my_charge(i)*my_charge(j)*erfc_ar
 
           if( present(f) .or. present(virial) ) then
-              force(:) = charge(i)*charge(j) * &
+              force(:) = my_charge(i)*my_charge(j) * &
               & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar ) / r_ij * u_ij(:)
 
               if(present(f)) then
                  f(:,i) = f(:,i) - force(:) 
-                 f(:,j) = f(:,j) + force(:)
               endif
 
-              if (present(virial)) virial = virial + (force .outer. u_ij) * r_ij
+              if (present(virial)) virial = virial + 0.5_dp * (force .outer. u_ij) * r_ij
           endif
  
       enddo
     enddo
              
-    call system_timer('ewald_real')
-    call system_timer('ewald_reciprocal')
-
     ! reciprocal energy
     if(present(e)) e = e + sum((sum(coskr,dim=4)**2 + sum(sinkr,dim=4)**2)*energy_factor) * prefac &
-    & - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
+    & - sum(my_charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(my_charge)**2
 
     ! reciprocal force
     if( present(f) ) then
@@ -242,8 +236,7 @@ contains
        enddo
     endif
 
-    if(present(virial)) virial = virial - identity3x3 * sum(charge)**2 * PI / v / alpha**2 / 2
-    call system_timer('ewald_reciprocal')
+    if(present(virial)) virial = virial - identity3x3 * sum(my_charge)**2 * PI / v / alpha**2 / 2
 
     if(present(e)) e = e / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV
     if(present(f)) f = f / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV/A
