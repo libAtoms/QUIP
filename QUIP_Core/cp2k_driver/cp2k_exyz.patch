@@ -2,7 +2,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_constants.F cp2k_cv
 *** cp2k_cvs/cp2k/src/input_constants.F	2009-08-19 15:20:31.000000000 -0400
 --- cp2k_cvs_patched/cp2k/src/input_constants.F	2009-08-27 12:40:09.000000000 -0400
 ***************
-*** 302,308 ****
+*** 304,310 ****
                                                 do_coord_g96=3,&
                                                 do_coord_crd=4,&
                                                 do_coord_cif=5,&
@@ -10,7 +10,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_constants.F cp2k_cv
                                              
     INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
                                                 do_ff_quartic=1,&
---- 302,309 ----
+--- 304,311 ----
                                                 do_coord_g96=3,&
                                                 do_coord_crd=4,&
                                                 do_coord_cif=5,&
@@ -37,7 +37,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_
               description="Prints information when parsing PSF files.",&
               default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
 ***************
-*** 1380,1388 ****
+*** 1552,1560 ****
               variants=s2a("COORDINATE"),&
               description="Set up the way in which coordinates will be read.",&
               usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
@@ -47,7 +47,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_
               enum_desc=s2a(&
               "Coordinates read in the &COORD section of the input file",&
               "Coordinates provided through a PDB file format",&
---- 1385,1393 ----
+--- 1557,1563 ----
               variants=s2a("COORDINATE"),&
               description="Set up the way in which coordinates will be read.",&
               usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
@@ -58,7 +58,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_
               "Coordinates read in the &COORD section of the input file",&
               "Coordinates provided through a PDB file format",&
 ***************
-*** 1390,1396 ****
+*** 1562,1568 ****
               "Coordinates provided through a GROMOS96 file format",&
               "Coordinates provided through an AMBER file format",&
               "Coordinates provided through a CIF (Crystallographic Information File) file format",&
@@ -66,7 +66,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_
               default_i_val=do_coord_off,error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
---- 1395,1402 ----
+--- 1567,1574 ----
               "Coordinates provided through a GROMOS96 file format",&
               "Coordinates provided through an AMBER file format",&
               "Coordinates provided through a CIF (Crystallographic Information File) file format",&
@@ -80,8 +80,8 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/OBJECTDEFS cp2k_cvs_patch
 *** cp2k_cvs/cp2k/src/OBJECTDEFS	2009-08-12 16:56:04.000000000 -0400
 --- cp2k_cvs_patched/cp2k/src/OBJECTDEFS	2009-08-27 15:47:57.000000000 -0400
 ***************
-*** 665,670 ****
---- 665,671 ----
+*** 672,677 ****
+--- 672,678 ----
    topology_util.o\
    topology_xtl.o\
    topology_xyz.o\
@@ -218,13 +218,13 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +        END DO
 + 
 +        call read_xyz(at, es)
-+        if (.not. assign_pointer(at, 'atmname', atmname)) nullify(atmname)
-+        if (.not. assign_pointer(at, 'molname', molname)) nullify(molname)
-+        if (.not. assign_pointer(at, 'resname', resname)) nullify(resname)
-+        if (.not. assign_pointer(at, 'resid', resid)) nullify(resid)
++        if (.not. assign_pointer(at, 'atom_type', atmname)) nullify(atmname)
++        if (.not. assign_pointer(at, 'atom_mol_name', molname)) nullify(molname)
++        if (.not. assign_pointer(at, 'atom_res_name', resname)) nullify(resname)
++        if (.not. assign_pointer(at, 'atom_res_number', resid)) nullify(resid)
 +        if (.not. assign_pointer(at, 'element', element)) nullify(element)
 +        if (.not. assign_pointer(at, 'atm_mass', atm_mass)) nullify(atm_mass)
-+        if (.not. assign_pointer(at, 'atm_charge', atm_charge)) nullify(atm_charge)
++        if (.not. assign_pointer(at, 'atom_charge', atm_charge)) nullify(atm_charge)
 +        if (.not. assign_pointer(at, 'occup', occup)) nullify(occup)
 +        if (.not. assign_pointer(at, 'beta', beta)) nullify(beta)
 + 
@@ -332,7 +332,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology.F cp2k_cvs_patch
 *** cp2k_cvs/cp2k/src/topology.F	2009-06-18 14:46:16.000000000 -0400
 --- cp2k_cvs_patched/cp2k/src/topology.F	2009-08-27 15:59:13.000000000 -0400
 ***************
-*** 29,35 ****
+*** 26,32 ****
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
          do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
          do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
@@ -340,7 +340,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology.F cp2k_cvs_patch
     USE input_section_types,             ONLY: section_vals_get,&
                                                section_vals_get_subs_vals,&
                                                section_vals_type,&
---- 29,35 ----
+--- 26,32 ----
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
          do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
          do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
@@ -349,8 +349,8 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology.F cp2k_cvs_patch
                                                section_vals_get_subs_vals,&
                                                section_vals_type,&
 ***************
-*** 85,90 ****
---- 85,91 ----
+*** 82,87 ****
+--- 82,88 ----
                                                topology_set_atm_mass
     USE topology_xtl,                    ONLY: read_coordinate_xtl
     USE topology_xyz,                    ONLY: read_coordinate_xyz
@@ -359,8 +359,8 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology.F cp2k_cvs_patch
   
     IMPLICIT NONE
 ***************
-*** 540,545 ****
---- 541,548 ----
+*** 533,538 ****
+--- 534,541 ----
          CALL read_coordinate_pdb (topology,para_env,subsys_section,error)
       CASE (do_coord_xyz)
          CALL read_coordinate_xyz (topology,para_env,subsys_section,error)
