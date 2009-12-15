@@ -141,9 +141,9 @@ implicit none
  
   do i=1, cluster_qm%N
     if (i == qm_center_i_cluster) then
-      call print(i // " " // cluster_qm%pos(:,i) // " " // f(:,i) // " CTR " // (i-qm_center_i))
+      call print(" " // r_qm // " " // i // " " // cluster_qm%pos(:,i) // " " // f(:,i) // " CTR")
     else
-      call print(i // " " // cluster_qm%pos(:,i) // " " // f(:,i))
+      call print(" " // r_qm // " " // i // " " // cluster_qm%pos(:,i) // " " // f(:,i))
     endif
   end do
   
