@@ -458,6 +458,7 @@ contains
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
+    real(dp), pointer :: force_p(:,:)
 
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
@@ -467,7 +468,10 @@ contains
 
     if (.not. get_value(f_xyz%params, "E", e)) &
       call system_abort('read_energy_forces failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file')
-    f = f_xyz%pos
+
+    if (.not.(assign_pointer(f_xyz, 'frc', force_p))) &
+      call system_abort("Did not find frc property in "//trim(run_dir)//'/quip-frc-1.xyz file')
+    f = force_p
 
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
