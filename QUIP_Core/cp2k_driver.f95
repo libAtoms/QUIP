@@ -76,7 +76,8 @@ contains
       call param_register(cli, "qm_vacuum", "6.0", qm_vacuum)
       call param_register(cli, "try_reuse_wfn", "T", try_reuse_wfn)
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
-      if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.false.,task='cp2k_filepot_template args_str')) &
+      ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
+      if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('could not parse argument line')
     call finalise(cli)
 
@@ -685,10 +686,14 @@ contains
 
     integer :: pamp
     character(len=1024) :: section_str, new_section_str
-    integer :: i, j
+    integer :: i, j, comment_i
 
     section_str = ""
     do i=1, size(l_a)
+      comment_i = index(l_a(i), "#")
+      if (comment_i /= 0) then
+	l_a(i)(comment_i:len(l_a(i))) = ""
+      endif
       if (index(l_a(i),"&END") /= 0) then
 	pamp = index(section_str, "&", .true.)
 	new_section_str = section_str(1:pamp-1)
