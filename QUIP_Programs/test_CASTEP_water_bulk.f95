@@ -5,7 +5,7 @@ implicit none
   type(Atoms) :: cluster_qm, cluster_mm, bulk
   type(Inoutput) :: io
   character(len=FIELD_LENGTH) :: init_args, calc_args, infile
-  real(dp) :: g_width, vacuum, charge_scale
+  real(dp) :: g_width_O, g_width_H, vacuum, charge_scale
   integer :: qm_center_i, qm_center_i_cluster
   real(dp) :: r_qm, r
   type(Potential) :: pot
@@ -27,13 +27,18 @@ implicit none
   call param_register(cli, "qm_center_i", param_mandatory, qm_center_i)
   call param_register(cli, "r_qm", param_mandatory, r_qm)
   call param_register(cli, "charge_scale", "1.0", charge_scale)
-  call param_register(cli, "g_width", "0.25", g_width)
+  call param_register(cli, "g_width_O", ""//(1.2_dp/sqrt(2.0_dp)), g_width_O)
+  call param_register(cli, "g_width_H", ""//(0.44_dp/sqrt(2.0_dp)), g_width_H)
   call param_register(cli, "vacuum", "15.0", vacuum)
   if (.not. param_read_args(cli, ignore_unknown=.false., do_check=.true.)) &
     call system_abort("Failed to parse CLI parameters")
 
   call print("qm_center_i " // qm_center_i)
   call print("r_qm " // r_qm)
+  call print("charge_scale " // charge_scale)
+  call print("g_width_O " // g_width_O)
+  call print("g_width_H " // g_width_H)
+  call print("vacuum " // vacuum)
 
   charge = 0.0_dp
   charge(1) = 0.417_dp*charge_scale
@@ -122,7 +127,13 @@ implicit none
 
   call initialise(io, "extcharges", OUTPUT)
   do i=1, cluster_mm%N
-    call print(charge(cluster_mm%Z(i)) //" " // cluster_mm%pos(:,i) //" " // g_width, file=io)
+    if (cluster_mm%Z(i) == 1) then
+      call print(charge(cluster_mm%Z(i)) //" " // cluster_mm%pos(:,i) //" " // g_width_H, file=io)
+    else if (cluster_mm%Z(i) == 8) then
+      call print(charge(cluster_mm%Z(i)) //" " // cluster_mm%pos(:,i) //" " // g_width_O, file=io)
+    else
+      call system_abort("No width defined for Z="//cluster_mm%Z(i))
+    endif
   end do
   call finalise(io)
 
