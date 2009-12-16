@@ -1237,6 +1237,15 @@ function dictionary_parse_value(this, key, strvalue, char_a_sep) result(status)
 
      ! Scalar data, try to guess type
 
+     do i=1, len_trim(fields(1))
+       if (fields(1)(i:i) == '/') then
+         ! slash is technically a delimiter, but we don't like that, so we'll call it a string manually (otherswise string_to_real will be confused)
+         call set_value(this,key,fields(1))
+         status = .true.
+         return
+       endif
+     end do
+
      ! Is it an integer?
      i = string_to_int(fields(1),err)
      if (.not. err) then
