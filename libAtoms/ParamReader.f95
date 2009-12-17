@@ -146,7 +146,7 @@ module paramreader_module
   integer, parameter :: VALUE_LENGTH = 1023  !% Length of parameter value strings
   integer, parameter :: FIELD_LENGTH = 1023  !% Maximum field width during parsing
   integer, parameter :: STRING_LENGTH = 1023 !% Maximum length of string parameters
-  integer, parameter, private :: MAX_N_FIELDS = 30       !% Maximum number of fields during parsing
+  integer, parameter, private :: MAX_N_FIELDS = 100       !% Maximum number of fields during parsing
 
   integer, parameter :: PARAM_NO_VALUE = 0 !% Special parameter type that doesn't get parsed
   integer, parameter :: PARAM_REAL = 1 !% Real (double precision) parameter
