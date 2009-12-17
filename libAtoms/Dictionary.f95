@@ -112,7 +112,7 @@ integer, parameter :: value_len = 1024 !% maximum length of value string
 
 
 integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
-integer, parameter :: dict_n_fields = 30       !% Maximum number of fields during parsing
+integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
 
 
 
@@ -1150,7 +1150,7 @@ subroutine dictionary_read_string(this, str, append)
         call system_abort("dictionary_read_string: value "//trim(value)//" too long")
         return
      end if
-           
+
      if (.not. dictionary_parse_value(this,key,value)) &
           call system_abort('dictionary_read_string: error parsing '//trim(key)//'='//trim(value))
      

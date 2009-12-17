@@ -652,7 +652,7 @@ module system_module
 
   ! Command argument variables
   integer,              save :: NUM_COMMAND_ARGS  = 0  !% The number of arguments on the command line
-  integer, parameter         :: MAX_READABLE_ARGS = 30 !% The maximum number of arguments that will be read
+  integer, parameter         :: MAX_READABLE_ARGS = 100 !% The maximum number of arguments that will be read
   character(255),       save :: EXEC_NAME              !% The name of the executable
   character(255), dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
 
@@ -1370,7 +1370,7 @@ contains
       if (i > length) then ! last character
 	if (in_token) then
 	  num_fields = num_fields + 1
-	  if (num_fields > size(fields)) call system_abort("split_string ran out of space for fields")
+	  if (num_fields > size(fields)) call system_abort("split_string on '"//trim(this)//"' ran out of space for fields max " // size(fields))
 	  if (tmp_field_last > 0) then
 	    if (t_start <= length) then
 	      fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:length)
@@ -1391,7 +1391,7 @@ contains
 						   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
 	if (closing_quote_pos <= 0) then
 	  call print("splitting string '"//trim(this)//"'", ERROR)
-	  call system_abort("split_line couldn't find closing quote matching opening at char " // i)
+	  call system_abort("split_string on '"//trim(this)//"' couldn't find closing quote matching opening at char " // i)
 	endif
 	if (in_token) then ! add string from t_start to tmp_field
           if (tmp_field_last > 0) then
@@ -1441,7 +1441,7 @@ contains
         else
           if (in_token) then ! we were in a token before finding this separator
             num_fields = num_fields + 1
-            if (num_fields > size(fields)) call system_abort("split_string ran out of space for fields")
+            if (num_fields > size(fields)) call system_abort("split_string on '"//trim(this)//"' ran out of space for fields max " // size(fields))
             ! add string from t_start and tmp_field to fields(num_fields)
             if (tmp_field_last > 0) then
               fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:i-1)
