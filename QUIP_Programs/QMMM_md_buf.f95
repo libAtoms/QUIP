@@ -79,10 +79,10 @@ program qmmm_md
   real(dp)                    :: Time_Step
   real(dp)                    :: Equilib_Time
   real(dp)                    :: Run_Time
-  real(dp)                    :: Inner_QM_Radius         !for hysteretic quantum
-  real(dp)                    :: Outer_QM_Radius         !          region selection
-  real(dp)                    :: Inner_Core_Radius
-  real(dp)                    :: Outer_Core_Radius
+  real(dp)                    :: Inner_Buffer_Radius         !for hysteretic quantum
+  real(dp)                    :: Outer_Buffer_Radius         !          region selection
+  real(dp)                    :: Inner_QM_Region_Radius
+  real(dp)                    :: Outer_QM_Region_Radius
   real(dp)                    :: Connect_Cutoff
   real(dp)                    :: Simulation_Temperature
   character(len=FIELD_LENGTH) :: coord_file
@@ -112,6 +112,7 @@ program qmmm_md
 type(inoutput) :: csilla_out
 real(dp) :: my_origin(3)
 logical :: have_silica_potential
+real(dp) :: use_cutoff
 
 !    call system_initialise(verbosity=ANAL,enable_timing=.true.)
     call system_initialise(verbosity=NERD,enable_timing=.true.)
@@ -128,10 +129,10 @@ logical :: have_silica_potential
       call param_register(params_in, 'Time_Step', '0.5', Time_Step)
       call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time)
       call param_register(params_in, 'Run_Time', '0.5', Run_Time)
-      call param_register(params_in, 'Inner_QM_Radius', '0.0', Inner_QM_Radius)
-      call param_register(params_in, 'Outer_QM_Radius', '0.0', Outer_QM_Radius)
-      call param_register(params_in, 'Inner_Core_Radius', '0.0', Inner_Core_Radius)
-      call param_register(params_in, 'Outer_Core_Radius', '0.0', Outer_Core_Radius)
+      call param_register(params_in, 'Inner_Buffer_Radius', '0.0', Inner_Buffer_Radius)
+      call param_register(params_in, 'Outer_Buffer_Radius', '0.0', Outer_Buffer_Radius)
+      call param_register(params_in, 'Inner_QM_Region_Radius', '0.0', Inner_QM_Region_Radius)
+      call param_register(params_in, 'Outer_QM_Region_Radius', '0.0', Outer_QM_Region_Radius)
       call param_register(params_in, 'Connect_Cutoff', '0.0', Connect_cutoff)
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature)
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file) 
@@ -227,16 +228,16 @@ logical :: have_silica_potential
       call print('  Time_Step '//round(Time_Step,3))
       call print('  Equilib_Time '//round(Equilib_Time,3))
       call print('  Run_Time '//round(Run_Time,3))
-      call print('  Inner_QM_Radius '//round(Inner_QM_Radius,3))
-      call print('  Outer_QM_Radius '//round(Outer_QM_Radius,3))
+      call print('  Inner_Buffer_Radius '//round(Inner_Buffer_Radius,3))
+      call print('  Outer_Buffer_Radius '//round(Outer_Buffer_Radius,3))
       call print('! - not used any more -  Connect_Cutoff '//round(Connect_cutoff,3))
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
       call print('  coord_file '//coord_file) 
       call print('  new_coord_file '//new_coord_file) 
       if (origin_centre) then
          call print('  QM core is centred around origin')
-         call print('  Inner_Core_Radius '//round(Inner_Core_Radius,3))
-         call print('  Outer_Core_Radius '//round(Outer_Core_Radius,3))
+         call print('  Inner_QM_Region_Radius '//round(Inner_QM_Region_Radius,3))
+         call print('  Outer_QM_Region_Radius '//round(Outer_QM_Region_Radius,3))
          call print('  use_spline '//use_spline)
          if (use_spline) then
             call print('  spline_from '//spline_from)
@@ -311,8 +312,8 @@ logical :: have_silica_potential
       !ndof is the estimated number of atoms in the QM zone (= core + buffer)
        call print('Cell_volume: '//cell_volume(ds%atoms))
        call print('Number of atoms: '//ds%atoms%N)
-       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_Core_Radius + Outer_Core_Radius + Inner_QM_Radius + Outer_QM_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
-       ndof_QM = nint(4._dp * ( (Inner_Core_Radius + Outer_Core_Radius + Inner_QM_Radius + Outer_QM_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
+       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
+       ndof_QM = nint(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
        call print('density: '//(real(ds%atoms%N,dp)/cell_volume(ds%atoms)))
        ndof_MM = 3._dp * ds%atoms%N - ndof_QM
        call print('Estimated ndof QM: '//ndof_QM)
@@ -325,8 +326,8 @@ logical :: have_silica_potential
       !ndof is the estimated number of atoms in the QM zone (= core + buffer)
        call print('Cell_volume: '//cell_volume(ds%atoms))
        call print('Number of atoms: '//ds%atoms%N)
-       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_Core_Radius + Outer_Core_Radius + Inner_QM_Radius + Outer_QM_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
-       ndof_QM = nint(4._dp * ( (Inner_Core_Radius + Outer_Core_Radius + Inner_QM_Radius + Outer_QM_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
+       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
+       ndof_QM = nint(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
        call print('density: '//(real(ds%atoms%N,dp)/cell_volume(ds%atoms)))
        ndof_MM = 3._dp * ds%atoms%N - ndof_QM
        call print('Estimated ndof QM: '//ndof_QM)
@@ -367,11 +368,12 @@ logical :: have_silica_potential
 
 !    call set_cutoff(ds%atoms,Connect_Cutoff)
 !    call set_cutoff(ds%atoms,0._dp) !use the covalent radii to determine bonds
-if (have_silica_potential) then
-    call set_cutoff(ds%atoms,max(SILICA_2BODY_CUTOFF,Outer_QM_Radius)) !use the covalent radii to determine bonds
-else
-    call set_cutoff(ds%atoms,Outer_QM_Radius) !use the covalent radii to determine bonds
-endif
+    use_cutoff = max(nneightol, Outer_Buffer_Radius)
+    use_cutoff = max(use_cutoff, Outer_QM_Region_Radius)
+    if (have_silica_potential) then
+	use_cutoff = max(SILICA_2BODY_CUTOFF, Outer_Buffer_Radius)
+    endif
+    call set_cutoff(ds%atoms,use_cutoff)
     call calc_connect(ds%atoms)
     if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
 
@@ -404,7 +406,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
 call print('hi')
-             call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=my_origin,list_changed=list_changed1)
+             call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=my_origin,list_changed=list_changed1)
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
@@ -460,6 +462,8 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
           temp = ds%atoms%nneightol
           ds%atoms%nneightol = nneightol
+	  call map_into_cell(ds%atoms)
+	  call calc_dists(ds%atoms)
           call create_CHARMM(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
 !          call calc_topology(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
@@ -510,8 +514,8 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
        call initialise(my_metapotential,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
             ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
             ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
-            ' buffer_inner_radius='//Inner_QM_Radius// &
-            ' buffer_outer_radius='//Outer_QM_Radius// &
+            ' buffer_inner_radius='//Inner_Buffer_Radius// &
+            ' buffer_outer_radius='//Outer_Buffer_Radius// &
             ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
@@ -591,7 +595,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark:weight_region1")
 !call finalise(csilla_out)
 !!!!!!!!!!
-!        call set_cutoff(ds%atoms,Inner_QM_Radius)
+!        call set_cutoff(ds%atoms,Inner_Buffer_Radius)
 !        call calc_connect(ds%atoms)
         call calc(my_metapotential,ds%atoms,f=f1,args_str=trim(args_str))
 !        call set_cutoff(ds%atoms,0._dp)
@@ -710,7 +714,7 @@ enddo
 
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         if (origin_centre) then
-           call create_centred_qmcore(ds%atoms,Inner_Core_Radius,Outer_Core_Radius,origin=my_origin,list_changed=list_changed1)
+           call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=my_origin,list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
 !             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
@@ -728,7 +732,8 @@ enddo
            if (trim(Run_Type1).ne.'QS') then
               call print_title('Recalculate Connectivity & Topology')
               call map_into_cell(ds%atoms)
-              call calc_dists(ds%atoms)
+	      call calc_dists(ds%atoms)
+              ! call calc_dists(ds%atoms)
               call create_CHARMM(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
 !              call calc_topology(ds%atoms,do_CHARMM=.true.)
               call print('CHARMM parameters added')
@@ -782,7 +787,7 @@ enddo
 !        args_str='qm_args_str={'//trim(mm_args_str)// &
           '} mm_args_str={'//trim(mm_args_str)//'}'
         call print('ARGS_STR | '//trim(args_str))
-!        call set_cutoff(ds%atoms,Inner_QM_Radius)
+!        call set_cutoff(ds%atoms,Inner_Buffer_Radius)
 !        call calc_connect(ds%atoms)
         call calc(my_metapotential,ds%atoms,f=f1,args_str=trim(args_str))
 !        call set_cutoff(ds%atoms,0._dp)
