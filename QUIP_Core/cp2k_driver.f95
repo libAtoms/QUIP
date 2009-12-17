@@ -158,7 +158,7 @@ contains
     if (use_QMMM) then
       call get_qm_list(at, run_type_i, qm_list, do_union=.true.)
       allocate(qm_list_a(qm_list%N))
-      qm_list_a = int_part(qm_list,1)
+      if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
     endif
 
     if (qm_list%N == at%N) then
@@ -189,7 +189,7 @@ contains
       call print('WARNING! Please check if your cell is centered around the QM region!',ERROR)
       call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',ERROR)
       call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',ERROR)
-      cur_qmmm_qm_abc = qmmm_qm_abc(at, run_type_i, qm_vacuum)
+      cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
 
@@ -223,7 +223,7 @@ contains
       do atno=minval(at%Z), maxval(at%Z)
 	if (any(at%Z(qm_list_a) == atno)) then
 	  insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&QM_KIND "//ElementName(atno))
-	  do i=1, qm_list%N
+	  do i=1, size(qm_list_a)
 	    if (at%Z(qm_list_a(i)) == atno) then
 	      call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&QM_KIND-"//trim(ElementName(atno))// &
 							" MM_INDEX "//qm_list_a(i), after_line = insert_pos, n_l = template_n_lines)
@@ -245,7 +245,7 @@ contains
 	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
-      call calc_charge_lsd(at, qm_list, charge, do_lsd)
+      call calc_charge_lsd(at, qm_list_a, charge, do_lsd)
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       if (do_lsd) call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT LSD ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
@@ -358,7 +358,7 @@ contains
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     ! parse output
-    call read_energy_forces(at, qm_list, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
+    call read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
 
     if (maxval(abs(f)) > max_force_warning) &
       call print('WARNING cp2k forces max component ' // maxval(abs(f)) // ' at ' // maxloc(abs(f)) // &
@@ -453,9 +453,9 @@ contains
 
   end function find_make_cp2k_input_section
 
-  subroutine read_energy_forces(at, qm_list, cur_qmmm_qm_abc, run_dir, proj, e, f)
+  subroutine read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f)
     type(Atoms), intent(in) :: at
-    type(Table), intent(in) :: qm_list
+    integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
@@ -476,7 +476,7 @@ contains
 
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
-    call reorder_if_necessary(at, qm_list, cur_qmmm_qm_abc, p_xyz%pos, f)
+    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f)
 
     call print('')
     call print('The energy of the system: '//e)
@@ -491,9 +491,9 @@ contains
 
   end subroutine read_energy_forces
 
-  subroutine reorder_if_necessary(at, qm_list, qmmm_qm_abc, new_p, new_f)
+  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f)
     type(Atoms), intent(in) :: at
-    type(Table), intent(in) :: qm_list
+    integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: qmmm_qm_abc(3)
     real(dp), intent(in) :: new_p(:,:)
     real(dp), intent(inout) :: new_f(:,:)
@@ -503,9 +503,9 @@ contains
     integer :: i, j
 
     ! shifted cell in case of QMMM (cp2k/src/toplogy_coordinate_util.F)
-    if (qm_list%N > 0) then
+    if (size(qm_list_a) > 0) then
       do i=1,3
-	shift(i) = 0.5_dp * qmmm_qm_abc(i) - (minval(at%pos(i,int_part(qm_list,1))) + maxval(at%pos(i,int_part(qm_list,1))))*0.5_dp
+	shift(i) = 0.5_dp * qmmm_qm_abc(i) - (minval(at%pos(i,qm_list_a)) + maxval(at%pos(i,qm_list_a)))*0.5_dp
       end do
     else
       shift = 0.0_dp
@@ -752,24 +752,21 @@ contains
     if (qm_list%N.eq.0) call print('Empty QM list with QM_flag '//qmflag//' and my_do_union ' // my_do_union ,ERROR)
   end subroutine get_qm_list
 
-  function qmmm_qm_abc(at, run_type_i, qm_vacuum)
+  function qmmm_qm_abc(at, qm_list_a, qm_vacuum)
     type(Atoms), intent(in) :: at
-    integer, intent(in) :: run_type_i
+    integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: qm_vacuum
     real(dp) :: qmmm_qm_abc(3)
 
     real(dp) :: qm_maxdist(3)
     integer i, j
-    type(Table) :: qm_list
-
-    call get_qm_list(at,run_type_i,qm_list, do_union=.true.)
 
     qm_maxdist = 0.0_dp
-    do i=1, qm_list%N
-    do j=1, qm_list%N
-      qm_maxdist(1) = max(qm_maxdist(1), at%pos(1,i)-at%pos(1,j))
-      qm_maxdist(2) = max(qm_maxdist(2), at%pos(2,i)-at%pos(2,j))
-      qm_maxdist(3) = max(qm_maxdist(3), at%pos(3,i)-at%pos(3,j))
+    do i=1, size(qm_list_a)
+    do j=1, size(qm_list_a)
+      qm_maxdist(1) = max(qm_maxdist(1), at%pos(1,qm_list_a(i))-at%pos(1,qm_list_a(j)))
+      qm_maxdist(2) = max(qm_maxdist(2), at%pos(2,qm_list_a(i))-at%pos(2,qm_list_a(j)))
+      qm_maxdist(3) = max(qm_maxdist(3), at%pos(3,qm_list_a(i))-at%pos(3,qm_list_a(j)))
     end do
     end do
 
@@ -779,18 +776,18 @@ contains
 
   end function
 
-  subroutine calc_charge_lsd(at, qm_list, charge, do_lsd)
+  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd)
     type(Atoms), intent(in) :: at
-    type(Table), intent(in) :: qm_list
+    integer, intent(in) :: qm_list_a(:)
     integer, intent(out) :: charge
     logical, intent(out) :: do_lsd
 
     real(dp), pointer :: atom_charge(:)
 
-    if (qm_list%N > 0) then
+    if (size(qm_list_a) > 0) then
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) &
 	call system_abort("calc_charge_lsd could not find atom_charge")
-      charge = nint(sum(atom_charge(int_part(qm_list,1))))
+      charge = nint(sum(atom_charge(qm_list_a)))
       do_lsd = (mod(charge,2) /= 0)
     else
       if (get_value(at%params, 'Charge', charge)) call print("Using Charge " // charge)
