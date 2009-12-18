@@ -1392,7 +1392,7 @@ contains
     integer::i
 
     at_out = at_in
-    call set_lattice(at_out,(at_in%lattice .mult. transpose(t)))
+    call set_lattice(at_out,(t .mult. at_in%lattice))
 
     do i=1,at_out%N
        at_out%pos(:,i) = t .mult. at_in%pos(:,i)
