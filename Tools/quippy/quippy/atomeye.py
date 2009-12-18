@@ -111,7 +111,7 @@ class AtomEyeView(object):
         d = theat[idx]
         for k in sorted(d):
             v = d[k]
-            if isinstance(v, FortranArray) and v.dtype.kind == 'f' and len(v) > 1:
+            if isinstance(v, FortranArray) and v.dtype.kind == 'f':
                 print '%s = %s (norm %f)' % (k, v, v.norm())
             else:
                 print '%s = %s' % (k, v)
@@ -165,7 +165,7 @@ class AtomEyeView(object):
         self.aux_property_coloring(self.paint_property)
 
 
-    def show(self, obj, property=None, frame=None, arrows=None, *arrowargs, **arrowkwargs):
+    def show(self, obj, property=None, highlight=None, frame=None, arrows=None, *arrowargs, **arrowkwargs):
         self.atoms = obj
         if hasattr(obj,'__iter__'):
             if frame is not None:
@@ -177,10 +177,10 @@ class AtomEyeView(object):
                         frame=len(self.atoms)-1
                 self.frame = frame
                 
-        self.redraw(property=property, arrows=arrows, *arrowargs, **arrowkwargs)
+        self.redraw(property=property, highlight=highlight, arrows=arrows, *arrowargs, **arrowkwargs)
 
     
-    def redraw(self, property=None, arrows=None, *arrowargs, **arrowkwargs):
+    def redraw(self, property=None, highlight=None, arrows=None, *arrowargs, **arrowkwargs):
         if not self.is_alive:
             raise RuntimeError('is_alive is False')
 
@@ -199,18 +199,15 @@ class AtomEyeView(object):
             if isinstance(property,str):
                 pass
             elif isinstance(property,int):
+                if theat.has_property('_show'):
+                    theat.remove_property('_show')
                 theat.add_property('_show', False)
                 theat._show[:] = [i == property for i in frange(theat.n)]
                 property = '_show'
             else:
-                if isinstance(property, numpy.ndarray):
-                    if theat.has_property('_show'):
-                        theat.remove_property('_show')
-                    theat.add_property('_show', property.flat[0],
-                                       len(property.shape) == 1 and 1 or property.shape[0])
-                else:
-                    theat.add_property('_show', property)
-                theat._show[...] = property
+                if theat.has_property('_show'):
+                    theat.remove_property('_show')
+                theat.add_property('_show', property)
                 property = '_show'
 
             # Make sure property we're looking at is in the first 48 columns, or it won't be available
@@ -225,6 +222,11 @@ class AtomEyeView(object):
                 if col >= ATOMEYE_MAX_AUX_PROPS:
                     theat.properties.swap(theat.properties.keys()[2], property)
 
+        if highlight is not None:
+            theat.add_property('highlight', False)
+            theat.highlight[highlight] = True
+            property = 'highlight'
+            
 	_atomeye.load_atoms(self._window_id, title, theat)
         if property is not None:
             self.aux_property_coloring(property)
@@ -476,7 +478,7 @@ _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
 
 view = None
 
-def show(obj, property=None, frame=1, window_id=None, nowindow=False, arrows=None, *arrowargs, **arrowkwargs):
+def show(obj, property=None, highlight=None, frame=1, window_id=None, nowindow=False, arrows=None, *arrowargs, **arrowkwargs):
     """Convenience function to show obj in the default AtomEye view
 
     If window_id is not None, then this window will be used. Otherwise
@@ -496,9 +498,9 @@ def show(obj, property=None, frame=1, window_id=None, nowindow=False, arrows=Non
             view = views[views.keys()[0]]
             view.show(obj, property, frame)
         else:
-            view = AtomEyeView(obj, property=property, frame=frame, nowindow=nowindow, arrows=arrows, *arrowargs, **arrowkwargs)
+            view = AtomEyeView(obj, property=property, highlight=highlight, frame=frame, nowindow=nowindow, arrows=arrows, *arrowargs, **arrowkwargs)
     else:
-        view.show(obj, property, frame, arrows=arrows, *arrowargs, **arrowkwargs)
+        view.show(obj, property, highlight, frame, arrows=arrows, *arrowargs, **arrowkwargs)
 
     return view
 
