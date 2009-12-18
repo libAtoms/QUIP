@@ -272,11 +272,10 @@ if hasattr(quippy, 'Potential') and got_scipy:
 
          self.pot = Potential('IP SW', self.xml)
          self.metapot = MetaPotential('Simple', self.pot)
-         #verbosity_push(SILENT)
+         verbosity_push(SILENT)
 
       def tearDown(self):
-         #verbosity_pop()
-         pass
+         verbosity_pop()
 
       def check_strain(self, pattern, C, relax=False):
 
@@ -299,7 +298,6 @@ if hasattr(quippy, 'Potential') and got_scipy:
          elastic_fields(at, a=self.a, cij=C)
 
          for i in frange(at.n):
-
             # Check computed strain matches applied strain
             strain_i = farray([at.s_xx_sub1[i], at.s_yy_sub1[i], at.s_zz_sub1[i], at.s_yz[i], at.s_xz[i], at.s_xy[i]])
             self.assertArrayAlmostEqual(strain_i, applied_strain)
@@ -311,13 +309,8 @@ if hasattr(quippy, 'Potential') and got_scipy:
             # Check calculated stress matches computed virial stress
             self.assertArrayAlmostEqual(stress_i, virial_stress, tol=self.eps)
 
-            print i, strain_i, stress_i
-
-
       def test1(self):
-         verbosity_push(VERBOSE)
          self.check_strain([1,0,0,0,0,0], self.C, False)
-         verbosity_pop()
 
       def test2(self):
          self.check_strain([0,1,0,0,0,0], self.C, False)
