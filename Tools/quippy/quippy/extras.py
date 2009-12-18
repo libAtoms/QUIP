@@ -382,7 +382,7 @@ class Atoms(FortranAtoms):
          value_ref = value
 
       FortranAtoms.add_property(self, name, value_ref, n_cols)
-      getattr(self, name)[:] = value
+      getattr(self, name.lower())[:] = value
             
 
 
