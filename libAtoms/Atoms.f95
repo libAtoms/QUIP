@@ -4345,6 +4345,28 @@ contains
     end subroutine cell_of_pos
 
 
+    function cell_n(this, i, j, k)
+      type(Connection), intent(in) :: this
+      integer, intent(in) :: i, j, k
+      integer :: cell_n
+      
+      if (.not. this%cells_initialised) call system_abort('cell_n: cells are not initialised')
+
+      cell_n = this%cell(i,j,k)%n
+
+    end function cell_n
+
+    function cell_contents(this, i, j, k, n)
+      type(Connection), intent(in) :: this
+      integer, intent(in) :: i, j, k, n
+      integer :: cell_contents
+
+      if (.not. this%cells_initialised) call system_abort('cell_n: cells are not initialised')
+
+      cell_contents = this%cell(i,j,k)%int(1,n)
+
+    end function cell_contents
+
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !
    ! Geometry procedures
