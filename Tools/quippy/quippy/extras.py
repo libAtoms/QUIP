@@ -160,11 +160,12 @@ class Atoms(FortranAtoms):
          dest.close()
       return res
 
-   def show(self, property=None, arrows=None, *arrowargs, **arrowkwargs):
+
+   def show(self, property=None, highlight=None, arrows=None, *arrowargs, **arrowkwargs):
       """Show this Atoms object in AtomEye."""
       try:
          import atomeye
-         atomeye.show(self,property=property, arrows=arrows, *arrowargs, **arrowkwargs)
+         atomeye.show(self,property=property, highlight=highlight, arrows=arrows, *arrowargs, **arrowkwargs)
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
@@ -181,7 +182,7 @@ class Atoms(FortranAtoms):
          FortranAtoms.select(out, self, mask=mask)
       elif list is not None:
          list = farray(list)
-         out = Atoms(n=list.size(), lattice=self.lattice)
+         out = Atoms(n=len(list), lattice=self.lattice)
          FortranAtoms.select(out, self, list=list)
       else:
          raise ValueError('Either mask or list must be present.')
@@ -381,9 +382,7 @@ class Atoms(FortranAtoms):
          value_ref = value
 
       FortranAtoms.add_property(self, name, value_ref, n_cols)
-      
-      if hasattr(value, 'shape'):
-         getattr(self, name)[:] = value
+      getattr(self, name)[:] = value
             
 
 
