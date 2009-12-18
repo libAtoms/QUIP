@@ -132,7 +132,8 @@ module CrackParams_module
      real(dp) :: crack_graphene_theta        !% Rotation angle of graphene plane, in radians.
      real(dp) :: crack_graphene_notch_width  !% Width of graphene notch. Unit:~\AA{}.
      real(dp) :: crack_graphene_notch_height !% Height of graphene notch. Unit:~\AA{}.
-     character(STRING_LENGTH) :: crack_slab_filename !%Input file to use instead of generating slabs.
+     character(STRING_LENGTH) :: crack_slab_filename !% Input file to use instead of generating slabs.
+     character(STRING_LENGTH) :: crack_bulk_filename  !% Input file containing primitive cell
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
      logical :: crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
  
@@ -378,6 +379,7 @@ contains
     this%crack_graphene_notch_width  = 5.0_dp  ! Angstrom
     this%crack_graphene_notch_height = 5.0_dp  ! Angstrom
     this%crack_slab_filename = ''
+    this%crack_bulk_filename = ''
 
     ! Basic simulation parameters
     this%simulation_task         = 'md'
@@ -724,6 +726,11 @@ contains
        call QUIP_FoX_get_value(attributes, "slab_filename", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_slab_filename
+       end if
+
+       call QUIP_FoX_get_value(attributes, "bulk_filename", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_bulk_filename
        end if
 
        call QUIP_FoX_get_value(attributes, "dislo_seed", value, status)
@@ -1289,6 +1296,7 @@ contains
     call Print('     graphene_notch_width  = '//this%crack_graphene_notch_width//' A', file=file)
     call Print('     graphene_notch_height = '//this%crack_graphene_notch_height//' A', file=file)
     call Print('     slab_filename         = '//this%crack_slab_filename, file=file)
+    call Print('     bulk_filename         = '//this%crack_slab_filename, file=file)
     call Print('     dislo_seed            = '//this%crack_dislo_seed, file=file)
     call Print('     doubled_ended         = '//this%crack_double_ended, file=file)
     call Print('',file=file)
