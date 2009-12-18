@@ -1,0 +1,287 @@
+from quippy import *
+
+J_PER_M2 = ELEM_CHARGE*1.0e20
+
+def surface_energy(pot, bulk, surface, dir=2):
+
+   if not hasattr(bulk, 'energy'):
+      bulk.calc_connect()
+      pot.calc(bulk, calc_energy=True, calc_force=True)
+
+   bulk_energy_per_sio2 = bulk.energy/(bulk.z == 14).count()
+
+   surface.calc_connect()
+   pot.calc(surface, calc_energy=True, calc_force=True)
+
+   area = surface.cell_volume()/surface.lattice[dir,dir]
+
+   return (surface.energy - (surface.z == 14).count()*bulk_energy_per_sio2)/(2.0*area)
+   
+
+def crack_rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
+   """Return 3x3 matrix rotation matrix defining a crack with open
+   surface defined by the plane `y`=(l,m.n) or (h,k,i,l), and either
+   crack tip line `z` or crack propagation direction `x`."""
+
+   axes = fzeros((3,3))
+   if len(y) == 4:
+      h, k, i, l = y
+      y = [h, k, l]
+
+   if (x is None and z is None) or (x is not None and z is not None):
+      raise ValueError('exactly one of x and z must be non-null')
+
+   axes[:,2] = dot(unit.g.T, y)     # plane defined by y=(lmn)
+
+   if z is not None:
+      axes[:,3] = dot(unit.lattice, z) # line defined by z=[pqr]
+
+      axes[:,2] = axes[:,2]/axes[:,2].norm()
+      axes[:,3] = axes[:,3]/axes[:,3].norm()
+
+      if abs(dot(axes[:,2], axes[:,3])) > tol:
+         raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
+
+      axes[:,1] = cross(axes[:,2], axes[:,3])
+   else:
+      axes[:,1] = dot(unit.lattice, x)
+
+      axes[:,2] = axes[:,2]/axes[:,2].norm()
+      axes[:,1] = axes[:,1]/axes[:,1].norm()
+
+      if abs(dot(axes[:,2], axes[:,3])) > tol:
+         raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
+
+      axes[:,3] = cross(axes[:,1], axes[:,2])
+
+   # Rotation matrix is transpose of axes matrix
+   return axes.T
+
+
+def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=None, periodicity=None, vacuum=None, shift=None, verbose=True):
+   """Try to construct an orthorhombic cell equivalent to the
+      primitive cell `at`, using supercells up to at most `max_nrep`
+      repeats. Symmetry must be exact within a tolerance of `tol`. If
+      `rot` is not None, we first transform `at` by the rotation
+      matrix `rot`. The optional argument `periodicity` can be used to
+      fix the periodicity one or more directions. It should be a three
+      component vector with value zero in the unconstrained
+      directions. The vector `vacuum` can be used to add vacuum in one
+      or more directions. `shift` is a three component vector which
+      can be used to shift the positions in the final cell. """
+
+   def atoms_near_plane(at, n, d, tol=1e-5):
+      """Return a list of atoms within a distance `tol` of the plane defined by dot(n, at.pos) == d"""
+      pd = dot(n, at.pos) - d
+      return (abs(pd) < tol).nonzero()[0]
+
+   def sort_by_distance(at, ref_atom, dir, candidates):
+      """Return a copy of `candidates` sorted by perpendicular distance from `ref_atom` in direction `dir`"""
+      distances_candidates =  zip([at.pos[dir,i]-at.pos[dir,ref_atom] for i in candidates], candidates)
+      distances_candidates.sort()
+      return [p for (d, p) in distances_candidates]
+
+   def orthorhombic_box(at):
+      """Return a copy of `at` in an orthorhombic box surrounded by vacuum"""
+      at = at.copy()
+      at.map_into_cell()
+      at.set_lattice([[2.0*(at.pos[1,:].max() - at.pos[1,:].min()), 0.0, 0.0],
+                      [0.0, 2.0*(at.pos[2,:].max() - at.pos[2,:].min()), 0.0],
+                      [0.0, 0.0, 2.0*(at.pos[3,:].max() - at.pos[3,:].min())]])
+      at.map_into_cell()
+      return at
+
+   def discard_outliers(at, indices, dirs, keep_fraction=0.5):
+      """Return a copy of `indices` with the atoms with fractional coordinates along directions in `dirs`
+         outside +/-`keep_fraction`/2 excluded. Lattice used is close fitting, `at.lattice`/2."""
+      g = linalg.inv(at.lattice/2)
+      t = dot(g, at.pos[:,indices])
+      return indices[ logical_and(t[dirs,:] >= -keep_fraction/2.0, t[dirs,:] < keep_fraction/2.0).all(axis=1) ]
+
+   if rot is not None:
+      at = transform(at, rot)
+
+   xyz = fidentity(3)
+   nrep = min_nrep-1
+   max_dist = fzeros(3)
+
+   if periodicity is not None:
+      periodicity = farray(periodicity)
+      periodicity = dict(zip((periodicity != 0).nonzero()[0], periodicity[periodicity != 0]))
+   else:
+      periodicity = {}
+
+   if verbose:
+      for (dir, p) in periodicity.iteritems():
+         print 'Periodicity in direction %d fixed at %f' % (dir, p)
+      
+   while sorted(periodicity.keys()) != [1,2,3]:
+      nrep += 1
+      if nrep > max_nrep:
+         raise ValueError('Maximum size of supercell (%d) exceeded' % max_nrep)
+      if verbose:
+         print '\n\nSupercell %d' % nrep
+      sup = supercell(at, nrep, nrep, nrep)
+      box = orthorhombic_box(sup)
+      zero_sum(box.pos)
+
+      for dir in set([1,2,3]) - set(periodicity.keys()):
+
+         if verbose:
+            print '  Direction %d' % dir
+         
+         other_dirs = list(set([1,2,3]) - set([dir]))
+
+         pos_index = zip(box.pos[dir,:],frange(box.n))
+         pos_index.sort()
+
+         # Find a pair of planes
+         while pos_index:
+            ref_pos1, ref_atom1 = pos_index.pop(0)
+
+            # Find atom to define second plane
+            while pos_index:
+               ref_pos2, ref_atom2 = pos_index.pop(0)
+               if abs(ref_pos2 - ref_pos1) > tol: break
+            else:
+               continue
+
+            ref_plane1 = atoms_near_plane(box, xyz[:,dir], box.pos[dir,ref_atom1], tol)
+            ref_plane2 = atoms_near_plane(box, xyz[:,dir], box.pos[dir,ref_atom2], tol)
+
+            # Only keep reference atoms in the centre of the cell
+            ref_plane1 = discard_outliers(box, ref_plane1, other_dirs)
+            ref_plane2 = discard_outliers(box, ref_plane2, other_dirs)
+
+            if len(ref_plane1) > 2 and len(ref_plane2) > 2:
+               # Now we've got two planes, both with more than two atoms in them
+               break
+         else:
+            # Used up all atoms without finding two planes
+            if verbose:
+               print '    No valid reference planes found.\n'
+            continue
+
+         if verbose:
+            print '    Reference plane #1 through atom %d ' % ref_atom1
+            print '    Reference plane #2 through atom %d at distance %r\n' % (ref_atom2, ref_pos2 - ref_pos1)
+
+         if graphics:
+            highlight = fzeros(box.n)
+            highlight[ref_plane1] = 1
+            highlight[ref_plane2] = 2
+            box.show(highlight)
+            atomeye.view.wait()
+            raw_input('continue')
+
+         candidates = [i for i in frange(box.n) if box.pos[dir,i] > box.pos[dir,ref_atom2] + max_dist[dir] + tol]
+         candidates = sort_by_distance(box, ref_atom1, dir, candidates)
+
+         while candidates:
+            cand1 = candidates.pop(0)
+
+            max_dist[dir] = box.pos[dir,cand1] - box.pos[dir,ref_atom1]
+
+            if verbose:
+               print '    Trying plane through atom %d distance %r' % (cand1, max_dist[dir])
+
+            cand_plane1 = atoms_near_plane(box, xyz[:,dir], box.pos[dir,cand1], tol)
+
+            for cand2 in sort_by_distance(box, ref_atom1, dir, set(candidates) - set(cand_plane1)):
+               if abs((box.pos[dir,cand2] - box.pos[dir,cand1]) - (box.pos[dir,ref_atom2] - box.pos[dir,ref_atom1])) < tol:
+                  if verbose:
+                     print '    Found pair to plane, passing through atom %d distance %r ' % (cand2, box.pos[dir,cand2] - box.pos[dir,ref_atom1])
+                  break
+            else:
+               if verbose:
+                  print '    Cannot find second candidate plane.\n'
+               candidates = sort_by_distance(box, ref_atom1, dir, set(candidates) - set(cand_plane1))
+               continue
+
+            if graphics:
+               highlight[cand_plane1] = 3
+               box.show(highlight)
+               atomeye.view.wait()
+            
+            cand_plane2 = atoms_near_plane(box, xyz[:,dir], box.pos[dir,cand2], tol)
+
+            if graphics:
+               highlight[cand_plane2] = 4
+               box.show(highlight)
+               atomeye.view.wait()
+
+               highlight[cand_plane1] = 0
+               highlight[cand_plane2] = 0
+
+            # Take union of two planes
+            ref_plane = list(set(ref_plane1) ^ set(ref_plane2))
+            cand_plane = list(set(cand_plane1) ^ set(cand_plane2))
+
+            # Remove cand_plane1 from list of candidates
+            candidates = sort_by_distance(box, ref_atom1, dir, set(candidates) - set(cand_plane1))
+
+            # Which pair of planes has more atoms, reference or candidate?
+            if len(ref_plane) < len(cand_plane):
+               smaller = ref_plane
+               larger  = cand_plane
+            else:
+               smaller = cand_plane
+               larger  = ref_plane
+
+            matches = {}
+            for j in smaller:
+               for k in larger:
+                  if box.z[k] == box.z[j] and abs(box.pos[other_dirs,k] - box.pos[other_dirs,j]).max() < tol:
+                     matches[j] = k
+                     break
+
+            if verbose:
+               print '   ', len(matches), '/', len(smaller), 'matches\n'
+
+            # Have we found all the atoms in smaller plane?
+            if len(matches) == len(smaller):
+               periodicity[dir] = box.pos[dir,cand1] - box.pos[dir,ref_atom1]
+               if verbose:
+                  print '  Periodicity in direction %d is %f\n' % (dir, box.pos[dir,cand1] - box.pos[dir,ref_atom1])
+
+               if graphics:
+                  highlight[cand_plane] = 3
+                  box.show(highlight)
+                  atomeye.view.wait()
+                  raw_input('continue...')
+               break
+
+            if graphics:
+               raw_input('continue...')
+         else:
+            # Failed to find match for direction dir
+            continue
+
+   # Finally, construct new cell by selecting atoms within first unit cell
+   lattice = farray(diag([periodicity[1], periodicity[2], periodicity[3]]))
+   g = linalg.inv(lattice)
+
+   nrepx, nrepy, nrepz = fit_box_in_cell(periodicity[1], periodicity[2], periodicity[3], at.lattice)
+
+   sup = supercell(at, nrepx, nrepy, nrepz)
+   sup.map_into_cell()
+
+   # small shift to avoid coincidental cell alignments
+   delta = tile([0.01, 0.02, 0.03], [sup.n, 1]).T
+   if shift is not None and vacuum is not None:
+      delta = delta + tile(shift, [sup.n, 1]).T
+   t = dot(g, sup.pos) + delta
+
+   orthorhombic = sup.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
+
+   if vacuum:
+      lattice = farray(diag(lattice.diagonal() + vacuum))
+
+   if shift is not None and vacuum is None:
+      if verbose:
+         print 'Shifting positions by %s' % dot(lattice, shift)
+      orthorhombic.pos += tile(dot(lattice, shift), [orthorhombic.n, 1]).T
+
+   orthorhombic.set_lattice(lattice)
+   orthorhombic.map_into_cell()
+   return orthorhombic
