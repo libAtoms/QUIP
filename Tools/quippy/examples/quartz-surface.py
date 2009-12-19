@@ -10,12 +10,16 @@ def add_asap_props(at):
 
 
 
+# Screened ASAP quartz parameters
 quartz_params = {'a': 4.8403809707320216,
                  'c': 5.3285240037002248,
                  'u': 0.46417561617105912,
                  'x': 0.41174271054205958,
                  'y': 0.27872745399831672,
                  'z': 0.10973603276909905}
+
+# CASTEP LDA quartz parameters
+#quartz_params = sio2.quartz_params['CASTEP_LDA']
 
 aq = alpha_quartz(**quartz_params)
 
@@ -47,28 +51,30 @@ for (y, z, shift) in indices:
 # (10-11)[010]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[0,1,0])
-quartz_surface[((1,0,-1,1),(0,1,0))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 13.0, 0.0],
-                                                          shift=[0.0, 0.05, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
+quartz_surface[((1,0,-1,1),(0,1,0))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 200.0, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, 100.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(0,1,0))].params['axes'] = rot.T
 
 # (10-11)[21-2]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[2,1,-2])
-quartz_surface[((1,0,-1,1),(2,1,-2))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 13.0, 0.0],
-                                                          shift=[0.0, 0.05, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
+quartz_surface[((1,0,-1,1),(2,1,-2))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 200.0, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, 100.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(2,1,-2))].params['axes'] = rot.T
 
 
 # (10-1-1)[010]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[0,1,0])
-quartz_surface[((1,0,-1,-1),(0,1,0))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 13.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
+quartz_surface[((1,0,-1,-1),(0,1,0))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 202.0, 0.0], vacuum=[0.0, 100.0, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(0,1,0))].params['axes'] = rot.T
 
 # (10-1-1)[212]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[2,1,2])
-quartz_surface[((1,0,-1,-1),(2,1,2))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 13.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
+quartz_surface[((1,0,-1,-1),(2,1,2))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 202.0, 0.0], vacuum=[0.0, 100.0, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(2,1,2))].params['axes'] = rot.T
 
 
@@ -92,8 +98,34 @@ add_asap_props(aq)
 aq.set_cutoff(pot.cutoff()+2.0)
 
 
-do_relax = True
-do_md = True
+do_relax = False
+do_md = False
+
+movie = CInOutput('relax.xyz', OUTPUT)
+
+
+C = FortranArray([[  8.31662343e+01,   1.30178406e+01,   1.44884078e+01,
+                -1.67795141e+01,   2.78491006e-05,   0.00000000e+00],
+              [  1.30178406e+01,   8.31662343e+01,   1.44884078e+01,
+                 1.67795141e+01,  -2.78491006e-05,   0.00000000e+00],
+              [  1.44884078e+01,   1.44884078e+01,   1.18895940e+02,
+                 0.00000000e+00,   0.00000000e+00,   0.00000000e+00],
+              [ -1.67795141e+01,   1.67795141e+01,   0.00000000e+00,
+                 5.91792377e+01,   0.00000000e+00,  -2.78491006e-05],
+              [  2.78491006e-05,  -2.78491006e-05,   0.00000000e+00,
+                 0.00000000e+00,   5.91792377e+01,  -1.67795141e+01],
+              [  0.00000000e+00,   0.00000000e+00,   0.00000000e+00,
+                -2.78491006e-05,  -1.67795141e+01,   3.50741969e+01]])
+
+
+for k in quartz_surface.keys():
+   at = quartz_surface[k]
+   at.params['YoungsModulus'] = youngs_modulus(C, at.axes[:,2])
+   at.params['PoissonRatio_yx'] = poisson_ratio(C, at.axes[:,2], at.axes[:,1])
+   at.params['PoissonRatio_yz'] = poisson_ratio(C, at.axes[:,2], at.axes[:,3])
+   if k in quartz_bulk:
+      quartz_bulk[k].params.update(at.params)
+   
 
 for index in sorted(quartz_surface.keys()):
    print index
@@ -112,6 +144,9 @@ for index in sorted(quartz_surface.keys()):
          traj.loadall()
          surface = traj[-1].copy()
 
-      mp.minim(surface, 'cg', 1e-2, 1000, do_lat=False, do_pos=True)
+      mp.minim(surface, 'cg', 1e-2, 1000, do_lat=False, do_pos=True, do_print=True, print_cinoutput=movie)
       gamma_relaxed[index] = surface_energy(mp, aq, surface)*J_PER_M2
       print 'gamma_relaxed[%s] = %f' % (index, gamma_relaxed[index])
+
+
+movie.close()
