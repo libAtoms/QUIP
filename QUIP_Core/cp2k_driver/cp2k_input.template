@@ -8,24 +8,25 @@
       NGRIDS 4
       REL_CUTOFF 30.0
     &END MGRID
-#Blochl 1995, decoupling of periodic QM images
+#periodic QS calculation. Blochl 1995, decoupling of periodic QM images is NOT applied.
 #this is ignored if &QMMM&PERIODIC is present
-#    &POISSON
-#      PERIODIC NONE
-#      POISSON_SOLVER MULTIPOLE
-#      &MULTIPOLE
-#        EWALD_PRECISION 1.0E-8
-#        RCUT 5.0
-#        ANALYTICAL_GTERM T
-#      &END MULTIPOLE
-#    &END POISSON
+    &POISSON
+      PERIODIC XYZ
+      POISSON_SOLVER PERIODIC
+      &EWALD
+        EWALD_TYPE ewald
+        EWALD_ACCURACY 1.E-8
+        ALPHA 0.35
+        GMAX 33
+      &END EWALD
+    &END POISSON
     &QS
       EXTRAPOLATION PS
       EXTRAPOLATION_ORDER 1
       EPS_DEFAULT 1.0E-12
     &END QS
     &SCF
-      SCF_GUESS atomic
+      SCF_GUESS restart
       EPS_SCF 1.0E-6
       MAX_SCF 200
       &OUTER_SCF
