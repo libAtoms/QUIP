@@ -24,7 +24,6 @@ program qmmm_md
   type(Table)                         :: constraints
   integer                             :: i, n, N_constraints
   character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
-  integer                             :: l
 
   !Force calc.
   type(Potential)                     :: CP2K_MM_potential
@@ -97,7 +96,8 @@ program qmmm_md
   logical                     :: Continue_it
   real(dp)                    :: avg_time
   integer                     :: Seed
-  logical                     :: origin_centre
+  logical                     :: qm_region_pt_ctr
+  integer                     :: qm_region_atom_ctr
   character(len=FIELD_LENGTH) :: print_prop
   real(dp)                    :: nneightol
   logical                     :: Delete_Metal_Connections
@@ -109,14 +109,14 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
+  real(dp) :: qm_region_ctr(3)
+  real(dp) :: use_cutoff
 type(inoutput) :: csilla_out
-real(dp) :: my_origin(3)
 logical :: have_silica_potential
-real(dp) :: use_cutoff
 
 !    call system_initialise(verbosity=ANAL,enable_timing=.true.)
-    call system_initialise(verbosity=NERD,enable_timing=.true.)
-!    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+!    call system_initialise(verbosity=NERD,enable_timing=.true.)
+    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !INPUT
@@ -137,7 +137,8 @@ real(dp) :: use_cutoff
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature)
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file) 
       call param_register(params_in, 'new_coord_file', 'movie.xyz',new_coord_file) 
-      call param_register(params_in, 'qm_list_filename', 'qmlist.dat', qm_list_filename)
+      qm_list_filename=''
+      call param_register(params_in, 'qm_list_filename', '', qm_list_filename)
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library) 
       call param_register(params_in, 'Use_Constraints', 'F', Use_Constraints)
       call param_register(params_in, 'constraint_file', 'constraints.dat',constraint_file) 
@@ -147,7 +148,8 @@ real(dp) :: use_cutoff
       call param_register(params_in, 'Continue', 'F', Continue_it)
       call param_register(params_in, 'avg_time', '100.0', avg_time)
       call param_register(params_in, 'Seed', '-1', Seed)
-      call param_register(params_in, 'origin_centre', 'F', origin_centre)
+      call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr)
+      call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr)
       call param_register(params_in, 'print_prop', 'all', print_prop)
       call param_register(params_in, 'nneightol', '1.2', nneightol)
       call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
@@ -160,12 +162,16 @@ real(dp) :: use_cutoff
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster)
-      call param_register(params_in, 'origin', '(/0.0 0.0 0.0/)', my_origin)
+      call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr)
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
       end if
+
+      if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
+	call system_abort("Need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr//"/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
+      endif
 
       if (Seed.gt.0) call system_reseed_rng(Seed)
 !      call hello_world(seed, common_seed)
@@ -234,8 +240,15 @@ real(dp) :: use_cutoff
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
       call print('  coord_file '//coord_file) 
       call print('  new_coord_file '//new_coord_file) 
-      if (origin_centre) then
-         call print('  QM core is centred around origin')
+      if (len_trim(qm_list_filename) /= 0) then
+         call print('  qm_list_filename '//trim(qm_list_filename))
+      else if (qm_region_pt_ctr .or. qm_region_atom_ctr /= 0) then
+	 if (qm_region_pt_ctr) then
+	   call print('  QM core is centred around qm_region_ctr= '//qm_region_ctr)
+	 else
+	   call print('  QM core is centred around atom '//qm_region_atom_ctr)
+	   qm_region_pt_ctr = .true.
+	 endif
          call print('  Inner_QM_Region_Radius '//round(Inner_QM_Region_Radius,3))
          call print('  Outer_QM_Region_Radius '//round(Outer_QM_Region_Radius,3))
          call print('  use_spline '//use_spline)
@@ -248,8 +261,6 @@ real(dp) :: use_cutoff
             my_spline%to = spline_to
             my_spline%dpot = spline_dpot
          endif
-      else
-         call print('  qm_list_filename '//qm_list_filename)
       endif
       call print('  Residue_Library '//Residue_Library) 
       call print('  Use_Constraints '//Use_Constraints)
@@ -261,7 +272,6 @@ real(dp) :: use_cutoff
       call print('  Seed '//Seed)
       call print('  Properties to print '//trim(print_prop))
       call print('  carve_cluster '//do_carve_cluster)
-      call print('  my_origin '//my_origin)
       call print('  have_silica_potential '//have_silica_potential)
       call print('---------------------------------------')
       call print('')
@@ -395,18 +405,17 @@ real(dp) :: use_cutoff
     if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
         (trim(Run_Type1).eq.'QMMM_EXTENDED')) then
        if (.not.Continue_it) then
-          if (origin_centre) then
-!             call add_property(ds%atoms,'QM_flag',0)
-call add_property(ds%atoms,'hybrid',HYBRID_NO_MARK)
-call add_property(ds%atoms,'hybrid_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'old_hybrid_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'cluster_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'old_cluster_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
+	  call add_property(ds%atoms,'hybrid',HYBRID_NO_MARK)
+	  call add_property(ds%atoms,'hybrid_mark',HYBRID_NO_MARK)
+	  call add_property(ds%atoms,'old_hybrid_mark',HYBRID_NO_MARK)
+	  call add_property(ds%atoms,'cluster_mark',HYBRID_NO_MARK)
+	  call add_property(ds%atoms,'old_cluster_mark',HYBRID_NO_MARK)
+	  call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
+          if (qm_region_pt_ctr) then
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
-call print('hi')
-             call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=my_origin,list_changed=list_changed1)
+	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
+             call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,list_changed=list_changed1)
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
@@ -420,12 +429,6 @@ call print('hi')
 !                call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
               endif
           else
-call add_property(ds%atoms,'hybrid',HYBRID_NO_MARK)
-call add_property(ds%atoms,'hybrid_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'old_hybrid_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'cluster_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms,'old_cluster_mark',HYBRID_NO_MARK)
-call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
              call read_qmlist(ds%atoms,qm_list_filename)
                 if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
                 if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
@@ -437,18 +440,19 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
        endif
 
 
-       if (origin_centre) then
-         ! no centering needed: QM is centred around the origin
-       else
-         ! ev
-         !center the whole system around the first QM atom, otherwise CP2K has difficulties with finding
-         !the centre of QM box => QM atoms will be on the edges, nothing in the middle!
-          if (.not.Continue_it) then
+       if (.not.Continue_it) then
+	 if (qm_region_atom_ctr) then
+	   call center_atoms(ds%atoms,ds%atoms%pos(:,qm_region_atom_ctr))
+	 else if (qm_region_pt_ctr) then
+	   call center_atoms(ds%atoms,qm_region_ctr)
+	 else
+	   !center the whole system around the first QM atom, otherwise CP2K has difficulties with finding
+	   !the centre of QM box => QM atoms will be on the edges, nothing in the middle!
              call get_qm_list(ds%atoms,1,embedlist,'hybrid_mark')
              if (embedlist%N.eq.0) call system_abort('empty embedlist')
-             call center_atoms(ds%atoms,embedlist%int(1,1))
-             call finalise(embedlist)
-          endif
+	     call center_atoms(ds%atoms,ds%atoms%pos(:,embedlist%int(1,1)))
+	     call finalise(embedlist)
+	  endif
        endif
     endif
     call map_into_cell(ds%atoms)
@@ -544,7 +548,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
      if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
 !added now
      empty_QM_core = .false.
-     if (origin_centre) then
+     if (qm_region_pt_ctr) then
         if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
            call system_abort("couldn't find hybrid_mark property")
         if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
@@ -565,7 +569,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)
         call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif (origin_centre.and.empty_QM_core) then !only MM, no force mixing
+     elseif (qm_region_pt_ctr.and.empty_QM_core) then !only MM, no force mixing
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
         args_str=trim(cp2k_calc_args) // &
           ' Run_Type=MM'// &
@@ -604,7 +608,7 @@ call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
      energy=0._dp !no energy
 
     !spline force calculation, if needed
-     if (origin_centre.and.use_spline) then
+     if (qm_region_pt_ctr.and.use_spline) then
         allocate(add_force(1:3,1:ds%atoms%N))
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
@@ -713,8 +717,9 @@ enddo
   !QM CORE + BUFFER UPDATE + THERMOSTAT REASSIGNMENT
 
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
-        if (origin_centre) then
-           call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=my_origin,list_changed=list_changed1)
+        if (qm_region_pt_ctr) then
+	   if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
+           call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
 !             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
@@ -742,7 +747,7 @@ enddo
      endif
 
      empty_QM_core = .false.
-     if (origin_centre) then
+     if (qm_region_pt_ctr) then
         if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
            call system_abort("couldn't find hybrid_mark property")
         if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
@@ -763,7 +768,7 @@ enddo
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)
         call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif (origin_centre.and.empty_QM_core) then !only MM, no force mixing
+     elseif (qm_region_pt_ctr.and.empty_QM_core) then !only MM, no force mixing
         call print('Empty QM core. MM run will be performed instead of QM/MM.')
         args_str=trim(cp2k_calc_args) // &
           ' Run_Type=MM'// &
@@ -796,7 +801,7 @@ enddo
      energy=0._dp !no energy
 
     !SPLINE force calculation, if needed
-     if (origin_centre.and.use_spline) then
+     if (qm_region_pt_ctr.and.use_spline) then
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
@@ -927,17 +932,16 @@ enddo
 
 contains
 
-  subroutine center_atoms(at,this)
+  subroutine center_atoms(at,p)
 
     type(atoms), intent(inout) :: at
-    integer, intent(in)        :: this
+    real(dp), intent(in)       :: p(3)
     integer                    :: i
-    real(dp)                   :: shift(3)
 
-    if (this.gt.at%N.or.this.lt.1) call system_abort('center_atoms: no atom '//this//'in atoms: 1 - '//at%N)
+    real(dp) :: shift(3)
 
-    shift = 0.0_dp - at%pos(1:3,this)
-
+    ! must copy shift vector so that if it's pointer into at%pos, things still work unambiguously
+    shift = -p
     do i=1,at%N
        at%pos(1:3,i) = at%pos(1:3,i) + shift
     enddo
@@ -1071,7 +1075,6 @@ contains
     real(dp), dimension(:,:), intent(in) :: force
     type(Atoms),              intent(in) :: at
     real(dp) :: force0(size(force,1),size(force,2))
-    integer :: i
     real(dp) :: sumF(3), sum_weight
 
     sumF = sum(force,2)
