@@ -55,7 +55,7 @@ program qmmm_md
   real(dp), pointer                   :: pot_p(:)
 
   !Output XYZ
-  type(Inoutput)                      :: xyz
+  type(Inoutput)                      :: traj_xyz, latest_xyz
 !  type(CInoutput)                      :: xyz
   character(len=FIELD_LENGTH)         :: backup_coord_file          !output XYZ file
   integer                             :: backup_i
@@ -85,7 +85,8 @@ program qmmm_md
   real(dp)                    :: Connect_Cutoff
   real(dp)                    :: Simulation_Temperature
   character(len=FIELD_LENGTH) :: coord_file
-  character(len=FIELD_LENGTH) :: new_coord_file          !output XYZ file
+  character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
+  character(len=FIELD_LENGTH) :: traj_file          !output XYZ file
   character(len=FIELD_LENGTH) :: qm_list_filename        !QM list file with a strange format
   character(len=FIELD_LENGTH) :: Residue_Library
   logical                     :: Use_Constraints         !_0_ no, 1 yes
@@ -136,7 +137,8 @@ logical :: have_silica_potential
       call param_register(params_in, 'Connect_Cutoff', '0.0', Connect_cutoff)
       call param_register(params_in, 'Simulation_Temperature', '300.0', Simulation_Temperature)
       call param_register(params_in, 'coord_file', 'coord.xyz',coord_file) 
-      call param_register(params_in, 'new_coord_file', 'movie.xyz',new_coord_file) 
+      call param_register(params_in, 'latest_coord_file', 'latest.xyz',latest_coord_file) 
+      call param_register(params_in, 'traj_file', 'movie.xyz',traj_file) 
       qm_list_filename=''
       call param_register(params_in, 'qm_list_filename', '', qm_list_filename)
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library) 
@@ -239,7 +241,8 @@ logical :: have_silica_potential
       call print('! - not used any more -  Connect_Cutoff '//round(Connect_cutoff,3))
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
       call print('  coord_file '//coord_file) 
-      call print('  new_coord_file '//new_coord_file) 
+      call print('  latest_coord_file '//latest_coord_file) 
+      call print('  traj_file '//traj_file) 
       if (len_trim(qm_list_filename) /= 0) then
          call print('  qm_list_filename '//trim(qm_list_filename))
       else if (qm_region_pt_ctr .or. qm_region_atom_ctr /= 0) then
@@ -278,19 +281,19 @@ logical :: have_silica_potential
 
 ! STARTS HERE
 
-    if (is_file_readable(trim(new_coord_file))) then
-      call print("WARNING: new_coord_file " // trim(new_coord_file) // " exists, backing it up")
+    if (is_file_readable(trim(traj_file))) then
+      call print("WARNING: traj_file " // trim(traj_file) // " exists, backing it up")
       backup_i=1
-      backup_coord_file=trim(new_coord_file)//".backup_"//backup_i
+      backup_coord_file=trim(traj_file)//".backup_"//backup_i
       do while (is_file_readable(trim(backup_coord_file)))
 	backup_i = backup_i + 1
-	backup_coord_file=trim(new_coord_file)//".backup_"//backup_i
+	backup_coord_file=trim(traj_file)//".backup_"//backup_i
       end do
       call print("WARNING:      to backup_coord_file " // trim(backup_coord_file))
-      call system("cp "//trim(new_coord_file)//" "//trim(backup_coord_file))
+      call system("cp "//trim(traj_file)//" "//trim(backup_coord_file))
     endif
 
-    call initialise(xyz,new_coord_file,action=OUTPUT)
+    call initialise(traj_xyz,traj_file,action=OUTPUT)
   
   !READ COORDINATES AND CONSTRAINTS
 
@@ -423,25 +426,25 @@ logical :: have_silica_potential
 !!!!!!!!!
 !stop
 
-              if (list_changed1) then
-                 call print('Core has changed')
-                 ! do nothing: both core and buffer belong to the QM of QM/MM
-!                call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
-              endif
-          else
+             if (list_changed1) then
+                call print('Core has changed')
+                ! do nothing: both core and buffer belong to the QM of QM/MM
+!               call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
+             endif
+          else ! qm_region_pt_ctr
              call read_qmlist(ds%atoms,qm_list_filename)
-                if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
-                if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
-                call print('hybrid_mark'//count(hybrid_mark_p.eq.1))
-                cluster_mark_p = hybrid_mark_p
-                call print('cluster_mark'//count(cluster_mark_p.eq.1))
-          endif
+	     if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
+	     if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
+	     call print('hybrid_mark'//count(hybrid_mark_p.eq.1))
+	     cluster_mark_p = hybrid_mark_p
+	     call print('cluster_mark'//count(cluster_mark_p.eq.1))
+          endif ! qm_region_pt_ctr
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
-       endif
+       endif ! .not. Continue_it
 
 
        if (.not.Continue_it) then
-	 if (qm_region_atom_ctr) then
+	 if (qm_region_atom_ctr /= 0) then
 	   call center_atoms(ds%atoms,ds%atoms%pos(:,qm_region_atom_ctr))
 	 else if (qm_region_pt_ctr) then
 	   call center_atoms(ds%atoms,qm_region_ctr)
@@ -486,13 +489,16 @@ logical :: have_silica_potential
      !----------------------------------------------------
     call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
-        call print_xyz(ds%atoms,xyz,all_properties=.true.,real_format='f17.10')
+        call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
         !call write(this=ds%atoms,cio=xyz,real_format='%17.10f')
     else
-        call print_xyz(ds%atoms,xyz,properties=trim(print_prop),real_format='f17.10')
+        call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
         !call write(this=ds%atoms,cio=xyz,real_format='%17.10f')
         !call write(this=ds%atoms,cio=xyz,properties=trim(print_prop),real_format='%17.10f')
     endif
+    call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+    call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+    call finalise(latest_xyz)
      !----------------------------------------------------
 
   !INIT. METAPOTENTIAL
@@ -697,13 +703,16 @@ enddo
 
      call set_value(ds%atoms%params,'Time',ds%t)
      if (trim(print_prop).eq.'all') then
-         call print_xyz(ds%atoms,xyz,all_properties=.true.,real_format='f17.10')
+         call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
 !         call write(ds%atoms,xyz,real_format='%17.10f')
      else
-         call print_xyz(ds%atoms,xyz,properties=trim(print_prop),real_format='f17.10')
+         call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
 !         call write(ds%atoms,xyz,real_format='%17.10f')
          !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
      endif
+     call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+     call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+     call finalise(latest_xyz)
 
     call system_timer('step')
 
@@ -898,13 +907,16 @@ enddo
      if (mod(n,IO_Rate)==0) then
         call set_value(ds%atoms%params,'Time',ds%t)
         if (trim(print_prop).eq.'all') then
-            call print_xyz(ds%atoms,xyz,all_properties=.true.,real_format='f17.10')
+            call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
 !            call write(ds%atoms,xyz,real_format='%17.10f')
         else
-            call print_xyz(ds%atoms,xyz,properties=trim(print_prop),real_format='f17.10')
+            call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
 !            call write(ds%atoms,xyz,real_format='%17.10f')
             !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
         endif
+        call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+        call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+        call finalise(latest_xyz)
      end if
      
   !ADVANCE VERLET 1
@@ -918,7 +930,7 @@ enddo
   deallocate(f,f0,f1)
 
   call finalise(ds)
-  call finalise(xyz)
+  call finalise(traj_xyz)
   call finalise(my_metapotential)
   call finalise(CP2K_QM_potential)
   if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) call finalise(CP2K_MM_potential)
