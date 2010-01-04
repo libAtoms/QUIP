@@ -159,6 +159,8 @@ contains
       call get_qm_list(at, run_type_i, qm_list, do_union=.true.)
       allocate(qm_list_a(qm_list%N))
       if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
+    else
+      allocate(qm_list_a(0))
     endif
 
     if (qm_list%N == at%N) then
@@ -503,12 +505,11 @@ contains
     integer :: i, j
 
     ! shifted cell in case of QMMM (cp2k/src/toplogy_coordinate_util.F)
+    shift = 0.0_dp
     if (size(qm_list_a) > 0) then
       do i=1,3
 	shift(i) = 0.5_dp * qmmm_qm_abc(i) - (minval(at%pos(i,qm_list_a)) + maxval(at%pos(i,qm_list_a)))*0.5_dp
       end do
-    else
-      shift = 0.0_dp
     endif
 
     allocate(oldpos(at%N))
