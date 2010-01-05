@@ -8,17 +8,21 @@ private
   type md_params
     character(len=FIELD_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file
     integer :: N_steps
-    real(dp) :: dt
-    real(dp) :: T, langevin_tau
-    logical :: calc_virial, const_T
+    real(dp) :: dt,  thermalise_wait_time, damping_time
+    real(dp) :: T_initial, T, T_final, freq_DT, langevin_tau, p_ext
+    real(dp) :: velocity_rescaling_time 
+    real(dp) :: cutoff_buffer 
+    integer :: velocity_rescaling_freq
+    logical :: calc_virial, const_T, const_P
     character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
     integer :: summary_interval, at_print_interval, pot_print_interval
     integer :: rng_seed
-    logical :: zero_momentum, zero_angular_momentum
+    logical :: damping, rescale_velocity 
+    logical :: annealing, zero_momentum, zero_angular_momentum
     logical :: calc_dipole_moment, quiet_calc, do_timing
   end type md_params
 
-public :: get_params, print_params, print_usage, do_prints
+public :: get_params, print_params, print_usage, do_prints, initialise_md_thermostat, update_thermostat
 
 contains
 
@@ -42,11 +46,23 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'rng_seed', '-1', params%rng_seed)
   call param_register(md_params_dict, 'N_steps', '1', params%N_steps)
   call param_register(md_params_dict, 'dt', '1.0', params%dt)
-  call param_register(md_params_dict, 'T', '0.0', params%T)
+  call param_register(md_params_dict, 'T', '0.0', params%T_initial)
+  call param_register(md_params_dict, 'T_final', '-100.0', params%T_final)
+  call param_register(md_params_dict, 'freq_DT', '10.0', params%freq_DT)
+  call param_register(md_params_dict, 'p_ext', '0.0', params%p_ext)
+  call param_register(md_params_dict, 'thermalise_wait_time', '10.0', params%thermalise_wait_time)
+  call param_register(md_params_dict, 'velocity_rescaling_freq', '2', params%velocity_rescaling_freq)
+  call param_register(md_params_dict, 'velocity_rescaling_time', '0.0', params%velocity_rescaling_time)
   call param_register(md_params_dict, 'const_T', 'F', params%const_T)
+  call param_register(md_params_dict, 'const_P', 'F', params%const_P)
+  call param_register(md_params_dict, 'annealing', 'F', params%annealing)
+  call param_register(md_params_dict, 'damping', 'F', params%damping)
+  call param_register(md_params_dict, 'damping_time', '10.0', params%damping_time)
+  call param_register(md_params_dict, 'rescale_velocity', 'F', params%rescale_velocity)
   call param_register(md_params_dict, 'langevin_tau', '100.0', params%langevin_tau)
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial)
   call param_register(md_params_dict, 'metapot_init_args', PARAM_MANDATORY, params%metapot_init_args)
+  call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval)
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval)
@@ -85,6 +101,8 @@ subroutine get_params(params, mpi_glob)
     if (params%langevin_tau <= 0.0_dp) call system_abort("get_params got const_T, but langevin_tau " // params%langevin_tau // " <= 0.0")
   endif
 
+  params%T = params%T_initial
+
 end subroutine get_params
 
 subroutine print_params(params)
@@ -95,14 +113,30 @@ subroutine print_params(params)
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
   call print("md_params%trajectory_out_file='" // trim(params%trajectory_out_file) // "'")
+  call print("md_params%cutoff_buffer='" // params%cutoff_buffer // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
   call print("md_params%dt=" // params%dt)
-  call print("md_params%T=" // params%T)
+  call print("md_params%T=" // params%T_initial)
+  if(params%T_final.lt.0.0) then
+   call print("md_params%T_final=" //  params%T_initial)
+  else
+   call print("md_params%T_final=" // params%T_final)
+   call print("md_params%freq_DT=" // params%freq_DT)
+  endif
   call print("md_params%const_T=" // params%const_T)
   if (params%const_T) then
     call print("md_params%langevin_tau=" // params%langevin_tau)
+    call print("md_params%rescale_velocity=" // params%rescale_velocity)
   endif
+  call print("md_params%annealing=" // params%annealing)
+  call print("md_params%damping=" // params%damping)
+  if(params%damping) then
+    call print("md_params%damping_time=" // params%damping_time)
+  endif
+  call print("md_params%const_P=" // params%const_P)
+  call print("md_params%p_ext=" // params%p_ext)
+  call print("md_params%thermalise_wait_time=" // params%thermalise_wait_time)
   call print("md_params%calc_virial=" // params%calc_virial)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%at_print_interval=" // params%at_print_interval)
@@ -119,7 +153,7 @@ subroutine print_usage()
   call Print('available parameters (in md_params file or on command line):', ERROR)
   call Print('  metapot_init_args="args" [metapot_calc_args="args"]', ERROR)
   call Print('  [atoms_in_file=file(stdin)] [params_in_file=file(quip_params.xml)]', ERROR)
-  call Print('  [trajectory_out_file=file(traj.xyz)] [rng_seed=n(none)]', ERROR)
+  call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', ERROR)
   call Print('  [N_steps=n(1)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', ERROR)
   call Print('  [calc_virial=logical(F)]', ERROR)
   call Print('  [summary_interval=n(1)] [at_print_interval=n(100)] [pot_print_interval=n(-1)]', ERROR)
@@ -132,7 +166,7 @@ subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_interval
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
   type(metapotential), intent(in) :: metapot
-  type(inoutput), optional, intent(inout) :: traj_out
+  type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
 
@@ -147,13 +181,8 @@ subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_interval
     if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, metapot)
   endif
   if (params%at_print_interval > 0) then
-    if (.not. present(traj_out)) then
-      if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
-	call print_at(params, ds, e, metapot, mainlog, real_format='f18.10')
-    else
       if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
 	call print_at(params, ds, e, metapot, traj_out, real_format='f18.10')
-    endif
   endif
 end subroutine
 
@@ -188,11 +217,83 @@ subroutine print_at(params, ds, e, metapot, out, real_format)
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
   type(metapotential), intent(in) :: metapot
-  type(inoutput), intent(inout) :: out
+  type(Cinoutput), intent(inout) :: out
   character(len=*), intent(in), optional :: real_format
 
-  call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format=real_format)
+    call write(out, ds%atoms)
+  !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format=real_format)
 end subroutine print_at
+
+subroutine initialise_md_thermostat(ds, params, do_rescale)
+  type(md_params), intent(inout) :: params
+  type(DynamicalSystem), intent(inout) :: ds
+  logical, optional :: do_rescale
+  integer           :: N_iter
+
+  if(params%T_final.gt.0.0_dp) then
+    params%annealing = .true.
+    N_iter = abs(params%T_initial - params%T_final)/params%freq_DT 
+    params%N_steps = N_iter*nint(params%thermalise_wait_time/params%dt)  
+    call print('Number of steps : ' //  params%N_steps)
+    params%freq_DT = sign(params%freq_DT, params%T_final - params%T_initial)
+    call print('Annealing from ' //  params%T_initial // "K to " // params%T_final // "K")
+    call print('Temperature increment ' // params%freq_DT)
+  endif
+
+  if (params%damping) then
+    call print('MD damping')
+    call enable_damping(ds, params%damping_time)
+  elseif (params%const_T.and..not.params%const_P) then
+    call print('Running NVT at T = ' // params%T // " K")
+    call add_thermostat(ds, LANGEVIN, params%T, tau=params%langevin_tau)
+    ds%atoms%thermostat_region = 1
+    if(present(do_rescale).and..not.do_rescale) then
+      call print('Velocities not rescaled') 
+    elseif(params%rescale_velocity) then
+      call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
+    endif
+  elseif (params%const_T.and.params%const_P) then
+    call print('Running NPT at T = '// params%T // " K and external p = " // params%p_ext )
+    call add_thermostat(ds,  LANGEVIN_NPT, params%T, tau=params%langevin_tau, p=params%p_ext)
+    ds%atoms%thermostat_region = 1
+    if (.not.params%calc_virial) then
+       params%calc_virial = .true.
+       call print('Set true calc_virial option')
+    endif
+    if(present(do_rescale).and..not.do_rescale) then
+      call print('Velocities not rescaled') 
+    elseif(params%rescale_velocity) then
+      call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
+    endif
+  elseif (params%const_P.and..not.params%const_T) then
+    call system_abort('Const_P and not Const_T')
+  else
+    call print('Running NVE')
+    if (params%T > 0.0_dp) then
+      call print("Rescaling initial velocities to T=" // params%T)
+      call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
+    endif
+  endif
+
+end subroutine initialise_md_thermostat
+
+subroutine update_thermostat(ds, params, do_rescale)
+  type(md_params), intent(inout) :: params
+  type(DynamicalSystem), intent(inout) :: ds
+  logical, optional :: do_rescale
+
+  if (params%const_T.and..not.params%const_P) then
+    call print('Running NVT at T = ' // params%T // " K")
+  else
+    call print('Running NPT at T = '// params%T // " K and external p = " // params%p_ext )
+  endif
+  ds%thermostat%T  = params%T 
+  if(present(do_rescale).and..not.do_rescale) then
+    call print('Velocities not rescaled')
+  elseif(params%rescale_velocity) then
+    call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
+  endif
+end subroutine update_thermostat
 
 end module md_module
 
@@ -207,15 +308,16 @@ implicit none
   type (MetaPotential) :: metapot
   type(MPI_context) :: mpi_glob
   type(extendable_str) :: es
-  type(inoutput) :: traj_out
+  type(Cinoutput) :: traj_out
   type(Atoms) :: at_in
   type(DynamicalSystem) :: ds
 
   real(dp) :: E, virial(3,3)
   real(dp), pointer :: forces(:,:)
-  real(dp) :: cutoff_buffer, max_moved
+  real(dp) :: cutoff_buffer, max_moved, last_state_change_time
   real(dp), pointer :: local_dn(:)
   real(dp) :: mu(3)
+  real(dp) :: toll_time = 0.001_dp
 
   integer i, i_step
   type(md_params) :: params
@@ -245,15 +347,7 @@ implicit none
 
   call initialise(traj_out, params%trajectory_out_file, OUTPUT)
 
-  if (params%const_T) then
-    call add_thermostat(ds, LANGEVIN, params%T, tau=params%langevin_tau)
-    ds%atoms%thermostat_region = 1
-  else
-    if (params%T > 0.0_dp) then
-      call print("Rescaling initial velocities to T=" // params%T)
-      call rescale_velo(ds, params%T, mass_weighted=.true., zero_L=.true.)
-    endif
-  endif
+  call initialise_md_thermostat(ds, params) 
 
   if (params%zero_momentum) call zero_momentum(ds)
   if (params%zero_angular_momentum) call zero_angular_momentum(ds%atoms)
@@ -272,7 +366,7 @@ implicit none
       call system_abort('failure to assign pointer for local_dn')
   endif
 
-  cutoff_buffer=0.5_dp
+  cutoff_buffer=params%cutoff_buffer
   call set_cutoff(ds%atoms, cutoff(metapot)+cutoff_buffer)
 
   ! start with p(t), v(t)
@@ -293,15 +387,29 @@ implicit none
   call calc_connect(ds%atoms)
   max_moved = 0.0_dp
 
+  last_state_change_time = ds%t
+
   call system_timer("md_prep")
 
   ! on entry, we have p(t), v(t), a(t), like advance verlet 1 wants
   call system_timer("md_loop")
   do i_step=1, params%N_steps
 
+    if (params%annealing.and.ds%t - last_state_change_time >= params%thermalise_wait_time) then
+        call print('Rescaling velocities at time '//ds%t//' from '//params%T// &
+                  ' K  to '//(params%T + params%freq_DT)//' K.')
+        last_state_change_time = ds%t
+        params%T = params%T + params%freq_DT
+        call update_thermostat(ds, params, do_rescale=(ds%cur_temp.gt.params%T))
+    endif
+
     ! first Verlet half-step
     call system_timer("md/advance_verlet1")
-    call advance_verlet1(ds, params%dt, forces)
+    if(params%const_P) then
+       call advance_verlet1(ds, params%dt, forces, virial=virial)
+    else
+       call advance_verlet1(ds, params%dt, forces)
+    endif
     call system_timer("md/advance_verlet1")
     ! now we have p(t+dt), v(t+dt/2), a(t)
 
@@ -329,7 +437,11 @@ implicit none
 
     ! second Verlet half-step
     call system_timer("md/advance_verlet2")
-    call advance_verlet2(ds, params%dt, forces)
+    if(params%const_P) then
+       call advance_verlet2(ds, params%dt, forces, virial=virial)
+    else
+       call advance_verlet2(ds, params%dt, forces)
+    endif
     call system_timer("md/advance_verlet2")
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
@@ -343,6 +455,7 @@ implicit none
     call do_prints(params, ds, e, metapot, traj_out, i_step)
 
     call system_timer("md/print")
+
   end do
   call system_timer("md_loop")
 
