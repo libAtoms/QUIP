@@ -202,6 +202,9 @@ program makecrack
 
   ! Open x and y surfaces, remain periodic in z direction (normal to plane)
   if (trim(params%crack_structure) /= 'graphene') then
+     if(params%crack_check_surface_coordination) then
+        call crack_check_coordination_boundaries(crack_slab, params) 
+     endif 
      lattice = crack_slab%lattice
      
      if (.not. params%crack_double_ended) then
@@ -237,6 +240,7 @@ program makecrack
   ! Fix top and bottom edges - anything within crack_edge_fix_tol of ymax or ymin is fixed
   maxy = 0.0; miny = 0.0; maxx = 0.0
   do i=1, crack_slab%N
+     if(params%crack_check_surface_coordination.and.crack_slab%Z(i).eq.params%crack_check_coordination_atom_type) cycle 
      if (crack_slab%pos(2,i) > maxy) maxy = crack_slab%pos(2,i)
      if (crack_slab%pos(2,i) < miny) miny = crack_slab%pos(2,i)
   end do
