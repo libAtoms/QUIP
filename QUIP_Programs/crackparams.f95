@@ -127,6 +127,7 @@ module CrackParams_module
      logical  :: crack_relax_loading_field      !% Should 'makecrack' relax the applied loading field
      real(dp) :: crack_edge_fix_tol       !% How close must an atom be to top or bottom to be fixed. Unit:~\AA{}.
      real(dp) :: crack_y_shift            !% Shift required to align y=0 with centre of a vertical bond. 
+     logical  :: crack_align_y            !% Vertical alignment turned on
                                           !% This value is only used for unknown values of 'crack_name'. Unit:~\AA{}.
      real(dp) :: crack_seed_embed_tol     !% Atoms closer than this distance from crack tip will be used to seed embed region. Unit:~\AA{}.
      real(dp) :: crack_graphene_theta        !% Rotation angle of graphene plane, in radians.
@@ -135,6 +136,10 @@ module CrackParams_module
      character(STRING_LENGTH) :: crack_slab_filename !% Input file to use instead of generating slabs.
      character(STRING_LENGTH) :: crack_bulk_filename  !% Input file containing primitive cell
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
+     logical  :: crack_check_surface_coordination !% Checking of the surface coordination before generating the crack seed
+     integer  :: crack_check_coordination_atom_type       !% Atom type we check the coordination for 
+     integer  :: crack_check_coordination_critical_nneigh !% Critical number of neighbours in the connectivity checking
+     real(dp) :: crack_check_coordination_region          !% Region (+/- around y=0 level) where the atomic coordination is checked.  
      logical :: crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
  
      ! Simulation parameters
@@ -173,6 +178,7 @@ module CrackParams_module
                                           !% converged when $|\mathbf{f}|^2 <$ 'tol'
      real(dp) :: minim_eps_guess          !% Initial guess for line search step size $\epsilon$.
      integer  :: minim_max_steps          !% Maximum number of minimisation steps.
+     integer  :: minim_print_output       !% Number of steps between XYZ confgurations printed
      character(STRING_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
                                                      !% 'LINMIN_DERIV' when doing a LOTF hybrid simulation and only forces are available.
      logical :: minim_minimise_mm         !% Should we minimise classical degrees of freedom before each QM force evaluation
@@ -220,6 +226,7 @@ module CrackParams_module
      character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
      logical :: qm_small_clusters         !% One big cluster or lots of little ones?
      integer :: qm_buffer_hops            !% Number of bond hops used for buffer region
+     integer :: qm_transition_hops        !% Number of transition hops used for buffer region
      logical :: qm_terminate              !% Terminate clusters with hydrogen atoms
      logical :: qm_force_periodic         !% Force clusters to be periodic in $z$ direction.
      logical :: qm_randomise_buffer       !% Randomise positions of outer layer of buffer atoms slightly to avoid systematic errors.
@@ -370,6 +377,7 @@ contains
     this%crack_rescale_x         = .false. 
     this%crack_edge_fix_tol      = 2.7_dp   ! Angstrom
     this%crack_y_shift           = 0.0_dp   ! Angstrom
+    this%crack_align_y           = .true.   ! Angstrom
     this%crack_seed_embed_tol    = 3.0_dp   ! Angstrom
     this%crack_dislo_seed        = 0
     this%crack_double_ended     = .false.
@@ -380,6 +388,11 @@ contains
     this%crack_graphene_notch_height = 5.0_dp  ! Angstrom
     this%crack_slab_filename = ''
     this%crack_bulk_filename = ''
+
+    this%crack_check_surface_coordination         = .false.
+    this%crack_check_coordination_atom_type       = 18  
+    this%crack_check_coordination_critical_nneigh = 2 
+    this%crack_check_coordination_region          = 10.0_dp  
 
     ! Basic simulation parameters
     this%simulation_task         = 'md'
@@ -415,6 +428,7 @@ contains
     this%minim_tol               = 1e-3_dp  ! norm2(force) eV/A
     this%minim_eps_guess         = 0.01_dp  ! Angstrom
     this%minim_max_steps         = 1000     ! number
+    this%minim_print_output      = 10       ! number
     this%minim_linminroutine     = 'LINMIN_DERIV'
     this%minim_minimise_mm       = .false.
     this%minim_mm_method         = 'cg'
@@ -462,6 +476,7 @@ contains
     this%qm_args_str              = ' '
     this%qm_small_clusters        = .false.
     this%qm_buffer_hops           = 3        ! Number
+    this%qm_transition_hops       = 0        ! Number
     this%qm_terminate             = .true.
     this%qm_force_periodic        = .false.
     this%qm_randomise_buffer      = .true.
@@ -703,6 +718,11 @@ contains
           read (value, *) parse_cp%crack_y_shift
        end if
 
+       call QUIP_FoX_get_value(attributes, "align_y", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_align_y
+       end if
+
        call QUIP_FoX_get_value(attributes, "seed_embed_tol", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_seed_embed_tol
@@ -738,11 +758,30 @@ contains
           read (value, *) parse_cp%crack_dislo_seed
        end if
 
+       call QUIP_FoX_get_value(attributes, "check_surface_coordination", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_check_surface_coordination
+       end if
+
+       call QUIP_FoX_get_value(attributes, "check_coordination_atom_type", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_check_coordination_atom_type
+       end if
+
+       call QUIP_FoX_get_value(attributes,"check_coordination_critical_nneigh", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_check_coordination_critical_nneigh
+       end if
+
+       call QUIP_FoX_get_value(attributes,"check_coordination_region", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_check_coordination_region
+       end if
+
        call QUIP_FoX_get_value(attributes, "double_ended", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_double_ended
        end if
-
 
     elseif (parse_in_crack .and. name == 'simulation') then
 
@@ -885,6 +924,11 @@ contains
        call QUIP_FoX_get_value(attributes, "max_steps", value, status)
        if (status == 0) then
           read (value, *) parse_cp%minim_max_steps
+       end if
+ 
+       call QUIP_FoX_get_value(attributes, "print_output", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%minim_print_output
        end if
 
        call QUIP_FoX_get_value(attributes, "linminroutine", value, status)
@@ -1092,6 +1136,11 @@ contains
           read (value, *) parse_cp%qm_buffer_hops
        end if
 
+       call QUIP_FoX_get_value(attributes, "transition_hops", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_transition_hops
+       end if
+
        call QUIP_FoX_get_value(attributes, "terminate", value, status)
        if (status == 0) then
           read (value, *) parse_cp%qm_terminate
@@ -1291,6 +1340,7 @@ contains
     call Print('     rescale_x             = '//this%crack_rescale_x, file=file)
     call Print('     edge_fix_tol          = '//this%crack_edge_fix_tol//' A', file=file)
     call Print('     y_shift               = '//this%crack_y_shift//' A', file=file)
+    call Print('     align_y               = '//this%crack_align_y, file=file)
     call Print('     seed_embed_tol        = '//this%crack_seed_embed_tol//' A', file=file)
     call Print('     graphene_theta        = '//this%crack_graphene_theta//' rad', file=file)
     call Print('     graphene_notch_width  = '//this%crack_graphene_notch_width//' A', file=file)
@@ -1298,6 +1348,10 @@ contains
     call Print('     slab_filename         = '//this%crack_slab_filename, file=file)
     call Print('     bulk_filename         = '//this%crack_slab_filename, file=file)
     call Print('     dislo_seed            = '//this%crack_dislo_seed, file=file)
+    call Print('     check_surface_coordination         = '//this%crack_check_surface_coordination, file=file)
+    call Print('     check_coordination_atom_type       = '//this%crack_check_coordination_atom_type, file=file)
+    call Print('     check_coordination_critical_nneigh = '//this%crack_check_coordination_critical_nneigh, file=file)
+    call Print('     check_coordination_region          = '//this%crack_check_coordination_region//' A', file=file)
     call Print('     doubled_ended         = '//this%crack_double_ended, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
@@ -1332,6 +1386,7 @@ contains
     call Print('     tol                   = '//this%minim_tol//' (eV/A)^2',file=file)
     call Print('     eps_guess             = '//this%minim_eps_guess//' A',file=file)
     call Print('     max_steps             = '//this%minim_max_steps,file=file)
+    call Print('     print_output          = '//this%minim_print_output,file=file)
     call Print('     linminroutine         = '//trim(this%minim_linminroutine),file=file)
     call Print('     minimise_mm           = '//this%minim_minimise_mm,file=file)
     call Print('     mm_method             = '//trim(this%minim_mm_method),file=file)
@@ -1378,6 +1433,7 @@ contains
     call Print('     args_str              = '//trim(this%qm_args_str),file=file)
     call Print('     small_clusters        = '//this%qm_small_clusters,file=file)
     call Print('     buffer_hops           = '//this%qm_buffer_hops,file=file)
+    call Print('     transition_hops       = '//this%qm_transition_hops,file=file)
     call Print('     terminate             = '//this%qm_terminate,file=file)
     call Print('     force_periodic        = '//this%qm_force_periodic,file=file)
     call Print('     randomise_buffer      = '//this%qm_randomise_buffer,file=file)
