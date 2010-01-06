@@ -384,6 +384,7 @@ program crack
      call initialise(metapot_params)
      call set_value(metapot_params, 'method', trim(params%fit_method))
      call set_value(metapot_params, 'buffer_hops', params%qm_buffer_hops)
+     call set_value(metapot_params, 'transition_hops', params%qm_transition_hops)buffer_hops='//params%qm_buff
      call set_value(metapot_params, 'fit_hops', params%fit_hops)
      call set_value(metapot_params, 'minimise_mm', params%minim_minimise_mm)
      call set_value(metapot_params, 'randomise_buffer', params%qm_randomise_buffer)
@@ -420,6 +421,7 @@ program crack
           '  cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z='//periodic_clusters(3)// &
           '  cluster_calc_connect='//(cutoff(qmpot) /= 0.0_dp)// &
           '  buffer_hops='//params%qm_buffer_hops//&
+          '  transition_hops='//params%qm_transition_hops//&
           '  randomise_buffer='//params%qm_randomise_buffer//&
           '  hysteretic_connect='//params%qm_hysteretic_connect//&
           '  nneighb_only='//(.not. params%qm_hysteretic_connect)//&
@@ -870,12 +872,12 @@ program crack
            !*  Extrapolation                                               *
            !*                                                              *
            !****************************************************************    
-           call print_title('Extrapolation')
-
-           call system_timer('extrapolation')
-
            if (.not. params%simulation_classical) then
+              call print_title('Extrapolation')
+              call system_timer('extrapolation')
               call ds_save_state(ds_save, ds)
+           else
+              call system_timer('md_time')
            end if
 
            do i = 1, params%md_extrapolate_steps
@@ -922,7 +924,12 @@ program crack
               end if
 
            end do
-           call system_timer('extrapolation')
+
+           if (.not. params%simulation_classical) then
+              call system_timer('extrapolation')
+           else
+              call system_timer('md_time')
+           endif
 
            if (.not. params%simulation_classical) then
 
@@ -1187,13 +1194,13 @@ program crack
         steps = minim(simple_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., use_fire=trim(params%minim_method)=='fire', &
-             print_cinoutput=movie, args_str=params%classical_args_str, eps_guess=params%minim_eps_guess, hook_print_interval=10)
+             print_cinoutput=movie, args_str=params%classical_args_str, eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
      else
         steps = minim(hybrid_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., use_fire=trim(params%minim_method)=='fire', &
              print_cinoutput=movie, &
-             eps_guess=params%minim_eps_guess, hook_print_interval=1)
+             eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
      end if
 
   if (.not. mpi_glob%active .or. (mpi_glob%active .and.mpi_glob%my_proc == 0)) then
@@ -1230,13 +1237,13 @@ program crack
                 max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, &
-                args_str=params%classical_args_str, eps_guess=params%minim_eps_guess,use_fire=trim(params%minim_method)=='fire', hook_print_interval=100)
+                args_str=params%classical_args_str, eps_guess=params%minim_eps_guess,use_fire=trim(params%minim_method)=='fire', hook_print_interval=params%minim_print_output)
         else
            steps = minim(hybrid_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
                 max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, eps_guess=params%minim_eps_guess, &
-                use_fire=trim(params%minim_method)=='fire', hook_print_interval=100)
+                use_fire=trim(params%minim_method)=='fire', hook_print_interval=params%minim_print_output)
         end if
 
         call crack_update_connect(ds%atoms, params)
