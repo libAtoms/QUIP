@@ -228,16 +228,17 @@ contains
   !% \hline 
   !% \hline
   !% \end{tabular}\end{center}
-  subroutine crack_uniform_load(at, l_crack_pos, r_crack_pos, zone_width, G, apply_load, disp)
-    type(Atoms), intent(inout) :: at
-    real(dp), intent(in) :: l_crack_pos, r_crack_pos, zone_width
-    real(dp), intent(inout) :: G
-    logical, optional :: apply_load
+  subroutine crack_uniform_load(at, params, l_crack_pos, r_crack_pos, zone_width, G, apply_load, disp)
+    type(Atoms), intent(inout)    :: at
+    type(CrackParams), intent(in) :: params
+    real(dp), intent(in)          :: l_crack_pos, r_crack_pos, zone_width
+    real(dp), intent(inout)       :: G
+    logical, optional             :: apply_load
     real(dp), allocatable, dimension(:,:), intent(out) :: disp
 
     integer ::  j
     real(dp) top_old, top_new, bottom_old, bottom_new, x, y, q, strain, E, v, &
-         orig_height, new_height, crack_pos_y
+         orig_height, new_height, crack_pos_y, y_check
     logical :: do_apply_load
 
     if (.not. get_value(at%params, 'OrigHeight', orig_height)) &
@@ -282,7 +283,11 @@ contains
        ! Strain region 2
        if (x >= l_crack_pos-zone_width .and. x < l_crack_pos) then
           q = (x - (l_crack_pos - zone_width))/zone_width
-          if (y >= 0.0) then
+          y_check = y
+          if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
+             call crack_check_coordination(at,params,j,y_check)
+          endif 
+          if (y_check >= 0.0) then
              disp(2,j) = strain*(y*(1.0-q) + top_old*q)
           else
              disp(2,j) = strain*(y*(1.0-q) + bottom_old*q)
@@ -292,7 +297,11 @@ contains
        ! Strain region 4
        if (x > r_crack_pos .and. x <= r_crack_pos+zone_width) then
           q = (x - r_crack_pos)/zone_width;
-          if (y >= 0.0) then
+          y_check = y
+          if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
+             call crack_check_coordination(at,params,j,y_check)
+          endif 
+          if (y_check >= 0.0) then
              disp(2,j) = strain*(y*q + top_old*(1.0-q))
           else
              disp(2,j) = strain*(y*q + bottom_old*(1.0-q))
@@ -301,7 +310,11 @@ contains
 
        ! Rigidly shift region 3
        if (x >= l_crack_pos .and. x <= r_crack_pos) then
-          if(y >= 0.0) then
+          y_check = y
+          if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
+             call crack_check_coordination(at,params,j,y_check)
+          endif 
+          if(y_check >= 0.0) then
              disp(2,j) = strain*top_old
           else
              disp(2,j) = strain*bottom_old
@@ -698,7 +711,7 @@ contains
           call print('Applying load 1')
 
           u_disp = 0.0_dp
-          call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+          call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
                params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp) 
 
           k_disp = 0.0_dp
@@ -737,7 +750,7 @@ contains
                params%crack_initial_loading_strain, E, v, orig_height)
 
           u_disp = 0.0_dp
-          call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+          call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
             params%crack_strain_zone_width, G1, apply_load=.false., disp=u_disp) 
 
           ! apply load increment to K_disp
@@ -859,7 +872,7 @@ contains
           call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
           call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
           call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
-          call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+          call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
                params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
 
           if(params%crack_rescale_x_z) then
@@ -927,7 +940,7 @@ contains
        call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.)
 
        G = params%crack_G
-       call crack_uniform_load(crack_slab, l_crack_pos, r_crack_pos, &
+       call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
             params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp)  
        call set_value(crack_slab%params, 'G', G)
 
@@ -1497,6 +1510,7 @@ contains
     
     crack_pos(1) = -orig_width
     crack_tip_atom = 0
+    print *, params%crack_z
     do i=1,at%N
        ti = find_in_array(params%crack_z, at%z(i))
        if (nn(i) >= params%md_eqm_coordination(ti)) cycle
@@ -1869,5 +1883,118 @@ contains
     end if
 
   end subroutine crack_make_slab
+
+  subroutine crack_check_coordination(at,params,j,y,x_boundaries,neigh_removed, at_for_connectivity)
+      type(Atoms), intent(inout)       :: at
+      type(CrackParams), intent(in)    :: params
+      integer, intent(in)              :: j
+      real(dp), optional,intent(inout) :: y
+      logical, optional, intent(in)    :: x_boundaries
+      logical, optional, intent(inout) :: neigh_removed(at%n)
+      type(Atoms), optional            :: at_for_connectivity
+      logical                          :: my_x_boundaries
+      real(dp)                         :: rmin, rij
+      integer                          :: i, ji, k, kj, n2, who_closest
+      integer, allocatable,dimension(:)  :: who, who_nn, who_absolute_index
+ 
+      my_x_boundaries = optional_default(.false.,x_boundaries)
+
+      rmin = 100.d0
+      allocate(who_nn(atoms_n_neighbours(at, j)))
+      allocate(who(atoms_n_neighbours(at, j)))
+      allocate(who_absolute_index(atoms_n_neighbours(at, j)))
+      who_absolute_index  = 0
+      who_nn  = 0
+      who = 0
+      n2  = 0
+
+
+      do i = 1, atoms_n_neighbours(at, j)
+         ji = atoms_neighbour(at,j,i,distance=rij)
+         if(at%Z(ji).ne.at%Z(j)) then 
+            n2 = n2 + 1
+            who_absolute_index(n2) = ji 
+            who(n2) = i
+            if(present(at_for_connectivity)) then
+               who_nn(n2) = atoms_n_neighbours(at_for_connectivity, ji)
+            else
+               who_nn(n2) = atoms_n_neighbours(at, ji)
+            endif
+!           Detect who is the nearest neighbour of different type
+            if(rij.lt.rmin) then
+                rmin = rij
+                who_closest  = i
+            endif
+         endif
+      enddo
+
+!     Check the connectivity. E.g.: if coordination_critical_nneigh=2, it checks when the atom has 3 nn, since it is going to loose a neighbours of its. 
+!     If an atom has already lost a neighbour, do not remove another atoms from it
+      do i = 1, n2
+        if(present(neigh_removed).and.neigh_removed(who_absolute_index(i))) then
+             who_closest = who(i)
+             exit 
+        elseif(who_nn(i).le.params%crack_check_coordination_critical_nneigh+1.and.who(i).ne.who_closest) then
+           if(who_nn(who_closest).gt.who_nn(i)) then
+              who_closest = who(i)
+           endif
+        endif
+      enddo
+
+      if(my_x_boundaries) then
+         ! check x-boundary 
+         if(at%pos(1,atoms_neighbour(at,j,who_closest)).gt.0.0_dp.and.at%pos(1,j).lt.0.0_dp) then
+            at%pos(1,j) = at%pos(1,j) + at%lattice(1,1) 
+         elseif(at%pos(1,atoms_neighbour(at,j,who_closest)).lt.0.0_dp.and.at%pos(1,j).gt.0.0_dp) then
+            at%pos(1,j) = at%pos(1,j) - at%lattice(1,1) 
+         endif
+         if(present(neigh_removed)) then
+           do i = 1, n2
+             if( abs(at%pos(1,atoms_neighbour(at,j,who(i)))-at%pos(1,j)).gt.at%lattice(1,1)/2.0_dp) then
+                neigh_removed=.true.
+             endif
+           enddo
+         endif
+      else   !check only y
+         if(at%pos(2,atoms_neighbour(at,j,who_closest)).gt.0.0_dp) then
+             y =  abs(at%pos(2,j))
+         else
+             y = -abs(at%pos(2,j))
+         endif
+      endif
+
+  end subroutine crack_check_coordination
+
+  subroutine crack_check_coordination_boundaries(at,params)
+      type(Atoms), intent(inout)       :: at
+      type(CrackParams), intent(inout) :: params
+      type(Atoms)                      :: at_tmp
+      real(dp), dimension(3,3)         :: lattice_tmp
+      integer                          :: i, jjjjj
+      logical, dimension(at%n)         :: neigh_removed
+      logical :: ccc
+      real(dp) :: width, height
+
+      at_tmp = at
+      lattice_tmp = at_tmp%lattice
+      lattice_tmp(1,1) = lattice_tmp(1,1) + params%crack_vacuum_size
+      lattice_tmp(2,2) = lattice_tmp(2,2) + params%crack_vacuum_size
+      call atoms_set_lattice(at_tmp, lattice_tmp)
+      !call calc_connect(at_tmp)
+
+      neigh_removed = .false.
+
+      if (.not. get_value(at_tmp%params, 'OrigWidth', width)) &
+         call system_abort('crack_check_coordination_boundaries: "OrigWidth" parameter missing')
+
+      do i = 1, at%n
+        print *, i
+        if(at%Z(i).eq.params%crack_check_coordination_atom_type.and.(abs(at%pos(1,i)) > width/2.0_dp - params%crack_check_coordination_region))  then
+           call crack_check_coordination(at,params,i, x_boundaries=.true., neigh_removed=neigh_removed, at_for_connectivity=at_tmp)
+           !call crack_check_coordination(at,params,i, x_boundaries=.true.)
+        endif
+      enddo
+       
+  end subroutine crack_check_coordination_boundaries
 
 end module CrackTools_module
