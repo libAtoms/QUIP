@@ -353,8 +353,6 @@ contains
     integer, pointer :: cluster_mark_p(:)
     integer, pointer :: old_cluster_mark_p(:)
 
-    real(dp), pointer, dimension(:) :: charge
-
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
 
