@@ -374,3 +374,14 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
 
    return C, C_err
 
+
+def elastic_constants(metapot, at, sym='cubic', relax=True, verbose=True, graphics=True):
+   """Convenience function which returns the 6x6 matrix :math:`C_{ij}` of configuration `at`
+   with MetaPotential `metapot` assumsing symmetry `sym` (default "cubic")."""
+   
+   strained_configs = generate_strained_configs(at, sym)
+   stressed_configs = calc_stress(strained_configs, metapot, relax=relax)
+   C, C_err = fit_elastic_constants(stressed_configs, sym, verbose=verbose, graphics=graphics)
+
+   return C
+
