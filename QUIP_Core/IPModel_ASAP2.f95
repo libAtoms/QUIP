@@ -291,14 +291,14 @@ end subroutine asap_rs_charges
 
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
-subroutine asap_rs_dipoles(this, at, charge, dip, pol, e, local_e, f, virial, efield)
+subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
 #ifdef _OPENMP
    use omp_lib
 #endif
 
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
-   real(dp), intent(in)            :: charge(:), dip(:,:), pol(:)
+   real(dp), intent(in)            :: charge(:), dip(:,:)
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
@@ -348,11 +348,11 @@ subroutine asap_rs_dipoles(this, at, charge, dip, pol, e, local_e, f, virial, ef
 
       qi = charge(i)
       dipi = dip(:,i)
-      tpoli = abs(pol(i)) > 0.0_dp
+      tpoli = abs(this%pol(ti)) > 0.0_dp
 
       ! Induced contribution to energy
       if ((present(e) .or. present(local_e)) .and. tpoli) then
-         de_ind = 0.5_dp*(dipi .dot. dipi)/pol(i)
+         de_ind = 0.5_dp*(dipi .dot. dipi)/this%pol(ti)
          if (present(e))       private_e = private_e + de_ind
          if (present(local_e)) private_local_e(i) = private_local_e(i) + de_ind
       end if
@@ -377,7 +377,7 @@ subroutine asap_rs_dipoles(this, at, charge, dip, pol, e, local_e, f, virial, ef
 
          qj = charge(j)
          dipj = dip(:,j)
-         tpolj = abs(pol(j)) > 0.0_dp
+         tpolj = abs(this%pol(tj)) > 0.0_dp
 
          qipj = (abs(qi) > 0.0_dp) .and. tpolj
          qjpi = (abs(qj) > 0.0_dp) .and. tpoli
@@ -516,10 +516,10 @@ subroutine asap_rs_dipoles(this, at, charge, dip, pol, e, local_e, f, virial, ef
 end subroutine asap_rs_dipoles
 
 
-subroutine asap_short_range_dipole_moments(this, at, charge, pol, dip_sr)
+subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr)
   type(IPModel_ASAP2), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), dimension(:), intent(in) :: charge, pol
+  real(dp), dimension(:), intent(in) :: charge
   real(dp), dimension(:,:), intent(out) :: dip_sr
 
   integer :: i, ti, m, j, tj, k
@@ -543,7 +543,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, pol, dip_sr)
      endif
 
      ti = get_type(this%type_of_atomic_num, at%Z(i))
-     if (.not. (abs(pol(i)) > 0.0_dp)) cycle
+     if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
 
      do m = 1, atoms_n_neighbours(at, i)
          
@@ -573,7 +573,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, pol, dip_sr)
          expfactor = exp(-this%yukalpha*r_ij)
          call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, this%yuksmoothlength, fc, dfc_dr)
 
-         private_dip_sr(:,i) = private_dip_sr(:,i) - pol(i)*qj*u_ij*gij/dist3*expfactor*fc
+         private_dip_sr(:,i) = private_dip_sr(:,i) - this%pol(ti)*qj*u_ij*gij/dist3*expfactor*fc
       end do
   end do
   !$omp end do
@@ -741,40 +741,30 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
    type(IPModel_ASAP2), intent(in):: this
    type(Atoms), intent(inout)      :: at
 
-   logical :: dummy, added_charge, added_pol
+   logical :: dummy, added_charge
    integer :: i, ti
-   real(dp), dimension(:), pointer :: charge, pol
+   real(dp), dimension(:), pointer :: charge
 
-   ! If charge or pol properties don't exist, we add them now and initialise them from 
-   ! stored parameters.
+   ! If charge property doesn't exist, we add and initialise it now
    
-   added_charge = .false.
    if (.not. has_property(at, 'charge')) then
       call add_property(at, 'charge', 0.0_dp)
-      added_charge = .true.
-   end if
-
-   added_pol = .false.
-   if (.not. has_property(at, 'pol')) then
-      call add_property(at, 'pol', 0.0_dp)
-      added_pol = .true.
-   end if
-
-   if (added_charge .or. added_pol) then
       dummy = assign_pointer(at, 'charge', charge)
-      dummy = assign_pointer(at, 'pol', pol)
       do i=1, at%N
          ti = get_type(this%type_of_atomic_num, at%Z(i))
-         if (added_charge) charge(i) = this%z(ti)
-         if (added_pol)    pol(i)    = this%pol(ti)
+         charge(i) = this%z(ti)
       end do
    end if
 
+   if (.not. has_property(at, 'fixdip')) call add_property(at, 'fixdip', .false.)
    if (.not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
    if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
    if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
    if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
    if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
+
+   ! Increment at%cutoff if necessary
+   call set_cutoff_minimum(at, max(this%cutoff_ms, this%cutoff_coulomb)*BOHR)
 
  end subroutine IPModel_ASAP2_setup_atoms
 
@@ -791,8 +781,9 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    logical :: save_efield, save_dipoles, restart, applied_efield
    real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_int_old(:,:)
    real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
-   real(dp), pointer, dimension(:) :: charge, pol
+   real(dp), pointer, dimension(:) :: charge
    real(dp), pointer, dimension(:,:) :: efield, dipoles, efield_old1, efield_old2, efield_old3, ext_efield
+   logical, pointer, dimension(:) :: fixdip
    real(dp) :: diff, diff_old
    integer :: n_efield_old
    integer :: i, npol, ti, vv
@@ -850,8 +841,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    if (.not. assign_pointer(at, 'charge', charge)) &
         call system_abort('IPModel_ASAP2_calc failed to assign pointer to "charge" property')
-   if (.not. assign_pointer(at, 'pol', pol)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "pol" property')
+   if (.not. assign_pointer(at, 'fixdip', fixdip)) &
+        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "fixdip" property')
    if (.not. assign_pointer(at, 'efield_old1', efield_old1)) &
         call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property')
    if (.not. assign_pointer(at, 'efield_old2', efield_old2)) &
@@ -869,7 +860,9 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    end if
 
    efield_dipole = 0.0_dp
-   dipoles = 0.0_dp
+   do i=1,at%n
+      if (.not. fixdip(i)) dipoles(:,i) = 0.0_dp
+   end do
 
    ! Extrapolate from the old electric efield
    if (this%pred_order == 0 .or. n_efield_old < 2) then
@@ -903,11 +896,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    allocate(dip_sr(3,at%n))
    dip_sr = 0.0_dp
-   if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, charge, pol, dip_sr)
+   if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, charge, dip_sr)
 
    efield_int_old = 0.0_dp
 
-   if (maxval(abs(this%pol)) > 0.0_dp) then
+   if (maxval(abs(this%pol)) > 0.0_dp .and. .not. all(fixdip)) then
       ! Self-consistent determination of dipole moments
       diff_old = 1.0_dp
       npol = 1
@@ -930,25 +923,25 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
          ! Calculate dipole moment in response to total efield
          do i=1,at%n
+            if (fixdip(i)) cycle
             ti = get_type(this%type_of_atomic_num, at%Z(i))
-            if (abs(pol(i)) > 0.0_dp) then
-               dipoles(:,i) = efield(:,i)*pol(i) + dip_sr(:,i)
+            if (abs(this%pol(ti)) > 0.0_dp) then
+               dipoles(:,i) = efield(:,i)*this%pol(ti) + dip_sr(:,i)
             end if
          end do
 
          ! Calculate new efield and measure of convergence
          efield_int_old = efield_dipole
          efield_dipole = 0.0_dp
-         call asap_rs_dipoles(this, at, charge, dipoles, pol, efield=efield_dipole)
+         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole)
 
          diff = 0.0_dp
          do i=1,at%n
             ti = get_type(this%type_of_atomic_num, at%Z(i))
-            diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))* &
+            diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))*&
                  this%pol(ti)*this%pol(ti)
          end do
          diff = sqrt(diff/at%n)
-
          efield_old1 = efield_dipole
          
          if (vv >= VERBOSE) then
@@ -973,14 +966,16 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       end do
       call system_timer('asap_self_consistent_dipoles')
 
-      ! Compute final energy, local energies, forces, virial and electric efield
-      efield = efield_charge
-      call asap_rs_dipoles(this, at, charge, dipoles, pol, e, local_e, f, virial, efield)
-
       ! Save final dipole field for next time
       efield_old1 = efield_dipole
    end if
 
+   ! Compute final energy, local energies, forces, virial and electric efield
+   efield = efield_charge
+   if (maxval(abs(dipoles)) > 0.0_dp) then
+      call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield)
+   end if
+   
    ! Finally, add the short-range contribution
    call asap_morse_stretch(this, at, e, local_e, f, virial)
 
