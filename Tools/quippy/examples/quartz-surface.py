@@ -23,10 +23,11 @@ quartz_params = {'a': 4.8403809707320216,
 
 aq = alpha_quartz(**quartz_params)
 
-nx = 3
+nx = 1
 ny = 3
-nz = 3
+nz = 1
 d  = 15.0
+h = 10.0
 
 quartz_bulk = {}
 quartz_surface = {}
@@ -51,29 +52,29 @@ for (y, z, shift) in indices:
 # (10-11)[010]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[0,1,0])
-quartz_surface[((1,0,-1,1),(0,1,0))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 200.0, 0.0],
-                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, 100.0, 0.0], verbose=False)
+quartz_surface[((1,0,-1,1),(0,1,0))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(0,1,0))].params['axes'] = rot.T
 
 # (10-11)[21-2]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,1], z=[2,1,-2])
-quartz_surface[((1,0,-1,1),(2,1,-2))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 200.0, 0.0],
-                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, 100.0, 0.0], verbose=False)
+quartz_surface[((1,0,-1,1),(2,1,-2))]  = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h, 0.0],
+                                                          shift=[0.0, 0.0, 0.0], vacuum=[0.0, d, 0.0], verbose=False)
 quartz_surface[((1,0,-1,1),(2,1,-2))].params['axes'] = rot.T
 
 
 # (10-1-1)[010]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[0,1,0])
-quartz_surface[((1,0,-1,-1),(0,1,0))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 202.0, 0.0], vacuum=[0.0, 100.0, 0.0],
+quartz_surface[((1,0,-1,-1),(0,1,0))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h + 2.0, 0.0], vacuum=[0.0, d, 0.0],
                                                           shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(0,1,0))].params['axes'] = rot.T
 
 # (10-1-1)[212]
 
 rot = crack_rotation_matrix(aq, y=[1,0,-1,-1], z=[2,1,2])
-quartz_surface[((1,0,-1,-1),(2,1,2))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, 202.0, 0.0], vacuum=[0.0, 100.0, 0.0],
+quartz_surface[((1,0,-1,-1),(2,1,2))] = orthorhombic_slab(aq, rot=rot, periodicity=[0.0, h + 2.0, 0.0], vacuum=[0.0, d, 0.0],
                                                           shift=[0.0, 0.0, 0.0], verbose=False)
 quartz_surface[((1,0,-1,-1),(2,1,2))].params['axes'] = rot.T
 
@@ -99,7 +100,7 @@ aq.set_cutoff(pot.cutoff()+2.0)
 
 
 do_relax = False
-do_md = False
+do_md = True
 
 movie = CInOutput('relax.xyz', OUTPUT)
 
