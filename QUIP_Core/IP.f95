@@ -140,6 +140,12 @@ interface Print
   module procedure IP_Print
 end interface Print
 
+!% Hook routine called before calc() is invoked. Can be used to add required properties.
+public :: setup_atoms
+interface setup_atoms
+   module procedure ip_setup_atoms
+end interface
+
 !% Call the potential calculator for the selected IP model
 public :: Calc
 private :: IP_Calc
@@ -380,6 +386,17 @@ function IP_cutoff(this)
      IP_cutoff = 0.0_dp
   end select
 end function IP_cutoff
+
+subroutine IP_setup_atoms(this, at)
+  type(IP_type), intent(in) :: this
+  type(Atoms), intent(inout) :: at
+
+  select case (this%functional_form)
+  case (FF_ASAP2)
+     call setup_atoms(this%ip_asap2, at)
+  end select
+
+end subroutine IP_setup_atoms
 
 subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
   type(IP_type), intent(inout) :: this

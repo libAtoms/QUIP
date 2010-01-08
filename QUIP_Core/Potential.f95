@@ -353,6 +353,8 @@ contains
     integer, pointer :: cluster_mark_p(:)
     integer, pointer :: old_cluster_mark_p(:)
 
+    real(dp), pointer, dimension(:) :: charge
+
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
 
@@ -618,6 +620,13 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
     else
+
+       ! For IP, call setup_atoms() hook now in case any properties must be added.
+       ! This must be done *before* we assign pointers to force, local_e etc.
+       if (associated(this%ip)) then
+          call setup_atoms(this%ip, at)
+       end if
+
        do_calc_force = calc_force .or. present(f)
        do_calc_energy = calc_energy .or. present(e)
        do_calc_local_e = calc_local_e .or. present(local_e)
