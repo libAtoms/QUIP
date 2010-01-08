@@ -46,13 +46,12 @@ atomseq = itertools.islice(itertools.chain.from_iterable(sources),
                            opt.range.start+1, opt.range.stop, opt.range.step)
 
 a0 = Atoms(args[0])
-view = atomeye.show(a0, nowindow=opt.nowindow)
+view = atomeye.AtomEyeView(nowindow=opt.nowindow)
+view.show(a0)
 
 if opt.viewfile is not None:
-   view.load_script(opt.viewfile)
-   view.shift_xtal(0, 0)
+   view.run_script(opt.viewfile)
    view.redraw()
-   view.wait()
 
 if not opt.nowindow:
    raw_input('Arrange AtomEye view then press enter...')
