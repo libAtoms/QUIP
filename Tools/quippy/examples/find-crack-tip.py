@@ -32,26 +32,54 @@ def percolation_step(v, nstep):
    print 'alive', (v == 2).count()
    return (v == 2).count() != 0
 
-def percolate(v):
+cmap_data = {'red':   ((0, 0., 0.),(0.365079, 1.000000, 1.000000),(1.0, 1.0, 1.0)),
+             'green': ((0, 0., 0.),(0.365079, 0.000000, 0.000000),(0.746032, 1.000000, 1.000000),(1.0, 1.0, 1.0)),
+             'blue':  ((0, 0., 0.),(0.746032, 0.000000, 0.000000),(1.0, 1.0, 1.0))}
+
+my_cmap = get_cmap('jet_r')
+my_cmap.set_under('k', 1.0)
+
+def percolate(v, fig=None, base=None):
+
+   if fig is not None:
+      fig.set_size_inches(6, 6)
+      fig.clf()
+      ax = fig.add_axes([0,0,1,1],frameon=False)
+
    nsteps = 0
-   imshow(v[1], interpolation='nearest')
-   draw()
    while percolation_step(v, nsteps):
       nsteps = nsteps +1
-      imshow(v[1], interpolation='nearest')
-      draw()
-   imshow(v[1], interpolation='nearest')
-   draw()
+
+      if fig is not None:
+         z = v.shape[2]/2+1
+         vis = flipud(v[z].T)
+         if base is not None:
+            ax.cla()
+            ax.imshow(base, extent=(0,vis.shape[1], 0, vis.shape[0]))
+         ax.pcolor(vis, cmap=my_cmap, vmin=1, edgecolor='k', alpha=0.4)
+         #ax.set_xlim(12, 75)
+         #ax.set_ylim(32, 52)
+         ax.set_xticks([])
+         ax.set_yticks([])
+         draw()
+         fig.savefig('img%05d.png' % nsteps)
+
    return nsteps
    
-def forest(nx,ny,nz):
-   v = farray(numpy.random.randint(2,size=nx*ny*nz).reshape((nx,ny,nz),order='F'))
+def forest(nx,ny,nz,p):
+   v = fzeros((nx,ny,nz))
+   for i in frange(nx):
+      for j in frange(ny):
+         for k in frange(nz):
+            if random.random() > 1-p: v[i,j,k] = 1
    # seed first row
    v[1,v[1,:,1] == 1,1] = 2
    return v
 
 
-def percolate_crack(at, tol):
+
+
+def percolate_crack(at, tol, fig, base, start_pos=[0.0, 0.0, 0.0]):
 
    at = at.copy()
    at.set_cutoff(tol)
@@ -65,7 +93,6 @@ def percolate_crack(at, tol):
             cells[i,j,k] = at.connect.cell_n(i,j,k) == 0
 
 
-   start_pos = [-at.params['OrigWidth']/2.0, 0.0, 0.0]
    i, j, k = at.connect.cell_of_pos(at.g, start_pos)
 
    # stop from going backwards
@@ -74,7 +101,7 @@ def percolate_crack(at, tol):
    # seed percolation at left edge
    cells[i,j,k] = 2
 
-   percolate(cells)
+   percolate(cells, fig=fig, base=base)
 
    # Last cell visited in percolation walk
    crack_cell = (cells == 3).nonzero()
@@ -84,4 +111,23 @@ def percolate_crack(at, tol):
 
    crack_pos = dot(at.lattice, crack_t)
 
-   return crack_pos
+   return crack_pos, cells
+
+
+def img(at):
+   view = atomeye.show(at)
+   view.capture('tmp.png')
+   view.wait()
+   im = imread('tmp.png')
+
+   ima = zeros((im.shape[0], im.shape[1], 4))
+   ima[:,:,0:3] = im
+
+   # make white transparent
+   ima[:,:,3] = 0
+   ima[:,:,3] = 1-(im == 1).all(axis=2)
+
+   return ima
+
+
+               
