@@ -384,7 +384,7 @@ program crack
      call initialise(metapot_params)
      call set_value(metapot_params, 'method', trim(params%fit_method))
      call set_value(metapot_params, 'buffer_hops', params%qm_buffer_hops)
-     call set_value(metapot_params, 'transition_hops', params%qm_transition_hops)buffer_hops='//params%qm_buff
+     call set_value(metapot_params, 'transition_hops', params%qm_transition_hops)
      call set_value(metapot_params, 'fit_hops', params%fit_hops)
      call set_value(metapot_params, 'minimise_mm', params%minim_minimise_mm)
      call set_value(metapot_params, 'randomise_buffer', params%qm_randomise_buffer)
@@ -860,12 +860,12 @@ program crack
            !*  Quantum Selection                                           *
            !*                                                              *
            !****************************************************************    
-           if (.not. params%simulation_classical) then
+!           if (.not. params%simulation_classical) then
               call system_timer('QM selection')
               call print_title('Quantum Selection')
               if (params%selection_dynamic) call crack_update_selection(ds%atoms, params)
               call system_timer('QM selection')
-           end if
+!           end if
 
 
            !****************************************************************
@@ -900,7 +900,9 @@ program crack
               end if
 
               ! advance the dynamics
+              call system_timer('advance_verlet')
               call advance_verlet(ds, params%md_time_step, f, do_calc_dists=(state /= STATE_MD_LOADING))
+              call system_timer('advance_verlet')
               if (params%simulation_classical) then
                  call ds_print_status(ds, 'E', epot=energy)
               else
@@ -910,6 +912,7 @@ program crack
 
               if (state == STATE_MD_LOADING) then
                  ! increment the load
+                 call system_timer('apply_load_increment')
                  if (has_property(ds%atoms, 'load')) then
                     call system_timer('load_increment')
                     call crack_apply_load_increment(ds%atoms, params%md_smooth_loading_rate*params%md_time_step)
@@ -921,6 +924,7 @@ program crack
                  else
                     call print('No load field found - not increasing load.')
                  end if
+                 call system_timer('apply_load_increment')
               end if
 
            end do
