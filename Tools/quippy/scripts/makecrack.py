@@ -7,11 +7,12 @@ params = CrackParams()
 
 if len(sys.argv[1:]) != 1:
    print('Usage: makecrack <stem>')
-   print('Where <stem>.xml is parameter XML file and <stem>.xyz is the crack slab output XYZ file')
+   print('Reads parameter file <stem>.xml  and writes NetCDF output file <stem>.nc')
    print('')
    print('Available parameters and their default values are:')
    params.print_()
 
+stem = sys.argv[1]
 
 xmlfilename = stem+'.xml'
 ncfilename = stem+'.nc'
@@ -26,17 +27,19 @@ params.read_xml(xmlfile)
 verbosity_push(params.io_verbosity)
 params.print_()
 
-print("Initialising classical potential with args " + params.classical_args +
+print("Initialising classical potential with args " + params.classical_args.strip() +
       " from file " + xmlfilename)
 xmlfile.rewind()
 classicalpot = Potential(params.classical_args, xmlfile)
 classicalpot.print_()
 
+mpi_glob = MPI_context()
+
 print('Initialising metapotential')
 simple = MetaPotential('Simple', classicalpot, mpi_obj=mpi_glob)
 simple.print_()
 
-crack_slab, width, height, e, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
+crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
 
 # Save bulk cube (used for qm_rescale_r parameter in crack code)
 bulk.write(stem+'_bulk.xyz')
@@ -56,7 +59,7 @@ if params.crack_structure != 'graphene':
         lattice[1,1] = lattice[1,1] + params.crack_vacuum_size
    
    lattice[2,2] = lattice[2,2] + params.crack_vacuum_size
-   crack_slab.set_lattice(crack_slab, lattice)
+   crack_slab.set_lattice(lattice)
 
 # Add various properties to crack_slab
 crack_slab.add_property('hybrid', 0)
@@ -83,11 +86,11 @@ for i in frange(crack_slab.n):
    if (crack_slab.pos[2,i] > maxy): maxy = crack_slab.pos[2,i]
    if (crack_slab.pos[2,i] < miny): miny = crack_slab.pos[2,i]
 
-crack_slab.move_mask = 1
+crack_slab.move_mask[:] = 1
 n_fixed = 0
 for i in frange(crack_slab.n):
-   if ((abs(crack_slab%pos(2,i)-maxy) < params%crack_edge_fix_tol) or
-       (abs(crack_slab%pos(2,i)-miny) < params%crack_edge_fix_tol)):
+   if ((abs(crack_slab.pos[2,i]-maxy) < params.crack_edge_fix_tol) or
+       (abs(crack_slab.pos[2,i]-miny) < params.crack_edge_fix_tol)):
       crack_slab.move_mask[i] = 0
       n_fixed = n_fixed + 1
 
@@ -96,7 +99,7 @@ print('%d atoms. %d fixed atoms' % (crack_slab.n, n_fixed))
 crack_make_seed(crack_slab, params)
 
 if (params.crack_apply_initial_load):
-   call crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True)
+   crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
 
 print_title('Initialising QM region')
 
@@ -106,7 +109,6 @@ crack_slab.params['CrackPosy'] = crack_pos[2]
 
 crack_setup_marks(crack_slab, params)
 
-params.io_print_all_properties = True
+crack_slab.write(ncfilename)
 
-call crack_print(crack_slab, ncfilename, params)
 
