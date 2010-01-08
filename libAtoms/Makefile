@@ -34,8 +34,8 @@ endif
 
 
 LIBATOMS_F95_FILES = \
-  mpi \
   System \
+  MPI_context \
   ExtendableStr\
   Units \
   linearalgebra \
