@@ -2757,7 +2757,6 @@ contains
 #ifdef _MPI
     integer::error
     integer :: is_initialised
-    character(1024) :: mpi_error_str
     include "mpif.h"
 
     call MPI_initialized(is_initialised, error)
@@ -2855,7 +2854,6 @@ contains
     integer :: values(8)
 #ifdef _MPI
     integer :: error
-    character(1024) :: mpi_error_str
     include "mpif.h"
 #endif
 
@@ -2968,7 +2966,6 @@ contains
     logical :: use_common_seed
 #ifdef _MPI
     integer :: error
-    character(len=1024) :: mpi_error_str
     include "mpif.h"    
 #endif
 
