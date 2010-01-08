@@ -71,6 +71,7 @@ interface Print
   module procedure IPModel_ASAP2_Print
 end interface Print
 
+public :: setup_atoms
 interface setup_atoms
    module procedure IPModel_ASAP2_setup_atoms
 end interface
@@ -316,7 +317,7 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
 
    call system_timer('asap_rs_dipoles')
 
-   !$omp parallel default(none) shared(this, at, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
+   !$omp parallel default(none) shared(this, at, charge, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -531,7 +532,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr)
 
   dip_sr = 0.0_dp
 
-  !$omp parallel default(none) shared(this, at, dip_sr) private(ti, m, j, tj, k, r_ij, u_ij, qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr, private_dip_sr)
+  !$omp parallel default(none) shared(this, at, charge, dip_sr) private(ti, m, j, tj, k, r_ij, u_ij, qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr, private_dip_sr)
 
   allocate(private_dip_sr(size(dip_sr,1),size(dip_sr,2)))
   private_dip_sr = 0.0_dp
@@ -741,7 +742,7 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
    type(IPModel_ASAP2), intent(in):: this
    type(Atoms), intent(inout)      :: at
 
-   logical :: dummy, added_charge
+   logical :: dummy
    integer :: i, ti
    real(dp), dimension(:), pointer :: charge
 
