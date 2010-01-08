@@ -571,7 +571,6 @@
 
 module system_module
 !$ use omp_lib
-  use mpi_module
   implicit none
 
 #ifdef HAVE_QP
@@ -2475,24 +2474,6 @@ contains
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X These functions provide access to some MPI global variables
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  !% Return this processes' MPI ID
-  function mpi_id() result (id)
-    integer::id
-    id = mpi_myid
-  end function mpi_id
-
-  !%  Return the total number of MPI processes.
-  function mpi_n_procs() result (n)
-    integer::n
-    n = mpi_n
-  end function mpi_n_procs
-
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
 !% Concatenation functions.
 !% Overloadings for the // operator to make strings from various other types.
 !% In each case, we need to work out the exact length of the resultant string
@@ -2718,6 +2699,40 @@ contains
     end if
   end function string_cat_complex
 
+
+  !% Return the mpi size and rank for the communicator 'comm'.
+  !% this routine aborts of _MPI is not defined
+  subroutine get_mpi_size_rank(comm, nproc, rank)
+    
+    integer, intent(in)  :: comm  !% MPI communicator
+    integer, intent(out) :: nproc  !% Total number of processes
+    integer, intent(out) :: rank  !% Rank of this process
+
+#ifdef _MPI
+    include 'mpif.h'
+#endif
+
+#ifdef _MPI
+    
+    integer::error_code
+
+    call MPI_COMM_SIZE(comm, nproc, error_code)
+    if (error_code .ne. MPI_SUCCESS) then
+       rank=-1
+       nproc=-1
+       return
+    endif
+    call MPI_COMM_RANK(comm, rank, error_code)
+    if (error_code .ne. MPI_SUCCESS) then
+       rank=-1
+       nproc=-1
+       return
+    endif
+#else
+    rank = 0
+    nproc = 1
+#endif
+  end subroutine get_mpi_size_rank
 
   ! System initialiser
 
@@ -3628,7 +3643,6 @@ contains
     endif
   end subroutine DEALLOC_TRACE
 
-
 #ifdef _OPENMP
   function system_omp_get_num_threads()
     use omp_lib
@@ -3644,5 +3658,25 @@ contains
     call omp_set_num_threads(threads)
   end subroutine system_omp_set_num_threads
 #endif  
+
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!X These functions provide low-level access to some MPI global variables
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  !% Return this processes' MPI ID
+  function mpi_id() result (id)
+    integer::id
+    id = mpi_myid
+  end function mpi_id
+
+  !%  Return the total number of MPI processes.
+  function mpi_n_procs() result (n)
+    integer::n
+    n = mpi_n
+  end function mpi_n_procs
+
 
 end module system_module

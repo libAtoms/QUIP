@@ -1,5 +1,5 @@
 module MPI_context_module
-use libatoms_module
+use system_module
 implicit none
 
 private

@@ -8,7 +8,7 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-BASE_F95_FILES = MPI_context ScaLAPACK Matrix RS_SparseMatrix QUIP_Common
+BASE_F95_FILES = ScaLAPACK Matrix RS_SparseMatrix QUIP_Common
 BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
 BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
 
