@@ -35,12 +35,6 @@ if got_asap2:
          df2 = fzeros((3, at.n))
          local_e2 = fzeros((at.n,))
 
-         at.add_property('efield', 0.0, n_cols=3)
-         at.add_property('dipoles', 0.0, n_cols=3)
-         at.add_property('efield_old1', 0.0, n_cols=3)
-         at.add_property('efield_old2', 0.0, n_cols=3)
-         at.add_property('efield_old3', 0.0, n_cols=3)
-
          at1 = at.copy()
          at1.set_cutoff(self.cutoff)
          at1.calc_connect()
@@ -89,13 +83,6 @@ if got_asap2:
          v = fzeros((3,3))
          df = fzeros((3, at.n))
          local_e = fzeros((at.n,))
-
-         at.add_property('efield', 0.0, n_cols=3)
-         at.add_property('dipoles', 0.0, n_cols=3)
-         at.add_property('efield_old1', 0.0, n_cols=3)
-         at.add_property('efield_old2', 0.0, n_cols=3)
-         at.add_property('efield_old3', 0.0, n_cols=3)
-
          at.calc_connect()
          self.p2.calc(at, e=e, f=f, virial=v, local_e=local_e)
 
@@ -9291,12 +9278,6 @@ O               8.67861563     -4.38862016     -3.81287652       8"""
 
             self.at = alpha_quartz(**sio2.quartz_params['CASTEP_LDA'])
             self.at.cutoff = 20.0*BOHR
-
-            self.at.add_property('efield', 0.0, n_cols=3)
-            self.at.add_property('dipoles', 0.0, n_cols=3)
-            self.at.add_property('efield_old1', 0.0, n_cols=3)
-            self.at.add_property('efield_old2', 0.0, n_cols=3)
-            self.at.add_property('efield_old3', 0.0, n_cols=3)
 
             self.ds1 = DynamicalSystem(self.at)
             self.ds1.rescale_velo(300.0)
