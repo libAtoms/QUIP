@@ -239,6 +239,14 @@ class AtomEyeView(object):
             raise RuntimeError('is_alive is False')
         _atomeye.run_command(self._window_id, command)
 
+    def run_script(self, script):
+        if type(script) == type(''):
+            script = open(script)
+            
+        for line in script:
+            self.run_command(line)
+            self.wait()
+
     def __call__(self, command):
         self.run_command(command)
 
@@ -595,4 +603,26 @@ class AtomEyeCfgWriter(object):
         for i in range(at.n):
             cfg.write(format % tuple(data[i]))
 
+
+class ImageWriter(object):
+
+    def __init__(self, img):
+        self.view = AtomEyeView(nowindow=True)
+        self.img = img
+
+    def write(self, at, property=None, highlight=None, arrows=None, *arrowargs, **arrowkwargs):
+        self.view.show(at, property, highlight, arrows=arrows, *arrowargs, **arrowkwargs)
+        self.view.shift_xtal(0, 0)
+        self.view.redraw()
+        self.view.wait()
+        self.view.capture(self.img)
+        self.view.wait()
+
+    def close(self):
+        pass
+
+
+from quippy import AtomsWriters
+AtomsWriters['cfg'] = AtomEyeCfgWriter
+AtomsWriters['png'] = AtomsWriters['eps'] = AtomsWriters['jpg'] = AtomsWriters['jpeg'] = ImageWriter
 
