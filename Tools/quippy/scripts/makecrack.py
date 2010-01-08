@@ -3,112 +3,106 @@
 from quippy import *
 import sys
 
-params = CrackParams()
+def makecrack(params):
+   """Given a CrackParams object `param`, construct and return a new crack slab Atoms object."""
+   
+   print_title('Initialisation')
 
-if len(sys.argv[1:]) != 1:
-   print('Usage: makecrack <stem>')
-   print('Reads parameter file <stem>.xml  and writes NetCDF output file <stem>.nc')
-   print('')
-   print('Available parameters and their default values are:')
+   verbosity_push(params.io_verbosity)
    params.print_()
 
-stem = sys.argv[1]
+   print("Initialising classical potential with args " + params.classical_args.strip() +
+         " from file " + xmlfilename)
+   xmlfile.rewind()
+   classicalpot = Potential(params.classical_args, xmlfile)
+   classicalpot.print_()
 
-xmlfilename = stem+'.xml'
-ncfilename = stem+'.nc'
+   mpi_glob = MPI_context()
 
-print_title('Initialisation')
+   print('Initialising metapotential')
+   simple = MetaPotential('Simple', classicalpot, mpi_obj=mpi_glob)
+   simple.print_()
 
-print('Reading parameters from file '+xmlfilename)
+   crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
 
-xmlfile = InOutput(xmlfilename,INPUT)
-params.read_xml(xmlfile)
+   # Save bulk cube (used for qm_rescale_r parameter in crack code)
+   bulk.write(stem+'_bulk.xyz')
 
-verbosity_push(params.io_verbosity)
-params.print_()
+   crack_slab.params['OrigWidth'] = width
+   crack_slab.params['OrigHeight'] = height
 
-print("Initialising classical potential with args " + params.classical_args.strip() +
-      " from file " + xmlfilename)
-xmlfile.rewind()
-classicalpot = Potential(params.classical_args, xmlfile)
-classicalpot.print_()
+   crack_slab.params['YoungsModulus'] = E
+   crack_slab.params['PoissonRatio_yx'] = v
+   crack_slab.params['PoissonRatio_yz'] = v2
 
-mpi_glob = MPI_context()
-
-print('Initialising metapotential')
-simple = MetaPotential('Simple', classicalpot, mpi_obj=mpi_glob)
-simple.print_()
-
-crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
-
-# Save bulk cube (used for qm_rescale_r parameter in crack code)
-bulk.write(stem+'_bulk.xyz')
-
-crack_slab.params['OrigWidth'] = width
-crack_slab.params['OrigHeight'] = height
-
-crack_slab.params['YoungsModulus'] = E
-crack_slab.params['PoissonRatio_yx'] = v
-crack_slab.params['PoissonRatio_yz'] = v2
-
-# Open x and y surfaces, remain periodic in z direction (normal to plane)
-if params.crack_structure != 'graphene':
-   lattice = crack_slab.lattice.copy()
-     
+   # Open surfaces, remain periodic in z direction (normal to plane)
+   # and optionally also in x direction if crack_double_ended is true
    if not params.crack_double_ended:
-        lattice[1,1] = lattice[1,1] + params.crack_vacuum_size
-   
-   lattice[2,2] = lattice[2,2] + params.crack_vacuum_size
-   crack_slab.set_lattice(lattice)
+      crack_slab.lattice[1,1] = crack_slab.lattice[1,1] + params.crack_vacuum_size
 
-# Add various properties to crack_slab
-crack_slab.add_property('hybrid', 0)
-crack_slab.add_property('hybrid_mark', HYBRID_NO_MARK)
-crack_slab.add_property('changed_nn', 0)
-crack_slab.add_property('move_mask', 0)
-crack_slab.add_property('nn', 0)
-crack_slab.add_property('old_nn', 0)
-crack_slab.add_property('md_old_changed_nn', 0)
-crack_slab.add_property('edge_mask', 0)
+   crack_slab.lattice[2,2] = crack_slab.lattice[2,2] + params.crack_vacuum_size
+   crack_slab.set_lattice(crack_slab.lattice)
 
-if params.crack_structure == 'alpha_quartz':
-   crack_slab.add_property('efield', 0.0, n_cols=3)
-   crack_slab.add_property('dipoles', 0.0, n_cols=3)
-   crack_slab.add_property('efield_old1', 0.0, n_cols=3)
-   crack_slab.add_property('efield_old2', 0.0, n_cols=3)
-   crack_slab.add_property('efield_old3', 0.0, n_cols=3)
+   # Add various properties to crack_slab
+   crack_slab.add_property('hybrid', 0)
+   crack_slab.add_property('hybrid_mark', HYBRID_NO_MARK)
+   crack_slab.add_property('changed_nn', 0)
+   crack_slab.add_property('move_mask', 0)
+   crack_slab.add_property('nn', 0)
+   crack_slab.add_property('old_nn', 0)
+   crack_slab.add_property('md_old_changed_nn', 0)
+   crack_slab.add_property('edge_mask', 0)
 
-print_title('Fixing Atoms')
+   print_title('Fixing Atoms')
 
-# Fix top and bottom edges - anything within crack_edge_fix_tol of ymax or ymin is fixed
-maxy = 0.0; miny = 0.0; maxx = 0.0
-for i in frange(crack_slab.n):
-   if (crack_slab.pos[2,i] > maxy): maxy = crack_slab.pos[2,i]
-   if (crack_slab.pos[2,i] < miny): miny = crack_slab.pos[2,i]
+   # Fix top and bottom edges - anything within crack_edge_fix_tol of ymax or ymin is fixed
 
-crack_slab.move_mask[:] = 1
-n_fixed = 0
-for i in frange(crack_slab.n):
-   if ((abs(crack_slab.pos[2,i]-maxy) < params.crack_edge_fix_tol) or
-       (abs(crack_slab.pos[2,i]-miny) < params.crack_edge_fix_tol)):
-      crack_slab.move_mask[i] = 0
-      n_fixed = n_fixed + 1
+   miny, maxy = crack_slab.pos[2,:].min(), crack_slab.pos[2,:].max()
 
-print('%d atoms. %d fixed atoms' % (crack_slab.n, n_fixed))
-  
-crack_make_seed(crack_slab, params)
+   crack_slab.move_mask[:] = 1
+   crack_slab.move_mask[logical_or(abs(crack_slab.pos[2,:]-maxy) < params.crack_edge_fix_tol,
+                                   abs(crack_slab.pos[2,:]-miny) < params.crack_edge_fix_tol)] = 0
 
-if (params.crack_apply_initial_load):
-   crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
+   print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
-print_title('Initialising QM region')
+   crack_make_seed(crack_slab, params)
 
-crack_pos = crack_find_crack_pos(crack_slab, params)
-crack_slab.params['CrackPosx'] = crack_pos[1]
-crack_slab.params['CrackPosy'] = crack_pos[2]
+   if (params.crack_apply_initial_load):
+      crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
 
-crack_setup_marks(crack_slab, params)
+   print_title('Initialising QM region')
 
-crack_slab.write(ncfilename)
+   crack_pos = crack_find_crack_pos(crack_slab, params)
+   crack_slab.params['CrackPosx'] = crack_pos[1]
+   crack_slab.params['CrackPosy'] = crack_pos[2]
+
+   crack_setup_marks(crack_slab, params)
+
+   return crack_slab
+
+
+if __name__ == '__main__':
+
+   params = CrackParams()
+
+   if len(sys.argv[1:]) != 1:
+      print('Usage: makecrack <stem>')
+      print('Reads parameter file <stem>.xml  and writes NetCDF output file <stem>.nc')
+      print('')
+      print('Available parameters and their default values are:')
+      params.print_()
+
+   stem = sys.argv[1]
+   xmlfilename = stem+'.xml'
+   ncfilename = stem+'.nc'
+
+   print('Reading parameters from file '+xmlfilename)
+
+   xmlfile = InOutput(xmlfilename,INPUT)
+   params.read_xml(xmlfile)
+
+   crack_slab = makecrack(params)
+   crack_slab.write(ncfilename)
+
 
 
