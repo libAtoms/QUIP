@@ -36,7 +36,9 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
 public :: create_cluster_info, create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
-    add_cut_hydrogens, construct_hysteretic_region !, construct_region, select_hysteretic_quantum_region
+    add_cut_hydrogens, construct_hysteretic_region, &
+    create_pos_centred_hybrid_region, get_hybrid_list
+    !, construct_region, select_hysteretic_quantum_region
 
 interface create_hybrid_weights
    module procedure create_hybrid_weights_args
@@ -84,7 +86,7 @@ contains
     integer::i
 
     do i=1,n
-       call bfs_step(this, list, tmplist, nneighb_only, min_images_only, alt_connect)
+       call bfs_step(this, list, tmplist, nneighb_only, min_images_only, alt_connect=alt_connect)
        call append(list, tmplist)
     end do
 
@@ -93,12 +95,13 @@ contains
 
 
   !% Execute one Breadth-First-Search move on the atomic connectivity graph.
-  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, alt_connect, property)
+  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, max_r, alt_connect, property, debugfile)
     type(Atoms),        intent(in), target      :: this  !% The atoms structure to perform the step on.
     type(Table),        intent(in)      :: input !% Table with intsize 4. First integer column is indices of atoms
                                                  !% already in the region, next 3 are shifts.
     type(Table),        intent(out)     :: output !% Table with intsize 4, containing the new atomic 
                                                   !% indices and shifts.
+
 
     logical, optional,  intent(in)      :: nneighb_only
     !% If present and true, sets whether only neighbours
@@ -110,8 +113,13 @@ contains
     !% If true, there will be no repeated atomic indices in final list - only the
     !% minimum shift image of those found will be included. Default is false.
 
+    real(dp), optional, intent(in)      :: max_r
+    !% if present, only neighbors within this range will be included
+
     type(Connection), intent(in), optional, target :: alt_connect
     integer, intent(in), optional:: property(:)
+
+    type(inoutput), optional :: debugfile
 
     !local
     logical                             :: do_nneighb_only, do_min_images_only
@@ -122,21 +130,28 @@ contains
     real(dp), allocatable, dimension(:) :: norm2shift
     type(Connection), pointer :: use_connect
 
+    if (present(debugfile)) call print("bfs_step", file=debugfile)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
       use_connect => this%connect
     endif
 
+    if (present(debugfile)) call print("bfs_step cutoff " // this%cutoff // " " // this%use_uniform_cutoff, file=debugfile)
+
     if (.not.use_connect%initialised) &
          call system_abort('BFS_Step: Atomic structure has no connectivity data')
 
-    do_nneighb_only = .true.
-    if(present(nneighb_only)) do_nneighb_only = nneighb_only
+    do_nneighb_only = optional_default(.true., nneighb_only)
+    ! do_nneighb_only = .true.
+    ! if(present(nneighb_only)) do_nneighb_only = nneighb_only
 
-    do_min_images_only = .false.
-    if (present(min_images_only)) do_min_images_only = min_images_only
-    call print('bfs_step: do_min_images_only = '//do_min_images_only, NERD)
+    do_min_images_only = optional_default(.false., min_images_only)
+    ! do_min_images_only = .false.
+    ! if (present(min_images_only)) do_min_images_only = min_images_only
+
+    if (present(debugfile)) call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, file=debugfile)
+    call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, NERD)
 
     if(input%intsize /= 4 .or. input%realsize /= 0) &
          call system_abort("bfs_step: input table must have intsize=4.")
@@ -148,26 +163,37 @@ contains
        i = input%int(1,m)
        ishift = input%int(2:4,m)
 
+       if (present(debugfile)) call print("bfs_step check atom " // m // " " // i // " with n_neigh " // atoms_n_neighbours(this, i, alt_connect=use_connect), file=debugfile)
        ! Loop over i's neighbours
        do n = 1, atoms_n_neighbours(this,i, alt_connect=use_connect)
-          j = atoms_neighbour(this,i,n,shift=jshift, alt_connect=use_connect)
+	  j = atoms_neighbour(this,i,n,shift=jshift,max_dist=max_r, alt_connect=use_connect)
+	  if (present(debugfile)) call print("bfs_step   check neighbour " // n // " " // j, file=debugfile)
+	  if (j == 0) cycle
 
           ! Look at next neighbour if j with correct shift is already in the cluster
           ! Must check input AND output tables
           if (find(input,(/j,ishift+jshift/)) > 0) cycle
+	  if (present(debugfile)) call print("bfs_step   not in input", file=debugfile)
           if (find(output,(/j,ishift+jshift/)) > 0) cycle
+	  if (present(debugfile)) call print("bfs_step   not in output", file=debugfile)
 
           if (do_nneighb_only .and. .not. is_nearest_neighbour(this, i, n, alt_connect=use_connect)) cycle
+	  if (present(debugfile)) call print("bfs_step   acceptably near neighbor", file=debugfile)
 
           if (present(property)) then
              if (property(j) == 0) cycle
           endif
+	  if (present(debugfile)) call print("bfs_step   property matches OK", file=debugfile)
 
           ! Everything checks out ok, so add j to the output table
           ! with correct shift
+	  if (present(debugfile)) call print("bfs_step   appending", file=debugfile)
           call append(output,(/j,ishift+jshift/)) 
        end do
     end do
+
+    if (present(debugfile)) call print("bfs_step   raw output", file=debugfile)
+    if (present(debugfile)) call print(output, file=debugfile)
 
     if (do_min_images_only) then
 
@@ -223,6 +249,9 @@ contains
        end do
 
     end if
+
+    if (present(debugfile)) call print("bfs_step   final output", file=debugfile)
+    if (present(debugfile)) call print(output, file=debugfile)
 
   end subroutine bfs_step
 
@@ -1502,6 +1531,7 @@ contains
     do_hysteretic_connect_cluster_radius = optional_default(30.0_dp, hysteretic_connect_cluster_radius)
     do_hysteretic_connect_inner_factor = optional_default(1.2_dp, hysteretic_connect_inner_factor)
     do_hysteretic_connect_outer_factor = optional_default(1.5_dp, hysteretic_connect_outer_factor)
+call print("create_hybrid_weights_args radii " // do_hysteretic_buffer_inner_radius // " " // do_hysteretic_buffer_outer_radius, ERROR)
 
     hop_ramp = .false.
     distance_ramp = .false.
@@ -1742,7 +1772,18 @@ contains
        end do
 
        !construct the hysteretic buffer region:
-       call construct_hysteretic_region(at,region=bufferlist,inner_radius=do_hysteretic_buffer_inner_radius,outer_radius=do_hysteretic_buffer_outer_radius,core=total_embedlist,use_avgpos=.false.,add_only_heavy_atoms=do_construct_buffer_use_only_heavy_atoms,simply_loop_over_atoms=.false.)
+       if (do_hysteretic_connect) then
+	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
+	   inner_radius=do_hysteretic_buffer_inner_radius,outer_radius=do_hysteretic_buffer_outer_radius,use_avgpos=.false., &
+	   add_only_heavy_atoms=do_construct_buffer_use_only_heavy_atoms, nneighb_only=do_nneighb_only, min_images_only=do_min_images_only, &
+	   alt_connect=at%hysteretic_connect, debugfile=mainlog)
+       else
+	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
+	   inner_radius=do_hysteretic_buffer_inner_radius,outer_radius=do_hysteretic_buffer_outer_radius,use_avgpos=.false., &
+	   add_only_heavy_atoms=do_construct_buffer_use_only_heavy_atoms, nneighb_only=do_nneighb_only, min_images_only=do_min_images_only, &
+	   debugfile=mainlog)
+       endif
+
 
        call print('bufferlist=',VERBOSE)
        call print(bufferlist,VERBOSE)
@@ -2132,22 +2173,27 @@ contains
   !% Optionally use the time averaged positions.
   !% Optionally use only heavy atom selection.
   !
-  subroutine construct_hysteretic_region(at,region,inner_radius,outer_radius,core,centre,use_avgpos,add_only_heavy_atoms,simply_loop_over_atoms)
+  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile)
 
-    type(Atoms),           intent(in)    :: at
     type(Table),           intent(inout) :: region
-    real(dp),              intent(in)    :: inner_radius
-    real(dp),              intent(in)    :: outer_radius
+    type(Atoms),           intent(in)    :: at
     type(Table), optional, intent(in)    :: core
     real(dp),    optional, intent(in)    :: centre(3)
+    logical,     optional, intent(in)    :: loop_atoms_no_connectivity
+    real(dp),              intent(in)    :: inner_radius
+    real(dp),              intent(in)    :: outer_radius
     logical,     optional, intent(in)    :: use_avgpos
     logical,     optional, intent(in)    :: add_only_heavy_atoms
-    logical,     optional, intent(in)    :: simply_loop_over_atoms
+    logical,     optional, intent(in)  :: nneighb_only
+    logical,     optional, intent(in)  :: min_images_only
+    type(Connection), optional,intent(in) :: alt_connect
+    type(inoutput), optional :: debugfile
 
     type(Table)                          :: inner_region
     type(Table)                          :: outer_region
     logical                              :: no_hysteresis
 
+    if (present(debugfile)) call print("construct_hysteretic_region radii " // inner_radius // " " // outer_radius, file=debugfile)
     !check the input arguments only in construct_region.
     if (inner_radius.lt.0._dp) call system_abort('inner_radius must be > 0 and it is '//inner_radius)
     if (outer_radius.lt.inner_radius) call system_abort('outer radius ('//outer_radius//') must not be smaller than inner radius ('//inner_radius//').')
@@ -2155,17 +2201,31 @@ contains
     no_hysteresis = .false.
     if ((outer_radius-inner_radius).lt.epsilon(0._dp)) no_hysteresis = .true.
     if (no_hysteresis) call print('WARNING! construct_hysteretic_region: inner_buffer=outer_buffer. no hysteresis applied: outer_region = inner_region used.',ERROR)
+    if (present(debugfile)) call print("   no_hysteresis " // no_hysteresis, file=debugfile)
 
-    call construct_region(at,radius=inner_radius,region=inner_region,core=core,centre=centre,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,simply_loop_over_atoms=simply_loop_over_atoms)
+    if (present(debugfile)) call print("   constructing inner region", file=debugfile)
+    call construct_region(region=inner_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
+      radius=inner_radius,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,nneighb_only=nneighb_only, &
+      min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile)
     if (no_hysteresis) then
        call initialise(outer_region,4,0,0,0,0)
        call append(outer_region,inner_region)
     else
-       call construct_region(at,radius=outer_radius,region=outer_region,core=core,centre=centre,use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,simply_loop_over_atoms=simply_loop_over_atoms)
+    if (present(debugfile)) call print("   constructing outer region", file=debugfile)
+       call construct_region(region=outer_region,at=at,core=core,centre=centre,loop_atoms_no_connectivity=loop_atoms_no_connectivity, &
+	radius=outer_radius, use_avgpos=use_avgpos,add_only_heavy_atoms=add_only_heavy_atoms,nneighb_only=nneighb_only, &
+	min_images_only=min_images_only,alt_connect=alt_connect,debugfile=debugfile)
     endif
 
-       call print('construct_hysteretic_region: old region list:',VERBOSE)
-       call print(region,VERBOSE)
+    if (present(debugfile)) call print("   orig inner_region list", file=debugfile)
+    if (present(debugfile)) call print(inner_region, file=debugfile)
+    if (present(debugfile)) call print("   orig outer_region list", file=debugfile)
+    if (present(debugfile)) call print(outer_region, file=debugfile)
+    if (present(debugfile)) call print("   old region list", file=debugfile)
+    if (present(debugfile)) call print(region, file=debugfile)
+
+     call print('construct_hysteretic_region: old region list:',VERBOSE)
+     call print(region,VERBOSE)
 
     call update_hysteretic_region(at,inner_region,outer_region,region)
 
@@ -2175,8 +2235,16 @@ contains
        call print('construct_hysteretic_region: outer_region list:',VERBOSE)
        call print(outer_region,VERBOSE)
 
+       if (present(debugfile)) call print("   new inner region list", file=debugfile)
+       if (present(debugfile)) call print(inner_region, file=debugfile)
+       if (present(debugfile)) call print("   new outer region list", file=debugfile)
+       if (present(debugfile)) call print(outer_region, file=debugfile)
+
        call print('construct_hysteretic_region: new region list:',VERBOSE)
        call print(region,VERBOSE)
+
+       if (present(debugfile)) call print("   new region list", file=debugfile)
+       if (present(debugfile)) call print(region, file=debugfile)
 
     call finalise(inner_region)
     call finalise(outer_region)
@@ -2192,261 +2260,159 @@ contains
   !% Optionally use a heavy atom based selection (applying to both the core and the region atoms).
   !% Alternatively use the hysteretic connection, only nearest neighbours and/or min_images (only for the n_connectivity_hops).
   !
-  subroutine construct_region(at,radius,region,core,centre,use_avgpos,add_only_heavy_atoms,simply_loop_over_atoms,n_connectivity_hops,nneighb_only,min_images_only,alt_connect)
+  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile)
 
-    type(Atoms),           intent(in)  :: at
     type(Table),           intent(out) :: region
-    real(dp),    optional, intent(in)  :: radius
-    integer,     optional, intent(in)  :: n_connectivity_hops
+    type(Atoms),           intent(in)  :: at
     type(Table), optional, intent(in)  :: core
     real(dp),    optional, intent(in)  :: centre(3)
+    logical,     optional, intent(in)  :: loop_atoms_no_connectivity
+    real(dp),    optional, intent(in)  :: radius
+    integer,     optional, intent(in)  :: n_connectivity_hops
     logical,     optional, intent(in)  :: use_avgpos
     logical,     optional, intent(in)  :: add_only_heavy_atoms
-    logical,     optional, intent(in)  :: simply_loop_over_atoms
     logical,     optional, intent(in)  :: nneighb_only
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
+type(inoutput), optional :: debugfile
 
     logical                             :: do_use_avgpos
-    logical                             :: do_loop_no_hops
+    logical                             :: do_loop_atoms_no_connectivity
     logical                             :: do_add_only_heavy_atoms
-    integer                             :: i, nhops
+    integer                             :: do_n_connectivity_hops
     logical                             :: do_nneighb_only
     logical                             :: do_min_images_only
-    type(Table)                         :: currentlist, nextlist
-    logical :: build_around_list
+    integer                             :: i, j, ii, ij
+    type(Table)                         :: nextlist
+    logical                             :: more_hops, add_i
+    integer                             :: cur_hop
+    real(dp), pointer                   :: use_pos(:,:)
+    integer                             ::  shift_i(3)
 
-    logical                             :: more_atoms, add_atom
-    integer                             :: region_atoms_guess, ii(4), jj(4), n, nn
-    type(Table)                         :: cluster, extra_atoms
-    integer,  allocatable, dimension(:) :: append_row_int
-    real(dp), allocatable, dimension(:) :: append_row_real
-    integer :: lookup(3), shift_i(3)
-    type(Table) :: my_core
-    integer :: first_atom, first_shift(3)
-    real(dp) :: first_distance, dist_i
-    !Check the input arguments
+    do_loop_atoms_no_connectivity = optional_default(.false.,loop_atoms_no_connectivity)
 
-    !Around point or list?
-    if ((present(core).and.present(centre)) .or. (.not.present(core).and..not.present(centre))) call system_abort('canstruct_region: Exactly one of centre or core must be present.')
-    if (present(core)) then
-       build_around_list = .true.
-       if (core%intsize < 1) call system_abort('Construct_Buffer: Core table must have at least one integer')
-    else
-       build_around_list = .false.
-    !   call system_abort('canstruct_region: not yet implemented.')   !**********
-    endif
-
-    !Optional looping over atoms, no hopping
-    do_loop_no_hops = optional_default(.false.,simply_loop_over_atoms)
-    if (do_loop_no_hops) then
-       if (present(core)) call system_abort('Building around a list only goes with connectivity hops.')
-       if (radius.lt.epsilon(0._dp)) call system_abort('If looping around atoms, the radius must be > 0.')
-    endif
-
-    !Optional use of average positions
-    do_use_avgpos = optional_default(.false.,use_avgpos)
-    if (do_use_avgpos.and.do_loop_no_hops) call system_abort('avg_pos when loops not yet implemented.')   !***********
-    if (do_use_avgpos .and. .not. get_value(at%properties, 'avgpos', lookup)) &
-         call system_abort('Construct_Buffer: Average positions are not present in atoms structure')
-
-    !Optional only heavy atom selection
     do_add_only_heavy_atoms = optional_default(.false.,add_only_heavy_atoms)
-    if (do_add_only_heavy_atoms) then
-       if (.not. has_property(at,'Z')) call system_abort("construct_region: atoms has no Z property")
+    if (do_add_only_heavy_atoms .and. .not. has_property(at,'Z')) &
+      call system_abort("construct_region: atoms has no Z property")
+
+    do_use_avgpos = optional_default(.false.,  use_avgpos)
+
+    if (count((/ present(centre), present(core) /)) /= 1) &
+      call system_abort("Need either centre or core, but not both present(centre) " // present(centre) // " present(core) "// present(core))
+
+    ! if we have radius, we'll have to decide what positions to use
+    if (present(radius)) then
+      if (do_use_avgpos) then
+        if (.not. assign_pointer(at, "avgpos", use_pos)) &
+	  call system_abort("do_use_avgpos is true, but no avgpos property")
+      else
+        if (.not. assign_pointer(at, "pos", use_pos)) &
+	  call system_abort("do_use_avgpos is false, but no pos property")
+      endif
     endif
 
-    !Number of hops
-    nhops = optional_default(0,n_connectivity_hops)
-    do_min_images_only = optional_default(.true.,min_images_only)
-    do_nneighb_only = optional_default(.true.,nneighb_only)
-    nhops = optional_default(0,n_connectivity_hops)
-    if (nhops.gt.0) then
-       if (radius.gt.epsilon(0._dp)) call system_abort('Only one of n_connectivity_hops and radius can be > 0.')
-       if (do_loop_no_hops) call system_abort('nhops cannot be > 0 if loop_over_atoms is true.')
-    elseif (nhops.eq.0) then
-       if (radius < epsilon(0.0_dp)) call system_abort('Construct_Buffer: Buffer radius must be positive')
-       if (present(min_images_only).or.present(nneighb_only)) call system_abort('min_images_only and nneighb_only are only meaningful in case of n_connectivity_hop > 0.')
-    endif
+    call initialise(region,4,0,0,0,0)
 
-call print('skip?'//do_loop_no_hops)
-    !If only loop over the atoms, no hopping
-    if (do_loop_no_hops) then ! around centre, loop over atoms
+    if (do_loop_atoms_no_connectivity) then
+      if (present(debugfile)) call print("   loop over atoms", file=debugfile)
+      if (.not. present(radius)) &
+	call system_abort("do_loop_atoms_no_connectivity=T requires radius")
+      if (present(n_connectivity_hops) .or. present(min_images_only) .or. present(nneighb_only)) &
+	call print("WARNING: do_loop_atoms_no_connectivity, but specified unused arg n_connectivity_hops " // present(n_connectivity_hops) // &
+	  " min_images_only " // present(min_images_only) // " nneighb_only " // present(nneighb_only), ERROR)
        call print('WARNING: check if your cell is greater than the radius, looping only works in that case.',ERROR)
        if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) call system_abort('too small cell')
-       call initialise(region,4,0,0,0,0)
        do i = 1,at%N
-          if (do_add_only_heavy_atoms .and. at%Z(i).eq.1) cycle
-          if (distance_min_image(at,i,centre(1:3),shift_i(1:3)).lt.Radius) call append(region,(/i,shift_i(1:3)/))
-       enddo
-       return
-    endif
+	 if (present(debugfile)) call print("check atom i " // i // " Z " // at%Z(i) // " pos " // at%pos(:,i), file=debugfile)
+	 if (do_add_only_heavy_atoms .and. at%Z(i) == 1) cycle
+	 if (present(centre)) then ! distance from centre is all that matters
+	   if (present(debugfile)) call print(" distance_min_image use_pos i " // use_pos(:,i) // " centre " // centre // " dist " // distance_min_image(at, use_pos(:,i), centre(1:3), shift_i(1:3)), file=debugfile)
+	   if (distance_min_image(at,use_pos(:,i),centre(1:3),shift_i(1:3)) < radius) then
+	     if (present(debugfile)) call print("   adding i " // i  // " at " // use_pos(:,i) // " center " // centre // " dist " // distance_min_image(at, use_pos(:,i), centre(1:3), shift_i(1:3)), file=debugfile)
+	     call append(region,(/i,shift_i(1:3)/))
+	    endif
+	  else ! no centre, check distance from each core list atom
+	    do ij=1, core%N
+	      j = core%int(1,ij)
+	      if (present(debugfile)) call print(" core atom ij " // ij // " j " // j // " distance_min_image use_pos i " // use_pos(:,i) // " use_pos j " // use_pos(:,j) // " dist " // distance_min_image(at, use_pos(:,i), use_pos(:,j), shift_i(1:3)), file=debugfile)
+	      if (distance_min_image(at,use_pos(:,i),use_pos(:,j),shift_i(1:3)) < radius) then
+		if (present(debugfile)) call print("   adding i " // i // " at " // use_pos(:,i) // " near j " // j // " at " // use_pos(:,j) // " dist " // distance_min_image(at, use_pos(:,i), use_pos(:,j), shift_i(1:3)), file=debugfile)
+	        call append(region,(/i,shift_i(1:3)/))
+		exit
+	      endif
+	    end do ! j
+	  endif ! no centre, use core
+       enddo ! i
 
-    !Connectivity hopping, no radius
-    if (.not.at%connect%initialised) call system_abort('Construct_Buffer: Atomic connectivity data required')
-    !If we did not want to check the stopping of the region growth, we could simply call bfs_grow_list
-    if (nhops.gt.0) then
-       call initialise(currentlist,4,0,0,0,0)
-       call append(currentlist,core)
+    else ! do_loop_atoms_no_connectivity
 
-       do i = 0,nhops-1
-          call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only,alt_connect=alt_connect)
-          if (nextlist%N.eq.0) then
-             call print('WARNING! region stopped growing after '//i//'hops.',ERROR)
-             exit
-          endif
-          call append(currentlist, nextlist)
-       end do
-       call initialise(region,4,0,0,0,0)
-       call append(region, currentlist)
-    else
-    !Connectivity hopping, up to radius -- here nneighb_only=F to hop between molecules, min_images=T
-    !can use average positions
-       if (radius>at%cutoff) then
-          call print('WARNING! the connect_cutoff '//at%cutoff//' is smaller than the radius '//radius,ERROR)
-          call print('WARNING! watch out if you have molecules instead of a crystal.',ERROR)
-       endif
+      if (.not. present(core)) &
+	call system_abort("do_loop_atoms_no_connectivity is false, trying connectivity hops, but no core list is specified")
 
-       if (.not.build_around_list) call system_abort('test it, implemented.')    !**********
+	if (present(debugfile)) call print("   connectivity hopping", file=debugfile)
+	if (present(debugfile) .and. present(radius)) call print("    have radius " // radius, file=debugfile)
+	if (present(debugfile)) call print("   present nneighb_only " // present(nneighb_only), file=debugfile)
+	if (present(debugfile) .and. present(nneighb_only)) call print("   nneighb_only " // nneighb_only, file=debugfile)
+      do_nneighb_only = optional_default(.true., nneighb_only)
+      do_min_images_only = optional_default(.true., min_images_only)
+      if (do_use_avgpos) &
+	call system_abort("can't use avgpos with connectivity hops - make sure your connectivity is based on avgpos instead")
 
+      ! start with core
+      call append(region,core)
 
+      more_hops = .true.
+      cur_hop = 1
+      do while (more_hops)
+	if (present(debugfile)) call print('   construct_region do_nneighb_only = " // do_nneighb_only // " do_min_images_only = '//do_min_images_only, file=debugfile)
+	if (present(debugfile)) call print("   doing hop " // cur_hop, file=debugfile)
+	if (present(debugfile)) call print("   cutoffs " // at%cutoff // " " // at%use_uniform_cutoff, file=debugfile)
+	more_hops = .false.
+	call bfs_step(at, region, nextlist, nneighb_only=do_nneighb_only, min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect)
+	if (present(debugfile)) call print("   bfs_step returned nextlist%N " // nextlist%N, file=debugfile)
+	if (present(debugfile)) call print(nextlist, file=debugfile)
+	if (nextlist%N /= 0) then ! go over things in next hop
+	  do ii=1, nextlist%N
+	    i = nextlist%int(1,ii)
+	    add_i = .true.
+	    if (do_add_only_heavy_atoms) then
+	      if (at%Z(i) == 1) cycle
+	    endif
+	    if (present(debugfile)) call print("  i " // i // " is heavy or all atoms requested", file=debugfile)
+	    if (present(radius)) then ! check to make sure we're close enough to core list
+	      if (present(debugfile)) call print("  radius is present, check distance from core list", file=debugfile)
+	      add_i = .false.
+	      do ij=1, core%N
+		j = core%int(1,ij)
+		if (present(debugfile)) call print("  distance of ii " // ii // " i " // i // " at  " // use_pos(:,i) // " from ij " // ij // " j " // j // " at " // use_pos(:,j) // " is " // distance_min_image(at,use_pos(:,i),use_pos(:,j),shift_i(1:3)), file=debugfile)
+		if (distance_min_image(at,use_pos(:,i),use_pos(:,j),shift_i(1:3)) <= radius) then
+		  if (present(debugfile)) call print("  decide to add i", file=debugfile)
+		  add_i = .true.
+		  exit ! from ij loop
+		endif
+	      end do ! ij
+	    endif ! present(radius)
+	    if (add_i) then
+	      if (present(debugfile)) call print("  actually adding i")
+	      more_hops = .true.
+	      call append(region, nextlist%int(1:4,ii))
+	    endif
+	  end do
+	else ! nextlist%N == 0
+	  if (present(n_connectivity_hops)) then
+	    if (n_connectivity_hops > 0) &
+	      call print("WARNING: n_connectivity_hops = " // n_connectivity_hops // " cur_hop " // cur_hop // " but no atoms added")
+	  endif
+	endif ! nextlist%N
 
+	cur_hop = cur_hop + 1
+	if (present(n_connectivity_hops)) then
+	  if (cur_hop > n_connectivity_hops) more_hops = .false.
+	endif
+      end do ! while more_hops
 
-       call print('In Construct_Buffer:',ANAL)
-   
-       !Build up the core
-       if (build_around_list) then !use the list
-          call initialise(my_core,core%intsize,core%realsize,0,0,core%N)
-          call append(my_core,core)
-       else !find the closest atom
-          call initialise(my_core,4,0,0,0,1)
-          first_atom = 0
-          first_distance = huge(0._dp)
-          do n=1,at%N
-             dist_i = distance_min_image(at,n,centre,shift_i(1:3))
-             if (dist_i.lt.first_distance) then
-                first_atom = n
-                first_distance = dist_i
-                first_shift(1:3) = shift_i(1:3)
-              endif
-          enddo
-          if (first_atom.eq.0 .or. first_distance.gt.radius) call system_abort('construct_region: No atoms are within radius around the given centre.')
-          call append(my_core,(/first_atom,first_shift(1:3)/))
-       endif
-   
-       !Guess the number of region atoms we'll add from the average number density and radius
-       region_atoms_guess = int(10 * at%N * radius*radius*radius / Cell_Volume(at))
-   
-       !Set up the output table and append rows
-       call allocate(region,my_core%intsize,core%realsize,0,0,region_atoms_guess)
-       allocate(append_row_int(my_core%intsize),append_row_real(my_core%realsize))
-       append_row_int = 0
-       append_row_real = 0.0_dp
-   
-       !Add the core atoms
-       do n = 1, my_core%N
-          append_row_int = my_core%int(:,n)
-          if (build_around_list) then
-             if (core%realsize > 0) then
-                call append(region,append_row_int,append_row_real)
-             else
-                call append(region,append_row_int)
-             end if
-          else
-                call append(region,append_row_int)
-          endif
-       end do
-   
-       !Loop through the neighbours and add them to the cluster if they are close enough.
-       !If we add any atoms this way, trigger an additional neighbour search.
-   
-       more_atoms = .true.
-       
-       do while(more_atoms)
-          
-          more_atoms = .false.
-          
-          call wipe(cluster)
-          call append(cluster,core)
-          call append(cluster,region)
-   
-          !Find the neighbours of all the current cluster atoms 
-          call print('Searching for neighbours...',ANAL)
-          call bfs_step(at,cluster,extra_atoms,nneighb_only=.false.,min_images_only=.true.)
-   
-          call print('Found '//extra_atoms%N//' neighbours',ANAL)
-             
-          !Now go through the found atoms and see if they are within 'radius' of ANY core atom/the centre
-          do n = 1, extra_atoms%N
-             
-             add_atom = .false.
-   
-             ii(1:4) = extra_atoms%int(1:4,n)
-   
-             if (do_add_only_heavy_atoms .and. (at%Z(ii(1)).eq.1)) cycle
-   
-             if (build_around_list) then !around the core atoms
-   
-                do nn = 1, core%N
-                   
-                   jj = core%int(1:4,nn)
-
-!add only_heavy_atoms: only heavy atoms around heavy atoms
-                   if (do_add_only_heavy_atoms .and. (at%Z(jj(1)).eq.1)) cycle
-                   
-                   if (do_use_avgpos) then
-                      if (norm(diff_min_image(at,at%avgpos(:,ii(1)),at%avgpos(:,jj(1))) + &
-                                (at%lattice .mult. (jj(2:4)-ii(2:4)))) < radius) then
-                         append_row_int = ii(1:4)
-                         add_atom = .true.
-                      end if
-                   else
-                      if (distance(at,ii(1),jj(1),jj(2:4)-ii(2:4)) < radius) then
-                         append_row_int = ii(1:4)
-                         add_atom = .true.
-                      end if
-                   end if
-      
-                   if (add_atom) exit
-      
-                end do
-   
-             else !around the centre !******* needs testing!!!!
-                if (do_use_avgpos) then
-                   if (norm(diff_min_image(at,at%avgpos(:,ii(1)),centre(1:3)) + &
-                           (at%lattice .mult. (-ii(2:4)))) < radius) then
-                      append_row_int = ii
-                      add_atom = .true.
-                   end if
-                else
-!                   if (distance(at,ii(1),centre(1:3),(-ii(1:4))) < radius) then
-                   if (norm(at%pos(1:3,ii(1))+(at%lattice .mult. ii(2:4)) - centre(1:3)) < radius) then
-                      append_row_int = ii
-                      add_atom = .true.
-                   end if
-                end if
-             endif
-   
-             if (add_atom) then
-                if (my_core%realsize > 0) then
-                   call append(region,append_row_int,append_row_real)
-                else
-                   call append(region,append_row_int)
-                end if
-                more_atoms = .true. !Trigger another neighbour search
-                call print('Adding atom '//ii,ANAL)
-                exit !Don't check other core atoms
-             end if
-          end do
-   
-       end do
-   
-       call finalise(cluster)
-       call finalise(extra_atoms)
-   
-       call print('Leaving Construct_Buffer',ANAL)
-
-    endif
+    endif ! do_loop_atoms_no_connectivity
+    if (present(debugfile)) call print("leaving construct_region()", file=debugfile)
 
   end subroutine construct_region
 
@@ -2980,5 +2946,171 @@ call print('skip?'//do_loop_no_hops)
     bond_energy = 0.5_dp * mi * mj * vij * vij / (mi + mj)
 
   end function bond_energy
+
+  !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
+  !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$, that is
+  !% the centre of the QM region.
+  !
+  subroutine create_pos_centred_hybrid_region(my_atoms,R_inner,R_outer,origin,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed)
+
+    type(Atoms),        intent(inout) :: my_atoms
+    real(dp),           intent(in)    :: R_inner
+    real(dp),           intent(in)    :: R_outer
+    real(dp), optional, intent(in)    :: origin(3)
+    logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
+    logical,  optional, intent(out)   :: list_changed
+
+    type(Atoms) :: atoms_for_add_cut_hydrogens
+    type(Table) :: inner_list, outer_list, core, core1, ext_qmlist
+    integer     :: qm_flag_index, i
+    real(dp)    :: my_origin(3)
+    integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
+
+    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
+
+    call map_into_cell(my_atoms)
+
+    call allocate(core,4,0,0,0,0)
+    call allocate(core1,4,0,0,0,0)
+    call allocate(ext_qmlist,4,0,0,0,0)
+    call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core1,int_property='hybrid_mark')
+    call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core,int_property='hybrid_mark')
+    call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
+
+!Build the hysteretic QM core:
+  call construct_hysteretic_region(region=core,at=my_atoms,centre=my_origin,loop_atoms_no_connectivity=.true., &
+    inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
+    nneighb_only=nneighb_only, min_images_only=min_images_only, debugfile=mainlog)
+!    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
+!    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
+!    call construct_region(my_atoms,R_inner,inner_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
+!    call construct_region(my_atoms,R_outer,outer_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
+
+!    call select_hysteretic_quantum_region(my_atoms,inner_list,outer_list,core)
+!    call finalise(inner_list)
+!    call finalise(outer_list)
+
+!TO BE OPTIMIZED : add avgpos to add_cut_hydrogen
+   ! add cut hydrogens, according to avgpos
+    atoms_for_add_cut_hydrogens = my_atoms
+    atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
+    atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
+    atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
+    call set_cutoff(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
+    call calc_connect(atoms_for_add_cut_hydrogens)
+    call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
+    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
+    !do i=1,core%N
+    !   call print(core%int(1,i))
+    !enddo
+    call finalise(atoms_for_add_cut_hydrogens)
+
+   ! check changes in QM list and set the new QM list
+    if (present(list_changed)) then
+       list_changed = check_list_change(old_list=core1,new_list=core)
+       if (list_changed)  call print('QM list around the origin  has changed')
+    endif
+
+   ! update QM_flag of my_atoms
+    if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) &
+      call system_abort("create_pos_centred_hybrid_region couldn't get hybrid_mark property")
+    hybrid_mark_p(1:my_atoms%N) = 0
+    hybrid_mark_p(int_part(ext_qmlist,1)) = HYBRID_BUFFER_MARK
+    hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
+    ! qm_flag_index = get_property(my_atoms,'hybrid_mark')
+    ! my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+    ! my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
+    ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
+
+   ! update hybrid property of my_atoms
+    if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) &
+      call system_abort("create_pos_centred_hybrid_region couldn't get hybrid property")
+    hybrid_p(1:my_atoms%N) = 0
+    hybrid_p(int_part(core,1)) = 1
+    ! qm_flag_index = get_property(my_atoms,'hybrid')
+    ! my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
+    ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
+
+    call finalise(core)
+    call finalise(core1)
+    call finalise(ext_qmlist)
+
+  end subroutine create_pos_centred_hybrid_region
+
+  !% Returns a $hybridlist$ table with the atom indices whose $cluster_mark$
+  !% (or optionally any $int_property$) property takes no greater than $hybridflag$ positive value.
+  !
+  subroutine get_hybrid_list(my_atoms,hybridflag,hybridlist,int_property,get_up_to_mark_value)
+
+    type(Atoms), intent(in)  :: my_atoms
+    integer,     intent(in)  :: hybridflag
+    type(Table), intent(out) :: hybridlist
+    character(len=*), optional, intent(in) :: int_property
+    logical, intent(in), optional :: get_up_to_mark_value
+  
+    integer, pointer :: mark_p(:)
+    integer              :: i
+    integer              :: hybrid_flag_index
+    logical              :: my_do_recursive
+    logical :: do_get_up_to_mark_value
+
+    do_get_up_to_mark_value = optional_default(.false., get_up_to_mark_value)
+
+    if (present(int_property)) then
+       if (.not. assign_pointer(my_atoms, trim(int_property), mark_p)) &
+	 call system_abort("get_hybrid_list_int couldn't get int_property='"//trim(int_property)//"'")
+    else
+       if (.not. assign_pointer(my_atoms, 'cluster_mark', mark_p)) &
+	 call system_abort("get_hybrid_list_int couldn't get default int_property='cluster_mark'")
+    endif
+
+    call initialise(hybridlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_hybrid_atoms entries
+    if (do_get_up_to_mark_value) then
+       do i=1,my_atoms%N
+          ! if (my_atoms%data%int(hybrid_flag_index,i).gt.0.and. &
+             ! my_atoms%data%int(hybrid_flag_index,i).le.hybridflag) &
+          if (mark_p(i) > 0 .and.  mark_p(i) <= hybridflag) &
+               call append(hybridlist,(/i,0,0,0/))
+       enddo
+    else
+       do i=1,my_atoms%N
+          ! if (my_atoms%data%int(hybrid_flag_index,i).eq.hybridflag) &
+          if (mark_p(i) == hybridflag) call append(hybridlist,(/i,0,0,0/))
+       enddo
+    endif
+
+    if (hybridlist%N.eq.0) call print('Empty QM list with cluster_mark '//hybridflag,verbosity=SILENT)
+
+  end subroutine get_hybrid_list
+
+  !% Checks and reports the changes between two tables, $old_qmlist$ and $new_qmlist$.
+  !
+  function check_list_change(old_list,new_list) result(list_changed)
+
+    type(Table), intent(in) :: old_list, new_list
+    integer :: i
+    logical :: list_changed
+
+    list_changed = .false.
+    if (old_list%N.ne.new_list%N) then
+       call print ('list has changed: new number of atoms is: '//new_list%N//', was: '//old_list%N)
+       list_changed = .true.
+    else
+       if (any(old_list%int(1,1:old_list%N).ne.new_list%int(1,1:new_list%N))) then
+           do i=1,old_list%N
+              if (.not.find_in_array(int_part(old_list,1),(new_list%int(1,i))).gt.0) then
+                 call print('list has changed: atom '//new_list%int(1,i)//' has entered the region')
+                 list_changed = .true.
+              endif
+              if (.not.find_in_array(int_part(new_list,1),(old_list%int(1,i))).gt.0) then
+                 call print('list has changed: atom '//old_list%int(1,i)//' has left the region')
+                 list_changed = .true.
+              endif
+           enddo
+       endif
+    endif
+
+  end function check_list_change
+
 
 end module clusters_module
