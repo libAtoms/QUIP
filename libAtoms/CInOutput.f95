@@ -12,6 +12,7 @@ module CInOutput_module
   use Atoms_module
   use Dictionary_module
   use Table_module
+  use MPI_Context_module
 
   implicit none
 
@@ -106,6 +107,7 @@ module CInOutput_module
      real(dp), pointer, dimension(:,:) :: preal_a, lattice
      real(dp), pointer, dimension(:,:) :: preal_a2
      character(1), dimension(:,:), pointer :: property_name, param_name, param_value
+     type(MPI_Context) :: mpi
 
   end type CInOutput
 
@@ -160,22 +162,18 @@ module CInOutput_module
      module procedure CInOutput_query
   end interface
 
-!!$  interface update
-!!$     !% Update C structure from Atoms object
-!!$     module procedure CInOutput_update
-!!$  end interface
-
   public :: CInOutput, initialise, finalise, close, read, write, query
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi)
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
     logical, intent(in), optional :: append
     logical, optional, intent(in) :: netcdf4
     logical, optional, intent(in) :: no_compute_index
+    type(MPI_context), optional, intent(in) :: mpi
 
     integer :: do_append, do_netcdf4, do_no_compute_index
 
@@ -191,6 +189,10 @@ contains
     do_no_compute_index = 0
     if (present(no_compute_index)) then
        if (no_compute_index) do_no_compute_index = 1
+    end if
+
+    if (present(mpi)) then
+       this%mpi = mpi
     end if
 
     if (present(filename)) then
@@ -348,29 +350,90 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
-    if (present(frame) .and. this%got_index == 0) then
-      if (frame /= this%current_frame) then
-	if (frame < this%current_frame) &
-	  call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
-	n_skip = frame-this%current_frame
-	cioskip_status = cioskip(this%c_at, n_skip)
-	if (cioskip_status == 0) then
-	  if (present(status)) then
-	    status = 1
-	    return
-	  else
-	    call system_abort("Error querying CInOutput file while skipping to desired frame")
-	  endif
-	endif
-	this%current_frame = this%current_frame + n_skip
-      endif
-    endif
 
-    do_frame = optional_default(this%current_frame, frame)
+    if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
 
-    if (this%got_index == 1) then
-       if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
-       if (do_frame < 0 .or. do_frame >= this%n_frame) then
+       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc)
+
+       if (present(frame) .and. this%got_index == 0) then
+          if (frame /= this%current_frame) then
+             if (frame < this%current_frame) &
+                  call system_abort("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
+             n_skip = frame-this%current_frame
+             cioskip_status = cioskip(this%c_at, n_skip)
+             if (cioskip_status == 0) then
+                if (present(status)) then
+                   status = 1
+                   return
+                else
+                   call system_abort("Error querying CInOutput file while skipping to desired frame")
+                endif
+             endif
+             this%current_frame = this%current_frame + n_skip
+          endif
+       endif
+
+       do_frame = optional_default(this%current_frame, frame)
+
+       if (this%got_index == 1) then
+          if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
+          if (do_frame < 0 .or. do_frame >= this%n_frame) then
+             if (present(status)) then
+                call finalise(properties)
+                call finalise(data)
+                call finalise(at)
+                status = 1
+                return
+             else
+                call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+             end if
+          end if
+       end if
+
+       do_zero = 0
+       if (present(zero)) then
+          if (zero) do_zero = 1
+       end if
+
+       if (this%got_index == 1) then
+          tmp_do_frame = do_frame
+          call cinoutput_query(this, tmp_do_frame, status=status)
+       else
+          call cinoutput_query(this, status=status)
+       end if
+       if (present(status)) then
+          if (status /= 0) return
+       endif
+
+       call initialise(properties)
+       do i=1,this%n_property
+          call set_value(properties, c_array_to_f_string(this%property_name(:,i)), &
+               (/ this%property_type(i), this%property_start(i)+1, this%property_start(i)+this%property_ncols(i) /))
+       end do
+
+       ! Make a blank data table, then initialise atoms object from it. We will
+       ! get C routine to read directly into final Atoms structure to save copying.
+       call allocate(data, this%n_int, this%n_real, this%n_str, this%n_logical, int(this%n_atom))
+       call append(data, blank_rows=int(this%n_atom))
+       this%lattice = 0.0_dp
+       this%lattice(1,1) = 1.0_dp
+       this%lattice(2,2) = 1.0_dp
+       this%lattice(3,3) = 1.0_dp
+       call initialise(at, int(this%n_atom), transpose(this%lattice), data, properties)
+
+       int_ptr = C_NULL_PTR
+       if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
+
+       real_ptr = C_NULL_PTR
+       if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
+
+       str_ptr = C_NULL_PTR
+       if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
+
+       log_ptr = C_NULL_PTR
+       if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
+
+       if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
           if (present(status)) then
              call finalise(properties)
              call finalise(data)
@@ -378,113 +441,61 @@ contains
              status = 1
              return
           else
-             call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+             call system_abort("Error reading from file")
           end if
        end if
-    end if
 
-    do_zero = 0
-    if (present(zero)) then
-       if (zero) do_zero = 1
-    end if
-
-    if (this%got_index == 1) then
-       tmp_do_frame = do_frame
-       call cinoutput_query(this, tmp_do_frame, status=status)
-    else
-       call cinoutput_query(this, status=status)
-    end if
-    if (present(status)) then
-      if (status /= 0) return
-    endif
-
-    call initialise(properties)
-    do i=1,this%n_property
-       call set_value(properties, c_array_to_f_string(this%property_name(:,i)), &
-            (/ this%property_type(i), this%property_start(i)+1, this%property_start(i)+this%property_ncols(i) /))
-    end do
-
-    ! Make a blank data table, then initialise atoms object from it. We will
-    ! get C routine to read directly into final Atoms structure to save copying.
-    call allocate(data, this%n_int, this%n_real, this%n_str, this%n_logical, int(this%n_atom))
-    call append(data, blank_rows=int(this%n_atom))
-    this%lattice = 0.0_dp
-    this%lattice(1,1) = 1.0_dp
-    this%lattice(2,2) = 1.0_dp
-    this%lattice(3,3) = 1.0_dp
-    call initialise(at, int(this%n_atom), transpose(this%lattice), data, properties)
-
-    int_ptr = C_NULL_PTR
-    if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
-
-    real_ptr = C_NULL_PTR
-    if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
-    
-    str_ptr = C_NULL_PTR
-    if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
-
-    log_ptr = C_NULL_PTR
-    if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
-
-    if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
-       if (present(status)) then
-          call finalise(properties)
-          call finalise(data)
-          call finalise(at)
-          status = 1
-          return
-       else
-          call system_abort("Error reading from file")
-       end if
-    end if
-
-    do i=1,this%n_param
-       namestr = c_array_to_f_string(this%param_name(:,i))
-       if (trim(namestr) == "Lattice" .or. trim(namestr) == "Properties") cycle
-       select case(this%param_type(i))
-       case(T_INTEGER)
-          call set_value(at%params, namestr, this%pint(i))
-       case(T_REAL)
-          call set_value(at%params, namestr, this%preal(i))
-       case(T_INTEGER_A)
-          call set_value(at%params, namestr, this%pint_a(:,i))
-       case (T_REAL_A)
-          call set_value(at%params, namestr, this%preal_a(:,i))
-       case(T_CHAR)
-          call set_value(at%params, namestr, c_array_to_f_string(this%param_value(:,i)))
-       case(T_INTEGER_A2)
-          call set_value(at%params, namestr, reshape(this%pint_a2(:,i), (/3,3/)))
-       case(T_REAL_A2)
-          call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
-       case default
-          call system_abort('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i))
-       end select
-    end do
-
-    call atoms_repoint(at)
-    call set_lattice(at, transpose(this%lattice))
-
-    if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
-       call print ("at%properties", ERROR)
-       call print(at%properties, ERROR)
-       call system_abort('cinoutput_read: atoms object read from file has neither Z nor species')
-    else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
-       call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
-       call atoms_repoint(at)
-       at%species = ElementName(at%Z)
-    else if (.not. has_property(at,"Z") .and. has_property(at, "species")) then
-       call add_property(at, "Z", 0)
-       call atoms_repoint(at)
-       do i=1,at%n
-          at%Z(i) = atomic_number_from_symbol(at%species(i))
+       do i=1,this%n_param
+          namestr = c_array_to_f_string(this%param_name(:,i))
+          if (trim(namestr) == "Lattice" .or. trim(namestr) == "Properties") cycle
+          select case(this%param_type(i))
+          case(T_INTEGER)
+             call set_value(at%params, namestr, this%pint(i))
+          case(T_REAL)
+             call set_value(at%params, namestr, this%preal(i))
+          case(T_INTEGER_A)
+             call set_value(at%params, namestr, this%pint_a(:,i))
+          case (T_REAL_A)
+             call set_value(at%params, namestr, this%preal_a(:,i))
+          case(T_CHAR)
+             call set_value(at%params, namestr, c_array_to_f_string(this%param_value(:,i)))
+          case(T_INTEGER_A2)
+             call set_value(at%params, namestr, reshape(this%pint_a2(:,i), (/3,3/)))
+          case(T_REAL_A2)
+             call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
+          case default
+             call system_abort('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i))
+          end select
        end do
+
+       call atoms_repoint(at)
+       call set_lattice(at, transpose(this%lattice))
+
+       if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
+          call print ("at%properties", ERROR)
+          call print(at%properties, ERROR)
+          call system_abort('cinoutput_read: atoms object read from file has neither Z nor species')
+       else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
+          call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
+          call atoms_repoint(at)
+          at%species = ElementName(at%Z)
+       else if (.not. has_property(at,"Z") .and. has_property(at, "species")) then
+          call add_property(at, "Z", 0)
+          call atoms_repoint(at)
+          do i=1,at%n
+             at%Z(i) = atomic_number_from_symbol(at%species(i))
+          end do
+       end if
+
+       call finalise(properties)
+       call finalise(data)
+       this%current_frame = this%current_frame + 1
     end if
 
-    call finalise(properties)
-    call finalise(data)
-    this%current_frame = this%current_frame + 1
+    if (this%mpi%active) call bcast(this%mpi, at)
 
   end subroutine cinoutput_read
+
 
   subroutine cinoutput_write(this, at, properties, int_format, real_format, frame, &
        shuffle, deflate, deflate_level, status)
@@ -500,7 +511,7 @@ contains
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
     character(len=VALUE_LEN) :: valuestr
-    integer :: i, j, k, lookup(3), extras, n, tmp_int_a2(3,3)
+    integer :: i, j, lookup(3), extras, n, tmp_int_a2(3,3)
     real(dp) :: tmp_real_a2(3,3)
     integer(C_INT) :: do_frame
     type(Dictionary) :: selected_properties
@@ -512,6 +523,8 @@ contains
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= OUTPUT .and. this%action /= INOUT) call system_abort("Cannot write to action=INPUT CInOutput object")
+
+    if (this%mpi%active .and. this%mpi%my_proc /= 0) return
 
     do_int_format = optional_default('%8d', int_format)
     do_real_format = optional_default('%16.8f', real_format)
@@ -663,106 +676,6 @@ contains
     this%current_frame = this%current_frame + 1
 
   end subroutine cinoutput_write
-
-
-!!$  subroutine cinoutput_update(this, at, atoms_ptr)
-!!$    type(CInOutput), intent(inout) :: this
-!!$    type(Atoms), target, intent(in) :: at
-!!$    integer(SIZEOF_VOID_PTR), intent(out) :: atoms_ptr
-!!$
-!!$    type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
-!!$    logical :: dum
-!!$    character(len=VALUE_LEN) :: valuestr
-!!$    integer :: i, lookup(3), extras, n
-!!$
-!!$    this%n_atom = at%n
-!!$    this%lattice = transpose(at%lattice)
-!!$
-!!$    extras = 0
-!!$    if (has_key(at%params, "Lattice"))    extras = extras + 1
-!!$    if (has_key(at%params, "Properties")) extras = extras + 1
-!!$    
-!!$    this%n_param = at%params%N - extras
-!!$    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-!!$    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-!!$    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-!!$    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-!!$    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-!!$    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-!!$    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-!!$    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-!!$    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-!!$    n = 1
-!!$    do i=1, this%n_param
-!!$       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
-!!$           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
-!!$       call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
-!!$       this%param_filter(n) = 1
-!!$       select case(at%params%entries(i)%type)
-!!$       case(T_INTEGER)
-!!$          dum = get_value(at%params, at%params%keys(i), this%pint(n))
-!!$          this%param_size(n) = 1
-!!$          this%param_type(n) = T_INTEGER
-!!$       case(T_REAL)
-!!$          dum = get_value(at%params, at%params%keys(i), this%preal(n))
-!!$          this%param_size(n) = 1
-!!$          this%param_type(n) = T_REAL
-!!$       case(T_INTEGER_A)
-!!$          dum = get_value(at%params, at%params%keys(i), this%pint_a(:,n))
-!!$          this%param_size(n) = 3
-!!$          this%param_type(n) = T_INTEGER_A
-!!$       case (T_REAL_A)
-!!$          dum = get_value(at%params, at%params%keys(i), this%preal_a(:,n))
-!!$          this%param_size(n) = 3
-!!$          this%param_type(n) = T_REAL_A
-!!$       case(T_CHAR)
-!!$          dum = get_value(at%params, at%params%keys(i), valuestr)
-!!$          call f_string_to_c_array(valuestr, this%param_value(:,n))
-!!$          this%param_size(n) = 1
-!!$          this%param_type(n) = T_CHAR
-!!$       case default
-!!$          call system_abort('cinoutput_update: unsupported parameter i='//i//' type='//at%params%entries(i)%type//' '//trim(at%params%keys(i)))
-!!$       end select
-!!$       n = n + 1
-!!$    end do
-!!$
-!!$    this%n_property = at%properties%N
-!!$    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-!!$    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-!!$    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-!!$    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-!!$    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
-!!$    do i=1,this%n_property
-!!$       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,i))
-!!$       dum = get_value(at%properties, at%properties%keys(i), lookup)
-!!$       this%property_type(i) = lookup(1)
-!!$       this%property_start(i) = lookup(2)-1
-!!$       this%property_ncols(i) = lookup(3)-lookup(2)+1
-!!$       this%property_filter(i) = 1
-!!$    end do
-!!$
-!!$    int_ptr = C_NULL_PTR
-!!$    this%n_int = at%data%intsize
-!!$    if (this%n_int /= 0) int_ptr = c_loc(at%data%int(1,1))
-!!$
-!!$    real_ptr = C_NULL_PTR
-!!$    this%n_real = at%data%realsize
-!!$    if (this%n_real /= 0) real_ptr = c_loc(at%data%real(1,1))
-!!$    
-!!$    str_ptr = C_NULL_PTR
-!!$    this%n_str = at%data%strsize
-!!$    if (this%n_str /= 0) str_ptr = c_loc(at%data%str(1,1))
-!!$
-!!$    log_ptr = C_NULL_PTR
-!!$    this%n_logical = at%data%logicalsize
-!!$    if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
-!!$
-!!$    if (cioupdate(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr) == 0) &
-!!$         call system_abort('error updating C structure')
-!!$
-!!$    atoms_ptr = transfer(this%c_at, atoms_ptr)
-!!$
-!!$  end subroutine cinoutput_update
 
   function c_array_to_f_string(carray) result(fstring)
     !% Convert a null-terminated array of characters in a fixed length buffer

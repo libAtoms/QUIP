@@ -953,6 +953,7 @@ module  atoms_module
   use linearalgebra_module
   use periodictable_module
   use minimization_module
+  use mpi_context_module
 
   implicit none
 
@@ -1313,6 +1314,10 @@ module  atoms_module
   interface map_into_cell
     module procedure atoms_map_into_cell
     module procedure vec_map_into_cell
+  end interface
+
+  interface bcast
+     module procedure atoms_bcast
   end interface
 
 
@@ -3401,7 +3406,7 @@ contains
     Ncells = cellsNa * cellsNb * cellsNc
     if (present(Natoms)) then
        av_atoms = Natoms / Ncells
-       stdev_atoms = int(sqrt(real((Natoms * (Ncells - 1) / (Ncells * Ncells)),dp)))
+       stdev_atoms = int(sqrt(real(Natoms,dp) * (real(Ncells,dp) - 1.0_dp) / (real(Ncells,dp) * real(Ncells,dp))))
     else
        av_atoms = 100   !defaults if number of atoms is not given
        stdev_atoms = 10
@@ -6286,5 +6291,45 @@ contains
     end if
 
   endfunction is_min_image 
+
+  subroutine atoms_bcast(mpi, at)
+    type(MPI_context), intent(in) :: mpi
+    type(Atoms), intent(inout) :: at
+
+    if (.not. mpi%active) return
+
+    if (mpi%my_proc == 0) then
+
+       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc)
+       call print('sending n')
+       call bcast(mpi, at%n)
+       call print('sending lattice')
+       call bcast(mpi, at%lattice)
+       call print('sending data')
+       call bcast(mpi, at%data)
+       call print('sending properties')
+       call bcast(mpi, at%properties)
+       call print('sending params')
+       call bcast(mpi, at%params)
+    else
+       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc)
+       call finalise(at)
+       call print('receiving n')
+       call bcast(mpi, at%n)
+       call print('receiving lattice')
+       call bcast(mpi, at%lattice)
+       call print('receiving data')
+       call bcast(mpi, at%data)
+       call print('receiving properties')
+       call bcast(mpi, at%properties)
+       call print('receiving params')
+       call bcast(mpi, at%params)
+
+       call matrix3x3_inverse(at%lattice,at%g)
+       call atoms_repoint(at)
+       at%initialised = .true.
+    end if
+
+  end subroutine atoms_bcast
 
 end module atoms_module

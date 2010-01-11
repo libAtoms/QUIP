@@ -92,6 +92,7 @@ module dictionary_module
 
 use system_module
 use linearalgebra_module
+use mpi_context_module
 implicit none
 
 integer, parameter :: &
@@ -241,6 +242,10 @@ end interface assignment(=)
 
 interface has_key
    module procedure dictionary_has_key
+end interface
+
+interface bcast
+   module procedure dictionary_bcast
 end interface
 
 private add_entry, extend_entries, remove_entry
@@ -1713,6 +1718,134 @@ elemental subroutine dictentry_copy(this, from)
 
 end subroutine dictentry_copy
 #endif
+
+  subroutine dictionary_bcast(mpi, dict)
+    type(MPI_context), intent(in) :: mpi
+    type(Dictionary), intent(inout) :: dict
+
+    integer :: i, size_tmp, shape_tmp(2)
+
+    if (.not. mpi%active) return
+
+    if (mpi%my_proc == 0) then
+       call bcast(mpi, dict%n)
+       do i=1,dict%n
+          call bcast(mpi, dict%entries(i)%type)
+          call bcast(mpi, dict%keys(i))
+
+          if (dict%entries(i)%type == T_NONE) then
+             ! nothing to do
+          else if (dict%entries(i)%type == T_INTEGER) then
+             call bcast(mpi, dict%entries(i)%i)
+          else if (dict%entries(i)%type == T_REAL) then
+             call bcast(mpi, dict%entries(i)%r)
+          else if (dict%entries(i)%type == T_COMPLEX) then
+             call bcast(mpi, dict%entries(i)%c)
+          else if (dict%entries(i)%type == T_LOGICAL) then
+             call bcast(mpi, dict%entries(i)%l)
+          else if (dict%entries(i)%type == T_CHAR) then
+             call bcast(mpi, dict%entries(i)%s)
+          else if (dict%entries(i)%type == T_INTEGER_A) then
+             size_tmp = size(dict%entries(i)%i_a)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%i_a)
+          else if (dict%entries(i)%type == T_REAL_A) then
+             size_tmp = size(dict%entries(i)%r_a)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%r_a)
+          else if (dict%entries(i)%type == T_COMPLEX_A) then
+             size_tmp = size(dict%entries(i)%c_a)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%c_a)
+          else if (dict%entries(i)%type == T_LOGICAL_A) then
+             size_tmp = size(dict%entries(i)%l_a)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%l_a)
+          else if (dict%entries(i)%type == T_CHAR_A) then
+             size_tmp = size(dict%entries(i)%s_a)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%s_a)
+          else if (dict%entries(i)%type == T_INTEGER_A2) then
+             shape_tmp = shape(dict%entries(i)%i_a2)
+             call bcast(mpi, shape_tmp)
+             call bcast(mpi, dict%entries(i)%i_a2)
+          else if (dict%entries(i)%type == T_REAL_A2) then
+             shape_tmp = shape(dict%entries(i)%r_a2)
+             call bcast(mpi, shape_tmp)
+             call bcast(mpi, dict%entries(i)%r_a2)
+          else if (dict%entries(i)%type == T_DATA) then
+             size_tmp = size(dict%entries(i)%d%d)
+             call bcast(mpi, size_tmp)
+             call bcast(mpi, dict%entries(i)%d%d)
+          end if
+       end do
+    else
+       call finalise(dict)
+       call bcast(mpi, dict%n)
+       allocate(dict%keys(dict%n))
+       allocate(dict%entries(dict%n))
+       do i=1,dict%n
+          call bcast(mpi, dict%entries(i)%type)
+          call bcast(mpi, dict%keys(i))
+
+          if (dict%entries(i)%type == T_NONE) then
+             ! nothing to do
+          else if (dict%entries(i)%type == T_INTEGER) then
+             call bcast(mpi, dict%entries(i)%i)
+          else if (dict%entries(i)%type == T_REAL) then
+             call bcast(mpi, dict%entries(i)%r)
+          else if (dict%entries(i)%type == T_COMPLEX) then
+             call bcast(mpi, dict%entries(i)%c)
+          else if (dict%entries(i)%type == T_LOGICAL) then
+             call bcast(mpi, dict%entries(i)%l)
+          else if (dict%entries(i)%type == T_CHAR) then
+             call bcast(mpi, dict%entries(i)%s)
+          else if (dict%entries(i)%type == T_INTEGER_A) then
+             size_tmp = size(dict%entries(i)%i_a)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%i_a(size_tmp))
+             call bcast(mpi, dict%entries(i)%i_a)
+          else if (dict%entries(i)%type == T_REAL_A) then
+             size_tmp = size(dict%entries(i)%r_a)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%r_a(size_tmp))
+             call bcast(mpi, dict%entries(i)%r_a)
+          else if (dict%entries(i)%type == T_COMPLEX_A) then
+             size_tmp = size(dict%entries(i)%c_a)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%c_a(size_tmp))
+             call bcast(mpi, dict%entries(i)%c_a)
+          else if (dict%entries(i)%type == T_LOGICAL_A) then
+             size_tmp = size(dict%entries(i)%l_a)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%l_a(size_tmp))
+             call bcast(mpi, dict%entries(i)%l_a)
+          else if (dict%entries(i)%type == T_CHAR_A) then
+             size_tmp = size(dict%entries(i)%s_a)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%s_a(size_tmp))
+             call bcast(mpi, dict%entries(i)%s_a)
+          else if (dict%entries(i)%type == T_INTEGER_A2) then
+             shape_tmp = shape(dict%entries(i)%i_a2)
+             call bcast(mpi, shape_tmp)
+             allocate(dict%entries(i)%i_a2(shape_tmp(1),shape_tmp(2)))
+             call bcast(mpi, dict%entries(i)%i_a2)
+          else if (dict%entries(i)%type == T_REAL_A2) then
+             shape_tmp = shape(dict%entries(i)%r_a2)
+             call bcast(mpi, shape_tmp)
+             allocate(dict%entries(i)%r_a2(shape_tmp(1),shape_tmp(2)))
+             call bcast(mpi, dict%entries(i)%r_a2)
+          else if (dict%entries(i)%type == T_DATA) then
+             size_tmp = size(dict%entries(i)%d%d)
+             call bcast(mpi, size_tmp)
+             allocate(dict%entries(i)%d%d(size_tmp))
+             call bcast(mpi, dict%entries(i)%d%d)
+          end if
+       end do
+    end if
+
+  end subroutine dictionary_bcast
+
 
 
 end module dictionary_module
