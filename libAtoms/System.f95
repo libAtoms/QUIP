@@ -598,7 +598,7 @@ module system_module
     integer, allocatable :: val(:)
   end type Stack
 
-  type Inoutput
+  type InOutput
      integer:: unit
      character(256)::filename
      character(256)::prefix, postfix
@@ -610,7 +610,7 @@ module system_module
      logical::mpi_all_inoutput_flag = .false.
      logical::mpi_print_id = .false.
      type(Stack) :: verbosity_stack, verbosity_cascade_stack
-  end type Inoutput
+  end type InOutput
 
   public   !standard setting for the module
   integer,private                  :: mpi_n, mpi_myid    ! Number of processes and local process ID
