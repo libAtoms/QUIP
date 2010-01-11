@@ -94,7 +94,7 @@ module cp2k_driver_module
 				     mainlog
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
-                                     int_part, TABLE_STRING_LENGTH
+                                     int_part, TABLE_STRING_LENGTH, print
   use topology_module,         only: write_psf_file, create_CHARMM, &
                                      delete_metal_connects, &
                                      write_cp2k_pdb_file, &
@@ -2390,12 +2390,13 @@ integer :: i_inner, i_outer
   !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$, that is
   !% the centre of the QM region.
   !
-  subroutine create_centred_qmcore(my_atoms,R_inner,R_outer,origin,list_changed)
+  subroutine create_centred_qmcore(my_atoms,R_inner,R_outer,origin,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed)
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
     real(dp),           intent(in)    :: R_outer
     real(dp), optional, intent(in)    :: origin(3)
+    logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
     logical,  optional, intent(out)   :: list_changed
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
@@ -2408,12 +2409,15 @@ integer :: i_inner, i_outer
     call map_into_cell(my_atoms)
 
     call allocate(core,4,0,0,0,0)
+    call allocate(core1,4,0,0,0,0)
     call get_qm_list_int(my_atoms,1,core1,int_property='hybrid_mark')
     call get_qm_list_int(my_atoms,1,core,int_property='hybrid_mark')
     call get_qm_list_int_rec(my_atoms,2,ext_qmlist, do_recursive=.true.,int_property='hybrid_mark')
 
 !Build the hysteretic QM core:
-  call construct_hysteretic_region(at=my_atoms,region=core,inner_radius=R_inner,outer_radius=R_outer,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false.,simply_loop_over_atoms=.true.)
+  call construct_hysteretic_region(region=core,at=my_atoms,centre=my_origin,loop_atoms_no_connectivity=.true., &
+    inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
+    nneighb_only=nneighb_only, min_images_only=min_images_only, debugfile=mainlog)
 !    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
 !    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
 !    call construct_region(my_atoms,R_inner,inner_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
