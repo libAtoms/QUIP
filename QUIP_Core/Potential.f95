@@ -617,7 +617,7 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
 	 call calc(this, at, f=f, args_str=new_args_str)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
-    else
+    else ! little_clusters is false..
 
        ! For IP, call setup_atoms() hook now in case any properties must be added.
        ! This must be done *before* we assign pointers to force, local_e etc.
