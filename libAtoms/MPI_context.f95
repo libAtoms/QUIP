@@ -42,7 +42,11 @@ end interface
 
 public :: bcast
 interface bcast
-  module procedure MPI_context_bcast_real, MPI_context_bcast_real1, MPI_context_bcast_real2, MPI_context_bcast_c, MPI_context_bcast_int
+  module procedure MPI_context_bcast_real, MPI_context_bcast_real1, MPI_context_bcast_real2
+  module procedure MPI_context_bcast_c, MPI_context_bcast_c1, MPI_context_bcast_c2
+  module procedure MPI_context_bcast_int, MPI_context_bcast_int1, MPI_context_bcast_int2
+  module procedure MPI_context_bcast_logical, MPI_context_bcast_logical1, MPI_context_bcast_logical2
+  module procedure MPI_context_bcast_char, MPI_context_bcast_char1, MPI_context_bcast_char2
 end interface
 public :: min
 interface min
@@ -431,25 +435,6 @@ include 'mpif.h'
 #endif
 end subroutine  MPI_context_sum_in_place_complex1
 
-subroutine MPI_context_bcast_real(this, v)
-  type(MPI_context), intent(in) :: this
-  real(dp), intent(inout) :: v
-
-#ifdef _MPI
-  integer err
-#endif
-
-#ifdef _MPI
-include 'mpif.h'
-#endif
-
-  if (.not. this%active) return
-
-#ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, 0, this%communicator, err)
-#endif
-end subroutine MPI_context_bcast_real
-
 subroutine MPI_context_bcast_int(this, v)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v
@@ -469,6 +454,103 @@ include 'mpif.h'
 #endif
 end subroutine MPI_context_bcast_int
 
+subroutine MPI_context_bcast_int1(this, v)
+  type(MPI_context), intent(in) :: this
+  integer, intent(inout) :: v(:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_int1
+
+subroutine MPI_context_bcast_int2(this, v)
+  type(MPI_context), intent(in) :: this
+  integer, intent(inout) :: v(:,:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_int2
+
+
+subroutine MPI_context_bcast_logical(this, v)
+  type(MPI_context), intent(in) :: this
+  logical, intent(inout) :: v
+
+#ifdef _MPI
+  logical err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, 1, MPI_LOGICAL, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_logical
+
+subroutine MPI_context_bcast_logical1(this, v)
+  type(MPI_context), intent(in) :: this
+  logical, intent(inout) :: v(:)
+
+#ifdef _MPI
+  logical err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_logical1
+
+subroutine MPI_context_bcast_logical2(this, v)
+  type(MPI_context), intent(in) :: this
+  logical, intent(inout) :: v(:,:)
+
+#ifdef _MPI
+  logical err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_logical2
+
+
 subroutine MPI_context_bcast_c(this, v)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v
@@ -487,6 +569,63 @@ include 'mpif.h'
   call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
 #endif
 end subroutine MPI_context_bcast_c
+
+subroutine MPI_context_bcast_c1(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(inout) :: v(:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_c1
+
+subroutine MPI_context_bcast_c2(this, v)
+  type(MPI_context), intent(in) :: this
+  complex(dp), intent(inout) :: v(:,:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_c2
+
+subroutine MPI_context_bcast_real(this, v)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_real
 
 subroutine MPI_context_bcast_real1(this, v)
   type(MPI_context), intent(in) :: this
@@ -525,6 +664,63 @@ include 'mpif.h'
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, 0, this%communicator, err)
 #endif
 end subroutine MPI_context_bcast_real2
+
+subroutine MPI_context_bcast_char(this, v)
+  type(MPI_context), intent(in) :: this
+  character(*), intent(inout) :: v
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, len(v), MPI_CHARACTER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_char
+
+subroutine MPI_context_bcast_char1(this, v)
+  type(MPI_context), intent(in) :: this
+  character(*), intent(inout) :: v(:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, len(v(1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_char1
+
+subroutine MPI_context_bcast_char2(this, v)
+  type(MPI_context), intent(in) :: this
+  character(*), intent(inout) :: v(:,:)
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call MPI_Bcast(v, len(v(1,1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
+#endif
+end subroutine MPI_context_bcast_char2
 
 subroutine MPI_Context_Print(this, file)
   type(MPI_context), intent(in) :: this

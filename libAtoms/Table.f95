@@ -329,6 +329,7 @@ module table_module
   use system_module
   use linearalgebra_module
   use dictionary_module
+  use mpi_context_module
   implicit none
 
   integer, parameter, private :: DEFAULT_TABLE_LENGTH = 100
@@ -510,6 +511,10 @@ module table_module
   interface select
      module procedure table_select
   end interface select
+
+  interface bcast
+     module procedure table_bcast
+  end interface
 
 contains
 
@@ -2931,5 +2936,54 @@ subroutine table_address(this, int_loc, real_loc, str_loc, logical_loc)
   if (this%logicalsize /=0) logical_loc = loc(this%logical)
 
 end subroutine table_address
+
+
+subroutine table_bcast(mpi, this)
+  type(MPI_Context), intent(in) :: mpi
+  type(Table), intent(inout) :: this
+  integer :: tmp_intsize, tmp_realsize, tmp_logicalsize, tmp_strsize, tmp_max_length
+
+  if (.not. mpi%active) return
+  
+  if (mpi%my_proc == 0) then
+
+     tmp_max_length  = this%max_length
+     tmp_intsize     = this%intsize
+     tmp_realsize    = this%realsize
+     tmp_strsize     = this%strsize
+     tmp_logicalsize = this%logicalsize
+
+     call bcast(mpi, tmp_max_length)
+     call bcast(mpi, tmp_intsize)
+     call bcast(mpi, tmp_realsize)
+     call bcast(mpi, tmp_strsize)
+     call bcast(mpi, tmp_logicalsize)
+
+     call bcast(mpi, this%n)
+     call bcast(mpi, this%increment)
+
+     if (this%intsize     /= 0) call bcast(mpi, this%int)
+     if (this%realsize    /= 0) call bcast(mpi, this%real)
+     if (this%strsize     /= 0) call bcast(mpi, this%str)
+     if (this%logicalsize /= 0) call bcast(mpi, this%logical)
+  else
+     call finalise(this)
+     call bcast(mpi, tmp_max_length)
+     call bcast(mpi, tmp_intsize)
+     call bcast(mpi, tmp_realsize)
+     call bcast(mpi, tmp_strsize)
+     call bcast(mpi, tmp_logicalsize)
+     call allocate(this, tmp_intsize, tmp_realsize, tmp_strsize, tmp_logicalsize, tmp_max_length)
+
+     call bcast(mpi, this%n)
+     call bcast(mpi, this%increment)
+
+     if (this%intsize     /= 0) call bcast(mpi, this%int)
+     if (this%realsize    /= 0) call bcast(mpi, this%real)
+     if (this%strsize     /= 0) call bcast(mpi, this%str)
+     if (this%logicalsize /= 0) call bcast(mpi, this%logical)     
+  end if
+
+end subroutine table_bcast
 
 end module table_module
