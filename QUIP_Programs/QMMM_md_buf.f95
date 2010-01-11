@@ -9,7 +9,6 @@ program qmmm_md
 
   use libatoms_module
   use cp2k_driver_template_module
-  use cp2k_driver_module
   use quip_module
 
   implicit none
@@ -50,6 +49,13 @@ program qmmm_md
   integer, pointer                    :: thermostat_region_p(:)
 
   !Spline
+
+  type spline_pot
+    real(dp) :: from
+    real(dp) :: to
+    real(dp) :: dpot
+  end type spline_pot
+
   type(spline_pot)                    :: my_spline
   real(dp)                            :: pot
   real(dp), pointer                   :: pot_p(:)
@@ -112,6 +118,9 @@ program qmmm_md
   logical                     :: do_carve_cluster
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
+
+  real(dp) :: max_move_since_calc_connect
+  real(dp) :: calc_connect_buffer
 type(inoutput) :: csilla_out
 logical :: have_silica_potential
 
@@ -165,6 +174,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster)
       call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr)
+      call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer)
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
@@ -236,6 +246,7 @@ logical :: have_silica_potential
       call print('  Time_Step '//round(Time_Step,3))
       call print('  Equilib_Time '//round(Equilib_Time,3))
       call print('  Run_Time '//round(Run_Time,3))
+      call print('  max_n_steps '//max_n_steps)
       call print('  Inner_Buffer_Radius '//round(Inner_Buffer_Radius,3))
       call print('  Outer_Buffer_Radius '//round(Outer_Buffer_Radius,3))
       call print('! - not used any more -  Connect_Cutoff '//round(Connect_cutoff,3))
@@ -386,7 +397,7 @@ logical :: have_silica_potential
     if (have_silica_potential) then
 	use_cutoff = max(SILICA_2BODY_CUTOFF, Outer_Buffer_Radius)
     endif
-    call set_cutoff(ds%atoms,use_cutoff)
+    call set_cutoff(ds%atoms,use_cutoff+calc_connect_buffer)
     call calc_connect(ds%atoms)
     if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
 
@@ -418,7 +429,7 @@ logical :: have_silica_potential
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
 	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-             call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,list_changed=list_changed1)
+             call create_pos_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
@@ -451,7 +462,7 @@ logical :: have_silica_potential
 	 else
 	   !center the whole system around the first QM atom, otherwise CP2K has difficulties with finding
 	   !the centre of QM box => QM atoms will be on the edges, nothing in the middle!
-             call get_qm_list(ds%atoms,1,embedlist,'hybrid_mark')
+             call get_hybrid_list(ds%atoms,1,embedlist,'hybrid_mark')
              if (embedlist%N.eq.0) call system_abort('empty embedlist')
 	     call center_atoms(ds%atoms,ds%atoms%pos(:,embedlist%int(1,1)))
 	     call finalise(embedlist)
@@ -718,7 +729,21 @@ enddo
 
 !LOOP - force calc, then VV-2, VV-1
 
+  ! keep track of how far atoms could have moved
+  max_move_since_calc_connect = 0.0_dp
   do while (ds%t < (Equilib_Time + Run_Time) .and. ((max_n_steps < 0) .or. (n < (max_n_steps-1))))
+
+    max_move_since_calc_connect = max_move_since_calc_connect + Time_Step* maxval(abs(ds%atoms%velo))
+    ! max distance atom could have moved is about max_move_since_calc_connect
+    ! 2.0 time that is max that interatomic distance could have changed
+    ! another factor of 1.5 to account for inaccuracy in max_move_since_calc_connect (because atoms really move a distance dependent on both velo and higher derivatives like acc)
+    if (max_move_since_calc_connect*2.0_dp*1.5_dp >= calc_connect_buffer) then
+      call system_timer("calc_connect")
+      call calc_connect(ds%atoms)
+      if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
+      max_move_since_calc_connect = 0.0_dp
+      call system_timer("calc_connect")
+    endif
 
     call system_timer('step')
      n = n + 1
@@ -728,7 +753,7 @@ enddo
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         if (qm_region_pt_ctr) then
 	   if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-           call create_centred_qmcore(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,list_changed=list_changed1)
+           call create_pos_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
 !             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
@@ -1158,5 +1183,153 @@ contains
     call print('Sum of the forces after mom.cons.: '//sumF(1:3))
 
   end function sumBUFFER
+
+  !% Calculates the force on the $i$th atom due to an external potential that has
+  !% the form of a spline, $my_spline$.
+  !
+  function spline_force(at, i, my_spline, pot) result(force)
+
+    type(Atoms), intent(in)  :: at
+    integer, intent(in) :: i
+    type(spline_pot), intent(in) :: my_spline
+    real(dp), optional, intent(out) :: pot
+    real(dp), dimension(3) :: force
+
+    real(dp) :: dist, factor
+
+! dist = distance from the origin
+! spline: f(dist) = spline%dpot/(spline%from-spline%to)**3._dp * (dist-spline%to)**2._dp * (3._dp*spline%from - spline%to - 2._dp*dist)
+! f(spline%from) = spline%dpot; f(spline%to) = 0.
+! f`(spline%from) = 0.; f`(spline%to) = 0.
+! force = - grad f(dist)
+
+    dist = distance_min_image(at,i,(/0._dp,0._dp,0._dp/))
+    if (dist.ge.my_spline%to .or. dist.le.my_spline%from) then
+       force = 0._dp
+       if (present(pot)) then
+          if (dist.ge.my_spline%to) pot = 0._dp
+          if (dist.le.my_spline%from) pot = my_spline%dpot
+       endif
+    else
+       factor = 1._dp
+      ! force on H should be 1/16 times the force on O, to get the same acc.
+       if (at%Z(i).eq.1) factor = ElementMass(1)/ElementMass(8)
+       force = - factor * 2._dp *my_spline%dpot / ((my_spline%from - my_spline%to)**3._dp * dist) * &
+               ( (3._dp * my_spline%from - my_spline%to - 2._dp * dist) * (dist - my_spline%to) &
+               - (dist - my_spline%to)**2._dp ) * at%pos(1:3,i)
+       if (present(pot)) pot = my_spline%dpot/(my_spline%from-my_spline%to)**3._dp * (dist-my_spline%to)**2._dp * (3._dp*my_spline%from - my_spline%to - 2._dp*dist)
+    endif
+
+  end function spline_force
+
+  !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
+  !% marking the QM atoms with 1, otherwise 0.
+  !
+  subroutine read_qmlist(my_atoms,qmlistfilename,verbose)
+
+    type(Atoms),       intent(inout) :: my_atoms
+    character(*),      intent(in)    :: qmlistfilename
+    logical, optional, intent(in)    :: verbose
+
+    type(table)                      :: qm_list
+    type(Inoutput)                   :: qmlistfile
+    integer                          :: n,num_qm_atoms,qmatom,status
+    character(80)                    :: title,testline
+    logical                          :: my_verbose
+    integer                          :: qm_flag_index
+    character(20), dimension(10)     :: fields
+    integer                          :: num_fields
+    integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
+
+
+    my_verbose = .false.
+    if (present(verbose)) my_verbose = verbose
+
+    if (my_verbose) call print('In Read_QM_list:')
+    call print('Reading the QM list from file '//trim(qmlistfilename)//'...')
+
+    call initialise(qmlistfile,filename=trim(qmlistfilename),action=INPUT)
+    title = read_line(qmlistfile,status)
+    if (status > 0) then
+       call system_abort('read_qmlist: Error reading from '//qmlistfile%filename)
+    else if (status < 0) then
+       call system_abort('read_qmlist: End of file when reading from '//qmlistfile%filename)
+    end if
+
+    call parse_line(qmlistfile,' ',fields,num_fields,status)
+    if (status > 0) then
+       call system_abort('read_qmlist: Error reading from '//qmlistfile%filename)
+    else if (status < 0) then
+       call system_abort('read_qmlist: End of file when reading from '//qmlistfile%filename)
+    end if
+
+    num_qm_atoms = string_to_int(fields(1))
+    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=ERROR)
+    call print('Number of QM atoms: '//num_qm_atoms)
+    call allocate(qm_list,4,0,0,0,num_qm_atoms)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
+
+    do while (status==0)
+       testline = read_line(qmlistfile,status)
+       !print *,testline
+       if (testline(1:4)=='list') exit
+    enddo
+   ! Reading and storing QM list...
+    do n=1,num_qm_atoms
+       call parse_line(qmlistfile,' ',fields,num_fields,status)
+       qmatom = string_to_int(fields(1))
+       if (my_verbose) call print(n//'th quantum atom is: '//qmatom)
+       call append(qm_list,(/qmatom,0,0,0/))
+    enddo
+
+    call finalise(qmlistfile)
+
+    if (qm_list%N/=num_qm_atoms) call system_abort('read_qmlist: Something wrong with the QM list file')
+    if (any(int_part(qm_list,1).gt.my_atoms%N).or.any(int_part(qm_list,1).lt.1)) &
+       call system_abort('read_qmlist: at least 1 QM atom is out of range')
+    if ((size(int_part(qm_list,1)).gt.my_atoms%N).or.(size(int_part(qm_list,1)).lt.1)) &
+       call system_abort("read_qmlist: QM atoms' number is <1 or >"//my_atoms%N)
+
+    call add_property(my_atoms,'hybrid',0)
+    if (.not. assign_pointer(my_atoms, 'hybrid', hybrid_p)) &
+      call system_abort("read_qmlist couldn't assign pointer for hybrid_p")
+    hybrid_p(1:my_atoms%N) = 0
+    hybrid_p(int_part(qm_list,1)) = 1
+call print('Added '//count(hybrid_p(1:my_atoms%N) == 1)//' qm atoms.')
+
+    call add_property(my_atoms,'hybrid_mark',0)
+    if (.not. assign_pointer(my_atoms, 'hybrid_mark', hybrid_mark_p)) &
+      call system_abort("read_qmlist couldn't assign pointer for hybrid_mark_p")
+    hybrid_mark_p(1:my_atoms%N) = 0
+    hybrid_mark_p(int_part(qm_list,1)) = HYBRID_ACTIVE_MARK
+call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//' qm atoms.')
+
+    if (my_verbose) call print('Finished. '//qm_list%N//' QM atoms have been read successfully.')
+    call finalise(qm_list)
+
+  end subroutine read_qmlist
+
+  !%Prints the quantum region mark with the cluster_mark property (/=0).
+  !%If file is given, into file, otherwise to the standard io.
+  !
+  subroutine print_qm_region(at, file)
+    type(Atoms), intent(inout) :: at
+    type(Inoutput), optional :: file
+
+    integer, pointer :: cluster_mark_p(:)
+
+    if (.not.(assign_pointer(at, "cluster_mark", cluster_mark_p))) &
+      call system_abort("print_qm_region couldn't find cluster_mark property")
+
+    if (present(file)) then
+      file%prefix="QM_REGION"
+      call print_xyz(at, file, mask=(cluster_mark_p /= 0))
+      file%prefix=""
+    else
+      mainlog%prefix="QM_REGION"
+      call print_xyz(at, mainlog, mask=(cluster_mark_p /= 0))
+      mainlog%prefix=""
+    end if
+  end subroutine print_qm_region
+
 
 end program qmmm_md
