@@ -2428,7 +2428,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
       
       case(PROPERTY_LOGICAL): 
 	for (j=0; j < atoms->property_ncols[i]; j++) {
-	  sprintf(tmpbuf, logical_format, property_logical(atoms, i, j, n));
+	  sprintf(tmpbuf, logical_format, property_logical(atoms, i, j, n) ? 'T' : 'F');
 	  strcat(linebuffer, tmpbuf);
 	}
 	break;
@@ -3691,7 +3691,7 @@ int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *l
     if (at->xyz_out == NULL) return 0;
     if (at->xyz_out != stdout && fseek(at->xyz_out, 0, SEEK_END) != 0) return 0;
 
-    if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5s", *swap))
+    if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5c", *swap))
       return 0;
     if (at->xyz_out == stdout) fflush(at->xyz_out);
     return 1;
