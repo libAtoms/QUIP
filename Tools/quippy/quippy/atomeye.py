@@ -1,7 +1,7 @@
 """This module provides a high-level interface between quippy and the AtomEye extension module
    :mod:`quippy._atomeye`. """
 
-import _atomeye, sys, numpy, time, os
+import _atomeye, sys, numpy, time
 from math import ceil, log10
 from farray import *
 
@@ -428,57 +428,6 @@ class AtomEyeView(object):
         if not self.is_alive: 
             raise RuntimeError('is_alive is False')
         _atomeye.wait(self._window_id)
-
-
-    def make_movie(self, atomsseq, moviefilename, progress=True,
-                   movieencoder='ffmpeg -i %s -r 25 -b 30M %s', movieplayer='mplayer %s', cleanup=True,
-                   postprocess=None, nframes=None):
-        """Make a movie using configurations from `atomsseq`. A sequence of JPEG files are
-        written and then encoded using `movieencoder` to form an MPEG - the default
-        command is ``fmpeg -i %s -r 25 -b 30M %s``. Optional arguments `start`, `stop` and `step`
-        can be used to limit the frames used for the movie. A textual progress bar will be
-        drawn unless `progress` is set to false. The intermediate JPEG files are cleared up
-        after the movie is made."""
-
-        from quippy.progbar import ProgressBar
-
-        ndigit = 5
-        if nframes is not None: ndigit = int(ceil(log10(nframes)))
-        
-        basename, ext = os.path.splitext(moviefilename)
-        fmt = '%s%%0%dd.jpg' % (basename, ndigit)
-        progress = progress and nframes is not None
-
-        imgs = []
-        if progress: pb = ProgressBar(0,nframes,80,showValue=True)
-        try:
-            if progress: print 'Rendering frames...'
-            for i, at in enumerate(atomsseq):
-                filename = fmt % i
-                
-                self.show(at)
-                self.capture(filename)
-                self.wait()
-                if postprocess is not None:
-                    postprocess(at, i, filename)
-                imgs.append(filename)
-                if progress: pb(i+1)
-            if progress: print
-
-            if movieencoder is not None:
-                if progress: print 'Encoding movie'
-                os.system(movieencoder % (fmt, moviefilename))
-
-            if movieplayer is not None:
-                if progress: print 'Playing movie'
-                os.system(movieplayer % moviefilename)
-           
-        finally:
-            if cleanup:
-                self.wait()
-                for img in imgs:
-                    if os.path.exists(img): os.remove(img)
-
 
 views = {}
 _atomeye.set_handlers(on_click, on_close, on_advance, on_new_window)
