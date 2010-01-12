@@ -96,7 +96,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
    println('module',shortname)
    indent += 3
 
-   use_list = [ 'my_%s => %s' % (x.name,x.name) for x in subts+functs]
+   use_list = [ 'quippy_%s => %s' % (x.name,x.name) for x in subts+functs]
 
    if len(subts+functs) != 0:
       println('use %s, only: &' % mod.name)
@@ -137,7 +137,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
    for modname in dep_mods.keys():
       println('use %s, only: &' % modname)
       indent += 3
-      println(','.join(['my_%s => %s' % (t, t) for t in dep_mods[modname]]))
+      println(','.join(['quippy_%s => %s' % (t, t) for t in dep_mods[modname]]))
       indent -= 3
    println()
 
@@ -244,7 +244,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               attributes.append('intent(inout)')
 
           if arg.type.startswith('type'):
-              mytype = 'type(my_%s' % arg.type[arg.type.index('(')+1:]
+              mytype = 'type(quippy_%s' % arg.type[arg.type.index('(')+1:]
 
               # Preserve original fortran intent
               fintent = [ a for a in attributes if a.startswith('intent')]
@@ -391,9 +391,9 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
 
       if hasattr(sub, 'ret_val'):
           argfilt = [ arg.name for arg in args if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
-          println('%s = my_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
+          println('%s = quippy_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
       else:
-          println('call my_%s(%s)' % (sub.name, join_and_split_lines(argnames)))
+          println('call quippy_%s(%s)' % (sub.name, join_and_split_lines(argnames)))
 
       if sub.name.lower().endswith('finalise') and len(argnames) > 0 and argnames[0] == 'this':
           println('deallocate(this)')
@@ -450,7 +450,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               println('subroutine %s__array__%s(this, dtype, dshape, dloc)' % (t.name,name))
               indent += 3
               println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(my_%s), pointer, intent(in) :: this' % t.name)
+              println('type(quippy_%s), pointer, intent(in) :: this' % t.name)
               println('character(%d), intent(out) :: dtype' % max_type_len)
               try:
                   rank = dim_list[0].count(',')+1
@@ -496,17 +496,17 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               println('subroutine %s__get__%s(this, the%s)' % (t.name, name, name))
               indent += 3
               println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(my_%s), pointer, intent(in) :: this' % t.name)
+              println('type(quippy_%s), pointer, intent(in) :: this' % t.name)
 
 
               if el.type.startswith('type'):
                   # For derived types elements, just treat as a pointer
                   println('!f2py integer*SIZEOF_VOID_PTR, intent(out) :: the%s' % name)
                   #if dim_list != []:
-                  #    #println('type(my_%s, pointer, %s, intent(out) :: the%s' % (el.type[5:], dim_list[0], name))
+                  #    #println('type(quippy_%s, pointer, %s, intent(out) :: the%s' % (el.type[5:], dim_list[0], name))
                   #    println('integer, %s, intent(out) :: the%s' % (el.type[5:], dim_list[0], name))
                   #else:
-                      #println('type(my_%s, pointer, intent(out) :: the%s' % (el.type[5:], name))
+                      #println('type(quippy_%s, pointer, intent(out) :: the%s' % (el.type[5:], name))
                   println('integer*SIZEOF_VOID_PTR, intent(out) :: the%s' % name)
                   println()
                   println('the%s = loc(this%%%s)' % (name, el.name))
@@ -553,13 +553,13 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               println('subroutine %s__set__%s(this, the%s)' % (t.name, name, name))
               indent += 3
               println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(my_%s), pointer, intent(inout) :: this' % t.name)
+              println('type(quippy_%s), pointer, intent(inout) :: this' % t.name)
               attributes = el.attributes[:]
 
               if el.type.startswith('type'):
                   # Set by reference
                   println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: the%s' % name)
-                  println('type(my_%s, pointer, intent(in) :: the%s' % (el.type[el.type.index('(')+1:], name))
+                  println('type(quippy_%s, pointer, intent(in) :: the%s' % (el.type[el.type.index('(')+1:], name))
                   println()
                   println('this%%%s = the%s' % (el.name, name))
 
