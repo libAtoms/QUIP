@@ -1643,7 +1643,7 @@ call print("create_hybrid_weights_args radii " // do_hysteretic_buffer_inner_rad
        call append(total_embedlist, activelist)    
    
        if (distance_ramp) core_CoM = core_CoM/core_mass
-   
+
        call wipe(currentlist)
        call append(currentlist, activelist)
 
@@ -1673,13 +1673,13 @@ call print("create_hybrid_weights_args radii " // do_hysteretic_buffer_inner_rad
              end if
           end do
        end do
-   
+
        if (distance_ramp) then
           ! Normalise distances from core_CoM so that maximum distance is equal to 1
           distances%real(1,1:distances%N) = distances%real(1,1:distances%N)/maxval(real_part(distances,1))
           ! Fill in the weights
           do i=1,distances%N
-             weight_region1(jj) = 1.0_dp - distances%real(1,i)
+             weight_region1(distances%int(1,i)) = 1.0_dp - distances%real(1,i)
           end do
           call finalise(distances)
        end if
