@@ -805,6 +805,7 @@ module paramreader_module
       type(DictData) :: data
       allocate(data%d(size(transfer(entry,data%d))))
 
+      s=""
       do i=1,dict%N
          if (.not. get_value(dict, dict%keys(i), data)) &
               call system_abort('param_print: Key '//dict%keys(i)//' missing')
