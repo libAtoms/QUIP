@@ -50,24 +50,9 @@ except ValueError:
 if infile == '-':  outfile = 'stdin'
 if outfile == '-': outfile = 'stdout'
 
-class SliceParser(object):
-   def __getitem__(self, idx):
-      return idx
-
-def parse_comma_colon_list(L):
-   if ':' in L:
-      L = L.split(':')
-   elif ',' in L:
-      L = L.split(',')
-   else:
-      L = [L]
-
-   return [k.lower() for k in L]
-
-
 if opt.range is not None:
    try:
-      opt.range = eval('SliceParser()[%s]' % opt.range)
+      opt.range = parse_slice(opt.range)
    except:
       p.error('Cannot parse slice "%s" - should be in format [start]:[stop][:step]')
 else:
@@ -144,7 +129,7 @@ def process(at):
             p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
-all_configs = AtomsList(infile)
+all_configs = AtomsList(infile, store=False)
 if outfile is not None:
    outfile = AtomsWriter(outfile, format=opt.format)
 
