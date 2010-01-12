@@ -31,7 +31,8 @@ p.add_option('-o', '--outfile', action='store', help='Movie output file')
 p.add_option('-n', '--nowindow', action='store_true', help='Disable AtomEye viewer window', default=False)
 p.add_option('-E', '--encoder', action='store', help='Movie encoder command', default='ffmpeg -i %s -r 25 -b 30M %s')
 p.add_option('-P', '--player', action='store', help='Movie player command', default='mplayer %s')
-p.add_option('-v', '--viewfile', action='store', help='AtomEye command script for initial view')
+p.add_option('-l', '--load-view', action='store', help='Load view from AtomEye command script')
+p.add_option('-s', '--save-view', action='store', help='Save view to AtomEye command script')
 p.add_option('-g', '--graph', action='store_true', help='Enable graph plotting')
 p.add_option('-x', '--xdata', action='store', help='Data for x axis of graph')
 p.add_option('-y', '--ydata', action='store', help='Data for y axis of graph')
@@ -47,6 +48,7 @@ p.add_option('-p', '--property', action='store', help="""Property to use to colo
 p.add_option('-a', '--arrows', action='store', help="""Property to use to draw arrows (default none)""")
 p.add_option('-e', '--exec_code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`.""")
+p.add_option('-u', '--update', action='store_true', help="""Update a previous movie. Requires a previous run with -k, and implies -k on this run.""")
 
 opt, args = p.parse_args()
 
@@ -69,8 +71,32 @@ sources = [AtomsList(f, store=False) for f in args]
 
 # Try to count number of frames
 nframes = sum([len(s) for s in sources])
-
 nframes = len(range(*opt.range.indices(nframes)))
+
+ndigit = 5
+if nframes is not None: ndigit = int(ceil(log10(nframes)))
+basename, ext = os.path.splitext(opt.outfile)
+out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
+
+# Look for existing JPEGs, so we can continue a previous run
+if opt.update:
+   opt.keep_images = True
+   
+   existing_frames = [ os.path.exists(out_fmt % i) for i in range(nframes) ]
+   restart_frame = existing_frames.index(False)
+   
+   print 'Restarting from frame %d' % restart_frame
+   if opt.range.step is None:
+      opt.range = slice(opt.range.start + restart_frame, opt.range.stop, opt.range.step)
+   else:
+      opt.range = slice(opt.range.start + restart_frame/opt.range.step, opt.range.stop, opt.range.step)
+
+   nframes = sum([len(s) for s in sources])
+   nframes = len(range(*opt.range.indices(nframes)))
+   img_offset = restart_frame
+else:
+   img_offset = 0
+
 
 # Build a chain of iterators over all input files, skipping frames as appropriate
 atomseq = itertools.islice(itertools.chain.from_iterable(sources),
@@ -99,12 +125,15 @@ if opt.merge is not None:
 view = atomeye.AtomEyeView(nowindow=opt.nowindow)
 view.show(a0, property=opt.property, arrows=opt.arrows)
 
-if opt.viewfile is not None:
-   view.run_script(opt.viewfile)
+if opt.load_view is not None:
+   view.run_script(opt.load_view)
    view.redraw()
 
 if not opt.nowindow:
    raw_input('Arrange AtomEye view then press enter...')
+
+if opt.save_view is not None:
+   view.save(opt.save_view)
 
 postprocess = None
 
@@ -159,26 +188,13 @@ if opt.text is not None:
 
    postprocess = add_text
 
-# Make a movie using configurations from `atomseq`. A sequence of JPEG files are
-# w ritten and then encoded using `movieencoder` to form an MPEG - the default
-# command is ``fmpeg -i %s -r 25 -b 30M %s``. Optional arguments `start`, `stop` and `step`
-# can be used to limit the frames used for the movie. A textual progress bar will be
-# drawn unless `progress` is set to false. The intermediate JPEG files are cleared up
-# after the movie is made."""
-
-ndigit = 5
-if nframes is not None: ndigit = int(ceil(log10(nframes)))
-
-basename, ext = os.path.splitext(opt.outfile)
-fmt = '%s%%0%dd.jpg' % (basename, ndigit)
 progress = nframes is not None
-
 imgs = []
 if progress: pb = ProgressBar(0,nframes,80,showValue=True)
 try:
    if progress: print 'Rendering frames...'
    for i, at in enumerate(atomseq):
-      filename = fmt % i
+      filename = out_fmt % (i + img_offset)
 
       if opt.merge:
          for k in opt.merge_properties:
@@ -198,7 +214,7 @@ try:
 
    if opt.encoder is not None:
       if progress: print 'Encoding movie'
-      os.system(opt.encoder % (fmt, opt.outfile))
+      os.system(opt.encoder % (out_fmt, opt.outfile))
 
    if opt.player is not None:
       if progress: print 'Playing movie'
