@@ -353,7 +353,7 @@ contains
 
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
 
-       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc)
+       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, VERBOSE)
 
        if (present(frame) .and. this%got_index == 0) then
           if (frame /= this%current_frame) then
