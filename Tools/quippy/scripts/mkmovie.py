@@ -74,7 +74,6 @@ nframes = sum([len(s) for s in sources])
 nframes = len(range(*opt.range.indices(nframes)))
 
 ndigit = 5
-if nframes is not None: ndigit = int(ceil(log10(nframes)))
 basename, ext = os.path.splitext(opt.outfile)
 out_fmt = '%s%%0%dd.jpg' % (basename, ndigit)
 
