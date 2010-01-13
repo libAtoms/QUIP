@@ -103,7 +103,7 @@ BATCH_READ  = False
 
 # If any force is larger than this threshold, repeat the
 # calculation without checkfile (units: eV/A)
-MAX_FORCE_THRESHOLD = 15.0
+MAX_FORCE_THRESHOLD = 150.0
 
 # Working directory for CASTEP. Set this to a local scratch
 # directory if network file performance is poor.
@@ -565,7 +565,7 @@ try:
             info('max force is %.2f eV/A on atom %d' % (max_force,max_force_atom))
 
          if max_force > MAX_FORCE_THRESHOLD:
-            error('max force is very large - repeating calculation')
+            error('max force is very large - repeating calculation %.6f %.6f' % (max_force, MAX_FORCE_THRESHOLD) )
             continue
          else:
             break
