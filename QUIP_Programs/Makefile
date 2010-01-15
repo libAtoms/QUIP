@@ -24,20 +24,9 @@ LIBFILES = libatoms.a libquip.a libquiputils.a
 
 .PHONY: clean allclean test
 
+EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test ts_calculation QMMM_CP2K_md QMMM_md_buf annealing
 
-${PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
-test_CASTEP_MM_buffer_crack: % :  ${OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
-test_CASTEP_water_chain: % :  ${OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
-test_CASTEP_water_bulk: % :  ${OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
-test: % :  ${OBJS} %.o ${LIBFILES}
+${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 CRACK_OBJS = crackparams.o cracktools.o
@@ -48,20 +37,8 @@ crack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 makecrack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
 
-ts_calculation: % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
-
-QMMM_CP2K_md: % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
-
-QMMM_md_buf: % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
-
-annealing: % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
-
 clean:	
-	-rm -f *.mod *.o ${PROGRAMS}
+	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} crack makecrack
 
 allclean : clean
 
