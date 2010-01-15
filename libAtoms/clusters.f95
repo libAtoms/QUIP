@@ -383,7 +383,7 @@ contains
              end do
 
              !If more than half of  j's nearest neighbours are in then add it to output
-             if (real(n_in,dp)/real(nn,dp) > 0.5_dp) &
+             if (find(output, (/j,ishift+jshift/)) == 0 .and. real(n_in,dp)/real(nn,dp) > 0.5_dp) &
                   call append(output, (/j,ishift+jshift/))
 
           end if
@@ -1192,6 +1192,7 @@ contains
 
     ! rescale cluster positions and lattice 
     if (do_rescale_r) then
+       call print('carve_cluster: rescaling cluster positions and lattice by factor '//r_scale, VERBOSE)
        cluster%pos = r_scale * cluster%pos
        call set_lattice(cluster, r_scale * cluster%lattice)
     end if
@@ -1225,27 +1226,15 @@ contains
           if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) &
                call system_abort('hybrid_mark property not found in cluster')
 
-	  if (hysteretic_connect) then
-	    use_connect => at%hysteretic_connect
-	  else
-	    use_connect => at%connect
-	  endif
-
           do i=1,cluster%N
              if (hybrid_mark(cluster_info%int(1,i)) /= HYBRID_BUFFER_MARK) cycle
              in_outer_layer = .false.
-             do n=1,atoms_n_neighbours(cluster,i, alt_connect=use_connect)
-                if (.not. (hysteretic_connect .or. is_nearest_neighbour(cluster,i,n, use_connect))) cycle
-                j = atoms_neighbour(cluster,i,n, alt_connect=use_connect)
-
-                do m = 1, cluster_info%N
-                   if (cluster_info%int(6,m).eq. 0) cycle
-                   if (cluster_info%int(1,m) .eq. j) then
-                      in_outer_layer = .true.
-                      exit
-                   end if
-                enddo
-             end do
+             do m = 1, cluster_info%N
+                if (cluster_info%int(6,m).eq. i) then
+                   in_outer_layer = .true.
+                   exit
+                end if
+             enddo
              if (in_outer_layer) then
                 hybrid_mark(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
                 cluster_hybrid_mark(i) = HYBRID_BUFFER_OUTER_LAYER_MARK
