@@ -903,7 +903,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    if (maxval(abs(this%pol)) > 0.0_dp .and. .not. all(fixdip)) then
 
-      call print('Entering ASAP2 Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments')
+      call print('Entering ASAP2 Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', VERBOSE)
 
       ! Self-consistent determination of dipole moments
       diff_old = 1.0_dp
