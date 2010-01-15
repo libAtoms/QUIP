@@ -254,7 +254,7 @@ class FortranDerivedType(object):
        for name, (arrayfunc, doc) in self._arrays.iteritems():
           dtype, shape, loc = arrayfunc(self._fpointer)
           dtype = dtype.strip()
-          if shape.any() and loc != 0:
+          if (shape > 0).all() and loc != 0:
              if dtype in numpy_to_fortran.keys():
                  nshape = self._get_array_shape(name)
                  if nshape is not None:
@@ -606,7 +606,7 @@ def wrapmod(modobj, moddoc, short_names, params):
                setattr(new_cls, name, property(fget=getattr(new_cls,'_get_%s'%name),
                                                fset=getattr(new_cls,'_set_%s'%name),
                                                doc=el['doc']))
-            else:
+            elif not 'pointer' in el['attributes']:
                 new_cls._subobjs[name] = (el['type'], 
                                           getattr(modobj, el['get']), 
                                           getattr(modobj, el['set']))
