@@ -4068,7 +4068,7 @@ contains
        if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
        allocate(this%connect%is_min_image(this%n))
        do i=1,this%n
-          this%connect%is_min_image(i) = is_min_image(this, i)
+          this%connect%is_min_image(i) = is_min_image(this, i, alt_connect=this%hysteretic_connect)
        end do
     end if
 
@@ -6248,38 +6248,47 @@ contains
 
   end function closest_atom
 
-  function is_min_image(this, i) 
-    type(Atoms), intent(in) :: this
+  function is_min_image(this, i, alt_connect) 
+    type(Atoms), target, intent(in) :: this
     integer, intent(in) ::i
+    type(Connection), intent(inout), target, optional :: alt_connect
+
     logical :: is_min_image
     integer :: n, m, NN
+    type(Connection), pointer :: use_connect
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
 
     is_min_image = .true.
     ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
-    if (this%connect%initialised) then
+    if (use_connect%initialised) then
 
-       nn = this%connect%neighbour1(i)%t%N
+       nn = use_connect%neighbour1(i)%t%N
        do n=1,nn
-          if (this%connect%neighbour1(i)%t%int(1,n) == i) then
+          if (use_connect%neighbour1(i)%t%int(1,n) == i) then
              is_min_image = .false.
              return
           end if
           do m=n+1,nn
-             if (this%connect%neighbour1(i)%t%int(1,n) == this%connect%neighbour1(i)%t%int(1,m)) then
+             if (use_connect%neighbour1(i)%t%int(1,n) == use_connect%neighbour1(i)%t%int(1,m)) then
                 is_min_image = .false.
                 return
              end if
           end do
        end do
 
-       nn = this%connect%neighbour2(i)%t%N
+       nn = use_connect%neighbour2(i)%t%N
        do n=1,nn
-          if (this%connect%neighbour2(i)%t%int(1,n) == i) then
+          if (use_connect%neighbour2(i)%t%int(1,n) == i) then
              is_min_image = .false.
              return
           end if
           do m=n+1,nn
-             if (this%connect%neighbour2(i)%t%int(1,n) == this%connect%neighbour2(i)%t%int(1,m)) then
+             if (use_connect%neighbour2(i)%t%int(1,n) == use_connect%neighbour2(i)%t%int(1,m)) then
                 is_min_image = .false.
                 return
              end if
