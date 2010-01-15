@@ -10,6 +10,7 @@ endif
 
 FOX = FoX-4.0.3
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
+EXTRA_CLEAN_DIRS = Tools/quippy
 
 all: ${MODULES}
 
@@ -69,9 +70,12 @@ ${BUILDDIR}: arch
 
 
 clean:
-	for mods in  ${MODULES}  ; do \
-	ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	${MAKE} -C ${BUILDDIR} -I${PWD}/Makefiles clean ; \
+	for mods in  ${MODULES} ; do \
+	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
+	  ${MAKE} -C ${BUILDDIR} -I${PWD}/Makefiles clean ; \
+	done ; \
+	for dir in ${EXTRA_CLEAN_DIRS}; do \
+	  cd $$dir; make clean; \
 	done
 
 
