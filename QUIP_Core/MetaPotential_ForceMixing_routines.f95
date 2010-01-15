@@ -29,33 +29,16 @@
     call param_register(params, 'conserve_momentum_weight_method', 'uniform', this%conserve_momentum_weight_method)
     call param_register(params, 'mm_args_str', '', this%mm_args_str)
     call param_register(params, 'qm_args_str', '', this%qm_args_str)
-    call param_register(params, 'buffer_hops', '0', this%buffer_hops)
-!    call param_register(params, 'hysteretic_buffer', 'F', this%hysteretic_buffer)
-    call param_register(params, 'buffer_inner_radius', '5.0', this%buffer_inner_radius)
-    call param_register(params, 'buffer_outer_radius', '7.0', this%buffer_outer_radius)
-    call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', this%construct_buffer_use_only_heavy_atoms)
-    call param_register(params, 'hysteretic_connect', 'F', this%hysteretic_connect)
-    call param_register(params, 'hysteretic_connect_cluster_radius', '20.0', this%hysteretic_connect_cluster_radius)
-    call param_register(params, 'hysteretic_connect_inner_factor', '1.2', this%hysteretic_connect_inner_factor)
-    call param_register(params, 'hysteretic_connect_outer_factor', '1.5', this%hysteretic_connect_outer_factor)
+    call param_register(params, 'qm_little_clusters_buffer_hops', '3', this%qm_little_clusters_buffer_hops)
     call param_register(params, 'use_buffer_for_fitting', 'F', this%use_buffer_for_fitting)
     call param_register(params, 'fit_hops', '3', this%fit_hops)
     call param_register(params, 'add_cut_H_in_fitlist', 'F', this%add_cut_H_in_fitlist)
     call param_register(params, 'randomise_buffer', 'F', this%randomise_buffer)
-    call param_register(params, 'transition_hops', '0', this%transition_hops)
-    call param_register(params, 'weight_interpolation', 'hop_ramp', this%weight_interpolation)
-    call param_register(params, 'nneighb_only', 'T', this%nneighb_only)
     call param_register(params, 'save_forces', 'T', this%save_forces)
     call param_register(params, 'lotf_spring_hops', '2', this%lotf_spring_hops)
     call param_register(params, 'lotf_interp_order', 'linear', this%lotf_interp_order)
     call param_register(params, 'lotf_interp_space', 'F', this%lotf_interp_space)
     call param_register(params, 'lotf_nneighb_only', 'T', this%lotf_nneighb_only)
-
-
-    ! Parameters for do_reference_bulk calculation
-    call param_register(params, "minimise_bulk", "F", minimise_bulk)
-    call param_register(params, "do_rescale_r", "F", this%do_rescale_r)
-    call param_register(params, "do_tb_defaults", "F", do_tb_defaults)
 
     ! Parameters for the MM minimisation
     call param_register(params, 'minim_mm_method', 'cg', this%minim_mm_method)
@@ -69,14 +52,52 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
+    ! Parameters for do_reference_bulk calculation, init time only
+    call param_register(params, "minimise_bulk", "F", minimise_bulk)
+    call param_register(params, "do_tb_defaults", "F", do_tb_defaults)
+    call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
+
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_initialise args_str')) then
        call system_abort('MetaPotential_FM_initialise failed to parse args_str="'//trim(args_str)//'"')
     end if
 
     call finalise(params)
 
+    call initialise(this%create_hybrid_weights_params)
+    call read_string(this%create_hybrid_weights_params, args_str)
+    call remove_value(this%create_hybrid_weights_params, 'minimise_mm')
+    call remove_value(this%create_hybrid_weights_params, 'calc_weights')
+    call remove_value(this%create_hybrid_weights_params, 'method')
+    call remove_value(this%create_hybrid_weights_params, 'mm_reweight')
+    call remove_value(this%create_hybrid_weights_params, 'conserve_momentum_weight_method')
+    call remove_value(this%create_hybrid_weights_params, 'mm_args_str')
+    call remove_value(this%create_hybrid_weights_params, 'qm_args_str')
+    call remove_value(this%create_hybrid_weights_params, 'qm_little_clusters_buffer_hops')
+    call remove_value(this%create_hybrid_weights_params, 'use_buffer_for_fitting')
+    call remove_value(this%create_hybrid_weights_params, 'fit_hops')
+    call remove_value(this%create_hybrid_weights_params, 'add_cut_H_in_fitlist')
+    call remove_value(this%create_hybrid_weights_params, 'randomise_buffer')
+    call remove_value(this%create_hybrid_weights_params, 'save_forces')
+    call remove_value(this%create_hybrid_weights_params, 'lotf_spring_hops')
+    call remove_value(this%create_hybrid_weights_params, 'lotf_interp_order')
+    call remove_value(this%create_hybrid_weights_params, 'lotf_interp_space')
+    call remove_value(this%create_hybrid_weights_params, 'lotf_nneighb_only')
+    call remove_value(this%create_hybrid_weights_params, 'do_rescale_r')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_method')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_tol')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_eps_guess')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_max_steps')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_linminroutine')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_pos')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_lat')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_print')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_use_n_minim')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_args_str')
+    call remove_value(this%create_hybrid_weights_params, 'minimise_bulk')
+    call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
+
     this%r_scale_pot1 = 1.0_dp
-    if (this%do_rescale_r) then
+    if (do_rescale_r) then
        if (.not. present(reference_bulk)) &
             call system_abort("metapotential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//&
             do_tb_defaults//" but reference_bulk is not present")
@@ -132,24 +153,17 @@
     call Print(' conserve_momentum_weight_method='//this%conserve_momentum_weight_method)
     call Print(' mm_args_str='//trim(this%mm_args_str), file=file)
     call Print(' qm_args_str='//trim(this%qm_args_str), file=file)
-    call Print(' buffer_hops='//this%buffer_hops, file=file)
-!    call print(' hysteretic_buffer'//this%hysteretic_buffer)
-    call print(' buffer_inner_radius'//this%buffer_inner_radius)
-    call print(' buffer_outer_radius'//this%buffer_outer_radius)
+    call Print(' qm_little_clusters_buffer_hops='//this%qm_little_clusters_buffer_hops, file=file)
     call print(' use_buffer_for_fitting='//this%use_buffer_for_fitting)
-    call print(' construct_buffer_use_only_heavy_atoms'//this%construct_buffer_use_only_heavy_atoms)
     call Print(' fit_hops='//this%fit_hops, file=file)
     call print(' add_cut_H_in_fitlist='//this%add_cut_H_in_fitlist,file=file)
     call Print(' randomise_buffer='//this%randomise_buffer, file=file)
-    call Print(' transition_hops='//this%transition_hops, file=file)
-    call Print(' weight_interpolation='//trim(this%weight_interpolation), file=file)
-    call Print(' nneighb_only='//this%nneighb_only, file=file)
     call Print(' save_forces='//this%save_forces, file=file)
-    call Print(' do_rescale_r='//this%do_rescale_r, file=file)
     call Print(' lotf_spring_hops='//this%lotf_spring_hops, file=file)
     call Print(' lotf_interp_order='//this%lotf_interp_order, file=file)
     call Print(' lotf_interp_space='//this%lotf_interp_space, file=file)
     call Print(' lotf_nneighb_only='//this%lotf_nneighb_only, file=file)
+    call Print(' r_scale_pot1='//this%r_scale_pot1, file=file)
     call Print('',file=file)
     call Print(' minim_mm_method='//this%minim_mm_method,file=file)
     call Print(' minim_mm_tol='//this%minim_mm_tol,file=file)
@@ -161,6 +175,8 @@
     call Print(' minim_mm_do_print='//this%minim_mm_do_print,file=file)
     call Print(' minim_mm_use_n_minim='//this%minim_mm_use_n_minim,file=file)
     call Print(' minim_mm_args_str='//trim(this%minim_mm_args_str),file=file)
+    call Print('',file=file)
+    call Print(' create_hybrid_weights_params '//write_string(this%create_hybrid_weights_params), file=file)
     call Print('',file=file)
     if (associated(this%mmpot)) then
        call Print('MM Potential:',file=file)
@@ -196,24 +212,22 @@
     real(dp), pointer, dimension(:) :: weight_region1, conserve_momentum_weight
     integer, pointer, dimension(:) :: hybrid, hybrid_mark
     integer :: i
-    type(Dictionary) :: params
+    type(Dictionary) :: params, calc_create_hybrid_weights_params
     logical :: dummy
-    logical  :: minimise_mm, calc_weights, nneighb_only, save_forces, lotf_do_init, &
-         lotf_do_map, lotf_do_fit, lotf_do_interp, lotf_do_qm, lotf_interp_space, do_rescale_r, &
-         randomise_buffer, hysteretic_buffer, hysteretic_connect, lotf_nneighb_only
+    logical  :: minimise_mm, calc_weights, save_forces, lotf_do_init, &
+         lotf_do_map, lotf_do_fit, lotf_do_interp, lotf_do_qm, lotf_interp_space, &
+         randomise_buffer, lotf_nneighb_only
     character(FIELD_LENGTH) :: method, mm_args_str, qm_args_str, conserve_momentum_weight_method, &
-         AP_method, weight_interpolation, lotf_interp_order
+         AP_method, lotf_interp_order
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
-    real(dp) :: buffer_inner_radius, buffer_outer_radius
-    real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor, hysteretic_connect_outer_factor
+    integer :: fit_hops
 
-    integer :: weight_method, buffer_hops, transition_hops, fit_hops, lotf_spring_hops
+    integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4
     integer, allocatable, dimension(:) :: embed, fit
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end of workaround for pgf90 bug (as of 9.0-1)
-    logical :: construct_buffer_use_only_heavy_atoms
 
     if (present(err)) err = 0
 
@@ -227,29 +241,30 @@
          conserve_momentum_weight_method)
     call param_register(params, 'mm_args_str', this%mm_args_str, mm_args_str)
     call param_register(params, 'qm_args_str', this%qm_args_str, qm_args_str)
-    call param_register(params, 'buffer_hops', ''//this%buffer_hops, buffer_hops)
-!    call param_register(params, 'hysteretic_buffer', ''//this%hysteretic_buffer, hysteretic_buffer)
-    call param_register(params, 'buffer_inner_radius', ''//this%buffer_inner_radius, buffer_inner_radius)
-    call param_register(params, 'buffer_outer_radius', ''//this%buffer_outer_radius, buffer_outer_radius)
-    call param_register(params, 'construct_buffer_use_only_heavy_atoms', ''//this%construct_buffer_use_only_heavy_atoms, construct_buffer_use_only_heavy_atoms)
-    call param_register(params, 'hysteretic_connect', ''//this%hysteretic_connect, hysteretic_connect)
-    call param_register(params, 'hysteretic_connect_cluster_radius', ''//this%hysteretic_connect_cluster_radius, hysteretic_connect_cluster_radius)
-    call param_register(params, 'hysteretic_connect_inner_factor', ''//this%hysteretic_connect_inner_factor, hysteretic_connect_inner_factor)
-    call param_register(params, 'hysteretic_connect_outer_factor', ''//this%hysteretic_connect_outer_factor, hysteretic_connect_outer_factor)
-    call param_register(params, 'transition_hops', ''//this%transition_hops, transition_hops)
+    call param_register(params, 'qm_little_clusters_buffer_hops', ''//this%qm_little_clusters_buffer_hops, qm_little_clusters_buffer_hops)
     call param_register(params, 'use_buffer_for_fitting', ''//this%use_buffer_for_fitting, this%use_buffer_for_fitting)
     call param_register(params, 'fit_hops', ''//this%fit_hops, fit_hops)
     call param_register(params, 'add_cut_H_in_fitlist', ''//this%add_cut_H_in_fitlist,this%add_cut_H_in_fitlist)
     call param_register(params, 'randomise_buffer', ''//this%randomise_buffer, randomise_buffer)
-    call param_register(params, 'weight_interpolation', this%weight_interpolation, weight_interpolation)
-    call param_register(params, 'nneighb_only', ''//this%nneighb_only, nneighb_only)
+    call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
     call param_register(params, 'lotf_spring_hops', ''//this%lotf_spring_hops, lotf_spring_hops)
     call param_register(params, 'lotf_interp_order', this%lotf_interp_order, lotf_interp_order)
     call param_register(params, 'lotf_interp_space', ''//this%lotf_interp_space, lotf_interp_space)
     call param_register(params, 'lotf_nneighb_only', ''//this%lotf_nneighb_only, lotf_nneighb_only)
-    call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
-    call param_register(params, 'do_rescale_r', ''//this%do_rescale_r, do_rescale_r)
 
+    ! override args_str parameters for the MM minimisation
+    call param_register(params, 'minim_mm_method', 'cg', this%minim_mm_method)
+    call param_register(params, 'minim_mm_tol', '1e-6', this%minim_mm_tol)
+    call param_register(params, 'minim_mm_eps_guess', '1e-4', this%minim_mm_eps_guess)
+    call param_register(params, 'minim_mm_max_steps', '1000', this%minim_mm_max_steps)
+    call param_register(params, 'minim_mm_linminroutine', 'FAST_LINMIN', this%minim_mm_linminroutine)
+    call param_register(params, 'minim_mm_do_pos', 'T', this%minim_mm_do_pos)
+    call param_register(params, 'minim_mm_do_lat', 'F', this%minim_mm_do_lat)
+    call param_register(params, 'minim_mm_do_print', 'F', this%minim_mm_do_print)
+    call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
+    call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
+
+    ! lotf parameters, calc time only
     call param_register(params, 'lotf_do_init', 'T', lotf_do_init)
     call param_register(params, 'lotf_do_map', 'F', lotf_do_map)
     call param_register(params, 'lotf_do_qm', 'T', lotf_do_qm)
@@ -257,27 +272,60 @@
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
 
-    if (current_verbosity().ge.NERD) call print(this)
-    
-    ! Apply the shortcuts
-    if (trim(method) == 'force_mixing_abrupt') then
-       buffer_hops = 0
-       transition_hops = 0
-       weight_interpolation = 'hop_ramp'
-    else if (trim(method) == 'force_mixing_smooth') then
-       weight_interpolation = 'hop_ramp'
-    else if (trim(method) == 'force_mixing_super_smooth') then
-       weight_interpolation = 'distance_ramp'
-    end if
-
-    hysteretic_buffer = .false.
-    if (buffer_inner_radius.gt.epsilon(0._dp)) hysteretic_buffer = .true.
-    if (hysteretic_buffer.and.buffer_hops.gt.0) call system_abort('only 1 of buffer_inner_radius ('//buffer_inner_radius//') and buffer_hops ('//buffer_hops//') can be > 0. ')
-    if (hysteretic_buffer.and.(buffer_outer_radius.lt.buffer_inner_radius)) call system_abort('the inner radius for the (hysteretic) buffer selection must not be larger than the outer radius.')
-
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_Calc args_str') ) &
       call system_abort("MetaPotential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
+
+    if (current_verbosity().ge.NERD) call print(this)
+
+    call initialise(calc_create_hybrid_weights_params)
+    call read_string(calc_create_hybrid_weights_params, write_string(this%create_hybrid_weights_params))
+    call read_string(calc_create_hybrid_weights_params, args_str, append=.true.)
+
+    call remove_value(calc_create_hybrid_weights_params, 'minimise_mm')
+    call remove_value(calc_create_hybrid_weights_params, 'calc_weights')
+    call remove_value(calc_create_hybrid_weights_params, 'method')
+    call remove_value(calc_create_hybrid_weights_params, 'mm_reweight')
+    call remove_value(calc_create_hybrid_weights_params, 'conserve_momentum_weight_method')
+    call remove_value(calc_create_hybrid_weights_params, 'mm_args_str')
+    call remove_value(calc_create_hybrid_weights_params, 'qm_args_str')
+    call remove_value(calc_create_hybrid_weights_params, 'qm_little_clusters_buffer_hops')
+    call remove_value(calc_create_hybrid_weights_params, 'use_buffer_for_fitting')
+    call remove_value(calc_create_hybrid_weights_params, 'fit_hops')
+    call remove_value(calc_create_hybrid_weights_params, 'add_cut_H_in_fitlist')
+    call remove_value(calc_create_hybrid_weights_params, 'randomise_buffer')
+    call remove_value(calc_create_hybrid_weights_params, 'save_forces')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_spring_hops')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_interp_order')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_interp_space')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_nneighb_only')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_method')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_tol')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_eps_guess')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_max_steps')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_linminroutine')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_pos')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_lat')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_do_print')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_use_n_minim')
+    call remove_value(calc_create_hybrid_weights_params, 'minim_mm_args_str')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_do_init')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_do_map')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_do_qm')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_do_fit')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_do_interp')
+    call remove_value(calc_create_hybrid_weights_params, 'lotf_interp')
+
+    ! Apply
+    if (trim(method) == 'force_mixing_abrupt') then
+       call set_value(calc_create_hybrid_weights_params, 'buffer_hops', 0)
+       call set_value(calc_create_hybrid_weights_params, 'transition_hops', 0)
+       call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'hop_ramp')
+    else if (trim(method) == 'force_mixing_smooth') then
+       call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'hop_ramp')
+    else if (trim(method) == 'force_mixing_super_smooth') then
+       call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'distance_ramp')
+    end if
 
     if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) &
          call system_abort('MetaPotential_FM_calc: supports only forces, not energy, virial or local_e')
@@ -298,31 +346,20 @@
             call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
 
        if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) call system_abort('MetaPotential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).')
-       if (hysteretic_buffer) then
           !update only the active region, the buffer region will be updated in create_hybrid_weights
-          where(hybrid_mark.eq.HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
-          where(hybrid.eq.HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
-       else
-          !no hysteresis, rebuild hybrid_markfrom scratch
-          hybrid_mark = HYBRID_NO_MARK
-          where(hybrid /= 0) hybrid_mark = HYBRID_ACTIVE_MARK
-       endif
+
+       ! if we have a hysteretic buffer, set marks to allow previously active atoms to become buffer atoms
+       ! if we don't, then this is irrelevant anyway
+       ! create_hybrid_weights will then set the buffer marks
+       where (hybrid_mark == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
+       where (hybrid == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
 
        call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.')
 
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) &
             call system_abort('MetatPotential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
 
-       call create_hybrid_weights(at, trans_width=transition_hops, buffer_width=buffer_hops, &
-            weight_interpolation=weight_interpolation, nneighb_only=nneighb_only, min_images_only=.true., &
-            mark_buffer_outer_layer=randomise_buffer, hysteretic_buffer=hysteretic_buffer, &
-            hysteretic_buffer_inner_radius=buffer_inner_radius, &
-            hysteretic_buffer_outer_radius=buffer_outer_radius, &
-            hysteretic_connect=hysteretic_connect, &
-            hysteretic_connect_cluster_radius=hysteretic_connect_cluster_radius, &
-            hysteretic_connect_inner_factor=hysteretic_connect_inner_factor, &
-            hysteretic_connect_outer_factor=hysteretic_connect_outer_factor, &
-            construct_buffer_use_only_heavy_atoms=construct_buffer_use_only_heavy_atoms)
+       call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
 
        ! reassign pointers
        
@@ -372,15 +409,14 @@
        call read_string(params, qm_args_str)
 
        !! TODO - possibly want to set more default options in the qm_args_str here
-       if (.not. dictionary_has_key(params, 'buffer_hops')) call set_value(params, 'buffer_hops', buffer_hops)
+       if (.not. dictionary_has_key(params, 'qm_little_clusters_buffer_hops')) &
+ 	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
 
-       ! We may have to rescale the cluster
-       if (do_rescale_r) then
-          call set_value(params, 'do_rescale_r', .true.)
-          call set_value(params, 'r_scale', this%r_scale_pot1)
-       end if
+       ! it never hurts to rescale r, as long as the default scale is 1.0
+       call set_value(params, 'do_rescale_r', .true.)
+       call set_value(params, 'r_scale', this%r_scale_pot1)
 
        qm_args_str = write_string(params)
        call finalise(params)

@@ -43,6 +43,27 @@
       call system_abort("MetaPotential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
+    call initialise(this%create_hybrid_weights_params)
+    call read_string(this%create_hybrid_weights_params, args_str)
+    call remove_value(this%create_hybrid_weights_params, 'r_scale')
+    call remove_value(this%create_hybrid_weights_params, 'E_scale')
+    call remove_value(this%create_hybrid_weights_params, 'terminate')
+    call remove_value(this%create_hybrid_weights_params, 'minimise_bulk')
+    call remove_value(this%create_hybrid_weights_params, 'do_rescale_r')
+    call remove_value(this%create_hybrid_weights_params, 'do_rescale_E')
+    call remove_value(this%create_hybrid_weights_params, 'do_tb_defaults')
+    call remove_value(this%create_hybrid_weights_params, 'minimise_mm')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_method')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_tol')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_eps_guess')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_max_steps')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_linminroutine')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_pos')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_lat')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_do_print')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_use_n_minim')
+    call remove_value(this%create_hybrid_weights_params, 'minim_mm_args_str')
+
     if (this%minimise_mm) then
       call initialise(this%relax_metapot, "Simple", region2_pot)
     endif
@@ -115,7 +136,7 @@
 
     logical :: calc_weights
     integer :: core_hops, transition_hops, buffer_hops
-    type(Dictionary) :: params
+    type(Dictionary) :: params, calc_create_hybrid_weights_params
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
@@ -126,15 +147,12 @@
     call initialise(params)
     call param_register(params, "calc_weights", "F", calc_weights)
     call param_register(params, "core_hops", "0", core_hops)
-    call param_register(params, "transition_hops", "0", transition_hops)
-    call param_register(params, "buffer_hops", "0", buffer_hops)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Local_E_Mix_Calc args_str') ) &
       call system_abort("MetaPotential_Local_E_Mix_calc_energy failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     if (calc_weights) then
-      call print("MetaPotential_Local_E_Mix_calc got calc_weights core_hops " // core_hops // &
-        " transition_hops " // transition_hops // " buffer_hops " // buffer_hops, VERBOSE)
+      call print("MetaPotential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
       call add_property(at, "hybrid_mark", HYBRID_NO_MARK)
       if (.not. assign_pointer(at, "hybrid", hybrid)) &
@@ -152,7 +170,9 @@
       call bfs_grow(at, region1_table, core_hops, nneighb_only = .false.)
       hybrid_mark(int_part(region1_table,1)) = HYBRID_ACTIVE_MARK
 
-      call create_hybrid_weights(at, trans_width=transition_hops, buffer_width=buffer_hops)
+      call read_string(calc_create_hybrid_weights_params, write_string(this%create_hybrid_weights_params))
+      call read_string(calc_create_hybrid_weights_params, trim(args_str), append=.true.)
+      call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
     endif
 
     call calc_local_energy_mix(this, at, energy, local_e, force, virial, args_str)
