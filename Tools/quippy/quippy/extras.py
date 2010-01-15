@@ -489,6 +489,13 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
 class Table(FortranTable):
 
+   def __repr__(self):
+      return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
+              (self.n, self.intsize, self.realsize, self.strsize, self.logicalsize))
+
+   def __str__(self):
+      return repr(self)
+
    def copy(self):
       t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
       t.n = self.n
@@ -560,8 +567,8 @@ from quippy import INPUT, OUTPUT, INOUT
 
 class CInOutput(FortranCInOutput):
 
-   def __init__(self, filename, action=INPUT, append=False, netcdf4=True, zero=False):
-      FortranCInOutput.__init__(self, filename, action, append, netcdf4)
+   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, fpointer=None, finalise=True):
+      FortranCInOutput.__init__(self, filename, action, append, netcdf4, fpointer=fpointer, finalise=finalise)
       self.zero = zero
 
    def __len__(self):
