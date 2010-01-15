@@ -20,6 +20,8 @@ contains
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
+    real(dp) :: cp2k_centre_pos(3)
+    logical :: centre_cp2k, has_cp2k_centre_pos
     logical :: try_reuse_wfn
 
     character(len=128) :: method
@@ -76,6 +78,8 @@ contains
       call param_register(cli, "qm_vacuum", "6.0", qm_vacuum)
       call param_register(cli, "try_reuse_wfn", "T", try_reuse_wfn)
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
+      call param_register(cli, "centre_cp2k", 'F', centre_cp2k)
+      call param_register(cli, "cp2k_centre_pos", '0.0 0.0 0.0', cp2k_centre_pos, has_cp2k_centre_pos)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('could not parse argument line')
@@ -92,6 +96,12 @@ contains
     call print("  qm_vacuum " // qm_vacuum)
     call print("  try_reuse_wfn " // try_reuse_wfn)
     call print('  have_silica_potential '//have_silica_potential)
+    call print('  centre_cp2k '//centre_cp2k)
+    if (has_cp2k_centre_pos) then
+      call print('  cp2k_centre_pos '//cp2k_centre_pos)
+    else
+      call print('  cp2k_centre_pos not present')
+    endif
 
     ! read template file
     call initialise(template_io, trim(cp2k_template_file), INPUT)
@@ -163,6 +173,21 @@ contains
       allocate(qm_list_a(0))
     endif
 
+    if (centre_cp2k) then
+      if (.not. has_cp2k_centre_pos) then
+	if (qm_list%N > 0) then
+	  cp2k_centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
+	else
+	  cp2k_centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
+	endif
+	call print("centering got automatic center " // cp2k_centre_pos, VERBOSE)
+      endif
+      at%pos(1,:) = at%pos(1,:) - cp2k_centre_pos(1)
+      at%pos(2,:) = at%pos(2,:) - cp2k_centre_pos(2)
+      at%pos(3,:) = at%pos(3,:) - cp2k_centre_pos(3)
+      call map_into_cell(at)
+    endif
+
     if (qm_list%N == at%N) then
       call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", ERROR)
       run_type='QS'
@@ -188,8 +213,8 @@ contains
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
 			' Angstrom around the QM atoms.')
-      call print('WARNING! Please check if your cell is centered around the QM region!',ERROR)
-      call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',ERROR)
+      call print('WARNING! Please check if your cell is centreed around the QM region!',ERROR)
+      call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',ERROR)
       call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',ERROR)
       cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
@@ -361,6 +386,13 @@ contains
 
     ! parse output
     call read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
+
+    if (centre_cp2k) then
+      at%pos(1,:) = at%pos(1,:) + cp2k_centre_pos(1)
+      at%pos(2,:) = at%pos(2,:) + cp2k_centre_pos(2)
+      at%pos(3,:) = at%pos(3,:) + cp2k_centre_pos(3)
+      call map_into_cell(at)
+    endif
 
     if (maxval(abs(f)) > max_force_warning) &
       call print('WARNING cp2k forces max component ' // maxval(abs(f)) // ' at ' // maxloc(abs(f)) // &

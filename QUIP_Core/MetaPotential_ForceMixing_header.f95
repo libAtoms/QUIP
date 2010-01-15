@@ -37,32 +37,20 @@
                                                                   !% property in the Atoms object.
      character(FIELD_LENGTH) :: mm_args_str !% Args string to be passed to 'calc' method of 'mmpot'
      character(FIELD_LENGTH) :: qm_args_str !% Args string to be passed to 'calc' method of 'qmpot'
-     integer :: buffer_hops !% Number of bond hops used for buffer region. Applies to 'force_mixing' methods only.
-!     logical :: hysteretic_buffer !% Turn on hysteretic selection algorithm for buffer region
-     real(dp) :: buffer_inner_radius,  buffer_outer_radius !% Turn on hysteretic selection algorithm for buffer region
-     logical :: hysteretic_connect !% Turn on hysteretic selection algorithm for connection used for buffer region
-     real(dp) :: hysteretic_connect_cluster_radius, hysteretic_connect_inner_factor,  hysteretic_connect_outer_factor
-     logical :: construct_buffer_use_only_heavy_atoms !% Whether to consider only the heavy atoms radius when constructing the hysteretic buffer
-
-     integer :: transition_hops !% Number of bond hops used for transition region. Applies to 'force_mixing' methods only.
+     integer :: qm_little_clusters_buffer_hops !% Number of bond hops used for buffer region for qm calcs with little clusters
      logical :: use_buffer_for_fitting !% Whether to generate the fit region or just use the buffer as the fit region. Only for method=conserve_momentum
      integer :: fit_hops !% Number of bond hops used for fit region. Applies to 'conserve_momentum' and 'lotf_*' methods only.
      logical :: add_cut_H_in_fitlist !% Whether to extend the fit region where a cut hydrogen is cut after the fitlist selection.
                                      !% This will ensure to only include whole water molecules in the fitlist.
      logical :: randomise_buffer !% If true, then positions of outer layer of buffer atoms will be randomised slightly. Default false.
-     character(FIELD_LENGTH) :: weight_interpolation !% Weigh interpolation method for transition region, for 'force_mixing' methods.
-       !% Should be one of 'hop_ramp' or 'distance_ramp'; default is 'hop_ramp'.
-     logical :: nneighb_only !% Should bond hopping be done to nearest neighbours only when building transition, 
-                             !% buffer and fit regions. Default true. Applies to all methods.
      logical :: save_forces !% If true, save MM, QM and total forces as properties in the Atoms object (default true)
 
      integer :: lotf_spring_hops  !% Maximum lengths of springs for LOTF 'adj_pot_svd' and 'adj_pot_minim' methods (default is 2).
      character(FIELD_LENGTH) :: lotf_interp_order !% Interpolation order: should be one of 'linear', 'quadratic', or 'cubic'. Default is 'linear'.
      logical :: lotf_interp_space !% Do spatial rather than temporal interpolation of adj pot parameters. Default is false.
      logical :: lotf_nneighb_only !% If true (which is the default), uses nearest neigbour hopping to determine fit atoms
-     logical :: do_rescale_r !% Should positions in QM region be rescaled
      real(dp) :: r_scale_pot1 !% Rescale positions in QM region by this factor
-     
+
      character(FIELD_LENGTH) :: minim_mm_method 
      real(dp)      :: minim_mm_tol, minim_mm_eps_guess
      integer       :: minim_mm_max_steps
@@ -71,6 +59,8 @@
      logical       :: minim_mm_do_print, minim_mm_use_n_minim
 
      character(FIELD_LENGTH) :: minim_mm_args_str
+
+     type(Dictionary) :: create_hybrid_weights_params !% extra arguments to pass create_hybrid_weights
 
      type(MetaPotential) :: relax_metapot
      type(Inoutput), pointer :: minim_inoutput_movie

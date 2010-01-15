@@ -119,6 +119,10 @@ program qmmm_md
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
 
+  logical :: distance_ramp
+  real(dp) :: distance_ramp_inner_radius, distance_ramp_outer_radius
+  character(len=128) :: weight_interpolation
+
   real(dp) :: max_move_since_calc_connect
   real(dp) :: calc_connect_buffer
 type(inoutput) :: csilla_out
@@ -176,6 +180,10 @@ logical :: have_silica_potential
       call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr)
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer)
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
+
+      call param_register(params_in, 'distance_ramp', 'F', distance_ramp)
+      call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius)
+      call param_register(params_in, 'distance_ramp_outer_radius', '4.0', distance_ramp_outer_radius)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
@@ -453,21 +461,6 @@ logical :: have_silica_potential
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
 
-
-       if (.not.Continue_it) then
-	 if (qm_region_atom_ctr /= 0) then
-	   call center_atoms(ds%atoms,ds%atoms%pos(:,qm_region_atom_ctr))
-	 else if (qm_region_pt_ctr) then
-	   call center_atoms(ds%atoms,qm_region_ctr)
-	 else
-	   !center the whole system around the first QM atom, otherwise CP2K has difficulties with finding
-	   !the centre of QM box => QM atoms will be on the edges, nothing in the middle!
-             call get_hybrid_list(ds%atoms,1,embedlist,'hybrid_mark')
-             if (embedlist%N.eq.0) call system_abort('empty embedlist')
-	     call center_atoms(ds%atoms,ds%atoms%pos(:,embedlist%int(1,1)))
-	     call finalise(embedlist)
-	  endif
-       endif
     endif
     call map_into_cell(ds%atoms)
     call calc_dists(ds%atoms)
@@ -507,9 +500,10 @@ logical :: have_silica_potential
         !call write(this=ds%atoms,cio=xyz,real_format='%17.10f')
         !call write(this=ds%atoms,cio=xyz,properties=trim(print_prop),real_format='%17.10f')
     endif
-    call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+    call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
     call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
     call finalise(latest_xyz)
+    call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      !----------------------------------------------------
 
   !INIT. METAPOTENTIAL
@@ -532,16 +526,24 @@ logical :: have_silica_potential
 !       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:hybrid_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
 !       call initialise(CP2K_MM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:hybrid_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type2)//' PSF_Print=USE_EXISTING_PSF') !every case but
        call initialise(CP2K_MM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:cluster_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type2)//' PSF_Print=USE_EXISTING_PSF') !every case but
+       if (distance_ramp) then
+	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
+	 weight_interpolation='distance_ramp'
+       else
+	 weight_interpolation='hop_ramp'
+       endif
        call initialise(my_metapotential,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
             ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
             ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
-            ' buffer_inner_radius='//Inner_Buffer_Radius// &
-            ' buffer_outer_radius='//Outer_Buffer_Radius// &
+            ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
+            ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+	    ' weight_interpolation='//trim(weight_interpolation)// &
+	    ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
             ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
-            //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)) &
-            , pot=CP2K_MM_potential, pot2=CP2K_QM_potential)
+            //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
+            pot=CP2K_MM_potential, pot2=CP2K_QM_potential)
     endif
 
     !allocate force lists
@@ -598,7 +600,7 @@ logical :: have_silica_potential
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)// &
           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
-          ' clean_up_files=F' !// &
+          ' clean_up_files=F centre_cp2k' !// &
 !next 2lines are for playing with silica carving
 !            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster// &
 !            ' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T'
@@ -609,6 +611,9 @@ logical :: have_silica_potential
         args_str='qm_args_str={'//trim(qm_args_str)// &
 !        args_str='qm_args_str={'//trim(mm_args_str)// &
           '} mm_args_str={'//trim(mm_args_str)//'}'
+	if (distance_ramp) then
+	  args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
+	endif
         call print('ARGS_STR | '//trim(args_str))
 !        call create_hybrid_mark_and_weight_region1_from_QM_flag(ds%atoms)
 !!!!!!!!!!
@@ -658,9 +663,9 @@ logical :: have_silica_potential
         enddo
      endif
 
-do i=1,ds%atoms%N
-     call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
-enddo
+!NB do i=1,ds%atoms%N
+!NB      call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+!NB enddo
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
        if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
@@ -814,7 +819,7 @@ enddo
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(PSF_Print)// &
           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
-          ' clean_up_files=F' !// &
+          ' clean_up_files=F centre_cp2k' !// &
 !next 2lines are for playing with silica carving
 !            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T'
@@ -825,6 +830,9 @@ enddo
         args_str='qm_args_str={'//trim(qm_args_str)// &
 !        args_str='qm_args_str={'//trim(mm_args_str)// &
           '} mm_args_str={'//trim(mm_args_str)//'}'
+	if (distance_ramp) then
+	  args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
+	endif
         call print('ARGS_STR | '//trim(args_str))
 !        call set_cutoff(ds%atoms,Inner_Buffer_Radius)
 !        call calc_connect(ds%atoms)
@@ -968,22 +976,6 @@ enddo
   call system_finalise
 
 contains
-
-  subroutine center_atoms(at,p)
-
-    type(atoms), intent(inout) :: at
-    real(dp), intent(in)       :: p(3)
-    integer                    :: i
-
-    real(dp) :: shift(3)
-
-    ! must copy shift vector so that if it's pointer into at%pos, things still work unambiguously
-    shift = -p
-    do i=1,at%N
-       at%pos(1:3,i) = at%pos(1:3,i) + shift
-    enddo
-
-  end subroutine center_atoms
 
   subroutine read_constraints_bond_diff(my_atoms,constraints,constraint_file)
 

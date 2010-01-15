@@ -16,8 +16,10 @@
      logical       :: minim_mm_do_print, minim_mm_use_n_minim
      character(FIELD_LENGTH) :: minim_mm_args_str
 
-      type(Inoutput), pointer :: minim_inoutput_movie
-      type(CInoutput), pointer :: minim_cinoutput_movie
+     type(Dictionary) :: create_hybrid_weights_params
+
+     type(Inoutput), pointer :: minim_inoutput_movie
+     type(CInoutput), pointer :: minim_cinoutput_movie
 
   end type MetaPotential_Local_E_Mix
 

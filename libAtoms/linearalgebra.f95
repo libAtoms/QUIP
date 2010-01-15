@@ -4988,9 +4988,21 @@ CONTAINS
 
    end function matrix3x3_det
 
+   function pbc_aware_centre(p, lattice, g) result(c)
+     real(dp), intent(in) :: p(:,:), lattice(3,3), g(3,3)
+     real(dp) :: c(3)
+
+     integer i
+     complex(dp) :: c_z(3)
+
+     c_z = 0.0_dp
+     do i=1, size(p,2)
+       c_z = c_z + exp(complex(0.0_dp,1.0_dp)*2.0_dp*PI*(g .mult. p(:,i)))
+     end do
+     c_z = c_z / real(size(p,2),dp)
+     c_z = c_z/abs(c_z)
+     c = lattice .mult. real(log(c_z)/(complex(0.0_dp,1.0_dp)*2.0_dp*PI),dp)
+
+   end function pbc_aware_centre
+
 end module linearalgebra_module
-
-
-
-
-
