@@ -651,6 +651,126 @@ class TestCluster_HybridMark_Periodic(QuippyTestCase):
       self.assertEqual(self.c1, self.c2)
 
 
+def mark_atoms(at, nneighb_only=True, alt_connect=None):
+   at.add_property('hybrid_mark', HYBRID_NO_MARK)
+   embed = at.bfs_grow_single(1, n=1, nneighb_only=nneighb_only, alt_connect=alt_connect)
+
+   buffer = embed.copy()
+   at.bfs_grow_list(buffer, n=1, nneighb_only=nneighb_only, alt_connect=alt_connect)
+
+   buffer_outer_layer = buffer.copy()
+   at.bfs_grow_list(buffer_outer_layer, n=1, nneighb_only=nneighb_only, alt_connect=alt_connect)
+
+   at.hybrid_mark[:] = HYBRID_NO_MARK
+   at.hybrid_mark[buffer_outer_layer.int[1,:]]= HYBRID_BUFFER_OUTER_LAYER_MARK
+   at.hybrid_mark[buffer.int[1,:]]= HYBRID_BUFFER_MARK
+   at.hybrid_mark[embed.int[1,:]]= HYBRID_ACTIVE_MARK
+
+
+class TestCluster_HystereticConnect_Equiv(QuippyTestCase):
+
+   def setUp(self):
+      self.at = supercell(diamond(5.44, 14), 3, 3, 3)
+
+      self.at.set_cutoff_factor(1.2, 1.4)
+      self.at.calc_connect()
+      self.at.calc_connect_hysteretic(self.at.hysteretic_connect)
+
+      mark_atoms(self.at)
+
+      self.args = {'terminate': True,
+                   'randomise_buffer' : False,
+                   'hysteretic_connect': False}
+      self.t = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args))
+      self.cluster = carve_cluster(self.at, args_str(self.args), cluster_info=self.t)
+
+      self.args_hysteretic = {'terminate' :True,
+                              'randomise_buffer' : False,
+                              'hysteretic_connect': True,
+                              'cluster_nneighb_only': False}
+      self.t_hysteretic = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args_hysteretic))
+      self.cluster_hysteretic = carve_cluster(self.at, args_str(self.args_hysteretic), cluster_info=self.t_hysteretic)
+
+   def test_cluster_info(self):
+      self.assertEqual(self.t, self.t_hysteretic)
+
+   def test_cluster(self):
+      self.assertEqual(self.cluster, self.cluster_hysteretic)
+
+
+class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
+
+   def setUp(self):
+      self.at = supercell(diamond(5.44, 14), 3, 3, 3)
+      self.at.set_cutoff_factor(1.2)
+      self.at.calc_connect()
+      mark_atoms(self.at)
+
+      self.move_atom = 66
+
+      self.at_hysteretic = self.at.copy()
+      self.at_hysteretic.set_cutoff_factor(1.2, 1.4)
+      self.at_hysteretic.calc_connect_hysteretic(self.at_hysteretic.hysteretic_connect)
+
+      self.at_move = self.at.copy()
+      
+      self.at_move.pos[2,self.move_atom] -= 0.5
+      self.at_hysteretic.pos[2,self.move_atom] -= 0.5
+
+      self.at_move.calc_connect()
+      mark_atoms(self.at_move)
+
+      self.args = {'terminate': True,
+                   'randomise_buffer' : False,
+                   'hysteretic_connect': False}
+
+      self.t = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args))
+      self.cluster = carve_cluster(self.at, args_str(self.args), cluster_info=self.t)
+
+      self.t_move = create_cluster_info_from_hybrid_mark(self.at_move, args_str(self.args))
+      self.cluster_move = carve_cluster(self.at_move, args_str(self.args), cluster_info=self.t)
+
+      self.at_hysteretic.calc_connect_hysteretic(self.at_hysteretic.hysteretic_connect)
+      mark_atoms(self.at_hysteretic, nneighb_only=False, alt_connect=self.at_hysteretic.hysteretic_connect)
+
+      self.args_hysteretic = {'terminate' :True,
+                              'randomise_buffer' : False,
+                              'hysteretic_connect': True,
+                              'cluster_nneighb_only': False}
+      self.t_hysteretic = create_cluster_info_from_hybrid_mark(self.at_hysteretic, args_str(self.args_hysteretic))
+      self.cluster_hysteretic = carve_cluster(self.at_hysteretic, args_str(self.args_hysteretic), cluster_info=self.t_hysteretic)
+
+   def test_mark(self):
+      self.assertEqual(self.at.hybrid_mark[self.move_atom], HYBRID_BUFFER_OUTER_LAYER_MARK)
+   
+   def test_mark_move(self):
+      self.assertEqual(self.at_move.hybrid_mark[self.move_atom], HYBRID_NO_MARK)
+
+   def test_mark_hysteretic(self):
+      self.assertEqual(self.at_hysteretic.hybrid_mark[self.move_atom], HYBRID_BUFFER_OUTER_LAYER_MARK)      
+
+   def test_cluster_info_int(self):
+      self.assertArrayAlmostEqual(self.t.int, self.t_hysteretic.int)
+      
+   def test_cluster_info_real(self):
+      r_diff = abs(self.t.real - self.t_hysteretic.real) > 0.0
+      r_diff_index = r_diff.nonzero()[1]
+
+      # find the index of the atom we moved in the cluster table
+      row1 = self.t.subtable(rows=frange(self.t.n), intcols=[1])
+      move_atom_index = row1.find(self.move_atom)
+
+      # Consider each entry in cluster_info which doesn't match original
+      for i in r_diff_index:
+         if self.t.int[6,i] == 0:
+            # it's not a termination atom, so should be the one we moved
+            self.assertEqual(self.t.int[1,i],self.move_atom)
+         else:
+            # it's a Hydrogen, so it should be attached to the atom we moved
+            self.assertEqual(self.t.int[6,i],move_atom_index)
+
+
+
 if hasattr(quippy, 'Potential'):
 
    class TestCluster_LittleClusters(QuippyTestCase):
