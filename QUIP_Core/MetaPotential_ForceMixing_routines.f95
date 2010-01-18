@@ -14,7 +14,7 @@
     type(MPI_Context), intent(in), optional :: mpi
 
     type(Dictionary) :: params
-    logical :: minimise_bulk, do_tb_defaults
+    logical :: minimise_bulk, do_tb_defaults, do_rescale_r
     real(dp) :: dummy_E
 
     call finalise(this)
