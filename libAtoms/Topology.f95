@@ -65,8 +65,14 @@ module topology_module
   integer,  parameter, private :: MAX_ATOMS_PER_RES = 50   !Maximum number of atoms in one residue
   integer,  parameter, private :: MAX_IMPROPERS_PER_RES = 12   !Maximum number of impropers in one residue
 
-  real(dp), parameter, public :: SILICA_CUTOFF = 2.8_dp
-  real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 5.5_dp
+  real(dp), parameter, public :: SILICON_2BODY_CUTOFF = 3.8_dp  !Si-Si 2body interaction
+  real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 7.5_dp !Si-O, O-O 2body interaction
+  real(dp), parameter, public :: SILICON_3BODY_CUTOFF = 3.8_dp !Si-Si-Si, Si-Si-O 3body cutoff
+  real(dp), parameter, public :: SILICA_3BODY_CUTOFF = 3.6_dp !Si-O-Si, O-Si-O, Si-O-H 3body cutoff
+!  real(dp), parameter, public :: SILICON_2BODY_CUTOFF = 2.8_dp  !Si-Si 2body interaction
+!  real(dp), parameter, public :: SILICA_2BODY_CUTOFF = 5.5_dp !Si-O, O-O 2body interaction
+!  real(dp), parameter, public :: SILICON_3BODY_CUTOFF = 2.8_dp !Si-Si-Si, Si-Si-O 3body cutoff
+!  real(dp), parameter, public :: SILICA_3BODY_CUTOFF = 2.6_dp !Si-O-Si, O-Si-O, Si-O-H 3body cutoff
 
   real(dp), parameter, private :: Danny_R_q = 2.0_dp
   real(dp), parameter, private :: Danny_Delta_q = 0.1_dp
@@ -445,6 +451,22 @@ type(Table) :: O_atom, O_neighb
 
       ! add charges and res numbers
        residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
+
+    if (any(unidentified)) then
+       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
+       call print(find(unidentified))
+do i=1,at%N
+   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
+   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+enddo
+
+       ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
+      call system_abort('create_CH_or_AM_input: Unidentified atoms')
+
+    else
+       call print('All atoms identified')
+       call print('Total charge of the molecule: '//round(mol_charge_sum,5))
+    end if
 
        call create_pos_dep_charges(at,SiOH_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
 
@@ -877,7 +899,7 @@ enddo
 
     do_add_silica_23body = optional_default(.false.,add_silica_23body)
     if (do_add_silica_23body) then !!xxx there must be a SIO2 residue?
-       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
     endif
 
     my_run_type_string = optional_default('',run_type_string)
@@ -1085,7 +1107,7 @@ call print('PSF| '//impropers%n//' impropers')
 
 
     if (add_silica_23body) then
-       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
+       if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
        atom_mol_name_index = get_property(at,'atom_mol_name')
     endif
     call initialise(bonds,2,0,0,0,0)
@@ -1101,7 +1123,7 @@ call print('PSF| '//impropers%n//' impropers')
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/i,0,0,0/))
        if (add_silica_23body) then
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
           call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
        endif
@@ -1130,9 +1152,9 @@ call print('PSF| '//impropers%n//' impropers')
                    !add only nearest neighbours
                    if (.not.(are_nearest_neighbours(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
                 elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) then !silica -- silica
-                   !add atom pairs within SILICA_CUTOFF
+                   !add atom pairs within SILICON_2BODY_CUTOFF
 !call system_abort('what not?')
-                   if (.not.are_silica_2body_neighbours(at,i,atom_j,alt_connect=alt_connect)) add_bond = .false. !SILICA_CUTOFF for Si-Si and Si-O, nearest neighbours otherwise(Si-H,O-O,O-H,H-H)
+                   if (.not.are_silica_2body_neighbours(at,i,atom_j,alt_connect=alt_connect)) add_bond = .false. !SILICON_2BODY_CUTOFF for Si-Si and Si-O, nearest neighbours otherwise(Si-H,O-O,O-H,H-H)
                 else
 !call system_abort('should have not got here')
                    !add only nearest neighbours
@@ -1213,7 +1235,7 @@ call print('PSF| '//impropers%n//' impropers')
              if (d < SILICA_2BODY_CUTOFF) &
                 are_silica_2body_neighbours = .true.
           elseif ((Z_i.eq.14).and.(Z_j.eq.14))  then !Si--Si
-             if (d < SILICA_CUTOFF) &
+             if (d < SILICON_2BODY_CUTOFF) &
                 are_silica_2body_neighbours = .true.
 !call print(i//'--'//j//': '//d//' < 2.8? '//are_silica_2body_neighbours)
           else !Si--H, O--H, O--O, H--H
@@ -1252,7 +1274,7 @@ call print('PSF| '//impropers%n//' impropers')
           if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
                ((Z_i.eq. 8).and.(Z_j.eq.14)) .or. & !O--Si
                ((Z_i.eq.14).and.(Z_j.eq.14)) ) then !Si--Si
-             if (d < SILICA_CUTOFF) &
+             if (d < SILICON_2BODY_CUTOFF) &
                 are_silica_nearest_neighbours = .true.
 !call print(i//'--'//j//': '//d//' < 2.8? '//are_silica_nearest_neighbours)
           else !Si--H, O--H, O--O, H--H
@@ -1288,8 +1310,9 @@ call print('PSF| '//impropers%n//' impropers')
     Z_i = this%Z(i)
     Z_j = this%Z(j)
     if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
+         ((Z_i.eq. 8).and.(Z_j.eq.14)) .or. & !O--Si
          ((Z_i.eq.14).and.(Z_j.eq.14)) ) then !Si--Si
-       if (d < SILICA_CUTOFF) &
+       if (d < SILICON_2BODY_CUTOFF) &
           is_silica_nearest_neighbour = .true.
     else !Si--H, O--H, O--O, H--H
        if (d < (bond_length(Z_i,Z_j)*this%nneightol)) &
@@ -1342,7 +1365,7 @@ call print('PSF| '//impropers%n//' impropers')
 
        if (add_silica_23body) then
 !call system_abort('stop!')
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
           call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
        endif
@@ -1360,14 +1383,14 @@ call print('PSF| '//impropers%n//' impropers')
                 !add only nearest neighbours
                 if (.not.(are_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
              elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) then !silica -- silica
-                !add atom pairs within SILICA_CUTOFF
+                !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect)) add_angle = .false.
 
                 ! we kept 2.8 A cutoff for Si-Si and 5.5 A for Si-O and O-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
                 if (add_angle) then
                     if (any(at%Z(atom_j)*1000000+at%Z(atom_1)*1000+at%Z(atom_2).eq.(/14008014,8014008,14008001,1008014/))) then
-                       add_angle =  (distance_min_image(at,atom_j,atom_1).le.2.6_dp).and. &
-                                  (distance_min_image(at,atom_1,atom_2).le.2.6_dp)
+                       add_angle =  (distance_min_image(at,atom_j,atom_1).le.SILICA_3BODY_CUTOFF).and. &
+                                  (distance_min_image(at,atom_1,atom_2).le.SILICA_3BODY_CUTOFF)
                     elseif (any(at%Z(atom_j)*1000000+at%Z(atom_1)*1000+at%Z(atom_2).eq.(/14008008,8008014,1008008,8008001,8008008/))) then
                        add_angle = .false.
                     endif
@@ -1393,7 +1416,7 @@ call print('PSF| '//impropers%n//' impropers')
        call append(atom_a,(/atom_2,0,0,0/))
 
        if (add_silica_23body) then
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICA_CUTOFF is not within nneigh_tol
+          call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
           call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
        endif
@@ -1411,14 +1434,14 @@ call print('PSF| '//impropers%n//' impropers')
                 !add only nearest neighbours
                 if (.not.(are_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
              elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) then !silica -- silica
-                !add atom pairs within SILICA_CUTOFF
+                !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect)) add_angle = .false.
 
                 ! we kept 2.8 A cutoff for Si-Si and 5.5 A for Si-O and O-O: reduce it to 2.6 for Si-O-Si, O-Si-O, Si-O-H
                 if (add_angle) then
                     if (any(at%Z(atom_j)*1000000+at%Z(atom_2)*1000+at%Z(atom_1).eq.(/14008014,8014008,14008001,1008014/))) then
-                       add_angle =  (distance_min_image(at,atom_j,atom_2).le.2.6_dp).and. &
-                                  (distance_min_image(at,atom_1,atom_2).le.2.6_dp)
+                       add_angle =  (distance_min_image(at,atom_j,atom_2).le.SILICA_3BODY_CUTOFF).and. &
+                                  (distance_min_image(at,atom_1,atom_2).le.SILICA_3BODY_CUTOFF)
                     elseif (any(at%Z(atom_j)*1000000+at%Z(atom_2)*1000+at%Z(atom_1).eq.(/14008008,8008014,1008008,8008001,8008008/))) then
                        add_angle = .false.
                     endif
@@ -1762,7 +1785,7 @@ call print('PSF| '//impropers%n//' impropers')
 
     if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
 
-    if (at%cutoff.lt.SILICA_CUTOFF) call print('WARNING! The connection cutoff value '//at%cutoff// &
+    if (at%cutoff.lt.SILICON_2BODY_CUTOFF) call print('WARNING! The connection cutoff value '//at%cutoff// &
        ' is less than the silica_cutoff. The charges can be totally wrong. Check your connection object.',ERROR)
 
     allocate(charge(at%N))
@@ -1776,10 +1799,12 @@ call print('PSF| '//impropers%n//' impropers')
           if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
              ! if it's a water O/H, ignore it!
              if (('TIP3'.eq.trim(residue_names(atom_j))) .or. &
+                 ('DOPA'.eq.trim(residue_names(atom_j))) .or. &
                  ('TIP' .eq.trim(residue_names(atom_j)))) then
                  cycle
              else
                 call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=ERROR)
+                call print('Unknown residue '//trim(residue_names(atom_j)))
                 call system_abort('Found a neighbour that is not part of the SiO2 residue')
              endif
           endif
