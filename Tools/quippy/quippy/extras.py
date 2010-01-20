@@ -35,10 +35,12 @@ class NeighbourInfo(object):
    def __repr__(self):
       return 'NeighbourInfo(j=%d, distance=%f, diff=%s, cosines=%s, shift=%s)' % (self.j, self.distance, self.diff, self.cosines, self.shift)
 
+
 class Neighbours(object):
 
-   def __init__(self, at):
+   def __init__(self, at, hysteretic=False):
       self.atref = weakref.ref(at)
+      self.hysteretic = hysteretic
 
    def __iter__(self):
       return self.iterneighbours()
@@ -52,20 +54,28 @@ class Neighbours(object):
    def __getitem__(self, i):
 
       at = self.atref()
-      if not at.connect.initialised:
-         at.calc_connect()
-      
+      if self.hysteretic:
+         connect = at.hysteretic_connect
+      else:
+         connect = at.connect
+
+      if not connect.initialised:
+         if self.hysteretic:
+            at.calc_connect_hysteretic(connect)
+         else:
+            at.calc_connect(connect)
+
       distance = farray(0.0)
       diff = fzeros(3)
       cosines = fzeros(3)
-      shift = fzeros(3,dtype=int)
+      shift = fzeros(3,dtype=numpy.int32)
 
       res = []
-      for n in frange(at.n_neighbours(i)):
-         j = at.neighbour(i, n, distance, diff, cosines, shift)
+      for n in frange(at.n_neighbours(i,alt_connect=connect)):
+         j = at.neighbour(i, n, distance, diff, cosines, shift, alt_connect=connect)
          res.append(NeighbourInfo(j,distance,diff,cosines,shift))
 
-      return farray(res) # to give 1-based indexing
+      return farray(res) # to give 1-based indexing      
 
 class Atoms(FortranAtoms):
    """
@@ -96,6 +106,8 @@ class Atoms(FortranAtoms):
 
       if source is None:
          self = object.__new__(cls)
+      elif isinstance(source, cls):
+         self = cls.copy(source)
       else:
          self = cls.read(source, *readargs, **readkwargs)
 
@@ -111,6 +123,7 @@ class Atoms(FortranAtoms):
          FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
                                data=data, properties=properties, params=params)
          self.neighbours = Neighbours(self)
+         self.hysteretic_neighbours = Neighbours(self,hysteretic=True)
 
    @classmethod
    def read(cls, source, format=None, *args, **kwargs):
@@ -178,6 +191,7 @@ class Atoms(FortranAtoms):
       
       """
       if mask is not None:
+         mask = farray(mask)
          out = Atoms(n=mask.count(),lattice=self.lattice)
          FortranAtoms.select(out, self, mask=mask)
       elif list is not None:
@@ -189,6 +203,8 @@ class Atoms(FortranAtoms):
       return out
 
    def _update_hook(self):
+      if self.n == 0: return
+      
       # Remove existing pointers
       if hasattr(self, '_props'):
          for prop in self._props:
@@ -213,31 +229,23 @@ class Atoms(FortranAtoms):
          if ptype == PROPERTY_REAL:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
-               #setattr(self, prop, self.data.real[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-               #setattr(self, prop, self.data.real[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_INT:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
-               #setattr(self, prop, self.data.int[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-               #setattr(self, prop, self.data.int[col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_STR:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
-               #setattr(self, prop, self.data.str[:,col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc,transpose_on_print=True))
-               #setattr(self, prop, self.data.str[:,col_start-1:col_end,0:self.n])
          elif ptype == PROPERTY_LOGICAL:
             if col_end == col_start:
                setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
-               #setattr(self, prop, self.data.logical[col_start-1,0:self.n])
             else:
                setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-               #setattr(self, prop, self.data.logical[col_start-1:col_end,0:self.n])
          else:
             raise ValueError('Bad property type :'+str(self.properties[prop]))
 
@@ -298,8 +306,13 @@ class Atoms(FortranAtoms):
       res = {}
       for k in self.properties.keys():
          v = getattr(self,k.lower())[...,i]
-         if isinstance(v,FortranArray) and v.dtype.kind == 'S':
-             v = ''.join(v).strip()
+         if isinstance(v,FortranArray):
+            if v.dtype.kind == 'S':
+               v = ''.join(v).strip()
+            elif v.shape == ():
+               v = v.item()
+            else:
+               v = list(v)
          res[k] = v
       return res
 
@@ -357,8 +370,9 @@ class Atoms(FortranAtoms):
       or higher. The value will be overwritten with that given in
       `value`.
       """
-      
-      if hasattr(value, 'shape'):
+
+      if hasattr(value, '__iter__'):
+         value = farray(value)
          # some kind of array:
          if len(value.shape) == 1:
             if value.shape[0] != self.n:
@@ -382,9 +396,7 @@ class Atoms(FortranAtoms):
          value_ref = value
 
       FortranAtoms.add_property(self, name, value_ref, n_cols)
-      getattr(self, name.lower())[:] = value
-            
-
+      getattr(self, name.lower())[:] = value            
 
 from dictmixin import DictMixin, ParamReaderMixin
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
