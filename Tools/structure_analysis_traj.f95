@@ -964,7 +964,6 @@ implicit none
   frame_count = 0
   do while (more_files)
 
-    write (mainlog%unit,'(a)') " "
     call print(trim(infilename))
     call initialise(infile, infilename, INPUT)
     call read(structure, infile, status=status, frame=raw_frame_count)
@@ -986,6 +985,7 @@ implicit none
       ! get ready for next structure
       call read(structure, infile, status=status, frame=raw_frame_count)
     end do
+    raw_frame_count = raw_frame_count - decimation
 
     ! get ready for next file
     more_files = .false.
@@ -995,11 +995,17 @@ implicit none
       if (status == 0) then
         more_files = .true.
       endif
+      if (infile%n_frame > 0) then
+	raw_frame_count = (decimation-1)-(infile%n_frame-1-raw_frame_count)
+      else
+	raw_frame_count = decimation-1
+      endif
     endif
-  end do
+    write (mainlog%unit,'(a)') " "
+    frame_count = 0
+  end do ! more_files
   if (infile_is_list) call finalise(list_infile)
 
-  write (mainlog%unit,'(a)') " "
 
   call print_analyses(analysis_a)
 
