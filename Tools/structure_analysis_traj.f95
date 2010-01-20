@@ -67,12 +67,14 @@ subroutine analysis_read(this, prev, args_str)
   character(len=*), optional, intent(in) :: args_str
 
   type(Dictionary) :: params
+  integer :: dummy_i_1
   character(len=FIELD_LENGTH) :: dummy_c_1, dummy_c_2
   logical :: dummy_l_1, dummy_l_2
 
   call initialise(params)
   call param_register(params, 'infile', '', dummy_c_1)
   call param_register(params, 'commandfile', '', dummy_c_2)
+  call param_register(params, 'decimation', '0', dummy_i_1)
   call param_register(params, 'infile_is_list', 'F', dummy_l_1)
   call param_register(params, 'quiet', 'F', dummy_l_2)
 
@@ -962,12 +964,14 @@ implicit none
   frame_count = 0
   do while (more_files)
 
+    write (mainlog%unit,'(a)') " "
+    call print(trim(infilename))
     call initialise(infile, infilename, INPUT)
     call read(structure, infile, status=status, frame=raw_frame_count)
     do while (status == 0)
       frame_count = frame_count + 1
       if (.not. quiet) then
-        if (mod(frame_count,1000) == 1) write (mainlog%unit,'(I4,a)') int(frame_count/1000)," "
+        if (mod(frame_count,1000) == 1) write (mainlog%unit,'(I7,a,$)') frame_count," "
         if (mod(frame_count,10) == 0) write (mainlog%unit,'(I1,$)') mod(frame_count/10,10)
         if (mod(frame_count,1000) == 0) write (mainlog%unit,'(a)') " "
       endif
@@ -994,6 +998,8 @@ implicit none
     endif
   end do
   if (infile_is_list) call finalise(list_infile)
+
+  write (mainlog%unit,'(a)') " "
 
   call print_analyses(analysis_a)
 
