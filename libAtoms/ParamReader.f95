@@ -582,7 +582,7 @@ module paramreader_module
 
       integer :: i, nargs
       character(len=1024) :: this_arg
-      character(len=1024) :: command_line
+      character(len=10240) :: command_line
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
       integer :: eq_loc, this_len
