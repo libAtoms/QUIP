@@ -1503,7 +1503,6 @@ contains
     ! do_hysteretic_connect_cluster_radius = optional_default(30.0_dp, hysteretic_connect_cluster_radius)
     ! do_hysteretic_connect_inner_factor = optional_default(1.2_dp, hysteretic_connect_inner_factor)
     ! do_hysteretic_connect_outer_factor = optional_default(1.5_dp, hysteretic_connect_outer_factor)
-    call print("create_hybrid_weights_args radii " // hysteretic_buffer_inner_radius // " " // hysteretic_buffer_outer_radius, ERROR)
 
     hop_ramp = .false.
     distance_ramp = .false.
@@ -1611,7 +1610,6 @@ contains
           call append(currentlist, nextlist)
        enddo
        list_1 = list_1 + activelist%N
-       call print('added '//activelist%N//' atoms to the list')
        call append(total_embedlist, activelist)    
 
        if (distance_ramp) then ! calculate actual distance ramp parameters 
@@ -1651,7 +1649,6 @@ contains
        ! create transition region
        call print('create_hybrid_mark: creating transition region',VERBOSE)
        n_trans = 0
-       call print ("transition_hops "//transition_hops)
 
        cur_trans_hop = 1
        if (distance_ramp) transition_hops = -1 ! distance ramp always does as many hops as needed to get every atom within outer radius
@@ -1696,20 +1693,17 @@ contains
        end do ! more_hops
 
        if (list_1 < n_region1) then
-          call print('searching for a new quantum zone as found '//list_1//' atoms, need to get to '//n_region1)
+          call print('searching for a new quantum zone as found '//list_1//' atoms, need to get to '//n_region1, VERBOSE)
           do i =1, at%N
              if (hybrid_mark(i) == HYBRID_ACTIVE_MARK .and. .not. Is_in_Array(total_embedlist%int(1,1:total_embedlist%N), i)) then
                 first_active = i
                 exit
              endif
           enddo
-          call print('new first active is'//first_active)  !CHIARA
        endif
 
     enddo ! while (total_embedlist%N < n_region1)
-    call print("region 1 done")
 
-    call print("doing region 2")
     ! create region2 (buffer region) 
     if (.not. hysteretic_buffer) then
        ! since no hysteresis, safe to reset non ACTIVE/TRANS atoms to HYBRID_NO_MARK
@@ -1737,7 +1731,6 @@ contains
              end if
           end do
        end do
-       call print("region 2 done, non hysteretic buffer")
     else 
        ! hysteretic buffer here
 
@@ -1819,7 +1812,6 @@ contains
        call finalise(oldbuffer)
 !       call finalise(embedlist)
 
-       call print("region 2 done, hysteretic buffer")   
     end if
 
     ! this is commented out for now, terminations are controlled in create_cluster only
@@ -1841,11 +1833,7 @@ contains
          ' region 2, '//count(hybrid_mark /= HYBRID_NO_MARK)//' in total', VERBOSE)
     !call print('create_hybrid_weights: '//n_region1//' region 1, '//n_trans//' transition, '//n_region2//&
     !     ' region 2, '//count(hybrid_mark /= HYBRID_NO_MARK)//' in total', VERBOSE)
-
-    call print("subroutine create_hybrid_weights_args: DONE")
-
-!    call sort(total_embedlist)
-
+    !    call sort(total_embedlist)
 
     call finalise(activelist)
     call finalise(currentlist)
@@ -1950,7 +1938,6 @@ contains
     first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK)
 
     n_region1 = count(hybrid_mark == HYBRID_ACTIVE_MARK)
-    call print("total number of hybrid atoms"//n_region1)
     list_1 = 0
     call allocate(totallist,4,0,0,0)
     call allocate(currentlist,4,0,0,0)
@@ -1967,7 +1954,7 @@ contains
       call wipe(totallist)
 
       call append(totallist, (/first_active,0,0,0/))
-      call print('expand quantum region starting from '//first_active//' atom')
+      call print('create_embed_and_fit_lists: expanding quantum region starting from '//first_active//' atom', VERBOSE)
       call append(currentlist, totallist)
 
       hybrid_number = 1 
@@ -1988,7 +1975,7 @@ contains
 
       list_1 = list_1 + totallist%N
       call append(embedlist, totallist)
-      call print('number of atoms in the embedlist is '//embedlist%N)
+      call print('create_embed_and_fit_lists: number of atoms in the embedlist is '//embedlist%N, VERBOSE)
 
       if (list_1 .lt. n_region1) then
          n = 0
@@ -1996,13 +1983,11 @@ contains
             if (hybrid_mark(i) == HYBRID_ACTIVE_MARK) then
                n = n+1
                if (.not. Is_in_Array(int_part(embedlist,1), i)) then
-                  call print('trovato nuovo first_active atom')
                   first_active = i
                   exit
                endif
             endif
          enddo
-         call print('number of atoms with hybrid mark, before exiting: '//n)
       endif
 
        ! check that cluster is still growing
@@ -2044,29 +2029,19 @@ contains
 
     if (do_min_images_only) then
        if (multiple_images(embedlist)) then
-          call print('embedlist contains repeated atom indices :-(')
           call discard_non_min_images(embedlist)
-          call print('multiple images discarded')
-       else
-          call print('embedlist does not contain repeated atom indices :-)')
+          call print('create_embed_and_fits_lists: multiple images discarded from embedlist', VERBOSE)
        endif
 
-
        if (multiple_images(fitlist)) then
-          call print('fitlist contains repeated atom indices :-(')
           call discard_non_min_images(fitlist)
-          call print('multiple images discarded')
-
-       else
-          call print('fitlist does not contain repeated atom indices :-)')
+          call print('create_embed_and_fits_lists: multiple images discarded from fitlist', VERBOSE)
        endif
     endif
 
     call finalise(currentlist)
     call finalise(nextlist)
     call finalise(tmpfitlist)
-
-    call print('Leaving create_embed_and_fit_lists.',VERBOSE)
 
   end subroutine create_embed_and_fit_lists
 
