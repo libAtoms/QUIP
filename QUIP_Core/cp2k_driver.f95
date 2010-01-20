@@ -222,7 +222,11 @@ contains
 
       if (get_value(at%params, "QM_cell", old_qmmm_qm_abc)) then
 	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
+      else
+        can_reuse_wfn = .false.
       endif
+      call set_value(at%params, "QM_cell", cur_qmmm_qm_abc)
+       call print('set_value QM_cell '//cur_qmmm_qm_abc)
 
       !check if QM list changed: compare cluster_mark and old_cluster_mark
 !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
