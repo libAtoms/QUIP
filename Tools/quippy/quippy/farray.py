@@ -269,7 +269,7 @@ class FortranArray(numpy.ndarray):
 	numpy.ndarray.__setitem__(self, indx, value)
 
     def __getslice__(self, i, j):
-        "Overloaded __getslice__ which accpepts one-based indices."
+        "Overloaded __getslice__ which accepts one-based indices."
         if i != 0:
             i = FortranArray.map_int(i)
         obj = numpy.ndarray.__getslice__(self, i, j)
@@ -278,7 +278,7 @@ class FortranArray(numpy.ndarray):
             return fa
 
     def __setslice__(self, i, j, value):
-        "Overloaded __setslice__ which accpepts one-based indices."
+        "Overloaded __setslice__ which accepts one-based indices."
         if i != 0:
             i = FortranArray.map_int(i)
         numpy.ndarray.__setslice__(self, i, j, value)
