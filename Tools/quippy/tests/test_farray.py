@@ -123,6 +123,12 @@ class TestFortranArray(QuippyTestCase):
       self.assertEqual(sl.shape, (1,))
       self.assertEqual(sl[1], 2)
 
+# Negative slices don't work correctly -- this test fails
+# To workaround this, would somehow need to remove __setslice__ and __getslice__ from MRO
+##    def testnegslice3(self):
+##       sl = self.f[-2:]
+##       self.assertEqual(list(sl), [2,3])
+
    def testrows(self):
       self.assertEqual(farray(0).rows.next(), 0)
       self.assertEqual(list(self.f.rows), [1,2,3])
