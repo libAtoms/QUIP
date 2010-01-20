@@ -354,10 +354,10 @@
        where (hybrid_mark == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
        where (hybrid == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
 
-       call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.')
+       call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', VERBOSE)
 
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) &
-            call system_abort('MetatPotential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
+            call system_abort('MetaPotential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
 
        call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
 
@@ -409,7 +409,7 @@
        call read_string(params, qm_args_str)
 
        !! TODO - possibly want to set more default options in the qm_args_str here
-       if (.not. dictionary_has_key(params, 'qm_little_clusters_buffer_hops')) &
+       if (.not. dictionary_has_key(params, 'buffer_hops')) &
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
@@ -538,7 +538,7 @@
        
        call verbosity_push(NORMAL)
 
-       call print('Conserving momentum using fit list with '//this%fitlist%N//' atoms')
+       call print('Conserving momentum using fit list with '//this%fitlist%N//' atoms', VERBOSE)
 
        select case(conserve_momentum_weight_method)
        case ('uniform')
@@ -569,7 +569,7 @@
        df(:,1:this%embedlist%N) = f_qm(:,embed) - f_mm(:,embed)
 
        f_tot = sum(df,dim=2)
-       call print('conserve_momentum: norm(sum of target forces) = '//round(norm(f_tot),15))
+       call print('conserve_momentum: norm(sum of target forces) = '//round(norm(f_tot),15), VERBOSE)
     
        w_tot = 0.0_dp
        do i = 1, this%fitlist%N
@@ -589,7 +589,7 @@
        df_fit = (df_fit / w_tot) + df
 
        !NB workaround for pgf90 bug (as of 9.0-1)
-       t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15))
+       t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15), VERBOSE)
        !NB end of workaround for pgf90 bug (as of 9.0-1)
 
        ! Final forces are classical forces plus corrected QM forces
