@@ -95,8 +95,11 @@ if not already_patched:
    numpy.f2py.rules.arg_rules[26]['callfortran'] = {isintent_out:'#varname#,', l_and(isoptional, l_not(isintent_out)):'#varname#_capi == Py_None ? NULL : #varname#,',
                                                     l_and(l_not(isoptional), l_not(isintent_out)): '#varname#,'}
 
-   del numpy.f2py.rules.arg_rules[33]['frompyobj'][4]
-   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(4, {l_not(isoptional): """\
+   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(2, {isoptional: 'if (#varname#_capi != Py_None) {'})
+   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(5, {isoptional: '}'})
+
+   del numpy.f2py.rules.arg_rules[33]['frompyobj'][6]
+   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(6, {l_not(isoptional): """\
    \tif (capi_#varname#_tmp == NULL) {
    \t\tif (!PyErr_Occurred())
    \t\t\tPyErr_SetString(#modulename#_error,\"failed in converting #nth# `#varname#\' of #pyname# to C/Fortran array\" );
@@ -104,11 +107,12 @@ if not already_patched:
    \t\t#varname# = (#ctype# *)(capi_#varname#_tmp->data);
    """})
 
-   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(5, {isoptional:"""\
-   {
-   \t\tPyErr_Clear();
-   if (capi_#varname#_tmp != NULL)
-   \t\t#varname# = (#ctype# *)(capi_#varname#_tmp->data);
+   numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(7, {isoptional:"""\
+   \tif (#varname#_capi != Py_None && capi_#varname#_tmp == NULL) {
+   \t\tif (!PyErr_Occurred())
+   \t\t\tPyErr_SetString(#modulename#_error,\"failed in converting #nth# `#varname#\' of #pyname# to C/Fortran array\" );
+   \t} else {
+   \t\tif (#varname#_capi != Py_None) #varname# = (#ctype# *)(capi_#varname#_tmp->data);
    """})
 
    def library_option(self, lib):
