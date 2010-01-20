@@ -524,8 +524,11 @@ def wrapmod(modobj, moddoc, short_names, params):
          if fullname in constructors:
              name = '__init__'+name
              logging.debug('    adding constructor %s.%s' % (tcls, name))
-                          
 
+         if fullname in destructors:
+             del routines[routines.index(fullname)]
+             continue
+         
          new_cls._routines[name] = (fobj, doc)
          func = add_doc(wrapmethod(name), fobj, doc, name, tcls+'.'+name)
          setattr(new_cls, name, func)
@@ -542,6 +545,7 @@ def wrapmod(modobj, moddoc, short_names, params):
       # only keep interfaces with more than one routine in them
       # if there's just one routine we want to copy the docstring
       for name,value in interfaces.iteritems():
+         if name.lower() == 'finalise': continue
          if name.lower() == 'initialise': name = '__init__'
          if name in py_keywords: name = name + '_'
 
@@ -552,6 +556,7 @@ def wrapmod(modobj, moddoc, short_names, params):
 #             value[0][2].__doc__  ='\n'.join(moddoc['interfaces'][name]['doc']) + '\n\n' + value[0][2].__doc__
 
       for intf, value in new_cls._interfaces.iteritems():
+
          # if there's a routine with same name as interface, move it first
          if hasattr(new_cls, intf):
             setattr(new_cls,intf+'_', getattr(new_cls, intf))
@@ -603,6 +608,10 @@ def wrapmod(modobj, moddoc, short_names, params):
                setattr(new_cls, '_get_%s' % name, wrap_get(name))
                setattr(new_cls, '_set_%s' % name, wrap_set(name))
 
+               # If element clashes with name of routine, move routine first
+               if hasattr(new_cls, name):
+                   setattr(new_cls, name+'_', getattr(new_cls, name))
+                   
                setattr(new_cls, name, property(fget=getattr(new_cls,'_get_%s'%name),
                                                fset=getattr(new_cls,'_set_%s'%name),
                                                doc=el['doc']))
