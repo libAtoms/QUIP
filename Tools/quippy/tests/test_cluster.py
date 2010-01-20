@@ -773,10 +773,6 @@ class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
 
 if hasattr(quippy, 'Potential'):
 
-   class TestCluster_LittleClusters(QuippyTestCase):
-      pass
-
-   
    class TestCluster_ForceEnergy(QuippyTestCase):
 
       def setUp(self):
