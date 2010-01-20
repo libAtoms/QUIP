@@ -273,7 +273,7 @@ class AtomsList(object):
 
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
-         
+
       res = []
       for i, a in fenumerate(self.iteratoms()):
          res.append(dest.write(a))
@@ -285,7 +285,12 @@ class AtomsList(object):
 
       if opened:
          dest.close()
-      return res
+
+      # Special case for writing to a string
+      if format == 'string':
+         return res[-1]
+      else:
+         return res
 
    def __getattr__(self, name):
 
@@ -321,5 +326,3 @@ def atoms_reader(source, lazy=True):
          AtomsReaders[source] = func
       return func
    return decorate
-
-
