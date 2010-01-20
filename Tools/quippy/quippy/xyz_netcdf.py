@@ -8,7 +8,7 @@ from atomslist import *
 from ordereddict import *
 from quippy import Dictionary
 from farray import *
-import logging
+import logging, StringIO
 from math import pi
 
 def make_lattice(a, b=None, c=None, alpha=pi/2.0, beta=pi/2.0, gamma=pi/2.0):
@@ -69,8 +69,9 @@ def _props_dtype(props):
    return numpy.dtype(result)
 
 
+@atoms_reader('pupyxyz', False)
 def PuPyXYZReader(xyz):
-   "Read from extended XYZ filename or open file."
+   "Read from extended XYZ filename, string or open file."
    from quippy import Table
 
    def parse_properties(prop_str):
@@ -169,8 +170,12 @@ def PuPyXYZReader(xyz):
 
    opened = False
    if type(xyz) == type(''):
-      xyz = open(xyz,'r')
-      opened = True
+      if '\n' in xyz and xyz[:xyz.index('\n')].isdigit():
+         # string looks like an embedded XYZ file
+         xyz = iter(xyz.split('\n'))
+      else:
+         xyz = open(xyz,'r')
+         opened = True
    else:
       xyz = iter(xyz)
 
@@ -228,9 +233,13 @@ class PuPyXYZWriter(object):
 
    def __init__(self, xyz):
       self.opened = False
+      self.string = False
       if type(xyz) == type(''):
          if xyz == 'stdout':
-            xyz = sys.stdout
+            self.xyz = sys.stdout
+         elif xyz == 'string':
+            self.xyz = StringIO.StringIO()
+            self.string = True
          else:
             self.xyz = open(xyz, 'w')
             self.opened = True
@@ -338,7 +347,9 @@ class PuPyXYZWriter(object):
       for i in range(at.n):
          self.xyz.write(format % tuple(data[i]))
 
-   def close(self, at):
+      if self.string: return self.xyz.getvalue()
+
+   def close(self):
       if self.opened: self.xyz.close()
 
 try:
@@ -447,7 +458,7 @@ try:
       def close(self):
          self.dest.close()
 
-   AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = AtomsWriters['stdout'] = CInOutputWriter
+   AtomsWriters['xyz'] = AtomsWriters['nc'] = AtomsWriters[CInOutput] = CInOutputWriter
 
    
 except ImportError:
@@ -455,9 +466,8 @@ except ImportError:
    AtomsReaders['xyz'] = PuPyXYZReader
    AtomsWrtiters['xyz'] = PuPyXYZWriter
 
-AtomsReaders['pupyxyz'] = PuPyXYZReader
-AtomsWriters['pupyxyz'] = PuPyXYZWriter
-
+AtomsReaders['pupyxyz'] = AtomsReaders['string'] = PuPyXYZReader
+AtomsWriters['pupyxyz'] = AtomsWriters['string'] = AtomsWriters['stdout'] = PuPyXYZWriter
 
 @atoms_reader(netcdf_file, True)
 @atoms_reader('nc', True)
