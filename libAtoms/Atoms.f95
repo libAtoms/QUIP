@@ -2367,8 +2367,8 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Zero data in an Atoms structure ---
-  !% this doesn\'t finalise it or change it\'s size. We zero 'this%pos'
-  !% and 'this%Z'. 
+  !% this doesn\'t finalise it or change it\'s size. We zero 'this%pos',
+  !% 'this%Z' and 'this%species'.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -2380,9 +2380,11 @@ contains
     if(present(indices)) then
        this%pos(:,indices) = 0.0_dp
        this%Z(indices) = 0
+       this%species(indices) = repeat(' ', TABLE_STRING_LENGTH)
     else
        this%pos = 0.0_dp
        this%Z = 0
+       this%species = repeat(' ', TABLE_STRING_LENGTH)
     end if
 
   end subroutine atoms_zero
@@ -4065,10 +4067,14 @@ contains
     end do ! k
 
     if (my_store_is_min_image) then
-       if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
-       allocate(this%connect%is_min_image(this%n))
+       if (allocated(use_connect%is_min_image)) deallocate(use_connect%is_min_image)
+       allocate(use_connect%is_min_image(this%n))
        do i=1,this%n
-          this%connect%is_min_image(i) = is_min_image(this, i, alt_connect=this%hysteretic_connect)
+          if (associated(use_connect%neighbour1(i)%t)) then
+             use_connect%is_min_image(i) = is_min_image(this, i, alt_connect=use_connect)
+          else
+             use_connect%is_min_image(i) = .false.
+          end if
        end do
     end if
 
@@ -6007,7 +6013,6 @@ contains
 
   !% Return the complement of a list, i.e. all those atoms not included
   !% in list. Result is in outlist on exit.
-  !% (not yet tested).
   subroutine complement(at, inlist, outlist)
     type(Atoms), intent(in) :: at
     type(Table), intent(in) :: inlist
@@ -6033,7 +6038,6 @@ contains
 
   !% Return the difference between list1 and list2 in outlist.
   !% That is, those elements in list1 but not in list2
-  !% (not yet tested).
   subroutine difference(list1, list2, outlist)
     type(Table), intent(in) :: list1, list2
     type(Table), intent(out) :: outlist
@@ -6267,6 +6271,10 @@ contains
     ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
     if (use_connect%initialised) then
 
+       if (.not. associated(use_connect%neighbour1(i)%t)) then
+          call system_abort('is_min_image: atoms structure has no connectivity data for atom '//i)
+       end if
+
        nn = use_connect%neighbour1(i)%t%N
        do n=1,nn
           if (use_connect%neighbour1(i)%t%int(1,n) == i) then
@@ -6309,29 +6317,19 @@ contains
 
     if (mpi%my_proc == 0) then
 
-       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc)
-       call print('sending n')
+       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, VERBOSE)
        call bcast(mpi, at%n)
-       call print('sending lattice')
        call bcast(mpi, at%lattice)
-       call print('sending data')
        call bcast(mpi, at%data)
-       call print('sending properties')
        call bcast(mpi, at%properties)
-       call print('sending params')
        call bcast(mpi, at%params)
     else
-       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc)
+       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, VERBOSE)
        call finalise(at)
-       call print('receiving n')
        call bcast(mpi, at%n)
-       call print('receiving lattice')
        call bcast(mpi, at%lattice)
-       call print('receiving data')
        call bcast(mpi, at%data)
-       call print('receiving properties')
        call bcast(mpi, at%properties)
-       call print('receiving params')
        call bcast(mpi, at%params)
 
        call matrix3x3_inverse(at%lattice,at%g)
