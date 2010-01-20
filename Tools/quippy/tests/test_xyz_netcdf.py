@@ -180,6 +180,20 @@ if got_cinoutput:
          self.assertEqual(list(al), list(self.al))
          cio.close()
 
+      def testframe_random_access(self):
+         self.al.write("test.xyz")
+         cio = CInOutput("test.xyz", INPUT)
+         at = cio.read(frame=4)
+         self.assertArrayAlmostEqual(at.lattice, 2*(5.44+0.01*4)*fidentity(3))
+         cio.close()
+
+      def testframe_out_of_range(self):
+         self.al.write("test.xyz")
+         cio = CInOutput("test.xyz", INPUT)
+         self.assertRaises(RuntimeError, cio.read, frame=5)
+         cio.close()
+
+
       
 try:
    import netCDF4
@@ -241,7 +255,7 @@ class TestPuPyXYZ(QuippyTestCase):
 
 
    def tearDown(self):
-      os.remove('test.xyz')
+      if os.path.exists('test.xyz'): os.remove('test.xyz')
 
    def testsinglexyz(self):
       self.at.write(PuPyXYZWriter('test.xyz'))
@@ -255,6 +269,15 @@ class TestPuPyXYZ(QuippyTestCase):
       self.assertEqual(len(self.al), len(al))
       self.assertEqual(list(self.al), list(al))
 
+   def teststring(self):
+      s = self.at.write('string')
+      a = Atoms(s, format='string')
+      self.assertEqual(a, self.at)
+
+   def testmultistring(self):
+      s = self.al.write('string')
+      al = AtomsList(s, format='string')
+      self.assertEqual(list(al), list(self.al))
 
 class TestNetCDFAtomsList(QuippyTestCase):
 
