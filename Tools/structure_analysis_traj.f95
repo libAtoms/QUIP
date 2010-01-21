@@ -208,6 +208,9 @@ subroutine do_analyses(a, time, frame, at)
 
   integer :: i_a
 
+  call map_into_cell(at)
+  at%travel = 0
+
   do i_a=1, size(a)
 
     if (do_this_analysis(a(i_a), time, frame)) then
@@ -462,6 +465,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   real(dp) :: rad_sample_r, p(3), dist, r, t_center(3), exp_arg, diff(3)
   logical, allocatable :: mask_a(:)
   integer at_i, at_i_index, ang_sample_i, rad_sample_i
+  real(dp), allocatable, save :: pos_mapped(:,:)
 
   if (present(center_pos) .and. present(center_i)) &
     call system_abort("density_sample_radial_mesh_Gaussians got both center_pos and center_i")
@@ -481,7 +485,6 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       radial_pos(rad_sample_i) = rad_sample_r
     end do
   endif
-
 
   ! ratio of 20/4=5 is bad
   ! ratio of 20/3=6.66 is bad
@@ -515,14 +518,18 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 
   else ! no center_pos, must have center_i
 
-    ! shift center_i to origin, and map into cell without updating travel or shift, etc
+    ! reallocate pos_mapped if necessary
+    if (allocated(pos_mapped)) then
+      if (size(pos_mapped,2) /= at%N) deallocate(pos_mapped)
+    endif
+    if (.not. allocated(pos_mapped)) allocate(pos_mapped(3,at%N))
+
+    ! shift center_i to origin, and map into cell
     t_center=at%pos(:,center_i)
     do at_i=1, at%N
-      at%pos(:,at_i) = at%pos(:,at_i) - t_center
+      pos_mapped(:,at_i) = at%pos(:,at_i) - t_center(:)
+      call map_into_cell(pos_mapped(:,at_i), at%lattice, at%g)
     end do
-    at%connect%initialised = .false.
-    call atoms_map_into_cell(at)
-    at%connect%initialised = .true.
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index, diff=diff)
       if (at_i == center_i) cycle
@@ -530,8 +537,8 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       do rad_sample_i=1, n_rad_bins
         rad_sample_r = (rad_sample_i-1)*rad_bin_width
         do ang_sample_i=1,size(dr,2)
-          p(:) = at%pos(:,center_i)+rad_sample_r*dr(:,ang_sample_i)
-          dist = norm(p-(at%pos(:,center_i)+diff))
+          p(:) = pos_mapped(:,center_i)+rad_sample_r*dr(:,ang_sample_i)
+          dist = norm(p-(pos_mapped(:,center_i)+diff))
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
             histogram(rad_sample_i) = histogram(rad_sample_i) + exp(exp_arg)*w(ang_sample_i)
@@ -539,14 +546,6 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
         end do ! ang_sample_i
       end do ! rad_sample_i
     end do
-    ! shift center_i back to original position, and map into cell without updating travel or shift, etc
-    do at_i=1, at%N
-      at%pos(:,at_i) = at%pos(:,at_i) + t_center
-    end do
-    at%connect%initialised = .false.
-    call atoms_map_into_cell(at)
-    at%connect%initialised = .true.
-
   end if ! present(center_pos)
 
   deallocate(mask_a)
@@ -628,6 +627,10 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     endif ! gaussian_smoothing
   end do ! i_at
 
+  do i_zone=1, n_zones
+    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
+  end do
+
   if (.not. gaussian_smoothing) then
     do i_bin=1, n_bins
       bin_inner_rad = real(i_bin-1,dp)*bin_width
@@ -635,13 +638,9 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
       rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
     end do
   endif
-
   if (count(neighbour_mask_a) > 0) then
     rdfd = rdfd / (count(neighbour_mask_a)/cell_volume(at))
   endif
-  do i_zone=1, n_zones
-    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
-  end do
 
 end subroutine rdfd_calc
 
