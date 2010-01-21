@@ -2549,7 +2549,10 @@ contains
 
       character(32) :: format
 
-      if (size(values)>0) then
+      if (size(values) == 1) then
+         format = '(a,i0)'
+         write(string_cat_int_array,format) string, values
+      else if (size(values)>1) then
          format = '(a,' // (size(values)-1) //'(i0,1x),i0)'
          write(string_cat_int_array,format) string, values
       else
