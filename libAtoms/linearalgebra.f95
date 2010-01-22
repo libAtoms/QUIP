@@ -4997,11 +4997,11 @@ CONTAINS
 
      c_z = 0.0_dp
      do i=1, size(p,2)
-       c_z = c_z + exp(complex(0.0_dp,1.0_dp)*2.0_dp*PI*(g .mult. p(:,i)))
+       c_z = c_z + exp(cmplx(0.0_dp,1.0_dp)*2.0_dp*PI*(g .mult. p(:,i)))
      end do
      c_z = c_z / real(size(p,2),dp)
      c_z = c_z/abs(c_z)
-     c = lattice .mult. real(log(c_z)/(complex(0.0_dp,1.0_dp)*2.0_dp*PI),dp)
+     c = lattice .mult. real(log(c_z)/(cmplx(0.0_dp,1.0_dp)*2.0_dp*PI),dp)
 
    end function pbc_aware_centre
 
