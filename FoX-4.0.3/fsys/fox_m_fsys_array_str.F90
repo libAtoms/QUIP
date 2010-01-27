@@ -31,8 +31,9 @@ contains
   pure function str_vs(vs) result(s)
     character, dimension(:), intent(in) :: vs
     character(len=size(vs)) :: s
-#ifdef PGF90
+#if defined(PGF90) || defined(__GFORTRAN__)
 !PGI crashes on this use of transfer. Knob-ends.
+!(added JRK -- this appears to affect gfortran as well).
     integer :: i
     do i = 1, size(vs)
       s(i:i) = vs(i)
