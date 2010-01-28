@@ -1454,16 +1454,21 @@ contains
   !% 'mask' allows individual atoms to be selected for searching, e.g. for preventing a water
   !% molecule from being re-identified as an OH, and then later as two hydrogens.
   !%
+  !% if find_all_possible_matches is true, all possible matches, not just non-overlapping ones,
+  !% are returned.  Useful for situations where things are ambiguous and need to be resolved
+  !% with more information outside this routine
+  !%
   !% The routine could optionally find hysteretically defined connections between neighbours,
   !% if the alt_connect's cutoff were the same as at%cutoff(_break)
   !%
-  subroutine find_motif(at,motif,matches,start,end,mask,alt_connect) !,hysteretic_neighbours)
+  subroutine find_motif(at,motif,matches,start,end,mask,find_all_possible_matches,alt_connect) !,hysteretic_neighbours)
 
     type(atoms),       intent(in), target  :: at           !% The atoms structure to search
     integer,           intent(in)  :: motif(:,:)   !% The motif to search for
     type(table),       intent(out) :: matches      !% All matches
     integer, optional, intent(in)  :: start, end   !% Start and End atomic indices for search
     logical, optional, intent(in)  :: mask(:)      !% If present only masked atoms are searched
+    logical, optional, intent(in)  :: find_all_possible_matches !% if true, don't exclude matches that overlap
     type(Connection), intent(in), optional, target :: alt_connect
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
@@ -1474,6 +1479,9 @@ contains
     integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom
     logical                  :: match
     type(table)              :: neighbours, core, num_species_at, num_species_motif
+    logical, allocatable :: assigned_to_motif(:)
+    logical :: do_append
+    logical :: do_find_all_possible_matches
 
     integer                  :: discards(7)
     type(Connection), pointer :: use_connect
@@ -1481,6 +1489,7 @@ contains
     real(dp) :: cutoff
 
     discards = 0
+    do_find_all_possible_matches = optional_default(.false., find_all_possible_matches)
 
     !XXXXXXXXXXXXXXXX
     !X INITIALISATION
@@ -1537,6 +1546,9 @@ contains
     !XXXXXXXXXXXXXXX
     !X THE ALGORITHM
     !XXXXXXXXXXXXXXX
+
+    allocate(assigned_to_motif(at%N))
+    assigned_to_motif = .false.
 
     !Loop over all atoms looking for candidates for the optimum atom 'opt_atom'
     call allocate(core,4,0,0,0,1)
@@ -1742,10 +1754,39 @@ contains
           C = matmul(M,transpose(matmul(M,B))) ! ***** THIS LINE IS ANOTHER CANDIDATE FOR OPTIMISATION *****
                                                ! Use sparse matrices maybe?
 
-          if (all(C==A)) then
-             match = .true.
-             exit
-          end if
+          if (all(C==A)) then ! match
+	     !decode trial matrix into atomic indices
+	     allocate(match_indices(N))
+	     do j = 1, N
+		 do k = 1, core%N
+		    if (M(j,k)==1) then
+		       match_indices(j) = core%int(1,k)
+		       exit
+		    end if
+		 end do
+	     end do
+
+	     do_append = .true.
+	     ! if mask is present, make sure all atoms are in mask, otherwise skip
+	     if (present(mask)) then
+		 if (.not. all(mask(match_indices))) do_append = .false.
+	     end if
+	     if (do_find_all_possible_matches) then
+	       ! if we're finding all possible matches, skip only if _all_ atoms are already in a motif
+	       if(all(assigned_to_motif(match_indices))) do_append = .false.
+	     else
+	       ! if we're not, skip if _any_ atom is already in a motif
+	       if (any(assigned_to_motif(match_indices))) do_append = .false.
+	     endif
+
+	     if (do_append) then
+		call append(matches,match_indices)
+		assigned_to_motif(match_indices) = .true.
+	     endif
+	     deallocate(match_indices)
+
+	     if (.not. do_find_all_possible_matches) exit
+          end if ! match
 
           call next_trial_matrix(M0,M)
 
@@ -1763,20 +1804,6 @@ contains
 
        end do
 
-       if (match) then
-          !decode trial matrix into atomic indices
-          allocate(match_indices(N))
-          do j = 1, N
-             do k = 1, core%N
-                if (M(j,k)==1) then
-                   match_indices(j) = core%int(1,k)
-                   exit
-                end if
-             end do
-          end do
-          call append(matches,match_indices)
-         deallocate(match_indices)
-       end if
 
        deallocate(B,M0,M)
 
