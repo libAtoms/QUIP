@@ -530,6 +530,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       pos_mapped(:,at_i) = at%pos(:,at_i) - t_center(:)
       call map_into_cell(pos_mapped(:,at_i), at%lattice, at%g)
     end do
+!$OMP PARALLEL DO default(shared) private(at_i_index, at_i, rad_sample_i, rad_sample_r, ang_sample_i, p, dist,  exp_arg)
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index, diff=diff)
       if (at_i == center_i) cycle
@@ -546,6 +547,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
         end do ! ang_sample_i
       end do ! rad_sample_i
     end do
+!$OMP END PARALLEL DO
   end if ! present(center_pos)
 
   deallocate(mask_a)

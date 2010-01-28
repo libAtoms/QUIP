@@ -2384,6 +2384,9 @@ CONTAINS
      real(qp), dimension(:), allocatable :: v, w
 
      integer :: i, j, k, p, mu, n
+#ifdef _OPENMP
+     integer, external :: omp_get_num_threads, omp_get_thread_num
+#endif
 
      n = size(this,1)
 
