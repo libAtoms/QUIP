@@ -9,6 +9,43 @@ public :: do_cp2k_calc
 
 contains
 
+  subroutine do_cp2k_calc_fake(at, f, e, args_str)
+    type(Atoms), intent(inout) :: at
+    real(dp), intent(out) :: f(:,:), e
+    character(len=*), intent(in) :: args_str
+
+    type(inoutput) :: last_run_io
+    type(cinoutput) :: force_cio
+    character(len=1024) :: last_run_s
+    integer :: this_run_i
+    integer :: stat
+    type(Atoms) :: for
+
+    call initialise(last_run_io, "cp2k_driver_fake_run", action=INPUT)
+    last_run_s = read_line(last_run_io, status=stat)
+    call finalise(last_run_io)
+    if (stat /= 0) then
+      this_run_i = 1
+    else
+      read (fmt=*,unit=last_run_s) this_run_i
+      this_run_i = this_run_i + 1
+    endif
+
+    call initialise(force_cio, "cp2k_force_file_log")
+    call read(force_cio, for, frame=this_run_i)
+    call finalise(force_cio)
+    f = for%pos
+
+    if (.not. get_value(for%params, "energy", e)) &
+      call system_abort("do_cp2k_calc_fake didn't find energy")
+
+    call initialise(last_run_io, "cp2k_driver_fake_run", action=OUTPUT)
+    call print(""//(this_run_i+1), file=last_run_io)
+    call finalise(last_run_io)
+
+  end subroutine do_cp2k_calc_fake
+
+
   subroutine do_cp2k_calc(at, f, e, args_str)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
@@ -44,6 +81,7 @@ contains
     logical :: can_reuse_wfn, qm_list_changed
 
     logical :: use_QM, use_MM, use_QMMM
+    logical :: cp2k_calc_fake
 
     integer, pointer :: isolated_atom(:)
     integer i, atno, insert_pos
@@ -63,27 +101,34 @@ contains
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
-      run_type = ""
-      call param_register(cli, "Run_Type", PARAM_MANDATORY, run_type)
-      cp2k_template_file = ""
-      call param_register(cli, "cp2k_template_file", "cp2k_input.template", cp2k_template_file)
-      psf_print = ""
-      call param_register(cli, "PSF_print", "NO_PSF", psf_print)
-      cp2k_program = ""
-      call param_register(cli, "cp2k_program", PARAM_MANDATORY, cp2k_program)
-      call param_register(cli, "clean_up_files", "T", clean_up_files)
-      call param_register(cli, "save_output_files", "T", save_output_files)
-      call param_register(cli, "max_n_tries", "2", max_n_tries)
-      call param_register(cli, "max_force_warning", "2.0", max_force_warning)
-      call param_register(cli, "qm_vacuum", "6.0", qm_vacuum)
-      call param_register(cli, "try_reuse_wfn", "T", try_reuse_wfn)
+      run_type = ''
+      call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type)
+      cp2k_template_file = ''
+      call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file)
+      psf_print = ''
+      call param_register(cli, 'PSF_print', 'NO_PSF', psf_print)
+      cp2k_program = ''
+      call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program)
+      call param_register(cli, 'clean_up_files', 'T', clean_up_files)
+      call param_register(cli, 'save_output_files', 'T', save_output_files)
+      call param_register(cli, 'max_n_tries', '2', max_n_tries)
+      call param_register(cli, 'max_force_warning', '2.0', max_force_warning)
+      call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum)
+      call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn)
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
-      call param_register(cli, "centre_cp2k", 'F', centre_cp2k)
-      call param_register(cli, "cp2k_centre_pos", '0.0 0.0 0.0', cp2k_centre_pos, has_cp2k_centre_pos)
+      call param_register(cli, 'centre_cp2k', 'F', centre_cp2k)
+      call param_register(cli, 'cp2k_centre_pos', '0.0 0.0 0.0', cp2k_centre_pos, has_cp2k_centre_pos)
+      call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('could not parse argument line')
     call finalise(cli)
+
+    if (cp2k_calc_fake) then
+      call print("do_fake cp2k calc calculation")
+      call do_cp2k_calc_fake(at, f, e, args_str)
+      return
+    endif
 
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
@@ -413,8 +458,7 @@ contains
     if (save_output_files) then
       call system_command('cat '//trim(run_dir)//'/cp2k_input.inp'// &
         ' >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
-        ' cat '//trim(run_dir)//'/quip-frc-1.xyz'// &
-        ' >> cp2k_force_file_log; echo "##############" >> cp2k_force_file_log;' // &
+        ' cat '//trim(run_dir)//'/quip-frc-1.xyz'// ' >> cp2k_force_file_log;' // &
         ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
     endif
 
