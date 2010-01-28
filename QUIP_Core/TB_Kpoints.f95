@@ -470,7 +470,7 @@ end subroutine KPoints_init_mpi
 subroutine KP_characters_handler(in)
   character(len=*), intent(in) :: in
 
-  if (parse_in_kp) call concat(cur_data, in)
+  if (parse_in_kp) call concat(cur_data, in, keep_lf=.false.)
 end subroutine
 
 subroutine KP_startElement_handler(URI, localname, name, attributes)

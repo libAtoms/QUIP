@@ -151,14 +151,18 @@ function extendable_str_len(this)
   extendable_str_len = this%len
 end function extendable_str_len
 
-subroutine extendable_str_concat(this, str)
+subroutine extendable_str_concat(this, str, keep_lf)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: str
+  logical, intent(in), optional :: keep_lf
 
   character, allocatable :: t(:)
   integer str_len
   integer new_len
   integer i
+  logical my_keep_lf
+
+  my_keep_lf = optional_default(.true., keep_lf)
 
   str_len = len(trim(str))
   if (str_len > 0) then
@@ -187,11 +191,19 @@ subroutine extendable_str_concat(this, str)
       this%len = 0
     endif
 
-    do i=1, str_len
-      this%s(this%len+i) = str(i:i)
-    end do
-
-    this%len = this%len + str_len
+    if (my_keep_lf) then
+       do i=1, str_len
+          this%s(this%len+i) = str(i:i)
+       end do
+       
+       this%len = this%len + str_len
+    else
+       do i=1, str_len
+          if (str(i:i) == char(13) .or. str(i:i) == char(10)) cycle
+          this%s(this%len+1) = str(i:i)
+          this%len = this%len + 1
+       end do
+    end if
  endif
 
  if (this%len > 0 .and. this%cur <= 0) this%cur = 1

@@ -172,7 +172,7 @@ subroutine TBM_characters_handler(in)
   character(len=*), intent(in) :: in
 
   if (parse_in_tbm) then
-    call concat(parse_cur_data, in)
+    call concat(parse_cur_data, in, keep_lf=.false.)
   endif
 end subroutine
 
