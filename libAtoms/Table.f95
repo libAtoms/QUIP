@@ -321,10 +321,6 @@
 ! Revision 1.1.1.1  2005/11/11 10:22:24  gc121
 ! starting
 
-#ifndef SIZEOF_VOID_PTR
-#define SIZEOF_VOID_PTR 4
-#endif
-
 module table_module
   use system_module
   use linearalgebra_module
@@ -2920,23 +2916,6 @@ subroutine table_remove_columns(this, int_col_min, int_col_max, real_col_min, re
   this = subtab
 
 end subroutine table_remove_columns
-
-subroutine table_address(this, int_loc, real_loc, str_loc, logical_loc)
-  type(Table), intent(in) :: this
-  integer(SIZEOF_VOID_PTR), intent(out) :: int_loc, real_loc, str_loc, logical_loc
-
-  int_loc = 0
-  real_loc = 0
-  str_loc = 0
-  logical_loc = 0
-
-  if (this%intsize /= 0)    int_loc     = loc(this%int)
-  if (this%realsize /= 0)   real_loc    = loc(this%real)
-  if (this%strsize /= 0)    str_loc     = loc(this%str)
-  if (this%logicalsize /=0) logical_loc = loc(this%logical)
-
-end subroutine table_address
-
 
 subroutine table_bcast(mpi, this)
   type(MPI_Context), intent(in) :: mpi
