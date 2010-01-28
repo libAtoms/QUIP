@@ -1,7 +1,3 @@
-#ifndef SIZEOF_VOID_PTR
-#define SIZEOF_VOID_PTR 4
-#endif
-
 module CInOutput_module
 
   !% Interface to C routines for reading and writing Atoms objects to and from XYZ and NetCDF files.
