@@ -255,6 +255,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      ! call the external command here
 !     call system_command(trim(this%command)//" "//trim(xyzfile)//" "//trim(outfile),status=status)
      call system_command(trim(this%command)//' '//trim(xyzfile)//" "//trim(outfile)//" "//trim(my_args_str),status=status)
+     call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command
      call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log=FilePot_log, err=my_err)
