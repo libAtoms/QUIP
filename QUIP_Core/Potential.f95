@@ -522,7 +522,7 @@ call print('ARGS1 | '//new_args_str,VERBOSE)
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('potential_calc: not carving cluster', VERBOSE)
-	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str, cut_bonds)
+	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds)
 
          !save cluster in cluster_mark property
          call add_property(at,'cluster_mark',HYBRID_NO_MARK)
