@@ -726,9 +726,10 @@ logical :: have_silica_potential
 !         call write(ds%atoms,xyz,real_format='%17.10f')
          !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
      endif
-     call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+     call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
      call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
      call finalise(latest_xyz)
+     call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
 
     call system_timer('step')
 
@@ -947,9 +948,10 @@ enddo
 !            call write(ds%atoms,xyz,real_format='%17.10f')
             !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
         endif
-        call initialise(latest_xyz,latest_coord_file,action=OUTPUT)
+        call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
         call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
         call finalise(latest_xyz)
+        call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
      
   !ADVANCE VERLET 1
