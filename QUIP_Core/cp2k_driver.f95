@@ -20,6 +20,7 @@ contains
     integer :: this_run_i
     integer :: stat
     type(Atoms) :: for
+    real(dp), pointer :: frc(:,:)
 
     call initialise(last_run_io, "cp2k_driver_fake_run", action=INPUT)
     last_run_s = read_line(last_run_io, status=stat)
@@ -34,10 +35,17 @@ contains
     call initialise(force_cio, "cp2k_force_file_log")
     call read(force_cio, for, frame=this_run_i)
     call finalise(force_cio)
-    f = for%pos
+    if (.not. assign_pointer(for, 'frc', frc)) &
+      call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
+    f = frc
 
-    if (.not. get_value(for%params, "energy", e)) &
-      call system_abort("do_cp2k_calc_fake didn't find energy")
+    if (.not. get_value(for%params, "energy", e)) then
+      if (.not. get_value(for%params, "Energy", e)) then
+	if (.not. get_value(for%params, "E", e)) then
+	  call system_abort("do_cp2k_calc_fake didn't find energy")
+	endif
+      endif
+    endif
 
     call initialise(last_run_io, "cp2k_driver_fake_run", action=OUTPUT)
     call print(""//(this_run_i+1), file=last_run_io)
