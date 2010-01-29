@@ -24,7 +24,7 @@ use libatoms_module
   call add_property(at, 'hybrid_mark', 1)
   call add_property(at, 'old_hybrid_mark', 1)
   call add_property(at, 'old_cluster_mark', 1)
-  call add_property(at, 'cut_bonds', 1)
+  call add_property(at, 'cut_bonds', 0, 4)
   call add_property(at, 'atom_type', '')
   call add_property(at, 'atom_res_name', '')
   call add_property(at, 'atom_mol_name', '')
