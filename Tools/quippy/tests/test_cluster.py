@@ -274,13 +274,12 @@ class TestCluster_Periodic(QuippyTestCase):
       self.at = supercell(self.dia, 4, 4, 1)
       self.at.set_cutoff(5.0)
       self.at.calc_connect()
-      
+
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
       self.embed = self.at.bfs_grow_single(1, n=2, min_images_only=True)
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
       self.t = self.at.create_cluster_info(self.embed, terminate=True, allow_cluster_modification=False, periodic=(False, False, True))
-
       self.cluster = carve_cluster(self.at, cluster_info=self.t, cluster_periodic_z=True)
       self.cluster.set_cutoff_factor(1.2)
       self.cluster.calc_connect()

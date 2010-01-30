@@ -1,66 +1,37 @@
 #!/usr/bin/env python
 
-from numpy.distutils.core import setup, Extension, Command
-from numpy.distutils.system_info import get_info
-from numpy.distutils.misc_util import dict_append
-from numpy.distutils.ccompiler import new_compiler, gen_preprocess_options 
-from distutils.file_util import copy_file
-from distutils.dir_util import remove_tree
-from distutils.dep_util import newer, newer_group
-from distutils.util import get_platform
-from numpy import get_include
-from distutils.command.clean import clean as _clean
-import sys, os, cPickle, glob, stat, subprocess
-import f90doc, f2py_wrapper_gen
-from unittest import TestLoader, TextTestRunner
-import patch_f2py
+import f90doc, f2py_wrapper_gen, patch_f2py
+import sys, os, cPickle, glob, stat, subprocess, re, string, StringIO
 
-print sys.argv
+from numpy.distutils.core import setup, Extension
+from numpy.distutils.ccompiler import gen_preprocess_options
+from numpy import get_include
+from numpy.distutils.system_info import get_info
+from distutils.file_util import copy_file
+from distutils.dep_util import newer, newer_group
+from distutils.sysconfig import parse_makefile
+from custom_commands import *
+from distutils.util import get_platform
 
 major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
     sys.stderr.write('Python 2.4 or later is needed to use this package\n')
     sys.exit(1)
 
-class clean(_clean):
-    def run(self):
-        _clean.run(self)
+def find_quip_root_and_arch():
+    """Find QUIP root directory."""
+    if 'QUIP_ROOT' in os.environ:
+        quip_root = os.environ['QUIP_ROOT']
+    else:
+        quip_root = os.path.abspath(os.path.join(os.getcwd(), '../../'))
 
-        for file in glob.glob('*.spec') + glob.glob('*.type') + ['sizeof_void_ptr', 'sizeof_void_ptr.o']:
-            os.remove(file)
+    if not 'QUIP_ARCH' in os.environ:
+        raise ValueError('QUIP_ARCH environment variable not set')
+    
+    quip_arch = os.environ['QUIP_ARCH']
 
-        remove_tree(build_base)
+    return (quip_root, quip_arch)
 
-
-class TestCommand(Command):
-    user_options = [ ]
-
-    def initialize_options(self):
-        self._dir = os.getcwd()
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        '''
-        Finds all the tests modules in tests/test*.py, and runs them.
-        '''
-        testfiles = [ ]
-        for t in glob.glob(os.path.join(self._dir, 'tests', 'test*.py')):
-            if not t.endswith('__init__.py'):
-                testfiles.append('.'.join(
-                    ['tests', os.path.splitext(os.path.basename(t))[0]])
-                )
-
-        save_path = sys.path[:]
-        if '' in sys.path: sys.path.remove('')
-        if self._dir in sys.path: sys.path.remove(self._dir)
-
-        tests = TestLoader().loadTestsFromNames(testfiles)
-        t = TextTestRunner(verbosity = 3)
-        t.run(tests)
-
-        sys.path = save_path
 
 def SourceImporter(infile, defines, include_dirs, cpp):
     """Import source code from infile and copy to build_dir/package,
@@ -93,10 +64,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
     }
     else { s/^\s*private\s*$/!private/; s/^\s*private([ :])/!private$1/; print; }
 }' %s > tmp.out; %s %s tmp.out | grep -v '^#' >  %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
-#}' %s | %s %s - | perl -ne 'print if !/^$/' > %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))
         else:
-            #if newer(infile, outfile):
-            #    os.system("cat %s | cpp %s > %s" % (infile, cpp_opt, outfile))
             copy_file(infile, outfile, update=True)
 
         return outfile
@@ -104,7 +72,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
     return func
 
 
-def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[], kindlines=[], short_names={}):
+def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, filtertypes=None):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
     give access to methods and instance data."""
@@ -135,7 +103,6 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
             fortran_spec = cPickle.load(open('%s.spec' % modname))
 
         wrap_modules = []
-        cpp_opt = gen_preprocess_options(macros, [])
         for file in wrap_sources:
 
             for mod, name in modules:
@@ -152,15 +119,21 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
             if not newer(name, wrapper):
                 res.append(wrapper)
                 continue
-            
-            wrapperf = open(wrapper, 'w')
-            tmpf = open('tmp.out','w')
-            new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines)
-            fortran_spec.update(new_spec)
+
+            tmpf = StringIO.StringIO()
+            new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines,
+                                                 initlines=initlines, filtertypes=filtertypes)
+
+            if not os.path.exists(wrapper) or (new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
+                print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
+                fortran_spec.update(new_spec)
+                wrapperf = open(wrapper, 'w')
+                wrapperf.write(tmpf.getvalue())
+                wrapperf.close()
+            else:
+                print 'Interface for module %s unchanged' % mod.name
+
             tmpf.close()
-            cpp_process = subprocess.Popen(cpp + cpp_opt + ['tmp.out'], stdout=wrapperf)
-            cpp_process.communicate()
-            wrapperf.close()
             res.append(wrapper)
 
         fortran_spec['wrap_modules'] = wrap_modules
@@ -171,250 +144,302 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, cpp, dep_type_maps=[],
 
     return func
 
-# Compile simple C program to find sizeof(void *) on this arch
-print 'Calculating sizeof(void *)...', 
-if os.path.exists('./sizeof_void_ptr'):
-  os.remove('./sizeof_void_ptr')
-if os.path.exists('./sizeof_void_ptr.o'):
-  os.remove('./sizeof_void_ptr.o')
-cc = new_compiler()
-cc.link_executable(cc.compile(['sizeof_void_ptr.c']),'sizeof_void_ptr')
-sizeof_void_ptr = int(os.popen('./sizeof_void_ptr').read())
-print sizeof_void_ptr, 'bytes.'
 
-# Bit of a hack: we have to add directory which will contain .mod files
-build_base = 'build'
-if 'build' in sys.argv:
-    for i, arg in enumerate(sys.argv[sys.argv.index('build'):]):
-        if not arg.startswith('-'): continue
-        if arg == '-b':
-            build_base = sys.argv[i+1]
-            break
-        if arg.startswith('--build-base'):
-            build_base = arg.split('=')[1]
-            break
-print 'build_base directory is %s' % build_base
-plat_specifier = ".%s-%s" % (get_platform(), sys.version[0:3])
-mod_dir = os.path.join(build_base, 'temp'+plat_specifier)
+def read_arch_makefiles_and_environment(quip_root, quip_arch):
+    """Read ${QUIP_ROOT}/Makefiles/Makefile.common, ${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH},
+    ${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc and then os.environ,
+    overriding variables in that order."""
+    
+    makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.common'))
+    makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.%s' % quip_arch), makefile)
+    makefile_inc = os.path.join(quip_root, 'build.%s/Makefile.inc' % quip_arch)
+    if os.path.exists(makefile_inc):
+        makefile = parse_makefile(makefile_inc, makefile)
+    makefile.update(os.environ)
+
+    return makefile
+
+
+def find_sources(makefile, quip_root):
+
+    def expand_addsuffix(s):
+        add_suffix = re.compile(r'\$\{addsuffix (.*?),(.*?)\}')
+
+        m = add_suffix.match(s)
+        if m:
+            res = []
+            while m is not None:
+                suffix, files = m.groups()
+                res.extend([f + suffix for f in files.split()])
+                s = add_suffix.sub('',s,1).strip()
+                m = add_suffix.match(s)
+        else:
+            res = s.split()
+        return res
+
+    source_dirs  = []
+    all_sources  = []
+    wrap_sources = []
+    wrap_types   = []
+
+    libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
+    makefile_libatoms   = parse_makefile(os.path.join(libatoms_dir,'Makefile'))
+    libatoms_sources = [os.path.join(libatoms_dir,f) for f in
+                        (expand_addsuffix(makefile_libatoms['LIBATOMS_F77_SOURCES']) +
+                         expand_addsuffix(makefile_libatoms['LIBATOMS_F95_SOURCES']) +
+                         expand_addsuffix(makefile_libatoms['LIBATOMS_C_SOURCES']))]
+    all_sources += libatoms_sources
+    wrap_sources += ['System.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
+                     'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
+                     'clusters.f95','Structures.f95', 'CInOutput.f95']
+    wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'dynamicalsystem', 'cinoutput']
+    source_dirs.append(libatoms_dir)
+
+    quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
+    makefile_quip_core = parse_makefile(os.path.join(quip_core_dir, 'Makefile'))
+    quip_core_sources = [os.path.join(quip_core_dir,f) for f in
+                         (expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']) +
+                          expand_addsuffix(makefile_quip_core['ALL_F95_FILES'])  + 
+                          expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']))]
+    all_sources += quip_core_sources
+    wrap_sources += ['Potential.f95', 'MetaPotential.f95']
+    wrap_types += ['potential', 'metapotential']
+    source_dirs.append(quip_core_dir)
+
+    if (not 'QUIPPY_NO_TOOLS' in makefile or
+        ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))):
+        tools_dir = os.path.join(quip_root, 'Tools/')
+        makefile_tools = parse_makefile(os.path.join(tools_dir, 'Makefile'))
+        tools_sources = [os.path.join(tools_dir,f)+'.f95' for f in makefile_tools['PROGRAMS'].split()]
+        all_sources += tools_sources
+        source_dirs.append(tools_dir)
+
+        quip_utils_dir = os.path.join(quip_root, 'QUIP_Utils/')
+        makefile_quip_utils = parse_makefile(os.path.join(quip_utils_dir, 'Makefile'))
+        quip_utils_sources = [os.path.join(quip_utils_dir,f)+'.f95' for f in makefile_quip_utils['F95_FILES'].split()]
+        all_sources += quip_utils_sources
+        wrap_sources += ['elasticity.f95', 'elastic_fields.f95']
+        source_dirs.append(quip_utils_dir)
+
+    if (not 'QUIPPY_NO_CRACK' in makefile or
+        ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))):
+        crack_dir = os.path.join(quip_root, 'QUIP_Programs/')
+        crack_sources = [os.path.join(crack_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
+        all_sources += crack_sources
+        wrap_sources += ['cracktools.f95', 'crackparams.f95']
+        source_dirs.append(quip_utils_dir)
+
+    return source_dirs, all_sources, wrap_sources, wrap_types
+
+
+def split_libraries_library_dirs(s):
+    """Given a string of the form '-L/path/one -llib1 -llib2 -L/path/two',
+    return a pair of lists ['lib1', 'lib2'] and ['/path/one', '/path/two']."""
+    
+    tmp = s.split()
+    libraries = [s.startswith('-l') and s[2:] or s  for s in tmp
+                 if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl') ]
+    library_dirs  = [s[2:] for s in tmp if s[:2] == '-L']
+    return libraries, library_dirs
+
 
 type_map = {}
 
-include_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-I')]
-library_dirs = [os.path.expanduser(s[2:]) for s in sys.argv if s.startswith('-L')]
-libraries = [s for s in sys.argv if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl')]
-libraries = [ s.startswith('-l') and s[2:] or s for s in libraries ]
-sys.argv = [ s for s in sys.argv if not s.startswith('-I') and not s.startswith('-L') and not s.startswith('-l') and not s == '-Bstatic'
-             and not s == '-Bdynamic' and not s.startswith('-Wl')]
+quip_root, quip_arch = find_quip_root_and_arch()
 
-# Silently ignore framework options
-cp = []
-i = 0
-while sys.argv:
-    p = sys.argv.pop(0)
-    if p not in ('-framework', '-Bstatic', '-Bdynamic'): 
-        cp.append(p)
-        continue
-    else:
-        # throw away next thing
-        sys.argv.pop(0)
+if not os.path.isdir(os.path.join(quip_root, 'libAtoms')):
+    raise ValueError('Cannot find libAtoms directory under %s - please set QUIP_ROOT env var' % quip_root)
 
-sys.argv = cp
-print sys.argv
+makefile = read_arch_makefiles_and_environment(quip_root, quip_arch)
+makefile_test = lambda var: var in makefile and int(makefile[var])
 
-argfilt = filter(lambda s: s.startswith('-D'), sys.argv)
-macros = []
-for arg in argfilt:
-    try:
-        k, v = arg[2:].split('=')
-        v = v.replace('"',r'\"')
-    except ValueError:
-        k, v = arg[2:], None
-    macros.append((k,v))
-    del sys.argv[sys.argv.index(arg)]
+# Check for essential Makefile variables
+for key in ('QUIPPY_FCOMPILER', 'QUIPPY_CPP'):
+    if not key in makefile:
+        raise ValueError('Mandatory variable %s must be specified in Makefile or environment' % key)
 
-argfilt = filter(lambda s: s.startswith('-U'), sys.argv)
-for arg in argfilt:
-    macros.append((arg[2:],))
-    del sys.argv[sys.argv.index(arg)]
+# C preprocessor
+cpp = makefile.get('QUIPPY_CPP', 'cpp').split()
 
-print 'macros = ', macros
+include_dirs = [ makefile[key] for key in makefile.keys() if key.endswith('INCDIR') and makefile[key] != '']
+library_dirs = [ makefile[key] for key in makefile.keys() if key.endswith('LIBDIR') and makefile[key] != '']
 
-do_quippy_extension = True
+# Default libraries and macros
+libraries = []
+extra_link_args = []
+macros = [('HAVE_QUIPPY',None), ('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
 
-argfilt = filter(lambda s: s.startswith('--libatoms-dir'), sys.argv)
-if argfilt:
-    libatoms_dir = argfilt[0].split('=')[1]
-    del sys.argv[sys.argv.index(argfilt[0])]
+# Maths libraries
+if 'QUIPPY_MATH_LINKOPTS' in makefile:
+    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['QUIPPY_MATH_LINKOPTS'])
+    libraries.extend(maths_libs)
+    library_dirs.extend(maths_libdirs)
+elif 'MATH_LINKOPTS' in makefile:
+    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['MATH_LINKOPTS'])
+    libraries.extend(maths_libs)
+    library_dirs.extend(maths_libdirs)
+elif 'DEFAULT_MATH_LINKOPTS' in makefile:
+    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['DEFAULT_MATH_LINKOPTS'])
+    libraries.extend(maths_libs)
+    library_dirs.extend(maths_libdirs)
 else:
-    do_quippy_extension = False
+    raise ValueError('Neither QUIPPY_MATH_LINKOPTS, MATHS_LINKOPT nor DEFAULT_MATHS_LINKOPTS are defined in either Makefile.arch or Makefile.inc')
 
-argfilt = filter(lambda s: s.startswith('--libatoms-sources'), sys.argv)
-if argfilt:
-    libatoms_sources = argfilt[0].split('=')[1].split(':')
-    del sys.argv[sys.argv.index(argfilt[0])]
-else:
-    do_quippy_extension = False
+# FoX libraries
+if not ('FOX_LIBDIR' in makefile and 'FOX_INCDIR' in makefile and 'FOX_LIBS' in makefile):
+    raise ValueError('FOX_LIBDIR, FOX_INCDIR and FOX_LIBS must all be set in Makefile or environment')
+extra_link_args.extend([os.path.join(makefile['FOX_LIBDIR'],'lib%s.a' % lib[2:]) for lib in makefile['FOX_LIBS'].split() ])
 
-quip_core_sources = []
-quip_core_dir = None
-argfilt = filter(lambda s: s.startswith('--quip-core-dir'), sys.argv)
-if argfilt:
-    quip_core_dir = argfilt[0].split('=')[1]
-    del sys.argv[sys.argv.index(argfilt[0])]
-# else:
-#     do_quippy_extension = False
-
-argfilt = filter(lambda s: s.startswith('--quip-core-sources'), sys.argv)
-if argfilt:
-    quip_core_sources = argfilt[0].split('=')[1].split(':')
-    del sys.argv[sys.argv.index(argfilt[0])]
-# else:
-#     do_quippy_extension = False
-
-if (quip_core_sources and (quip_core_dir is None)): 
-  print 'Found --quip_core_sources but no --quip-core-dir'
-  sys.exit(1)
-
-if (not (quip_core_dir is None) and not quip_core_sources):
-  print 'Found --quip_core_dir but no --quip-core-sources'
-  sys.exit(1)
-
-cpp = 'cpp'
-argfilt = filter(lambda s: s.startswith('--cpp'), sys.argv)
-if argfilt:
-    cpp = argfilt[0].split('=')[1].split()
-    del sys.argv[sys.argv.index(argfilt[0])]
-
-do_atomeye = False
-argfilt = filter(lambda s: s.startswith('--atomeye-dir'), sys.argv)
-if argfilt:
-    do_atomeye = True
-    atomeye_dir = argfilt[0].split('=')[1]
-    del sys.argv[sys.argv.index(argfilt[0])]
-
-    argfilt = [s for s in sys.argv if s.startswith('--atomeye-libs')]
-    if argfilt:
-        print argfilt[0].split('=')[1]
-        atomeye_libs = [s[2:] for s in argfilt[0].split('=')[1].split() if s[:2] == '-l']
-        atomeye_libdirs = [s[2:] for s in argfilt[0].split('=')[1].split() if s[:2] == '-L']
-        del sys.argv[sys.argv.index(argfilt[0])]
-        print atomeye_libs, atomeye_libdirs
+# NetCDF libraries
+if makefile_test('HAVE_NETCDF'):
+    macros.append(('HAVE_NETCDF',None))
+    if makefile_test('NETCDF4'):
+        libraries += makefile['NETCDF4_LIBS'].split()
+        macros.append(('NETCDF4',None))
     else:
-        do_atomeye = False
+        libraries += makefile['NETCDF_LIBS'].split()
 
-#do_import = True
-#argfilt = [ s for s in sys.argv if s == '--no-import-source']
-#if argfilt:
-#    do_import = False
-#    del sys.argv[sys.argv.index(argfilt[0])]
+# ASAP potential
+if makefile_test('HAVE_ASAP'):
+    libraries.append('asap')
+    macros.append(('HAVE_ASAP',None))
 
+# MDCore library
+if makefile_test('HAVE_LARSPOT'):
+    libraries.append('mdcore')
+    macros.append(('HAVE_LARSPOT',None))
 
-tools_sources = []
-argfilt = [ s for s in sys.argv if s.startswith('--tools-sources')]
-if argfilt:
-    tools_sources = argfilt[0].split('=')[1].split()
-    del sys.argv[sys.argv.index(argfilt[0])]
+# CP2K macro
+if makefile_test('HAVE_CP2K'):
+    macros.append(('HAVE_CP2K',None))
 
+if 'QUIPPY_DEFINES' in makefile:
+    for defn in makefile['QUIPPY_DEFINES'].split():
+        if defn[:2] == '-D':
+            if '=' in defn:
+                n, v = defn[2:].split('=')
+                macros.append((n,v))
+            else:
+                macros.append((defn[2:], None))
+        elif defn[:2] == '-U':
+            macros.append(defn[2:])
 
-wrap_sources = []
-argfilt = [ s for s in sys.argv if s.startswith('--wrap-sources')]
-if argfilt:
-    wrap_sources = argfilt[0].split('=')[1].split()
-    del sys.argv[sys.argv.index(argfilt[0])]
-
-
-if do_quippy_extension:
-    macros += [('SIZEOF_VOID_PTR', sizeof_void_ptr), ('HAVE_QUIPPY',None)]
-    arraydata_ext = Extension(name='quippy.arraydata', 
-                              sources=['arraydatamodule.c'],
-                              include_dirs=[get_include()])
-
-
-    libatoms_files = [ os.path.join(libatoms_dir, f) for f in libatoms_sources ]
-
-    libatoms_lib = ('atoms', {
-            'sources': [ SourceImporter(f, macros, [libatoms_dir], cpp) for f in libatoms_files ],
-            'include_dirs':  [libatoms_dir] + include_dirs,
-            'macros': macros
-            })
-
-    int_libs = ['atoms']
-    build_libraries = [libatoms_lib]
-
-    if quip_core_sources:
-      quip_core_files = [os.path.join(quip_core_dir, f) for f in quip_core_sources]
-
-      quip_core_lib = ('quip_core', {
-          'sources': [ SourceImporter(f, macros, [quip_core_dir], cpp) for f in quip_core_files ],
-          'include_dirs': [quip_core_dir] + include_dirs,
-          'macros': macros
-          })
-
-      int_libs = ['quip_core'] + int_libs
-      build_libraries = build_libraries + [quip_core_lib]
-
-    if tools_sources:
-        tools_lib = ('tools', {
-            'sources': [ SourceImporter(f, macros, [libatoms_dir, quip_core_dir], cpp) for f in tools_sources ],
-            'include_dirs': [libatoms_dir, quip_core_dir] + include_dirs,
-            'macros': macros
-            })
-
-        int_libs = ['tools'] + int_libs
-        build_libraries = [libatoms_lib, quip_core_lib, tools_lib]
+# Default distutils options -- will be overriden by command line options
+# once setup() is invoked.
+default_options= {
+    'config': {
+    },
     
+    'config_fc': {
+    'f90flags':  makefile.get('QUIPPY_F90FLAGS', '').split(),
+    'f77flags':  makefile.get('QUIPPY_F77FLAGS', '').split(),
+    'debug':     int(makefile.get('QUIPPY_DEBUG',1))
+    },
 
-    data_files = ['quippy.spec']
+    'build': {
+    'build_base': 'build.%s' % quip_arch,
+    'debug':     int(makefile.get('QUIPPY_DEBUG',1))
+   
+    },
 
-    ext_args = {'name': 'quippy._quippy',
-                'sources': [ F90WrapperBuilder('quippy',
-                                               [f[:-4]+'.f90' for f in libatoms_sources + quip_core_sources +
-                                                [os.path.basename(x) for x in tools_sources] if f.endswith('.f95')],
-                                               [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
-                                               cpp, dep_type_maps=[{'c_ptr': 'iso_c_binding',
-                                                                    'dictionary_t':'FoX_sax'}], 
-                                               kindlines=['use system_module, only: dp, qp',
-                                                          'use iso_c_binding, only: C_SIZE_T'],
-                                               short_names={'dynamicalsystem':'ds',
-                                                            'metapotential': 'metapot'})
-                             ],
-                'library_dirs': library_dirs,
-                'include_dirs': [mod_dir] + include_dirs,
-                'libraries':  int_libs + libraries,
-#                'depends': ['%s/lib%s.a' % (mod_dir,L) for L in int_libs],
-                'define_macros': macros
-                }
+    'build_ext': {
+    'fcompiler': makefile['QUIPPY_FCOMPILER']
+    },
 
-    quippy_ext = Extension(**ext_args)
+    'build_src': {
+    'f2py_opts': makefile.get('QUIPPY_F2PY_OPTS', '--no-wrap-functions')
+    },
 
-    exts = [arraydata_ext, quippy_ext]
+    'clean':{
+    'all': True
+    },
+}
 
-    if do_atomeye:
-        ext_args = {'name': 'quippy._atomeye',
-                    'sources': ['atomeyemodule.c'],
-                    'library_dirs':  atomeye_libdirs + library_dirs + [os.path.join(atomeye_dir, 'lib')],
-                    'libraries': ['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
-                    'include_dirs': [os.path.join(atomeye_dir,'include')] + [libatoms_dir],
-#                    'depends': [os.path.join(atomeye_dir, 'lib/libAtomEye.a')],
-                    'define_macros': macros
-                    }
+if makefile_test('QUIPPY_DEBUG'):
+    os.environ['FOPT'] = '-O0'
+    os.environ['FARCH'] = '-O0'
 
-        atomeye_ext = Extension(**ext_args)
-        exts.append(atomeye_ext)
-else:
-    build_libraries = []
-    exts = []
-    data_files = []
+if 'QUIPPY_OPT' in makefile:
+    default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
 
+# Install options
+if 'QUIPPY_INSTALL_OPTS' in makefile:
+    install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
+    default_options['install'] = {}
+    for opt in install_opts:
+        n, v = opt.split('=')
+        n = n[2:] # remove --
+        default_options['install'][n] = v
 
+# Find Fortran source code files
+source_dirs, all_sources, wrap_sources, wrap_types = find_sources(makefile, quip_root)
+include_dirs.extend(source_dirs)
+
+# arraydata extension module
+f2py_info = get_info('f2py')
+arraydata_ext = Extension(name='quippy.arraydata', 
+                          sources=['arraydatamodule.c'] + f2py_info['sources'],
+                          include_dirs=f2py_info['include_dirs'])
+
+# underlying quippy library, libquippy.a
+quippy_lib = ('quippy', {
+    'sources': [ SourceImporter(f, macros, source_dirs, cpp) for f in all_sources ],
+    'include_dirs':  include_dirs,
+    'macros': macros,
+    })
+
+# _quippy extension module
+quippy_ext = Extension(name='quippy._quippy',
+                       sources=[ F90WrapperBuilder('quippy',
+                                                   [os.path.basename(f)[:-4]+'.f90' for f in all_sources if f.endswith('.f95')],
+                                                   [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
+                                                   dep_type_maps=[{'c_ptr': 'iso_c_binding',
+                                                                   'dictionary_t':'FoX_sax'}], 
+                                                   kindlines=['use system_module, only: dp, qp'],
+                                                   short_names={'dynamicalsystem':'ds',
+                                                                'metapotential': 'metapot'},
+                                                   initlines={'atoms': ('atoms_module', ('call atoms_repoint(%(PTR)s)',
+                                                                                         'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))},
+                                                   filtertypes=wrap_types)
+                                 ],
+                       library_dirs=library_dirs,
+                       include_dirs=include_dirs,
+                       libraries=[quippy_lib] + libraries,
+                       depends=['build.%s/temp.%s-%s/libquippy.a' % (quip_arch, get_platform(), sys.version[0:3])],
+                       define_macros= macros,
+                       extra_link_args=extra_link_args)
+
+exts = [arraydata_ext, quippy_ext]
+
+# Optionally compile AtomEye extension module
+if makefile_test('QUIPPY_HAVE_ATOMEYE'):
+    atomeye_dir =  os.path.join(quip_root, 'Tools/AtomEye')
+
+    if 'QUIPPY_ATOMEYE_LIBS' in makefile:
+        atomeye_libs, atomeye_libdirs = split_libraries_library_dirs(makefile['QUIPPY_ATOMEYE_LIBS'])
+    elif 'ATOMEYE_LIBS' in makefile:
+        atomeye_libs, atomeye_libdirs = split_libraries_library_dirs(makefile['ATOMEYE_LIBS'])
+    else:
+        raise ValueError('Missing variable ATOMEYE_LIBS or QUIPPY_ATOMEYE_LIBS')
+
+    atomeye_ext = Extension(name='quippy._atomeye',
+                            sources=['atomeyemodule.c'],
+                            library_dirs=atomeye_libdirs + [os.path.join(atomeye_dir, 'lib')],
+                            libraries=['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
+                            include_dirs=[os.path.join(atomeye_dir,'include')] + source_dirs,
+                            define_macros= macros)
+    exts.append(atomeye_ext)
+
+# Finally, call setup() to run command
 setup(name='quippy',
-      libraries=build_libraries,
       packages = ['quippy'],
       ext_modules = exts,
-      data_files = [('quippy',data_files)],
-      cmdclass = {'clean':clean, 'test': TestCommand},
+      data_files = [('quippy',['quippy.spec'])],
+      scripts=glob.glob('scripts/*.py'),      
+      cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext},
       version=os.popen('svnversion -n .').read(),
       description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',
-      url='http://www.jrkermode.co.uk/quippy')
+      url='http://www.jrkermode.co.uk/quippy',
+      options=default_options)

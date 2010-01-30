@@ -649,24 +649,3 @@ class NetCDFWriter(object):
 
 AtomsWriters[netcdf_file] = NetCDFWriter
 if not 'nc' in AtomsWriters: AtomsWriters['nc'] = NetCDFWriter
-
-class NetCDFAtomsList(netcdf_file, AtomsList):
-   def __init__(self, source, *args, **kwargs):
-      AtomsList.__init__(self, source, *args, **kwargs)
-      netcdf_file.__init__(self, source)
-
-   def __getattr__(self, name):
-      try:
-         return netcdf_file.__getattr__(self,name)
-      except AttributeError:
-         try:
-            return farray(self.variables[name][:])
-         except KeyError:
-            raise AttributeError('Attribute %s not found' % name)
-
-   def __setattr__(self, name, value):
-      if name.startswith('_'):
-         self.__dict__[name] = value
-      else:
-         netcdf_file.__setattr__(self, name, value)
-      

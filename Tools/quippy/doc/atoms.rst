@@ -136,13 +136,15 @@
 
    .. attribute:: neighbours
 
-      A :class:`Neighbours` object, which should be indexed with an
-      integer `i` from 1 to `at.n` to give an array of
+      A :class:`Neighbours` object, which, when indexed with an
+      integer from 1 to `at.n`, returns an array of
       :class:`NeighbourInfo` objects, each of which corresponds to a
-      particular pair `(i,j)`. If connectivity information has not
-      already been calculated :meth:`calc_connect` will be called
-      automatically. The code to loop over the neighbours of all atoms
-      is quite idiomatic::
+      particular pair `(i,j)` and has attributes `j`, `distance`,
+      `diff`, `cosines` and `shift`.
+
+      If connectivity information has not already been calculated
+      :meth:`calc_connect` will be called automatically. The code to
+      loop over the neighbours of all atoms is quite idiomatic::
       
         for i in frange(at.n):
 	    for neighb in at.neighbours[i]:
@@ -152,6 +154,14 @@
       the atomic connectivity information than the wrapped Fortran
       functions :meth:`n_neighbours` and :meth:`neighbour` described
       below.
+
+   .. attribute:: hysteretic_neighbours
+
+      The same as :attr:`neighbours`, but this one accesses the
+      :attr:`hysteretic_connect` :class:`Connection` object rather than
+      :attr:`connect`. :attr:`cutoff` and :attr:`cutoff_break` should be
+      set appropriately and :meth:`calc_connect_hysteretic` called
+      before accessing this attribute.
 
    .. method:: read(source[, format, *args, **kwargs])
 
@@ -369,7 +379,7 @@
       :attr:`hysteretic_connect` attribute. `origin` and `extent`
       vectors can be used to restrict the hysteretic region to only
       part of the entire system -- the :func:`estimate_origin_extent`
-      can be used to guess suitable values.
+      function can be used to guess suitable values.
 
 
    .. method:: calc_dists()
@@ -566,25 +576,11 @@ Structure generation routines
 Cluster carving routines
 ------------------------
 
-.. function:: create_hybrid_weights_args(at,trans_width,buffer_width,[weight_interpolation,nneighb_only,min_images_only,mark_buffer_outer_layer,hysteretic_buffer,hysteretic_buffer_inner_radius,hysteretic_buffer_outer_radius,hysteretic_connect,hysteretic_connect_cluster_radius,hysteretic_connect_inner_factor,hysteretic_connect_outer_factor])
+.. function:: create_hybrid_weights(at, args_str)
 
    Given an atoms structure with a `hybrid_mark` property, this
    routine creates a `weight_region1` property, whose values are
-   between 0 and 1. Atoms marked with ``HYBRID_ACTIVE_MARK`` in
-   `hybrid_mark` get weight 1, the neighbourhopping is done
-   `trans_width` times, during which the weight linearly decreases
-   to zero (either with hop count if ``weight_interpolation="hop_ramp"``
-   or with distance from the centre of mass of the embed region if
-   ``weight_interpolation="distance_ramp"``) decreases and atoms are
-   marked with ``HYBRID_TRANS_MARK``. Further hopping is done
-   `buffer_width` times and atoms are marked with
-   ``HYBRID_BUFFER_MARK`` and given weight zero.
-
-
-.. function:: create_hybrid_weights_args_str(at, args_str)
-
-   `args_str` version of :func:`create_hybrid_weights_args`.
-
+   between 0 and 1.
 
 .. function:: create_cluster_info_from_hybrid_mark(at, args_str[, cut_bonds])
 

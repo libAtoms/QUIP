@@ -1,9 +1,15 @@
 from f90doc import *
+import numpy
 
-def wrap_mod(mod, type_map, out=None, kindlines=[]):
+def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
    spec = {}
+   prefix = 'quippy_'
 
+   def strip_type(t):
+      if t.startswith('type('):
+         t = t[t.index('(')+1:t.index(')')]
+      return t.lower()
 
    def println(*args):
       out.write('%s%s\n' % ((' '*indent),' '.join(args)))
@@ -60,6 +66,15 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
 
       return True
 
+   # Only wrap certain types
+   def no_bad_types(sub):
+      for arg in sub.arguments:
+         if arg.type.startswith('type') and not strip_type(arg.type) in filtertypes:
+            print 'omitting routine %s as argument %s of unwrapped type %s' % (sub.name, arg.name, arg.type)
+            return False
+      return True
+      
+
    debug(mod.name)
    shortname = mod.name[:mod.name.index('_module')]
 
@@ -87,73 +102,17 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
    subts = filter(no_c_ptr, subts)
    functs = filter(no_c_ptr, functs)
 
+   if filtertypes is not None:
+      print 'Filtering routines to exclude derived types not in list %s' % filtertypes
+      subts  = filter(no_bad_types, subts)
+      functs = filter(no_bad_types, functs)
+
    debug('%s: %d subs' % (mod.name, len(subts+functs)))
 
    names = [x.name for x in subts+functs]
    if shortname in names: shortname += '_'
 
    indent = 0
-   println('module',shortname)
-   indent += 3
-
-   use_list = [ 'quippy_%s => %s' % (x.name,x.name) for x in subts+functs]
-
-   if len(subts+functs) != 0:
-      println('use %s, only: &' % mod.name)
-      indent += 3
-      while use_list:
-          take = use_list[:min(1,len(use_list))]
-          del use_list[:min(1,len(use_list))]
-          term = ', &'
-          if use_list == []:
-              term = ''
-          println(', '.join(take)+term)
-      indent -= 3
-      println()
-
-   # Add uses clauses for types used in this module
-   dep_types = []
-   for sub in subts + functs:
-      for arg in sub.arguments:
-          if arg.type.startswith('type'):
-              t = arg.type[arg.type.index('(')+1:arg.type.index(')')].lower()
-              if t not in dep_types: dep_types.append(t)
-
-   for t in mod.types:
-      tname = t.name.lower()
-      if not tname in dep_types: dep_types.append(tname)
-      for el in t.elements:
-          if el.type.startswith('type'):
-              tname = el.type[el.type.index('(')+1:el.type.index(')')].lower()
-              if not tname in dep_types: dep_types.append(tname)
-
-   dep_mods = {}
-   for dep in dep_types:
-      modname = type_map[dep]
-      if not modname in dep_mods:
-          dep_mods[modname] = []
-      dep_mods[modname].append(dep)
-
-   for modname in dep_mods.keys():
-      println('use %s, only: &' % modname)
-      indent += 3
-      println(','.join(['quippy_%s => %s' % (t, t) for t in dep_mods[modname]]))
-      indent -= 3
-   println()
-
-   # Kind lines
-   for line in kindlines:
-      println(line)
-   # Must have at least one item in module or f2py gives segfaults
-   # Let's put the module name in, could be handy
-   println('character*(%d), parameter :: module_name = "%s"' % (len(shortname), shortname))
-
-
-   if len(subts+functs) > 0:
-      println()
-      println('contains')
-      println()
-      indent += 3
 
    spec[shortname.lower()] = {'doc': '\n'.join(mod.doc),
                                   'routines': {},
@@ -169,49 +128,38 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
 
    for sub in subts + functs:
 
+      arglines = []
+      init = []
+      got_types = []
+      uses = set()
+      type_lines = []
+
+      # Imported routine
+      ##uses.append('use %s, only: imported_%s => %s' % (mod.name, sub.name,sub.name))
+      uses.add(mod.name.lower())
+      
       # Add argument for return value, after last non-optional argument
       if hasattr(sub,'ret_val'):
           ret_val = sub.ret_val
           ret_val.name = 'ret_'+ret_val.name
           ret_val.attributes.append('intent(out)')
           ret_val.is_ret_val = True
-          sub.arguments = ([ arg for arg in sub.arguments if not 'optional' in arg.attributes ] + [ret_val] +
+          sub.arguments = ([ arg for arg in sub.arguments if not 'optional' in arg.attributes ] + [ret_val] + 
                            [ arg for arg in sub.arguments if 'optional' in arg.attributes ])
+             
 
       args = sub.arguments
+      old_arg_names = [x.name for x in args]
+      for a in args:
+         a.name = prefix + a.name
       argnames = [x.name for x in args]
       newargnames = argnames[:]
 
-      arglines = []
       optionals = []
 
       n_dummy = 0
 
       newname = sub.name
-      # Ensure that methods start with the class name followed by an underscore
-      #if len(args) > 0 and args[0].type.startswith('type') and args[0].name == 'this':
-      #    if not sub.name.lower().startswith(args[0].type[5:-1].lower()+'_'):
-      #        if sub.name.startswith('ds_'):
-      #            newname = args[0].type[5:-1].lower()+'_'+sub.name[3:]
-      #        else:
-      #            newname = args[0].type[5:-1].lower()+'_'+sub.name
-      #else:
-
-      #br = sub.name.find('_')
-      #if br != -1:
-      #    oldtype = sub.name[:br]
-      #    if len(args) > 0 and oldtype.lower() == args[0].type[5:-1].lower():
-      #        basename = sub.name[br+1:]
-      #    else:
-      #        basename = sub.name
-      #else:
-      #    basename = sub.name
-
-      #if len(typenames) < 8:
-      #    newname = '__'.join(typenames)
-      #else:
-      #    newname = 'too_many_types_%s' % basename
-
       spec[shortname.lower()]['routines'][newname.lower()] = \
           {'doc': '\n'.join(sub.doc),'args':[]}
       thisdoc = spec[shortname.lower()]['routines'][newname.lower()]['args']
@@ -228,8 +176,12 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               spec[shortname.lower()]['interfaces'][intf.name.lower()]['routines'].append(sub.name.lower())
 
       allocates = []
+      transfer_in = []
+      transfer_out = []
 
       for arg in args:
+
+          append_argline = True
 
           # Replace all type args with pointers
           if not hasattr(arg, 'attributes') and not hasattr(arg, 'type'):
@@ -244,7 +196,27 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               attributes.append('intent(inout)')
 
           if arg.type.startswith('type'):
-              mytype = 'type(quippy_%s' % arg.type[arg.type.index('(')+1:]
+
+              tname = strip_type(arg.type)
+
+              if not tname in got_types:
+                 ##uses.append('use %s, only: imported_%s => %s' % (type_map[tname], tname, tname))
+                 uses.add(type_map[tname].lower())
+
+                 type_lines.extend(['type %s_ptr_type' %  tname,
+                                    'type(%s), pointer :: p' % tname,
+                                    'end type %s_ptr_type' % tname])
+                 got_types.append(tname)
+                          
+              if tname in initlines:
+                 use, (exe, exe_optional) = initlines[tname]
+                 if use is not None: uses.add(use.lower())
+                 if 'optional' in attributes:
+                    init.append(exe_optional % {'OLD_ARG':arg.name[len(prefix):], 'ARG':arg.name, 'PTR':arg.name+'_ptr%p'})
+                 else:
+                    init.append(exe % {'OLD_ARG':arg.name[len(prefix):], 'ARG':arg.name, 'PTR':arg.name+'_ptr%p'})
+
+              ptr_type = 'type(%s_ptr_type)' % tname
 
               # Preserve original fortran intent
               fintent = [ a for a in attributes if a.startswith('intent')]
@@ -252,16 +224,20 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
 
               if ('intent(out)' in attributes or 
                   ((sub.name.lower().find('_initialise') != -1 or sub.name.lower().find('_allocate') != -1) \
-                       and len(argnames) > 0 and argnames[0] == 'this' and arg.name == 'this')):
-                  allocates.append(arg.name)
-                  intent = 'intent(out)'
+                   and len(argnames) > 0 and argnames[0] == prefix+'this' and arg.name == prefix+'this')):
+                 allocates.append(arg.name)
+                 intent = 'intent(out)'
+                 transfer_out.append(arg.name)
               else:
-                  intent = 'intent(in)'
+                 intent = 'intent(in)'
+                 transfer_in.append((arg.name, 'optional' in attributes))
 
-              arglines.append('!f2py integer*SIZEOF_VOID_PTR, %s :: %s' % (intent, arg.name))
-              attributes = filter(lambda x:x.startswith('dimension') or
-                                  x.startswith('allocatable') or x.startswith('optional'),attributes)
-              attributes.append('pointer')
+              arglines.append('integer, %s%s :: %s(12)' % (intent, ('optional' in attributes and ', optional' or ''), arg.name))
+              arglines.append('%s :: %s_ptr' % (ptr_type, arg.name))
+              argnames[argnames.index(arg.name)] = '%s_ptr%%p' % arg.name
+              append_argline = False
+
+              
           elif arg.type.startswith('character'):
               # change from '(len=*)' or '(*)' syntax to *(*) syntax
               try:
@@ -308,13 +284,15 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               for i,d in enumerate(ds):
                   if valid_dim_re.match(d):
                       #if ',' in d: ds[i] = d.replace('size','shape')
+                      for old, new in zip(old_arg_names, argnames):
+                         ds[i] = ds[i].replace(old, new)
                       if d.startswith('len'):
                           arglines.append('!f2py %s %s, dimension(%s) :: %s' % \
                                               (arg.type, 
                                                ','.join(filter(lambda a: not a.startswith('dimension'), attributes)), 
-                                               d.replace('len','slen'), arg.name))
+                                               ds[i].replace('len','slen'), arg.name))
                       continue
-                  ds[i] = ('n%d' % (n_dummy))
+                  ds[i] = (prefix+'n%d' % (n_dummy))
                   newds.append(ds[i])
                   n_dummy += 1
 
@@ -335,10 +313,11 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
               charflag = 'n%d' % n_dummy
               n_dummy += 1
 
-          if attributes == []:
-              arglines.append('%s :: %s' % (mytype, arg.name))
-          else:
-              arglines.append('%s, %s :: %s' % (mytype, ', '.join(attributes),arg.name))
+          if append_argline:
+             if attributes == []:
+                arglines.append('%s :: %s' % (mytype, arg.name))
+             else:
+                arglines.append('%s, %s :: %s' % (mytype, ', '.join(attributes),arg.name))
 
           f2py_attributes = attributes[:]
           # For types, we want the intent of the f2py 'pointer', rather than the real fortran intent
@@ -352,9 +331,9 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
           if dims != []:
               for i,d in enumerate(newds):
                   newargnames.append(d)
-                  arglines.append('integer :: %s' % d)
+                  arglines.insert(0,'integer :: %s' % d)
                   if not 'intent(out)' in attributes:
-                      arglines.append('!f2py intent(hide), depend(%s) :: %s = shape(%s,%d)' % (arg.name, d, arg.name, i))
+                      arglines.insert(0,'!f2py intent(hide), depend(%s) :: %s = shape(%s,%d)' % (arg.name, d, arg.name, i))
                   else:
                       thisdoc.append({'name': d, 'doc': 'shape(%s,%d)' % (arg.name,i), 'type': 'integer', 'attributes':[]})
 
@@ -381,41 +360,86 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
           args_str += line
           return args_str
 
-      println('subroutine %s(%s)' % (newname, join_and_split_lines(newargnames)))
+      println('subroutine %s%s(%s)' % (prefix, newname, join_and_split_lines(newargnames)))
       indent += 3
+      for line in kindlines:
+         if not any([line.startswith('use %s' % umod) for umod in uses]):
+            println(line)
+      for umod in uses:
+         println('use %s' % umod)
+      println('implicit none')
+      for line in type_lines:
+         println(line)
       for line in arglines:
           println(line)
       println()
 
-      for var in allocates: println('allocate(%s)' % var)
+      for var in allocates: println('allocate(%s_ptr%%p)' % var)
 
+      for var, optional in transfer_in:
+         if optional:
+            println('if (present(%s)) then' % var)
+            indent += 3
+            println('%s_ptr = transfer(%s, %s_ptr)' % (var,var,var))
+            indent -= 3
+            println('else')
+            indent += 3
+            println('%s_ptr%%p => null()' % var)
+            indent -= 3
+            println('end if')
+         else:
+            println('%s_ptr = transfer(%s, %s_ptr)' % (var,var,var))
+
+      for line in init:
+         println(line)
+            
       if hasattr(sub, 'ret_val'):
-          argfilt = [ arg.name for arg in args if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
-          println('%s = quippy_%s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
+          argfilt = [ name for name,arg in zip(argnames,args) if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
+          if sub.ret_val.type.startswith('type'):
+             println('%s_ptr%%p = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))                          
+          else:
+             println('%s = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
       else:
-          println('call quippy_%s(%s)' % (sub.name, join_and_split_lines(argnames)))
+          println('call %s(%s)' % (sub.name, join_and_split_lines(argnames)))
 
-      if sub.name.lower().endswith('finalise') and len(argnames) > 0 and argnames[0] == 'this':
-          println('deallocate(this)')
+      for var in transfer_out: println('%s = transfer(%s_ptr, %s)' % (var,var,var))
+
+
+      if sub.name.lower().endswith('finalise') and len(old_arg_names) > 0 and old_arg_names[0] == 'this':
+         println('deallocate(%sthis_ptr%%p)' % prefix)
 
       println()
 
       indent -= 3
-      println('end subroutine',newname)
+      println('end subroutine %s%s' % (prefix,newname))
       println()
 
 
    # add _get_<type> and _set_<type> methods
 
-   numpy_type_map = {'real(dp)':'d','integer':'i','logical':'i','character*(*)':'S','complex(dp)':'complex'}
+   numpy_type_map = {'real(dp)':'d',
+                     'integer':'i',
+                     'logical':'i',
+                     'character*(*)':'S',
+                     'complex(dp)':'complex',
+                     'real(qp)':'float128'}
    max_type_len = max(map(len,numpy_type_map.values()))
 
    subnames = [x.name for x in subts+functs]
    for t in mod.types:
 
+      if filtertypes is not None and not strip_type(t.name) in filtertypes: continue
+
       spec[shortname.lower()]['types'][t.name] = {'doc': '\n'.join(t.doc), 'elements':{}}
       thisdoc = spec[shortname.lower()]['types'][t.name]['elements']
       for el in t.elements:
+
+          uses = set()
+          uses.add(type_map[t.name.lower()].lower())
+
+          if filtertypes is not None and el.type.startswith('type') and not strip_type(el.type) in filtertypes:
+             print 'Omitting element %s as of unwrapped type %s' % (el.name, el.type)
+             continue
 
           #f2py misparses arguments that are called "type"
           name = el.name
@@ -438,7 +462,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
           # a numpy array that shares the same data)
 
           if mytype.startswith('type'):
-              typename = mytype[mytype.index('(')+1:mytype.index(')')]
+              typename = strip_type(mytype)
           elif mytype in numpy_type_map:
               typename = numpy_type_map[mytype]
           else:
@@ -446,70 +470,92 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
 
           if  dim_list != []:
               if mytype.startswith('type'): continue
+              tname = strip_type(t.name)
 
-              println('subroutine %s__array__%s(this, dtype, dshape, dloc)' % (t.name,name))
+              println('subroutine %s%s__array__%s(this, nd, dtype, dshape, dloc)' % (prefix, t.name,name))
               indent += 3
-              println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(quippy_%s), pointer, intent(in) :: this' % t.name)
-              println('character(%d), intent(out) :: dtype' % max_type_len)
+              #println('use %s, only: imported_%s => %s' % (type_map[t.name.lower()], t.name, t.name))
+              for umod in uses:
+                 println('use %s' % umod)
+              println('implicit none')
+              println('type %s_ptr_type' %  tname)
+              println('type(%s), pointer :: p' % tname)
+              println('end type %s_ptr_type' % tname)
+              println('integer, intent(in) :: this(12)')
+              println('type(%s_ptr_type) :: this_ptr' % t.name)
+              println('integer, intent(out) :: nd')
+              println('integer, intent(out) :: dtype')
               try:
                   rank = dim_list[0].count(',')+1
                   if mytype.startswith('character'): rank += 1
               except ValueError:
                   rank = 1
-              println('integer, dimension(%d), intent(out) :: dshape' % rank)
-              println('integer*SIZEOF_VOID_PTR, intent(out) :: dloc')
+              println('integer, dimension(10), intent(out) :: dshape')
+              println('integer*%d, intent(out) :: dloc' % numpy.dtype('O').itemsize)
               println()
-              println('dtype = "%s"' % typename)
+              println('nd = %d' % rank)
+              println('dtype = %d' % numpy.dtype(typename).num)
+              println('this_ptr = transfer(this, this_ptr)')
               if 'allocatable' in el.attributes:
-                  println('if (allocated(this%%%s)) then' % el.name)
+                  println('if (allocated(this_ptr%%p%%%s)) then' % el.name)
                   indent += 3
               if mytype.startswith('character'):
                   first = ','.join(['1' for i in range(rank-1)])
-                  println('dshape = (/len(this%%%s(%s)), shape(this%%%s)/)' % (el.name, first, el.name))
+                  println('dshape(1:%d) = (/len(this_ptr%%p%%%s(%s)), shape(this_ptr%%p%%%s)/)' % (rank, el.name, first, el.name))
               else:
-                  println('dshape = shape(this%%%s)' % el.name)
-              println('dloc = loc(this%%%s)' % el.name)
+                 println('dshape(1:%d) = shape(this_ptr%%p%%%s)' % (rank, el.name))
+              println('dloc = loc(this_ptr%%p%%%s)' % el.name)
               if 'allocatable' in el.attributes:
                   indent -= 3
                   println('else')
                   indent += 3
-                  println('dshape = (/%s/)' % ','.join(['0' for x in range(rank)]))
-                  println('dloc   = 0')
+                  println('dloc = 0')
                   indent -= 3
                   println('end if')
 
               indent -= 3
-              println('end subroutine %s__array__%s' % (t.name, name))
-              thisdoc[el.name]['array'] = '%s__array__%s' % (t.name.lower(), name.lower())
+              println('end subroutine %s%s__array__%s' % (prefix, t.name, name))
+              thisdoc[el.name]['array'] = '%s%s__array__%s' % (prefix, t.name.lower(), name.lower())
               println()
 
           # For scalars write get/set routines
           else:
               if mytype.startswith('type'):
-                  typename = mytype[mytype.index('(')+1:mytype.index(')')]
+                  typename = strip_type(mytype)
+                  uses.add(type_map[typename].lower())
               elif mytype in numpy_type_map:
                   typename = numpy_type_map[mytype]
               else:
                   typename = mytype
 
-              println('subroutine %s__get__%s(this, the%s)' % (t.name, name, name))
+              println('subroutine %s%s__get__%s(this, the%s)' % (prefix, t.name, name, name))
               indent += 3
-              println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(quippy_%s), pointer, intent(in) :: this' % t.name)
+              for line in kindlines:
+                 if not any([line.startswith('use %s' % umod) for umod in uses]):
+                    println(line)
+              for umod in uses:
+                 println('use %s' % umod)
+              println('implicit none')
+              println('type %s_ptr_type' %  t.name)
+              println('type(%s), pointer :: p' % t.name)
+              println('end type %s_ptr_type' % t.name)
+              if mytype.startswith('type'):
+                 println('type %s_ptr_type' %  strip_type(mytype))
+                 println('type(%s), pointer :: p' % strip_type(mytype))
+                 println('end type %s_ptr_type' % strip_type(mytype))
+              println('integer, intent(in)   :: this(12)')
+              println('type(%s_ptr_type) :: this_ptr' % t.name)
 
 
               if el.type.startswith('type'):
-                  # For derived types elements, just treat as a pointer
-                  println('!f2py integer*SIZEOF_VOID_PTR, intent(out) :: the%s' % name)
-                  #if dim_list != []:
-                  #    #println('type(quippy_%s, pointer, %s, intent(out) :: the%s' % (el.type[5:], dim_list[0], name))
-                  #    println('integer, %s, intent(out) :: the%s' % (el.type[5:], dim_list[0], name))
-                  #else:
-                      #println('type(quippy_%s, pointer, intent(out) :: the%s' % (el.type[5:], name))
-                  println('integer*SIZEOF_VOID_PTR, intent(out) :: the%s' % name)
+
+                  # For derived types elements, treat as opaque reference
+                  println('integer, intent(out) :: the%s(12)' % name)
+                  println('type(%s_ptr_type) :: the%s_ptr' % (typename, name))
                   println()
-                  println('the%s = loc(this%%%s)' % (name, el.name))
+                  println('this_ptr = transfer(this, this_ptr)')
+                  println('the%s_ptr%%p => this_ptr%%p%%%s' % (name, el.name))
+                  println('the%s = transfer(the%s_ptr,the%s)' % (name, name, name))
 
               else:
                   # Return by value
@@ -542,26 +588,43 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
                   else:
                       println('%s, intent(out) :: the%s' % (mytype, name))
                   println()
-                  println('the%s = this%%%s' % (name, el.name))
+                  println('this_ptr = transfer(this, this_ptr)')
+                  println('the%s = this_ptr%%p%%%s' % (name, el.name))
 
               indent -= 3
-              println('end subroutine %s__get__%s' % (t.name, name))
-              thisdoc[el.name]['get'] = '%s__get__%s' % (t.name.lower(), name.lower())
+              println('end subroutine %s%s__get__%s' % (prefix, t.name, name))
+              thisdoc[el.name]['get'] = '%s%s__get__%s' % (prefix, t.name.lower(), name.lower())
 
               println()
 
-              println('subroutine %s__set__%s(this, the%s)' % (t.name, name, name))
+              println('subroutine %s%s__set__%s(this, the%s)' % (prefix, t.name, name, name))
               indent += 3
-              println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: this')
-              println('type(quippy_%s), pointer, intent(inout) :: this' % t.name)
+              for line in kindlines:
+                 if not any([line.startswith('use %s' % umod) for umod in uses]):
+                    println(line)
+              for umod in uses:
+                 println('use %s' % umod)                 
+              println('implicit none')
+              println('type %s_ptr_type' %  t.name)
+              println('type(%s), pointer :: p' % t.name)
+              println('end type %s_ptr_type' % t.name)
+              if mytype.startswith('type'):
+                 println('type %s_ptr_type' %  strip_type(mytype))
+                 println('type(%s), pointer :: p' % strip_type(mytype))
+                 println('end type %s_ptr_type' % strip_type(mytype))
+              println('integer, intent(in)   :: this(12)')
+              println('type(%s_ptr_type) :: this_ptr' % t.name)
               attributes = el.attributes[:]
 
               if el.type.startswith('type'):
                   # Set by reference
-                  println('!f2py integer*SIZEOF_VOID_PTR, intent(in) :: the%s' % name)
-                  println('type(quippy_%s, pointer, intent(in) :: the%s' % (el.type[el.type.index('(')+1:], name))
+                  println('integer, intent(in) :: the%s(12)' % name)
+                  println('type(%s_ptr_type) :: the%s_ptr' % (typename,name))
                   println()
-                  println('this%%%s = the%s' % (el.name, name))
+                  println('this_ptr = transfer(this, this_ptr)')
+                  println('the%s_ptr = transfer(the%s,the%s_ptr)' % (name, name, name))
+                  println('this_ptr%%p%%%s = the%s_ptr%%p' % (el.name, name))
+                  
 
               else:
                   # Set by value
@@ -570,15 +633,14 @@ def wrap_mod(mod, type_map, out=None, kindlines=[]):
                   else:
                       println('%s, intent(in) :: the%s' % (mytype, name))
                   println()
-                  println('this%%%s = the%s' % (el.name, name))
+                  println('this_ptr = transfer(this, this_ptr)')
+                  println('this_ptr%%p%%%s = the%s' % (el.name, name))
 
               indent -= 3
-              println('end subroutine %s__set__%s' % (t.name, name))
-              thisdoc[el.name]['set'] = '%s__set__%s' % (t.name.lower(), name.lower())
+              println('end subroutine %s%s__set__%s' % (prefix, t.name, name))
+              thisdoc[el.name]['set'] = '%s%s__set__%s' % (prefix, t.name.lower(), name.lower())
               println()
 
-   indent -= 6
-   println('end module',shortname)
    println()
 
    return spec
