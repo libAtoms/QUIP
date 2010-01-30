@@ -21,8 +21,9 @@ AR_ADD = src
 
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
-QUIPPY_CFLAGS =
+QUIPPY_DEFINES =  -DGETARG_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
+QUIPPY_DEBUG = 0
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 
