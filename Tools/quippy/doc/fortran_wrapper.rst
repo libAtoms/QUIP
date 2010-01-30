@@ -19,13 +19,13 @@ installed quippy package), and the last two at run-time.
    and functions found in the file.
    
 2. :mod:`f2py_wrapper_gen` is used to write a simplified Fortran 90
-   prototype for each routine, with derived types arguments replaced
-   by pointers. These pointers will be treated as integers by the f2py
-   tool when it creates a wrapper, allowing us to pass opaque
-   references to the true Fortran derived type data structures back
-   and forth between Python and Fortran. The :mod:`patch_f2py` module
-   is used to patch the :mod:`numpy.f2py` system at runtime, to
-   slightly modify the way it generates C code.
+   prototype for each routine, with derived type arguments replaced by
+   integer arrays containing a representation of a pointer to the
+   derived type, in the manner described in [Pletzer2008]_ This allows
+   us to pass opaque references to the true Fortran derived type data
+   structures back and forth between Python and Fortran. The
+   :mod:`patch_f2py` module is used to patch the :mod:`numpy.f2py`
+   system at runtime, to slightly modify the way it generates C code.
    
 3. :mod:`quippy.oo_fortran` acts as a thin object-oriented layer on
    top of the f2py generated wrapper functions which handles
@@ -44,3 +44,9 @@ Contents:
    patch_f2py.rst
    oo_fortran.rst
    extras.rst
+
+References:
+
+.. [Pletzer2008] Pletzer, A et al., Exposing Fortran Derived Types to C and Other Languages,
+   *Computing in Science and Engineering*, **10**, 86 (2008).
+   http://link.aip.org/link/?CSENFA/10/86/1

@@ -158,12 +158,12 @@ if got_cinoutput:
             a.append(cio.read())
          self.assertEqual(a, list(self.al))      
 
-      def teststdinstdout(self):
-         import sys
-         self.al.write('test.xyz')
-         os.system("%s -c 'from quippy import *; al = AtomsList(\"stdin\"); al.write(\"stdout\",)' < test.xyz > test2.xyz" % sys.executable)
-         al = AtomsList('test2.xyz')
-         self.assertEqual(list(al), list(self.al))
+#      def teststdinstdout(self):
+#         import sys
+#         self.al.write('test.xyz')
+#         os.system("%s -c 'from quippy import *; al = AtomsList(\"stdin\"); al.write(\"stdout\",)' < test.xyz > test2.xyz" % sys.executable)
+#         al = AtomsList('test2.xyz')
+#         self.assertEqual(list(al), list(self.al))
 
 
       def testwritecio(self):
@@ -278,31 +278,6 @@ class TestPuPyXYZ(QuippyTestCase):
       s = self.al.write('string')
       al = AtomsList(s, format='string')
       self.assertEqual(list(al), list(self.al))
-
-class TestNetCDFAtomsList(QuippyTestCase):
-
-   def setUp(self):
-      self.at = supercell(diamond(5.44, 14), 2, 2, 2)
-      self.at.params['dummy_real'] = 1.0
-      self.at.params['dummy_int'] = 2
-      self.at.params['dummy_int_a'] = [1,2,3]
-      self.at.params['dummy_real_a'] = [1.0,2.0,3.0]
-      self.at.params['dummy_int_a2'] = farray([1,2,3,4,5,6,7,8,9]).reshape(3,3)
-      self.at.params['dummy_real_a2'] = farray([1.0,2,3,4,5,6,7,8,9]).reshape(3,3)
-      self.al = AtomsList(self.at for x in range(5))
-      self.al.write('test.nc', netcdf4=False)
-
-   def tearDown(self):
-      os.remove('test.nc')
-
-   def testread(self):
-      at = Atoms('test.nc', format=netcdf_file)
-      self.assertEqual(at, self.at)
-
-   def testgetvars(self):
-      nc = NetCDFAtomsList('test.nc')
-      self.assertEqual(nc.variables.keys(), ['dummy_real', 'coordinates', 'dummy_int_a2', 'dummy_real_a2', 'dummy_int', 'cell_angular', 'cell_lengths', 'dummy_real_a', 'dummy_int_a', 'spatial', 'cell_spatial', 'Z', 'cell_angles', 'species'])
-      
 
 if __name__ == '__main__':
    unittest.main()

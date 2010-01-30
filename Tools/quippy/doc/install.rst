@@ -11,6 +11,20 @@ using `f2py <http://www.scipy.org/F2py>`_, part of
 not yet support Fortran 90 extensions such as derived types, so quippy
 has to do a little more work to allow us to use them transparently.
 
+Quick start
+-----------
+
+For people who don't read manuals::
+
+ $ export QUIP_ARCH=linux_x86_64_gfortran
+ $ cd ${QUIP_ROOT}
+ $ make
+ $ cd Tools/quippy
+ $ python setup.py build
+ $ python setup.py test
+ $ python setup.py install [--prefix=PREFIX]
+
+
 Requirements
 ------------
 
@@ -19,14 +33,14 @@ Essential:
  * `numpy`_  - version 1.2.1 or later
  * A fortran compiler:
 
-   * ifort 10 or later (tested with 10.1-015)
-   * gfortran, svn version of 4.3.3 branch, available by
+   * ifort 10 or later (tested with 10.1.015 and 11.0.084)
+   * gfortran 4.3.3 or later (tested with svn version of 4.3.3 branch, available by
      anonymous svn from `svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_3_release 
-     <svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_3_release>`_.
+     <svn://gcc.gnu.org/svn/gcc/tags/gcc_4_3_3_release>`_, and with stable 4.4 release)
      With 4.3.2 or earlier you run into an 
      `internal compiler error <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=37735>`_, 
      reported by Steve Winfield and now fixed.
-   * (PGI Fortran 90 - almost works)
+   * Others that should work but haven't been tested: `pathf95`, `g95`, `pgf95`, `xlf95`
 
 Optional:
  * `ipython <http://ipython.scipy.org>`_ makes using python interactively 
@@ -48,9 +62,9 @@ you should checkout a copy of the QUIP trunk::
 
   svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/QUIP QUIP
 
-If you don't have an account, you can download a `snapshot
-<svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/QUIP?view=tar>`_
-of the svn repository as a tarball. Extracting this archive will create a
+If you don't have an account, you can download the `current snapshot
+<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/QUIP?view=tar>`_
+(~ 6MB) of the svn repository as a tarball. Extracting this archive will create a
 :file:`QUIP` tree.
 
 We'll use the environment variable :envvar:`QUIP_ROOT` to refer
@@ -66,8 +80,8 @@ under :file:`${QUIP_ROOT}/Tools`::
   svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye AtomEye
 
 Again, if you don't have an account you can download a `snapshot
-<svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/QUIP?view=tar>`_, 
-which you should extract under :file:`${QUIP_ROOT}/Tools`
+<http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye?view=tar>`_
+(~ 2MB) which you should extract under :file:`${QUIP_ROOT}/Tools`
 
 
 Configuring quippy
@@ -82,7 +96,7 @@ been tested on the following architectures::
 
   darwin_x86_64_gfortran
   linux_x86_64_gfortran
-  linux_x86_64_ifort_gcc
+  linux_x86_64_ifort_gcc_serial
   linux_x86_64_pgi
 
 If you're on one of these platforms then just set :envvar:`QUIP_ARCH`
@@ -91,8 +105,11 @@ do::
 
   $ export QUIP_ARCH=darwin_x86_64_gfortan
 
-Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`. It
-should define various quippy-specific variables:
+Otherwise you'll have to make a new :file:`Makefile.${QUIP_ARCH}`,
+containing some of the variables defined below
+
+Mandatory settings
+^^^^^^^^^^^^^^^^^^
 
 :makevar:`QUIPPY_FCOMPILER`
    Fortran compiler to use. The shell command::
@@ -102,105 +119,162 @@ should define various quippy-specific variables:
    will print a list of detected compilers on your system. Use ``gnu95`` for gfortran, 
    ``intel`` for ifort on 32-bit platforms and ``intelem`` for ifort on 64-bit platforms.
 
-:makevar:`QUIPPY_INSTALL_OPTS`
-   Installation options, e.g. specify ``--home=${HOME}``
-   or ``--prefix=${PREFIX}`` to install in a non-default location.
+:makevar:`QUIPPY_DEFINES` Preprocessor macros which should be defined
+   when compiling quippy. Note that since the Fortran source files are
+   preprocessed *before* being scanned by :mod:`f90doc`, it's
+   important to put all the `-D` options needed here and not in
+   :makevar:`QUIPPY_F90FLAGS`.
 
-:makevar:`QUIPPY_F90FLAGS`
-   Flags to pass to Fortran compiler
+:makevar:`QUIPPY_MATHS_LINKOPTS` or :makevar:`MATHS_LINKOPTS` or :makevar:`DEFAULT_MATHS_LINKOPTS`
+   Library options needed to link to BLAS and LAPACK libraries, e.g. for ATLAS::
+ 
+   -llapack -lf77blas -lcblas -latlas
+
+:makevar:`FOX_LIBDIR`, :makevar:`FOX_INCDIR` and :makevar:`FOX_LIBS`
+  Directories containing FoX libraries and header files, and required link options. 
+  Should be read automatically from QUIP's :file:`Makefile.inc`.
+
+Optional settings
+^^^^^^^^^^^^^^^^^
+
+:makevar:`QUIPPY_F90FLAGS` and :makevar:`QUIPPY_F77FLAGS`
+   Extra flags to pass to Fortran 90 and 77 compilers
 
 :makevar:`QUIPPY_OPT`
    Optimisation settings for Fortran compiler
 
+:makevar:`QUIPPY_DEBUG`
+   Set this to `1` to include debugging information in the compiled extension code. 
+   This also disables optimisation.
+
 :makevar:`QUIPPY_CPP`
-   Fortran preprocessor to use 
+   Fortran preprocessor to use. Default is system `cpp`.
+
+:makevar:`QUIPPY_INSTALL_OPTS`
+   Installation options, e.g. specify ``--home=${HOME}``
+   or ``--prefix=${PREFIX}`` to install in a non-default location.
 
 :makevar:`QUIPPY_NO_TOOLS`
    If set to 1, omit compilation of extra tools such as the elasticity module.
 
 :makevar:`QUIPPY_NO_CRACK`
-  If set to 1, omit compilation of crack utilities. Currently this is
-  necessary with ``ifort`` to avoid an internal compiler error. 
+  If set to 1, omit compilation of crack utilities.
 
 :makevar:`QUIPPY_HAVE_ATOMEYE`
   Set this to 1 if you want to build the AtomEye interface module.
 
+:makevar:`QUIPPY_ATOMEYE_LIBS` or :makevar:`ATOMEYE_LIBS`
+  Libraries and library paths required to compile AtomEye. As an
+  example, on my Linux system with the `gfortran` and `gcc` compilers,
+  this is set as follows::
+
+   QUIPPY_ATOMEYE_LIBS = -L/usr/lib64  -lm \
+		-lutil  -lXpm -lXext -lX11 -ljpeg -lpthread   \
+	        -lreadline  -lpng  -lncurses -lz -lnetcdf  -lhdf5_hl -lhdf5 \
+		-llapack -lf77blas -lcblas -latlas -lgfortran 
+
+:makevar:`HAVE_NETCDF`
+  Should be set to 1 to enable NetCDF support. Should be read automatically from QUIP's 
+  :file:`Makefile.inc`
+
+:makevar:`NETCDF4`
+  If set to 1, use version 4 of NetCDF. Should be read automatically from QUIP's 
+  :file:`Makefile.inc`
+
+:makevar:`NETCDF_LIBDIR`, :makevar:`NETCDF_INCDIR`, :makevar:`NETCDF_LIBS` and :makevar:`NETCDF4_LIBS`
+  Directories containing NetCDF libraries and header files, and required link options. 
+  Should be read automatically from QUIP's :file:`Makefile.inc`.
+
+
 Compilation
 -----------
 
-After all the Makefile variables desribed above have been setup, run
-``make install`` to compile and install everything. The process is
-quite long; here is an overview of the various steps that are
-performed.
+It's best to compile QUIP before trying to compile quippy. This will
+compile the FoX Fortran XML library as well as generating a file
+called :file:`${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc` . Values
+in this file take precedence over those in
+:file:`Makefile.${QUIP_ARCH}`.  To compile QUIP, run `make` from the
+:envvar:`QUIP_ROOT` directory after setting :envvar:`QUIP_ARCH`
+appropriately, e.g. ::
 
-* ``make`` invokes :file:`presetup.py` which compiles a small C program
-  to determine the size of a ``void*`` pointer on your architecture.
+  cd ${QUIP_ROOT}
+  export QUIP_ARCH=linux_x86_64_gfortran
+  make
 
-* If AtomEye support is enabled, ``make`` compiles the AtomEye C source 
-  as a library, suitable for linking into the :mod:`_atomeye` Python
-  C extension module.
+You may be asked a couple of questions about your system libraries:
+you can mostly accept the suggested defaults.
 
-* ``make`` invokes :file:`setup.py` which does the rest of the work:
+After this, it's time to compile quippy itself ::
 
-   - :mod:`patch_f2py` is invoked to patch the :mod:`numpy.f2py`
-     package at runtime to make several changes to the f2py-generated
-     C code. This will fail if you don't have :mod:`numpy` 1.2.1 or
-     later.
+  cd ${QUIP_ROOT}/Tools/quippy	
+  python setup.py build
 
-   - Fortran sources are imported from the :file:`libAtoms`, :file:`QUIP_Core`, 
-     :file:`QUIP_Utils` (if :makevar:`QUIPPY_NO_TOOLS` is not set) 
-     and :file:`QUIP_Programs` (if :makevar:`QUIPPY_NO_CRACK` is not set)
-     directories. At this stage the sources are preprocessed with the
-     :makevar:`QUIPPY_CPP` preprocessor. This removes ``#ifdef`` sections
-     so that the tools which read the Fortran source do not get confused
-     by multiple version of 
+to compile quippy. You can add various command line argument to
+override the settings described above: run ::
 
-   - The :mod:`f90doc` module is used to parse Fortran sources and
-     analyse all the subroutines and functions defined. Only the files
-     listed in the :makevar:`WRAP_SOURCES_LIST` Makefile variable are
-     looked at.
+  python setup.py --help
 
-   - Using the definitions read by :mod:`f90doc`, the
-     :mod:`f2py_wrapper_gen` module writes a Fortran wrapper file for
-     each source file that we're going to wrap. These files are named
-     :file:`quippy_{STEM}_wrap.f90` and are designed to use the
-     restricted set of Fortran 90 features understood by f2py.
+for details. The compilation process is quite long; here is an
+overview of the various steps that are performed.
 
-   - The :file:`quippy_{STEM}_wrap.f90` files are passed to f2py, which 
-     generates a Python extension module :mod:`_quippy`. This is a low-level
-     module which allows all the Fortran functions to be called from Python,
-     but doesn't know anything about derived-types. See :ref:`wrapping-fortran-90-code`
-     for more details.
-   
-   - All the Fortran sources - both those imported and the generated
-     wrappers - are compiled using the Fortran compiler specified in
-     the :makevar:`QUIPPY_COMPILER` Makefile variable. The :mod:`_quippy`
-     C extension module is also compiled.
+- :mod:`patch_f2py` is invoked to patch the :mod:`numpy.f2py`
+  package at runtime to make several changes to the f2py-generated
+  C code. This will fail if you don't have :mod:`numpy` 1.2.1 or
+  later.
 
-   - Finally all the object files are linked, together with external
-     libraries such as NetCDF and LAPACK, to create
-     :file:`_quippy.so`, the Python extension module. Along with the
-     various pure Python modules which make up quippy, this is
-     installed in the standard place for Python extension modules on
-     your system. This will probably be something like
-     :file:`/usr/local/lib/python-2.{x}/site-packages`, unless you
-     overrode this by setting :makevar:`QUIPPY_INSTALL_OPTS`.
+- Fortran sources are imported from the :file:`libAtoms`, :file:`QUIP_Core`, 
+  :file:`QUIP_Utils` (if :makevar:`QUIPPY_NO_TOOLS` is not set) 
+  and :file:`QUIP_Programs` (if :makevar:`QUIPPY_NO_CRACK` is not set)
+  directories. At this stage the sources are preprocessed with the
+  :makevar:`QUIPPY_CPP` preprocessor. This removes ``#ifdef`` sections
+  so that the tools which read the Fortran source do not get confused
+  by multiple version of routines.
 
-If the complication fails with an error message, please send the full
+- The :mod:`f90doc` module is used to parse Fortran sources and
+  analyse all the types, subroutines and functions.
+
+- Using the definitions read by :mod:`f90doc`, the
+  :mod:`f2py_wrapper_gen` module writes a Fortran wrapper file for
+  each source file that we're going to wrap. These files are named
+  :file:`quippy_${STEM}_wrap.f90` and are designed to use the
+  restricted set of Fortran 90 features understood by f2py.
+
+- The :file:`quippy_${STEM}_wrap.f90` files are passed to f2py, which 
+  generates a Python extension module :mod:`_quippy`. This is a low-level
+  module which allows all the Fortran functions to be called from Python,
+  but doesn't know anything about derived-types. See :ref:`wrapping-fortran-90-code`
+  for more details.
+
+- All the Fortran sources - both those imported and the generated
+  wrappers - are compiled using the Fortran compiler specified in
+  the :makevar:`QUIPPY_FCOMPILER` Makefile variable. The :mod:`_quippy`
+  C extension module is also compiled.
+
+- Finally all the object files are linked, together with external
+  libraries such as NetCDF and LAPACK, to create
+  :file:`_quippy.so`, the Python extension module. 
+
+If the compilation fails with an error message, please send the full
 output to me at james.kermode@kcl.ac.uk and I'll do my best to work
 out what's going wrong.
 
-Once you've compiled quippy successfully, try to import it to verify that
-everything is working okay. You should change directory away from the source
-tree to avoid importing the uncompiled version::
+Once quippy is successfully compiled, you should run the test suite to 
+check everything is working correctly::
 
-   $ cd ~
-   $ python
-   >>> Python 2.6.1+ (release26-maint:71045, Jul 17 2009, 17:47:18) 
-   [GCC 4.3.3] on linux2
-   Type "help", "copyright", "credits" or "license" for more information.
-   >>> import quippy
+   python setup.py test
 
+If any of the tests fail please send me (james.kermode@kcl.ac.uk) the output.
+Once all the tests have passed, run ::
+
+   python setup.py install
+
+to install in the standard place for Python extension modules on your
+system (this will probably be something like
+:file:`/usr/local/lib/python-2.{x}/site-packages`), or ::
+
+  python setup.py install --prefix=PREFIX
+
+to install somewhere else.
 
 Common Problems
 ---------------
@@ -229,18 +303,6 @@ or by applying `the patch manually
 If you get an :exc:`ImportError` with a message about unresolved
 dependancies then something went wrong with the linking process -
 check that all the libraries you're linking against are correct.
-
-
-Running the test suite
-----------------------
-
-Once quippy is successfully installed, you should run the test suite to 
-check everything is working correctly::
-
-   $ cd ${QUIP_ROOT}/Tools/quippy/tests
-   $ python run_all.py
-
-If any of the tests fail please send me (james.kermode@kcl.ac.uk) the output.
 
 
 Installing the ipython profile

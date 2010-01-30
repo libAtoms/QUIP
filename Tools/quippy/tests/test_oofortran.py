@@ -17,7 +17,7 @@ class TestOOFortran(QuippyTestCase):
 
    def testcopy(self):
       cp = self.dia.copy()
-      self.assert_(cp._fpointer != self.dia._fpointer)
+      self.assert_(not all(cp._fpointer == self.dia._fpointer))
       self.assertEqual(self.dia.n, cp.n)
       self.assert_((self.dia.lattice == cp.lattice).all())
       self.assertEqual(self.dia.properties.keys(), cp.properties.keys())

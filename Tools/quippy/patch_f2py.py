@@ -3,8 +3,8 @@ is generated. We make several changes to f2py:
 
   1. Allow the Fortran :cfunc:`present` function to work correctly with optional arguments.
      If an argument to an f2py wrapped function is optional and is not given, replace it
-     with a ``NULL`` for scalars and arrays, or with a pointer to ``NULL`` for derived-types.
-
+     with ``NULL``.
+     
   2. Allow Fortran routines to raise a :exc:`RuntimeError` exception with a message
      by calling the :cfunc:`system_abort` function. This is implemented using a :cfunc:`setjmp`/
      :cfunc:`longjmp` trap.
@@ -24,8 +24,6 @@ already_patched = 'patched_JRK' in f2py_version
 
 if not already_patched:
    import numpy.f2py.auxfuncs
-
-   numpy.f2py.auxfuncs.isderivedtypepointer = lambda var: 'typename' in var and 'attrspec' in var and 'pointer' in var['attrspec']
 
    import numpy.f2py.capi_maps
    numpy.f2py.capi_maps.cformat_map['long_long'] = '%Ld'
@@ -74,14 +72,8 @@ if not already_patched:
 
    from numpy.f2py.auxfuncs import *
 
-   numpy.f2py.rules.arg_rules[8]['decl'] = {l_or(l_not(isoptional),
-                                                 l_not(isderivedtypepointer)): '\t#ctype# #varname# = 0;',
-                                            l_and(isoptional, isderivedtypepointer): '\t#ctype# #varname# = 0;\n\tvoid *#varname#_nullptr = NULL;'}
-
-
    numpy.f2py.rules.arg_rules[8]['callfortran'] = {isintent_c:'#varname#,',
-                                                   l_and(isoptional,l_not(isintent_c),l_not(isderivedtypepointer)):'#varname#_capi == Py_None ? NULL : &#varname#,',
-                                                   l_and(isoptional,l_not(isintent_c),isderivedtypepointer):'#varname#_capi == Py_None ? (#ctype#*)&#varname#_nullptr : &#varname#,',
+                                                   l_and(isoptional,l_not(isintent_c)):'#varname#_capi == Py_None ? NULL : &#varname#,',
                                                    l_and(l_not(isoptional),l_not(isintent_c)):'&#varname#,'}
 
 
@@ -122,6 +114,8 @@ if not already_patched:
          return '-l' + lib
 
    import numpy.distutils.fcompiler
+   import numpy.distutils.ccompiler
    numpy.distutils.fcompiler.FCompiler.library_option = library_option
+   numpy.distutils.unixccompiler.UnixCCompiler.library_option = library_option
 
    

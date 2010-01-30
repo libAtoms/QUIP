@@ -2,10 +2,13 @@ The aim of quippy is to make all the functions, subroutines and types
 defined in QUIP available from Python scripts. 
 
 Quick-start:
+ $ export QUIP_ARCH=linux_x86_64_gfortran
+ $ cd ${QUIP_ROOT}
  $ make
- $ make install
- $ cd tests
- $ python run_all.py
+ $ cd Tools/quippy
+ $ python setup.py build
+ $ python setup.py test
+ $ python setup.py install [--prefix=PREFIX]
 
 For more details, see documentation in doc/ subdirectory, which is in
 reStructredText format.

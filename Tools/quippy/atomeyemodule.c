@@ -529,6 +529,9 @@ atomeye_set_title(PyObject *self, PyObject *args)
   return Py_None;
 }
 
+static char atomeye_wait_doc[] =
+  "_atomeye.wait(iw) -- wait for window `iw` to complete all queued events";
+
 static PyObject*
 atomeye_wait(PyObject *self, PyObject *args)
 {
@@ -549,7 +552,7 @@ static PyMethodDef atomeye_methods[] = {
   {"run_command", atomeye_run_command, METH_VARARGS, atomeye_run_command_doc},
   {"load_atoms", atomeye_load_atoms, METH_VARARGS, atomeye_load_atoms_doc},
   {"set_title", atomeye_set_title, METH_VARARGS, atomeye_set_title_doc},
-  {"wait", atomeye_wait, METH_VARARGS, atomeye_wait},
+  {"wait", atomeye_wait, METH_VARARGS, atomeye_wait_doc},
   {NULL, NULL}
 };
 

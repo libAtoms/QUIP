@@ -10,23 +10,26 @@
 This module is used to write intermediary Fortran 90 wrapper files 
 to allow a code which makes use of derived-types to be wrapped with f2py.
 
-All routines which accept derived types arguments are converted to
-equivalent routines which accept pointers to derived types, and f2py
-is instructed to treat these pointers simply as integers. In this way
-we can use derived types as opaque references to the underlying
-Fortran structures from Python.
+All routines which accept derived types arguments are wrapped by
+equivalent routines which instead accept integer arrays as opaque
+handles.  The Fortran `transfer()` intrinsic is used to convert these
+handles into pointers to derived types, as described in
+[Pletzer2008]_. Using integer arrays of size 12 makes this approach
+portable across most currently available Fortran compilers. In this
+way we can access the underlying Fortran structures from Python.
 
 :cfunc:`initialise()` and :cfunc:`finalise()` routines are handled
-specially: on initilisation, the pointer is allocated before the
-wrapped routine is invoked, and on finalisation the pointer is deallocated
-after the wrapped routine returns.
+specially: on initialisation, a derived type pointer is allocated
+before the wrapped routine is invoked, and an opaque reference to this
+new derived type is returned. On finalisation the underlying
+derived type pointer is deallocated after the wrapped routine returns.
 
 Extra routines are generated to access the values of attributes
 within derived types. For scalars a pair of get and set routines is
-created, whilst for arrays a single routine which returns the shape, 
-memory location and type of the array is output. These routines are used
-by :mod:`quippy.oo_fortran` when constructing the object-oriented wrapper
-layer.
+created, whilst for arrays a single routine which returns the shape,
+memory location and type of the array is output. These routines are
+used by :mod:`quippy.oo_fortran` when constructing the object-oriented
+wrapper layer.
 
 There are various other special cases which are handled individually: for 
 details see the 

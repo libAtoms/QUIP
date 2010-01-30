@@ -1,7 +1,7 @@
 """Object oriented interface on top of f2py generated wrappers."""
 
 import logging, numpy, sys
-from arraydata import arraydata
+import arraydata
 from farray import *
 import numpy
 from types import MethodType
@@ -34,6 +34,8 @@ numpy_to_fortran = {
     }
 
 FortranDerivedTypes = {}
+
+from quippy import QUIPPY_TRUE, QUIPPY_FALSE
 
 from numpy.f2py.crackfortran import badnames
 
@@ -96,7 +98,7 @@ def type_is_compatible(spec, arg):
             # Check each dimension matches
             return all([x == y for (x,y) in zip(adims,dims)])
 
-def process_in_args(args, kwargs, inargs):
+def process_in_args(args, kwargs, inargs, prefix):
    newargs = []
    for arg, spec in zip(args,inargs):
       if spec['type'].startswith('type'):
@@ -111,9 +113,10 @@ def process_in_args(args, kwargs, inargs):
    newkwargs = {}
    args_str_kwargs = {}
    for k,a in kwargs.iteritems():
+      k = prefix+k
       if not k in type_lookup:
-          if 'args_str' in type_lookup:
-              args_str_kwargs[k] = a
+          if prefix+'args_str' in type_lookup:
+              args_str_kwargs[k[len(prefix):]] = a
               continue
           else:
               raise ValueError('Unknown keyword argument %s' % k)
@@ -128,12 +131,12 @@ def process_in_args(args, kwargs, inargs):
           if a is None: continue
           newkwargs[k] = a
 
-   if 'args_str' in type_lookup and args_str_kwargs != {}:
-       newkwargs['args_str'] = newkwargs.get('args_str', '') + ' ' + args_str(args_str_kwargs)
+   if prefix+'args_str' in type_lookup and args_str_kwargs != {}:
+       newkwargs[prefix+'args_str'] = newkwargs.get(prefix+'args_str', '') + ' ' + args_str(args_str_kwargs)
 
    return tuple(newargs), newkwargs
 
-def process_results(res, args, kwargs, inargs, outargs):
+def process_results(res, args, kwargs, inargs, outargs, prefix):
    newres = []
 
    madeseq = False
@@ -154,15 +157,14 @@ def process_results(res, args, kwargs, inargs, outargs):
 
    # update any objects in args or kwargs affected by this call
    for arg, spec in zip(args, inargs):
-      if (isinstance(arg, FortranDerivedType) and 'pointer' in spec['attributes'] and
-          not 'fintent(in)' in spec['attributes']):
+      if (isinstance(arg, FortranDerivedType) and not 'fintent(in)' in spec['attributes']):
           arg._update()
 
    type_lookup = dict([(badnames.get(x['name'].lower(),x['name'].lower()),x) for x in inargs])
    for k,a in kwargs.iteritems():
-      if (isinstance(a, FortranDerivedType) and 'pointer' in type_lookup[k]['attributes']
-          and not 'fintent(in)' in type_lookup[k]['attributes']):
-         a._update()
+      k = prefix + k
+      if (isinstance(a, FortranDerivedType) and not 'fintent(in)' in type_lookup[k]['attributes']):
+          a._update()
 
    if res is None:
        return None
@@ -183,6 +185,8 @@ class FortranDerivedType(object):
    _arrays = {}
    _interfaces = {}
    _elements = {}
+
+   prefix = 'quippy_'
 
    def __init__(self, *args, **kwargs):
 
@@ -214,7 +218,7 @@ class FortranDerivedType(object):
    def __del__(self):
        #print 'del %s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
-       if self._fpointer and self._finalise and '__del__' in self._routines:
+       if self._fpointer is not None and not (self._fpointer == 0).all() and self._finalise and '__del__' in self._routines:
            fobj, doc = self._routines['__del__']
            fobj(self._fpointer)
            self._fpointer = None
@@ -224,7 +228,7 @@ class FortranDerivedType(object):
        if self._fpointer is None:
            return '%s(fpointer=None, finalise=%d)' % (self.__class__.__name__, self._finalise)
        else:
-           return '%s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
+           return '%s(fpointer=%r, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
    def __str__(self):
       items = []
@@ -252,24 +256,33 @@ class FortranDerivedType(object):
              pass
 
        for name, (arrayfunc, doc) in self._arrays.iteritems():
-          dtype, shape, loc = arrayfunc(self._fpointer)
-          dtype = dtype.strip()
-          if (shape > 0).all() and loc != 0:
-             if dtype in numpy_to_fortran.keys():
-                 nshape = self._get_array_shape(name)
-                 if nshape is not None:
-                     setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
-                     #setattr(self, '_'+name, arraydata(shape,dtype,loc))
-                     setattr(self, name, getattr(self, '_'+name)[nshape])
-                 else:
-                     setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
-                     #setattr(self, name, arraydata(shape,dtype,loc))
-             else:
-                # access to arrays of derived type not yet implemented
-                continue
-          else:
-             logging.debug('Ignoring uninitialised array %s (shape=%s, dtype=%s, loc=%s)' % (name, shape, dtype, loc))
-             continue
+##           dtype, shape, loc = arrayfunc(self._fpointer)
+##           dtype = dtype.strip()
+##           if (shape > 0).all() and loc != 0:
+##              if dtype in numpy_to_fortran.keys():
+##                  nshape = self._get_array_shape(name)
+##                  if nshape is not None:
+##                      setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
+##                      #setattr(self, '_'+name, arraydata(shape,dtype,loc))
+##                      setattr(self, name, getattr(self, '_'+name)[nshape])
+##                  else:
+##                      setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
+##                      #setattr(self, name, arraydata(shape,dtype,loc))
+##              else:
+##                 # access to arrays of derived type not yet implemented
+##                 continue
+##           else:
+           try:
+               a = arraydata.arraydata(self._fpointer, arrayfunc)
+               nshape = self._get_array_shape(name)
+               if nshape is not None:
+                   setattr(self, '_'+name, FortranArray(a,doc))
+                   setattr(self, name, getattr(self, '_'+name)[nshape])
+               else:
+                   setattr(self, name, FortranArray(a,doc))
+           except ValueError:
+               logging.debug('Ignoring uninitialised array %s.%s' % (self.__class__, name))
+               continue
 
        for name in self._subobjs:
           try:
@@ -283,7 +296,7 @@ class FortranDerivedType(object):
              logging.debug('Unknown class %s' % cls)
              continue
           p = getfunc(self._fpointer)
-          if p != 0:
+          if not (p == 0).all():
              savedoc = getattr(self, name).__doc__
              setattr(self, name, FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False))
              getattr(self,name).__doc__ = savedoc
@@ -311,12 +324,12 @@ class FortranDerivedType(object):
        if not name.startswith('__init__'):
            # Put self at beginning of args list
            args = tuple([self] + list(args))
-       newargs, newkwargs = process_in_args(args, kwargs, inargs)
+       newargs, newkwargs = process_in_args(args, kwargs, inargs, self.prefix)
        
        res = fobj(*newargs, **newkwargs)
 
        if not name.startswith('__init__'):
-           newres = process_results(res, args, kwargs, inargs, outargs)
+           newres = process_results(res, args, kwargs, inargs, outargs, self.prefix)
        else:
            newres = res
       
@@ -363,13 +376,13 @@ class FortranDerivedType(object):
            if kwargs:
                innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
 
-           if not all([key.lower() in innames[len(args):] for key in kwargs.keys()]):
+           if not all([self.prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
                logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
                continue
 
            try:
                for key, arg in kwargs.iteritems():
-                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == key.lower()]
+                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == self.prefix+key.lower()]
                    if not type_is_compatible(inarg, arg):
                        logging.debug('Types and dimensions of kwarg %s incompatible' % key)
                        raise ValueError
@@ -384,30 +397,28 @@ class FortranDerivedType(object):
        raise TypeError('No matching routine found in interface %s' % name)
 
 
-def wrap_all(topmod, spec, mods, short_names):
+def wrap_all(fobj, spec, mods, short_names, prefix):
    all_classes = []
    leftover_routines = []
    standalone_routines = []
    params = {}
 
    for mod in mods:
-       fmod = getattr(topmod, mod)
        logging.debug('Module %s' % mod)
-       fmod.__doc__ = spec[mod]['doc']
-       classes, routines, params = wrapmod(fmod, spec[mod],
+       classes, routines, params = wrapmod(fobj, spec[mod],
                                            short_names=short_names,
-                                           params=params)
+                                           params=params, prefix=prefix)
        all_classes.extend(classes)
-       leftover_routines.append((fmod, spec[mod], routines))
+       leftover_routines.append((spec[mod], routines))
 
    # Now try to add orphaned routines to classes where possible
-   for modobj, modspec, routines in leftover_routines:
+   for modspec, routines in leftover_routines:
       for routine in routines:
          rspec = modspec['routines'][routine]
 
          if (len(rspec['args']) > 0 and 
              rspec['args'][0]['type'].lower() in FortranDerivedTypes and
-             rspec['args'][0]['name'].lower() == 'this'):
+             rspec['args'][0]['name'].lower() == prefix+'this'):
             
             cls = FortranDerivedTypes[rspec['args'][0]['type'].lower()]
 
@@ -422,18 +433,18 @@ def wrap_all(topmod, spec, mods, short_names):
 
             if method_name in py_keywords: name = name+'_'
          
-            setattr(cls, method_name, wraproutine(modobj, modspec, routine, cls.__name__+'.'+method_name))
+            setattr(cls, method_name, wraproutine(fobj, modspec, routine, cls.__name__+'.'+method_name, prefix))
             logging.debug('  added method %s to class %s' % (method_name, cls.__name__))
                   
          else:
-            standalone_routines.append((routine,wraproutine(modobj, modspec, routine, routine)))
+            standalone_routines.append((routine,wraproutine(fobj, modspec, routine, routine, prefix)))
             logging.debug('  added stand-alone routine %s' % routine)
 
    return all_classes, standalone_routines, params
 
 
 
-def wrapmod(modobj, moddoc, short_names, params):
+def wrapmod(modobj, moddoc, short_names, params, prefix):
 
    wrapmethod = lambda name: lambda self, *args, **kwargs: self._runroutine(name, *args, **kwargs)
    wrapinterface = lambda name: lambda self, *args, **kwargs: self._runinterface(name, *args, **kwargs)
@@ -499,12 +510,12 @@ def wrapmod(modobj, moddoc, short_names, params):
       new_cls._modobj = modobj
 
       if constructor:
-          new_cls._routines['__init__'] = (getattr(modobj, constructor), moddoc['routines'][constructor])
-          new_cls.__init__ = add_doc(wrapinit(constructor), getattr(modobj, constructor),
-                                     moddoc['routines'][constructor], constructor, tcls)
+          new_cls._routines['__init__'] = (getattr(modobj, prefix+constructor), moddoc['routines'][constructor])
+          new_cls.__init__ = add_doc(wrapinit(constructor), getattr(modobj, prefix+constructor),
+                                     moddoc['routines'][constructor], constructor, tcls, prefix)
 
       if destructor:
-          new_cls._routines['__del__'] = (getattr(modobj, destructor), moddoc['routines'][destructor])
+          new_cls._routines['__del__'] = (getattr(modobj, prefix+destructor), moddoc['routines'][destructor])
 
       interfaces = {}
 
@@ -519,7 +530,7 @@ def wrapmod(modobj, moddoc, short_names, params):
 
          if name in py_keywords: name = name+'_'
 
-         fobj = getattr(modobj, fullname)
+         fobj = getattr(modobj, prefix+fullname)
          doc = moddoc['routines'][fullname]
          if fullname in constructors:
              name = '__init__'+name
@@ -530,7 +541,7 @@ def wrapmod(modobj, moddoc, short_names, params):
              continue
          
          new_cls._routines[name] = (fobj, doc)
-         func = add_doc(wrapmethod(name), fobj, doc, name, tcls+'.'+name)
+         func = add_doc(wrapmethod(name), fobj, doc, name, tcls+'.'+name, prefix)
          setattr(new_cls, name, func)
          
          for intf_name,value in moddoc['interfaces'].iteritems():
@@ -603,7 +614,7 @@ def wrapmod(modobj, moddoc, short_names, params):
             if is_scalar_type(el['type']):
                logging.debug('    adding property %s get=%s set=%s' % (name, el['get'], el['set']))
 
-               new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']))
+               new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']), el['type'])
                   
                setattr(new_cls, '_get_%s' % name, wrap_get(name))
                setattr(new_cls, '_set_%s' % name, wrap_set(name))
@@ -654,7 +665,11 @@ def wrap_get(name):
        if not name in self._elements:
            raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
        res = self._elements[name][0](self._fpointer)
-       return res
+
+       if self._elements[name][2] == 'logical':
+           return res == QUIPPY_TRUE
+       else:
+           return res
 
    return func
 
@@ -664,7 +679,11 @@ def wrap_set(name):
        if self._fpointer is None:
            raise ValueError('%s object not initialised.' % self.__class__.__name__)
        if not name in self._elements:
-           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name)) 
+           raise ValueError('Unknown element %s in class %s' % (name, self.__class.__name))
+
+       if self._elements[name][2] == 'logical':
+           value = value and QUIPPY_TRUE or QUIPPY_FALSE
+       
        res = self._elements[name][1](self._fpointer, value)
        self._update()
        return res
@@ -672,7 +691,7 @@ def wrap_set(name):
    return func
 
 
-def add_doc(func, fobj, doc, fullname, name):
+def add_doc(func, fobj, doc, fullname, name, prefix):
 
    if doc is None:
       func.__doc__ = fobj.__doc__
@@ -683,9 +702,11 @@ def add_doc(func, fobj, doc, fullname, name):
       arg_lines = L[3:]
 
       L[0] = L[0].replace(fullname, name)
+      L[0] = L[0].replace(prefix,'')
       if '.' in name:
           L[0] = L[0].replace(name[:name.index('.')].lower()+'_', '')
-          L[1] = L[1].replace(name[:name.index('.')].lower()+'_', '')      
+          L[1] = L[1].replace(name[:name.index('.')].lower()+'_', '')
+      L[1] = L[1].replace(prefix, '')
       if '=' in L[1]:
           L[1] = L[1][:L[1].index('=')] + L[1][L[1].index('='):].replace(fullname, name)
       else:
@@ -705,8 +726,10 @@ def add_doc(func, fobj, doc, fullname, name):
              else:
                  raise ValueError('%s not found in lines %r' % (name, arg_lines))
 
+             arg_lines[i] = arg_lines[i].replace(name,name[len(prefix):])
+
              if arg['type'].startswith('type('):
-                arg_lines[i] = '  %s : %s object' % (name, arg['type'][5:-1])
+                arg_lines[i] = '  %s : %s object' % (name[len(prefix):], arg['type'][5:-1])
 
              if arg['doc'] != '':
                 arg_lines[i] = (fmt % (arg_lines[i].strip(),arg['doc'])).replace('\n','\n   '+indent*' ')
@@ -717,21 +740,21 @@ def add_doc(func, fobj, doc, fullname, name):
 
    return func
 
-def wraproutine(modobj, moddoc, name, shortname):
+def wraproutine(modobj, moddoc, name, shortname, prefix):
    doc = moddoc['routines'][name]
-   fobj = getattr(modobj, name)
+   fobj = getattr(modobj, prefix+name)
    inargs  = filter(lambda x: not 'intent(out)' in x['attributes'], doc['args'])
    outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
                                
    def func(*args, **kwargs):
-      newargs, newkwargs = process_in_args(args, kwargs, inargs)
+      newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
 
       res = fobj(*newargs, **newkwargs)
-      newres = process_results(res, args, kwargs, inargs, outargs)
+      newres = process_results(res, args, kwargs, inargs, outargs, prefix)
       
       return newres
 
-   return add_doc(func, fobj, doc, name, shortname)
+   return add_doc(func, fobj, doc, name, shortname, prefix)
 
 
 

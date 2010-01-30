@@ -2,11 +2,22 @@ ifeq (${QUIP_ROOT},)
   QUIP_ROOT = ${PWD}/../..
 endif
 
-.PHONY: build
+.PHONY: build install clean test
 
 build:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
-	$(MAKE) -f Makefile.quippy -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} build QUIP_ROOT=${QUIP_ROOT}
+	cd ${QUIP_ROOT}/Tools/quippy; python setup.py build
 
-.DEFAULT:
-	$(MAKE) -f Makefile.quippy -I ${QUIP_ROOT}/Makefiles -I ${QUIP_ROOT}/build.${QUIP_ARCH} $@ QUIP_ROOT=${QUIP_ROOT}
+install:
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; python setup.py install
+
+clean:
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; python setup.py clean
+
+test:
+	@echo "QUIP_ROOT=${QUIP_ROOT}"
+	cd ${QUIP_ROOT}/Tools/quippy; python setup.py test
+
+

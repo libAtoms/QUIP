@@ -65,6 +65,17 @@ number of atoms::
     >>> print at.n
     8
 
+We can save our new atoms to an XYZ file, and then re-read it by
+passing the filename to the :class:`Atoms` constructor. Let's do that,
+and check that what we get back is the same as the original::
+
+   >>> dia.write('diamond.xyz')
+   >>> dia2 = Atoms('diamond.xyz')
+   >>> print dia == dia2
+   True
+
+Various different file formats are supported, see :ref:`fileformats`.
+
 If you have the optional :mod:`atomeye` module installed, you can visualise
 your new Atoms object::
 
