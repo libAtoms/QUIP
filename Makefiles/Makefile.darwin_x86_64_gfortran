@@ -21,24 +21,11 @@ AR_ADD = src
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
-ATOMEYE_LIBS = -lm -L/usr/X11/lib/ -lXpm -lXext -lX11 -lmpi \
-   -L${QUIP_ROOT}/Tools/AtomEye/staticlibs/ -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline
-
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libz.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libjpeg.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libhistory.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libncurses.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libnetcdf.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libhdf5.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libhdf5_hl.a \
-#   ${QUIP_ROOT}/Tools/AtomEye/staticlibs/libreadline.a \
-#   -framework vecLib
-
-# QUIPPY_INSTALL_OPTS = --home=${HOME}
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
+QUIPPY_DEFINES =  -DGETARG_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_PYTHON = python2.6
+QUIPPY_DEBUG = 1
 
 # rules
 
