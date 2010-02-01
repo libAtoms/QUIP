@@ -209,6 +209,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
       389        0        0        0
       483        0        0        0"""))
 
+      def test_no_multiple_images(self):
+         self.assert_(not multiple_images(self.embedlist))
 
       def test_single_cluster(self):
          create_hybrid_weights(self.at, buffer_hops=3)
