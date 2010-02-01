@@ -351,12 +351,22 @@ class FortranArray(numpy.ndarray):
     def __str__(self):
         if self.transpose_on_print:
             if self.dtype.kind == 'S':
-                return str(self.T.stripstrings())
+                if len(self.shape) == 0:
+                    return str(self.item())
+                elif len(self.shape) == 1:
+                    return self.T.stripstrings()
+                else:
+                    return str(list(self.T.stripstrings()))
             else:
                 return str(numpy.asarray(self.T).view(numpy.ndarray))
         else:
             if self.dtype.kind == 'S':
-                return str(self.stripstrings())
+                if len(self.shape) == 0:
+                    return str(self.item())
+                elif len(self.shape) == 1:
+                    return self.stripstrings()
+                else:
+                    return str(list(self.stripstrings()))
             else:
                 return str(numpy.asarray(self).view(numpy.ndarray))
 
@@ -448,7 +458,8 @@ class FortranArray(numpy.ndarray):
         return obj
 
     def stripstrings(self):
-        """Return string or array of strings with trailing spaces removed.
+        """Return contents as string (0- and 1-dimensional arrays) or array of strings with
+        trailing spaces removed (2-dimensional arrays).
 
         Raises :exc:`ValueError` if this :class:`FortranArray` does not have a string datatype.
         """
@@ -460,7 +471,6 @@ class FortranArray(numpy.ndarray):
             return ''.join(self).strip()
         else:
             return farray([''.join(x).strip() for x in self])
-
 
 
 def padded_str_array(d, length):
