@@ -3678,5 +3678,20 @@ contains
     n = mpi_n
   end function mpi_n_procs
 
+#ifdef HAVE_QUIPPY
+  function reference_true()
+    logical :: reference_true
+    
+    reference_true = .true.
+
+  end function reference_true
+
+  function reference_false()
+    logical :: reference_false
+    
+    reference_false = .false.
+
+  end function reference_false
+#endif
 
 end module system_module
