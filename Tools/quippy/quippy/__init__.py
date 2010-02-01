@@ -19,8 +19,8 @@ AtomsWriters = {}
 import _quippy
 
 # Reference values of .true. and .false. from Fortran
-QUIPPY_TRUE = _quippy.quippy_reference_true()
-QUIPPY_FALSE = _quippy.quippy_reference_false()
+QUIPPY_TRUE = _quippy.qp_reference_true()
+QUIPPY_FALSE = _quippy.qp_reference_false()
 
 from oo_fortran import FortranDerivedType, FortranDerivedTypes, fortran_class_prefix, wrap_all
 
@@ -28,11 +28,11 @@ from oo_fortran import FortranDerivedType, FortranDerivedTypes, fortran_class_pr
 # and routines found therein.
 
 def quippy_cleanup():
-   _quippy.quippy_verbosity_pop()
-   _quippy.quippy_system_finalise()
+   _quippy.qp_verbosity_pop()
+   _quippy.qp_system_finalise()
 
-_quippy.quippy_system_initialise(-1)
-_quippy.quippy_verbosity_push(0)
+_quippy.qp_system_initialise(-1)
+_quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 trial_spec_files = [os.path.join(os.path.dirname(__file__),'quippy.spec'),
@@ -47,7 +47,7 @@ for spec_file in trial_spec_files:
 else:
    raise IOError('quippy.spec file not found in locations %s' % trial_spec_files)
 
-classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'], prefix='quippy_')
+classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'], prefix='qp_')
 
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)

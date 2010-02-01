@@ -72,7 +72,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
     return func
 
 
-def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, filtertypes=None):
+def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, filtertypes=None, prefix=''):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
     give access to methods and instance data."""
@@ -121,8 +121,8 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
                 continue
 
             tmpf = StringIO.StringIO()
-            new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines,
-                                                 initlines=initlines, filtertypes=filtertypes)
+            new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines, initlines=initlines,
+                                                 filtertypes=filtertypes, prefix=prefix)
 
             if not os.path.exists(wrapper) or (new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
                 print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
@@ -191,7 +191,7 @@ def find_sources(makefile, quip_root):
     all_sources += libatoms_sources
     wrap_sources += ['System.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
-                     'clusters.f95','Structures.f95', 'CInOutput.f95']
+                     'clusters.f95','Structures.f95', 'CInOutput.f95', 'Topology.f95']
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'dynamicalsystem', 'cinoutput']
     source_dirs.append(libatoms_dir)
 
@@ -227,6 +227,7 @@ def find_sources(makefile, quip_root):
         crack_sources = [os.path.join(crack_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
         all_sources += crack_sources
         wrap_sources += ['cracktools.f95', 'crackparams.f95']
+        wrap_types += ['crackparams']
         source_dirs.append(quip_utils_dir)
 
     return source_dirs, all_sources, wrap_sources, wrap_types
@@ -400,12 +401,12 @@ quippy_ext = Extension(name='quippy._quippy',
                                                                 'metapotential': 'metapot'},
                                                    initlines={'atoms': ('atoms_module', ('call atoms_repoint(%(PTR)s)',
                                                                                          'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))},
-                                                   filtertypes=wrap_types)
+                                                   filtertypes=wrap_types,
+                                                   prefix='qp_')
                                  ],
                        library_dirs=library_dirs,
                        include_dirs=include_dirs,
                        libraries=[quippy_lib] + libraries,
-                       depends=['build.%s/temp.%s-%s/libquippy.a' % (quip_arch, get_platform(), sys.version[0:3])],
                        define_macros= macros,
                        extra_link_args=extra_link_args)
 

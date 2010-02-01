@@ -1,11 +1,9 @@
 from f90doc import *
 import numpy
 
-def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None):
+def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix=''):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
    spec = {}
-   prefix = 'quippy_'
-
    def strip_type(t):
       if t.startswith('type('):
          t = t[t.index('(')+1:t.index(')')]
