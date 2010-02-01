@@ -343,7 +343,7 @@ contains
     logical :: do_carve_cluster
     type(Table) :: cluster_info, cut_bonds
     integer, pointer :: cut_bonds_p(:,:)
-    integer :: i_inner, i_outer
+    integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
     character(len=256) :: prefix_save
     real(dp), pointer :: force_ptr(:,:), df_ptr(:,:), local_e_ptr(:)
@@ -489,6 +489,12 @@ call print('ARGS0 | '//new_args_str,VERBOSE)
        if (do_carve_cluster) then
 	 call print('potential_calc: carving cluster', VERBOSE)
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
+
+         ! Check there are no repeated indices among the non-termination atoms in the cluster
+         n_non_term = count(cluster_info%int(6,1:cluster_info%n) == 0)
+         if (multiple_images(int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/)))) &
+              call system_abort('Potential_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images')
+
 	 cluster = carve_cluster(at, new_args_str, cluster_info)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= NERD) then
@@ -507,10 +513,6 @@ call print('ARGS1 | '//new_args_str,VERBOSE)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
 
 	 ! copy forces for all active and transition atoms
-
-	 !! TODO: if there are repeated images in cluster, we want force from
-	 !! the one with smallest shift relative to centre of cluster
-
 	 f = 0.0_dp
 	 do i=1,cluster%N
 	    if (termindex(i) /= 0) cycle ! skip termination atoms
