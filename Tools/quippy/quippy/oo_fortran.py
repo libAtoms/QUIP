@@ -186,7 +186,7 @@ class FortranDerivedType(object):
    _interfaces = {}
    _elements = {}
 
-   prefix = 'quippy_'
+   _prefix = ''
 
    def __init__(self, *args, **kwargs):
 
@@ -324,12 +324,12 @@ class FortranDerivedType(object):
        if not name.startswith('__init__'):
            # Put self at beginning of args list
            args = tuple([self] + list(args))
-       newargs, newkwargs = process_in_args(args, kwargs, inargs, self.prefix)
+       newargs, newkwargs = process_in_args(args, kwargs, inargs, self._prefix)
        
        res = fobj(*newargs, **newkwargs)
 
        if not name.startswith('__init__'):
-           newres = process_results(res, args, kwargs, inargs, outargs, self.prefix)
+           newres = process_results(res, args, kwargs, inargs, outargs, self._prefix)
        else:
            newres = res
       
@@ -376,13 +376,13 @@ class FortranDerivedType(object):
            if kwargs:
                innames = [badnames.get(x['name'],x['name']).lower() for x in oblig_inargs + opt_inargs]
 
-           if not all([self.prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
+           if not all([self._prefix+key.lower() in innames[len(args):] for key in kwargs.keys()]):
                logging.debug('Unexpected keyword argument valid=%s got=%s' % (kwargs.keys(), innames[len(args):]))
                continue
 
            try:
                for key, arg in kwargs.iteritems():
-                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == self.prefix+key.lower()]
+                   (inarg,) = [x for x in inargs if badnames.get(x['name'],x['name']).lower() == self._prefix+key.lower()]
                    if not type_is_compatible(inarg, arg):
                        logging.debug('Types and dimensions of kwarg %s incompatible' % key)
                        raise ValueError
@@ -508,6 +508,7 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
       new_cls._classdoc = moddoc['types'][cls]
       new_cls._moddoc = moddoc
       new_cls._modobj = modobj
+      new_cls._prefix = prefix
 
       if constructor:
           new_cls._routines['__init__'] = (getattr(modobj, prefix+constructor), moddoc['routines'][constructor])

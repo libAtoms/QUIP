@@ -796,9 +796,9 @@ class TestGeometry(QuippyTestCase):
    def test_make_lattice_cubic_2(self):
       a = b = c = 1.0
       alpha = beta = gamma = 90.0*PI/180.0
-      L = quippy._quippy.quippy_make_lattice(a,b,c,alpha,beta,gamma)
+      L = quippy._quippy.qp_make_lattice(a,b,c,alpha,beta,gamma)
       fvar(['a2','b2','c2','alpha2','beta2','gamma2'])
-      quippy._quippy.quippy_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
+      quippy._quippy.qp_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
       self.assertArrayAlmostEqual((a2,b2,c2,alpha2,beta2,gamma2), (a,b,c,alpha,beta,gamma))
    
    def test_make_lattice_trigonal_2(self):
@@ -806,9 +806,9 @@ class TestGeometry(QuippyTestCase):
       c = 2.0
       alpha = beta = 90.0*PI/180.0
       gamma = 120.0*PI/180.0
-      L = quippy._quippy.quippy_make_lattice(a,b,c,alpha,beta,gamma)
+      L = quippy._quippy.qp_make_lattice(a,b,c,alpha,beta,gamma)
       fvar(['a2','b2','c2','alpha2','beta2','gamma2'])
-      quippy._quippy.quippy_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
+      quippy._quippy.qp_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
       self.assertArrayAlmostEqual((a2,b2,c2,alpha2,beta2,gamma2), (a,b,c,alpha,beta,gamma))
 
    def test_make_lattice_triclinic_2(self):
@@ -818,9 +818,9 @@ class TestGeometry(QuippyTestCase):
       alpha = 60.0*PI/180.0
       beta  = 70.0*PI/180.0
       gamma = 80.0*PI/180.0
-      L = quippy._quippy.quippy_make_lattice(a,b,c,alpha,beta,gamma)
+      L = quippy._quippy.qp_make_lattice(a,b,c,alpha,beta,gamma)
       fvar(['a2','b2','c2','alpha2','beta2','gamma2'])
-      quippy._quippy.quippy_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
+      quippy._quippy.qp_get_lattice_params(L,a2,b2,c2,alpha2,beta2,gamma2)
       self.assertArrayAlmostEqual((a2,b2,c2,alpha2,beta2,gamma2), (a,b,c,alpha,beta,gamma))
 
    def test_max_cutoff_1(self):
