@@ -295,10 +295,10 @@ extra_link_args.extend([os.path.join(makefile['FOX_LIBDIR'],'lib%s.a' % lib[2:])
 if makefile_test('HAVE_NETCDF'):
     macros.append(('HAVE_NETCDF',None))
     if makefile_test('NETCDF4'):
-        libraries += makefile['NETCDF4_LIBS'].split()
+        libraries += [lib[2:] for lib in makefile['NETCDF4_LIBS'].split()]
         macros.append(('NETCDF4',None))
     else:
-        libraries += makefile['NETCDF_LIBS'].split()
+        libraries += [lib[2:] for lib in makefile['NETCDF_LIBS'].split()]
 
 # ASAP potential
 if makefile_test('HAVE_ASAP'):
@@ -344,7 +344,8 @@ default_options= {
     },
 
     'build_ext': {
-    'fcompiler': makefile['QUIPPY_FCOMPILER']
+    'fcompiler': makefile['QUIPPY_FCOMPILER'],
+    'dep_libs': True
     },
 
     'build_src': {

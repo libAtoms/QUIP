@@ -57,8 +57,23 @@ class clean(_clean):
                 pass
 
 class build_ext(_build_ext):
-    """Subclass of numpy.distutils.command.build_ext.build_ext which adds module_build_dir of
-       included libraries to ext.module_dirs for all ext in self.extensions."""
+    """Subclass of numpy.distutils.command.build_ext.build_ext with two new features:
+
+    (1) We add module_build_dir of included libraries to include_dirs for all extensions.
+    (2) New build_ext dep_libs options which forces a re-link of the Extension .so library
+        if any of the libraries with which it's being linked are newer than it."""
+
+    user_options = _build_ext.user_options + [
+        ('dep-libs', None, 're-link shared object if any libraries are newer than it')
+        ]
+
+    def initialize_options(self):
+        _build_ext.initialize_options(self)
+        self.dep_libs = None
+
+    def finalize_options(self):
+        _build_ext.finalize_options(self)
+    
     def run(self):
         if not self.extensions:
             return
@@ -72,7 +87,6 @@ class build_ext(_build_ext):
             self.library_dirs.append(build_clib.build_clib)
             ## JRK addition
             for ext in self.extensions:
-                #ext.module_dirs.append(build_clib.build_clib)
                 ext.include_dirs.append(build_clib.build_clib)
             ### end addition
         else:
@@ -238,6 +252,195 @@ class build_ext(_build_ext):
             cmd = self.reinitialize_command('scons')
             cmd.inplace = 1
         self.run_command('scons')
+
+
+    def build_extension(self, ext):
+        sources = ext.sources
+        if sources is None or not is_sequence(sources):
+            raise DistutilsSetupError(
+                ("in 'ext_modules' option (extension '%s'), " +
+                 "'sources' must be present and must be " +
+                 "a list of source filenames") % ext.name)
+        sources = list(sources)
+
+        if not sources:
+            return
+
+        fullname = self.get_ext_fullname(ext.name)
+        if self.inplace:
+            modpath = fullname.split('.')
+            package = '.'.join(modpath[0:-1])
+            base = modpath[-1]
+            build_py = self.get_finalized_command('build_py')
+            package_dir = build_py.get_package_dir(package)
+            ext_filename = os.path.join(package_dir,
+                                        self.get_ext_filename(base))
+        else:
+            ext_filename = os.path.join(self.build_lib,
+                                        self.get_ext_filename(fullname))
+        depends = sources + ext.depends
+
+        log.info("building '%s' extension", ext.name)
+
+        extra_args = ext.extra_compile_args or []
+        macros = ext.define_macros[:]
+        for undef in ext.undef_macros:
+            macros.append((undef,))
+
+        c_sources, cxx_sources, f_sources, fmodule_sources = \
+                   filter_sources(ext.sources)
+
+        if self.compiler.compiler_type=='msvc':
+            if cxx_sources:
+                # Needed to compile kiva.agg._agg extension.
+                extra_args.append('/Zm1000')
+            # this hack works around the msvc compiler attributes
+            # problem, msvc uses its own convention :(
+            c_sources += cxx_sources
+            cxx_sources = []
+
+        # Set Fortran/C++ compilers for compilation and linking.
+        if ext.language=='f90':
+            fcompiler = self._f90_compiler
+        elif ext.language=='f77':
+            fcompiler = self._f77_compiler
+        else: # in case ext.language is c++, for instance
+            fcompiler = self._f90_compiler or self._f77_compiler
+        cxx_compiler = self._cxx_compiler
+
+        # check for the availability of required compilers
+        if cxx_sources and cxx_compiler is None:
+            raise DistutilsError, "extension %r has C++ sources" \
+                  "but no C++ compiler found" % (ext.name)
+        if (f_sources or fmodule_sources) and fcompiler is None:
+            raise DistutilsError, "extension %r has Fortran sources " \
+                  "but no Fortran compiler found" % (ext.name)
+        if ext.language in ['f77','f90'] and fcompiler is None:
+            self.warn("extension %r has Fortran libraries " \
+                  "but no Fortran linker found, using default linker" % (ext.name))
+        if ext.language=='c++' and cxx_compiler is None:
+            self.warn("extension %r has C++ libraries " \
+                  "but no C++ linker found, using default linker" % (ext.name))
+
+        kws = {'depends':ext.depends}
+        output_dir = self.build_temp
+
+        include_dirs = ext.include_dirs + get_numpy_include_dirs()
+
+        c_objects = []
+        if c_sources:
+            log.info("compiling C sources")
+            c_objects = self.compiler.compile(c_sources,
+                                              output_dir=output_dir,
+                                              macros=macros,
+                                              include_dirs=include_dirs,
+                                              debug=self.debug,
+                                              extra_postargs=extra_args,
+                                              **kws)
+
+        if cxx_sources:
+            log.info("compiling C++ sources")
+            c_objects += cxx_compiler.compile(cxx_sources,
+                                              output_dir=output_dir,
+                                              macros=macros,
+                                              include_dirs=include_dirs,
+                                              debug=self.debug,
+                                              extra_postargs=extra_args,
+                                              **kws)
+
+        extra_postargs = []
+        f_objects = []
+        if fmodule_sources:
+            log.info("compiling Fortran 90 module sources")
+            module_dirs = ext.module_dirs[:]
+            module_build_dir = os.path.join(
+                self.build_temp,os.path.dirname(
+                    self.get_ext_filename(fullname)))
+
+            self.mkpath(module_build_dir)
+            if fcompiler.module_dir_switch is None:
+                existing_modules = glob('*.mod')
+            extra_postargs += fcompiler.module_options(
+                module_dirs,module_build_dir)
+            f_objects += fcompiler.compile(fmodule_sources,
+                                           output_dir=self.build_temp,
+                                           macros=macros,
+                                           include_dirs=include_dirs,
+                                           debug=self.debug,
+                                           extra_postargs=extra_postargs,
+                                           depends=ext.depends)
+
+            if fcompiler.module_dir_switch is None:
+                for f in glob('*.mod'):
+                    if f in existing_modules:
+                        continue
+                    t = os.path.join(module_build_dir, f)
+                    if os.path.abspath(f)==os.path.abspath(t):
+                        continue
+                    if os.path.isfile(t):
+                        os.remove(t)
+                    try:
+                        self.move_file(f, module_build_dir)
+                    except DistutilsFileError:
+                        log.warn('failed to move %r to %r' %
+                                 (f, module_build_dir))
+        if f_sources:
+            log.info("compiling Fortran sources")
+            f_objects += fcompiler.compile(f_sources,
+                                           output_dir=self.build_temp,
+                                           macros=macros,
+                                           include_dirs=include_dirs,
+                                           debug=self.debug,
+                                           extra_postargs=extra_postargs,
+                                           depends=ext.depends)
+
+        objects = c_objects + f_objects
+
+        if ext.extra_objects:
+            objects.extend(ext.extra_objects)
+        extra_args = ext.extra_link_args or []
+        libraries = self.get_libraries(ext)[:]
+        library_dirs = ext.library_dirs[:]
+
+        linker = self.compiler.link_shared_object
+        # Always use system linker when using MSVC compiler.
+        if self.compiler.compiler_type=='msvc':
+            # expand libraries with fcompiler libraries as we are
+            # not using fcompiler linker
+            self._libs_with_msvc_and_fortran(fcompiler, libraries, library_dirs)
+
+        elif ext.language in ['f77','f90'] and fcompiler is not None:
+            linker = fcompiler.link_shared_object
+        if ext.language=='c++' and cxx_compiler is not None:
+            linker = cxx_compiler.link_shared_object
+
+        if sys.version[:3]>='2.3':
+            kws = {'target_lang':ext.language}
+        else:
+            kws = {}
+
+        if self.dep_libs is not None:
+            dep_libs = [ self.compiler.find_library_file(library_dirs+self.library_dirs, lib) for lib in libraries ]
+            dep_libs = [ libfile for libfile in dep_libs if libfile is not None ]
+
+            if newer_group(dep_libs, ext_filename):
+                self.compiler.force = 1
+                fcompiler.force = 1
+
+        linker(objects, ext_filename,
+               libraries=libraries,
+               library_dirs=library_dirs,
+               runtime_library_dirs=ext.runtime_library_dirs,
+               extra_postargs=extra_args,
+               export_symbols=self.get_export_symbols(ext),
+               debug=self.debug,
+               build_temp=self.build_temp,**kws)
+
+        if self.dep_libs is not None:
+            self.compiler.force = 0
+            fcompiler.force = 0
+
+        
 
 
 class test(Command):
