@@ -187,15 +187,17 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_CHARMM(at,do_CHARMM,intrares_impropers, alt_connect) !, hysteretic_neighbours)
+  subroutine create_CHARMM(at,do_CHARMM,intrares_impropers, alt_connect,have_silica_potential) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
     type(Connection), intent(in), optional, target :: alt_connect
+    logical,     optional, intent(in)    :: have_silica_potential
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
     character(*), parameter  :: me = 'create_CHARMM: '
+    logical :: remove_Si_H_silica_bonds = .true.
 
     type(Inoutput)                       :: lib
     character(4)                         :: cha_res_name(MAX_KNOWN_RESIDUES), Cres_name
@@ -232,10 +234,12 @@ logical :: silanol
     type(Connection), pointer :: use_connect
 !    logical :: use_hysteretic_neighbours
 type(Table) :: O_atom, O_neighb
-!integer :: hydrogen
+integer :: hydrogen
+logical :: silica_potential
 
     call system_timer('create_CHARMM')
 
+    silica_potential = optional_default(.false.,have_silica_potential)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -270,6 +274,146 @@ type(Table) :: O_atom, O_neighb
     if (present(intrares_impropers)) call initialise(intrares_impropers,4,0,0,0,0)
     call allocate(residue_type,1,0,0,0,1000)
     call print('Identifying atoms...')
+
+!>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
+    if (silica_potential) then
+
+   ! SIO residue for Danny potential if Si atom is present in the atoms structure
+       if (any(at%Z(1:at%N).eq.14)) then
+          call print('|-Looking for SIO residue, not from the library...')
+          call print('| |-Found... will be treated as 1 molecule, 1 residue...')
+          !all this bulk will be 1 residue
+          n = n + 1
+          cha_res_name(n) = 'SIO2'
+          pdb_res_name(n) = '' !not used
+          call append(residue_type,(/n/))
+          nres = nres + 1
+
+          !Add Si atoms
+          call initialise(atom_Si,4,0,0,0,0)
+          do i = 1,at%N
+             if (at%Z(i).eq.14) then
+                call append(atom_Si,(/i,0,0,0/))
+             endif
+          enddo
+          call print(atom_Si%N//' Si atoms found in total')
+          !Add O atoms
+          call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+          call print(atom_SiO%N//' O atoms found in total')
+!          if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
+          if (remove_Si_H_silica_bonds) then
+             do i=1,atom_SiO%N !check Hs bonded to Si. There shouldn't be any,removing the bond.
+                 if (at%Z(atom_SiO%int(1,i)).eq.1) then
+                    call print('WARNING! Si and H are very close',verbosity=ERROR)
+                    bond_H = atom_SiO%int(1,i)
+                    call initialise(bondH,4,0,0,0,0)
+                    call append(bondH,(/bond_H,0,0,0/))
+                    call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+                    do j = 1,bondSi%N
+                       if (at%Z(bondSi%int(1,i)).eq.14) then
+                          bond_Si = bondSi%int(1,i)
+                          call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
+                          call remove_bond(use_connect,bond_H,bond_Si)
+                       endif
+                    enddo
+                 endif
+!                call print('atom_SiO has '//at%Z(atom_SiO%int(1,i)))
+             enddo
+          endif
+          !Add H atoms -- if .not.remove_Si_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
+      !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
+          call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
+          call print(atom_SiO%N//' O/H atoms found in total')
+
+          !check if none of these atoms are identified yet
+          if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
+             call system_abort('already identified atoms found again.')
+          endif
+          if (any(.not.unidentified(atom_SiO%int(1,1:atom_SiO%N)))) then
+!             call system_abort('already identified atoms found again.')
+             do i = 1,atom_SiO%N,-1
+                if (.not.unidentified(atom_SiO%int(1,i))) then
+                   call print('delete from SiO2 list already identified atom '//atom_SiO%int(1,1:atom_SiO%N))
+                   call delete(atom_SiO,i)
+                endif
+             enddo
+          endif
+          unidentified(atom_Si%int(1,1:atom_Si%N)) = .false.
+          unidentified(atom_SiO%int(1,1:atom_SiO%N)) = .false.
+
+          !add atom, residue and molecule names
+          !SIO
+          do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
+             atom_i = atom_Si%int(1,i)
+             atom_name(atom_i) = 'SIO'
+          enddo
+          !OSB, OSI & HSI
+          do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
+             atom_i = atom_SiO%int(1,i)
+             !OSB & OSI
+             if (at%Z(atom_i).eq.8) then
+                call initialise(O_neighb,4,0,0,0)
+                call initialise(O_atom,4,0,0,0)
+                call append(O_atom,(/atom_i,0,0,0/))
+                call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+                !check nearest neighbour number = 2
+                if (O_neighb%N.ne.2) then
+                   call print('WARNING! silica O '//atom_i//'has '//O_neighb%N//'/=2 nearest neighbours',ERROR)
+                   call print('neighbours: '//O_neighb%int(1,1:O_neighb%N))
+                endif
+                !check if it has a H nearest neighbour
+                hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
+                if (hydrogen.ne.0) then
+                   atom_name(atom_i) = 'OSI' !silanol O
+!                   call print('Found OH silanol oxygen.'//atom_SiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
+                   !check if it has only 1 H nearest neighbour
+                   if (hydrogen.lt.O_neighb%N) then
+                      if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N)),1).gt.0) &
+                         call system_abort('More than 1 H neighbours of O '//atom_i)
+                   endif
+                else
+                   atom_name(atom_i) = 'OSB' !bridging O
+!                   call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
+                endif
+                call finalise(O_atom)
+                call finalise(O_neighb)
+             !HSI
+             elseif (at%Z(atom_SiO%int(1,i)).eq.1) then
+                atom_name(atom_SiO%int(1,i)) = 'HSI'
+             else
+                call system_abort('Non O/H atom '//atom_i//'!?')
+             endif
+          enddo
+
+          !Add all the silica atoms together
+          call initialise(SiOH_list,4,0,0,0,0)
+          call append (SiOH_list,atom_Si)
+          call append (SiOH_list,atom_SiO)
+
+          !Residue numbers
+          residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
+
+          !Charges
+          call create_pos_dep_charges(at,SiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+          atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
+          atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
+          call print('Atomic charges: ',ANAL)
+          call print('   ATOM     CHARGE',ANAL)
+          do i=1,at%N
+             call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
+          enddo
+
+          call finalise(atom_Si)
+          call finalise(atom_SiO)
+          call finalise(SiOH_list)
+
+       else
+          call print('WARNING! have_silica_potential is true, but found no silicon atoms in the atoms object!',ERROR)
+       endif
+
+    endif
+!>>>>>>>>> END DANNY POTENTIAL <<<<<<<<<!
+
     do 
 
        ! Pull the next residue template from the library
@@ -338,150 +482,159 @@ type(Table) :: O_atom, O_neighb
    ! check if residue library is empty
     if (.not.found_residues) call system_abort('Residue library '//trim(lib%filename)//' does not contain any residues!')
 
-!>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
-
-   ! SIO residue for Danny potential if Si atom is present in the atoms structure
-    if (any(at%Z(1:at%N).eq.14)) then
-       call print('|-Looking for SIO residue, not from the library...')
-       call print('| |-Found... will be treated as 1 molecule, 1 residue...')
-       !all this bulk will be 1 residue
-       n = n + 1
-       cha_res_name(n) = 'SIO2'
-       call append(residue_type,(/n/))
-       nres = nres + 1
-
-       !add Si (SIO) atoms
-       call initialise(atom_Si,4,0,0,0,0)
-       do i = 1,at%N
-          if (at%Z(i).eq.14) then
-!             call print('found Si atom '//atom_Si%int(1,i))
-             call append(atom_Si,(/i,0,0,0/))
-          endif
-       enddo
-       call print(atom_Si%N//' Si atoms found in total')
-       !2 cluster carving steps, to include OSI and HSI atoms
-       call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-       call print(atom_SiO%N//' O atoms found in total')
-       do i=1,atom_SiO%N
-           if (at%Z(atom_SiO%int(1,i)).eq.1) then
-              call print('WARNING! Si and H are very close',verbosity=ERROR)
-              bond_H = atom_SiO%int(1,i)
-              call initialise(bondH,4,0,0,0,0)
-              call append(bondH,(/bond_H,0,0,0/))
-              call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-              do j = 1,bondSi%N
-                 if (at%Z(bondSi%int(1,i)).eq.14) then
-                    bond_Si = bondSi%int(1,i)
-                    call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
-                    call remove_bond(use_connect,bond_H,bond_Si)
-                 endif
-              enddo
-           endif
-!          call print('atom_SiO has '//at%Z(atom_SiO%int(1,i)))
-       enddo
-!       if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
-   !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
-       call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
-       call print(atom_SiO%N//' O/H atoms found in total')
-       !check if none of these atoms are identified yet
-       if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
-          call system_abort('already identified atoms found again.')
-       endif
-       if (any(.not.unidentified(atom_SiO%int(1,1:atom_SiO%N)))) then
+!!>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
+!
+!   ! SIO residue for Danny potential if Si atom is present in the atoms structure
+!    if (any(at%Z(1:at%N).eq.14)) then
+!       call print('|-Looking for SIO residue, not from the library...')
+!       call print('| |-Found... will be treated as 1 molecule, 1 residue...')
+!       !all this bulk will be 1 residue
+!       n = n + 1
+!       cha_res_name(n) = 'SIO2'
+!       pdb_res_name(n) = '' !not used
+!       call append(residue_type,(/n/))
+!       nres = nres + 1
+!
+!       !Add Si atoms
+!       call initialise(atom_Si,4,0,0,0,0)
+!       do i = 1,at%N
+!          if (at%Z(i).eq.14) then
+!!             call print('found Si atom '//atom_Si%int(1,i))
+!             call append(atom_Si,(/i,0,0,0/))
+!          endif
+!       enddo
+!       call print(atom_Si%N//' Si atoms found in total')
+!       !Add O atoms
+!       call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+!       call print(atom_SiO%N//' O atoms found in total')
+!!       if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
+!       if (remove_Si_H_silica_bonds) then
+!          do i=1,atom_SiO%N !check Hs bonded to Si. There shouldn't be any,removing the bond.
+!              if (at%Z(atom_SiO%int(1,i)).eq.1) then
+!                 call print('WARNING! Si and H are very close',verbosity=ERROR)
+!                 bond_H = atom_SiO%int(1,i)
+!                 call initialise(bondH,4,0,0,0,0)
+!                 call append(bondH,(/bond_H,0,0,0/))
+!                 call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+!                 do j = 1,bondSi%N
+!                    if (at%Z(bondSi%int(1,i)).eq.14) then
+!                       bond_Si = bondSi%int(1,i)
+!                       call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
+!                       call remove_bond(use_connect,bond_H,bond_Si)
+!                    endif
+!                 enddo
+!              endif
+!!             call print('atom_SiO has '//at%Z(atom_SiO%int(1,i)))
+!          enddo
+!       endif
+!       !Add H atoms -- if .not.remove_Si_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
+!   !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
+!       call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
+!       call print(atom_SiO%N//' O/H atoms found in total')
+!
+!       !check if none of these atoms are identified yet
+!       if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
 !          call system_abort('already identified atoms found again.')
-          do i = 1,atom_SiO%N,-1
-             if (.not.unidentified(atom_SiO%int(1,i))) then
-                call print('delete from SiO2 list already identified atom '//atom_SiO%int(1,1:atom_SiO%N))
-                call delete(atom_SiO,i)
-             endif
-          enddo
-       endif
-       unidentified(atom_Si%int(1,1:atom_Si%N)) = .false.
-       unidentified(atom_SiO%int(1,1:atom_SiO%N)) = .false.
-
-       !add atom, residue and molecule names
-       do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
-          atom_i = atom_Si%int(1,i)
-          atom_name(atom_i) = 'SIO'
-          !if (atoms_n_neighbours(at,atom_i).ne.4) call system_abort('More than 4 neighbours of Si '//atom_i)
-       enddo
-       do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
-          atom_i = atom_SiO%int(1,i)
-          if (at%Z(atom_i).eq.8) then
-             call initialise(O_neighb,4,0,0,0)
-             call initialise(O_atom,4,0,0,0)
-             call append(O_atom,(/atom_i,0,0,0/))
-             call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-             if (find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1).ne.0) then
-!call print('ATOM OSI '//atom_i//' has '//O_neighb%N//' neighbours')
-!hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
-!call print('ATOMS '//atom_i//' '//O_neighb%int(1,hydrogen))
-!call print(O_neighb%int(1,1:O_neighb%N))
-!             if ( any(at%Z(use_connect%neighbour1(atom_i)%t%int(1,1:use_connect%neighbour1(atom_i)%t%N)).eq.1) .or. &
-!                  any(at%Z(use_connect%neighbour2(atom_i)%t%int(1,1:use_connect%neighbour2(atom_i)%t%N)).eq.1) ) then !has a H neighbour
-                atom_name(atom_i) = 'OSI' !silanol O
-!                call print('Found OH silanol oxygen.'//atom_SiO%int(1,i))
-             else
-                atom_name(atom_i) = 'OSB' !bridging O
-!                call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
-             endif
-             !if (atoms_n_neighbours(at,atom_i).ne.2) call system_abort('More than 2 neighbours of O '//atom_i)
-             call finalise(O_atom)
-             call finalise(O_neighb)
-          endif
-          if (at%Z(atom_SiO%int(1,i)).eq.1)  atom_name(atom_SiO%int(1,i)) = 'HSI'
-          !if (atoms_n_neighbours(at,atom_i).ne.1) call system_abort('More than 1 neighbours of H '//atom_i)
-       enddo
-
-       !add all the silica atoms together:
-
-   !calc charges, to compare with CP2K calc charges
-      ! collect the whole molecule
-!       do i = 1, atom_Si%N
-!          call append (SiOH_list,atom_Si%int(1:4,i))
+!       endif
+!       if (any(.not.unidentified(atom_SiO%int(1,1:atom_SiO%N)))) then
+!!          call system_abort('already identified atoms found again.')
+!          do i = 1,atom_SiO%N,-1
+!             if (.not.unidentified(atom_SiO%int(1,i))) then
+!                call print('delete from SiO2 list already identified atom '//atom_SiO%int(1,1:atom_SiO%N))
+!                call delete(atom_SiO,i)
+!             endif
+!          enddo
+!       endif
+!       unidentified(atom_Si%int(1,1:atom_Si%N)) = .false.
+!       unidentified(atom_SiO%int(1,1:atom_SiO%N)) = .false.
+!
+!       !add atom, residue and molecule names
+!       !SIO
+!       do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
+!          atom_i = atom_Si%int(1,i)
+!          atom_name(atom_i) = 'SIO'
 !       enddo
-!       do i = 1, atom_SiO%N
-!          call append (SiOH_list,atom_SiO%int(1:4,i))
+!       !OSB, OSI & HSI
+!       do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
+!          atom_i = atom_SiO%int(1,i)
+!          !OSB & OSI
+!          if (at%Z(atom_i).eq.8) then
+!             call initialise(O_neighb,4,0,0,0)
+!             call initialise(O_atom,4,0,0,0)
+!             call append(O_atom,(/atom_i,0,0,0/))
+!             call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+!             !check nearest neighbour number = 2
+!             if (O_neighb%N.ne.2) then
+!                call print('WARNING! silica O '//O_atom//'has '//O_neighb%N//'/=2 nearest neighbours')
+!                call print('neighbours:')
+!                do i=1,I_neihgb%N
+!                enddo
+!             endif
+!             !check if it has a H nearest neighbour
+!             hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
+!             if (hydrogen.ne.0) then
+!                atom_name(atom_i) = 'OSI' !silanol O
+!!                call print('Found OH silanol oxygen.'//atom_SiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
+!                !check if it has only 1 H nearest neighbour
+!                if (hydrogen.lt.O_neighb%N) then
+!                   if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N))).gt.0) &
+!                      call system_abort('More than 1 H neighbours of O '//atom_i)
+!                endif
+!             else
+!                atom_name(atom_i) = 'OSB' !bridging O
+!!                call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
+!             endif
+!             call finalise(O_atom)
+!             call finalise(O_neighb)
+!          !HSI
+!          elseif (at%Z(atom_SiO%int(1,i)).eq.1)
+!             atom_name(atom_SiO%int(1,i)) = 'HSI'
+!          else
+!             call system_abort('Non O/H atom '//atom_i//'!?')
+!          endif
 !       enddo
-
-      ! calc charges for the whole molecule
-       call initialise(SiOH_list,4,0,0,0,0)
-       call append (SiOH_list,atom_Si)
-       call append (SiOH_list,atom_SiO)
-
-      ! add charges and res numbers
-       residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
-
-    if (any(unidentified)) then
-       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
-       call print(find(unidentified))
-do i=1,at%N
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
-enddo
-
-       ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
-      call system_abort('create_CH_or_AM_input: Unidentified atoms')
-
-    else
-       call print('All atoms identified')
-       call print('Total charge of the molecule: '//round(mol_charge_sum,5))
-    end if
-
-       call create_pos_dep_charges(at,SiOH_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
-
-       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
-       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
-       call print('Atomic charges: ',ANAL)
-       call print('   ATOM     CHARGE',ANAL)
-       do i=1,at%N
-          call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
-       enddo
-       call finalise(atom_Si)
-       call finalise(atom_SiO)
-       call finalise(SiOH_list)
-    endif
-
+!
+!       !add all the silica atoms together:
+!
+!      ! calc charges for the whole molecule
+!       call initialise(SiOH_list,4,0,0,0,0)
+!       call append (SiOH_list,atom_Si)
+!       call append (SiOH_list,atom_SiO)
+!
+!      ! add charges and res numbers
+!       residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
+!
+!    if (any(unidentified)) then
+!       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
+!       call print(find(unidentified))
+!do i=1,at%N
+!   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
+!   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+!enddo
+!
+!       ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
+!      call system_abort('create_CH_or_AM_input: Unidentified atoms')
+!
+!    else
+!       call print('All atoms identified')
+!       call print('Total charge of the molecule: '//round(mol_charge_sum,5))
+!    end if
+!
+!       call create_pos_dep_charges(at,SiOH_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
+!
+!       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
+!       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
+!       call print('Atomic charges: ',ANAL)
+!       call print('   ATOM     CHARGE',ANAL)
+!       do i=1,at%N
+!          call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
+!       enddo
+!       call finalise(atom_Si)
+!       call finalise(atom_SiO)
+!       call finalise(SiOH_list)
+!    endif
+!
+!!!END DANNY
 
     call print('Finished.')
     call print(nres//' residues found in total')
@@ -1770,20 +1923,21 @@ call print('PSF| '//impropers%n//' impropers')
   !% Calculates the position dependent charges for a silica molecule.
   !% See: Cole et al., J. Chem. Phys. 127 204704--204712 (2007)
   !
-  subroutine create_pos_dep_charges(at,SiOH_list,charge,residue_names)
+  subroutine create_pos_dep_charges(at,SiOH_list,charge) !,residue_names)
 
     type(Atoms), intent(in) :: at
     type(Table), intent(in) :: SiOH_list
     real(dp), allocatable, dimension(:), intent(out) :: charge
-    character(4), dimension(:), intent(in) :: residue_names
+!    character(4), dimension(:), intent(in) :: residue_names
 
     real(dp) :: rij, fcq
     integer :: iatom, jatom
     integer :: atom_i, atom_j, jj
+    logical, allocatable :: silica_mask(:)
 
     call system_timer('create_pos_dep_charges')
 
-    if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
+!    if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
 
     if (at%cutoff.lt.SILICON_2BODY_CUTOFF) call print('WARNING! The connection cutoff value '//at%cutoff// &
        ' is less than the silica_cutoff. The charges can be totally wrong. Check your connection object.',ERROR)
@@ -1791,22 +1945,27 @@ call print('PSF| '//impropers%n//' impropers')
     allocate(charge(at%N))
     charge = 0._dp
 
+    allocate(silica_mask(at%N)) !whether the atom is in the SiOH list
+    silica_mask = .false.
+    silica_mask(SiOH_list%int(1,1:SiOH_list%N)) = .true.
+
     do iatom = 1, SiOH_list%N
        atom_i = SiOH_list%int(1,iatom)
        do jatom = 1, atoms_n_neighbours(at,atom_i)
           atom_j = atoms_neighbour(at, atom_i, jatom)
          ! check if atom_j is in SiOH_list
-          if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
-             ! if it's a water O/H, ignore it!
-             if (('TIP3'.eq.trim(residue_names(atom_j))) .or. &
-                 ('DOPA'.eq.trim(residue_names(atom_j))) .or. &
-                 ('TIP' .eq.trim(residue_names(atom_j)))) then
+          if (.not.silica_mask(atom_j)) then
+!          if (.not.any(atom_j.eq.SiOH_list%int(1,1:SiOH_list%N))) then
+!             ! if it's a water O/H, ignore it!
+!             if (('TIP3'.eq.trim(residue_names(atom_j))) .or. &
+!                 ('DOPA'.eq.trim(residue_names(atom_j))) .or. &
+!                 ('TIP' .eq.trim(residue_names(atom_j)))) then
                  cycle
-             else
-                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=ERROR)
-                call print('Unknown residue '//trim(residue_names(atom_j)))
-                call system_abort('Found a neighbour that is not part of the SiO2 residue')
-             endif
+!             else
+!                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=ERROR)
+!                call print('Unknown residue '//trim(residue_names(atom_j)))
+!                call system_abort('Found a neighbour that is not part of the SiO2 residue')
+!             endif
           endif
           if (atom_j.lt.atom_i) cycle
 
@@ -1815,35 +1974,31 @@ call print('PSF| '//impropers%n//' impropers')
           if (rij.gt.(Danny_R_q+Danny_Delta_q)) cycle
 
          !silanol endings (O--H and H--O)
-          if (at%Z(atom_i).eq.1) then
-             !call print('Found H--X for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
+          if (at%Z(atom_i).eq.1) then !H-O
              if (rij.lt.1.2_dp*(ElementCovRad(1)+ElementCovRad(8))) then
                 charge(atom_i) = 0.2_dp
                 charge(atom_j) = charge(atom_j) - 0.2_dp
              endif
           else
-             if (at%Z(atom_j).eq.1) then
-                !call print('Found X--H for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
+             if (at%Z(atom_j).eq.1) then !O-H
                 if (rij.lt.1.2_dp*(ElementCovRad(1)+ElementCovRad(8))) then
                    charge(atom_i) = charge(atom_i) - 0.2_dp
                    charge(atom_j) = 0.2_dp
                 endif
              else
-            !Si--Si and O--O do not affect each other
+                !Si--Si and O--O do not affect each other
                 if (at%Z(atom_i).eq.at%Z(atom_j)) cycle
-            !Si--O and O--Si
+                !Si--O and O--Si
                 fcq = calc_fc(rij)
-                if (at%Z(atom_i).eq.14 .and. at%Z(atom_j).eq.8) then
-                   !call print('Found Si--O for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
+                if (at%Z(atom_i).eq.14 .and. at%Z(atom_j).eq.8) then !Si-O
                    charge(atom_i) = charge(atom_i) + 0.4_dp * fcq
                    charge(atom_j) = charge(atom_j) - 0.4_dp * fcq
                 else
-                   if (at%Z(atom_i).eq.8 .and. at%Z(atom_j).eq.14) then
-                      !call print('Found O--Si for atoms '//atom_i//ElementName(at%Z(atom_i))//'--'//atom_j//ElementName(at%Z(atom_j)))
+                   if (at%Z(atom_i).eq.8 .and. at%Z(atom_j).eq.14) then !O-Si
                       charge(atom_i) = charge(atom_i) - 0.4_dp * fcq
                       charge(atom_j) = charge(atom_j) + 0.4_dp * fcq
                    else
-                      call print(atom_i//trim(ElementName(at%Z(atom_i)))//'--'//atom_j//trim(ElementName(at%Z(atom_j)))//' could not be located',verbosity=ERROR)
+                      call print(atom_i//trim(ElementName(at%Z(atom_i)))//'--'//atom_j//trim(ElementName(at%Z(atom_j)))//' of silica is none of H,O,Si!',verbosity=ERROR)
                       call system_abort('create_pos_dep_charge: unknown neighbour pair')
                    endif
                 endif
@@ -1851,6 +2006,8 @@ call print('PSF| '//impropers%n//' impropers')
           endif
        enddo
     enddo
+
+    deallocate(silica_mask)
 
     call print('Calculated charge on atoms:',verbosity=ANAL)
     do jj = 1, at%N
