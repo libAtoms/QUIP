@@ -1749,14 +1749,19 @@ contains
 
   end subroutine atoms_remove_property
 
-  function atoms_has_property(this, name)
+  function atoms_has_property(this, name, lookup)
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: name
+    integer, optional :: lookup(3)
     logical :: atoms_has_property
 
-    integer :: lookup(3)
+    integer :: my_lookup(3)
 
-    atoms_has_property = get_value(this%properties, name, lookup)
+    if (present(lookup)) then
+      atoms_has_property = get_value(this%properties, name, lookup)
+    else
+      atoms_has_property = get_value(this%properties, name, my_lookup)
+    endif
     
   end function atoms_has_property
 

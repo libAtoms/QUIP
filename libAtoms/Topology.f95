@@ -7,7 +7,8 @@ module topology_module
                                      read_line, parse_line, &
                                      atoms_n_neighbours, atoms_neighbour, bond_length, &
                                      distance_min_image, &
-                                     DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect
+                                     DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect, &
+				     assign_pointer
   use clusters_module,         only: bfs_step, add_cut_hydrogens
   use dictionary_module,       only: get_value, value_len
   use linearalgebra_module,    only: find_in_array, find, &
@@ -22,7 +23,7 @@ module topology_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
-                                     operator(//)
+                                     operator(//), allocatable_array_pointers
 #ifndef HAVE_QUIPPY
   use system_module,           only: system_abort
 #endif
@@ -112,8 +113,8 @@ contains
                                         atom_charge_index2
     logical :: my_do_CHARMM
 
-  call system_timer('calc_topology')
-   my_do_CHARMM = optional_default(.true.,do_CHARMM)
+    call system_timer('calc_topology')
+    my_do_CHARMM = optional_default(.true.,do_CHARMM)
    !this should be only the 3 calls with use_avgpos!
     call print('Creating CHARMM format...')
 
@@ -133,11 +134,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     call delete_metal_connects(atoms_for_find_motif)
     call map_into_cell(atoms_for_find_motif)
     call calc_dists(atoms_for_find_motif)
-    if (my_do_CHARMM.and.present(intrares_impropers)) then
-       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM,intrares_impropers=intrares_impropers)
-    else
-       call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM)
-    endif
+    call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM,intrares_impropers=intrares_impropers)
 
     atoms_for_find_motif%pos = atoms_for_find_motif%oldpos
 
@@ -236,6 +233,9 @@ logical :: silanol
 type(Table) :: O_atom, O_neighb
 integer :: hydrogen
 logical :: silica_potential
+
+    integer, pointer :: mol_id(:)
+    type(allocatable_array_pointers), allocatable :: molecules(:)
 
     call system_timer('create_CHARMM')
 
@@ -482,173 +482,20 @@ logical :: silica_potential
    ! check if residue library is empty
     if (.not.found_residues) call system_abort('Residue library '//trim(lib%filename)//' does not contain any residues!')
 
-!!>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
-!
-!   ! SIO residue for Danny potential if Si atom is present in the atoms structure
-!    if (any(at%Z(1:at%N).eq.14)) then
-!       call print('|-Looking for SIO residue, not from the library...')
-!       call print('| |-Found... will be treated as 1 molecule, 1 residue...')
-!       !all this bulk will be 1 residue
-!       n = n + 1
-!       cha_res_name(n) = 'SIO2'
-!       pdb_res_name(n) = '' !not used
-!       call append(residue_type,(/n/))
-!       nres = nres + 1
-!
-!       !Add Si atoms
-!       call initialise(atom_Si,4,0,0,0,0)
-!       do i = 1,at%N
-!          if (at%Z(i).eq.14) then
-!!             call print('found Si atom '//atom_Si%int(1,i))
-!             call append(atom_Si,(/i,0,0,0/))
-!          endif
-!       enddo
-!       call print(atom_Si%N//' Si atoms found in total')
-!       !Add O atoms
-!       call bfs_step(at,atom_Si,atom_SiO,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-!       call print(atom_SiO%N//' O atoms found in total')
-!!       if (any(at%Z(atom_SiO%int(1,1:atom_SiO%N)).eq.1)) call system_abort('Si-H bond')
-!       if (remove_Si_H_silica_bonds) then
-!          do i=1,atom_SiO%N !check Hs bonded to Si. There shouldn't be any,removing the bond.
-!              if (at%Z(atom_SiO%int(1,i)).eq.1) then
-!                 call print('WARNING! Si and H are very close',verbosity=ERROR)
-!                 bond_H = atom_SiO%int(1,i)
-!                 call initialise(bondH,4,0,0,0,0)
-!                 call append(bondH,(/bond_H,0,0,0/))
-!                 call bfs_step(at,bondH,bondSi,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-!                 do j = 1,bondSi%N
-!                    if (at%Z(bondSi%int(1,i)).eq.14) then
-!                       bond_Si = bondSi%int(1,i)
-!                       call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
-!                       call remove_bond(use_connect,bond_H,bond_Si)
-!                    endif
-!                 enddo
-!              endif
-!!             call print('atom_SiO has '//at%Z(atom_SiO%int(1,i)))
-!          enddo
-!       endif
-!       !Add H atoms -- if .not.remove_Si_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
-!   !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
-!       call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
-!       call print(atom_SiO%N//' O/H atoms found in total')
-!
-!       !check if none of these atoms are identified yet
-!       if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
-!          call system_abort('already identified atoms found again.')
-!       endif
-!       if (any(.not.unidentified(atom_SiO%int(1,1:atom_SiO%N)))) then
-!!          call system_abort('already identified atoms found again.')
-!          do i = 1,atom_SiO%N,-1
-!             if (.not.unidentified(atom_SiO%int(1,i))) then
-!                call print('delete from SiO2 list already identified atom '//atom_SiO%int(1,1:atom_SiO%N))
-!                call delete(atom_SiO,i)
-!             endif
-!          enddo
-!       endif
-!       unidentified(atom_Si%int(1,1:atom_Si%N)) = .false.
-!       unidentified(atom_SiO%int(1,1:atom_SiO%N)) = .false.
-!
-!       !add atom, residue and molecule names
-!       !SIO
-!       do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
-!          atom_i = atom_Si%int(1,i)
-!          atom_name(atom_i) = 'SIO'
-!       enddo
-!       !OSB, OSI & HSI
-!       do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
-!          atom_i = atom_SiO%int(1,i)
-!          !OSB & OSI
-!          if (at%Z(atom_i).eq.8) then
-!             call initialise(O_neighb,4,0,0,0)
-!             call initialise(O_atom,4,0,0,0)
-!             call append(O_atom,(/atom_i,0,0,0/))
-!             call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
-!             !check nearest neighbour number = 2
-!             if (O_neighb%N.ne.2) then
-!                call print('WARNING! silica O '//O_atom//'has '//O_neighb%N//'/=2 nearest neighbours')
-!                call print('neighbours:')
-!                do i=1,I_neihgb%N
-!                enddo
-!             endif
-!             !check if it has a H nearest neighbour
-!             hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
-!             if (hydrogen.ne.0) then
-!                atom_name(atom_i) = 'OSI' !silanol O
-!!                call print('Found OH silanol oxygen.'//atom_SiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
-!                !check if it has only 1 H nearest neighbour
-!                if (hydrogen.lt.O_neighb%N) then
-!                   if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N))).gt.0) &
-!                      call system_abort('More than 1 H neighbours of O '//atom_i)
-!                endif
-!             else
-!                atom_name(atom_i) = 'OSB' !bridging O
-!!                call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
-!             endif
-!             call finalise(O_atom)
-!             call finalise(O_neighb)
-!          !HSI
-!          elseif (at%Z(atom_SiO%int(1,i)).eq.1)
-!             atom_name(atom_SiO%int(1,i)) = 'HSI'
-!          else
-!             call system_abort('Non O/H atom '//atom_i//'!?')
-!          endif
-!       enddo
-!
-!       !add all the silica atoms together:
-!
-!      ! calc charges for the whole molecule
-!       call initialise(SiOH_list,4,0,0,0,0)
-!       call append (SiOH_list,atom_Si)
-!       call append (SiOH_list,atom_SiO)
-!
-!      ! add charges and res numbers
-!       residue_number(SiOH_list%int(1,1:SiOH_list%N)) = nres
-!
-!    if (any(unidentified)) then
-!       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
-!       call print(find(unidentified))
-!do i=1,at%N
-!   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
-!   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
-!enddo
-!
-!       ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
-!      call system_abort('create_CH_or_AM_input: Unidentified atoms')
-!
-!    else
-!       call print('All atoms identified')
-!       call print('Total charge of the molecule: '//round(mol_charge_sum,5))
-!    end if
-!
-!       call create_pos_dep_charges(at,SiOH_list,charge,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
-!
-!       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
-!       atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
-!       call print('Atomic charges: ',ANAL)
-!       call print('   ATOM     CHARGE',ANAL)
-!       do i=1,at%N
-!          call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
-!       enddo
-!       call finalise(atom_Si)
-!       call finalise(atom_SiO)
-!       call finalise(SiOH_list)
-!    endif
-!
-!!!END DANNY
-
     call print('Finished.')
     call print(nres//' residues found in total')
 
     if (any(unidentified)) then
        call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
        call print(find(unidentified))
-do i=1,at%N
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
-   if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
-enddo
+       do i=1,at%N
+	  if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
+	    ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
+	  if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+       enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
-      call system_abort('create_CH_or_AM_input: Unidentified atoms')
+      call system_abort('create_CHARMM: Unidentified atoms')
 
     else
        call print('All atoms identified')
@@ -682,45 +529,29 @@ enddo
       at%data%str(atom_type_index,i) = adjustl(atom_name(i))
     end do
     !NB end of workaround for pgf90 bug (as of 9.0-1)
-!
-!    do_qmmm = .true.
-!    if (get_value(at%properties,trim('QM_flag'),pos_indices)) then
-!       qm_flag_index = pos_indices(2)
-!       call print('QM core atoms are treated as isolated atoms.')
-!    else
-!       do_qmmm = .false.
-!    end if
-!
+
     if (my_do_charmm) then
-       do i = 1, at%N
-!set mol_name to res_name, if the residue is a molecule
-          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'MCL','SOD','CLA','CES','POT','Rb+','CAL','MEF','FLA','TIP'/))) then
-!          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'MCL','SOD','CLA','CES','POT','Rb+','CAL','MEF','FLA','HYD','HWP','H3O'/))) then
-             at%data%str(atom_mol_name_index,i) = at%data%str(atom_res_name_index,i)
-          endif
-!#ifdef HAVE_DANNY
-          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'FLEX','TIP3','SIO2'/)).or. &
-                 (trim(at%data%str(atom_res_name_index,i)).eq.'TIP')) then
-!#else
-!          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'FLEX','TIP3'/)).or. &
-!                 (trim(at%data%str(atom_res_name_index,i)).eq.'TIP')) then
-!#endif
-             at%data%str(atom_mol_name_index,i) = at%data%str(atom_res_name_index,i)
-          endif
-          if (any(trim(at%data%str(atom_res_name_index,i)).eq.(/'MG','ZN'/))) then
-             at%data%str(atom_mol_name_index,i) = at%data%str(atom_res_name_index,i)
-          endif
-!set both mol_name and res_name to atom_type for QM core atoms.
-!          if (do_qmmm) then
-!             if (at%data%int(qm_flag_index,i).eq.1) then
-!     call print('atom '//i//' has atom_type '//at%data%str(atom_type_index,i))
-!                at%data%str(atom_mol_name_index,i) = at%data%str(atom_type_index,i)
-!                at%data%str(atom_res_name_index,i) = at%data%str(atom_type_index,i)
-!     call print('atom '//i//' has mol_name '//at%data%str(atom_mol_name_index,i))
-!     call print('atom '//i//' has res_name '//at%data%str(atom_res_name_index,i))
-!             endif
-!          endif
-       enddo
+       allocate(molecules(at%N))
+       call find_molecule_ids(at,molecules,alt_connect)
+       do i=1, size(molecules)
+	 if (allocated(molecules(i)%i_a)) then
+	   ! special case for single atoms
+	   if (size(molecules(i)%i_a) == 1) then
+	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
+	   ! special case for H2O
+	   else if (size(molecules(i)%i_a) == 3) then
+	     if (count(at%Z(molecules(i)%i_a) == 8) == 1 .and. &
+	         count(at%Z(molecules(i)%i_a) == 1) == 2) then
+	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
+	     else ! default
+	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
+	     endif
+	   else ! default
+	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
+	   endif
+	 end if ! allocated(molecules)
+       end do ! i=1,size(molecules)
+       deallocate(molecules)
        at%data%real(atom_charge_index,1:at%N) = atom_charge(1:at%N)
     endif
 
@@ -742,6 +573,62 @@ enddo
     call system_timer('create_CHARMM')
 
   end subroutine create_CHARMM
+
+  subroutine find_molecule_ids(at,molecules,alt_connect)
+    type(Atoms), intent(inout) :: at
+    type(allocatable_array_pointers), optional :: molecules(:)
+    type(Connection), intent(in), optional, target :: alt_connect
+
+    integer, pointer :: mol_id(:)
+    integer :: last_seed, last_mol_id, seed_at
+    logical :: added_something
+    type(Table) :: cur_molec, next_atoms
+
+    call add_property(at,'mol_id',0)
+    if (.not. assign_pointer(at,'mol_id',mol_id)) &
+      call system_abort("find_molecule_ids can't assign mol_id")
+
+    last_seed = 0
+    last_mol_id = 0
+    do while (any(mol_id == 0))
+      do seed_at=last_seed+1, at%N
+	if (mol_id(seed_at) /= 0) cycle
+
+	! find molecule from seed
+	call initialise(cur_molec)
+	call append(cur_molec, (/ seed_at, 0, 0, 0 /) )
+	added_something = .true.
+	! look for neighbours
+	do while (added_something)
+	   call initialise(next_atoms)
+	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = .true., min_images_only = .true., alt_connect=alt_connect)
+	   if (next_atoms%N > 0) then
+	    added_something = .true.
+	    call append(cur_molec, next_atoms)
+	   else
+	    added_something = .false.
+	   endif
+	end do
+
+	! set mol_id
+	mol_id(cur_molec%int(1,1:cur_molec%N)) = last_mol_id+1
+	! store in molecules
+	if (present(molecules)) then
+	  allocate(molecules(last_mol_id+1)%i_a(cur_molec%N))
+	  molecules(last_mol_id+1)%i_a = cur_molec%int(1,1:cur_molec%N)
+	endif
+	call finalise(cur_molec)
+
+	last_mol_id = last_mol_id + 1
+
+	last_seed = seed_at
+      end do ! seed_at
+    end do ! while any(mol_id == 0)
+
+    call finalise(cur_molec)
+    call finalise(next_atoms)
+  end subroutine find_molecule_ids
+
 
   !% This is the subroutine that reads residues from a library.
   !% Used by create_CHARMM, can read from CHARMM and AMBER residue libraries.

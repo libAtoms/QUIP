@@ -106,6 +106,8 @@ contains
     logical :: dummy, have_silica_potential
     type(Table) :: intrares_impropers
 
+    integer :: mol_id_lookup(3), atom_res_number_lookup(3)
+
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
@@ -212,6 +214,13 @@ contains
 
       call create_CHARMM(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
     endif
+
+    if (.not.(has_property(at,'mol_id',mol_id_lookup)) .or. .not. has_property(at,'atom_res_number',atom_res_number_lookup)) then
+      call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain")
+    else
+      call sort(at%data, int_cols= (/ mol_id_lookup(2), atom_res_number_lookup(2) /) )
+      call calc_connect(at)
+    end if
 
     ! put in method
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
