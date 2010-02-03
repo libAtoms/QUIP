@@ -1507,10 +1507,11 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine table_sort(this,idx)
-
+  subroutine table_sort(this,idx,int_cols)
     type(table),                               intent(inout) :: this
     integer, dimension(this%N),      optional, intent(out)   :: idx
+    integer, optional, intent(in)                            :: int_cols(:)
+
     integer, dimension(this%intsize)                         :: tmp_intpart
     real(dp),dimension(this%realsize)                        :: tmp_realpart
     character(TABLE_STRING_LENGTH), dimension(this%strsize)  :: tmp_strpart
@@ -1518,6 +1519,7 @@ contains
 
     integer :: i, j, vi
     logical :: have_reals, have_strs, have_logicals
+    integer, allocatable :: sort_cols(:)
 
     if (this%intsize == 0) return
     have_reals = (this%realsize /= 0)
@@ -1526,10 +1528,19 @@ contains
 
     if (present(idx)) idx = (/ (i, i=1,this%N) /)
 
+    if (present(int_cols)) then
+      allocate(sort_cols(size(int_cols)))
+      sort_cols = int_cols
+    else
+      allocate(sort_cols(this%intsize))
+      sort_cols = (/ (i, i=1,this%intsize) /)
+    endif
+
      do i = 2, this%N
 
-        if (int_array_ge(this%int(:,i),this%int(:,i-1))) cycle
+        if (int_array_ge(this%int(sort_cols,i),this%int(sort_cols,i-1))) cycle
 
+	! i is smaller than i-1, start moving it back
         tmp_intpart = this%int(:,i)
         if (have_reals)    tmp_realpart    = this%real(:,i)
         if (have_strs)     tmp_strpart     = this%str(:,i)
@@ -1540,7 +1551,8 @@ contains
 
         do while (j >= 1) 
 
-           if (int_array_gt(tmp_intpart, this%int(:,j))) exit
+	   ! if tmp (orig i, now j+1) is greater than this j, no need to move it further
+           if (int_array_gt(tmp_intpart(sort_cols), this%int(sort_cols,j))) exit
 
            this%int(:,j+1) = this%int(:,j)
            if (have_reals) this%real(:,j+1) = this%real(:,j)
@@ -1561,6 +1573,8 @@ contains
         end do
 
      end do
+
+     deallocate(sort_cols)
 
   end subroutine table_sort
 

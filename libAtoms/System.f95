@@ -612,6 +612,13 @@ module system_module
      type(Stack) :: verbosity_stack, verbosity_cascade_stack
   end type InOutput
 
+  type allocatable_array_pointers
+    integer, allocatable :: i_a(:)
+    real(dp), allocatable :: r_a(:)
+    complex(dp), allocatable :: c_a(:)
+    logical, allocatable :: l_a(:)
+  end type allocatable_array_pointers
+
   public   !standard setting for the module
   integer,private                  :: mpi_n, mpi_myid    ! Number of processes and local process ID
   real(dp),private                 :: start_time         ! Initial time
