@@ -10,7 +10,7 @@ implicit none
 private
 
 type analysis
-  logical :: density_radial, density_grid, rdfd
+  logical :: density_radial, density_grid, rdfd, integrated_rdfd
   character(len=FIELD_LENGTH) :: outfilename
   character(len=FIELD_LENGTH) :: mask_str
 
@@ -295,6 +295,7 @@ function do_this_analysis(this, time, frame)
 
   do_this_analysis = .true.
 
+if (present(time)) call print("do_this_analysis time " // time // " min " // this%min_time // " max " // this%max_time, ERROR)
   if (this%min_time > 0.0_dp) then
     if (.not. present(time)) call system_abort("analysis has non-zero min_time, but no time specified")
     if (time < 0.0_dp) call system_abort("analysis has non-zero min_time, but invalid time < 0")
@@ -332,6 +333,7 @@ subroutine print_analyses(a)
 
   type(inoutput) :: outfile
   integer :: i, i1, i2, i3, i_a
+  real(dp), allocatable :: integrated_rdfds(:,:)
 
   do i_a=1, size(a)
     call initialise(outfile, a(i_a)%outfilename, OUTPUT)
@@ -379,6 +381,33 @@ subroutine print_analyses(a)
         do i=1, a(i_a)%n_configs
           call print(""//reshape(a(i_a)%rdfds(:,:,i), (/ a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins /) ), file=outfile)
         end do
+
+        call print("", file=outfile)
+        call print("", file=outfile)
+        call print("# integrated_rdfd", file=outfile)
+        call print("n_bins="//a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%rdfd_n_zones
+        do i2=1, a(i_a)%rdfd_n_bins
+          if (a(i_a)%rdfd_zone_width > 0.0_dp) then
+            call print(""//a(i_a)%rdfd_zone_pos(i1)//" "//a(i_a)%rdfd_bin_pos(i2), file=outfile)
+          else
+            call print(""//a(i_a)%rdfd_bin_pos(i2), file=outfile)
+          endif
+        end do
+        end do
+	allocate(integrated_rdfds(a(i_a)%rdfd_n_zones,a(i_a)%rdfd_n_bins))
+        do i=1, a(i_a)%n_configs
+	  integrated_rdfds = 0.0_dp
+	  do i1=1, a(i_a)%rdfd_n_zones
+	    do i2=2, a(i_a)%rdfd_n_bins
+	      integrated_rdfds(i2,i1) = integrated_rdfds(i2-1,i1) + &
+		(a(i_a)%rdfd_bin_pos(i2)-a(i_a)%rdfd_bin_pos(i2-1))* &
+		4.0_dp*PI*((a(i_a)%rdfd_bin_pos(i2)**2)*a(i_a)%rdfds(i2,i1,i)+(a(i_a)%rdfd_bin_pos(i2-1)**2)*a(i_a)%rdfds(i2-1,i1,i))/2.0_dp
+	    end do
+	  end do
+          call print(""//reshape(integrated_rdfds(:,:), (/ a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins /) ), file=outfile)
+        end do
+	deallocate(integrated_rdfds)
 
       else
         call system_abort("print_analyses: no type of analysis set for " // i_a)
@@ -935,6 +964,9 @@ implicit none
     allocate(analysis_a(1))
     call analysis_read(analysis_a(1))
   else
+    if (.not. param_read_args(cli_params, ignore_unknown = .false., task="CLI_again")) then
+      call system_abort("Failed to parse CLI again after getting a commandfile, most likely passed in some analysis specific flags on command line")
+    endif
     call initialise(commandfile, trim(commandfilename), INPUT)
     arg_line_no = 1
     myline = read_line(commandfile)
