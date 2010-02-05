@@ -1,3 +1,7 @@
+!% Atoms_ll_module
+!% linked list of Atoms structures, read in from one or more xyz files, with 
+!% some automatic time sorting/clean-up capability
+
 module Atoms_ll_module
 use system_module
 use atoms_module
@@ -84,11 +88,12 @@ contains
     this%next => null()
     this%prev => null()
   end subroutine atoms_ll_entry_finalise
-
+  
   subroutine atoms_ll_new_entry(this, atoms_p, before, after)
-    type(atoms_ll), target, intent(inout) :: this
-    type(atoms), intent(inout), pointer :: atoms_p
-    type(atoms_ll_entry), intent(in), target, optional :: before, after
+    type(atoms_ll), target, intent(inout) :: this    !% this: atoms_ll object to add to
+    type(atoms), intent(inout), pointer :: atoms_p   !% atoms_p: pointer to atoms object to insert
+    type(atoms_ll_entry), intent(in), target, optional :: before, after !% before, after: if present, put in new entry before/after this one
+                                                                        !% before and after are mutually exclusive
 
     type(atoms_ll_entry), pointer :: my_before, my_after
     type(atoms_ll_entry), pointer :: entry
@@ -169,13 +174,18 @@ contains
   !%  duplicate Time values.
   subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index, &
                                         properties, all_properties)
-    type(atoms_ll) :: this
-    character(len=*), intent(in) :: filename
-    logical, intent(in) :: file_is_list
-    integer, intent(in), optional :: decimation
-    real(dp), intent(in), optional :: min_time, max_time
-    character(len=*), intent(in), optional :: properties
-    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties
+    type(atoms_ll) :: this !% object to read configs into
+    character(len=*), intent(in) :: filename !% file name to read from
+    logical, intent(in) :: file_is_list !% is true, file is list of files to read from rather than xyz file
+    integer, intent(in), optional :: decimation !% only read one out of every decimation frames
+    real(dp), intent(in), optional :: min_time, max_time !% ignore frames before min_time or after max_time
+    character(len=*), intent(in), optional :: properties !% properties to include in objects in list
+    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties 
+       !% sort_time: if true, sort configurations by time
+       !% no_Times_dups: if true, eliminate configs that have same time value
+       !% quiet: if true, don't output progress bar
+       !% no_compute_index: if true, don't compute index for xyz file
+       !% do_all_properties: if true, include all properties in save Atoms structures
 
     integer :: status
     integer :: frame_count, last_file_frame_n
