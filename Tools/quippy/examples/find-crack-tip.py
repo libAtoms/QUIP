@@ -3,34 +3,34 @@ from quippy import *
 
 # Use percolation algorithm to find crack tip
 
-def percolation_step(v, nstep):
-   nx, ny, nz = v.shape
+## def percolation_step(v, nstep):
+##    nx, ny, nz = v.shape
 
-   # copy of v with zeros around edges to avoid IndexError
-   vb = zeros((nx+2,ny+2,nz+2),int)
-   vb[1:nx+1,1:ny+1,1:nz+1] = v.copy()
+##    # copy of v with zeros around edges to avoid IndexError
+##    vb = zeros((nx+2,ny+2,nz+2),int)
+##    vb[1:nx+1,1:ny+1,1:nz+1] = v.copy()
 
-   v[v >= 2] += 1
+##    v[v >= 2] += 1
 
-   for i in frange(nx):
-      for j in frange(ny):
-         for k in frange(nz):
+##    for i in frange(nx):
+##       for j in frange(ny):
+##          for k in frange(nz):
 
-            # Only consider cells which could be infected
-            if vb[i,j,k] != 1: continue
+##             # Only consider cells which could be infected
+##             if vb[i,j,k] != 1: continue
 
-            try:
-               if (vb[i+1,j,k] == 2 or vb[i-1,j,k] == 2 or
-                   vb[i,j+1,k] == 2 or vb[i,j-1,k] == 2 or
-                   vb[i,j,k+1] == 2 or vb[i,j,k-1] == 2):
-                  v[i,j,k] = 2
-                  raise StopIteration()
+##             try:
+##                if (vb[i+1,j,k] == 2 or vb[i-1,j,k] == 2 or
+##                    vb[i,j+1,k] == 2 or vb[i,j-1,k] == 2 or
+##                    vb[i,j,k+1] == 2 or vb[i,j,k-1] == 2):
+##                   v[i,j,k] = 2
+##                   raise StopIteration()
 
-            except StopIteration:
-               pass
+##             except StopIteration:
+##                pass
 
-   print 'alive', (v == 2).count()
-   return (v == 2).count() != 0
+##    print 'alive', (v == 2).count()
+##    return (v == 2).count() != 0
 
 cmap_data = {'red':   ((0, 0., 0.),(0.365079, 1.000000, 1.000000),(1.0, 1.0, 1.0)),
              'green': ((0, 0., 0.),(0.365079, 0.000000, 0.000000),(0.746032, 1.000000, 1.000000),(1.0, 1.0, 1.0)),
@@ -47,7 +47,7 @@ def percolate(v, fig=None, base=None):
       ax = fig.add_axes([0,0,1,1],frameon=False)
 
    nsteps = 0
-   while percolation_step(v, nsteps):
+   while percolation_step(v):
       nsteps = nsteps +1
 
       if fig is not None:
@@ -62,7 +62,8 @@ def percolate(v, fig=None, base=None):
          ax.set_xticks([])
          ax.set_yticks([])
          draw()
-         fig.savefig('img%05d.png' % nsteps)
+         raw_input()
+         #fig.savefig('img%05d.png' % nsteps)
 
    return nsteps
    
@@ -131,3 +132,75 @@ def img(at):
 
 
                
+def is_through_crack(cp, cells):
+   # see if there is a connected route through entire system
+   vert_slice = cells[max(1,cells.shape[0]/2),:,max(1,cells.shape[2]/2)]
+   occupied_cells, = (vert_slice != 1).nonzero()
+   top_edge, bottom_edge = occupied_cells[2], occupied_cells[-2]
+
+   print top_edge, bottom_edge
+
+   if cp.crack_double_ended:
+      left_edge = 1
+      right_edge = -1
+   else:
+      horz_slice = cells[:,max(1,cells.shape[1]/2),max(1,cells.shape[2]/2)]
+      occupied_cells, = (horz_slice != 1).nonzero()
+      left_edge, right_edge = occupied_cells[2], occupied_cells[-2]
+      
+   print left_edge, right_edge
+   return any(cells[left_edge,top_edge:bottom_edge,:] > 1) and any(cells[right_edge,top_edge:bottom_edge,:] > 1)
+
+
+def apply_min_filter(cells, start_pos, min_dist):
+   from scipy.ndimage import minimum_filter
+
+   ncells = cells.copy()
+##    ncells[ncells == 0] = 2*ncells.max()
+   ncells = farray(minimum_filter(ncells, size=min_dist))
+
+   minima = [tuple(x) for x in transpose((logical_and(ncells == cells, ncells != ncells.max())).nonzero())]
+
+   class Duplicate: pass
+
+   while True:
+      try:
+         for min1,min2 in combinations(minima,2):
+            if (farray(min1) - farray(min2)).norm() < min_dist:
+               print 'duplicate', min1, min2
+               raise Duplicate
+         else:
+            break
+      except Duplicate:
+         d1 = (farray(min1) - farray(start_pos)).norm()
+         d2 = (farray(min2) - farray(start_pos)).norm()
+         print d1, d2
+         if d1 < d2:
+            print 'removing', min2
+            minima.remove(min2)
+         else:
+            print 'removing', min1
+            minima.remove(min1)
+
+   return minima
+
+
+      
+verbosity_push(VERBOSE)
+
+a = Atoms('quartz_movie_2.nc',frame=0)
+cp = CrackParams()
+io = InOutput('quartz.xml')
+cp.read_xml(io)
+io.close()
+
+crack_tips = crack_find_tips(a, cp)
+
+print crack_tips
+
+for pos in crack_tips.real:
+   a.add_atoms(pos, 29)
+
+a.show()
+
+verbosity_pop()
