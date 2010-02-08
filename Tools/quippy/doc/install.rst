@@ -74,10 +74,17 @@ Fortran 95 source code. quippy itself lives in the
 :file:`{QUIP_ROOT}/Tools/quippy` directory
 
 If you want to include the AtomEye extension, you should check it out
-under :file:`${QUIP_ROOT}/Tools`::
+under :file:`${QUIP_ROOT}/Tools`, and then compile it as a static
+library::
 
   cd ${QUIP_ROOT}/Tools
   svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye AtomEye
+  cd AtomEye
+  make atomeyelib
+
+.. note::
+   If you've previously compiled AtomEye as an exectuable, you should do
+   a `make clean` before the `make atomeyelib`.
 
 Again, if you don't have an account you can download a `snapshot
 <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye?view=tar>`_
