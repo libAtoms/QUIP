@@ -585,3 +585,7 @@ def n2f(x):
     """Return ``x.view(FortranArray)``"""
     return x.view(FortranArray)
     
+def unravel_index(x, dims):
+    """1-based version of numpy.unravel_index"""
+
+    return tuple([n+1 for n in numpy.unravel_index(x-1, dims)])
