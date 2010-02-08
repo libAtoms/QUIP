@@ -141,6 +141,8 @@ module CrackParams_module
      integer  :: crack_check_coordination_critical_nneigh !% Critical number of neighbours in the connectivity checking
      real(dp) :: crack_check_coordination_region          !% Region (+/- around y=0 level) where the atomic coordination is checked.  
      logical :: crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
+     real(dp) :: crack_tip_grid_size       !% Size (in A) of grid used for locating crack tips
+     real(dp) :: crack_tip_min_separation  !% Minimum seperation (in A) between a pair of crack tips for them to be considered distinct
  
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -381,6 +383,8 @@ contains
     this%crack_seed_embed_tol    = 3.0_dp   ! Angstrom
     this%crack_dislo_seed        = 0
     this%crack_double_ended     = .false.
+    this%crack_tip_grid_size    = 3.0_dp    ! Angstrom
+    this%crack_tip_min_separation = 20.0_dp ! Angstrom
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -782,6 +786,17 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%crack_double_ended
        end if
+
+       call QUIP_FoX_get_value(attributes, "tip_grid_size", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_tip_grid_size
+       end if
+
+       call QUIP_FoX_get_value(attributes, "tip_min_separation", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_tip_min_separation
+       end if
+
 
     elseif (parse_in_crack .and. name == 'simulation') then
 
@@ -1353,6 +1368,8 @@ contains
     call Print('     check_coordination_critical_nneigh = '//this%crack_check_coordination_critical_nneigh, file=file)
     call Print('     check_coordination_region          = '//this%crack_check_coordination_region//' A', file=file)
     call Print('     doubled_ended         = '//this%crack_double_ended, file=file)
+    call Print('     tip_grid_size         = '//this%crack_tip_grid_size, file=file)
+    call Print('     tip_min_separation    = '//this%crack_tip_min_separation, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
