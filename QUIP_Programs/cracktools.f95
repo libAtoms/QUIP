@@ -20,55 +20,55 @@ contains
   subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark) 
 
-    type(Atoms), intent(in) :: crack_slab
+    type(Atoms), intent(inout) :: crack_slab
     real(dp), pointer, dimension(:,:) :: load 
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
-    if (has_property(crack_slab, 'nn')) then
-       if (.not. assign_pointer(crack_slab, 'nn', nn)) &
-            call system_abort('nn pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'nn')) &
+         call add_property(crack_slab, 'nn', 0)
+    if (.not. assign_pointer(crack_slab, 'nn', nn)) &
+         call system_abort('nn pointer assignment failed')
 
-    if (has_property(crack_slab, 'changed_nn')) then
-       if (.not. assign_pointer(crack_slab, 'changed_nn', changed_nn)) &
-            call system_abort('changed_nn pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'changed_nn')) &
+         call add_property(crack_slab, 'changed_nn', 0)
+    if (.not. assign_pointer(crack_slab, 'changed_nn', changed_nn)) &
+         call system_abort('changed_nn pointer assignment failed')
   
-    if (has_property(crack_slab, 'load')) then
-       if (.not. assign_pointer(crack_slab, 'load', load)) &
-            call system_abort('load pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'load')) &
+         call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
+    if (.not. assign_pointer(crack_slab, 'load', load)) &
+         call system_abort('load pointer assignment failed')
 
-    if (has_property(crack_slab, 'move_mask')) then
-       if (.not. assign_pointer(crack_slab, 'move_mask', move_mask)) &
-            call system_abort('move_mask pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'move_mask')) &
+         call add_property(crack_slab, 'move_mask', 0)
+    if (.not. assign_pointer(crack_slab, 'move_mask', move_mask)) &
+         call system_abort('move_mask pointer assignment failed')
 
-    if (has_property(crack_slab, 'edge_mask')) then
-       if (.not. assign_pointer(crack_slab, 'edge_mask', edge_mask)) &
-            call system_abort('edge_mask pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'edge_mask')) &
+         call add_property(crack_slab, 'edge_mask', 0)
+    if (.not. assign_pointer(crack_slab, 'edge_mask', edge_mask)) &
+         call system_abort('edge_mask pointer assignment failed')
 
-    if (has_property(crack_slab, 'md_old_changed_nn')) then
-       if (.not. assign_pointer(crack_slab, 'md_old_changed_nn', md_old_changed_nn)) &
-            call system_abort('md_old_changed_nn pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'md_old_changed_nn')) &
+         call add_property(crack_slab, 'md_old_changed_nn', 0)
+    if (.not. assign_pointer(crack_slab, 'md_old_changed_nn', md_old_changed_nn)) &
+         call system_abort('md_old_changed_nn pointer assignment failed')
 
-    if (has_property(crack_slab, 'old_nn')) then
-       if (.not. assign_pointer(crack_slab, 'old_nn', old_nn)) &
-            call system_abort('old_nn pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'old_nn')) &
+         call add_property(crack_slab, 'old_nn', 0)
+    if (.not. assign_pointer(crack_slab, 'old_nn', old_nn)) &
+         call system_abort('old_nn pointer assignment failed')
     
-    if (has_property(crack_slab, 'hybrid')) then
-       if (.not. assign_pointer(crack_slab, 'hybrid', hybrid)) &
-            call system_abort('hybrid pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'hybrid')) &
+         call add_property(crack_slab, 'hybrid', 0)
+    if (.not. assign_pointer(crack_slab, 'hybrid', hybrid)) &
+         call system_abort('hybrid pointer assignment failed')
 
-    if (has_property(crack_slab, 'hybrid_mark')) then
-       if (.not. assign_pointer(crack_slab, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('hybrid_mark pointer assignment failed')
-    end if
+    if (.not. has_property(crack_slab, 'hybrid_mark')) &
+         call add_property(crack_slab, 'hybrid_mark', 0)
+    if (.not. assign_pointer(crack_slab, 'hybrid_mark', hybrid_mark)) &
+         call system_abort('hybrid_mark pointer assignment failed')
 
   end subroutine crack_fix_pointers
 
@@ -502,8 +502,8 @@ contains
     type(Atoms) :: crack_slab
     type(CrackParams) :: params
 
+    type(Table) :: crack_tips
     integer :: i
-    real(dp), dimension(2) :: crack_pos
 
     ! Pointers into Atoms data structure
     real(dp), pointer, dimension(:,:) :: load!, k_disp, u_disp
@@ -522,8 +522,20 @@ contains
     ! Calculate connectivity and numbers of nearest neighbours
     call crack_update_connect(crack_slab, params)
 
-    ! Find rightmost undercoordinated atoms in bulk - this is initial crack tip position
-    crack_pos = crack_find_crack_pos(crack_slab, params)
+    ! Find position of crack tips
+    call crack_find_tips(crack_slab, params, crack_tips)
+    call print('crack_update_selection: crack_tips=')
+    call print(crack_tips)
+
+    if (params%crack_double_ended) then
+       if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
+    else
+       if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
+    end if
+
+    ! We'll follow the right-most crack tip which is last entry in list
+    call set_value(crack_slab%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
+    call set_value(crack_slab%params, 'CrackPosy', crack_tips%real(2,crack_tips%N))
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
@@ -535,7 +547,7 @@ contains
 
     ! Artificially set changed_nn to 1 for atoms near to crack tip
     do i = 1, crack_slab%N
-       if (distance_min_image(crack_slab, i, (/crack_pos(1),0.0_dp,0.0_dp/)) < params%crack_seed_embed_tol) &
+       if (distance_min_image(crack_slab, i, crack_tips%real(:,crack_tips%N)) < params%crack_seed_embed_tol) &
 	    changed_nn(i) = 1
     end do
 
@@ -1222,7 +1234,7 @@ contains
     type(CrackParams), intent(in) :: params
 
     integer :: p, i, j, surface, age, ti
-    type(Table) :: old_embed, selectlist(2), tmp_select, embedlist, temptable
+    type(Table) :: old_embed, selectlist(2), tmp_select, embedlist, temptable, crack_tips
     type(Table), dimension(2) :: new_embed
     integer, allocatable, dimension(:) :: sindex
     real(dp), allocatable, dimension(:) :: sorted, tip_dist
@@ -1388,85 +1400,20 @@ contains
     call finalise(selectlist(2))
     call finalise(tmp_select)
 
+    ! Find new position of crack tips
+    call crack_find_tips(at, params, crack_tips)
+    call print('crack_update_selection: crack_tips=')
+    call print(crack_tips)
 
-!!$    ! Grow QM region to form fit region
-!!$    call print('Building fit zone...')
-!!$
-!!$    if (params%hack_fit_on_eqm_coordination_only) then
-!!$       fitlist = embedlist
-!!$
-!!$       ! Only add atoms which aren't undercoordinated to fit list
-!!$       do i=1, params%fit_hops
-!!$          call wipe(tmplist)
-!!$          call bfs_step(at, fitlist, tmplist, nneighb_only = .true., min_images_only = .true.)
-!!$          do j=1,tmplist%N
-!!$             if (nn(tmplist%int(1,j)) == params%md_eqm_coordination) call append(fitlist, tmplist%int(:,j)) 
-!!$          end do
-!!$       end do
-!!$    else
-!!$       fitlist = embedlist
-!!$       call bfs_grow(at, fitlist, params%fit_hops, min_images_only = .true.)
-!!$    end if
-!!$    call print('Fitting on '//fitlist%N//' atoms')
-!!$
-!!$    ! How many atoms should we require good directionality on, i.e. good spring
-!!$    ! spanning of 3D space?
-!!$    if (params%selection_directionality) then
-!!$       num_directionality = embedlist%N
-!!$    else
-!!$       num_directionality = 0
-!!$    end if
+    if (params%crack_double_ended) then
+       if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
+    else
+       if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
+    end if
 
-    ! Update crack position: set to average of embed atom time-averaged x coordinate
-    ! (or just normal positions if we're not doing MD)
-    !if (embedlist%N /= 0) then
-    !   crack_pos(1) = 0.0_dp
-    !   do i=1,embedlist%N
-    !      if (trim(params%simulation_task) == 'md' .and. associated(at%avgpos)) then
-
-    !         lattice_coord = at%g .mult. at%avgpos(:,embedlist%int(1,i))
-    !         do n=1,3
-    !            if ((lattice_coord(n) < -0.5_dp) .or. (lattice_coord(n) >= 0.5_dp)) then
-    !               k = floor(lattice_coord(n)+0.5_dp)
-    !               lattice_coord(n) = lattice_coord(n) - k
-    !            end if
-    !         end do
-
-    !         real_pos = at%lattice .mult. lattice_coord
-    !         crack_pos(1) = crack_pos(1) + real_pos(1)
-    !      else
-    !         crack_pos(1) = crack_pos(1) + at%pos(1,embedlist%int(1,i))
-    !      end if
-    !   end do
-    !   crack_pos(1) = crack_pos(1)/embedlist%N
-    !end if
-    !call Print('Crack position x = '//crack_pos(1))
-    !call set_value(at%params, 'CrackPosx', crack_pos(1))
-
-    !update crack position: use embedlist and find 
-    !the rightmost undercoordinated atom within that
-
-    crack_pos(1) = -100000.0_dp
-    crack_tip_atom = 0
-    do j=1,embedlist%N
-       i = embedlist%int(1,j)
-       ti = find_in_array(params%crack_z, at%z(i))
-       if (ti == 0) call system_abort('Bad atom type i='//i//' z='//at%z(i))
-       if (nn(i) >= params%md_eqm_coordination(ti)) cycle
-       if (edge_mask(i) == 1) cycle
-       if (at%pos(1,i) > crack_pos(1)) then
-          crack_pos(1) = at%pos(1,i)
-          crack_pos(2) = at%pos(2,i)
-          crack_tip_atom = i
-       end if
-    end do
-
-    crack_pos(3) = 0.0_dp 
-
-    call Print('Crack position x = '//crack_pos(1)//' near atom '//crack_tip_atom)
-    call Print('Crack position y = '//crack_pos(2)//' near atom '//crack_tip_atom)
-    call set_value(at%params, 'CrackPosx', crack_pos(1))
-    call set_value(at%params, 'CrackPosy', crack_pos(2))
+    ! We'll follow the right-most crack tip which is last entry in list
+    call set_value(at%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
+    call set_value(at%params, 'CrackPosy', crack_tips%real(2,crack_tips%N))
 
     !quantum atoms around the dislocation
     if (dislo_seed .ne. 0) then
@@ -1588,7 +1535,7 @@ contains
     integer :: start_i, start_j, start_k, i, j, k, nstep, crack_cell(3), d1, d2
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
     integer :: top_edge, bottom_edge, left_edge, right_edge
-    real(dp) :: crack_t(3), orig_width, start_pos(3)
+    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3)
     logical :: duplicate
     integer, pointer, dimension(:) :: horz_slice, vert_slice
 
@@ -1727,7 +1674,7 @@ contains
              crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
              crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
              crack_t = crack_t - 0.5_dp
-             call print(' tip #'//i//' at positon '//(at%lattice .mult. crack_t))
+             call print(' tip #'//i//' at position '//(at%lattice .mult. crack_t))
           end do
        end if
 
@@ -1764,7 +1711,17 @@ contains
           crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
           crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
           crack_t = crack_t - 0.5_dp
-          call append(crack_tips, realpart=(at%lattice .mult. crack_t))
+          crack_pos = at%lattice .mult. crack_t
+
+          ! Insert in crack_tips table such that results are ordered by increasing x coordinate
+          j = crack_tips%N
+          do while (j > 1)
+             if (crack_tips%real(1,j) < crack_pos(1)) exit
+             j = j - 1
+          end do
+          j = j + 1
+          call print('crack_find_tips: inserting x='//crack_pos(1)//' at position '//j)
+          call insert(crack_tips, j, realpart=crack_pos)
        end do
 
     end if

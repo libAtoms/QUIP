@@ -270,6 +270,8 @@ program crack
   type(Potential) :: classicalpot, qmpot
   type(MetaPotential) :: simple_metapot, hybrid_metapot, forcemix_metapot
   type(Dictionary) :: metapot_params
+  type(mpi_context) :: mpi_glob
+  type(Table) :: crack_tips, old_crack_tips
 
   ! Pointers into Atoms data table
   real(dp), pointer, dimension(:,:) :: load
@@ -286,11 +288,10 @@ program crack
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
-       G, orig_width
+       G
   character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix
   character(value_len) :: state_string
 
-  type(mpi_context) :: mpi_glob
 
   !** Initialisation Code **
 
@@ -708,8 +709,8 @@ program crack
         state = STATE_MD_LOADING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
-        dummy = get_value(ds%atoms%params, 'CrackPosx', orig_crack_pos)
-        crack_pos(1) = orig_crack_pos
+        call crack_find_tips(ds%atoms, params, old_crack_tips)
+        crack_tips = old_crack_tips
 
      else if (state_string(1:11) == 'MD_CRACKING') then
         state = STATE_MD_CRACKING
@@ -807,16 +808,17 @@ program crack
         case(STATE_MD_LOADING)
            ! If tip has moved by more than smooth_loading_tip_move_tol then
            ! turn off loading. 
-           dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
-           dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
+           call crack_find_tips(ds%atoms, params, crack_tips)
 
-           if ((crack_pos(1) - orig_crack_pos) > params%md_smooth_loading_tip_move_tol) then
+           if (crack_tips%N /= old_crack_tips%N) &
+                call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
+           
+           if (any(abs(crack_tips%real(1,1:crack_tips%N) - old_crack_tips%real(1,1:crack_tips%N)) > params%md_smooth_loading_tip_move_tol)) then
               call print_title('Crack Moving')
               call print('STATE changing MD_LOADING -> MD_CRACKING')
               state = STATE_MD_CRACKING
               last_state_change_time = ds%t
-              orig_crack_pos = crack_pos(1)
-              call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
+              old_crack_tips = crack_tips
            else
               call print('STATE: crack is not moving (crack_pos='//crack_pos(1)//')')
            end if
@@ -825,28 +827,27 @@ program crack
            ! Monitor tip and if it doesn't move by more than smooth_loading_tip_move_tol in
            ! time smooth_loading_arrest_time then switch back to loading
            if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
-              dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
-              dummy = get_value(ds%atoms%params, 'OrigWidth', orig_width)
-              dummy = get_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
-              
-              if ((crack_pos(1) - orig_crack_pos) < params%md_smooth_loading_tip_move_tol) then
 
-                 if ((orig_width/2.0_dp - crack_pos(1)) < params%md_smooth_loading_tip_edge_tol) then
-                    call print_title('Cracked Through')
-                    exit
-                 else
-                    call print_title('Crack Arrested')
-                    call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
-                         .false., mpi_glob)
-                    call print('STATE changing MD_CRACKING -> MD_LOADING')
-                    state = STATE_MD_LOADING
-                 end if
-              else
-                 call print('STATE: crack is moving (crack_pos='//crack_pos//')')
+              call crack_find_tips(ds%atoms, params, crack_tips)
+
+              if (crack_tips%N == 0) then
+                 call print_title('Cracked Through')
+                 exit
               end if
+
+              if (any(abs(crack_tips%real(1,1:crack_tips%N) - old_crack_tips%real(1,1:crack_tips%N)) < params%md_smooth_loading_tip_move_tol)) then
+                 call print_title('Crack Arrested')
+                 call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
+                      .false., mpi_glob)
+                 call print('STATE changing MD_CRACKING -> MD_LOADING')
+                 state = STATE_MD_LOADING
+              else
+                 call print('STATE: crack is moving, crack_tips=')
+                 call print(crack_tips)
+              end if
+
               last_state_change_time = ds%t
-              orig_crack_pos = crack_pos(1) 
-              call set_value(ds%atoms%params, 'OrigCrackPos', orig_crack_pos)
+              old_crack_tips = crack_tips
            end if
 
         case default
@@ -860,13 +861,10 @@ program crack
            !*  Quantum Selection                                           *
            !*                                                              *
            !****************************************************************    
-!           if (.not. params%simulation_classical) then
-              call system_timer('QM selection')
-              call print_title('Quantum Selection')
-              if (params%selection_dynamic) call crack_update_selection(ds%atoms, params)
-              call system_timer('QM selection')
-!           end if
-
+           call system_timer('selection')
+           call print_title('Quantum Selection')
+           if (params%selection_dynamic) call crack_update_selection(ds%atoms, params)
+           call system_timer('selection')
 
            !****************************************************************
            !*  Extrapolation                                               *
