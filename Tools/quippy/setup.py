@@ -359,7 +359,7 @@ default_options= {
 
 if makefile_test('QUIPPY_DEBUG'):
     os.environ['FOPT'] = '-O0'
-    os.environ['FARCH'] = '-O0'
+    os.environ['FARCH'] = ''
 
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
