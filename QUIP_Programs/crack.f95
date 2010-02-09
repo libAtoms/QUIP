@@ -813,14 +813,14 @@ program crack
            if (crack_tips%N /= old_crack_tips%N) &
                 call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
            
-           if (any(abs(crack_tips%real(1,1:crack_tips%N) - old_crack_tips%real(1,1:crack_tips%N)) > params%md_smooth_loading_tip_move_tol)) then
+           if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) > params%md_smooth_loading_tip_move_tol) then
               call print_title('Crack Moving')
               call print('STATE changing MD_LOADING -> MD_CRACKING')
               state = STATE_MD_CRACKING
               last_state_change_time = ds%t
               old_crack_tips = crack_tips
            else
-              call print('STATE: crack is not moving (crack_pos='//crack_pos(1)//')')
+              call print('STATE: crack is not moving (crack_pos='//crack_tips%real(1,crack_tips%N)//')')
            end if
 
         case(STATE_MD_CRACKING)
@@ -835,7 +835,7 @@ program crack
                  exit
               end if
 
-              if (any(abs(crack_tips%real(1,1:crack_tips%N) - old_crack_tips%real(1,1:crack_tips%N)) < params%md_smooth_loading_tip_move_tol)) then
+              if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) < params%md_smooth_loading_tip_move_tol) then
                  call print_title('Crack Arrested')
                  call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
                       .false., mpi_glob)

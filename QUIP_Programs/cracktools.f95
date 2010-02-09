@@ -1605,7 +1605,7 @@ contains
     ! Find cells containing left and right edges of slab
     if (params%crack_double_ended) then
        left_edge = 1
-       right_edge = -1
+       right_edge = size(cells,1)
     else
        horz_slice => cells(:,max(1,size(cells,2)/2),max(1,size(cells,3)/2))
 
@@ -1621,6 +1621,8 @@ contains
        end do
        right_edge = right_edge - 2
     end if
+
+    write (*,*) 'top, bottom, left, right', top_edge, bottom_edge, left_edge, right_edge
 
     if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
        call print('crack_find_tips: through-going crack detected')
@@ -1714,12 +1716,12 @@ contains
           crack_pos = at%lattice .mult. crack_t
 
           ! Insert in crack_tips table such that results are ordered by increasing x coordinate
-          j = crack_tips%N
-          do while (j > 1)
-             if (crack_tips%real(1,j) < crack_pos(1)) exit
-             j = j - 1
+          j = 1
+          do while (j <= crack_tips%N)
+             if (crack_tips%real(1,j) > crack_pos(1)) exit
+             j = j + 1
           end do
-          j = j + 1
+          
           call print('crack_find_tips: inserting x='//crack_pos(1)//' at position '//j)
           call insert(crack_tips, j, realpart=crack_pos)
        end do
