@@ -551,6 +551,8 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
 
   call print('setup_parallel timings', VERBOSE)
   call print('group_size  time/sec', VERBOSE)
+  
+  call setup_atoms(this, at)
   do pgroup_size=1, this%mpi_glob%n_procs
     n_groups = this%mpi_glob%n_procs / pgroup_size
     if (n_groups*pgroup_size == this%mpi_glob%n_procs) then
