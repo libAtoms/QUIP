@@ -156,16 +156,17 @@ contains
     character(4)                         :: cha_res_name(MAX_KNOWN_RESIDUES), Cres_name
     character(3)                         :: pdb_res_name(MAX_KNOWN_RESIDUES), pres_name
     integer                              :: residue_number(at%N)
-    character(4)                         :: atom_name(at%N)
+    character(4)                         :: atom_name(at%N), atom_name_PDB(at%N)
     real(dp)                             :: atom_charge(at%N)
     type(Table)                          :: residue_type, list
     logical                              :: unidentified(at%N)
     integer, allocatable, dimension(:,:) :: motif
     integer                              :: i, m, n, nres
-    character(4), allocatable, dimension(:) :: at_names
+    character(4), allocatable, dimension(:) :: at_names, at_names_PDB
     real(dp),     allocatable, dimension(:) :: at_charges
     logical                              :: my_do_charmm
     integer                              :: atom_type_index, &
+                                            atom_type_PDB_index, &
                                             atom_res_name_index, &
                                             atom_mol_name_index, &
                                             atom_res_number_index, &
@@ -230,7 +231,7 @@ logical :: silica_potential
     call allocate(residue_type,1,0,0,0,1000)
     call print('Identifying atoms...')
 
-!>>>>>>>>> DANNY POTENTIAL <<<<<<<<<!
+!!!!!!!!!!!!!!! DANNY POTENTIAL !!!!!!!!!!!!!!!!
     if (silica_potential) then
 
    ! SIO residue for Danny potential if Si atom is present in the atoms structure
@@ -301,6 +302,7 @@ logical :: silica_potential
           do i = 1, atom_Si%N                              !atom_Si  only has Si atoms
              atom_i = atom_Si%int(1,i)
              atom_name(atom_i) = 'SIO'
+             atom_name_PDB(atom_i) = 'SIO'
           enddo
           !OSB, OSI & HSI
           do i = 1, atom_SiO%N                             !atom_SiO only has O,H atoms
@@ -320,6 +322,7 @@ logical :: silica_potential
                 hydrogen = find_in_array(at%Z(O_neighb%int(1,1:O_neighb%N)),1)
                 if (hydrogen.ne.0) then
                    atom_name(atom_i) = 'OSI' !silanol O
+                   atom_name_PDB(atom_i) = 'OSI' !silanol O
 !                   call print('Found OH silanol oxygen.'//atom_SiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
                    !check if it has only 1 H nearest neighbour
                    if (hydrogen.lt.O_neighb%N) then
@@ -328,6 +331,7 @@ logical :: silica_potential
                    endif
                 else
                    atom_name(atom_i) = 'OSB' !bridging O
+                   atom_name_PDB(atom_i) = 'OSB' !bridging O
 !                   call print('Found OB bridging oxygen.'//atom_SiO%int(1,i))
                 endif
                 call finalise(O_atom)
@@ -335,6 +339,7 @@ logical :: silica_potential
              !HSI
              elseif (at%Z(atom_SiO%int(1,i)).eq.1) then
                 atom_name(atom_SiO%int(1,i)) = 'HSI'
+                atom_name_PDB(atom_SiO%int(1,i)) = 'HSI'
              else
                 call system_abort('Non O/H atom '//atom_i//'!?')
              endif
@@ -367,15 +372,15 @@ logical :: silica_potential
        endif
 
     endif
-!>>>>>>>>> END DANNY POTENTIAL <<<<<<<<<!
+!!!!!!!!!!!!!!! END DANNY POTENTIAL !!!!!!!!!!!!!!!!
 
     do 
 
        ! Pull the next residue template from the library
        if (my_do_charmm) then
-          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_charges=at_charges,n_impr=n_impr,imp_atoms=imp_atoms,do_CHARMM=.true.)
+          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_charges=at_charges,atom_names_PDB=at_names_PDB, n_impr=n_impr,imp_atoms=imp_atoms,do_CHARMM=.true.)
        else
-          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,do_CHARMM=.false.)
+          call next_motif(lib,cres_name,pres_name,motif,atom_names=at_names,atom_names_PDB=at_names_PDB, do_CHARMM=.false.)
        endif
 
        if (cres_name=='NONE') then
@@ -416,6 +421,7 @@ logical :: silica_potential
                   !        cha_res_name(k)   = 'ALA'    name of the k-th residue in the library file
                   !then atom 'i' is in a residue 'ALA'
              atom_name(list%int(:,m)) = at_names
+             atom_name_PDB(list%int(:,m)) = at_names_PDB
              if (my_do_charmm) then
                 atom_charge(list%int(:,m)) = at_charges
                ! intraresidual IMPROPERs
@@ -459,18 +465,21 @@ logical :: silica_potential
 
    ! add data to store CHARMM topology
     call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH))
+    call add_property(at,'atom_type_PDB',repeat(' ',TABLE_STRING_LENGTH))
     call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH))
     call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH))
     call add_property(at,'atom_res_number',0)
     call add_property(at,'atom_charge',0._dp)
 
     atom_type_index = get_property(at,'atom_type')
+    atom_type_PDB_index = get_property(at,'atom_type_PDB')
     atom_res_name_index = get_property(at,'atom_res_name')
     atom_mol_name_index = get_property(at,'atom_mol_name')
     atom_res_number_index = get_property(at,'atom_res_number')
     atom_charge_index = get_property(at,'atom_charge')
 
     at%data%str(atom_type_index,1:at%N) = 'X'
+    at%data%str(atom_type_PDB_index,1:at%N) = 'X'
     at%data%str(atom_res_name_index,1:at%N) = 'X'
     at%data%str(atom_mol_name_index,1:at%N) = 'X'
     at%data%int(atom_res_number_index,1:at%N) = 0
@@ -482,6 +491,7 @@ logical :: silica_potential
     ! at%data%str(atom_type_index,1:at%N) = adjustl(atom_name(1:at%N))
     do i=1, at%N
       at%data%str(atom_type_index,i) = adjustl(atom_name(i))
+      at%data%str(atom_type_PDB_index,i) = adjustl(atom_name_PDB(i))
     end do
     !NB end of workaround for pgf90 bug (as of 9.0-1)
 
@@ -589,13 +599,13 @@ logical :: silica_potential
   !% Used by create_CHARMM, can read from CHARMM and AMBER residue libraries.
   !% do_CHARMM=.true. is the default
   !
-  subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,n_impr,imp_atoms,do_CHARMM)
+  subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,atom_names_PDB, n_impr,imp_atoms,do_CHARMM)
     
     type(Inoutput),                   intent(in)  :: library
     character(4),                     intent(out) :: res_name
     character(3),                     intent(out) :: pdb_name
     integer,             allocatable, intent(out) :: motif(:,:)
-    character(4),        allocatable, intent(out) :: atom_names(:)
+    character(4),        allocatable, intent(out) :: atom_names(:), atom_names_PDB(:)
     real(dp), optional,  allocatable, intent(out) :: atom_charges(:)
     logical,  optional,               intent(in)  :: do_CHARMM
     integer,  optional,  allocatable, intent(out) :: imp_atoms(:,:)
@@ -604,7 +614,7 @@ logical :: silica_potential
     character(20), dimension(10) :: fields
     integer                      :: status, num_fields, data(7), i, n_at, max_num_fields
     type(Table)                  :: motif_table
-    character(4)                 :: tmp_at_names(MAX_ATOMS_PER_RES)
+    character(4)                 :: tmp_at_names(MAX_ATOMS_PER_RES), tmp_at_names_PDB(MAX_ATOMS_PER_RES)
     real(dp)                     :: tmp_at_charges(MAX_ATOMS_PER_RES),check_charge
     logical                      :: my_do_charmm
     character(len=1024)          :: line
@@ -615,7 +625,7 @@ logical :: silica_potential
     if (present(do_CHARMM)) my_do_charmm = do_CHARMM
 
     if (my_do_charmm) then
-       max_num_fields = 9
+       max_num_fields = 10
        imp_fields = 5
     else !do AMBER
        max_num_fields = 8
@@ -644,7 +654,7 @@ logical :: silica_potential
    ! residue structure [& charges]
     do
        call parse_line(library,' ',fields,num_fields)
-       if (num_fields < max_num_fields) exit
+       if (num_fields < max_num_fields-1) exit ! last column of protein library (atom_name_PDB) is optional
        do i = 1, 7
           data(i) = string_to_int(fields(i))
        end do
@@ -654,6 +664,11 @@ logical :: silica_potential
        if (my_do_charmm) then
           tmp_at_charges(n_at) = string_to_real(fields(9))
           check_charge=check_charge+tmp_at_charges(n_at)
+          if(num_fields == 10) then
+             tmp_at_names_PDB(n_at) = fields(10)
+          else
+             tmp_at_names_PDB(n_at) = tmp_at_names(n_at)
+          end if
        endif
     end do
     if (my_do_charmm) then
@@ -682,12 +697,15 @@ logical :: silica_potential
 
     allocate(atom_names(n_at))
     atom_names = tmp_at_names(1:n_at)
-
+    allocate(atom_names_PDB(n_at))
     if (my_do_charmm) then
        allocate(atom_charges(n_at))
        atom_charges = tmp_at_charges(1:n_at)
        allocate(imp_atoms(4,n_impr))
        imp_atoms(1:4,1:n_impr) = tmp_imp_atoms(1:4,1:n_impr)
+       atom_names_PDB = tmp_at_names_PDB(1:n_at)
+    else
+       atom_names_PDB = atom_names
     endif
 
     call finalise(motif_table)
@@ -720,6 +738,7 @@ logical :: silica_potential
                                 atom_charge_index
     character(len=1024)      :: my_run_type_string
     integer                  :: run_type
+    real(dp)                 :: cell_lengths(3), cell_angles(3)
 
     call system_timer('write_pdb_file')
     my_run_type_string = optional_default('',run_type_string)
@@ -729,6 +748,10 @@ logical :: silica_potential
 !    call print('REMARK'//at%N,file=pdb)
 !lattice information could be added in a line like this:
 !CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1          
+    call lattice_xyz_to_abc(at%lattice, cell_lengths, cell_angles)
+    sor=''
+    write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), cell_angles(:), ' P 1           1'
+    call print(sor, file=pdb)
 
     if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
         (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
@@ -736,11 +759,12 @@ logical :: silica_potential
        if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
        if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
     endif
-    atom_type_index = get_property(at,'atom_type')
+    atom_type_index = get_property(at,'atom_type_PDB')
     atom_res_name_index = get_property(at,'atom_res_name')
     atom_mol_name_index = get_property(at,'atom_mol_name')
     atom_res_number_index = get_property(at,'atom_res_number')
     atom_charge_index = get_property(at,'atom_charge')
+
 
     do mm=1,at%N
       ! e.g. CP2K needs different name for QM molecules, if use isolated atoms
@@ -785,7 +809,7 @@ logical :: silica_potential
     character(len=*), optional, intent(in) :: run_type_string
 
 !    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f8.3,2f6.2,10x,a2,2x,f7.4)'
-    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f8.3,2f6.2,5x,a4,2x,a2,2x,f7.4)'
+    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f8.3,2f6.2,6x,a4,1x,a2,2x,f7.4)'
 
   !Brookhaven PDB format
   !       sor(1:6)   = 'ATOM  '
@@ -873,6 +897,7 @@ logical :: silica_potential
     character(4)            :: QM_prefix_atom_mol_name
     integer                 :: qm_flag_index, &
                                atom_type_index, &
+                               atom_type_PDB_index, &
                                atom_res_name_index, &
                                atom_mol_name_index, &
                                atom_res_number_index, &
@@ -905,6 +930,7 @@ logical :: silica_potential
        if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
     endif
     atom_type_index = get_property(at,'atom_type')
+    atom_type_PDB_index = get_property(at,'atom_type_PDB')
     atom_res_name_index = get_property(at,'atom_res_name')
     atom_mol_name_index = get_property(at,'atom_mol_name')
     atom_res_number_index = get_property(at,'atom_res_number')
@@ -938,7 +964,7 @@ logical :: silica_potential
 !       call print('molecule '//QM_prefix_atom_mol_name)
 !       call print('writing PSF file: atom type '//at%data%str(atom_type_index,mm))
        write(sor,psf_format) mm, QM_prefix_atom_mol_name, at%data%int(atom_res_number_index,mm), &
-                     at%data%str(atom_res_name_index,mm),at%data%str(atom_type_index,mm),at%data%str(atom_type_index,mm), &
+                     at%data%str(atom_res_name_index,mm),at%data%str(atom_type_PDB_index,mm),at%data%str(atom_type_index,mm), &
                      at%data%real(atom_charge_index,mm),ElementMass(at%Z(mm))/MASSCONVERT,0
        call print(sor,file=psf)
     enddo
