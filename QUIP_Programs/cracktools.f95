@@ -523,7 +523,9 @@ contains
     call crack_update_connect(crack_slab, params)
 
     ! Find position of crack tips
+#ifndef HAVE_QUIPPY
     call crack_find_tips(crack_slab, params, crack_tips)
+#endif
     call print('crack_update_selection: crack_tips=')
     call print(crack_tips)
 
@@ -1401,7 +1403,9 @@ contains
     call finalise(tmp_select)
 
     ! Find new position of crack tips
+#ifndef HAVE_QUIPPY
     call crack_find_tips(at, params, crack_tips)
+#endif
     call print('crack_update_selection: crack_tips=')
     call print(crack_tips)
 
@@ -1523,21 +1527,31 @@ contains
   !% 'params%crack_tip_min_separation' cells from one another. The result is a Table
   !% with realsize=3 containing the coordinates of the crack tips detected. 
   !% If a through-going crack is detected the result table will have size zero.
+#ifdef HAVE_QUIPPY
+  subroutine crack_find_tips(at, params, crack_tips, cells, min_cells)
+#else
   subroutine crack_find_tips(at, params, crack_tips)
+#endif
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
     type(Table), intent(out) :: crack_tips
+#ifdef HAVE_QUIPPY
+    integer, dimension(:,:,:), intent(inout), target :: cells, min_cells
+#else
+    integer, dimension(:,:,:), allocatable, target :: cells, min_cells
+#endif
 
     type(Connection) :: connect
     type(Table) :: minima
-    integer, dimension(:,:,:), allocatable, target :: cells, min_cells
     integer :: cellsna, cellsnb, cellsnc, min_dist
-    integer :: start_i, start_j, start_k, i, j, k, nstep, crack_cell(3), d1, d2
+    integer :: start_i, start_j, start_k, i, j, k, nstep, crack_cell(3), d_i, d_j
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
-    integer :: top_edge, bottom_edge, left_edge, right_edge
-    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3)
+    integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_occupied
+    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), sum, sum_2, occ_mu, occ_sigma
     logical :: duplicate
     integer, pointer, dimension(:) :: horz_slice, vert_slice
+
+    call system_timer('crack_find_tip')
 
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_tips: "OrigWidth" parameter missing from atoms')
@@ -1549,15 +1563,38 @@ contains
     call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
     call partition_atoms(connect, at)
 
+#ifndef HAVE_QUIPPY
     allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
     allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
+#endif
     call allocate(crack_tips, 0, 3, 0, 0)
 
+    ! Calculate mean and standard deviation of cell occupancies, excluding empty cells
+    sum = 0.0_dp
+    sum_2 = 0.0_dp
+    n_occupied = 0
+    do k=1,connect%cellsnc
+       do j=1,connect%cellsnb
+          do i=1,connect%cellsna
+             if (connect%cell(i,j,k)%n == 0) cycle
+             sum = sum + real(connect%cell(i,j,k)%n,dp)
+             sum_2 = sum_2 + real(connect%cell(i,j,k)%n*connect%cell(i,j,k)%n,dp)
+             n_occupied = n_occupied + 1
+          end do
+       end do
+    end do
+    occ_mu = sum/n_occupied
+    occ_sigma = sqrt(sum_2/n_occupied - occ_mu**2.0_dp)
+
+    occ_threshold = 1 !floor(occ_mu - occ_sigma)
+    call print('crack_find_tips: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
+
+    ! Mark cells with occupancy <= occ_threshold for percolation
     cells = 0
     do k=1,connect%cellsnc
        do j=1,connect%cellsnb
           do i=1,connect%cellsna
-             if (connect%cell(i,j,k)%n == 0) cells(i,j,k) = 1
+             if (connect%cell(i,j,k)%n <= occ_threshold) cells(i,j,k) = 1
           end do
        end do
     end do
@@ -1622,8 +1659,6 @@ contains
        right_edge = right_edge - 2
     end if
 
-    write (*,*) 'top, bottom, left, right', top_edge, bottom_edge, left_edge, right_edge
-
     if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
        call print('crack_find_tips: through-going crack detected')
     else
@@ -1676,7 +1711,7 @@ contains
              crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
              crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
              crack_t = crack_t - 0.5_dp
-             call print(' tip #'//i//' at position '//(at%lattice .mult. crack_t))
+             call print(' tip #'//i//' cell '//minima%int(:,i)//' position '//(at%lattice .mult. crack_t))
           end do
        end if
 
@@ -1693,12 +1728,16 @@ contains
           end do OUTER
 
           if (duplicate) then
-             d1 = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
-             d2 = dot_product((minima%int(:,j) - (/start_i, start_j, start_k/)),(minima%int(:,j) - (/start_i, start_j, start_k/)))
+             d_i = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
+             d_j = dot_product((minima%int(:,j) - (/start_i, start_j, start_k/)),(minima%int(:,j) - (/start_i, start_j, start_k/)))
 
-             if (d1 < d2) then
+             call print('duplicates '//i//' and '//j//' d_i='//d_i//' d_j='//d_j)
+
+             if (d_i > d_j) then
+                call print('removing j '//j)
                 call delete(minima, j, .true.)
              else
+                call print('removing i '//i)
                 call delete(minima, i, .true.)
              end if
           else
@@ -1728,10 +1767,13 @@ contains
 
     end if
 
+#ifndef HAVE_QUIPPY
     deallocate(cells)
     deallocate(min_cells)
+#endif
     call finalise(connect)
     call finalise(minima)
+    call system_timer('crack_find_tip')
 
   end subroutine crack_find_tips
 
@@ -2175,7 +2217,7 @@ contains
       type(CrackParams), intent(inout) :: params
       type(Atoms)                      :: at_tmp
       real(dp), dimension(3,3)         :: lattice_tmp
-      integer                          :: i, jjjjj
+      integer                          :: i
       logical, dimension(at%n)         :: neigh_removed
       logical :: ccc
       real(dp) :: width, height
