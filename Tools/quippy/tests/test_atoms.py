@@ -609,6 +609,17 @@ class TestAtoms_Extras(QuippyTestCase):
       self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
       self.assertEqual(list([str(x) for x in self.at.str]), ['']*8)
 
+   def test_add_property_property_type(self):
+      self.at.add_property('logical', [1]*self.at.n, property_type=PROPERTY_LOGICAL)
+      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.assertEqual(list(self.at.logical), [True]*8)
+
+   def test_add_property_no_property_type(self):
+      # without propety_type, ambiguity between types PROPERTY_INT and PROPETY_LOGICAL
+      self.at.add_property('int', [1]*self.at.n)
+      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.assertEqual(list(self.at.int), [1]*8)
+
 
 class TestAtoms_Neighbour(QuippyTestCase):
 
