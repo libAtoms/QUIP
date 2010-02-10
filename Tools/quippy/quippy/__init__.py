@@ -84,5 +84,5 @@ try:
 except ImportError:
    logging.warning('_atomeye extension module not available - atomeye interface disabled')
 
-import castep, sio2, povray
+import castep, sio2, povray, aseinterface
 
