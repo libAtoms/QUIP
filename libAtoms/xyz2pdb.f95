@@ -9,7 +9,8 @@ program xyz2pdb
                                      read_xyz, &
                                      set_cutoff, &
                                      calc_connect, print, &
-                                     distance_min_image, bond_length
+                                     distance_min_image, bond_length, &
+                                     map_into_cell
   use dictionary_module,       only: dictionary, initialise, finalise, &
                                      set_value
   use linearalgebra_module,    only: find_in_array
@@ -45,6 +46,8 @@ program xyz2pdb
                                    psf_name, &
                                    xsc_name
     integer                     :: len_name
+    integer                     :: center_atom, i
+    real(dp)                    :: shift(3)
     logical                     :: ex
 
     call system_initialise(verbosity=silent,enable_timing=.true.)
@@ -58,6 +61,7 @@ program xyz2pdb
     call param_register(params_in, 'Neighbour_Tolerance', '1.2', Neighbour_Tolerance)
     call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
     call param_register(params_in, 'Print_XSC', 'F', print_xsc)
+    call param_register(params_in, 'Center_atom', '0', center_atom)
     if (.not. param_read_args(params_in, do_check = .true.)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -81,6 +85,8 @@ program xyz2pdb
     call print('  Print_XSC (NAMD cell file): '//print_xsc)
     call print('  Delete_Metal_Connections'//Delete_Metal_Connections)
     call print('  Neighbour Tolerance: '//Neighbour_Tolerance)
+    if(center_atom > 0) &
+         call print('  Center atom: '//center_atom)
     call print('Output:')
     call print('  PDB file: '//trim(pdb_name))
     call print('  PSF file: '//trim(psf_name))
@@ -106,6 +112,7 @@ program xyz2pdb
     call print('Reading in coordinates...')
     call read_xyz(my_atoms,xyz_file)
 
+
    ! calculating connectivities
     call print('Calculating connectivities...')
    ! use nonuniform connect_cutoff, include only nearest neighbours, otherwise the adjacency matrix will contain disjoint regions
@@ -116,6 +123,14 @@ program xyz2pdb
     if (Delete_Metal_Connections) call delete_metal_connects(my_atoms)
 !    call print(my_atoms%connect)
 
+    ! center atoms if needed
+    if(center_atom > 0) then
+       shift = my_atoms%pos(:,center_atom)
+       do i=1,my_atoms%N
+          my_atoms%pos(:,i) = my_atoms%pos(:,i)-shift
+       end do
+    end if
+    call map_into_cell(my_atoms)
 
    ! identify residues
     call print('Identifying residues...')
@@ -139,7 +154,7 @@ contains
 
   subroutine print_usage
 
-    call print('Usage: xyz2pdb File=filename.xyz [Residue_Library=library] [Print_XSC] [Delete_Metal_Connections=T] [Neighbour_tolerance=1.2]')
+    call print('Usage: xyz2pdb File=filename.xyz [Residue_Library=library] [Print_XSC] [Delete_Metal_Connections=T] [Neighbour_tolerance=1.2] [Center_atom=num]')
     call print('')
     call print('  File=filename,        where your input file has extension .xyz')
     call print('  [Residue_Library=library],  optional, default is protein_res.CHARMM.lib')
@@ -148,6 +163,8 @@ contains
     call print('                           should work fine - only modify if you want bonds with other elements in your structure')
     call print('  [Neighbour_Tolerance=1.2],  optional, default is 1.2, should work fine - do not poke it ')
     call print('                          unless you know you have unusally long bonds in your structure')
+    call print('  [Center_atom=num], optionally shifts atoms so that the atom with index num is at')
+    call print('                     the origin, before dropping periodic boundary condition info')
 
     call print('')
 
