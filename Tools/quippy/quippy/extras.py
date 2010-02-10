@@ -347,7 +347,7 @@ class Atoms(FortranAtoms):
       return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
 
-   def add_property(self, name, value, n_cols=1):
+   def add_property(self, name, value, n_cols=1, property_type=None):
       """
       Add a new property to this Atoms object.
 
@@ -365,35 +365,53 @@ class Atoms(FortranAtoms):
       property.  In this case `n_cols` is inferred from the shape of
       the `value` and shouldn't be passed as an argument.
 
+      If `property_type` is present, then no attempt is made to
+      infer the type from `value`. This is necessary to resolve
+      ambiguity between integer and logical types.
+
       If property with the same type is already present then no error
       occurs. A warning is printed if the verbosity level is VERBOSE
       or higher. The value will be overwritten with that given in
       `value`.
       """
 
-      if hasattr(value, '__iter__'):
-         value = farray(value)
-         # some kind of array:
-         if len(value.shape) == 1:
-            if value.shape[0] != self.n:
-               raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
-                                % (value.shape[0], self.n))
-            n_cols = 1
-            value_ref = value[1]
-         elif len(value.shape) == 2:
-            if value.shape[1] != self.n:
-               raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
-                                % (value.shape[1], self.n))
-            value_ref = value[1,1]
-            if value.dtype.kind == 'S':
-               n_cols = 1
-            else:
-               n_cols = value.shape[0]
-         else:
-            raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
+      if property_type is not None:
+         from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
+         
+         type_to_value_ref = {
+            PROPERTY_INT  : 0,
+            PROPERTY_REAL : 0.0,
+            PROPERTY_STR  : "",
+            PROPERTY_LOGICAL : False
+            }
+         try:
+            value_ref = type_to_value_ref[property_type]
+         except KeyError:
+            raise ValueError('Unknown property_type %d' % property_type)
       else:
-         # some kind of scalar
-         value_ref = value
+         if hasattr(value, '__iter__'):
+            value = farray(value)
+            # some kind of array:
+            if len(value.shape) == 1:
+               if value.shape[0] != self.n:
+                  raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
+                                   % (value.shape[0], self.n))
+               n_cols = 1
+               value_ref = value[1]
+            elif len(value.shape) == 2:
+               if value.shape[1] != self.n:
+                  raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
+                                   % (value.shape[1], self.n))
+               value_ref = value[1,1]
+               if value.dtype.kind == 'S':
+                  n_cols = 1
+               else:
+                  n_cols = value.shape[0]
+            else:
+               raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
+         else:
+            # some kind of scalar
+            value_ref = value
 
       FortranAtoms.add_property(self, name, value_ref, n_cols)
       getattr(self, name.lower())[:] = value            

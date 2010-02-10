@@ -100,7 +100,8 @@ def process(at):
    # Merge from merge_config
    if opt.merge:
       for k in opt.merge_properties:
-         at.add_property(k, getattr(merge_config, k))
+         # specify property type explicity - needed because of NumPy ambiguity between logical and integer
+         at.add_property(k, getattr(merge_config, k), property_type=merge_config.properties[k][1])
 
    # Execute user code
    if opt.exec_code is not None:
