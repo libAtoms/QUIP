@@ -263,6 +263,13 @@ int atoms_find_param(Atoms *atoms, char *key)
   return -1;
 }
 
+/* FORTRAN wrappers */
+void lattice_abc_to_xyz_(double  cell_lengths[3], double cell_angles[3], double lattice[3][3]){
+  lattice_abc_to_xyz(cell_lengths, cell_angles, lattice);}
+
+void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double cell_angles[3]){
+  lattice_xyz_to_abc(lattice, cell_lengths, cell_angles);}
+
 void lattice_abc_to_xyz(double cell_lengths[3], double cell_angles[3],
 			double lattice[3][3])
 {
