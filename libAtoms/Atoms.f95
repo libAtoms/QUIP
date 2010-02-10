@@ -2853,10 +2853,12 @@ contains
 	      j = atoms_neighbour(this, i, n, index=m) ! get neighbour
 
 	      ! now update the data for atom i and the current neighbour
-	      if (i <= j) then
+	      if (i < j) then
 		 this%connect%neighbour1(i)%t%int(2:4,m) = this%connect%neighbour1(i)%t%int(2:4,m) + shift
-	      else
+	      else if (i > j) then
 		 this%connect%neighbour1(j)%t%int(2:4,m) = this%connect%neighbour1(j)%t%int(2:4,m) - shift
+              else
+                 ! do nothing when i == j
 	      end if
 	   end do
 	end if ! this%connect%initialised
