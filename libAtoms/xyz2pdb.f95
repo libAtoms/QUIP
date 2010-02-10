@@ -25,7 +25,7 @@ program xyz2pdb
                                      INPUT, OUTPUT, &
                                      SILENT, NORMAL, ANAL, NERD
   use table_module,            only: table, finalise, int_part, delete
-  use topology_module,         only: create_CHARMM, delete_metal_connects, &
+  use topology_module,         only: create_residue_labels, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
                                      MM_RUN
@@ -135,7 +135,7 @@ program xyz2pdb
    ! identify residues
     call print('Identifying residues...')
     call set_value(my_atoms%params,'Library',trim(Library))
-    call create_CHARMM(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+    call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
 
    ! print output PDB and PSF files
     call print('Writing files with CHARMM format...')
