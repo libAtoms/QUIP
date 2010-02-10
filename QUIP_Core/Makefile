@@ -30,8 +30,8 @@ POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 ALL_F95_FILES = ${BASE_F95_SOURCES} ${TB_F95_SOURCES} ${IP_F95_SOURCES}
 QUIP_OBJS = ${BASE_F95_OBJS} ${TB_F95_OBJS} ${IP_F95_OBJS} 
 ifeq (${HAVE_CP2K},1)
-  QUIP_OBJS += cp2k_driver_old.o cp2k_driver.o
-  ALL_F95_FILES += cp2k_driver_old.f95 cp2k_driver.f95
+  QUIP_OBJS += cp2k_driver.o
+  ALL_F95_FILES += cp2k_driver.f95
 endif
 QUIP_OBJS += ${POT_F95_OBJS}
 ALL_F95_FILES += ${POT_F95_SOURCES}

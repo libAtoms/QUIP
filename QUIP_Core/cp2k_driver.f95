@@ -32,8 +32,10 @@ contains
       this_run_i = this_run_i + 1
     endif
 
+    call print("do_cp2k_calc_fake run_i " // this_run_i, ERROR)
+
     call initialise(force_cio, "cp2k_force_file_log")
-    call read(force_cio, for, frame=this_run_i)
+    call read(force_cio, for, frame=this_run_i-1)
     call finalise(force_cio)
     if (.not. assign_pointer(for, 'frc', frc)) &
       call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
@@ -47,8 +49,11 @@ contains
       endif
     endif
 
+    e = e * HARTREE
+    f  = f * HARTREE/BOHR 
+
     call initialise(last_run_io, "cp2k_driver_fake_run", action=OUTPUT)
-    call print(""//(this_run_i+1), file=last_run_io)
+    call print(""//this_run_i, file=last_run_io)
     call finalise(last_run_io)
 
   end subroutine do_cp2k_calc_fake
@@ -166,7 +171,6 @@ contains
     call prefix_cp2k_input_sections(cp2k_template_a(1:template_n_lines))
 
     if ( (trim(psf_print) /= 'NO_PSF') .and. &
-         (trim(psf_print) /= 'CP2K_PRINT_AND_SAVE') .and. &
          (trim(psf_print) /= 'DRIVER_PRINT_AND_SAVE') .and. &
          (trim(psf_print) /= 'USE_EXISTING_PSF')) &
       call system_abort("Unknown value for psf_print '"//trim(psf_print)//"'")
@@ -212,7 +216,6 @@ contains
       call map_into_cell(at)
       call calc_dists(at)
 
-      call create_CHARMM(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
     endif
 
     if (.not.(has_property(at,'mol_id',mol_id_lookup)) .or. .not. has_property(at,'atom_res_number',atom_res_number_lookup)) then
@@ -398,6 +401,7 @@ contains
 
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	call create_residue_labels(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
 	call write_psf_file(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
       endif
     endif
@@ -407,47 +411,9 @@ contains
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
     ! prepare xyz file for input to cp2k
-
-!    call atoms_copy_without_connect(at_cp2k, at, properties="species:pos")
-!    dummy_s = ""
-!    ! hopefully no need for this once topology.f95 and cp2k patch agree on property names
-!!    if (run_type /= "QS") then
-!      call add_property(at_cp2k, "atmname", dummy_s, n_cols=1)
-!      call add_property(at_cp2k, "molname", dummy_s, n_cols=1)
-!      call add_property(at_cp2k, "resname", dummy_s, n_cols=1)
-!      call add_property(at_cp2k, "resid", 0, n_cols=1)
-!      call add_property(at_cp2k, "atm_charge", 0.0_dp, n_cols=1)
-!      if (.not. assign_pointer(at_cp2k, "atmname", to_str)) &
-!        call system_abort("impossible failure to set pointer to at_cp2k%atmname")
-!      if (.not. assign_pointer(at, "atom_type", from_str)) &
-!        call system_abort("failed to set pointer to at%atom_type")
-!      to_str = from_str
-!      if (.not. assign_pointer(at_cp2k, "molname", to_str)) &
-!        call system_abort("impossible failure to set pointer to at_cp2k%molname")
-!      if (.not. assign_pointer(at, "atom_mol_name", from_str)) &
-!        call system_abort("failed to set pointer to at%atom_mol_name")
-!      to_str = from_str
-!      if (.not. assign_pointer(at_cp2k, "resname", to_str)) &
-!        call system_abort("impossible failure to set pointer to at_cp2k%resname")
-!      if (.not. assign_pointer(at, "atom_res_name", from_str)) &
-!        call system_abort("failed to set pointer to at%atom_res_name")
-!      to_str = from_str
-!      if (.not. assign_pointer(at_cp2k, "resid", to_i)) &
-!        call system_abort("impossible failure to set pointer to at_cp2k%resid")
-!      if (.not. assign_pointer(at, "atom_res_number", from_i)) &
-!        call system_abort("failed to set pointer to at%atom_res_number")
-!      to_i = from_i
-!      if (.not. assign_pointer(at_cp2k, "atm_charge", to_dp)) &
-!        call system_abort("impossible failure to set pointer to at_cp2k%atm_charge")
-!      if (.not. assign_pointer(at, "atom_charge", from_dp)) &
-!        call system_abort("failed to set pointer to at%atom_charge")
-!      to_dp = from_dp
-!!    endif
-!    call print_xyz(at_cp2k, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
-    call print_xyz(at, trim(run_dir)//'/quip_cp2k.xyz', all_properties=.true.)
+    call print_xyz(at, trim(run_dir)//'/quip_cp2k.xyz', properties="species:pos")
 
     ! actually run cp2k
-
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     ! parse output
@@ -465,9 +431,6 @@ contains
 		 ' exceeds warning threshold ' // max_force_warning, ERROR)
 
     ! save output
-
-    if (trim(psf_print) == "CP2K_PRINT_AND_SAVE") &
-      call system_command('cp '//trim(run_dir)//'/quip-dump-1.psf quip_cp2k.psf')
 
     if (use_QM) &
       call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn')

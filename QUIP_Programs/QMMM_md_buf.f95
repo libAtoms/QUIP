@@ -13,11 +13,6 @@ program qmmm_md
 
   implicit none
 
-  integer, parameter :: TOPOLOGY_NO_PSF = 0
-  integer, parameter :: TOPOLOGY_CP2K_ONLY_STEP0 = -1
-  integer, parameter :: TOPOLOGY_DRIVER_ONLY_STEP0 = -2
-  integer, parameter :: TOPOLOGY_USE_EXISTING_PSF = -3
-
   type(DynamicalSystem)               :: ds
   type(Atoms)                         :: my_atoms
   type(Table)                         :: constraints
@@ -25,11 +20,9 @@ program qmmm_md
   character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
-  type(Potential)                     :: CP2K_MM_potential
-  type(Potential)                     :: CP2K_QM_potential
-  type(MetaPotential)                 :: my_metapotential
+  type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
+  type(MetaPotential)                 :: metapot, empty_qm_metapot
   character(len=STRING_LENGTH)        :: args_str
-  character(len=STRING_LENGTH)        :: qm_args_str, mm_args_str
   real(dp)                            :: energy,check,TI_force, TI_corr
   real(dp), dimension(:,:), allocatable :: f,f0,f1, add_force
 
@@ -37,7 +30,6 @@ program qmmm_md
   type(Table)                         :: embedlist
   logical                             :: list_changed
   logical                             :: list_changed1
-  logical                             :: empty_QM_core
   integer, pointer                    :: qm_flag_p(:)
   integer, pointer                    :: hybrid(:)
   integer, pointer                    :: hybrid_mark_p(:)
@@ -67,11 +59,9 @@ program qmmm_md
   integer                             :: backup_i
 
   !Topology
-  character(len=FIELD_LENGTH)         :: Print_PSF_array(4)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
-  character(len=FIELD_LENGTH)         :: PSF_Print
-  integer                             :: Topology_Print          !_0_ never, -1 let CP2K print one at the 0th step and use that
-                                                         !           -2 print one at the 0th time step and use that
-                                                         !n>0 every n-th step
+  character(len=FIELD_LENGTH)         :: driver_PSF_Print
+  integer                             :: Topology_Print_rate     !_-1_ never, 0 print one at the 0th time step and use that
+                                                                 ! n>0 print at 0th and then every n-th step
   type(Table)                         :: intrares_impropers
 
   !Input parameters
@@ -80,7 +70,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: Run_Type2               !_NONE_, MM, or QMMM_CORE
   integer                     :: IO_Rate                 !print coordinates at every n-th step
   integer                     :: Thermostat_Type         !_0_ none, 1 Langevin
-  character(len=FIELD_LENGTH) :: Print_PSF               !_NO_PSF_, DRIVER_AT0, CP2K_AT0, EVERY_#,USE_EXIST
+  character(len=FIELD_LENGTH) :: PSF_Print               !_NO_PSF_, DRIVER_AT_0, DRIVER_EVERY_#, USE_EXISTING_PSF
   real(dp)                    :: Time_Step
   real(dp)                    :: Equilib_Time
   real(dp)                    :: Run_Time
@@ -127,6 +117,7 @@ program qmmm_md
   real(dp) :: calc_connect_buffer
 type(inoutput) :: csilla_out
 logical :: have_silica_potential
+  integer :: stat
 
 !    call system_initialise(verbosity=ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=NERD,enable_timing=.true.)
@@ -139,7 +130,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'Run_Type2', 'NONE', Run_Type2)
       call param_register(params_in, 'IO_Rate', '1', IO_Rate)
       call param_register(params_in, 'Thermostat_Type', '0', Thermostat_Type)
-      call param_register(params_in, 'Print_PSF', 'NO_PSF', Print_PSF)
+      call param_register(params_in, 'PSF_Print', 'NO_PSF', PSF_Print)
       call param_register(params_in, 'Time_Step', '0.5', Time_Step)
       call param_register(params_in, 'Equilib_Time', '0.0', Equilib_Time)
       call param_register(params_in, 'Run_Time', '0.5', Run_Time)
@@ -212,22 +203,29 @@ logical :: have_silica_potential
          Run_Type2 = 'NONE'
          call print('RunType2 set to NONE')
       endif
-      if ((trim(Run_Type1)).eq.'QMMM_EXTENDED' .and..not.any(trim(Run_Type2).eq.Run_Type_array(3:5))) call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
-      if ((trim(Run_Type1)).eq.'QMMM_CORE' .and..not.any(trim(Run_Type2).eq.Run_Type_array(4:5))) call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
+      if ((trim(Run_Type1)).eq.'QMMM_EXTENDED' .and..not.any(trim(Run_Type2).eq.Run_Type_array(3:5))) &
+	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
+      if ((trim(Run_Type1)).eq.'QMMM_CORE' .and..not.any(trim(Run_Type2).eq.Run_Type_array(4:5))) &
+	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
 
 !check PSF printing
-      Print_PSF_array(1) = 'NO_PSF'
-      Print_PSF_array(2) = 'DRIVER_AT_0'
-      Print_PSF_array(3) = 'CP2K_AT_0'
-      Print_PSF_array(4) = 'USE_EXIST'
-      if (.not.any(trim(Print_PSF).eq.Print_PSF_array(1:4))) then
-         if (.not.Print_PSF(1:6).eq.'EVERY_') call system_abort('Print_PSF must be one of "NO_PSF","DRIVER_AT_0","CP2K_AT_0","USE_EXIST","EVERY_#')
+      if (trim(PSF_Print) == 'NO_PSF' .or. trim(PSF_Print) == 'USE_EXISTING_PSF') then
+	 topology_print_rate=-1
+	 driver_PSF_Print=PSF_Print
+      else if (trim(PSF_Print) == 'DRIVER_AT_0') then
+	 topology_print_rate=0
+      else if (len(PSF_Print) > 13) then
+	 if (PSF_Print(1:13) == 'DRIVER_EVERY_') then
+	    read(unit=PSF_Print(14:len_trim(PSF_Print)),fmt=*,iostat=stat) topology_print_rate
+	    if (stat /= 0) &
+	       call system_abort("PSF_Print='"//trim(PSF_Print)//"' unable to parse N from DRIVER_EVERY_N '"// &
+	 	 PSF_Print(14:len_trim(PSF_Print))//"'")
+	 else
+	   call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
+	 endif
+      else
+	 call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
       endif
-      if (Print_PSF.eq.'NO_PSF') Topology_Print=TOPOLOGY_NO_PSF !0
-      if (Print_PSF.eq.'DRIVER_AT_0') Topology_Print=TOPOLOGY_DRIVER_ONLY_STEP0 !-2
-      if (Print_PSF.eq.'CP2K_AT_0') Topology_Print=TOPOLOGY_CP2K_ONLY_STEP0 !-1
-      if (Print_PSF.eq.'USE_EXIST') Topology_Print=TOPOLOGY_USE_EXISTING_PSF !-3
-      if (Print_PSF(1:6).eq.'EVERY_') read(Print_PSF(7:len(Print_PSF)),*) Topology_Print !#>0
 
       call finalise(params_in)
 
@@ -249,7 +247,7 @@ logical :: have_silica_potential
          call print('                   QM core & buffer H in the 2nd thermostat')
          call print('                   classical O & H in the 3rd thermostat')
       endif
-      call print('  Print_PSF '//Print_PSF)
+      call print('  PSF_Print '//PSF_Print)
       call print('  nneightol '//nneightol)
       call print('  Time_Step '//round(Time_Step,3))
       call print('  Equilib_Time '//round(Equilib_Time,3))
@@ -475,10 +473,8 @@ logical :: have_silica_potential
           ds%atoms%nneightol = nneightol
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
-          call create_CHARMM(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
-!          call calc_topology(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+          call create_residue_labels(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
-          call write_psf_file(ds%atoms,psf_file='quip_cp2k.psf',run_type_string=trim(Run_Type1),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
           ds%atoms%nneightol = temp
 !       endif
     endif
@@ -494,11 +490,8 @@ logical :: have_silica_potential
     call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
         call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
-        !call write(this=ds%atoms,cio=xyz,real_format='%17.10f')
     else
         call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
-        !call write(this=ds%atoms,cio=xyz,real_format='%17.10f')
-        !call write(this=ds%atoms,cio=xyz,properties=trim(print_prop),real_format='%17.10f')
     endif
     call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
     call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
@@ -511,39 +504,39 @@ logical :: have_silica_potential
     !only QMMM_EXTENDED for the moment **************
     !if (trim(Run_Type1).ne.'QMMM_EXTENDED') call system_abort('ONLY QMMM_EXTENDED')
 
-    !call initialise(CP2K_potential,'wrapper=.true.')
-    if ((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM')) then
-       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0 Run_Type='//trim(Run_Type1)//' '//trim(cp2k_calc_args))
-       call initialise(my_metapotential,args_str='Simple=T',pot=CP2K_QM_potential)
-    elseif ((trim(Run_Type2).eq.'NONE')) then
-       if  ((trim(Run_Type1).eq.'QMMM_EXTENDED')) call system_abort('not yet implemented')
-!       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:cluster_mark:old_cluster_mark:cut_bonds min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
-       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:cluster_mark:old_cluster_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
-       call initialise(my_metapotential,args_str='Simple=T',pot=CP2K_QM_potential)
-    else
-!       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:hybrid_mark:cut_bonds min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
-       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:cluster_mark:old_cluster_mark:cut_bonds min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
-!       call initialise(CP2K_QM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:hybrid_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type1))
-!       call initialise(CP2K_MM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:hybrid_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type2)//' PSF_Print=USE_EXISTING_PSF') !every case but
-       call initialise(CP2K_MM_potential,'FilePot command='//trim(filepot_program)//' property_list=pos:cluster_mark min_cutoff=0.0 clean_up_files=F Run_Type='//trim(Run_Type2)//' PSF_Print=USE_EXISTING_PSF') !every case but
+    ! set up metapot
+    if (trim(Run_Type2) == 'NONE') then ! no force mixing
+       call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
+       call initialise(metapot,args_str='Simple=T',pot=CP2K_slow_pot)
+       ! set up mm only metapot, in case we need it for empty QM core
+       call setup_pot(cp2k_fast_pot, 'MM', filepot_program)
+       call initialise(empty_qm_metapot,args_str='Simple=T',pot=CP2K_fast_pot)
+    else ! doing force mixing
+       call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
+       call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
        if (distance_ramp) then
 	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
 	 weight_interpolation='distance_ramp'
        else
 	 weight_interpolation='hop_ramp'
        endif
-       call initialise(my_metapotential,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
-            ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
-            ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
-            ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
-            ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
-	    ' weight_interpolation='//trim(weight_interpolation)// &
-	    ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
-            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
+       call initialise(metapot,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
+	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
+	  ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
+	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+	  ' weight_interpolation='//trim(weight_interpolation)// &
+	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
+	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
-            //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
-            pot=CP2K_MM_potential, pot2=CP2K_QM_potential)
+	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
+	  pot=CP2K_fast_pot, pot2=CP2K_slow_pot)
+
+       ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
+       if (trim(Run_Type2) == 'MM') then
+	 call initialise(empty_qm_metapot,args_str='Simple=T',pot=CP2K_fast_pot)
+       endif
     endif
 
     !allocate force lists
@@ -557,79 +550,12 @@ logical :: have_silica_potential
 
   !FORCE
 
-     PSF_Print = 'DRIVER_PRINT_AND_SAVE' !in case every #th step
-     if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
-     if (Topology_Print.eq.TOPOLOGY_CP2K_ONLY_STEP0) PSF_Print = 'CP2K_PRINT_AND_SAVE'
-     if (Topology_Print.eq.TOPOLOGY_NO_PSF) PSF_Print='NO_PSF'
-     if (Topology_Print.eq.TOPOLOGY_USE_EXISTING_PSF) PSF_Print='USE_EXISTING_PSF'
-     if (Topology_Print.gt.0 .or. Topology_Print.eq.(-2)) PSF_Print = 'DRIVER_PRINT_AND_SAVE'    !generate PSF (at every n-th step) and then use it
-!added now
-     if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
-!added now
-     empty_QM_core = .false.
-     if (qm_region_pt_ctr) then
-        if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
-           call system_abort("couldn't find hybrid_mark property")
-        if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
-     endif
-     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
-        call print_qm_region(ds%atoms)
-     endif
+     if (topology_print_rate >= 0) driver_PSF_Print='DRIVER_PRINT_AND_SAVE'
+     call do_calc_call(metapot, empty_qm_metapot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
+     if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
-     if ((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM')) then
-        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)
-        call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif ((trim(Run_Type1).eq.'QMMM_CORE').or.(trim(Run_Type1).eq.'NONE')) then
-        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)
-        call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif (qm_region_pt_ctr.and.empty_QM_core) then !only MM, no force mixing
-        call print('Empty QM core. MM run will be performed instead of QM/MM.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type=MM'// &
-          ' PSF_Print='//trim(PSF_Print)
-        call print('ARGS_STR | '//trim(args_str))
-        call calc(CP2K_MM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     else ! force mixing
-        qm_args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)// &
-          ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
-          ' clean_up_files=F centre_cp2k' !// &
-!next 2lines are for playing with silica carving
-!            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster// &
-!            ' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T'
-        mm_args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type2)// &
-          ' PSF_Print='//trim(PSF_Print)// &
-          ' clean_up_files=F'
-        args_str='qm_args_str={'//trim(qm_args_str)// &
-!        args_str='qm_args_str={'//trim(mm_args_str)// &
-          '} mm_args_str={'//trim(mm_args_str)//'}'
-	if (distance_ramp) then
-	  args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
-	endif
-        call print('ARGS_STR | '//trim(args_str))
-!        call create_hybrid_mark_and_weight_region1_from_QM_flag(ds%atoms)
-!!!!!!!!!!
-!call initialise(csilla_out,filename='csilla.xyz',ACTION=OUTPUT,append=.true.)
-!call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark:weight_region1")
-!call finalise(csilla_out)
-!!!!!!!!!!
-!        call set_cutoff(ds%atoms,Inner_Buffer_Radius)
-!        call calc_connect(ds%atoms)
-        call calc(my_metapotential,ds%atoms,f=f1,args_str=trim(args_str))
-!        call set_cutoff(ds%atoms,0._dp)
-!        call calc_connect(ds%atoms)
-     endif
-     energy=0._dp !no energy
-
-    !spline force calculation, if needed
+     !spline force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
         allocate(add_force(1:3,1:ds%atoms%N))
 	call verbosity_push_decrement()
@@ -770,78 +696,15 @@ logical :: have_silica_potential
 
   !FORCE
 
-     if (Topology_Print.gt.0) then !every #th step
-        if (mod(n,Topology_Print).eq.0) then    !recalc connectivity & generate PSF (at every n-th step) and then use it
-           PSF_Print = 'DRIVER_PRINT_AND_SAVE'
-           if (Topology_Print.eq.TOPOLOGY_DRIVER_ONLY_STEP0) PSF_Print = 'USE_EXISTING_PSF' !DRIVER_PRINT_AND_SAVE ! we have just printed one
-           if (trim(Run_Type1).ne.'QS') then
-              call print_title('Recalculate Connectivity & Topology')
-              call map_into_cell(ds%atoms)
-	      call calc_dists(ds%atoms)
-              ! call calc_dists(ds%atoms)
-              call create_CHARMM(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
-!              call calc_topology(ds%atoms,do_CHARMM=.true.)
-              call print('CHARMM parameters added')
-           endif
+     if (Topology_Print_rate > 0) then !every #th step
+        if (mod(n,Topology_Print_rate) == 0) then    !recalc connectivity & generate PSF (at every n-th step) and then use it
+           driver_PSF_Print = 'DRIVER_PRINT_AND_SAVE'
+	else
+           driver_PSF_Print = 'USE_EXISTING_PSF'
         endif
      endif
-
-     empty_QM_core = .false.
-     if (qm_region_pt_ctr) then
-        if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
-           call system_abort("couldn't find hybrid_mark property")
-        if (.not.any(qm_flag_p(1:ds%atoms%N).eq.1)) empty_QM_core = .true.
-     endif
-     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
-        call print_qm_region(ds%atoms)
-     endif
-
-     if ((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM')) then
-        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)
-        call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif ((trim(Run_Type1).eq.'QMMM_CORE').or.(trim(Run_Type1).eq.'NONE')) then
-        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)
-        call calc(CP2K_QM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     elseif (qm_region_pt_ctr.and.empty_QM_core) then !only MM, no force mixing
-        call print('Empty QM core. MM run will be performed instead of QM/MM.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type=MM'// &
-          ' PSF_Print='//trim(PSF_Print)
-        call print('ARGS_STR | '//trim(args_str))
-        call calc(CP2K_MM_potential,ds%atoms,f=f1,args_str=trim(args_str))
-     else ! force mixing
-        qm_args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(PSF_Print)// &
-          ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F termination_clash_check=T terminate=T even_electrons=F'// &
-          ' clean_up_files=F centre_cp2k' !// &
-!next 2lines are for playing with silica carving
-!            ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
-!          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T'
-        mm_args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type2)// &
-          ' PSF_Print='//trim(PSF_Print)// &
-          ' clean_up_files=F'
-        args_str='qm_args_str={'//trim(qm_args_str)// &
-!        args_str='qm_args_str={'//trim(mm_args_str)// &
-          '} mm_args_str={'//trim(mm_args_str)//'}'
-	if (distance_ramp) then
-	  args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
-	endif
-        call print('ARGS_STR | '//trim(args_str))
-!        call set_cutoff(ds%atoms,Inner_Buffer_Radius)
-!        call calc_connect(ds%atoms)
-        call calc(my_metapotential,ds%atoms,f=f1,args_str=trim(args_str))
-!        call set_cutoff(ds%atoms,0._dp)
-!        call calc_connect(ds%atoms)
-     endif
-     energy=0._dp !no energy
+     call do_calc_call(metapot, empty_qm_metapot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
 
     !SPLINE force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
@@ -966,9 +829,11 @@ enddo
 
   call finalise(ds)
   call finalise(traj_xyz)
-  call finalise(my_metapotential)
-  call finalise(CP2K_QM_potential)
-  if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) call finalise(CP2K_MM_potential)
+
+  call finalise(metapot)
+  call finalise(empty_qm_metapot)
+  call finalise(CP2K_slow_pot)
+  call finalise(CP2K_fast_pot)
 
   call print_title('THE')
   call print('Finished. CP2K is now having a rest, since deserved it. Bye-Bye!')
@@ -1325,5 +1190,94 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
     end if
   end subroutine print_qm_region
 
+  subroutine do_calc_call(metapot, empty_qm_metapot, at, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+			  distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
+     type(MetaPotential), intent(inout) :: metapot, empty_qm_metapot
+     type(Atoms), intent(inout) :: at
+     logical, intent(in) :: qm_region_pt_ctr, distance_ramp, do_carve_cluster
+     real(dp), intent(in) :: qm_region_ctr(3)
+     character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, driver_PSF_Print
+     real(dp), intent(inout) :: f1(:,:)
+     real(dp), intent(out) :: energy
+
+     integer, pointer :: qm_flag_p(:)
+     character(len=STRING_LENGTH)        :: slow_args_str, fast_args_str, args_str
+     logical :: empty_QM_core
+
+     empty_QM_core = .false.
+     if (qm_region_pt_ctr) then
+        if (.not.(assign_pointer(at, "hybrid_mark", qm_flag_p))) &
+           call system_abort("couldn't find hybrid_mark property")
+        if (.not.any(qm_flag_p(1:at%N).eq.1)) empty_QM_core = .true.
+	if (empty_QM_core .and. trim(Run_Type2) == 'QMMM_CORE') &
+	  call system_abort("Can't handle Run_Type2=QMMM_CORE but QM core appears empty")
+     endif
+     if (.not.((trim(Run_Type1).eq.'QS').or.(trim(Run_Type1).eq.'MM'))) then
+        call print_qm_region(at)
+     endif
+
+     if (trim(Run_Type2) == 'NONE' .or. (qm_region_pt_ctr .and. empty_QM_core)) then ! no force mixing
+        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
+        args_str=trim(cp2k_calc_args) // &
+          ' Run_Type='//trim(Run_Type1)// &
+          ' PSF_Print='//trim(driver_PSF_Print) // &
+	  ' clean_up_files=F'
+        call print('ARGS_STR | '//trim(args_str))
+	if (Run_Type1(1:4) == 'QMMM') then
+	  if ( qm_region_pt_ctr .and. empty_QM_core) then
+	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', ERROR)
+	    call calc(empty_qm_metapot,at,e=energy,f=f1,args_str=trim(args_str))
+	  else
+	    args_str = trim(args_str) // &
+	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+	      ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+	  endif
+	else
+	  call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
+	endif
+     else ! do force mixing
+
+       slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
+       if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) &
+	 slow_args_str = trim(slow_args_str) // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+
+       fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
+       if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) &
+	 fast_args_str = trim(fast_args_str) // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+
+       args_str='qm_args_str={'//trim(slow_args_str)//'} mm_args_str={'//trim(fast_args_str)//'}'
+       if (distance_ramp) then
+	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
+       endif
+       call print('ARGS_STR | '//trim(args_str))
+       if (qm_region_pt_ctr .and. empty_QM_core) then
+	 if (trim(Run_Type2) /= 'MM') &
+	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
+	 call calc(empty_qm_metapot,at,f=f1,args_str=trim(fast_args_str))
+       else
+	 call calc(metapot,at,f=f1,args_str=trim(args_str))
+       endif
+       energy=0._dp !no energy
+     endif
+
+  end subroutine do_calc_call
+
+  subroutine setup_pot(pot, Run_Type, filepot_program)
+    type(Potential), intent(inout) :: pot
+    character(len=*), intent(in) :: Run_Type, filepot_program
+    if (trim(Run_Type) == 'QS') then
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')
+    else if (trim(Run_Type) == 'MM') then
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
+    else if (trim(Run_Type) == 'QMMM_CORE' .or. trim(Run_Type1) == 'QMMM_EXTENDED') then
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark min_cutoff=0.0')
+    else
+       call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
+    endif
+  end subroutine setup_pot
 
 end program qmmm_md

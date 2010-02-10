@@ -2987,8 +2987,10 @@ type(inoutput), optional :: debugfile
     atoms_for_add_cut_hydrogens%oldpos = my_atoms%avgpos
     atoms_for_add_cut_hydrogens%avgpos = my_atoms%avgpos
     atoms_for_add_cut_hydrogens%pos = my_atoms%avgpos
-    call set_cutoff(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
+
+    call set_cutoff_factor(atoms_for_add_cut_hydrogens,DEFAULT_NNEIGHTOL)
     call calc_connect(atoms_for_add_cut_hydrogens)
+
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
     !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
     !do i=1,core%N
