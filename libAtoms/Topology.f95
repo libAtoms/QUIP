@@ -44,8 +44,8 @@ module topology_module
              write_brookhaven_pdb_file, &
              write_cp2k_pdb_file, &
              write_psf_file, &
-             calc_topology, &
-             create_CHARMM, &
+             create_residue_labels, &
+             create_residue_labels_pos, &
              NONE_RUN, &
              QS_RUN, &
              MM_RUN, &
@@ -90,90 +90,46 @@ module topology_module
 contains
 
 
-  !% Topology calculation using average coordinates.
-  !% Invokes create_CHARMM that works on at%pos rather than at%avgpos.
-  !% Optionally outputs the intraresidual impropers.
-  !
-  subroutine calc_topology(at,do_CHARMM,intrares_impropers)
+  !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
+  !%
+  subroutine create_residue_labels(at,do_CHARMM,intrares_impropers,alt_connect,have_silica_potential,pos_field_for_connectivity)
+    type(Atoms),           intent(inout),target :: at
+    logical,     optional, intent(in)    :: do_CHARMM
+    type(Table), optional, intent(out)   :: intrares_impropers
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical,     optional, intent(in)    :: have_silica_potential
+    character(len=*), optional, intent(in) :: pos_field_for_connectivity
 
-    type(Atoms),       intent(inout) :: at
-    logical, optional, intent(in)    :: do_CHARMM
-    type(Table), optional, intent(out) :: intrares_impropers
-    type(Atoms)                      :: atoms_for_find_motif
-    integer                          :: pos_indices(3), &
-                                        atom_type_index, &
-                                        atom_res_name_index, &
-                                        atom_mol_name_index, &
-                                        atom_res_number_index, &
-                                        atom_charge_index, &
-                                        atom_type_index2, &
-                                        atom_res_name_index2, &
-                                        atom_mol_name_index2, &
-                                        atom_res_number_index2, &
-                                        atom_charge_index2
-    logical :: my_do_CHARMM
+    real(dp), pointer :: use_pos(:,:)
+    type(Atoms) :: at_copy
 
-    call system_timer('calc_topology')
-    my_do_CHARMM = optional_default(.true.,do_CHARMM)
-   !this should be only the 3 calls with use_avgpos!
-    call print('Creating CHARMM format...')
+    ! save a copy
+    at_copy = at
 
-    if (.not.get_value(at%properties,'oldpos',pos_indices)) &
-       call system_abort('calc_topology: atoms object does not have oldpos property')
-    if (.not.get_value(at%properties,'avgpos',pos_indices)) &
-       call system_abort('calc_topology: atoms object does not have avgpos property')
+    ! find desired position field (pos, avgpos, whatever)
+    if (present(pos_field_for_connectivity)) then
+      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
+	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+    else
+      if (.not. assign_pointer(at, 'avgpos', use_pos)) &
+	call system_abort("calc_topology can't find default pos field avgpos")
+    endif
 
-    atoms_for_find_motif = at
-    atoms_for_find_motif%oldpos = at%avgpos
-    atoms_for_find_motif%avgpos = at%avgpos
-    atoms_for_find_motif%pos = at%avgpos
-!     call set_cutoff(atoms_for_find_motif,DEFAULT_NNEIGHTOL)
-!    call set_cutoff(atoms_for_find_motif,at%cutoff)
-call set_cutoff(atoms_for_find_motif, 0._dp)
-    call calc_connect(atoms_for_find_motif)
-    call delete_metal_connects(atoms_for_find_motif)
-    call map_into_cell(atoms_for_find_motif)
-    call calc_dists(atoms_for_find_motif)
-    call create_CHARMM(atoms_for_find_motif,do_CHARMM=my_do_CHARMM,intrares_impropers=intrares_impropers)
+    ! copy desired pos to pos, and new connectivity
+    !NB don't do if use_pos => pos
+    at%pos = use_pos
+    call set_cutoff(at, 0.0_dp)
+    call calc_connect(at)
 
-    atoms_for_find_motif%pos = atoms_for_find_motif%oldpos
+    call create_residue_labels_pos(at,do_CHARMM,intrares_impropers,alt_connect,have_silica_potential)
 
-   ! copy data to at
-    call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_number',0)
-    call add_property(at,'atom_charge',0._dp)
-
-    atom_type_index = get_property(at,'atom_type')
-    atom_type_index2 = get_property(atoms_for_find_motif,'atom_type')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_res_name_index2 = get_property(atoms_for_find_motif,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_mol_name_index2 = get_property(atoms_for_find_motif,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_res_number_index2 = get_property(atoms_for_find_motif,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
-    atom_charge_index2 = get_property(atoms_for_find_motif,'atom_charge')
-
-    at%data%str(atom_type_index,1:at%N) = atoms_for_find_motif%data%str(atom_type_index2,1:at%N)
-    at%data%str(atom_res_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_res_name_index2,1:at%N)
-    at%data%str(atom_mol_name_index,1:at%N) = atoms_for_find_motif%data%str(atom_mol_name_index2,1:at%N)
-    at%data%int(atom_res_number_index,1:at%N) = atoms_for_find_motif%data%int(atom_res_number_index2,1:at%N)
-    at%data%real(atom_charge_index,1:at%N) = atoms_for_find_motif%data%real(atom_charge_index2,1:at%N)
-
-    if (any(at%data%int(atom_res_number_index,1:at%N).le.0)) &
-       call system_abort('calc_topology: atom_res_number is not >0 for every atom')
-    if (any(at%data%str(atom_type_index,1:at%N).eq.'X')) &
-       call system_abort('calc_topology: atom_type is not saved for at least one atom')
-    if (any(at%data%str(atom_res_name_index,1:at%N).eq.'X')) &
-       call system_abort('calc_topology: atom_res_name is not saved for at least one atom')
-    call print('CHARMM parameters added and stored in atoms object')
-    call finalise(atoms_for_find_motif)
-  call system_timer('calc_topology')
-
-  end subroutine calc_topology
-
+    ! copy back from saved copy
+    at%pos = at_copy%pos
+    at%travel = at_copy%travel
+    at%connect = at_copy%connect
+    at%cutoff = at_copy%cutoff
+    at%use_uniform_cutoff = at_copy%use_uniform_cutoff
+  end subroutine create_residue_labels
 
   !% Topology calculation. Recognize residues and save atomic names, residue names etc. in the atoms object.
   !% Generally useable for AMBER and CHARMM force fields, in case of CHARMM, the MM charges are assigned here, too.
@@ -184,7 +140,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_CHARMM(at,do_CHARMM,intrares_impropers, alt_connect,have_silica_potential) !, hysteretic_neighbours)
+  subroutine create_residue_labels_pos(at,do_CHARMM,intrares_impropers, alt_connect,have_silica_potential) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -193,7 +149,7 @@ call set_cutoff(atoms_for_find_motif, 0._dp)
     logical,     optional, intent(in)    :: have_silica_potential
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
-    character(*), parameter  :: me = 'create_CHARMM: '
+    character(*), parameter  :: me = 'create_residue_labels_pos: '
     logical :: remove_Si_H_silica_bonds = .true.
 
     type(Inoutput)                       :: lib
@@ -237,7 +193,7 @@ logical :: silica_potential
     integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
 
-    call system_timer('create_CHARMM')
+    call system_timer('create_residue_labels_pos')
 
     silica_potential = optional_default(.false.,have_silica_potential)
 
@@ -249,15 +205,14 @@ logical :: silica_potential
     if (.not.use_connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
 !    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
 
-    my_do_charmm = .true.
-    if (present(do_CHARMM)) my_do_charmm = do_CHARMM
+    my_do_charmm = optional_default(.true.,do_CHARMM)
 
     residue_library = ''
     call print_title('Creating CHARMM format')
     ex = .false.
     ex = get_value(at%params,'Library',residue_library)
     if (ex) call print('Library: '//trim(residue_library))
-    if (.not.ex) call system_abort('create_CHARMM: no residue library specified, but topology generation requested')
+    if (.not.ex) call system_abort('create_residue_labels_pos: no residue library specified, but topology generation requested')
 
     !Open the residue library
     !call print('Opening library...')
@@ -495,7 +450,7 @@ logical :: silica_potential
        enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
-      call system_abort('create_CHARMM: Unidentified atoms')
+      call system_abort('create_residue_labels_pos: Unidentified atoms')
 
     else
        call print('All atoms identified')
@@ -556,11 +511,11 @@ logical :: silica_potential
     endif
 
     if (any(at%data%int(atom_res_number_index,1:at%N).le.0)) &
-       call system_abort('create_CHARMM: atom_res_number is not >0 for every atom')
+       call system_abort('create_residue_labels_pos: atom_res_number is not >0 for every atom')
     if (any(at%data%str(atom_type_index,1:at%N).eq.'X')) &
-       call system_abort('create_CHARMM: atom_type is not saved for at least one atom')
+       call system_abort('create_residue_labels_pos: atom_type is not saved for at least one atom')
     if (any(at%data%str(atom_res_name_index,1:at%N).eq.'X')) &
-       call system_abort('create_CHARMM: atom_res_name is not saved for at least one atom')
+       call system_abort('create_residue_labels_pos: atom_res_name is not saved for at least one atom')
 
     !Free up allocations
     call finalise(residue_type)
@@ -570,9 +525,9 @@ logical :: silica_potential
     !Close the library
     call finalise(lib)
 
-    call system_timer('create_CHARMM')
+    call system_timer('create_residue_labels_pos')
 
-  end subroutine create_CHARMM
+  end subroutine create_residue_labels_pos
 
   subroutine find_molecule_ids(at,molecules,alt_connect)
     type(Atoms), intent(inout) :: at
