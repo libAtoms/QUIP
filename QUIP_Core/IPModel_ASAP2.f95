@@ -903,71 +903,90 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    if (maxval(abs(this%pol)) > 0.0_dp .and. .not. all(fixdip)) then
 
-      call print('Entering ASAP2 Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', VERBOSE)
+      RESTART_LOOP: do while (.true.)
+         call print('Entering ASAP2 Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', VERBOSE)
 
-      ! Self-consistent determination of dipole moments
-      diff_old = 1.0_dp
-      npol = 1
-      call system_timer('asap_self_consistent_dipoles')
-      do 
-         ! Mix current and previous total efields
-         if (npol == 1) then
-            efield = efield_dipole + efield_charge
-         else
-            efield = this%betapol*efield_dipole + &
-                 (1.0_dp - this%betapol)*efield_int_old + efield_charge
-         end if
-
-         ! Add external field if present
-         if (applied_efield) then
-            do i=1,at%n
-               efield(:,i) = efield(:,i) + ext_efield(:,i)
-            end do
-         end if
-
-         ! Calculate dipole moment in response to total efield
-         do i=1,at%n
-            if (fixdip(i)) cycle
-            ti = get_type(this%type_of_atomic_num, at%Z(i))
-            if (abs(this%pol(ti)) > 0.0_dp) then
-               dipoles(:,i) = efield(:,i)*this%pol(ti) + dip_sr(:,i)
+         ! Self-consistent determination of dipole moments
+         diff_old = 1.0_dp
+         npol = 1
+         call system_timer('asap_self_consistent_dipoles')
+         do 
+            ! Mix current and previous total efields
+            if (npol == 1) then
+               efield = efield_dipole + efield_charge
+            else
+               efield = this%betapol*efield_dipole + &
+                    (1.0_dp - this%betapol)*efield_int_old + efield_charge
             end if
+            
+            ! Add external field if present
+            if (applied_efield) then
+               do i=1,at%n
+                  efield(:,i) = efield(:,i) + ext_efield(:,i)
+               end do
+            end if
+            
+            ! Calculate dipole moment in response to total efield
+            do i=1,at%n
+               if (fixdip(i)) cycle
+               ti = get_type(this%type_of_atomic_num, at%Z(i))
+               if (abs(this%pol(ti)) > 0.0_dp) then
+                  dipoles(:,i) = efield(:,i)*this%pol(ti) + dip_sr(:,i)
+               end if
+            end do
+
+            ! Calculate new efield and measure of convergence
+            efield_int_old = efield_dipole
+            efield_dipole = 0.0_dp
+            call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole)
+
+            diff = 0.0_dp
+            do i=1,at%n
+               ti = get_type(this%type_of_atomic_num, at%Z(i))
+               diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))*&
+                    this%pol(ti)*this%pol(ti)
+            end do
+            diff = sqrt(diff/at%n)
+            efield_old1 = efield_dipole
+            
+            if (vv >= VERBOSE) then
+               write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
+               call print(line, VERBOSE)
+            end if
+
+            if (diff > difftol) then
+               if (restart) then
+                  call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
+                  call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
+               else
+                  call print('IPModel_ASAP2_calc: : Polarisation diverges - diff='//diff//' - trying to restart')
+                  restart = .true.
+                  efield_old1(:,:) = 0.0_dp
+                  efield_old2(:,:) = 0.0_dp
+                  efield_old3(:,:) = 0.0_dp
+                  efield_dipole(:,:) = efield_old1
+                  efield_int_old = 0.0_dp
+                  n_efield_old = 0
+                  call set_value(at%params, 'n_efield_old', min(n_efield_old+1,3))
+                  cycle RESTART_LOOP
+               end if
+            end if
+            
+            if (abs(diff - diff_old) < this%tolpol) exit
+
+            diff_old = diff
+            npol = npol + 1
+            if (npol >= this%maxipol)  then
+               call write(at, 'ipmodel_asap_polarisation_not_converged.xyz')
+               call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+            endif
+
          end do
 
-         ! Calculate new efield and measure of convergence
-         efield_int_old = efield_dipole
-         efield_dipole = 0.0_dp
-         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole)
+         exit RESTART_LOOP
 
-         diff = 0.0_dp
-         do i=1,at%n
-            ti = get_type(this%type_of_atomic_num, at%Z(i))
-            diff = diff + ((efield_dipole(:,i) - efield_old1(:,i)) .dot. (efield_dipole(:,i) - efield_old1(:,i)))*&
-                 this%pol(ti)*this%pol(ti)
-         end do
-         diff = sqrt(diff/at%n)
-         efield_old1 = efield_dipole
-         
-         if (vv >= VERBOSE) then
-            write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
-            call print(line, VERBOSE)
-         end if
-
-         if (diff > difftol) then
-            call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
-            call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
-         end if
+      end do RESTART_LOOP
       
-         if (abs(diff - diff_old) < this%tolpol) exit
-
-         diff_old = diff
-         npol = npol + 1
-         if (npol >= this%maxipol)  then
-            call write(at, 'ipmodel_asap_polarisation_not_converged.xyz')
-            call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
-         endif
-
-      end do
       call system_timer('asap_self_consistent_dipoles')
 
       ! Save final dipole field for next time
