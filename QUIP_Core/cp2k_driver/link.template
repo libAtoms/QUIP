@@ -1,0 +1,24 @@
+    &LINK
+      LINK_TYPE IMOMM
+      QMMM_SCALE_FACTOR 1.0
+      QM_KIND H
+#      ALPHA_IMOMM
+#      CORR_RADIUS
+#      FIST_SCALE_FACTOR 1.0
+#      RADIUS
+#      &ADD_MM_CHARGE
+#        ALPHA
+#        ATOM_INDEX_1
+#        ATOM_INDEX_2
+#        CHARGE
+#        CORR_RADIUS
+#        RADIUS
+#      &END ADD_MM_CHARGE
+#      &MOVE_MM_CHARGE
+#        ALPHA
+#        ATOM_INDEX_1
+#        ATOM_INDEX_2
+#        CORR_RADIUS
+#        RADIUS
+#      &END MOVE_MM_CHARGE
+    &END LINK
