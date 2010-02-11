@@ -295,7 +295,6 @@ function do_this_analysis(this, time, frame)
 
   do_this_analysis = .true.
 
-if (present(time)) call print("do_this_analysis time " // time // " min " // this%min_time // " max " // this%max_time, ERROR)
   if (this%min_time > 0.0_dp) then
     if (.not. present(time)) call system_abort("analysis has non-zero min_time, but no time specified")
     if (time < 0.0_dp) call system_abort("analysis has non-zero min_time, but invalid time < 0")
