@@ -73,6 +73,84 @@ and check that what we get back is the same as the original::
    >>> dia2 = Atoms('diamond.xyz')
    >>> print dia == dia2
    True
+   >>> print dia is dia2
+   False
+
+Note that `dia == dia2` evaluates to `True` since `dia2` is an identical
+copy of `dia`, but `dia is dia2` is `False` since there are two separate
+Atoms objects, residing at different memory locations.
+
+.. warning::
+   
+   Be aware that the assignment operator (i.e. the = sign) in Python
+   does not behave as you may expect from other programming languages:
+   assignment always creates *references* not *copies*.
+
+   In Python, variables are *names* for values, and assignment binds a
+   name to a value. For example the sequence of commands ::
+   
+      >>> a = 1
+      >>> b = a
+      >>> print a
+      1
+      >>> print b
+      1
+      >>> print a == b
+      True
+      >>> print a is b
+      True
+      
+   creates one value (1) with two names (`a` and `b`). The comparison
+   operator == checks whether two names corresond to the same *value*,
+   wheras the `is` operator checks if they correspond to the same
+   address.  The expression `a is b` is equivalent to `id(a) == id(b)`,
+   where :func:`id` is a Python built in function which returns a
+   unique number identifying a the memory address to which a reference
+   points.
+
+   If you forget about this you can get into difficulties when dealding
+   with mutable objects such as lists or Atoms objects::
+
+      >>> a = []
+      >>> b = a
+      >>> print a is b
+      True
+      >>> a.append(1)
+      >>> print a
+      [1]
+      >>> print b
+      [1]
+
+   Here `a` and `b` are two names for the same list, so appending a value
+   to `a` modifies `b` as well. If this is not what you want, create a copy:
+   for list objects this is done with the slice operator::
+
+      >>> a = []
+      >>> b = a[:]
+      >>> print a is b
+      False
+      >>> a.append(1)
+      >>> print a
+      [1]
+      >>> print b
+      []
+
+   To make a copy of a more complex object like an array or an :class:`Atoms` instance
+   you should use the :meth:`~Atoms.copy` method, e.g. ::
+
+      >>> a = diamond(5.44, 14)
+      >>> b = a.copy()
+      >>> print a == b
+      True
+      >>> print a is b
+      False
+
+   Instead, use the :meth:`~quippy.farray.FortranArray.copy` method,
+   like in the second statement above.
+
+
+   For more information, consult the `offical Python tutorial`_.
+      
 
 Various different file formats are supported, see :ref:`fileformats`.
 
@@ -191,6 +269,39 @@ negative numbers to count backwards from the end of an array::
    [[ 1.155462   -2.00131889  3.6       ]
     [ 9.544062   -1.7618594   8.35686   ]]
 
+You can also assign to sections of an array using fancy indexing. For
+example, the following codes adds a `charge` property to our alpha
+quartz object and sets the charge of the Oxygen atoms to -1.4 and that
+of the Silicon atoms to +2.8 ::
+
+   aq.add_property('charge', 0.0)
+   aq.charge[aq.z == 8]  = -1.4
+   aq.charge[aq.z == 14] =  2.8
+
+.. warning::     
+   
+   In view of the way Python assignment works (see warning above), you
+   should be careful not to overwrite array attributes. If you want to
+   set all coordinates to zero you should do::
+
+      dia.pos[:] = 0.0
+
+   and never ::
+
+      dia.pos = 0.0
+
+   since the latter overwrites the `dia.pos` attribute, which is a
+   reference to the relevant colums in the underlying Fortran array
+   within the :attr:`~Atoms.data` Table, with a single floating point
+   value (If you do this by accident you can recreate the array
+   references with the :meth:`~quippy.oo_fortran.FortranDerivedType._update`
+   method). 
+
+   This caveat applies only to arrays. It's okay to assign directly to
+   scalar attributes, such as :attr:`~Atoms.cutoff` or
+   :attr:`~Atoms.nneightol`.
+
+
 Here's an example of making a new Atoms object containing only
 the atoms with positive y coordinates. We first ensure all atoms
 are within the first unit cell using :meth:`~Atoms.map_into_cell`::
@@ -207,7 +318,6 @@ are within the first unit cell using :meth:`~Atoms.map_into_cell`::
    I've shifted the cell by lattice coordinates of ``(0.5, 0.5, 0.5)``
    to make this image.  With the extended version of AtomEye included
    in quippy, you can do this by pressing :kbd:`Shift+z`.
-
 
 Using an AtomsList to analyse results
 -------------------------------------
