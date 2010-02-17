@@ -9,7 +9,7 @@ from numpy import get_include
 from numpy.distutils.system_info import get_info
 from distutils.file_util import copy_file
 from distutils.dep_util import newer, newer_group
-from distutils.sysconfig import parse_makefile
+# from distutils.sysconfig import parse_makefile
 from custom_commands import *
 from distutils.util import get_platform
 
@@ -18,6 +18,83 @@ if (major, minor) < (2, 4):
     sys.stderr.write('Python 2.4 or later is needed to use this package\n')
     sys.exit(1)
 
+# parse_makefile() from Python 2.6.1 distutils.sys_config.
+
+# Regexes needed for parsing Makefile (and similar syntaxes,
+# like old-style Setup files).
+_variable_rx = re.compile("([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
+_findvar1_rx = re.compile(r"\$\(([A-Za-z][A-Za-z0-9_]*)\)")
+_findvar2_rx = re.compile(r"\${([A-Za-z][A-Za-z0-9_]*)}")
+
+def parse_makefile(fn, g=None):
+   """Parse a Makefile-style file.
+
+   A dictionary containing name/value pairs is returned.  If an
+   optional dictionary is passed in as the second argument, it is
+   used instead of a new dictionary.
+   """
+   from distutils.text_file import TextFile
+   fp = TextFile(fn, strip_comments=1, skip_blanks=1, join_lines=1)
+
+   if g is None:
+       g = {}
+   done = {}
+   notdone = {}
+
+   while 1:
+       line = fp.readline()
+       if line is None:                # eof
+           break
+       m = _variable_rx.match(line)
+       if m:
+           n, v = m.group(1, 2)
+           v = string.strip(v)
+           if "$" in v:
+               notdone[n] = v
+           else:
+               try: v = int(v)
+               except ValueError: pass
+               done[n] = v
+
+   # do variable interpolation here
+   while notdone:
+       for name in notdone.keys():
+           value = notdone[name]
+           m = _findvar1_rx.search(value) or _findvar2_rx.search(value)
+           if m:
+               n = m.group(1)
+               found = True
+               if n in done:
+                   item = str(done[n])
+               elif n in notdone:
+                   # get it on a subsequent round
+                   found = False
+               elif n in os.environ:
+                   # do it like make: fall back to environment
+                   item = os.environ[n]
+               else:
+                   done[n] = item = ""
+               if found:
+                   after = value[m.end():]
+                   value = value[:m.start()] + item + after
+                   if "$" in after:
+                       notdone[name] = value
+                   else:
+                       try: value = int(value)
+                       except ValueError:
+                           done[name] = string.strip(value)
+                       else:
+                           done[name] = value
+                       del notdone[name]
+           else:
+               # bogus variable reference; just drop it since we can't deal
+               del notdone[name]
+
+   fp.close()
+
+   # save the results in the global dictionary
+   g.update(done)
+   return g
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
     if 'QUIP_ROOT' in os.environ:
