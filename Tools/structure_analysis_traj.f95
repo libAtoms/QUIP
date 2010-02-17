@@ -494,6 +494,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   logical, allocatable :: mask_a(:)
   integer at_i, at_i_index, ang_sample_i, rad_sample_i
   real(dp), allocatable, save :: pos_mapped(:,:)
+  real(dp), allocatable :: t_histogram(:)
 
   if (present(center_pos) .and. present(center_i)) &
     call system_abort("density_sample_radial_mesh_Gaussians got both center_pos and center_i")
@@ -558,7 +559,11 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       pos_mapped(:,at_i) = at%pos(:,at_i) - t_center(:)
       call map_into_cell(pos_mapped(:,at_i), at%lattice, at%g)
     end do
-!$OMP PARALLEL DO default(shared) private(at_i_index, at_i, rad_sample_i, rad_sample_r, ang_sample_i, p, dist,  exp_arg)
+
+!$OMP PARALLEL default(shared) private(t_histogram, at_i_index, at_i, rad_sample_i, rad_sample_r, ang_sample_i, p, dist, exp_arg)
+    allocate (t_histogram(size(histogram)))
+    t_histogram = 0.0_dp
+!$OMP DO 
     do at_i_index=1, atoms_n_neighbours(at, center_i)
       at_i = atoms_neighbour(at, center_i, at_i_index, diff=diff)
       if (at_i == center_i) cycle
@@ -570,12 +575,18 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
           dist = norm(p-(pos_mapped(:,center_i)+diff))
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
-            histogram(rad_sample_i) = histogram(rad_sample_i) + exp(exp_arg)*w(ang_sample_i)
+            t_histogram(rad_sample_i) = t_histogram(rad_sample_i) + exp(exp_arg)*w(ang_sample_i)
           endif
         end do ! ang_sample_i
       end do ! rad_sample_i
     end do
-!$OMP END PARALLEL DO
+!$OMP END DO
+!$OMP CRITICAL
+    histogram = histogram + t_histogram
+!$OMP END CRITICAL
+    deallocate(t_histogram)
+!$OMP END PARALLEL
+
   end if ! present(center_pos)
 
   deallocate(mask_a)
@@ -1037,7 +1048,6 @@ implicit none
     frame_count = 0
   end do ! more_files
   if (infile_is_list) call finalise(list_infile)
-
 
   call print_analyses(analysis_a)
 
