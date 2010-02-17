@@ -456,7 +456,9 @@ class test(Command):
         ('test-suffixes=', None,
          "a list of suffixes used to generate names of the testcases"),
         ('verbosity=', None,
-         "verbosity for unit tests")
+         "verbosity for unit tests"),
+        ("test=", None,
+         "single test to run")
         ]
 
     def initialize_options(self):
@@ -467,6 +469,7 @@ class test(Command):
         self.test_prefix = 'test_'
         self.test_suffixes = None
         self.verbosity = None
+        self.test = None
 
     def finalize_options(self):
         import os
@@ -502,7 +505,11 @@ class test(Command):
         sys.path.insert(0, self.test_dir)
 
         # run tests
-        tests = TestLoader().loadTestsFromNames([self.test_prefix+case for case in self.test_suffixes])
+        if self.test is not None:
+            tests = TestLoader().loadTestsFromNames([self.test])
+        else:
+            tests = TestLoader().loadTestsFromNames([self.test_prefix+case for case in self.test_suffixes])
+
         print 'Running tests with verbosity %d' % self.verbosity
         TextTestRunner(verbosity=self.verbosity).run(tests)
 
