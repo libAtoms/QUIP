@@ -832,7 +832,7 @@ Here's a function to estimate initial values for the four parameters `eo`, `vo`,
       print 'Volume vo =', vo, 'A^3'
       print 'Energy eo =', eo, 'eV'
       print 'Bulk modulus bo = ', bo, 'eV/A^3 =', bo*GPA, 'GPa'
-      print 'dP/dV (P=0) bop = ', bop
+      print 'dB/dP (T=0) bop = ', bop
 
       return (vo, eo, bo, bop)
 
@@ -842,7 +842,7 @@ We can carry out the fit by calling this function::
    Volume vo = 160.177976999 A^3
    Energy eo = -34.6800268878 eV
    Bulk modulus bo =  1.78075170982 eV/A^3 = 285.312038947 GPa
-   dP/dV (P=0) bop =  19.6902877922
+   dB/dP (T=0) bop =  19.6902877922
 
 Repeating for the relaxed configurations gives results in better agreement with experiment::
 
@@ -850,7 +850,7 @@ Repeating for the relaxed configurations gives results in better agreement with 
    Volume vo = 160.187033408 A^3
    Energy eo = -34.6800000528 eV
    Bulk modulus bo =  0.63282410954 eV/A^3 = 101.39107883 GPa
-   dP/dV (P=0) bop =  2.92639511085
+   dB/dP (T=0) bop =  2.92639511085
 
 We can add plots of the fitted equations to our graph::
 
