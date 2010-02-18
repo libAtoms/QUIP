@@ -142,7 +142,7 @@ class TestCluster_TerminateFalse(QuippyTestCase):
       self.embed = self.at.bfs_grow_single(1, n=2)
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = self.at.create_cluster_info(self.embed, terminate=False, allow_cluster_modification=False)
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=F cluster_allow_modification=F")
 
    def test_int_shape(self):
       self.assertEqual(self.t.int.shape,  (6, self.embed.n))
@@ -185,7 +185,7 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
       self.cut_bonds = Table(8,0,0,0)
-      self.t = self.at.create_cluster_info(self.embed, terminate=True, allow_cluster_modification=False, cut_bonds=self.cut_bonds)
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T cluster_allow_modification=F", self.cut_bonds)
 
       self.n_term = self.t.n - self.embed.n
       self.term_atoms =  [122, 508, 510,  26, 124,  30,  98, 126, 100, 410, 508, 512,  26, 412,  32, 386, 416, 388,
@@ -279,7 +279,7 @@ class TestCluster_Periodic(QuippyTestCase):
       self.embed = self.at.bfs_grow_single(1, n=2, min_images_only=True)
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = self.at.create_cluster_info(self.embed, terminate=True, allow_cluster_modification=False, periodic=(False, False, True))
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T cluster_allow_modification=F cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T")
       self.cluster = carve_cluster(self.at, cluster_info=self.t, cluster_periodic_z=True)
       self.cluster.set_cutoff_factor(1.2)
       self.cluster.calc_connect()
@@ -363,7 +363,7 @@ class TestCluster_HollowSection(QuippyTestCase):
       
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = self.at.create_cluster_info(self.embed, terminate=False, allow_cluster_modification=True)
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=F cluster_allow_modification=T")
 
    def test_int_shape(self):
       self.assertEqual(self.t.int.shape, (6, self.embed.n + 1))
@@ -379,8 +379,8 @@ class TestCluster_HollowSection(QuippyTestCase):
       self.assertEqual(list(self.t.int[1:4,-1]), [self.hollow_atom, 0, 0, 0])
 
    def test_mark_last(self):
-      # Should be marked as having been added by hollow section detector
-      self.assertEqual(str(self.t.str[1,-1]), 'hollow')
+      # Should be marked as having been added by n_cut_bond section detector
+      self.assertEqual(str(self.t.str[1,-1]), 'n_cut_bond')
 
    def test_z(self):
       self.assertArrayAlmostEqual(self.t.int[5,1:self.embed.n], self.at.z[self.t.int[1,1:self.embed.n]])
@@ -434,7 +434,7 @@ class TestCluster_TerminationClash(QuippyTestCase):
 
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = self.at.create_cluster_info(self.embed, terminate=True, allow_cluster_modification=True)
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T cluster_allow_modification=T")
 
    def test_i_shift(self):
       self.assertArrayAlmostEqual(self.t.int[1:4,1:self.embed.n], self.embed.int[1:4,1:self.embed.n])
@@ -483,7 +483,7 @@ class TestCluster_Rescale(QuippyTestCase):
 
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = self.at.create_cluster_info(self.embed, terminate=False, allow_cluster_modification=False)
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=F cluster_allow_modification=F")
 
       self.r_scale = 0.9
 
@@ -533,12 +533,12 @@ class TestCluster_RandomiseBuffer(QuippyTestCase):
 
       self.args = {'terminate' :True,
                    'randomise_buffer' : False}
-      t = self.at.create_cluster_info(self.all_marked, args_str(self.args))
+      t = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args))
       self.cluster = carve_cluster(self.at, args_str(self.args), t)
 
       self.args_randomise_buffer = {'terminate' :True,
                                     'randomise_buffer' : True}
-      t = self.at.create_cluster_info(self.all_marked, args_str(self.args_randomise_buffer))
+      t = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args_randomise_buffer))
       self.cluster_randomise_buffer = carve_cluster(self.at, args_str(self.args_randomise_buffer), t)
 
    def test_cluster_hybrid_mark(self):
@@ -556,14 +556,14 @@ class TestCluster_RandomiseBuffer(QuippyTestCase):
       at2.calc_connect()
       at2.hybrid_mark[at2.hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK] = HYBRID_BUFFER_MARK
 
-      t = at2.create_cluster_info(self.all_marked, args_str(self.args_randomise_buffer))
+      t = create_cluster_info_from_hybrid_mark(at2, args_str(self.args_randomise_buffer))
       cluster_randomise_buffer_2 = carve_cluster(at2, args_str(self.args_randomise_buffer), t)
 
       self.assertEqual(list(self.cluster_randomise_buffer.hybrid_mark),
                        list(cluster_randomise_buffer_2.hybrid_mark))
 
 
-class TestCluster_HybridMark(QuippyTestCase):
+class TestCluster_SplitQM(QuippyTestCase):
 
    def setUp(self):
       self.dia = diamond(5.44, 14)
@@ -590,25 +590,6 @@ class TestCluster_HybridMark(QuippyTestCase):
                    'cluster_allow_modification': False,
                    'randomise_buffer' : False}
 
-      self.cb1 = Table(8,0,0,0)
-      self.cb2 = Table(8,0,0,0)
-
-      self.t1 = self.at.create_cluster_info(self.all_marked, args_str(self.args), cut_bonds=self.cb1)
-      self.t2 = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args), cut_bonds=self.cb2)
-
-      self.c1 = carve_cluster(self.at, cluster_info=self.t1, args_str=args_str(self.args))
-      self.c2 = carve_cluster(self.at, cluster_info=self.t2, args_str=args_str(self.args))
-
-
-   def test_cluster_info(self):
-      self.assertEqual(self.t1, self.t2)
-
-   def test_cut_bonds(self):
-      self.assertEqual(self.cb1, self.cb2)
-
-   def test_cluster(self):
-      self.assertEqual(self.c1, self.c2)
-
    def test_split_qm_raises_runtime_error(self):
       # Split QM region by marking another atom
       self.at.hybrid_mark[107] = HYBRID_ACTIVE_MARK
@@ -617,37 +598,86 @@ class TestCluster_HybridMark(QuippyTestCase):
       verbosity_pop()
   
 
-class TestCluster_HybridMark_Periodic(QuippyTestCase):
+class TestCluster_Surface_Dia(QuippyTestCase):
 
    def setUp(self):
-      self.at = diamond(5.44, 14)
-      self.at.set_cutoff(5.0)
+      self.at = supercell(diamond(5.44, 14), 3, 3, 3)
+      lat = self.at.lattice
+      lat[3,3] *= 2
+      self.at.set_lattice(lat)
       self.at.calc_connect()
-      
+
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
-      self.embed = self.at.bfs_grow_single(1, n=2, min_images_only=True)
 
-      self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
+      embed = self.at.bfs_grow_single(1, n=3)
+      self.at.hybrid_mark[:] = HYBRID_NO_MARK
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T")
+      self.cluster3 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T", cluster_info=self.t)
 
-      self.cb1 = Table(8,0,0,0)
-      self.cb2 = Table(8,0,0,0)
+      embed = self.at.bfs_grow_single(1, n=4)
+      self.at.hybrid_mark[:] = HYBRID_NO_MARK
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T")
+      self.cluster4 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T", cluster_info=self.t)
 
-      self.t1 = self.at.create_cluster_info(self.embed, terminate=True, allow_cluster_modification=False,
-                                            periodic=(False, False, True), cut_bonds=self.cb1)
-      self.t2 = create_cluster_info_from_hybrid_mark(self.at, terminate=True, cluster_allow_modification=False,
-                                                     cluster_periodic_z=True, cut_bonds=self.cb2)
+      self.at.print_xyz("tmp_at.xyz", all_properties=True)
+      self.cluster3.print_xyz("tmp_cluster3.xyz", all_properties=True)
+      self.cluster4.print_xyz("tmp_cluster4.xyz", all_properties=True)
 
-      self.c1 = carve_cluster(self.at, cluster_info=self.t1, terminate=True, cluster_allow_modification=False, cluster_periodic_z=True)
-      self.c2 = carve_cluster(self.at, cluster_info=self.t2, terminate=True, cluster_allow_modification=False, cluster_periodic_z=True)
+   def test_surface_3_hops(self):
+      self.assertEqual(self.cluster3.n,53)
 
-   def test_cluster_info(self):
-      self.assertEqual(self.t1, self.t2)
+   def test_surface_4_hops(self):
+      self.assertEqual(self.cluster4.n,94)
 
-   def test_cut_bonds(self):
-      self.assertEqual(self.cb1, self.cb2)
 
-   def test_clusters(self):
-      self.assertEqual(self.c1, self.c2)
+class TestCluster_Surface_FCC(QuippyTestCase):
+
+   def setUp(self):
+      self.at = supercell(fcc_z111(4.05), 5, 5, 3)
+      self.at.set_atoms([ 13 for x in frange(1,self.at.n) ])
+
+      lat = self.at.lattice
+      lat[3,3] *= 2
+      self.at.set_lattice(lat)
+      self.at.set_cutoff(3.0)
+      self.at.calc_connect()
+
+      self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
+
+      embed = self.at.bfs_grow_single(1, n=1, nneighb_only=False)
+      self.at.hybrid_mark[:] = HYBRID_NO_MARK
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.cluster1 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
+
+      embed = self.at.bfs_grow_single(1, n=2, nneighb_only=False)
+      self.at.hybrid_mark[:] = HYBRID_NO_MARK
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.cluster2 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
+
+      hollow_atom = 28
+      embed.delete(hollow_atom)
+      self.at.hybrid_mark[:] = HYBRID_NO_MARK
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_allow_modification=T reduce_n_cut_bonds=T cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F cluster_nneighb_only=F")
+      self.cluster2h = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=F randomise_buffer=F", cluster_info=self.t)
+
+      # self.at.print_xyz("tmp_at.xyz", all_properties=True)
+      # self.cluster1.print_xyz("tmp_cluster1.xyz", all_properties=True)
+      # self.cluster2.print_xyz("tmp_cluster2.xyz", all_properties=True)
+      # self.cluster2h.print_xyz("tmp_cluster2h.xyz", all_properties=True)
+
+   def test_surface_1_hops(self):
+      self.assertEqual(self.cluster1.n,10)
+
+   def test_surface_2_hops(self):
+      self.assertEqual(self.cluster2.n,37)
+
+   def test_surface_2_hops_hollow(self):
+      self.assertEqual(self.cluster2h.n,37)
 
 
 def mark_atoms(at, nneighb_only=True, alt_connect=None):
@@ -828,7 +858,8 @@ if hasattr(quippy, 'Potential'):
                self.at.hybrid_mark[i] = HYBRID_BUFFER_MARK
 
          self.args = {'cluster_calc_connect': True,
-                      'randomise_buffer': False}
+                      'randomise_buffer': False,
+		      'reduce_n_cut_bonds': False}
 
          self.cluster_info = create_cluster_info_from_hybrid_mark(self.at, args_str(self.args))
          self.cluster = carve_cluster(self.at, args_str(self.args), self.cluster_info)

@@ -35,7 +35,7 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
      "h_outer_l ", &
      "h_fit     " /)
 
-public :: create_cluster_info, create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
+public :: create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
     add_cut_hydrogens, construct_hysteretic_region, &
@@ -393,645 +393,511 @@ contains
   end function  make_convex_step
 
 
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !
-  ! Create Cluster Information Structure:
-  !% Returns an Table object (cluster_info) which contains info on atoms whose
-  !% indices are given in atomlist, possibly with some extras for consistency,
-  !% and optionally terminated with Hydrogens, that can be used by carve_cluster().
-  !
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!OUTDATED   ! Gotcha 1: Hollow sections
+!OUTDATED   !NB equivalent to reduce_n_cut_bonds when new number of bonds is 0
+!OUTDATED   ! OUT and IN refers to the list in cluster_info
+!OUTDATED   ! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
+!OUTDATED   ! atom are IN, then make the OUT atom IN.
+!OUTDATED   function cluster_ss_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+!OUTDATED     type(Atoms), intent(in) :: this
+!OUTDATED     type(Table), intent(inout) :: cluster_info
+!OUTDATED     logical, intent(in) :: connectivity_just_from_connect
+!OUTDATED     type(Connection), intent(in) :: use_connect
+!OUTDATED     logical, intent(in) :: atom_mask(6)
+!OUTDATED     logical :: cluster_changed
+!OUTDATED 
+!OUTDATED     integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
+!OUTDATED     logical :: all_in
+!OUTDATED 
+!OUTDATED     cluster_changed = .false.
+!OUTDATED 
+!OUTDATED     n = 1
+!OUTDATED     ! Loop over cluster atoms (including ones that may get added in this loop)
+!OUTDATED     call print('create_cluster: Checking for hollow sections', NERD)
+!OUTDATED     do while (n <= cluster_info%N)
+!OUTDATED       i = cluster_info%int(1,n)
+!OUTDATED       ishift = cluster_info%int(2:4,n)
+!OUTDATED       call print('cluster_ss_in_out_in: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+!OUTDATED 
+!OUTDATED       !Loop over neighbours
+!OUTDATED       do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
+!OUTDATED 	j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
+!OUTDATED 
+!OUTDATED 	if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
+!OUTDATED 	    (connectivity_just_from_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect)) ) then
+!OUTDATED 	  ! j is out and is nearest neighbour
+!OUTDATED 
+!OUTDATED 	  call print('cluster_ss_in_out_in:   checking j = '//j//" ["//jshift//"]",ANAL)
+!OUTDATED 
+!OUTDATED 	  ! We have an OUT nearest neighbour, loop over its nearest neighbours to see if they
+!OUTDATED 	  ! are all IN
+!OUTDATED 
+!OUTDATED 	  all_in = .true.
+!OUTDATED 	  do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
+!OUTDATED 	    k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
+!OUTDATED 	    if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
+!OUTDATED 	      (connectivity_just_from_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
+!OUTDATED 	      all_in = .false.
+!OUTDATED 	      exit
+!OUTDATED 	    end if
+!OUTDATED 	  end do
+!OUTDATED 
+!OUTDATED 	  !If all j's nearest neighbours are IN then add it
+!OUTDATED 	  if (all_in) then
+!OUTDATED 	    call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
+!OUTDATED 	    cluster_changed = .true.
+!OUTDATED 	    call print('cluster_ss_in_out_in:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+!OUTDATED 	  end if
+!OUTDATED 
+!OUTDATED 	end if
+!OUTDATED 
+!OUTDATED       end do ! m
+!OUTDATED       n = n + 1
+!OUTDATED     end do ! while (n <= cluster_info%N)
+!OUTDATED 
+!OUTDATED     call print('cluster_ss_in_out_in: Finished checking',NERD)
+!OUTDATED     call print("cluster_ss_in_out_in: cluster list:", NERD)
+!OUTDATED     call print(cluster_info, NERD)
+!OUTDATED   end function cluster_ss_in_out_in
 
-  function create_cluster_info(this, atomlist, terminate, periodic, same_lattice, even_electrons, &
-       cut_bonds, allow_cluster_modification, hysteretic_connect, termination_clash_check) result(cluster_info)
-    type(Atoms), target,       intent(in)    :: this           !% Input Atoms object
-    type(Table),               intent(in)    :: atomlist       !% List of atoms to include in cluster. This should be
-                                                               !% either 1 column with indices, or 4 columns with indices
-                                                               !% and shifts relative to first atom in list.
-    logical,     optional,     intent(in)    :: terminate      !% Should Hydrogens be added to cut bonds (default .true.)
-    logical,     optional,     intent(in)    :: periodic(3)    !% Should cluster be periodic in each direction.
-                                                               !% Default is '(/false,false,false/)'.
-                                                               !% Number of true entries must be zero, one or three.
-    logical,	 optional,     intent(in)    :: same_lattice   !% Should lattice be left the same, overrides periodic variable
-                                                               !% Default false
-    logical,     optional,     intent(in)    :: even_electrons !% If true, then cluster will be terminated such that there is no imbalance
-                                                               !% of spin up and spin down electrons. If a hydrogen has to
-                                                               !% be removed it will be taken from an atom with as many 
-                                                               !% termination hydrogens as possible.
-    type(Table), optional,     intent(out)   :: cut_bonds      !% Return a list of the bonds cut when making
-                                                               !% the cluster. Table with 8 'int' columns,
-                                                               !% for $i$, $j$, 'shift_i' and 'shift_j'.
-                                                               !% for the atom indices at each end of the cut bonds.
-    logical,     optional,     intent(in)    :: allow_cluster_modification  !% if false, don't try to fix cluster surface
-    logical,     optional,     intent(in)    :: hysteretic_connect  !% if true, use this%hysteretic_connect for connectivity (also, don't restrict hops to nneigh_tol)
-    logical,     optional,     intent(in)    :: termination_clash_check !% if true, the checks for hollow regions and IN-OUT-IN motifs will be done, even if terminate is false
-    type(Table)                              :: cluster_info   ! this is the output
+  !% Find cases where two IN atoms have a common
+  !% OUT nearest neighbour, and see if termination would cause the hydrogen
+  !% atoms to be too close together. If so, include the OUT nearest neighbour
+  !% in the cluster
+  !% returns true if cluster was changed
+  function cluster_fix_termination_clash(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
 
-    type(Table)                              :: n_term, sorted_n_term
-    integer                                  :: i, j, k, l, m, n, p, q, s, w, nn, nnearest
+    integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
+    real(dp) :: dhat_ij(3), dhat_jk(3), r_ij, r_jk, H1(3), H2(3), diff_ik(3)
+    ! real(dp) :: t_norm
 
-    real(dp),    dimension(3)                :: diff_ik
-    real(dp),    dimension(3)                :: dhat_ij, dhat_jk, H1, H2
-    !NB workaround for pgf90 bug (as of 9.0-1)
-    real(dp) :: t_norm
-    !NB end of workaround for pgf90 bug (as of 9.0-1)
-    real(dp)                                 :: r_ij, r_jk, rescale
-    logical                                  :: all_in
-    logical                                  :: do_terminate, do_periodic(3), do_even_electrons, do_same_lattice, &
-                                                do_hysteretic_connect, do_termination_clash_check
-    integer                                  :: ishift(3), jshift(3), kshift(3), lshift(3), hshift(3), oldN, most_hydrogens
-    logical                                  :: atom_mask(6)
-    logical                                  :: more_atoms
-    logical                                  :: l1, l2, l3
-    logical allow_cluster_mod
-    integer, allocatable, dimension(:,:)     :: periodic_shift
-    integer, allocatable, dimension(:) :: idx
+    cluster_changed = .false.
 
-    integer, pointer :: hybrid_mark(:)
-    type(Connection), pointer :: use_connect
+    call print('doing cluster_fix_termination_clash', NERD)
 
-    type(table)                              :: to_delete, extra_atoms, bonds, buffer, centre
+    !Loop over atoms in the cluster
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)     ! index of atom in the cluster
+      ishift = cluster_info%int(2:4,n)
+      call print('cluster_fix_termination_clash: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+      !Loop over atom i's neighbours
+      do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
+	j = atoms_neighbour(this,i,m, shift=jshift, diff=dhat_ij, distance=r_ij,alt_connect=use_connect)
+	dhat_ij = dhat_ij/r_ij
 
-    ! optional defaults
+	!If j is IN the cluster, or not a nearest neighbour then try the next neighbour
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print('cluster_fix_termination_clash:   j = '//j//" ["//jshift//"] is in cluster",ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print('cluster_fix_termination_clash:   j = '//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	  cycle
+	end if
 
-    allow_cluster_mod = optional_default(.true., allow_cluster_modification)
-    do_terminate      = optional_default(.true., terminate)
-    do_same_lattice   = optional_default(.false., same_lattice)
-    do_even_electrons = optional_default(.false., even_electrons)
-    do_hysteretic_connect = optional_default(.false., hysteretic_connect)
-    do_termination_clash_check = optional_default(.false., termination_clash_check)
+	! So j is an OUT nearest neighbour of i.
+	call print('cluster_fix_termination_clash:   checking j = '//j//" ["//jshift//"]",ANAL)
 
-    do_periodic = (/.false.,.false.,.false./)
-    if (present(periodic)) do_periodic = periodic
+	!Determine the position of the would-be hydrogen along i--j
+	call print('cluster_fix_termination_clash:  Finding i--j hydrogen position',ANAL)
 
-    if (.not. assign_pointer(this, "hybrid_mark", hybrid_mark)) &
-      call system_abort("create_cluster impossible failure to assign hybrid_mark pointer")
+	H1 = this%pos(:,i) + (this%lattice .mult. (ishift)) + &
+	     termination_bond_rescale(this%Z(i), this%Z(j)) * r_ij * dhat_ij
 
+	!Do a loop over j's nearest neighbours
+	call print('cluster_fix_termination_clash:  Looping over '//atoms_n_neighbours(this,j, alt_connect=use_connect)//' neighbours of j', ANAL)
 
-    ! 
-    ! Validate arguments
-    !
+	do p = 1, atoms_n_neighbours(this,j, alt_connect=use_connect)
+	  k = atoms_neighbour(this,j,p, shift=kshift, diff=dhat_jk, distance=r_jk, alt_connect=use_connect)
+	  dhat_jk = dhat_jk/r_jk
 
-    ! check for consistency in optional arguments
+	  !If k is OUT of the cluster or k == i or it is not a nearest neighbour of j
+	  !then try the next neighbour
 
-    if (.not. (count(do_periodic) == 0 .or. count(do_periodic) == 1 .or. count(do_periodic) == 3)) &
-         call system_abort('count(periodic) must be zero, one or three.')
+	  if(find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
+	    call print('cluster_fix_termination_clash:   k = '//k//" ["//kshift//"] not in cluster",ANAL)
+	    cycle
+	  end if
+	  if(k == i .and. all( jshift+kshift == 0 )) cycle
+	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
+	    call print('cluster_fix_termination_clash:   k = '//k//" ["//kshift//"] not nearest neighbour",ANAL)
+	    cycle
+	  end if
 
-    if (do_same_lattice) do_periodic = .true.
+	  call print('cluster_fix_termination_clash: testing k = '//k//" ["//kshift//"]", ANAL)
+	  !Determine the position of the would-be hydrogen along k--j
+	  call print('cluster_fix_termination_clash:   Finding k--j hydrogen position',ANAL)
 
-    if (any(do_periodic) .and. multiple_images(atomlist)) &
-         call system_abort("create_cluster: can't make a periodic cluster since atomlist contains repeats")
+	  diff_ik = r_ij * dhat_ij + r_jk * dhat_jk
 
-    ! check for empty list
+	  H2 = this%pos(:,i) + (this%lattice .mult. (ishift)) + diff_ik - &
+	    termination_bond_rescale(this%Z(k), this%Z(j)) * r_jk * dhat_jk
+	  call print('cluster_fix_termination_clash:   Checking i--k distance and hydrogen distance',ANAL)
 
-    if(atomlist%N == 0) then
-       call print('create_cluster: empty atomlist', NORMAL)
-       return
-    end if
+	  call print("cluster_fix_termination_clash: proposed hydrogen positions:", ANAL)
+	  call print(H1, ANAL)
+	  call print(H2, ANAL)
+	  !NB workaround for pgf90 bug (as of 9.0-1)
+	  ! t_norm = norm(H1-H2); call print("cluster_fix_termination_clash: hydrogen distance would be "//t_norm, ANAL)
+	  !NB end of workaround for pgf90 bug (as of 9.0-1)
+	  ! If i and k are nearest neighbours, or the terminating hydrogens would be very close, then
+	  ! include j in the cluster. The H--H checking is conservative, hence the extra factor of 1.2
+	  if ((norm(diff_ik) < bond_length(this%Z(i),this%Z(k))*this%nneightol) .or. &
+	      (norm(H1-H2) < bond_length(1,1)*this%nneightol*1.2_dp) ) then
 
-    call print('create_cluster: Entering create_cluster', NERD)
+	    call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
+	    cluster_changed = .true.
+	    call print('cluster_fix_termination_clash:  Atom '//j//' added to cluster. Atoms = '//cluster_info%N, NERD)
+	    ! j is now included in the cluster, so we can exit this do loop (over p)
+	    exit
+	  end if 
 
-    if(.not.(atomlist%intsize == 1 .or. atomlist%intsize == 4) .or. atomlist%realsize /= 0) &
-         call system_abort("create_cluster: atomlist table must have intsize=1 or 4 and realsize=0.")
+	end do ! p
 
+      end do ! m
 
-    ! Cluster_info is extensible storage for the cluster
-    ! It stores atomic indices and shifts (4 ints)
-    ! atomic number (1 int)
-    ! termination index (1 int): for termination atoms, which atom is being terminated?
-    ! and atomic positions (3 reals)
-    ! It's length will be at least atomlist%N
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
 
-    call print('create_cluster: Creating temporary cluster table', NERD)
-    call table_allocate(cluster_info,6,4,1,0,atomlist%N)
-
-
-    ! First, put all the marked atoms into cluster_info, storing their positions and shifts
-    call print('create_cluster: Adding specified atoms to the cluster', NERD)
-    do i = 1, atomlist%N
-       if(atomlist%intsize == 4) then
-          ! we have shifts
-          ishift = atomlist%int(2:4,i)
-       else
-          ! no incoming shifts
-          ishift = (/0,0,0/)
-       end if
-       call append(cluster_info, (/atomlist%int(1,i),ishift,this%Z(atomlist%int(1,i)),0/),&
-	    (/this%pos(:,atomlist%int(1,i)),1.0_dp/), (/ hybrid_mark_name(hybrid_mark(atomlist%int(1,i))) /) )
-    end do
-
-    call print("create_cluster: cluster list:", NERD)
+    call print('cluster_fix_termination_clash: Finished checking',NERD)
+    call print("cluster_fix_termination_clash: cluster list:", NERD)
     call print(cluster_info, NERD)
+  end function cluster_fix_termination_clash
 
-    ! Next, check for various gotchas
+  !% keep each whole residue (using atom_res_number(:) property) if any bit of it is already included
+  function cluster_keep_whole_residues(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_keep_whole_residues) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_keep_whole_residues !% if true, keep_whole_residues was specified by user, not just a default value
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+    integer, pointer :: atom_res_number(:)
 
-    ! this mask is used to match with atoms already in the cluster_info table
-    ! if we are periodic in a direction, we don't care about the shifts in that direction when matching
-    atom_mask = (/.true.,.not.do_periodic, .true., .true./)
+    call print('doing cluster_keep_whole_residues', NERD)
 
-    if (do_hysteretic_connect) then
-      use_connect => this%hysteretic_connect
-    else
-      use_connect => this%connect
+    cluster_changed = .false.
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number)) then
+      if (present_keep_whole_residues) then
+	call print("WARNING: cluster_keep_whole_residues got keep_whole_residues requested explicitly, but no proper atom_res_number property available", ERROR)
+      endif
+      return
     endif
 
-    if(allow_cluster_mod) then
-       ! Gotcha 1: Hollow sections
-       ! OUT and IN refers to the list in cluster_info
-       ! Look at the OUT nearest neighbours of IN atoms. If all the nearest neighbours of the OUT
-       ! atom are IN, then make the OUT atom IN.
-       n = 1
-       ! Loop over cluster atoms (including ones that may get added in this loop)
-       call print('create_cluster: Checking for hollow sections', NERD)
-       do while(n <= cluster_info%N)
-          i = cluster_info%int(1,n)
-          ishift = cluster_info%int(2:4,n)
-          call print('create_cluster: i = '//i//' ['//ishift//'] Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
-
-          !Loop over neighbours
-          do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
-             j = atoms_neighbour(this,i,m, r_ij,shift=jshift,alt_connect=use_connect)
-
-             if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
-		  (do_hysteretic_connect .or.  is_nearest_neighbour(this, i, m,alt_connect=use_connect)) ) then
-
-                call print('create_cluster:   checking j = '//j//" ["//jshift//"]",ANAL)
-
-                ! We have an OUT nearest neighbour, loop over it's nearest neighbours to see if they
-                ! are all IN
-
-                all_in = .true.
-                do p = 1, atoms_n_neighbours(this,j,alt_connect=use_connect)
-                   k = atoms_neighbour(this,j,p, shift=kshift,alt_connect=use_connect)
-                   if (find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0 .and. &
-                        (do_hysteretic_connect .or. is_nearest_neighbour(this, j, p,alt_connect=use_connect)) ) then
-                      all_in = .false.
-                      exit
-                   end if
-                end do
-
-                !If all j's nearest neighbours are IN then add it
-                if (all_in) then
-                   call append(cluster_info, (/j,ishift+jshift,this%Z(j),0/), (/this%pos(:,j), 1.0_dp/), (/ "hollow    "/) )
-		   call print('create_cluster:  Adding atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
-                end if
-
-             end if
-
-          end do
-          n = n + 1
-       end do
-
-       call print('create_cluster: Finished checking for hollow sections',NERD)
-       call print("create_cluster: cluster list:", NERD)
-       call print(cluster_info, NERD)
-
-       ! Gotcha 2: In-out-in structures
-       ! Find cases where two IN atoms have a common
-       ! OUT nearest neighbour, and see if termination would cause the hydrogen
-       ! atoms to be too close together. If so, include the OUT nearest neighbour
-       ! in the cluster
-
-       call print('create_cluster: Checking for termination clashes', NERD)
-
-       !Loop over atoms in the cluster
-       n = 1
-       if(do_terminate .or. do_termination_clash_check) then
-         do while (n <= cluster_info%N)
-            i = cluster_info%int(1,n)     ! index of atom in the cluster
-            ishift = cluster_info%int(2:4,n)
-            call print('create_cluster: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
-            !Loop over atom i's neighbours
-            do m = 1, atoms_n_neighbours(this,i,alt_connect=use_connect)
-               j = atoms_neighbour(this,i,m, shift=jshift, diff=dhat_ij, distance=r_ij,alt_connect=use_connect)
-               dhat_ij = dhat_ij/r_ij
-
-               !If j is IN the cluster, or not a nearest neighbour then try the next neighbour
-
-               if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
-                  call print('create_cluster:   j = '//j//" ["//jshift//"] is in cluster",ANAL)
-                  cycle
-               end if
-               if(.not. (do_hysteretic_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
-                  call print('create_cluster:   j = '//j//" ["//jshift//"] not nearest neighbour",ANAL)
-                  cycle
-               end if
-
-               ! So j is an OUT nearest neighbour of i.
-               call print('create_cluster:   checking j = '//j//" ["//jshift//"]",ANAL)
-
-               !Determine the position of the would-be hydrogen along i--j
-               call print('create_cluster:  Finding i--j hydrogen position',ANAL)
-
-               H1 = this%pos(:,i) + (this%lattice .mult. (ishift)) + &
-                    termination_bond_rescale(this%Z(i), this%Z(j)) * r_ij * dhat_ij
-
-               !Do a loop over j's nearest neighbours
-               call print('create_cluster:  Looping over '//atoms_n_neighbours(this,j, alt_connect=use_connect)//' neighbours of j',&
-                    ANAL)
-
-               do p = 1, atoms_n_neighbours(this,j, alt_connect=use_connect)
-
-                  k = atoms_neighbour(this,j,p, shift=kshift, diff=dhat_jk, distance=r_jk, alt_connect=use_connect)
-                  dhat_jk = dhat_jk/r_jk
-
-                  !If k is OUT of the cluster or k == i or it is not a nearest neighbour of j
-                  !then try the next neighbour
-
-                  if(find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/), atom_mask) == 0) then
-                     call print('create_cluster:   k = '//k//" ["//kshift//"] not in cluster",ANAL)
-                     cycle
-                  end if
-                  if(k == i .and. all( jshift+kshift == 0 )) cycle
-                  if(.not. (do_hysteretic_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
-                     call print('create_cluster:   k = '//k//" ["//kshift//"] not nearest neighbour",ANAL)
-                     cycle
-                  end if
-
-                  call print('create_cluster: testing k = '//k//" ["//kshift//"]", ANAL)
-                  !Determine the position of the would-be hydrogen along k--j
-                  call print('create_cluster:   Finding k--j hydrogen position',ANAL)
-
-                  diff_ik = r_ij * dhat_ij + r_jk * dhat_jk
-
-                  H2 = this%pos(:,i) + (this%lattice .mult. (ishift)) + diff_ik - &
-                       termination_bond_rescale(this%Z(k), this%Z(j)) * r_jk * dhat_jk
-                  call print('create_cluster:   Checking i--k distance and hydrogen distance',ANAL)
-
-                  call print("create_cluster: proposed hydrogen positions:", ANAL)
-                  call print(H1, ANAL)
-                  call print(H2, ANAL)
-		  !NB workaround for pgf90 bug (as of 9.0-1)
-                  t_norm = norm(H1-H2); call print("create_cluster: hydrogen distance would be "//t_norm, ANAL)
-		  !NB end of workaround for pgf90 bug (as of 9.0-1)
-                  ! If i and k are nearest neighbours, or the terminating hydrogens would be very close, then
-                  ! include j in the cluster. The H--H checking is conservative, hence the extra factor of 1.2
-
-
-                  if ((norm(diff_ik) < bond_length(this%Z(i),this%Z(k))*this%nneightol) .or. &
-                       (norm(H1-H2) < bond_length(1,1)*this%nneightol*1.2_dp) ) then
-
-                     call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), (/ "clash     "/) )
-                     call print('create_cluster:  Atom '//j//' added to cluster. Atoms = '//cluster_info%N, &
-                          NERD)
-                     ! j is now included in the cluster, so we can exit this do loop (over p)
-                     exit
-                  end if
-
-               end do
-
-            end do
-            n = n + 1
-         end do
-       endif
-
-       call print('create_cluster: Finished checking for termination clashes',NERD)
-       call print("create_cluster: cluster list:", NERD)
-       call print(cluster_info, NERD)
-
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-       !x This part is biochem related, it has been mainly transfered from the AMBER_driver                     x
-       !x It avoids cutting double and triple bonds by checking for the atom's valence (number of neighbours), x
-       !x and taking all its neighbors IN if it has not only single bonds                                      x
-       !x Chemical groups like >C=O -C=O -C=O  >C=S etc. are by the above rule not split                       x
-       !x                             \OH  \NH                                                                 x
-       !x It also avoids cutting aromatic rings and bonds between heavy atoms and hydrogens                     x
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-       !Go through the cluster atoms and find cut bonds. If the bond is to
-       !hydrogen, then include the hydrogen in the cluster list (since AMBER
-       !doesn't cap a bond to hydrogen with a link atom)
-
-       if(do_termination_clash_check) then
-
-          call table_allocate(extra_atoms,6,4,1,0,100)
-          !call table_allocate(to_delete,6,4,1,0,100)
-          call table_allocate(buffer,6,4,1,0,100)
-          call table_allocate(extra_atoms,6,4,1,0,100)
-          call table_allocate(extra_atoms,6,4,1,0,100)
-
-          more_atoms = .true.
-          call Print('create_cluster_info: checking for hydrogens',NERD)
-          do while(more_atoms)
-
-             more_atoms = .false.
-
-             do m = 1, cluster_info%N
-
-                j = cluster_info%int(1,m)
-                call wipe(centre)
-                jshift = cluster_info%int(2:4,m)
-                call append(centre, (/j,jshift/) ) ! BFS step needs intsize=4 !
-!!!!!!!                call append(centre, (/j,jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/), &
-!!!!!!!                                    (/ hybrid_mark_name(hybrid_mark(j)) /) )
-
-                call bfs_step(this,centre,bonds,nneighb_only=.true.)
-                call Print('create_cluster: going for atom '//j//' as centre in checking for cut H bonds',NERD)
-                do nn = 1, bonds%N
-
-                   k = bonds%int(1,nn) !k is an atom which j is bonded to
-                   kshift = bonds%int(2:4,nn)
-                   if (find(cluster_info,(/k,kshift,this%Z(k),0/), atom_mask)/=0) cycle
-                   if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
-!                   if (find(cluster_info,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
-!                   if (find(extra_atoms,(/k,jshift+kshift,this%Z(k),0/), atom_mask)/=0) cycle
-
-                   !If we get to this point then the bond j--k is being cut.
-                   !Add k to extra_atoms if j or k are hydrogen (Z=1)
-                   if (this%Z(j)==1 .or. this%Z(k)==1) then
-!                      call append(extra_atoms,(/k,jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
-                      call append(extra_atoms,(/k,kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/))
-                      call print('Add extra_atom (/'//k//','//kshift//','//this%Z(k)//',0/),(/this%pos(:,k),1.0_dp/), (/ "clash     "/)',VERBOSE)
-                      more_atoms = .true.
-                   end if
-                   !call Print('construct_qm_region: went for bond '//nn)
-                end do
-
-             end do
-
-             !Add any extra atoms to the cluster list then wipe it
-             call append(cluster_info,extra_atoms)
-             call wipe(extra_atoms)
-
-          end do
-
-          !if by accident a single atom is included, that is part of a larger entity (not ion)
-          !then delete it from the list as it will cause error in SCF (e.g. C=O oxygen)
-          !call allocate(to_delete,4,0,0,0,1)
-          !do n = 1, cluster%N
-          !        i = cluster%int(1,n)
-          !        is_alone = .true.
-          !        do j = 1, atoms_n_neighbours(at,i)
-          !                k = atoms_neighbour(at,i,j)
-          !                if(find(cluster_info,(/k,shift/)) /= 0) then
-          !                   if(is_nearest_neighbour(at,i,j)) GOTO 120
-          !                else
-          !                   if(is_nearest_neighbour(at,i,j)) is_alone = .false.
-          !                end if
-          !        end do
-          !        if(.not. is_alone) call append(to_delete,(/i,shift/))
-          !   120  cycle
-          !end do
-
-          !do i = 1, to_delete%N
-          ! call delete(cluster_info,to_delete%int(:,i))
-          !end do
-
-          !check for IN-OUT-IN motifs after adding heavy atoms bonded to cluster H-s
-          ! H-s bonded to cluster heavy atoms
-          n = 1
-          do while (n <= cluster_info%N)
-             i = cluster_info%int(1,n)     ! index of atom in the cluster_info
-             ishift = cluster_info%int(2:4,n)
-             !Loop over atom i's neighbours
-             do m = 1, atoms_n_neighbours(this,i)
-                j = atoms_neighbour(this,i,m, shift=jshift,alt_connect=use_connect)
-
-                !If j is IN the cluster_info, or not a nearest neighbour then try the next neighbour
-                l1 = find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) /= 0
-                l2 = .not.(is_nearest_neighbour(this, i, m))
-                if (l1 .or. l2) cycle
-                !So j is an OUT nearest neighbour of i.
-                !Do a loop over j's nearest neighbours
-                do p = 1, atoms_n_neighbours(this,j)
-                   k = atoms_neighbour(this, j, p, shift=kshift, distance=r_jk, alt_connect=use_connect)
-                   !If k is OUT of the cluster_info or k == i or it is not a nearest neighbour of j
-                   !then try the next neighbour
-                   l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
-                   l2 = (k == i)
-                   l3 = (.not. is_nearest_neighbour(this,j, p))
-                   if (l1 .or. l2 .or. l3) cycle
-                   !So k is an IN nearest neighbour of j.
-!                  if(find(cluster_info,(/j,ishift+jshift/)) == 0) &
-                   if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/)) == 0) &
-                      call append(cluster_info,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
-                   ! j is now included in the cluster_info, so we can exit this do loop (over p)
-                   ! only include j's hydrogen neighbours
-                   do s = 1, atoms_n_neighbours(this,j)
-                      q = atoms_neighbour(this, j, s, shift=hshift, distance=r_ij, alt_connect=use_connect)
-                      if(is_nearest_neighbour( this, j, s )) then
-                         l1 = find(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/)) == 0
-                         l2 = (this%Z(q) == 1)
-                         if(l1 .AND. l2) call append(cluster_info,(/q,ishift+jshift+hshift,this%Z(q),0/),(/this%pos(:,j),1.0_dp/),(/"clash     "/))
-                      end if
-                   end do
-                end do
-             end do
-             n = n + 1
-          end do
-
-          !If in >C=O O is out, include it. Do it also for C=N-C motif for N.
-          !In  general: if a heavy atom is not on its maximal coordination, take its neighbours
-
-          call wipe(extra_atoms)
-          more_atoms = .true.
-          !call Print('Checking for double bonds, cluster size: '//cluster%N)
-          do while(more_atoms)
-
-             more_atoms = .false.
-
-             do n = 1, cluster_info%N
-
-                i = cluster_info%int(1,n)
-                ishift = cluster_info%int(2:4,n)
-                nnearest = 0 ! will be the number of nearest neighbours of atom i
-                do m = 1, atoms_n_neighbours(this,i)
-                  if(is_nearest_neighbour(this,i,m)) nnearest = nnearest + 1
-                end do
-
-                if(ElementValence(this%Z(i)) .ne. -1 .and. (nnearest .ne. ElementValence(this%Z(i)) )  ) then
-                   !the ith atom has 'double bond'
-                   !call Print('QMCut_Create_Cluster: Atom nr'//cluster_info%int(1,n)//' was found to have a double bond, checking...')
-                   do m = 1, atoms_n_neighbours(this,i)
-                      j = atoms_neighbour(this,i,m,shift=jshift,alt_connect=use_connect)
-                      if(.NOT. is_nearest_neighbour(this,i,m)) cycle
-                      if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/))/=0) cycle
-                      if (find(extra_atoms,(/j,ishift+jshift,this%Z(j),0/)) /= 0) cycle
-
-
-                      call append(extra_atoms,(/j,ishift+jshift,this%Z(j),0/),(/this%pos(:,j),1.0_dp/),(/"group     "/))
-                      !also append j's H neighbours, if any, to the list
-                      do p = 1, atoms_n_neighbours(this,j)
-                         k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
-                         if(is_nearest_neighbour(this,j,p)) then
-                            l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0
-                            l2 = (this%Z(k) == 1)
-                            if(l1 .AND. l2) then
-
-                               if(find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0 .AND. find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) == 0) &
-                                  call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
-                            end if
-                         end if
-                      end do
-                      more_atoms = .true.
-
-                      !now check for changed IN-OUT-IN motifs
-                      do p = 1, atoms_n_neighbours(this,j)
-
-                         k = atoms_neighbour(this,j,p,shift=kshift,alt_connect=use_connect)
-
-                         !If k is IN the cluster, or not a nearest neighbour then try the next neighbour
-                         l1 = find(cluster_info,(/k,ishift+jshift+kshift,this%Z(k),0/)) /= 0
-                         l2 = .not.(is_nearest_neighbour(this,j,p))
-                         if (l1 .or. l2) cycle
-                         !So k is an OUT nearest neighbour of j.
-                         !Do a loop over j's nearest neighbours
-                         do q = 1, atoms_n_neighbours(this,k)
-
-                            l = atoms_neighbour(this,k,q,shift=lshift,alt_connect=use_connect)
-                            !If l is OUT of the cluster or l == j or it is not a nearest neighbour of v
-                            !then try the next neighbour
-                            l1 = find(cluster_info,(/l,ishift+jshift+kshift+lshift,this%Z(l),0/)) == 0
-                            l2 = (l == j)
-                            l3 = (.not. is_nearest_neighbour(this,k,q))
-                            if (l1 .or. l2 .or. l3) cycle
-                            !So q is an IN nearest neighbour of v.
-
-                            if(find(cluster_info,(/k,ishift+kshift+kshift/)) == 0 .AND. &
-                               find(extra_atoms,(/k,ishift+jshift+kshift/)) == 0) &
-                               call append(extra_atoms,(/k,ishift+jshift+kshift,this%Z(k),0/),(/this%pos(:,k),1.0_dp/),(/"group     "/))
-                            ! k is now included in the cluster, so we can exit this do loop (over q)
-                            !also include v's hydrogen neighbours
-
-                            do s = 1, atoms_n_neighbours(this,k)
-                               w = atoms_neighbour(this,k,s,shift=hshift,alt_connect=use_connect)
-                               if(is_nearest_neighbour(this,k,s)) then
-                                  l1 = find(cluster_info,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/)) == 0
-                                  l2 = (this%Z(w) == 1)
-                                  if(l1 .AND. l2) then
-
-                                     if(find(extra_atoms,(/w,hshift/)) == 0 .AND. &
-                                        find(cluster_info,(/w,ishift+jshift+kshift+hshift/)) == 0) &
-                                     call append(extra_atoms,(/w,ishift+jshift+kshift+hshift,this%Z(w),0/),&
-                                                (/this%pos(:,w),1.0_dp/),(/"group     "/))
-                                  end if
-                               end if
-                            end do
-                         end do
-                      end do
-
-                   end do
-                end if
-
-             end do
-
-             !Add any extra atoms to the cluster list then wipe it
-             call append(cluster_info,extra_atoms)
-             call wipe(extra_atoms)
-          end do
-
-          !Free up tables
-          !call finalise(to_delete)
-          call finalise(extra_atoms)
-          call finalise(bonds)
-          call finalise(buffer)
-          call finalise(centre) 
-
-          call print('create_cluster: Finished checking for bio valence termination clashes',NERD)
-          call print("create_cluster: cluster list:", NERD)
-          call print(cluster_info, NERD)
-
-       end if !do_termination_clash_check
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-       !x End of biochem related part x
-       !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-    end if ! allow_cluster_mod
-
-    !So now cluster_info contains all the atoms that are going to be in the cluster.
-    !If do_terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
-    if (do_terminate) then
-       call print('create_cluster: Terminating cluster with hydrogens',NERD)
-
-       call table_allocate(n_term, 5, 0, 0, 0)
-       oldN = cluster_info%N
-
-       !Loop over atoms in the cluster
-       do n = 1, oldN
-
-          i = cluster_info%int(1,n)
-          ishift = cluster_info%int(2:4,n)
-          !Loop over atom i's neighbours
-          do m = 1, atoms_n_neighbours(this,i, alt_connect=use_connect)
-
-             j = atoms_neighbour(this,i,m, r_ij, diff=dhat_ij, shift=jshift, alt_connect=use_connect)
-             dhat_ij = dhat_ij / r_ij
-
-             if (find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) == 0 .and. &
-                  (do_hysteretic_connect .or. is_nearest_neighbour(this, i, m, alt_connect=use_connect))) then
-
-                ! If j is an OUT atom, and it is close enough, put a terminating hydrogen
-                ! at the scaled distance between i and j
-
-                rescale = termination_bond_rescale(this%Z(i), this%Z(j))
-                H1 = this%pos(:,i) + rescale * r_ij * dhat_ij
-
-                ! Label term atom with indices into original atoms structure.
-                ! j is atom it's generated from and n is index into cluster table of atom it's attached to
-                call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
-		! label term atom in original atos object calso
-!!$		hybrid_mark(j) = HYBRID_TERM_MARK
-
-                ! Keep track of how many termination atoms each cluster atom has
-                p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
-                if (p == 0) then
-                   call append(n_term, (/n,ishift,1/))
-                else
-                   n_term%int(5,p) = n_term%int(5,p) + 1
-                end if
-
-                ! optionally keep a record of the bonds that we have cut
-                if (present(cut_bonds)) &
-                     call append(cut_bonds, (/i,j,ishift,jshift/))
-
-                if(current_verbosity() .ge. NERD) then
-                   write(line,'(a,i0,a,i0,a)')'create_cluster: Replacing bond ',i,'--',j,' with hydrogen'
-                   call print(line, NERD)
-                end if
-             end if
-          end do
-
-       end do
-
-       ! Do we need to remove a hydrogen atom to ensure equal n_up and n_down electrons?
-       if (do_even_electrons .and. mod(sum(int_part(cluster_info,5)),2) == 1) then
-
-          ! Find first atom with a maximal number of terminating hydrogens
-
-          do i=1,n_term%n
-             call append(sorted_n_term, (/n_term%int(5,i), n_term%int(1,i)/))
-          end do
-          allocate(idx(n_term%n))
-          call sort(sorted_n_term, idx)
-
-          n = sorted_n_term%int(2, sorted_n_term%n)
-          most_hydrogens = idx(sorted_n_term%n)
-          ishift = n_term%int(2:4,most_hydrogens)
-
-          ! Loop over termination atoms
-          do j=oldN,cluster_info%N
-             ! Remove first H atom attached to atom i
-             if (all(cluster_info%int(2:6,j) == (/ishift,1,n/))) then
-                call delete(cluster_info, j)
-                call print('create_cluster: removed one of atom '//cluster_info%int(1,n)//" "//maxval(int_part(n_term,5))// &
-                     ' terminating hydrogens to zero total spin', VERBOSE)
-                exit 
-             end if
-          end do
-
-          deallocate(idx)
-       end if
-
-       call finalise(n_term)
-
-       call print('create_cluster: Finished terminating cluster',NERD)
-
-       if (allocated(periodic_shift)) deallocate(periodic_shift)
-    end if
-
-    call print ('Exiting create_cluster_info', NERD)
-
-  end function create_cluster_info
-
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (atom_res_number(i) < 0) cycle
+      call print('cluster_keep_whole_residues: i = '//i//' residue # = ' // atom_res_number(i) //'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	if (atom_res_number(i) /= atom_res_number(j)) then
+	  call print("cluster_keep_whole_residues:   j = "//j//" ["//jshift//"] has different res number " // atom_res_number(j), ANAL)
+	  cycle
+	endif
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print("cluster_keep_whole_residues:   j = "//j//" ["//jshift//"] is in cluster",ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_residues:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	  cycle
+	end if
+
+	call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"res_num   "/) )
+	cluster_changed = .true.
+	call print('cluster_keep_whole_residues:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+
+      end do ! m
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_residues: Finished checking',NERD)
+    call print("cluster_keep_whole_residues: cluster list:", NERD)
+    call print(cluster_info, NERD)
+
+  end function cluster_keep_whole_residues
+
+  !% adding each neighbour outside atom if doing so immediately reduces the number of cut bonds
+  function cluster_reduce_n_cut_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
+
+    integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
+    integer :: n_bonds_in, n_bonds_out
+
+    call print('doing cluster_reduce_n_cut_bonds', NERD)
+
+    cluster_changed = .false.
+
+    ! loop over each atom in the cluster already
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+
+      ! loop over every neighbour, looking for outside neighbours
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_reduce_n_cut_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	  cycle
+	end if
+	! if we're here, j must be an outside neighbour of i
+	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//atoms_n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',ANAL)
+
+	n_bonds_in = 0
+	n_bonds_out = 0
+	do p=1, atoms_n_neighbours(this, j, alt_connect=use_connect)
+	  k = atoms_neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
+	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
+	    call print("cluster_reduce_n_cut_bonds:   k = "//k//" ["//kshift//"] not nearest neighbour of j = " // j,ANAL)
+	    cycle
+	  end if
+	  ! count how many bonds point in vs. out
+	  if (find(cluster_info, (/ k, ishift+jshift+kshift, this%Z(k), 0 /), atom_mask ) /= 0) then
+	    n_bonds_in = n_bonds_in + 1
+	  else
+	    n_bonds_out = n_bonds_out + 1
+	  endif
+	end do ! p
+
+	if (n_bonds_out < n_bonds_in) then ! adding this one would reduce number of cut bonds
+	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"n_cut_bond" /) )
+	  cluster_changed = .true.
+	  call print('cluster_reduce_n_cut_bonds:  Added atom ' //j//' ['//(ishift+jshift)//'] n_bonds_in ' // n_bonds_in // &
+		     ' out ' // n_bonds_out // '  to cluster. Atoms = ' // cluster_info%N, NERD)
+	endif
+      end do ! m
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_reduce_n_cut_bonds: Finished checking',NERD)
+    call print("cluster_reduce_n_cut_bonds: cluster list:", NERD)
+    call print(cluster_info, NERD)
+  end function cluster_reduce_n_cut_bonds
+
+  !% Go through the cluster atoms and find cut bonds. If the bond is to
+  !% hydrogen, then include the hydrogen in the cluster list (since AMBER
+  !% doesn't cap a bond to hydrogen with a link atom)
+  function cluster_protect_X_H_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
+
+    integer :: n, i, ishift(3), m, j, jshift(3)
+
+    call print('doing cluster_protect_X_H_bonds', NERD)
+    cluster_changed = .false.
+
+    ! loop over each atom in the cluster already
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      call print('cluster_protect_X_H_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+
+      ! loop over every neighbour, looking for outside neighbours
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	! if j is in, or not a nearest neighbour, go on to next
+	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_protect_X_H_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	  cycle
+	end if
+	! if we're here, j must be an outside neighbour of i
+
+	if (this%Z(i) == 1 .or. this%Z(j) == 1) then
+	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"X_H_bond  " /) )
+	  cluster_changed = .true.
+	  call print('cluster_protect_X_H_bonds:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+	endif
+      end do ! m
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_protect_X_H_bonds: Finished checking',NERD)
+    call print("cluster_protect_X_H_bonds: cluster list:", NERD)
+    call print(cluster_info, NERD)
+  end function cluster_protect_X_H_bonds
+
+  !if by accident a single atom is included, that is part of a larger entity (not ion)
+  !then delete it from the list as it will cause error in SCF (e.g. C=O oxygen)
+  !call allocate(to_delete,4,0,0,0,1)
+  !do n = 1, cluster%N
+  !        i = cluster%int(1,n)
+  !        is_alone = .true.
+  !        do j = 1, atoms_n_neighbours(at,i)
+  !                k = atoms_neighbour(at,i,j)
+  !                if(find(cluster_info,(/k,shift/)) /= 0) then
+  !                   if(is_nearest_neighbour(at,i,j)) GOTO 120
+  !                else
+  !                   if(is_nearest_neighbour(at,i,j)) is_alone = .false.
+  !                end if
+  !        end do
+  !        if(.not. is_alone) call append(to_delete,(/i,shift/))
+  !   120  cycle
+  !end do
+
+  !do i = 1, to_delete%N
+  ! call delete(cluster_info,to_delete%int(:,i))
+  !end do
+
+!OUTDATED   function cluster_biochem_in_out_in(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+!OUTDATED     type(Atoms), intent(in) :: this
+!OUTDATED     type(Table), intent(inout) :: cluster_info
+!OUTDATED     logical, intent(in) :: connectivity_just_from_connect
+!OUTDATED     type(Connection), intent(in) :: use_connect
+!OUTDATED     logical, intent(in) :: atom_mask(6)
+!OUTDATED     logical :: cluster_changed
+!OUTDATED 
+!OUTDATED     integer :: n, i, ishift(3), m, j, jshift(3), p, k, kshift(3)
+!OUTDATED 
+!OUTDATED     call print('doing cluster_biochem_in_out_in', NERD)
+!OUTDATED     cluster_changed = .false.
+!OUTDATED 
+!OUTDATED     ! loop over each atom in the cluster already
+!OUTDATED     n = 1
+!OUTDATED     do while (n <= cluster_info%N)
+!OUTDATED       i = cluster_info%int(1,n)
+!OUTDATED       ishift = cluster_info%int(2:4,n)
+!OUTDATED       call print('cluster_reduce_n_cut_bonds: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+!OUTDATED 
+!OUTDATED       ! loop over every neighbour, looking for outside neighbours
+!OUTDATED       do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+!OUTDATED 	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+!OUTDATED 
+!OUTDATED 	! if j is in, or not a neareste neighbour, go on to next
+!OUTDATED 	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+!OUTDATED 	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+!OUTDATED 	  call print("cluster_reduce_n_cut_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+!OUTDATED 	  cycle
+!OUTDATED 	end if
+!OUTDATED 	! if we're here, j must be an outside neighbour of i
+!OUTDATED 	call print('cluster_reduce_n_cut_bonds: j = '//j//'. Looping over '//atoms_n_neighbours(this,j,alt_connect=use_connect)//' neighbours...',ANAL)
+!OUTDATED 
+!OUTDATED 	do p=1, atoms_n_neighbours(this, j, alt_connect=use_connect)
+!OUTDATED 	  k = atoms_neighbour(this, j, p, shift=kshift, alt_connect=use_connect)
+!OUTDATED 	  if (k == i .and. all(jshift + kshift == 0)) cycle
+!OUTDATED 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,j, p, alt_connect=use_connect))) then
+!OUTDATED 	    call print("cluster_reduce_n_cut_bonds:   k = "//k//" ["//kshift//"] not nearest neighbour of j = " // j,ANAL)
+!OUTDATED 	    cycle
+!OUTDATED 	  end if
+!OUTDATED 	  ! if k is in, then j has 2 in neighbours, and so we add it
+!OUTDATED 	  if (find(cluster_info, (/ k, ishift+jshift+kshift, this%Z(k), 0 /), atom_mask ) /= 0) then
+!OUTDATED 	    call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"bio_IOI   " /) )
+!OUTDATED 	    cluster_changed = .true.
+!OUTDATED 	    call print('cluster_biochem_in_out_in:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+!OUTDATED 	    exit
+!OUTDATED 	  end if 
+!OUTDATED 	end do ! p
+!OUTDATED       end do ! m
+!OUTDATED 
+!OUTDATED       n = n + 1
+!OUTDATED     end do ! while (n <= cluster_info%N)
+!OUTDATED 
+!OUTDATED     call print('cluster_biochem_in_out_in: Finished checking',NERD)
+!OUTDATED     call print("cluster_biochem_in_out_in: cluster list:", NERD)
+!OUTDATED     call print(cluster_info, NERD)
+!OUTDATED   end function cluster_biochem_in_out_in
+
+  !% if an in non-H atom is in a residue and not at right coordination, add all of its neighbours
+  function cluster_protect_double_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, present_protect_double_bonds) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical, intent(in) :: present_protect_double_bonds !% if true, protect_double_bonds was specified by user, not just a default value
+    logical :: cluster_changed
+
+    integer :: n, i, ishift(3), m, j, jshift(3)
+    integer ::  n_nearest_neighbours
+    integer, pointer :: atom_res_number(:)
+
+    call print('doing cluster_protect_double_bonds', NERD)
+    cluster_changed = .false.
+
+    if (.not. assign_pointer(this, 'atom_res_number', atom_res_number)) then
+      if (present_protect_double_bonds) then
+	call print("WARNING: cluster_protect_double_bonds got protect_double_bonds requested explicitly, but no proper atom_res_number property available", ERROR)
+      endif
+      return
+    endif
+
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+
+      if (this%Z(i) == 1) cycle
+      if (atom_res_number(i) < 0) cycle
+
+      ! count nearest neighbours of i
+      n_nearest_neighbours = 0
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, alt_connect=use_connect)
+
+	! if j is not nearest neighbour, go on to next one
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_reduce_n_cut_bonds:   j = "//j//" not nearest neighbour",ANAL)
+	  cycle
+	end if
+	! if we're here, j must be an outside neighbour of i
+	n_nearest_neighbours = n_nearest_neighbours + 1
+      end do
+
+      if (ElementValence(this%Z(i)) /= -1 .and. (ElementValence(this%Z(i)) /= n_nearest_neighbours)) then ! i has a valence, and it doesn't match nn#
+	do m=1, atoms_n_neighbours(this, i)
+	  j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	  ! if j is in, or isn't nearest neighbour, go on to next
+	  if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	    call print("cluster_reduce_n_cut_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	    cycle
+	  end if
+
+	  ! if we're here, j must be an outside neighbour of i
+	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"dbl_bond  " /) )
+	  cluster_changed = .true.
+	  call print('cluster_protect_double_bonds:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+	end do
+      endif
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_protect_double_bonds: Finished checking',NERD)
+    call print("cluster_protect_double_bonds: cluster list:", NERD)
+    call print(cluster_info, NERD)
+  end function cluster_protect_double_bonds
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -1058,14 +924,13 @@ contains
     real(dp) :: r_scale, cluster_vacuum
     logical :: terminate, randomise_buffer, print_clusters, do_calc_connect, do_same_lattice
     logical :: hysteretic_connect
-    integer :: i, j, k, at_j, n, m
+    integer :: i, j, k, m
     real(dp) :: maxlen(3), sep(3), lat_maxlen(3), lat_sep(3)
     integer :: lookup(3)
     logical :: do_periodic(3)
     integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:)
     type(Inoutput)                    :: clusterfile
     character(len=255)                :: clusterfilename
-    type(Connection), pointer :: use_connect
     type(Table) :: outer_layer
     logical :: in_outer_layer
 
@@ -1272,10 +1137,18 @@ contains
 
   end function carve_cluster
 
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
   !% Create a cluster using the 'hybrid_mark' property and options in 'args_str'.
   !% All atoms that are marked with anything other than 'HYBRID_NO_MARK' will
   !% be included in the cluster; this includes active, transition and buffer
   !% atoms. 
+  !% Returns an Table object (cluster_info) which contains info on atoms whose
+  !% indices are given in atomlist, possibly with some extras for consistency,
+  !% and optionally terminated with Hydrogens, that can be used by carve_cluster().
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
   function create_cluster_info_from_hybrid_mark(at, args_str, cut_bonds) result(cluster_info)
     type(Atoms), intent(inout), target :: at
     character(len=*), intent(in) :: args_str
@@ -1287,12 +1160,28 @@ contains
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
        even_electrons, do_periodic(3), cluster_nneighb_only, &
        cluster_allow_modification, hysteretic_connect, same_lattice, &
-       termination_clash_check
+       fix_termination_clash, keep_whole_residues, reduce_n_cut_bonds, &
+       protect_X_H_bonds, protect_double_bonds
+    logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
     real(dp) :: r, r_min, centre(3)
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
     integer :: i, j, jj, first_active, old_n, n_cluster, shift(3)
     integer, pointer :: hybrid_mark(:)
     integer, allocatable, dimension(:) :: uniqed, tmp_index
+
+    type(Table)                              :: n_term, sorted_n_term
+    integer                                  :: m, n, p
+
+    real(dp)                                 :: H1(3)
+    real(dp)                                 :: dhat_ij(3)
+    real(dp)                                 :: r_ij, rescale
+    integer                                  :: ishift(3), jshift(3), oldN, most_hydrogens
+    logical                                  :: atom_mask(6)
+    integer, allocatable, dimension(:) :: idx
+
+    type(Connection), pointer :: use_connect
+    logical :: connectivity_just_from_connect
+    logical :: cluster_changed, cluster_changed_t
 
     call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', VERBOSE)
 
@@ -1306,7 +1195,11 @@ contains
     call param_register(params, 'cluster_allow_modification', 'T', cluster_allow_modification)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
     call param_register(params, 'cluster_same_lattice', 'F', same_lattice)
-    call param_register(params, 'termination_clash_check','F', termination_clash_check)
+    call param_register(params, 'fix_termination_clash','T', fix_termination_clash)
+    call param_register(params, 'keep_whole_residues','T', keep_whole_residues, keep_whole_residues_has_value)
+    call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds)
+    call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
+    call param_register(params, 'protect_double_bonds','T', protect_double_bonds, protect_double_bonds_has_value)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) &
       call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
@@ -1388,6 +1281,8 @@ contains
        old_n = cluster_list%N
     end do
     deallocate(tmp_index, uniqed)
+    call finalise(nextlist)
+    call finalise(currentlist)
 
     ! partition cluster_list so that active atoms come first
     do i=1,cluster_list%N
@@ -1403,14 +1298,207 @@ contains
     call append(cluster_list, bufferlist)
     call finalise(activelist)
     call finalise(bufferlist)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    cluster_info = create_cluster_info(at, cluster_list, terminate=terminate, &
-         periodic=do_periodic, same_lattice=same_lattice, even_electrons=even_electrons, &
-         cut_bonds=cut_bonds, allow_cluster_modification=cluster_allow_modification, &
-	 hysteretic_connect=hysteretic_connect,termination_clash_check=termination_clash_check)
+    ! 
+    ! Validate arguments
+    !
 
-    call finalise(currentlist)
-    call finalise(nextlist)
+    ! check for consistency in optional arguments
+
+    if (.not. (count(do_periodic) == 0 .or. count(do_periodic) == 1 .or. count(do_periodic) == 3)) &
+         call system_abort('count(periodic) must be zero, one or three.')
+
+    if (same_lattice) do_periodic = .true.
+
+    if (any(do_periodic) .and. multiple_images(cluster_list)) &
+         call system_abort("create_cluster: can't make a periodic cluster since cluster_list contains repeats")
+
+    ! check for empty list
+
+    if(cluster_list%N == 0) then
+       call print('create_cluster: empty cluster_list', NORMAL)
+       return
+    end if
+
+    call print('create_cluster: Entering create_cluster', NERD)
+
+    if(.not.(cluster_list%intsize == 1 .or. cluster_list%intsize == 4) .or. cluster_list%realsize /= 0) &
+         call system_abort("create_cluster: cluster_list table must have intsize=1 or 4 and realsize=0.")
+
+
+    ! Cluster_info is extensible storage for the cluster
+    ! It stores atomic indices and shifts (4 ints)
+    ! atomic number (1 int)
+    ! termination index (1 int): for termination atoms, which atom is being terminated?
+    ! and atomic positions (3 reals)
+    ! It's length will be at least cluster_list%N
+
+    call print('create_cluster: Creating temporary cluster table', NERD)
+    call table_allocate(cluster_info,6,4,1,0,cluster_list%N)
+
+    ! First, put all the marked atoms into cluster_info, storing their positions and shifts
+    call print('create_cluster: Adding specified atoms to the cluster', NERD)
+    do i = 1, cluster_list%N
+       if(cluster_list%intsize == 4) then
+          ! we have shifts
+          ishift = cluster_list%int(2:4,i)
+       else
+          ! no incoming shifts
+          ishift = (/0,0,0/)
+       end if
+       call append(cluster_info, (/cluster_list%int(1,i),ishift,at%Z(cluster_list%int(1,i)),0/),&
+	    (/at%pos(:,cluster_list%int(1,i)),1.0_dp/), (/ hybrid_mark_name(hybrid_mark(cluster_list%int(1,i))) /) )
+    end do
+
+    call print("create_cluster: cluster list:", NERD)
+    call print(cluster_info, NERD)
+
+    ! Next, check for various gotchas
+
+    ! at mask is used to match with atoms already in the cluster_info table
+    ! if we are periodic in a direction, we don't care about the shifts in that direction when matching
+    atom_mask = (/.true.,.not.do_periodic, .true., .true./)
+
+    connectivity_just_from_connect = .not. cluster_nneighb_only
+    if (hysteretic_connect) then
+      use_connect => at%hysteretic_connect
+      ! will also pass true for connectivity_just_from_connect to cluster_...() routines, so that
+      ! is_nearest_neighbour() won't be used
+      connectivity_just_from_connect = .true.
+    else
+      use_connect => at%connect
+    endif
+
+    if (cluster_allow_modification) then
+      cluster_changed = .true.
+      do while (cluster_changed) 
+	cluster_changed = .false.
+	call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
+	  ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
+	  ' protect_X_H_bonds ' // protect_X_H_bonds // &
+	  ' protect_double_bonds ' // protect_double_bonds // &
+	  ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=NERD)
+	if (keep_whole_residues) then
+	  cluster_changed_t = cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)
+	  cluster_changed = cluster_changed .or. cluster_changed_t
+	endif
+	if (reduce_n_cut_bonds) then
+	  cluster_changed_t = cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+	  cluster_changed = cluster_changed .or. cluster_changed_t
+	endif
+	if (protect_X_H_bonds) then
+	  cluster_changed_t = cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+	  cluster_changed = cluster_changed .or. cluster_changed_t
+	endif
+	if (protect_double_bonds) then
+	  cluster_changed_t = cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)
+	  cluster_changed = cluster_changed .or. cluster_changed_t
+	endif
+	if (terminate .or. fix_termination_clash) then
+	  cluster_changed_t = cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+	  cluster_changed = cluster_changed .or. cluster_changed_t
+	endif
+!OUTDATED if (ss_in_out_in) cluster_changed = cluster_changed .or. cluster_ss_in_out_in(at, cluster_info, use_connect)
+!OUTDATED if (biochem_in_out_in) cluster_changed = cluster_changed .or. cluster_biochem_in_out_in(at, cluster_info, use_connect)
+      end do ! while cluster_changed
+
+      call print('create_cluster: Finished fixing cluster for various heuristic pathologies',NERD)
+      call print("create_cluster: cluster list:", NERD)
+      call print(cluster_info, NERD)
+    end if ! allow_cluster_mod
+
+    !So now cluster_info contains all the atoms that are going to be in the cluster.
+    !If terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
+    if (terminate) then
+       call print('create_cluster: Terminating cluster with hydrogens',NERD)
+
+       call table_allocate(n_term, 5, 0, 0, 0)
+       oldN = cluster_info%N
+
+       !Loop over atoms in the cluster
+       do n = 1, oldN
+
+          i = cluster_info%int(1,n)
+          ishift = cluster_info%int(2:4,n)
+          !Loop over atom i's neighbours
+          do m = 1, atoms_n_neighbours(at,i, alt_connect=use_connect)
+
+             j = atoms_neighbour(at,i,m, r_ij, diff=dhat_ij, shift=jshift, alt_connect=use_connect)
+             dhat_ij = dhat_ij / r_ij
+
+             if (find(cluster_info,(/j,ishift+jshift,at%Z(j),0/), atom_mask) == 0 .and. &
+                  (hysteretic_connect .or. is_nearest_neighbour(at, i, m, alt_connect=use_connect))) then
+
+                ! If j is an OUT atom, and it is close enough, put a terminating hydrogen
+                ! at the scaled distance between i and j
+
+                rescale = termination_bond_rescale(at%Z(i), at%Z(j))
+                H1 = at%pos(:,i) + rescale * r_ij * dhat_ij
+
+                ! Label term atom with indices into original atoms structure.
+                ! j is atom it's generated from and n is index into cluster table of atom it's attached to
+                call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
+		! label term atom in original atos object calso
+!!$		hybrid_mark(j) = HYBRID_TERM_MARK
+
+                ! Keep track of how many termination atoms each cluster atom has
+                p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
+                if (p == 0) then
+                   call append(n_term, (/n,ishift,1/))
+                else
+                   n_term%int(5,p) = n_term%int(5,p) + 1
+                end if
+
+                ! optionally keep a record of the bonds that we have cut
+                if (present(cut_bonds)) &
+                     call append(cut_bonds, (/i,j,ishift,jshift/))
+
+                if(current_verbosity() .ge. NERD) then
+                   write(line,'(a,i0,a,i0,a)')'create_cluster: Replacing bond ',i,'--',j,' with hydrogen'
+                   call print(line, NERD)
+                end if
+             end if
+          end do
+
+       end do
+
+       ! Do we need to remove a hydrogen atom to ensure equal n_up and n_down electrons?
+       if (even_electrons .and. mod(sum(int_part(cluster_info,5)),2) == 1) then
+
+          ! Find first atom with a maximal number of terminating hydrogens
+
+          do i=1,n_term%n
+             call append(sorted_n_term, (/n_term%int(5,i), n_term%int(1,i)/))
+          end do
+          allocate(idx(n_term%n))
+          call sort(sorted_n_term, idx)
+
+          n = sorted_n_term%int(2, sorted_n_term%n)
+          most_hydrogens = idx(sorted_n_term%n)
+          ishift = n_term%int(2:4,most_hydrogens)
+
+          ! Loop over termination atoms
+          do j=oldN,cluster_info%N
+             ! Remove first H atom attached to atom i
+             if (all(cluster_info%int(2:6,j) == (/ishift,1,n/))) then
+                call delete(cluster_info, j)
+                call print('create_cluster: removed one of atom '//cluster_info%int(1,n)//" "//maxval(int_part(n_term,5))// &
+                     ' terminating hydrogens to zero total spin', VERBOSE)
+                exit 
+             end if
+          end do
+
+          deallocate(idx)
+       end if
+
+       call finalise(n_term)
+
+       call print('create_cluster: Finished terminating cluster',NERD)
+    end if
+
+    call print ('Exiting create_cluster_info', NERD)
+
     call finalise(cluster_list)
 
   end function create_cluster_info_from_hybrid_mark
@@ -1452,9 +1540,9 @@ contains
     integer :: n_region1, n_trans, n_region2 !, n_term
     integer :: i, j, jj, first_active, shift(3)
     logical :: dummy
-    type(Table) :: activelist, currentlist, nextlist, distances, oldbuffer, bufferlist, buffer_inner, buffer_outer
+    type(Table) :: activelist, currentlist, nextlist, distances, oldbuffer, bufferlist
     real(dp) :: core_CoM(3), core_mass, mass
-    integer :: list_1, old_nextlist_N, hybrid_number 
+    integer :: list_1, hybrid_number 
     type(Table) :: total_embedlist 
 
     real(dp) :: origin(3), extent(3,3)
@@ -1917,7 +2005,6 @@ contains
     logical :: do_nneighb_only, do_min_images_only
     type(Table) :: currentlist, nextlist, tmpfitlist
     integer :: n, hybrid_number
-    integer, dimension(:), allocatable :: array 
     type(Table) :: totallist
     integer :: list_1
 
@@ -2270,7 +2357,6 @@ type(inoutput), optional :: debugfile
     logical                             :: do_use_avgpos
     logical                             :: do_loop_atoms_no_connectivity
     logical                             :: do_add_only_heavy_atoms
-    integer                             :: do_n_connectivity_hops
     logical                             :: do_nneighb_only
     logical                             :: do_min_images_only
     integer                             :: i, j, ii, ij
@@ -2952,8 +3038,7 @@ type(inoutput), optional :: debugfile
     logical,  optional, intent(out)   :: list_changed
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
-    type(Table) :: inner_list, outer_list, core, core1, ext_qmlist
-    integer     :: qm_flag_index, i
+    type(Table) :: core, core1, ext_qmlist
     real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
 
@@ -3043,8 +3128,6 @@ type(inoutput), optional :: debugfile
 
     integer, pointer :: mark_p(:)
     integer              :: i
-    integer              :: hybrid_flag_index
-    logical              :: my_do_recursive
     logical :: do_get_up_to_mark_value
 
     do_get_up_to_mark_value = optional_default(.false., get_up_to_mark_value)
