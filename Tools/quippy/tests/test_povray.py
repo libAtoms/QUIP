@@ -41,7 +41,7 @@ sphere { <1.360000,-4.080000,4.080000>, 1.0 pigment {color <1.000000,1.000000,1.
 
    def testpov(self):
       self.at.write(self.s, format='pov')
-      self.assertEqual(self.pov_ref, self.s.getvalue())
+      self.assertEqual(self.pov_ref.replace('-0.00','0.00'), self.s.getvalue().replace('-0.00','0.00'))
 
 
 if __name__ == '__main__':
