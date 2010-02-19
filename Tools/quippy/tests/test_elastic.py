@@ -104,8 +104,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
          C, C_err = fit_elastic_constants(stressed_configs, 'cubic', verbose=False, graphics=False)
 
-         self.assertArrayAlmostEqual(C, self.C_ref, tol=1e-4)
-         self.assertArrayAlmostEqual(C_err, self.C_err_ref, tol=1e-4)
+         self.assertArrayAlmostEqual(C, self.C_ref, tol=1e-2)
+         self.assertArrayAlmostEqual(C_err, self.C_err_ref, tol=1e-2)
 
       def testcubic_relaxed(self):
 
@@ -120,8 +120,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
          C, C_err = fit_elastic_constants(stressed_configs, 'cubic', verbose=False, graphics=False)
 
-         self.assertArrayAlmostEqual(C, self.C_ref_relaxed, tol=1e-4)
-         self.assertArrayAlmostEqual(C_err, self.C_err_ref_relaxed, tol=1e-4)
+         self.assertArrayAlmostEqual(C, self.C_ref_relaxed, tol=1e-2)
+         self.assertArrayAlmostEqual(C_err, self.C_err_ref_relaxed, tol=1e-2)
 
 
       def testorthorhombic_unrelaxed(self):
