@@ -134,18 +134,24 @@ all_configs = AtomsList(infile, store=False)
 if outfile is not None:
    outfile = AtomsWriter(outfile, format=opt.format)
 
-if len(all_configs) == 1:
-   opt.range = 1
+try:
+   if len(all_configs) == 1:
+      opt.range = 1
+   got_length = True
+except ValueError:
+   got_length = False
 
 if isinstance(opt.range, slice):
    # multiple frames
 
-   from quippy.progbar import ProgressBar
-   pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
-   
-   for i, at in fenumerate(itertools.islice(all_configs, opt.range.start+1, opt.range.stop, opt.range.step)):
+   if got_length:
+      from quippy.progbar import ProgressBar
+      pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
+
+   for i, at in fenumerate(itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)):
       process(at)
-      pb(i)
+      if got_length:
+         pb(i)
 
    print
                     
