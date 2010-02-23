@@ -549,9 +549,12 @@ logical :: silica_potential
     logical :: added_something
     type(Table) :: cur_molec, next_atoms
 
+    !if property not present
     call add_property(at,'mol_id',0)
     if (.not. assign_pointer(at,'mol_id',mol_id)) &
       call system_abort("find_molecule_ids can't assign mol_id")
+    !if present
+    mol_id=0
 
     last_seed = 0
     last_mol_id = 0
