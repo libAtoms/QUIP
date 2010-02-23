@@ -139,158 +139,6 @@ def info(message):
    sys.stdout.write('castep_driver INFO    : '+message+'\n')
 
 
-def castep_check_pspots(cluster, cell, param):
-   """Check pseudopotential files are present, and that we have one for
-   each element present in cluster. Also tries to check spin polarisation
-   of system matches that specified in parameters."""
-
-   # Get list of unique elements in cluster
-   pspot_dict = {}
-   for el in cluster.species:
-      pspot_dict[el] = None
-   elements = pspot_dict.keys()
-
-   if 'SPECIES_POT' in cell:
-      for line in cell['SPECIES_POT']:
-         element, pspot = map(string.strip, line.split())
-         pspot_dict[element] = pspot
-
-   valence_charges = {}
-   missing_pspots = False
-   
-   for el in elements:
-      pspot = pspot_dict[el]
-      if pspot is None:
-         # Not fatal since on-the-fly pseudo-potential will be generated
-         # however, we can't estimate then n_electrons here
-         warn('Pseudopotential missing for element %s' % el)
-         valence_charges[el] = '?'
-         missing_pspots = True
-      elif not pspot.startswith('/"'):
-         shutil.copy(orig_dir+'/'+pspot, '.')
-         pspot_lines = open(pspot,'r').readlines()
-
-         # First check for old-style pspot report
-         zlines = filter(lambda s: s.startswith('    |  z ='), pspot_lines)
-         if len(zlines) == 1:
-            # Extract number of valence electrons
-            fields = zlines[0].split()
-            zv = float(fields[fields.index('zv')+2])
-         else:
-            # Now try newer style for OTF generated pspots
-            zlines = filter(lambda s: s.startswith('   | Element: '), pspot_lines)
-            if len(zlines) != 1:
-               raise ValueError('Malformed pseudopotential file: does not contain pseudopotential report')
-            fields = zlines[0].split()
-            zv = float(fields[fields.index('charge:')+1])
-
-         valence_charges[el] = zv
-      else:
-         # It's an on-the-fly pseudopotential
-         fields = pspot[2:-2].split('|')
-         valence_charges[el] = float(fields[0])
-
-   info('unique elements and valence electrons: %s' % valence_charges)
-
-   if not missing_pspots:
-      n_electrons = reduce(operator.add, \
-                           map(lambda el: valence_charges[el]*count(cluster.species == el), \
-                               elements))
-
-      info('total electrons %.1f' % n_electrons)
-      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() == 'false' and \
-          int(n_electrons) % 2 != 0):
-         raise ValueError('spin polarised set to false but got odd number of electrons!')
-      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() == 'true' and \
-          int(n_electrons) % 2 == 0):
-         raise ValueError('spin polarised set to true but got even number of electrons!')
-
-
-def castep_run(cell, param,  stem, castep, log=None):
-   "Invoke castep and return True if it completed successfully"
-   # Write parameter file ...
-   param.write(stem+'.param')
-   # ... and cell file
-   cell.write(stem+'.cell')
-
-   if TEST_MODE:
-      info('test mode: not running castep')
-      
-      # Simulate making check file
-      check_file = open(stem+'.check','w')
-      check_file.close()
-
-   else:
-      # Remove old output file and error files
-      try: 
-         os.remove(stem+'.castep')
-      except:
-         pass
-      for f in glob.glob('%s*.err' % stem):
-         os.remove(f)
-
-      os.system(castep % stem)
-
-   if SAVE_ALL_CHECK_FILES:
-      if os.path.exists('%s.check' % stem):
-         n = 0
-         while os.path.exists('%s.check.%d' % (stem, n)):
-            n += 1
-         shutil.copyfile('%s.check' % stem, '%s.check.%d' % (stem, n))
-
-   if SAVE_ALL_INPUT_FILES:
-      if os.path.exists('%s.cell' % stem):
-         n = 0
-         while os.path.exists('%s.cell.%d' % (stem, n)):
-            n += 1
-         shutil.copyfile('%s.cell' % stem, '%s.cell.%d' % (stem, n))
-      if os.path.exists('%s.param' % stem):
-         n = 0
-         while os.path.exists('%s.param.%d' % (stem, n)):
-            n += 1
-         shutil.copyfile('%s.param' % stem, '%s.param.%d' % (stem, n))
-
-   err_files = glob.glob('%s*.err' % stem)
-   got_error = False
-   if (len(err_files) > 0):
-      for f in err_files:
-         error_text = open(f).read().strip()
-         if error_text != '':
-            got_error = True
-            error(error_text)
-
-   # Write log file here so that it will always be written
-   if log is not None and os.path.exists('%s.castep' % stem):
-      logf = open(log, 'a')
-      castep_output = open('%s.castep' % stem, 'r').readlines()
-      logf.writelines(castep_output)
-      logf.close()
-
-   return not got_error
-
-
-import md5
-
-def hash_atoms(at, ndigits=HASH_NDIGITS):
-   """Hash an atoms object with a precision of ndigits decimal digits.
-   Species, lattice and fractional positions are fed to MD5 to form the hash."""
-
-   doround = lambda x: round(x, ndigits)
-
-   # Compute fractional positions, round them to ndigits, then sort them
-   # for hash stability
-   flat_frac_pos = array([ dot(at.pos[i,:],at.g) for i in range(at.n) ]).flatten()
-   flat_frac_pos = map(doround, flat_frac_pos)
-   flat_frac_pos.sort()
-
-   m = md5.new()
-   m.update(str(map(doround, at.lattice.flat)))
-   m.update(str(at.species))
-   m.update(str(flat_frac_pos))
-
-   return m.hexdigest()
-
-
 class ParamError(Exception):
    pass
 
@@ -388,7 +236,7 @@ if os.path.exists(outfile):
    os.remove(outfile)
 
 if DO_HASH:
-   path = WORKING_DIR+'/'+stem+'_'+str(hash_atoms(cluster))
+   path = WORKING_DIR+'/'+stem+'_'+str(castep.hash_atoms(cluster, HASH_NDIGITS))
 elif BATCH_QUEUE or BATCH_READ:
    try:
       batch_id = int(open('castep_driver_batch_id').read())
@@ -434,7 +282,7 @@ if not BATCH_READ:
    # Check pseudopotentials are present and
    # copy pseudopotential files into working directory
    try:
-      castep_check_pspots(cluster, cell, params[0][1])
+      castep.check_pspots(cluster, cell, params[0][1])
    except IOError, (errno, msg):
       die('IO Error reading pseudopotentials (%d,%s)' % (errno,msg))
    except ValueError, message:
@@ -529,7 +377,9 @@ try:
 
       # Run castep
       if not BATCH_READ and not BATCH_QUEUE:
-         if not castep_run(cell, param, stem, CASTEP, log=stem+'.castep_log'):
+         if not castep.run_castep(cell, param, stem, CASTEP, log=stem+'.castep_log',
+                                  test_mode=TEST_MODE, save_all_input_files=SAVE_ALL_INPUT_FILES,
+                                  save_all_check_files=SAVE_ALL_CHECK_FILES):
             error('castep run failed')
             continue
 
