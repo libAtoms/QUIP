@@ -77,6 +77,41 @@ class Neighbours(object):
 
       return farray(res) # to give 1-based indexing      
 
+class Atom(dict):
+   def __init__(self, *args, **kwargs):
+      dict.__init__(self, *args, **kwargs)
+
+   def __getattr__(self, key):
+      return self[key]
+
+   def __setattr__(self, key, value):
+      raise ValueError('Atom instances are read-only')
+      
+   def __repr__(self):
+      return 'Atom(%s)' % ', '.join(['%s=%r' % (k,v) for (k, v) in self.iteritems()])
+
+   def __eq__(self, other):
+      tol = 1e-10
+
+      self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
+      other_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
+
+      if sorted(self_.keys()) != sorted(other_.keys()): return False
+      
+      for k in self_.keys():
+         v1, v2 = self_[k], other_[k]
+         if isinstance(v1, FortranArray):
+            if abs(v1 - v2).max() > tol:
+               return False
+         else:
+            if v1 != v2:
+               return False
+      return True
+
+   def __ne__(self, other):
+      return not self.__eq__(other)
+
+
 class Atoms(FortranAtoms):
    """
    Thin pythonic wrapper over auto-generated FortranAtoms class
@@ -219,7 +254,6 @@ class Atoms(FortranAtoms):
                     PROPERTY_REAL: "real",
                     PROPERTY_STR: "string",
                     PROPERTY_LOGICAL: "logical"}
-
       self._props = {}
       for prop,(ptype,col_start,col_end) in self.properties.iteritems():
          prop = prop.lower()
@@ -248,6 +282,7 @@ class Atoms(FortranAtoms):
                setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
          else:
             raise ValueError('Bad property type :'+str(self.properties[prop]))
+         
 
    def copy(self):
       other = Atoms(n=self.n, lattice=self.lattice, data=self.data, 
@@ -304,6 +339,7 @@ class Atoms(FortranAtoms):
       if i < 1 or i > self.n:
          raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
       res = {}
+      res['i'] = i
       for k in self.properties.keys():
          v = getattr(self,k.lower())[...,i]
          if isinstance(v,FortranArray):
@@ -311,10 +347,16 @@ class Atoms(FortranAtoms):
                v = ''.join(v).strip()
             elif v.shape == ():
                v = v.item()
-            else:
-               v = list(v)
-         res[k] = v
-      return res
+         res[k.lower()] = v
+
+      return Atom(**res)
+
+   def __setitem__(self, i, atom):
+      if i < 1 or i > self.n:
+         raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
+      for k, v in atom.iteratoms():
+         setattr(self, k.lower())[...,i] = v
+      
 
    def __eq__(self, other):
       tol = 1e-10
@@ -528,12 +570,11 @@ class Table(FortranTable):
 
    def copy(self):
       t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
-      t.n = self.n
-      t._update()
-      t.int[...] = self.int[...]
-      t.real[...] = self.real[...]
-      t.str[...] = self.str[...]
-      t.logical[...] = self.logical[...]
+      t.append(blank_rows=self.n)
+      if self.intsize != 0: t.int[...] = self.int[...]
+      if self.realsize != 0: t.real[...] = self.real[...]
+      if self.strsize != 0: t.str[...] = self.str[...]
+      if self.logicalsize != 0: t.logical[...] = self.logical[...]
       return t
 
    def __eq__(self, other):
