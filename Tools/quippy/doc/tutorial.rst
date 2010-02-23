@@ -297,9 +297,11 @@ of the Silicon atoms to +2.8 ::
    references with the :meth:`~quippy.oo_fortran.FortranDerivedType._update`
    method). 
 
-   This caveat applies only to arrays. It's okay to assign directly to
-   scalar attributes, such as :attr:`~Atoms.cutoff` or
-   :attr:`~Atoms.nneightol`.
+   This caveat applies only to atomic properties arrays, since they're
+   dynamically generated. It's okay to assign directly to derived type
+   scalar attributes such as :attr:`~Atoms.cutoff`. Trying to assign
+   to array attributes such as :attr:`~Atoms.lattice` will raise an
+   exception.
 
 
 Here's an example of making a new Atoms object containing only

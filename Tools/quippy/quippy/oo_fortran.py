@@ -248,59 +248,6 @@ class FortranDerivedType(object):
    def _update(self):
        logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))
        if self._fpointer is None: return
-       
-       for name in self._arrays:
-          try:
-             delattr(self, name)
-          except AttributeError:
-             pass
-
-       for name, (arrayfunc, doc) in self._arrays.iteritems():
-##           dtype, shape, loc = arrayfunc(self._fpointer)
-##           dtype = dtype.strip()
-##           if (shape > 0).all() and loc != 0:
-##              if dtype in numpy_to_fortran.keys():
-##                  nshape = self._get_array_shape(name)
-##                  if nshape is not None:
-##                      setattr(self, '_'+name, FortranArray(arraydata(shape,dtype,loc), doc))
-##                      #setattr(self, '_'+name, arraydata(shape,dtype,loc))
-##                      setattr(self, name, getattr(self, '_'+name)[nshape])
-##                  else:
-##                      setattr(self, name, FortranArray(arraydata(shape,dtype,loc), doc))
-##                      #setattr(self, name, arraydata(shape,dtype,loc))
-##              else:
-##                 # access to arrays of derived type not yet implemented
-##                 continue
-##           else:
-           try:
-               a = arraydata.arraydata(self._fpointer, arrayfunc)
-               nshape = self._get_array_shape(name)
-               if nshape is not None:
-                   setattr(self, '_'+name, FortranArray(a,doc))
-                   setattr(self, name, getattr(self, '_'+name)[nshape])
-               else:
-                   setattr(self, name, FortranArray(a,doc))
-           except ValueError:
-               logging.debug('Ignoring uninitialised array %s.%s' % (self.__class__, name))
-               continue
-
-       for name in self._subobjs:
-          try:
-             delattr(self, name)
-          except AttributeError:
-             pass
-
-       for name, (cls, getfunc, setfunc) in self._subobjs.iteritems():
-          if name == 'thetype': name = 'type' # special case: f2py misparses name 'type'
-          if not cls.lower() in FortranDerivedTypes:
-             logging.debug('Unknown class %s' % cls)
-             continue
-          p = getfunc(self._fpointer)
-          if not (p == 0).all():
-             savedoc = getattr(self, name).__doc__
-             setattr(self, name, FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False))
-             getattr(self,name).__doc__ = savedoc
-
        self._update_hook()
 
    def _get_array_shape(self, name):
@@ -563,9 +510,6 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
 
          if len(value) > 1: 
              new_cls._interfaces[name] = value
-         else:
-             pass
-#             value[0][2].__doc__  ='\n'.join(moddoc['interfaces'][name]['doc']) + '\n\n' + value[0][2].__doc__
 
       for intf, value in new_cls._interfaces.iteritems():
 
@@ -598,15 +542,9 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
              func.__doc__ = doc
              new_cls.__init__ = func
 
+      # Add properties for get and set routines of scalar type, sub
+      # objects, and arrays.
 
-      # Constructor documentation could be in initialise interface
-      #if 'initialise' in moddoc['interfaces']:
-      #    if moddoc['interfaces']['initialise']['doc'] != []:
-      #        d['__init__'].__doc__ = '\n'.join(moddoc['interfaces']['initialise']['doc'])+ '\n\n' + d['__init__'].__doc__
-
-      # Add property() calls for get and set routines of scalar type,
-      # and placeholders for dynamically created sub objects
-      
       for name, el in moddoc['types'][cls]['elements'].iteritems():
          if name == 'thetype': name = 'type' # special case: f2py misparses name 'type'
          name = name.lower() # lower case all attributes
@@ -617,28 +555,30 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
 
                new_cls._elements[name] = (getattr(modobj, el['get']), getattr(modobj, el['set']), el['type'])
                   
-               setattr(new_cls, '_get_%s' % name, wrap_get(name))
-               setattr(new_cls, '_set_%s' % name, wrap_set(name))
-
                # If element clashes with name of routine, move routine first
                if hasattr(new_cls, name):
                    setattr(new_cls, name+'_', getattr(new_cls, name))
                    
-               setattr(new_cls, name, property(fget=getattr(new_cls,'_get_%s'%name),
-                                               fset=getattr(new_cls,'_set_%s'%name),
+               setattr(new_cls, name, property(fget=wrap_get(name),
+                                               fset=wrap_set(name),
                                                doc=el['doc']))
             elif not 'pointer' in el['attributes']:
                 new_cls._subobjs[name] = (el['type'], 
                                           getattr(modobj, el['get']), 
                                           getattr(modobj, el['set']))
-                setattr(new_cls, name,FortranDerivedType())
-                getattr(new_cls, name).__doc__ = el['doc']
+                setattr(new_cls, name, property(fget=wrap_obj_get(name),
+                                                fset=wrap_obj_set(name),
+                                                doc=el['doc']))
+                        
 
-         # Placeholders for array members
+         # array members
          if 'array' in el:
             logging.debug('    adding array %s' % name)
             new_cls._arrays[name] = (getattr(modobj, el['array']), el['doc'])
-            setattr(new_cls, name, FortranArray(doc=el['doc']))
+            setattr(new_cls, '_'+name, property(fget=wrap_array_get(name,reshape=False),doc=el['doc']))
+            setattr(new_cls, name, property(fget=wrap_array_get(name),doc=el['doc']))
+
+            
    
 
    # Try to evaluate params
@@ -690,6 +630,42 @@ def wrap_set(name):
        return res
 
    return func
+
+def wrap_obj_get(name):
+    def func(self):
+       if self._fpointer is None:
+           raise ValueError('%s object not initialised.' % self.__class__.__name__)
+       cls, getfunc, setfunc = self._subobjs[name]
+       p = getfunc(self._fpointer)
+       if not (p == 0).all():
+           return FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False)
+    return func
+
+def wrap_obj_set(name):
+    def func(self, value):
+       if self._fpointer is None:
+           raise ValueError('%s object not initialised.' % self.__class__.__name__)
+       cls, getfunc, setfunc = self._subobjs[name]
+       setfunc(self._fpointer, value._fpointer)
+    return func
+
+def wrap_array_get(name, reshape=True):
+    def func(self):
+        try:
+            arrayfunc, doc = self._arrays[name]
+        except KeyError:
+            arrayfunc, doc = self._arrays['_'+name]
+        try:
+            a = arraydata.arraydata(self._fpointer, arrayfunc)
+            nshape = self._get_array_shape(name)
+            if reshape and nshape is not None:
+                return FortranArray(a,doc)[nshape]
+            else:
+                return FortranArray(a,doc)
+        except ValueError:
+            return None
+            
+    return func
 
 
 def add_doc(func, fobj, doc, fullname, name, prefix):
