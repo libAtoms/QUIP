@@ -204,3 +204,16 @@ for pos in crack_tips.real:
 a.show()
 
 verbosity_pop()
+
+def count_cells(at,size):
+   at.set_cutoff(size)
+   at.calc_connect()
+   cells = fzeros((at.connect.cellsna, at.connect.cellsnb, at.connect.cellsnc),int)
+
+   for i in frange(at.connect.cellsna):
+      for j in frange(at.connect.cellsnb):
+         for k in frange(at.connect.cellsnc):
+            cells[i,j,k] = at.connect.cell_n(i, j, k)
+
+   return cells
+
