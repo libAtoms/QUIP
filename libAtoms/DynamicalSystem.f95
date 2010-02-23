@@ -3191,6 +3191,9 @@ contains
       write(line,'(a,f8.4)')      'Averaging Time  = ',this%avg_time ; call print(line,file=file)
       call print("")
 
+      call print('Thermostat')
+      call print(this%thermostat)
+
       call print('-------------------------------------------------------------------------------', VERBOSE, file)
       call print('| Index  |   Average Position   |      Velocity        |     Acceleration     |', VERBOSE, file)
       call print('-------------------------------------------------------------------------------', VERBOSE, file)
