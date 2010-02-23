@@ -109,10 +109,6 @@ providing the Fortran source code was built using
       when it is a component of another object which is passed with
       ``intent(in,out)``.
 
-      This method creates arrays based on the contents of :attr:`_arrays`
-      and updates component objects listed in :attr:`_subobjs`. 
-
-
    .. method:: _update_hook() 
 
       Invoked by :meth:`_update()`. Can be overriden in subclasses to
