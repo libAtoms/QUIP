@@ -57,6 +57,7 @@ type TB_type
   type (GreensFunctions) gf
 
   real(dp) :: fermi_E, fermi_T = 0.001_dp
+  real(dp) :: fermi_E_precision = 1.0e-10_dp
   real(dp) :: homo_e, lumo_e
 
   character(len=1024) :: init_args_str
@@ -666,6 +667,8 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   integer :: i
   logical :: u_do_evecs, do_local_N, do_local_e
 
+  type(Dictionary) :: params
+
   real(dp), pointer :: w_e(:)
   real(dp), pointer :: w_n(:)
 
@@ -725,6 +728,13 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   if (.not. has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str)) &
     call system_abort("TB_calc_diag called without fermi_T for a TB model without default fermi T")
   call system_timer("TB_calc_diag/prep")
+
+  call initialise(params)
+  call param_register(params, 'fermi_e_precision', ''//this%fermi_E_precision, this%fermi_E_precision)
+  if (.not. param_read_line(params, this%calc_args_str, ignore_unknown=.true.,task='TB_calc_diag fermi_e_precision')) then
+    call system_abort("TBModel_has_fermi_e failed to parse this%calc_args_str='"//trim(this%calc_args_str)//"'")
+  endif
+  call finalise(params)
 
   call system_timer("TB_calc_diag/solve_diag")
   call print("TB_calc_diag solve_diag", VERBOSE)
@@ -1944,7 +1954,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
 
     iter = 0
     N_try = N_e + 1
-    do while (N_try .fne. N_e)
+    do while (abs(N_try-N_e) > this%fermi_E_precision)
       e_try = (e_min + e_max) / 2.0_dp
       if (this%tbsys%noncollinear) then
 	degeneracy = 1.0_dp
@@ -1983,7 +1993,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
 	call verbosity_pop()
 	call system_abort("Ran out of iterations in find_fermi_E")
       endif
-      if ((N_try .fne. N_e) .and. (e_min == e_max)) then
+      if ((abs(N_try-N_e) > this%fermi_E_precision) .and. (e_min == e_max)) then
 	call print("N_e " // N_e // " N_try " // N_try, ERROR)
 	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, ERROR)
 	call print("this%evals", ERROR)
