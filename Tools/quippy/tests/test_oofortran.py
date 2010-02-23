@@ -55,8 +55,8 @@ class TestOOFortran(QuippyTestCase):
       
    def testfpointernone(self):
       self.dia._fpointer = None
-      self.assertRaises(ValueError, self.dia._get_n)
-      self.assertRaises(ValueError, self.dia._set_n, 0)
+      self.assertRaises(ValueError, getattr, self.dia, 'n')
+      self.assertRaises(ValueError, setattr, self.dia, 'n', 0)
 
    def testabort(self):
       self.assertRaises(RuntimeError, self.dia.read_xyz, '')
