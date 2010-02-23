@@ -421,12 +421,8 @@ try:
                   return farray(self.netcdf_file.variables[name][:])
                except KeyError:
                   raise AttributeError('Attribute %s not found' % name)
-
-#      def __setattr__(self, name, value):
-#         if name.startswith('_'):
-#            self.__dict__[name] = value
-#         else:
-#            self.netcdf_file.__setattr__(name, value)
+         else:
+            raise AttributeError('Attribute %s not found' % name)
 
 
    AtomsReaders['xyz'] = AtomsReaders['nc'] = AtomsReaders[CInOutput] = CInOutputReader
