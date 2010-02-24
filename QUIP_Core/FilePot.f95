@@ -409,8 +409,17 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   endif
 
   !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*
+  QM_cell = 0._dp
   if (get_value(at_out%params,'QM_cell',QM_cell)) then
      call set_value(at%params,'QM_cell',QM_cell)
+  endif
+  QM_cell = 0._dp
+  if (get_value(at_out%params,'QM_cell_extended',QM_cell)) then
+     call set_value(at%params,'QM_cell_extended',QM_cell)
+  endif
+  QM_cell = 0._dp
+  if (get_value(at_out%params,'QM_cell_core',QM_cell)) then
+     call set_value(at%params,'QM_cell_core',QM_cell)
   endif
 
    if (my_filepot_log) then
