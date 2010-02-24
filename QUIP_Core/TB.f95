@@ -57,7 +57,7 @@ type TB_type
   type (GreensFunctions) gf
 
   real(dp) :: fermi_E, fermi_T = 0.001_dp
-  real(dp) :: fermi_E_precision = 1.0e-10_dp
+  real(dp) :: fermi_E_precision = 1.0e-9_dp
   real(dp) :: homo_e, lumo_e
 
   character(len=1024) :: init_args_str
