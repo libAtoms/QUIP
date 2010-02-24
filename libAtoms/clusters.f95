@@ -39,7 +39,7 @@ public :: create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_wei
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
     add_cut_hydrogens, construct_hysteretic_region, &
-    create_pos_centred_hybrid_region, get_hybrid_list
+    create_pos_or_list_centred_hybrid_region, get_hybrid_list
     !, construct_region, select_hysteretic_quantum_region
 
 !% Grow a selection list by bond hopping.
@@ -3025,15 +3025,16 @@ type(inoutput), optional :: debugfile
   end function bond_energy
 
   !% Updates the core QM flags saved in $hybrid$ and $hybrid_mark$ properties.
-  !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$, that is
-  !% the centre of the QM region.
+  !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
+  !% the centre of the QM region (a position in space or a list of atoms).
   !
-  subroutine create_pos_centred_hybrid_region(my_atoms,R_inner,R_outer,origin,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed)
+  subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed)
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
     real(dp),           intent(in)    :: R_outer
     real(dp), optional, intent(in)    :: origin(3)
+    type(Table), optional, intent(in)    :: atomlist !the seed of the QM region
     logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
     logical,  optional, intent(out)   :: list_changed
 
@@ -3041,8 +3042,9 @@ type(inoutput), optional :: debugfile
     type(Table) :: core, core1, ext_qmlist
     real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
-
-    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
+    
+    if (count((/present(origin),present(atomlist)/))/=1) call system_abort('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.')
+!    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
 
     call map_into_cell(my_atoms)
 
@@ -3054,9 +3056,16 @@ type(inoutput), optional :: debugfile
     call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
 
 !Build the hysteretic QM core:
-  call construct_hysteretic_region(region=core,at=my_atoms,centre=my_origin,loop_atoms_no_connectivity=.true., &
-    inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-    nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, debugfile=mainlog)
+  if (present(atomlist)) then
+     call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
+       inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
+       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, debugfile=mainlog)
+  else !present origin
+     call construct_hysteretic_region(region=core,at=my_atoms,centre=my_origin,loop_atoms_no_connectivity=.true., &
+       inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
+       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, debugfile=mainlog)
+  endif
+
 !    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
 !    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
 !    call construct_region(my_atoms,R_inner,inner_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
@@ -3091,7 +3100,7 @@ type(inoutput), optional :: debugfile
 
    ! update QM_flag of my_atoms
     if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) &
-      call system_abort("create_pos_centred_hybrid_region couldn't get hybrid_mark property")
+      call system_abort("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark property")
     hybrid_mark_p(1:my_atoms%N) = 0
     hybrid_mark_p(int_part(ext_qmlist,1)) = HYBRID_BUFFER_MARK
     hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
@@ -3102,7 +3111,7 @@ type(inoutput), optional :: debugfile
 
    ! update hybrid property of my_atoms
     if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) &
-      call system_abort("create_pos_centred_hybrid_region couldn't get hybrid property")
+      call system_abort("create_pos_or_list_centred_hybrid_region couldn't get hybrid property")
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(core,1)) = 1
     ! qm_flag_index = get_property(my_atoms,'hybrid')
@@ -3113,7 +3122,7 @@ type(inoutput), optional :: debugfile
     call finalise(core1)
     call finalise(ext_qmlist)
 
-  end subroutine create_pos_centred_hybrid_region
+  end subroutine create_pos_or_list_centred_hybrid_region
 
   !% Returns a $hybridlist$ table with the atom indices whose $cluster_mark$
   !% (or optionally any $int_property$) property takes no greater than $hybridflag$ positive value.
