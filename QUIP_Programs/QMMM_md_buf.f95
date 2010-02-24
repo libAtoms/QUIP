@@ -84,6 +84,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: latest_coord_file          !output XYZ file
   character(len=FIELD_LENGTH) :: traj_file          !output XYZ file
   character(len=FIELD_LENGTH) :: qm_list_filename        !QM list file with a strange format
+  type(Table)                 :: qm_seed
   character(len=FIELD_LENGTH) :: Residue_Library
   logical                     :: Use_Constraints         !_0_ no, 1 yes
   character(len=FIELD_LENGTH) :: constraint_file
@@ -435,7 +436,7 @@ logical :: have_silica_potential
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
 	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-             call create_pos_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
@@ -449,12 +450,25 @@ logical :: have_silica_potential
 !               call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
              endif
           else ! qm_region_pt_ctr
-             call read_qmlist(ds%atoms,qm_list_filename)
+             call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed)
 	     if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
 	     if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
 	     call print('hybrid_mark'//count(hybrid_mark_p.eq.1))
 	     cluster_mark_p = hybrid_mark_p
 	     call print('cluster_mark'//count(cluster_mark_p.eq.1))
+
+             !save the qm list into qm_seed property, too
+             !in case we want to change the seed in time
+             !call add_property(my_atoms,'qm_seed',0)
+	     !if (.not.(assign_pointer(ds%atoms, "qm_seed", qm_seed_p))) call system_abort('??')
+	     !if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
+	     !qm_seed_p = hybrid_mark_p
+
+             !extend QM core around seed atoms
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,list_changed=list_changed1)
+!             call construct_hysteretic_region(region=core,at=ds%atoms,core=seed,loop_atoms_no_connectivity=.false., &
+!                  inner_radius=Inner_QM_Region_Radius,outer_radius=Outer_QM_Region_Radius, use_avgpos=.false., add_only_heavy_atoms=(.not.buffer_general), &
+!                  nneighb_only=.false., min_images_only=.true.)
           endif ! qm_region_pt_ctr
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
@@ -685,12 +699,15 @@ logical :: have_silica_potential
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         if (qm_region_pt_ctr) then
 	   if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-           call create_pos_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+           call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
 !             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
               ! do nothing: both core and buffer belong to the QM of QM/MM
            endif
+        else !qm_region_pt_ctr
+           !extend QM core around seed atoms
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,list_changed=list_changed1)
         endif
      endif
 
@@ -827,6 +844,7 @@ enddo
 
   deallocate(f,f0,f1)
 
+  call finalise(qm_seed)
   call finalise(ds)
   call finalise(traj_xyz)
 
@@ -1084,10 +1102,11 @@ contains
   !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
   !% marking the QM atoms with 1, otherwise 0.
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
+    type(Table), optional, intent(out) :: qmlist
     logical, optional, intent(in)    :: verbose
 
     type(table)                      :: qm_list
@@ -1163,6 +1182,13 @@ call print('Added '//count(hybrid_p(1:my_atoms%N) == 1)//' qm atoms.')
 call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//' qm atoms.')
 
     if (my_verbose) call print('Finished. '//qm_list%N//' QM atoms have been read successfully.')
+
+    !output the list in a table if needed
+    if (present(qmlist)) then
+       call allocate(qmlist,4,0,0,0,num_qm_atoms)
+       call append(qmlist,qm_list)
+    endif
+
     call finalise(qm_list)
 
   end subroutine read_qmlist
