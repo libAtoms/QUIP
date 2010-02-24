@@ -92,6 +92,7 @@ contains
     logical :: do_lsd
 
     logical :: can_reuse_wfn, qm_list_changed
+    character(len=20) :: qm_name_postfix
 
     logical :: use_QM, use_MM, use_QMMM
     logical :: cp2k_calc_fake
@@ -184,6 +185,7 @@ contains
 	use_QM=.true.
 	method="QS"
 	run_type_i = QS_RUN
+        qm_name_postfix=""
       case("MM")
 	use_MM=.true.
 	method="Fist"
@@ -194,12 +196,14 @@ contains
 	use_QMMM=.true.
 	method="QMMM"
 	run_type_i = QMMM_RUN_CORE
+        qm_name_postfix="_core"
       case("QMMM_EXTENDED")
 	use_QM=.true.
 	use_MM=.true.
 	use_QMMM=.true.
 	method="QMMM"
 	run_type_i = QMMM_RUN_EXTENDED
+        qm_name_postfix="_extended"
       case default
 	call system_abort("Unknown run_type "//trim(run_type))
     end select
@@ -285,13 +289,13 @@ contains
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
 
-      if (get_value(at%params, "QM_cell", old_qmmm_qm_abc)) then
+      if (get_value(at%params, "QM_cell"//trim(qm_name_postfix), old_qmmm_qm_abc)) then
 	if (cur_qmmm_qm_abc .fne. old_qmmm_qm_abc) can_reuse_wfn = .false.
       else
         can_reuse_wfn = .false.
       endif
-      call set_value(at%params, "QM_cell", cur_qmmm_qm_abc)
-       call print('set_value QM_cell '//cur_qmmm_qm_abc)
+      call set_value(at%params, "QM_cell"//trim(qm_name_postfix), cur_qmmm_qm_abc)
+       call print('set_value QM_cell'//trim(qm_name_postfix)//' '//cur_qmmm_qm_abc)
 
       !check if QM list changed: compare cluster_mark and old_cluster_mark
 !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
@@ -337,7 +341,7 @@ contains
     if (use_QM) then
       if (try_reuse_wfn .and. can_reuse_wfn) then 
 	insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
-	call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+        call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT WFN_RESTART_FILE_NAME ../wfn.restart.wfn"//trim(qm_name_postfix), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
@@ -433,7 +437,7 @@ contains
     ! save output
 
     if (use_QM) &
-      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn')
+      call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_postfix))
 
     if (save_output_files) then
       call system_command('cat '//trim(run_dir)//'/cp2k_input.inp'// &
