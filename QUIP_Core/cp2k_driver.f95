@@ -844,16 +844,33 @@ contains
     logical, intent(out) :: do_lsd
 
     real(dp), pointer :: atom_charge(:)
+    integer, pointer  :: Z_p(:)
+    integer           :: sum_Z
+    logical           :: dummy
+
+    if (.not. assign_pointer(at, "Z", Z_p)) &
+	call system_abort("calc_charge_lsd could not find Z property")
+
 
     if (size(qm_list_a) > 0) then
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) &
 	call system_abort("calc_charge_lsd could not find atom_charge")
       charge = nint(sum(atom_charge(qm_list_a)))
-      do_lsd = (mod(charge,2) /= 0)
+      !check if we have an odd number of electrons
+      sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
+      do_lsd = (mod(sum_Z-charge,2) /= 0)
     else
-      if (get_value(at%params, 'Charge', charge)) call print("Using Charge " // charge)
+      sum_Z = sum(Z_p)
       do_lsd = .false.
-      if (get_value(at%params, 'LSD', do_lsd)) call print("Using do_lsd " // do_lsd)
+      dummy = (get_value(at%params, 'LSD', do_lsd))
+      !if charge is saved, also check if we have an odd number of electrons
+      if (get_value(at%params, 'Charge', charge)) then
+        call print("Using Charge " // charge)
+        do_lsd = do_lsd .or. (mod(sum_Z-charge,2) /= 0)
+      else !charge=0 is assumed by CP2K
+        do_lsd = do_lsd .or. (mod(sum_Z,2) /= 0)
+      endif
+      if (do_lsd) call print("Using do_lsd " // do_lsd)
     endif
 
   end subroutine
