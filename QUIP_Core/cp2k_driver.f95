@@ -297,13 +297,13 @@ contains
       call set_value(at%params, "QM_cell"//trim(qm_name_postfix), cur_qmmm_qm_abc)
        call print('set_value QM_cell'//trim(qm_name_postfix)//' '//cur_qmmm_qm_abc)
 
-      !check if QM list changed: compare cluster_mark and old_cluster_mark
+      !check if QM list changed: compare cluster_mark and old_cluster_mark[_postfix]
 !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
 !       if (qm_list_changed) can_reuse_wfn = .false.
 !      endif
        if (.not.has_property(at, 'cluster_mark')) call system_abort('no cluster_mark found in atoms object')
-       if (.not.has_property(at, 'old_cluster_mark')) call system_abort('no old_cluster_mark found in atoms object')
-       dummy = assign_pointer(at, 'old_cluster_mark', old_cluster_mark_p)
+       if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_postfix))) call system_abort('no old_cluster_mark'//trim(qm_name_postfix)//' found in atoms object')
+       dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_postfix), old_cluster_mark_p)
        dummy = assign_pointer(at, 'cluster_mark', cluster_mark_p)
 
        qm_list_changed = .false.
