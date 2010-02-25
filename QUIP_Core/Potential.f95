@@ -352,6 +352,7 @@ contains
     logical :: calc_force, calc_energy, calc_local_e, calc_df, calc_virial, do_calc_force, do_calc_energy, do_calc_local_e, do_calc_df, do_calc_virial
     integer, pointer :: cluster_mark_p(:)
     integer, pointer :: old_cluster_mark_p(:)
+    character(len=FIELD_LENGTH) :: old_cluster_mark_postfix 
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -368,6 +369,8 @@ contains
 
     call initialise(params)
     call param_register(params, 'single_cluster', 'F', single_cluster)
+    old_cluster_mark_postfix=""
+    call param_register(params, 'old_cluster_mark_postfix', '', old_cluster_mark_postfix)
     call param_register(params, 'carve_cluster', 'T', do_carve_cluster)
     call param_register(params, 'little_clusters', 'F', little_clusters)
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
@@ -528,10 +531,10 @@ call print('ARGS1 | '//new_args_str,VERBOSE)
 
          !save cluster in cluster_mark property
          call add_property(at,'cluster_mark',HYBRID_NO_MARK)
-         call add_property(at,'old_cluster_mark',HYBRID_NO_MARK)
+         call add_property(at,'old_cluster_mark'//trim(old_cluster_mark_postfix),HYBRID_NO_MARK)
 	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for cluster_mark pointer")
-	 if (.not. assign_pointer(at, 'old_cluster_mark', old_cluster_mark_p)) &
+	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(old_cluster_mark_postfix), old_cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for old_cluster_mark pointer")
          old_cluster_mark_p = cluster_mark_p
          cluster_mark_p = HYBRID_NO_MARK
