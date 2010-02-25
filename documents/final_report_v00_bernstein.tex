@@ -23,11 +23,10 @@ involve the breaking and formation of covalent bonds between atoms,
 in the presence of large structures and large numbers of solvent
 molecules.  Describing the bond breaking process requires a reliable
 quantum-mechanical description of interatomic bonding.  However,
-such methods are limited to a few hundred atoms at most, but often
+methods that can do this are limited to a few hundred atoms at most, but often
 the reaction region is affected, directly or indirectly, by many
 more atoms or molecules.  The large number of atoms required can
-be described with classical interatomic potentials, but these can
-not describe the bond breaking itself.  To include both of these
+be described with classical interatomic potentials, but these cannot describe the bond breaking itself.  To include both of these
 effects, methods that couple the different computational approaches
 have been developed.  These methods are referred to as hybrid or
 concurrent coupling schemes in the solid state
@@ -42,13 +41,16 @@ electostatically, and moving the QM region (or moving atoms into
 or out of a fixed region).  Various subsets of these problems have
 been handled in different ways in published implementations, as we
 discuss in more detail in the next section.  It is important to
-determine what consitutes ``success'' for a hybrid method.  We
-focus on reproducing observables (i.e. ensemble averages) in the
-QM region is agreement with a full QM simulation.  Agreement with
-experiment is also important, of course, but a hybrid method that 
-agrees with experiment when the underlying, nominally accurate,
-QM method does not is simply benefitting from a cancellation of
-errors, and is unlikely to be transferable or reliable.
+determine what consitutes ``success'' for a hybrid method.  We focus
+on reproducing observables (i.e. ensemble averages) in the QM region
+in agreement with a full QM simulation.  Agreement with experiment
+is also important, of course, but a hybrid method that agrees with
+experiment when the underlying, nominally accurate, QM method does
+not is probably just benefitting from a cancellation of errors, and
+is unlikely to be transferable or reliable.  This statement is not
+absolute: interatomic potentials could be fit to reproduce interactions,
+for example dispersion forces, that are not well described by QM
+method such as density functional theory (DFT).
 
 In this project we have implemented a hybrid method based on atomic
 forces that attempts to address all of these issues.  We have tested
@@ -64,7 +66,7 @@ in the active site of an enzymatic protein.  It has since been
 applied to many systems, some recently reviewed in
 Refs.\onlinecite{senn_topics_cur_chem_2007a} and
 \onlinecite{lin_theor_chem_acc_2005a}.  The vast majority of QM/MM
-implementation in the chemistry community begin by defining a total
+implementations in the chemistry community begin by defining a total
 energy for the coupled system.  In addition, a fixed set of atoms
 or molecules is assumed to form the QM region.  While these assumptions
 make it possible to construct a simulation that conserves total
@@ -93,13 +95,17 @@ the total energy
 $$ E = E_1(1+2) + E_2(1) - E_1(1), $$
 where $E_1$ is the energy evaluated with the fast method (MM), $E_2$ is
 the method evaluated with the slow method (QM), and the arguments
-indicate the two regions where the two methods are to be used.  In
-ONIOM-XS, a transition region between the two regions is defined.
-When there are atoms in the transition region, the total energy is
-a linear combination of two ONIOM total energies, one with the
-transition region atoms included in region 1, the other with the
-atoms included in region 2.  As Truhlar noted, this approach is not
-consistent when there is more than 1 molecule in the transition
+indicate the two regions where the two methods are to be used.  If
+any covalent bonds are broken at the interface, the two calculations
+on region 1 (last 2 terms in the equation) are done on passivated
+clusters, where typically H atoms are used to saturate the dangling
+bonds left by the missing region 2 atoms.  In ONIOM-XS, a transition
+region between the two regions is defined.  When there are atoms
+in the transition region, the total energy is a linear combination
+of two ONIOM total energies, one with the transition region atoms
+included in region 1, the other with the atoms included in region
+2.  As Truhlar noted, this approach is not consistent when there
+is more than 1 molecule in the transition
 region~\cite{heyden_j_phys_chem_b_2007a}.  ONIOM-XS has been used
 in a few applications to the solvation of
 ions~\cite{kerdcharoen_j_chem_phys_2003a,hofer_j_amer_chem_soc_2005a}.
@@ -114,17 +120,17 @@ assignment of molecules in the transition region to the QM and MM
 regions.  A simplified ``sorted'' variant orders the molecules in
 increasing distance from the QM region, and combines calculations
 that include in the QM region the nearest molecule, two nearest
-molecules, three nearest molecules, and so on.  The paper tests the
-methods on two small systems, the solvation in water of a Li$^+$
-ion, and liquid Ar.  The MM water molecules were described with the
-CF2-BJH potential, and the QM region with density functional theory
-(DFT) with the PBE0 density functional.  The Ar liquid was used to
-test constant energy and constant temperature calculations, using
-two different interatomic potentials (Lennard-Jones and Morse),
-rather than a QM and an MM description.  In comparison to ONIOM-XS
-and Rode's hot-spot method, described below, the method shows
-smoother forces as molecules move between the two regions, but there
-is no comparison to full QM simulations.
+molecules, three nearest molecules, and so on.  In the paper the
+methods are tested on two small systems, the solvation in water of
+a Li$^+$ ion, and liquid Ar.  The MM water molecules were described
+with the CF2-BJH potential, and the QM region with density functional
+theory (DFT) with the PBE0 density functional.  In comparison to
+ONIOM-XS and Rode's Hot-Spot method, described below, the method
+shows smoother forces as molecules move between the two regions,
+but there is no comparison to full QM simulations.  The Ar liquid
+was used to test constant energy and constant temperature calculations,
+using two different interatomic potentials (Lennard-Jones and Morse),
+rather than a QM and an MM description.
 
 Hodak {\it et al.} developed a coupling scheme for two different
 QM methods, Kohn-Sham DFT (KS-DFT) with a plane-wave basis~\cite{kohn_phys_rev_1965a}
@@ -140,10 +146,11 @@ region, and take care to apply a thermostat to molecules that have
 changed identity to compensate for the addition or removal of
 distortion potential energy and vibrational kinetic energy.  Tests
 of the method for water are restricted to the dipole of a KS-DFT
-water, and internal consistency (e.g. energy conservation).
+water, and internal consistency (e.g. energy conservation), both
+of which show acceptable results.
 
 The main exception to the energy based coupling commonly used in
-the chemistry community is the hot-spot method, first presented by
+the chemistry community is the Hot-Spot method, first presented by
 Kerdcharoen {\it et al.}~\cite{kerdcharoen_chem_phys_1996a}.  In
 this approach, the system is divided into a QM region and an MM
 region, with a thin transition region between them, typically a
@@ -160,25 +167,56 @@ as the positions vary from inner to outer boundaries of the transition
 region.  Note that because these forces are not the gradients of a
 scalar function (the potential energy), they do not lead to
 trajectories that obey conservation of momentum or energy.  In
-nearly 50 subsequent publications by Rode {\it et al.} citing
-Ref.~\onlinecite{kerdcharoen_chem_phys_1996a}, this method has been
-used for studying pure water, as well as a large number ions solvated
-in water and other solvents such as ammonia.  Most of these focused
-on metal ions and complexes, although a few considered the hydration
-of other ions such as F$^-$ and
-Cl$^-$~\cite{tongraar_phys_chem_chem_phys_2003a},
-NO$^{3-}$~\cite{tongraar_j_phys_chem_a_2006a}, and pure
+nearly 80 subsequent publications by Rode {\it et al.}, this method
+has been used for studying a large number ions solvated in water
+and other solvents such as ammonia, as well as pure water.  Most
+of these focused on metal ions and complexes, although a few
+considered the hydration of other ions such as F$^-$ and
+Cl$^-$~\cite{tongraar_phys_chem_chem_phys_2003a,tongraar_chem_phys_lett_2005a},
+NO$_3^-$~\cite{tongraar_j_phys_chem_a_2006a},
+HCOO$^-$~\cite{payaka_j_phys_chem_a_2009a}, and pure
 water~\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}.
+
+[NB: review these relatively relevant papers in more details?]
+
+Bulo {\it et al.} recently published two variants of the Adaptive
+Partitioning method\cite{bulo_j_chem_theor_comp_2009a}, one based
+on energies and the other on force mixing.  The energy mixing method
+differs from Heyden {\it et al.}'s work by using different algorithms
+for determining the weights of particular configurations in the
+linear combination.  They also consider explicitly the effects of
+the position dependent coefficients in the energy sum on the forces.
+These terms are presumably also present in the original Adaptive
+Partitioning method, otherwise it would not conserve energy, but
+not discussed in Ref.~\cite{heyden_j_phys_chem_b_2007a}.   Bulo
+{\it et al.} note that these forces can lead to fictitious barriers
+for transition between the two regions.  They suggest aligning the
+potential energy surfaces, but note that this cannot be done for
+arbitrary configurations.  In fact, even if the potential energy
+surfaces are perfectly aligned and there is no fictitious {\em
+barrier}, differences in local energy {\em minima} values can lead
+over time to net transport from one region to the other.  Finally,
+Bulo {\it et al.} consider a force mixing method, and derive a
+``bookkeeping term'' that accounts for the violation of energy
+conservation.  They also state that the force mixing method, if the
+energy conservation violation is small, will lead to better
+trajectories than any other adaptive method.  The tests of the
+method are done with two different interatomic potentials, SPC water
+in TIP3P water, rather than with QM and MM.   The water radial
+distribution functions with the energy mixing methods show large
+artifacts, and look very different from either underlying single
+model.  The force-mixing based method is much better, with minimal
+disagreement.
 
 \subsection{Fixed QM region}
 
 In addition to the work in the previous subsection, a few publications
 have presented results from QM/MM calculations on liquids with a
-fixed set of atoms in the QM region.  To do this, the QM region
-was restricted to a single molecule, or a molecule and a reacting
-ion;  the rest of the molecules were then effectively treated
-as a solvent, which doesn't truly participate in the reaction,
-and can be described with an interatomic potential.
+fixed set of atoms in the QM region.  To do this, the QM region was
+restricted to a single molecule, or a molecule and a reacting ion;
+the rest of the molecules were then effectively treated as a solvent,
+which doesn't truly participate in the reaction, and can be described
+with an interatomic potential.
 
 Walewski {\it et al.} used a semi-empirical QM method, the
 charge-self-consistent density-functional tight-binding (SCC-DFTB),
@@ -189,7 +227,7 @@ to pure water, and to the geometry and proton transfer in malonaldehyde,
 a 9-atom ring molecule.  For water a single molecule was treated
 with QM, and the rest with MM.  For malonaldehyde, the malonaldehyde
 molecule itself was described with QM, and the solvent water molecules
-with MM.  There is no comparison with full DFT for pure water,
+with MM.  There is no comparison with full QM for pure water,
 although the authors do note that the diffusion cofficients of the
 two underlying models (SCC-DFTB and SPC) do not agree with each
 other or with experiment.  There is no discussion of whether this
@@ -199,7 +237,7 @@ Ref.~\onlinecite{winfield_thesis_2009a}.
 Geerke {\it et al.} used an additive, energy based coupling to
 simulate H-bonding in water, and a exchange of a chloride ion from
 amino chloride in a dimethyl ether (DME) solvent.  The QM region
-consists of a pair of water molecules and the reacting molecule,
+consisted of a pair of water molecules and the reacting molecule,
 respectively.  They compared various semi-empirical QM methods, and
 a polarizable and non-polarizable interatomic potentials for DME,
 but there was no comparison to a full QM calculation.  The authors
@@ -207,7 +245,7 @@ did find that for water, in comparison to experiment, the QM-MM
 interaction terms could be fine tuned to improve the total energy
 of the pure liquid more accurate, but this would make the agreement
 for the water-dimer dissociation energy worse.  This is an example
-of the dangers of fine tuning of these interaction parameters, and
+of the dangers of fine tuning of such interaction parameters, and
 the likelihood of reducing transferability upon such adjustment.
 For the Cl$^-$ exchange reaction free energy barriers and differences
 were computed from the potential of mean force (mean force on the
@@ -216,50 +254,70 @@ reacting species constrained to one point in the reaction path).
 \section{Technical Approach}
 
 We have developed a coupling method based on forces that is designed
-to give accurate QM forces in the QM region.  We do this by applying
-the QM calculation not only to the atoms where we need QM forces, but
-also to a buffer layer of surrounding atoms.  These atoms are present to
-insulate our QM region from edge effects, but their QM forces are ignored.
-We still take advantage of the methods developed to passivate the broken
-covalent bonds and electrostatic coupling when possible, but we can
-systematically improve the accuracy of the forces in the QM region by
-increasing the thickness of the buffer layer.  The non-buffer QM region
-forces are combined with MM forces for the MM and buffer regions, as shown
-in Fig.~\ref{fig:buffered_hybrid_diagram}, and used to compute trajectories.
+to give accurate QM forces in the QM region.  It is most similar
+to Rode's approach~\cite{kerdcharoen_chem_phys_1996a}, but with
+some essential differences.  In particular, we perform the QM
+calculation including not only the atoms where we need QM forces,
+but also to a {\em buffer layer} of surrounding atoms.  These atoms
+are present to insulate our QM region from edge effects, but their
+QM forces are ignored.  We still take advantage of the methods
+developed to passivate the broken covalent bonds and electrostatic
+coupling when possible, but we can systematically improve the
+accuracy of the forces in the QM region by increasing the thickness
+of the buffer layer.  The non-buffer QM region forces are combined
+with MM forces for the MM and buffer regions, as shown in
+Fig.~\ref{fig:buffered_hybrid_diagram}, and used to compute
+trajectories.  As noted by us and
+others~\cite{heyden_j_phys_chem_b_2007a,bernstein_rep_prog_phys_2009a},
+this approach does not guarantee conservation of energy or momentum.
+Energy conservation is a global property of the forces as a function
+of positions, because it implies that an integral of the forces
+over any arbitrary closed path must be zero.  There is therefore
+no known way to restore energy conservation.  Momentum conservation,
+on the other hand, can be ensured for each configuration by forcing
+the sum of all the forces to be zero.  We do this by subtracting
+from each QM and buffer region atom an equal force that exactly
+brings the overall force total to zero.
 
 \begin{figure}
-\centerline{\resizebox{4in}{!}{\includegraphics{buffered_hybrid_diagram}}}
-\caption{Combining of forces from MM and buffered QM calculations
-to generate a complete set of forces for trajectory calculations.}
-\label{fig:buffered_hybrid_diagram}
+  \centerline{\resizebox{4in}{!}{\includegraphics{buffered_hybrid_diagram}}}
+  \caption{Combining of forces from MM and buffered QM calculations
+           to generate a complete set of forces for trajectory calculations.
+           Small arrows indicate forces applied to recover momentum
+           conservation.}
+  \label{fig:buffered_hybrid_diagram}
 \end{figure}
 
 The advantages of the buffered force mixing method over previously
 applied methods are significant.  The forces in the QM region are
 more accurate, especially in the presence of polarization as can
-occur in polar regions of a protein~\cite{solt_j_phys_chem_b_2009a}.  The software has
-robust adaptive algorithms for QM and buffer atom selection, tested
-in previous applications, enabling the transfer of solvent molecules
-in and out of the QM region.  Finally, the method has already been
-shown to work well for solid state systems, where other methods
-used for biochemical application QM/MM are inaccurate~\cite{bernstein_rep_prog_phys_2009a},
-and will therefore be useful for situations where a solid
-substrate, e.g. a solid state support for a catalytic molecule,
-is present.
-
-The underlying QM method we use is density functional theory (DFT)
-with the BLYP generalized gradient approximation (GGA)~\cite{kohn_phys_rev_1965a,becke_phys_rev_a_1988a,lee_phys_rev_b_1988a}.  For
-the MM region we use the CHARMM force field, which includes 2, 3,
-and 4 body terms (bond stretching, bending, and dihedral angle),
+occur in polar regions of a protein~\cite{solt_j_phys_chem_b_2009a}.
+The software has robust adaptive algorithms for QM and buffer atom
+selection, tested in previous applications, enabling the transfer
+of solvent molecules in and out of the QM region.  Finally, the
+method has already been shown to work well for solid state systems,
+where other methods used for biochemical application QM/MM are
+inaccurate~\cite{bernstein_rep_prog_phys_2009a}, and will therefore
+be useful for situations where a solid substrate, e.g. a solid state
+support for a catalytic molecule, is present.  The underlying QM
+method we use in this work is density functional theory (DFT) with
+the BLYP generalized gradient approximation
+(GGA)~\cite{kohn_phys_rev_1965a,becke_phys_rev_a_1988a,lee_phys_rev_b_1988a}.
+For the MM region we use the CHARMM force field, which includes 2,
+3, and 4 body terms (bond stretching, bending, and dihedral angle),
 as well as non-bonded van der Waals type terms and fixed atomic
-point charges~\cite{brooks_j_comp_chem_2009a}.  Both of these are implemented in the CP2K
-software~\cite{vandevondele_comp_phys_comm_2005a,laino_j_chem_theor_comp_2006a}.  In addition, a conventional QM/MM coupling
-method is also implemneted in CP2K.  When computing the MM forces,
+point charges~\cite{brooks_j_comp_chem_2009a}.  For water with use
+the flexible TIP3P (3 atom-centered point charges, two bond stretch terms, one
+bond bending term) parameters from within the CHARMM force field.
+
+Both of these are implemented in the CP2K
+software~\cite{vandevondele_comp_phys_comm_2005a,laino_j_chem_theor_comp_2006a,cp2k_web}.
+In addition, a conventional QM/MM coupling method is also implemented
+in CP2K~\cite{laio_j_chem_phys_2002a}.  When computing the MM forces,
 the whole system is passed to a CP2K MM calculation.  When computing
 the QM forces, a QM/MM system is passed to CP2K, treating the QM
-region and buffer region atoms as QM within CP2K.  The resulting
+region {\em and buffer region atoms} as QM within CP2K.  The resulting
 forces outside the QM region are ignored.
-
 
 The whole simulation proceeds as follows:
 \begin{verbatim}
@@ -271,25 +329,27 @@ repeat:
   combine MM forces in MM and buffer regions and QM/MM forces in QM region
   use combined forces to propagate configuration in time
 \end{verbatim}
-This method has been implemented in the {\tt libAtoms} and {\tt QUIP}
-libraries, developed jointly by the PIs.  The software provides a framework
-that automates the connectivity and MM force-field term calculations,
-invokes CP2K on a variety of parallel computers, and carries out the time
-integration using the velocity Verlet algorithm~\cite{frenkel_2002a}.  In addition,
-various constraints can be applied and computable quantities tabulated.
-These include structural properties, such as pair correlation functions
-and neighbor numbers, temperatures, energies, and ensemble-averaged
-forces that contribute the free energy difference calculations using
-thermodynamic integration~\cite{frenkel_2002b}.
+This method has been implemented in the {\tt libAtoms} and {\tt
+QUIP} libraries, developed jointly by the PIs~\cite{libatoms_web}.
+The software provides a framework that automates the connectivity
+and MM force-field term calculations, invokes CP2K on a variety of
+parallel computers, and carries out the time integration using the
+velocity Verlet algorithm~\cite{frenkel_2002a}.  In addition, various
+constraints can be applied and computable quantities tabulated.
+These include structural properties, such as pair correlation
+functions and neighbor numbers, temperatures, energies, and
+ensemble-averaged forces that contribute the free energy difference
+calculations using thermodynamic integration~\cite{frenkel_2002b}.
 
-Past experience has shown that it is not trivial to properly thermostat
-all the atomic degrees of freedom~\cite{winfield_thesis_2009a}.
-This frequently overlooked issue can be manifested in various ways, including
-temperature oscillations, or trajectories for light degrees of freedom
-(i.e. H atoms) that do not equilibrate with the other, heavier atoms.
-We have found that a combination of Nose-Hoover and Langevin thermostats
-with different parameters in the QM, boundary, and MM regions works well
-to keep the system in a well-equilibrated, constant temperature ensemble.
+Past experience has shown that it is not trivial to properly
+thermostat all the atomic degrees of freedom~\cite{winfield_thesis_2009a}.
+This frequently overlooked issue can be manifested in various ways,
+including temperature oscillations, or trajectories for light degrees
+of freedom (i.e. H atoms) that do not equilibrate with the other,
+heavier atoms.  We have found that a combination of Nose-Hoover and
+Langevin thermostats with different parameters in the QM, boundary,
+and MM regions works well to keep the system in a well-equilibrated,
+constant temperature ensemble.
 
 \section{Results}
 
