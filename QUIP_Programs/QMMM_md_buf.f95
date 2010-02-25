@@ -107,6 +107,9 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
+  character(len=FIELD_LENGTH) :: old_cluster_mark_postfix     !the old_cluster_mark has to be saved under different names
+                                  !for QMMM_extended & QMMM_core no to be updated twice in 1 step.
+                                  !old_cluster_mark is saved by Potential: added old_cluster_mark_postfix to Potential args_str.
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
 
@@ -1258,22 +1261,42 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
 	      ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
 	  endif
+          !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
+            args_str = trim(args_str) // ' old_cluster_mark_postfix=_extended'
+          elseif (trim(Run_Type1) == 'QMMM_CORE') then
+            args_str = trim(args_str) // ' old_cluster_mark_postfix=_core'
+          endif
 	else
 	  call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
 	endif
      else ! do force mixing
 
        slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
-       if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) &
+       if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+         !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+         if (trim(Run_Type1) == 'QMMM_EXTENDED') then
+           slow_args_str = trim(slow_args_str) // ' old_cluster_mark_postfix=_extended'
+         elseif (trim(Run_Type1) == 'QMMM_CORE') then
+           slow_args_str = trim(slow_args_str) // ' old_cluster_mark_postfix=_core'
+         endif
+       endif
 
        fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
-       if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) &
+       if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+         !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+         if (trim(Run_Type2) == 'QMMM_EXTENDED') then
+           fast_args_str = trim(fast_args_str) // ' old_cluster_mark_postfix=_extended'
+         elseif (trim(Run_Type2) == 'QMMM_CORE') then
+           fast_args_str = trim(fast_args_str) // ' old_cluster_mark_postfix=_core'
+         endif
+       endif
 
        args_str='qm_args_str={'//trim(slow_args_str)//'} mm_args_str={'//trim(fast_args_str)//'}'
        if (distance_ramp) then
@@ -1299,8 +1322,10 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')
     else if (trim(Run_Type) == 'MM') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
-    else if (trim(Run_Type) == 'QMMM_CORE' .or. trim(Run_Type1) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark min_cutoff=0.0')
+    else if (trim(Run_Type) == 'QMMM_CORE') then
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark_core min_cutoff=0.0')
+    else if (trim(Run_Type) == 'QMMM_EXTENDED') then
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark_extended min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
