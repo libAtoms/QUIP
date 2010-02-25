@@ -389,6 +389,9 @@
        f_mm = 0
     end if
 
+    !Potential calc could have added properties e.g. old_cluster_mark
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
+         call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
        f = f_mm
        return
