@@ -83,7 +83,9 @@ interested in are actually constant temperature, not constant energy,
 ensemble averages, since that is how experiments are usually carried
 out.
 
-\subsection{Variable QM region}
+\subsection{Methods}
+
+\subsubsection{Variable QM region}
 
 Some attempts to go beyond these limitations and to simulate liquids,
 where diffusion is significant, have been published.  The first of
@@ -177,8 +179,6 @@ NO$_3^-$~\cite{tongraar_j_phys_chem_a_2006a},
 HCOO$^-$~\cite{payaka_j_phys_chem_a_2009a}, and pure
 water~\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}.
 
-[NB: review these relatively relevant papers in more details?]
-
 Bulo {\it et al.} recently published two variants of the Adaptive
 Partitioning method\cite{bulo_j_chem_theor_comp_2009a}, one based
 on energies and the other on force mixing.  The energy mixing method
@@ -208,7 +208,7 @@ artifacts, and look very different from either underlying single
 model.  The force-mixing based method is much better, with minimal
 disagreement.
 
-\subsection{Fixed QM region}
+\subsubsection{Fixed QM region}
 
 In addition to the work in the previous subsection, a few publications
 have presented results from QM/MM calculations on liquids with a
@@ -250,6 +250,233 @@ the likelihood of reducing transferability upon such adjustment.
 For the Cl$^-$ exchange reaction free energy barriers and differences
 were computed from the potential of mean force (mean force on the
 reacting species constrained to one point in the reaction path).
+
+\subsection{Applications to water and anions}
+
+In a pair of recent papers, Xenides {\it et al.} applied the Hot-Spot
+method to the structure and dynamics of pure
+water~\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}.
+The work focused on a comparison of 3 QM methods, Hartree-Fock (HF),
+M{\o}ller-Plesset perturbation theory (MP2), the B3LYP DFT functional.
+The QM regions included one molecule and a single hydration shell
+(radius of 3.2~{\AA} for HF and B3LYP, 3.4~{\AA} for MP2), and also
+HF with two neighbor shells (2HF, radius 5.6~{\AA}).  The interatomic
+potential model was the flexible water model BJH-CF2.  The simulations
+used 500 molecules, MD time steps of 0.2~fs, the Berendsen (velocity
+rescaling) thermostat to keep the temperature at 298~K, and different
+cutoffs for Coulombic and non-Coulombic interactions.  To analyze
+the resulting structure of the water, the radial distribution
+functions (RDFs) and angular distribution functions (ADFs) were
+computed.  To analyze the dynamics, vibrational spectra were extracted
+from velocity autocorrelation functions, and mean residence time
+from tracking the identity of molecules in the 1st hydration shell.
+The O-O RDFs show rather different looking 1st neighbor peaks for
+the different methods, and significant 2nd neighbor peaks for all
+but 2HF.  Cited experiments show a 2nd neighbor peak at room
+temperature and pressure, which disappears at higher temperatures
+or pressures.  The O-O coordination numbers varied from 4.2-4.9,
+but no experimental comparison was quoted.  The position of the 1st
+shell peak varied from 2.75-2.97~{\AA}, within the range of cited
+experiments, which were described as difficult and unreliable, of
+2.72-2.82~{\AA}.  The positions and coordination numbers are
+summarized in Table~\ref{table:rode}.
+O-O-O ADFs were fairly similar for all models,
+showing a single broad peak from 50$^\circ$-175$^\circ$, with one
+or two maxima around 75$^\circ$-100$^\circ$.  The dynamics showed
+rather more divergence between the various QM models.  Internal
+vibrational modes were all in reasonable agreement, but rotations
+were not.  Rotational decorrelation times varied by factors of 10
+across the different models, and no model was in overall reasonable
+agreement with experiment.  B3LYP tended to lead to the longest
+times, and the other models to much shorter time scales.  Mean-residence
+times were also in poor agreement with experiment, with B3LYP a
+factor of 2 too slow, and the other models factors of 1.5--2 too
+fast compared to experiment.  The authors conclude that the average
+coodination number is between 3 and 4, in agreement with experiment,
+but that only 2-3 of these neighbouring molecules form H bonds with
+the central molecule.  Inclusion of the 2nd hydration shell is
+needed for a good description (i.e. 2HF), and electronic correlations
+(MP2) have a moderate effect.  They also conclude that B3LYP provides
+an overly structured water network, with too slow dynamics.  One
+possible caution is that the Berendsen thermostat does not give a
+canonical ensemble, and may corrupt the dynamics, especially if the
+time constant, which was not reported, is short.  The authors also
+do not investigate whether the system is in thermal equilibrium,
+which has sometimes been a problem in systems with fast H degrees
+of freedom coupled to slow degrees of freedom such as H$_2$O
+rotation~\cite{winfield_thesis_2009a}.
+
+\begin{table}
+\label{table:rode}
+\caption{Summary of structural parameters for pure water~\cite{xenides_j_chem_phys_2005a},
+and anions~\cite{tongraar_phys_chem_chem_phys_2003a}.}
+\begin{tabular}{lc|ll}
+        &       & $r$ (\AA)     & Coord num. \\ \tableline
+  HF    & O-O   & 2.97          & 4.9 \\
+  MP2   & O-O   & 2.87          & 4.7 \\
+  B3LYP & O-O   & 2.75          & 4.2 \\
+  2HF   & O-O   & 2.92          & 4.2 \\
+  HF    & F-O   & 2.68          & $4.6 \pm 2$ \\
+  exper. & F-O  & 2.6--2.9      & 4--6 (4.5) \\
+  HF    & F-H   & 1.74, 3.21 \\
+  HF    & Cl-O  & 3.24          & $5.6 \pm 0.1$ \\
+  exper. & Cl-O & 3.1--3.33     & 4--9 (6)   \\
+  HF    & Cl-H  & 2.42\\
+\end{tabular}
+\end{table}
+
+Tongraar {\it et al.} applied the Hot-Spot method to the hydration
+of Cl$^-$ and F$^-$ using the HF method for the ion and one to two
+solvation shells, and the BJH-CF2 interatomic
+potential~\cite{tongraar_phys_chem_chem_phys_2003a,tongraar_chem_phys_lett_2005a}.
+The authors used QM regions of 7.2-8.0~{\AA} for F$^-$, and 9.2~{\AA}
+for CL$^-$, and fit ion-water pair-potential interactions to QM
+calculations.  Molecular dynamics parameters were the same as in
+the pure water simulations discussed above, execpt for the unit
+cell size which included only 199 water molecules.  The structure
+was characterized in terms of RDFs and ADFs, and compared to
+previously published interatomic potential simulations and experiments.
+Peak heights and coordination numbers are summarized in
+Table~\ref{table:rode}.
+
+[NB: finish summarized Tongraar papers]
+
+% Tongraar Phys Chem Chem Phys 2003
+%   HF, 7.6 A for F, 9.2 A for Cl (1.5 hydration shells)
+%   BJH-CF2 flexible water
+%   fit F/Cl -- water
+%   298 K, 0.2 fs, 199 waters
+%   from well equil MM, QM/MM for 20K ts equil, 40K ts sampling
+%     claim 2 ps is enough
+%   X-O and X-H RDFs
+%   F-O: 
+%     MM 2.53 A, coord 5.8 +- 0.1
+%     QM/MM 2.68 A, 4.6 +- 0.2 (less well defined 1st peak)
+%   F-H:
+%     MM 1.56 A, 2.81 A
+%     QM/MM 1.74 A, 3.21 A, broader
+%   Cl-O: 
+%     MM 3.15 A, 5.9 +- 1
+%     QM/MM 3.24 A, 5.6 +- 1, broader peak
+%   Cl-H:
+%     MM 2.29 A
+%     QM/MM broad, 2.42 A (to 3.2 A), not classical H bonds
+%   O-F-O, O-Cl-O
+%     two peaks, braod around 90, another around 150
+%   various classical literature water, RDF maxima and coord @
+%     F-O 2.67-3.0 A, 4.1-6.7
+%       exper 2.6-2.9 A, 4-6 (4.5)
+%     Cl-O 3.15-3.9 A, 5.1-8.4
+%       exper 3.1-3.33 A, 4-9 (6)
+% 
+% Tongraar Chem Phys Lett 2005
+%   (BLYP too rigid)
+%   QM region 8.0 A, 9.2 A (F, Cl)
+%   HF, BJH-CF2
+%   199 waters, 0.2 fs
+%   75K ts data
+%   pure water, 4.0 A QM region
+%   smooth forces over 0.2 A
+%   ADFs
+%     X-O-H
+%     X: Ow low peak at 15, med peak at 110
+%        F v. high peak at 15, med peak at 110
+%        Cl med peak at 15, low peak at 110
+%   various RDFs - bulk vs. Cl solvation vs. F solvation
+%     O-H bond length
+%       bulk: med
+%       F - longer, broader
+%       Cl - shorter, sharper
+%     H-O-H angle
+%       bulk: largest, med height peak
+%       F smaller, med height peak
+%       Cl - even smaller, sharper peak
+%     power spectra:
+%       Q1, Q2, Q3 - diffs
+%     Table 1
+%                 CN      time (depending on min time to count exchange)
+%       bulk      4.7     0.2, 1.36
+%       F         4.6     0.4, 2.46
+%       Cl        5.6     0.22, 2.05
+% 
+% 
+% 
+% Tongraar Chem Phys Lett 2005
+% 
+% 
+% Payaka J Phys Chem A 2009
+% 
+%   HCOO$^-$ in water.
+%   HF, B3LYP
+%   complexes: B3LYP geom good, HF underconverged basis to agree with correlated methods
+%   CF2-BJH flexible water
+%   fit HCOO- -> H2O interaction to DFT (pair wise powers + Morse + Coulomb)
+%   298 K, 0.2 fs, 199 waters
+%   equil for 30K steps, 250K-450K steps
+%   RDFs:
+%     Ow-Ow, Ow-Hw, Hw-Hw,
+%     O-Ow, O-Hw 
+%   Ow-Ow - reasonable looking, no artifact, peak at 2.75 A,
+%     back to 1 at 3.25 A
+%   O-Ow
+%     B3LYP shorter H bonds, lower coordination than HF
+%   O-Hw
+%     both higher coord (3.14, 2.71) than experiment (2.5),
+%       but broad peaks, so sensitive to exact integration cutoff
+%     BLYP gave 2.45, PW91 gave 2.12-2.66
+%   O-Ow and O-Hw water # distributions
+%     time dependences
+%   various bond length, angle distributions
+%   mean residence times
+%     longer than pure water for HF
+%     shorter than pure water for B3LYP
+%     B3LYP pure water known to be too slow compared to exper
+%   conclusion: B3LYP does bad dynamics, use HF, or better method
+% 
+
+% Xenides J. Chem. Phys. 2005
+%   1st neigbour HF, MP2, B3LYP, also  HF w/ 2nd neighbor
+%   CF2-NJH
+%   RDFs
+%   velocity autocorrel
+%   reorientation time correl func.
+%   mean residence time
+% 
+%   results
+%     O-O RDF
+%       1 shell - all very different looking 1st peaks, 
+%         B3LYP much sharper 1st peak
+%         second peak significant
+%       2 shells - no 2nd peak. in experiment see 2nd peak
+%         unless heated or pressurized
+%       coordination HF 4.9, MP2 4.6, 2HF 4.2, B3LYP 4.2
+%       R O-O experiments very tricky, 2.72-2.82
+%     O-H RDFs
+%       3 peak structure, fairly different for the various
+%         methods - 2HF not great agreement with MP2
+%         B3LYP better?
+%     ADFs - broad, 50-175, peak around 100
+%     dynamics
+%       vibr, rot. freq - broad vibr spectra
+%         experiment only for vibr., all agree
+%       orientation time - very different, few experiments,
+%         B3LYP best for 1, none good for other
+%       MRT
+%         B3LYP twice as slow, others factor of 1.5-2 too fast
+%   conclusions
+%     coord # 3-4 (??)
+%     2 form H bonds to central water
+%     2 neighbors needed
+% 
+% Xenides J Mol Liq 2006
+%   HF, 2nd neigh, BJH-CF2, Berendsen thermostat (bad?)
+%   500 waters,0.2 fs, cutoff Coulomb
+%   rehash of prev results
+%   from MRT - H-bond lifetime 0.33 ps, laser pulse spectroscopy 0.5 ps
+% 
+
+
+[NB: review these relatively relevant papers in more details?]
 
 \section{Technical Approach}
 
@@ -350,6 +577,8 @@ heavier atoms.  We have found that a combination of Nose-Hoover and
 Langevin thermostats with different parameters in the QM, boundary,
 and MM regions works well to keep the system in a well-equilibrated,
 constant temperature ensemble.
+
+[NB: more detail on thermostating]
 
 \section{Results}
 
