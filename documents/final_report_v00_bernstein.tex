@@ -151,7 +151,7 @@ of the method for water are restricted to the dipole of a KS-DFT
 water, and internal consistency (e.g. energy conservation), both
 of which show acceptable results.
 
-[NB: comment on lack of description of actual coupling procedure]
+[NB: enough comment on lack of description of actual coupling procedure?]
 
 The main exception to the energy based coupling commonly used in
 the chemistry community is the Hot-Spot method, first presented by
@@ -162,15 +162,17 @@ region, with a thin transition region between them, typically a
 calculation is carried out separately, with transition region atoms
 in both calculations, and the {\em forces} on each atom are combined
 to give a complete set of forces for the simulation.   For atoms
-in the QM and MM regions, the forces from that calculation are used.
+in the QM and MM regions, the forces from the relevant calculation are used.
 For atoms in the transition region, a linear combination of the two
 forces $f^{QM}$ and $f^{MM}$ is used
 $$f_i = x_i f_i^{QM} + (1-x_i) f_i^{MM},$$
 with the cofficients $x_i$ changing smoothly from 1 to 0
 as the positions vary from inner to outer boundaries of the transition
-region.  Note that because these forces are not the gradients of a
-scalar function (the potential energy), they do not lead to
-trajectories that obey conservation of momentum or energy.  In
+region.  Note that because these forces are not the gradients of a scalar
+function (the potential energy), they do not lead to trajectories that
+obey conservation of momentum or energy.  One essential part of the method
+that is not explained is how the two calculations are actually coupled,
+either mechanically or electrostatically.  In
 nearly 80 subsequent publications by Rode {\it et al.}, this method
 has been used for studying a large number ions solvated in water
 and other solvents such as ammonia, as well as pure water.  Most
@@ -570,19 +572,26 @@ functions and neighbor numbers, temperatures, energies, and
 ensemble-averaged forces that contribute the free energy difference
 calculations using thermodynamic integration~\cite{frenkel_2002b}.
 
-Past experience has shown that it is not trivial to properly
-thermostat all the atomic degrees of freedom~\cite{winfield_thesis_2009a}.
+Past experience has shown that it is not trivial to properly thermostat
+all the atomic degrees of freedom~\cite{winfield_thesis_2009a}.
 This frequently overlooked issue can be manifested in various ways,
 including temperature oscillations, or trajectories for light degrees
 of freedom (i.e. H atoms) that do not equilibrate with the other,
 heavier atoms.  We have found that a combination of Nose-Hoover and
 Langevin thermostats with different parameters in the QM, boundary,
 and MM regions works well to keep the system in a well-equilibrated,
-constant temperature ensemble.
+constant temperature ensemble.  We use two separate Nose-Hoover
+thermostats~\cite{nose_mol_phys_1984a} in the QM and buffer regions,
+one for the O atoms and one for the H atoms.  The separate thermostats
+ensure equilibrium between the fast and slow degrees of freedom, and
+the Nose-Hoover method is most effective at handling the deviation from
+energy conservation in this region~\cite{winfield_thesis_2009a}.  In the
+MM region we use a Nose-Langevin thermostat, because has better ergodicity
+properties than Nose-Hoover.  While it is less effective at compensating
+for energy conservation deviation~\cite{winfield_thesis_2009a}, this is
+not a problem in the MM region.
 
-[NB: more detail on thermostating]
-Nose: QM H, QM O
-Nose-Langevin: MM
+[NB: OK detail on thermostating?]
 
 \section{Results}
 
