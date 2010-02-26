@@ -680,6 +680,64 @@ class TestCluster_Surface_FCC(QuippyTestCase):
       self.assertEqual(self.cluster2h.n,37)
 
 
+class TestCluster_CrackTip(QuippyTestCase):
+
+   def setUp(self):
+      slab = supercell(diamond(5.44, 14), 10, 10, 1)
+      slab.map_into_cell()
+      width = slab.lattice[1,1]
+      notch_width = 0.5*width
+      notch_height = notch_width/2.0
+
+      slab.lattice[1,1] += 50.0
+      slab.lattice[2,2] += 50.0
+      slab.set_lattice(slab.lattice)
+
+      mask = fzeros(slab.n, dtype=int)
+      mask[:] = 1
+      for i in frange(slab.n):
+         if ((slab.pos[2,i] < -(0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) + notch_height/2.0) and
+             (slab.pos[2,i] >  (0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) - notch_height/2.0)):
+            mask[i] = 0
+
+      self.at = slab.select(mask)
+      self.at.set_cutoff(5.0)
+      self.at.calc_connect()
+      
+      embed = self.at.bfs_grow_single(1, n=5, nneighb_only=True)
+      self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
+      self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+
+      verbosity_push(VERBOSE)
+      self.t1 = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=F cluster_allow_modification=F")
+      self.cluster1 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t1)
+
+      self.t2 = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=T cluster_allow_modification=F")
+      self.cluster2 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t2)
+      verbosity_pop()
+
+      #AtomsList([self.at,self.cluster1,self.cluster2]).show()
+      #raw_input()
+
+   def test_cluster_n(self):
+      self.assertEqual(self.cluster1.n, 97)
+
+   def test_cluster_n_term(self):
+      self.assertEqual((self.cluster1.z == 1).count(), 40)
+
+   def test_cluster_lattice_x(self):
+      self.assertAlmostEqual(self.cluster1.lattice[1,1], 28.0)
+
+   def test_cluster_lattice_y(self):
+      self.assertAlmostEqual(self.cluster1.lattice[2,2], 28.0)
+
+   def test_cluster_lattice_z(self):
+      self.assertAlmostEqual(self.cluster1.lattice[3,3], self.at.lattice[3,3])
+      
+   def test_cluster_nneighb_only_table(self):
+      self.assertEqual(sorted(self.t1.int[1,:]), sorted(self.t1.int[1,:]))
+
+
 def mark_atoms(at, nneighb_only=True, alt_connect=None):
    at.add_property('hybrid_mark', HYBRID_NO_MARK)
    embed = at.bfs_grow_single(1, n=1, nneighb_only=nneighb_only, alt_connect=alt_connect)
