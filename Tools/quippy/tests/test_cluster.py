@@ -708,13 +708,11 @@ class TestCluster_CrackTip(QuippyTestCase):
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
       self.at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
 
-      verbosity_push(VERBOSE)
       self.t1 = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=F cluster_allow_modification=F")
       self.cluster1 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t1)
 
       self.t2 = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T cluster_nneighb_only=T cluster_allow_modification=F")
       self.cluster2 = carve_cluster(self.at, "cluster_periodic_x=F cluster_periodic_y=F cluster_periodic_z=T terminate=T randomise_buffer=F", cluster_info=self.t2)
-      verbosity_pop()
 
       #AtomsList([self.at,self.cluster1,self.cluster2]).show()
       #raw_input()
@@ -735,7 +733,7 @@ class TestCluster_CrackTip(QuippyTestCase):
       self.assertAlmostEqual(self.cluster1.lattice[3,3], self.at.lattice[3,3])
       
    def test_cluster_nneighb_only_table(self):
-      self.assertEqual(sorted(self.t1.int[1,:]), sorted(self.t1.int[1,:]))
+      self.assertEqual(sorted(self.t1.int[1,:]), sorted(self.t2.int[1,:]))
 
 
 def mark_atoms(at, nneighb_only=True, alt_connect=None):
