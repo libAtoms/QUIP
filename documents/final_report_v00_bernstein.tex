@@ -1,18 +1,18 @@
 \documentclass[11pt]{revtex4}
 
-\usepackage{graphics}
+\usepackage{graphicx}
 \setlength\textwidth{6.25in}
 \setlength\topmargin{-0.25in}
 
 \begin{document}
 
-\title{Adaptive Hybrid Simulations of Solvated Reactions}
+\title{Final report: Adaptive Hybrid Simulations of Solvated Reactions}
 
 \author{Noam Bernstein}
 \affiliation{Center for Computational Materials Science, Naval Research Lab Code 6390, 4555 Overlook Ave SW, Washington DC, 20375}
 
 \author{G\'abor Cs\'anyi}
-\affiliation{Mechanics, Materials and Design, Engineering Dept., University of Cambridge, Trumpington Street, Cambridge CB2 1PZ, UK}
+\affiliation{Computational Mechanics Group, Engineering Laboratory, University of Cambridge, Trumpington Street, Cambridge CB2 1PZ, UK}
 
 \maketitle
 
@@ -582,6 +582,61 @@ constant temperature ensemble.
 
 \section{Results}
 
+\subsection{Classical model}
+
+Throughout this project, we use the TIP3P classical model for water. There are an enormous variety of classical water models in the literature. This choice is governed by two key factors. The first is that our long term goal is the simulation of biomolecules, and the classical force fields that describe them are tied to a specific water model, which is mostly TIP3P. Secondly, we are aiming to create a hybrid simulation scheme that is agnostic with respect to which two models it couples, and using a relatively crude classical water model such as TIP3P is a good way to test the ability of the coupling scheme to bridge models whose description of the system might be quite different. One modification that we introduce with respect to the original TIP3P model in the literature is to make the OH bond flexible. This is helpful in the hybrid simulation context because the number of degrees of freedom does not have to change as molecules move between the QM and MM region. If we were to use a rigid water model, then when a molecule moves into the QM region, the constraints need to be released, and vibrational energy needs to be artificially put into the new degrees of freedom. Conversely, when a molecule moves into the MM region, its geometry would not be compatible with the constraints of the rigid model, and the corresponding potential and kinetic energy in these degrees of freedom need to be removed. While such a scheme is possible, and has been implemented in \cite{winfield_thesis_2009a}, we find it an unnecessary complication. To make sure that the flexible water model is still reasonable, we have computed the radial distribution function with both rigid and flexible models using two different parametrisations of the O--H bond, using two different commercial softwares, as shown in Figure~\ref{rigid-flex}. The CHARMM parametrisation is significantly better in the flexible case, and this is what we use in this project.
+
+\begin{figure}
+\includegraphics[height=6cm]{AMBER-CHARMM_TIP3P_rdf}
+\includegraphics[height=6cm]{AMBER_rigid-flex_rdf}
+\includegraphics[height=6cm]{CHARMM_rigid-flex_rdf}
+\caption{Top: AMBER and CHARMM parametrisations of the rigid TIP3P model show RDFs that match very well. Middle: the flexible TIP3P model in AMBER shows significant deviations from its rigid counterpart. Bottom: with the CHARMM parametrisation, the flexible and rigid models yield very close RDFs.}
+\label{rigid-flex}
+\end{figure}
+
+\subsection{Force error vs. buffer size}
+
+Our hybrid simulation requires an a priori determination of an appropriate buffer size in order to get forces on atoms in the QM region that are accurate enough. The minimum buffer size should be used that leads to acceptable results, because increasing the buffer size has the largest adverse effect on the cost of the simulation. Each system thus calls for some preliminary testing. Figure \ref{MCLbuftest} shows the result of such a test for a small molecule solvated in water. A buffer of about 4 to 5 \AA\ is thus reasonable. The force error is worst for highly charged atoms, as was already shown in~\cite{solt_j_phys_chem_b_2009a}.
+
+\begin{figure}
+\includegraphics{force_error_MCL}
+\caption{Average force component error as a function of buffer size from a BLYP/TIP3P QM/MM calculation on various atoms of methyl chloride (MCL) solvated in water. Another chloride ion is included in the simulation cell, not bonded to the molecule. The solid lines represent averages over 14 configurations, the dashed lines indicate the largest error observed. }
+\label{MCLbuftest}
+\end{figure}
+
+\subsection{Chemical potential}
+
+Even though in both our method and in the Hot Spot method only forces are used from the QM and MM models, there can be an effective chemical potential difference between the QM and MM regions even in the case of a homogeneous liquid. This chemical potential difference can arise purely due to the different diffusion constants, as illustrated in Figure~\cite{diffusion_sketch}. This is on top of any actual chemical potential difference between the models, stemming from e.g. different electrostatics. 
+
+\begin{figure}
+\includegraphics{diffusion}
+\caption{Illustration of the effective chemical potential difference that can arise in a force-based hybrid simulation purely from dynamical effects. In a), a series of barriers are shown between sites which are of different height for the two different models, corresponding to different diffusion constants. Even though energies are not used, the effective energy surface that a diffusion particle will feel is shown in b). The model with the higher diffusion barrier will appear to have sites with lower chemical potential. }
+\label{diffusion_sketch}
+\end{figure}
+
+Such chemical potential differences would result in unphysical density differences, in extreme cases even voids can open up in the simulation box. A practical solution is to introduce a corrective potential that compensates for the chemical potential difference. The appropriate size of the corrective potential needs to be found experimentally. Figure~\ref{density} shows the density in the simulation box for both the semiempirical PM3/TIP3P and the DFT-LDA/TIP3P hybrid simulations for different sized corrective potentials. The potentials were constant in the QM and well inside the MM regions, and had a form of a cubic spline near the transition. The width of the spline is another free parameter, and can be used to limit the adverse effect the corrective potential might have on the dynamics of the particles. A wider potential of a given depth will give rise to smaller forces. We checked that the forces arising from this potential were an order of magnitude smaller than the dynamical forces in the system, and of the same order as the forces coming from the thermostat.  
+
+\begin{figure}
+\centerline{\vbox to 5cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[width=8cm]{PM3_hybrid_4-X_0_15eV_depth_norm}
+\includegraphics[width=8cm]{LDA_density_4-6_0_15eV}}
+\centerline{\includegraphics[width=8cm]{LDA_density_4-7_0_15eV}
+\includegraphics[width=8cm]{LDA_density_4-8_0_20eV}}
+\hbox{\vbox to 5cm{\hbox to 0.5cm{b)}\vfil}\includegraphics[width=8cm]{radial_mean_new_6_12_ps}\hfil}
+\caption{a) Density of PM3/TIP3P and LDA/TIP3P QM/MM water as a function of distance form the center of the QM region for different size corrective potentials. The error bars grow towards the center of the QM zone because fewer atoms contribute to the sample there; b) water density in the BLYP/TIP3P simulation with no corrective potential. The different curves correspond to different amounts of Gaussian smoothing.}
+\label{density}
+\end{figure}
+
+The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously that for the BLYP/TIP3P combination, no corrective potential is necessary. 
+
+\subsection{Water RDFs}
+In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440 K, where the dynamics (and the radial distribution function) of DFT water better matches reality. An added benefit of the higher temperatures is that equlibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
+
+\begin{figure}
+\hbox{\vbox to 8cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=8cm]{summary_pure_water_rdfs_G}}
+\hbox{\vbox to 8cm{\hbox to 0.5cm{b)}\vfil}\includegraphics[height=8cm]{summary_water_Cl_rdfs_G}}
+\caption{a) O--O radial distribution functions in water using the BLYP/TIP3P hybrid method, as compared with the fully BLYP and fully TIP3P models. For the hybrid curves, the first number in the label is the radius of the QM region, the second is the radius of the buffer region. Using zero buffer radius basically corresponds to the Hot Spot method; b) distribution of the Cl--O distance for a solvated chloride ion using the hybrid technique, as compared with the classical and fully quantum becnhmarks. }
+\label{water_blyp_rdf}
+\end{figure}
 \section{Summary}
 
 \bibliography{database}
