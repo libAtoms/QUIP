@@ -99,6 +99,7 @@ type Self_Consistency
 
   real(dp) :: alpha = 0.01_dp, w0 = 0.02_dp
   real(dp) :: conv_tol = 1.0e-10_dp
+  real(dp) :: mix_simple_end_tol = -1.0e-2_dp, mix_simple_start_tol=1.0e38_dp
 
   integer :: max_iter = 100
 
@@ -1370,8 +1371,10 @@ subroutine Self_Consistency_set_type_str(this, args_str)
   call param_register(params, 'SCF_ALPHA', ''//this%alpha, this%alpha)
   call param_register(params, 'SCF_W0', ''//this%w0, this%w0)
   call param_register(params, 'SCF_MAX_ITER', ''//this%max_iter, this%max_iter)
-  call param_register(params, 'SCF_MIX_SIMPLE', 'F', this%mix_simple)
+  call param_register(params, 'SCF_MIX_SIMPLE', ''//this%mix_simple, this%mix_simple)
   call param_register(params, 'SCF_CONV_TOL', ''//this%conv_tol, this%conv_tol)
+  call param_register(params, 'SCF_MIX_SIMPLE_END_TOL', ''//this%mix_simple_end_tol, this%mix_simple_end_tol)
+  call param_register(params, 'SCF_MIX_SIMPLE_START_TOL', ''//this%mix_simple_start_tol, this%mix_simple_start_tol)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Self_Consistency_set_type_str args_str')) then
     call system_abort("Self_Consistency_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
   endif
@@ -2451,6 +2454,15 @@ function TBSystem_update_orb_local_pot(this, at, iter, global_at_weight, new_orb
   call Print("SCF iteration " // iter // " residual " // resid)
 
   done = (resid < this%scf%conv_tol)
+
+  if (.not. done .and. this%scf%mix_simple .and. resid < this%scf%mix_simple_end_tol) then
+    call print("mix_simple is active, resid < this%scf%mix_simple_end_tol, switching simple mixing off", ERROR)
+    this%scf%mix_simple = .false.
+  endif
+  if (.not. done .and. .not. this%scf%mix_simple .and. resid > this%scf%mix_simple_start_tol) then
+    call print("mix_simple is not active, resid > this%scf%mix_simple_start_tol, switching simple mixing on", ERROR)
+    this%scf%mix_simple = .true.
+  endif
 
   cur_dof = 1
   if (allocated(this%scf%terms)) then
