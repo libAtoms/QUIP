@@ -624,8 +624,8 @@ Throughout this project, we use the TIP3P classical model for water. There are a
 Our hybrid simulation requires an a priori determination of an appropriate buffer size in order to get forces on atoms in the QM region that are accurate enough. The minimum buffer size should be used that leads to acceptable results, because increasing the buffer size has the largest adverse effect on the cost of the simulation. Each system thus calls for some preliminary testing. Figure \ref{MCLbuftest} shows the result of such a test for a small molecule solvated in water. A buffer of about 4 to 5 \AA\ is thus reasonable. The force error is worst for highly charged atoms, as was already shown in~\cite{solt_j_phys_chem_b_2009a}.
 
 \begin{figure}
-\includegraphics{force_error_MCL}
-\caption{Average force component error as a function of buffer size from a BLYP/TIP3P QM/MM calculation on various atoms of methyl chloride (MCL) solvated in water. Another chloride ion is included in the simulation cell, not bonded to the molecule. The solid lines represent averages over 14 configurations, the dashed lines indicate the largest error observed. }
+\centerline{\vbox to 5cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=5cm]{force_error_H2O}\vbox to 5cm{\hbox to 0.5cm{b)}\vfil}\includegraphics[height=5cm]{force_error_MCL}}
+\caption{Average force component error as a function of buffer size from a BLYP/TIP3P QM/MM calculation a) in water, and b) on various atoms of methyl chloride (MCL) solvated in water. In the latter case, another chloride ion is included in the simulation cell, not bonded to the molecule. The solid lines represent averages over 14 configurations, the dashed lines indicate the largest error observed. }
 \label{MCLbuftest}
 \end{figure}
 
@@ -664,6 +664,22 @@ In order to compare the present method with the only practical alternative, i.e.
 \label{water_blyp_rdf}
 \end{figure}
 \section{Summary}
+
+The following objectives have been achieved to date in this project.
+\begin{enumerate}
+\item {\bf Interface hybrid code to CP2K}\\Residue library, xyz2pdb
+\item {\bf Testing DFT/MM coupling on pure water}
+\item {\bf Testing DFT/MM coupling on solvated ion}
+\end{enumerate}
+
+The secondary goal of testing with semiempirical QM engines was dropped. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300 K is very slow. Once this was realised, the production runs were restarted at a higher temperature. We changed the QM region size parameters to better match with Rode's work, and this confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
+
+The following objectives remain, work for which is currently underway:
+\begin{enumerate}
+\item{Free energy barrier for nucleophilic substitution of methyl chloride}
+\item{Free energy barrier and difference during deprotonation of an amino acid}
+\item{Free energy of adsoprtion of an amino acid on an oxide surface (silica)}
+\end{enumerate}
 
 \bibliography{database}
 
