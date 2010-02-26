@@ -151,7 +151,7 @@ of the method for water are restricted to the dipole of a KS-DFT
 water, and internal consistency (e.g. energy conservation), both
 of which show acceptable results.
 
-[NB: enough comment on lack of description of actual coupling procedure?]
+[NB: enough comment now on lack of description of actual coupling procedure?]
 
 The main exception to the energy based coupling commonly used in
 the chemistry community is the Hot-Spot method, first presented by
@@ -320,7 +320,7 @@ and anions~\cite{tongraar_phys_chem_chem_phys_2003a}.}
   MP2   & O-O   & 2.87          & 4.7 \\
   B3LYP & O-O   & 2.75          & 4.2 \\
   2HF   & O-O   & 2.92          & 4.2 \\
-  HF    & F-O   & 2.68          & $4.6 \pm 2$ \\
+  HF    & F-O   & 2.68          & $4.6 \pm 0.2$ \\
   exper. & F-O  & 2.6--2.9      & 4--6 (4.5) \\
   HF    & F-H   & 1.74, 3.21 \\
   HF    & Cl-O  & 3.24          & $5.6 \pm 0.1$ \\
@@ -329,50 +329,34 @@ and anions~\cite{tongraar_phys_chem_chem_phys_2003a}.}
 \end{tabular}
 \end{table}
 
-Tongraar {\it et al.} applied the Hot-Spot method to the hydration
-of Cl$^-$ and F$^-$ using the HF method for the ion and one to two
-solvation shells, and the BJH-CF2 interatomic
+Tongraar {\it et al.} applied the Hot-Spot method to the
+hydration of Cl$^-$ and F$^-$ using the HF method for the
+ion and one to two solvation shells, and the BJH-CF2 interatomic
 potential~\cite{tongraar_phys_chem_chem_phys_2003a,tongraar_chem_phys_lett_2005a}.
-The authors used QM regions of 7.2-8.0~{\AA} for F$^-$, and 9.2~{\AA}
-for CL$^-$, and fit ion-water pair-potential interactions to QM
-calculations.  Molecular dynamics parameters were the same as in
-the pure water simulations discussed above, execpt for the unit
-cell size which included only 199 water molecules.  The structure
-was characterized in terms of RDFs and ADFs, and compared to
-previously published interatomic potential simulations and experiments.
-Peak heights and coordination numbers are summarized in
-Table~\ref{table:rode}.
+The authors used QM regions of 7.2--8.0~{\AA} for F$^-$, and 9.2~{\AA} for
+Cl$^-$, and fit ion-water pair-potential interactions to QM calculations.
+Molecular dynamics parameters were the same as in the pure water
+simulations discussed above, except for the unit cell size which included
+only 199 water molecules.  The structure was characterized in terms of
+RDFs and ADFs, and compared to previously published interatomic potential
+simulations and experiments.  Peak heights and coordination numbers are
+summarized in Table~\ref{table:rode}.  These results are in reasonable
+agreement with experiment, although the range of experimental results
+is large.  The authors do note that for some of the coordination numbers,
+for example number of water H's near an O atom, the computational results
+are sensitive to the precise distance cutoff for ``nearest neighbors.''
+The authors also compared RDFs and ADFs for bulk water molecules to water
+molecules in the ions' 1st solvation shells, to see how the binding to
+the ion changes the water molecules' internal structure.   They find that
+compared to the bulk water molecules near F$^-$ have a weaker, longer OH
+bond, and broader distribution of H-O-H angles.  These effects are even
+stronger near the Cl$^-$ ion.  They also compure mean residence times,
+and find that exchanges from the 1st hydration shell are slower for water
+neighbors of F$^-$ than bulk water neighbors, but dynamics near Cl$^-$
+are similar in speed to bulk water.
 
-[NB: finish summarized Tongraar papers]
+[NB: done?]
 
-% Tongraar Phys Chem Chem Phys 2003
-%   HF, 7.6 A for F, 9.2 A for Cl (1.5 hydration shells)
-%   BJH-CF2 flexible water
-%   fit F/Cl -- water
-%   298 K, 0.2 fs, 199 waters
-%   from well equil MM, QM/MM for 20K ts equil, 40K ts sampling
-%     claim 2 ps is enough
-%   X-O and X-H RDFs
-%   F-O: 
-%     MM 2.53 A, coord 5.8 +- 0.1
-%     QM/MM 2.68 A, 4.6 +- 0.2 (less well defined 1st peak)
-%   F-H:
-%     MM 1.56 A, 2.81 A
-%     QM/MM 1.74 A, 3.21 A, broader
-%   Cl-O: 
-%     MM 3.15 A, 5.9 +- 1
-%     QM/MM 3.24 A, 5.6 +- 1, broader peak
-%   Cl-H:
-%     MM 2.29 A
-%     QM/MM broad, 2.42 A (to 3.2 A), not classical H bonds
-%   O-F-O, O-Cl-O
-%     two peaks, braod around 90, another around 150
-%   various classical literature water, RDF maxima and coord @
-%     F-O 2.67-3.0 A, 4.1-6.7
-%       exper 2.6-2.9 A, 4-6 (4.5)
-%     Cl-O 3.15-3.9 A, 5.1-8.4
-%       exper 3.1-3.33 A, 4-9 (6)
-% 
 % Tongraar Chem Phys Lett 2005
 %   (BLYP too rigid)
 %   QM region 8.0 A, 9.2 A (F, Cl)
@@ -402,9 +386,9 @@ Table~\ref{table:rode}.
 %       bulk      4.7     0.2, 1.36
 %       F         4.6     0.4, 2.46
 %       Cl        5.6     0.22, 2.05
-% 
-% 
-% 
+ 
+ 
+ 
 % Tongraar Chem Phys Lett 2005
 % 
 % 
@@ -437,6 +421,34 @@ Table~\ref{table:rode}.
 %     B3LYP pure water known to be too slow compared to exper
 %   conclusion: B3LYP does bad dynamics, use HF, or better method
 % 
+
+% Tongraar Phys Chem Chem Phys 2003
+%   HF, 7.6 A for F, 9.2 A for Cl (1.5 hydration shells)
+%   BJH-CF2 flexible water
+%   fit F/Cl -- water
+%   298 K, 0.2 fs, 199 waters
+%   from well equil MM, QM/MM for 20K ts equil, 40K ts sampling
+%     claim 2 ps is enough
+%   X-O and X-H RDFs
+%   F-O: 
+%     MM 2.53 A, coord 5.8 +- 0.1
+%     QM/MM 2.68 A, 4.6 +- 0.2 (less well defined 1st peak)
+%   F-H:
+%     MM 1.56 A, 2.81 A
+%     QM/MM 1.74 A, 3.21 A, broader
+%   Cl-O: 
+%     MM 3.15 A, 5.9 +- 1
+%     QM/MM 3.24 A, 5.6 +- 1, broader peak
+%   Cl-H:
+%     MM 2.29 A
+%     QM/MM broad, 2.42 A (to 3.2 A), not classical H bonds
+%   O-F-O, O-Cl-O
+%     two peaks, braod around 90, another around 150
+%   various classical literature water, RDF maxima and coord @
+%     F-O 2.67-3.0 A, 4.1-6.7
+%       exper 2.6-2.9 A, 4-6 (4.5)
+%     Cl-O 3.15-3.9 A, 5.1-8.4
+%       exper 3.1-3.33 A, 4-9 (6)
 
 % Xenides J. Chem. Phys. 2005
 %   1st neigbour HF, MP2, B3LYP, also  HF w/ 2nd neighbor
@@ -591,7 +603,7 @@ properties than Nose-Hoover.  While it is less effective at compensating
 for energy conservation deviation~\cite{winfield_thesis_2009a}, this is
 not a problem in the MM region.
 
-[NB: OK detail on thermostating?]
+[NB: OK detail on thermostating now?]
 
 \section{Results}
 
@@ -643,7 +655,7 @@ Such chemical potential differences can lead to unphysical density differences, 
 The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously that for the BLYP/TIP3P combination, no corrective potential is necessary. 
 
 \subsection{Water RDFs}
-In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{?}. An added benefit of the higher temperatures is that equlibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
+In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equlibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
 
 \begin{figure}
 \hbox{\vbox to 8cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=8cm]{summary_pure_water_rdfs_G}}
