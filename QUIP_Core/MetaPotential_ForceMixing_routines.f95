@@ -566,14 +566,19 @@
                call system_abort('MetaPotential_FM_Calc: missing property conserve_momentum_weight')
        end if
 
-       allocate(df(3,this%fitlist%N),df_fit(3,this%fitlist%N))
+       allocate(df(3,at%N),df_fit(3,this%fitlist%N))
 
-       df = 0.0_dp
-       df(:,1:this%embedlist%N) = f_qm(:,embed) - f_mm(:,embed)
+       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) &
+            call system_abort('MetaPotential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
+
+       ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
+       do i=1,at%N
+          df(:,i) = (weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)) - f_mm(:.i)
+       end do
 
        f_tot = sum(df,dim=2)
        call print('conserve_momentum: norm(sum of target forces) = '//round(norm(f_tot),15), VERBOSE)
-    
+
        w_tot = 0.0_dp
        do i = 1, this%fitlist%N
           select case(weight_method)
@@ -589,14 +594,14 @@
           df_fit(:,i) = -weight * f_tot
           w_tot = w_tot + weight
        end do
-       df_fit = (df_fit / w_tot) + df
+       df_fit = (df_fit / w_tot)
 
        !NB workaround for pgf90 bug (as of 9.0-1)
        t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15), VERBOSE)
        !NB end of workaround for pgf90 bug (as of 9.0-1)
 
        ! Final forces are classical forces plus corrected QM forces
-       f = f_mm
+       f = f_mm + df
        f(:,fit) = f(:,fit) + df_fit
 
        call verbosity_pop()
