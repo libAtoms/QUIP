@@ -34,17 +34,17 @@ literature~\cite{curtin_model_simul_mater_sci_eng_2003a,csanyi_j_phys_condens_ma
 as QM/MM (quantum mechanics/molecular mechanics) in the chemistry
 literature~\cite{senn_topics_cur_chem_2007a,lin_theor_chem_acc_2005a}.
 
-A number of challenges can arise in the development of a hyrid
+A number of challenges can arise in the development of a hybrid
 simulation method: boundary effects at the edge of each simulation
 (QM or MM) region, coupling the two regions mechanically and
-electostatically, and moving the QM region (or moving atoms into
+electrostatically, and moving the QM region (or moving atoms into
 or out of a fixed region).  Various subsets of these problems have
 been handled in different ways in published implementations, as we
 discuss in more detail in the next section.  It is important to
-determine what consitutes ``success'' for a hybrid method.  We focus
+state clearly what constitutes ``success'' for a hybrid method.  We focus
 on reproducing observables (i.e. ensemble averages) in the QM region
-in agreement with a full QM simulation.  Agreement with experiment
-is also important, of course, but a hybrid method that agrees with
+in agreement with a fully QM simulation.  Agreement with experiment
+is ultimately also important, of course, but a hybrid method that agrees with
 experiment when the underlying, nominally accurate, QM method does
 not is probably just benefitting from a cancellation of errors, and
 is unlikely to be transferable or reliable.  This statement is not
@@ -52,19 +52,20 @@ absolute: interatomic potentials could be fit to reproduce interactions,
 for example dispersion forces, that are not well described by QM
 method such as density functional theory (DFT).
 
-In this project we have implemented a hybrid method based on atomic
-forces that attempts to address all of these issues.  We have tested
+In this project we have implemented a hybrid method which is based on combining atomic
+forces from the two models, rather than energies, and that attempts to address all of these issues.  We have tested
 it on a relatively challenging system, liquid water and ions solvated
 in water, and shown that the hybrid method is good at reproducing
-the fully QM simulation.
+the results of a fully QM simulation. Attempting such a rigorous benchmark is not commonly
+done in the literature.
 
 \section{Background}
 
 The QM/MM approach in chemistry was first introduced by
 Warshel~\cite{warshel_j_mol_biol_1976a} for the study of a reaction
-in the active site of an enzymatic protein.  It has since been
+at the active site of an enzymatic protein.  It has since been
 applied to many systems, some recently reviewed in
-Refs.\onlinecite{senn_topics_cur_chem_2007a} and
+Refs. \onlinecite{senn_topics_cur_chem_2007a} and
 \onlinecite{lin_theor_chem_acc_2005a}.  The vast majority of QM/MM
 implementations in the chemistry community begin by defining a total
 energy for the coupled system.  In addition, a fixed set of atoms
@@ -78,7 +79,7 @@ in Ref.~\onlinecite{laio_j_chem_phys_2002a} for a molecular system, and in
 Ref.~\onlinecite{sokol_int_j_quant_chem_2004a,sherwood_j_mol_struct_theochem_2003a} for an ionic solid-state
 system.  The second is that it is impossible to change the contents
 of the QM region, because doing so will necessarily change the total
-energy.  In fact the observables that researchers are typically
+energy abruptly.  In fact the observables that researchers are typically
 interested in are actually constant temperature, not constant energy,
 ensemble averages, since that is how experiments are usually carried
 out.
@@ -232,7 +233,7 @@ a 9-atom ring molecule.  For water a single molecule was treated
 with QM, and the rest with MM.  For malonaldehyde, the malonaldehyde
 molecule itself was described with QM, and the solvent water molecules
 with MM.  There is no comparison with full QM for pure water,
-although the authors do note that the diffusion cofficients of the
+although the authors do note that the diffusion coefficients of the
 two underlying models (SCC-DFTB and SPC) do not agree with each
 other or with experiment.  There is no discussion of whether this
 mismatch leads to artifacts, as were seen in
@@ -296,7 +297,7 @@ times, and the other models to much shorter time scales.  Mean-residence
 times were also in poor agreement with experiment, with B3LYP a
 factor of 2 too slow, and the other models factors of 1.5--2 too
 fast compared to experiment.  The authors conclude that the average
-coodination number is between 3 and 4, in agreement with experiment,
+coordination number is between 3 and 4, in agreement with experiment,
 but that only 2-3 of these neighbouring molecules form H bonds with
 the central molecule.  Inclusion of the 2nd hydration shell is
 needed for a good description (i.e. 2HF), and electronic correlations
@@ -350,7 +351,7 @@ molecules in the ions' 1st solvation shells, to see how the binding to
 the ion changes the water molecules' internal structure.   They find that
 compared to the bulk water molecules near F$^-$ have a weaker, longer OH
 bond, and broader distribution of H-O-H angles.  These effects are even
-stronger near the Cl$^-$ ion.  They also compure mean residence times,
+stronger near the Cl$^-$ ion.  They also compute mean residence times,
 and find that exchanges from the 1st hydration shell are slower for water
 neighbors of F$^-$ than bulk water neighbors, but dynamics near Cl$^-$
 are similar in speed to bulk water.
@@ -631,7 +632,7 @@ Our hybrid simulation requires an a priori determination of an appropriate buffe
 
 \subsection{Chemical potential}
 
-Even though in both our method and in the Hot Spot method only forces are used from the QM and MM models, there can be net transport between the QM and MM regions even in the case of a homogeneous liquid, which can be thought of as an effecive chemical potential difference. This net transport can arise purely due to the different diffusion constants, as illustrated in Figure~\ref{diffusion_sketch}. This is on top of any actual chemical potential difference between the models, stemming from e.g. different electrostatics. 
+Even though in both our method and in the Hot Spot method only forces are used from the QM and MM models, there can be net transport between the QM and MM regions even in the case of a homogeneous liquid, which can be thought of as an effective chemical potential difference. This net transport can arise purely due to the different diffusion constants, as illustrated in Figure~\ref{diffusion_sketch}. This is on top of any actual chemical potential difference between the models, stemming from e.g. different electrostatics. 
 
 \begin{figure}
 \includegraphics{diffusion}
@@ -655,12 +656,12 @@ Such chemical potential differences can lead to unphysical density differences, 
 The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously that for the BLYP/TIP3P combination, no corrective potential is necessary. 
 
 \subsection{Water RDFs}
-In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equlibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
+In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equilibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
 
 \begin{figure}
 \hbox{\vbox to 8cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=8cm]{summary_pure_water_rdfs_G}}
 \hbox{\vbox to 8cm{\hbox to 0.5cm{b)}\vfil}\includegraphics[height=8cm]{summary_water_Cl_rdfs_G}}
-\caption{a) O--O radial distribution functions in water using the BLYP/TIP3P hybrid method, as compared with the fully BLYP and fully TIP3P models. For the hybrid curves, the first number in the label is the radius of the QM region, the second is the radius of the buffer region. Using zero buffer radius basically corresponds to the Hot Spot method; b) distribution of the Cl--O distance for a solvated chloride ion using the hybrid technique, as compared with the classical and fully quantum becnhmarks. }
+\caption{a) O--O radial distribution functions in water using the BLYP/TIP3P hybrid method, as compared with the fully BLYP and fully TIP3P models. For the hybrid curves, the first number in the label is the radius of the QM region, the second is the radius of the buffer region. Using zero buffer radius basically corresponds to the Hot Spot method; b) distribution of the Cl--O distance for a solvated chloride ion using the hybrid technique, as compared with the classical and fully quantum benchmarks. }
 \label{water_blyp_rdf}
 \end{figure}
 \section{Summary}
