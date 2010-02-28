@@ -50,7 +50,10 @@ not is probably just benefitting from a cancellation of errors, and
 is unlikely to be transferable or reliable.  This statement is not
 absolute: interatomic potentials could be fit to reproduce interactions,
 for example dispersion forces, that are not well described by QM
-method such as density functional theory (DFT).
+method such as density functional theory (DFT).  If the improved
+description of the MM region affects the processes occuring in
+the QM region, the hybrid simulation could actually be more accurate
+than a full QM simulation.
 
 In this project we have implemented a hybrid method which is based on combining atomic
 forces from the two models, rather than energies, and that attempts to address all of these issues.  We have tested
@@ -76,7 +79,7 @@ care is needed to terminate the QM and MM calculations that are to
 be coupled together into an (ideally) seamless single system.  An
 example of the sophistication needed for such coupling is described
 in Ref.~\onlinecite{laio_j_chem_phys_2002a} for a molecular system, and in
-Ref.~\onlinecite{sokol_int_j_quant_chem_2004a,sherwood_j_mol_struct_theochem_2003a} for an ionic solid-state
+Ref.~\onlinecite{sokol_int_j_quant_chem_2004a} and \onlinecite{sherwood_j_mol_struct_theochem_2003a} for an ionic solid-state
 system.  The second is that it is impossible to change the contents
 of the QM region, because doing so will necessarily change the total
 energy abruptly.  In fact the observables that researchers are typically
@@ -140,7 +143,7 @@ QM methods, Kohn-Sham DFT (KS-DFT) with a plane-wave basis~\cite{kohn_phys_rev_1
 and orbital-free DFT (OF-DFT) using fixed Gaussian charge
 distributions~\cite{hodak_j_chem_phys_2008a}.  The mismatch between
 these two methods is much smaller than between typical QM and MM
-methods, so the edge effect and discontinuity problems are inherently
+methods, so the edge effects and discontinuity problems are inherently
 smaller.  The molecules change identity abruptly as the move between
 the KS-DFT and OF-DFT regions.  The method is applied to liquid
 water and to a protein-metal binding interaction.  The authors use
@@ -152,12 +155,12 @@ of the method for water are restricted to the dipole of a KS-DFT
 water, and internal consistency (e.g. energy conservation), both
 of which show acceptable results.
 
-[NB: enough comment now on lack of description of actual coupling procedure?]
+% [NB: enough comment now on lack of description of actual coupling procedure?]
 
 The main exception to the energy based coupling commonly used in
 the chemistry community is the Hot-Spot method, first presented by
 Kerdcharoen {\it et al.}~\cite{kerdcharoen_chem_phys_1996a}.  In
-this approach, the system is divided into a QM region and an MM
+this approach, the system is divided into a QM region and a MM
 region, with a thin transition region between them, typically a
 0.2~{\AA} spherical shell around a spherical QM region.  Each
 calculation is carried out separately, with transition region atoms
@@ -193,7 +196,7 @@ linear combination.  They also consider explicitly the effects of
 the position dependent coefficients in the energy sum on the forces.
 These terms are presumably also present in the original Adaptive
 Partitioning method, otherwise it would not conserve energy, but
-not discussed in Ref.~\cite{heyden_j_phys_chem_b_2007a}.   Bulo
+not discussed in Ref.~\onlinecite{heyden_j_phys_chem_b_2007a}.   Bulo
 {\it et al.} note that these forces can lead to fictitious barriers
 for transition between the two regions.  They suggest aligning the
 potential energy surfaces, but note that this cannot be done for
@@ -240,7 +243,7 @@ mismatch leads to artifacts, as were seen in
 Ref.~\onlinecite{winfield_thesis_2009a}.
 
 Geerke {\it et al.} used an additive, energy based coupling to
-simulate H-bonding in water, and a exchange of a chloride ion from
+simulate H-bonding in water, and an exchange of a chloride ion from
 amino chloride in a dimethyl ether (DME) solvent.  The QM region
 consisted of a pair of water molecules and the reacting molecule,
 respectively.  They compared various semi-empirical QM methods, and
@@ -262,14 +265,14 @@ In a pair of recent papers, Xenides {\it et al.} applied the Hot-Spot
 method to the structure and dynamics of pure
 water~\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}.
 The work focused on a comparison of 3 QM methods, Hartree-Fock (HF),
-M{\o}ller-Plesset perturbation theory (MP2), the B3LYP DFT functional.
+M{\o}ller-Plesset perturbation theory (MP2), and the B3LYP DFT functional.
 The QM regions included one molecule and a single hydration shell
 (radius of 3.2~{\AA} for HF and B3LYP, 3.4~{\AA} for MP2), and also
 HF with two neighbor shells (2HF, radius 5.6~{\AA}).  The interatomic
 potential model was the flexible water model BJH-CF2.  The simulations
 used 500 molecules, MD time steps of 0.2~fs, the Berendsen (velocity
-rescaling) thermostat to keep the temperature at 298~K, and different
-cutoffs for Coulombic and non-Coulombic interactions.  To analyze
+rescaling) thermostat to keep the temperature at 298~K, and 
+finite-range cutoffs for Coulombic and non-Coulombic interactions.  To analyze
 the resulting structure of the water, the radial distribution
 functions (RDFs) and angular distribution functions (ADFs) were
 computed.  To analyze the dynamics, vibrational spectra were extracted
@@ -279,15 +282,15 @@ The O-O RDFs show rather different looking 1st neighbor peaks for
 the different methods, and significant 2nd neighbor peaks for all
 but 2HF.  Cited experiments show a 2nd neighbor peak at room
 temperature and pressure, which disappears at higher temperatures
-or pressures.  The O-O coordination numbers varied from 4.2-4.9,
+or pressures.  The O-O coordination numbers varied from 4.2--4.9,
 but no experimental comparison was quoted.  The position of the 1st
-shell peak varied from 2.75-2.97~{\AA}, within the range of cited
+shell peak varied from 2.75--2.97~{\AA}, within the range of cited
 experiments, which were described as difficult and unreliable, of
-2.72-2.82~{\AA}.  The positions and coordination numbers are
+2.72--2.82~{\AA}.  The positions and coordination numbers are
 summarized in Table~\ref{table:rode}.
 O-O-O ADFs were fairly similar for all models,
-showing a single broad peak from 50$^\circ$-175$^\circ$, with one
-or two maxima around 75$^\circ$-100$^\circ$.  The dynamics showed
+showing a single broad peak from 50$^\circ$--175$^\circ$, with one
+or two maxima around 75$^\circ$--100$^\circ$.  The dynamics showed
 rather more divergence between the various QM models.  Internal
 vibrational modes were all in reasonable agreement, but rotations
 were not.  Rotational decorrelation times varied by factors of 10
@@ -298,7 +301,7 @@ times were also in poor agreement with experiment, with B3LYP a
 factor of 2 too slow, and the other models factors of 1.5--2 too
 fast compared to experiment.  The authors conclude that the average
 coordination number is between 3 and 4, in agreement with experiment,
-but that only 2-3 of these neighbouring molecules form H bonds with
+but that only 2--3 of these neighbouring molecules form H bonds with
 the central molecule.  Inclusion of the 2nd hydration shell is
 needed for a good description (i.e. 2HF), and electronic correlations
 (MP2) have a moderate effect.  They also conclude that B3LYP provides
@@ -312,7 +315,6 @@ of freedom coupled to slow degrees of freedom such as H$_2$O
 rotation~\cite{winfield_thesis_2009a}.
 
 \begin{table}
-\label{table:rode}
 \caption{Summary of structural parameters for pure water~\cite{xenides_j_chem_phys_2005a},
 and anions~\cite{tongraar_phys_chem_chem_phys_2003a}.}
 \begin{tabular}{lc|ll}
@@ -328,6 +330,7 @@ and anions~\cite{tongraar_phys_chem_chem_phys_2003a}.}
   exper. & Cl-O & 3.1--3.33     & 4--9 (6)   \\
   HF    & Cl-H  & 2.42\\
 \end{tabular}
+\label{table:rode}
 \end{table}
 
 Tongraar {\it et al.} applied the Hot-Spot method to the
@@ -349,14 +352,14 @@ are sensitive to the precise distance cutoff for ``nearest neighbors.''
 The authors also compared RDFs and ADFs for bulk water molecules to water
 molecules in the ions' 1st solvation shells, to see how the binding to
 the ion changes the water molecules' internal structure.   They find that
-compared to the bulk water molecules near F$^-$ have a weaker, longer OH
+compared to the bulk water, molecules near F$^-$ have a weaker, longer OH
 bond, and broader distribution of H-O-H angles.  These effects are even
 stronger near the Cl$^-$ ion.  They also compute mean residence times,
 and find that exchanges from the 1st hydration shell are slower for water
 neighbors of F$^-$ than bulk water neighbors, but dynamics near Cl$^-$
 are similar in speed to bulk water.
 
-[NB: done?]
+% [NB: done?]
 
 % Tongraar Chem Phys Lett 2005
 %   (BLYP too rigid)
@@ -502,7 +505,8 @@ some essential differences.  In particular, we perform the QM
 calculation including not only the atoms where we need QM forces,
 but also to a {\em buffer layer} of surrounding atoms.  These atoms
 are present to insulate our QM region from edge effects, but their
-QM forces are ignored.  We still take advantage of the methods
+positions come from MM atom positions, and their QM forces are ignored. 
+We still take advantage of the methods
 developed to passivate the broken covalent bonds and electrostatic
 coupling when possible, but we can systematically improve the
 accuracy of the forces in the QM region by increasing the thickness
@@ -521,12 +525,18 @@ the sum of all the forces to be zero.  We do this by subtracting
 from each QM and buffer region atom an equal force that exactly
 brings the overall force total to zero.
 
-[NB: fix buffered hybrid diagram - explain big cross, fix PDF output of inkscape ]
+% [NB: fix buffered hybrid diagram - explain big cross, fix PDF output of inkscape ]
 
 \begin{figure}
   \centerline{\resizebox{4in}{!}{\includegraphics{buffered_hybrid_diagram}}}
   \caption{Combining of forces from MM and buffered QM calculations
            to generate a complete set of forces for trajectory calculations.
+	   Calculation of MM forces (upper left) may be a fully MM calculation,
+	   or a conventional QM/MM calculation if there are no MM parameters for some
+	   species in the QM region, but only MM forces are used.  Calculation 
+	   of QM forces (upper right) is done with a conventional QM/MM
+	   method, to allow for mechanical and electrostatic coupling of MM
+	   atoms with QM atoms, but only QM forces are used.
            Small arrows indicate forces applied to recover momentum
            conservation.}
   \label{fig:buffered_hybrid_diagram}
@@ -588,7 +598,8 @@ calculations using thermodynamic integration~\cite{frenkel_2002b}.
 Past experience has shown that it is not trivial to properly thermostat
 all the atomic degrees of freedom~\cite{winfield_thesis_2009a}.
 This frequently overlooked issue can be manifested in various ways,
-including temperature oscillations, or trajectories for light degrees
+including temperature oscillations, or velocities (and therefore
+temperatures) for light degrees
 of freedom (i.e. H atoms) that do not equilibrate with the other,
 heavier atoms.  We have found that a combination of Nose-Hoover and
 Langevin thermostats with different parameters in the QM, boundary,
@@ -599,18 +610,18 @@ one for the O atoms and one for the H atoms.  The separate thermostats
 ensure equilibrium between the fast and slow degrees of freedom, and
 the Nose-Hoover method is most effective at handling the deviation from
 energy conservation in this region~\cite{winfield_thesis_2009a}.  In the
-MM region we use a Nose-Langevin thermostat, because has better ergodicity
+MM region we use a Nose-Langevin thermostat, because it has better ergodicity
 properties than Nose-Hoover.  While it is less effective at compensating
 for energy conservation deviation~\cite{winfield_thesis_2009a}, this is
 not a problem in the MM region.
 
-[NB: OK detail on thermostating now?]
+% [NB: OK detail on thermostating now?]
 
 \section{Results}
 
 \subsection{Classical model}
 
-Throughout this project, we use the TIP3P classical model for water. There are an enormous variety of classical water models in the literature. This choice is governed by two key factors. The first is that our long term goal is the simulation of biomolecules, and the classical force fields that describe them are tied to a specific water model, which is mostly TIP3P. Secondly, we are aiming to create a hybrid simulation scheme that is agnostic with respect to which two models it couples, and using a relatively crude classical water model such as TIP3P is a good way to test the ability of the coupling scheme to bridge models whose description of the system might be quite different. One modification that we introduce with respect to the original TIP3P model in the literature is to make the molecule flexible. This is helpful in the hybrid simulation context because the number of degrees of freedom does not have to change as molecules move between the QM and MM region. If we were to use a rigid water model, then when a molecule moves into the QM region, the constraints need to be released, and vibrational energy needs to be artificially put into the new degrees of freedom. Conversely, when a molecule moves into the MM region, its geometry would not be compatible with the constraints of the rigid model, and the corresponding potential and kinetic energy in these degrees of freedom need to be removed. While such a scheme is possible, and has been implemented in \cite{hodak_j_chem_phys_2008a,winfield_thesis_2009a}, we find it an unnecessary complication. To make sure that the flexible water model is still reasonable, we have computed the radial distribution function with both rigid and flexible models using two different parametrisations of the O--H bond, using two different commercial softwares, as shown in Figure~\ref{rigid-flex}. The CHARMM parametrisation is significantly better in the flexible case, and this is what we use in this project.
+Throughout this project, we use the TIP3P classical model for water. There are an enormous variety of classical water models in the literature. This choice is governed by two key factors. The first is that our long term goal is the simulation of biomolecules, and the classical force fields that describe them are tied to a specific water model, which is mostly TIP3P. Secondly, we are aiming to create a hybrid simulation scheme that is agnostic with respect to which two models it couples, and using a relatively crude classical water model such as TIP3P is a good way to test the ability of the coupling scheme to bridge models whose description of the system might be quite different. One modification that we introduce with respect to the original TIP3P model in the literature is to make the molecule flexible. This is helpful in the hybrid simulation context because the number of degrees of freedom does not have to change as molecules move between the QM and MM region. If we were to use a rigid water model, then when a molecule moves into the QM region, the constraints need to be released, and vibrational energy needs to be artificially put into the new degrees of freedom. Conversely, when a molecule moves into the MM region, its geometry would not be compatible with the constraints of the rigid model, and the corresponding potential and kinetic energy in these degrees of freedom need to be removed. While such a scheme is possible, and has been implemented in Refs.\onlinecite{hodak_j_chem_phys_2008a} and \onlinecite{winfield_thesis_2009a}, we find it an unnecessary complication. To make sure that the flexible water model is still reasonable, we have computed the radial distribution function with both rigid and flexible models using two different parametrisations of the O--H bond, using two different commercial softwares, as shown in Figure~\ref{rigid-flex}. The CHARMM parametrisation is significantly better in the flexible case, and this is what we use in this project.
 
 \begin{figure}
 \includegraphics[height=6cm]{AMBER-CHARMM_TIP3P_rdf}
@@ -640,7 +651,7 @@ Even though in both our method and in the Hot Spot method only forces are used f
 \label{diffusion_sketch}
 \end{figure}
 
-Such chemical potential differences can lead to unphysical density differences, in extreme cases even voids can open up in the simulation box. A practical solution is to introduce a corrective potential that compensates for the chemical potential difference. The appropriate size of the corrective potential needs to be found experimentally. Figure~\ref{density} shows the density in the simulation box for both the semiempirical PM3/TIP3P and the DFT-LDA/TIP3P hybrid simulations for different sized corrective potentials. The potentials were constant in the QM and well inside the MM regions, and had a form of a cubic spline near the transition. The width of the spline is another free parameter, and can be used to limit the adverse effect the corrective potential might have on the dynamics of the particles. A wider potential of a given depth will give rise to smaller forces. We checked that the forces arising from this potential were an order of magnitude smaller than the dynamical forces in the system, and of the same order as the forces coming from the thermostat.  Rode {\it et al.}, which used a similar approach to ours, did not comment on possible density differences.  While they did not actually show any density measurements for water\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}, their RDFs indicate that they do not see a severe problem.  This may be because of their particular choice of QM and MM methods, the details of the QM-MM transition region, or perhaps through a cancellation of errors in their (unspecified) mechanical and electrostatic coupling scheme.
+Such chemical potential differences can lead to unphysical density differences, and in extreme cases voids can even open up in the simulation box. A practical solution is to introduce a corrective potential that compensates for the chemical potential difference. The appropriate size of the corrective potential needs to be found experimentally. Figure~\ref{density} shows the density in the simulation box for both the semiempirical PM3/TIP3P and the DFT-LDA/TIP3P hybrid simulations for different sized corrective potentials. The potentials were constant in the QM and well inside the MM regions, and had a form of a cubic spline near the transition. The width of the spline is another free parameter, and can be used to limit the adverse effect the corrective potential might have on the dynamics of the particles. A wider potential of a given depth will give rise to smaller forces. We checked that the forces arising from this potential were an order of magnitude smaller than the dynamical forces in the system, and of the same order as the forces coming from the thermostat.  Rode {\it et al.}, which used a similar approach to ours, did not comment on possible density differences.  While they did not actually show any density measurements for water\cite{xenides_j_chem_phys_2005a,xenides_j_mol_liq_2006a}, their RDFs indicate that they do not see a severe problem.  This may be because of their particular choice of QM and MM methods, the details of the QM-MM transition region, or perhaps through a cancellation of errors in their (unspecified) mechanical and electrostatic coupling scheme.
 
 
 \begin{figure}
@@ -653,10 +664,12 @@ Such chemical potential differences can lead to unphysical density differences, 
 \label{density}
 \end{figure}
 
-The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously that for the BLYP/TIP3P combination, no corrective potential is necessary. 
+The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously, that for the BLYP/TIP3P combination, no corrective potential is necessary. 
 
 \subsection{Water RDFs}
 In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equilibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
+
+[NB: more description of how great we are]
 
 \begin{figure}
 \hbox{\vbox to 8cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=8cm]{summary_pure_water_rdfs_G}}
@@ -668,12 +681,19 @@ In order to compare the present method with the only practical alternative, i.e.
 
 The following objectives have been achieved to date in this project.
 \begin{enumerate}
-\item {\bf Interface hybrid code to CP2K}\\Residue library, xyz2pdb
-\item {\bf Testing DFT/MM coupling on pure water}
+\item {\bf Interface hybrid code to CP2K}\\
+  \begin{itemize}
+    \item developed residue library
+    \item developed {\tt xyz2pdb} converter from atomic positions to standard biochem. input format with connectivity, chemical residue/molecule identification
+    \item working interface for {\tt libatoms/QUIP} to CP2K
+  \end{itemize}
+\item {\bf Testing DFT/MM coupling on pure water} \\
+  Showed good agreement for BLYP/TIP3P hybrid method with full BLYP simulation.  TIP3P is also in agreement with BLYP in this case.
 \item {\bf Testing DFT/MM coupling on solvated ion}
+  Showed good agreement for BLYP/TIP3P hybrid method with full BLYP simulation, while full CHARMM potential shows very different structure.
 \end{enumerate}
 
-The secondary goal of testing with semiempirical QM engines was dropped. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300 K is very slow. Once this was realised, the production runs were restarted at a higher temperature. Initially we adjusted the QM region size so that we are  better able to compare with Rode's work, however these simulations confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
+The secondary goal of testing with semiempirical QM engines was dropped. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300~K is very slow because it is supercooled.  Once this was realised, the production runs were restarted at a higher temperature. Initially we adjusted the QM region size so that we are  better able to compare with Rode's work, however these simulations confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
 
 The following objectives remain, work for which is currently underway:
 \begin{enumerate}
