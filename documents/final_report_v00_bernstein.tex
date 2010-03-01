@@ -68,8 +68,8 @@ The QM/MM approach in chemistry was first introduced by
 Warshel~\cite{warshel_j_mol_biol_1976a} for the study of a reaction
 at the active site of an enzymatic protein.  It has since been
 applied to many systems, some recently reviewed in
-Refs. \onlinecite{senn_topics_cur_chem_2007a} and
-\onlinecite{lin_theor_chem_acc_2005a}.  The vast majority of QM/MM
+Refs. \onlinecite{senn_topics_cur_chem_2007a},
+\onlinecite{lin_theor_chem_acc_2005a} and \onlinecite{acevedo_acc_chem_res_2010a}.  The vast majority of QM/MM
 implementations in the chemistry community begin by defining a total
 energy for the coupled system.  In addition, a fixed set of atoms
 or molecules is assumed to form the QM region.  While these assumptions
@@ -259,8 +259,7 @@ artifacts, and look very different from either underlying single
 model.  The force-mixing based method is much better, with minimal
 disagreement.
 
-It is clear that in all the works review above, it was perceived that that the main challenge in developing adaptive hybrid schemes is to make the energy and/or the forces continuous functions of the atomic coordinates. While this is certainly a good thing to have in principle, it does not address the issue of having {\em correct} forces, where correctness is defined is being as close to the force one would obtain form a fully QM description. The scheme used in this project focuses on this latter problem, and can be combined with the techniques above that construct a continuous force model. 
-
+It is clear that in all the works reviewed above, it was perceived that that the main challenge in developing adaptive hybrid schemes is to make the energy and/or the forces continuous functions of the atomic coordinates. While this is certainly a good thing to have in principle, it does not address the issue of having {\em correct} forces, where correctness is defined is being as close to the force one would obtain form a fully QM description. The scheme used in this project focuses on this latter problem, and can be combined with the techniques above that construct a continuous force model. 
 
 \subsection{Applications to water and anions}
 
@@ -670,9 +669,12 @@ Such chemical potential differences can lead to unphysical density differences, 
 The parameters of the corrective potential obviously depend on which QM and MM models are used, and it turns out, rather fortuitously, that for the BLYP/TIP3P combination, no corrective potential is necessary. 
 
 \subsection{Water RDFs}
-In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equilibration times are shorter. Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.
 
-[NB: more description of how great we are]
+In order to compare the present method with the only practical alternative, i.e. the Hot Spot method, we calculated radial distribution functions in a hybrid simulation with and without using a buffer region.  A practical problem when considering pure water a benchmark is that DFT descriptions of bulk water are known to get the melting point wrong, and in fact at 300~K, the dynamics is very slow - in effect that system is supercooled (it does not quite freeze due to the short time scales, lack of nucleation site and small simulation cell). In order not to distract from the central issue of hybrid methodology, we carried out the tests at a somewhat higher temperature, 440~K, where the dynamics (and the radial distribution function) of DFT water better matches reality~\cite{yoo_j_chem_phys_2009a}. An added benefit of the higher temperatures is that equilibration times are shorter. 
+
+Figure~\ref{water_blyp_rdf} shows the radial distribution functions for pure water and around a chloride ion using the present method and the Hot Spot method, as well as fully QM and fully MM benchmarks.  There are no major artifacts apparent in the RDF, at the boundary between the QM and MM regions or elsewhere. The first peak is somewhat too broad, probably because the QM region is too small, just barely including the first hydration shell.  In contrast our implementation of the Hot-Spot method, which is the only previously published work that was able to simulate liquid water without dramatic artifacts, fails completely for the QM and MM models we are using.  
+
+% [NB: more description of how great we are]
 
 \begin{figure}
 \hbox{\vbox to 8cm{\hbox to 0.5cm{a)}\vfil}\includegraphics[height=8cm]{summary_pure_water_rdfs_G}}
@@ -694,7 +696,7 @@ The following objectives have been achieved to date in this project.
   Hybrid simulation is stable and shows good agreement for BLYP/TIP3P hybrid method with full BLYP simulation in both cases. 
  \end{enumerate}
 
-The secondary goal of testing with semiempirical QM engines was dropped. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300~K is very slow because it is supercooled.  Once this was realised, the production runs were restarted at a higher temperature. Initially we adjusted the QM region size so that we are  better able to compare with Rode's work, however these simulations confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
+The secondary goal of testing with semiempirical QM engines was dropped to focus on DFT, which is more accurate. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300~K is very slow because it is supercooled.  Once this was realised, the production runs were restarted at a higher temperature. Initially we adjusted the QM region size so that we are  better able to compare with Rode's work, however these simulations confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
 
 The following objectives remain, work for which is currently underway:
 \begin{enumerate}
