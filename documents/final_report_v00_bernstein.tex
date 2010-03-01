@@ -89,10 +89,53 @@ out.
 
 \subsection{Methods}
 
+\subsubsection{Fixed QM region}
+
+A few publications
+have presented results from QM/MM calculations on liquids with a
+fixed set of atoms in the QM region.  To do this, the QM region was
+restricted to a single molecule, or a molecule and a reacting ion;
+the rest of the molecules were then effectively treated as a solvent,
+which doesn't truly participate in the reaction, and can be described
+with an interatomic potential.
+
+Walewski {\it et al.} used a semi-empirical QM method, the
+charge-self-consistent density-functional tight-binding (SCC-DFTB),
+and the SPC model for water~\cite{walewski_chem_phys_lett_2004a}.
+The coupling was energy based, with an additive expression for the
+interaction between the QM and MM regions.  The method was applied
+to pure water, and to the geometry and proton transfer in malonaldehyde,
+a 9-atom ring molecule.  For water a single molecule was treated
+with QM, and the rest with MM.  For malonaldehyde, the malonaldehyde
+molecule itself was described with QM, and the solvent water molecules
+with MM.  There is no comparison with full QM for pure water,
+although the authors do note that the diffusion coefficients of the
+two underlying models (SCC-DFTB and SPC) do not agree with each
+other or with experiment.  There is no discussion of whether this
+mismatch leads to artifacts, as were seen in
+Ref.~\onlinecite{winfield_thesis_2009a}.
+
+Geerke {\it et al.} used an additive, energy based coupling to
+simulate H-bonding in water, and an exchange of a chloride ion from
+amino chloride in a dimethyl ether (DME) solvent.  The QM region
+consisted of a pair of water molecules and the reacting molecule,
+respectively.  They compared various semi-empirical QM methods, and
+a polarizable and non-polarizable interatomic potentials for DME,
+but there was no comparison to a full QM calculation.  The authors
+did find that for water, in comparison to experiment, the QM-MM
+interaction terms could be fine tuned to improve the total energy
+of the pure liquid more accurate, but this would make the agreement
+for the water-dimer dissociation energy worse.  This is an example
+of the dangers of fine tuning of such interaction parameters, and
+the likelihood of reducing transferability upon such adjustment.
+For the Cl$^-$ exchange reaction free energy barriers and differences
+were computed from the potential of mean force (mean force on the
+reacting species constrained to one point in the reaction path).
+
 \subsubsection{Variable QM region}
 
 Some attempts to go beyond these limitations and to simulate liquids,
-where diffusion is significant, have been published.  The first of
+where diffusion is significant, with variable QM regions have been published.  The first of
 these is the ONIOM-XS method by Kerdcharoen and
 Morokuma~\cite{kerdcharoen_chem_phys_lett_2002a}.  This approach is
 based on the ONIOM method, which is one of the simplest approaches
@@ -216,48 +259,8 @@ artifacts, and look very different from either underlying single
 model.  The force-mixing based method is much better, with minimal
 disagreement.
 
-\subsubsection{Fixed QM region}
+It is clear that in all the works review above, it was perceived that that the main challenge in developing adaptive hybrid schemes is to make the energy and/or the forces continuous functions of the atomic coordinates. While this is certainly a good thing to have in principle, it does not address the issue of having {\em correct} forces, where correctness is defined is being as close to the force one would obtain form a fully QM description. The scheme used in this project focuses on this latter problem, and can be combined with the techniques above that construct a continuous force model. 
 
-In addition to the work in the previous subsection, a few publications
-have presented results from QM/MM calculations on liquids with a
-fixed set of atoms in the QM region.  To do this, the QM region was
-restricted to a single molecule, or a molecule and a reacting ion;
-the rest of the molecules were then effectively treated as a solvent,
-which doesn't truly participate in the reaction, and can be described
-with an interatomic potential.
-
-Walewski {\it et al.} used a semi-empirical QM method, the
-charge-self-consistent density-functional tight-binding (SCC-DFTB),
-and the SPC model for water~\cite{walewski_chem_phys_lett_2004a}.
-The coupling was energy based, with an additive expression for the
-interaction between the QM and MM regions.  The method was applied
-to pure water, and to the geometry and proton transfer in malonaldehyde,
-a 9-atom ring molecule.  For water a single molecule was treated
-with QM, and the rest with MM.  For malonaldehyde, the malonaldehyde
-molecule itself was described with QM, and the solvent water molecules
-with MM.  There is no comparison with full QM for pure water,
-although the authors do note that the diffusion coefficients of the
-two underlying models (SCC-DFTB and SPC) do not agree with each
-other or with experiment.  There is no discussion of whether this
-mismatch leads to artifacts, as were seen in
-Ref.~\onlinecite{winfield_thesis_2009a}.
-
-Geerke {\it et al.} used an additive, energy based coupling to
-simulate H-bonding in water, and an exchange of a chloride ion from
-amino chloride in a dimethyl ether (DME) solvent.  The QM region
-consisted of a pair of water molecules and the reacting molecule,
-respectively.  They compared various semi-empirical QM methods, and
-a polarizable and non-polarizable interatomic potentials for DME,
-but there was no comparison to a full QM calculation.  The authors
-did find that for water, in comparison to experiment, the QM-MM
-interaction terms could be fine tuned to improve the total energy
-of the pure liquid more accurate, but this would make the agreement
-for the water-dimer dissociation energy worse.  This is an example
-of the dangers of fine tuning of such interaction parameters, and
-the likelihood of reducing transferability upon such adjustment.
-For the Cl$^-$ exchange reaction free energy barriers and differences
-were computed from the potential of mean force (mean force on the
-reacting species constrained to one point in the reaction path).
 
 \subsection{Applications to water and anions}
 
