@@ -686,23 +686,21 @@ The following objectives have been achieved to date in this project.
 \begin{enumerate}
 \item {\bf Interface hybrid code to CP2K}\\
   \begin{itemize}
-    \item developed residue library
-    \item developed {\tt xyz2pdb} converter from atomic positions to standard biochem. input format with connectivity, chemical residue/molecule identification
-    \item working interface for {\tt libatoms/QUIP} to CP2K
+    \item Developed residue template library that includes all amino acids and nucleic acids in most naturally occurring forms
+    \item Developed {\tt xyz2pdb} converter from atomic positions to standard biochemical input format with connectivity, chemical residue/molecule identification
+    \item Working interface for {\tt libatoms/QUIP} to CP2K, using the template library to select the appropriate force field
   \end{itemize}
-\item {\bf Testing DFT/MM coupling on pure water} \\
-  Showed good agreement for BLYP/TIP3P hybrid method with full BLYP simulation.  TIP3P is also in agreement with BLYP in this case.
-\item {\bf Testing DFT/MM coupling on solvated ion}
-  Showed good agreement for BLYP/TIP3P hybrid method with full BLYP simulation, while full CHARMM potential shows very different structure.
-\end{enumerate}
+\item {\bf Testing DFT/MM coupling on pure water and on a solvated ion} \\
+  Hybrid simulation is stable and shows good agreement for BLYP/TIP3P hybrid method with full BLYP simulation in both cases. 
+ \end{enumerate}
 
 The secondary goal of testing with semiempirical QM engines was dropped. Once tool chain was in place, two things caused delays, one of them was a bug in dealing with how CP2K requests electrostatics parameters in various modes of its operation, resulting in incorrect forces. The second was that the relaxation of DFT water at 300~K is very slow because it is supercooled.  Once this was realised, the production runs were restarted at a higher temperature. Initially we adjusted the QM region size so that we are  better able to compare with Rode's work, however these simulations confirmed that Rode's method does not work in coupling the pair of models we have chosen. The presently advocated hybrid method does, but we are repeating the runs with a larger QM region to get a more extended match with the fully QM radial distribution function.
 
 The following objectives remain, work for which is currently underway:
 \begin{enumerate}
-\item{Free energy barrier for nucleophilic substitution of methyl chloride}
-\item{Free energy barrier and difference during deprotonation of an amino acid}
-\item{Free energy of adsoprtion of an amino acid on an oxide surface (silica)}
+\item Free energy barrier for nucleophilic substitution of methyl chloride (production runs underway)
+\item Free energy barrier and difference during deprotonation of an amino acid (production runs about to start)
+\item Free energy of adsoprtion of an amino acid on an oxide surface (silica)
 \end{enumerate}
 
 \bibliography{database}
