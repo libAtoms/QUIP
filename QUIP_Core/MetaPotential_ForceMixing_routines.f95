@@ -573,7 +573,7 @@
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
-          df(:,i) = (weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)) - f_mm(:.i)
+          df(:,i) = (weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)) - f_mm(:,i)
        end do
 
        f_tot = sum(df,dim=2)
