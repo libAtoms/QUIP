@@ -394,7 +394,8 @@ subroutine print_analyses(a)
           endif
         end do
         end do
-	allocate(integrated_rdfds(a(i_a)%rdfd_n_zones,a(i_a)%rdfd_n_bins))
+	allocate(integrated_rdfds(a(i_a)%rdfd_n_bins,a(i_a)%rdfd_n_zones))
+	integrated_rdfds = 0.0_dp
         do i=1, a(i_a)%n_configs
 	  integrated_rdfds = 0.0_dp
 	  do i1=1, a(i_a)%rdfd_n_zones
