@@ -20,6 +20,7 @@ private
     logical :: damping, rescale_velocity 
     logical :: annealing, zero_momentum, zero_angular_momentum
     logical :: calc_dipole_moment, quiet_calc, do_timing
+    integer :: advance_md_substeps
   end type md_params
 
 public :: get_params, print_params, print_usage, do_prints, initialise_md_thermostat, update_thermostat
@@ -72,6 +73,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'dipole_moment', 'F', params%calc_dipole_moment)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
   call param_register(md_params_dict, 'do_timing', 'T', params%do_timing)
+  call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -146,6 +148,7 @@ subroutine print_params(params)
   call print("md_params%calc_dipole_moment=" // params%calc_dipole_moment)
   call print("md_params%quiet_calc=" // params%quiet_calc)
   call print("md_params%do_timing=" // params%do_timing)
+  call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
 end subroutine print_params
 
 subroutine print_usage()
@@ -158,7 +161,7 @@ subroutine print_usage()
   call Print('  [calc_virial=logical(F)]', ERROR)
   call Print('  [summary_interval=n(1)] [at_print_interval=n(100)] [pot_print_interval=n(-1)]', ERROR)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)] [dipole_moment=T/F(F)]', ERROR)
-  call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)]', ERROR)
+  call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)', ERROR)
 end subroutine print_usage
 
 subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_intervals)
@@ -403,6 +406,88 @@ implicit none
         call update_thermostat(ds, params, do_rescale=(ds%cur_temp.gt.params%T))
     endif
 
+    call advance_md(ds, params, metapot, forces, virial, E)
+
+    ! now we have p(t+dt), v(t+dt), a(t+dt)
+
+    if (params%calc_dipole_moment) then
+      mu = dipole_moment(ds%atoms%pos, local_dn)
+      call set_value(ds%atoms%params, 'Dipole_Moment', mu)
+    endif
+
+    call system_timer("md/print")
+    call do_prints(params, ds, e, metapot, traj_out, i_step)
+
+    call system_timer("md/print")
+
+  end do
+  call system_timer("md_loop")
+
+  call do_prints(params, ds, e, metapot, traj_out, params%N_steps, override_intervals = .true.)
+
+  call system_finalise()
+
+contains
+
+  subroutine advance_md(ds, params, metapot, forces, virial, E)
+    type(DynamicalSystem), intent(inout) :: ds
+    type(md_params), intent(in) :: params
+    type(MetaPotential), intent(inout) :: metapot
+    real(dp), intent(inout) :: forces(:,:), virial(3,3)
+    real(dp), intent(inout) :: E
+
+    integer :: i_substep
+    real(dp), pointer :: new_pos(:,:), new_velo(:,:), new_forces(:,:)
+    real(dp) :: new_E
+    logical :: has_new_pos, has_new_velo, has_new_forces, has_new_E
+
+    if (params%advance_md_substeps > 0) then
+      call calc_connect(ds%atoms)
+      if (params%quiet_calc) call verbosity_push_decrement()
+      if (params%calc_virial) then
+	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args // &
+	  'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+      else
+	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args // &
+	  'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+      endif
+      if (params%quiet_calc) call verbosity_pop()
+      has_new_pos = assign_pointer(ds%atoms, 'new_pos', new_pos)
+      has_new_velo = assign_pointer(ds%atoms, 'new_velo', new_velo)
+      has_new_forces = assign_pointer(ds%atoms, 'new_forces', new_forces)
+      has_new_E = get_value(ds%atoms%params, 'New_Energy', new_E)
+      if (count ( (/ has_new_pos, has_new_velo, has_new_forces /) ) > 0) then
+	if (count ( (/ has_new_pos, has_new_velo, has_new_forces /) ) /= 3) then
+	    call system_abort("advance_md tried to do md within driver, got only some of " // &
+	     "has_new_pos=" // has_new_pos // " has_new_velo="//has_new_velo//" has_new_forces="//has_new_forces)
+	  endif
+	ds%atoms%pos = new_pos
+	ds%atoms%velo = new_velo
+	forces = new_forces
+	if (has_new_E) E = new_E
+	ds%t = ds%t + params%dt*params%advance_md_substeps
+	ds%nSteps = ds%nSteps + params%advance_md_substeps
+	call calc_connect(ds%atoms)
+	max_moved = 0.0_dp
+      else ! failed to find new_pos
+	do i_substep=1, params%advance_md_substeps
+	  call advance_md_one(ds, params, metapot, forces, virial, E)
+	end do
+      endif
+    else
+      call advance_md_one(ds, params, metapot, forces, virial, E)
+    endif
+
+  end subroutine advance_md
+
+
+  subroutine advance_md_one(ds, params, metapot, forces, virial, E)
+    type(DynamicalSystem), intent(inout) :: ds
+    type(md_params), intent(in) :: params
+    type(MetaPotential), intent(inout) :: metapot
+    real(dp), intent(inout) :: forces(:,:), virial(3,3)
+    real(dp), intent(inout) :: E
+
     ! first Verlet half-step
     call system_timer("md/advance_verlet1")
     if(params%const_P) then
@@ -413,7 +498,7 @@ implicit none
     call system_timer("md/advance_verlet1")
     ! now we have p(t+dt), v(t+dt/2), a(t)
 
-    max_moved = max_moved + maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
+    max_moved = max_moved + params%dt*maxval(abs(ds%atoms%velo))*sqrt(3.0_dp)
     call system_timer("md/calc_connect")
     if (max_moved > 0.9_dp*cutoff_buffer) then
       call calc_connect(ds%atoms)
@@ -444,23 +529,6 @@ implicit none
     endif
     call system_timer("md/advance_verlet2")
 
-    ! now we have p(t+dt), v(t+dt), a(t+dt)
-
-    if (params%calc_dipole_moment) then
-      mu = dipole_moment(ds%atoms%pos, local_dn)
-      call set_value(ds%atoms%params, 'Dipole_Moment', mu)
-    endif
-
-    call system_timer("md/print")
-    call do_prints(params, ds, e, metapot, traj_out, i_step)
-
-    call system_timer("md/print")
-
-  end do
-  call system_timer("md_loop")
-
-  call do_prints(params, ds, e, metapot, traj_out, params%N_steps, override_intervals = .true.)
-
-  call system_finalise()
+  end subroutine advance_md_one
 
 end program
