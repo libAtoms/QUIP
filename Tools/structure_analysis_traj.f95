@@ -51,6 +51,15 @@ type analysis
   real(dp), allocatable :: rdfds(:,:,:)
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
 
+  !geometry
+  logical :: geometry
+  character(FIELD_LENGTH) :: geometry_filename
+  type(Table) :: geometry_params
+  integer :: geometry_central_atom
+  real(dp), allocatable :: geometry_histograms(:,:)
+  real(dp), allocatable :: geometry_pos(:)
+  character(FIELD_LENGTH), allocatable :: geometry_label(:)
+
 end type analysis
 
 public :: analysis, analysis_read, check_analyses, do_analyses, print_analyses
@@ -91,6 +100,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'density_radial', 'F', this%density_radial)
     call param_register(params, 'density_grid', 'F', this%density_grid)
     call param_register(params, 'rdfd', 'F', this%rdfd)
+    call param_register(params, 'geometry', 'F', this%geometry)
 
     ! radial density
     call param_register(params, 'radial_min_p', "0.0", this%radial_min_p)
@@ -123,6 +133,11 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'rdfd_random_angular_samples', 'F', this%rdfd_random_angular_samples)
     call param_register(params, 'rdfd_n_angular_samples', '2 4', this%rdfd_n_angular_samples)
 
+    ! geometry
+    this%geometry_filename=''
+    call param_register(params, 'geometry_filename', '', this%geometry_filename)
+    call param_register(params, 'geometry_central_atom', '-1', this%geometry_central_atom)
+
   else
     ! general
     call param_register(params, 'outfile', trim(prev%outfilename), this%outfilename)
@@ -134,6 +149,7 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'density_radial', ''//prev%density_radial, this%density_radial)
     call param_register(params, 'density_grid', ''//prev%density_grid, this%density_grid)
     call param_register(params, 'rdfd', ''//prev%rdfd, this%rdfd)
+    call param_register(params, 'geometry', ''//prev%geometry, this%geometry)
 
     ! radial density
     call param_register(params, 'radial_min_p', ''//this%radial_min_p, this%radial_min_p)
@@ -163,6 +179,11 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'rdfd_sigma', ''//prev%rdfd_gaussian_sigma, this%rdfd_gaussian_sigma)
     call param_register(params, 'rdfd_random_angular_samples', ''//prev%rdfd_random_angular_samples, this%rdfd_random_angular_samples)
     call param_register(params, 'rdfd_n_angular_samples', ''//prev%rdfd_n_angular_samples, this%rdfd_n_angular_samples)
+
+    ! geometry
+    call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename)
+    call param_register(params, 'geometry_central_atom', ''//prev%geometry_central_atom, this%geometry_central_atom)
+
   endif
 
   if (present(args_str)) then
@@ -173,8 +194,8 @@ subroutine analysis_read(this, prev, args_str)
       call system_abort("analysis_read failed to parse command line arguments")
   endif
 
-  if (count ( (/ this%density_radial, this%density_grid, this%rdfd/) ) /= 1) &
-    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid /) )//" types of analysis.  Possiblities: density_radial, density_grid, rdfd")
+  if (count ( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry/) ) /= 1) &
+    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid /) )//" types of analysis.  Possiblities: density_radial, density_grid, rdfd, geometry")
 
 end subroutine analysis_read
 
@@ -194,6 +215,11 @@ subroutine check_analyses(a)
       if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_bins <= 0) call system_abort("analysis " // i_a // " has rdfd_n_bins="//a(i_a)%rdfd_n_bins//" <= 0")
       if (a(i_a)%rdfd_n_zones <= 0) call system_abort("analysis " // i_a // " has rdfd_n_zones="//a(i_a)%rdfd_n_zones//" <= 0")
+    else if (a(i_a)%geometry) then
+      if (trim(a(i_a)%geometry_filename)=="") call system_abort("analysis "//i_a//" has empty geometry_filename")
+      !read geometry parameters to calculate from the file into a table
+      call read_geometry_params(a(i_a),trim(a(i_a)%geometry_filename))
+      if (a(i_a)%geometry_params%N==0) call system_abort("analysis "//i_a//" has no geometry parameters to calculate")
     else
       call system_abort("check_analyses: no type of analysis set for " // i_a)
     endif
@@ -279,6 +305,16 @@ subroutine do_analyses(a, time, frame, at)
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_dr, a(i_a)%rdfd_w, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
+        endif
+      else if (a(i_a)%geometry) then
+        call reallocate_data(a(i_a)%geometry_histograms, a(i_a)%n_configs, a(i_a)%geometry_params%N)
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%geometry_pos(a(i_a)%geometry_params%N))
+          allocate(a(i_a)%geometry_label(a(i_a)%geometry_params%N))
+          call geometry_calc(a(i_a)%geometry_histograms(:,a(i_a)%n_configs), at, a(i_a)%geometry_params, a(i_a)%geometry_central_atom, &
+               a(i_a)%geometry_pos(1:a(i_a)%geometry_params%N), a(i_a)%geometry_label(1:a(i_a)%geometry_params%N))
+        else
+          call geometry_calc(a(i_a)%geometry_histograms(:,a(i_a)%n_configs), at, a(i_a)%geometry_params, a(i_a)%geometry_central_atom)
         endif
       else 
         call system_abort("do_analyses: no type of analysis set for " // i_a)
@@ -409,6 +445,16 @@ subroutine print_analyses(a)
         end do
 	deallocate(integrated_rdfds)
 
+      else if (a(i_a)%geometry) then
+        call print("# geometry histogram", file=outfile)
+        call print("n_bins="//a(i_a)%geometry_params%N//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%geometry_params%N
+!          call print(a(i_a)%geometry_pos(i), file=outfile)
+          call print(a(i_a)%geometry_label(i), file=outfile)
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(a(i_a)%geometry_histograms(:,i), file=outfile)
+        end do
       else
         call system_abort("print_analyses: no type of analysis set for " // i_a)
       endif
@@ -477,6 +523,76 @@ subroutine calc_angular_samples_random(n, dr, w, gaussian_sigma)
   w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
 
 end subroutine calc_angular_samples_random
+
+!Calculates distances, angles, dihedrals of the given atoms
+subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_pos, geometry_label)
+
+  real(dp), intent(inout) :: histogram(:)
+  type(Atoms), intent(inout) :: at
+  type(Table), intent(in) :: geometry_params
+  integer, intent(in) :: central_atom
+  real(dp), intent(out), optional :: geometry_pos(:)
+  character(FIELD_LENGTH), intent(out), optional :: geometry_label(:)
+
+  integer :: i, j, geom_type
+  integer :: atom1, atom2, atom3, atom4
+  real(dp) :: shift(3), bond12(3),bond23(3),bond34(3)
+
+  !center around central_atom if requested
+  if (central_atom.gt.at%N) call system_abort('central atom is greater than atom number '//at%N)
+  if (central_atom.gt.0) then !center around central_atom
+     shift = at%pos(1:3,central_atom)
+     do j=1,at%N
+        at%pos(1:3,j) = at%pos(1:3,j) - shift(1:3)
+     enddo
+     call map_into_cell(at) !only in this case, otherwise it has been mapped
+  endif
+
+  !loop over the parameters to calculate
+  do i=1, geometry_params%N
+     geom_type=geometry_params%int(1,i)
+     atom1 = geometry_params%int(2,i)
+     atom2 = geometry_params%int(3,i)
+     atom3 = geometry_params%int(4,i)
+     atom4 = geometry_params%int(5,i)
+     select case (geom_type)
+       case(1) !y coord atom1
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         histogram(i) = at%pos(2,atom1)
+       case(2) !distance atom1-atom2
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         !histogram(i) = norm(at%pos(1:3,atom1)-at%pos(1:3,atom2))
+         histogram(i) = distance_min_image(at,atom1,atom2)
+       case(3) !angle atom1-atom2-atom3
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
+         !histogram(i) = angle(at%pos(1:3,atom1)-at%pos(1:3,atom2), &
+         !                     at%pos(1:3,atom3)-at%pos(1:3,atom2))
+         histogram(i) = angle(diff_min_image(at,atom2,atom1), &
+                              diff_min_image(at,atom2,atom3))
+       case(4) !dihedral atom1-(bond12)->atom2-(bond23)->atom3-(bond34)->atom4
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
+         if (atom4<1.or.atom2>at%N) call system_abort('atom4 must be >0 and < '//at%N)
+         !bond12(1:3) = at%pos(1:3,atom2)-at%pos(1:3,atom1)
+         bond12(1:3) = diff_min_image(at,atom1,atom2)
+         !bond23(1:3) = at%pos(1:3,atom3)-at%pos(1:3,atom2)
+         bond23(1:3) = diff_min_image(at,atom2,atom3)
+         !bond34(1:3) = at%pos(1:3,atom4)-at%pos(1:3,atom3)
+         bond34(1:3) = diff_min_image(at,atom3,atom4)
+         histogram(i) = atan2(norm(bond23(1:3)) * bond12(1:3).dot.(bond23(1:3).cross.bond34(1:3)), &
+                              (bond12(1:3).cross.bond23(1:3)) .dot. (bond23(1:3).cross.bond34(1:3)))
+       case default
+         call system_abort("geometry_calc: unknown geometry type "//geom_type)
+     end select
+     if (present(geometry_pos)) geometry_pos(i) = real(i,dp)
+     if (present(geometry_label)) geometry_label(i) = geom_type//'=='//atom1//'--'//atom2//'--'//atom3//'--'//atom4
+  enddo
+
+end subroutine geometry_calc
 
 subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, dr, w, mask_str, radial_pos, accumulate)
   real(dp), intent(inout) :: histogram(:)
@@ -645,6 +761,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   do i_at=1, at%N ! loop over center atoms
     if (.not. center_mask_a(i_at)) cycle
 
+    !calc which zone the atom is in
     if (zone_width > 0.0_dp) then
       r = distance_min_image(at, zone_center, at%pos(:,i_at))
       i_zone = int(r/zone_width)+1
@@ -653,12 +770,15 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
       i_zone = 1
     endif
 
+    !count the number of atoms in that zone
     n_in_zone(i_zone) = n_in_zone(i_zone) + 1
 
+    !calc rdfd in each bin for this zone
     if (gaussian_smoothing) then
       call density_sample_radial_mesh_Gaussians(rdfd(:,i_zone), at, center_i=i_at, rad_bin_width=bin_width, n_rad_bins=n_bins, &
         gaussian_sigma=gaussian_sigma, dr=dr, w=w, mask_str=neighbour_mask_str, accumulate = .true.)
     else
+      !loop over atoms and advance the bins
       do j_at=1, at%N
         if (j_at == i_at) cycle
         if (.not. neighbour_mask_a(j_at)) cycle
@@ -669,10 +789,12 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     endif ! gaussian_smoothing
   end do ! i_at
 
+  !normalise zones by the number of atoms in that zone
   do i_zone=1, n_zones
     if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
   end do
 
+  !calculate local density by dividing bins with their volumes
   if (.not. gaussian_smoothing) then
     do i_bin=1, n_bins
       bin_inner_rad = real(i_bin-1,dp)*bin_width
@@ -680,6 +802,7 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
       rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
     end do
   endif
+  !normalizing with the global density
   if (count(neighbour_mask_a) > 0) then
     rdfd = rdfd / (count(neighbour_mask_a)/cell_volume(at))
   endif
@@ -918,6 +1041,87 @@ subroutine reallocate_data_3d(data, n, n_bins)
     allocate(data(n_bins(1), n_bins(2), n_bins(3), n))
   endif
 end subroutine reallocate_data_3d
+
+!read geometry parameters to calculate
+!format:
+!4               number of params
+!anything        comment
+!1 3             type #1: y-coord  of atom  #3
+!2 4 5           type #2: distance of atoms #4--#5
+!3 3 4 5         type #3: angle    of atoms #3--#4--#5
+!4 3 1 2 4       type #4: dihedral of atoms #3--#1--#2--#4
+subroutine read_geometry_params(this,filename)
+
+  type(analysis), intent(inout) :: this
+  character(*), intent(in) :: filename
+
+  type(inoutput) :: geom_lib
+  character(20), dimension(10) :: fields
+  integer :: num_fields, status
+  integer :: num_geom, i, geom_type
+  character(FIELD_LENGTH) :: comment
+
+  call initialise(this%geometry_params,5,0,0,0,0) !type, atom1, atom2, atom3, atom4
+
+  if (trim(filename)=="") then
+     call print('WARNING! no file specified')
+     return !with an empty table
+  endif
+
+  call initialise(geom_lib,trim(filename),action=INPUT)
+  call parse_line(geom_lib,' ',fields,num_fields)
+  if (num_fields < 1) then
+     call print ('WARNING! empty file '//trim(filename))
+     call finalise(geom_lib)
+     return !with an empty table
+  endif
+
+  num_geom = string_to_int(fields(1))
+  comment=""
+  comment = read_line(geom_lib,status)
+  call print(trim(comment),VERBOSE)
+
+  do i=1,num_geom
+    call parse_line(geom_lib,' ',fields,num_fields)
+    if (num_fields.gt.5 .or. num_fields.lt.2) call system_abort('read_geometry_params: 1 type and maximum 4 atoms must be in the geometry file')
+    geom_type = string_to_int(fields(1))
+    select case (geom_type)
+      case (1) !y coord atom1
+        if (num_fields.lt.2) call system_abort('type 1: coordinate, =1 atom needed')
+        call append(this%geometry_params,(/geom_type, &
+                                           string_to_int(fields(2)), &
+                                           0, &
+                                           0, &
+                                           0/) )
+      case (2) !distance atom1-atom2
+        if (num_fields.lt.3) call system_abort('type 2: bond length, =2 atom needed')
+        call append(this%geometry_params, (/geom_type, &
+                                            string_to_int(fields(2)), &
+                                            string_to_int(fields(3)), &
+                                            0, &
+                                            0/) )
+      case (3) !angle atom1-atom2-atom3
+        if (num_fields.lt.4) call system_abort('type 3: angle, =3 atom needed')
+        call append(this%geometry_params, (/geom_type, &
+                                            string_to_int(fields(2)), &
+                                            string_to_int(fields(3)), &
+                                            string_to_int(fields(4)), &
+                                            0/) )
+      case (4) !dihedral atom1-atom2-atom3-atom4
+        if (num_fields.lt.5) call system_abort('type 4: dihedral, =4 atom needed')
+        call append(this%geometry_params, (/geom_type, &
+                                            string_to_int(fields(2)), &
+                                            string_to_int(fields(3)), &
+                                            string_to_int(fields(4)), &
+                                            string_to_int(fields(5)) /) )
+      case default
+        call system_abort('unknown type '//geom_type//', must be one of 1(y coordinate), 2(bond length/distance), 3(angle), 4(dihedral).')
+    end select
+  enddo
+
+  call finalise(geom_lib)
+
+end subroutine read_geometry_params
 
 end module structure_analysis_module
 
