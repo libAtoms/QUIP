@@ -463,11 +463,6 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
    def __init__(self, D=None, *args, **kwargs):
       FortranDictionary.__init__(self, *args, **kwargs)
-      if 'keys' in self._arrays:
-         self._arrays['_keys'] = self._arrays['keys']
-         del self._arrays['keys']
-         del self.keys
-         self._update()
       if D is not None:
          self.read(D) # copy from D
 
