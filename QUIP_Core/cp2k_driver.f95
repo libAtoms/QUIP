@@ -235,7 +235,15 @@ contains
 
     ! get qm_list
     if (use_QMMM) then
-      call get_qm_list(at, run_type_i, qm_list, do_union=.true.)
+      select case (run_type_i)
+	case(QMMM_RUN_CORE)
+	  call get_hybrid_list(at, qm_list, active_trans_only=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
+	case(QMMM_RUN_EXTENDED)
+	  call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
+	case default
+	  call system_abort("use_QMM is true, but run_type_i="//run_type_i //" is neither QMMM_RUN_CORE="//QMMM_RUN_CORE// &
+	    " QMMM_RUN_EXTENDED="//QMMM_RUN_EXTENDED)
+      end select
       allocate(qm_list_a(qm_list%N))
       if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
     else
@@ -301,10 +309,10 @@ contains
 !      if (get_value(at%params, "QM_list_changed", qm_list_changed)) then
 !       if (qm_list_changed) can_reuse_wfn = .false.
 !      endif
-       if (.not.has_property(at, 'cluster_mark')) call system_abort('no cluster_mark found in atoms object')
+       if (.not.has_property(at, 'cluster_mark'//trim(qm_name_postfix))) call system_abort('no cluster_mark'//trim(qm_name_postfix)//' found in atoms object')
        if (.not.has_property(at, 'old_cluster_mark'//trim(qm_name_postfix))) call system_abort('no old_cluster_mark'//trim(qm_name_postfix)//' found in atoms object')
        dummy = assign_pointer(at, 'old_cluster_mark'//trim(qm_name_postfix), old_cluster_mark_p)
-       dummy = assign_pointer(at, 'cluster_mark', cluster_mark_p)
+       dummy = assign_pointer(at, 'cluster_mark'//trim(qm_name_postfix), cluster_mark_p)
 
        qm_list_changed = .false.
        do i=1,at%N
@@ -778,44 +786,6 @@ contains
       section_str = new_section_str
     end do
   end subroutine
-
-  subroutine get_qm_list(at,qmflag,qm_list,do_union,int_property)
-    type(Atoms), intent(in)  :: at
-    integer,     intent(in)  :: qmflag
-    type(Table), intent(out) :: qm_list
-    logical, intent(in), optional :: do_union
-    character(len=*), optional, intent(in) :: int_property
-  
-    integer :: i
-    integer, pointer :: QM_flag(:)
-    logical              :: my_do_union
-    integer :: qmflag_min
-    character(STRING_LENGTH) :: my_int_property
-
-    my_do_union = optional_default(.false.,do_union)
-
-    my_int_property = ''
-    if (present(int_property)) then
-       my_int_property = trim(int_property)
-    else
-       my_int_property = "cluster_mark"
-    endif
-    if (.not.(assign_pointer(at, trim(my_int_property), QM_flag))) &
-      call system_abort("get_qm_list couldn't find "//trim(my_int_property)//" field")
-
-    if (my_do_union) then
-      qmflag_min = 1
-    else
-      qmflag_min = qmflag
-    endif
-
-    call initialise(qm_list,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
-    do i=1,at%N
-      if (QM_flag(i) >= qmflag_min .and.  QM_flag(i) <= qmflag) call append(qm_list,(/i,0,0,0/))
-    enddo
-
-    if (qm_list%N.eq.0) call print('Empty QM list with QM_flag '//qmflag//' and my_do_union ' // my_do_union ,ERROR)
-  end subroutine get_qm_list
 
   function qmmm_qm_abc(at, qm_list_a, qm_vacuum)
     type(Atoms), intent(in) :: at

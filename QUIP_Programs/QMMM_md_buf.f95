@@ -107,9 +107,9 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
-  character(len=FIELD_LENGTH) :: old_cluster_mark_postfix     !the old_cluster_mark has to be saved under different names
+  character(len=FIELD_LENGTH) :: cluster_mark_postfix     !the cluster_mark & old_cluster_mark have to be saved under different names
                                   !for QMMM_extended & QMMM_core no to be updated twice in 1 step.
-                                  !old_cluster_mark is saved by Potential: added old_cluster_mark_postfix to Potential args_str.
+                                  !this is done by Potential: added cluster_mark_postfix to Potential args_str.
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
 
@@ -125,7 +125,8 @@ logical :: have_silica_potential
 
 !    call system_initialise(verbosity=ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=NERD,enable_timing=.true.)
-    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+    call system_initialise(verbosity=VERBOSE,enable_timing=.true.)
+!    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !INPUT
@@ -404,6 +405,7 @@ logical :: have_silica_potential
 !    call set_cutoff(ds%atoms,0._dp) !use the covalent radii to determine bonds
     use_cutoff = max(nneightol, Outer_Buffer_Radius)
     use_cutoff = max(use_cutoff, Outer_QM_Region_Radius)
+    if (distance_ramp) use_cutoff = max(use_cutoff, distance_ramp_outer_radius)
     if (have_silica_potential) then
 	use_cutoff = max(SILICA_2BODY_CUTOFF, Outer_Buffer_Radius)
     endif
@@ -415,15 +417,16 @@ logical :: have_silica_potential
 
    !QM BUFFER + THERMOSTATTING
       ! set general/heavy atom selection before QM region selection
-       call set_value(ds%atoms%params,'Buffer_general',Buffer_general)
-       call print('set Buffer_general into ds%atoms%params')
-       if (get_value(ds%atoms%params,'Buffer_general',do_general)) then
-           call print('Found Buffer_general in atoms%params'//do_general)
-           buffer_general=do_general
-       else
-           call print('Not found Buffer_general in atoms%params')
-           buffer_general=.false.
-       endif
+!       call set_value(ds%atoms%params,'Buffer_general',Buffer_general)
+!       call print('set Buffer_general into ds%atoms%params')
+!       if (get_value(ds%atoms%params,'Buffer_general',do_general)) then
+!           call print('Found Buffer_general in atoms%params'//do_general)
+!           buffer_general=do_general
+!       else
+!           call print('Not found Buffer_general in atoms%params')
+!           buffer_general=.false.
+!       endif
+    do_general=Buffer_general
 
    !QM CORE
     if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
@@ -439,7 +442,9 @@ logical :: have_silica_potential
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
 	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius, &
+	       origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
 !call print_xyz(ds%atoms,xyzfile=csilla_out,properties="species:pos:hybrid:hybrid_mark")
@@ -452,7 +457,7 @@ logical :: have_silica_potential
                 ! do nothing: both core and buffer belong to the QM of QM/MM
 !               call set_value(ds%atoms%params,'QM_core_changed',list_changed1)
              endif
-          else ! qm_region_pt_ctr
+          else ! not qm_region_pt_ctr
              call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed)
 	     if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
 	     if (.not.(assign_pointer(ds%atoms, "cluster_mark", cluster_mark_p))) call system_abort('??')
@@ -623,11 +628,8 @@ logical :: have_silica_potential
                 select case(qm_flag_p(i))
                    case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
                      thermostat_region_p(i) = 2
-                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
-                     thermostat_region_p(i) = 1
                    case default
-!                     call system_abort('Unknown hybrid_mark '//qm_flag_p(i))
-                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
+                     thermostat_region_p(i) = 1
                 end select
              enddo
           elseif (Thermostat_Type.eq.5) then !match thermostat_region to cluster_mark property
@@ -639,14 +641,12 @@ logical :: have_silica_potential
                 select case(qm_flag_p(i))
                    case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
                      thermostat_region_p(i) = 3
-                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
+                   case default
                      if (ds%atoms%Z(i).eq.1) then !QM or buffer H
                         thermostat_region_p(i) = 2
                      else !QM or buffer heavy atom
                         thermostat_region_p(i) = 1
                      endif
-                   case default
-                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
                 end select
              enddo
           else
@@ -764,11 +764,11 @@ enddo
                 select case(qm_flag_p(i))
                    case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
                      thermostat_region_p(i) = 2
-                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
-                     thermostat_region_p(i) = 1
+!                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
                    case default
-!                     call system_abort('Unknown hybrid_mark '//qm_flag_p(i))
-                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
+                     thermostat_region_p(i) = 1
+!                   case default
+!                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
                 end select
              enddo
           elseif (Thermostat_Type.eq.5) then !match thermostat_region to cluster_mark property
@@ -780,14 +780,15 @@ enddo
                 select case(qm_flag_p(i))
                    case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
                      thermostat_region_p(i) = 3
-                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
+!                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
+                   case default
                      if (ds%atoms%Z(i).eq.1) then !QM or buffer H
                         thermostat_region_p(i) = 2
                      else !QM or buffer heavy atom
                         thermostat_region_p(i) = 1
                      endif
-                   case default
-                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
+!                   case default
+!                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
                 end select
              enddo
           else
@@ -1175,14 +1176,12 @@ contains
       call system_abort("read_qmlist couldn't assign pointer for hybrid_p")
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(qm_list,1)) = 1
-call print('Added '//count(hybrid_p(1:my_atoms%N) == 1)//' qm atoms.')
 
     call add_property(my_atoms,'hybrid_mark',0)
     if (.not. assign_pointer(my_atoms, 'hybrid_mark', hybrid_mark_p)) &
       call system_abort("read_qmlist couldn't assign pointer for hybrid_mark_p")
     hybrid_mark_p(1:my_atoms%N) = 0
     hybrid_mark_p(int_part(qm_list,1)) = HYBRID_ACTIVE_MARK
-call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//' qm atoms.')
 
     if (my_verbose) call print('Finished. '//qm_list%N//' QM atoms have been read successfully.')
 
@@ -1237,7 +1236,7 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
      if (qm_region_pt_ctr) then
         if (.not.(assign_pointer(at, "hybrid_mark", qm_flag_p))) &
            call system_abort("couldn't find hybrid_mark property")
-        if (.not.any(qm_flag_p(1:at%N).eq.1)) empty_QM_core = .true.
+        if (.not.any(qm_flag_p(1:at%N).eq.HYBRID_ACTIVE_MARK)) empty_QM_core = .true.
 	if (empty_QM_core .and. trim(Run_Type2) == 'QMMM_CORE') &
 	  call system_abort("Can't handle Run_Type2=QMMM_CORE but QM core appears empty")
      endif
@@ -1258,43 +1257,42 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
 	    call calc(empty_qm_metapot,at,e=energy,f=f1,args_str=trim(args_str))
 	  else
 	    args_str = trim(args_str) // &
-	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	      ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
 	  endif
-          !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-            args_str = trim(args_str) // ' old_cluster_mark_postfix=_extended'
+            args_str = trim(args_str) // ' cluster_mark_postfix=_extended'
           elseif (trim(Run_Type1) == 'QMMM_CORE') then
-            args_str = trim(args_str) // ' old_cluster_mark_postfix=_core'
+            args_str = trim(args_str) // ' cluster_mark_postfix=_core'
           endif
-	else
-	  call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
 	endif
+	call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
      else ! do force mixing
 
        slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
-           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
-         !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
-           slow_args_str = trim(slow_args_str) // ' old_cluster_mark_postfix=_extended'
+           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_extended'
          elseif (trim(Run_Type1) == 'QMMM_CORE') then
-           slow_args_str = trim(slow_args_str) // ' old_cluster_mark_postfix=_core'
+           slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_core'
          endif
        endif
 
        fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
-           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=F ' // &
+           ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
 	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
-         !old_cluster_mark_postfix to save old_cluster_mark under different name for QMMM_extended & QMMM_core
+         !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
-           fast_args_str = trim(fast_args_str) // ' old_cluster_mark_postfix=_extended'
+           fast_args_str = trim(fast_args_str) // ' cluster_mark_postfix=_extended'
          elseif (trim(Run_Type2) == 'QMMM_CORE') then
-           fast_args_str = trim(fast_args_str) // ' old_cluster_mark_postfix=_core'
+           fast_args_str = trim(fast_args_str) // ' cluster_mark_postfix=_core'
          endif
        endif
 
@@ -1323,9 +1321,9 @@ call print('Added '//count(hybrid_mark_p(1:my_atoms%N) == HYBRID_ACTIVE_MARK)//'
     else if (trim(Run_Type) == 'MM') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark_core min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark:old_cluster_mark_extended min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif

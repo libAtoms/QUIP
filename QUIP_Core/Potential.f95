@@ -335,7 +335,7 @@ contains
     type(Dictionary) :: params
     logical :: single_cluster, little_clusters, dummy, do_rescale_r
     character(len=10240) :: my_args_str, new_args_str
-    integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex
+    integer, pointer, dimension(:) :: hybrid_mark, cluster_index, termindex, modified_hybrid_mark
     real(dp), pointer, dimension(:) :: weight_region1
     integer, allocatable, dimension(:) :: hybrid_mark_saved
     real(dp), allocatable, dimension(:) :: weight_region1_saved
@@ -351,8 +351,9 @@ contains
     real(dp), target :: my_e, my_virial(3,3)
     logical :: calc_force, calc_energy, calc_local_e, calc_df, calc_virial, do_calc_force, do_calc_energy, do_calc_local_e, do_calc_df, do_calc_virial
     integer, pointer :: cluster_mark_p(:)
+    integer, pointer :: cluster_mark_p_postfix(:)
     integer, pointer :: old_cluster_mark_p(:)
-    character(len=FIELD_LENGTH) :: old_cluster_mark_postfix 
+    character(len=FIELD_LENGTH) :: cluster_mark_postfix 
 
     if (at%N <= 0) &
       call system_abort("Potential_Calc called with at%N <= 0")
@@ -369,8 +370,8 @@ contains
 
     call initialise(params)
     call param_register(params, 'single_cluster', 'F', single_cluster)
-    old_cluster_mark_postfix=""
-    call param_register(params, 'old_cluster_mark_postfix', '', old_cluster_mark_postfix)
+    cluster_mark_postfix=""
+    call param_register(params, 'cluster_mark_postfix', '', cluster_mark_postfix)
     call param_register(params, 'carve_cluster', 'T', do_carve_cluster)
     call param_register(params, 'little_clusters', 'F', little_clusters)
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
@@ -529,66 +530,52 @@ call print('ARGS1 | '//new_args_str,VERBOSE)
 	 call print('potential_calc: not carving cluster', VERBOSE)
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds)
 
-         !save cluster in cluster_mark property
+         !save cluster in cluster_mark property and optionally cluster_mark_postfix property
          call add_property(at,'cluster_mark',HYBRID_NO_MARK)
-         call add_property(at,'old_cluster_mark'//trim(old_cluster_mark_postfix),HYBRID_NO_MARK)
+         if (trim(cluster_mark_postfix)/="") then
+           call print('Add cluster_mark'//trim(cluster_mark_postfix),ANAL)
+           call add_property(at,'cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
+         else
+           call print('NOT Add cluster_mark'//trim(cluster_mark_postfix),ANAL)
+         endif
+         !save the previous cluster_mark[_postfix] into old_cluster_mark[_postfix]
+         call add_property(at,'old_cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
+           call print('Add old_cluster_mark'//trim(cluster_mark_postfix),ANAL)
 	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
-	   call system_abort("potential_calc failed to assing pointer for cluster_mark pointer")
-	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(old_cluster_mark_postfix), old_cluster_mark_p)) &
+	   call system_abort("potential_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer")
+         if (trim(cluster_mark_postfix)/="") then
+	   if (.not. assign_pointer(at, 'cluster_mark'//trim(cluster_mark_postfix), cluster_mark_p_postfix)) &
+	     call system_abort("potential_calc failed to assing pointer for cluster_mark pointer")
+           call print('Assign cluster_mark'//trim(cluster_mark_postfix),ANAL)
+         else
+           call print('NOT Assign cluster_mark'//trim(cluster_mark_postfix),ANAL)
+         endif
+	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(cluster_mark_postfix), old_cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for old_cluster_mark pointer")
-         old_cluster_mark_p = cluster_mark_p
+
+         !save old from cluster_mark_postfix
+         if (trim(cluster_mark_postfix)/="") then
+           old_cluster_mark_p = cluster_mark_p_postfix
+         else
+           old_cluster_mark_p = cluster_mark_p
+         endif
+
+         !zero cluster_mark_[postfix]
          cluster_mark_p = HYBRID_NO_MARK
-!**** old_cluster_mark
-         do i=1,cluster_info%N
-            select case (cluster_info%str(1,i))
-            case ('h_active  ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_ACTIVE_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('h_buffer  ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('h_outer_l ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_OUTER_LAYER_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('hollow    ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('clash     ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('group     ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_BUFFER_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case ('term      ')
-              if (cluster_mark_p(cluster_info%int(1,i)).eq.HYBRID_NO_MARK) then
-                 cluster_mark_p(cluster_info%int(1,i)) = HYBRID_TERM_MARK
-              else
-                 call system_abort('atom '//cluster_info%int(1,i)//' has already cluster_mark '//cluster_mark_p(cluster_info%int(1,i)))
-              endif
-            case default
-              call system_abort('unknown mark: '//cluster_info%str(1,i))
-            end select
-!            mark_i = hybrid_mark_from_name(cluster_info%str(i))
-!            if (mark_i.ne.HYBRID_NO_MARK) cluster_mark_p(i) = mark_i
-         enddo
+         if (trim(cluster_mark_postfix)/="") cluster_mark_p_postfix = HYBRID_NO_MARK
+
+         !save modified_hybrid_mark into cluster_mark[_postfix]
+	 if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) then
+	   cluster_mark_p = hybrid_mark
+	 else
+	   cluster_mark_p = modified_hybrid_mark
+	 endif
+         if (trim(cluster_mark_postfix)/="") then
+           call print('set value cluster_mark'//trim(cluster_mark_postfix))
+           cluster_mark_p_postfix = cluster_mark_p
+         else
+           call print('NOT set value cluster_mark'//trim(cluster_mark_postfix))
+         endif
 
          !save cut bonds in cut_bonds property
 	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)
