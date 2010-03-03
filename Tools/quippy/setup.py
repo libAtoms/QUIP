@@ -402,6 +402,9 @@ if 'QUIPPY_DEFINES' in makefile:
         elif defn[:2] == '-U':
             macros.append(defn[2:])
 
+if 'EXTRA_LINKOPTS' in makefile:
+    extra_link_args.extend([arg for arg in makefile['EXTRA_LINKOPTS'].split()])
+
 # Default distutils options -- will be overriden by command line options
 # once setup() is invoked.
 default_options= {
