@@ -226,9 +226,11 @@ class CastepCell(OrderedDict):
       result = Atoms(n=len(self['POSITIONS_ABS']),lattice = numpy.array([ [float(x) for x in row] 
                                                                           for row in map(string.split, self['LATTICE_CART'])]))
 
-      field_list = [line.split() for line in self['POSITIONS_ABS']]
+      pos_field_list = [line.split() for line in self['POSITIONS_ABS']]
+      if (self.has_key('IONIC_VELOCITIES')):
+	 velo_field_list = [line.split() for line in self['IONIC_VELOCITIES']]
 
-      elements = map(operator.itemgetter(0), field_list)
+      elements = map(operator.itemgetter(0), pos_field_list)
 
       # Look up names of elements specified by atomic number
       elements = [ el.isdigit() and ElementName[int(el)] or el \
@@ -237,7 +239,10 @@ class CastepCell(OrderedDict):
       # Set the element and pos data
       result.species[:] = numpy.array(elements)
       result.pos[:,:] = numpy.array([ [float(x) for x in row] \
-                         for row in [field[1:4] for field in field_list]])
+                         for row in [field[1:4] for field in pos_field_list]])
+      if (self.has_key('IONIC_VELOCITIES')):
+	result.velo[:,:] = 0.001*numpy.array([ [float(x) for x in row] \
+			   for row in [field[1:4] for field in velo_field_list]])
       return result
 
 
@@ -253,6 +258,9 @@ class CastepCell(OrderedDict):
       for i in range(at.n):
          self['POSITIONS_ABS'].append(at.species[i]+' %f %f %f' % tuple(at.pos[i,:]))
 
+      self['IONIC_VELOCITIES'] = []
+      for i in range(at.n):
+         self['IONIC_VELOCITIES'].append(at.species[i]+' %f %f %f' % tuple(1000.0 * at.velo[i,:]))
 
 
 
@@ -464,7 +472,7 @@ def read_castep_md(md_file, cluster=None, abort=True, first=True):
       if (E_re.search(line)):
 	 if (in_config and first):
 	    break
-	 cluster.params['Energy'] = float(fields[0])
+	 Energy = float(fields[0])
 	 in_config = True
 	 R = []
 	 species = []
@@ -515,15 +523,19 @@ def read_castep_md(md_file, cluster=None, abort=True, first=True):
       n_atoms = len(pos)
       cluster = atoms.Atoms(n=n_atoms,lattice=lattice)
 
-   cluster.add_property('velo',0.0,ncols=3)
+   cluster.params['energy'] = Energy
+   if (not first):
+     cluster.add_property('new_pos',0.0,ncols=3)
+     cluster.add_property('new_velo',0.0,ncols=3)
    cluster.add_property('force',0.0,ncols=3)
    for i in range(n_atoms):
       el = species[i]
       num = at_num[i]
       cluster.species[lookup[(el,num)]] = el
-      cluster.pos[lookup[(el,num)]] = numpy.array(map(float, pos[i][:]))
-      cluster.velo[lookup[(el,num)]] = numpy.array(map(float, velo[i][:]))
       cluster.force[lookup[(el,num)]] = numpy.array(map(float, force[i][:]))
+      if (not first):
+	cluster.new_pos[lookup[(el,num)]] = numpy.array(map(float, pos[i][:]))
+	cluster.new_velo[lookup[(el,num)]] = numpy.array(map(float, velo[i][:]))
 
    return cluster
 
