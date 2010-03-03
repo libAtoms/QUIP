@@ -1,4 +1,4 @@
-import sys, string, numpy, os
+import sys, string, numpy, os, re
 import atoms
 from ordereddict import OrderedDict
 from units import *
@@ -287,8 +287,9 @@ class CastepParam(OrderedDict):
          if line.startswith('#') or line == '':
             continue
 
-         for c in ':=':  # Remove delimeters
-            line = line.replace(c,'',1)
+	 line = re.compile('[:=]').sub('', line, 1)
+#         for c in ':=':  # Remove delimeters
+#            line = line.replace(c,'',1)
 
          fields = line.split()
          key = fields[0].lower()
@@ -440,6 +441,91 @@ def read_geom():
 
    return result
 
+
+def read_castep_md(md_file, cluster=None, abort=True, first=True):
+   """Parse .md file, and return Atoms object with positions,
+      energy, forces, and possibly stress and atomic populations as
+      well"""
+
+   opened = False
+   if type(md_file) == type(''):
+      opened = True
+      md_file = open(md_file,'r')
+
+   E_re = re.compile(' E[ ]*$')
+   R_re = re.compile(' R[ ]*$')
+   V_re = re.compile(' V[ ]*$')
+   F_re = re.compile(' F[ ]*$')
+   h_re = re.compile(' h[ ]*$')
+   in_config = False
+   while True:
+      line = md_file.readline()
+      fields = line.split()
+      if (E_re.search(line)):
+	 if (in_config and first):
+	    break
+	 cluster.params['Energy'] = float(fields[0])
+	 in_config = True
+	 R = []
+	 species = []
+	 at_num = []
+	 pos = []
+	 velo = []
+	 force = []
+	 cur_h_line = 0
+	 cur_R_line = 0
+	 cur_V_line = 0
+	 cur_F_line = 0
+      if (in_config):
+	if (h_re.search(line)):
+	   cur_h_line += 1
+	   R.append(map(float, fields[0:3]))
+	   if (cur_h_line == 3):
+	      lattice = numpy.array([R[0],R[1],R[2]])
+	if (R_re.search(line)):
+	   cur_R_line += 1
+	   pos.append([fields[2], fields[3], fields[3]])
+	   species.append(fields[0])
+	   at_num.append(int(fields[1]))
+	if (V_re.search(line)):
+	   cur_V_line += 1
+	   velo.append([fields[2], fields[3], fields[3]])
+	if (F_re.search(line)):
+	   cur_F_line += 1
+	   force.append([fields[2], fields[3], fields[3]])
+
+   if cluster is not None:
+      # If we were passed in an Atoms object, construct mapping from
+      # CASTEP (element, number) to original atom index
+      n_atoms = cluster.n
+      cluster = cluster.copy()
+      species_count = {}
+      lookup = {}
+      for i in range(cluster.n):
+	     el = cluster.species[i]
+	     if species_count.has_key(el):
+		species_count[el] += 1
+	     else:
+		species_count[el] = 1
+	     lookup[(el,species_count[el])] = i
+   else:
+      # Otherwise we make a new, empty Atoms object. Atoms will
+      # be ordered as they are in .castep file.
+      lookup = {}
+      n_atoms = len(pos)
+      cluster = atoms.Atoms(n=n_atoms,lattice=lattice)
+
+   cluster.add_property('velo',0.0,ncols=3)
+   cluster.add_property('force',0.0,ncols=3)
+   for i in range(n_atoms):
+      el = species[i]
+      num = at_num[i]
+      cluster.species[lookup[(el,num)]] = el
+      cluster.pos[lookup[(el,num)]] = numpy.array(map(float, pos[i][:]))
+      cluster.velo[lookup[(el,num)]] = numpy.array(map(float, velo[i][:]))
+      cluster.force[lookup[(el,num)]] = numpy.array(map(float, force[i][:]))
+
+   return cluster
 
 def read_castep_output(castep_file, cluster=None, abort=True):
    """Parse .castep file, and return Atoms object with positions,
