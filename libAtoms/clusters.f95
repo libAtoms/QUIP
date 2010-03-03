@@ -856,40 +856,40 @@ contains
       i = cluster_info%int(1,n)
       ishift = cluster_info%int(2:4,n)
 
-      if (this%Z(i) == 1) cycle
-      if (atom_res_number(i) < 0) cycle
+      if (this%Z(i) /= 0 .and. atom_res_number(i) >= 0) then
 
-      ! count nearest neighbours of i
-      n_nearest_neighbours = 0
-      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
-	j = atoms_neighbour(this, i, m, alt_connect=use_connect)
+	! count nearest neighbours of i
+	n_nearest_neighbours = 0
+	do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	  j = atoms_neighbour(this, i, m, alt_connect=use_connect)
 
-	! if j is not nearest neighbour, go on to next one
-	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
-	  call print("cluster_reduce_n_cut_bonds:   j = "//j//" not nearest neighbour",ANAL)
-	  cycle
-	end if
-	! if we're here, j must be an outside neighbour of i
-	n_nearest_neighbours = n_nearest_neighbours + 1
-      end do
-
-      if (ElementValence(this%Z(i)) /= -1 .and. (ElementValence(this%Z(i)) /= n_nearest_neighbours)) then ! i has a valence, and it doesn't match nn#
-	do m=1, atoms_n_neighbours(this, i)
-	  j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
-
-	  ! if j is in, or isn't nearest neighbour, go on to next
-	  if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	  ! if j is not nearest neighbour, go on to next one
 	  if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
-	    call print("cluster_reduce_n_cut_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	    call print("cluster_protect_double_bonds:   j = "//j//" not nearest neighbour",ANAL)
 	    cycle
 	  end if
-
 	  ! if we're here, j must be an outside neighbour of i
-	  call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"dbl_bond  " /) )
-	  cluster_changed = .true.
-	  call print('cluster_protect_double_bonds:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
-	end do
-      endif
+	  n_nearest_neighbours = n_nearest_neighbours + 1
+	end do ! m
+
+	if (ElementValence(this%Z(i)) /= -1 .and. (ElementValence(this%Z(i)) /= n_nearest_neighbours)) then ! i has a valence, and it doesn't match nn#
+	  do m=1, atoms_n_neighbours(this, i)
+	    j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	    ! if j is in, or isn't nearest neighbour, go on to next
+	    if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	    if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	      call print("cluster_protect_double_bonds:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	      cycle
+	    end if
+
+	    ! if we're here, j must be an outside neighbour of i
+	    call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"dbl_bond  " /) )
+	    cluster_changed = .true.
+	    call print('cluster_protect_double_bonds:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+	  end do ! m
+	endif ! valence defined
+      end if !  atom_res_number(i) >= 0
 
       n = n + 1
     end do ! while (n <= cluster_info%N)
@@ -1166,7 +1166,8 @@ contains
     real(dp) :: r, r_min, centre(3)
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
     integer :: i, j, jj, first_active, old_n, n_cluster, shift(3)
-    integer, pointer :: hybrid_mark(:)
+    integer, pointer :: hybrid_mark(:), modified_hybrid_mark(:)
+    integer :: prev_cluster_info_n
     integer, allocatable, dimension(:) :: uniqed, tmp_index
 
     type(Table)                              :: n_term, sorted_n_term
@@ -1181,7 +1182,7 @@ contains
 
     type(Connection), pointer :: use_connect
     logical :: connectivity_just_from_connect
-    logical :: cluster_changed, cluster_changed_t
+    logical :: cluster_changed
 
     call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', VERBOSE)
 
@@ -1210,6 +1211,13 @@ contains
     if (.not. has_property(at, 'hybrid_mark')) &
          call system_abort('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property')
 
+    if (cluster_allow_modification) then
+      call add_property(at, 'modified_hybrid_mark', 0)
+      if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) &
+	   call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
+    endif
+
+    ! only after adding modified_hybrid_mark_property
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
          call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
 
@@ -1251,13 +1259,13 @@ contains
     old_n = cluster_list%N
     do 
        if (hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
        else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = cluster_nneighb_only, min_images_only = any(do_periodic) .or. same_lattice)
+	 call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice)
        endif
        do j=1,nextlist%N
           jj = nextlist%int(1,j)
-          shift = nextlist%int(2:4,j)
+!          shift = nextlist%int(2:4,j)
           if (hybrid_mark(jj) /= HYBRID_NO_MARK) &
                call append(cluster_list, nextlist%int(:,j))
        end do
@@ -1372,6 +1380,7 @@ contains
 
     if (cluster_allow_modification) then
       cluster_changed = .true.
+      modified_hybrid_mark = hybrid_mark
       do while (cluster_changed) 
 	cluster_changed = .false.
 	call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
@@ -1380,24 +1389,39 @@ contains
 	  ' protect_double_bonds ' // protect_double_bonds // &
 	  ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=NERD)
 	if (keep_whole_residues) then
-	  cluster_changed_t = cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)
-	  cluster_changed = cluster_changed .or. cluster_changed_t
+	  prev_cluster_info_n = cluster_info%N
+	  if (cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)) then
+	    cluster_changed = .true.
+	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+	  endif
 	endif
 	if (reduce_n_cut_bonds) then
-	  cluster_changed_t = cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
-	  cluster_changed = cluster_changed .or. cluster_changed_t
+	  prev_cluster_info_n = cluster_info%N
+	  if (cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+	    cluster_changed = .true.
+	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+	  endif
 	endif
 	if (protect_X_H_bonds) then
-	  cluster_changed_t = cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
-	  cluster_changed = cluster_changed .or. cluster_changed_t
+	  prev_cluster_info_n = cluster_info%N
+	  if (cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+	    cluster_changed = .true.
+	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+	  endif
 	endif
 	if (protect_double_bonds) then
-	  cluster_changed_t = cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)
-	  cluster_changed = cluster_changed .or. cluster_changed_t
+	  prev_cluster_info_n = cluster_info%N
+	  if (cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)) then
+	    cluster_changed = .true.
+	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+	  endif
 	endif
 	if (terminate .or. fix_termination_clash) then
-	  cluster_changed_t = cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
-	  cluster_changed = cluster_changed .or. cluster_changed_t
+	  prev_cluster_info_n = cluster_info%N
+	  if (cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+	    cluster_changed = .true.
+	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+	  endif
 	endif
 !OUTDATED if (ss_in_out_in) cluster_changed = cluster_changed .or. cluster_ss_in_out_in(at, cluster_info, use_connect)
 !OUTDATED if (biochem_in_out_in) cluster_changed = cluster_changed .or. cluster_biochem_in_out_in(at, cluster_info, use_connect)
@@ -1670,9 +1694,9 @@ contains
        hybrid_number = 1
        do while (hybrid_number .ne. 0)
           if (hysteretic_connect) then
-            call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
+            call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
           else
-            call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only, property =hybrid_mark)
+            call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, property=hybrid_mark)
           endif
           hybrid_number = 0 
           do j=1,nextlist%N
@@ -1744,9 +1768,9 @@ contains
        do while (more_hops)
 	 more_hops = .false.
          if (hysteretic_connect) then
-           call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
+           call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only .and. (transition_hops > 0), min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
          else
-           call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only)
+           call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only .and. (transition_hops > 0), min_images_only = min_images_only)
          endif
 
          call wipe(currentlist)
@@ -1843,9 +1867,9 @@ contains
        old_n = bufferlist%N
        do while (bufferlist%N < n_region2)
 	  if (hysteretic_connect) then
-	    call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
+	    call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
 	  else
-	    call BFS_step(at, currentlist, nextlist, nneighb_only = nneighb_only, min_images_only = min_images_only, property =hybrid_mark)
+	    call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, property =hybrid_mark)
 	  endif
           do j=1,nextlist%N
              jj = nextlist%int(1,j)
@@ -2046,7 +2070,7 @@ contains
 
       hybrid_number = 1 
       do while (hybrid_number .ne. 0) 
-       call BFS_step(at, currentlist, nextlist, nneighb_only = do_nneighb_only, min_images_only = do_min_images_only, property =hybrid_mark)
+       call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = do_min_images_only, property =hybrid_mark)
 
        hybrid_number = 0 
        do j=1,nextlist%N
@@ -2445,7 +2469,7 @@ type(inoutput), optional :: debugfile
 	if (present(debugfile)) call print("   doing hop " // cur_hop, file=debugfile)
 	if (present(debugfile)) call print("   cutoffs " // at%cutoff // " " // at%use_uniform_cutoff, file=debugfile)
 	more_hops = .false.
-	call bfs_step(at, region, nextlist, nneighb_only=do_nneighb_only, min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect)
+	call bfs_step(at, region, nextlist, nneighb_only=do_nneighb_only .and. .not. present(radius), min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect)
 	if (present(debugfile)) call print("   bfs_step returned nextlist%N " // nextlist%N, file=debugfile)
 	if (present(debugfile)) call print(nextlist, file=debugfile)
 	if (nextlist%N /= 0) then ! go over things in next hop
@@ -2517,7 +2541,7 @@ type(inoutput), optional :: debugfile
        call add_property(this, 'old_nn', 0)
        call add_property(this, 'active', 0)
 
-       call atoms_set_cutoff_factor(nn_atoms, use_nn_tol)
+       call set_cutoff_factor(nn_atoms, use_nn_tol)
     end if
 
     if (this%N /= nn_atoms%N) &
@@ -3039,31 +3063,34 @@ type(inoutput), optional :: debugfile
     logical,  optional, intent(out)   :: list_changed
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
-    type(Table) :: core, core1, ext_qmlist
-    real(dp)    :: my_origin(3)
+    type(Table) :: core, old_core, ext_qmlist
+!    real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
-    
+
     if (count((/present(origin),present(atomlist)/))/=1) call system_abort('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.')
 !    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
 
     call map_into_cell(my_atoms)
 
     call allocate(core,4,0,0,0,0)
-    call allocate(core1,4,0,0,0,0)
+    call allocate(old_core,4,0,0,0,0)
     call allocate(ext_qmlist,4,0,0,0,0)
-    call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core1,int_property='hybrid_mark')
-    call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core,int_property='hybrid_mark')
-    call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
+    ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,old_core,int_property='hybrid_mark')
+    ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core,int_property='hybrid_mark')
+    ! call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
+    call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark')
+    call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark')
+    call get_hybrid_list(my_atoms,ext_qmlist, all_but_term=.true., int_property='hybrid_mark')
 
 !Build the hysteretic QM core:
   if (present(atomlist)) then
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, debugfile=mainlog)
+       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 
   else !present origin
-     call construct_hysteretic_region(region=core,at=my_atoms,centre=my_origin,loop_atoms_no_connectivity=.true., &
+     call construct_hysteretic_region(region=core,at=my_atoms,centre=origin,loop_atoms_no_connectivity=.true., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, debugfile=mainlog)
+       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 
   endif
 
 !    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
@@ -3094,7 +3121,7 @@ type(inoutput), optional :: debugfile
 
    ! check changes in QM list and set the new QM list
     if (present(list_changed)) then
-       list_changed = check_list_change(old_list=core1,new_list=core)
+       list_changed = check_list_change(old_list=old_core,new_list=core)
        if (list_changed)  call print('QM list around the origin  has changed')
     endif
 
@@ -3119,54 +3146,54 @@ type(inoutput), optional :: debugfile
     ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
 
     call finalise(core)
-    call finalise(core1)
+    call finalise(old_core)
     call finalise(ext_qmlist)
 
   end subroutine create_pos_or_list_centred_hybrid_region
 
-  !% Returns a $hybridlist$ table with the atom indices whose $cluster_mark$
-  !% (or optionally any $int_property$) property takes no greater than $hybridflag$ positive value.
-  !
-  subroutine get_hybrid_list(my_atoms,hybridflag,hybridlist,int_property,get_up_to_mark_value)
-
-    type(Atoms), intent(in)  :: my_atoms
-    integer,     intent(in)  :: hybridflag
-    type(Table), intent(out) :: hybridlist
-    character(len=*), optional, intent(in) :: int_property
-    logical, intent(in), optional :: get_up_to_mark_value
-
-    integer, pointer :: mark_p(:)
-    integer              :: i
-    logical :: do_get_up_to_mark_value
-
-    do_get_up_to_mark_value = optional_default(.false., get_up_to_mark_value)
-
-    if (present(int_property)) then
-       if (.not. assign_pointer(my_atoms, trim(int_property), mark_p)) &
-	 call system_abort("get_hybrid_list_int couldn't get int_property='"//trim(int_property)//"'")
-    else
-       if (.not. assign_pointer(my_atoms, 'cluster_mark', mark_p)) &
-	 call system_abort("get_hybrid_list_int couldn't get default int_property='cluster_mark'")
-    endif
-
-    call initialise(hybridlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_hybrid_atoms entries
-    if (do_get_up_to_mark_value) then
-       do i=1,my_atoms%N
-          ! if (my_atoms%data%int(hybrid_flag_index,i).gt.0.and. &
-             ! my_atoms%data%int(hybrid_flag_index,i).le.hybridflag) &
-          if (mark_p(i) > 0 .and.  mark_p(i) <= hybridflag) &
-               call append(hybridlist,(/i,0,0,0/))
-       enddo
-    else
-       do i=1,my_atoms%N
-          ! if (my_atoms%data%int(hybrid_flag_index,i).eq.hybridflag) &
-          if (mark_p(i) == hybridflag) call append(hybridlist,(/i,0,0,0/))
-       enddo
-    endif
-
-    if (hybridlist%N.eq.0) call print('Empty QM list with cluster_mark '//hybridflag,verbosity=SILENT)
-
-  end subroutine get_hybrid_list
+!  !% Returns a $hybridlist$ table with the atom indices whose $cluster_mark$
+!  !% (or optionally any $int_property$) property takes no greater than $hybridflag$ positive value.
+!  !
+!  subroutine get_hybrid_list(my_atoms,hybridflag,hybridlist,int_property,get_up_to_mark_value)
+!
+!    type(Atoms), intent(in)  :: my_atoms
+!    integer,     intent(in)  :: hybridflag
+!    type(Table), intent(out) :: hybridlist
+!    character(len=*), optional, intent(in) :: int_property
+!    logical, intent(in), optional :: get_up_to_mark_value
+!
+!    integer, pointer :: mark_p(:)
+!    integer              :: i
+!    logical :: do_get_up_to_mark_value
+!
+!    do_get_up_to_mark_value = optional_default(.false., get_up_to_mark_value)
+!
+!    if (present(int_property)) then
+!       if (.not. assign_pointer(my_atoms, trim(int_property), mark_p)) &
+!	 call system_abort("get_hybrid_list_int couldn't get int_property='"//trim(int_property)//"'")
+!    else
+!       if (.not. assign_pointer(my_atoms, 'cluster_mark', mark_p)) &
+!	 call system_abort("get_hybrid_list_int couldn't get default int_property='cluster_mark'")
+!    endif
+!
+!    call initialise(hybridlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_hybrid_atoms entries
+!    if (do_get_up_to_mark_value) then
+!       do i=1,my_atoms%N
+!          ! if (my_atoms%data%int(hybrid_flag_index,i).gt.0.and. &
+!             ! my_atoms%data%int(hybrid_flag_index,i).le.hybridflag) &
+!          if (mark_p(i) > 0 .and.  mark_p(i) <= hybridflag) &
+!               call append(hybridlist,(/i,0,0,0/))
+!       enddo
+!    else
+!       do i=1,my_atoms%N
+!          ! if (my_atoms%data%int(hybrid_flag_index,i).eq.hybridflag) &
+!          if (mark_p(i) == hybridflag) call append(hybridlist,(/i,0,0,0/))
+!       enddo
+!    endif
+!
+!    if (hybridlist%N.eq.0) call print('Empty QM list with cluster_mark '//hybridflag,verbosity=SILENT)
+!
+!  end subroutine get_hybrid_list
 
   !% Checks and reports the changes between two tables, $old_qmlist$ and $new_qmlist$.
   !
@@ -3196,6 +3223,53 @@ type(inoutput), optional :: debugfile
     endif
 
   end function check_list_change
+
+  !% return list of atoms that have various subsets of hybrid marks set
+  subroutine get_hybrid_list(at,hybrid_list,all_but_term,active_trans_only,int_property)
+    type(Atoms), intent(in)  :: at !% object to scan for marked atoms
+    type(Table), intent(out) :: hybrid_list !% on return, list of marked atoms
+    logical, intent(in), optional :: all_but_term !% if present and true, select all marked atoms that aren't TERM
+    logical, intent(in), optional :: active_trans_only !% if present and true, select all atoms marked ACTIVE or TRANS
+    !% exactly one of all_but_term and active_trans_only must be present and true
+    character(len=*), optional, intent(in) :: int_property !% if present, property to check, default cluster_mark
+
+    integer :: i
+    integer, pointer :: hybrid_mark(:)
+    logical              :: my_all_but_term, my_active_trans_only
+    character(STRING_LENGTH) :: my_int_property
+
+    if (.not. present(all_but_term) .and. .not. present(active_trans_only)) &
+      call system_abort("get_hybrid_list called with neither all_but_term nor active_trans_only present")
+
+    my_all_but_term = optional_default(.false., all_but_term)
+    my_active_trans_only = optional_default(.false., active_trans_only)
+
+    if ((my_all_but_term .and. my_active_trans_only) .or. (.not. my_all_but_term .and. .not. my_active_trans_only)) &
+      call system_abort("get_hybrid_list needs exactly one of all_but_term=" // all_but_term // " and active_trans_only="//my_active_trans_only)
+
+    my_int_property = ''
+    if (present(int_property)) then
+       my_int_property = trim(int_property)
+    else
+       my_int_property = "cluster_mark"
+    endif
+    if (.not.(assign_pointer(at, trim(my_int_property), hybrid_mark))) &
+      call system_abort("get_hybrid_list couldn't find "//trim(my_int_property)//" field")
+
+    call initialise(hybrid_list,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
+    do i=1, at%N
+      if (my_all_but_term) then
+	if (hybrid_mark(i) /= HYBRID_NO_MARK .and. hybrid_mark(i) /= HYBRID_TERM_MARK) call append(hybrid_list,(/i,0,0,0/))
+      else if (my_active_trans_only) then
+	if (hybrid_mark(i) == HYBRID_ACTIVE_MARK .or. hybrid_mark(i) == HYBRID_TRANS_MARK) call append(hybrid_list,(/i,0,0,0/))
+      else
+	call system_abort("impossible! get_hybrid_list has no selection mode set")
+      endif
+    end do
+
+    if (hybrid_list%N.eq.0) call print('get_hybrid_list returns empty hybrid list with field '//trim(my_int_property)// &
+                                   ' all_but_term ' // my_all_but_term // ' active_trans_only ' // my_active_trans_only ,ERROR)
+  end subroutine get_hybrid_list
 
 
 end module clusters_module

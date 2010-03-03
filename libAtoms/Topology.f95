@@ -756,12 +756,12 @@ logical :: silica_potential
     write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), cell_angles(:), ' P 1           1'
     call print(sor, file=pdb)
 
-    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
-        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
-       qm_flag_index = get_property(at,'cluster_mark')
-       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
-       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
-    endif
+!    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+!        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
+!       qm_flag_index = get_property(at,'cluster_mark')
+!       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
+!       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
+!    endif
     atom_type_index = get_property(at,'atom_type_PDB')
     atom_res_name_index = get_property(at,'atom_res_name')
     atom_mol_name_index = get_property(at,'atom_mol_name')
@@ -926,12 +926,12 @@ logical :: silica_potential
     endif
 
     my_run_type_string = optional_default('',run_type_string)
-    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
-        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
-       qm_flag_index = get_property(at,'cluster_mark')
-       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
-       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
-    endif
+!    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
+!        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
+!       qm_flag_index = get_property(at,'cluster_mark')
+!       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
+!       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
+!    endif
     atom_type_index = get_property(at,'atom_type')
     atom_type_PDB_index = get_property(at,'atom_type_PDB')
     atom_res_name_index = get_property(at,'atom_res_name')
