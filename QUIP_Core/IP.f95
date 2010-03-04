@@ -401,7 +401,7 @@ end subroutine IP_setup_atoms
 subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at                
-  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
+  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional      :: args_str 
@@ -454,7 +454,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
     case (FF_GAP)
       call calc(this%ip_gap, at, energy, local_e, f, virial)
     case (FF_LJ)
-      call calc(this%ip_lj, at, energy, local_e, f, virial)
+      call calc(this%ip_lj, at, energy, local_e, f, virial, args_str)
     case (FF_SW)
       call calc(this%ip_sw, at, energy, local_e, f, virial)
     case (FF_Tersoff)

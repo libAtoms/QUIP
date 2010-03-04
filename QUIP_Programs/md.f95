@@ -15,7 +15,7 @@ private
     integer :: velocity_rescaling_freq
     logical :: calc_virial, const_T, const_P
     character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
-    integer :: summary_interval, at_print_interval, pot_print_interval
+    integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     integer :: rng_seed
     logical :: damping, rescale_velocity 
     logical :: annealing, zero_momentum, zero_angular_momentum
@@ -65,6 +65,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'metapot_init_args', PARAM_MANDATORY, params%metapot_init_args)
   call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
+  call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval)
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval)
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval)
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum)
@@ -141,6 +142,7 @@ subroutine print_params(params)
   call print("md_params%thermalise_wait_time=" // params%thermalise_wait_time)
   call print("md_params%calc_virial=" // params%calc_virial)
   call print("md_params%summary_interval=" // params%summary_interval)
+  call print("md_params%params_print_interval=" // params%params_print_interval)
   call print("md_params%at_print_interval=" // params%at_print_interval)
   call print("md_params%pot_print_interval=" // params%pot_print_interval)
   call print("md_params%zero_momentum=" // params%zero_momentum)
@@ -159,7 +161,7 @@ subroutine print_usage()
   call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', ERROR)
   call Print('  [N_steps=n(1)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', ERROR)
   call Print('  [calc_virial=logical(F)]', ERROR)
-  call Print('  [summary_interval=n(1)] [at_print_interval=n(100)] [pot_print_interval=n(-1)]', ERROR)
+  call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [at_print_interval=n(100)] [pot_print_interval=n(-1)]', ERROR)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)] [dipole_moment=T/F(F)]', ERROR)
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)', ERROR)
 end subroutine print_usage
@@ -179,6 +181,9 @@ subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_interval
 
   if (params%summary_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%summary_interval) == 0) call print_summary(params, ds, e)
+  endif
+  if (params%params_print_interval > 0) then
+    if (my_override_intervals .or. mod(i_step,params%params_print_interval) == 0) call print_atoms_params(params, ds%atoms)
   endif
   if (params%pot_print_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, metapot)
@@ -202,6 +207,12 @@ subroutine print_summary(params, ds, e)
   endif
 end subroutine print_summary
 
+subroutine print_atoms_params(params, at)
+  type(md_params), intent(in) :: params
+  type(Atoms), intent(in) :: at
+  call print("PA " // write_string(at%params))
+end subroutine print_atoms_params
+
 subroutine print_pot(params, metapot)
   type(md_params), intent(in) :: params
   type(metapotential), intent(in) :: metapot
@@ -223,7 +234,7 @@ subroutine print_at(params, ds, e, metapot, out, real_format)
   type(Cinoutput), intent(inout) :: out
   character(len=*), intent(in), optional :: real_format
 
-    call write(out, ds%atoms)
+  call write(out, ds%atoms)
   !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format=real_format)
 end subroutine print_at
 
@@ -382,6 +393,7 @@ implicit none
     call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
   endif
   if (params%quiet_calc) call verbosity_pop()
+  call set_value(ds%atoms%params, 'time', ds%t)
   call do_prints(params, ds, e, metapot, traj_out, 0, override_intervals = .true.)
 
   ! calculate a(t) from f(t)
@@ -416,6 +428,7 @@ implicit none
     endif
 
     call system_timer("md/print")
+    call set_value(ds%atoms%params, 'time', ds%t)
     call do_prints(params, ds, e, metapot, traj_out, i_step)
 
     call system_timer("md/print")

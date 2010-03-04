@@ -124,18 +124,26 @@ end subroutine IPModel_LJ_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str)
   type(IPModel_LJ), intent(inout) :: this
-  type(Atoms), intent(in) :: at
+  type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), intent(in), optional      :: args_str
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ti, tj
   real(dp) :: dr(3), dr_mag
   real(dp) :: de, de_dr
   logical :: i_is_min_image
+
+  integer :: i_calc, n_extra_calcs
+  character(len=20) :: extra_calcs_list(10)
+
+  logical :: do_flux = .false.
+  real(dp), pointer :: velo(:,:)
+  real(dp) :: flux(3)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -144,6 +152,25 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
      if(size(f,1) .ne. 3 .or. size(f,2) .ne. at%N) call system_abort('IPMOdel_LJ_Calc: f is the wrong size')
      f = 0.0_dp
   end if
+
+  if (present(args_str)) then
+    if (len_trim(args_str) > 0) then
+      n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
+      if (n_extra_calcs > 0) then
+	do i_calc=1, n_extra_calcs
+	  select case(trim(extra_calcs_list(i_calc)))
+	    case("flux")
+	      if (.not. assign_pointer(at, "velo", velo)) &
+		call system_abort("IPModel_LJ_Calc Flux calculation requires velo field")
+	      do_flux = .true.
+	      flux = 0.0_dp
+	    case default
+	      call system_abort("Unsopported extra_calc '"//trim(extra_calcs_list(i_calc))//"'")
+	  end select
+	end do
+      endif ! n_extra_calcs
+    endif ! len_trim(args_str)
+  endif ! present(args_str)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
@@ -180,7 +207,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
           endif
 	endif
       endif
-      if (present(f) .or. present(virial)) then
+      if (present(f) .or. present(virial) .or. do_flux) then
 	de_dr = IPModel_LJ_pairenergy_deriv(this, ti, tj, dr_mag)
 	if (associated(w_e)) then
 	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
@@ -188,6 +215,9 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
 	if (present(f)) then
 	  f(:,i) = f(:,i) + de_dr*dr
 	  if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
+	endif
+	if (do_flux) then
+	  flux = flux + 0.5_dp*(velo(:,i)+velo(:,j))*(de_dr*dr)*dr
 	endif
 	if (present(virial)) then
 	  if(i_is_min_image) then
@@ -204,6 +234,10 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial)
   if (present(local_e)) call sum_in_place(this%mpi, local_e)
   if (present(virial)) call sum_in_place(this%mpi, virial)
   if (present(f)) call sum_in_place(this%mpi, f)
+  if (do_flux) then
+    call sum_in_place(this%mpi, flux)
+    call set_value(at%params, "Flux", flux)
+  endif
 
 end subroutine IPModel_LJ_Calc
 
@@ -448,5 +482,55 @@ subroutine IPModel_LJ_Print (this, file)
   end do
 
 end subroutine IPModel_LJ_Print
+
+
+subroutine split_string_simple(str, fields, n_fields, separators)
+  character(len=*), intent(in) :: str
+  character(len=*), intent(out) :: fields(:)
+  integer, intent(out) :: n_fields
+  character(len=*), intent(in) :: separators
+
+  integer :: str_len, cur_pos, next_pos, cur_field
+
+
+  str_len = len_trim(str)
+  cur_pos = 0
+  cur_field = 1
+  do while (cur_pos <= str_len)
+    if (cur_field > size(fields)) &
+      call system_abort("split_string_simple no room for fields")
+    next_pos = scan(str(cur_pos+1:str_len),separators)
+    if (next_pos > 0) then
+      fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-1)
+      cur_pos = cur_pos + next_pos
+      cur_field = cur_field + 1
+    else
+      fields(cur_field) = str(cur_pos+1:str_len)
+      cur_field = cur_field + 1
+      cur_pos = str_len+1 ! exit loop
+    endif
+  end do
+  n_fields = cur_field - 1
+
+end subroutine split_string_simple
+
+function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
+  character(len=*), intent(in) :: args_str
+  character(len=*), intent(out) :: extra_calcs_list(:)
+  integer :: n_extra_calcs
+
+  character(len=FIELD_LENGTH) :: extra_calcs_str
+  type(Dictionary) :: params
+
+  call initialise(params)
+  call param_register(params, "extra_calcs", "", extra_calcs_str)
+  if (param_read_line(params, args_str, ignore_unknown=.true.,task='parse_extra_calcs')) then
+    if (len_trim(extra_calcs_str) > 0) then
+      call split_string_simple(extra_calcs_str, extra_calcs_list, n_extra_calcs, ":")
+    end if
+  end if
+  call finalise(params)
+
+end function parse_extra_calcs
 
 end module IPModel_LJ_module

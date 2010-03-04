@@ -987,7 +987,7 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
     end interface
     
     if (.not. associated(this%callbackpot)) call system_abort('potential_set_callback: this Potential is not a CallbackPot')
-    call callbackpot_set_callback(this%callbackpot, callback)
+    call set_callback(this%callbackpot, callback)
 
   end subroutine potential_set_callback
 
