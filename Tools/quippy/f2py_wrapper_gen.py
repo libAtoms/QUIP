@@ -27,7 +27,9 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           types = [x.type for x in sub.arguments]
           attrs = [x.attributes for x in sub.arguments]
       except AttributeError:
-          return False
+         if sub.name.lower().startswith('potential_set_callback'): return True
+         print 'filtering callback rountine %s' % sub.name
+         return False
 
       return True
 
@@ -35,9 +37,12 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    # (and return type if sub is a function)
    def no_allocatables_or_pointers(sub):
       for arg in sub.arguments:
+          if not hasattr(arg, 'attributes'): continue
+         
           # FIXME: this skips scalar pointer args too
-          if 'allocatable' in arg.attributes or 'pointer' in arg.attributes:
-              return False
+
+          if ('allocatable' in arg.attributes or 'pointer' in arg.attributes):
+             return False
 
           # arrays of derived type are out as well
           dims = filter(lambda x: x.startswith('dimension'), arg.attributes)
@@ -52,6 +57,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
    def no_complex_scalars(sub):
       for arg in sub.arguments:
+          if not hasattr(arg, 'attributes'): continue         
           dims = filter(lambda x: x.startswith('dimension'), arg.attributes)
           if arg.type.startswith('complex') and len(dims) == 0: return False
 
@@ -60,6 +66,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
    def no_c_ptr(sub):
       for arg in sub.arguments:
+          if not hasattr(arg, 'attributes'): continue      
           if arg.type.lower() == 'type(c_ptr)': return False
 
       return True
@@ -67,6 +74,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    # Only wrap certain types
    def no_bad_types(sub):
       for arg in sub.arguments:
+         if not hasattr(arg, 'attributes'): continue      
          if arg.type.startswith('type') and not strip_type(arg.type) in filtertypes:
             print 'omitting routine %s as argument %s of unwrapped type %s' % (sub.name, arg.name, arg.type)
             return False
@@ -174,6 +182,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               spec[shortname.lower()]['interfaces'][intf.name.lower()]['routines'].append(sub.name.lower())
 
       allocates = []
+      callbacklines = []
       transfer_in = []
       transfer_out = []
 
@@ -181,9 +190,12 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
           append_argline = True
 
-          # Replace all type args with pointers
           if not hasattr(arg, 'attributes') and not hasattr(arg, 'type'):
               arglines.append('external %s' % arg.name)
+              arglines.append('logical :: calc_energy, calc_local_e, calc_force, calc_virial')
+              thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': 'callback', 'attributes': []})
+              arg_spec = 'qp_this, calc_energy, calc_local_e, calc_force, calc_virial'
+              callbacklines.extend(['if (.false.) then','call %s(%s)' % (arg.name, arg_spec),'end if'])
               continue
 
           attributes = arg.attributes
@@ -373,6 +385,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       println()
 
       for var in allocates: println('allocate(%s_ptr%%p)' % var)
+
+      for line in callbacklines: println(line)
 
       for var, optional in transfer_in:
          if optional:
