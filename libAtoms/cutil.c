@@ -142,3 +142,18 @@ int c_increase_stack_(int *stack_size) {
 int pointer_to_(void *p) {
   return ((int) p);
 }
+
+typedef struct{
+  void (*sub)(int*);
+} VCALLBACKPOTSUB_TABLE;
+
+VCALLBACKPOTSUB_TABLE callbackpotsub_table[20];
+static int ncallbackpotsub = 0;
+
+void register_callbackpot_sub_(void (*sub)(int*, int*, int*, int*, int*)){
+  callbackpotsub_table[ncallbackpotsub++].sub = sub;
+}
+
+void call_callbackpot_sub_(int* i, int* at, int* calc_energy, int* calc_local_e, int* calc_force, int* calc_virial){
+  callbackpotsub_table[*i].sub(at);
+}
