@@ -137,6 +137,7 @@ module Potential_module
   use IP_module
   use TB_module
   use FilePot_module
+  use CallbackPot_module
 
 #define MAX_CUT_BONDS 4
 
@@ -153,6 +154,7 @@ module Potential_module
      type(TB_type), pointer     :: tb => null()
      type(IP_type), pointer     :: ip => null()
      type(FilePot_type), pointer     :: filepot => null()
+     type(CallbackPot_type), pointer     :: callbackpot => null()
      logical :: is_wrapper
   end type potential
 
@@ -202,7 +204,6 @@ contains
     character(len=*), intent(in) :: filename
     type(MPI_context), intent(in), optional :: mpi_obj
     logical, intent(in), optional :: no_parallel
-
     type(inoutput) :: io
 
     ! WARNING: setting master_only=.true. may lead to failure if not all processes are calling the initialise
@@ -244,8 +245,7 @@ contains
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in), optional :: param_str
     type(MPI_context), intent(in), optional :: mpi_obj
-
-    logical is_TB, is_IP, is_FilePot, is_wrapper
+    logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot
     type(Dictionary) :: params
 
     call Finalise(this)
@@ -255,12 +255,13 @@ contains
     call param_register(params, 'IP', 'false', is_IP)
     call param_register(params, 'FilePot', 'false', is_FilePot)
     call param_register(params, 'wrapper', 'false', is_wrapper)
+    call param_register(params, 'CallbackPot', 'false', is_CallbackPot)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise_str args_str')) then
       call system_abort("Potential_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     endif
     call finalise(params)
 
-    if (count( (/is_TB, is_IP, is_FilePot, is_wrapper /) ) /= 1) then
+    if (count( (/is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot /) ) /= 1) then
       call system_abort("Potential_Initialise_str found too few or too many Potential types args_str='"//trim(args_str)//"'")
     endif
 
@@ -281,6 +282,9 @@ contains
     else if (is_FilePot) then
        allocate(this%filepot)
        call Initialise(this%filepot, args_str, mpi_obj)
+    else if (is_CallbackPot) then
+       allocate(this%CallbackPot)
+       call Initialise(this%callbackpot, args_str, mpi=mpi_obj)
     else if(is_wrapper) then
        this%is_wrapper = .true.
     endif
@@ -298,6 +302,9 @@ contains
     elseif(associated(this%filepot)) then
        call Finalise(this%filepot)
        deallocate(this%filepot)
+    elseif(associated(this%callbackpot)) then
+       call Finalise(this%callbackpot)
+       deallocate(this%callbackpot)
     end if
     this%is_wrapper = .false.
   end subroutine Potential_Finalise
@@ -312,6 +319,8 @@ contains
        Potential_cutoff = cutoff(this%ip)
     elseif(associated(this%filepot)) then
        Potential_cutoff = cutoff(this%filepot)
+    elseif(associated(this%callbackpot)) then
+       Potential_cutoff = cutoff(this%callbackpot)
     else
        Potential_cutoff = 0.0_dp
     end if
@@ -785,6 +794,46 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
                 end if
              end if
 
+          elseif(associated(this%callbackpot)) then
+
+             if (do_calc_virial) then
+                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, virial=virial_ptr, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                end if
+             else
+                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, forces=force_ptr, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, args_str=args_str, err=err)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, err=err)
+                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                end if
+             end if
+
           elseif(this%is_wrapper) then
              !
              ! put here hardcoded energy and force functions
@@ -893,6 +942,8 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
        call Print(this%ip, file=file)
     elseif(associated(this%filepot)) then
        call Print(this%filepot, file=file)
+    elseif(associated(this%callbackpot)) then
+       call Print(this%callbackpot, file=file)
     elseif(this%is_wrapper) then
        call print("Potential: wrapper potential")
     else
@@ -916,6 +967,8 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
        call setup_parallel(this%ip, at, e, local_e, f, virial)
     elseif(associated(this%filepot)) then
        return
+    elseif(associated(this%callbackpot)) then
+       return
     elseif(this%is_wrapper) then
        return
     else
@@ -923,6 +976,20 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
     end if
 
   end subroutine Potential_setup_parallel
+
+  subroutine potential_set_callback(this, callback)
+    type(Potential), intent(inout) :: this
+    interface
+       subroutine callback(at, calc_energy, calc_local_e, calc_force, calc_virial)
+         integer, intent(in) :: at(12) 
+         logical :: calc_energy, calc_local_e, calc_force, calc_virial
+       end subroutine callback
+    end interface
+    
+    if (.not. associated(this%callbackpot)) call system_abort('potential_set_callback: this Potential is not a CallbackPot')
+    call callbackpot_set_callback(this%callbackpot, callback)
+
+  end subroutine potential_set_callback
 
 
 end module Potential_module

@@ -14,7 +14,7 @@ BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
 
 TB_F77_FILES = ginted
 TB_F95_FILES = TB_Common  TB_Kpoints TBModel_NRL_TB_defs TBModel_NRL_TB TBModel_Bowler TBModel_DFTB TBModel_GSP \
-  TBModel TBMatrix TB_Mixing Functions Ewald TBSystem  ApproxFermi TB_GreensFunctions TB FilePot
+  TBModel TBMatrix TB_Mixing Functions Ewald TBSystem  ApproxFermi TB_GreensFunctions TB FilePot CallbackPot
 TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
 TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
 TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
