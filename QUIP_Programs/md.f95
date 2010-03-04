@@ -73,7 +73,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'metapot_calc_args', '', params%metapot_calc_args)
   call param_register(md_params_dict, 'dipole_moment', 'F', params%calc_dipole_moment)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
-  call param_register(md_params_dict, 'do_timing', 'T', params%do_timing)
+  call param_register(md_params_dict, 'do_timing', 'F', params%do_timing)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
 
   inquire(file='md_params', exist=md_params_exist)
@@ -210,7 +210,7 @@ end subroutine print_summary
 subroutine print_atoms_params(params, at)
   type(md_params), intent(in) :: params
   type(Atoms), intent(in) :: at
-  call print("PA " // write_string(at%params))
+  call print("PA " // write_string(at%params, real_format='f18.10'))
 end subroutine print_atoms_params
 
 subroutine print_pot(params, metapot)
