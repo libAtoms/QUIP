@@ -8,7 +8,7 @@ implicit none
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_correl
+  logical :: do_mean, do_var, do_correl, correlation_subtract_mean
   character(len=FIELD_LENGTH) :: infile_name, outfile_name
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
@@ -24,6 +24,7 @@ implicit none
   call param_register(cli_params, "mean", "F", do_mean)
   call param_register(cli_params, "variance", "F", do_var)
   call param_register(cli_params, "correlation", "F", do_correl)
+  call param_register(cli_params, "correlation_subtract_mean", "T", correlation_subtract_mean)
   call param_register(cli_params, "correlation_max_lag", "1000", correlation_max_lag)
   call param_register(cli_params, "over_bins", "F", over_bins)
   call param_register(cli_params, "over_time", "F", over_time)
@@ -115,21 +116,39 @@ implicit none
     if (over_bins) then
       allocate(data_correl(min(n_bins, correlation_max_lag+1), n_data))
       data_correl = 0.0_dp
-      do i_lag=0, min(n_bins-1, correlation_max_lag)
-        do i=1, n_bins-i_lag
-          data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:)-data_mean(:))*(data(i+i_lag,:)-data_mean(:))
-        end do
-        data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
-      end do
+      if (correlation_subtract_mean) then
+	do i_lag=0, min(n_bins-1, correlation_max_lag)
+	  do i=1, n_bins-i_lag
+	    data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:)-data_mean(:))*(data(i+i_lag,:)-data_mean(:))
+	  end do
+	  data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
+	end do
+      else
+	do i_lag=0, min(n_bins-1, correlation_max_lag)
+	  do i=1, n_bins-i_lag
+	    data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:))*(data(i+i_lag,:))
+	  end do
+	  data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
+	end do
+      endif
     else
       allocate(data_correl(n_bins, min(correlation_max_lag+1,n_data)))
       data_correl = 0.0_dp
-      do i_lag=0, min(n_data-1, correlation_max_lag)
-        do i=1, n_data-i_lag
-          data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i)-data_mean(:))*(data(:,i+i_lag)-data_mean(:))
-        end do
-        data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
-      end do
+      if (correlation_subtract_mean) then
+	do i_lag=0, min(n_data-1, correlation_max_lag)
+	  do i=1, n_data-i_lag
+	    data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i)-data_mean(:))*(data(:,i+i_lag)-data_mean(:))
+	  end do
+	  data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
+	end do
+      else
+	do i_lag=0, min(n_data-1, correlation_max_lag)
+	  do i=1, n_data-i_lag
+	    data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i))*(data(:,i+i_lag))
+	  end do
+	  data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
+	end do
+      endif
     endif
 
     call print("# correl", file=outfile)
