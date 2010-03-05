@@ -223,7 +223,18 @@ def PuPyXYZReader(xyz):
       tab.append(blank_rows=n)
       table_update_from_recarray(tab, properties, data)
 
-      yield Atoms(n=n,lattice=lattice, properties=properties, params=params, data=tab)
+      at = Atoms(n=n,lattice=lattice, properties=properties, params=params, data=tab)
+
+      if not at.has_property('Z')  and not at.has_property('species'):
+         raise ValueError('Atoms read from XYZ has neither Z nor species')
+      elif at.has_property('Z') and not at.has_property('species'):
+         at.add_property('species', ' '*TABLE_STRING_LENGTH)
+         at.set_atoms(at.z)
+      elif at.has_property('species') and not at.has_property('z'):
+         at.add_property('Z', 0)
+         at.z[:] = [ElementName.index(sp) for sp in at.species.stripstrings()]
+
+      yield at
 
    if opened: xyz.close()
 
