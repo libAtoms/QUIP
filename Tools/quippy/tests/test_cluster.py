@@ -2,6 +2,29 @@ from quippy import *
 import unittest, quippy
 from quippytest import *
 
+def sort_for_comparison(t, t_padded):
+      # sort subset list
+      t.sort(int_cols=(1))
+
+      # copy and sort original part of padded list
+      t_padded_orig = Table()
+      if (t.n >= 1):
+	t_padded_orig.select(t_padded, row_list=frange(1,t.n))
+	t_padded_orig.sort(int_cols=(1))
+
+      # copy and sort new part of padded list
+      t_padded_new = Table()
+      if (t_padded.n >= t.n+1):
+	t_padded_new.select(t_padded, row_list=frange(t.n+1,t_padded.n))
+	t_padded_new.sort(int_cols=(1))
+
+      # concatenate back into padded list
+      t_padded.wipe()
+      if (t_padded_orig.n > 0):
+	t_padded.append(t_padded_orig)
+      if (t_padded_new.n > 0):
+	t_padded.append(t_padded_new)
+
 class TestBFSStep(QuippyTestCase):
 
    def setUp(self):
@@ -144,6 +167,8 @@ class TestCluster_TerminateFalse(QuippyTestCase):
 
       self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=F cluster_allow_modification=F")
 
+      sort_for_comparison(self.embed, self.t)
+
    def test_int_shape(self):
       self.assertEqual(self.t.int.shape,  (6, self.embed.n))
 
@@ -187,9 +212,12 @@ class TestCluster_TerminateTrue(QuippyTestCase):
       self.cut_bonds = Table(8,0,0,0)
       self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T cluster_allow_modification=F", self.cut_bonds)
 
+      sort_for_comparison(self.embed, self.t)
+
       self.n_term = self.t.n - self.embed.n
       self.term_atoms =  [122, 508, 510,  26, 124,  30,  98, 126, 100, 410, 508, 512,  26, 412,  32, 386, 416, 388,
                           482, 510, 512,  98, 486, 104, 386, 488, 390,  30,  32,   4, 100, 104,   6, 388, 390,   8]
+      self.term_atoms.sort()
 
       self.cluster = carve_cluster(self.at, cluster_info=self.t, args_str="")
       self.cluster.set_cutoff_factor(1.2)
@@ -360,10 +388,12 @@ class TestCluster_HollowSection(QuippyTestCase):
       # Introduce a hollow section by unmarking atom 2
       self.hollow_atom = 2
       self.embed.delete(self.embed.find((self.hollow_atom,0,0,0)))
-      
+
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
       self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=F cluster_allow_modification=T")
+
+      sort_for_comparison(self.embed, self.t)
 
    def test_int_shape(self):
       self.assertEqual(self.t.int.shape, (6, self.embed.n + 1))
@@ -434,29 +464,40 @@ class TestCluster_TerminationClash(QuippyTestCase):
 
       self.at.hybrid_mark[self.embed.int[1,:]]= HYBRID_ACTIVE_MARK
 
-      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T cluster_allow_modification=T")
+      self.t = create_cluster_info_from_hybrid_mark(self.at, "terminate=T reduce_n_cut_bonds=F cluster_allow_modification=T")
+
+      sort_for_comparison(self.embed, self.t)
+
+      self.clash_ind = -1
+      for i in frange(1,self.t.n):
+	if (str(self.t.str[1,i].stripstrings()) == 'clash'):
+	  self.assertEqual(self.clash_ind,-1)
+	  self.clash_ind = i
 
    def test_i_shift(self):
       self.assertArrayAlmostEqual(self.t.int[1:4,1:self.embed.n], self.embed.int[1:4,1:self.embed.n])
 
    def test_i_shift_clash(self):
       # Last entry should be [clash_atom, 0,0,0]
-      self.assertEqual(list(self.t.int[1:4,self.embed.n+1]), [self.clash_atom, 0, 0, 0])
+      self.assertNotEqual(self.clash_ind,-1)
+      self.assertEqual(list(self.t.int[1:4,self.clash_ind]), [self.clash_atom, 0, 0, 0])
 
-   def test_mark_clash(self):
-      # Should be marked as having been added by terminatin clash detector
-      self.assertEqual(str(self.t.str[1,self.embed.n+1]), 'clash')
+# clash marking implicitly tested by test_i_shift_clash
+#   def test_mark_clash(self):
+#      # Should be marked as having been added by terminatin clash detector
+#      self.assertEqual(str(self.t.str[1,self.embed.n+1]), 'clash')
 
    def test_z(self):
       self.assertArrayAlmostEqual(self.t.int[5,1:self.embed.n], self.at.z[self.t.int[1,1:self.embed.n]])
 
    def test_z_clash(self):
       # Last atom in cluster should be clash_atom
-      self.assertEqual(self.t.int[5,self.embed.n+1], self.at.z[self.clash_atom])
+      self.assertEqual(self.t.int[5,self.clash_ind], self.at.z[self.clash_atom])
 
    def test_term_index(self):
       # Final int column is term index
-      self.assert_((self.t.int[6,1:self.embed.n+1] == 0).all())
+      self.assert_((self.t.int[6,1:self.embed.n] == 0).all())
+      self.assert_((self.t.int[6,self.clash_ind] == 0).all())
 
    def test_pos(self):
       # First three real columns are positions, relative to atom #1 in cluster
@@ -464,10 +505,11 @@ class TestCluster_TerminationClash(QuippyTestCase):
       self.assertArrayAlmostEqual(self.t.real[1:3,1:self.embed.n], self.at.pos[self.embed.int[1,1:self.embed.n]])
 
    def test_pos_clash(self):
-      self.assertArrayAlmostEqual(self.t.real[1:3,self.embed.n+1], self.at.pos[self.clash_atom])
+      self.assertArrayAlmostEqual(self.t.real[1:3,self.clash_ind], self.at.pos[self.clash_atom])
 
    def test_rescale(self):
-      self.assertAlmostEqual(abs(self.t.real[4,1:self.embed.n+1] - 1.0).max(), 0.0)
+      self.assertAlmostEqual(abs(self.t.real[4,1:self.embed.n] - 1.0).max(), 0.0)
+      self.assertAlmostEqual(abs(self.t.real[4,self.clash_ind] - 1.0).max(), 0.0)
 
 
 class TestCluster_Rescale(QuippyTestCase):
@@ -568,7 +610,8 @@ class TestCluster_SplitQM(QuippyTestCase):
    def setUp(self):
       self.dia = diamond(5.44, 14)
       self.at = supercell(self.dia, 3, 3, 3)
-      self.at.set_cutoff(5.0)
+      # self.at.set_cutoff(5.0)
+      self.at.set_cutoff(2.5)
       self.at.calc_connect()
       
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
