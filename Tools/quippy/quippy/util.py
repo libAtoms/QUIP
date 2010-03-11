@@ -25,6 +25,10 @@ def parse_comma_colon_list(L):
 
    return [k.lower() for k in L]
 
+def loadstring(s): 
+   import StringIO
+   from numpy import loadtxt
+   return loadtxt(StringIO.StringIO(s.replace('[','').replace(']','')))
 
 try:
    from pylab import plot
