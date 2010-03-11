@@ -21,6 +21,7 @@ private
     logical :: annealing, zero_momentum, zero_angular_momentum
     logical :: calc_dipole_moment, quiet_calc, do_timing
     integer :: advance_md_substeps
+    logical :: v_dep_quants_extra_calc
   end type md_params
 
 public :: get_params, print_params, print_usage, do_prints, initialise_md_thermostat, update_thermostat
@@ -75,6 +76,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
+  call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc)
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -501,6 +503,8 @@ contains
     real(dp), intent(inout) :: forces(:,:), virial(3,3)
     real(dp), intent(inout) :: E
 
+    ! start with have p(t), v(t), a(t)
+
     ! first Verlet half-step
     call system_timer("md/advance_verlet1")
     if(params%const_P) then
@@ -541,6 +545,20 @@ contains
        call advance_verlet2(ds, params%dt, forces)
     endif
     call system_timer("md/advance_verlet2")
+
+    ! now we have p(t+dt), v(t+dt), a(t+dt)
+
+    ! call calc again if needed for v dep. forces
+    if (params%v_dep_quants_extra_calc) then
+      if (params%quiet_calc) call verbosity_push_decrement()
+      if (params%calc_virial) then
+	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      else
+	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+      endif
+      if (params%quiet_calc) call verbosity_pop()
+    end if
+    call system_timer("md/calc")
 
   end subroutine advance_md_one
 
