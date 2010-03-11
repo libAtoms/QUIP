@@ -664,9 +664,9 @@ class TestCluster_Surface_Dia(QuippyTestCase):
       self.t = create_cluster_info_from_hybrid_mark(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T")
       self.cluster4 = carve_cluster(self.at, "cluster_periodic_x=T cluster_periodic_y=T cluster_periodic_z=T terminate=T", cluster_info=self.t)
 
-      self.at.print_xyz("tmp_at.xyz", all_properties=True)
-      self.cluster3.print_xyz("tmp_cluster3.xyz", all_properties=True)
-      self.cluster4.print_xyz("tmp_cluster4.xyz", all_properties=True)
+      #self.at.print_xyz("tmp_at.xyz", all_properties=True)
+      #self.cluster3.print_xyz("tmp_cluster3.xyz", all_properties=True)
+      #self.cluster4.print_xyz("tmp_cluster4.xyz", all_properties=True)
 
    def test_surface_3_hops(self):
       self.assertEqual(self.cluster3.n,53)
