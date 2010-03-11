@@ -1796,7 +1796,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int
 
@@ -1832,7 +1832,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int_a
 
@@ -1868,7 +1868,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real
 
@@ -1904,7 +1904,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real_a
 
@@ -1940,7 +1940,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str
 
@@ -1976,7 +1976,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str_a
 
@@ -2012,7 +2012,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical
 
@@ -2048,7 +2048,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical_a
 
