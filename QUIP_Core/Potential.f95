@@ -451,13 +451,20 @@ contains
 	  call finalise(cluster_info)
           allocate(f_cluster(3,cluster%N))
 
+          ! Reassign pointers - create_cluster_info_from_hybrid_mark() might have broken them
+          if (has_property(at, 'hybrid_mark')) &
+               dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
+          if (has_property(at, 'weight_region1')) &
+               dummy = assign_pointer(at, 'weight_region1', weight_region1)
+
 	  if (current_verbosity() >= NERD) then
 	    prefix_save = mainlog%prefix
 	    mainlog%prefix="LITTLE_CLUSTER_"//i
 	    call print_xyz(cluster, mainlog, all_properties=.true.)
 	    mainlog%prefix=prefix_save
 	  endif
-call print('ARGS0 | '//new_args_str,VERBOSE)
+          call print('ARGS0 | '//new_args_str,VERBOSE)
+
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)
@@ -521,9 +528,14 @@ call print('ARGS0 | '//new_args_str,VERBOSE)
 	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
 	      call system_abort('potential_calc: cluster is missing termindex property')
 	 allocate(f_cluster(3,cluster%N))
-call print('ARGS1 | '//new_args_str,VERBOSE)
+         call print('ARGS1 | '//new_args_str,VERBOSE)
+
 	 call calc(this, cluster, f=f_cluster, args_str=new_args_str)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
+
+         ! Reassign pointers - create_cluster_info_from_hybrid_mark() might have broken them
+         if (has_property(at, 'hybrid_mark')) &
+              dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
 
 	 ! copy forces for all active and transition atoms
 	 f = 0.0_dp
@@ -990,6 +1002,69 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
     call set_callback(this%callbackpot, callback)
 
   end subroutine potential_set_callback
+
+  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str)
+    type atoms_ptr_type
+       type(atoms), pointer :: p
+    end type atoms_ptr_type
+    type(DynamicalSystem), intent(inout), target :: this
+    type(Potential), intent(inout) :: pot
+    real(dp), intent(in) :: dt
+    integer, intent(in) :: n_steps
+    integer, intent(in), optional :: hook_interval, write_interval, connect_interval
+    type(CInOutput), intent(inout), optional :: trajectory
+    character(len=*), intent(in), optional :: args_str
+    interface
+       subroutine hook()
+       end subroutine hook
+    end interface    
+    
+    integer :: n, my_hook_interval, my_write_interval, my_connect_interval
+    real(dp) :: e
+    real(dp), pointer, dimension(:,:) :: f
+    character(len=1024) :: my_args_str
+    type(Dictionary) :: params
+
+    my_hook_interval = optional_default(1, hook_interval)
+    my_write_interval = optional_default(1, write_interval)
+    my_connect_interval = optional_default(1, connect_interval)
+    my_args_str = optional_default("", args_str)
+    call initialise(params)
+    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='dynamicalsystem_run') ) &
+         call system_abort("dynamicalsystem_run failed to parse args_str='"//trim(my_args_str)//"'")
+    call set_value(params, 'calc_energy', .true.)
+    call set_value(params, 'calc_force', .true.)
+    my_args_str = write_string(params)
+    call finalise(params)
+
+    call calc_connect(this%atoms)
+    call calc(pot, this%atoms, args_str=my_args_str)
+    call set_value(this%atoms%params, 'time', this%t)
+    if (.not. get_value(this%atoms%params, 'energy', e)) &
+         call system_abort("dynamicalsystem_run failed to get energy")
+    if (.not. assign_pointer(this%atoms, 'force', f)) &
+         call system_abort("dynamicalsystem_run failed to get forces")
+    call ds_print_status(this, epot=e)
+    call hook()
+    if (present(trajectory)) call write(trajectory, this%atoms)
+
+    do n=1,n_steps
+       call advance_verlet1(this, dt, f)
+       call calc(pot, this%atoms, args_str=my_args_str)
+       call advance_verlet2(this, dt, f)
+       if (.not. get_value(this%atoms%params, 'energy', e)) &
+            call system_abort("dynamicalsystem_run failed to get energy")
+       if (.not. assign_pointer(this%atoms, 'force', f)) &
+            call system_abort("dynamicalsystem_run failed to get forces")
+       call ds_print_status(this, epot=e)
+       call set_value(this%atoms%params, 'time', this%t)
+
+       if (mod(n,my_hook_interval) == 0) call hook()
+       if (present(trajectory) .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
+       if (mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+    end do
+
+  end subroutine DynamicalSystem_run
 
 
 end module Potential_module
