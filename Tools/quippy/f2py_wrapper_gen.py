@@ -1,7 +1,7 @@
 from f90doc import *
 import numpy
 
-def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix=''):
+def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix='', callback_routines={}):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
    spec = {}
    def strip_type(t):
@@ -27,9 +27,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           types = [x.type for x in sub.arguments]
           attrs = [x.attributes for x in sub.arguments]
       except AttributeError:
-         if sub.name.lower().startswith('potential_set_callback'): return True
-         print 'filtering callback rountine %s' % sub.name
-         return False
+         return sub.name.lower() in callback_routines.keys()
 
       return True
 
@@ -191,12 +189,11 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           append_argline = True
 
           if not hasattr(arg, 'attributes') and not hasattr(arg, 'type'):
-              arglines.append('external %s' % arg.name)
-              arglines.append('logical :: calc_energy, calc_local_e, calc_force, calc_virial')
-              thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': 'callback', 'attributes': []})
-              arg_spec = 'qp_this, calc_energy, calc_local_e, calc_force, calc_virial'
-              callbacklines.extend(['if (.false.) then','call %s(%s)' % (arg.name, arg_spec),'end if'])
-              continue
+             callback_spec = callback_routines[sub.name.lower()]
+             arglines.extend(callback_spec['arglines'])
+             thisdoc.append({'doc': '\n'.join(arg.doc), 'name':arg.name, 'type': 'callback', 'attributes': callback_spec['attributes']})
+             callbacklines.extend(['if (.false.) then','call %s(%s)' % (arg.name, callback_spec['call']),'end if'])
+             continue
 
           attributes = arg.attributes
           mytype = arg.type
