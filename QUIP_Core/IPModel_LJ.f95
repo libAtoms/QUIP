@@ -217,7 +217,8 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str)
 	  if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
 	endif
 	if (do_flux) then
-	  flux = flux + 0.5_dp*(velo(:,i)+velo(:,j))*(de_dr*dr)*dr
+	  ! -0.5 (v_i + v_j) . F_ij * dr_ij
+	  flux = flux - 0.5_dp*sum((velo(:,i)+velo(:,j))*(de_dr*dr))*(dr*dr_mag)
 	endif
 	if (present(virial)) then
 	  if(i_is_min_image) then
@@ -235,6 +236,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str)
   if (present(virial)) call sum_in_place(this%mpi, virial)
   if (present(f)) call sum_in_place(this%mpi, f)
   if (do_flux) then
+    flux = flux / cell_volume(at)
     call sum_in_place(this%mpi, flux)
     call set_value(at%params, "Flux", flux)
   endif
