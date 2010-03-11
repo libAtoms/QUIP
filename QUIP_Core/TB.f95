@@ -361,10 +361,16 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   if (this%tbsys%scf%active) then
     if (my_use_prev_charge) then
 
-      if (assign_pointer(this%at, 'local_N', local_N)) &
+      if (assign_pointer(this%at, 'local_N', local_N)) then
 	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_N", VERBOSE)
-      if (assign_pointer(this%at, 'local_mom', local_mom)) &
+      else
+	call print("TB_solve_diag got use_prev_charge, but no local_N value is defined", ERROR)
+      endif
+      if (assign_pointer(this%at, 'local_mom', local_mom)) then
 	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_mom", VERBOSE)
+      else
+	call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", ERROR)
+      endif
       call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom)
 
       if (get_value(this%at%params, 'global_N', global_N)) then
