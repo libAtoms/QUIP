@@ -95,6 +95,8 @@ def parse_makefile(fn, g=None):
    # save the results in the global dictionary
    g.update(done)
    return g
+
+
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
     if 'QUIP_ROOT' in os.environ:
@@ -149,7 +151,8 @@ def SourceImporter(infile, defines, include_dirs, cpp):
     return func
 
 
-def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, filtertypes=None, prefix=''):
+def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, 
+                      filtertypes=None, prefix='',callback_routines={}):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
     give access to methods and instance data."""
@@ -199,7 +202,7 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
 
             tmpf = StringIO.StringIO()
             new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines, initlines=initlines,
-                                                 filtertypes=filtertypes, prefix=prefix)
+                                                 filtertypes=filtertypes, prefix=prefix, callback_routines=callback_routines)
 
             if not os.path.exists(wrapper) or (new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
                 print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
@@ -483,7 +486,14 @@ quippy_ext = Extension(name='quippy._quippy',
                                                    initlines={'atoms': ('atoms_module', ('call atoms_repoint(%(PTR)s)',
                                                                                          'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))},
                                                    filtertypes=wrap_types,
-                                                   prefix='qp_')
+                                                   prefix='qp_',
+                                                   callback_routines={'potential_set_callback':{'arglines': ['external :: qp_callback', 
+                                                                                                             'logical :: calc_energy, calc_local_e, calc_force, calc_virial'],
+                                                                                                'attributes':[],
+                                                                                                'call':'qp_this, calc_energy, calc_local_e, calc_force, calc_virial'},
+                                                                      'dynamicalsystem_run':{'arglines' : ['external :: qp_hook'],
+                                                                                             'attributes': [],
+                                                                                             'call':'qp_this'}})
                                  ],
                        library_dirs=library_dirs,
                        include_dirs=include_dirs,
