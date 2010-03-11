@@ -608,25 +608,19 @@ class Table(FortranTable):
 
 
 class DynamicalSystem(FortranDynamicalSystem):
-   
-   def run(self, pot, dt=1.0, n_steps=10, save_interval=1, connect_interval=10, args_str="",
-           out=None, write_interval=10):
-      self.atoms.calc_connect()
-      pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
-      for n in range(n_steps):
-         self.advance_verlet1(dt, self.atoms.force)
-         pot.calc(self.atoms, args_str=args_str, calc_force=True, calc_energy=True)
-         self.advance_verlet2(dt, self.atoms.force)
-         self.print_status(epot=self.atoms.energy)
-         self.atoms.params['time'] = self.t
-         if connect_interval is not None and n % connect_interval == 0:
-            self.atoms.calc_connect()
-         if out is not None and n % write_interval == 0:
-            out.write(self.atoms)
-         if save_interval is not None and n % save_interval == 0:
-            yield self.atoms.copy()
-      raise StopIteration
 
+   def run(self, pot, dt, n_steps, hook_interval=None, write_interval=None, connect_interval=None, trajectory=None, args_str=None, hook=None,
+           save_interval=None):
+      if hook is None:
+         if hook_interval is not None:
+            raise ValueError('hook_interval not permitted when hook is not present. save_interval is used instead')
+         traj = []
+         FortranDynamicalSystem.run(self, pot, dt, n_steps, hook_interval=save_interval, write_interval=write_interval, 
+                                    connect_interval=connect_interval, trajectory=trajectory, args_str=args_str, hook=lambda:traj.append(self.atoms.copy()))
+         return traj
+      else:
+         FortranDynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval, write_interval, 
+                                    connect_interval, trajectory, args_str)
 
 from quippy import INPUT, OUTPUT, INOUT
 
