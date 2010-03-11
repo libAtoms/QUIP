@@ -101,11 +101,11 @@ def type_is_compatible(spec, arg):
 def process_in_args(args, kwargs, inargs, prefix):
    newargs = []
    for arg, spec in zip(args,inargs):
-      if spec['type'].startswith('type'):
+      if arg is not None and spec['type'].startswith('type'):
          if isinstance(arg, FortranDerivedTypes[spec['type'].lower()]):
             newargs.append(arg._fpointer)
          else:
-            raise TypeError('Argument %s should be of type %s' % (arg, spec['type']))
+             raise TypeError('Argument %s should be of type %s' % (arg, spec['type']))
       else:
          newargs.append(arg)
 
@@ -126,7 +126,7 @@ def process_in_args(args, kwargs, inargs, prefix):
          elif a is None:
              continue
          else:
-            raise TypeError('Argument %s=%s should be of type %s' % (k,a,type_lookup[k]))
+             raise TypeError('Argument %s=%s should be of type %s' % (k,a,type_lookup[k]))
       else:
           if a is None: continue
           newkwargs[k] = a
@@ -273,7 +273,15 @@ class FortranDerivedType(object):
            args = tuple([self] + list(args))
        newargs, newkwargs = process_in_args(args, kwargs, inargs, self._prefix)
        
-       res = fobj(*newargs, **newkwargs)
+       try:
+           res = fobj(*newargs, **newkwargs)
+       except:
+           if logging.root.getEffectiveLevel() <= logging.DEBUG:
+               logging.debug('args', args)
+               logging.debug('newargs', newargs)
+               logging.debug('kwargs', kwargs)
+               logging.debug('newkwargs', newkwargs)
+           raise
 
        if not name.startswith('__init__'):
            newres = process_results(res, args, kwargs, inargs, outargs, self._prefix)
@@ -726,7 +734,16 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
    def func(*args, **kwargs):
       newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
 
-      res = fobj(*newargs, **newkwargs)
+      try:
+          res = fobj(*newargs, **newkwargs)
+      except:
+          if logging.root.getEffectiveLevel() <= logging.DEBUG:
+              logging.debug('args', args)
+              logging.debug('newargs', newargs)
+              logging.debug('kwargs', kwargs)
+              logging.debug('newkwargs', newkwargs)
+          raise
+
       newres = process_results(res, args, kwargs, inargs, outargs, prefix)
       
       return newres
