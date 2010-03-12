@@ -5239,7 +5239,7 @@ contains
       end if
 
       ! Backward compatibility - prepend species tag if it's missing
-      if (prop_names(1:7) == 'pos:R:3') prop_names = 'species:S:1:'//prop_names
+      if (prop_names(1:7) == 'pos:R:3' .and. index(trim(prop_names),"species:S:1") <= 0) prop_names = 'species:S:1:'//trim(prop_names)
 
       if (present(comment)) then
          ! Remove Lattice="..." and Properties=... from comment line
@@ -5303,6 +5303,7 @@ contains
               call system_abort('Atoms_read_xyz: key '//fields(i)//' not found')
          call append(props, lookup)
       end do
+call print("Z_found " // Z_found // " species_found " // species_found, ERROR)
 
       ! Remove trailing ':'
       if (present(properties)) properties = trim(properties(1:len(properties)-1))
@@ -5343,6 +5344,20 @@ contains
          end do
       end do
 
+      ! Set species from Z if we didn't read a species property from file
+      if (.not. species_found) then
+         call print('Atoms_read_xyz: Setting species from Z', VERBOSE)
+         if (.not. Z_found) then
+           call system_abort("Neither Z nor species found")
+         endif
+         do i=1,this%N
+	    if (this%Z(i) >= 1 .and. this%Z(i) <= size(ElementName)) then
+	      this%species(i) = ElementName(this%Z(i))
+	    else
+	      this%species(i) = "" // this%Z(i)
+	    endif
+         end do
+      endif
       ! Set Z from species if we didn't read a Z property from file
       if (.not. Z_found) then
          call print('Atoms_read_xyz: Setting Z from species', VERBOSE)

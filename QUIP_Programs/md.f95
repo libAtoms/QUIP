@@ -16,10 +16,11 @@ private
     logical :: calc_virial, const_T, const_P
     character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
+    character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
     logical :: damping, rescale_velocity 
     logical :: annealing, zero_momentum, zero_angular_momentum
-    logical :: calc_dipole_moment, quiet_calc, do_timing
+    logical :: quiet_calc, do_timing
     integer :: advance_md_substeps
     logical :: v_dep_quants_extra_calc
   end type md_params
@@ -35,13 +36,10 @@ subroutine get_params(params, mpi_glob)
   type(Dictionary) :: md_params_dict
   type(Extendable_Str) :: es
   logical :: md_params_exist
+  character(len=FIELD_LENGTH) :: print_property_list_str
+  integer :: n_print_property_list
 
   call initialise(md_params_dict)
-  params%atoms_in_file=''
-  params%trajectory_out_file=''
-  params%params_in_file=''
-  params%metapot_init_args=''
-  params%metapot_calc_args=''
   call param_register(md_params_dict, 'atoms_in_file', 'stdin', params%atoms_in_file)
   call param_register(md_params_dict, 'trajectory_out_file', 'traj.xyz', params%trajectory_out_file)
   call param_register(md_params_dict, 'params_in_file', 'quip_params.xml', params%params_in_file)
@@ -68,11 +66,11 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval)
   call param_register(md_params_dict, 'at_print_interval', '100', params%at_print_interval)
+  call param_register(md_params_dict, 'print_property_list', '', print_property_list_str)
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval)
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum)
   call param_register(md_params_dict, 'zero_angular_momentum', 'F', params%zero_angular_momentum)
   call param_register(md_params_dict, 'metapot_calc_args', '', params%metapot_calc_args)
-  call param_register(md_params_dict, 'dipole_moment', 'F', params%calc_dipole_moment)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
@@ -106,12 +104,24 @@ subroutine get_params(params, mpi_glob)
     if (params%langevin_tau <= 0.0_dp) call system_abort("get_params got const_T, but langevin_tau " // params%langevin_tau // " <= 0.0")
   endif
 
+  if (len_trim(print_property_list_str) > 0) then
+    allocate(params%print_property_list(500))
+    call split_string_simple(trim(print_property_list_str), params%print_property_list, n_print_property_list, ':')
+    deallocate(params%print_property_list)
+    allocate(params%print_property_list(n_print_property_list))
+    call split_string_simple(trim(print_property_list_str), params%print_property_list, n_print_property_list, ':')
+  else
+    if (allocated(params%print_property_list)) deallocate(params%print_property_list)
+  endif
+
   params%T = params%T_initial
 
 end subroutine get_params
 
 subroutine print_params(params)
   type(md_params), intent(in) :: params
+
+  integer :: i
 
   call print("md_params%metapot_init_args='" // trim(params%metapot_init_args) // "'")
   call print("md_params%metapot_calc_args='" // trim(params%metapot_calc_args) // "'")
@@ -146,13 +156,23 @@ subroutine print_params(params)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%params_print_interval=" // params%params_print_interval)
   call print("md_params%at_print_interval=" // params%at_print_interval)
+  call print("md_params%print_property_list=", nocr=.true.)
+  if (allocated(params%print_property_list)) then
+    if (size(params%print_property_list) > 0) then
+      call print(trim(params%print_property_list(1)), nocr=.true.)
+      do i=2, size(params%print_property_list)
+	call print(":"//trim(params%print_property_list(i)), nocr=.true.)
+      end do
+    endif
+  endif
+  call print("", nocr=.false.)
   call print("md_params%pot_print_interval=" // params%pot_print_interval)
   call print("md_params%zero_momentum=" // params%zero_momentum)
   call print("md_params%zero_angular_momentum=" // params%zero_angular_momentum)
-  call print("md_params%calc_dipole_moment=" // params%calc_dipole_moment)
   call print("md_params%quiet_calc=" // params%quiet_calc)
   call print("md_params%do_timing=" // params%do_timing)
   call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
+  call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
 end subroutine print_params
 
 subroutine print_usage()
@@ -163,9 +183,10 @@ subroutine print_usage()
   call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', ERROR)
   call Print('  [N_steps=n(1)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', ERROR)
   call Print('  [calc_virial=logical(F)]', ERROR)
-  call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [at_print_interval=n(100)] [pot_print_interval=n(-1)]', ERROR)
-  call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)] [dipole_moment=T/F(F)]', ERROR)
-  call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)', ERROR)
+  call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [at_print_interval=n(100)]', ERROR)
+  call Print('  [print_property_list=prop1:prop2:...()] [pot_print_interval=n(-1)]', ERROR)
+  call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)]', ERROR)
+  call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', ERROR)
 end subroutine print_usage
 
 subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_intervals)
@@ -192,7 +213,7 @@ subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_interval
   endif
   if (params%at_print_interval > 0) then
       if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
-	call print_at(params, ds, e, metapot, traj_out, real_format='f18.10')
+	call print_at(params, ds, e, metapot, traj_out)
   endif
 end subroutine
 
@@ -228,16 +249,19 @@ subroutine print_pot(params, metapot)
   mainlog%prefix=""
 end subroutine print_pot
 
-subroutine print_at(params, ds, e, metapot, out, real_format)
+subroutine print_at(params, ds, e, metapot, out)
   type(md_params), intent(in) :: params
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
-  type(metapotential), intent(in) :: metapot
-  type(Cinoutput), intent(inout) :: out
-  character(len=*), intent(in), optional :: real_format
+  type(MetaPotential), intent(in) :: metapot
+  type(CInOutput), intent(inout) :: out
 
-  call write(out, ds%atoms)
-  !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format=real_format)
+  if (allocated(params%print_property_list)) then
+    call write(out, ds%atoms, properties=params%print_property_list, real_format='%18.10f')
+  else
+    call write(out, ds%atoms, real_format='%18.10f')
+  endif
+  !call print_xyz(ds%atoms, out, all_properties=.true., comment="t="//ds%t//" e="//(kinetic_energy(ds)+e), real_format='f18.10')
 end subroutine print_at
 
 subroutine initialise_md_thermostat(ds, params, do_rescale)
@@ -329,9 +353,9 @@ implicit none
   type(DynamicalSystem) :: ds
 
   real(dp) :: E, virial(3,3)
-  real(dp), pointer :: forces(:,:)
+  real(dp), allocatable :: forces(:,:)
+  real(dp), pointer :: forces_p(:,:)
   real(dp) :: cutoff_buffer, max_moved, last_state_change_time
-  real(dp), pointer :: local_dn(:)
   real(dp) :: mu(3)
   real(dp) :: toll_time = 0.001_dp
 
@@ -370,17 +394,7 @@ implicit none
 
   ! add properties
   call add_property(ds%atoms, 'forces', 0.0_dp, n_cols=3)
-  if (params%calc_dipole_moment) then
-    call add_property(ds%atoms, 'local_dn', 0.0_dp, 1)
-  endif
-
-  ! make pointers to properties
-  if (.not. assign_pointer(ds%atoms, 'forces', forces)) &
-    call system_abort('Impossible failure to assign_ptr for forces')
-  if (params%calc_dipole_moment) then
-    if (.not. assign_pointer(ds%atoms, 'local_dn', local_dn)) &
-      call system_abort('failure to assign pointer for local_dn')
-  endif
+  allocate(forces(3,ds%atoms%N))
 
   cutoff_buffer=params%cutoff_buffer
   call set_cutoff(ds%atoms, cutoff(metapot)+cutoff_buffer)
@@ -396,10 +410,14 @@ implicit none
   endif
   if (params%quiet_calc) call verbosity_pop()
   call set_value(ds%atoms%params, 'time', ds%t)
-  call do_prints(params, ds, e, metapot, traj_out, 0, override_intervals = .true.)
 
   ! calculate a(t) from f(t)
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = forces(:,i) / ElementMass(ds%atoms%Z(i))
+
+  if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
+    call system_abort('Impossible failure to assign_ptr for forces')
+  forces_p = forces
+  call do_prints(params, ds, e, metapot, traj_out, 0, override_intervals = .true.)
 
   call calc_connect(ds%atoms)
   max_moved = 0.0_dp
@@ -424,13 +442,11 @@ implicit none
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
-    if (params%calc_dipole_moment) then
-      mu = dipole_moment(ds%atoms%pos, local_dn)
-      call set_value(ds%atoms%params, 'Dipole_Moment', mu)
-    endif
-
     call system_timer("md/print")
     call set_value(ds%atoms%params, 'time', ds%t)
+    if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
+      call system_abort('Impossible failure to assign_ptr for forces')
+    forces_p = forces
     call do_prints(params, ds, e, metapot, traj_out, i_step)
 
     call system_timer("md/print")
@@ -492,9 +508,7 @@ contains
     else
       call advance_md_one(ds, params, metapot, forces, virial, E)
     endif
-
   end subroutine advance_md
-
 
   subroutine advance_md_one(ds, params, metapot, forces, virial, E)
     type(DynamicalSystem), intent(inout) :: ds

@@ -165,7 +165,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str)
 	      do_flux = .true.
 	      flux = 0.0_dp
 	    case default
-	      call system_abort("Unsopported extra_calc '"//trim(extra_calcs_list(i_calc))//"'")
+	      call system_abort("Unsupported extra_calc '"//trim(extra_calcs_list(i_calc))//"'")
 	  end select
 	end do
       endif ! n_extra_calcs
@@ -485,37 +485,6 @@ subroutine IPModel_LJ_Print (this, file)
 
 end subroutine IPModel_LJ_Print
 
-
-subroutine split_string_simple(str, fields, n_fields, separators)
-  character(len=*), intent(in) :: str
-  character(len=*), intent(out) :: fields(:)
-  integer, intent(out) :: n_fields
-  character(len=*), intent(in) :: separators
-
-  integer :: str_len, cur_pos, next_pos, cur_field
-
-
-  str_len = len_trim(str)
-  cur_pos = 0
-  cur_field = 1
-  do while (cur_pos <= str_len)
-    if (cur_field > size(fields)) &
-      call system_abort("split_string_simple no room for fields")
-    next_pos = scan(str(cur_pos+1:str_len),separators)
-    if (next_pos > 0) then
-      fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-1)
-      cur_pos = cur_pos + next_pos
-      cur_field = cur_field + 1
-    else
-      fields(cur_field) = str(cur_pos+1:str_len)
-      cur_field = cur_field + 1
-      cur_pos = str_len+1 ! exit loop
-    endif
-  end do
-  n_fields = cur_field - 1
-
-end subroutine split_string_simple
-
 function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=*), intent(in) :: args_str
   character(len=*), intent(out) :: extra_calcs_list(:)
@@ -524,6 +493,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
   character(len=FIELD_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
 
+  n_extra_calcs = 0
   call initialise(params)
   call param_register(params, "extra_calcs", "", extra_calcs_str)
   if (param_read_line(params, args_str, ignore_unknown=.true.,task='parse_extra_calcs')) then
