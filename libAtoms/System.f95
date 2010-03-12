@@ -1038,14 +1038,20 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine inoutput_print_string(string, verbosity, file)
+  subroutine inoutput_print_string(string, verbosity, file, nocr)
     character(*),             intent(in) :: string
     integer,  optional,       intent(in) :: verbosity
     type(Inoutput), optional, target, intent(in) :: file
-
+    logical, optional, intent(in) :: nocr
 
     type(Inoutput), pointer :: myoutput
     integer :: myverbosity
+    character(len=2) :: nocr_fmt
+
+    nocr_fmt = ''
+    if (present(nocr)) then
+      if (nocr) nocr_fmt = ',$'
+    endif
 
     ! check inoutput object
     myoutput => mainlog
@@ -1072,16 +1078,16 @@ contains
     if (inoutput_do_output(myoutput)) then
       if (len_trim(myoutput%prefix) == 0) then
 	if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
-	  write(myoutput%unit,'(i0,": ",a)') mpi_id(), trim(string)//trim(myoutput%postfix)
+	  write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(string)//trim(myoutput%postfix)
 	else
-	  write(myoutput%unit,'(a)') trim(string)//trim(myoutput%postfix)
+	  write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(string)//trim(myoutput%postfix)
 	endif
       else
 	if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
-	  write(myoutput%unit,'(i0,": ",a)') mpi_id(), trim(myoutput%prefix)//" "//trim(string) &
+	  write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(myoutput%prefix)//" "//trim(string) &
 	    // " " // trim(myoutput%postfix)
 	else
-	  write(myoutput%unit,'(a)') trim(myoutput%prefix)//" "//trim(string)// " "  // trim(myoutput%postfix)
+	  write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(myoutput%prefix)//" "//trim(string)// " "  // trim(myoutput%postfix)
 	endif
       endif
     endif
@@ -1325,6 +1331,36 @@ contains
       num_fields,status=status)
   end subroutine inoutput_parse_line
 
+  !% split a string into fields separated by possible separators
+  !% no quoting, matching separators, just a simple split
+  subroutine split_string_simple(str, fields, n_fields, separators)
+    character(len=*), intent(in) :: str !% string to be split
+    character(len=*), intent(out) :: fields(:) !% on return, array of fields
+    integer, intent(out) :: n_fields !% on return, number of fields
+    character(len=*), intent(in) :: separators !% string of possible separators
+
+    integer :: str_len, cur_pos, next_pos, cur_field
+
+    str_len = len_trim(str)
+    cur_pos = 0
+    cur_field = 1
+    do while (cur_pos <= str_len)
+      if (cur_field > size(fields)) &
+	call system_abort("split_string_simple no room for fields")
+      next_pos = scan(str(cur_pos+1:str_len),separators)
+      if (next_pos > 0) then
+	fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-2)
+	cur_pos = cur_pos + next_pos
+	cur_field = cur_field + 1
+      else
+	fields(cur_field) = str(cur_pos+1:str_len)
+	cur_field = cur_field + 1
+	cur_pos = str_len+1 ! exit loop
+      endif
+    end do
+    n_fields = cur_field - 1
+
+  end subroutine split_string_simple
 
 
   !% split a string at separators, making sure not to break up bits that
@@ -1492,6 +1528,7 @@ contains
 ! call print("returning c='"//c//"' and dist "//dist)
   end function next_non_separator
 
+  !% outdated - please use split_string
   !% Parse a string into fields delimited by certain characters. On exit
   !% the 'fields' array will contain one field per entry and 'num_fields'
   !% gives the total number of fields. 'status' will be given the error status
