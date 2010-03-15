@@ -99,15 +99,20 @@
       colouring, initial frame and vector arrows respectively.
 
 
-   .. method:: write(dest[, format, progress, progress_width, update_interval, show_value, *args, **kwargs])
+   .. method:: write(dest[, format, properties, progress, progress_width, update_interval, show_value, *args, **kwargs])
 
       Write all frames in this AtomsList to `dest`. If `format` is not
       given it is inferred from the file extension of `dest` (see
-      :ref:`fileformats`). `progress`, `progress_width`, `update_interval` and
+      :ref:`fileformats`). If `properties` is present, it should be a list
+      of property names to include in the output file, e.g. `['species', 'pos']`.
+      
+      `progress`, `progress_width`, `update_interval` and
       `show_value` are used to control a textual progress bar, as described
       in :meth:`loadall`. The extra arguments in `*args` and `**kwargs`
       are passed along to the underlying writer routine constructed
       for writing to `dest`.
+
+      See :ref:`fileformats` for a list of supported file formats.
 
 Utility functions
 -----------------

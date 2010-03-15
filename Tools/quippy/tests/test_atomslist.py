@@ -118,7 +118,6 @@ class TestAtomsList(QuippyTestCase):
       self.assertEqual(list(reversed(L1)), L2)
 
    def testwrite(self):
-
       class testwriter(object):
          def write(self, at):
             return at.n
@@ -128,6 +127,20 @@ class TestAtomsList(QuippyTestCase):
 
       g = testwriter()
       self.assertEqual(self.genal.write(g),  [8, 8, 8, 8, 8])
+
+   def testwriteproperties(self):
+      class testwriter_properties(object):
+         def write(self, at, properties):
+            return properties
+      g = testwriter_properties()
+      self.assertEqual(self.listal.write(g, properties=['pos']), [['pos']]*5)
+
+   def testwriteproperties_exception(self):
+      class testwriter(object):
+         def write(self, at):
+            return at.n
+      g = testwriter()
+      self.assertRaises(ValueError, self.listal.write, g, properties=['pos'])
 
    def testfrom_at(self):
       nl = AtomsList(self.listal[1])

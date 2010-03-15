@@ -187,7 +187,7 @@ class Atoms(FortranAtoms):
       return at
          
 
-   def write(self, dest, format=None, *args, **kwargs):
+   def write(self, dest, format=None, properties=None, *args, **kwargs):
       opened = False
       if format is None:
          if isinstance(dest, str):
@@ -203,7 +203,14 @@ class Atoms(FortranAtoms):
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
 
-      res = dest.write(self)
+      if properties is not None:
+         try:
+            res = dest.write(self, properties=properties)
+         except TypeError:
+            raise ValueError('Atoms.write destination %r does not specifying properties' % dest)
+      else:
+         res = dest.write(self)
+
       if opened and hasattr(dest, 'close'):
          dest.close()
       return res
