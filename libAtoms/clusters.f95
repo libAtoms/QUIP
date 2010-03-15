@@ -129,7 +129,7 @@ contains
 
     if (present(debugfile)) call print("bfs_step", file=debugfile)
     if (present(alt_connect)) then
-      use_connect => alt_connect
+       use_connect => alt_connect
     else
       use_connect => this%connect
     endif
@@ -1691,6 +1691,7 @@ contains
        ! Add other active atoms using bond hopping from the first atom
        ! in the cluster to find the other active atoms and hence to determine the correct 
        ! periodic shifts
+       
        hybrid_number = 1
        do while (hybrid_number .ne. 0)
           if (hysteretic_connect) then
@@ -1707,7 +1708,7 @@ contains
                 call append(activelist, nextlist%int(:,j))
                 weight_region1(jj) = 1.0_dp
 
-                if (distance_ramp) then ! we might neet ACTIVE_MARK center of mass
+                if (distance_ramp) then ! we might need ACTIVE_MARK center of mass
                    if (has_property(at, 'mass')) then
                       mass = at%mass(jj)
                    else
