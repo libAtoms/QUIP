@@ -394,6 +394,10 @@ if makefile_test('HAVE_LARSPOT'):
 if makefile_test('HAVE_CP2K'):
     macros.append(('HAVE_CP2K',None))
 
+# LOTF macro
+if makefile_test('HAVE_LOTF'):
+    macros.append(('HAVE_LOTF',None))
+
 if 'QUIPPY_DEFINES' in makefile:
     for defn in makefile['QUIPPY_DEFINES'].split():
         if defn[:2] == '-D':
