@@ -115,4 +115,23 @@ complex(dp), parameter :: CPLX_ZERO = (0.0_dp,0.0_dp)
 complex(dp), parameter :: CPLX_IMAG = (0.0_dp,1.0_dp)
 complex(dp), parameter :: CPLX_ONE  = (1.0_dp,0.0_dp)
 
+! Make the values of some compiler macros available at runtime
+#ifdef HAVE_LOTF
+integer, parameter :: have_lotf = 1
+#else
+integer, parameter :: have_lotf = 0
+#endif
+
+#ifdef HAVE_CP2K
+integer, parameter :: have_cp2k = 1
+#else
+integer, parameter :: have_cp2k = 0
+#endif
+
+#ifdef HAVE_NETCDF
+integer, parameter :: have_netcdf = 1
+#else
+integer, parameter :: have_netcdf = 0
+#endif
+
 end module units_module
