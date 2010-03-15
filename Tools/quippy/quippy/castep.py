@@ -1,7 +1,7 @@
 import sys, string, os, operator, itertools, logging, glob
 from ordereddict import OrderedDict
 from farray import *
-from quippy import Atoms, Dictionary, HARTREE, BOHR, GPA, atomic_number_from_symbol
+from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.xyz_netcdf import make_lattice, get_lattice_params
 from math import pi
@@ -424,10 +424,10 @@ class CastepParam(OrderedDict):
       for key, value in self.iteritems():
          paramfile.write('%s = %s\n' % (key, value))
 
-
 @atoms_reader('geom', False)
-def CastepGeomReader(source, atoms_ref=None):
-   """Generator to read frames from CASTEP .geom file"""
+@atoms_reader('md', False)
+def CastepGeomMDReader(source, atoms_ref=None):
+   """Generator to read frames from CASTEP .geom and .md files"""
 
    if type(source) == type(''):
       source = open(source, 'r')
@@ -490,6 +490,7 @@ def CastepGeomReader(source, atoms_ref=None):
 
       # Find positions and forces
       poslines   = filter(lambda s: s.endswith('<-- R'), lines)
+      velolines  = filter(lambda s: s.endswith('<-- V'), lines)
       forcelines = filter(lambda s: s.endswith('<-- F'), lines)
 
       if poslines != [] and forcelines != [] and len(poslines) != len(forcelines):
@@ -537,6 +538,14 @@ def CastepGeomReader(source, atoms_ref=None):
          at.set_atoms(at.z) # set at.species property to match at.z
       else:
          at.pos[:] = numpy.dot(at.lattice, at.frac_pos)
+         
+      # Velocities, if this is an MD file, from atomic units
+      if velolines != []:
+         at.add_property('velo', 0.0, n_cols=3)
+         for i, line in fenumerate(velolines):
+            el, num, vx, vy, vz, arrow, label = line.split()
+            num = int(num)
+            at.velo[:,lookup[(el,num)]] = [ float(f)*BOHR/AU_FS for f in (vx, vy, vz) ]
                 
       # And finally the forces, which are in units of hartree/bohr
       if forcelines != []:
@@ -550,6 +559,9 @@ def CastepGeomReader(source, atoms_ref=None):
          at.params['virial'] = -virial*at.cell_volume()
 
       yield at
+
+# Synonyms
+CastepGeomReader = CastepMDReader = CastepGeomMDReader
 
 @atoms_reader('castep', False)
 @atoms_reader('castep_log', False)
