@@ -442,6 +442,10 @@ default_options= {
     'clean':{
     'all': True
     },
+
+    'test':{
+    'verbosity': 2
+    }
 }
 
 if makefile_test('QUIPPY_DEBUG'):
