@@ -193,6 +193,20 @@ if got_cinoutput:
          self.assertRaises(RuntimeError, cio.read, frame=5)
          cio.close()
 
+      def testwrite_single_xyz_properties(self):
+         self.at.write('test.xyz', properties=['species','pos'])
+         at = Atoms('test.xyz')
+         self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+         self.assertArrayAlmostEqual(self.at.pos, at.pos)
+         self.assertEqual(list(self.at.z), list(at.z))
+
+      def testwrite_multi_xyz_properties(self):
+         self.al.write('test.xyz', properties=['species','pos'])
+         al = AtomsList('test.xyz')
+         for at,at_ref in zip(al, self.al):
+            self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+            self.assertArrayAlmostEqual(at.pos, at_ref.pos)
+            self.assertEqual(list(at.z), list(at_ref.z))
 
       
 try:
@@ -278,6 +292,23 @@ class TestPuPyXYZ(QuippyTestCase):
       s = self.al.write('string')
       al = AtomsList(s, format='string')
       self.assertEqual(list(al), list(self.al))
+
+   def testwrite_single_xyz_properties(self):
+      self.at.write('test.xyz', properties=['species','pos'], format='pupyxyz')
+      at = Atoms('test.xyz', format='pupyxyz')
+      self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+      self.assertArrayAlmostEqual(self.at.pos, at.pos)
+      self.assertEqual(list(self.at.z), list(at.z))
+
+   def testwrite_multi_xyz_properties(self):
+      self.al.write('test.xyz', properties=['species','pos'], format='pupyxyz')
+      al = AtomsList('test.xyz', format='pupyxyz')
+      for at,at_ref in zip(al, self.al):
+         self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+         self.assertArrayAlmostEqual(at.pos, at_ref.pos)
+         self.assertEqual(list(at.z), list(at_ref.z))
+
+
 
 if __name__ == '__main__':
    unittest.main()

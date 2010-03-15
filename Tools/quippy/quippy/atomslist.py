@@ -249,7 +249,7 @@ class AtomsList(object):
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
-   def write(self, dest, format=None, progress=False, progress_width=80, update_interval=None,
+   def write(self, dest, format=None, properties=None, progress=False, progress_width=80, update_interval=None,
              show_value=True, *args, **kwargs):
       opened = False
       if format is None:
@@ -276,7 +276,13 @@ class AtomsList(object):
 
       res = []
       for i, a in fenumerate(self.iteratoms()):
-         res.append(dest.write(a))
+         if properties is not None:
+            try:
+               res.append(dest.write(a, properties=properties))
+            except TypeError:
+               raise ValueError('AtomsList.write destination does not support specifying properties')
+         else:
+            res.append(dest.write(a))
          if progress and i % update_interval == 0:
             if self._randomaccess:
                pb(i)
@@ -290,7 +296,8 @@ class AtomsList(object):
       if format == 'string':
          return res[-1]
       else:
-         return res
+         if res is not None and not all(el is None for el in res):
+            return res
 
    def __getattr__(self, name):
 

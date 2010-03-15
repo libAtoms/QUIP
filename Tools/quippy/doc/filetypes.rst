@@ -29,11 +29,16 @@ The quippy native formats are `extended XYZ
    +----------------+-----------------------+
    | ``geom``       | CASTEP geom file      |
    +----------------+-----------------------+
+   | ``md``         | CASTEP MD file        |
+   +----------------+-----------------------+
    | ``nc``         | NetCDF  file          |
    +----------------+-----------------------+
    | ``pos``        | ASAP coordinate file  |
    +----------------+-----------------------+
    | ``stdin``      | Read from stdin in    |
+   |                | extended XYZ format   |
+   +----------------+-----------------------+
+   ! ``string``     | Read from string in   |
    |                | extended XYZ format   |
    +----------------+-----------------------+
    | ``xyz``        | Extended XYZ format   |
@@ -55,6 +60,9 @@ The quippy native formats are `extended XYZ
    | ``pov``        | POV-ray script        |
    +----------------+-----------------------+
    | ``stdout``     | Write to stdout in    |
+   |                | extended XYZ format   |
+   +----------------+-----------------------+
+   | ``string``     | Write to string in    |
    |                | extended XYZ format   |
    +----------------+-----------------------+
    | ``xyz``        | Extended XYZ format   |

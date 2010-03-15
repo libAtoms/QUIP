@@ -179,12 +179,15 @@
       expected to be an iterator returning :class:`Atoms` objects.
 
 
-   .. method:: write(dest[, format, *args, **kwargs])
+   .. method:: write(dest[, format, properties, *args, **kwargs])
 
       Write this :class:`Atoms` object to `dest`. If `format` is
       absent it is inferred from the file extension or type of `dest`,
-      as described for the :meth:`read` method. See
-      :ref:`fileformats` for a list of supported file formats.
+      as described for the :meth:`read` method.  If `properties` is
+      present, it should be a list of property names to include in the
+      output file, e.g. `['species', 'pos']`.
+
+      See :ref:`fileformats` for a list of supported file formats.
 
    .. method:: show([property, arrows])
 

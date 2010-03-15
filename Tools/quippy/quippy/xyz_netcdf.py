@@ -1,4 +1,4 @@
-from quippy import (atoms_reader, AtomsReaders, AtomsWriters, TABLE_STRING_LENGTH,
+from quippy import (ElementName, atoms_reader, AtomsReaders, AtomsWriters, TABLE_STRING_LENGTH,
                     PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
                     T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                     T_CHAR, T_LOGICAL, T_INTEGER_A,
@@ -331,6 +331,8 @@ class PuPyXYZWriter(object):
 
       if properties is None:
          props = at.properties.keys()
+      else:
+         props = properties
 
       if 'species' in props:
          i = props.index('species')
