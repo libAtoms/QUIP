@@ -124,7 +124,7 @@ def PosCelReader(basename=None, pos='pos.in', cel='cel.in', force='force.in', en
 
    while True:
 
-      poslines = list(itertools.takewhile(lambda L: L.strip() != '', pos))
+      poslines = list(itertools.takewhile(lambda L: L.strip() != '' and not L.strip().startswith('STEP'), pos))
       if poslines == []:
          break
 
