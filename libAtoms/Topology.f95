@@ -102,6 +102,7 @@ contains
 
     real(dp), pointer :: use_pos(:,:)
     type(Atoms) :: at_copy
+    logical :: do_have_silica_potential
 
     ! save a copy
     at_copy = at
@@ -115,13 +116,19 @@ contains
 	call system_abort("calc_topology can't find default pos field avgpos")
     endif
 
+    do_have_silica_potential = optional_default(.false.,have_silica_potential)
+
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
     at%pos = use_pos
-    call set_cutoff(at, 0.0_dp)
+    if (do_have_silica_potential) then
+      call set_cutoff(at,SILICA_2body_CUTOFF)
+    else
+      call set_cutoff(at,0.0_dp)
+    endif
     call calc_connect(at)
 
-    call create_residue_labels_pos(at,do_CHARMM,intrares_impropers,alt_connect,have_silica_potential)
+    call create_residue_labels_pos(at,do_CHARMM,intrares_impropers,alt_connect,do_have_silica_potential)
 
     ! copy back from saved copy
     at%pos = at_copy%pos
@@ -357,6 +364,7 @@ logical :: silica_potential
           call create_pos_dep_charges(at,SiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
           atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
           atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
+call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_list%N))))
           call print('Atomic charges: ',ANAL)
           call print('   ATOM     CHARGE',ANAL)
           do i=1,at%N
@@ -400,7 +408,7 @@ logical :: silica_potential
 
        if (list%N > 0) then
           
-          call print('| |-Found '//list%N//' occurrences of '//cres_name)
+          call print('| |-Found '//list%N//' occurrences of '//cres_name//' with charge '//(sum(at_charges(1:size(at_charges)))))
           mol_charge_sum = mol_charge_sum + list%N * sum(at_charges(1:size(at_charges)))
 
           ! Loop over all found instances of the residue
@@ -500,8 +508,11 @@ logical :: silica_potential
        call find_molecule_ids(at,molecules,alt_connect)
        do i=1, size(molecules)
 	 if (allocated(molecules(i)%i_a)) then
+           ! special case for silica molecule
+           if (silica_potential .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
+	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
 	   ! special case for single atoms
-	   if (size(molecules(i)%i_a) == 1) then
+	   elseif (size(molecules(i)%i_a) == 1) then
 	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
 	   ! special case for H2O
 	   else if (size(molecules(i)%i_a) == 3) then
@@ -509,9 +520,11 @@ logical :: silica_potential
 	         count(at%Z(molecules(i)%i_a) == 1) == 2) then
 	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
 	     else ! default
+call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
 	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
 	     endif
 	   else ! default
+call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
 	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
 	   endif
 	 end if ! allocated(molecules)
@@ -972,13 +985,13 @@ logical :: silica_potential
        call print(sor,file=psf)
     enddo
     call print('',file=psf)
-call print('PSF| '//at%n//' atoms',VERBOSE)
+call print('PSF| '//at%n//' atoms')
    ! BOND section
     call create_bond_list(at,bonds,do_add_silica_23body,alt_connect=alt_connect)
     if (any(bonds%int(1:2,1:bonds%N).le.0) .or. any(bonds%int(1:2,1:bonds%N).gt.at%N)) &
        call system_abort('write_psf_file: element(s) of bonds not within (0;at%N]')
     call write_psf_section(data_table=bonds,psf=psf,section='BOND',int_format=int_format,title_format=title_format)
-call print('PSF| '//bonds%n//' bonds',VERBOSE)
+call print('PSF| '//bonds%n//' bonds')
 
    ! ANGLE section
     call create_angle_list(at,bonds,angles,do_add_silica_23body,alt_connect=alt_connect)
