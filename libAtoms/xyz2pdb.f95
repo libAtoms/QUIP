@@ -28,7 +28,7 @@ program xyz2pdb
   use topology_module,         only: create_residue_labels, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
-                                     MM_RUN
+                                     MM_RUN, silica_2body_cutoff
 
   implicit none
 
@@ -49,6 +49,8 @@ program xyz2pdb
     integer                     :: center_atom, i
     real(dp)                    :: shift(3)
     logical                     :: ex
+    logical                     :: have_silica_potential
+    logical                     :: use_avgpos
 
     call system_initialise(verbosity=silent,enable_timing=.true.)
     call verbosity_push(NORMAL)
@@ -62,6 +64,8 @@ program xyz2pdb
     call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
     call param_register(params_in, 'Print_XSC', 'F', print_xsc)
     call param_register(params_in, 'Center_atom', '0', center_atom)
+    call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
+    call param_register(params_in, 'use_avgpos', 'T', use_avgpos)
     if (.not. param_read_args(params_in, do_check = .true.)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -85,6 +89,8 @@ program xyz2pdb
     call print('  Print_XSC (NAMD cell file): '//print_xsc)
     call print('  Delete_Metal_Connections'//Delete_Metal_Connections)
     call print('  Neighbour Tolerance: '//Neighbour_Tolerance)
+    call print('  have_silica_potential: '//have_silica_potential)
+    call print('  use_avgpos to build connectivity: '//use_avgpos)
     if(center_atom > 0) &
          call print('  Center atom: '//center_atom)
     call print('Output:')
@@ -116,7 +122,11 @@ program xyz2pdb
    ! calculating connectivities
     call print('Calculating connectivities...')
    ! use nonuniform connect_cutoff, include only nearest neighbours, otherwise the adjacency matrix will contain disjoint regions
-    call set_cutoff(my_atoms,0.0_dp)
+    if (have_silica_potential) then
+       call set_cutoff(my_atoms,silica_2body_cutoff)
+    else
+       call set_cutoff(my_atoms,0.0_dp)
+    endif
     my_atoms%nneightol = Neighbour_Tolerance
     call calc_connect(my_atoms)
    ! remove bonds for metal ions - everything but H, C, N, O, Si, P, S
@@ -135,11 +145,15 @@ program xyz2pdb
    ! identify residues
     call print('Identifying residues...')
     call set_value(my_atoms%params,'Library',trim(Library))
-    call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+    if (use_avgpos) then
+       call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,pos_field_for_connectivity="avgpos")
+    else !use actual positions
+       call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,pos_field_for_connectivity="pos")
+    endif
 
    ! print output PDB and PSF files
     call print('Writing files with CHARMM format...')
-    call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers)
+    call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
     call write_brookhaven_pdb_file(my_atoms,trim(pdb_name))
     if (Print_XSC) call write_xsc_file(my_atoms,xsc_file=trim(xsc_name))
 
@@ -160,11 +174,13 @@ contains
     call print('  [Residue_Library=library],  optional, default is protein_res.CHARMM.lib')
     call print('  [Print_XSC],          optional, whether to print NAMD cell file, default is false')
     call print('  [Delete_Metal_Connections=T],  optional, default is true, only calculates connection for H,C,N,O,Si,P,S,Cl')
-    call print('                           should work fine - only modify if you want bonds with other elements in your structure')
+    call print('                        should work fine - only modify if you want bonds with other elements in your structure')
     call print('  [Neighbour_Tolerance=1.2],  optional, default is 1.2, should work fine - do not poke it ')
-    call print('                          unless you know you have unusally long bonds in your structure')
+    call print('                        unless you know you have unusally long bonds in your structure')
     call print('  [Center_atom=num], optionally shifts atoms so that the atom with index num is at')
-    call print('                     the origin, before dropping periodic boundary condition info')
+    call print('                        the origin, before dropping periodic boundary condition info')
+    call print('  [use_avgpos=T], optionally use instantaneous positions instead of average positions, if this is set to F')
+    call print('  [have_silica_potential=F], optionally switches on the use of silica potential described by Cole et al., JChemPhys, 2007.')
 
     call print('')
 
