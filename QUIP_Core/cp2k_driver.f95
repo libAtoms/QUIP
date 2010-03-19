@@ -413,7 +413,7 @@ contains
 
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	call create_residue_labels(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+	call create_residue_labels(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
 	call write_psf_file(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
       endif
     endif
