@@ -10,7 +10,9 @@ implicit none
 private
 
 type analysis
-  logical :: density_radial, density_grid, rdfd, integrated_rdfd
+  logical :: density_radial, density_grid, rdfd, integrated_rdfd, & !water
+             geometry, & !general
+             density_axial_silica, num_hbond_silica, water_orientation_silica !silica-water interface
   character(len=FIELD_LENGTH) :: outfilename
   character(len=FIELD_LENGTH) :: mask_str
 
@@ -30,6 +32,16 @@ type analysis
   real(dp), allocatable :: radial_pos(:)
   real(dp), allocatable :: radial_dr(:,:), radial_w(:)
 
+  !uniaxial density - for silica-water interface
+  integer :: axial_axis !x:1,y:2,z:3
+  real(dp) :: axial_bin_width
+  integer :: axial_n_bins
+  integer :: axial_silica_atoms
+  real(dp) :: axial_gaussian_sigma
+  logical :: axial_gaussian_smoothing
+  real(dp), allocatable :: axial_histograms(:,:)
+  real(dp), allocatable :: axial_pos(:)
+  
   ! density grid stuff
   real(dp) :: grid_min_p(3), grid_bin_width(3)
   integer :: grid_n_bins(3)
@@ -52,13 +64,41 @@ type analysis
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
 
   !geometry
-  logical :: geometry
   character(FIELD_LENGTH) :: geometry_filename
   type(Table) :: geometry_params
   integer :: geometry_central_atom
   real(dp), allocatable :: geometry_histograms(:,:)
   real(dp), allocatable :: geometry_pos(:)
   character(FIELD_LENGTH), allocatable :: geometry_label(:)
+
+  !silica_numhb - hydrogen bond distribution for silica-water interface
+  integer :: num_hbond_axis !x:1,y:2,z:3
+  integer :: num_hbond_silica_atoms
+  integer :: num_hbond_n_type=4
+  integer :: num_hbond_n_bins
+  logical :: num_hbond_gaussian_smoothing
+  real(dp) :: num_hbond_gaussian_sigma
+  real(dp), allocatable :: num_hbond_histograms(:,:,:)
+  real(dp), allocatable :: integrated_num_hbond_histograms(:,:)
+  integer, allocatable :: num_hbond_type_code(:)
+  real(dp), allocatable :: num_hbond_bin_pos(:)
+  character(FIELD_LENGTH), allocatable :: num_hbond_type_label(:)
+
+  !silica_water_orientation - water orientation distribution for silica-water interface
+  integer :: water_orientation_axis !x:1,y:2,z:3
+  integer :: water_orientation_silica_atoms
+  integer :: water_orientation_n_angle_bins
+  integer :: water_orientation_n_pos_bins
+  logical :: water_orientation_gaussian_smoothing
+  real(dp) :: water_orientation_pos_gaussian_sigma
+  !real(dp) :: water_orientation_angle_gaussian_sigma
+  logical :: water_orientation_use_dipole
+  logical :: water_orientation_use_HOHangle_bisector
+  real(dp), allocatable :: water_orientation_histograms(:,:,:)
+  real(dp), allocatable :: integrated_water_orientation_histograms(:,:)
+  real(dp), allocatable :: water_orientation_pos_bin(:)
+  real(dp), allocatable :: water_orientation_angle_bin(:)
+  real(dp), allocatable :: water_orientation_angle_bin_w(:)
 
 end type analysis
 
@@ -101,6 +141,9 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'density_grid', 'F', this%density_grid)
     call param_register(params, 'rdfd', 'F', this%rdfd)
     call param_register(params, 'geometry', 'F', this%geometry)
+    call param_register(params, 'density_axial_silica', 'F', this%density_axial_silica)
+    call param_register(params, 'num_hbond_silica', 'F', this%num_hbond_silica)
+    call param_register(params, 'water_orientation_silica', 'F', this%water_orientation_silica)
 
     ! radial density
     call param_register(params, 'radial_min_p', "0.0", this%radial_min_p)
@@ -137,6 +180,33 @@ subroutine analysis_read(this, prev, args_str)
     this%geometry_filename=''
     call param_register(params, 'geometry_filename', '', this%geometry_filename)
     call param_register(params, 'geometry_central_atom', '-1', this%geometry_central_atom)
+
+    ! uniaxial density silica
+    call param_register(params, 'axial_n_bins', '-1', this%axial_n_bins)
+    !call param_register(params, 'axial_bin_width', '-1.0', this%axial_bin_width)
+    call param_register(params, 'axial_axis', '-1', this%axial_axis)
+    call param_register(params, 'axial_silica_atoms', '-1', this%axial_silica_atoms)
+    call param_register(params, 'axial_gaussian', 'F', this%axial_gaussian_smoothing)
+    call param_register(params, 'axial_sigma', '1.0', this%axial_gaussian_sigma)
+    !call param_register(params, 'axial_atommask', '', this%axial_atommask)
+
+    ! num_hbond_silica
+    call param_register(params, 'num_hbond_n_bins', '-1', this%num_hbond_n_bins)
+    call param_register(params, 'num_hbond_axis', '0', this%num_hbond_axis)
+    call param_register(params, 'num_hbond_silica_atoms', '0', this%num_hbond_silica_atoms)
+    call param_register(params, 'num_hbond_gaussian', 'F', this%num_hbond_gaussian_smoothing)
+    call param_register(params, 'num_hbond_sigma', '1.0', this%num_hbond_gaussian_sigma)
+
+    ! water_orientation_silica
+    call param_register(params, 'water_orientation_n_pos_bins', '-1', this%water_orientation_n_pos_bins)
+    call param_register(params, 'water_orientation_n_angle_bins', '-1', this%water_orientation_n_angle_bins)
+    call param_register(params, 'water_orientation_axis', '0', this%water_orientation_axis)
+    call param_register(params, 'water_orientation_silica_atoms', '0', this%water_orientation_silica_atoms)
+    call param_register(params, 'water_orientation_gaussian', 'F', this%water_orientation_gaussian_smoothing)
+    call param_register(params, 'water_orientation_pos_sigma', '1.0', this%water_orientation_pos_gaussian_sigma)
+    !call param_register(params, 'water_orientation_angle_sigma', '1.0', this%water_orientation_angle_gaussian_sigma)
+    call param_register(params, 'water_orientation_use_dipole', 'F', this%water_orientation_use_dipole)
+    call param_register(params, 'water_orientation_use_HOHangle_bisector', 'F', this%water_orientation_use_HOHangle_bisector)
 
   else
     ! general
@@ -184,6 +254,33 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename)
     call param_register(params, 'geometry_central_atom', ''//prev%geometry_central_atom, this%geometry_central_atom)
 
+    ! uniaxial density silica
+    call param_register(params, 'axial_n_bins', ''//prev%axial_n_bins, this%axial_n_bins)
+    !call param_register(params, 'axial_bin_width', ''//prev%axial_bin_width, this%axial_bin_width)
+    call param_register(params, 'axial_axis', ''//prev%axial_axis, this%axial_axis)
+    call param_register(params, 'axial_silica_atoms', ''//prev%axial_silica_atoms, this%axial_silica_atoms)
+    call param_register(params, 'axial_gaussian', ''//prev%axial_gaussian_smoothing, this%axial_gaussian_smoothing)
+    call param_register(params, 'axial_sigma', ''//prev%axial_gaussian_sigma, this%axial_gaussian_sigma)
+    !call param_register(params, 'axial_atommask', ''//prev%axial_atommask, this%axial_atommask)
+
+    ! num_hbond_silica
+    call param_register(params, 'num_hbond_n_bins', ''//prev%num_hbond_n_bins, this%num_hbond_n_bins)
+    call param_register(params, 'num_hbond_axis', ''//prev%num_hbond_axis, this%num_hbond_axis)
+    call param_register(params, 'num_hbond_silica_atoms', ''//prev%num_hbond_silica_atoms, this%num_hbond_silica_atoms)
+    call param_register(params, 'num_hbond_gaussian', ''//prev%num_hbond_gaussian_smoothing, this%num_hbond_gaussian_smoothing)
+    call param_register(params, 'num_hbond_sigma', ''//prev%num_hbond_gaussian_sigma, this%num_hbond_gaussian_sigma)
+
+    ! water_orientation_silica
+    call param_register(params, 'water_orientation_n_pos_bins', ''//prev%water_orientation_n_pos_bins, this%water_orientation_n_pos_bins)
+    call param_register(params, 'water_orientation_n_angle_bins', ''//prev%water_orientation_n_angle_bins, this%water_orientation_n_angle_bins)
+    call param_register(params, 'water_orientation_axis', ''//prev%water_orientation_axis, this%water_orientation_axis)
+    call param_register(params, 'water_orientation_silica_atoms', ''//prev%water_orientation_silica_atoms, this%water_orientation_silica_atoms)
+    call param_register(params, 'water_orientation_gaussian', ''//prev%water_orientation_gaussian_smoothing, this%water_orientation_gaussian_smoothing)
+    call param_register(params, 'water_orientation_pos_sigma', ''//prev%water_orientation_pos_gaussian_sigma, this%water_orientation_pos_gaussian_sigma)
+    !call param_register(params, 'water_orientation_angle_sigma', ''//prev%water_orientation_angle_gaussian_sigma, this%water_orientation_angle_gaussian_sigma)
+    call param_register(params, 'water_orientation_use_dipole', ''//prev%water_orientation_use_dipole, this%water_orientation_use_dipole)
+    call param_register(params, 'water_orientation_use_HOHangle_bisector', ''//prev%water_orientation_use_HOHangle_bisector, this%water_orientation_use_HOHangle_bisector)
+
   endif
 
   if (present(args_str)) then
@@ -194,8 +291,8 @@ subroutine analysis_read(this, prev, args_str)
       call system_abort("analysis_read failed to parse command line arguments")
   endif
 
-  if (count ( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry/) ) /= 1) &
-    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid /) )//" types of analysis.  Possiblities: density_radial, density_grid, rdfd, geometry")
+  if (count ( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /) ) /= 1) &
+    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /) )//" types of analysis.  Possiblities: density_radial, density_grid, rdfd, geometry, density_axial_silica, num_hbond_silica, water_orientation_silica.")
 
 end subroutine analysis_read
 
@@ -205,21 +302,32 @@ subroutine check_analyses(a)
   integer :: i_a
 
   do i_a=1, size(a)
-    if (a(i_a)%density_radial) then
+    if (a(i_a)%density_radial) then !density_radial
       if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
       if (a(i_a)%radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%radial_n_bins//" <= 0")
-    else if (a(i_a)%density_grid) then
+    else if (a(i_a)%density_grid) then !density_grid
       if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
       if (any(a(i_a)%grid_n_bins <= 0)) call system_abort("analysis " // i_a // " has grid_n_bins="//a(i_a)%grid_n_bins//" <= 0")
-    else if (a(i_a)%rdfd) then
+    else if (a(i_a)%rdfd) then !rdfd
       if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_bins <= 0) call system_abort("analysis " // i_a // " has rdfd_n_bins="//a(i_a)%rdfd_n_bins//" <= 0")
       if (a(i_a)%rdfd_n_zones <= 0) call system_abort("analysis " // i_a // " has rdfd_n_zones="//a(i_a)%rdfd_n_zones//" <= 0")
-    else if (a(i_a)%geometry) then
+    else if (a(i_a)%geometry) then !geometry
       if (trim(a(i_a)%geometry_filename)=="") call system_abort("analysis "//i_a//" has empty geometry_filename")
       !read geometry parameters to calculate from the file into a table
       call read_geometry_params(a(i_a),trim(a(i_a)%geometry_filename))
       if (a(i_a)%geometry_params%N==0) call system_abort("analysis "//i_a//" has no geometry parameters to calculate")
+    else if (a(i_a)%density_axial_silica) then !density_axial_silica
+      if (a(i_a)%axial_n_bins <= 0) call system_abort("analysis " // i_a // " has axial_n_bins="//a(i_a)%axial_n_bins//" <= 0")
+      if (.not. any(a(i_a)%axial_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has axial_axis="//a(i_a)%axial_axis//" /= 1, 2 or 3")
+    else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
+      if (a(i_a)%num_hbond_n_bins <= 0) call system_abort("analysis " // i_a // " has num_hbond_n_bins="//a(i_a)%num_hbond_n_bins//" <= 0")
+      if (.not. any(a(i_a)%num_hbond_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has num_hbond_axis="//a(i_a)%num_hbond_axis//" /= 1, 2 or 3")
+    else if (a(i_a)%water_orientation_silica) then !water_orientation_silica
+      if (a(i_a)%water_orientation_n_pos_bins <= 0) call system_abort("analysis " // i_a // " has water_orientation_n_pos_bins="//a(i_a)%water_orientation_n_pos_bins//" <= 0")
+      if (a(i_a)%water_orientation_n_angle_bins <= 0) call system_abort("analysis " // i_a // " has water_orientation_n_angle_bins="//a(i_a)%water_orientation_n_angle_bins//" <= 0")
+      if (.not. any(a(i_a)%water_orientation_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has water_orientation_axis="//a(i_a)%water_orientation_axis//" /= 1, 2 or 3")
+      if (.not. count((/a(i_a)%water_orientation_use_HOHangle_bisector,a(i_a)%water_orientation_use_dipole/)) == 1) call system_abort("Exactly one of water_orientation_use_HOHangle_bisector and water_orientation_use_dipole must be one.")
     else
       call system_abort("check_analyses: no type of analysis set for " // i_a)
     endif
@@ -243,7 +351,7 @@ subroutine do_analyses(a, time, frame, at)
 
       a(i_a)%n_configs = a(i_a)%n_configs + 1
 
-      if (a(i_a)%density_radial) then
+      if (a(i_a)%density_radial) then !density_radial
         call reallocate_data(a(i_a)%radial_histograms, a(i_a)%n_configs, a(i_a)%radial_n_bins)
         if (a(i_a)%radial_random_angular_samples) then
           call calc_angular_samples_random(a(i_a)%radial_n_angular_samples(1)*a(i_a)%radial_n_angular_samples(2), &
@@ -262,7 +370,7 @@ subroutine do_analyses(a, time, frame, at)
             rad_bin_width=a(i_a)%radial_bin_width, n_rad_bins=a(i_a)%radial_n_bins, gaussian_sigma= a(i_a)%radial_gaussian_sigma, &
             dr=a(i_a)%radial_dr, w=a(i_a)%radial_w, mask_str=a(i_a)%mask_str)
         endif
-      else if (a(i_a)%density_grid) then
+      else if (a(i_a)%density_grid) then !density_grid
         call reallocate_data(a(i_a)%grid_histograms, a(i_a)%n_configs, a(i_a)%grid_n_bins)
         if (a(i_a)%grid_gaussian_smoothing) then
           if (a(i_a)%n_configs == 1) then
@@ -283,7 +391,7 @@ subroutine do_analyses(a, time, frame, at)
               a(i_a)%grid_n_bins, a(i_a)%mask_str)
           endif
         endif
-      else if (a(i_a)%rdfd) then
+      else if (a(i_a)%rdfd) then !rdfd
         call reallocate_data(a(i_a)%rdfds, a(i_a)%n_configs, (/ a(i_a)%rdfd_n_bins, a(i_a)%rdfd_n_zones /) )
         if (a(i_a)%rdfd_random_angular_samples) then
           call calc_angular_samples_random(a(i_a)%rdfd_n_angular_samples(1)*a(i_a)%rdfd_n_angular_samples(2), &
@@ -306,7 +414,7 @@ subroutine do_analyses(a, time, frame, at)
             a(i_a)%rdfd_dr, a(i_a)%rdfd_w, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
         endif
-      else if (a(i_a)%geometry) then
+      else if (a(i_a)%geometry) then !geometry
         call reallocate_data(a(i_a)%geometry_histograms, a(i_a)%n_configs, a(i_a)%geometry_params%N)
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%geometry_pos(a(i_a)%geometry_params%N))
@@ -315,6 +423,72 @@ subroutine do_analyses(a, time, frame, at)
                a(i_a)%geometry_pos(1:a(i_a)%geometry_params%N), a(i_a)%geometry_label(1:a(i_a)%geometry_params%N))
         else
           call geometry_calc(a(i_a)%geometry_histograms(:,a(i_a)%n_configs), at, a(i_a)%geometry_params, a(i_a)%geometry_central_atom)
+        endif
+      else if (a(i_a)%density_axial_silica) then !density_axial_silica
+        call reallocate_data(a(i_a)%axial_histograms, a(i_a)%n_configs, a(i_a)%axial_n_bins)
+        if (a(i_a)%n_configs == 1) then
+           allocate(a(i_a)%axial_pos(a(i_a)%axial_n_bins))
+           call density_axial_calc(a(i_a)%axial_histograms(:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%axial_axis, silica_center_i=a(i_a)%axial_silica_atoms, &
+             n_bins=a(i_a)%axial_n_bins, &
+             gaussian_smoothing=a(i_a)%axial_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%axial_gaussian_sigma, &
+             mask_str=a(i_a)%mask_str, axial_pos=a(i_a)%axial_pos)
+        else
+           call density_axial_calc(a(i_a)%axial_histograms(:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%axial_axis, silica_center_i=a(i_a)%axial_silica_atoms, &
+             n_bins=a(i_a)%axial_n_bins, &
+             gaussian_smoothing=a(i_a)%axial_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%axial_gaussian_sigma, &
+             mask_str=a(i_a)%mask_str)
+        endif
+      else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
+        a(i_a)%num_hbond_n_type = 4
+        call reallocate_data(a(i_a)%num_hbond_histograms, a(i_a)%n_configs, (/a(i_a)%num_hbond_n_bins,a(i_a)%num_hbond_n_type/)) !4: ss, sw, ws, ww
+        if (a(i_a)%n_configs == 1) then
+           allocate(a(i_a)%num_hbond_bin_pos(a(i_a)%num_hbond_n_bins))
+           allocate(a(i_a)%num_hbond_type_code(4))
+           allocate(a(i_a)%num_hbond_type_label(4))
+           call num_hbond_calc(a(i_a)%num_hbond_histograms(:,:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%num_hbond_axis, silica_center_i=a(i_a)%num_hbond_silica_atoms, &
+             n_bins=a(i_a)%num_hbond_n_bins, &
+             gaussian_smoothing=a(i_a)%num_hbond_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%num_hbond_gaussian_sigma, &
+             mask_str=a(i_a)%mask_str, num_hbond_pos=a(i_a)%num_hbond_bin_pos, &
+             num_hbond_type_code=a(i_a)%num_hbond_type_code, &
+             num_hbond_type_label=a(i_a)%num_hbond_type_label)
+        else
+           call num_hbond_calc(a(i_a)%num_hbond_histograms(:,:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%num_hbond_axis, silica_center_i=a(i_a)%num_hbond_silica_atoms, &
+             n_bins=a(i_a)%num_hbond_n_bins, &
+             gaussian_smoothing=a(i_a)%num_hbond_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%num_hbond_gaussian_sigma, &
+             mask_str=a(i_a)%mask_str)
+        endif
+      else if (a(i_a)%water_orientation_silica) then !water_orientation_silica
+        call reallocate_data(a(i_a)%water_orientation_histograms, a(i_a)%n_configs, (/ a(i_a)%water_orientation_n_angle_bins, a(i_a)%water_orientation_n_pos_bins /) )
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%water_orientation_angle_bin(a(i_a)%water_orientation_n_angle_bins))
+          allocate(a(i_a)%water_orientation_angle_bin_w(a(i_a)%water_orientation_n_angle_bins))
+          allocate(a(i_a)%water_orientation_pos_bin(a(i_a)%water_orientation_n_pos_bins))
+          call water_orientation_calc(a(i_a)%water_orientation_histograms(:,:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%water_orientation_axis, silica_center_i=a(i_a)%water_orientation_silica_atoms, &
+            n_pos_bins=a(i_a)%water_orientation_n_pos_bins, n_angle_bins=a(i_a)%water_orientation_n_angle_bins, &
+            gaussian_smoothing=a(i_a)%water_orientation_gaussian_smoothing, &
+            pos_gaussian_sigma=a(i_a)%water_orientation_pos_gaussian_sigma, &
+            !angle_gaussian_sigma=a(i_a)%water_orientation_angle_gaussian_sigma, &
+            pos_bin=a(i_a)%water_orientation_pos_bin, angle_bin=a(i_a)%water_orientation_angle_bin, &
+            angle_bin_w=a(i_a)%water_orientation_angle_bin_w, &
+            use_dipole_rather_than_angle_bisector=a(i_a)%water_orientation_use_dipole)
+        else
+          call water_orientation_calc(a(i_a)%water_orientation_histograms(:,:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%water_orientation_axis, silica_center_i=a(i_a)%water_orientation_silica_atoms, &
+            n_pos_bins=a(i_a)%water_orientation_n_pos_bins, n_angle_bins=a(i_a)%water_orientation_n_angle_bins, &
+            gaussian_smoothing=a(i_a)%water_orientation_gaussian_smoothing, &
+            pos_gaussian_sigma=a(i_a)%water_orientation_pos_gaussian_sigma, &
+            !angle_gaussian_sigma=a(i_a)%water_orientation_angle_gaussian_sigma, &
+            angle_bin_w=a(i_a)%water_orientation_angle_bin_w, &
+            use_dipole_rather_than_angle_bisector=a(i_a)%water_orientation_use_dipole)
         endif
       else 
         call system_abort("do_analyses: no type of analysis set for " // i_a)
@@ -379,7 +553,7 @@ subroutine print_analyses(a)
     if (a(i_a)%n_configs <= 0) then
       call print("# NO DATA", file=outfile)
     else
-      if (a(i_a)%density_radial) then
+      if (a(i_a)%density_radial) then !density_radial
         call print("# radial density histogram", file=outfile)
         call print("n_bins="//a(i_a)%radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
         do i=1, a(i_a)%radial_n_bins
@@ -388,7 +562,7 @@ subroutine print_analyses(a)
         do i=1, a(i_a)%n_configs
           call print(a(i_a)%radial_histograms(:,i), file=outfile)
         end do
-      else if (a(i_a)%density_grid) then
+      else if (a(i_a)%density_grid) then !density_grid
         call print("# grid density histogram", file=outfile)
         call print("n_bins="//a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3)//" n_data="//a(i_a)%n_configs, file=outfile)
         do i1=1, a(i_a)%grid_n_bins(1)
@@ -401,7 +575,7 @@ subroutine print_analyses(a)
         do i=1, a(i_a)%n_configs
           call print(""//reshape(a(i_a)%grid_histograms(:,:,:,i), (/ a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3) /) ), file=outfile)
         end do
-      else if (a(i_a)%rdfd) then
+      else if (a(i_a)%rdfd) then !rdfd
         call print("# rdfd", file=outfile)
         call print("n_bins="//a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
         do i1=1, a(i_a)%rdfd_n_zones
@@ -445,16 +619,83 @@ subroutine print_analyses(a)
         end do
 	deallocate(integrated_rdfds)
 
-      else if (a(i_a)%geometry) then
+      else if (a(i_a)%geometry) then !geometry
         call print("# geometry histogram", file=outfile)
         call print("n_bins="//a(i_a)%geometry_params%N//" n_data="//a(i_a)%n_configs, file=outfile)
         do i=1, a(i_a)%geometry_params%N
 !          call print(a(i_a)%geometry_pos(i), file=outfile)
-          call print(a(i_a)%geometry_label(i), file=outfile)
+          call print(trim(a(i_a)%geometry_label(i)), file=outfile)
         end do
         do i=1, a(i_a)%n_configs
           call print(a(i_a)%geometry_histograms(:,i), file=outfile)
         end do
+
+      else if (a(i_a)%density_axial_silica) then !density_axial_silica
+        call print("# uniaxial density histogram in direction "//a(i_a)%axial_axis, file=outfile)
+        call print("n_bins="//a(i_a)%axial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%axial_n_bins
+          call print(a(i_a)%axial_pos(i), file=outfile)
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(a(i_a)%axial_histograms(:,i), file=outfile)
+        end do
+
+      else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
+        !header
+        call print("# num_hbond_silica in direction "//a(i_a)%num_hbond_axis, file=outfile)
+        call print("n_bins="//a(i_a)%num_hbond_n_type*a(i_a)%num_hbond_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%num_hbond_n_type
+          do i2=1, a(i_a)%num_hbond_n_bins
+            !call print(""//a(i_a)%num_hbond_type_code(i1)//" "//a(i_a)%num_hbond_bin_pos(i2), file=outfile)
+            call print(""//trim(a(i_a)%num_hbond_type_label(i1))//" "//a(i_a)%num_hbond_bin_pos(i2), file=outfile)
+          end do
+        end do
+        !histograms
+        do i=1, a(i_a)%n_configs
+          call print(""//reshape(a(i_a)%num_hbond_histograms(:,:,i), (/ a(i_a)%num_hbond_n_type*a(i_a)%num_hbond_n_bins /) ), file=outfile)
+        end do
+
+        !integrated histograms header
+        call print("", file=outfile)
+        call print("", file=outfile)
+        call print("# integrated_num_hbond_silica", file=outfile)
+        call print("n_bins="//a(i_a)%num_hbond_n_type*a(i_a)%num_hbond_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%num_hbond_n_type
+          do i2=1, a(i_a)%num_hbond_n_bins
+            !call print(""//a(i_a)%num_hbond_type_code(i1)//" "//a(i_a)%num_hbond_bin_pos(i2), file=outfile)
+            call print(""//trim(a(i_a)%num_hbond_type_label(i1))//" "//a(i_a)%num_hbond_bin_pos(i2), file=outfile)
+          end do
+        end do
+        !integrated histograms
+	allocate(a(i_a)%integrated_num_hbond_histograms(a(i_a)%num_hbond_n_bins,a(i_a)%num_hbond_n_type))
+	a(i_a)%integrated_num_hbond_histograms = 0.0_dp
+        do i=1, a(i_a)%n_configs
+	  a(i_a)%integrated_num_hbond_histograms = 0.0_dp
+	  do i1=1, a(i_a)%num_hbond_n_type
+	    do i2=2, a(i_a)%num_hbond_n_bins
+	      a(i_a)%integrated_num_hbond_histograms(i2,i1) = a(i_a)%integrated_num_hbond_histograms(i2-1,i1) + &
+		(a(i_a)%num_hbond_bin_pos(i2)-a(i_a)%num_hbond_bin_pos(i2-1))* &
+		4.0_dp*PI*((a(i_a)%num_hbond_bin_pos(i2)**2)*a(i_a)%num_hbond_histograms(i2,i1,i)+(a(i_a)%num_hbond_bin_pos(i2-1)**2)*a(i_a)%num_hbond_histograms(i2-1,i1,i))/2.0_dp
+	    end do
+	  end do
+          call print(""//reshape(a(i_a)%integrated_num_hbond_histograms(:,:), (/ a(i_a)%num_hbond_n_type*a(i_a)%num_hbond_n_bins /) ), file=outfile)
+        end do
+	deallocate(a(i_a)%integrated_num_hbond_histograms)
+
+      else if (a(i_a)%water_orientation_silica) then !water_orientation_silica
+        !header
+        call print("# water_orientation_silica in direction "//a(i_a)%water_orientation_axis, file=outfile)
+        call print("n_bins="//a(i_a)%water_orientation_n_pos_bins*a(i_a)%water_orientation_n_angle_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%water_orientation_n_pos_bins
+          do i2=1, a(i_a)%water_orientation_n_angle_bins
+            call print(""//a(i_a)%water_orientation_pos_bin(i1)//" "//a(i_a)%water_orientation_angle_bin(i2), file=outfile)
+          end do
+        end do
+        !histograms
+        do i=1, a(i_a)%n_configs
+          call print(""//reshape(a(i_a)%water_orientation_histograms(:,:,i), (/ a(i_a)%water_orientation_n_pos_bins*a(i_a)%water_orientation_n_angle_bins /) ), file=outfile)
+        end do
+
       else
         call system_abort("print_analyses: no type of analysis set for " // i_a)
       endif
@@ -523,76 +764,6 @@ subroutine calc_angular_samples_random(n, dr, w, gaussian_sigma)
   w = w / ( (gaussian_sigma*sqrt(2.0_dp*PI))**3 * sum(w) )
 
 end subroutine calc_angular_samples_random
-
-!Calculates distances, angles, dihedrals of the given atoms
-subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_pos, geometry_label)
-
-  real(dp), intent(inout) :: histogram(:)
-  type(Atoms), intent(inout) :: at
-  type(Table), intent(in) :: geometry_params
-  integer, intent(in) :: central_atom
-  real(dp), intent(out), optional :: geometry_pos(:)
-  character(FIELD_LENGTH), intent(out), optional :: geometry_label(:)
-
-  integer :: i, j, geom_type
-  integer :: atom1, atom2, atom3, atom4
-  real(dp) :: shift(3), bond12(3),bond23(3),bond34(3)
-
-  !center around central_atom if requested
-  if (central_atom.gt.at%N) call system_abort('central atom is greater than atom number '//at%N)
-  if (central_atom.gt.0) then !center around central_atom
-     shift = at%pos(1:3,central_atom)
-     do j=1,at%N
-        at%pos(1:3,j) = at%pos(1:3,j) - shift(1:3)
-     enddo
-     call map_into_cell(at) !only in this case, otherwise it has been mapped
-  endif
-
-  !loop over the parameters to calculate
-  do i=1, geometry_params%N
-     geom_type=geometry_params%int(1,i)
-     atom1 = geometry_params%int(2,i)
-     atom2 = geometry_params%int(3,i)
-     atom3 = geometry_params%int(4,i)
-     atom4 = geometry_params%int(5,i)
-     select case (geom_type)
-       case(1) !y coord atom1
-         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
-         histogram(i) = at%pos(2,atom1)
-       case(2) !distance atom1-atom2
-         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
-         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
-         !histogram(i) = norm(at%pos(1:3,atom1)-at%pos(1:3,atom2))
-         histogram(i) = distance_min_image(at,atom1,atom2)
-       case(3) !angle atom1-atom2-atom3
-         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
-         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
-         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
-         !histogram(i) = angle(at%pos(1:3,atom1)-at%pos(1:3,atom2), &
-         !                     at%pos(1:3,atom3)-at%pos(1:3,atom2))
-         histogram(i) = angle(diff_min_image(at,atom2,atom1), &
-                              diff_min_image(at,atom2,atom3))
-       case(4) !dihedral atom1-(bond12)->atom2-(bond23)->atom3-(bond34)->atom4
-         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
-         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
-         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
-         if (atom4<1.or.atom2>at%N) call system_abort('atom4 must be >0 and < '//at%N)
-         !bond12(1:3) = at%pos(1:3,atom2)-at%pos(1:3,atom1)
-         bond12(1:3) = diff_min_image(at,atom1,atom2)
-         !bond23(1:3) = at%pos(1:3,atom3)-at%pos(1:3,atom2)
-         bond23(1:3) = diff_min_image(at,atom2,atom3)
-         !bond34(1:3) = at%pos(1:3,atom4)-at%pos(1:3,atom3)
-         bond34(1:3) = diff_min_image(at,atom3,atom4)
-         histogram(i) = atan2(norm(bond23(1:3)) * bond12(1:3).dot.(bond23(1:3).cross.bond34(1:3)), &
-                              (bond12(1:3).cross.bond23(1:3)) .dot. (bond23(1:3).cross.bond34(1:3)))
-       case default
-         call system_abort("geometry_calc: unknown geometry type "//geom_type)
-     end select
-     if (present(geometry_pos)) geometry_pos(i) = real(i,dp)
-     if (present(geometry_label)) geometry_label(i) = geom_type//'=='//atom1//'--'//atom2//'--'//atom3//'--'//atom4
-  enddo
-
-end subroutine geometry_calc
 
 subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, dr, w, mask_str, radial_pos, accumulate)
   real(dp), intent(inout) :: histogram(:)
@@ -1122,6 +1293,604 @@ subroutine read_geometry_params(this,filename)
   call finalise(geom_lib)
 
 end subroutine read_geometry_params
+
+!Calculates distances, angles, dihedrals of the given atoms
+subroutine geometry_calc(histogram, at, geometry_params, central_atom, geometry_pos, geometry_label)
+
+  real(dp), intent(inout) :: histogram(:)
+  type(Atoms), intent(inout) :: at
+  type(Table), intent(in) :: geometry_params
+  integer, intent(in) :: central_atom
+  real(dp), intent(out), optional :: geometry_pos(:)
+  character(FIELD_LENGTH), intent(out), optional :: geometry_label(:)
+
+  integer :: i, j, geom_type
+  integer :: atom1, atom2, atom3, atom4
+  real(dp) :: shift(3), bond12(3),bond23(3),bond34(3)
+
+  !center around central_atom if requested
+  if (central_atom.gt.at%N) call system_abort('central atom is greater than atom number '//at%N)
+  if (central_atom.gt.0) then !center around central_atom
+     shift = at%pos(1:3,central_atom)
+     do j=1,at%N
+        at%pos(1:3,j) = at%pos(1:3,j) - shift(1:3)
+     enddo
+     call map_into_cell(at) !only in this case, otherwise it has been mapped
+  endif
+
+  !loop over the parameters to calculate
+  do i=1, geometry_params%N
+     geom_type=geometry_params%int(1,i)
+     atom1 = geometry_params%int(2,i)
+     atom2 = geometry_params%int(3,i)
+     atom3 = geometry_params%int(4,i)
+     atom4 = geometry_params%int(5,i)
+     select case (geom_type)
+       case(1) !y coord atom1
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         histogram(i) = at%pos(2,atom1)
+       case(2) !distance atom1-atom2
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         !histogram(i) = norm(at%pos(1:3,atom1)-at%pos(1:3,atom2))
+         histogram(i) = distance_min_image(at,atom1,atom2)
+       case(3) !angle atom1-atom2-atom3
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
+         !histogram(i) = angle(at%pos(1:3,atom1)-at%pos(1:3,atom2), &
+         !                     at%pos(1:3,atom3)-at%pos(1:3,atom2))
+         histogram(i) = angle(diff_min_image(at,atom2,atom1), &
+                              diff_min_image(at,atom2,atom3))
+       case(4) !dihedral atom1-(bond12)->atom2-(bond23)->atom3-(bond34)->atom4
+         if (atom1<1.or.atom1>at%N) call system_abort('atom1 must be >0 and < '//at%N)
+         if (atom2<1.or.atom2>at%N) call system_abort('atom2 must be >0 and < '//at%N)
+         if (atom3<1.or.atom2>at%N) call system_abort('atom3 must be >0 and < '//at%N)
+         if (atom4<1.or.atom2>at%N) call system_abort('atom4 must be >0 and < '//at%N)
+         !bond12(1:3) = at%pos(1:3,atom2)-at%pos(1:3,atom1)
+         bond12(1:3) = diff_min_image(at,atom1,atom2)
+         !bond23(1:3) = at%pos(1:3,atom3)-at%pos(1:3,atom2)
+         bond23(1:3) = diff_min_image(at,atom2,atom3)
+         !bond34(1:3) = at%pos(1:3,atom4)-at%pos(1:3,atom3)
+         bond34(1:3) = diff_min_image(at,atom3,atom4)
+         histogram(i) = atan2(norm(bond23(1:3)) * bond12(1:3).dot.(bond23(1:3).cross.bond34(1:3)), &
+                              (bond12(1:3).cross.bond23(1:3)) .dot. (bond23(1:3).cross.bond34(1:3)))
+       case default
+         call system_abort("geometry_calc: unknown geometry type "//geom_type)
+     end select
+     if (present(geometry_pos)) geometry_pos(i) = real(i,dp)
+     if (present(geometry_label)) geometry_label(i) = geom_type//'=='//atom1//'--'//atom2//'--'//atom3//'--'//atom4
+  enddo
+
+end subroutine geometry_calc
+
+
+!silica-water inerface: put half-half of the silica slab to the 2 edges of the cell along the axis  normal to the surface
+subroutine shift_silica_to_edges(at, axis, silica_center_i, mask_str)
+  type(Atoms), intent(inout) :: at
+  integer, intent(in) :: axis
+  integer, intent(in) :: silica_center_i
+  character(len=*), optional, intent(in) :: mask_str
+
+  logical, allocatable :: mask_a(:), mask_silica(:)
+  integer :: i
+  integer :: counter
+  integer, allocatable :: Si_atoms(:)
+  real(dp) :: com(3), shift(3)
+  real(dp), pointer :: mass_p(:)
+
+  if (.not.silica_center_i>0) return
+
+  !find the com of the silica (using the Si atoms) and move that to the edges in this direction
+  shift(1:3) = at%pos(1:3,1)
+  do i=1,at%N
+     at%pos(1:3,i) = at%pos(1:3,i) - shift(1:3)
+  enddo
+  call map_into_cell(at)
+  allocate(mask_silica(at%N))
+  call is_in_mask(mask_silica, at, "Si")
+  allocate(Si_atoms(count(mask_silica)))
+  counter = 0
+  do i=1,at%N
+     if (mask_silica(i)) then
+        counter = counter + 1
+        Si_atoms(counter) = i
+     endif
+  enddo
+  !allocate(at%mass(at%N))
+  !at%mass = ElementMass(at%Z)
+  call add_property(at,"mass",0._dp)
+  if (.not.(assign_pointer(at, "mass", mass_p))) call system_abort('??')
+  mass_p = ElementMass(at%Z)
+  com = centre_of_mass(at,index_list=Si_atoms(1:size(Si_atoms)),origin=1)
+  !shift axis to the edge (-0.5*edge_length)
+  at%pos(axis,1:at%N) = at%pos(axis,1:at%N) - 0.5_dp * at%lattice(axis,axis) - com(axis)
+  call map_into_cell(at) !everyone becomes -0.5b<y<0.5b
+  !NO !shift everyone to positive coordinate along axis
+  !at%pos(axis,1:at%N) = at%pos(axis,1:at%N) + 0.5_dp * at%lattice(axis,axis)
+  deallocate(Si_atoms)
+  deallocate(mask_silica)
+
+end subroutine shift_silica_to_edges
+
+subroutine density_axial_calc(histogram, at, axis, silica_center_i,n_bins, gaussian_smoothing, gaussian_sigma, mask_str, axial_pos, accumulate)
+  real(dp), intent(inout) :: histogram(:)
+  type(Atoms), intent(inout) :: at
+  integer, intent(in) :: axis
+  integer, intent(in) :: silica_center_i
+  integer, intent(in) :: n_bins
+  logical, intent(in) :: gaussian_smoothing
+  real(dp), intent(in) :: gaussian_sigma
+  character(len=*), optional, intent(in) :: mask_str
+  real(dp), intent(out), optional :: axial_pos(:)
+  logical, optional, intent(in) :: accumulate
+
+  logical :: my_accumulate
+  real(dp) :: ax_sample_r, dist, r, exp_arg
+  logical, allocatable :: mask_a(:)
+  integer at_i, ax_sample_i, i
+  real(dp) :: bin_width
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+
+  !atommask
+  allocate(mask_a(at%N))
+  call is_in_mask(mask_a, at, mask_str)
+
+  !bin labels
+  bin_width = at%lattice(axis,axis) / n_bins
+  if (present(axial_pos)) then
+    do ax_sample_i=1, n_bins
+      ax_sample_r = (real(ax_sample_i,dp)-0.5_dp)*bin_width !the middle of the bin
+      axial_pos(ax_sample_i) = ax_sample_r
+    end do
+  endif
+
+  if (silica_center_i>0) then ! silica
+     call shift_silica_to_edges(at, axis, silica_center_i, mask_str)
+  endif
+
+  !now bins are from -axis/2 to axis/2
+  !shift everyone to positive coordinate along axis
+  at%pos(axis,1:at%N) = at%pos(axis,1:at%N) + 0.5_dp * at%lattice(axis,axis)
+
+
+  !simply check distances and bin them
+
+
+  ! ratio of 20/4=5 is bad
+  ! ratio of 20/3=6.66 is bad
+  ! ratio of 20/2.5=8 is borderline (2e-4)
+  ! ratio of 20/2.22=9 is fine  (error 2e-5)
+  ! ratio of 20/2=10 is fine
+  if ( gaussian_smoothing .and. (at%lattice(axis,axis) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
+  if (gaussian_smoothing) then
+
+    do at_i=1, at%N
+      if (silica_center_i>0 .and. at_i<=silica_center_i) cycle !ignore silica atoms
+      if (.not. mask_a(at_i)) cycle
+      r = at%pos(axis,at_i)
+      do ax_sample_i=1, n_bins
+
+        ax_sample_r = (real(ax_sample_i,dp)-0.5_dp)*bin_width
+        dist = abs(r - ax_sample_r)
+!Include all the atoms, slow but minimises error
+!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+          exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
+          if (exp_arg > -20.0_dp) then ! good to about 1e-8
+            histogram(ax_sample_i) = histogram(ax_sample_i) + exp(exp_arg)/(gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
+          endif
+
+      end do ! ax_sample_i
+    end do ! at_i
+
+  else !no gaussian_smoothing
+
+    do at_i=1, at%N
+      if (silica_center_i>0 .and. at_i<=silica_center_i) cycle !ignore silica atoms
+      if (.not. mask_a(at_i)) cycle
+      r = at%pos(axis,at_i)
+
+        histogram(int(r/bin_width)+1) = histogram(int(r/bin_width)+1) + 1
+
+    end do ! at_i
+
+  endif
+
+  deallocate(mask_a)
+end subroutine density_axial_calc
+
+!
+! Calculates the number of H-bonds along an axis
+!  -- 1st center around atom 1
+!  -- then calculate COM of Si atoms
+!  -- then shift the centre of mass along the y axis to y=0
+!  -- calculate H bonds for
+!        water - water
+!        water - silica
+!        silica - water
+!        silica - silica
+!     interactions
+!  -- the definition of a H-bond (O1-H1 - - O2):
+!        d(O1,O2) < 3.5 A
+!        d(O2,H1) < 2.45 A
+!        angle(H1,O1,O2) < 30 degrees
+!     source: P. Jedlovszky, J.P. Brodholdt, F. Bruni, M.A. Ricci and R. Vallauri, J. Chem. Phys. 108, 8525 (1998)
+!
+subroutine num_hbond_calc(histogram, at, axis, silica_center_i,n_bins, gaussian_smoothing, gaussian_sigma, mask_str, num_hbond_pos, num_hbond_type_code, num_hbond_type_label,accumulate)
+  real(dp),                          intent(inout) :: histogram(:,:)
+  type(Atoms),                       intent(inout) :: at
+  integer,                           intent(in)    :: axis
+  integer,                           intent(in)    :: silica_center_i
+  integer,                           intent(in)    :: n_bins
+  logical,                           intent(in)    :: gaussian_smoothing
+  real(dp),                          intent(in)    :: gaussian_sigma
+  character(len=*),        optional, intent(in)    :: mask_str
+  real(dp),                optional, intent(out)   :: num_hbond_pos(:)
+  integer,                 optional, intent(out)   :: num_hbond_type_code(:)
+  character(FIELD_LENGTH), optional, intent(out)   :: num_hbond_type_label(:)
+  logical,                 optional, intent(in)    :: accumulate
+
+  logical :: my_accumulate
+  real(dp) :: num_hbond_sample_r, dist, r, exp_arg
+  logical, allocatable :: mask_a(:)
+  integer :: num_hbond_sample_i
+  real(dp) :: bin_width
+  real(dp), parameter                   :: dist_O2_H1 = 2.45_dp
+  real(dp), parameter                   :: dist_O1_O2 = 3.5_dp
+  real(dp), parameter                   :: angle_H1_O1_O2 = 30._dp
+real(dp) :: min_distance, distance, HOO_angle
+integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+
+  !atommask
+  allocate(mask_a(at%N))
+  call is_in_mask(mask_a, at, mask_str)
+
+  !bin labels
+  bin_width = at%lattice(axis,axis) / n_bins
+  if (present(num_hbond_pos)) then
+    do num_hbond_sample_i=1, n_bins
+      num_hbond_sample_r = (real(num_hbond_sample_i,dp)-0.5_dp)*bin_width !the middle of the bin
+      num_hbond_pos(num_hbond_sample_i) = num_hbond_sample_r
+    end do
+  endif
+  if (present(num_hbond_type_label)) then
+    num_hbond_type_label(1)="water-water"
+    num_hbond_type_label(2)="water-silica"
+    num_hbond_type_label(3)="silica-water"
+    num_hbond_type_label(4)="silica-silica"
+  endif
+  if (present(num_hbond_type_code)) then
+    num_hbond_type_code(1)=11
+    num_hbond_type_code(2)=10
+    num_hbond_type_code(3)=01
+    num_hbond_type_code(4)=00
+  endif
+
+  if (silica_center_i>0) then ! silica
+     call shift_silica_to_edges(at, axis, silica_center_i, mask_str)
+  endif
+
+  !!calc_connect now, before shifting positions to positive, because it would remap the positions!!
+  !call calc_connect including the H-bonds
+  call set_cutoff(at,dist_O2_H1)
+  call calc_connect(at)
+
+  !now bins are from -axis/2 to axis/2
+  !shift everyone to positive coordinate along axis
+  at%pos(axis,1:at%N) = at%pos(axis,1:at%N) + 0.5_dp * at%lattice(axis,axis)
+
+  !simply check hbonds and bin them
+
+
+  ! ratio of 20/4=5 is bad
+  ! ratio of 20/3=6.66 is bad
+  ! ratio of 20/2.5=8 is borderline (2e-4)
+  ! ratio of 20/2.22=9 is fine  (error 2e-5)
+  ! ratio of 20/2=10 is fine
+  if ( gaussian_smoothing .and. (at%lattice(axis,axis) < 9.0_dp*gaussian_sigma) ) &
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+
+!  call set_cutoff(at,dist_O2_H1)
+!  call calc_connect(at)
+
+  num_atoms = 0
+  do H1=1, at%N
+     if(at%Z(H1)/=1) cycle !find H: H1
+     !Count the atoms
+     call print('Found H'//H1//ElementName(at%Z(H1)),ANAL)
+     num_atoms = num_atoms + 1
+
+     !find closest O: O1
+     min_distance = huge(1._dp)
+     O1 = 0
+     k = 0
+     do i = 1, atoms_n_neighbours(at,H1)
+        j = atoms_neighbour(at,H1,i,distance)
+        if (distance<min_distance) then
+           min_distance = distance
+           k = i  !the closest neighbour is the k-th one
+           O1 = j
+        endif
+     enddo
+     if (O1==0) call system_abort('H has no neighbours.')
+     !if (at%Z(O1).ne.8) call system_abort('H'//H1//' has not O closest neighbour '//ElementName(at%Z(O1))//O1//'.')
+     if (.not.mask_a(O1)) call system_abort('H'//H1//' has not O closest neighbour '//ElementName(at%Z(O1))//O1//'.')
+
+     !loop over all other Os: O2
+     do i = 1, atoms_n_neighbours(at,H1)
+        if (i.eq.k) cycle
+        O2 = atoms_neighbour(at,H1,i)
+        !if (at%Z(O2).ne.8) cycle !only keep O
+        if (.not. mask_a(O2)) cycle
+        !check O1-O2 distance for definition
+        if (distance_min_image(at,O1,O2).gt.dist_O1_O2) cycle
+        !check H1-O1-O2 angle for definition
+        HOO_angle = angle(diff_min_image(at,O1,H1), &
+                          diff_min_image(at,O1,O2)) *180._dp/PI
+        call print('HOO_ANGLE '//ElementName(at%Z(H1))//H1//' '//ElementName(at%Z(O1))//O1//' '//ElementName(at%Z(O2))//O2//' '//HOO_angle,ANAL)
+        if (HOO_angle.gt.angle_H1_O1_O2) cycle
+
+        !We've found a H-bond.
+
+        !Find out the type (what-to-what)
+        if (O1>silica_center_i .and. O2>silica_center_i) then  ! water - water
+           call print('Found water-water H-bond.',ANAL)
+           hbond_type = 1
+        elseif (O1>silica_center_i .and. O2<=silica_center_i) then  ! water - silica
+           call print('Found water-silica H-bond.',ANAL)
+           hbond_type = 2
+        elseif (O1<=silica_center_i .and. O2>silica_center_i) then  ! silica - water
+           call print('Found silica-water H-bond.',ANAL)
+           hbond_type = 3
+        elseif (O1<=silica_center_i .and. O2<=silica_center_i) then  ! silica - silica
+           call print('Found silica-silica H-bond.',ANAL)
+           hbond_type = 4
+        endif
+
+        !Build histogram
+        r = at%pos(axis,H1) !the position of H1
+
+        if (gaussian_smoothing) then !smear the position along axis
+           do num_hbond_sample_i=1, n_bins
+             num_hbond_sample_r = (real(num_hbond_sample_i,dp)-0.5_dp)*bin_width
+             dist = abs(r - num_hbond_sample_r)
+!!!!!!Include all the atoms, slow but minimises error
+!!!!!!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+               exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
+               if (exp_arg > -20.0_dp) then ! good to about 1e-8
+                 histogram(num_hbond_sample_i,hbond_type) = histogram(num_hbond_sample_i,hbond_type) + exp(exp_arg)/(gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
+               endif
+           end do ! num_hbond_sample_i
+        else !no gaussian_smoothing
+           histogram(int(r/bin_width)+1,hbond_type) = histogram(int(r/bin_width)+1,hbond_type) + 1
+        endif
+     end do ! i, atom_neighbours
+
+  end do ! H1
+
+  deallocate(mask_a)
+
+end subroutine num_hbond_calc
+
+!
+! Calculates the orientation of water molecules along the y axis
+!  -- 1st center around atom 1
+!  -- then calculate COM of Si atoms
+!  -- then shift the centre of mass along the y axis to y=0
+!  -- calculate the orientation of the {dipole moment} / {angle half line} of the water: if skip_atoms is set to the last atom of the silica
+!
+subroutine water_orientation_calc(histogram, at, axis, silica_center_i,n_pos_bins, n_angle_bins, gaussian_smoothing, pos_gaussian_sigma, pos_bin, angle_bin, angle_bin_w, use_dipole_rather_than_angle_bisector, accumulate)
+!subroutine water_orientation_calc(histogram, at, axis, silica_center_i,n_pos_bins, n_angle_bins, gaussian_smoothing, pos_gaussian_sigma, angle_gaussian_sigma, pos_bin, angle_bin, angle_bin_w, use_dipole_rather_than_angle_bisector, accumulate)
+  real(dp),                          intent(inout) :: histogram(:,:)
+  type(Atoms),                       intent(inout) :: at
+  integer,                           intent(in)    :: axis
+  integer,                           intent(in)    :: silica_center_i
+  integer,                           intent(in)    :: n_pos_bins, n_angle_bins
+  logical,                           intent(in)    :: gaussian_smoothing
+  real(dp),                          intent(in)    :: pos_gaussian_sigma !, angle_gaussian_sigma
+  real(dp),                optional, intent(out)   :: pos_bin(:), angle_bin(:)
+  real(dp),                optional, intent(inout) :: angle_bin_w(:)
+  logical,                 optional, intent(in)    :: use_dipole_rather_than_angle_bisector
+  logical,                 optional, intent(in)    :: accumulate
+
+  logical :: my_accumulate
+  real(dp) :: sample_r, sample_angle, r
+  logical, allocatable :: mask_a(:)
+  integer :: sample_i
+  real(dp) :: pos_bin_width, angle_bin_width
+  real(dp) :: sum_w
+integer :: n, num_atoms
+integer :: O, H1, H2
+  real(dp) :: surface_normal(3)
+  logical :: use_dipole
+real(dp) :: vector_OH1(3), vector_OH2(3)
+real(dp) :: bisector_vector(3)
+real(dp) :: dipole(3)
+real(dp) :: orientation_angle
+    real(dp), parameter                   :: charge_O = -0.834_dp
+    real(dp), parameter                   :: charge_H = 0.417_dp
+real(dp) :: sum_counts
+real(dp) :: dist, exp_arg
+
+  my_accumulate = optional_default(.false., accumulate)
+  if (.not. my_accumulate) histogram = 0.0_dp
+
+  use_dipole = optional_default(.true.,use_dipole_rather_than_angle_bisector)
+  if (use_dipole) then
+     call print("Using dipole to calculate angle with the surface normal.",VERBOSE)
+  else
+     call print("Using HOH angle bisector to calculate angle with the surface normal.",VERBOSE)
+  endif
+
+  !pos bin labels along axis
+  pos_bin_width = at%lattice(axis,axis) / real(n_pos_bins,dp)
+  if (present(pos_bin)) then
+    do sample_i=1, n_pos_bins
+      sample_r = (real(sample_i,dp)-0.5_dp)*pos_bin_width !the middle of the bin
+      pos_bin(sample_i) = sample_r
+    end do
+  endif
+
+ !angle bin labels
+  angle_bin_width = PI/n_angle_bins
+  if (present(pos_bin)) then
+    sum_w = 0._dp
+    do sample_i=1, n_angle_bins
+      sample_angle = (real(sample_i,dp)-0.5_dp)*angle_bin_width !the middle of the bin
+      angle_bin(sample_i) = sample_angle
+      !the normalised solid angle is (1/4pi) * 2pi * sin((fi_north)-sin(fi_south)) where fi e [-pi/2,pi/2]
+      angle_bin_w(sample_i) = 0.5_dp * ( sin(0.5_dp*PI - real(sample_i-1,dp)*angle_bin_width) - &
+                                         sin(0.5_dp*PI - real(sample_i, dp)*angle_bin_width) )
+      sum_w = sum_w + angle_bin_w(sample_i)
+    end do
+    angle_bin_w(1:n_angle_bins) = angle_bin_w(1:n_angle_bins) / sum_w
+  endif
+
+  !shift silica slab to the edges, water in the middle    || . . . ||
+  if (silica_center_i>0) then ! silica
+     call shift_silica_to_edges(at, axis, silica_center_i)
+  endif
+
+  !!calc_connect now, before shifting positions to positive, because it would remap the positions!!
+  !call calc_connect including the H-bonds
+  call set_cutoff(at,0._dp)
+  call calc_connect(at)
+
+  !now bins are from -axis/2 to axis/2
+  !shift everyone to positive coordinate along axis
+  at%pos(axis,1:at%N) = at%pos(axis,1:at%N) + 0.5_dp * at%lattice(axis,axis)
+
+  !simply check water orientations and bin them
+
+
+!  if (gaussian_smoothing) call system_abort('not implemented.')
+
+  surface_normal(1:3) = 0._dp
+  surface_normal(axis) = 1._dp
+
+  num_atoms = 0
+  do O=silica_center_i+1, at%N !only check water molecules
+     if(at%Z(O)==1) cycle !find O
+     !Count the atoms
+     call print('Found O'//O//ElementName(at%Z(O)),ANAL)
+     num_atoms = num_atoms + 1
+
+     !find H neighbours
+     n = atoms_n_neighbours(at,O)
+     if (n.ne.2) then ! O with =2 nearest neighbours
+        call print("WARNING! water(?) oxygen with "//n//"/=2 neighbours will be skipped!")
+        cycle
+     endif
+     H1 = atoms_neighbour(at,O,1)
+     H2 = atoms_neighbour(at,O,2)
+     if ((at%Z(H1).ne.1).or.(at%Z(H2).ne.1)) then !2 H neighbours
+        call print("WARNING! water(?) oxygen with non H neighbour will be skipped!")
+        cycle
+     endif
+ 
+     !We've found a water molecule.
+
+     !Build histogram
+     r = at%pos(axis,H1) !the position of O
+     !HOH_angle = angle(diff_min_image(at,O,H1), &
+     !                  diff_min_image(at,O,H2)) !the H-O-H angle
+
+     if (.not. use_dipole) then
+     !VERSION 1.
+     !the direction of the HH->O vector, the bisector of the HOH angle
+     !vector that is compared to the surface normal:
+     !  point from the bisector of the 2 Hs (scaled to have the same bond length)
+     !        to the O
+         vector_OH1(1:3) = diff_min_image(at, O, H1)
+         if (norm(vector_OH1) > 1.2_dp) &
+            call system_abort('too long OH bond? '//O//' '//H1//' '//norm(vector_OH1))
+         vector_OH2(1:3) = diff_min_image(at, O, H2)
+         if (norm(vector_OH2) > 1.2_dp) &
+            call system_abort('too long OH bond? '//O//' '//H2//' '//norm(vector_OH1))
+         bisector_vector(1:3) = vector_OH1(1:3) / norm(vector_OH1) * norm(vector_OH2)
+
+         ! a.dot.b = |a|*|b|*cos(angle)
+         orientation_angle = dot_product((bisector_vector(1:3)),surface_normal(1:3)) / &
+                             sqrt(dot_product(bisector_vector(1:3),bisector_vector(1:3))) / &
+                             sqrt(dot_product(surface_normal(1:3),surface_normal(1:3)))
+     else ! use_dipole
+
+     !VERSION 2.
+     !the dipole of the water molecule = sum(q_i*r_i)
+     !Calculate the dipole and its angle compared to the surface normal
+
+         !
+         dipole(1:3) = ( diff_min_image(at,O,H1)*charge_H + &
+                         diff_min_image(at,O,H2)*charge_H )
+         if (norm(diff_min_image(at,O,H1)).gt.1.2_dp) call system_abort('too long O-H1 bond (atoms '//O//'-'//H1//'): '//norm(diff_min_image(at,O,H1)))
+         if (norm(diff_min_image(at,O,H2)).gt.1.2_dp) call system_abort('too long O-H2 bond (atoms '//O//'-'//H2//'): '//norm(diff_min_image(at,O,H2)))
+!call print ('dipole '//dipole(1:3))
+    
+         ! a.dot.b = |a|*|b|*cos(angle)
+         orientation_angle = dot_product((dipole(1:3)),surface_normal(1:3)) / &
+                             sqrt(dot_product(dipole(1:3),dipole(1:3))) / &
+                             sqrt(dot_product(surface_normal(1:3),surface_normal(1:3)))
+     endif
+
+     if (orientation_angle.gt.1._dp) then
+        call print('WARNING | correcting cos(angle) to 1.0 = '//orientation_angle)
+        orientation_angle = 1._dp
+     else if (orientation_angle.lt.-1._dp) then
+        call print('WARNING | correcting cos(angle) to -1.0 = '//orientation_angle)
+        orientation_angle = -1._dp
+     endif
+     orientation_angle = acos(orientation_angle)
+     if (orientation_angle.lt.0._dp) then
+        call print('WARNING | correcting angle to 0.0: '//orientation_angle)
+        orientation_angle = 0._dp
+     endif
+     if (orientation_angle.gt.PI) then
+        call print('WARNING | correcting angle to pi : '//orientation_angle)
+        orientation_angle = PI
+     endif
+!call print ('angle '//(orientation_angle*180._dp/pi))
+
+     call print('Storing angle for water '//O//'--'//H1//'--'//H2//' with reference = '//round(orientation_angle,5)//'degrees',ANAL)
+     call print('   with distance -1/2 b -- '//O//' = '//round(r,5)//'A',ANAL)
+
+     if (gaussian_smoothing) then !smear the position along axis
+        !call system_abort('not implemented.')
+        do sample_i=1, n_pos_bins
+          sample_r = (real(sample_i,dp)-0.5_dp)*pos_bin_width
+          dist = abs(r - sample_r)
+          !Include all the atoms, slow but minimises error
+          !	  if (dist > 4.0_dp*gaussian_sigma) cycle
+            exp_arg = -0.5_dp*(dist/(pos_gaussian_sigma))**2
+            if (exp_arg > -20.0_dp) then ! good to about 1e-8
+              histogram(int(orientation_angle/angle_bin_width)+1,sample_i) = histogram(int(orientation_angle/angle_bin_width)+1,sample_i) + exp(exp_arg)/(pos_gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
+            endif
+        end do ! sample_i
+
+     else !no gaussian_smoothing
+        histogram(int(orientation_angle/angle_bin_width)+1,int(r/pos_bin_width)+1) = histogram(int(orientation_angle/angle_bin_width)+1,int(r/pos_bin_width)+1) + 1._dp
+     endif
+
+  end do ! O
+
+  !normalise for the number of molecules in each pos_bin
+  do sample_i=1,n_pos_bins
+     sum_counts = sum(histogram(1:n_angle_bins,sample_i))
+     if (sum_counts /= 0) histogram(1:n_angle_bins,sample_i) = histogram(1:n_angle_bins,sample_i) / sum_counts
+  enddo
+
+  !normalise for different solid angles of each angle_bin
+  do sample_i=1, n_angle_bins
+     histogram(sample_i,1:n_pos_bins) = histogram(sample_i,1:n_pos_bins) / angle_bin_w(sample_i)
+  enddo 
+
+end subroutine water_orientation_calc
 
 end module structure_analysis_module
 
