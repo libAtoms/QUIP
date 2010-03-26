@@ -105,14 +105,17 @@ contains
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
     logical :: do_have_silica_potential
+    logical :: use_pos_is_pos
 
     ! save a copy
     at_copy = at
 
+    use_pos_is_pos = .false.
     ! find desired position field (pos, avgpos, whatever)
     if (present(pos_field_for_connectivity)) then
       if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
 	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+      if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else
       if (.not. assign_pointer(at, 'avgpos', use_pos)) &
 	call system_abort("calc_topology can't find default pos field avgpos")
@@ -122,7 +125,7 @@ contains
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    if (trim(pos_field_for_connectivity) /= 'pos') at%pos = use_pos
+    if (.not. use_pos_is_pos) at%pos = use_pos
     if (do_have_silica_potential) then
       call set_cutoff(at,SILICA_2body_CUTOFF)
     else
@@ -918,7 +921,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
     character(len=TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
-    logical do_add_silica_23body
+    logical :: use_pos_is_pos, do_add_silica_23body
 
     ! save a copy
     at_copy = at
@@ -926,9 +929,11 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     do_add_silica_23body = optional_default(.false., add_silica_23body)
 
     ! find desired position field (pos, avgpos, whatever)
+    use_pos_is_pos = .false.
     if (present(pos_field_for_connectivity)) then
       if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
 	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+      if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else
       if (.not. assign_pointer(at, 'avgpos', use_pos)) &
 	call system_abort("calc_topology can't find default pos field avgpos")
@@ -936,19 +941,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    if (trim(pos_field_for_connectivity) /= 'pos') then
-      if (do_add_silica_23body) then
-	if (.not. assign_pointer(at, 'atom_res_name', atom_res_name_p)) &
-	  call system_abort("write_psf_file_arb_pos failed to assign pointer for atom_res_name to do silica 2,3 body stuff")
-	where (atom_res_name_p /= 'SIO2')
-	  at%pos(:,1) = use_pos(:,1)
-	  at%pos(:,2) = use_pos(:,2)
-	  at%pos(:,3) = use_pos(:,3)
-	end where
-      else
-	at%pos = use_pos
-      endif
-    endif
+    if (.not. use_pos_is_pos) at%pos = use_pos
     if (do_add_silica_23body) then
       call set_cutoff(at,SILICA_2body_CUTOFF)
     else
