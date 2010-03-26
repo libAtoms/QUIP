@@ -3581,6 +3581,28 @@ contains
 
   end subroutine wipe_cells
 
+  !% Test if an atom j is one of i's nearest neighbours
+  function is_nearest_neighbour_abs_index(this,i,j, alt_connect)
+    type(Atoms), intent(in), target :: this
+    integer,     intent(in) :: i,j
+    type(Connection), intent(in), optional, target :: alt_connect
+    logical                 :: is_nearest_neighbour_abs_index
+
+    integer :: ji
+    real(dp) :: d
+
+    is_nearest_neighbour_abs_index = .false.
+    do ji=1, atoms_n_neighbours(this, i)
+      if (atoms_neighbour(this, i, ji, distance=d, alt_connect=alt_connect) == j) then
+	if (d < bond_length(this%Z(i),this%Z(j))*this%nneightol) then
+	  is_nearest_neighbour_abs_index = .true.
+	  return
+	endif
+      endif
+    end do
+  end function is_nearest_neighbour_abs_index
+
+
   !% Test if an atom's $n$th neighbour is one if its nearest neighbours
   function is_nearest_neighbour(this,i,n, alt_connect)
 
@@ -4114,14 +4136,22 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine calc_connect(this, own_neighbour, store_is_min_image)
-    type(Atoms), intent(inout)           :: this
+  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image)
+    type(Atoms), intent(inout), target    :: this
+    type(Connection), intent(inout), target, optional :: alt_connect
     logical, optional, intent(in) :: own_neighbour, store_is_min_image
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
     real(dp)                             :: cutoff, density, volume_per_cell
     logical my_own_neighbour, my_store_is_min_image, do_fill
+    type(Connection), pointer :: use_connect
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
@@ -4131,10 +4161,9 @@ contains
     end if
 
     if ((this%cutoff .feq. 0.0_dp) .or. (this%cutoff_break .feq. 0.0_dp)) then
-      call wipe(this%connect)
+      call wipe(use_connect)
       return
     endif
-
     !Calculate the cutoff value we should use in dividing up the simulation cell
     if (this%use_uniform_cutoff) then
        !The cutoff has been specified by the user, so use that value
@@ -4157,9 +4186,9 @@ contains
     call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, VERBOSE)
 
     ! If the lattice has changed, then the cells need de/reallocating
-    if ((cellsNa /= this%connect%cellsNa) .or. &
-         (cellsNb /= this%connect%cellsNb) .or. &
-         (cellsNc /= this%connect%cellsNc)) call connection_finalise(this%connect)
+    if ((cellsNa /= use_connect%cellsNa) .or. &
+         (cellsNb /= use_connect%cellsNb) .or. &
+         (cellsNc /= use_connect%cellsNc)) call connection_finalise(use_connect)
 
     ! figure out how many unit cell images we will need to loop over in each direction
     call fit_box_in_cell(cutoff, cutoff, cutoff, this%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
@@ -4173,30 +4202,30 @@ contains
     call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, VERBOSE)
 
     ! Allocate space for the connection object if needed
-    if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N, this%pos, this%lattice, this%g, fill=.false.)
+    if (.not.use_connect%initialised) then
+       call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, fill=.false.)
        do_fill = .true.
     else
        ! otherwise just wipe the connection table
-       call wipe(this%connect)
+       call wipe(use_connect)
        do_fill = .false.
     end if
 
-    if (.not.this%connect%cells_initialised) &
-         call connection_cells_initialise(this%connect, cellsNa, cellsNb, cellsNc,this%N)
+    if (.not.use_connect%cells_initialised) &
+         call connection_cells_initialise(use_connect, cellsNa, cellsNb, cellsNc,this%N)
 
     ! Partition the atoms into cells
-    call partition_atoms(this%connect, this)
+    call partition_atoms(use_connect, this)
 
     if (do_fill) then
        volume_per_cell = cell_volume(this%lattice)/real(cellsNa*cellsNb*cellsNc,dp)
-       
+ 
        ! Count the occupied cells so vacuum does not contribute to average number density
        n_occ = 0
        do k=1,cellsNc
           do j=1,cellsNb
              do i=1,cellsNa
-                if (this%connect%cell(i,j,k)%n /= 0) n_occ = n_occ + 1
+                if (use_connect%cell(i,j,k)%n /= 0) n_occ = n_occ + 1
              end do
           end do
        end do
@@ -4208,7 +4237,7 @@ contains
        call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), VERBOSE)
        call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, VERBOSE)
 
-       call connection_fill(this%connect, this%n, this%pos, this%lattice, this%g, nn_guess=nn_guess)
+       call connection_fill(use_connect, this%n, this%pos, this%lattice, this%g, nn_guess=nn_guess)
     end if
 
     ! Here is the main loop:
@@ -4224,9 +4253,9 @@ contains
           do i = 1, cellsNa
 
              !Loop over atoms in cell(i,j,k)
-             do n1 = 1, this%connect%cell(i,j,k)%N
+             do n1 = 1, use_connect%cell(i,j,k)%N
 
-                atom1 = this%connect%cell(i,j,k)%int(1,n1)
+                atom1 = use_connect%cell(i,j,k)%int(1,n1)
 
                 ! Loop over neighbouring cells, applying PBC
                 do k2 = -cell_image_Nc, +cell_image_Nc
@@ -4255,9 +4284,9 @@ contains
                          ! with shift (i4,j4,k4)
                          ! loop over it's atoms and test connectivity if atom1 < atom2
 
-                         do n2 = 1, this%connect%cell(i3,j3,k3)%N
+                         do n2 = 1, use_connect%cell(i3,j3,k3)%N
 
-                            atom2 = this%connect%cell(i3,j3,k3)%int(1,n2)
+                            atom2 = use_connect%cell(i3,j3,k3)%int(1,n2)
                             ! omit atom2 < atom1
                             if (atom1 > atom2) cycle
                             ! omit self in the same cell without shift
@@ -4265,7 +4294,7 @@ contains
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
-                            call test_form_bond(this%connect,this%cutoff, this%use_uniform_cutoff, &
+                            call test_form_bond(use_connect,this%cutoff, this%use_uniform_cutoff, &
 			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false.)
 
                          end do
@@ -4280,10 +4309,10 @@ contains
     end do
 
     if (my_store_is_min_image) then
-       if (allocated(this%connect%is_min_image)) deallocate(this%connect%is_min_image)
-       allocate(this%connect%is_min_image(this%n))
+       if (allocated(use_connect%is_min_image)) deallocate(use_connect%is_min_image)
+       allocate(use_connect%is_min_image(this%n))
        do i=1,this%n
-          this%connect%is_min_image(i) = is_min_image(this, i)
+          use_connect%is_min_image(i) = is_min_image(this, i)
        end do
     end if
 

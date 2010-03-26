@@ -140,12 +140,8 @@ contains
          call system_abort('BFS_Step: Atomic structure has no connectivity data')
 
     do_nneighb_only = optional_default(.true., nneighb_only)
-    ! do_nneighb_only = .true.
-    ! if(present(nneighb_only)) do_nneighb_only = nneighb_only
 
     do_min_images_only = optional_default(.false., min_images_only)
-    ! do_min_images_only = .false.
-    ! if (present(min_images_only)) do_min_images_only = min_images_only
 
     if (present(debugfile)) call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, file=debugfile)
     call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, NERD)

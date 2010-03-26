@@ -8,7 +8,7 @@ module topology_module
                                      atoms_n_neighbours, atoms_neighbour, bond_length, &
                                      distance_min_image, &
                                      DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect, &
-				     assign_pointer
+				     assign_pointer, is_nearest_neighbour_abs_index
   use clusters_module,         only: bfs_step, add_cut_hydrogens
   use dictionary_module,       only: get_value, value_len
   use linearalgebra_module,    only: find_in_array, find, &
@@ -23,7 +23,8 @@ module topology_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
-                                     operator(//), allocatable_array_pointers
+                                     operator(//), allocatable_array_pointers, &
+				     verbosity_push, verbosity_pop
 #ifndef HAVE_QUIPPY
   use system_module,           only: system_abort
 #endif
@@ -44,8 +45,9 @@ module topology_module
              write_brookhaven_pdb_file, &
              write_cp2k_pdb_file, &
              write_psf_file, &
+             write_psf_file_arb_pos, &
              create_residue_labels, &
-             create_residue_labels_pos, &
+             create_residue_labels_arb_pos, &
              NONE_RUN, &
              QS_RUN, &
              MM_RUN, &
@@ -92,15 +94,15 @@ contains
 
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
-  subroutine create_residue_labels(at,do_CHARMM,intrares_impropers,alt_connect,have_silica_potential,pos_field_for_connectivity)
+  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential,pos_field_for_connectivity)
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
-    type(Connection), intent(in), optional, target :: alt_connect
     logical,     optional, intent(in)    :: have_silica_potential
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
 
     real(dp), pointer :: use_pos(:,:)
+    type(Connection) :: t_connect
     type(Atoms) :: at_copy
     logical :: do_have_silica_potential
 
@@ -120,23 +122,24 @@ contains
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    at%pos = use_pos
+    if (trim(pos_field_for_connectivity) /= 'pos') at%pos = use_pos
     if (do_have_silica_potential) then
       call set_cutoff(at,SILICA_2body_CUTOFF)
     else
       call set_cutoff(at,0.0_dp)
     endif
-    call calc_connect(at)
-
-    call create_residue_labels_pos(at,do_CHARMM,intrares_impropers,alt_connect,do_have_silica_potential)
-
+    call calc_connect(at, alt_connect=t_connect)
     ! copy back from saved copy
     at%pos = at_copy%pos
     at%travel = at_copy%travel
-    at%connect = at_copy%connect
     at%cutoff = at_copy%cutoff
     at%use_uniform_cutoff = at_copy%use_uniform_cutoff
-  end subroutine create_residue_labels
+
+    ! now create labels using this connectivity object
+    call create_residue_labels(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential)
+    call finalise(t_connect)
+
+  end subroutine create_residue_labels_arb_pos
 
   !% Topology calculation. Recognize residues and save atomic names, residue names etc. in the atoms object.
   !% Generally useable for AMBER and CHARMM force fields, in case of CHARMM, the MM charges are assigned here, too.
@@ -147,11 +150,12 @@ contains
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_residue_labels_pos(at,do_CHARMM,intrares_impropers, alt_connect,have_silica_potential) !, hysteretic_neighbours)
+  subroutine create_residue_labels(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
+    logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical,     optional, intent(in)    :: have_silica_potential
 !    logical, optional, intent(in) :: hysteretic_neighbours
@@ -186,7 +190,7 @@ contains
     logical                              :: found_residues
     type(Table)                          :: atom_Si, atom_SiO, SiOH_list
     real(dp), dimension(:), allocatable  :: charge
-integer :: j,k, atom_i
+integer :: j,k, atom_i, ji
 logical :: silanol
     type(Table) :: bondH,bondSi
     integer :: bond_H,bond_Si
@@ -404,7 +408,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 
        ! Search the atom structure for this residue
        call print('|-Looking for '//cres_name//'...',verbosity=ANAL)
-       call find_motif(at,motif,list,mask=unidentified,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
+       call find_motif(at,motif,list,mask=unidentified,nneighb_only=nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
           
@@ -458,9 +462,15 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
        call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
        call print(find(unidentified))
        do i=1,at%N
-	  if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
-	    ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
-	  if (unidentified(i)) call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+	  if (unidentified(i)) then
+	    call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
+	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
+	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+	    do ji=1, atoms_n_neighbours(at, i)
+	      j = atoms_neighbour(at, i, ji)
+	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=ERROR)
+	    end do
+	  endif
        enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
@@ -505,7 +515,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 
     if (my_do_charmm) then
        allocate(molecules(at%N))
-       call find_molecule_ids(at,molecules,alt_connect)
+       call find_molecule_ids(at,molecules,nneighb_only=nneighb_only,alt_connect=alt_connect)
        do i=1, size(molecules)
 	 if (allocated(molecules(i)%i_a)) then
            ! special case for silica molecule
@@ -550,11 +560,12 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     call system_timer('create_residue_labels_pos')
 
-  end subroutine create_residue_labels_pos
+  end subroutine create_residue_labels
 
-  subroutine find_molecule_ids(at,molecules,alt_connect)
+  subroutine find_molecule_ids(at,molecules,nneighb_only,alt_connect)
     type(Atoms), intent(inout) :: at
     type(allocatable_array_pointers), optional :: molecules(:)
+    logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
 
     integer, pointer :: mol_id(:)
@@ -582,7 +593,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 	! look for neighbours
 	do while (added_something)
 	   call initialise(next_atoms)
-	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = .true., min_images_only = .true., alt_connect=alt_connect)
+	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = nneighb_only, min_images_only = .true., alt_connect=alt_connect)
 	   if (next_atoms%N > 0) then
 	    added_something = .true.
 	    call append(cur_molec, next_atoms)
@@ -891,10 +902,51 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
   end subroutine write_cp2k_pdb_file
 
+  subroutine write_psf_file_arb_pos(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,pos_field_for_connectivity)
+    character(len=*),           intent(in) :: psf_file
+    type(atoms),                intent(inout) :: at
+    character(len=*), optional, intent(in) :: run_type_string
+    type(Table),      optional, intent(in) :: intrares_impropers
+    character(80),    optional, intent(in) :: imp_filename
+    logical,          optional, intent(in) :: add_silica_23body
+    character(len=*), optional, intent(in) :: pos_field_for_connectivity
+
+    real(dp), pointer :: use_pos(:,:)
+    type(Connection) :: t_connect
+    type(Atoms) :: at_copy
+
+    ! save a copy
+    at_copy = at
+
+    ! find desired position field (pos, avgpos, whatever)
+    if (present(pos_field_for_connectivity)) then
+      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
+	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+    else
+      if (.not. assign_pointer(at, 'avgpos', use_pos)) &
+	call system_abort("calc_topology can't find default pos field avgpos")
+    endif
+
+    ! copy desired pos to pos, and new connectivity
+    !NB don't do if use_pos => pos
+    if (trim(pos_field_for_connectivity) /= 'pos') at%pos = use_pos
+    call set_cutoff(at, 0.0_dp)
+    call calc_connect(at, alt_connect=t_connect)
+    ! copy back from saved copy
+    at%pos = at_copy%pos
+    at%travel = at_copy%travel
+    at%cutoff = at_copy%cutoff
+    at%use_uniform_cutoff = at_copy%use_uniform_cutoff
+
+    ! now create labels using this connectivity object
+    call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect)
+    call finalise(t_connect)
+  end subroutine write_psf_file_arb_pos
+
   !% Writes PSF topology file, to be used with the PDB coordinate file.
   !% PSF contains the list of atoms, bonds, angles, impropers, dihedrals.
   !
-  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,alt_connect)
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect)
 
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(in) :: at
@@ -902,6 +954,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     type(Table),      optional, intent(in) :: intrares_impropers
     character(80),    optional, intent(in) :: imp_filename
     logical,          optional, intent(in) :: add_silica_23body
+    logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
 
     type(Inoutput)          :: psf
@@ -925,7 +978,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     integer                 :: run_type
     logical                 :: do_add_silica_23body
 
-    call system_timer('write_psf_file')
+    call system_timer('write_psf_file_pos')
 
     !intraresidual impropers: table or read in from file
     if (.not.present(intrares_impropers).and..not.present(imp_filename)) call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!',verbosity=ERROR)
@@ -987,35 +1040,35 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     call print('',file=psf)
 call print('PSF| '//at%n//' atoms')
    ! BOND section
-    call create_bond_list(at,bonds,do_add_silica_23body,alt_connect=alt_connect)
+    call create_bond_list(at,bonds,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
     if (any(bonds%int(1:2,1:bonds%N).le.0) .or. any(bonds%int(1:2,1:bonds%N).gt.at%N)) &
-       call system_abort('write_psf_file: element(s) of bonds not within (0;at%N]')
+       call system_abort('write_psf_file_pos: element(s) of bonds not within (0;at%N]')
     call write_psf_section(data_table=bonds,psf=psf,section='BOND',int_format=int_format,title_format=title_format)
 call print('PSF| '//bonds%n//' bonds')
 
    ! ANGLE section
-    call create_angle_list(at,bonds,angles,do_add_silica_23body,alt_connect=alt_connect)
+    call create_angle_list(at,bonds,angles,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
           call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=ERROR)
        enddo
-       call system_abort('write_psf_file: element(s) of angles not within (0;at%N]')
+       call system_abort('write_psf_file_pos: element(s) of angles not within (0;at%N]')
     endif
     call write_psf_section(data_table=angles,psf=psf,section='THETA',int_format=int_format,title_format=title_format)
 call print('PSF| '//angles%n//' angles')
 
    ! DIHEDRAL section
-    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,alt_connect=alt_connect)
+    call create_dihedral_list(at,angles,dihedrals,do_add_silica_23body,nneighb_only,alt_connect=alt_connect)
     if (any(dihedrals%int(1:4,1:dihedrals%N).le.0) .or. any(dihedrals%int(1:4,1:dihedrals%N).gt.at%N)) &
-       call system_abort('write_psf_file: element(s) of dihedrals not within (0;at%N]')
+       call system_abort('write_psf_file_pos: element(s) of dihedrals not within (0;at%N]')
     call write_psf_section(data_table=dihedrals,psf=psf,section='PHI',int_format=int_format,title_format=title_format)
 call print('PSF| '//dihedrals%n//' dihedrals')
 
    ! IMPROPER section
     call create_improper_list(at,angles,impropers,intrares_impropers=intrares_impropers)
     if (any(impropers%int(1:4,1:impropers%N).le.0) .or. any(impropers%int(1:4,1:impropers%N).gt.at%N)) &
-       call system_abort('write_psf_file: element(s) of impropers not within (0;at%N]')
+       call system_abort('write_psf_file_pos: element(s) of impropers not within (0;at%N]')
     call write_psf_section(data_table=impropers,psf=psf,section='IMPHI',int_format=int_format,title_format=title_format)
 call print('PSF| '//impropers%n//' impropers')
 
@@ -1040,7 +1093,7 @@ call print('PSF| '//impropers%n//' impropers')
     call finalise(impropers)
     call finalise(psf)
 
-    call system_timer('write_psf_file')
+    call system_timer('write_psf_file_pos')
 !call print('psf written. stop.')
 !stop
 
@@ -1122,12 +1175,13 @@ call print('PSF| '//impropers%n//' impropers')
   !% atom pairs that have SIO2 molecule type up to the silica_cutoff distance.
   !% Optionally use hysteretic_connect, if it is passed as alt_connect.
   !
-  subroutine create_bond_list(at,bonds,add_silica_23body,alt_connect)
+  subroutine create_bond_list(at,bonds,add_silica_23body,nneighb_only,alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(out) :: bonds
   logical,     intent(in)  :: add_silica_23body
-    type(Connection), intent(in), optional, target :: alt_connect
+  logical, intent(in), optional :: nneighb_only
+  type(Connection), intent(in), optional, target :: alt_connect
 
     character(*), parameter  :: me = 'create_bond_list: '
 
@@ -1162,7 +1216,7 @@ call print('PSF| '//impropers%n//' impropers')
        if (add_silica_23body) then
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
@@ -1187,7 +1241,7 @@ call print('PSF| '//impropers%n//' impropers')
                      ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) ) then !silica -- something
 !call system_abort('should have not got here')
                    !add only nearest neighbours
-                   if (.not.(are_nearest_neighbours(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
+                   if (.not.(is_nearest_neighbour_abs_index(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
                 elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) then !silica -- silica
                    !add atom pairs within SILICON_2BODY_CUTOFF
 !call system_abort('what not?')
@@ -1195,7 +1249,7 @@ call print('PSF| '//impropers%n//' impropers')
                 else
 !call system_abort('should have not got here')
                    !add only nearest neighbours
-                   if (.not.(are_nearest_neighbours(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
+                   if (.not.(is_nearest_neighbour_abs_index(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
                 endif
              endif
 
@@ -1218,33 +1272,6 @@ call print('PSF| '//impropers%n//' impropers')
 
   end subroutine create_bond_list
 
-  !% Test if atom $j$ is a nearest neighbour of atom $i$.
-  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
-  !%
-  function are_nearest_neighbours(this,i,j, alt_connect)
-
-    type(Atoms), intent(in), target :: this
-    integer,     intent(in) :: i,j
-    type(Connection), intent(in), optional, target :: alt_connect
-    logical                 :: are_nearest_neighbours
-
-    real(dp)                :: d
-    integer :: neigh, j2
-
-    are_nearest_neighbours = .false.
-
-    do neigh = 1, atoms_n_neighbours(this,i)
-       j2 = atoms_neighbour(this, i, neigh, distance=d, alt_connect=alt_connect)
-       if (j2.eq.j) then
-          if (d < (bond_length(this%Z(i),this%Z(j))*this%nneightol)) &
-             are_nearest_neighbours = .true.
-          return
-       endif
-    enddo
-
-    call system_abort('are_nearest_neighbours: atom '//j//'is not a neighbour of atom '//i)
-
-  end function are_nearest_neighbours
 
   !% Test if atom $j$ is a neighbour of atom $i$ for the silica 2 body terms.
   !% Optionally use hysteretic_connect, if it is passed as alt_connect.
@@ -1327,50 +1354,20 @@ call print('PSF| '//impropers%n//' impropers')
 
   end function are_silica_nearest_neighbours
 
-  !% Test if an atom's $n$th neighbour is one if its nearest neighbours for the silica 3body terms.
-  !% Optionally use hysteretic_connect, if it is passed as alt_connect.
-  !%
-  function is_silica_nearest_neighbour(this,i,n, alt_connect)
-
-    type(Atoms), intent(in), target :: this
-    integer,     intent(in) :: i,n
-    type(Connection), intent(in), optional, target :: alt_connect
-    logical                 :: is_silica_nearest_neighbour
-
-    real(dp)                :: d
-    integer :: j, Z_i, Z_j
-
-    is_silica_nearest_neighbour = .false.
-    if (.not.has_property(this,'Z')) call system_abort('is_silica_nearest_neighbour: could not find Z property.')
-
-    j = atoms_neighbour(this, i, n, distance=d, alt_connect=alt_connect)
-    Z_i = this%Z(i)
-    Z_j = this%Z(j)
-    if ( ((Z_i.eq.14).and.(Z_j.eq. 8)) .or. & !Si--O
-         ((Z_i.eq. 8).and.(Z_j.eq.14)) .or. & !O--Si
-         ((Z_i.eq.14).and.(Z_j.eq.14)) ) then !Si--Si
-       if (d < SILICON_2BODY_CUTOFF) &
-          is_silica_nearest_neighbour = .true.
-    else !Si--H, O--H, O--O, H--H
-       if (d < (bond_length(Z_i,Z_j)*this%nneightol)) &
-          is_silica_nearest_neighbour = .true.
-    endif
-
-  end function is_silica_nearest_neighbour
-
   !% Subroutine to create an $angles$ table with all the angles,
   !% according to the connectivity nearest neighbours. If $add_silica_23body$ is true, include
   !% atom triplets that have SIO2 molecule type and the distances are smaller than the cutoff
   !% for the corresponding 3 body cutoff.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_angle_list(at,bonds,angles,add_silica_23body,alt_connect)
+  subroutine create_angle_list(at,bonds,angles,add_silica_23body,nneighb_only,alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: bonds
   type(Table), intent(out) :: angles
   logical,     intent(in)  :: add_silica_23body
-    type(Connection), intent(in), optional, target :: alt_connect
+  logical,     intent(in), optional  :: nneighb_only
+  type(Connection), intent(in), optional, target :: alt_connect
 
     character(*), parameter  :: me = 'create_angle_list: '
 
@@ -1404,7 +1401,7 @@ call print('PSF| '//impropers%n//' impropers')
 !call system_abort('stop!')
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
 
        do j = 1,atom_b%N
@@ -1418,7 +1415,7 @@ call print('PSF| '//impropers%n//' impropers')
              if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).ne.'SIO2')) .or. &
                   ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) ) then !silica -- something
                 !add only nearest neighbours
-                if (.not.(are_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
+                if (.not.(is_nearest_neighbour_abs_index(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
              elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) then !silica -- silica
                 !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect)) add_angle = .false.
@@ -1434,7 +1431,7 @@ call print('PSF| '//impropers%n//' impropers')
                 endif
              else !something -- something, neither are silica
                 !add only nearest neighbours
-                if (.not.(are_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
+                if (.not.(is_nearest_neighbour_abs_index(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
              endif
           endif
 
@@ -1455,7 +1452,7 @@ call print('PSF| '//impropers%n//' impropers')
        if (add_silica_23body) then
           call bfs_step(at,atom_a,atom_b,nneighb_only=.false.,min_images_only=.true.,alt_connect=alt_connect) ! SILICON_2BODY_CUTOFF is not within nneigh_tol
        else
-          call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+          call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        endif
 
        do j = 1,atom_b%N
@@ -1469,7 +1466,7 @@ call print('PSF| '//impropers%n//' impropers')
              if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).ne.'SIO2')) .or. &
                   ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) ) then !silica -- something
                 !add only nearest neighbours
-                if (.not.(are_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
+                if (.not.(is_nearest_neighbour_abs_index(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
              elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) then !silica -- silica
                 !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect)) add_angle = .false.
@@ -1485,7 +1482,7 @@ call print('PSF| '//impropers%n//' impropers')
                 endif
              else !something -- something, neither are silica
                 !add only nearest neighbours
-                if (.not.(are_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
+                if (.not.(is_nearest_neighbour_abs_index(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
              endif
           endif
 
@@ -1516,13 +1513,14 @@ call print('PSF| '//impropers%n//' impropers')
   !% skip any dihedrals with Si atoms, as there are only 2 and 3 body terms.
   !% Optionally use hysteretic_connect if passed as alt_connect.
   !
-  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,alt_connect)
+  subroutine create_dihedral_list(at,angles,dihedrals,add_silica_23body,nneighb_only, alt_connect)
 
   type(Atoms), intent(in)  :: at
   type(Table), intent(in)  :: angles
   type(Table), intent(out) :: dihedrals
   logical,     intent(in)  :: add_silica_23body
-    type(Connection), intent(in), optional, target :: alt_connect
+  logical,     intent(in), optional  :: nneighb_only
+  type(Connection), intent(in), optional, target :: alt_connect
 
     character(*), parameter  :: me = 'create_angle_list: '
 
@@ -1544,7 +1542,7 @@ call print('PSF| '//impropers%n//' impropers')
       ! look for one more to the beginning: ??--1--2--3
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(1,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then
@@ -1563,7 +1561,7 @@ call print('PSF| '//impropers%n//' impropers')
       ! look for one more to the end: 1--2--3--??
        call initialise(atom_a,4,0,0,0,0)
        call append(atom_a,(/angles%int(3,i),0,0,0/))
-       call bfs_step(at,atom_a,atom_b,nneighb_only=.true.,min_images_only=.true.,alt_connect=alt_connect)
+       call bfs_step(at,atom_a,atom_b,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
        do j = 1,atom_b%N
           atom_j = atom_b%int(1,j)
           if (atom_j.ne.angles%int(2,i)) then

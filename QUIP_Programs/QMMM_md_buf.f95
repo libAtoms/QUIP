@@ -495,7 +495,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
           ds%atoms%nneightol = nneightol
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
-          call create_residue_labels(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
+          call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
           ds%atoms%nneightol = temp
 !       endif

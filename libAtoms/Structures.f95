@@ -1461,7 +1461,7 @@ contains
   !% The routine could optionally find hysteretically defined connections between neighbours,
   !% if the alt_connect's cutoff were the same as at%cutoff(_break)
   !%
-  subroutine find_motif(at,motif,matches,start,end,mask,find_all_possible_matches,alt_connect) !,hysteretic_neighbours)
+  subroutine find_motif(at,motif,matches,start,end,mask,find_all_possible_matches,nneighb_only,alt_connect) !,hysteretic_neighbours)
 
     type(atoms),       intent(in), target  :: at           !% The atoms structure to search
     integer,           intent(in)  :: motif(:,:)   !% The motif to search for
@@ -1469,6 +1469,7 @@ contains
     integer, optional, intent(in)  :: start, end   !% Start and End atomic indices for search
     logical, optional, intent(in)  :: mask(:)      !% If present only masked atoms are searched
     logical, optional, intent(in)  :: find_all_possible_matches !% if true, don't exclude matches that overlap
+    logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
@@ -1484,9 +1485,11 @@ contains
     logical :: do_find_all_possible_matches
 
     integer                  :: discards(7)
-    type(Connection), pointer :: use_connect
 !    logical :: use_hysteretic_neighbours
     real(dp) :: cutoff
+
+    call print("find_motif", verbosity=ANAL)
+    call print(motif, verbosity=ANAL)
 
     discards = 0
     do_find_all_possible_matches = optional_default(.false., find_all_possible_matches)
@@ -1500,11 +1503,10 @@ contains
 
     ! Check for atomic connectivity
     if (present(alt_connect)) then
-      use_connect => alt_connect
+      if (.not.alt_connect%initialised) call system_abort(me//'got alt_connect uninitialised')
     else
-      use_connect => at%connect
+      if (.not.at%connect%initialised) call system_abort(me//'got at%connect uninitialised')
     endif
-    if (.not.use_connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
 !    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
 !
     if (size(motif,1).eq.0) call system_abort(me//'zero motif size')
@@ -1555,6 +1557,8 @@ contains
     allocate(neighbour_Z(count(A(opt_atom,:)==1)))
     neighbour_Z = pack(Z,(A(opt_atom,:)==1))
 
+    call print("opt_atom " // opt_atom // " Z " // at%Z(opt_atom), verbosity=ANAL)
+
     my_start = 1
     if (present(start)) then
        if (start < 1 .or. start > at%N) call system_abort(me//'Starting atom is out of range ('//start//')')
@@ -1570,8 +1574,13 @@ contains
 
     do i = my_start, my_end
 
+       call print("check atom " // i // " Z " // at%Z(i), verbosity=ANAL)
+
        if (present(mask)) then
-          if (.not.mask(i)) cycle
+          if (.not.mask(i)) then
+	    call print("   i not in mask, skipping", verbosity=ANAL)
+	    cycle
+	   endif
        end if
 
        !XXXXXXXXXXXXXXXXXXXX
@@ -1581,13 +1590,12 @@ contains
        ! Discard atoms which don't match the atomic number of the optimum atom
 
        if (at%Z(i) /= Z(opt_atom)) then
+	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=ANAL)
           discards(1) = discards(1) + 1
           cycle
        end if
 
        !---------------------
-
-
 
        !XXXXXXXXXXXXXXXXXXXX
        !X ESCAPE ROUTE 2
@@ -1595,8 +1603,9 @@ contains
 
        ! Check if the real atom's neighbours can be matched with those in the motif
 
-       if (.not.atoms_compatible(at,i,A,Z,opt_atom,alt_connect=use_connect)) then
+       if (.not.atoms_compatible(at,i,A,Z,opt_atom,nneighb_only=nneighb_only,alt_connect=alt_connect)) then
           discards(2) = discards(2) + 1
+	  call print("   i has incompatible neighbour list, skipping", verbosity=ANAL)
           cycle
        end if
 
@@ -1605,7 +1614,7 @@ contains
        ! Grow a cluster around the real atom i which is  max_depth hops deep
        call wipe(core)
        call append(core,(/i,0,0,0/))
-       call bfs_grow(at,core,max_depth,nneighb_only = .true., min_images_only = .true.,alt_connect=use_connect)
+       call bfs_grow(at,core,max_depth,nneighb_only = nneighb_only, min_images_only = .true.,alt_connect=alt_connect)
 
        !XXXXXXXXXXXXXXXXXXXX
        !X ESCAPE ROUTE 3
@@ -1613,6 +1622,7 @@ contains
 
        ! If the number of atoms in the cluster is less than those in the motif we can't have a match
        if (core%N < N) then
+	  call print("   i's cluster is too small, skipping", verbosity=ANAL)
           discards(3) = discards(3) + 1
           cycle
        end if
@@ -1658,6 +1668,7 @@ contains
        call finalise(num_species_motif)
        call finalise(num_species_at)
        if (.not.match) then
+	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=ANAL)
           discards(4) = discards(4) + 1
           cycle
        end if
@@ -1691,6 +1702,11 @@ contains
           end do
        end do
 
+       call print("core", verbosity=ANAL)
+       call print(core, verbosity=ANAL)
+       call print("adjacency mat", verbosity=ANAL)
+       call print(B, verbosity=ANAL)
+
        ! Find depth of connectivity for real atoms
        allocate(depth_real(core%N))
        call find_connectivity_depth(B,1,depth_real)
@@ -1702,6 +1718,7 @@ contains
 
        ! If there are atoms which aren't deep enough in the real structure then a match is impossible
        if (max_depth > max_depth_real) then
+	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=ANAL)
           deallocate(B,depth_real)
           discards(5) = discards(5) + 1
           cycle
@@ -1724,7 +1741,7 @@ contains
           do p = 1, N
              if (p==opt_atom) cycle
              if (depth_real(q) == depth(p)) then
-                if (atoms_compatible(at,core%int(1,q),A,Z,p,alt_connect=use_connect)) M0(p,q) = 1
+                if (atoms_compatible(at,core%int(1,q),A,Z,p,nneighb_only=nneighb_only,alt_connect=alt_connect)) M0(p,q) = 1
              end if
           end do
        end do
@@ -1737,6 +1754,7 @@ contains
 
        ! Check to see if any atoms have no possibilities
        if (any(sum(M0,dim=2)==0)) then
+	  call print("   i has some neighbor that doesn't match, skipping", verbosity=ANAL)
           deallocate(M0,B)
           discards(6) = discards(6) + 1
           cycle
@@ -1750,6 +1768,7 @@ contains
        match = .false.
        do 
 
+	  call print("  check permutation loop start", verbosity=ANAL)
           ! For each trial matrix create the permuted adjacency matrix
           C = matmul(M,transpose(matmul(M,B))) ! ***** THIS LINE IS ANOTHER CANDIDATE FOR OPTIMISATION *****
                                                ! Use sparse matrices maybe?
@@ -1782,10 +1801,14 @@ contains
 	     if (do_append) then
 		call append(matches,match_indices)
 		assigned_to_motif(match_indices) = .true.
+		call print("  found match, indices " // match_indices, verbosity=ANAL)
 	     endif
 	     deallocate(match_indices)
 
-	     if (.not. do_find_all_possible_matches) exit
+	     if (.not. do_find_all_possible_matches) then
+	       call print("  not looking for _all_ matches, finished", verbosity=ANAL)
+	       exit
+	     endif
           end if ! match
 
           call next_trial_matrix(M0,M)
@@ -1797,6 +1820,7 @@ contains
           ! If next_trial_matrix deletes the only atom we know to be fitted then all
           ! permutations have been exhausted
           if (M(opt_atom,1)==0) then
+	     call print("   i has no more premutations, leaving loop", verbosity=ANAL)
              discards(7) = discards(7) + 1
              exit
           end if
@@ -1992,13 +2016,14 @@ contains
   !% OMIT
   ! Used by find_motif
   ! Added alt_connect.
-  function atoms_compatible(at,i,A,Z,j,alt_connect)
+  function atoms_compatible(at,i,A,Z,j,nneighb_only,alt_connect)
 
     type(atoms),             intent(in), target :: at !the atoms structure
     integer,                 intent(in) :: i  !the atom in the atoms structure we are testing
     integer, dimension(:,:), intent(in) :: A  !the adjacency matrix of the motif
     integer, dimension(:),   intent(in) :: Z  !the atomic number of the motif
     integer,                 intent(in) :: j  !the atom in the motif we are testing
+    logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical                             :: atoms_compatible
 
@@ -2007,7 +2032,6 @@ contains
     integer, allocatable, dimension(:) :: neighbour_Z
     integer                            :: p,q
     logical                            :: match, found
-    type(Connection), pointer :: use_connect
 
     ! First check the atomic numbers of the two atoms to test
     if (at%Z(i) /= Z(j)) then
@@ -2015,16 +2039,10 @@ contains
        return
     end if
 
-    if (present(alt_connect)) then
-      use_connect => alt_connect
-    else
-      use_connect => at%connect
-    endif
-
     ! find nearest neighbours of real atom
     call allocate(core,4,0,0,0,1)
     call append(core,(/i,0,0,0/))
-    call bfs_step(at,core,neighbours,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+    call bfs_step(at,core,neighbours,nneighb_only=nneighb_only,min_images_only=.true.,alt_connect=alt_connect)
 
     allocate(neighbour_used(neighbours%N))
     neighbour_used = .false.
