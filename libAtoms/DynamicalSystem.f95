@@ -556,13 +556,17 @@ contains
       end if
 
       ! Initialize oldpos and avgpos
-      do i = 1, this%N
-         this%atoms%avgpos(:,i) = realpos(this%atoms,i)
-      end do
+      if (.not. associated(atoms_in%avgpos)) then
+	do i = 1, this%N
+	   this%atoms%avgpos(:,i) = realpos(this%atoms,i)
+	end do
+      endif
       this%atoms%oldpos = this%atoms%avgpos
-      do i=1, this%atoms%N
-	this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
-      end do
+      if (.not. associated(atoms_in%avg_ke)) then
+	do i=1, this%atoms%N
+	  this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
+	end do
+      endif
 
       ! Check for constraints
       if (present(constraints)) then
