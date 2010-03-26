@@ -136,7 +136,10 @@ contains
     at%use_uniform_cutoff = at_copy%use_uniform_cutoff
 
     ! now create labels using this connectivity object
-    call create_residue_labels(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential)
+    ! if cutoff is set to 0, nneighb_only doesn't matter
+    ! if cutoff is large, then nneighb_only must be true
+    !    so might as well pass true
+    call create_residue_labels(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential)
     call finalise(t_connect)
 
   end subroutine create_residue_labels_arb_pos
@@ -914,9 +917,13 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
+    character(len=TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
+    logical do_add_silica_23body
 
     ! save a copy
     at_copy = at
+
+    do_add_silica_23body = optional_default(.false., add_silica_23body)
 
     ! find desired position field (pos, avgpos, whatever)
     if (present(pos_field_for_connectivity)) then
@@ -929,8 +936,24 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    if (trim(pos_field_for_connectivity) /= 'pos') at%pos = use_pos
-    call set_cutoff(at, 0.0_dp)
+    if (trim(pos_field_for_connectivity) /= 'pos') then
+      if (do_add_silica_23body) then
+	if (.not. assign_pointer(at, 'atom_res_name', atom_res_name_p)) &
+	  call system_abort("write_psf_file_arb_pos failed to assign pointer for atom_res_name to do silica 2,3 body stuff")
+	where (atom_res_name_p /= 'SIO2')
+	  at%pos(:,1) = use_pos(:,1)
+	  at%pos(:,2) = use_pos(:,2)
+	  at%pos(:,3) = use_pos(:,3)
+	end where
+      else
+	at%pos = use_pos
+      endif
+    endif
+    if (do_add_silica_23body) then
+      call set_cutoff(at,SILICA_2body_CUTOFF)
+    else
+      call set_cutoff(at,0.0_dp)
+    endif
     call calc_connect(at, alt_connect=t_connect)
     ! copy back from saved copy
     at%pos = at_copy%pos
@@ -939,7 +962,10 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     at%use_uniform_cutoff = at_copy%use_uniform_cutoff
 
     ! now create labels using this connectivity object
-    call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect)
+    ! if cutoff is set to 0, nneighb_only doesn't matter
+    ! if cutoff is large, then nneighb_only must be true
+    !    so might as well pass true
+    call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect)
     call finalise(t_connect)
   end subroutine write_psf_file_arb_pos
 
