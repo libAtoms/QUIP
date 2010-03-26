@@ -17,6 +17,7 @@ program cp2k_filepot_template
 
     call system_initialise(verbosity=SILENT,enable_timing=.true.)
     call verbosity_push(NORMAL)
+    mainlog%prefix="CP2K_FILEPOT"
     call system_timer('cp2k_filepot_template')
 
     if (cmd_arg_count() < 2) &
@@ -57,6 +58,7 @@ program cp2k_filepot_template
     deallocate(f0)
     call finalise(my_atoms)
     call system_timer('cp2k_filepot_template')
+    mainlog%prefix=""
     call verbosity_push(SILENT)
     call system_finalise
 
