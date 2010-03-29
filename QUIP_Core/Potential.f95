@@ -561,7 +561,7 @@ contains
          endif
          !save the previous cluster_mark[_postfix] into old_cluster_mark[_postfix]
          call add_property(at,'old_cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
-           call print('Add old_cluster_mark'//trim(cluster_mark_postfix),ANAL)
+	 call print('Add old_cluster_mark'//trim(cluster_mark_postfix),ANAL)
 	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer")
          if (trim(cluster_mark_postfix)/="") then

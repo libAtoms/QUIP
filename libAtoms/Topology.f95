@@ -125,18 +125,13 @@ contains
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    if (.not. use_pos_is_pos) at%pos = use_pos
+    if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_have_silica_potential) then
-      call set_cutoff(at,SILICA_2body_CUTOFF)
+      call set_cutoff(at_copy,SILICA_2body_CUTOFF)
     else
-      call set_cutoff(at,0.0_dp)
+      call set_cutoff(at_copy,0.0_dp)
     endif
-    call calc_connect(at, alt_connect=t_connect)
-    ! copy back from saved copy
-    at%pos = at_copy%pos
-    at%travel = at_copy%travel
-    at%cutoff = at_copy%cutoff
-    at%use_uniform_cutoff = at_copy%use_uniform_cutoff
+    call calc_connect(at_copy, alt_connect=t_connect)
 
     ! now create labels using this connectivity object
     ! if cutoff is set to 0, nneighb_only doesn't matter
@@ -941,18 +936,13 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
-    if (.not. use_pos_is_pos) at%pos = use_pos
+    if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_add_silica_23body) then
-      call set_cutoff(at,SILICA_2body_CUTOFF)
+      call set_cutoff(at_copy,SILICA_2body_CUTOFF)
     else
-      call set_cutoff(at,0.0_dp)
+      call set_cutoff(at_copy,0.0_dp)
     endif
-    call calc_connect(at, alt_connect=t_connect)
-    ! copy back from saved copy
-    at%pos = at_copy%pos
-    at%travel = at_copy%travel
-    at%cutoff = at_copy%cutoff
-    at%use_uniform_cutoff = at_copy%use_uniform_cutoff
+    call calc_connect(at_copy, alt_connect=t_connect)
 
     ! now create labels using this connectivity object
     ! if cutoff is set to 0, nneighb_only doesn't matter

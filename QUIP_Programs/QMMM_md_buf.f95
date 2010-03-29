@@ -692,6 +692,8 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
       if (Delete_Metal_Connections) call delete_metal_connects(ds%atoms)
       max_move_since_calc_connect = 0.0_dp
       call system_timer("calc_connect")
+    else
+      call calc_dists(ds%atoms)
     endif
 
     call system_timer('step')
