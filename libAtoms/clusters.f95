@@ -1890,11 +1890,13 @@ contains
 
        !construct the hysteretic buffer region:
        if (hysteretic_connect) then
+	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
 	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, &
 	   alt_connect=at%hysteretic_connect) !NB, debugfile=mainlog)
        else
+	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
 	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, &
@@ -2462,11 +2464,11 @@ type(inoutput), optional :: debugfile
       more_hops = .true.
       cur_hop = 1
       do while (more_hops)
-	if (present(debugfile)) call print('   construct_region do_nneighb_only = " // do_nneighb_only // " do_min_images_only = '//do_min_images_only, file=debugfile)
-	if (present(debugfile)) call print("   doing hop " // cur_hop, file=debugfile)
-	if (present(debugfile)) call print("   cutoffs " // at%cutoff // " " // at%use_uniform_cutoff, file=debugfile)
+	if (present(debugfile)) call print('   construct_region do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, file=debugfile)
+	if (present(debugfile)) call print('   doing hop ' // cur_hop, file=debugfile)
+	if (present(debugfile)) call print('   cutoffs ' // at%cutoff // ' ' // at%use_uniform_cutoff, file=debugfile)
 	more_hops = .false.
-	call bfs_step(at, region, nextlist, nneighb_only=do_nneighb_only .and. .not. present(radius), min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect)
+	call bfs_step(at, region, nextlist, nneighb_only=do_nneighb_only .and. .not. present(radius), min_images_only=do_min_images_only, max_r=radius, alt_connect=alt_connect, debugfile=debugfile)
 	if (present(debugfile)) call print("   bfs_step returned nextlist%N " // nextlist%N, file=debugfile)
 	if (present(debugfile)) call print(nextlist, file=debugfile)
 	if (nextlist%N /= 0) then ! go over things in next hop
@@ -3081,10 +3083,12 @@ type(inoutput), optional :: debugfile
 
 !Build the hysteretic QM core:
   if (present(atomlist)) then
+     call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
        nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 
   else !present origin
+     call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,centre=origin,loop_atoms_no_connectivity=.true., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
        nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 

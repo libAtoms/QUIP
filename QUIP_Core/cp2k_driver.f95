@@ -36,7 +36,8 @@ contains
 
     call initialise(force_cio, "cp2k_force_file_log")
     call read(force_cio, for, frame=this_run_i-1)
-    call finalise(force_cio)
+    !NB why does this crash now?
+    ! call finalise(force_cio)
     if (.not. assign_pointer(for, 'frc', frc)) &
       call system_abort("do_cp2k_calc_fake couldn't find frc field in force log file")
     f = frc

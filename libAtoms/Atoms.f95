@@ -1785,7 +1785,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1796,7 +1796,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int
 
@@ -1821,7 +1821,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1832,7 +1832,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_int_a
 
@@ -1857,7 +1857,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1868,7 +1868,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real
 
@@ -1893,7 +1893,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1904,7 +1904,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real_a
 
@@ -1929,7 +1929,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1940,7 +1940,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str
 
@@ -1965,7 +1965,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -1976,7 +1976,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_str_a
 
@@ -2001,7 +2001,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -2012,7 +2012,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical
 
@@ -2037,7 +2037,7 @@ contains
           if (present(lookup)) lookup = use_lookup
           return
        else
-          call system_abort('Add_Property: incompatible property '//name//' already present')
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
        end if
     end if
 
@@ -2048,7 +2048,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//name//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_logical_a
 
