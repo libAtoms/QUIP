@@ -66,7 +66,7 @@ contains
     character(len=*), intent(in) :: args_str
 
     type(Dictionary) :: cli
-    character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program
+    character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file
     logical :: clean_up_files, save_output_files
     integer :: max_n_tries
     real(dp) :: max_force_warning
@@ -80,13 +80,23 @@ contains
     type(Inoutput) :: template_io
     integer :: template_n_lines
     character(len=1024), allocatable :: cp2k_template_a(:)
+    type(Inoutput) :: link_template_io
+    integer :: link_template_n_lines
+    character(len=1024), allocatable :: link_template_a(:)
+    integer :: i_line
 
     character(len=1024) :: run_dir
 
     integer :: run_type_i
 
     type(Table) :: qm_list
+    type(Table) :: cut_bonds
+    integer, pointer :: cut_bonds_p(:,:)
     integer, allocatable :: qm_list_a(:)
+    integer, allocatable :: link_list_a(:)
+    integer, allocatable :: qm_and_link_list_a(:)
+    integer :: i_inner, i_outer
+    logical :: inserted_atoms
     integer :: counter
 
     integer :: charge
@@ -99,7 +109,7 @@ contains
     logical :: cp2k_calc_fake
 
     integer, pointer :: isolated_atom(:)
-    integer i, atno, insert_pos
+    integer i, j, atno, insert_pos
     real(dp) :: cur_qmmm_qm_abc(3), old_qmmm_qm_abc(3)
 
     type(Atoms) :: at_cp2k
@@ -122,6 +132,8 @@ contains
       call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type)
       cp2k_template_file = ''
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file)
+      link_template_file = ""
+      call param_register(cli, "qmmm_link_template_file", "", link_template_file)
       psf_print = ''
       call param_register(cli, 'PSF_print', 'NO_PSF', psf_print)
       cp2k_program = ''
@@ -150,6 +162,7 @@ contains
     call print("do_cp2k_calc command line arguments")
     call print("  Run_Type " // Run_Type)
     call print("  cp2k_template_file " // cp2k_template_file)
+    call print("  qmmm_link_template_file " // link_template_file)
     call print("  PSF_print " // PSF_print)
     call print("  clean_up_files " // clean_up_files)
     call print("  save_output_files " // save_output_files)
@@ -234,7 +247,7 @@ contains
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
     call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL METHOD "//trim(method), after_line = insert_pos, n_l = template_n_lines)
 
-    ! get qm_list
+    ! get qm_list and link_list
     if (use_QMMM) then
       select case (run_type_i)
 	case(QMMM_RUN_CORE)
@@ -247,8 +260,44 @@ contains
       end select
       allocate(qm_list_a(qm_list%N))
       if (qm_list%N > 0) qm_list_a = int_part(qm_list,1)
+      !get link list
+
+       if (assign_pointer(at,'cut_bonds',cut_bonds_p)) then
+          call initialise(cut_bonds,2,0,0,0,0)
+          do i_inner=1,at%N
+             do j=1,4 !MAX_CUT_BONDS
+                i_outer = cut_bonds_p(j,i_inner)
+                if (i_outer .eq. 0) exit
+                call append(cut_bonds,(/i_inner,i_outer/))
+             enddo
+          enddo
+          if (cut_bonds%N.gt.0) then
+             call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
+             allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
+             qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
+             qm_and_link_list_a(size(qm_list_a)+1:size(qm_list_a)+size(link_list_a)) = link_list_a(1:size(link_list_a))
+          else
+             allocate(link_list_a(0))
+             allocate(qm_and_link_list_a(size(qm_list_a)))
+             if (size(qm_list_a).gt.0) qm_and_link_list_a = qm_list_a
+          endif
+       else
+          allocate(qm_and_link_list_a(size(qm_list_a)))
+          if (size(qm_list_a).gt.0) qm_and_link_list_a = qm_list_a
+       endif
+
+       !If needed, read QM/MM link_template_file
+       if (size(link_list_a).gt.0) then
+          if (trim(link_template_file).eq."") call system_abort("There are QM/MM links, but qmmm_link_template is not defined.")
+          call initialise(link_template_io, trim(link_template_file), INPUT)
+          call read_file(link_template_io, link_template_a, link_template_n_lines)
+          call finalise(link_template_io)
+          call prefix_cp2k_input_sections(link_template_a)
+       endif
     else
       allocate(qm_list_a(0))
+      allocate(link_list_a(0))
+      allocate(qm_and_link_list_a(0))
     endif
 
     if (centre_cp2k) then
@@ -328,6 +377,7 @@ contains
 
        if (qm_list_changed) can_reuse_wfn = .false.
 
+      !Add QM atoms
       counter = 0
       do atno=minval(at%Z), maxval(at%Z)
 	if (any(at%Z(qm_list_a) == atno)) then
@@ -344,6 +394,24 @@ contains
       end do
       if (size(qm_list_a) /= counter) &
 	call system_abort("Number of QM list atoms " // size(qm_list_a) // " doesn't match number of QM_KIND atoms " // counter)
+
+      !Add link sections from template file for each link
+      if (size(link_list_a).gt.0) then
+         do i=1,cut_bonds%N
+            i_inner = cut_bonds%int(1,i)
+            i_outer = cut_bonds%int(2,i)
+            insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&QMMM")
+            inserted_atoms = .false.
+            do i_line=1,link_template_n_lines
+               call insert_cp2k_input_line(cp2k_template_a, trim("&FORCE_EVAL&QMMM")//trim(link_template_a(i_line)), after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+               if (.not.inserted_atoms) then
+                  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&LINK MM_INDEX "//i_outer, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+                  call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&LINK QM_INDEX "//i_inner, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+                  inserted_atoms = .true.
+               endif
+            enddo
+         enddo
+      endif
     endif
 
     ! put in things needed for QM
@@ -430,7 +498,7 @@ contains
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     ! parse output
-    call read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
+    call read_energy_forces(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
 
     if (centre_cp2k) then
       at%pos(1,:) = at%pos(1,:) + cp2k_centre_pos(1)
