@@ -92,6 +92,7 @@ program qmmm_md
   real(dp)                    :: Tau
   logical                     :: Buffer_general, do_general
   logical                     :: Continue_it
+  logical                     :: reinitialise_qm_region
   real(dp)                    :: avg_time
   integer                     :: Seed
   logical                     :: qm_region_pt_ctr
@@ -157,6 +158,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'Tau', '500.0', Tau)
       call param_register(params_in, 'Buffer_general', 'F', Buffer_general)
       call param_register(params_in, 'Continue', 'F', Continue_it)
+      call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region)
       call param_register(params_in, 'avg_time', '100.0', avg_time)
       call param_register(params_in, 'Seed', '-1', Seed)
       call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr)
@@ -293,6 +295,7 @@ logical :: have_silica_potential
       call print('  Charge '//Charge)
       call print('  Buffer_general '//Buffer_general)
       call print('  Continue '//Continue_it)
+      call print('  reinitialise_qm_region '//reinitialise_qm_region)
       call print('  avg_time '//avg_time)
       call print('  Seed '//Seed)
       call print('  Properties to print '//trim(print_prop))
@@ -431,13 +434,13 @@ logical :: have_silica_potential
    !QM CORE
     if ((trim(Run_Type1).eq.'QMMM_CORE') .or. &
         (trim(Run_Type1).eq.'QMMM_EXTENDED')) then
-       if (.not.Continue_it) then
+       if (reinitialise_qm_region .or. .not. Continue_it) then
 	  call add_property(ds%atoms,'hybrid',HYBRID_NO_MARK)
 	  call add_property(ds%atoms,'hybrid_mark',HYBRID_NO_MARK)
 	  call add_property(ds%atoms,'old_hybrid_mark',HYBRID_NO_MARK)
 	  call add_property(ds%atoms,'cluster_mark',HYBRID_NO_MARK)
 	  call add_property(ds%atoms,'old_cluster_mark',HYBRID_NO_MARK)
-	  call add_property(ds%atoms, 'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
+	  call add_property(ds%atoms,'cut_bonds', 0, n_cols=4) !MAX_CUT_BONDS)
           if (qm_region_pt_ctr) then
              call map_into_cell(ds%atoms)
              call calc_dists(ds%atoms)
