@@ -63,7 +63,7 @@ class TestOOFortran(QuippyTestCase):
 
    def testoptional(self):
       self.dia.calc_connect() # without optional argument
-      self.dia.calc_connect(1) # optional argument by position
+      self.dia.calc_connect(self.dia.connect) # optional argument by position
       self.dia.calc_connect(own_neighbour=1)
 
 
