@@ -2647,6 +2647,45 @@ contains
 
   end function atoms_neighbour
 
+  function atoms_neighbour_minimal(this, i, n, shift, index) result(j)
+    type(Atoms), intent(in), target :: this
+    integer ::i, j, n
+    integer,  intent(out) :: shift(3)
+    integer,  intent(out) :: index
+
+    integer ::i_n1n, j_n1n, m
+
+    if (.not. associated(this%connect%neighbour1(i)%t)) then
+      call system_abort("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table")
+      return
+    endif
+
+    ! First we give the neighbour2 entries (i > j) then the neighbour1 (i <= j)
+    ! This order chosen to give neighbours in approx numerical order but doesn't matter
+    if (this%connect%initialised) then
+       i_n1n = n-this%connect%neighbour2(i)%t%N
+       if (n <= this%connect%neighbour2(i)%t%N) then
+          j = this%connect%neighbour2(i)%t%int(1,n)
+          j_n1n = this%connect%neighbour2(i)%t%int(2,n)
+          index = j_n1n
+       else if (i_n1n <= this%connect%neighbour1(i)%t%N) then
+          j = this%connect%neighbour1(i)%t%int(1,i_n1n)
+          index = i_n1n
+       else
+          call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
+               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
+       end if
+    else
+       call system_abort('atoms_neighbour: Atoms structure has no connectivity data. Call calc_connect first.')
+    end if
+
+     if (i <= j) then
+	shift = this%connect%neighbour1(i)%t%int(2:4,i_n1n)
+     else
+	shift = -this%connect%neighbour1(j)%t%int(2:4,j_n1n)
+     end if
+
+  end function atoms_neighbour_minimal
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -2960,9 +2999,10 @@ contains
 
        do n = 1, atoms_n_neighbours(this, i) 
 
-          j = atoms_neighbour(this, i, n, shift=shift, index=index)
+          j = atoms_neighbour_minimal(this, i, n, shift=shift, index=index)
 
-          j_pos = this%pos(:,j) + ( this%lattice .mult. shift )
+          ! j_pos = this%pos(:,j) + ( this%lattice .mult. shift )
+          j_pos(:) = this%pos(:,j) + ( this%lattice(:,1) * shift(1) + this%lattice(:,2) * shift(2) + this%lattice(:,3) * shift(3) )
 
           if (i <= j) then
              this%connect%neighbour1(i)%t%real(1,index) = norm(j_pos - this%pos(:,i))
@@ -3829,7 +3869,7 @@ contains
     integer,     intent(in)    :: i,j
     integer,     intent(in), optional    :: shift(3)
 
-    integer :: ii, jj, iii, jjj, jjjj, r_index, n_removed
+    integer :: ii, jj, iii, jjj, jjjj, r_index, n_removed, my_shift(3)
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
       call system_abort("tried to remove_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
@@ -3839,9 +3879,11 @@ contains
     if (i > j) then
       ii = j
       jj = i
+      if (present(shift)) my_shift = -shift
     else
       ii = i
       jj = j
+      if (present(shift)) my_shift = shift
     endif
     ! now ii <= jj
 
@@ -3850,7 +3892,7 @@ contains
     do while (r_index /= 0)
       ! remove entry from neighbour1(ii)
       if (present(shift)) then
-	r_index = find(this%neighbour1(ii)%t, (/ jj, shift /) )
+	r_index = find(this%neighbour1(ii)%t, (/ jj, my_shift /) )
       else
 	r_index = find(this%neighbour1(ii)%t, (/ jj, 0, 0, 0 /), (/ .true., .false., .false., .false./) )
       endif
