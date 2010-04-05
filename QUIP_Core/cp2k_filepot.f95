@@ -13,7 +13,7 @@ program cp2k_filepot_template
 
     character(len=1024)  :: infile, outfile
     character(len=10240) :: arg, args_str
-    integer :: i
+    integer :: i, index_insert
 
     call system_initialise(verbosity=SILENT,enable_timing=.true.)
     call verbosity_push(NORMAL)
@@ -29,6 +29,12 @@ program cp2k_filepot_template
     if (cmd_arg_count() > 2) then
       do i=3, cmd_arg_count()
 	call get_cmd_arg(i, arg)
+        !add {} if there is space in the arg
+        if (index(trim(arg)," ").ne.0) then
+            index_insert = index(trim(arg),"=")
+            arg(index_insert+1:len_trim(arg)+2) = "{"//arg(index_insert+1:len_trim(arg))//"}"
+            call print('arg: '//trim(arg),SILENT)
+        endif
 	args_str = trim(args_str) // " " // trim(arg)
       end do
     endif
