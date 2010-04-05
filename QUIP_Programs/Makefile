@@ -11,7 +11,7 @@ endif
 OBJS = vacancy_map_mod.o 
 
 PROGRAMS = eval md lj_example md_example \
-  NRL_TB_to_xml DFTB_to_xml \
+  NRL_TB_to_xml DFTB_to_xml FC_to_xml \
   calc_n_poles \
   analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
@@ -24,7 +24,7 @@ LIBFILES = libatoms.a libquip.a libquiputils.a
 
 .PHONY: clean allclean test
 
-EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test ts_calculation QMMM_CP2K_md QMMM_md_buf annealing
+EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP_water_bulk test ts_calculation QMMM_CP2K_md QMMM_md_buf annealing deval_dphonon
 
 ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
