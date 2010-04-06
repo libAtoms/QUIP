@@ -53,7 +53,7 @@ TARGETS = ${TEST_TARGETS}
 .PHONY : clean allclean depend doc
 
 libquip.a: ${QUIP_OBJS}
-	ar ${AR_ADD} libquip.a ${QUIP_OBJS}
+	${AR} ${AR_ADD} libquip.a ${QUIP_OBJS}
 
 MetaPotential.o: \
 	MetaPotential_Hybrid_utils.f95 \
