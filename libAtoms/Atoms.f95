@@ -2512,6 +2512,66 @@ contains
 
   end function atoms_n_neighbours
 
+  function atoms_neighbour_index(this, i, n, index, t, is_j, alt_connect) result(j)
+    type(Atoms), intent(in), target :: this
+    integer :: i, j, n
+    integer,  intent(out) :: index
+    type(Table), pointer, intent(out) :: t
+    logical, intent(out) :: is_j
+    type(Connection), optional, intent(in), target :: alt_connect
+
+    integer :: i_n1n, j_n1n
+    type(Connection), pointer :: use_connect
+
+    if (present(alt_connect)) then
+      use_connect => alt_connect
+    else
+      use_connect => this%connect
+    endif
+
+    if (use_connect%initialised) then
+       i_n1n = n-use_connect%neighbour2(i)%t%N
+       if (n <= use_connect%neighbour2(i)%t%N) then
+          j = use_connect%neighbour2(i)%t%int(1,n)
+          j_n1n = use_connect%neighbour2(i)%t%int(2,n)
+          index = j_n1n
+	  t => use_connect%neighbour1(j)%t
+	  is_j = .true.
+       else if (i_n1n <= use_connect%neighbour1(i)%t%N) then
+          j = use_connect%neighbour1(i)%t%int(1,i_n1n)
+          index = i_n1n
+	  t => use_connect%neighbour1(i)%t
+	  is_j = .false.
+       else
+          call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
+               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
+       end if
+    else
+       call system_abort('atoms_neighbour_index: Connect structure not initialized. Call calc_connect first.')
+    end if
+
+  end function atoms_neighbour_index
+
+  function atoms_neighbour_minimal(this, i, n, shift, index, alt_connect) result(j)
+    type(Atoms), intent(in), target :: this
+    integer ::i, j, n
+    integer,  intent(out) :: shift(3)
+    integer,  intent(out) :: index
+    type(Connection), optional, intent(in), target :: alt_connect
+
+    type(Table), pointer :: t
+    logical :: is_j
+
+    j = atoms_neighbour_index(this, i, n, index, t, is_j, alt_connect)
+
+    if (is_j) then
+      shift = - t%int(2:4,index)
+    else
+      shift = t%int(2:4,index)
+    endif
+
+  end function atoms_neighbour_minimal
+
   !% Return the index of the $n^{\mbox{\small{th}}}$ neighbour of atom $i$. Together with the
   !% previous function, this facilites a loop over the neighbours of atom $i$. Optionally, we
   !% return other geometric information, such as distance, direction cosines and difference vector,
@@ -2576,15 +2636,15 @@ contains
        if(i < j) then
           do i_njn = 1, use_connect%neighbour2(j)%t%N
              if( (use_connect%neighbour2(j)%t%int(1,i_njn)==i) .and. &
-             & (use_connect%neighbour2(j)%t%int(2,i_njn)==i_n1n) ) jn = i_njn
+                 (use_connect%neighbour2(j)%t%int(2,i_njn)==i_n1n) ) jn = i_njn
           enddo
        elseif(i > j) then
           jn = j_n1n + use_connect%neighbour2(j)%t%N
        else
           do i_njn = 1, use_connect%neighbour1(j)%t%N
              if( (use_connect%neighbour1(j)%t%int(1,i_njn) == i) .and. &
-             & all(use_connect%neighbour1(j)%t%int(2:4,i_njn) == -use_connect%neighbour1(i)%t%int(2:4,i_n1n))) &
-             & jn = i_njn + use_connect%neighbour2(j)%t%N
+                  all(use_connect%neighbour1(j)%t%int(2:4,i_njn) == -use_connect%neighbour1(i)%t%int(2:4,i_n1n))) &
+	       jn = i_njn + use_connect%neighbour2(j)%t%N
           enddo
        endif
     endif
@@ -2631,7 +2691,8 @@ contains
           !mydiff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
           mydiff = this%pos(:,j) - this%pos(:,i)
           do m=1,3
-             forall(k=1:3) mydiff(k) = mydiff(k) + this%lattice(k,m) * myshift(m)
+             ! forall(k=1:3) mydiff(k) = mydiff(k) + this%lattice(k,m) * myshift(m)
+             mydiff(1:3) = mydiff(1:3) + this%lattice(1:3,m) * myshift(m)
           end do
           if(present(diff)) diff = mydiff
           if(present(cosines)) then
@@ -2646,46 +2707,6 @@ contains
     end if
 
   end function atoms_neighbour
-
-  function atoms_neighbour_minimal(this, i, n, shift, index) result(j)
-    type(Atoms), intent(in), target :: this
-    integer ::i, j, n
-    integer,  intent(out) :: shift(3)
-    integer,  intent(out) :: index
-
-    integer ::i_n1n, j_n1n, m
-
-    if (.not. associated(this%connect%neighbour1(i)%t)) then
-      call system_abort("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table")
-      return
-    endif
-
-    ! First we give the neighbour2 entries (i > j) then the neighbour1 (i <= j)
-    ! This order chosen to give neighbours in approx numerical order but doesn't matter
-    if (this%connect%initialised) then
-       i_n1n = n-this%connect%neighbour2(i)%t%N
-       if (n <= this%connect%neighbour2(i)%t%N) then
-          j = this%connect%neighbour2(i)%t%int(1,n)
-          j_n1n = this%connect%neighbour2(i)%t%int(2,n)
-          index = j_n1n
-       else if (i_n1n <= this%connect%neighbour1(i)%t%N) then
-          j = this%connect%neighbour1(i)%t%int(1,i_n1n)
-          index = i_n1n
-       else
-          call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
-               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
-       end if
-    else
-       call system_abort('atoms_neighbour: Atoms structure has no connectivity data. Call calc_connect first.')
-    end if
-
-     if (i <= j) then
-	shift = this%connect%neighbour1(i)%t%int(2:4,i_n1n)
-     else
-	shift = -this%connect%neighbour1(j)%t%int(2:4,j_n1n)
-     end if
-
-  end function atoms_neighbour_minimal
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
