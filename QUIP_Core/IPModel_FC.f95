@@ -93,6 +93,9 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str, mpi)
   real(dp), allocatable :: t_phi(:)
   integer :: ti, tj
 
+  integer :: i, ji, j, s(3), fc_i, tind, t_s(3)
+  real(dp) :: ideal_v(3), ideal_dr_mag
+
   call Finalise(this)
 
   call initialise(params)
@@ -125,6 +128,31 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str, mpi)
   end do
 
   if (present(mpi)) this%mpi = mpi
+
+  call set_cutoff(this%ideal_struct, this%cutoff)
+  call calc_connect(this%ideal_struct)
+  do i = 1, this%ideal_struct%N
+    ti = get_type(this%type_of_atomic_num, this%ideal_struct%Z(i))
+    ji = 1
+    do while (ji <= atoms_n_neighbours(this%ideal_struct, i))
+      ji = 1
+      do while (ji <= atoms_n_neighbours(this%ideal_struct, i))
+	j = atoms_neighbour(this%ideal_struct, i, ji, distance=ideal_dr_mag, shift=s)
+
+	! if (dr_mag .feq. 0.0_dp) cycle
+	! if ((i < j) .and. i_is_min_image) cycle
+
+	tj = get_type(this%type_of_atomic_num, this%ideal_struct%Z(j))
+
+	fc_i = find_fc_i(this, ti, tj, ideal_dr_mag)
+	if (fc_i <= 0) then
+	  call remove_bond(this%ideal_struct%connect, i, j, s)
+	  exit
+	end if
+	ji = ji + 1
+      end do ! while ji inner
+    end do ! while ji outer
+  end do ! j
 
 end subroutine IPModel_FC_Initialise_str
 
@@ -159,7 +187,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ti, tj, fc_i
-  real(dp) :: dr(3), dr_mag, ideal_dr_mag
+  real(dp) :: dr(3), dr_mag, ideal_dr_mag, ideal_v(3)
   real(dp) :: de, de_dr
   integer :: s(3)
   logical :: i_is_min_image
@@ -170,6 +198,14 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
   logical :: do_flux = .false.
   real(dp), pointer :: velo(:,:)
   real(dp) :: flux(3)
+  integer :: tind, dr_shift(3)
+  type(Table), pointer :: t
+  logical :: is_j
+  real(dp) :: dr_v(3)
+#define NEIGHBOR_LOOP_OPTION 1
+#if NEIGHBOR_LOOP_OPTION == 2
+  integer :: i_n1n, j_n1n
+#endif
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -201,36 +237,64 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
   do i = 1, at%N
-    i_is_min_image = is_min_image(at,i)
+    i_is_min_image = this%ideal_struct%connect%is_min_image(i)
+    ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     if (this%mpi%active) then
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
     endif
 
-    do ji = 1, atoms_n_neighbours(at, i)
+    do ji = 1, atoms_n_neighbours(this%ideal_struct, i)
+#if NEIGHBOR_LOOP_OPTION == 0
       j = atoms_neighbour(at, i, ji, dr_mag, cosines = dr, shift=s)
-      
-      if (dr_mag .feq. 0.0_dp) cycle
+#endif
+#if NEIGHBOR_LOOP_OPTION == 1 || NEIGHBOR_LOOP_OPTION == 2
+#if NEIGHBOR_LOOP_OPTION == 1
+      j = atoms_neighbour_index(this%ideal_struct, i, ji, tind, t, is_j)
+#else
+      i_n1n = ji-this%ideal_struct%connect%neighbour2(i)%t%N
+      if (ji <= this%ideal_struct%connect%neighbour2(i)%t%N) then
+	j = this%ideal_struct%connect%neighbour2(i)%t%int(1,ji)
+	j_n1n = this%ideal_struct%connect%neighbour2(i)%t%int(2,ji)
+	tind = j_n1n
+	t => this%ideal_struct%connect%neighbour1(j)%t
+	is_j = .true.
+      else if (i_n1n <= this%ideal_struct%connect%neighbour1(i)%t%N) then
+	j = this%ideal_struct%connect%neighbour1(i)%t%int(1,i_n1n)
+	tind = i_n1n
+	t => this%ideal_struct%connect%neighbour1(i)%t
+	is_j = .false.
+      endif
+#endif
       if ((i < j) .and. i_is_min_image) cycle
+      ideal_dr_mag = t%real(1,tind)
+      if (ideal_dr_mag .feq. 0.0_dp) cycle
+      if (is_j) then
+	s = -t%int(2:4,tind)
+      else
+	s = t%int(2:4,tind)
+      endif
+#endif
 
-      ti = get_type(this%type_of_atomic_num, at%Z(i))
       tj = get_type(this%type_of_atomic_num, at%Z(j))
-
-      ! NB: This is right only if ideal_struct%travel is 0.
-      !     We are not subtracting ideal_struct%travel because is does not have the 
-      !     component travel initialised
-      ! v = (p(j) - lat . travel(j))  - (p(i) - lat . travel(i)) + lat. s
-      !   = p(j) - p(i) + lat . (travel(i) - travel(j) + s)
-      ideal_dr_mag = norm( this%ideal_struct%pos(:,j) - this%ideal_struct%pos(:,i) + &
-			   (this%ideal_struct%lattice .mult. (at%travel(:,i) - at%travel(:,j) + s)) )
       fc_i = find_fc_i(this, ti, tj, ideal_dr_mag)
       if (fc_i <= 0) cycle
+
+#if NEIGHBOR_LOOP_OPTION == 1 || NEIGHBOR_LOOP_OPTION == 2
+      ! v = (p(j) - lat . travel(j))  - (p(i) - lat . travel(i)) + lat . s
+      !   = p(j) - p(i) + lat . (travel(i) - travel(j) + s)
+      dr_shift = - at%travel(:,i) + at%travel(:,j) + this%ideal_struct%travel(:,i) - this%ideal_struct%travel(:,j) + s(:)
+      dr_v = at%pos(:,j) - at%pos(:,i) + ( at%lattice(:,1) * dr_shift(1) + &
+					   at%lattice(:,2) * dr_shift(2) + &
+					   at%lattice(:,3) * dr_shift(3) )
+      dr_mag = sqrt(dr_v(1)*dr_v(1) + dr_v(2)*dr_v(2) + dr_v(3)*dr_v(3))
+#endif
 
       if (present(e) .or. present(local_e)) then
 	de = IPModel_FC_pairenergy(this, ti, tj, fc_i, dr_mag)
 	if (present(local_e)) then
 	  local_e(i) = local_e(i) + 0.5_dp*de
-          if(i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
+          if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
 	endif
 	if (present(e)) then
 	  if (associated(w_e)) then
@@ -248,6 +312,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
 	if (associated(w_e)) then
 	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
 	endif
+	dr = dr_v/dr_mag
 	if (present(f)) then
 	  f(:,i) = f(:,i) + de_dr*dr
 	  if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
