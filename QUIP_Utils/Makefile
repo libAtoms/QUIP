@@ -18,7 +18,7 @@ OBJS = ${addsuffix .o, ${F95_FILES}}
 
 
 libquiputils.a:  ${OBJS}
-	ar ${AR_ADD} libquiputils.a ${OBJS}
+	${AR} ${AR_ADD} libquiputils.a ${OBJS}
 
 clean:
 	rm -f *.o *.mod *.mod.save libquiputils.a

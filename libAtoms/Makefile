@@ -82,7 +82,7 @@ LIBATOMS_OBJS = ${LIBATOMS_F77_OBJS} ${LIBATOMS_F95_OBJS} ${LIBATOMS_C_OBJS}
 
 
 libatoms.a: ${LIBATOMS_OBJS}
-	ar ${AR_ADD} libatoms.a $?
+	${AR} ${AR_ADD} libatoms.a $?
 
 clean:
 	rm -f libatoms.a *.o *.mod
