@@ -1,6 +1,6 @@
-diff -r -c /home/cv255/cp2k/src/barostat_types.F src/barostat_types.F
-*** /home/cv255/cp2k/src/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
---- src/barostat_types.F	2010-03-25 12:50:50.595067328 +0000
+diff -r -c ../cp2k/src_20100324_around1700/barostat_types.F src_20100325_1711/barostat_types.F
+*** ../cp2k/src_20100324_around1700/barostat_types.F	2010-03-29 15:19:07.354332033 +0100
+--- src_20100325_1711/barostat_types.F	2010-04-06 16:05:45.094153150 +0100
 ***************
 *** 21,27 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -29,9 +29,9 @@ diff -r -c /home/cv255/cp2k/src/barostat_types.F src/barostat_types.F
           simpar%ensemble == npe_f_ensemble .OR. &
           simpar%ensemble == npe_i_ensemble .OR. &
           simpar%ensemble == nph_uniaxial_ensemble .OR. &
-diff -r -c /home/cv255/cp2k/src/barostat_utils.F src/barostat_utils.F
-*** /home/cv255/cp2k/src/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
---- src/barostat_utils.F	2010-03-25 12:50:50.749971733 +0000
+diff -r -c ../cp2k/src_20100324_around1700/barostat_utils.F src_20100325_1711/barostat_utils.F
+*** ../cp2k/src_20100324_around1700/barostat_utils.F	2010-03-29 15:19:12.064609574 +0100
+--- src_20100325_1711/barostat_utils.F	2010-04-06 16:05:43.242601012 +0100
 ***************
 *** 19,25 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -62,9 +62,9 @@ diff -r -c /home/cv255/cp2k/src/barostat_utils.F src/barostat_utils.F
       END IF
   
     END SUBROUTINE get_baro_energies
-diff -r -c /home/cv255/cp2k/src/constraint.F src/constraint.F
-*** /home/cv255/cp2k/src/constraint.F	2010-01-03 23:41:26.000000000 +0000
---- src/constraint.F	2010-03-25 12:50:56.998411160 +0000
+diff -r -c ../cp2k/src_20100324_around1700/constraint.F src_20100325_1711/constraint.F
+*** ../cp2k/src_20100324_around1700/constraint.F	2010-03-29 15:19:31.080272949 +0100
+--- src_20100325_1711/constraint.F	2010-04-06 16:05:44.049612284 +0100
 ***************
 *** 43,49 ****
     USE distribution_1d_types,           ONLY: distribution_1d_type
@@ -105,9 +105,9 @@ diff -r -c /home/cv255/cp2k/src/constraint.F src/constraint.F
       END IF
       DO k = 1, SIZE(vel,2)
          atomic_kind=>particle_set (k) % atomic_kind
-diff -r -c /home/cv255/cp2k/src/csvr_system_mapping.F src/csvr_system_mapping.F
-*** /home/cv255/cp2k/src/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
---- src/csvr_system_mapping.F	2010-03-25 12:51:16.870123939 +0000
+diff -r -c ../cp2k/src_20100324_around1700/csvr_system_mapping.F src_20100325_1711/csvr_system_mapping.F
+*** ../cp2k/src_20100324_around1700/csvr_system_mapping.F	2010-03-29 15:19:00.198970853 +0100
+--- src_20100325_1711/csvr_system_mapping.F	2010-04-06 16:05:56.797447860 +0100
 ***************
 *** 22,28 ****
          do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
@@ -176,9 +176,9 @@ diff -r -c /home/cv255/cp2k/src/csvr_system_mapping.F src/csvr_system_mapping.F
   
          CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
               molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
-diff -r -c /home/cv255/cp2k/src/extended_system_init.F src/extended_system_init.F
-*** /home/cv255/cp2k/src/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
---- src/extended_system_init.F	2010-03-25 12:51:29.965612396 +0000
+diff -r -c ../cp2k/src_20100324_around1700/extended_system_init.F src_20100325_1711/extended_system_init.F
+*** ../cp2k/src_20100324_around1700/extended_system_init.F	2010-03-29 15:18:59.985784190 +0100
+--- src_20100325_1711/extended_system_init.F	2010-04-06 16:05:42.905608823 +0100
 ***************
 *** 32,38 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -222,9 +222,9 @@ diff -r -c /home/cv255/cp2k/src/extended_system_init.F src/extended_system_init.
       END SELECT
       ! initializing velocities
       DO i = 1, SIZE ( npt,1)
-diff -r -c /home/cv255/cp2k/src/fist_force.F src/fist_force.F
-*** /home/cv255/cp2k/src/fist_force.F	2010-03-20 04:09:38.000000000 +0000
---- src/fist_force.F	2010-03-25 14:29:02.154319053 +0000
+diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_force.F
+*** ../cp2k/src_20100324_around1700/fist_force.F	2010-03-29 15:19:36.511758913 +0100
+--- src_20100325_1711/fist_force.F	2010-04-06 16:05:46.648282497 +0100
 ***************
 *** 51,56 ****
 --- 51,61 ----
@@ -480,9 +480,9 @@ diff -r -c /home/cv255/cp2k/src/fist_force.F src/fist_force.F
       END IF
       CALL cp_print_key_finished_output(iw,logger,mm_section,"PRINT%DERIVATIVES",error=error)
       CALL cp_print_key_finished_output(iw2,logger,mm_section,"PRINT%EWALD_INFO",error=error)
-diff -r -c /home/cv255/cp2k/src/fist_intra_force.F src/fist_intra_force.F
-*** /home/cv255/cp2k/src/fist_intra_force.F	2010-01-03 23:41:27.000000000 +0000
---- src/fist_intra_force.F	2010-03-25 13:37:03.428772991 +0000
+diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/fist_intra_force.F
+*** ../cp2k/src_20100324_around1700/fist_intra_force.F	2010-03-29 15:19:02.165037486 +0100
+--- src_20100325_1711/fist_intra_force.F	2010-04-06 16:06:03.346316978 +0100
 ***************
 *** 12,22 ****
   MODULE fist_intra_force
@@ -2050,9 +2050,9 @@ diff -r -c /home/cv255/cp2k/src/fist_intra_force.F src/fist_intra_force.F
   
   END MODULE fist_intra_force
   
-diff -r -c /home/cv255/cp2k/src/force_env_methods.F src/force_env_methods.F
-*** /home/cv255/cp2k/src/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
---- src/force_env_methods.F	2010-03-25 12:51:35.184835623 +0000
+diff -r -c ../cp2k/src_20100324_around1700/force_env_methods.F src_20100325_1711/force_env_methods.F
+*** ../cp2k/src_20100324_around1700/force_env_methods.F	2010-03-29 15:19:32.465768245 +0100
+--- src_20100325_1711/force_env_methods.F	2010-04-06 16:05:53.206790691 +0100
 ***************
 *** 119,124 ****
 --- 119,127 ----
@@ -2078,9 +2078,9 @@ diff -r -c /home/cv255/cp2k/src/force_env_methods.F src/force_env_methods.F
          END IF
          CALL cp_print_key_finished_output(output_unit,logger,force_env%force_env_section,&
               "PRINT%PROGRAM_RUN_INFO",error=error)
-diff -r -c /home/cv255/cp2k/src/input_constants.F src/input_constants.F
-*** /home/cv255/cp2k/src/input_constants.F	2010-03-10 12:51:50.000000000 +0000
---- src/input_constants.F	2010-03-25 13:38:47.715430158 +0000
+diff -r -c ../cp2k/src_20100324_around1700/input_constants.F src_20100325_1711/input_constants.F
+*** ../cp2k/src_20100324_around1700/input_constants.F	2010-03-29 15:19:02.144349156 +0100
+--- src_20100325_1711/input_constants.F	2010-04-06 16:05:51.571503097 +0100
 ***************
 *** 105,111 ****
                                                 reftraj_ensemble=9,&
@@ -2119,9 +2119,9 @@ diff -r -c /home/cv255/cp2k/src/input_constants.F src/input_constants.F
     INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
                                                 do_ff_quartic=1,&
                                                 do_ff_g96=2,&
-diff -r -c /home/cv255/cp2k/src/input_cp2k_check.F src/input_cp2k_check.F
-*** /home/cv255/cp2k/src/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
---- src/input_cp2k_check.F	2010-03-25 12:51:47.633941336 +0000
+diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_check.F src_20100325_1711/input_cp2k_check.F
+*** ../cp2k/src_20100324_around1700/input_cp2k_check.F	2010-03-29 15:19:01.328354679 +0100
+--- src_20100325_1711/input_cp2k_check.F	2010-04-06 16:06:00.185100443 +0100
 ***************
 *** 22,28 ****
     USE input_constants,                 ONLY: &
@@ -2156,9 +2156,9 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_check.F src/input_cp2k_check.F
                   CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
                   check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
                   CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
-diff -r -c /home/cv255/cp2k/src/input_cp2k_mm.F src/input_cp2k_mm.F
-*** /home/cv255/cp2k/src/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
---- src/input_cp2k_mm.F	2010-03-25 12:51:49.707435241 +0000
+diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_mm.F src_20100325_1711/input_cp2k_mm.F
+*** ../cp2k/src_20100324_around1700/input_cp2k_mm.F	2010-03-29 15:19:29.781426321 +0100
+--- src_20100325_1711/input_cp2k_mm.F	2010-04-06 16:05:49.565611537 +0100
 ***************
 *** 232,237 ****
 --- 232,238 ----
@@ -2223,9 +2223,9 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_mm.F src/input_cp2k_mm.F
          CALL create_IMPROPER_section(subsection, error=error)
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
-diff -r -c /home/cv255/cp2k/src/input_cp2k_motion.F src/input_cp2k_motion.F
-*** /home/cv255/cp2k/src/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
---- src/input_cp2k_motion.F	2010-03-25 12:51:49.955240863 +0000
+diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_motion.F src_20100325_1711/input_cp2k_motion.F
+*** ../cp2k/src_20100324_around1700/input_cp2k_motion.F	2010-03-29 15:19:06.730554121 +0100
+--- src_20100325_1711/input_cp2k_motion.F	2010-04-06 16:05:49.661425981 +0100
 ***************
 *** 1423,1434 ****
               description="The ensemble/integrator that you want to use for MD propagation",&
@@ -2271,9 +2271,9 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_motion.F src/input_cp2k_motion.F
               nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
               reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
          CALL section_add_keyword(section,keyword,error=error)
-diff -r -c /home/cv255/cp2k/src/input_cp2k_subsys.F src/input_cp2k_subsys.F
-*** /home/cv255/cp2k/src/input_cp2k_subsys.F	2010-03-20 04:09:38.000000000 +0000
---- src/input_cp2k_subsys.F	2010-03-25 13:43:04.280910217 +0000
+diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_subsys.F src_20100325_1711/input_cp2k_subsys.F
+*** ../cp2k/src_20100324_around1700/input_cp2k_subsys.F	2010-03-29 15:19:15.284215910 +0100
+--- src_20100325_1711/input_cp2k_subsys.F	2010-04-07 15:24:16.263489459 +0100
 ***************
 *** 377,382 ****
 --- 377,387 ----
@@ -2329,10 +2329,17 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_subsys.F src/input_cp2k_subsys.F
          CALL keyword_release(keyword,error=error)
 ***************
 *** 1603,1608 ****
---- 1609,1628 ----
+--- 1609,1635 ----
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
   
++        CALL keyword_create(keyword, name="SHORTCUT_SILICA",&
++             description="Whether to do a shortcut not excluding all SIO,OSI,OSB,HSI silica atom pairs (not OSI-HSI).",&
++             usage="SHORTCUT_SILICA logical",&
++             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
++        CALL section_add_keyword(section,keyword,error=error)
++        CALL keyword_release(keyword,error=error)
++ 
 +        CALL keyword_create(keyword, name="EXCLUDE_VDW_14",&
 +             description="Whether to exclude 1-4 vdw terms.",&
 +             usage="EXCLUDE_VDW_14 logical",&
@@ -2364,7 +2371,7 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_subsys.F src/input_cp2k_subsys.F
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
---- 1696,1714 ----
+--- 1703,1721 ----
               "applied to all bond kinds. When this section is present the 1-2 exclusion "//&
               "is applied ONLY to the bonds defined herein. This section allows ONLY fine tuning of 1-2 "//&
               "interactions. ",&
@@ -2384,9 +2391,9 @@ diff -r -c /home/cv255/cp2k/src/input_cp2k_subsys.F src/input_cp2k_subsys.F
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
-diff -r -c /home/cv255/cp2k/src/integrator.F src/integrator.F
-*** /home/cv255/cp2k/src/integrator.F	2010-02-11 22:31:20.000000000 +0000
---- src/integrator.F	2010-03-25 12:51:52.991630050 +0000
+diff -r -c ../cp2k/src_20100324_around1700/integrator.F src_20100325_1711/integrator.F
+*** ../cp2k/src_20100324_around1700/integrator.F	2010-03-29 15:19:27.705018636 +0100
+--- src_20100325_1711/integrator.F	2010-04-06 16:05:51.466711871 +0100
 ***************
 *** 100,106 ****
   
@@ -2831,9 +2838,9 @@ diff -r -c /home/cv255/cp2k/src/integrator.F src/integrator.F
 + 
   END MODULE integrator
   
-diff -r -c /home/cv255/cp2k/src/integrator_utils.F src/integrator_utils.F
-*** /home/cv255/cp2k/src/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
---- src/integrator_utils.F	2010-03-25 12:51:53.186130108 +0000
+diff -r -c ../cp2k/src_20100324_around1700/integrator_utils.F src_20100325_1711/integrator_utils.F
+*** ../cp2k/src_20100324_around1700/integrator_utils.F	2010-03-29 15:19:12.481681275 +0100
+--- src_20100325_1711/integrator_utils.F	2010-04-06 16:05:58.757000841 +0100
 ***************
 *** 26,32 ****
     USE input_constants,                 ONLY: &
@@ -2894,9 +2901,9 @@ diff -r -c /home/cv255/cp2k/src/integrator_utils.F src/integrator_utils.F
       END SELECT
   
     END SUBROUTINE rescaled_vv_first
-diff -r -c /home/cv255/cp2k/src/md_conserved_quantities.F src/md_conserved_quantities.F
-*** /home/cv255/cp2k/src/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
---- src/md_conserved_quantities.F	2010-03-25 12:52:08.260116250 +0000
+diff -r -c ../cp2k/src_20100324_around1700/md_conserved_quantities.F src_20100325_1711/md_conserved_quantities.F
+*** ../cp2k/src_20100324_around1700/md_conserved_quantities.F	2010-03-29 15:19:06.306023289 +0100
+--- src_20100325_1711/md_conserved_quantities.F	2010-04-06 16:05:45.891465651 +0100
 ***************
 *** 28,34 ****
          dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
@@ -2931,9 +2938,9 @@ diff -r -c /home/cv255/cp2k/src/md_conserved_quantities.F src/md_conserved_quant
          CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
          md_ener%temp_baro = md_ener%temp_baro*kelvin
       CASE (  nph_uniaxial_ensemble )
-diff -r -c /home/cv255/cp2k/src/md_energies.F src/md_energies.F
-*** /home/cv255/cp2k/src/md_energies.F	2010-03-24 09:19:30.975293160 +0000
---- src/md_energies.F	2010-03-25 12:52:08.707875150 +0000
+diff -r -c ../cp2k/src_20100324_around1700/md_energies.F src_20100325_1711/md_energies.F
+*** ../cp2k/src_20100324_around1700/md_energies.F	2010-03-29 15:19:37.334566523 +0100
+--- src_20100325_1711/md_energies.F	2010-04-06 16:05:56.514596774 +0100
 ***************
 *** 40,45 ****
 --- 40,46 ----
@@ -2964,9 +2971,9 @@ diff -r -c /home/cv255/cp2k/src/md_energies.F src/md_energies.F
                  simpar%ensemble == npt_f_ensemble.OR.&
                  simpar%ensemble == npe_i_ensemble.OR.&
                  simpar%ensemble == npe_f_ensemble) THEN
-diff -r -c /home/cv255/cp2k/src/md_run.F src/md_run.F
-*** /home/cv255/cp2k/src/md_run.F	2010-03-24 09:19:31.154504473 +0000
---- src/md_run.F	2010-03-25 12:52:09.055190962 +0000
+diff -r -c ../cp2k/src_20100324_around1700/md_run.F src_20100325_1711/md_run.F
+*** ../cp2k/src_20100324_around1700/md_run.F	2010-03-29 15:19:08.490899442 +0100
+--- src_20100325_1711/md_run.F	2010-04-06 16:05:57.580642303 +0100
 ***************
 *** 35,46 ****
                                                force_env_type
@@ -3024,9 +3031,9 @@ diff -r -c /home/cv255/cp2k/src/md_run.F src/md_run.F
            (simpar%ensemble==npe_f_ensemble).OR.&
            (simpar%ensemble==npe_i_ensemble).OR.&
            (simpar%ensemble==nph_uniaxial_ensemble).OR.&
-diff -r -c /home/cv255/cp2k/src/md_vel_utils.F src/md_vel_utils.F
-*** /home/cv255/cp2k/src/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src/md_vel_utils.F	2010-03-25 12:52:09.399632470 +0000
+diff -r -c ../cp2k/src_20100324_around1700/md_vel_utils.F src_20100325_1711/md_vel_utils.F
+*** ../cp2k/src_20100324_around1700/md_vel_utils.F	2010-03-29 15:19:24.810297488 +0100
+--- src_20100325_1711/md_vel_utils.F	2010-04-06 16:05:50.587095398 +0100
 ***************
 *** 36,42 ****
     USE global_types,                    ONLY: global_environment_type
@@ -3073,9 +3080,9 @@ diff -r -c /home/cv255/cp2k/src/md_vel_utils.F src/md_vel_utils.F
          IF(simpar%temp_baro_tol > 0.0_dp) THEN
             CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
          END IF
-diff -r -c /home/cv255/cp2k/src/motion_utils.F src/motion_utils.F
-*** /home/cv255/cp2k/src/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src/motion_utils.F	2010-03-25 12:52:15.088752597 +0000
+diff -r -c ../cp2k/src_20100324_around1700/motion_utils.F src_20100325_1711/motion_utils.F
+*** ../cp2k/src_20100324_around1700/motion_utils.F	2010-03-29 15:19:00.359202000 +0100
+--- src_20100325_1711/motion_utils.F	2010-04-06 16:06:02.088972227 +0100
 ***************
 *** 261,267 ****
       CHARACTER(LEN=4)                         :: id_dcd
@@ -3142,9 +3149,9 @@ diff -r -c /home/cv255/cp2k/src/motion_utils.F src/motion_utils.F
             ELSE
               WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
             END IF
-diff -r -c /home/cv255/cp2k/src/OBJECTDEFS src/OBJECTDEFS
-*** /home/cv255/cp2k/src/OBJECTDEFS	2010-03-03 11:27:49.000000000 +0000
---- src/OBJECTDEFS	2010-03-25 12:50:42.004671262 +0000
+diff -r -c ../cp2k/src_20100324_around1700/OBJECTDEFS src_20100325_1711/OBJECTDEFS
+*** ../cp2k/src_20100324_around1700/OBJECTDEFS	2010-03-29 15:19:12.286725194 +0100
+--- src_20100325_1711/OBJECTDEFS	2010-04-06 16:05:49.299283392 +0100
 ***************
 *** 678,683 ****
 --- 678,684 ----
@@ -3155,9 +3162,9 @@ diff -r -c /home/cv255/cp2k/src/OBJECTDEFS src/OBJECTDEFS
    util.o\
    velocity_verlet_control.o\
    vibrational_analysis.o\
-diff -r -c /home/cv255/cp2k/src/particle_types.F src/particle_types.F
-*** /home/cv255/cp2k/src/particle_types.F	2010-01-03 23:41:36.000000000 +0000
---- src/particle_types.F	2010-03-25 12:52:19.047592089 +0000
+diff -r -c ../cp2k/src_20100324_around1700/particle_types.F src_20100325_1711/particle_types.F
+*** ../cp2k/src_20100324_around1700/particle_types.F	2010-03-29 15:19:28.560966940 +0100
+--- src_20100325_1711/particle_types.F	2010-04-06 16:05:56.885097315 +0100
 ***************
 *** 71,76 ****
 --- 71,80 ----
@@ -3193,9 +3200,9 @@ diff -r -c /home/cv255/cp2k/src/particle_types.F src/particle_types.F
       END DO
   
     END SUBROUTINE allocate_particle_set
-diff -r -c /home/cv255/cp2k/src/simpar_methods.F src/simpar_methods.F
-*** /home/cv255/cp2k/src/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src/simpar_methods.F	2010-03-25 12:53:07.590308692 +0000
+diff -r -c ../cp2k/src_20100324_around1700/simpar_methods.F src_20100325_1711/simpar_methods.F
+*** ../cp2k/src_20100324_around1700/simpar_methods.F	2010-03-29 15:19:30.374680480 +0100
+--- src_20100325_1711/simpar_methods.F	2010-04-06 16:05:57.601255252 +0100
 ***************
 *** 23,29 ****
     USE input_constants,                 ONLY: &
@@ -3274,9 +3281,9 @@ diff -r -c /home/cv255/cp2k/src/simpar_methods.F src/simpar_methods.F
             tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
             CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
             CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
-diff -r -c /home/cv255/cp2k/src/thermal_region_utils.F src/thermal_region_utils.F
-*** /home/cv255/cp2k/src/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src/thermal_region_utils.F	2010-03-25 12:53:12.165714220 +0000
+diff -r -c ../cp2k/src_20100324_around1700/thermal_region_utils.F src_20100325_1711/thermal_region_utils.F
+*** ../cp2k/src_20100324_around1700/thermal_region_utils.F	2010-03-29 15:19:36.275387627 +0100
+--- src_20100325_1711/thermal_region_utils.F	2010-04-06 16:06:02.871957192 +0100
 ***************
 *** 19,24 ****
 --- 19,25 ----
@@ -3297,9 +3304,9 @@ diff -r -c /home/cv255/cp2k/src/thermal_region_utils.F src/thermal_region_utils.
                            (simpar%ensemble == npt_i_ensemble)
          IF(apply_thermostat) THEN
            CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
-diff -r -c /home/cv255/cp2k/src/thermostat_methods.F src/thermostat_methods.F
-*** /home/cv255/cp2k/src/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src/thermostat_methods.F	2010-03-25 12:53:12.531766371 +0000
+diff -r -c ../cp2k/src_20100324_around1700/thermostat_methods.F src_20100325_1711/thermostat_methods.F
+*** ../cp2k/src_20100324_around1700/thermostat_methods.F	2010-03-29 15:19:22.464077139 +0100
+--- src_20100325_1711/thermostat_methods.F	2010-04-06 16:05:43.507776662 +0100
 ***************
 *** 46,52 ****
     USE input_constants,                 ONLY: &
@@ -3337,9 +3344,9 @@ diff -r -c /home/cv255/cp2k/src/thermostat_methods.F src/thermostat_methods.F
                            (simpar%ensemble == npe_i_ensemble).OR.&
                            (simpar%ensemble == npe_f_ensemble)
   
-diff -r -c /home/cv255/cp2k/src/thermostat_utils.F src/thermostat_utils.F
-*** /home/cv255/cp2k/src/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src/thermostat_utils.F	2010-03-25 12:53:12.851299969 +0000
+diff -r -c ../cp2k/src_20100324_around1700/thermostat_utils.F src_20100325_1711/thermostat_utils.F
+*** ../cp2k/src_20100324_around1700/thermostat_utils.F	2010-03-29 15:18:57.217927525 +0100
+--- src_20100325_1711/thermostat_utils.F	2010-04-06 16:06:00.848109170 +0100
 ***************
 *** 31,37 ****
          do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
@@ -3374,9 +3381,9 @@ diff -r -c /home/cv255/cp2k/src/thermostat_utils.F src/thermostat_utils.F
          IF (ensemble==nve_ensemble) check = do_shell
          IF (check) THEN
             SELECT CASE(region)
-diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordinate_util.F
-*** /home/cv255/cp2k/src/topology_coordinate_util.F	2010-03-08 18:56:43.000000000 +0000
---- src/topology_coordinate_util.F	2010-03-25 14:14:21.225033153 +0000
+diff -r -c ../cp2k/src_20100324_around1700/topology_coordinate_util.F src_20100325_1711/topology_coordinate_util.F
+*** ../cp2k/src_20100324_around1700/topology_coordinate_util.F	2010-03-29 15:19:37.371788627 +0100
+--- src_20100325_1711/topology_coordinate_util.F	2010-04-07 15:26:27.195635803 +0100
 ***************
 *** 27,32 ****
 --- 27,33 ----
@@ -3428,8 +3435,18 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
       TYPE(atom_type), DIMENSION(:), POINTER   :: atom_list
       TYPE(atomic_kind_type), POINTER          :: atomic_kind
 ***************
+*** 120,125 ****
+--- 125,131 ----
+      TYPE(molecule_type), POINTER             :: molecule
+      TYPE(section_vals_type), POINTER         :: exclude_section, &
+                                                  topology_section
++     logical                                  :: shortcut
+  
+      failure = .FALSE.
+      NULLIFY(logger)
+***************
 *** 372,377 ****
---- 377,388 ----
+--- 378,389 ----
          END IF
          particle_set(i)%atomic_kind => atomic_kind_set(ikind)
          particle_set(i)%r(:) = atom_info%r(:,i) - dims
@@ -3458,7 +3475,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
---- 410,445 ----
+--- 411,455 ----
         CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
       END IF
   
@@ -3478,6 +3495,15 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
 !     ! Check if a list of 1-2 or 1-3 exclusion bonds/bends is defined.. if not use all bonds/bends
       NULLIFY(ex_bond_list_vdw, ex_bond_list_ei)
 +     NULLIFY(ex_bend_list_vdw, ex_bend_list_ei)
++ 
++     !check whether to do a shortcut for silica
++     CALL section_vals_val_get(topology_section,"SHORTCUT_SILICA", explicit=explicit, error=error)
++     if (explicit) then
++       shortcut = section_get_lval(topology_section,"SHORTCUT_SILICA",error=error)
++     else
++        shortcut= .false.
++     endif
++ 
       ! VdW
       exclude_section => section_vals_get_subs_vals(topology_section,"EXCLUDE_VDW_LIST",error=error)
       CALL section_vals_get(exclude_section, explicit=explicit, error=error)
@@ -3496,8 +3522,11 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
 ***************
-*** 417,429 ****
-                                   particle_set, error)
+*** 414,429 ****
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
+!                                  particle_set, error)
       ELSE
          ex_bond_list_vdw => ex_bond_list
       END IF
@@ -3510,8 +3539,11 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          ALLOCATE(ex_bond_list_ei(natom),stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
---- 450,483 ----
-                                   particle_set, error)
+--- 457,493 ----
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
+!                                  particle_set, shortcut, error)
       ELSE
          ex_bond_list_vdw => ex_bond_list
 +     endif
@@ -3524,7 +3556,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
 +           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +        ENDDO
 +        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_vdw,&
-+                                  particle_set, error)
++                                  particle_set, shortcut, error)
 +     ELSE
 +        ex_bend_list_vdw => ex_bend_list
       END IF
@@ -3546,7 +3578,11 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
 ***************
-*** 435,454 ****
+*** 431,454 ****
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
+!                                  particle_set, error)
       ELSE
          ex_bond_list_ei => ex_bond_list
       END IF
@@ -3567,7 +3603,11 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
       ! Reorder onfo
       ALLOCATE(ex_onfo_list(natom),stat=stat)
       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
---- 489,508 ----
+--- 495,518 ----
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         ENDDO
+         CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
+!                                  particle_set, shortcut, error)
       ELSE
          ex_bond_list_ei => ex_bond_list
       END IF
@@ -3580,7 +3620,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
 !           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 !        ENDDO
 !        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_ei,&
-!                                  particle_set, error)
+!                                  particle_set, shortcut, error)
 !     ELSE
 !        ex_bend_list_ei => ex_bend_list
       END IF
@@ -3590,7 +3630,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 ***************
 *** 461,466 ****
---- 515,534 ----
+--- 525,544 ----
         N = SIZE(conn_info%onfo_a)
         CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
       END IF
@@ -3623,7 +3663,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          dim3 = dim2 + dim3
          IF (dim3 /= 0) THEN
             NULLIFY(list, wlist)
---- 541,554 ----
+--- 551,564 ----
          dim1 = dim1 + dim0
          dim2 = 0
          IF  (topology%exclude_vdw==do_skip_13.OR. &
@@ -3647,7 +3687,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
             IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
             ! Get a unique list
             DO i = 1, SIZE(wlist)-1
---- 556,562 ----
+--- 566,572 ----
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
             wlist(  dim0:dim0) = iatom
             IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
@@ -3667,7 +3707,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
                dim3 = dim2 + dim3
   
                IF (dim3 /= 0) THEN
---- 592,605 ----
+--- 602,615 ----
                dim1 = dim1 + dim0
                dim2 = 0
                IF  (topology%exclude_ei==do_skip_13.OR. &
@@ -3691,7 +3731,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
                   IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
                   ! Get a unique list
                   DO i = 1, SIZE(wlist)-1
---- 607,613 ----
+--- 617,623 ----
                   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
                   wlist(  dim0:dim0) = iatom
                   IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
@@ -3701,7 +3741,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
                   DO i = 1, SIZE(wlist)-1
 ***************
 *** 557,562 ****
---- 633,643 ----
+--- 643,653 ----
          END IF
          particle_set(iatom)%list_exclude_vdw => list
          particle_set(iatom)%list_exclude_ei  => list2
@@ -3715,7 +3755,7 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
             CPPostcondition(ANY(list==ex_onfo_list(iatom)%array1(i)),cp_failure_level,routineP,error,failure)
 ***************
 *** 583,588 ****
---- 664,689 ----
+--- 674,699 ----
       DEALLOCATE(ex_onfo_list,stat=stat)
       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
       ! deallocate bends
@@ -3743,7 +3783,42 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          DEALLOCATE(ex_bend_list(I)%array1,stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 ***************
-*** 709,715 ****
+*** 687,699 ****
+  !>      Teodoro Laino [tlaino] - 12.2009
+  ! *****************************************************************************
+    SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
+!        ex_bond_list_w, particle_set, error)
+      TYPE(section_vals_type), POINTER         :: exclude_section
+      CHARACTER(LEN=*), INTENT(IN)             :: keyword
+      TYPE(array1_list_type), DIMENSION(:), &
+        POINTER                                :: ex_bond_list, ex_bond_list_w
+      TYPE(particle_type), DIMENSION(:), &
+        POINTER                                :: particle_set
+      TYPE(cp_error_type), INTENT(inout)       :: error
+  
+      CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
+--- 798,811 ----
+  !>      Teodoro Laino [tlaino] - 12.2009
+  ! *****************************************************************************
+    SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
+!        ex_bond_list_w, particle_set, shortcut, error)
+      TYPE(section_vals_type), POINTER         :: exclude_section
+      CHARACTER(LEN=*), INTENT(IN)             :: keyword
+      TYPE(array1_list_type), DIMENSION(:), &
+        POINTER                                :: ex_bond_list, ex_bond_list_w
+      TYPE(particle_type), DIMENSION(:), &
+        POINTER                                :: particle_set
++     logical, intent(in)                      :: shortcut
+      TYPE(cp_error_type), INTENT(inout)       :: error
+  
+      CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
+***************
+*** 704,721 ****
+        DIMENSION(:), POINTER                  :: names
+      INTEGER                                  :: i, ind, j, k, l, m, n_rep
+      LOGICAL                                  :: failure
+  
+      failure = .FALSE.
       CPPostcondition(ASSOCIATED(ex_bond_list),cp_failure_level,routineP,error,failure)
       CPPostcondition(ASSOCIATED(ex_bond_list_w),cp_failure_level,routineP,error,failure)
       SELECT CASE(keyword)
@@ -3751,7 +3826,20 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          CALL section_vals_val_get(exclude_section,keyword,n_rep_val=n_rep,error=error)
          DO j=1, SIZE(ex_bond_list)
             CPPostcondition(ASSOCIATED(ex_bond_list(j)%array1),cp_failure_level,routineP,error,failure)
---- 810,816 ----
+            CPPostcondition(ASSOCIATED(ex_bond_list_w(j)%array1),cp_failure_level,routineP,error,failure)
+  
+            flag1=particle_set(j)%atomic_kind%name
+            m = SIZE(ex_bond_list(j)%array1)
+            CALL reallocate(ex_bond_list_w(j)%array1,1,m)
+  
+--- 816,857 ----
+        DIMENSION(:), POINTER                  :: names
+      INTEGER                                  :: i, ind, j, k, l, m, n_rep
+      LOGICAL                                  :: failure
++ integer :: index_qm
++ character(len=default_string_length) :: tmp
+  
+      failure = .FALSE.
       CPPostcondition(ASSOCIATED(ex_bond_list),cp_failure_level,routineP,error,failure)
       CPPostcondition(ASSOCIATED(ex_bond_list_w),cp_failure_level,routineP,error,failure)
       SELECT CASE(keyword)
@@ -3759,9 +3847,82 @@ diff -r -c /home/cv255/cp2k/src/topology_coordinate_util.F src/topology_coordina
          CALL section_vals_val_get(exclude_section,keyword,n_rep_val=n_rep,error=error)
          DO j=1, SIZE(ex_bond_list)
             CPPostcondition(ASSOCIATED(ex_bond_list(j)%array1),cp_failure_level,routineP,error,failure)
-diff -r -c /home/cv255/cp2k/src/topology.F src/topology.F
-*** /home/cv255/cp2k/src/topology.F	2010-01-03 23:41:38.000000000 +0000
---- src/topology.F	2010-03-25 12:53:13.635764431 +0000
+            CPPostcondition(ASSOCIATED(ex_bond_list_w(j)%array1),cp_failure_level,routineP,error,failure)
+  
+            flag1=particle_set(j)%atomic_kind%name
++           !exclude QM or LNK atoms, too:
++           !remove _LNK
++           if (index(trim(flag1),"_LNK")==1) then
++           tmp =  ""
++              tmp = trim(flag1)
++              flag1 = ""
++              flag1 = tmp(5:)
++           endif
++           !remove _QM_ NOT only for _LNK#_QM
++           index_qm = index(trim(flag1),"_QM")
++           if (index_qm /= 0) then
++              tmp = ""
++              tmp = trim(flag1)
++              flag1 = ""
++              flag1 = tmp(index_qm+4:)
++           endif
++ 
++ !SHORTCUT
++ if (shortcut) then !skip most silica atoms
++    if ( any(trim(flag1).eq.(/"SIO","OSB"/))) cycle
++ endif
++ 
+            m = SIZE(ex_bond_list(j)%array1)
+            CALL reallocate(ex_bond_list_w(j)%array1,1,m)
+  
+***************
+*** 723,735 ****
+--- 859,900 ----
+            DO k =1, m
+               ind = ex_bond_list(j)%array1(k)
+               flag2=particle_set(ind)%atomic_kind%name
++              !exclude QM or LNK atoms, too:
++              !remove _LNK
++              if (index(trim(flag2),"_LNK")==1) then
++              tmp =  ""
++                 tmp = trim(flag2)
++                 flag2 = ""
++                 flag2 = tmp(5:)
++              endif
++              !remove _QM_ NOT only for _LNK#_QM
++              index_qm = index(trim(flag2),"_QM")
++              if (index_qm /= 0) then
++                 tmp = ""
++                 tmp = trim(flag2)
++                 flag2 = ""
++                 flag2 = tmp(index_qm+4:)
++              endif
++ !SHORTCUT
++ if (shortcut) then !skip most silica atoms
++    if ( any(trim(flag2).eq.(/"SIO","OSB"/))) cycle
++    if ( trim(flag1).eq."OSI" .and. trim(flag2).eq."OSI" ) cycle
++    if ( trim(flag1).eq."HSI" .and. trim(flag2).eq."HSI" ) cycle
++    !only HSI - OSI left
++ endif
++ 
+               DO i=1, n_rep
+                  CALL section_vals_val_get(exclude_section,keyword,i_rep_val=i,&
+                       c_vals=names,error=error)
++ 
++ 
+                  IF  (((TRIM(names(1))==TRIM(flag1)).AND.(TRIM(names(2))==TRIM(flag2))).OR.&
+                       ((TRIM(names(1))==TRIM(flag2)).AND.(TRIM(names(2))==TRIM(flag1)))) THEN
+                     l = l + 1
+                     ex_bond_list_w(j)%array1(l) = ind
++ !print *, "will exclude: ",trim(flag1)," -- ",trim(flag2)
++ !else
++ !print *, "will not exclude: ",trim(flag1)," -- ",trim(flag2)
+                  END IF
+               END DO
+            END DO
+diff -r -c ../cp2k/src_20100324_around1700/topology.F src_20100325_1711/topology.F
+*** ../cp2k/src_20100324_around1700/topology.F	2010-03-29 15:19:30.653555925 +0100
+--- src_20100325_1711/topology.F	2010-04-06 16:06:04.628413446 +0100
 ***************
 *** 26,32 ****
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
@@ -3800,9 +3961,9 @@ diff -r -c /home/cv255/cp2k/src/topology.F src/topology.F
       CASE (do_coord_cif)
          CALL read_coordinate_cif (topology,para_env,subsys_section,error)
       CASE (do_coord_xtl)
-diff -r -c /home/cv255/cp2k/src/velocity_verlet_control.F src/velocity_verlet_control.F
-*** /home/cv255/cp2k/src/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
---- src/velocity_verlet_control.F	2010-03-25 12:53:17.142374875 +0000
+diff -r -c ../cp2k/src_20100324_around1700/velocity_verlet_control.F src_20100325_1711/velocity_verlet_control.F
+*** ../cp2k/src_20100324_around1700/velocity_verlet_control.F	2010-03-29 15:19:14.573770403 +0100
+--- src_20100325_1711/velocity_verlet_control.F	2010-04-06 16:05:50.487556423 +0100
 ***************
 *** 16,24 ****
     USE input_constants,                 ONLY: &
