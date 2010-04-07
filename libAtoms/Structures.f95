@@ -398,6 +398,12 @@ contains
       if (.not. present(c) .or. .not. present(u) .or. .not. present(x) &
            .or. .not. present(y) .or. .not. present(z)) call system_abort('unit_slab: alpha_quartz missing c, u, x, y or z')
       call alpha_quartz_cubic(at, a, c, u, x, y, z)
+   elseif(trim(my_lat_type) .eq. 'anatase') then
+      if (.not. present(c) .or. .not. present(u) ) call system_abort('unit_slab: anatase missing c, u')
+      call anatase(at, a, c, u)
+   elseif(trim(my_lat_type) .eq. 'rutile') then
+      if (.not. present(c) .or. .not. present(u) ) call system_abort('unit_slab: rutile missing c, u')
+      call rutile(at, a, c, u)
    else
       call system_abort('unit_slab: unknown lattice type '//my_lat_type)
    endif
@@ -1269,6 +1275,71 @@ contains
 
  end subroutine alpha_quartz_cubic
 
+ subroutine rutile(at, a, c, u)
+!For atomic coordinates see Ref. PRB 65, 224112 (2002).
+!Experimental values: a=4.587, c=2.954, u=0.305 (Ref. JACS 109, 3639 (1987)).
+    type(Atoms), intent(out) :: at
+    real(dp), intent(in) :: a, c, u
+
+    real(dp) :: lattice(3,3), a1(3), a2(3), a3(3)
+
+    lattice = 0.0_dp
+    a1 = (/ a, 0.0_dp, 0.0_dp /)
+    a2 = (/ 0.0_dp, a, 0.0_dp /)
+    a3 = (/ 0.0_dp, 0.0_dp, c /)
+    lattice(:,1) = a1
+    lattice(:,2) = a2
+    lattice(:,3) = a3
+
+    call initialise(at, n=6, lattice=lattice)
+    call set_atoms(at, (/22,22,8,8,8,8 /))
+
+    at%pos(:,1) =  0.0_dp 
+    at%pos(:,2) =  0.5_dp * a1 + 0.5_dp*a2 + 0.5_dp*a3
+    at%pos(:,3) =  u*a1 + u*a2
+    at%pos(:,4) = -u*a1 - u*a2 
+    at%pos(:,5) = (0.5_dp + u)*a1 + (0.5_dp - u)*a2 + 0.5_dp*a3 
+    at%pos(:,6) = (0.5_dp - u)*a1 + (0.5_dp + u)*a2 + 0.5_dp*a3
+
+    call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6/))
+
+ end subroutine rutile 
+
+ subroutine anatase(at, a, c, u)
+!Conventional 12 atoms unit cell defined as a function of a,c,u.
+!Experimental values: a=3.782, c=9.502, u=0.208 (Ref. JACS 109, 3639 (1987)).
+    type(Atoms), intent(out) :: at
+    real(dp), intent(in) :: a, c, u
+
+    real(dp) :: lattice(3,3), a1(3), a2(3), a3(3)
+
+    lattice = 0.0_dp
+    a1 = (/ a, 0.0_dp, 0.0_dp /)
+    a2 = (/ 0.0_dp, a, 0.0_dp /)
+    a3 = (/ 0.0_dp, 0.0_dp, c  /)
+    lattice(:,1) = a1
+    lattice(:,2) = a2
+    lattice(:,3) = a3
+
+    call initialise(at, n=12, lattice=lattice)
+    call set_atoms(at, (/22,22,22,22,8,8,8,8,8,8,8,8 /))
+
+    at%pos(:,1) = (/0.0_dp*a, 0.5_dp*a,  0.0_dp   /)
+    at%pos(:,2) = (/0.0_dp,   0.0_dp  ,  0.25_dp*c/) 
+    at%pos(:,3) = (/0.5_dp*a, 0.5_dp*a, -0.25_dp*c/) 
+    at%pos(:,4) = (/0.5_dp*a, 0.0_dp  ,  0.50_dp*c/)  
+    at%pos(:,5) = (/0.0_dp  , 0.5_dp*a,  u * c   /) 
+    at%pos(:,6) = (/0.0_dp  , 0.5_dp*a, -u * c   /) 
+    at%pos(:,7) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp+u)*c /) 
+    at%pos(:,8) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp-u)*c /) 
+    at%pos(:,9) = (/0.5_dp*a, 0.5_dp*a,  (0.75_dp-u)*c /) 
+    at%pos(:,10)= (/0.5_dp*a, 0.0_dp  ,  (0.50_dp-u)*c /) 
+    at%pos(:,11)= (/0.5_dp*a, 0.0_dp  , -(0.50_dp-u)*c /) 
+    at%pos(:,12)= (/0.5_dp*a, 0.5_dp*a, -(0.25_dp-u)*c /) 
+
+    call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6,7,8,9,10,11,12/))
+
+ end subroutine anatase 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
