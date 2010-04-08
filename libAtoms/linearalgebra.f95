@@ -2322,12 +2322,13 @@ CONTAINS
 
   endsubroutine LA_Matrix_Finalise
 
-  subroutine LA_Matrix_Factorise(this,factor)
+  subroutine LA_Matrix_Factorise(this,factor,info)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out), optional :: factor
+     integer, optional, intent(out) :: info
 
-     integer :: i, j, info
+     integer :: i, j, my_info
      real(dp) :: scond, amax
 
      if(.not. this%initialised) call system_abort('LA_Matrix_Factorise: Initialise first')
@@ -2351,7 +2352,7 @@ CONTAINS
      endif
 
      !call dpotrf('U', this%n, this%factor, this%n, info)
-     call my_potrf(this%factor,info)
+     call my_potrf(this%factor,my_info)
 
 !     do i = 1, this%n
 !        do j = i+1, this%n
@@ -2359,7 +2360,13 @@ CONTAINS
 !        enddo
 !     enddo
 
-     if( info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, error: '//info)
+     if( present(info) ) then
+        info = my_info
+        return
+     else
+        if( my_info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, error: '//my_info)
+     endif
+
      this%factorised = .true.
 
      if( present(factor) ) then
@@ -2450,19 +2457,25 @@ CONTAINS
 
   endsubroutine my_potrf
 
-  subroutine LA_Matrix_Inverse(this,inverse)
+  subroutine LA_Matrix_Inverse(this,inverse,info)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out) :: inverse
-     integer :: i, j, info
+     integer, optional, intent(out) :: info
 
-     if( .not. this%factorised ) call LA_Matrix_Factorise(this)
+     integer :: i, j, my_info
+
+     if( .not. this%factorised ) call LA_Matrix_Factorise(this, info=info)
+     if( present(info) ) then
+        if( info /= 0 ) return
+     endif
+
      !call check_size('inverse',inverse,shape(this%matrix),'LA_Matrix_Inverse')
 
      inverse = this%factor
 
      !call dpotri('U', this%n, inverse, this%n, info)
-     call my_potri(inverse); info = 0
+     call my_potri(inverse); my_info = 0
 
      do i = 1, this%n
         do j = i+1, this%n
@@ -2476,8 +2489,6 @@ CONTAINS
         enddo
      endif
 
-     if( info /= 0 ) call system_abort('LA_Matrix_Inverse: cannot invert, error: '//info)
-     
   endsubroutine LA_Matrix_Inverse
 
   subroutine my_potri(this)
@@ -2498,12 +2509,13 @@ CONTAINS
      
   endsubroutine my_potri
 
-  subroutine LA_Matrix_Solve_Vector(this,b,x,refine)
+  subroutine LA_Matrix_Solve_Vector(this,b,x,refine,info)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:), intent(in) :: b
      real(qp), dimension(:), intent(out) :: x
      logical, intent(in), optional :: refine
+     integer, intent(out), optional :: info
 
      real(qp), dimension(:,:), allocatable :: my_x
 
@@ -2511,23 +2523,27 @@ CONTAINS
      & call system_abort('LA_Matrix_Solve_Vector: length of b or x is not n')
 
      allocate(my_x(this%n,1))
-     call LA_Matrix_Solve_Matrix(this,reshape(b,(/this%n,1/)),my_x,refine)
+     call LA_Matrix_Solve_Matrix(this,reshape(b,(/this%n,1/)),my_x,refine,info)
+     if( present(info) ) then
+        if( info /= 0 ) return
+     endif
      x = my_x(:,1)
      deallocate(my_x)
 
   endsubroutine LA_Matrix_Solve_Vector
 
-  subroutine LA_Matrix_Solve_Matrix(this,b,x,refine)
+  subroutine LA_Matrix_Solve_Matrix(this,b,x,refine,info)
 
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(in) :: b
      real(qp), dimension(:,:), intent(out) :: x
      logical, intent(in), optional :: refine
+     integer, intent(out), optional :: info
 
      real(qp), dimension(:,:), allocatable :: my_b, my_x
      real(qp), dimension(:), allocatable :: work, ferr, berr
      integer, dimension(:), allocatable :: iwork
-     integer :: i, m, info
+     integer :: i, m, my_info
 
      logical :: my_refine
 
@@ -2538,7 +2554,15 @@ CONTAINS
      
      my_refine = optional_default(.false.,refine)
 
-     if( .not. this%factorised ) call LA_Matrix_Factorise(this)
+     if( .not. this%factorised ) then
+        call LA_Matrix_Factorise(this,info=info)
+        if( present(info) ) then
+           if( info /= 0 ) return
+        endif
+     else
+        if( present(info) ) info = 0
+     endif
+
      m = size(b,2)
      allocate(my_b(this%n,m),my_x(this%n,m)) !, work(3*this%n),iwork(this%n),ferr(m), berr(m))
 
@@ -2553,7 +2577,7 @@ CONTAINS
      endif
 
      !call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, info )
-     call my_potrs( this%factor, my_x ); info = 0
+     call my_potrs( this%factor, my_x ); my_info = 0
 
 !     if( my_refine ) call dporfs( 'U', this%n, m, this%matrix, this%n, this%factor, &
 !     & this%n, my_b, this%n, my_x, this%n, ferr, berr, work, iwork, info )
@@ -2566,7 +2590,7 @@ CONTAINS
         x = my_x
      endif
 
-     if( info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, error: '//info)
+     if( my_info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, error: '//info)
      deallocate(my_x,my_b) !,work, iwork, ferr, berr)
 
   endsubroutine LA_Matrix_Solve_Matrix
@@ -2595,13 +2619,19 @@ CONTAINS
 
   endsubroutine my_potrs
 
-  function LA_Matrix_LogDet(this)
+  function LA_Matrix_LogDet(this,info)
 
      type(LA_Matrix), intent(inout) :: this         
+     integer, intent(out), optional :: info
      real(dp) :: LA_Matrix_LogDet
      integer :: i
 
-     if( .not. this%factorised ) call LA_Matrix_Factorise(this)
+     if( .not. this%factorised ) then
+        call LA_Matrix_Factorise(this,info=info)
+        if( present(info) ) then
+           if( info /= 0 ) return
+        endif
+     endif
 
      LA_Matrix_LogDet = 0.0_dp
      do i = 1, this%n
@@ -2613,13 +2643,19 @@ CONTAINS
 
   endfunction LA_Matrix_LogDet
 
-  function LA_Matrix_Det(this)
+  function LA_Matrix_Det(this,info)
 
      type(LA_Matrix), intent(inout) :: this         
+     integer, intent(out), optional :: info
      real(dp) :: LA_Matrix_Det
      integer :: i
 
-     if( .not. this%factorised ) call LA_Matrix_Factorise(this)
+     if( .not. this%factorised ) then
+        call LA_Matrix_Factorise(this,info=info)
+        if( present(info) ) then
+           if( info /= 0 ) return
+        endif
+     endif
 
      LA_Matrix_Det = 1.0_dp
      do i = 1, this%n
@@ -4478,13 +4514,15 @@ CONTAINS
 
    !% Sort an array of integers into ascending order (slow: scales as N$^2$).
    !% i_data is an accompanying array of integers on which the same reordering is performed
-   subroutine sort_array_r(array, i_data)
+   subroutine sort_array_r(array, i_data,r_data)
 
       real(dp), dimension(:), intent(inout) :: array
       integer, dimension(:), intent(inout), optional :: i_data
+      real(dp), dimension(:), intent(inout), optional :: r_data
       integer                              :: i,j, minpos
       real(dp) :: tmp, min
       integer :: i_tmp
+      real(dp) :: r_tmp
 
 
       do i = 1, (size(array) - 1)
@@ -4507,6 +4545,11 @@ CONTAINS
 	   i_tmp = i_data(i)
 	   i_data(i) = i_data(minpos)
 	   i_data(minpos) = i_tmp
+	 endif
+	 if (present(r_data)) then
+	   r_tmp = r_data(i)
+	   r_data(i) = r_data(minpos)
+	   r_data(minpos) = r_tmp
 	 endif
 
       end do
