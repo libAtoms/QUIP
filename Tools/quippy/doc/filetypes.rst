@@ -38,7 +38,7 @@ The quippy native formats are `extended XYZ
    | ``stdin``      | Read from stdin in    |
    |                | extended XYZ format   |
    +----------------+-----------------------+
-   ! ``string``     | Read from string in   |
+   | ``string``     | Read from string in   |
    |                | extended XYZ format   |
    +----------------+-----------------------+
    | ``xyz``        | Extended XYZ format   |
