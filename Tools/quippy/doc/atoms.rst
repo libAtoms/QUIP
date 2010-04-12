@@ -299,8 +299,8 @@
       End points can be specified by any combination of atoms indices
       `i` and `j` and absolute coordinates `u` and `w`.
 
-      If `shift` is present it should be a vector giving the number of 
-      periodic cells separating the end points in each dimension.
+      If `shift` is present it should be an farray of dtype `int32`, which
+      on exit will contain the periodic shift between the two atoms or points.
 
      
    .. method:: diff(i, j, shift)
