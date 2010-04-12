@@ -8,13 +8,15 @@ implicit none
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_correl, correlation_subtract_mean
+  logical :: do_mean, do_var, do_correl, correlation_subtract_mean, do_effective_N
   character(len=FIELD_LENGTH) :: infile_name, outfile_name
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:)
-  integer :: reduction_index, other_index, sz, correlation_max_lag, i_lag, n_correl_print
+  integer :: reduction_index, other_index, sz, correlation_max_lag, i_lag, n_correl_print, correlation_effective_N_long_lag
   logical :: over_bins, over_time
+  real(dp) :: correl_0, correl_mean, correl_std_dev
+  real(dp), allocatable :: effective_N(:)
 
   call system_initialise()
 
@@ -23,13 +25,18 @@ implicit none
   call param_register(cli_params, "outfile", "stdout", outfile_name)
   call param_register(cli_params, "mean", "F", do_mean)
   call param_register(cli_params, "variance", "F", do_var)
+  call param_register(cli_params, "effective_N", "F", do_effective_N)
   call param_register(cli_params, "correlation", "F", do_correl)
   call param_register(cli_params, "correlation_subtract_mean", "T", correlation_subtract_mean)
   call param_register(cli_params, "correlation_max_lag", "1000", correlation_max_lag)
+  call param_register(cli_params, "correlation_effective_N_long_lag", "1001", correlation_effective_N_long_lag)
   call param_register(cli_params, "over_bins", "F", over_bins)
   call param_register(cli_params, "over_time", "F", over_time)
-  if (.not.param_read_args(cli_params, do_check=.true.)) &
-    call system_abort("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F correlation_max_lag=1000 over_bins=F over_time=T")
+  if (.not.param_read_args(cli_params, do_check=.true.)) then
+    call print("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F effective_N=F", ERROR)
+    call print("        correlation_max_lag=1000 correlation_effective_N_long_lag=1001 over_bins=F over_time=T", ERROR)
+    call system_abort("Unable to parse command line")
+  endif
   call finalise(cli_params)
 
   if (over_bins .and. over_time) &
@@ -89,30 +96,7 @@ implicit none
   endif
 
 
-  if (over_bins) then
-    myline = "#"
-  else
-    myline = "# bin_label"
-  endif
-  if (do_mean) myline = trim(myline) //" mean"
-  if (do_var) myline = trim(myline) //" var N "
-
-  call print(trim(myline), file=outfile)
-
-  if (do_mean .or. do_var) then
-    do i=1, sz
-      if (over_bins) then
-        myline = ""
-      else
-        myline = trim(bin_labels(i))
-      endif
-      if (do_mean) myline = trim(myline) //" " // data_mean(i)
-      if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
-      call print(trim(myline), file=outfile)
-    end do
-  end if
-
-  if (do_correl) then
+  if (do_correl .or. do_effective_N) then
     if (over_bins) then
       allocate(data_correl(min(n_bins, correlation_max_lag+1), n_data))
       data_correl = 0.0_dp
@@ -151,17 +135,81 @@ implicit none
       endif
     endif
 
-    call print("# correl", file=outfile)
-    if (over_bins) then
-      n_correl_print = n_data
-    else
-      n_correl_print = min(n_data, correlation_max_lag+1)
+    if (do_correl) then
+      call print("# correl", file=outfile)
+      if (over_bins) then
+	n_correl_print = n_data
+      else
+	n_correl_print = min(n_data, correlation_max_lag+1)
+      endif
+      do i=1, n_correl_print
+	call print(""//data_correl(:,i), file=outfile)
+      end do
     endif
-    do i=1, n_correl_print
-      call print(""//data_correl(:,i), file=outfile)
-    end do
 
-  endif
+    if (do_effective_N) then
+      if (over_bins) then
+	if (correlation_effective_N_long_lag+1 < size(data_correl,1)) then
+	  allocate(effective_N(size(data_correl,2)))
+	  call print("", file=outfile)
+	  call print("", file=outfile)
+	  call print("# effective_N", file=outfile)
+	  do i=1, size(data_correl,2)
+	    correl_0 = data_correl(1, i)
+	    correl_mean = sum(data_correl(correlation_effective_N_long_lag+1:,i)) / real(size(data_correl,1)-correlation_effective_N_long_lag, dp)
+	    correl_std_dev = sqrt( sum((data_correl(correlation_effective_N_long_lag+1:,i)-correl_mean)**2) / real(size(data_correl,1)-correlation_effective_N_long_lag, dp) )
+	    if (correl_std_dev > 0.0_dp) then
+	      effective_N(i) = (correl_0/correl_std_dev)**2
+	    else
+	      effective_N(i) = -1
+	    endif
+	  end do
+	endif
+      else
+	if (correlation_effective_N_long_lag+1 < size(data_correl,2)) then
+	  allocate(effective_N(size(data_correl,1)))
+	  call print("", file=outfile)
+	  call print("", file=outfile)
+	  call print("# effective_N", file=outfile)
+	  do i=1, size(data_correl,1)
+	    correl_0 = data_correl(i, 1)
+	    correl_mean = sum(data_correl(i,correlation_effective_N_long_lag+1:)) / real(size(data_correl,2)-correlation_effective_N_long_lag, dp)
+	    correl_std_dev = sqrt( sum((data_correl(i,correlation_effective_N_long_lag+1:)-correl_mean)**2) / real(size(data_correl,2)-correlation_effective_N_long_lag, dp) )
+	    if (correl_std_dev > 0.0_dp) then
+	      effective_N(i) = (correl_0/correl_std_dev)**2
+	    else
+	      effective_N(i) = -1
+	    endif
+	  end do
+	endif
+      endif
+    endif
+  endif ! do_correl or do_effective_N
+
+  if (do_mean .or. do_var .or. do_effective_N) then
+    if (over_bins) then
+      myline = "#"
+    else
+      myline = "# bin_label"
+    endif
+    if (do_mean) myline = trim(myline) //" mean"
+    if (do_var) myline = trim(myline) //" var N"
+    if (do_effective_N) myline = trim(myline) // " effective_N"
+
+    call print(trim(myline), file=outfile)
+
+    do i=1, sz
+      if (over_bins) then
+        myline = ""
+      else
+        myline = trim(bin_labels(i))
+      endif
+      if (do_mean) myline = trim(myline) //" " // data_mean(i)
+      if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
+      if (do_effective_N) myline = trim(myline) // " " // effective_N(i)
+      call print(trim(myline), file=outfile)
+    end do
+  end if
 
   call finalise(outfile)
   call system_finalise()
