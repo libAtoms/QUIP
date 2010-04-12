@@ -328,6 +328,78 @@ Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Propert
                                              [ -1.44992225,    1.05479624,    0.78616438]]))
 
 
+   class TestPotential_Callback(QuippyTestCase):
+
+      @staticmethod
+      def callback_1(at):
+         if at.calc_energy:
+            at.params['energy'] = 1.0
+         if at.calc_force:
+            at.add_property('force', 0.0, n_cols=3)
+            at.force[:] = 1.0
+         if at.calc_virial:
+            virial = fzeros((3,3))
+            virial[:] = 1.0
+            at.params['virial'] = virial
+
+      @staticmethod
+      def callback_2(at):
+         if at.calc_energy:
+            at.params['energy'] = 2.0
+         if at.calc_force:
+            at.add_property('force', 0.0, n_cols=3)
+            at.force[:] = 2.0
+         if at.calc_virial:
+            virial = fzeros((3,3))
+            virial[:] = 2.0
+            at.params['virial'] = virial
+
+      def setUp(self):
+         self.p = Potential('CallbackPot')
+         self.p.set_callback(TestPotential_Callback.callback_1)
+
+         self.a = diamond(5.44, 14)
+         self.a.calc_connect()
+
+      def test_energy(self):
+         self.p.calc(self.a, calc_energy=True)
+         self.assertAlmostEqual(self.a.energy, 1.0)
+
+      def test_force(self):
+         self.p.calc(self.a, calc_force=True)
+         self.assertArrayAlmostEqual(self.a.force, 1.0*ones((3,self.a.n)))
+
+      def test_virial(self):
+         self.p.calc(self.a, calc_virial=True)
+         self.assertArrayAlmostEqual(self.a.virial, 1.0*ones((3,3)))
+
+      def test_all(self):
+         e = farray(0.0)
+         f = fzeros((3,self.a.n))
+         v = fzeros((3,3))
+         self.p.calc(self.a, e=e, f=f, virial=v)
+         self.assertAlmostEqual(e, 1.0)
+         self.assertArrayAlmostEqual(v, 1.0*ones((3,3)))
+         self.assertArrayAlmostEqual(f, 1.0*ones((3,self.a.n)))
+
+      def test_new_pot(self):
+         p2 = Potential('CallbackPot')
+         p2.set_callback(TestPotential_Callback.callback_2)
+         p2.calc(self.a, calc_energy=True)
+         self.assertEqual(self.a.energy, 2.0)
+
+         self.p.calc(self.a, calc_energy=True)
+         self.assertEqual(self.a.energy, 1.0)
+
+      def test_bad_label(self):
+         p3 = Potential('CallbackPot label=BAD')
+         verbosity_push(SILENT) # suppress warning about energy not being computed
+         self.assertRaises(ValueError, p3.calc, self.a, calc_energy=True)
+         verbosity_pop()
+         
+
+         
+
 
 if __name__ == '__main__':
    unittest.main()

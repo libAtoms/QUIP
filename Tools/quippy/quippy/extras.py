@@ -16,7 +16,7 @@ else:
 import numpy, os, weakref
 from farray import *
 
-from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput
+from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput, FortranPotential
 from quippy import AtomsReaders, AtomsWriters
 
 class NeighbourInfo(object):
@@ -468,6 +468,8 @@ class Atoms(FortranAtoms):
 from dictmixin import DictMixin, ParamReaderMixin
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
+   __doc__ = FortranDictionary.__doc__
+
    def __init__(self, D=None, *args, **kwargs):
       FortranDictionary.__init__(self, *args, **kwargs)
       if D is not None:
@@ -560,8 +562,9 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
    def copy(self):
       return Dictionary(self)
 
-
 class Table(FortranTable):
+
+   __doc__ = FortranTable.__doc__
 
    def __repr__(self):
       return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
@@ -616,6 +619,8 @@ class Table(FortranTable):
 
 class DynamicalSystem(FortranDynamicalSystem):
 
+   __doc__ = FortranDynamicalSystem.__doc__
+
    def run(self, pot, dt, n_steps, hook_interval=None, write_interval=None, connect_interval=None, trajectory=None, args_str=None, hook=None,
            save_interval=None):
       if hook is None:
@@ -634,9 +639,13 @@ from quippy import INPUT, OUTPUT, INOUT
 
 class CInOutput(FortranCInOutput):
 
+   __doc__ = FortranCInOutput.__doc__
+
    def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, fpointer=None, finalise=True):
       FortranCInOutput.__init__(self, filename, action, append, netcdf4, fpointer=fpointer, finalise=finalise)
       self.zero = zero
+
+   __init__.__doc__ = FortranCInOutput.__init__.__doc__
 
    def __len__(self):
       return int(self.n_frame)
@@ -656,8 +665,29 @@ class CInOutput(FortranCInOutput):
       FortranCInOutput.write(self, at, properties, int_format, real_format, frame,
                              shuffle, deflate, deflate_level, status)
                              
-      
-             
-             
+class Potential(FortranPotential):
+
+   __doc__ = FortranPotential.__doc__
+   callback_map = {}
+   
+   def __init__(self, args_str, *args, **kwargs):
+      if args_str.lower().startswith('callbackpot') and not 'label' in args_str:
+         args_str = args_str + ' label=%d' % id(self)
+      FortranPotential.__init__(self, args_str, *args, **kwargs)
+
+      if args_str.lower().startswith('callbackpot'):
+         FortranPotential.set_callback(self, Potential.callback)
+
+   __init__.__doc__ = FortranPotential.__init__.__doc__
+
+   @staticmethod
+   def callback(at_ptr):
+      at = Atoms(fpointer=at_ptr, finalise=False)
+      if at.params['label'] not in Potential.callback_map:
+         raise ValueError('Unknown Callback potential label %s' % at.params['label'])
+      Potential.callback_map[at.params['label']](at)
+
+   def set_callback(self, callback):
+      Potential.callback_map[str(id(self))] = callback
 
 

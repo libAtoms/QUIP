@@ -150,10 +150,10 @@ typedef struct{
 VCALLBACKPOTSUB_TABLE callbackpotsub_table[20];
 static int ncallbackpotsub = 0;
 
-void register_callbackpot_sub_(void (*sub)(int*, int*, int*, int*, int*)){
+void register_callbackpot_sub_(void (*sub)(int*)){
   callbackpotsub_table[ncallbackpotsub++].sub = sub;
 }
 
-void call_callbackpot_sub_(int* i, int* at, int* calc_energy, int* calc_local_e, int* calc_force, int* calc_virial){
+void call_callbackpot_sub_(int* i, int* at) {
   callbackpotsub_table[*i].sub(at);
 }

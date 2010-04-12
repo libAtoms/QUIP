@@ -195,6 +195,10 @@ module Potential_module
      module procedure Potential_setup_parallel
   end interface setup_parallel
 
+  public :: set_callback
+  interface set_callback
+     module procedure potential_set_callback
+  end interface
 
 contains
 
@@ -992,9 +996,13 @@ call print('ARGS2 | '//new_args_str,VERBOSE)
   subroutine potential_set_callback(this, callback)
     type(Potential), intent(inout) :: this
     interface
-       subroutine callback(at, calc_energy, calc_local_e, calc_force, calc_virial)
-         integer, intent(in) :: at(12) 
-         logical :: calc_energy, calc_local_e, calc_force, calc_virial
+       subroutine callback(at)
+#ifdef HAVE_QUIPPY
+         integer, intent(in) :: at(12)
+#else
+         use Atoms_module, only: Atoms
+         type(Atoms), intent(inout) :: at
+#endif
        end subroutine callback
     end interface
     

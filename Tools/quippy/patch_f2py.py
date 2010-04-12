@@ -28,7 +28,7 @@ if not already_patched:
    import numpy.f2py.capi_maps
    numpy.f2py.capi_maps.cformat_map['long_long'] = '%Ld'
 
-   import numpy.f2py.rules
+   import numpy.f2py.rules, numpy.f2py.cb_rules
 
    numpy.f2py.rules.module_rules['modulebody'] = numpy.f2py.rules.module_rules['modulebody'].replace('#includes0#\n', """#includes0#
 
@@ -71,6 +71,18 @@ if not already_patched:
    """)
 
    from numpy.f2py.auxfuncs import *
+
+   numpy.f2py.auxfuncs.options['persistant_callbacks'] = True
+
+   # Disable callback argument cleanup so that callbacks can be called after function returns.
+   # This will lead to a small memory leak every time a function with callback arguments is called.
+   def persistant_callbacks(var):
+      return True
+   
+   numpy.f2py.cb_rules.cb_routine_rules['body'] = numpy.f2py.cb_rules.cb_routine_rules['body'].replace('capi_longjmp_ok = 1', 'capi_longjmp_ok = 0')
+
+   numpy.f2py.rules.arg_rules[7]['cleanupfrompyobj'] = {l_not(persistant_callbacks): numpy.f2py.rules.arg_rules[7]['cleanupfrompyobj'],
+                                                        persistant_callbacks: '}'}
 
    numpy.f2py.rules.arg_rules[8]['callfortran'] = {isintent_c:'#varname#,',
                                                    l_and(isoptional,l_not(isintent_c)):'#varname#_capi == Py_None ? NULL : &#varname#,',

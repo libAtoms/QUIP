@@ -71,6 +71,7 @@ integer :: n_callbacks = 0
 public :: Callbackpot_type
 type CallbackPot_type
    character(len=1024) :: init_args_str
+   character(len=FIELD_LENGTH) :: label
    integer :: callback_id
    type(MPI_context) :: mpi
 end type CallbackPot_type
@@ -114,19 +115,27 @@ end interface
 interface 
    subroutine register_callbackpot_sub(sub)
      interface 
-        subroutine sub(at, calc_energy, calc_local_e, calc_force, calc_virial)
+        subroutine sub(at)
+#ifdef HAVE_QUIPPY
           integer, intent(in) :: at(12)
-          logical :: calc_energy, calc_local_e, calc_force, calc_virial
+#else
+          use Atoms_module, only: Atoms
+          type(Atoms), intent(inout) :: at
+#endif
         end subroutine sub
      end interface
    end subroutine register_callbackpot_sub
 end interface
   
 interface 
-   subroutine call_callbackpot_sub(i,at, calc_energy, calc_local_e, calc_force, calc_virial)
-     integer, intent(in) :: i
+   subroutine call_callbackpot_sub(i,at)
+#ifdef HAVE_QUIPPY
      integer, intent(in) :: at(12)
-     logical :: calc_energy, calc_local_e, calc_force, calc_virial
+#else
+     use Atoms_module, only: Atoms
+     type(Atoms), intent(inout) :: at
+#endif
+     integer, intent(in) :: i
    end subroutine call_callbackpot_sub
 end interface
 
@@ -138,8 +147,16 @@ subroutine Callbackpot_Initialise(this, args_str, mpi)
   type(Callbackpot_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(MPI_Context), intent(in), optional :: mpi
+  type(Dictionary) :: params
 
   call finalise(this)
+
+  call initialise(params)
+  call param_register(params, 'label', '', this%label)
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='CallbackPot_initialise')) &
+       call system_abort('CallbackPot_Initialise failed to parse args_str="'//trim(args_str)//"'")
+  call finalise(params)
+
   this%init_args_str = args_str
   if (present(mpi)) this%mpi = mpi
 
@@ -148,9 +165,13 @@ end subroutine Callbackpot_Initialise
 subroutine callbackpot_set_callback(this, callback)
   type(Callbackpot_type), intent(inout) :: this
   interface
-     subroutine callback(at, calc_energy, calc_local_e, calc_force, calc_virial)
+     subroutine callback(at)
+#ifdef HAVE_QUIPPY
        integer, intent(in) :: at(12)
-       logical :: calc_energy, calc_local_e, calc_force, calc_virial
+#else
+       use Atoms_module, only: Atoms
+       type(Atoms), intent(inout) :: at
+#endif
      end subroutine callback
   end interface
 
@@ -188,7 +209,8 @@ subroutine Callbackpot_Print(this, file)
 
   if (current_verbosity() < NORMAL) return
 
-  call print("Callbackpot: callback_id='"//this%callback_id)
+  call print("Callbackpot: callback_id="//this%callback_id)
+  call print("Callbackpot: label="//this%label)
 
 end subroutine Callbackpot_Print
 
@@ -205,8 +227,10 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   character(len=*), intent(in), optional :: args_str
   integer, intent(out), optional :: err
   type(Atoms), target :: at_copy
+#ifdef HAVE_QUIPPY
   type(atoms_ptr_type) :: at_ptr
   integer :: at_ptr_i(12)
+#endif
   real(dp), pointer :: local_e_ptr(:), force_ptr(:,:)
   logical :: calc_energy, calc_local_e, calc_force, calc_virial
   
@@ -235,9 +259,20 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   if (this%callback_id < 0) call system_abort('callbackpot_calc: callback_id < 0')
 
   at_copy = at
+  call set_value(at_copy%params, 'calc_energy', calc_energy)
+  call set_value(at_copy%params, 'calc_local_e', calc_local_e)
+  call set_value(at_copy%params, 'calc_virial', calc_virial)
+  call set_value(at_copy%params, 'calc_force', calc_force)
+  call set_value(at_copy%params, 'callback_id', this%callback_id)
+  call set_value(at_copy%params, 'label', this%label)
+
+#ifdef HAVE_QUIPPY
   at_ptr%p => at_copy
   at_ptr_i = transfer(at_ptr, at_ptr_i)
-  call call_callbackpot_sub(this%callback_id, at_ptr_i, calc_energy, calc_local_e, calc_force, calc_virial)
+  call call_callbackpot_sub(this%callback_id, at_ptr_i)
+#else
+  call call_callbackpot_sub(this%callback_id, at_copy)
+#endif
 
   if (present(energy)) then
      if (.not. get_value(at_copy%params, 'energy', energy)) &
@@ -262,7 +297,7 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
 
   if (present(virial)) then
      if (.not. get_value(at_copy%params, 'virial', virial)) &
-          call print('Callbackpot_calc: "virial" requested but not returned by callback')
+          call print('WARNING Callbackpot_calc: "virial" requested but not returned by callback')
   end if
 
   if (this%mpi%active) then
@@ -273,6 +308,8 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
      if (present(forces))  call bcast(this%mpi, forces)
      if (present(virial))  call bcast(this%mpi, virial)
   end if
+
+  call finalise(at_copy)
 
 end subroutine Callbackpot_calc
 
