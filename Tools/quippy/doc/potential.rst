@@ -19,6 +19,7 @@
      ``IP``                Interatomic Potential
      ``TB``                Tight Binding Model
      ``FilePot``           File potential, used to communicate with external program
+     ``CallbackPot``       Callback potential, computation done by Python function
      ====================  ==========================================================
 
    
@@ -106,4 +107,30 @@
       Not all Potentials support all of these quantities: a
       :exc:`RuntimeError` will be raised if you ask for something that
       is not supported.
+
+   .. method:: set_callback(at, callback)
+
+      For a :class:`Potential` of type `CallbackPot`, this method is used
+      to set the callback function. `callback` should be a Python function
+      which takes a single argument, of type :class:`Atoms`. Information about
+      which quantities should be computed can be obtained from the `calc_energy`, 
+      `calc_local_e`, `calc_force`, and `calc_virial` keys in `at.params`. Results
+      should be returned either as `at.params` entries (for energy and virial) or
+      by adding new atomic properties (for forces and local energy).
+
+      Here's an example implementation of such a callback::
+
+        def example_callback(at):
+	    if at.calc_energy:
+	       at.params['energy'] = ...
+	      
+	    if at.calc_force:
+	       at.add_property('force', 0.0, n_cols=3)
+	       at.force[:,:] = ...
+
+	p = Potential('CallbackPot')
+	p.set_callback(example_callback)
+	p.calc(at, calc_energy=True)
+	print at.energy
+	...
  
