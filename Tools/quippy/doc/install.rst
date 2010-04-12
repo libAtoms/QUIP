@@ -265,12 +265,27 @@ If the compilation fails with an error message, please send the full
 output to me at james.kermode@kcl.ac.uk and I'll do my best to work
 out what's going wrong.
 
+Testing
+-------
+
 Once quippy is successfully compiled, you should run the test suite to 
 check everything is working correctly::
 
    python setup.py test
 
+You can also specify which tests to run by module, class or even choose
+a specific test case, e.g.::
+  
+  python setup.py test --test=test_atoms
+  python setup.py test --test=test_atoms.TestGeometry
+  python setup.py test --test=test_atoms.TestGeometry.test_cell_volume
+
+The tests themselves can be found in :file:`${QUIP_ROOT}/Tools/quippy/tests/test*.py`.
 If any of the tests fail please send me (james.kermode@kcl.ac.uk) the output.
+
+Installation
+------------
+
 Once all the tests have passed, run ::
 
    python setup.py install
