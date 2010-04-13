@@ -161,7 +161,7 @@ implicit none
 	    if (correl_std_dev > 0.0_dp) then
 	      effective_N(i) = (correl_0/correl_std_dev)**2
 	    else
-	      effective_N(i) = -1
+	      effective_N(i) = 0
 	    endif
 	  end do
 	endif
@@ -178,7 +178,7 @@ implicit none
 	    if (correl_std_dev > 0.0_dp) then
 	      effective_N(i) = (correl_0/correl_std_dev)**2
 	    else
-	      effective_N(i) = -1
+	      effective_N(i) = 0
 	    endif
 	  end do
 	endif
@@ -194,7 +194,7 @@ implicit none
     endif
     if (do_mean) myline = trim(myline) //" mean"
     if (do_var) myline = trim(myline) //" var N"
-    if (do_effective_N) myline = trim(myline) // " effective_N"
+    if (do_effective_N) myline = trim(myline) // " effective_N effective_decorrel_time"
 
     call print(trim(myline), file=outfile)
 
@@ -206,7 +206,11 @@ implicit none
       endif
       if (do_mean) myline = trim(myline) //" " // data_mean(i)
       if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
-      if (do_effective_N) myline = trim(myline) // " " // effective_N(i)
+      if (effective_N(i) > 0) then
+	if (do_effective_N) myline = trim(myline) // " " // effective_N(i) // " " // (size(data,reduction_index)/effective_N(i))
+      else
+	if (do_effective_N) myline = trim(myline) // " " // effective_N(i) // " " // 0
+      endif
       call print(trim(myline), file=outfile)
     end do
   end if
