@@ -1,0 +1,6 @@
+<Morse_params n_types="2" label="CoSb3_CompMatSci_44">
+<!-- Morse potential for CoSb3 from Yang et al., Comp. Mat. Sci. v 44, p 1390 (2009) -->
+  <pair atnum_i="27" atnum_j="27" r0="2.9641" D="0.59530" alpha="1.0527" />
+  <pair atnum_i="51" atnum_j="51" r0="3.7353" D="0.82060" alpha="0.7848" />
+  <pair atnum_i="27" atnum_j="51" r0="2.4366" D="0.70795" alpha="1.8985" />
+</Morse_params>
