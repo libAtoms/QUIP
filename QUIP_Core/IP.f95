@@ -22,6 +22,7 @@
 !%   \begin{itemize}
 !%    \item    Gaussian Approximation Potential           ({\bf IPModel_GAP}) 
 !%    \item    Lennard-Jones Potential                    ({\bf IPModel_LJ}) 
+!%    \item    Morse Potential                            ({\bf IPModel_Morse}) 
 !%    \item    Force-Constant Potential                   ({\bf IPModel_FC}) 
 !%    \item    Stillinger and Weber Potential for Silicon ({\bf IPModel_SW}) 
 !%    \item    Tersoff potential for C/Si/Ge              ({\bf IPModel_Tersoff})  
@@ -45,6 +46,7 @@
 !%   \begin{itemize}
 !%    \item    'IP GAP'
 !%    \item    'IP LJ'
+!%    \item    'IP Morse'
 !%    \item    'IP FC'
 !%    \item    'IP SW' 
 !%    \item    'IP Tersoff'
@@ -68,6 +70,7 @@ use libatoms_module
 use MPI_context_module
 use IPModel_GAP_module
 use IPModel_LJ_module
+use IPModel_Morse_module
 use IPModel_FC_module
 use IPModel_SW_module
 use IPModel_Tersoff_module
@@ -91,7 +94,7 @@ private
 
 integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, &
      FF_Brenner = 5, FF_GAP = 6, FF_FS = 7, FF_BOP = 8, FF_FB = 9, FF_Si_MEAM = 10, FF_Brenner_Screened = 11, &
-     FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, &   ! Add new IPs here
+     FF_Brenner_2002 = 12, FF_ASAP = 13, FF_ASAP2 = 14, FF_FC = 15, FF_Morse = 16, &   ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -100,6 +103,7 @@ type IP_type
 
   type(IPModel_GAP) ip_gap
   type(IPModel_LJ) ip_lj
+  type(IPModel_Morse) ip_morse
   type(IPModel_FC) ip_fc
   type(IPModel_SW) ip_sw
   type(IPModel_Tersoff) ip_Tersoff
@@ -211,7 +215,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   type(MPI_context), intent(in), optional :: mpi_obj
 
   type(Dictionary) :: params
-  logical is_GAP, is_LJ, is_FC, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
+  logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_template
 
   call Finalise(this)
@@ -219,6 +223,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   call initialise(params)
   call param_register(params, 'GAP', 'false', is_GAP)
   call param_register(params, 'LJ', 'false', is_LJ)
+  call param_register(params, 'Morse', 'false', is_Morse)
   call param_register(params, 'FC', 'false', is_FC)
   call param_register(params, 'SW', 'false', is_SW)
   call param_register(params, 'Tersoff', 'false', is_Tersoff)
@@ -240,7 +245,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   endif
   call finalise(params)
 
-  if (count((/is_GAP, is_LJ, is_FC, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
+  if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, &        ! add new IPs here
        is_Template /)) /= 1) then
     call system_abort("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'")
@@ -252,6 +257,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   else if (is_LJ) then
     this%functional_form = FF_LJ
     call Initialise(this%ip_lj, args_str, param_str)
+  else if (is_Morse) then
+    this%functional_form = FF_Morse
+    call Initialise(this%ip_morse, args_str, param_str)
   else if (is_FC) then
     this%functional_form = FF_FC
     call Initialise(this%ip_fc, args_str, param_str)
@@ -311,6 +319,9 @@ subroutine IP_Finalise(this)
     case (FF_LJ)
       if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
       call Finalise(this%ip_lj)
+    case (FF_Morse)
+      if (this%ip_morse%mpi%active) call free_context(this%ip_morse%mpi)
+      call Finalise(this%ip_morse)
     case (FF_FC)
       if (this%ip_fc%mpi%active) call free_context(this%ip_fc%mpi)
       call Finalise(this%ip_fc)
@@ -366,6 +377,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_gap%cutoff
   case (FF_LJ)
      IP_cutoff = this%ip_lj%cutoff
+  case (FF_Morse)
+     IP_cutoff = this%ip_morse%cutoff
   case (FF_FC)
      IP_cutoff = this%ip_fc%cutoff
   case (FF_SW)
@@ -428,6 +441,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
       mpi_active = this%ip_gap%mpi%active
     case (FF_LJ)
       mpi_active = this%ip_lj%mpi%active
+    case (FF_Morse)
+      mpi_active = this%ip_morse%mpi%active
     case (FF_FC)
       mpi_active = this%ip_fc%mpi%active
     case (FF_SW)
@@ -470,6 +485,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
       call calc(this%ip_gap, at, energy, local_e, f, virial)
     case (FF_LJ)
       call calc(this%ip_lj, at, energy, local_e, f, virial, args_str)
+    case (FF_Morse)
+      call calc(this%ip_morse, at, energy, local_e, f, virial, args_str)
     case (FF_FC)
       call calc(this%ip_fc, at, energy, local_e, f, virial, args_str)
     case (FF_SW)
@@ -518,6 +535,8 @@ subroutine IP_Print(this, file)
       call Print(this%ip_gap, file=file)
     case (FF_LJ)
       call Print(this%ip_lj, file=file)
+    case (FF_Morse)
+      call Print(this%ip_morse, file=file)
     case (FF_FC)
       call Print(this%ip_fc, file=file)
     case (FF_SW)
@@ -614,6 +633,9 @@ subroutine setup_parallel_groups(this, mpi, pgroup_size)
     case (FF_LJ)
       if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
       this%ip_lj%mpi = mpi_local
+    case (FF_Morse)
+      if (this%ip_morse%mpi%active) call free_context(this%ip_morse%mpi)
+      this%ip_morse%mpi = mpi_local
     case (FF_FC)
       if (this%ip_fc%mpi%active) call free_context(this%ip_fc%mpi)
       this%ip_fc%mpi = mpi_local

@@ -399,15 +399,9 @@ end function IPModel_FC_pairenergy_deriv
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
 !%
-!%> <FC_params n_types="2" label="default">
-!%> <per_type_data type="1" atomic_num="29" />
-!%> <per_type_data type="2" atomic_num="79" />
-!%> <per_pair_data type1="1" type2="1" sigma="4.0" eps6="1.0" 
-!%>       eps12="1.0" cutoff="6.0" shifted="T" />
-!%> <per_pair_data type1="2" type2="2" sigma="5.0" eps6="2.0" 
-!%>       eps12="2.0" cutoff="7.5" shifted="T" />
-!%> <per_pair_data type1="1" type2="2" sigma="4.5" eps6="1.5" 
-!%>       eps12="1.5" cutoff="6.75" shifted="T" />
+!%> <FC_params n_types="2" max_n_fcs="2" cutoff="4.0" label="default">
+!%> <FC atnum_i="14" atnum_j="14" fc_i="1" r0="2.0" phi2="1.0" phi3="0.1" phi4="0.1" />
+!%> <FC atnum_i="14" atnum_j="14" fc_i="2" r0="3.0" phi2="1.0" phi3="0.1" phi4="0.1" />
 !%> </FC_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
