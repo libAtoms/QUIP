@@ -82,7 +82,7 @@ if got_ase:
          """
 
          system_reseed_rng(1)
-         self.pot = Potential('IP SW', xml)
+         self.pot = PotentialCalculator('IP SW', xml)
 
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
@@ -109,8 +109,7 @@ if got_ase:
                               [-0.02138795, -0.19375487, -0.34640615]])
 
          self.ase_at = atoms_to_ase(self.at)
-         self.calc = QuippyCalculator(self.pot)
-         self.ase_at.set_calculator(self.calc)
+         self.ase_at.set_calculator(self.pot)
 
       def test_energy(self):
          self.assertAlmostEqual(self.ase_at.get_potential_energy(), self.e_ref)
@@ -123,7 +122,7 @@ if got_ase:
          self.assertArrayAlmostEqual(self.ase_at.get_stress(), stress_vector(-self.v_ref*GPA/self.at.cell_volume()))
 
       def test_numeric_forces(self):
-         self.assertArrayAlmostEqual(self.calc.get_numeric_forces(self.ase_at), self.f_ref.T)
+         self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.ase_at), self.f_ref.T)
 
 
 
