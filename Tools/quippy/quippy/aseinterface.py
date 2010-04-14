@@ -56,119 +56,38 @@ def atoms_from_ase(at):
 
    return qat
 
-   
-class QuippyCalculator(object):
+from quippy import Atoms
+class ASECompatibleAtoms(Atoms):
+   """Subclass of quippy.Atoms which is compatible with the ASE Atoms class."""
 
-   def __init__(self, pot):
-      """Construct a QuippyCalculator object from `pot`, which
-      should either be an instance of :class:`quippy.Potential` or
-      :class:`quippy.MetaPotential`"""
-      
-      self.pot = pot
-      self.quippy_at = None
-
-   def update(self, atoms):
-      qat = atoms_from_ase(atoms)
-      if self.quippy_at is None or self.quippy_at != qat:
-         self.calculate(qat)
-
-   def calculate(self, qat):
-      from numpy import array, zeros
-      from quippy import GPA
-      
-      self.quippy_at = qat.copy()
-      self.quippy_at.set_cutoff(self.pot.cutoff())
-      self.quippy_at.calc_connect()
-      
-      energy = array(0.0)
-      force = zeros((3,self.quippy_at.n), order='F')
-      virial = zeros((3,3), order='F')
-
-      self.pot.calc(self.quippy_at, f=force, e=energy, virial=virial)
-
-      self.energy = float(energy)
-      self.forces = array(force.T)
-      self.stress = -array(virial)*GPA/qat.cell_volume()
-      
-   def get_potential_energy(self, atoms):
-      self.update(atoms)
-      return self.energy
-
-   def get_forces(self, atoms):
-      self.update(atoms)
-      return self.forces.copy()
-
-   def get_numeric_forces(self, atoms):
-      from numpy import zeros
-      
-      self.update(atoms)
-      df = zeros((3,self.quippy_at.n), order='F')
-      self.pot.calc(self.quippy_at, df=df)
-      return df.T
-
-   def get_stress(self, atoms):
-      self.update(atoms)
-      return self.stress
-
-import castep, os
-
-class CastepCalculator(object):
-   def __init__(self, cell=None, param=None, castep_exec=None, stem=None):
-      """Construct a CastepCalculator object from `cell` and
-      `param` templates."""
-      
-      if isinstance(cell, str):
-         self.cell = castep.CastepCell(cell)
-      else:
-         self.cell = cell
-
-      if isinstance(param, str):
-         self.param = castep.CastepParam(param)
-      else:
-         self.param = param
-
-      if stem is None:
-         self.stem = 'castep_calculator'
-      else:
-         self.stem = stem
-
-      self.castep_exec = castep_exec
-      self.quippy_at = None
-      self.n = 0
-
-
-   def update(self, atoms):
-      qat = atoms_from_ase(atoms)
-      if self.quippy_at is None or self.quippy_at != qat:
-         self.calculate(qat)
-
-   def calculate(self, qat):
-      from numpy import array, zeros
-      from quippy import GPA
-      
-      self.quippy_at = qat.copy()
-      self.cell.update_from_atoms(self.quippy_at)
-
-      stem = '%s_%05d' % (self.stem, self.n)
-      castep.run_castep(self.cell, self.param, stem, self.castep_exec, test_mode=True)
-      self.n += 1
-
+   def __init__(self, *args, **kwargs):
       try:
-         print 'Reading from file %s' % (stem+'.castep')
-         result = Atoms(stem+'.castep', atoms_ref=self.quippy_at)
-         print self.quippy_at.pos
-         print result.pos
-         self.energy = float(result.energy)
-         self.forces = array(result.force.T)
-         if hasattr(result, 'virial'):
-            self.stress = -array(result.virial)*GPA/result.cell_volume()
-         else:
-            self.stress = zeros((3,3))
-      except IOError:
-         self.energy = 0.0
-         self.forces = zeros((qat.n,3))
-         self.stress = zeros((3,3))
+         from ase import Atoms as ase_Atoms
+         Atoms.__init__(atoms_from_ase(ase_Atoms(*args, **kwargs)))
+      except ImportError:
+         raise ImportError('ASE not installed.')
+   
 
+class CalculatorMixin(object):
+   def update(self, atoms):
+      qat = atoms_from_ase(atoms)
+      if not hasattr(self, 'quippy_at') or self.quippy_at != qat:
+         from numpy import array, zeros
+         from quippy import GPA
+
+         self.quippy_at = qat.copy()
+         self.quippy_at.set_cutoff(self.cutoff())
+         self.quippy_at.calc_connect()
+
+         energy = array(0.0)
+         force = zeros((3,self.quippy_at.n), order='F')
+         virial = zeros((3,3), order='F')
+
+         self.calc(self.quippy_at, f=force, e=energy, virial=virial)
+
+         self.energy = float(energy)
+         self.forces = array(force.T)
+         self.stress = -array(virial)*GPA/qat.cell_volume()
       
    def get_potential_energy(self, atoms):
       self.update(atoms)
@@ -183,17 +102,20 @@ class CastepCalculator(object):
       
       self.update(atoms)
       df = zeros((3,self.quippy_at.n), order='F')
-      self.pot.calc(self.quippy_at, df=df)
+      self.calc(self.quippy_at, df=df)
       return df.T
 
    def get_stress(self, atoms):
       self.update(atoms)
       return self.stress
-   
+
+from quippy import Potential
+class PotentialCalculator(Potential, CalculatorMixin):
+   pass
 
 
 # If the ASE is installed, register AtomsReader from ase.Atoms instances
-# and add a 'to_ase()' method to quippy Atoms and Potential classes
+# and add a 'to_ase()' method to quippy Atoms class
 try:
    from ase import Atoms as ase_Atoms
    from quippy import Atoms, Potential, AtomsReaders
@@ -205,12 +127,6 @@ try:
    AtomsReaders['ase'] = atoms_from_ase_gen
    Atoms.to_ase = atoms_to_ase
    del atoms_from_ase_gen
-
-   def potential_to_ase(self):
-      return QuippyCalculator(self)
-
-   Potential.to_ase = potential_to_ase
-   del potential_to_ase
    
 except ImportError:
    pass

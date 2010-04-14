@@ -1001,3 +1001,40 @@ def hash_atoms(at, ndigits):
    m.update(str(flat_frac_pos))
 
    return m.hexdigest()
+
+from quippy import Potential
+
+class CastepPotential(Potential):
+   def __init__(self, cell, param, castep_exec='castep %s', stem='castep_callback', test_mode=False):
+      Potential.__init__(self, 'CallbackPot')
+      self.set_callback(self.run)
+
+      if isinstance(cell, str):
+         self.cell = CastepCell(cell)
+      else:
+         self.cell = cell
+
+      if isinstance(param, str):
+         self.param = CastepParam(cell)
+      else:
+         self.param = param
+
+      self.castep_exec = castep_exec
+      self.stem = stem
+      self.n = 0
+      self.test_mode = test_mode
+
+   def run(self, at):
+      self.cell.update_from_atoms(at)
+      stem = '%s_%05d' % (self.stem, self.n)
+      run_castep(self.cell, self.param, stem, self.castep_exec, test_mode=self.test_mode)
+      self.n += 1
+
+      print 'Reading from file %s' % (stem+'.castep')
+      result = Atoms(stem+'.castep', atoms_ref=at)
+      at.params['energy'] = float(result.energy)
+      at.add_property('force', result.force)
+      if hasattr(result, 'virial'):
+         at.params['virial'] = result.virial
+      else:
+         at.params['virial'] = fzeros((3,3))
