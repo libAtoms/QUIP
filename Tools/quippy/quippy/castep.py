@@ -1036,9 +1036,12 @@ class CastepPotential(Potential):
 
    def run(self, at):
       self.cell.update_from_atoms(at)
-      stem = '%s_%05d' % (self.stem, self.n)
+      while True:
+         stem = '%s_%05d' % (self.stem, self.n)
+         self.n += 1
+         if not os.path.exists(stem+'.castep'): break
+
       run_castep(self.cell, self.param, stem, self.castep_exec, test_mode=self.test_mode)
-      self.n += 1
 
       print 'Reading from file %s' % (stem+'.castep')
       result = Atoms(stem+'.castep', atoms_ref=at)
