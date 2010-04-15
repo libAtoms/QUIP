@@ -137,7 +137,11 @@ class CastepCell(OrderedDict):
       return new
 
    def read(self, cellfile):
-      "Read a CASTEP .cell file. cellfile can be a filename or an open file"
+      "Read a CASTEP .cell file. cellfile can be a mapping type, filename or an open file"
+
+      if operator.isMappingType(cellfile):
+         self.update(cellfile)
+         return
 
       if type(cellfile) == type(''):
          cellfile = open(cellfile,'r')
@@ -345,6 +349,10 @@ class CastepParam(OrderedDict):
    
    def read(self, paramfile):
       "Read a CASTEP .param file. paramfile can be a filename or an open file"
+
+      if operator.isMappingType(paramfile):
+         self.update(paramfile)
+         return
 
       if type(paramfile) == type(''):
          paramfile = open(paramfile,'r')
