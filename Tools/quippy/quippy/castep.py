@@ -926,6 +926,8 @@ def run_castep(cell, param,  stem, castep, log=None, save_all_check_files=False,
    # ... and cell file
    cell.write(stem+'.cell')
 
+   if not '%s' in castep: castep = castep + ' %s'
+
    if test_mode:
       info('test mode: not running castep')
       
