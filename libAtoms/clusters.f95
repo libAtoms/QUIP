@@ -1157,9 +1157,9 @@ contains
        even_electrons, do_periodic(3), cluster_nneighb_only, &
        cluster_allow_modification, hysteretic_connect, same_lattice, &
        fix_termination_clash, keep_whole_residues, reduce_n_cut_bonds, &
-       protect_X_H_bonds, protect_double_bonds
+       protect_X_H_bonds, protect_double_bonds, has_termination_rescale
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
-    real(dp) :: r, r_min, centre(3)
+    real(dp) :: r, r_min, centre(3), termination_rescale
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
     integer :: i, j, jj, first_active, old_n, n_cluster, shift(3)
     integer, pointer :: hybrid_mark(:), modified_hybrid_mark(:)
@@ -1197,6 +1197,7 @@ contains
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds)
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, protect_double_bonds_has_value)
+    call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_termination_rescale)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) &
       call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
@@ -1453,7 +1454,11 @@ contains
                 ! If j is an OUT atom, and it is close enough, put a terminating hydrogen
                 ! at the scaled distance between i and j
 
-                rescale = termination_bond_rescale(at%Z(i), at%Z(j))
+                if (.not. has_termination_rescale) then
+                   rescale = termination_bond_rescale(at%Z(i), at%Z(j))
+                else
+                   rescale = termination_rescale
+                end if
                 H1 = at%pos(:,i) + rescale * r_ij * dhat_ij
 
                 ! Label term atom with indices into original atoms structure.
