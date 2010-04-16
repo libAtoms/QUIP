@@ -77,6 +77,18 @@ class Neighbours(object):
 
       return farray(res) # to give 1-based indexing      
 
+   def distances(self, Z1=None, Z2=None):
+      """Distances between pairs of neighbours, optionally filtered by species (Z1,Z2)"""
+      at = self.atref()
+      for i in frange(at.n):
+         for neighb in self[i]:
+            if neighb.j > i: continue
+            if Z1 is not None and Z2 is not None:
+               if sorted((at.z[i],at.z[neighb.j])) == sorted((Z1,Z2)):
+                  yield neighb.distance
+            else:
+               yield neighb.distance
+
 class Atom(dict):
    def __init__(self, *args, **kwargs):
       dict.__init__(self, *args, **kwargs)
