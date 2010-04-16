@@ -898,6 +898,86 @@ class TestCluster_HystereticConnect_MoveAtom(QuippyTestCase):
             self.assertEqual(self.t.int[6,i],move_atom_index)
 
 
+class TestCluster_SilicaTetrahedra(QuippyTestCase):
+      def setUp(self):
+            from quippy.surface import crack_rotation_matrix, orthorhombic_slab
+
+            aq = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
+            unit_slab = orthorhombic_slab(aq, rot=crack_rotation_matrix(aq,(0,0,0,1),z=(-1,0,0)),verbose=False)
+            slab = supercell(unit_slab, 10, 10, 1)
+
+            slab.map_into_cell()
+            width = slab.lattice[1,1]
+            notch_width = 0.5*width
+            notch_height = notch_width/2.0
+
+            slab.lattice[1,1] += 50.0
+            slab.lattice[2,2] += 50.0
+            slab.set_lattice(slab.lattice)
+
+            mask = fzeros(slab.n, dtype=int)
+            mask[:] = 1
+            for i in frange(slab.n):
+               if ((slab.pos[2,i] < -(0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) + notch_height/2.0) and
+                   (slab.pos[2,i] >  (0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) - notch_height/2.0)):
+                  mask[i] = 0
+
+            at = slab.select(mask)
+            at.calc_connect()
+
+            embed = at.bfs_grow_single(2, n=4, nneighb_only=True)
+            at.add_property('hybrid_mark', HYBRID_NO_MARK)
+            at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+
+            cluster_options = {
+               'cluster_periodic_x': False,
+               'cluster_periodic_y': False,
+               'cluster_periodic_z': True, 
+               'terminate': True, 
+               'cluster_allow_modification': True, 
+               'randomise_buffer': False
+            }
+
+            self.t1 = create_cluster_info_from_hybrid_mark(at, args_str(cluster_options))
+            self.cluster1 = carve_cluster(at, args_str(cluster_options), cluster_info=self.t1)
+
+            cluster_options['keep_whole_silica_tetrahedra'] = True
+
+            self.t2 = create_cluster_info_from_hybrid_mark(at, args_str(cluster_options))
+            self.cluster2 = carve_cluster(at, args_str(cluster_options), cluster_info=self.t2)
+
+      
+      def test_cluster1_n(self):
+            self.assertEqual(self.cluster1.n, 39)
+
+      def test_cluster_index(self):
+            self.assertEqual(sorted(self.cluster1.index),
+                             [2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 18, 19, 21, 22, 33, 160, 164, 167, 168, 171, 
+                              172, 173, 176, 182, 184, 187, 188, 189, 192, 193, 205, 206, 211, 340, 344, 347, 351])
+
+      def test_cluster2_n(self):
+            self.assertEqual(self.cluster2.n, 56)
+
+      def test_cluster_2_index(self):
+            self.assertEqual(sorted(self.cluster2.index),
+                             [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 17, 18, 19, 21, 22, 30, 33, 160, 161, 
+                              161, 164, 167, 168, 171, 172, 173, 174, 174, 176, 178, 182, 183, 183, 184, 185, 187, 188, 
+                              189, 192, 193, 201, 205, 206, 210, 211, 340, 344, 347, 351, 354, 354])
+
+      def test_cluster1_composition(self):
+            descr = self.t1.str[1,:].stripstrings()
+            self.assertEqual([(descr == 'h_active').count(),
+                              (descr == 'term').count()],
+                             [22,17])
+            
+      def test_cluster2_composition(self):
+            descr = self.t2.str[1,:].stripstrings()
+            self.assertEqual([(descr == 'h_active').count(),
+                              (descr == 'tetra').count(),
+                              (descr == 'n_cut_bond').count(),
+                              (descr == 'term').count()],
+                             [22,18,1,15])
+            
 
 if hasattr(quippy, 'Potential'):
 

@@ -627,6 +627,63 @@ contains
 
   end function cluster_keep_whole_residues
 
+  !% keep whole silica tetrahedra -- that is, for each silicon atom, keep all it's oxygen nearest neighbours
+  function cluster_keep_whole_silica_tetrahedra(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
+    
+    integer :: n, i, ishift(3), m, j, jshift(3)
+
+    call print('doing cluster_keep_whole_silica_tetrahedra', NERD)
+
+    cluster_changed = .false.
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      if (this%z(i) /= 14) then
+         ! Consider only silicon atoms, which form centres of tetrahedra
+         n = n + 1
+         cycle  
+      end if
+
+      call print('cluster_keep_whole_silica_tetrahedra: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',ANAL)
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	if (this%z(j) /= 8) then
+	  call print("cluster_keep_whole_silica_tetrahedra:   j = "//j//" ["//jshift//"] is not oxygen ", ANAL)
+	  cycle
+	endif
+	if(find(cluster_info,(/j,ishift+jshift,this%Z(j),0/), atom_mask) /= 0) then
+	  call print("cluster_keep_whole_silica_tetrahedra:   j = "//j//" ["//jshift//"] is in cluster",ANAL)
+	  cycle
+	end if
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_silica_tetrahedra:   j = "//j//" ["//jshift//"] not nearest neighbour",ANAL)
+	  cycle
+	end if
+
+	call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"tetra     "/) )
+	cluster_changed = .true.
+	call print('cluster_keep_whole_silica_tetrahedra:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, NERD)
+
+      end do ! m
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_silica_tetrahedra: Finished checking',NERD)
+    call print("cluster_keep_whole_silica_tetrahedra: cluster list:", NERD)
+    call print(cluster_info, NERD)
+
+  end function cluster_keep_whole_silica_tetrahedra
+
+
   !% adding each neighbour outside atom if doing so immediately reduces the number of cut bonds
   function cluster_reduce_n_cut_bonds(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
     type(Atoms), intent(in) :: this !% atoms structure 
@@ -1156,7 +1213,7 @@ contains
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
        even_electrons, do_periodic(3), cluster_nneighb_only, &
        cluster_allow_modification, hysteretic_connect, same_lattice, &
-       fix_termination_clash, keep_whole_residues, reduce_n_cut_bonds, &
+       fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
        protect_X_H_bonds, protect_double_bonds, has_termination_rescale
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale
@@ -1194,6 +1251,7 @@ contains
     call param_register(params, 'cluster_same_lattice', 'F', same_lattice)
     call param_register(params, 'fix_termination_clash','T', fix_termination_clash)
     call param_register(params, 'keep_whole_residues','T', keep_whole_residues, keep_whole_residues_has_value)
+    call param_register(params, 'keep_whole_silica_tetrahedra','F', keep_whole_silica_tetrahedra)
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds)
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, protect_double_bonds_has_value)
@@ -1381,6 +1439,7 @@ contains
       do while (cluster_changed) 
 	cluster_changed = .false.
 	call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
+          ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
 	  ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
 	  ' protect_X_H_bonds ' // protect_X_H_bonds // &
 	  ' protect_double_bonds ' // protect_double_bonds // &
@@ -1392,6 +1451,13 @@ contains
 	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
 	  endif
 	endif
+        if (keep_whole_silica_tetrahedra) then
+           prev_cluster_info_n = cluster_info%N
+           if (cluster_keep_whole_silica_tetrahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+              cluster_changed = .true.
+              modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+           endif
+        end if
 	if (reduce_n_cut_bonds) then
 	  prev_cluster_info_n = cluster_info%N
 	  if (cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
