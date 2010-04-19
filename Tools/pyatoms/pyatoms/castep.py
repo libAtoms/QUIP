@@ -258,9 +258,10 @@ class CastepCell(OrderedDict):
       for i in range(at.n):
          self['POSITIONS_ABS'].append(at.species[i]+' %f %f %f' % tuple(at.pos[i,:]))
 
-      self['IONIC_VELOCITIES'] = []
-      for i in range(at.n):
-         self['IONIC_VELOCITIES'].append(at.species[i]+' %f %f %f' % tuple(1000.0 * at.velo[i,:]))
+      if at.properties.has_key('velo'):
+         self['IONIC_VELOCITIES'] = []
+         for i in range(at.n):
+            self['IONIC_VELOCITIES'].append(at.species[i]+' %f %f %f' % tuple(1000.0 * at.velo[i,:]))
 
 
 
