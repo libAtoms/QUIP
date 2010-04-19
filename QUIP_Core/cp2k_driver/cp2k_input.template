@@ -17,6 +17,7 @@
         EWALD_TYPE ewald
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
+#GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #        GMAX 33
       &END EWALD
     &END POISSON
@@ -59,6 +60,7 @@
         EWALD_TYPE spme
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
+#GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #        GMAX 33
       &END EWALD
     &END POISSON
@@ -70,9 +72,11 @@
     USE_GEEP_LIB 15
 #from Laino 2006 using Blochl 1995, periodic electrostatic QM-MM coupling
     &PERIODIC
+#GMAX is calculated from a different formmula, using the system size. 1.0 works fine.
       GMAX 1.0
       NGRIDS 50 50 50
       &MULTIPOLE
+#best to omit RCUT, default is system size dependent and OK.
 #        RCUT 5.0
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
