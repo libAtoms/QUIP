@@ -296,10 +296,7 @@ class CastepParam(OrderedDict):
          if line.startswith('#') or line == '':
             continue
 
-	 line = re.compile('[:=]').sub('', line, 1)
-#         for c in ':=':  # Remove delimeters
-#            line = line.replace(c,'',1)
-
+	 line = re.compile('[:=]').sub(' ', line, 1)
          fields = line.split()
          key = fields[0].lower()
          if not key in valid_parameters_keywords:

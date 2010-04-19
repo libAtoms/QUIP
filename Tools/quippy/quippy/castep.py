@@ -1,4 +1,4 @@
-import sys, string, os, operator, itertools, logging, glob
+import sys, string, os, operator, itertools, logging, glob, re
 from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_from_symbol
@@ -364,9 +364,8 @@ class CastepParam(OrderedDict):
          if line.startswith('#') or line == '':
             continue
 
+	 line = re.compile('[:=]').sub(' ', line, 1)
          fields = line.split()
-         fields = [ f for f in fields if not f in (':','=')]
-         
          key = fields[0].lower()
          if not key in valid_parameters_keywords:
             raise ValueError('Unknown PARAMETERS keyword %s' % key)
