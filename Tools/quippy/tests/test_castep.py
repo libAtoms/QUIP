@@ -428,6 +428,24 @@ develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
                       if (line.strip() != '' and not line.startswith('#'))]):
          self.assertEqual(a,b)
 
+   def testparsernospaces1(self):
+      p = castep.CastepParam(['#comment',
+                       'elec_energy_tol:value'])
+      self.assertEqual(p.keys(), ['elec_energy_tol'])
+      self.assertEqual(p.values(), ['value'])
+
+   def testparsernospaces2(self):
+      p = castep.CastepParam(['#comment',
+                       'elec_energy_tol: value'])
+      self.assertEqual(p.keys(), ['elec_energy_tol'])
+      self.assertEqual(p.values(), ['value'])
+
+   def testparsernospaces3(self):
+      p = castep.CastepParam(['#comment',
+                       'elec_energy_tol :value'])
+      self.assertEqual(p.keys(), ['elec_energy_tol'])
+      self.assertEqual(p.values(), ['value'])
+
    
 class TestReadGeom(QuippyTestCase):
 
