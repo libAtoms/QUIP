@@ -5395,7 +5395,6 @@ contains
               call system_abort('Atoms_read_xyz: key '//fields(i)//' not found')
          call append(props, lookup)
       end do
-call print("Z_found " // Z_found // " species_found " // species_found, ERROR)
 
       ! Remove trailing ':'
       if (present(properties)) properties = trim(properties(1:len(properties)-1))
