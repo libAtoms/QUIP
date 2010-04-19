@@ -15,9 +15,9 @@
       POISSON_SOLVER PERIODIC
       &EWALD
         EWALD_TYPE ewald
-        EWALD_ACCURACY 1.E-8
+        EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-        GMAX 33
+#        GMAX 33
       &END EWALD
     &END POISSON
     &QS
@@ -56,10 +56,10 @@
     &END FORCEFIELD
     &POISSON
       &EWALD
-        EWALD_TYPE ewald
-        EWALD_ACCURACY 1.E-8
+        EWALD_TYPE spme
+        EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-        GMAX 33
+#        GMAX 33
       &END EWALD
     &END POISSON
   &END MM
@@ -73,7 +73,7 @@
       GMAX 1.0
       NGRIDS 50 50 50
       &MULTIPOLE
-        RCUT 5.0
+#        RCUT 5.0
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
         ANALYTICAL_GTERM T
