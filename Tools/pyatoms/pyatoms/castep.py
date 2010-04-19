@@ -138,7 +138,7 @@ class CastepCell(OrderedDict):
          line = line.strip()
 
          # Skip comments and blank lines
-         if line.startswith('#') or line == '':
+         if line.startswith('#') or line.startswith('!') or line == '':
             continue
 
          # Start of block
@@ -293,7 +293,7 @@ class CastepParam(OrderedDict):
          line = line.strip()
 
          # Skip comments and blank lines
-         if line.startswith('#') or line == '':
+         if line.startswith('#') or line.startswith('!') or line == '':
             continue
 
 	 line = re.compile('[:=]').sub(' ', line, 1)

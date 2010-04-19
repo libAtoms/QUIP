@@ -446,6 +446,14 @@ develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
       self.assertEqual(p.keys(), ['elec_energy_tol'])
       self.assertEqual(p.values(), ['value'])
 
+   def testfortrancomment(self):
+      p = castep.CastepParam(['!comment',
+                              'elec_energy_tol :value'])
+      self.assertEqual(p.keys(), ['elec_energy_tol'])
+      self.assertEqual(p.values(), ['value'])
+      
+      
+
    
 class TestReadGeom(QuippyTestCase):
 
