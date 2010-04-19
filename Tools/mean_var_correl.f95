@@ -206,10 +206,12 @@ implicit none
       endif
       if (do_mean) myline = trim(myline) //" " // data_mean(i)
       if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
-      if (effective_N(i) > 0) then
-	if (do_effective_N) myline = trim(myline) // " " // effective_N(i) // " " // (size(data,reduction_index)/effective_N(i))
-      else
-	if (do_effective_N) myline = trim(myline) // " " // effective_N(i) // " " // 0
+      if (do_effective_N) then
+	if (effective_N(i) > 0) then
+	  myline = trim(myline) // " " // effective_N(i) // " " // (size(data,reduction_index)/effective_N(i))
+	else
+	  myline = trim(myline) // " " // effective_N(i) // " " // 0
+	endif
       endif
       call print(trim(myline), file=outfile)
     end do
