@@ -215,6 +215,9 @@ class Atoms(FortranAtoms):
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
 
+      if not hasattr(dest, 'write'):
+         raise ValueError("Don't know how to write to destination \"%s\" in format \"%s\"" % (dest, format))
+
       if properties is not None:
          try:
             res = dest.write(self, properties=properties)

@@ -274,6 +274,9 @@ class AtomsList(object):
       if format in AtomsWriters:
          dest = AtomsWriters[format](dest, *args, **kwargs)
 
+      if not hasattr(dest, 'write'):
+         raise ValueError("Don't know how to write to destination \"%s\" in format \"%s\"" % (dest, format))
+
       res = []
       for i, a in fenumerate(self.iteratoms()):
          if properties is not None:
