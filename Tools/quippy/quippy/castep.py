@@ -5,7 +5,7 @@ from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_f
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.xyz_netcdf import make_lattice, get_lattice_params
 from math import pi
-from logging import warn, info
+from logging import warn, info, error
 
 import xml.dom.minidom
 
