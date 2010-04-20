@@ -99,7 +99,7 @@ else:
 
 # Build a chain of iterators over all input files, skipping frames as appropriate
 atomseq = itertools.islice(itertools.chain.from_iterable(sources),
-                           opt.range.start+1, opt.range.stop, opt.range.step)
+                           opt.range.start-1, opt.range.stop, opt.range.step)
 
 if opt.skip_bad_times:
    atomseq = skip_bad_times(atomseq)
