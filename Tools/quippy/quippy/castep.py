@@ -5,8 +5,6 @@ from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_f
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
 from quippy.xyz_netcdf import make_lattice, get_lattice_params
 from math import pi
-from logging import warn, info, error
-
 import xml.dom.minidom
 
 # Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 4.3.
@@ -859,16 +857,19 @@ def get_valid_keywords(castep):
    return (valid_cell_keywords, valid_parameters_keywords) 
 
 
-def check_pspots(cluster, cell, param):
+def check_pspots(cluster, cell, param, orig_dir):
    """Check pseudopotential files are present, and that we have one for
    each element present in cluster. Also tries to check spin polarisation
    of system matches that specified in parameters."""
+   
+   log = logging.getLogger('castep_driver')
 
    # Get list of unique elements in cluster
    pspot_dict = {}
-   for el in cluster.species:
+   for el in cluster.species.stripstrings():
       pspot_dict[el] = None
    elements = pspot_dict.keys()
+   log.info(str(elements))
 
    if 'SPECIES_POT' in cell:
       for line in cell['SPECIES_POT']:
@@ -883,7 +884,7 @@ def check_pspots(cluster, cell, param):
       if pspot is None:
          # Not fatal since on-the-fly pseudo-potential will be generated
          # however, we can't estimate then n_electrons here
-         warn('Pseudopotential missing for element %s' % el)
+         log.warn('Pseudopotential missing for element %s' % el)
          valence_charges[el] = '?'
          missing_pspots = True
       elif not pspot.startswith('/"'):
@@ -910,14 +911,14 @@ def check_pspots(cluster, cell, param):
          fields = pspot[2:-2].split('|')
          valence_charges[el] = float(fields[0])
 
-   info('unique elements and valence electrons: %s' % valence_charges)
+   log.info('unique elements and valence electrons: %s' % valence_charges)
 
    if not missing_pspots:
       n_electrons = reduce(operator.add, \
                            map(lambda el: valence_charges[el]*count(cluster.species == el), \
                                elements))
 
-      info('total electrons %.1f' % n_electrons)
+      log.info('total electrons %.1f' % n_electrons)
       if (param.has_key('spin_polarised') and param['spin_polarised'].lower() == 'false' and \
           int(n_electrons) % 2 != 0):
          raise ValueError('spin polarised set to false but got odd number of electrons!')
@@ -926,8 +927,11 @@ def check_pspots(cluster, cell, param):
          raise ValueError('spin polarised set to true but got even number of electrons!')
 
 
-def run_castep(cell, param,  stem, castep, log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False):
+def run_castep(cell, param,  stem, castep, castep_log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False):
    "Invoke castep and return True if it completed successfully"
+
+   log = logging.getLogger('castep_driver')
+
    # Write parameter file ...
    param.write(stem+'.param')
    # ... and cell file
@@ -936,7 +940,7 @@ def run_castep(cell, param,  stem, castep, log=None, save_all_check_files=False,
    if not '%s' in castep: castep = castep + ' %s'
 
    if test_mode:
-      info('test mode: not running castep')
+      log.info('test mode: not running castep')
       
       # Simulate making check file
       check_file = open(stem+'.check','w')
@@ -982,8 +986,8 @@ def run_castep(cell, param,  stem, castep, log=None, save_all_check_files=False,
             error(error_text)
 
    # Write log file here so that it will always be written
-   if log is not None and os.path.exists('%s.castep' % stem):
-      logf = open(log, 'a')
+   if castep_log is not None and os.path.exists('%s.castep' % stem):
+      logf = open(castep_log, 'a')
       castep_output = open('%s.castep' % stem, 'r').readlines()
       logf.writelines(castep_output)
       logf.close()
@@ -995,17 +999,14 @@ def hash_atoms(at, ndigits):
    """Hash an atoms object with a precision of ndigits decimal digits.
    Species, lattice and fractional positions are fed to MD5 to form the hash."""
 
-   import md5
-   doround = lambda x: round(x, ndigits)
+   import numpy, md5
 
    # Compute fractional positions, round them to ndigits, then sort them
    # for hash stability
-   flat_frac_pos = array([ dot(at.pos[i,:],at.g) for i in range(at.n) ]).flatten()
-   flat_frac_pos = map(doround, flat_frac_pos)
-   flat_frac_pos.sort()
+   flat_frac_pos = sorted([numpy.round(x,ndigits) for x in dot(at.g,at.pos).flatten()])
 
    m = md5.new()
-   m.update(str(map(doround, at.lattice.flat)))
+   m.update(str([numpy.round(x,ndigits) for x in at.lattice.flatten()]))
    m.update(str(at.species))
    m.update(str(flat_frac_pos))
 
