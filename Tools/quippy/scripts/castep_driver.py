@@ -5,7 +5,7 @@
 # 
 # type(Potential) :: pot
 # ...
-# call initialise(pot, "FilePot command=./castep_driver.py")
+# call initialise(pot, "FilePot command=/path/to/castep_driver.py")
 # 
 # To use the CASTEP driver, you must have Python 2.3 or later
 # (http://www.python.org) installed, along with the NumPy numerical
@@ -41,7 +41,7 @@
 # NUMNODES=8
 # export CASTEP="mpirun -np $NUMNODES ../run_castep %s"
 # 
-# Any questions, email James Kermode <jrk33@cam.ac.uk>
+# Any questions, email James Kermode <james.kermode@kcl.ac.uk>
 
 
 #----------------------------------------------------------------
@@ -49,7 +49,7 @@
 #----------------------------------------------------------------
 
 # Python standard library modules
-import sys, string, os, os.path, shutil, glob, operator, xml.dom.minidom
+import sys, string, os, os.path, shutil, glob, operator, xml.dom.minidom, logging
 
 # NumPy <http://www.numpy.org>
 from numpy import *
@@ -116,36 +116,26 @@ DO_HASH = False
 HASH_NDIGITS = 2
 
 #----------------------------------------------------------------
-# Subroutines 
-#----------------------------------------------------------------
+
+
+# Set up logging
+log = logging.getLogger('castep_driver')
+format = logging.Formatter('%(name)s %(levelname)-10s %(asctime)s %(message)s')
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+handler.setFormatter(format)
+log.addHandler(handler)
+log.propagate = False
+log.level = logging.INFO
 
 def die(message):
    "Print error message and abort"
-   sys.stdout.write('castep_driver ABORT   : '+message+'\n')
+   log.critical(message)
    os.chdir(orig_dir)
    sys.exit(1)
 
-def warn(message):
-   "Print message to STDOUT"
-   sys.stdout.write('castep_driver WARNING : '+message+'\n')
-
-def error(message):
-   "Print message to STDOUT"
-   sys.stdout.write('castep_driver ERROR   : '+message+'\n')
-   
-
-def info(message):
-   "Print message to STDOUT"
-   sys.stdout.write('castep_driver INFO    : '+message+'\n')
-
-
 class ParamError(Exception):
    pass
-
-
-#----------------------------------------------------------------
-# Main code
-#----------------------------------------------------------------
 
 # Save starting directory
 orig_dir = os.getcwd()
@@ -215,7 +205,7 @@ else:
          else:
             order = element.attributes['order'].value
             
-         info('got parameter set %s, order %s' % (label, order))
+         log.info('got parameter set %s, order %s' % (label, order))
          params[int(order)] = (label, castep.CastepParam(element.firstChild.data.split('\n')))
 
    except ValueError, message:
@@ -257,21 +247,21 @@ os.chdir(path)
 if not BATCH_READ:
    # Load up old cluster, if it's there
    if os.path.exists(stem+'.xyz.old'):
-      info('found old cluster in file %s' % stem+'.xyz.old')
+      log.info('found old cluster in file %s' % stem+'.xyz.old')
       try:
-         old_cluster = Atoms(stem+'.xyz.old')
+         old_cluster = Atoms(stem+'.xyz.old', format='xyz')
       except IOError:
          die('error opening old cluster file %s' % stem+'.xyz.old')
 
       if (all(cluster.lattice == old_cluster.lattice)):
-         info('lattice matches that of previous cluster')
+         log.info('lattice matches that of previous cluster')
       else:
-         warn('lattice mismatch with prevous cluster')
+         log.warn('lattice mismatch with prevous cluster')
 
       if (cluster.n == old_cluster.n):
-         info('RMS position difference is %.3f A' % rms_diff(cluster, old_cluster))
+         log.info('RMS position difference is %.3f A' % rms_diff2(cluster.pos, old_cluster.pos))
       else:
-         warn('number mismatch with previous cluster')
+         log.warn('number mismatch with previous cluster')
 
    else:
       old_cluster = cluster
@@ -282,7 +272,7 @@ if not BATCH_READ:
    # Check pseudopotentials are present and
    # copy pseudopotential files into working directory
    try:
-      castep.check_pspots(cluster, cell, params[0][1])
+      castep.check_pspots(cluster, cell, params[0][1], orig_dir)
    except IOError, (errno, msg):
       die('IO Error reading pseudopotentials (%d,%s)' % (errno,msg))
    except ValueError, message:
@@ -292,8 +282,8 @@ if not BATCH_READ:
    # multiple parameter sets - first DM, then EDFT, them DM without reuse,
    # then EDFT without reuse
    if len(params) == 1 and params[0][0] == 'default':
-      info('Only default paramater set found: forking it to produce')
-      info(' "standard", "without DM", "without reuse" and "without DM or reuse".')
+      log.info('Only default paramater set found: forking it to produce')
+      log.info(' "standard", "without DM", "without reuse" and "without DM or reuse".')
       standard_params = params[0][1].copy()
 
       # Fall back to EDFT if DM fails to converge
@@ -331,7 +321,7 @@ try:
 
       order = sorted_param_keys.pop()
       name, param = params[order]
-      info('running CASTEP with parameter set <%s>' % name)
+      log.info('running CASTEP with parameter set <%s>' % name)
 
       # Ensure iprint is >= 2 since CASTEP doesn't output parameters properly for iprint=1
       if 'iprint' in param:
@@ -346,15 +336,15 @@ try:
          if (os.path.exists(stem+'.check') and
              cluster.n == old_cluster.n and
              all(cluster.lattice == old_cluster.lattice)):
-            info('check file found: trying to reuse it')
+            log.info('check file found: trying to reuse it')
             param['reuse'] = 'default'
          else:
             if cluster.n != old_cluster.n:
-               info('cannot reuse check file - atom number mismatch')
+               log.info('cannot reuse check file - atom number mismatch')
             elif not all(cluster.lattice == old_cluster.lattice):
-               info('cannot reuse check file - lattice mismatch')
+               log.info('cannot reuse check file - lattice mismatch')
             else:
-               info('check file not found')
+               log.info('check file not found')
                
             # Discard parameter sets in order until we find one where
             # we don't try to reuse the electronic density.
@@ -369,7 +359,7 @@ try:
                break
             continue
       else:
-         info('not reusing check file')
+         log.info('not reusing check file')
          param['reuse'] = 'NULL'
 
       if 'max_scf_cycles_dm'   in param: del param['max_scf_cycles_dm']
@@ -377,45 +367,45 @@ try:
 
       # Run castep
       if not BATCH_READ and not BATCH_QUEUE:
-         if not castep.run_castep(cell, param, stem, CASTEP, log=stem+'.castep_log',
+         if not castep.run_castep(cell, param, stem, CASTEP, castep_log=stem+'.castep_log',
                                   test_mode=TEST_MODE, save_all_input_files=SAVE_ALL_INPUT_FILES,
                                   save_all_check_files=SAVE_ALL_CHECK_FILES):
-            error('castep run failed')
+            log.error('castep run failed')
             continue
 
       if BATCH_QUEUE:
          param.write(stem+'.param')
          cell.write(stem+'.cell')
          
-         info('batch queue mode: not running castep')
+         log.info('batch queue mode: not running castep')
          cluster.params['energy'] = 0.0
          cluster.params['virial'] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
          cluster.add_property('force', 0.0, n_cols=3)
          break
       else:
          try:
-            cluster = castep.read_castep_output(stem+'.castep', cluster)
+            cluster = Atoms(stem+'.castep', atoms_ref=cluster)
          except IOError, message:
-            error('error parsing .castep file: %s' % message)
+            log.error('error parsing .castep file: %s' % message)
             continue
          except ValueError, message:
-            error('error parsing .castep file: %s' % message)
+            log.error('error parsing .castep file: %s' % message)
             continue
 
-         info('castep completed in %.1f s' % cluster.params['castep_run_time'])
+         log.info('castep completed in %.1f s' % cluster.params['castep_run_time'])
 
-         norm_f = norm(cluster.force)
+         norm_f = cluster.force.norm()
          max_force_atom = norm_f.argmax()
          max_force = norm_f[max_force_atom]
 
          if hasattr(cluster,'hybrid'):
-            info('max force is %.2f eV/A on atom %d hybrid=%r' % \
+            log.info('max force is %.2f eV/A on atom %d hybrid=%r' % \
                  (max_force,max_force_atom,cluster.hybrid[max_force_atom]))
          else:
-            info('max force is %.2f eV/A on atom %d' % (max_force,max_force_atom))
+            log.info('max force is %.2f eV/A on atom %d' % (max_force,max_force_atom))
 
          if max_force > MAX_FORCE_THRESHOLD:
-            error('max force is very large - repeating calculation')
+            log.error('max force is very large - repeating calculation')
             continue
          else:
             break
@@ -427,12 +417,8 @@ except ParamError:
 
 
 # Save cluster for comparison with next time
-old_cluster_file = open(stem+'.xyz.old', 'w')
-cluster.write(old_cluster_file)
-old_cluster_file.close()
+cluster.write(stem+'.xyz.old', format='xyz')
 
 # Finally change back to original working directory and write output file
 os.chdir(orig_dir)
-output_file = open(outfile, 'w')
-cluster.write(output_file)
-output_file.close()
+cluster.write(outfile, format='xyz')
