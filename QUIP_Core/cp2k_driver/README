@@ -1,14 +1,13 @@
-Patches tested against CP2K cvs version 31 Aug 2009 (NB).
+Patches tested against CP2K cvs version 21 April 2010 (NB).
 
-Modified CP2K source files (06 Dec 2008!!):
-  topology_pdb.F
-  motion_utils.F
-More robust are 
-  topology_pdb.F.patch (OUTDATED, don't use if you enable exyz reading, which is more accurate anyway)
-  motion_utils.F.patch
+Most robust forms for applying the changes are in
+  topology_pdb.F.patch (OUTDATED, don't use if you enable exyz reading, which is more accurate and only supported way right now)
+  motion_utils.F.patch (fixes output for parsing by cp2k_driver)
+  cp2k_exyz.patch (enables CP2K reading of our extended xyz format, needed for current version of cp2k_driver)
+  cp2k_speed.patch (improves speed, especially for QM/MM in parallel, with force error < 1e-9)
 Use them by going to the CP2K cp2k/src directory, and running
   patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
-If you want to enable exyz reading in cp2k, also do
+  patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/cp2k_speed.patch
   patch -l -F 4 < patch_to_your_QUIP_Core/cp2k_driver/cp2k_exyz.patch 
 You will need to tell the compiler to add
   -Ipath_to_your_QUIP/build.QUIP_ARCH
