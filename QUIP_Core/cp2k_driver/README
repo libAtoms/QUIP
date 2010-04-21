@@ -4,7 +4,7 @@ Modified CP2K source files (06 Dec 2008!!):
   topology_pdb.F
   motion_utils.F
 More robust are 
-  topology_pdb.F.patch
+  topology_pdb.F.patch (OUTDATED, don't use if you enable exyz reading, which is more accurate anyway)
   motion_utils.F.patch
 Use them by going to the CP2K cp2k/src directory, and running
   patch -l -F 4 < path_to_your_QUIP_Core/cp2k_driver/motion_utils.F.patch
