@@ -76,7 +76,9 @@
       GMAX 1.0
       NGRIDS 50 50 50
       &MULTIPOLE
-#best to omit RCUT, default is system size dependent and OK.
+# RCUT default is system size dependent and marginally OK.
+# for some systems, setting it to the system size is significantly faster
+#    (speedup in ewald_ddapc_pot and ewald_ddapc_force)
 #        RCUT 5.0
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
