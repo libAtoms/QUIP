@@ -706,7 +706,13 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    # Have we calculated local populations and charges?
    if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
       try:
-         popn_start = castep_output.index('     Atomic Populations\n')
+         try:
+            popn_start = castep_output.index('     Atomic Populations\n')
+         except ValueError:
+            try:
+               popn_start = castep_output.index('     Atomic Populations (Mulliken)\n')
+            except ValueError:
+               raise
 
          popn_lines = castep_output[popn_start+4:popn_start+4+cluster.n]
 
