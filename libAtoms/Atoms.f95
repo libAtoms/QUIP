@@ -1200,6 +1200,7 @@ module  atoms_module
      module procedure atoms_add_property_real, atoms_add_property_real_a
      module procedure atoms_add_property_str, atoms_add_property_str_a
      module procedure atoms_add_property_logical, atoms_add_property_logical_a 
+     module procedure atoms_add_property_real_2Da
   end interface
 
   !% Convenience function to test if a property is present. No checking
@@ -1907,6 +1908,40 @@ contains
     call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
 
   end subroutine atoms_add_property_real_a
+
+  subroutine atoms_add_property_real_2Da(this, name, value, lookup)
+    type(Atoms), intent(inout),target :: this
+    character(len=*), intent(in) :: name
+    real(dp), intent(in) :: value(:,:)
+    integer, dimension(3), optional, intent(out) :: lookup
+
+    integer :: use_n_cols, new_cols(2), use_lookup(3)
+
+    use_n_cols = size(value,1)
+
+    ! Check if there's already a property with this name
+    if (Get_Value(this%properties, name, use_lookup)) then
+       ! Does it match this type and number of columns?
+       if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
+          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          if (present(lookup)) lookup = use_lookup
+          return
+       else
+          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+       end if
+    end if
+
+    call append_column(this%data, 0.0_dp, n_cols=use_n_cols, cols=new_cols)
+    this%data%real(new_cols(1):new_cols(2),1:this%data%N) = value
+    use_lookup = (/PROPERTY_REAL, new_cols(1), new_cols(2)/)
+    call set_value(this%properties, name, use_lookup)
+    if (present(lookup)) lookup = use_lookup
+
+    ! Append column will have moved this%data in memory and invalidated pointers
+    call atoms_repoint(this)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+
+  end subroutine atoms_add_property_real_2Da
 
 
   subroutine atoms_add_property_str(this, name, value, n_cols, lookup)
@@ -5147,7 +5182,7 @@ contains
      dict_prop_names_string = dict_prop_names_string(1:len_trim(dict_prop_names_string)-1)
    end function dict_prop_names_string
 
-   subroutine atoms_print_xyz_filename(this, xyzfilename, comment, properties, all_properties, human_readable, real_format)
+   subroutine atoms_print_xyz_filename(this, xyzfilename, comment, properties, all_properties, human_readable, real_format, append)
 
       type(Atoms),            intent(inout)    :: this     
       character(*),           intent(in)    :: xyzfilename
@@ -5155,11 +5190,12 @@ contains
       character(*), optional, intent(in)    :: properties 
       logical,      optional, intent(in)    :: all_properties
       logical,      optional, intent(in)    :: human_readable
+      logical,      optional, intent(in)    :: append
       character(*), optional, intent(in)    :: real_format
 
       type(Inoutput)  :: file
 
-      call initialise(file, xyzfilename, action=OUTPUT)
+      call initialise(file, xyzfilename, action=OUTPUT, append=optional_default(.false.,append))
       call atoms_print_xyz(this, file, comment, properties, all_properties, human_readable, real_format)
       call finalise(file)
 
