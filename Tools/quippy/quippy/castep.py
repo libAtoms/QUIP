@@ -779,7 +779,13 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
       # Have we calculated local populations and charges?
       if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
          try:
-            popn_start = castep_output.index('     Atomic Populations\n')
+            try:
+               popn_start = castep_output.index('     Atomic Populations\n')
+            except ValueError:
+               try:
+                  popn_start = castep_output.index('     Atomic Populations (Mulliken)\n')
+               except ValueError:
+                  raise
 
             popn_lines = castep_output[popn_start+4:popn_start+4+atoms.n]
 
@@ -1051,3 +1057,15 @@ class CastepPotential(Potential):
          at.params['virial'] = result.virial
       else:
          at.params['virial'] = fzeros((3,3))
+
+def potential_to_cube(filename):
+   """Load a potential write by CASTEP pot_write_formatted() routine, and convert
+   to a 3-dimensional FortranArray suitable for writing to a .cube file."""
+   
+   pot = numpy.loadtxt(filename)
+   nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
+   data = fzeros((nx,ny,nz))
+   for (i,j,k,value) in pot:
+      data[int(i),int(j),int(k)] = value
+   return data
+   
