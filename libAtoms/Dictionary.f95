@@ -1628,7 +1628,7 @@ function dictionary_subset(this, keys, case_sensitive)
   do i=1,size(keys)
      entry_i = lookup_entry_i(this, keys(i), case_sensitive)
      if (entry_i <= 0) &
-          call system_abort('dictionary_subset: key '//keys(i)//' not in dictionary')
+          call system_abort('dictionary_subset: key '//trim(keys(i))//' not in dictionary')
      call add_entry(dictionary_subset, keys(i), this%entries(entry_i))
   end do
 
