@@ -496,8 +496,8 @@ try:
       # that of previous cluster
       if USE_CHECK_FILES and (('reuse' in param and param['reuse'].upper() != 'NULL') or not 'reuse' in param):
          if (os.path.exists(stem+'.check') and
-             cluster.n == old_cluster.n and
-             all(cluster.lattice == old_cluster.lattice)):
+             cluster.n == old_cluster.n):
+#             all(cluster.lattice == old_cluster.lattice)):
             info('check file found: trying to reuse it')
             param['reuse'] = 'default'
          else:
