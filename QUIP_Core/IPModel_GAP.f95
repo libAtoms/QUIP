@@ -34,7 +34,6 @@ use IPEwald_module
 
 #ifdef HAVE_GP
 use bispectrum_module
-use qw_continous_module
 use gp_sparse_module
 #endif
 
@@ -65,14 +64,13 @@ type IPModel_GAP
   real(dp), dimension(116) :: w_Z = 1.0_dp
 
   ! qw parameters
-  integer :: qw_dim = 0
-  integer, allocatable :: qw_type(:)
-  integer, allocatable :: qw_l(:)
+  integer :: qw_l_max = 0
+  integer :: qw_f_n = 0
+  logical :: qw_do_q = .false.
+  logical :: qw_do_w = .false.
   real(dp), allocatable :: qw_cutoff(:)
-  real(dp), allocatable :: qw_wf_char_length(:)
-  integer, allocatable :: qw_wf_type(:)
-  logical, allocatable :: qw_do_weight(:)
-  real(dp) :: energy_difference = 0.0_dp
+  integer, allocatable :: qw_cutoff_f(:)
+  real(dp), allocatable :: qw_cutoff_r1(:)
 
   character(len=256) :: datafile                               !% File name containing the GAP database
   character(len=value_len) :: datafile_coordinates             !% Coordinate system used in GAP database
@@ -141,23 +139,21 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
      & call system_abort('Did not find bispectrum parameters in gp.dat file, &
      & might be old version or format not correct')
   elseif (trim(this%datafile_coordinates) == 'qw') then
-     if (.not. get_value(my_dictionary, 'qw_dim', this%qw_dim)) &
-        call system_abort('Did not find qw dimensionality')
+     if (.not. get_value(my_dictionary, 'l_max', this%qw_l_max) .and. &
+               get_value(my_dictionary, 'f_n', this%qw_f_n)) &
+        call system_abort('Did not find qw parameters in gp.dat file')
 
-     allocate(this%qw_type(this%qw_dim), this%qw_l(this%qw_dim), this%qw_cutoff(this%qw_dim), &
-              this%qw_wf_char_length(this%qw_dim), this%qw_wf_type(this%qw_dim), this%qw_do_weight(this%qw_dim))
+     allocate(this%qw_cutoff(this%qw_f_n), this%qw_cutoff_f(this%qw_f_n), this%qw_cutoff_r1(this%qw_f_n))
 
-     do i = 1, this%qw_dim
-        if (.not. (get_value(my_dictionary, 'qw_type_' // i, this%qw_type(i)) .and. &
-                   get_value(my_dictionary, 'qw_l_' // i, this%qw_l(i)) .and. &
-                   get_value(my_dictionary, 'qw_cutoff_' // i, this%qw_cutoff(i)) .and. &
-                   get_value(my_dictionary, 'qw_wf_char_length_' // i, this%qw_wf_char_length(i)) .and. &
-                   get_value(my_dictionary, 'qw_wf_type_' // i, this%qw_wf_type(i)) .and. &
-                   get_value(my_dictionary, 'qw_do_weight_' // i, this%qw_do_weight(i)))) &
-           call system_abort('Did not find qw parameters in')
+     do i = 1, this%qw_f_n
+        if (.not. (get_value(my_dictionary, 'cutoff_' // i, this%qw_cutoff(i)) .and. &
+                   get_value(my_dictionary, 'cutoff_f_' // i, this%qw_cutoff_f(i)) .and. &
+                   get_value(my_dictionary, 'cutoff_r1_' // i, this%qw_cutoff_r1(i)))) &
+           call system_abort('Did not find qw parameters in gp.dat file')
      enddo
 
-     if (.not. get_value(my_dictionary, 'energy_difference', this%energy_difference)) this%energy_difference = 0.0_dp
+     if (.not. get_value(my_dictionary, 'do_q', this%qw_do_q)) this%qw_do_q = .true.
+     if (.not. get_value(my_dictionary, 'do_w', this%qw_do_w)) this%qw_do_w = .true.
 
      this%cutoff = maxval(this%qw_cutoff)
   endif
@@ -195,14 +191,9 @@ subroutine IPModel_GAP_Finalise(this)
 
   this%n_types = 0
 
-  if (allocated(this%qw_type)) deallocate(this%qw_type)
-  if (allocated(this%qw_l)) deallocate(this%qw_l)
   if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
-  if (allocated(this%qw_wf_char_length)) deallocate(this%qw_wf_char_length)
-  if (allocated(this%qw_wf_type)) deallocate(this%qw_wf_type)
-  if (allocated(this%qw_do_weight)) deallocate(this%qw_do_weight)
-
-  this%qw_dim = 0
+  if (allocated(this%qw_cutoff_f)) deallocate(this%qw_cutoff_f)
+  if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
 
   this%datafile = ''
   this%datafile_coordinates = ''
@@ -230,9 +221,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:), allocatable   :: vec, f_ewald
   real(dp), dimension(:,:,:), allocatable   :: jack
-  integer :: d, i, j, k, l, n, nei_max, jn
+  integer :: d, i, j, k, n, nei_max, jn
 
-  real(dp) :: qw_in(this%qw_dim), qw_prime_in(this%qw_dim,3), e_ewald
+  real(dp) :: e_ewald
   real(dp), dimension(3,3) :: virial_ewald
 
   integer, dimension(3) :: shift
@@ -243,7 +234,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   type(bispectrum_so4), save :: bis
   type(grad_bispectrum_so4), save :: dbis
 
+  type(fourier_so3), save :: f3_hat
+  type(grad_fourier_so3), save :: df3_hat
+  type(qw_so3), save :: qw
+  type(grad_qw_so3), save :: dqw
+
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
+  !$omp threadprivate(f3_hat,df3_hat,qw,dqw)  
 #endif  
 
   if (present(e)) then
@@ -281,12 +278,15 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   do i = 1, at%N
      w(i) = this%w_Z(at%Z(i))
   enddo
-  
-  if (trim(this%datafile_coordinates) == 'bispectrum') then
 
 #ifdef HAVE_GP
-  d = j_max2d(this%j_max)
-  call cg_initialise(this%j_max,2)
+  if (trim(this%datafile_coordinates) == 'bispectrum') then
+     d = j_max2d(this%j_max)
+     call cg_initialise(this%j_max,2)
+  elseif (trim(this%datafile_coordinates) == 'qw') then
+     d = ((this%qw_l_max / 2) + 1) * this%qw_f_n
+     if (this%qw_do_q .and. this%qw_do_w) d = d * 2
+  endif
 #endif
 
   nei_max = 0
@@ -298,31 +298,60 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
 !$omp parallel 
 #ifdef HAVE_GP
-  call initialise(f_hat,this%j_max,this%z0,this%cutoff)
-  if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
+  if (trim(this%datafile_coordinates) == 'bispectrum') then
+     call initialise(f_hat,this%j_max,this%z0,this%cutoff)
+     if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
+  elseif (trim(this%datafile_coordinates) == 'qw') then
+     call initialise(f3_hat, this%qw_l_max, this%qw_cutoff, this%qw_cutoff_f, this%qw_cutoff_r1)
+     call initialise(qw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
+     if (present(f) .or. present(virial)) then
+        call initialise(df3_hat, this%qw_l_max, this%qw_cutoff, this%qw_cutoff_f, this%qw_cutoff_r1)
+        call initialise(dqw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
+     endif
+  endif
 #endif
 !$omp do private(n)
   do i = 1, at%N
 
 #ifdef HAVE_GP
-     call fourier_transform(f_hat,at,i,w)
-     call calc_bispectrum(bis,f_hat)
-     call bispectrum2vec(bis,vec(:,i))
-     if(present(f).or.present(virial)) then
-        do n = 0, atoms_n_neighbours(at,i)
-           call fourier_transform(df_hat,at,i,n,w)
-           call calc_bispectrum(dbis,f_hat,df_hat)
-           call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
-        enddo
+     if (trim(this%datafile_coordinates) == 'bispectrum') then
+        call fourier_transform(f_hat,at,i,w)
+        call calc_bispectrum(bis,f_hat)
+        call bispectrum2vec(bis,vec(:,i))
+        if(present(f).or.present(virial)) then
+           do n = 0, atoms_n_neighbours(at,i)
+              call fourier_transform(df_hat,at,i,n,w)
+              call calc_bispectrum(dbis,f_hat,df_hat)
+              call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
+           enddo
+        endif
+     elseif (trim(this%datafile_coordinates) == 'qw') then
+        call fourier_transform(f3_hat, at, i)
+        call calc_qw(qw, f3_hat)
+        call qw2vec(qw, vec(:,i))
+        if (present(f) .or. present(virial)) then
+           do n = 0, atoms_n_neighbours(at, i)
+              call fourier_transform(df3_hat, at, i, n)
+              call calc_qw(dqw, f3_hat, df3_hat)
+              call qw2vec(dqw, jack(:,3*n+1:3*(n+1),i))
+           enddo
+        endif
      endif
 #endif
   enddo
 !$omp end do 
 #ifdef HAVE_GP
-  call finalise(f_hat)
-  call finalise(df_hat)
-  call finalise(bis)
-  call finalise(dbis)
+  if (trim(this%datafile_coordinates) == 'bispectrum') then
+     call finalise(f_hat)
+     call finalise(df_hat)
+     call finalise(bis)
+     call finalise(dbis)
+  elseif (trim(this%datafile_coordinates) == 'qw') then
+     call finalise(f3_hat)
+     call finalise(df3_hat)
+     call finalise(qw)
+     call finalise(dqw)
+  endif
 #endif
 !$omp end parallel
     
@@ -366,70 +395,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   enddo
 
   deallocate(vec,jack)
-
-  elseif (trim(this%datafile_coordinates) == 'qw') then
-
-#ifdef HAVE_GP
-
-  do i = 1, at%N
-     if (present(f) .or. present(virial)) then
-        do j = 1, this%qw_dim
-           if (this%qw_type(j) == 1) then
-              call calc_qw(at, i, this%qw_l(j), q = qw_in(j), grad_q = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
-                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-           elseif (this%qw_type(j) == 2) then
-              call calc_qw(at, i, this%qw_l(j), w = qw_in(j), grad_w = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
-                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-           endif
-        enddo
-     elseif ((.not. (present(f) .or. present(virial))) .and. (present(e) .or. present(local_e))) then 
-        do j = 1, this%qw_dim
-           if (this%qw_type(j) == 1) then
-              call calc_qw(at, i, this%qw_l(j), q = qw_in(j), cutoff = this%qw_cutoff(j), &
-                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-           elseif (this%qw_type(j) == 2) then
-              call calc_qw(at, i, this%qw_l(j), w = qw_in(j), cutoff = this%qw_cutoff(j), &
-                           wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-           endif
-        enddo
-     endif
-
-     if (present(e) .or. present(local_e)) local_e_in(i) = gp_mean(this%my_gp, qw_in) + this%energy_difference
-
-     if (present(f) .or. present(virial)) then
-        do j = 1, 3
-           f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
-
-           if (present(f)) f(j,i) = f_gp_k
-           if (present(virial)) virial_in(:,j,i) = - f_gp_k * at%pos(:,i)
-        enddo
-
-        do k = 1, atoms_n_neighbours(at, i)
-           l = atoms_neighbour(at, i, k, shift = shift)
-
-           do j = 1, this%qw_dim
-              if (this%qw_type(j) == 1) then
-                 call calc_qw(at, l, this%qw_l(j), q = qw_in(j), grad_q = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
-                              wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-              elseif (this%qw_type(j) == 2) then
-                 call calc_qw(at, l, this%qw_l(j), w = qw_in(j), grad_w = qw_prime_in(j,:), d = i, cutoff = this%qw_cutoff(j), &
-                              wf_char_length = this%qw_wf_char_length(j), wf_type = this%qw_wf_type(j), do_weight = this%qw_do_weight(j))
-              endif
-           enddo
-
-           do j = 1, 3
-              f_gp_k = - gp_mean(this%my_gp, qw_in, qw_prime_in(:,j))
-
-              if (present(f)) f(j,i) = f(j,i) + f_gp_k
-              if (present(virial)) virial_in(:,j,i) = virial_in(:,j,i) - f_gp_k * (at%pos(:,i) - matmul(at%lattice, shift))
-           enddo
-        enddo
-     endif
-  enddo
-
-#endif
-
-  endif
 
   if( this%do_ewald ) then
      allocate(charge(at%N))
