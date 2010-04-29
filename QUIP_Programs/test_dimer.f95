@@ -1,14 +1,36 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! HJ X
+! HJ X   libAtoms+QUIP: atomistic simulation library
+! HJ X
+! HJ X   Portions of this code were written by
+! HJ X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! HJ X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! HJ X
+! HJ X   Copyright 2006-2010.
+! HJ X
+! HJ X   These portions of the source code are released under the GNU General
+! HJ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! HJ X
+! HJ X   If you would like to license the source code under different terms,
+! HJ X   please contact Gabor Csanyi, gabor@csanyi.net
+! HJ X
+! HJ X   Portions of this code were written by Noam Bernstein as part of
+! HJ X   his employment for the U.S. Government, and are not subject
+! HJ X   to copyright in the USA.
+! HJ X
+! HJ X
+! HJ X   When using this software, please cite the following reference:
+! HJ X
+! HJ X   http://www.libatoms.org
+! HJ X
+! HJ X  Additional contributions by
+! HJ X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! HJ X
+! HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
-!X
-!X    
-!X     Authors: Gabor Csanyi, Alessio Commisso, Steven Winfield
-!X     James Kermode, Gianpietro Moras, Michael Payne, Alessandro De Vita
-!X
-!X     
-!X     Copyright 2005, All Rights Reserved 
 !X
 !X     This source code is confidential, all distribution is 
 !X     prohibited. Making unauthorized copies is also prohibited
@@ -27,28 +49,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: test_dimer.f95,v 1.3 2008-04-09 11:26:56 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.2  2008/04/09 11:16:39  jrk33
-! Made compile with changes to code. Not tested.
-!
-! Revision 1.1.1.1  2008/03/13 17:36:35  gc121
-! this module contains the LOTF top level programs
-!
-! Revision 1.11  2007/05/08 15:13:53  jrk33
-! Uncommented code - Adjustable potential is now updated for new multiple image convention
-!
-! Revision 1.10  2007/05/02 23:45:27  gc121
-! updated to reflect changes in libAtoms; AdjPot not done yet, so most of code is commented out for now
-!
-! Revision 1.9  2007/05/02 22:46:35  gc121
-! started to update after the changes in libAtoms
-!
-! Revision 1.8  2006/06/20 17:23:19  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
 
 program test_dimer
 

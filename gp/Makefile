@@ -1,3 +1,5 @@
+# HEADER_CHECK
+
 all: libgp.a
 
 include Makefile.inc

@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Minimization module
 !X  
@@ -30,315 +36,6 @@
 !%  The conjugate gradient minimiser can use various different line minimisation routines.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-
-!X $Id: minimization.f95,v 1.80 2008-06-23 17:01:15 gc121 Exp $
-
-!X $Log: not supported by cvs2svn $
-!X Revision 1.79  2008/05/29 16:46:36  jrk33
-!X Fixed stack mismatch in minim
-!X
-!X Revision 1.78  2008/05/29 13:03:41  jrk33
-!X Fixed typo in do_line_scan stuff
-!X
-!X Revision 1.77  2008/05/29 13:00:37  jrk33
-!X Added optional do_linescan argument to linmin_deriv_iter and linmin_deriv_iter_simple
-!X
-!X Revision 1.76  2008/05/29 12:40:37  jrk33
-!X Use linmin_deriv_iter_simple; print max(abs(df)) in minim status line
-!X
-!X Revision 1.75  2008/05/28 21:52:06  gc121
-!X linmin_deriv_iter_simple: fixed detection of too large extrapolation step
-!X
-!X Revision 1.74  2008/05/28 18:14:32  nb326
-!X Fix my_hook_print_interval=1 checks for verbosity_push_increment()
-!X
-!X Revision 1.73  2008/05/23 00:43:22  gc121
-!X put in simplified linmin_deriv_iter_simple, which does not attempt to reduce the bracketing interval on both sides
-!X
-!X Revision 1.72  2008/05/22 22:52:52  gc121
-!X bug in linmin_deriv_iter, sign error
-!X
-!X Revision 1.71  2008/05/22 14:37:27  gc121
-!X typo in linmin_deriv_iter
-!X
-!X Revision 1.70  2008/05/22 14:29:29  gc121
-!X there was a halving of new_eps in linmin_deriv_iter which didnt make sense
-!X
-!X Revision 1.69  2008/05/22 10:25:36  gc121
-!X tweaked linmin_deriv_iter again to catch the rounding noise when the iteration is essentially converged from one side but not the other
-!X
-!X Revision 1.68  2008/05/22 10:05:35  gc121
-!X tweaked linmin_deriv_iter again. tested on a simple quartic. still not entirely happy, but put more debugging info
-!X
-!X Revision 1.67  2008/05/21 16:09:59  gc121
-!X rewrote linmin_deriv_iter again. tested on a simple quartic
-!X
-!X Revision 1.66  2008/05/20 21:22:12  jrk33
-!X linmin_deriv_iter modified to deal properly with negative projected gradient. Not yet tested
-!X
-!X Revision 1.65  2008/05/15 18:36:09  gc121
-!X tweaked linmin_fast again: reject to SMALL epsilons as well
-!X
-!X Revision 1.64  2008/05/08 10:45:33  gc121
-!X linmin_fast: forgot to modify update of b,c when a is updated
-!X
-!X Revision 1.63  2008/05/07 15:51:07  nb326
-!X Clean up ifort warnings, mostly unused variables
-!X
-!X Revision 1.62  2008/05/06 21:26:17  nb326
-!X Don't let hook override done in n_minim
-!X
-!X Revision 1.61  2008/05/02 19:30:06  nb326
-!X Add hook_print_interval, and some system_timer() calls to minim()
-!X
-!X Revision 1.60  2008/05/02 14:29:13  gc121
-!X moved a print line in linmin_fast, to get more info in case we are stuck. changed the ftol to 1e-13 from 1e-12
-!X
-!X Revision 1.59  2008/05/01 17:14:11  nb326
-!X Fix n_minim outputs
-!X
-!X Revision 1.58  2008/04/28 20:53:58  gc121
-!X minor tweak in linmin_fast: limit new_eps to 10*(b-a) rather than 10*epsilon
-!X
-!X Revision 1.57  2008/04/28 20:43:15  gc121
-!X fixed yet another bug in linmin_fast: rationalized acceptance criterion of quadratic extrapolation step
-!X
-!X Revision 1.56  2008/04/28 20:31:09  gc121
-!X fixed another bug in linmin_fast: when epsilon should not grow by more than a factor of say 10 in any single quadratic step
-!X
-!X Revision 1.55  2008/04/28 19:50:14  gc121
-!X fixed a bug in linmin_fast: when epsilon was so small that the quadratic approx resulted in a backward step, the behaviour was stupid and the linmin failed
-!X
-!X Revision 1.54  2008/04/28 17:44:29  nb326
-!X Test for gradient = 0 when using for normalized direction in test_gradient and n_test_gradient
-!X
-!X Revision 1.53  2008/04/11 14:46:10  jrk33
-!X Added a trim() call
-!X
-!X Revision 1.52  2008/03/04 17:50:53  jrk33
-!X reduced gamma cap to 2 in linmin_deriv; decreased max_extrap_steps to 10 in linmin_deriv_iter
-!X
-!X Revision 1.51  2008/02/26 11:22:43  jrk33
-!X linmin_deriv: make max_extrap_steps a parameter and increase value to 100
-!X
-!X Revision 1.50  2008/02/19 20:24:18  nb326
-!X Don't auto switch from LINMIN_DERIV to FAST_LINMIN, since you probably don't have func
-!X
-!X Revision 1.49  2008/02/04 13:39:06  saw44
-!X Changed error to my_error to prevent name conflict with the verbosity level ERROR
-!X
-!X Revision 1.48  2007/12/18 15:24:27  nb326
-!X Pass data to hook function
-!X
-!X Revision 1.47  2007/11/13 22:18:31  nb326
-!X Change TOL to 1e-4.  func, dfunc, both_func now take optional data argument
-!X
-!X Revision 1.46  2007/11/08 20:25:52  nb326
-!X n_minim seems to be working now
-!X
-!X Revision 1.45  2007/11/08 19:03:23  nb326
-!X Add n_linmin and n_minim, may be broken
-!X
-!X Revision 1.44  2007/11/07 16:53:37  nb326
-!X Call gradient test if minim is stuck and verbosity >= NERD
-!X
-!X Revision 1.43  2007/10/31 17:46:29  nb326
-!X Print out status when initial call to minim is already converged
-!X
-!X Revision 1.42  2007/10/25 17:26:38  saw44
-!X Removed annoying double space in function  minim!
-!X
-!X Revision 1.41  2007/10/22 14:43:40  gc121
-!X bit of cleanup in linmin, lbfgs in minim, linmin_routine now optional argument, removed the oldtest module
-!X
-!X Revision 1.40  2007/10/19 16:01:12  nb326
-!X Clean up abort call
-!X
-!X Revision 1.39  2007/09/03 16:43:32  gc121
-!X removed separate printing initial value, main loop already does it
-!X
-!X Revision 1.38  2007/09/03 16:22:36  gc121
-!X sync
-!X
-!X Revision 1.37  2007/09/03 13:39:40  gc121
-!X fiddled with verbosity
-!X
-!X Revision 1.36  2007/08/30 14:34:01  gc121
-!X  added always_do_test_gradient option, put in more verbosity statements
-!X
-!X Revision 1.35  2007/08/30 14:04:04  nb326
-!X Print initial value of function in minim
-!X
-!X Revision 1.34  2007/08/16 17:38:18  nb326
-!X No dup output of Eu
-!X
-!X Revision 1.33  2007/08/16 16:41:00  nb326
-!X Label linmin's output
-!X
-!X Revision 1.32  2007/08/16 16:30:33  nb326
-!X More output from linmin on NERD
-!X
-!X Revision 1.31  2007/08/16 12:45:10  nb326
-!X Add n_test_gradient
-!X
-!X Revision 1.30  2007/08/09 22:05:27  nb326
-!X Label test_gradient output lines for easier grepping
-!X
-!X Revision 1.29  2007/08/08 16:20:53  nb326
-!X Use current_verbosity() intead of querying value(mainlog%verbosity_stack)
-!X
-!X Revision 1.28  2007/08/08 16:19:51  nb326
-!X Move verbosity into type(inoutput), and make verbosity_push type routines operate on mainlog%verbosity
-!X
-!X Revision 1.27  2007/08/03 00:30:28  ab686
-!X broken some lines for the broken compiler by Sun
-!X
-!X Revision 1.26  2007/07/30 14:17:23  nb326
-!X eps should not be cached between called to minim()
-!X
-!X Revision 1.25  2007/07/20 17:04:40  nb326
-!X Pass in optional eps_guess
-!X
-!X Revision 1.24  2007/07/20 09:35:29  gc121
-!X fixed single precision constants in minim and added more sane debug printing
-!X
-!X Revision 1.23  2007/07/19 17:28:09  gc121
-!X added more informative printing for failing linmins
-!X
-!X Revision 1.22  2007/07/19 15:58:30  gc121
-!X  put verbosity push/pop into minim
-!X
-!X Revision 1.21  2007/07/19 12:45:48  jrk33
-!X Removed verbosity argument from fire_minim
-!X
-!X Revision 1.20  2007/07/18 20:36:25  nb326
-!X minim stuff that should only be printed one in 10 steps now printed 1 in 10 steps
-!X
-!X Revision 1.19  2007/07/18 20:31:32  nb326
-!X Print without line temporary, and clear extra_report verbosity stack levels when leaving minim()
-!X
-!X Revision 1.18  2007/07/18 14:23:27  nb326
-!X Use new verbosity system (intro.tex v 1.13)
-!X
-!X Revision 1.17  2007/07/17 10:56:24  nb326
-!X Direction along which to project is optional argument to test_gradient
-!X
-!X Revision 1.16  2007/07/16 21:35:22  gc121
-!X added more padding to printing of Ex in linmin
-!X
-!X Revision 1.15  2007/07/12 11:18:27  nb326
-!X Fix typo in output
-!X
-!X Revision 1.14  2007/07/11 15:43:09  nb326
-!X Make minim and test_gradient module procedures
-!X
-!X Revision 1.13  2007/07/09 17:08:39  nb326
-!X Normalize gradient before using it as direction in test_gradient - now eps has units of distance
-!X
-!X Revision 1.12  2007/07/04 13:12:12  nb326
-!X More gradient tests in minim() for report >= ANAL, and more output from test_gradient for report >= ANAL
-!X
-!X Revision 1.11  2007/05/24 13:14:55  jrk33
-!X Added "done" parameter to minim and fire_minim hook functions to allow early exit of minim
-!X
-!X Revision 1.10  2007/05/09 08:46:43  jrk33
-!X Fixed verbosity of various print lines in minim()
-!X
-!X Revision 1.9  2007/04/17 17:25:11  jrk33
-!X Changed module name to lower case
-!X
-!X Revision 1.8  2007/04/17 09:57:19  gc121
-!X put copyright statement in each file
-!X
-!X Revision 1.7  2007/03/21 15:26:17  jrk33
-!X Updated docs
-!X
-!X Revision 1.6  2007/03/13 13:49:46  jrk33
-!X All output now goes to logger, apart from System_Abort which does go to stderr.
-!X
-!X Revision 1.5  2007/03/12 17:07:59  jrk33
-!X Added patent pending warning to doc string for FIRE
-!X
-!X Revision 1.4  2007/03/12 17:06:30  jrk33
-!X DP/IN/OUT/INOUT to lowercase; reformatted documentation. Added FIRE minimizer - beware patent pending
-!X
-!X Revision 1.3  2007/03/01 13:51:46  jrk33
-!X Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!X
-!X Revision 1.2  2007/02/12 10:26:56  gc121
-!X added linmin_deriv, directly translated from C. compiles, but it is not tested
-!X
-!X Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-!X Imported sources
-!X
-!X Revision 1.28  2006/11/27 17:29:04  jrk33
-!X Changed automatic arrays to allocatable to work around ifort's bad stack handling
-!X
-!X Revision 1.27  2006/11/13 23:34:06  gc121
-!X fixed initialisations (used to acquire save attribute)
-!X
-!X Revision 1.26  2006/11/13 22:51:50  gc121
-!X corrected subtle bug in linmin, a<b<c positions need converting to a<b positions in going from initial bracketing to the parabolic linmin
-!X
-!X Revision 1.25  2006/06/29 17:56:25  gc121
-!X tweaked printing in test_gradient
-!X
-!X Revision 1.24  2006/06/20 17:23:19  gc121
-!X added new copyright notice to include James, Gian, Mike and Alessandro
-!X
-!X Revision 1.23  2006/06/14 10:39:48  saw44
-!X Fixed bug in the minim test: 1.0_dp-10 -> real(1.0e-10,dp)
-!X
-!X Revision 1.22  2006/06/07 16:25:43  jrk33
-!X Changed numerical constants xx.yd0 -> xx.y_dp
-!X
-!X Revision 1.21  2006/05/30 11:12:38  jrk33
-!X Removed declarations for unused variables
-!X
-!X Revision 1.20  2006/03/09 12:52:37  gc121
-!X formatted write statement for dcos and linminquality
-!X
-!X Revision 1.19  2006/02/27 17:01:19  gc121
-!X put in <LEVEL>-report parameter in all the print statements in NR_linmin
-!X
-!X Revision 1.18  2006/02/10 18:20:31  saw44
-!X fixed report changing bug in minim
-!X
-!X Revision 1.17  2006/02/06 16:48:22  saw44
-!X General Code clean-up: routine names changed to match the changes in System and linearalgebra
-!X
-!X Revision 1.16  2006/01/31 14:01:20  gc121
-!X changed printing format
-!X
-!X Revision 1.15  2006/01/30 13:06:23  gc121
-!X beautified comments, added _dp
-!X
-!X Revision 1.14  2006/01/30 12:05:35  gc121
-!X removeds *s from some writes
-!X
-!X Revision 1.13  2006/01/30 10:42:46  gc121
-!X removed logger from print calls, its the default ; changed where convergence check is made to be more sane
-!X
-!X Revision 1.12  2006/01/28 20:48:51  gc121
-!X fixed bug in table_allocate: it called size(intpart) or size(realpart) without checking if the optional arguments were present.
-!X
-!X Revision 1.11  2006/01/26 18:16:37  gc121
-!X fiddled with report_level bits, still not fully consistent
-!X
-!X Revision 1.10  2006/01/26 01:58:04  gc121
-!X corrected obsolete routine name
-!X
-!X Revision 1.9  2006/01/25 17:35:27  gc121
-!X changed vector_abs and vector_abs2 to norm() and norm2()
-!X
-!X Revision 1.8  2006/01/19 17:26:27  saw44
-!X fabs -> abs, and sign(x) -> sign(1.0_dp,x)
-!X
-!X Revision 1.7  2006/01/19 15:02:12  gc121
-!X added copyright headers and cvs magic tags to files that were missing them
-!X
 
 module minimization_module
 

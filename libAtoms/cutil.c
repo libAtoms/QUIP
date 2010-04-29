@@ -1,49 +1,34 @@
-//!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//!X
-//!X     libAtoms: atomistic simulation library
-//!X     
-//!X     Copyright 2006-2007.
-//!X
-//!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-//!X     Contributors: Noam Bernstein, Alessio Comisso
-//!X
-//!X     The source code is released under the GNU General Public License,
-//!X     version 2, http://www.gnu.org/copyleft/gpl.html
-//!X
-//!X     If you would like to license the source code under different terms,
-//!X     please contact Gabor Csanyi, gabor@csanyi.net
-//!X
-//!X     When using this software, please cite the following reference:
-//!X
-//!X     http://www.libatoms.org
-//!X
-//!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//
-//
+/* H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+/* H0 X                                                                            */
+/* H0 X   libAtoms+QUIP: atomistic simulation library                              */
+/* H0 X                                                                            */
+/* H0 X   Portions of this code were written by                                    */
+/* H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,      */
+/* H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.          */
+/* H0 X                                                                            */
+/* H0 X   Copyright 2006-2010.                                                     */
+/* H0 X                                                                            */
+/* H0 X   These portions of the source code are released under the GNU General     */
+/* H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html          */
+/* H0 X                                                                            */
+/* H0 X   If you would like to license the source code under different terms,      */
+/* H0 X   please contact Gabor Csanyi, gabor@csanyi.net                            */
+/* H0 X                                                                            */
+/* H0 X   Portions of this code were written by Noam Bernstein as part of          */
+/* H0 X   his employment for the U.S. Government, and are not subject              */
+/* H0 X   to copyright in the USA.                                                 */
+/* H0 X                                                                            */
+/* H0 X                                                                            */
+/* H0 X   When using this software, please cite the following reference:           */
+/* H0 X                                                                            */
+/* H0 X   http://www.libatoms.org                                                  */
+/* H0 X                                                                            */
+/* H0 X  Additional contributions by                                               */
+/* H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras                 */
+/* H0 X                                                                            */
+/* H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 // cutil.c. : C Utility Functions to do things that fortran 95 can't do
 // 
-//
-//
-// $Id: cutil.c,v 1.6 2008-02-11 18:47:38 nb326 Exp $
-//
-// $Log: not supported by cvs2svn $
-// Revision 1.5  2007/10/02 21:04:42  nb326
-// add external pointer_to
-//
-// Revision 1.4  2007/09/17 15:36:00  nb326
-// Fix fisnan to receive pointer, and add c_increase_stack_()
-//
-// Revision 1.3  2007/08/30 14:32:59  gc121
-//  now include math.h
-//
-// Revision 1.2  2007/08/10 16:53:14  gc121
-// added fisnan
-//
-// Revision 1.1  2007/04/18 17:37:58  jrk33
-// Group C utility functions in one file
-//
-//
 
 #include <stdlib.h>
 #include <stdio.h>

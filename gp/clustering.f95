@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 module clustering_module
 
   use libatoms_module

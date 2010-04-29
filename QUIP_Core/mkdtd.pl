@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+# JAMES_HEADER
+
 # Perl script to generate quip.dtd Document Type Definition
 # file, which can be used to validate an input XML file. 
 

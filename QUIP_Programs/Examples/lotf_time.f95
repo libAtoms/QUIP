@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
@@ -27,22 +29,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: lotf_time.f95,v 1.3 2008-04-09 12:46:59 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.2  2008/04/09 11:26:56  jrk33
-! use LOTF_module
-!
-! Revision 1.1.1.1  2008/03/13 17:36:35  gc121
-! this module contains the LOTF top level programs
-!
-! Revision 1.2  2006/10/30 12:48:54  gc121
-! synced calling conventions
-!
-! Revision 1.1  2006/10/06 11:41:36  gc121
-! subroutine version of the simple time-embedded LOTF extrapolation loop
-!
 
 program lotf_time
 

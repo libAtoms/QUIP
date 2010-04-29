@@ -1,34 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
-!X
-!X    
-!X     Authors: Gabor Csanyi, Alessio Commisso, Steven Winfield
-!X     James Kermode, Gianpietro Moras, Michael Payne, Alessandro De Vita
-!X
-!X     
-!X     Copyright 2005, All Rights Reserved 
-!X
-!X     This source code is confidential, all distribution is 
-!X     prohibited. Making unauthorized copies is also prohibited
-!X
-!X     When using this software, the following should be referenced:
-!X
-!X     Gabor Csanyi, Tristan Albaret, Mike C. Payne and Alessandro De Vita
-!X     "Learn on the fly": a hybrid classical and quantum-mechanical
-!X         molecular dynamics simulation
-!X     Physical Review Letters 93 p. 175503 (2004) >>PDF [626 KB]
-!X
-!X     Gabor Csanyi, T. Albaret, G. Moras, M. C. Payne, A. De Vita
-!X     Multiscale hybrid simulation methods for material systems
-!X     J. Phys. Cond. Mat. 17 R691-R703 Topical Review (2005)
-!X
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Sparse module
 !X  
@@ -43,119 +42,6 @@
 !X  the table
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: Sparse.f95,v 1.6 2008-07-14 10:20:29 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.5  2008/05/05 13:39:59  jrk33
-! Changed table_allocate calls to reflect changes to Table.f95
-!
-! Revision 1.4  2007/10/11 16:30:40  nb326
-! Replace decode_mpi_error with abort_on_mpi_error
-!
-! Revision 1.3  2007/06/22 14:17:09  nb326
-! Max line length, even for comments
-!
-! Revision 1.2  2007/04/20 11:26:20  jrk33
-! Updated mpi functions get_mpi_n and get_mpi_it to get_mpi_size_rank
-!
-! Revision 1.1  2007/04/18 17:26:50  jrk33
-! Imported Sparse from LOTF
-!
-! Revision 1.36  2007/03/30 16:46:35  jrk33
-! Modified print argument order to conform with changes to System
-!
-! Revision 1.35  2007/03/29 11:15:53  jrk33
-! Removed operator(.mult.) from end of end interface line to satisfy pathf90
-!
-! Revision 1.34  2007/03/28 17:33:49  saw44
-! Swicthed order of use statements to stop ifort internal error
-!
-! Revision 1.33  2007/01/03 16:57:41  jrk33
-! Changed #ifdef MPI to #ifdef _MPI to reflect changes in libAtoms
-!
-! Revision 1.32  2006/06/29 11:10:29  jrk33
-! Removed unused variables
-!
-! Revision 1.31  2006/06/28 17:23:51  saw44
-! allocate -> reallocate in sparse_assign_sparse
-!
-! Revision 1.30  2006/06/23 14:41:13  saw44
-! Sped up Sparse_CFCT by skipping zero elements(!)
-!
-! Revision 1.29  2006/06/20 17:23:18  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
-! Revision 1.28  2006/06/14 10:35:51  saw44
-! Reduced SPARSITY_GUESS to 0.01, renamed sparse_non_zero to sparse_stored_elements (because now zero
-! elements can be used as placeholders), added the nocheck option to sparse_set_element to supress 
-! deletion of elements that are set to zero, added sparse_mult_sparse routine. In future, a binary 
-! search should probably be implemented for set/delete_element.
-!
-! Revision 1.27  2006/06/07 16:24:53  jrk33
-! 0.0d0 -> 0.0_dp
-!
-! Revision 1.26  2006/05/30 11:11:48  jrk33
-! Removed declarations for unused variables
-!
-! Revision 1.25  2006/04/28 10:29:12  saw44
-! Added check to sparse_print_full
-!
-! Revision 1.24  2006/04/28 09:52:36  saw44
-! Fixed bug in sparse_print_full
-!
-! Revision 1.23  2006/04/11 17:19:32  saw44
-! Added functionality for constructing sparses from scratch, setting and deleting elements, and added a cfct routine (tested against the one in linearalgebra) in preparation for constrained dynamics calculations
-!
-! Revision 1.22  2006/04/05 17:02:44  saw44
-! real(8) -> real(dp)
-!
-! Revision 1.21  2006/03/09 12:53:15  gc121
-! put in parallelization of vector*sparse and sparse*vector
-!
-! Revision 1.20  2006/02/28 17:00:59  saw44
-! Finalize -> Finalise
-!
-! Revision 1.19  2006/02/21 12:18:50  saw44
-! Minor changes to interface statements
-!
-! Revision 1.18  2006/02/06 16:48:22  saw44
-! General Code clean-up: routine names changed to match the changes in System and linearalgebra
-!
-! Revision 1.17  2006/01/31 13:58:25  gc121
-! if-then on nerdy writes
-!
-! Revision 1.16  2006/01/31 12:24:52  saw44
-! Changed argument order in routine calls
-!
-! Revision 1.15  2006/01/31 11:58:28  saw44
-! Changed argument order in sparse_print and sparse_print_full
-!
-! Revision 1.14  2006/01/30 13:05:19  gc121
-! fixed bug in print: if this%rows was too long, it crashed. now it uses custom integer array printing
-!
-! Revision 1.13  2006/01/30 10:40:37  gc121
-! removed logger from print calls, its the default
-!
-! Revision 1.12  2006/01/26 16:10:44  gc121
-! added verbosity to printing, fixed function names
-!
-! Revision 1.11  2006/01/26 01:55:44  gc121
-! rationalized routine names
-!
-! Revision 1.10  2006/01/25 12:31:17  gc121
-! fixed typos
-!
-! Revision 1.9  2006/01/24 17:03:00  gc121
-! added sparse_finalize()
-!
-! Revision 1.8  2006/01/24 13:56:06  gc121
-! made Nmax optional in Sparse_init()
-!
-! Revision 1.7  2006/01/17 17:06:28  gc121
-! General cleanup of variable names, subroutines etc.
-!
-
 
 module sparse_module
   use system_module

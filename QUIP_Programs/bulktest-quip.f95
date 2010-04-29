@@ -1,17 +1,34 @@
+! HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! HJ X
+! HJ X   libAtoms+QUIP: atomistic simulation library
+! HJ X
+! HJ X   Portions of this code were written by
+! HJ X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! HJ X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! HJ X
+! HJ X   Copyright 2006-2010.
+! HJ X
+! HJ X   These portions of the source code are released under the GNU General
+! HJ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! HJ X
+! HJ X   If you would like to license the source code under different terms,
+! HJ X   please contact Gabor Csanyi, gabor@csanyi.net
+! HJ X
+! HJ X   Portions of this code were written by Noam Bernstein as part of
+! HJ X   his employment for the U.S. Government, and are not subject
+! HJ X   to copyright in the USA.
+! HJ X
+! HJ X
+! HJ X   When using this software, please cite the following reference:
+! HJ X
+! HJ X   http://www.libatoms.org
+! HJ X
+! HJ X  Additional contributions by
+! HJ X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! HJ X
+! HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
-!X
-!X    
-!X     Authors: Gabor Csanyi, Alessio Commisso, Steven Winfield
-!X     James Kermode, Gianpietro Moras, Michael Payne, Alessandro De Vita
-!X
-!X     
-!X     Copyright 2005, All Rights Reserved 
-!X
-!X     This source code is confidential, all distribution is 
-!X     prohibited. Making unauthorized copies is also prohibited
 !X
 !X     When using this software, the following should be referenced:
 !X
@@ -27,13 +44,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: bulktest-quip.f95,v 1.2 2008-05-08 15:17:19 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.1  2008/05/07 14:16:58  jrk33
-! Added LOTF/QUIP version of bulktest code
-!
 
 program bulktest
 
@@ -147,4 +157,3 @@ program bulktest
   call system_finalise()
 
 end program bulktest
-

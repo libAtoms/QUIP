@@ -1,27 +1,42 @@
-! $Id: TB_GreensFunctions.f95,v 1.16 2008-04-15 02:32:31 nb326 Exp $
-! $Log: not supported by cvs2svn $
-! Revision 1.15  2008/04/11 20:58:43  nb326
-! Replace tbsys%kpoints%non_gamma with tbsys%complex_matrices in a few places
-!
-! Revision 1.14  2008/02/01 21:37:27  nb326
-! annotate
-!
-! Revision 1.13  2008/01/31 15:58:36  nb326
-! Handle n_procs > N_G, and make at inoutput in calc_Gs
-!
-! Revision 1.12  2008/01/08 20:40:15  nb326
-! Be sure to finalise this%tbsys in setup_system() and to finalise at beginning of initialise so that things are deallocated properly (in particular mpi communicators are freed
-!
-! Revision 1.11  2008/01/07 14:44:04  nb326
-! Create end_mpi which calls free_context on those created in init_mpi
-!
-! Revision 1.10  2007/11/08 12:58:40  gc121
-! fixed openmp. the trick was to declare stuff as threadprivate.
-!
-! Revision 1.9  2007/09/03 16:22:36  gc121
-! sync
-!
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
+!X
+!X TB_GreensFunctions module
+!X
+!% Contain Green's functions of a TB model, calculate them,
+!% and compute derivatives of energies by summing over GFs
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 module TB_GreensFunctions_module
 
 use System_module

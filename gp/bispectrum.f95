@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 module bispectrum_module
 
    use libatoms_module

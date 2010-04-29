@@ -1,77 +1,39 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Periodic Table module
 !X  
 !%  This module contains a list of elements, their masses and covalent radii.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-!X $Id: PeriodicTable.f95,v 1.8 2007-08-03 00:29:50 ab686 Exp $
-
-!X $Log: not supported by cvs2svn $
-!X Revision 1.7  2007/07/17 08:44:55  gc121
-!X added ElementName(0) so we can print undefined atoms
-!X
-!X Revision 1.6  2007/06/28 10:39:00  nb326
-!X Parse an integer (passed in as a string) as an atomic number if atomic_number_from_symbol(). Maybe should rename to atomic_number_from_string?
-!X
-!X Revision 1.5  2007/04/17 09:57:19  gc121
-!X put copyright statement in each file
-!X
-!X Revision 1.4  2007/04/13 15:21:59  saw44
-!X Standardified any miscombobulations
-!X
-!X Revision 1.3  2007/03/12 16:59:24  jrk33
-!X Reformatted documentation
-!X
-!X Revision 1.2  2007/03/01 13:52:09  jrk33
-!X Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!X
-!X Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-!X Imported sources
-!X
-!X Revision 1.9  2006/06/20 17:23:18  gc121
-!X added new copyright notice to include James, Gian, Mike and Alessandro
-!X
-!X Revision 1.8  2006/06/08 13:56:53  saw44
-!X Added function to look up the atomic number given the mass, to within a hard-coded tolerance
-!X
-!X Revision 1.7  2006/02/08 17:53:13  saw44
-!X Added atomic symbol -> atomic number lookup function
-!X
-!X Revision 1.6  2006/01/27 16:12:51  gc121
-!X added *MASSCONVERT so that we are in the correct units
-!X
-!X Revision 1.5  2006/01/24 11:33:06  saw44
-!X Made all element names 3 characters long, to compile with PathScale
-!X
-!X Revision 1.4  2006/01/19 15:02:12  gc121
-!X added copyright headers and cvs magic tags to files that were missing them
-!X
 
 module periodictable_module
 

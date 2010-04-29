@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Spline module
 !X  
@@ -29,79 +35,6 @@
 !%  Code partially based on Numerical Recipes.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: Spline.f95,v 1.12 2007-08-16 10:38:54 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.11  2007/07/18 16:42:53  nb326
-! Nicer printing, no y2 on NORMAL
-!
-! Revision 1.10  2007/07/18 16:35:39  nb326
-! Use new verbosity system (intro.tex v 1.13)
-!
-! Revision 1.9  2007/07/17 10:56:46  nb326
-! Add min_knot() and max_knot() functions
-!
-! Revision 1.8  2007/05/31 11:17:08  nb326
-! Fix inoutput obj in Spline_print()
-!
-! Revision 1.7  2007/05/02 14:01:29  nb326
-! New standard arguments to spline_print()
-!
-! Revision 1.6  2007/04/17 17:11:18  jrk33
-! Standardised subroutine and function references and printing argument order.
-!
-! Revision 1.5  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.4  2007/03/12 17:00:51  jrk33
-! IN, OUT, INOUT to lowercase
-!
-! Revision 1.3  2007/03/01 13:51:46  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!
-! Revision 1.2  2007/01/04 18:08:39  nb326
-! Use allocate(), not the stack in spline_print, also don't print y2 twice
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.13  2006/06/20 17:23:18  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
-! Revision 1.12  2006/05/30 11:11:48  jrk33
-! Removed declarations for unused variables
-!
-! Revision 1.11  2006/02/10 14:28:21  saw44
-! Added Check_Size to spline_init, fixed bug in spline_finalise, ize -> ise
-!
-! Revision 1.10  2006/02/10 14:05:12  saw44
-! Bug fix: if(allocated(this%x)) -> if (allocated(this%y)) in spline_init
-!
-! Revision 1.9  2006/01/31 13:58:55  gc121
-! precedence bug: added () to .mult. call
-!
-! Revision 1.8  2006/01/26 16:10:44  gc121
-! added verbosity to printing, fixed function names
-!
-! Revision 1.7  2006/01/25 16:13:05  gc121
-! no need to use atoms_module anymore
-!
-! Revision 1.6  2006/01/25 12:32:05  gc121
-! added _dp
-!
-! Revision 1.5  2006/01/24 15:24:38  gc121
-! removed y2_matrix from type(Spline), because we do not need to store it there. the routine that calculates it returns it.
-!
-! Revision 1.4  2006/01/19 15:00:57  saw44
-! minor corrections
-!
-! Revision 1.3  2006/01/19 14:53:23  gc121
-! moved the adjustable force model out of Spline.f95, which now contains only the spline type and its routines
-!
-
-
 
 module spline_module
   use linearalgebra_module

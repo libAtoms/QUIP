@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Table module
 !X  
@@ -43,283 +49,6 @@
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: Table.f95,v 1.44 2008-07-14 10:21:42 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.43  2008/07/03 11:22:08  jrk33
-! Removed some debugging code
-!
-! Revision 1.42  2008/07/03 11:13:37  jrk33
-! Added spaces in table_print
-!
-! Revision 1.41  2008/06/16 13:03:09  jrk33
-! Changes to allocate(): use default values if one part of table is missing, and added optional blank_rows argument. Fixed bug in append_column: new array lengths were this%N not this%max_length. Tweaked printing.
-!
-! Revision 1.40  2008/05/13 15:51:00  jrk33
-! Added properties optional argument to table_print
-!
-! Revision 1.39  2008/05/13 10:51:23  jrk33
-! Resolve ambigurity in append interface by adding table_append_row_or_arrays. Improved printing
-!
-! Revision 1.38  2008/05/10 13:41:32  saw44
-! Fixed setting of logicals to 0 instead of .false.
-!
-! Revision 1.37  2008/05/06 18:29:20  nb326
-! table_allocate error message now points out that it could be allocate or initialise
-!
-! Revision 1.36  2008/05/05 13:39:24  jrk33
-! Major changes! Added string and logical columns. Warning: interface to table_allocate has changed, check your code
-!
-! Revision 1.35  2008/04/16 10:52:29  saw44
-! Fixed bug in table_record_delete_multiple which did not check if the real or int parts were allocated before accessing them
-!
-! Revision 1.34  2008/03/03 18:16:34  jrk33
-! out->file in print() interface
-!
-! Revision 1.33  2008/02/04 13:36:25  saw44
-! Fixed binary search of zero length table
-!
-! Revision 1.32  2007/11/20 18:38:40  saw44
-! Added search and sort interfaces. Added index returning to table_sort
-!
-! Revision 1.31  2007/11/17 18:10:11  saw44
-! Added table_insert and sort subroutines, and search function
-!
-! Revision 1.30  2007/11/12 23:57:47  gc121
-! added optional mask argument to find_row routine
-!
-! Revision 1.29  2007/10/22 16:17:10  jrk33
-! ends of functions and subroutines
-!
-! Revision 1.28  2007/09/14 13:09:48  jrk33
-! Applied checkcode, added missing names to ends of functions subroutines
-!
-! Revision 1.27  2007/08/14 10:44:46  nb326
-! Set this%N in read_binary
-!
-! Revision 1.26  2007/08/10 15:33:00  jrk33
-! Added routines to binary read/write 1D,2D and 3D arrays of Tables
-!
-! Revision 1.25  2007/08/07 11:22:11  nb326
-! Faster reading/writing binary
-!
-! Revision 1.24  2007/07/25 08:32:45  gc121
-! switched table printing to scientific format
-!
-! Revision 1.23  2007/07/23 15:40:18  gc121
-! removed optional clause from arguments of table_append_row
-!
-! Revision 1.22  2007/07/23 15:19:43  gc121
-! added overloads for table_append_row that take a single integer/real array
-!
-! Revision 1.21  2007/07/17 08:42:04  jrk33
-! Changed uniq from function to subroutine
-!
-! Revision 1.20  2007/07/16 17:39:48  jrk33
-! Fixed bug in table_record_delete_multiple which occurs if indices are repeated. Fix is to uniqify indices list after sorting
-!
-! Revision 1.19  2007/07/12 09:57:09  nb326
-! Add remove_columns()
-!
-! Revision 1.18  2007/07/11 12:42:05  gc121
-! added initialise interface (same as allocate)
-!
-! Revision 1.17  2007/07/09 16:36:05  saw44
-! Fixed spurious extensions of a table if allocated length == required length in table_append_table
-!
-! Revision 1.16  2007/07/09 14:44:08  gc121
-! made some arguments to subtable() optional, and corrected a bug in it, table_select now can take a list as well
-!
-! Revision 1.15  2007/06/08 10:42:42  nb326
-! select_table() from a mask, uses subtable
-!
-! Revision 1.14  2007/04/18 01:32:21  gc121
-! updated to reflect changes in printing and other naming conventions
-!
-! Revision 1.13  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.12  2007/04/13 13:52:15  saw44
-! Standardised subroutine and function references and printing argument order. Updated documentation. Removed Free interface - use finalise instead.
-!
-! Revision 1.11  2007/04/03 14:02:01  jrk33
-! Updated doc comments
-!
-! Revision 1.10  2007/03/30 16:46:11  jrk33
-! Modified print argument order to conform with changes to System
-!
-! Revision 1.9  2007/03/22 18:11:28  nb326
-! Fix typo in table_extend_real_cols
-!
-! Revision 1.8  2007/03/22 17:27:08  nb326
-! Add append_column
-!
-! Revision 1.7  2007/03/22 14:43:00  jrk33
-! Added Delete_Multiple interface to remove multiple rows from a Table.
-!
-! Revision 1.6  2007/03/21 15:25:34  jrk33
-! Added Zero interface to Table_Zero
-!
-! Revision 1.5  2007/03/12 17:02:05  jrk33
-! DP to lowercase; reformatted documentation
-!
-! Revision 1.4  2007/03/01 13:51:46  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!
-! Revision 1.3  2007/02/28 15:46:47  saw44
-! Allowed max_length to be zero when allocating a table. This was causing some problems when reading a Connection object in binary format where some neighbour tables has zero length
-!
-! Revision 1.2  2007/02/13 15:07:33  saw44
-! Added Set_Increment subroutine to set the table increment length, with a check for bad values. Replaced multiple free and wipe routines with one routine each which can free/wipe up to 10 tables at a time.
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.49  2006/08/14 11:01:00  jrk33
-! Bug fix: Allocate table in ReadB_Table even if length is zero so that Nint and Nreal are set correctly - thanks Gian
-!
-! Revision 1.48  2006/06/20 17:23:19  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
-! Revision 1.47  2006/06/14 10:38:43  saw44
-! Giving max_length to table_allocate now sets the increment to 1/10 of that. This should hopefully save memory. Also, I noticed that the local variable max_length is sometimes zeroed when a call to Free is made. See the commented lines in table_allocate.
-!
-! Revision 1.46  2006/06/07 16:25:27  jrk33
-! Changed numerical constants xx.yd0 -> xx.y_dp
-!
-! Revision 1.45  2006/05/30 11:11:48  jrk33
-! Removed declarations for unused variables
-!
-! Revision 1.44  2006/05/25 13:41:39  jrk33
-! Removed overriden table assignment interface, causes seg faults on Tru64 unix (see STYLE.txt for full explanation)
-!
-! Revision 1.43  2006/04/19 15:18:54  saw44
-! Changed allocate, assign and append to be consistent with extra variables in the table type and not seg fault
-!
-! Revision 1.42  2006/03/31 16:22:53  saw44
-! Removed bug where more space was being allocated for a table before the current space was filled
-!
-! Revision 1.41  2006/03/03 16:27:00  gc121
-! fixed log entry, accedentally committed with wrong log
-!
-! Revision 1.40  2006/03/03 16:16:54  gc121
-! fixed bug in RMS_diff_list, now works
-!
-! Revision 1.39  2006/03/03 15:09:35  gc121
-! added RMS_diff_list to produce the rms diff of two arrays, but only over part of the second dimension, determined by the table argument
-!
-! Revision 1.38  2006/02/28 15:06:31  saw44
-! Expanded Wipe to take up to 4 tables at once
-!
-! Revision 1.37  2006/02/21 17:01:35  saw44
-! Fixed bug in table_allocate. Added multiple object destructors
-!
-! Revision 1.36  2006/02/17 12:34:01  saw44
-! Gave intents to all arguments
-!
-! Revision 1.35  2006/02/17 05:09:15  gc121
-! put in initialisation to 0 and freeing of temporary in table_allocate
-!
-! Revision 1.34  2006/02/16 22:46:21  saw44
-! Fixed bug where table_find_row searched in undefined portion of table
-!
-! Revision 1.33  2006/02/10 17:24:43  saw44
-! Added allocate interface
-!
-! Revision 1.32  2006/02/06 16:48:22  saw44
-! General Code clean-up: routine names changed to match the changes in System and linearalgebra
-!
-! Revision 1.31  2006/02/02 17:10:49  saw44
-! Added Table_Wipe to quickly delete all data from a table, optionally zeroing it for safety
-!
-! Revision 1.30  2006/01/31 17:46:50  gc121
-! append accepts a 1D column as well
-!
-! Revision 1.29  2006/01/31 17:35:11  saw44
-! Added 1D append to intsize/realsize=1 tables
-!
-! Revision 1.28  2006/01/31 14:28:19  saw44
-! Updated ReadB and WriteB argument order
-!
-! Revision 1.27  2006/01/31 14:00:27  gc121
-! increased default length and increment to optimise
-!
-! Revision 1.26  2006/01/31 11:54:47  saw44
-! Changed argument order in ReadB/WriteB_Table_File
-!
-! Revision 1.25  2006/01/30 10:41:30  gc121
-! renamed table_x_part interface to x_part ; put in explicit check of >100 columns into print_table
-!
-! Revision 1.24  2006/01/29 17:15:58  saw44
-! Added Subtable, Real_Subtable and Int_Subtable
-!
-! Revision 1.23  2006/01/29 16:14:01  saw44
-! Added Table_Append_Arrays subroutines and improved Table_Print
-!
-! Revision 1.22  2006/01/29 15:02:06  gc121
-! added verbosity to table_print
-!
-! Revision 1.21  2006/01/28 20:48:51  gc121
-! fixed bug in table_allocate: it called size(intpart) or size(realpart) without checking if the optional arguments were present.
-!
-! Revision 1.20  2006/01/28 16:17:00  saw44
-! Fixed error messages in Table_Find_Element/Row
-!
-! Revision 1.19  2006/01/27 19:31:30  saw44
-! Fixed bug in Table_Real_Part (using intsize instead of realsize)
-!
-! Revision 1.18  2006/01/27 18:28:55  gc121
-! changed table_find to find
-!
-! Revision 1.17  2006/01/26 16:29:26  saw44
-! Table_Int_Part interface overloaded with functions for returning 1, some or all columns
-!
-! Revision 1.16  2006/01/26 16:11:46  saw44
-! Added intsize and realsize variables to Table type. Added Table_Int_Part, Table_Int_Column, and same for Real
-!
-! Revision 1.15  2006/01/26 01:57:09  gc121
-! deleted obsolete log() calls, changed printing format, renamed some routines
-!
-! Revision 1.14  2006/01/25 16:10:17  gc121
-! uses find_in_array() to find rows in table
-!
-! Revision 1.13  2006/01/25 15:29:27  saw44
-! Added Table_Int/Real_Column functions
-!
-! Revision 1.12  2006/01/24 18:24:00  gc121
-! fixed typo
-!
-! Revision 1.11  2006/01/24 13:55:30  gc121
-! added table_find routines
-!
-! Revision 1.10  2006/01/24 12:13:53  saw44
-! Implemented the discussed changes
-!
-! Revision 1.9  2006/01/17 17:06:28  gc121
-! General cleanup of variable names, subroutines etc.
-!
-! Revision 1.8  2005/12/19 17:00:38  saw44
-! Added WriteB_Table and ReadB_Table
-!
-! Revision 1.7  2005/12/13 15:11:57  comisso
-! table- table assignment fixed
-!
-! Revision 1.6  2005/12/02 17:07:52  comisso
-!  Added assignment table=table
-!
-! Revision 1.5  2005/11/21 17:03:46  saw44
-! Added interface for delete
-!
-! Revision 1.4  2005/11/17 12:00:01  comisso
-! table
-!
-! Revision 1.2  2005/11/11 11:18:59  gc121
-! forgot to comment cvs magic variables
-!
-! Revision 1.1.1.1  2005/11/11 10:22:24  gc121
-! starting
 
 module table_module
   use system_module
