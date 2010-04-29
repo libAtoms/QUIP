@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X ParamReader module
 !X  
@@ -34,106 +40,6 @@
 !% options set by the parameter file.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: ParamReader.f95,v 1.21 2008-06-05 14:09:06 nb326 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.20  2008/05/05 13:39:58  jrk33
-! Changed table_allocate calls to reflect changes to Table.f95
-!
-! Revision 1.19  2008/04/21 11:27:41  jrk33
-! Bug fix for the special case of empty string valued parameters
-!
-! Revision 1.18  2008/02/12 18:18:52  jrk33
-! intent(in) -> intent(inout) for things that ultimately call atoms_print_xyz
-!
-! Revision 1.17  2007/10/04 20:58:21  nb326
-! Fix handling of has_value pointers, check for null and set to .false. before parsing
-!
-! Revision 1.16  2007/10/04 15:41:23  nb326
-! Add has_value logical optional has_value argument to param_register, set to true on parsing if field was found
-!
-! Revision 1.15  2007/08/31 17:44:01  nb326
-! Add ignore_unknown to param_read_line
-!
-! Revision 1.14  2007/08/17 09:32:55  nb326
-! More robust check for no value specified (i.e. use .true.) for parsing PARAM_LOGICAL
-!
-! Revision 1.13  2007/08/17 09:20:21  nb326
-! Add PARAM_LOGICAL, which can be set by just listing, as opposed to doing P=T or P=F
-!
-! Revision 1.12  2007/07/31 16:08:12  nb326
-! Longer field lengths (1023) by default, and allow args to be surround by single or double quotes (no need to match right now)
-!
-! Revision 1.11  2007/07/27 10:53:36  nb326
-! Longer max argument length
-!
-! Revision 1.10  2007/06/22 13:42:00  nb326
-! declare iargc external everywhere
-!
-! Revision 1.9  2007/04/18 12:41:49  jrk33
-! Fixed doc string
-!
-! Revision 1.8  2007/04/17 17:04:22  jrk33
-! Standardised subroutine and function references and printing argument order.
-!
-! Revision 1.7  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.6  2007/03/29 11:17:08  jrk33
-! Reformatted documentation
-!
-! Revision 1.5  2007/03/28 10:52:24  jrk33
-! Modified to use Dictionary object to store key/value pairs. Interface has 
-! changed quite a lot since there is no longer a ParamReader type
-!
-! Revision 1.4  2007/03/12 16:59:14  jrk33
-! Reformatted documentation
-!
-! Revision 1.3  2007/03/01 13:51:46  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!
-! Revision 1.2  2007/01/03 14:40:48  jrk33
-! Added Process_Arguments interface and function to wrap command line processing
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.14  2006/06/20 17:23:18  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
-! Revision 1.13  2006/05/30 11:11:11  jrk33
-! Removed declarations for unused variables. Added GETARG_F2003 #define
-!
-! Revision 1.12  2006/05/25 11:03:40  jrk33
-! Replaced logical == .false. with .not. logical
-!
-! Revision 1.11  2006/05/18 10:47:22  jrk33
-! Added external declarations for iargc()
-!
-! Revision 1.10  2006/05/12 14:01:20  jrk33
-! Fixed duplicate log entry
-!
-! Revision 1.9  2006/05/10 12:52:47  jrk33
-! Removed multiple string param_type option: strings with spaces in should be treated as single parameter
-!
-! Revision 1.7  2006/04/21 17:04:34  jrk33
-! Simplified PARAM_NO_VALUE usage
-!
-! Revision 1.6  2006/04/17 21:13:04  jrk33
-! Added option not to parse value of certain keys, by specifying type as PARAM_NO_VALUE
-!
-! Revision 1.5  2006/04/15 22:43:43  jrk33
-! sync
-!
-! Revision 1.4  2006/04/15 16:08:46  jrk33
-! Added possiblilty of specifying some parameters as being mandatory
-!
-! Revision 1.3  2006/04/13 11:19:08  jrk33
-! Added (correct) CVS magic tags to new files
-!
-
 
 module paramreader_module
 

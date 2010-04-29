@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 program lotf_metapot
 
   use libAtoms_module

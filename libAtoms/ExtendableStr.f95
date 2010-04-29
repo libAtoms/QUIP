@@ -1,43 +1,39 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Extendable string module
 !X  
 !%  Defines strings that can extend as required, using a character array
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: ExtendableStr.f95,v 1.15 2008-07-14 10:18:49 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.14  2008/05/07 15:51:07  nb326
-! Clean up ifort warnings, mostly unused variables
-!
-! Revision 1.13  2007/11/07 10:07:55  gc121
-! added cvs magic
-!
 
 module extendable_str_module
 

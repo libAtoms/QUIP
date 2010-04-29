@@ -1,3 +1,27 @@
+C HL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+C HL X
+C HL X   LBFGS
+C HL X
+C HL X   This code was downloaded from J. Nocedal's web site
+C HL X   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
+C HL X
+C HL X   Author: J. Nocedal
+C HL X
+C HL X   Condition for Use:
+C HL X     This software is freely available for educational or commercial 
+C HL X     purposes. We expect that all publications describing work using this 
+C HL X     software quote at least one of the references given below.  This 
+C HL X     software is released under the GNU Public License (GPL)
+C HL X
+C HL X   References:
+C HL X     J. Nocedal. Updating Quasi-Newton Matrices with Limited Storage 
+C HL X       (1980), Mathematics of Computation 35, pp. 773-782.
+C HL X     D.C. Liu and J. Nocedal. On the Limited Memory Method for Large 
+C HL X       Scale Optimization (1989), Mathematical Programming B, 45, 3, pp. 
+C HL X       503-528.
+C HL X
+C HL XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 C     ----------------------------------------------------------------------
 C     This file contains the LBFGS algorithm and supporting routines
 C
@@ -1154,4 +1178,3 @@ C
 C     LAST LINE OF SUBROUTINE MCSTEP.
 C
       END
-

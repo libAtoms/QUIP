@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 module teach_sparse_module
 
   use libatoms_module

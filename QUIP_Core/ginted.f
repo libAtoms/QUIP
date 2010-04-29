@@ -1,3 +1,7 @@
+!X   Portions of this code were written by Mark Pederson as part of
+!X   the NRLMOL program, developed as part of his employment for 
+!X   the U.S. Government, and are not subject to copyright in the USA.
+
       ! compute <psi_i | x,y,z,1 | psi_j>
       ! where <psi_i | r> is a Gaussian times a spherical harmonic
       ! returns 10x10 matrix for different spherical harmonics

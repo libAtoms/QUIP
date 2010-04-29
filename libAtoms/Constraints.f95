@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Constraints module
 !X  
@@ -121,64 +127,6 @@
 !% 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-! $Id: Constraints.f95,v 1.13 2008-02-04 13:31:19 saw44 Exp $
-
-! $Log: Constraints.f95,v $
-! Revision 1.13  2008/02/04 13:31:19  saw44
-! Fixed comment typo
-!
-! Revision 1.12  2007/10/08 15:13:09  saw44
-! Split lambda into lambdaR and lambdaV which are not zeroed between calls
-!
-! Revision 1.11  2007/04/17 15:42:39  jrk33
-! Standardised subroutine and function references and printing argument order.
-!
-! Revision 1.10  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.9  2007/04/11 15:44:17  saw44
-! Updated/Added comments for the documentation generator
-!
-! Revision 1.8  2007/03/12 16:52:52  jrk33
-! Reformatted documentation
-!
-! Revision 1.7  2007/03/01 13:51:45  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%" 
-! is picked up by the documentation generation script
-!
-! Revision 1.6  2007/02/28 15:41:06  saw44
-! Converted SMOOTH_BOND to CUBIC_BOND
-!
-! Revision 1.5  2007/01/24 11:20:49  saw44
-! Removed unused variables
-!
-! Revision 1.4  2007/01/19 15:18:44  saw44
-! Reduced WARNING_TOLERANCE to allow for numerical errors in lapack matrix inversion
-!
-! Revision 1.3  2007/01/09 16:56:49  saw44
-! Added CONSTRAINT_WARNING_TOLERANCE parameter (used in DynamicalSystem)
-!
-! Revision 1.2  2006/12/13 14:06:28  saw44
-! Made data and func optional in Constraint_Amend. Increased MAX_ITERATIONS and reduced convergence tolerance
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.5  2006/11/27 14:30:56  saw44
-! Added SMOOTH_BOND and RELAX_BOND constraint subroutines. Added Constraint_Amend routine. Made the number of registered constraint subroutines a global to allow checking in Constraint_Amend
-!
-! Revision 1.4  2006/11/24 12:19:26  saw44
-! Updated some comments
-!
-! Revision 1.3  2006/11/21 13:37:56  saw44
-! Added time dependence to constraints. Printing a constraint now gives more info
-!
-! Revision 1.2  2006/11/17 13:05:33  saw44
-! Added assignment subroutines. Fixed ReadB interface clash.
-!
-! Revision 1.1  2006/11/13 15:23:49  saw44
-! Constraints added to the repository
-!
 module constraints_module
 
   use system_module

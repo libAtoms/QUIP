@@ -1,19 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     QUIP: quantum mechanical and interatomic potential simulation package
-!X     
-!X     Portions written by Noam Bernstein, while working at the
-!X     Naval Research Laboratory, Washington DC. 
-!X
-!X     Portions written by Gabor Csanyi, Copyright 2006-2007.   
-!X
-!X     When using this software,  please cite the following reference:
-!X
-!X     reference
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 !X
 !X Potential module 
 !X
@@ -36,99 +50,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-! $Id: Potential.f95,v 1.60 2008-07-11 09:54:52 gc121 Exp $
-! $Log: not supported by cvs2svn $
-! Revision 1.59  2008/07/11 09:53:38  gc121
-! added hardcoded wrapper potential, fixed bug in finite difference force
-!
-! Revision 1.58  2008/06/27 15:24:04  nb326
-! Fix order of arguments calling TB_calc
-!
-! Revision 1.57  2008/05/15 19:35:03  jrk33
-! Added some calc_dists() to finite difference calculation
-!
-! Revision 1.56  2008/05/15 18:35:31  gc121
-! implemented finite difference forces in Potential. untested.
-!
-! Revision 1.55  2008/05/01 02:27:39  nb326
-! Add setup_parallel
-!
-! Revision 1.54  2008/04/25 18:42:16  nb326
-! Init potential_initialise_filename, pass master_only to initialis(io,...)
-!
-! Revision 1.53  2008/04/08 12:39:19  jrk33
-! Added docs
-!
-! Revision 1.52  2008/03/07 23:08:22  nb326
-! Move hybrid into MetaPotential
-!
-! Revision 1.51  2008/02/26 14:29:43  jrk33
-! FilePot does not require param_str
-!
-! Revision 1.50  2008/02/14 22:47:52  nb326
-! Use FilePot
-!
-! Revision 1.49  2007/12/14 18:27:58  nb326
-! Remove setting of hybrid defaults - now done in definition of structure
-!
-! Revision 1.48  2007/11/28 15:37:51  nb326
-! Zero err in potential_calc
-!
-! Revision 1.47  2007/11/26 17:20:49  nb326
-! Add no_parallel option to potential_initialise() for doing parallel I/O but not setting up parallel calculations
-!
-! Revision 1.46  2007/11/14 18:40:40  nb326
-! Just print this%tb in print - internal handling in type(TB) now sensible (I claim)
-!
-! Revision 1.45  2007/11/14 14:26:30  nb326
-!  Add optional err argument to potential_calc, used only with TB so far
-!
-! Revision 1.44  2007/11/08 13:00:49  gc121
-! cosmetics
-!
-! Revision 1.43  2007/11/05 21:53:23  nb326
-! Trivial changes in notations
-!
-! Revision 1.42  2007/11/01 20:34:12  nb326
-! Move hybrid stuff out, and protect with #ifdef HAVE_HYBRID
-!
-! Revision 1.41  2007/10/16 17:06:13  nb326
-! Pass mpi communicator to read(extendable_str...) for reading parameter file in parallel
-!
-! Revision 1.40  2007/10/03 15:10:55  nb326
-! Pass convert_to_string=.true. to read to do automatic stack size increase
-!
-! Revision 1.39  2007/09/21 14:30:10  nb326
-! Only abort in hybrid_calc with virial if there are some QM atoms
-!
-! Revision 1.38  2007/09/17 15:32:58  nb326
-! Lots more calls to system_timer
-!
-! Revision 1.37  2007/09/13 13:22:03  nb326
-! Print k-points for TB object
-!
-! Revision 1.36  2007/09/06 15:23:30  gc121
-! bug in loop termination in create_weights
-!
-! Revision 1.35  2007/09/06 14:56:19  gc121
-! moved clearing of hybrid flags from Potential.f95 to vacancy_map_hybrid.f95
-!
-! Revision 1.34  2007/09/06 14:28:22  gc121
-! clear out flags at the end of create_local_energy_weights
-!
-! Revision 1.33  2007/09/04 17:06:40  nb326
-! Finalise currentlist and nextline in create_local_energy_weights to prevent mem leaks
-!
-! Revision 1.32  2007/09/04 14:10:15  nb326
-! Finalise cluster in hybrid_calc to prevent mem leaks
-!
-! Revision 1.31  2007/09/04 10:38:04  gc121
-! hardwired global_u into the hybrid for now
-!
-! Revision 1.30  2007/09/03 16:22:36  gc121
-! sync
-!
-
 module Potential_module
 
   use libAtoms_module

@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Dynamical System module
 !X  
@@ -42,336 +48,6 @@
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: DynamicalSystem.f95,v 1.70 2008-07-10 12:59:25 nb326 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.69  2008/07/02 13:37:58  jrk33
-! Fixed bug in ds_add_atom_single - missing optional arguments cannot be reshaped
-!
-! Revision 1.68  2008/06/16 13:03:32  jrk33
-! Updated for changes to add_atoms
-!
-! Revision 1.67  2008/05/29 16:48:08  jrk33
-! Typo for MPI_ defined
-!
-! Revision 1.66  2008/05/29 15:25:28  jrk33
-! Bug fix to constraint force calculation - thanks Steve
-!
-! Revision 1.65  2008/05/15 17:27:34  jrk33
-! Add travel in ds_initialise
-!
-! Revision 1.64  2008/05/13 15:48:36  jrk33
-! Add mass property when initialising dynamical system
-!
-! Revision 1.63  2008/05/13 10:39:57  saw44
-! Added constraint_force subroutine to return constraint forces used in the last advance_verlet call
-!
-! Revision 1.62  2008/05/08 14:21:06  saw44
-! Fixed temperature calc in adaptive_thermostat
-!
-! Revision 1.61  2008/05/07 15:51:07  nb326
-! Clean up ifort warnings, mostly unused variables
-!
-! Revision 1.60  2008/05/02 14:13:47  saw44
-! Added more functionality to adaptive thermostat: thermal_taus can now vary from region to region, regions can be named, regions can be made non-adaptive. Removed some unused variables. Added some docs
-!
-! Revision 1.59  2008/05/01 18:48:48  saw44
-! Improved adaptive thermostat - now reacts to changes in number of atoms in each region. Fixed bug in optimum_alpha. Fixed ds_assignment
-!
-! Revision 1.58  2008/04/29 11:30:50  saw44
-! Adaptive thermostat no prints the number of atoms in each region
-!
-! Revision 1.57  2008/04/28 15:45:13  saw44
-! Adaptive thermostat is now usable
-!
-! Revision 1.56  2008/04/25 14:25:50  saw44
-! fixed bug in adaptive_thermostat_add_to_region
-!
-! Revision 1.55  2008/04/25 13:57:33  saw44
-! Updated some of the adaptive thermostat routines
-!
-! Revision 1.54  2008/04/22 19:25:36  saw44
-! Fixed bug in adaptive thermstat (atoms%mass added in wrong place)
-!
-! Revision 1.53  2008/04/14 18:29:25  saw44
-! Added add_group_members subroutine, and now advance_verlet stores the thermostat forces if a property called "thermo_force" is present
-!
-! Revision 1.52  2008/03/07 23:49:29  ab686
-! reordered arguments in call to add_atoms(atoms,...)
-!
-! Revision 1.51  2008/03/07 23:23:51  nb326
-! Fix ambiguous interface in add_atoms
-!
-! Revision 1.50  2008/02/12 18:18:52  jrk33
-! intent(in) -> intent(inout) for things that ultimately call atoms_print_xyz
-!
-! Revision 1.49  2008/02/04 14:07:34  jrk33
-! Decoupled atomic number and mass to allow mixed isotope simulations. New mass property must be set
-!
-! Revision 1.48  2008/02/04 13:33:46  saw44
-! Added adaptive thermostat
-!
-! Revision 1.47  2007/11/30 21:40:19  nb326
-! make various things operate on atoms instead of dynamical system.  Should this be done more widely?
-!
-! Revision 1.46  2007/11/29 16:56:12  nb326
-! No need for true_pos, true_velo
-!
-! Revision 1.45  2007/11/28 22:52:17  nb326
-! Save in-sync positions and velocities into true_pos and true_velo (both corresponding to time before advance_verlet() was called if such fields exist in atoms struct
-!
-! Revision 1.44  2007/11/28 18:40:56  nb326
-! Remove roqgue print from torque()
-!
-! Revision 1.43  2007/11/28 18:33:54  nb326
-! Fix operator precendence in torque()
-!
-! Revision 1.42  2007/11/28 15:35:21  nb326
-! Add optional origin argument to torque()
-!
-! Revision 1.41  2007/11/27 18:20:46  nb326
-! Add angular_momentum() and torque().  kinetic_energy() and momentum() can operate on DS, Atoms, or raw arrays
-!
-! Revision 1.40  2007/11/26 17:20:04  nb326
-! Add momentum() that operates on Z and velo
-!
-! Revision 1.39  2007/11/21 15:00:41  jrk33
-! Fixed mistake in per atom average kinetic energy
-!
-! Revision 1.38  2007/11/21 14:55:13  jrk33
-! Added per atom average kinetic energy
-!
-! Revision 1.37  2007/11/19 16:01:22  nb326
-! Add angular_momentum() and zero_angular_momentum().  Add mass_weighted and zero_L as optional arguments to rescale_velo
-!
-! Revision 1.36  2007/11/14 21:42:29  nb326
-! Move guts of kinetic_energy into raw_kinetic energy, which takes arrays of Z and velo
-!
-! Revision 1.35  2007/11/07 10:09:05  gc121
-! printing dW
-!
-! Revision 1.34  2007/10/25 17:25:41  saw44
-! decode_mpi_error -> abort_on_mpi_error
-!
-! Revision 1.33  2007/10/25 16:54:41  saw44
-! Fixed MPI bug when using a mixture of constrained and free atoms. Removed printing of dW every time advance_verlet is called. Changed Sum(p) to Norm(p) in ds_print_status. Deallocate mpi variables in advance_verlet only when parallel=.true.
-!
-! Revision 1.32  2007/10/11 18:34:00  nb326
-! Replace decode_mpi_error with abort_on_mpi_error
-!
-! Revision 1.31  2007/10/08 15:14:15  saw44
-! Parallelised over groups in Advance_Verlet. Changed SHAKE/RATTLE to not zero Lagrange multipliers between calls (slight speed up)
-!
-! Revision 1.30  2007/10/05 14:05:15  saw44
-! Allowed passing through of data table in ds_add_atoms_multiple
-!
-! Revision 1.29  2007/08/28 08:49:52  jrk33
-! Use Trapezium rule rather than Simpsons rule to integrate work done since it is piecewise linear
-!
-! Revision 1.28  2007/08/22 17:21:32  jrk33
-! Resync the RNG before doing Langevein thermostatting
-!
-! Revision 1.27  2007/08/21 09:06:53  jrk33
-! Added calculation and logging of work done by thermostat and extended energy to DS
-!
-! Revision 1.26  2007/07/18 13:18:36  nb326
-! Use new verbosity system (intro.tex v 1.13)
-!
-! Revision 1.25  2007/04/30 14:34:40  jrk33
-! Removed call to symmetrise_postions
-!
-! Revision 1.24  2007/04/27 14:41:53  jrk33
-! Symmetry removed
-!
-! Revision 1.23  2007/04/27 11:58:56  gc121
-! Massive change to the way we deal with neighbour connections. We no longer follow minimum image conventions, but store all images of neighbouring atoms within a (perhaps huge) cutoff. Much code is expected to be now broken.
-!
-! Revision 1.22  2007/04/20 09:49:37  saw44
-! Removed PURE attribute from gaussian_velocity(_component) functions
-!
-! Revision 1.21  2007/04/19 12:33:41  saw44
-! Added gaussian_velocity and gaussian_velocity_component functions to draw a random velocity from the correct gaussian distrbution for a degree of freedom with a specified effective mass and temperature
-!
-! Revision 1.20  2007/04/18 12:41:09  jrk33
-! Fixed a couple of doc comments
-!
-! Revision 1.19  2007/04/18 01:31:03  gc121
-! updated to reflect changes in printing and other naming conventions
-!
-! Revision 1.18  2007/04/17 16:43:21  jrk33
-! Standardised subroutine and function references and printing argument order.
-!
-! Revision 1.17  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.16  2007/03/30 16:46:11  jrk33
-! Modified print argument order to conform with changes to System
-!
-! Revision 1.15  2007/03/28 17:44:14  saw44
-! Cleaned up unused variables. Added Distance_Relative_Velocity subroutine
-!
-! Revision 1.14  2007/03/27 14:28:40  jrk33
-! Changed to use Atoms properties to store all dynamical variables. Masks changed from logical type to integer - your code will break!
-!
-! Revision 1.13  2007/03/12 16:55:09  jrk33
-! Reformatted documentation. Corrected BAERENDS to BERENDSEN thermostat
-!
-! Revision 1.12  2007/03/01 13:51:45  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!
-! Revision 1.11  2007/02/28 15:44:30  saw44
-! Added Constrain_Bond subroutine for easy use. Allowed getMomentum and ZeroMomentum to work on a subset of the atoms
-!
-! Revision 1.10  2007/01/24 11:21:49  saw44
-! Removed unused variables
-!
-! Revision 1.9  2007/01/17 14:23:44  jrk33
-! Added optional parallel argument to CalcDists. Defaults to serial operation. Set parallel to true when called from DynamicalSystem.advanceVerlet
-!
-! Revision 1.8  2007/01/09 16:57:48  saw44
-! Adding constraints now checks CONSTRAINT_WARNING_TOLERANCE
-!
-! Revision 1.7  2006/12/14 16:54:25  saw44
-! Fixed bug in handling of time-dependent constraints
-!
-! Revision 1.6  2006/12/13 12:07:05  saw44
-! Copied over RATTLE fix from old repository
-!
-! Revision 1.5  2006/12/12 14:53:29  gc121
-! DS assignment did not work properly, now it does
-!
-! Revision 1.4  2006/12/12 00:14:44  gc121
-! fixed errors, now compiles
-!
-! Revision 1.3  2006/12/11 23:27:51  gc121
-! Moved (:,N) variables from DynamicalSystem to Atoms
-!
-! Revision 1.2  2006/12/04 18:06:26  nb326
-! Doesn't seem to need Sparse_module to compile, so remove it
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.46  2006/11/27 14:29:16  saw44
-! Added a ZeroMomentum call to RescaleVelo for the case where the temperature is initially zero. Added DS_Amend_Constraint routine
-!
-! Revision 1.45  2006/11/24 12:20:29  saw44
-! If a constraint is not initially obeyed then DS_Add_Constraint now prints a more helpful warning
-!
-! Revision 1.44  2006/11/22 19:40:05  saw44
-! Added comments about velocity Verlet and for what time the velocity corresponds to throughout the routine
-!
-! Revision 1.43  2006/11/21 13:42:02  saw44
-! Added time dependence to constraints. Moved the position of RATTLE algorithm in AdvanceVerlet, hopefully for improved stability
-!
-! Revision 1.42  2006/11/17 13:32:30  saw44
-! ADDED CONSTRAINTS. Made lots of changes to ReadB, WriteB, the DynamicalSystem type, partitioned AdvanceVerlet into a few smaller routines and integration now occurs by group rather than by atom
-!
-! Revision 1.41  2006/08/07 11:00:46  saw44
-! Fixed bug in AdvanceVerlet: all components of random force in Langevin thermostat were equal
-!
-! Revision 1.40  2006/06/29 11:08:34  jrk33
-! Removed unused variables, changed real(1e-4,dp) to 1e-4_dp in initialisation statement
-!
-! Revision 1.39  2006/06/28 17:26:50  saw44
-! Added constrained dynamics: New object DSConstraints. See comments for use and constraint.f95 for sample program. Added centre_of_mass_velocity function.
-!
-! Revision 1.38  2006/06/22 18:54:53  jrk33
-! Bug fixed in advanceVerlet for symmetric systems: atoms on the edge of cells with non zero travels were not being correctly remapped
-!
-! Revision 1.37  2006/06/20 17:23:18  gc121
-! added new copyright notice to include James, Gian, Mike and Alessandro
-!
-! Revision 1.36  2006/06/14 10:30:41  saw44
-! Renamed Constraint_Tol to Within_Constraint_Tol (name clash with new variables)
-!
-! Revision 1.35  2006/06/08 13:58:22  saw44
-! Added Initialise and Finalise interfaces (as with other modules). Changed calculation of forcesum to sum(force,dim = 2) for possible compiler optimisation
-!
-! Revision 1.34  2006/06/08 13:28:55  jrk33
-! Bug fix to advanceVerlet for symmetric systems: atoms that had been remapped by May_Into_Cell were not having their displacements correctly taken into account. Now we use realpos instead of pos
-!
-! Revision 1.33  2006/05/30 11:10:13  jrk33
-! Removed declarations for unused variables
-!
-! Revision 1.32  2006/05/25 11:02:17  jrk33
-! Shortened long lines to allow compilation with Sun f95
-!
-! Revision 1.31  2006/05/12 13:58:12  jrk33
-! Moved force symmetrisation out of DS to hybrid_model
-!
-! Revision 1.30  2006/05/10 10:42:00  jrk33
-! Added symmetrisation to advanceVerlet if atoms%symmetrise /= 0
-!
-! Revision 1.29  2006/05/05 09:02:06  saw44
-! Fixed bug found by Gian in DS_File_Read
-!
-! Revision 1.28  2006/03/29 10:51:10  saw44
-! Included dissipative term in fix of langevin thermostat
-!
-! Revision 1.27  2006/03/28 09:54:04  saw44
-! Fixed langevin thermostat non-zero random momenta problem. needs testing
-!
-! Revision 1.26  2006/03/10 00:41:44  gc121
-! fixed bugs in addatoms, Remove_Atoms: forgot to update this%N, flipped one loop exit condition, made do loop go from 1,N, it was not terminated before.
-!
-! Revision 1.25  2006/03/03 16:35:52  saw44
-! Removed SAVE - not needed
-!
-! Revision 1.24  2006/02/28 17:00:32  saw44
-! Typo correction
-!
-! Revision 1.23  2006/02/15 14:16:54  saw44
-! Removed commas before first entry in write statements
-!
-! Revision 1.22  2006/02/06 16:48:22  saw44
-! General Code clean-up: routine names changed to match the changes in System and linearalgebra
-!
-! Revision 1.21  2006/01/31 15:41:34  gc121
-! added a ds_print() to initialise
-!
-! Revision 1.20  2006/01/31 14:28:19  saw44
-! Updated ReadB and WriteB argument order
-!
-! Revision 1.19  2006/01/31 12:37:17  saw44
-! Pointer target now properly deallocated
-!
-! Revision 1.18  2006/01/30 13:04:36  gc121
-! correct format statement
-!
-! Revision 1.17  2006/01/30 12:05:43  gc121
-! removeds *s from some writes
-!
-! Revision 1.16  2006/01/30 11:41:13  gc121
-! swapped arguments of is_in_array
-!
-! Revision 1.15  2006/01/30 10:38:52  gc121
-! removed logger from print lines, its the default
-!
-! Revision 1.14  2006/01/27 16:12:30  gc121
-! added status line. rescaleVelo works with zero velocities. added zeroMomentum. fixed default timescales to be in our units
-!
-! Revision 1.13  2006/01/26 16:10:44  gc121
-! added verbosity to printing, fixed function names
-!
-! Revision 1.12  2006/01/26 01:53:28  gc121
-! corrected typo
-!
-! Revision 1.11  2006/01/25 17:35:27  gc121
-! changed vector_abs and vector_abs2 to norm() and norm2()
-!
-! Revision 1.10  2006/01/25 16:09:44  gc121
-! changes some argument names
-!
-! Revision 1.9  2006/01/24 12:07:31  saw44
-! DS now compiles with some of the discussed changes
-!
-! Revision 1.8  2006/01/18 16:07:59  gc121
-! cleanup started by gc121 and saw44
-!
-
 module dynamicalsystem_module
  
    use system_module

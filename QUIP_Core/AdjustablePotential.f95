@@ -1,5 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 !X
 !X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
 !X
@@ -25,7 +53,6 @@
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
@@ -35,157 +62,6 @@
 !X  given forces on atoms
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: AdjustablePotential_linear.f95,v 1.50 2008-05-05 13:40:43 jrk33 Exp $
-
-! $Log: not supported by cvs2svn $
-! Revision 1.49  2008/02/18 23:28:05  saw44
-! Removed repeated definitions of variables in ap_force
-!
-! Revision 1.48  2008/02/04 13:29:32  saw44
-! Added option to prevent all processes doing SVD and causing memmory bottlenecks
-!
-! Revision 1.47  2007/11/14 16:27:22  nb326
-! Add optional data argument to  funcs used for minim calls
-!
-! Revision 1.46  2007/11/08 17:04:18  gc121
-! renamed dV_dt to power, and made dt=1 here. it should be multipled by the real dt by the calling function
-!
-! Revision 1.45  2007/11/08 16:53:24  gc121
-! cleaned up some weird conflicts
-!
-! Revision 1.44  2007/11/07 10:47:34  gc121
-! made dV_dt an optional argument to adjustable_potential_force
-!
-! Revision 1.43  2007/10/25 17:24:44  saw44
-! Changed order of arguments to minim
-!
-! Revision 1.42  2007/10/08 15:07:19  saw44
-! Removed printing of target_force (line 1108)
-!
-! Revision 1.41  2007/09/17 15:13:54  jrk33
-! Sanitised interpolate argument in AP_force
-!
-! Revision 1.40  2007/08/31 15:08:47  jrk33
-! Added deallocates() to early return path of AP_init
-!
-! Revision 1.39  2007/08/31 15:03:15  jrk33
-! Sort fitlist before comparison with old list incase only the order has changed
-!
-! Revision 1.38  2007/08/30 15:27:36  jrk33
-! Removed unused variable my_method
-!
-! Revision 1.37  2007/08/30 15:09:09  jrk33
-! Keep spring set fixed while fitlist does not change
-!
-! Revision 1.36  2007/08/08 17:27:37  jrk33
-! verbosity_stack -> mainlog%verbosity_stack
-!
-! Revision 1.35  2007/08/07 11:08:53  jrk33
-! Changed verbosity_stack to use new value interface
-!
-! Revision 1.34  2007/07/20 15:06:06  jrk33
-! Update verbosity, add springs for difficult atoms in a better way based on choosing springs that make best angle
-!
-! Revision 1.33  2007/05/15 13:17:55  jrk33
-! Use fitlist with intsize=4 so we know shifts of all atoms. Repeats not allowed.
-!
-! Revision 1.32  2007/05/10 16:44:10  jrk33
-! Changed to only use springs with at least one end connected to a real atom. I believe it works correctly now but not thoroughly tested.
-!
-! Revision 1.31  2007/05/08 15:13:10  jrk33
-! Replaced atomindex array by atomlist table
-!
-! Revision 1.30  2007/05/04 13:24:37  jrk33
-! Updated for new multiple image convention, not tested yet
-!
-! Revision 1.29  2007/04/19 11:16:17  jrk33
-! Updated for changes in libAtoms
-!
-! Revision 1.28  2007/03/30 16:46:35  jrk33
-! Modified print argument order to conform with changes to System
-!
-! Revision 1.27  2007/03/28 17:29:13  saw44
-! Changed rank of X from 1 to 2 in force fitting to match lapack specification
-!
-! Revision 1.26  2007/03/13 15:04:33  jrk33
-! cosines -> Direction_Cosines
-!
-! Revision 1.25  2007/03/01 14:00:57  jrk33
-! Fixed bugs in map: tests for presence of i,j in old lists should be of form "if (fi == 0)" not "if (i == 0)"
-!
-! Revision 1.24  2007/01/31 14:43:42  saw44
-! Added reporting which spring has the largest spring constant when a warning is printed
-!
-! Revision 1.23  2007/01/09 16:51:07  saw44
-! Added ability to exclude spring creation between pairs of atoms
-!
-! Revision 1.22  2007/01/03 16:58:13  jrk33
-! Changed #ifdef MPI to #ifdef _MPI to reflect changes in libAtoms
-!
-! Revision 1.21  2006/12/18 17:12:40  saw44
-! Fixed James bug
-!
-! Revision 1.20  2006/12/18 11:30:31  jrk33
-! Preconditiong of springs is now done in AP_optimise if the optional argument prec_func is present
-!
-! Revision 1.19  2006/12/18 11:26:27  jrk33
-! Added nnonly optional arguement to AP_init
-!
-! Revision 1.18  2006/12/18 11:18:29  jrk33
-! Added nnonly optional arguement to AP_init
-!
-! Revision 1.17  2006/12/12 15:16:19  gc121
-! use named optional arguments
-!
-! Revision 1.16  2006/12/06 18:21:11  jrk33
-! If there are only two springs connected to an atom, this must be a bad atom
-!
-! Revision 1.15  2006/11/24 17:29:42  jrk33
-! Fixed CVS screwup with BFS_Grow
-!
-! Revision 1.14  2006/11/13 23:37:41  gc121
-! minor changes to printing, constants, tweaks in nneighb_only parameters
-!
-! Revision 1.13  2006/11/06 12:02:40  jrk33
-! If number of springs connected to an atom is 1, dont bother calling directionality, it must be really bad. Print warning if max spring constant after optimisation is large
-!
-! Revision 1.12  2006/11/03 11:49:11  jrk33
-! Changed default spring hops to 2, fixed a couple of write statements. Now we initially try to add springs to difficult atoms using nearest neighbour hopping, and if that fails we use nneighb_only = false.
-!
-! Revision 1.11  2006/11/02 22:28:31  gc121
-! fiddled with init defaults, renamed the hops argument and adjusted printing
-!
-! Revision 1.10  2006/11/02 18:06:47  jrk33
-! Only do the refit of old forces with new springs if springs have changed
-!
-! Revision 1.9  2006/11/02 17:15:08  jrk33
-! Always refit new springs to old forces. Additional checks for failing to find any springs
-!
-! Revision 1.8  2006/11/02 13:52:06  jrk33
-! BFS_Step with neighb_only set to false when adding springs for difficult atoms, since they may well be a long way away from their nearest neighbours
-!
-! Revision 1.7  2006/11/02 13:03:47  jrk33
-! Corrected max force error after optimisation
-!
-! Revision 1.6  2006/11/02 11:21:08  jrk33
-! Use bond hopping to determine initial spring set; optionally refit parameters to old forces using new spring set
-!
-! Revision 1.5  2006/10/31 11:53:01  jrk33
-! Do workspace query before SVD lapack call in AP_optimise
-!
-! Revision 1.4  2006/10/30 22:21:55  gc121
-! added SVD solver for optimisation, its now the default
-!
-! Revision 1.3  2006/10/30 20:47:40  gc121
-! linear springs now work.
-!
-! Revision 1.2  2006/10/30 16:31:33  gc121
-! made rlimit argument to init() optional
-!
-! Revision 1.1  2006/10/30 12:47:21  gc121
-! new kind of adjustable potential, just a linear spring
-!
 
 #ifdef HAVE_LOTF
 

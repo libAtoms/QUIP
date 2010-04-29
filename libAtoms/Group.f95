@@ -1,27 +1,33 @@
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X
-!X     libAtoms: atomistic simulation library
-!X     
-!X     Copyright 2006-2007.
-!X
-!X     Authors: Gabor Csanyi, Steven Winfield, James Kermode
-!X     Contributors: Noam Bernstein, Alessio Comisso
-!X
-!X     The source code is released under the GNU General Public License,
-!X     version 2, http://www.gnu.org/copyleft/gpl.html
-!X
-!X     If you would like to license the source code under different terms,
-!X     please contact Gabor Csanyi, gabor@csanyi.net
-!X
-!X     When using this software, please cite the following reference:
-!X
-!X     http://www.libatoms.org
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! H0 X
+! H0 X   libAtoms+QUIP: atomistic simulation library
+! H0 X
+! H0 X   Portions of this code were written by
+! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X
+! H0 X   Copyright 2006-2010.
+! H0 X
+! H0 X   These portions of the source code are released under the GNU General
+! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X
+! H0 X   If you would like to license the source code under different terms,
+! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+! H0 X
+! H0 X   Portions of this code were written by Noam Bernstein as part of
+! H0 X   his employment for the U.S. Government, and are not subject
+! H0 X   to copyright in the USA.
+! H0 X
+! H0 X
+! H0 X   When using this software, please cite the following reference:
+! H0 X
+! H0 X   http://www.libatoms.org
+! H0 X
+! H0 X  Additional contributions by
+! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+! H0 X
+! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  Group module
 !X  
@@ -74,49 +80,6 @@
 !% \end{itemize}
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-! $Id: Group.f95,v 1.10 2007/09/03 10:57:46 nb326 Exp $
-!
-! $Log: Group.f95,v $
-! Revision 1.10  2007/09/03 10:57:46  nb326
-! Make set_type into a module procedure, to prevent name clashes
-!
-! $Log: not supported by cvs2svn $
-! Revision 1.9  2007/04/18 01:32:21  gc121
-! updated to reflect changes in printing and other naming conventions
-!
-! Revision 1.8  2007/04/17 16:05:03  jrk33
-! Standardised subroutine and function references and printing argument order.
-!
-! Revision 1.7  2007/04/17 09:57:19  gc121
-! put copyright statement in each file
-!
-! Revision 1.6  2007/04/11 15:44:17  saw44
-! Updated/Added comments for the documentation generator
-!
-! Revision 1.5  2007/03/12 16:58:30  jrk33
-! Reformatted documentation
-!
-! Revision 1.4  2007/03/01 13:51:46  jrk33
-! Documentation comments reformatted and edited throughout. Anything starting "!(no space)%"
-!  is picked up by the documentation generation script
-!
-! Revision 1.3  2007/01/24 11:22:06  saw44
-! Removed unused variables
-!
-! Revision 1.2  2007/01/09 16:58:27  saw44
-! Minor changes to error messages
-!
-! Revision 1.1.1.1  2006/12/04 11:11:30  gc121
-! Imported sources
-!
-! Revision 1.2  2006/11/17 13:07:21  saw44
-! Added Finalising of array, assignment, binary reading/writing, inquiring functions, extended tidying subroutine
-!
-! Revision 1.1  2006/11/13 12:05:41  saw44
-! Group module added to the repository
-!
-!
 
 module group_module
 

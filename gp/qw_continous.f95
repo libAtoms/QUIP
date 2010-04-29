@@ -1,3 +1,5 @@
+! HEADER_CHECK
+
 module qw_continous_module
 
   use libatoms_module

@@ -1,0 +1,212 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+ 
+my %headers;
+$headers{""} = ["H0", <<'H0text'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   libAtoms+QUIP: atomistic simulation library
+X
+X   Portions of this code were written by
+X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+X
+X   Copyright 2006-2010.
+X
+X   These portions of the source code are released under the GNU General
+X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+X
+X   If you would like to license the source code under different terms,
+X   please contact Gabor Csanyi, gabor@csanyi.net
+X
+X   Portions of this code were written by Noam Bernstein as part of
+X   his employment for the U.S. Government, and are not subject
+X   to copyright in the USA.
+X
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.libatoms.org
+X
+X  Additional contributions by
+X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+H0text
+
+$headers{"_NO_DISTRIBUTION"} = ["HND", <<'HNDtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   libAtoms+QUIP: atomistic simulation library
+X
+X   Portions of this code were written by
+X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+X
+X   Copyright 2006-2010.
+X
+X   Not for distribution
+X
+X   Portions of this code were written by Noam Bernstein as part of
+X   his employment for the U.S. Government, and are not subject
+X   to copyright in the USA.
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.libatoms.org
+X
+X  Additional contributions by
+X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HNDtext
+
+$headers{"_JAMES"} = ["HJ", <<'HJtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   libAtoms+QUIP: atomistic simulation library
+X
+X   Portions of this code were written by
+X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+X
+X   Copyright 2006-2010.
+X
+X   These portions of the source code are released under the GNU General
+X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+X
+X   If you would like to license the source code under different terms,
+X   please contact Gabor Csanyi, gabor@csanyi.net
+X
+X   Portions of this code were written by Noam Bernstein as part of
+X   his employment for the U.S. Government, and are not subject
+X   to copyright in the USA.
+X
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.libatoms.org
+X
+X  Additional contributions by
+X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HJtext
+
+$headers{"_LBFGS"} = ["HL", <<'HLtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   LBFGS
+X
+X   This code was downloaded from J. Nocedal's web site
+X   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
+X
+X   Author: J. Nocedal
+X
+X   Condition for Use:
+X     This software is freely available for educational or commercial 
+X     purposes. We expect that all publications describing work using this 
+X     software quote at least one of the references given below.  This 
+X     software is released under the GNU Public License (GPL)
+X
+X   References:
+X     J. Nocedal. Updating Quasi-Newton Matrices with Limited Storage 
+X       (1980), Mathematics of Computation 35, pp. 773-782.
+X     D.C. Liu and J. Nocedal. On the Limited Memory Method for Large 
+X       Scale Optimization (1989), Mathematical Programming B, 45, 3, pp. 
+X       503-528.
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HLtext
+
+foreach my $file (@ARGV) {
+  if (-f $file) {
+    warn "FILE $file\n";
+    open FP, "<$file";
+    my @l = <FP>;
+    close FP;
+    my $do = 1;
+    my $f = join("", @l);
+
+    my $found_header_content = 0;
+    for my $header_name (keys(%headers)) {
+      my $header_label = $headers{$header_name}->[0];
+      if ($f =~ /^(.*\S+.+${header_label}.+X+.*)$/m) {
+        my $l = $1;
+        if ($l =~ /^\s*(\S+)\s+${header_label}\s+X+\s*(\S*)\s*$/m) {
+          warn "got ${header_label}\n";
+          my $pre = $1;
+          my $post = (defined($2) ? $2 : "");
+          replace_header ($f, $pre, $post, $headers{$header_name}->[1], "${header_label}");
+          $found_header_content = 1;
+        } else {
+          warn "got $header_label, but couldn't parse header\n";
+          $do = 0;
+        }
+      }
+      last if ($found_header_content);
+    }
+
+    if (!$found_header_content) {
+      if ($f =~ /^(.*HEADER.*)$/m) {
+        my $l = $1;
+        $l =~ /^\s*(\S+)\s+HEADER(_\S*)?\s*(\S*)\s*$/;
+        my $pre = $1;
+        my $header_type = (defined($2) ? $2 : "");
+        my $post = (defined($3) ? $3 : "");
+        warn "got HEADER${header_type} pre '$pre' post '$post'\n";
+        if (exists($headers{$header_type})) {
+          add_header($f, $pre, $post, $headers{$header_type}->[1], $headers{$header_type}->[0]);
+        } elsif ($header_type eq "_CHECK") {
+          $do = 0;
+          warn "$file has CHECK header\n"
+        } else {
+          $do = 0;
+          warn "unknown header type $header_type\n";
+        }
+      } else {
+        $do = 0;
+        warn "$file has no header\n"
+      }
+    }
+    warn "do $do\n";
+    if ($do) {
+      ## warn "$f";
+      rename("$file", "$file.bak");
+      open FP, ">$file";
+      print FP "$f";
+      close FP;
+    }
+  }
+}
+
+exit 0;
+
+sub add_header {
+  my ($pre, $post, $header_text, $header_label) = ($_[1], $_[2], $_[3], $_[4]);
+  $header_text =~ s/^/$pre $header_label /mg;
+  if ($post ne "") {
+    my @header_ls = split (/\n/, $header_text);
+    my $max_line_len = 0;
+    foreach my $l (@header_ls) {
+      $max_line_len = (length($l) > $max_line_len ? length($l) : $max_line_len);
+    }
+    foreach my $l (@header_ls) {
+      $l = sprintf("%-${max_line_len}s $post", $l);
+    }
+    $header_text = join("\n", @header_ls);
+  }
+  $_[0] =~ s/^\s*(\S+)\s+HEADER\s*(\S*)\s*$/$header_text/m;
+}
+
+sub replace_header {
+  my ($f, $pre, $post, $header_text, $header_label) = @_;
+  $f =~ s/^(\s*$pre\s+)${header_label}\s+X+(\s*$post\s*)$/$1HEADER$2/m;
+  my @f = split(/\n/, $f);
+  @f = grep { $_ !~ /^\s*$pre\s+${header_label}\s+.+\s*$post\s*$/ } @f;
+  $f = join("\n", @f)."\n";
+  add_header($f, $pre, $post, $header_text, "${header_label}");
+  $_[0] = $f;
+}
