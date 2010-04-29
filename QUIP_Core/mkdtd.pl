@@ -1,6 +1,33 @@
 #!/usr/bin/perl -w
-
-# JAMES_HEADER
+# HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HJ X
+# HJ X   libAtoms+QUIP: atomistic simulation library
+# HJ X
+# HJ X   Portions of this code were written by
+# HJ X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# HJ X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# HJ X
+# HJ X   Copyright 2006-2010.
+# HJ X
+# HJ X   These portions of the source code are released under the GNU General
+# HJ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# HJ X
+# HJ X   If you would like to license the source code under different terms,
+# HJ X   please contact Gabor Csanyi, gabor@csanyi.net
+# HJ X
+# HJ X   Portions of this code were written by Noam Bernstein as part of
+# HJ X   his employment for the U.S. Government, and are not subject
+# HJ X   to copyright in the USA.
+# HJ X
+# HJ X
+# HJ X   When using this software, please cite the following reference:
+# HJ X
+# HJ X   http://www.libatoms.org
+# HJ X
+# HJ X  Additional contributions by
+# HJ X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# HJ X
+# HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # Perl script to generate quip.dtd Document Type Definition
 # file, which can be used to validate an input XML file. 
