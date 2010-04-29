@@ -740,7 +740,9 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       em = 0.0_dp
       exp_arg = -(r0-d)**2/s_sq
       if (exp_arg > -20.0_dp) em = exp(exp_arg)
-      histogram(rad_sample_i) = histogram(rad_sample_i) + r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)
+      ! should really fix d->0 limit
+      if (d .fne. 0.0_dp) &
+	histogram(rad_sample_i) = histogram(rad_sample_i) + r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)
     end do ! rad_sample_i
   end do ! at_i
 
