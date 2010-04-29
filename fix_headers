@@ -1,7 +1,62 @@
 #!/usr/bin/perl -w
 
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# X
+# X   libAtoms+QUIP: atomistic simulation library
+# X
+# X   Portions of this code were written by
+# X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# X
+# X   Copyright 2006-2010.
+# X
+# X   These portions of the source code are released under the GNU General
+# X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# X
+# X   If you would like to license the source code under different terms,
+# X   please contact Gabor Csanyi, gabor@csanyi.net
+# X
+# X   Portions of this code were written by Noam Bernstein as part of
+# X   his employment for the U.S. Government, and are not subject
+# X   to copyright in the USA.
+# X
+# X
+# X   When using this software, please cite the following reference:
+# X
+# X   http://www.libatoms.org
+# X
+# X  Additional contributions by
+# X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# X
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# this can be used to annotate the entire QUIP distribution by doing
+#  ./fix_headers `find . -type f -not-wholename "*fix_headers" -not -wholename "*.svn*" -not -wholename "*quippy*" -not -wholename "*pyatoms*" -not -wholename "*FoX-4.0.3*"  -print` > fix_headers.out 2>&1
+
+my $usage=<<USAGE;
+Replaces header strings with the appropriate header.
+These can be of the form 
+    <COMMENT_SYMBOL> HEADER[_SUFFIX] [POST_COMMENT_SYMBOL]
+or
+    <COMMENT_SYMBOL> H[HEADER_LABEL] <header line> [POST_COMMENT_SYMBOL]
+inserted lines are of the form
+    <COMMENT_SYMBOL> H[HEADER_LABEL] <header line> [POST_COMMENT_SYMBOL]
+
+Header names, labels, and contents are specified below in the %headers hash.
+hash key is the _SUFFIX (if any), content is an anonymous array
+first array entry is HEADER_LABEL
+second array entry is header text
+
+code implicitly assumes that first line of inserted header is of the form
+  <COMMENT_SYMBOL> H[HEADER_LABEL] X+ [POST_COMMENT_SYMBOL]
+i.e. make sure all your headers start with a line of 'X' and nothing else
+USAGE
+
 use strict;
 
+if ($#ARGV < 0) {
+  die "Usage: $0 filename1 [filename2 ... ]\n\n$usage\n";
+}
  
 my %headers;
 $headers{""} = ["H0", <<'H0text'];
