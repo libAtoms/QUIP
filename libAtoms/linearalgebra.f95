@@ -1658,6 +1658,8 @@ CONTAINS
     integer,allocatable::IPIV(:)
     real(dp),allocatable::WORK(:)
     logical::positive
+    !IMPROVE real(dp), allocatable :: u_lu(:,:), b(:,:), ferr(:), berr(:)
+    !IMPROVE integer, allocatable :: iwork(:)
 
     real(dp), pointer :: u_inverse(:,:)
 
@@ -1726,10 +1728,19 @@ CONTAINS
     call DGETRF(N, N, u_inverse, N, IPIV, info)
     if (INFO /= 0) call system_abort('Error in calling DGETRF (info = '//info//')')
 
+    !IMPROVE allocate(u_lu(N,N))
+    !IMPROVE u_lu = u_inverse
+
     !inverse
 
     call DGETRI(N, u_inverse, N, IPIV, WORK, LWORK, info)
     if (INFO /= 0) call system_abort('Error in calling DGETRI (info = '//info//')') 
+
+    !IMPROVE deallocate(WORK)
+    !IMPROVE allocate(b(N,N),ferr(N),berr(N),WORK(3*N),iwork(N))
+    !IMPROVE b = 0.0_dp
+    !IMPROVE call add_identity(b)
+    !IMPROVE call dgerfs('N',N,N,matrix,N,u_lu,N,ipiv,b,N,u_inverse,N,ferr,berr,WORK,iwork,info)
 
     deallocate(WORK,IPIV)
 
