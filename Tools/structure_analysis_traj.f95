@@ -719,8 +719,8 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
 
   logical :: my_accumulate
 
-  real(dp) :: use_center_pos(3), d, r0, s_sq
-  real(dp), parameter :: SQROOT_PI = sqrt(PI)
+  real(dp) :: use_center_pos(3), d, r0, s_sq, s_cu, h_val
+  real(dp), parameter :: SQROOT_PI = sqrt(PI), PI_THREE_HALVES = PI**(3.0_dp/2.0_dp)
   logical, allocatable :: mask_a(:)
   integer :: at_i, rad_sample_i
   real(dp) :: rad_sample_r, exp_arg, ep, em
@@ -758,9 +758,15 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   end if
 
   s_sq = gaussian_sigma**2
+  s_cu = s_sq*gaussian_sigma
   do at_i=1, at%N
     if (.not. mask_a(at_i)) cycle
+    if (present(center_i)) then
+      if (at_i == center_i) cycle
+    endif
     d = distance_min_image(at,use_center_pos,at%pos(:,at_i))
+    ! skip if atom is outside range
+    if (d > (n_rad_bins-1)*rad_bin_width+6.0_dp*gaussian_sigma) cycle
     do rad_sample_i=1, n_rad_bins
       rad_sample_r = (rad_sample_i-1)*rad_bin_width
       r0 = rad_sample_r
@@ -771,16 +777,22 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       exp_arg = -(r0-d)**2/s_sq
       if (exp_arg > -20.0_dp) em = exp(exp_arg)
       ! should really fix d->0 limit
-      if (d .fne. 0.0_dp) &
-	histogram(rad_sample_i) = histogram(rad_sample_i) + r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)
+      if (d .feq. 0.0_dp) then
+	h_val = 0.0_dp
+	exp_arg = -r0**2/s_sq
+	if (exp_arg > -20.0_dp) &
+	  h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
+      else if (r0 .feq. 0.0_dp) then
+	h_val = 0.0_dp
+	exp_arg = -d**2/s_sq
+	if (exp_arg > -20.0_dp) &
+	  h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
+      else
+	h_val = (r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)) /  (4.0_dp * PI * r0**2)
+      endif
+      histogram(rad_sample_i) = histogram(rad_sample_i) +  h_val
     end do ! rad_sample_i
   end do ! at_i
-
-  do rad_sample_i=1, n_rad_bins
-    rad_sample_r = (rad_sample_i-1)*rad_bin_width
-    if (rad_sample_r > 0.0_dp) &
-      histogram(rad_sample_i) = histogram(rad_sample_i) / (4.0_dp * pi * rad_sample_r**2)
-  end do
 
 end subroutine density_sample_radial_mesh_Gaussians
 
@@ -827,10 +839,10 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     end do
   endif
 
-  if (gaussian_smoothing) then
-    call set_cutoff(at, n_bins*bin_width+5.0_dp*gaussian_sigma)
-    call calc_connect(at)
-  endif
+!  if (gaussian_smoothing) then
+!    call set_cutoff(at, n_bins*bin_width+5.0_dp*gaussian_sigma)
+!    call calc_connect(at)
+!  endif
 
   rdfd = 0.0_dp
   do i_at=1, at%N ! loop over center atoms
@@ -864,20 +876,20 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
     endif ! gaussian_smoothing
   end do ! i_at
 
-  !normalise zones by the number of atoms in that zone
-  do i_zone=1, n_zones
-    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
-  end do
-
-  !calculate local density by dividing bins with their volumes
   if (.not. gaussian_smoothing) then
+    !calculate local density by dividing bins with their volumes
     do i_bin=1, n_bins
       bin_inner_rad = real(i_bin-1,dp)*bin_width
       bin_outer_rad = real(i_bin,dp)*bin_width
       rdfd(i_bin,:) = rdfd(i_bin,:)/(4.0_dp/3.0_dp*PI*bin_outer_rad**3 - 4.0_dp/3.0_dp*PI*bin_inner_rad**3)
     end do
-  endif
-  !normalizing with the global density
+  end if
+
+  ! normalise zones by the number of atoms in that zone
+  do i_zone=1, n_zones
+    if (n_in_zone(i_zone) > 0) rdfd(:,i_zone) = rdfd(:,i_zone)/real(n_in_zone(i_zone),dp)
+  end do
+  ! normalise with the global density
   if (count(neighbour_mask_a) > 0) then
     rdfd = rdfd / (count(neighbour_mask_a)/cell_volume(at))
   endif
