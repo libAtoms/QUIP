@@ -33,8 +33,9 @@ p.add_option('-f', '--format', action='store', help="""Explicitly specify output
 Supported formats: cell, nc, pos, pov, xyz.""")
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
 p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
-p.add_option('-e', '--exec_code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
+p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`.""")
+p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 
 opt, args = p.parse_args()
 
@@ -77,8 +78,15 @@ if opt.properties is not None:
 if opt.params is not None:
    opt.params = parse_comma_colon_list(opt.params)
 
+if opt.atoms_ref is not None:
+   opt.atoms_ref = Atoms(opt.atoms_ref)
+
 if opt.merge is not None:
-   merge_config = Atoms(opt.merge)
+   if opt.atoms_ref is not None:
+      merge_config = Atoms(opt.merge, atoms_ref=opt.atoms_ref)
+   else:
+      merge_config = Atoms(opt.merge)
+   
 
    if opt.merge_properties is not None:
       opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
@@ -130,7 +138,11 @@ def process(at):
             p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
 
-all_configs = AtomsList(infile, store=False)
+if opt.atoms_ref is not None:
+   all_configs = AtomsList(infile, store=False, atoms_ref=opt.atoms_ref)
+else:
+   all_configs = AtomsList(infile, store=False)
+
 if outfile is not None:
    outfile = AtomsWriter(outfile, format=opt.format)
 
