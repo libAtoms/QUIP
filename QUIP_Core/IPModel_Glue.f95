@@ -317,7 +317,7 @@ subroutine sort_spline(this, ti)
   num_potential_points = size(this%spline_data(ti)%spline_potential(1,:))
   finished = .false.
 
-  do while (finished .ne. .true.)
+  do while (finished .neqv. .true.)
       finished = .true.
       do m=2, num_potential_points
           if (this%spline_data(ti)%spline_potential(1,m-1) > this%spline_data(ti)%spline_potential(1,m)) then
