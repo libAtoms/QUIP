@@ -1051,12 +1051,23 @@ class CastepPotential(Potential):
 
       print 'Reading from file %s' % (stem+'.castep')
       result = Atoms(stem+'.castep', atoms_ref=at)
+
+      at.params['castep_file'] = os.path.join(os.getcwd(), stem+'.castep')
+
+      # Energy and force
       at.params['energy'] = float(result.energy)
       at.add_property('force', result.force)
+
+      # Virial stress tensor
       if hasattr(result, 'virial'):
          at.params['virial'] = result.virial
       else:
          at.params['virial'] = fzeros((3,3))
+
+      # Add popn_calculate output
+      for k in result.properties.keys():
+         if k.startswith('popn_'):
+            at.add_property(k, getattr(result, k))
 
 def potential_to_cube(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
