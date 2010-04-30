@@ -1,6 +1,6 @@
 pyatoms - a simple Python package for manipulating XYZ files
 
-James Kermode <jrk33@cam.ac.uk>
+James Kermode <james.kermode@gmail.com>
 
 I've written a simple Python packaged called PyAtoms for playing with
 atomic configurations interactively. It works with the extended XYZ
