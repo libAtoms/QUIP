@@ -253,10 +253,10 @@ if not BATCH_READ:
       except IOError:
          die('error opening old cluster file %s' % stem+'.xyz.old')
 
-      if (all(cluster.lattice == old_cluster.lattice)):
-         log.info('lattice matches that of previous cluster')
-      else:
-         log.warn('lattice mismatch with prevous cluster')
+#      if (all(cluster.lattice == old_cluster.lattice)):
+#         log.info('lattice matches that of previous cluster')
+#      else:
+#         log.warn('lattice mismatch with prevous cluster')
 
       if (cluster.n == old_cluster.n):
          log.info('RMS position difference is %.3f A' % rms_diff2(cluster.pos, old_cluster.pos))
@@ -333,16 +333,16 @@ try:
       # Try to reuse check file if it's there and lattice matches
       # that of previous cluster
       if USE_CHECK_FILES and (('reuse' in param and param['reuse'].upper() != 'NULL') or not 'reuse' in param):
-         if (os.path.exists(stem+'.check') and
-             cluster.n == old_cluster.n and
-             all(cluster.lattice == old_cluster.lattice)):
+         if (os.path.exists(stem+'.check') and cluster.n == old_cluster.n):
+# CASTEP now copes OK with changes in lattice and fft box.
+#             all(cluster.lattice == old_cluster.lattice)):
             log.info('check file found: trying to reuse it')
             param['reuse'] = 'default'
          else:
             if cluster.n != old_cluster.n:
                log.info('cannot reuse check file - atom number mismatch')
-            elif not all(cluster.lattice == old_cluster.lattice):
-               log.info('cannot reuse check file - lattice mismatch')
+#            elif not all(cluster.lattice == old_cluster.lattice):
+#               log.info('cannot reuse check file - lattice mismatch')
             else:
                log.info('check file not found')
                
