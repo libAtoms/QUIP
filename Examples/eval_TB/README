@@ -14,7 +14,7 @@ Create 8 atom simple cubic supercell of diamond structure Si (Z=14)
 
 Create a k-point mesh
   ${QUIP_DIR}/build.${QUIP_ARCH}/make_k_mesh mesh='2 2 2' monkhorst_pack > k_points.xml
-Combine model parameters and k-points into a quip paramter file
+Combine model parameters and k-points into a quip paramter file (you may need to give concat_quip_params execute permission)
   ${QUIP_DIR}/QUIP_Core/parameters/concat_quip_params ../../QUIP_Core/parameters/tightbind.parms.NRL_TB.Si.xml k_points.xml > quip_params.xml
 
 Relax configuration with NRL-TB
