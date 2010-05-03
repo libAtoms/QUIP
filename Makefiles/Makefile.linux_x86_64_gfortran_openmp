@@ -40,7 +40,7 @@ LINKER = gfortran -fopenmp -L/usr/local/lib64 -Wl,-rpath,/usr/local/lib64
 DEFAULT_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 DEFAULT_OPTIM = -O3
 
-DEFINES += -DGETARG_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE -D_OPENMP
+DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE -D_OPENMP
 F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused -fopenmp
 F77FLAGS += -x f77-cpp-input -fno-second-underscore -fopenmp
 CFLAGS +=  -fPIC -fopenmp
