@@ -42,7 +42,8 @@ OBJS =
 
 PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_new \
   clean_traj file_rewrite find_space_minim \
-  structure_analysis_traj mean_var_correl angle_distr postproc_flux make_bulk_supercell test
+  structure_analysis_traj mean_var_correl angle_distr postproc_flux \
+  make_bulk_supercell make_k_mesh test
 
 LIBS =  -L. -lquiputils -lquip -latoms 
 LIBFILES = libatoms.a libquip.a libquiputils.a
