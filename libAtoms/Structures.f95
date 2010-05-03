@@ -36,9 +36,11 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module  structures_module
+  use system_module
   use linearalgebra_module
   use atoms_module
   use clusters_module
+  use paramreader_module
   implicit none
   public
 
@@ -1411,6 +1413,107 @@ contains
     call finalise(points)
 
   end function make_structure
+
+  function structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str) result(dup_cell)
+    character(len=*), intent(in) :: struct
+    real(dp), intent(in), optional :: vol_per_atom, vol_per_unit_cell
+    integer, intent(in), optional :: repeat(3)
+    character(len=*), intent(in), optional :: Z_values_str
+    type(Atoms) :: dup_cell
+
+    character(len=FIELD_LENGTH) :: quip_structs_dir
+    type(inoutput) :: struct_io
+    type(Atoms) :: cell, dup_cell
+    real(dp) :: vol, scale
+    integer :: stat
+    logical :: cell_has_Z_values, args_have_Z_values
+    integer :: Z_values_i
+    integer, allocatable :: Z_values(:), new_Z(:)
+    integer :: i, n_types
+    real(dp) :: u_vol_per_atom, u_vol_per_unit_cell
+    type(Dictionary) :: Z_values_params
+
+    if (minval(repeat) <= 0) &
+      call system_abort("all elements of repeat='"//repeat//"' must be >= 1")
+
+    u_vol_per_atom = optional_default(-1.0_dp, vol_per_atom)
+    u_vol_per_unit_cell = optional_default(-1.0_dp, vol_per_unit_cell)
+
+    if (u_vol_per_atom > 0.0_dp .and. u_vol_per_unit_cell > 0.0_dp) &
+      call system_abort("Only one of u_vol_per_atom="//u_vol_per_atom//" and u_vol_per_unit="//u_vol_per_unit_cell//" cell can be specified")
+    if (u_vol_per_atom <= 0.0_dp .and. u_vol_per_unit_cell <= 0.0_dp) &
+      call system_abort("One of u_vol_per_atom ="//u_vol_per_atom//"and u_vol_per_unit ="//u_vol_per_unit_cell//"cell must be specified")
+
+    if (struct(1:1) == '.' .or. struct(1:1) == '/') then
+      call initialise(struct_io, trim(struct)//".xyz")
+    else
+      call get_env_var("QUIP_STRUCTS_DIR", quip_structs_dir, stat)
+      if (stat /= 0) then
+	call get_env_var("QUIP_DIR", quip_structs_dir, stat)
+	if (stat /= 0) then
+	  call get_env_var("HOME", quip_structs_dir, stat)
+	  if (stat /= 0) &
+	    call system_abort("Could not get QUIP_STRUCTS_DIR or QUIP_DIR or HOME env variables")
+	  quip_structs_dir = trim(quip_structs_dir) // "/share/quip_structures"
+	else
+	  quip_structs_dir = trim(quip_structs_dir) // "/structures"
+	endif
+      endif
+      call initialise(struct_io, trim(quip_structs_dir)//"/"//trim(struct)//".xyz")
+    endif
+    call read_xyz(cell, struct_io)
+
+    n_types=maxval(cell%Z)-minval(cell%Z) + 1
+    allocate(Z_values(n_types))
+    allocate(new_Z(cell%N))
+
+    if (n_types == 1) then
+      cell_has_Z_values = get_value(cell%params, "z_values", Z_values_i)
+      Z_values(1) = Z_values_i
+    else
+      cell_has_Z_values = get_value(cell%params, "z_values", Z_values)
+    endif
+    args_have_Z_values = .false.
+    if (present(Z_values_str)) then
+      if (len_trim(Z_values_str) > 0) then
+	call initialise(Z_values_params)
+	if (n_types == 1) then
+	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values_i)
+	else
+	  call param_register(Z_values_params, "Z_values", PARAM_MANDATORY, Z_values)
+	endif
+	if (.not. param_read_line(Z_values_params, 'Z_values="'//trim(Z_values_str)//'"', do_check=.true., ignore_unknown=.true.)) then
+	  call system_abort("Z_values '"//trim(Z_values_str)//"' specified on command line, but can't be parsed to find "//n_types//" Z values")
+	else ! succeeded in parsing
+	  if (n_types == 1) Z_values(1) = Z_values_i
+	endif
+	call finalise(Z_values_params)
+      endif
+    endif
+    if (.not. cell_has_Z_values .and. .not. args_have_Z_values) &
+      call system_abort("structure_from_file could not find appropriate Z values in cell file or Z_values_str argument")
+
+    do i=1, n_types
+      where (cell%Z == i)
+	new_Z = Z_values(i)
+      end where
+    end do
+    call set_atoms(cell, new_Z)
+
+    vol = cell_volume(cell)
+    if (u_vol_per_atom > 0.0_dp) then
+      scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * (cell%N*u_vol_per_atom)**(1.0_dp/3.0_dp)
+    else
+      scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * u_vol_per_atom**(1.0_dp/3.0_dp)
+    endif
+    call set_lattice(cell, cell%lattice*scale )
+    cell%pos = cell%pos*scale
+    call supercell(dup_cell, cell, repeat(1), repeat(2), repeat(3))
+
+    deallocate(Z_values)
+    deallocate(new_Z)
+
+  end function structure_from_file
 
   subroutine transform(at_out, at_in, t)
     type(Atoms), intent(out)::at_out  !% Output 

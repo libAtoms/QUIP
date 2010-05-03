@@ -2370,6 +2370,23 @@ contains
 #endif
   end subroutine get_cmd_arg
 
+  subroutine get_env_var(name, arg, status)
+    character(len=*), intent(in) :: name
+    character(len=*), intent(out) :: arg
+    integer, intent(out), optional :: status
+
+#ifndef GETENV_F2003
+    external getenv
+#endif
+
+#ifndef GETENV_F2003
+    call getenv(trim(name), arg)
+    if (present(status)) status = 0
+#else
+    call get_environment_variable(trim(name), arg, status=status)
+#endif
+  end subroutine get_env_var
+
   !% Shut down gracefully, finalising system objects.
   subroutine system_finalise()
     integer :: values(8)
