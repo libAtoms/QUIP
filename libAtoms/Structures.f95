@@ -1414,6 +1414,18 @@ contains
 
   end function make_structure
 
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  !% create a supercell of a structure, read from a file, with chosen
+  !% volume per atom or volume per unit cell, with desired supercell
+  !% repeats, and specified Z values.
+  !% file may contain default Z values as a property Z_values='Z1 Z2 ...'
+  !% structures that begin with . or / are searched for as paths,
+  !% and everything else is searched for in $QUIP_ARCH/structures/struct.xyz
+  !% or in $HOME/share/quip_structures/struct.xyz
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
   function structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str) result(dup_cell)
     character(len=*), intent(in) :: struct
     real(dp), intent(in), optional :: vol_per_atom, vol_per_unit_cell
@@ -1445,7 +1457,7 @@ contains
       call system_abort("One of u_vol_per_atom ="//u_vol_per_atom//"and u_vol_per_unit ="//u_vol_per_unit_cell//"cell must be specified")
 
     if (struct(1:1) == '.' .or. struct(1:1) == '/') then
-      call initialise(struct_io, trim(struct)//".xyz")
+      call initialise(struct_io, trim(struct))
     else
       call get_env_var("QUIP_STRUCTS_DIR", quip_structs_dir, stat)
       if (stat /= 0) then
