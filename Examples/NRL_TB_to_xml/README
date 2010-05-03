@@ -13,5 +13,5 @@ Fix TBMD format input file (let's call it nrl_tb_param_file), as downloaded
   from http://cst-www.nrl.navy.mil/bind by adding after each atomic mass 
   the atomic number for that element
 
-Create XML format NRL-TB parameter file for QUI
+Create XML format NRL-TB parameter file for QUIP
   ${QUIP_DIR}/build.${QUIP_ARCH}/NRL_TB_to_xml tightbind.parms.NRL_TB.element_name.xml < nrl_tb_param_file
