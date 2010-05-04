@@ -801,6 +801,8 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             if abort:
                raise ValueError('No stress tensor found in .castep file')
 
+      spin_polarised = 'spin_polarised' in param and param['spin_polarised'].lower() == 'true'
+
       # Have we calculated local populations and charges?
       if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
          try:
@@ -820,9 +822,14 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             atoms.add_property('popn_f',0.0)
             atoms.add_property('popn_total',0.0)
             atoms.add_property('popn_charge',0.0)
+            if spin_polarised:
+               atoms.add_property('popn_spin', 0.0)
 
             for line in popn_lines:
-               el, num_str, s, p, d, f, tot, charge = line.split()
+               if spin_polarised:
+                  el, num_str, s, p, d, f, tot, charge, spin = line.split()
+               else:
+                  el, num_str, s, p, d, f, tot, charge = line.split()
                num = int(num_str)
                atoms.popn_s[lookup[(el,num)]] = float(s)
                atoms.popn_p[lookup[(el,num)]] = float(p)
@@ -830,6 +837,8 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
                atoms.popn_f[lookup[(el,num)]] = float(f)
                atoms.popn_total[lookup[(el,num)]] = float(tot)
                atoms.popn_charge[lookup[(el,num)]] = float(charge)
+               if spin_polarised:
+                  atoms.popn_spin[lookup[(el,num)]] = float(spin)
 
          except ValueError:
             if abort:
