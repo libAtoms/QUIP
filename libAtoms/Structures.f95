@@ -1435,7 +1435,7 @@ contains
 
     character(len=FIELD_LENGTH) :: quip_structs_dir
     type(inoutput) :: struct_io
-    type(Atoms) :: cell, dup_cell
+    type(Atoms) :: cell
     real(dp) :: vol, scale
     integer :: stat
     logical :: cell_has_Z_values, args_have_Z_values
