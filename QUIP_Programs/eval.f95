@@ -59,7 +59,7 @@ implicit none
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
-  type(inoutput) :: relax_io
+  type(inoutput) :: relax_io, infile
   real(dp) :: absorption_polarization_in(6)
   complex(dp) :: absorption_polarization(3)
   real(dp) :: absorption_freq_range(3), absorption_gamma
@@ -81,6 +81,7 @@ implicit none
 
   logical did_something
   logical test_ok
+  integer status
 
   integer i, n_iter, j
 
@@ -178,7 +179,7 @@ implicit none
 
   call Initialise(mpi_glob)
 
-  call read_xyz(at, at_file, mpi_comm=mpi_glob%communicator)
+
   if (do_hybrid) then
     call Potential_Initialise_filename(pot1, init_args_pot1, param_file, mpi_obj=mpi_glob, &
       no_parallel=do_parallel_phonons)
@@ -191,287 +192,296 @@ implicit none
     call Initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
   endif
 
-  call set_cutoff(at, cutoff(metapot)+0.5_dp)
-
-  call calc_connect(at)
-
-  did_something=.false.
-
-  if (do_test .or. do_n_test) then
-    did_something=.true.
-    if (do_test) then
-      call verbosity_set_minimum(NERD)
-      if (len(trim(test_dir_field)) > 0) then
-	test_ok = test_gradient(metapot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
-      else
-	test_ok = test_gradient(metapot, at, do_F, do_V, args_str = calc_args)
-      endif
-      call verbosity_unset_minimum()
-      call print ("test is OK? " // test_ok)
-    endif
-    if (do_n_test) then
-      if (len(trim(test_dir_field)) > 0) then
-	call n_test_gradient(metapot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
-      else
-	call n_test_gradient(metapot, at, do_F, do_V, args_str = calc_args)
-      endif
-    end if
-    call system_finalise()
-    stop
-  end if
-
-  if (do_relax) then
-    if (len(trim(relax_print_file)) > 0) then
-      call initialise(relax_io, relax_print_file, OUTPUT)
-      n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
-	print_inoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-	eps_guess=relax_eps, use_n_minim = use_n_minim)
-      call finalise(relax_io)
-    else
-      n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-	do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim)
-    endif
-    mainlog%prefix='RELAXED_POS'
-    call print_xyz(at,mainlog,real_format='f12.5')
-    mainlog%prefix=''
-    call calc_connect(at)
-  end if
-
-  if (do_c0ij .or. do_cij) then
-    did_something=.true.
-    if (do_c0ij .and. do_cij) then
-      call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, c0=c0, relax_initial=.false.)
-    else if (do_c0ij) then
-      call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c0=c0, relax_initial=.false.)
-    else
-      call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, relax_initial=.false.)
-    endif
-    if (do_c0ij) then
-      mainlog%prefix="C0IJ"
-      call print(c0)
-      mainlog%prefix=""
-    endif
-    if (do_cij) then
-      mainlog%prefix="CIJ"
-      call print(c)
-      mainlog%prefix=""
-    endif
-  endif
-
-  if (do_dipole_moment) then
-    call add_property(at, 'local_dn', 0.0_dp, 1)
-  endif
-
-  if (do_phonons) then
-    did_something = .true.
-    if (do_force_const_mat) then
-      allocate(force_const_mat(at%N*3,at%N*3))
-    endif
-
-    allocate(phonon_evals(at%N*3))
-    allocate(phonon_masses(at%N*3))
-    allocate(phonon_evecs(at%N*3,at%N*3))
-    if (do_dipole_moment) then
-      allocate(IR_intensities(at%N*3))
-      if (do_force_const_mat) then
-	call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-	  IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
-      else
-	call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-	  IR_intensities=IR_intensities, do_parallel=do_parallel_phonons)
-      endif
-    else
-      if (do_force_const_mat) then
-	call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-	  do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
-      else
-	call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-	  do_parallel=do_parallel_phonons)
-      endif
-    endif
-
-    if (do_force_const_mat) then
-      call print ("Force constants are usually in eV/A^2")
-      mainlog%prefix="FORCE_CONST_MAT"
-      do i=1, size(force_const_mat,1)
-      do j=1, size(force_const_mat,2)
-	call print( ((i-1)/3+1) // " " // (mod(i-1,3)+1) // " " // ((j-1)/3+1) // " " // (mod(j-1,3)+1) // " " // force_const_mat(i,j))
-      end do
-      end do
-      mainlog%prefix=""
-    endif
-
-    call print ("Phonons frequencies are \omega usually in fs^-1")
-
-    call add_property(at,"phonon", 0.0_dp, 3)
-    if (.not. assign_pointer(at,"phonon", phonon)) &
-      call system_abort("Failed to assign pointer for phonon property")
-    do i=1, at%N*3
-      phonon = reshape(phonon_evecs(:,i), (/ 3, at%N /))
-      mainlog%prefix = "PHONON"
-      call set_value(at%params, "phonon_i", i)
-      if (phonon_evals(i) > 0.0_dp) then
-	call set_value(at%params, "phonon_freq", sqrt(phonon_evals(i)))
-      else
-	call set_value(at%params, "phonon_freq", "I*"//sqrt(-phonon_evals(i)))
-      endif
-      call set_value(at%params, "phonon_eff_mass", phonon_masses(i))
-      if (do_dipole_moment) then
-	call set_value(at%params, "IR_intensity", 10**6*IR_intensities(i))
-      endif
-      if (do_dipole_moment) then
-	call print_xyz(at,mainlog,properties="pos:phonon:local_dn",real_format='f14.10')
-      else
-	call print_xyz(at,mainlog,properties="pos:phonon",real_format='f14.10')
-      endif
-      mainlog%prefix = ""
-
-      call verbosity_push(VERBOSE)
-      if (phonon_evals(i) < 0.0_dp) then
-	eval_froz = eval_frozen_phonon(metapot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
-	call print("eval " // i // " diag " // phonon_evals(i) // " " // eval_froz // " mass " // phonon_masses(i))
-      endif
-      call verbosity_pop()
-
-    end do
-    if (do_dipole_moment) then
-      deallocate(IR_intensities)
-    endif
-  endif
-  if (do_fine_phonons) then
-    did_something = .true.
-    call phonons_fine(metapot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
-    & phonon_supercell=phonon_supercell)
-  endif
-
-  if (do_F) allocate(F0(3,at%N))
-  if (do_local) allocate(local_E0(at%N))
-
-  if (do_E .or. do_F .or. do_V) then
-    did_something=.true.
-
-    if (do_E) then
-      if (do_F) then
-	if (do_V) then
-	  if (do_local) then
-	    call calc(metapot, at, e = E0, local_e = local_E0, f = F0, virial = V0, args_str = calc_args)
-	  else
-	    call calc(metapot, at, e = E0, f = F0, virial = V0, args_str = calc_args)
-	  endif
-	else ! no V
-	  if (do_local) then
-	    call calc(metapot, at, e = E0, local_e = local_E0, f = F0, args_str = calc_args)
-	  else
-	    call calc(metapot, at, e = E0, f = F0, args_str = calc_args)
-	  endif
-	endif
-      else ! no F
-	if (do_V) then
-	  if (do_local) then
-	    call calc(metapot, at, e = E0, local_e = local_E0, virial = V0, args_str = calc_args)
-	  else
-	    call calc(metapot, at, e = E0, virial = V0, args_str = calc_args)
-	  endif
-	else ! no V
-	  if (do_local) then
-	    call calc(metapot, at, e = E0, local_e = local_E0, args_str = calc_args)
-	  else
-	    call calc(metapot, at, e = E0, args_str = calc_args)
-	  endif
-	endif
-      endif
-    else ! no E
-      if (do_F) then
-	if (do_V) then
-	  call calc(metapot, at, f = F0, virial = V0, args_str = calc_args)
-	else ! no V
-	  call calc(metapot, at, f = F0, args_str = calc_args)
-	endif
-      else ! no F
-	if (do_V) then
-	  call calc(metapot, at, virial = V0, args_str = calc_args)
-	endif
-      endif
-    endif
-
-    if (do_E) then
-      call print ("Energy " // E0)
-      call set_value(at%params, 'Energy', "" // E0)
-    endif
-
-    if (do_dipole_moment) then
-      if (.not. assign_pointer(at, "local_dn", local_dn)) &
-	call system_abort("impossible failure to assign pointer for local_dn")
-      mu = dipole_moment(at%pos, local_dn)
-      call print ("Dipole moment " // mu)
-      call set_value(at%params, 'Dipole_Moment', ""//mu)
-    endif
-
-    if (do_V) then
-      P0 = V0/cell_volume(at)
-      do i=1, 3
-	call print ("Virial " // V0(i,:))
-      end do
-      do i=1, 3
-	call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*GPA))
-      end do
-    end if
-
-    if (do_F) then
-      call add_property(at, "forces", 0.0_dp, 3)
-      if (.not. assign_pointer(at, "forces", forces_p)) &
-	call system_abort("impossible failure to assign pointer for forces")
-      forces_p = F0
-    endif
-    if (do_local) then
-      call add_property(at, "local_E", 0.0_dp)
-      if (.not. assign_pointer(at, "local_E", local_E_p)) &
-	call system_abort("impossible failure to assign pointer for local_E")
-      local_E_p = local_E0
-    endif
-
-    if (do_torque) then
-      if (.not. do_F) then
-	call print("ERROR: Can't do torque without forces", ERROR)
-      else
-	tau = torque(at%pos, F0)
-	call print("Torque " // tau)
-      endif
-    endif
-  endif
-
-  if (do_absorption) then
-    if (.not. associated (metapot%pot%tb)) &
-      call system_abort("Can only do absorption of TB model")
-
-    absorption_polarization = (/ cmplx(absorption_polarization_in(1), absorption_polarization_in(2), dp), &
-                                 cmplx(absorption_polarization_in(3), absorption_polarization_in(4), dp), &
-                                 cmplx(absorption_polarization_in(5), absorption_polarization_in(6), dp) /)
-    call print("do absorption: polarization " // absorption_polarization)
-    call print("do absorption: freq_range " // absorption_freq_range)
-    call print("do absorption: gamma " // absorption_gamma)
-
-    allocate(absorption_freqs(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
-    allocate(absorption_v(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
-    do freq_i=1, size(absorption_freqs)
-      absorption_freqs(freq_i) = absorption_freq_range(1) +(freq_i-1)*absorption_freq_range(3)
-    end do
-
-    call absorption(metapot%pot%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
-    do freq_i=1, size(absorption_freqs)
-      call print("absorption i " // freq_i // " freq " // absorption_freqs(freq_i) // " a " // absorption_v(freq_i))
-    end do
-    deallocate(absorption_freqs)
-    deallocate(absorption_v)
-  endif
-
-  if (.not. did_something) call system_abort("Nothing to be calculated")
-
   call print(metapot)
 
-  mainlog%prefix = "AT"
-  call print_xyz(at, mainlog, all_properties=.true., real_format='f13.8')
-  mainlog%prefix = ""
+  call initialise(infile, trim(at_file))
+
+  ! main loop over frames
+  do 
+     call read_xyz(at, infile, status=status)!, mpi_comm=mpi_glob%communicator)
+     if(status /= 0) exit
+
+     call set_cutoff(at, cutoff(metapot)+0.5_dp)
+
+     call calc_connect(at)
+
+     did_something=.false.
+     
+     if (do_test .or. do_n_test) then
+        did_something=.true.
+        if (do_test) then
+           call verbosity_set_minimum(NERD)
+           if (len(trim(test_dir_field)) > 0) then
+              test_ok = test_gradient(metapot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
+           else
+              test_ok = test_gradient(metapot, at, do_F, do_V, args_str = calc_args)
+           endif
+           call verbosity_unset_minimum()
+           call print ("test is OK? " // test_ok)
+        endif
+        if (do_n_test) then
+           if (len(trim(test_dir_field)) > 0) then
+              call n_test_gradient(metapot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
+           else
+              call n_test_gradient(metapot, at, do_F, do_V, args_str = calc_args)
+           endif
+        end if
+        call finalise(at)
+        cycle
+     end if
+     
+     if (do_relax) then
+        if (len(trim(relax_print_file)) > 0) then
+           call initialise(relax_io, relax_print_file, OUTPUT)
+           n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+                print_inoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+                eps_guess=relax_eps, use_n_minim = use_n_minim)
+           call finalise(relax_io)
+        else
+           n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
+                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim)
+        endif
+        mainlog%prefix='RELAXED_POS'
+        call print_xyz(at,mainlog,real_format='f12.5')
+        mainlog%prefix=''
+        call calc_connect(at)
+     end if
+     
+     if (do_c0ij .or. do_cij) then
+        did_something=.true.
+        if (do_c0ij .and. do_cij) then
+           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, c0=c0, relax_initial=.false.)
+        else if (do_c0ij) then
+           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c0=c0, relax_initial=.false.)
+        else
+           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, relax_initial=.false.)
+        endif
+        call print("Elastic constants in GPa")
+        if (do_c0ij) then
+           mainlog%prefix="C0IJ"
+           call print(c0*GPA)
+           mainlog%prefix=""
+        endif
+        if (do_cij) then
+           mainlog%prefix="CIJ"
+           call print(c*GPA)
+           mainlog%prefix=""
+        endif
+     endif
+     
+     if (do_dipole_moment) then
+        call add_property(at, 'local_dn', 0.0_dp, 1)
+     endif
+     
+     if (do_phonons) then
+        did_something = .true.
+        if (do_force_const_mat) then
+           allocate(force_const_mat(at%N*3,at%N*3))
+        endif
+        
+        allocate(phonon_evals(at%N*3))
+        allocate(phonon_masses(at%N*3))
+        allocate(phonon_evecs(at%N*3,at%N*3))
+        if (do_dipole_moment) then
+           allocate(IR_intensities(at%N*3))
+           if (do_force_const_mat) then
+              call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+                   IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
+           else
+              call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+                   IR_intensities=IR_intensities, do_parallel=do_parallel_phonons)
+           endif
+        else
+           if (do_force_const_mat) then
+              call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+                   do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
+           else
+              call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
+                   do_parallel=do_parallel_phonons)
+           endif
+        endif
+        
+        if (do_force_const_mat) then
+           call print ("Force constants are usually in eV/A^2")
+           mainlog%prefix="FORCE_CONST_MAT"
+           do i=1, size(force_const_mat,1)
+              do j=1, size(force_const_mat,2)
+                 call print( ((i-1)/3+1) // " " // (mod(i-1,3)+1) // " " // ((j-1)/3+1) // " " // (mod(j-1,3)+1) // " " // force_const_mat(i,j))
+              end do
+           end do
+           mainlog%prefix=""
+           deallocate(force_const_mat)
+        endif
+
+        call print ("Phonons frequencies are \omega usually in fs^-1")
+        
+        call add_property(at,"phonon", 0.0_dp, 3)
+        if (.not. assign_pointer(at,"phonon", phonon)) &
+             call system_abort("Failed to assign pointer for phonon property")
+        do i=1, at%N*3
+           phonon = reshape(phonon_evecs(:,i), (/ 3, at%N /))
+           mainlog%prefix = "PHONON"
+           call set_value(at%params, "phonon_i", i)
+           if (phonon_evals(i) > 0.0_dp) then
+              call set_value(at%params, "phonon_freq", sqrt(phonon_evals(i)))
+           else
+              call set_value(at%params, "phonon_freq", "I*"//sqrt(-phonon_evals(i)))
+           endif
+           call set_value(at%params, "phonon_eff_mass", phonon_masses(i))
+           if (do_dipole_moment) then
+              call set_value(at%params, "IR_intensity", 10**6*IR_intensities(i))
+           endif
+           if (do_dipole_moment) then
+              call print_xyz(at,mainlog,properties="pos:phonon:local_dn",real_format='f14.10')
+           else
+              call print_xyz(at,mainlog,properties="pos:phonon",real_format='f14.10')
+           endif
+           mainlog%prefix = ""
+           
+           call verbosity_push(VERBOSE)
+           if (phonon_evals(i) < 0.0_dp) then
+              eval_froz = eval_frozen_phonon(metapot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
+              call print("eval " // i // " diag " // phonon_evals(i) // " " // eval_froz // " mass " // phonon_masses(i))
+           endif
+           call verbosity_pop()
+        end do
+        if (do_dipole_moment) then
+           deallocate(IR_intensities)
+        endif
+        deallocate(phonon_evals)
+        deallocate(phonon_masses)
+        deallocate(phonon_evecs)
+     endif
+
+     if (do_fine_phonons) then
+        did_something = .true.
+        call phonons_fine(metapot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
+             & phonon_supercell=phonon_supercell)
+     endif
+     
+     
+     if (do_E .or. do_F .or. do_V .or. do_local) then
+        did_something=.true.
+
+        if (do_F) allocate(F0(3,at%N))
+        if (do_local) allocate(local_E0(at%N))
+        
+        if (do_E) then
+           if (do_F) then
+              if (do_V) then
+                 if (do_local) then
+                    call calc(metapot, at, e = E0, local_e = local_E0, f = F0, virial = V0, args_str = calc_args)
+                 else
+                    call calc(metapot, at, e = E0, f = F0, virial = V0, args_str = calc_args)
+                 endif
+              else ! no V
+                 if (do_local) then
+                    call calc(metapot, at, e = E0, local_e = local_E0, f = F0, args_str = calc_args)
+                 else
+                    call calc(metapot, at, e = E0, f = F0, args_str = calc_args)
+                 endif
+              endif
+           else ! no F
+              if (do_V) then
+                 if (do_local) then
+                    call calc(metapot, at, e = E0, local_e = local_E0, virial = V0, args_str = calc_args)
+                 else
+                    call calc(metapot, at, e = E0, virial = V0, args_str = calc_args)
+                 endif
+              else ! no V
+                 if (do_local) then
+                    call calc(metapot, at, e = E0, local_e = local_E0, args_str = calc_args)
+                 else
+                    call calc(metapot, at, e = E0, args_str = calc_args)
+                 endif
+              endif
+           endif
+        else ! no E
+           if (do_F) then
+              if (do_V) then
+                 call calc(metapot, at, f = F0, virial = V0, args_str = calc_args)
+              else ! no V
+                 call calc(metapot, at, f = F0, args_str = calc_args)
+              endif
+           else ! no F
+              if (do_V) then
+                 call calc(metapot, at, virial = V0, args_str = calc_args)
+              endif
+           endif
+        endif
+        
+        if (do_E) then
+           call print ("Energy=" // E0)
+           call set_value(at%params, 'Energy', "" // E0)
+        endif
+        
+        if (do_dipole_moment) then
+           if (.not. assign_pointer(at, "local_dn", local_dn)) &
+                call system_abort("impossible failure to assign pointer for local_dn")
+           mu = dipole_moment(at%pos, local_dn)
+           call print ("Dipole moment " // mu)
+           call set_value(at%params, 'Dipole_Moment', ""//mu)
+        endif
+        
+        if (do_V) then
+           P0 = V0/cell_volume(at)
+           do i=1, 3
+              call print ("Virial " // V0(i,:))
+           end do
+           do i=1, 3
+              call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*GPA))
+           end do
+        end if
+        
+        if (do_F) call add_property(at, "forces", F0)
+        if (do_local) call add_property(at, "local_E", local_E0)
+        
+        if (do_torque) then
+           if (.not. do_F) then
+              call print("ERROR: Can't do torque without forces", ERROR)
+           else
+              tau = torque(at%pos, F0)
+              call print("Torque " // tau)
+           endif
+        endif
+        if (do_F) deallocate(F0)
+        if (do_local) deallocate(local_E0)
+     endif
+     
+     if (do_absorption) then
+        if (.not. associated (metapot%pot%tb)) &
+             call system_abort("Can only do absorption of TB model")
+        
+        absorption_polarization = (/ cmplx(absorption_polarization_in(1), absorption_polarization_in(2), dp), &
+             cmplx(absorption_polarization_in(3), absorption_polarization_in(4), dp), &
+             cmplx(absorption_polarization_in(5), absorption_polarization_in(6), dp) /)
+        call print("do absorption: polarization " // absorption_polarization)
+        call print("do absorption: freq_range " // absorption_freq_range)
+        call print("do absorption: gamma " // absorption_gamma)
+        
+        allocate(absorption_freqs(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
+        allocate(absorption_v(floor((absorption_freq_range(2)-absorption_freq_range(1))/absorption_freq_range(3)+1.5_dp)))
+        do freq_i=1, size(absorption_freqs)
+           absorption_freqs(freq_i) = absorption_freq_range(1) +(freq_i-1)*absorption_freq_range(3)
+        end do
+        
+        call absorption(metapot%pot%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
+        do freq_i=1, size(absorption_freqs)
+           call print("absorption i " // freq_i // " freq " // absorption_freqs(freq_i) // " a " // absorption_v(freq_i))
+        end do
+        deallocate(absorption_freqs)
+        deallocate(absorption_v)
+     endif
+     
+     if (.not. did_something) call system_abort("Nothing to be calculated")
+          
+     mainlog%prefix = "AT"
+     call print_xyz(at, mainlog, all_properties=.true., real_format='e16.8')
+     mainlog%prefix = ""
+
+     call finalise(at)
+     
+  enddo
 
   call system_finalise()
 
