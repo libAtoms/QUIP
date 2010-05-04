@@ -178,7 +178,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str)
       j = atoms_neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       
-      if (r_ij_mag < cutoff(this, tj)) then ! Skip atoms beyond the cutoff
+      if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           rho_local = rho_local + eam_density(this, tj, r_ij_mag)
           drho_i_drij = eam_density_deriv(this, tj, r_ij_mag)
           drho_i_dri = drho_i_dri + drho_i_drij * r_ij_hat
@@ -194,7 +194,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str)
       j = atoms_neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
      
-      if(present(f) .and. r_ij_mag < cutoff(this, tj)) then         
+      if(present(f) .and. r_ij_mag < glue_cutoff(this, tj)) then         
           f(:,j) = f(:,j) - potential_deriv * eam_density_deriv(this, tj, r_ij_mag) * r_ij_hat
       endif
     end do ! ji
@@ -205,14 +205,14 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str)
   end do ! i
 end subroutine IPModel_Glue_Calc
 
-function cutoff(this, ti)
+function glue_cutoff(this, ti)
   type(IPModel_Glue), intent(in) :: this
   integer, intent(in) :: ti
-  real(dp) :: cutoff
+  real(dp) :: glue_cutoff
   
-  cutoff = this%density_extent(ti)*10
+  glue_cutoff = this%density_extent(ti)*10
 
-end function cutoff
+end function glue_cutoff
 
 function eam_density(this, ti, r)
   type(IPModel_Glue), intent(in) :: this
@@ -220,7 +220,7 @@ function eam_density(this, ti, r)
   real(dp), intent(in) :: r
   real(dp) :: eam_density
   
-  if (r < cutoff(this, ti)) then
+  if (r < glue_cutoff(this, ti)) then
     eam_density = this%density_scale(ti) * exp(-r/this%density_extent(ti))
   else
     eam_density = 0.0
@@ -233,7 +233,7 @@ function eam_density_deriv(this, ti, r)
   real(dp), intent(in) :: r
   real(dp) :: eam_density_deriv
 
-  if (r < cutoff(this, ti)) then
+  if (r < glue_cutoff(this, ti)) then
     eam_density_deriv = - this%density_scale(ti)/this%density_extent(ti) * exp(-r/this%density_extent(ti))
   else
     eam_density_deriv = 0.0
@@ -378,8 +378,8 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
 
   ! Find the largest cutoff
   do ti=1, this%n_types
-    if(cutoff(this,ti) > this%cutoff) then
-      this%cutoff = cutoff(this,ti)
+    if(glue_cutoff(this,ti) > this%cutoff) then
+      this%cutoff = glue_cutoff(this,ti)
     endif
   end do
 
