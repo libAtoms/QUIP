@@ -61,11 +61,9 @@ include 'IPModel_interface.h'
 ! lower down in the GP
 
 public :: IPModel_GAP
+
 type IPModel_GAP
 
-  integer :: n_types = 0
-
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:) !% Atomic number dimensioned as \texttt{n_types}.
   real(dp) :: cutoff = 0.0_dp                                  !% Cutoff for computing connection.
 
   ! bispectrum parameters
@@ -74,6 +72,8 @@ type IPModel_GAP
   integer :: n_species = 0                                       !% Number of atomic types.
   integer, dimension(:), allocatable :: Z
   logical :: do_ewald = .false.
+  logical :: do_ewald_corr = .false.
+  logical :: do_core = .false.
   real(dp), dimension(116) :: z_eff = 0.0_dp
   real(dp), dimension(116) :: w_Z = 1.0_dp
 
@@ -95,10 +95,15 @@ type IPModel_GAP
 #ifdef HAVE_GP
   type(gp) :: my_gp
 #endif
+  character(len=1000000) :: quip_string = ''
+  character(len=1024) :: ip_args = ''
+
+  logical :: initialised = .false.
 
 end type IPModel_GAP
 
 logical :: parse_in_ip, parse_matched_label
+
 type(IPModel_GAP), pointer :: parse_ip
 
 interface Initialise
@@ -125,7 +130,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: my_dictionary
-  integer :: i, n_species
+  integer :: i, n_species, quip_string_start, bracket_start, bracket_end
   real(dp), dimension(:), allocatable :: w, z_eff
 
   call Finalise(this)
@@ -134,28 +139,26 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
 
   ! now initialise the potential
 
-  !call IPModel_GAP_read_params_xml(this, param_str)
+  call IPModel_GAP_read_params_xml(this, param_str)
 
 #ifdef HAVE_GP
-  !call gp_read_binary(this%my_gp, 'this%datafile')
-  this%datafile = 'gp.dat'
-  call gp_read_binary(this%my_gp, 'gp.dat')
+  call gp_read_binary(this%my_gp, this%datafile)
   call read_string(my_dictionary, this%my_gp%comment)
 
   this%datafile_coordinates = ''
   if (.not. get_value(my_dictionary, 'coordinates', this%datafile_coordinates)) &
-     this%datafile_coordinates = 'bispectrum'
+     & call system_abort('IPModel_GAP_Initialise_str: datafile_coordinates not found')
 
   if (trim(this%datafile_coordinates) == 'bispectrum') then
      if( .not. ( get_value(my_dictionary,'cutoff',this%cutoff) .and. &
                & get_value(my_dictionary,'j_max',this%j_max) .and. &
                & get_value(my_dictionary,'z0',this%z0) ) ) &
-     & call system_abort('Did not find bispectrum parameters in gp.dat file, &
+     & call system_abort('IPModel_GAP_Initialise_str: did not find bispectrum parameters in gp data file, &
      & might be old version or format not correct')
   elseif (trim(this%datafile_coordinates) == 'qw') then
      if (.not. get_value(my_dictionary, 'l_max', this%qw_l_max) .and. &
                get_value(my_dictionary, 'f_n', this%qw_f_n)) &
-        call system_abort('Did not find qw parameters in gp.dat file')
+        call system_abort('IPModel_GAP_Initialise_str: did not find qw parameters in gp data file')
 
      allocate(this%qw_cutoff(this%qw_f_n), this%qw_cutoff_f(this%qw_f_n), this%qw_cutoff_r1(this%qw_f_n))
 
@@ -163,23 +166,28 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
         if (.not. (get_value(my_dictionary, 'cutoff_' // i, this%qw_cutoff(i)) .and. &
                    get_value(my_dictionary, 'cutoff_f_' // i, this%qw_cutoff_f(i)) .and. &
                    get_value(my_dictionary, 'cutoff_r1_' // i, this%qw_cutoff_r1(i)))) &
-           call system_abort('Did not find qw parameters in gp.dat file')
+        call system_abort('IPModel_GAP_Initialise_str: did not find qw parameters in gp data file')
      enddo
 
      if (.not. get_value(my_dictionary, 'do_q', this%qw_do_q)) this%qw_do_q = .true.
      if (.not. get_value(my_dictionary, 'do_w', this%qw_do_w)) this%qw_do_w = .true.
 
      this%cutoff = maxval(this%qw_cutoff)
+  else
+     call system_abort('IPModel_GAP_Initialise_str: datafile_coordinates '//trim(this%datafile_coordinates)//' unknown')
   endif
 
   if( get_value(my_dictionary,'n_species',n_species) ) then
+     this%n_species = n_species
      allocate( this%Z(n_species), w(n_species), z_eff(n_species) )
      if( n_species == 1 ) then
         if( .not. ( get_value(my_dictionary,'Z',this%Z(1)) .and. get_value(my_dictionary,'w',w(1)) .and. &
-        & get_value(my_dictionary,'z_eff',z_eff(1)) ) ) call system_abort('')
+        & get_value(my_dictionary,'z_eff',z_eff(1)) ) ) &
+        & call system_abort('IPModel_GAP_Initialise_str: no species information found')
      else
         if( .not. ( get_value(my_dictionary,'Z',this%Z) .and. get_value(my_dictionary,'w',w) .and. &
-        & get_value(my_dictionary,'z_eff',z_eff) ) ) call system_abort('')
+        & get_value(my_dictionary,'z_eff',z_eff) ) ) &
+        & call system_abort('IPModel_GAP_Initialise_str: no species information found')
      endif
      
      this%w_Z = 0.0_dp
@@ -190,29 +198,56 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
      enddo
      deallocate(w, z_eff)
   endif
-  if( .not. get_value(my_dictionary,'do_ewald',this%do_ewald) ) call system_abort('')
+  if( .not. get_value(my_dictionary,'do_ewald',this%do_ewald) ) this%do_ewald = .false.
+  if( .not. get_value(my_dictionary,'do_ewald_corr',this%do_ewald_corr) ) this%do_ewald_corr = .false.
+  if( .not. get_value(my_dictionary,'do_core',this%do_core) ) this%do_core = .false.
+  if( .not. get_value(my_dictionary,'ip_args',this%ip_args) ) this%ip_args = ''
      
   call finalise(my_dictionary)
+
+  if( this%do_core ) then
+     quip_string_start = index(this%my_gp%comment,'quip_string')
+     bracket_start = index(this%my_gp%comment(quip_string_start:),'{')
+     bracket_end = index(this%my_gp%comment(quip_string_start:),'}')
+     this%quip_string = this%my_gp%comment(quip_string_start+bracket_start:quip_string_start+bracket_end-2)
+  endif
 #endif  
+
+  this%initialised = .true.
 
 end subroutine IPModel_GAP_Initialise_str
 
 subroutine IPModel_GAP_Finalise(this)
   type(IPModel_GAP), intent(inout) :: this
 
-  if (allocated(this%atomic_num)) deallocate(this%atomic_num)
-  if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
-
-  this%n_types = 0
-
   if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
   if (allocated(this%qw_cutoff_f)) deallocate(this%qw_cutoff_f)
   if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
+
+  if (allocated(this%Z)) deallocate(this%Z)
+  if (this%my_gp%initialised) call finalise(this%my_gp)
+
+  this%cutoff = 0.0_dp
+  this%j_max = 0
+  this%z0 = 0.0_dp
+  this%n_species = 0
+  this%do_ewald = .false.
+  this%do_ewald_corr = .false.
+  this%do_core = .false.
+  this%z_eff = 0.0_dp
+  this%w_Z = 1.0_dp
+  this%qw_l_max = 0
+  this%qw_f_n = 0
+  this%qw_do_q = .false.
+  this%qw_do_w = .false.
 
   this%datafile = ''
   this%datafile_coordinates = ''
 
   this%label = ''
+  this%quip_string = ''
+  this%ip_args = ''
+  this%initialised = .false.
 
 end subroutine IPModel_GAP_Finalise
 
@@ -231,14 +266,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
-  real(dp), dimension(:), allocatable   :: local_e_in, w, charge
+  real(dp), dimension(:), allocatable   :: local_e_in, w, charge, local_e_core
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  real(dp), dimension(:,:), allocatable   :: vec, f_ewald
+  real(dp), dimension(:,:), allocatable   :: vec, f_ewald, f_core, f_ewald_corr
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer :: d, i, j, k, n, nei_max, jn
 
-  real(dp) :: e_ewald
-  real(dp), dimension(3,3) :: virial_ewald
+  real(dp) :: e_ewald, e_core, e_ewald_corr
+  real(dp), dimension(3,3) :: virial_ewald, virial_core, virial_ewald_corr
 
   integer, dimension(3) :: shift
 
@@ -260,6 +295,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if (present(e)) then
      e = 0.0_dp
      e_ewald = 0.0_dp
+     e_ewald_corr = 0.0_dp
   endif
 
   if (present(local_e)) then
@@ -274,6 +310,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if (present(virial)) then
      virial = 0.0_dp
      virial_ewald = 0.0_dp
+     virial_ewald_corr = 0.0_dp
   endif
 
   if(present(e) .or. present(local_e) ) then
@@ -309,6 +346,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   enddo
 
   allocate(vec(d,at%N),jack(d,3*nei_max,at%N))
+  vec = 0.0_dp
+  jack = 0.0_dp
 
 !$omp parallel 
 #ifdef HAVE_GP
@@ -380,9 +419,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      if(present(f).or.present(virial)) then
         do k = 1, 3
            f_gp = 0.0_dp
-           !kk = (i-1)*3 + k
        
-           !call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,kk,i))
 #ifdef HAVE_GP
            call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i))
 #endif
@@ -393,13 +430,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
            do n = 1, atoms_n_neighbours(at,i)
               j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
-!              if(jn==i)cycle              
 #ifdef HAVE_GP
               call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j),Z=at%Z(j))
 #endif
-              !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,kk,j))
               f_gp = f_gp - f_gp_k
-              !if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(shift,at%lattice) )
               if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
            enddo
        
@@ -416,7 +450,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      do i = 1, at%N
         charge(i) = this%z_eff(at%Z(i))
      enddo
-
      if( present(e) .and. .not.present(f) .and. .not.present(virial)) call Ewald_calc(at,e=e_ewald,charge=charge)
      if( present(f) .and. .not.present(e) .and. .not.present(virial)) call Ewald_calc(at,f=f_ewald,charge=charge)
      if( present(virial) .and. .not.present(e) .and. .not.present(f)) call Ewald_calc(at,virial=virial_ewald,charge=charge)
@@ -428,14 +461,22 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      if( present(e) .and. present(f) .and. present(virial)) call Ewald_calc(at,e=e_ewald,f=f_ewald,virial=virial_ewald,charge=charge)
      
      if(present(f)) f = f + f_ewald
+
+     if( this%do_ewald_corr ) then
+        allocate(f_ewald_corr(3,at%N))
+        call Ewald_corr_calc(at,e=e_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr,charge=charge,cutoff=this%cutoff)
+        if(present(f)) f = f - f_ewald_corr
+        deallocate(f_ewald_corr)
+     endif
+     
      deallocate(charge)
      if(allocated(f_ewald)) deallocate(f_ewald)
   endif
 
-  if(present(e)) e = sum(local_e_in) + e_ewald
-  if(present(local_e)) local_e = local_e_in
-  if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald
+  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
+  if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
 
+  if(allocated(local_e_core)) deallocate(local_e_core)
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
   if(allocated(w)) deallocate(w)
@@ -448,8 +489,7 @@ end subroutine IPModel_GAP_Calc
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
 !%
-!%> <GAP_params datafile="file" n_types="1" label="default">
-!%> <per_type_data type="1" atomic_num="14" />
+!%> <GAP_params datafile="file" label="default">
 !%> </GAP_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -466,6 +506,8 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   logical shifted
   integer ti, tj
 
+  parse_ip%datafile = 'gp.dat'
+
   if (name == 'GAP_params') then ! new GAP stanza
      
     if (parse_in_ip) &
@@ -476,60 +518,31 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      call QUIP_FoX_get_value(attributes, 'label', value, status)
      if (status /= 0) value = ''
      
-    if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-      if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
-      else ! no match
-	parse_in_ip = .false.
-      endif
-    else ! no label passed in
-      parse_in_ip = .true.
-    endif
+     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
+       if (value == parse_ip%label) then ! exact match
+ 	parse_matched_label = .true.
+ 	parse_in_ip = .true.
+       else ! no match
+ 	parse_in_ip = .false.
+       endif
+     else ! no label passed in
+       parse_in_ip = .true.
+     endif
 
     if (parse_in_ip) then
-      if (parse_ip%n_types /= 0) then
+      if (parse_ip%initialised) then
 	call finalise(parse_ip)
       endif
-
-      call QUIP_FoX_get_value(attributes, 'n_types', value, status)
-      if (status == 0) then
-	read (value, *), parse_ip%n_types
-      else
-	call system_abort("Can't find n_types in GAP_params")
-      endif
-
-      allocate(parse_ip%atomic_num(parse_ip%n_types))
-      parse_ip%atomic_num = 0
 
       parse_ip%datafile = ''
       call QUIP_FoX_get_value(attributes, 'datafile', value, status)
       if (status == 0) then
          parse_ip%datafile = trim(value)
       else
-	call system_abort("Can't find datafile in GAP_params")
+        call print_warning('Reading GAP parameters: no datafile found in the xml string. Using gp.dat as default.')
       endif
 
     endif
-
-  elseif (parse_in_ip .and. name == 'per_type_data') then
-
-    call QUIP_FoX_get_value(attributes, "type", value, status)
-    if (status /= 0) call system_abort ("IPModel_GAP_read_params_xml cannot find type")
-    read (value, *) ti
-
-    call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
-    if (status /= 0) call system_abort ("IPModel_GAP_read_params_xml cannot find atomic_num")
-    read (value, *) parse_ip%atomic_num(ti)
-
-    ! build reverse lookup table to atomic types
-    if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
-    allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
-    parse_ip%type_of_atomic_num = 0
-    do ti=1, parse_ip%n_types
-      if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
-    end do
 
   endif
 
@@ -554,20 +567,18 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
 
   type(xml_t) :: fxml
 
-  if (len(trim(param_str)) <= 0) return
+  if (len(trim(param_str)) <= 0) then
+     this%datafile = 'gp.dat'
+  else
+     parse_in_ip = .false.
+     parse_matched_label = .false.
+     parse_ip => this
 
-  parse_in_ip = .false.
-  parse_matched_label = .false.
-  parse_ip => this
-
-  call open_xml_string(fxml, param_str)
-  call parse(fxml,  &
-    startElement_handler = IPModel_startElement_handler, &
-    endElement_handler = IPModel_endElement_handler)
-  call close_xml_t(fxml)
-
-  if (this%n_types == 0) then
-    call system_abort("IPModel_GAP_read_params_xml parsed file, but n_types = 0")
+     call open_xml_string(fxml, param_str)
+     call parse(fxml,  &
+       startElement_handler = IPModel_startElement_handler, &
+       endElement_handler = IPModel_endElement_handler)
+     call close_xml_t(fxml)
   endif
 
 end subroutine IPModel_GAP_read_params_xml
@@ -582,14 +593,8 @@ subroutine IPModel_GAP_Print (this, file)
   type(IPModel_GAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj
-
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
-  call Print("IPModel_GAP : datafile = "//trim(this%datafile)//" n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
-
-  do ti=1, this%n_types
-    call Print ("IPModel_GAP : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
-  end do
+  call Print("IPModel_GAP : datafile = "//trim(this%datafile), file=file)
 
 end subroutine IPModel_GAP_Print
 
