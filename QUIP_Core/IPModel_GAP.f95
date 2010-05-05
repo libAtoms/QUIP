@@ -225,7 +225,9 @@ subroutine IPModel_GAP_Finalise(this)
   if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
 
   if (allocated(this%Z)) deallocate(this%Z)
+#ifdef HAVE_GP
   if (this%my_gp%initialised) call finalise(this%my_gp)
+#endif
 
   this%cutoff = 0.0_dp
   this%j_max = 0
