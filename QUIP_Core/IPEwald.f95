@@ -28,13 +28,6 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-!X
-!X IPEwald module 
-!X
-!X Do Ewald sums for interatomic potentials, optimized for large systems
-!X
-!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 module IPEwald_module
 
 use Atoms_module
@@ -46,7 +39,7 @@ implicit none
 real(dp), parameter :: reciprocal_time_by_real_time = 1.0_dp / 3.0_dp
 
 private
-public :: Ewald_calc
+public :: Ewald_calc, Ewald_corr_calc
 
 contains
 
@@ -76,7 +69,7 @@ contains
     logical :: my_use_ewald_cutoff
 
     real(dp) :: r_ij, erfc_ar, arg, my_error, alpha, kmax, kmax2, prefac, infac, two_alpha_over_sqrt_pi, v, &
-    & ewald_precision, ewald_cutoff
+    & ewald_precision, ewald_cutoff, my_cutoff
 
     real(dp), dimension(3) :: force, u_ij, a, b, c, h
     real(dp), dimension(3,3) :: identity3x3, k3x3
@@ -120,6 +113,13 @@ contains
     else
         at => at_in
     endif
+
+    if( my_use_ewald_cutoff ) then
+        my_cutoff = ewald_cutoff
+     else
+        my_cutoff = at_in%cutoff
+     endif
+
          
     alpha = sqrt(ewald_precision)/at%cutoff
     call print('Ewald alpha = '//alpha,ANAL)
@@ -209,6 +209,7 @@ contains
        !Loop over neighbours
        do n = 1, atoms_n_neighbours(at,i)
           j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+          if( r_ij > my_cutoff )  cycle
            
           erfc_ar = erfc(r_ij*alpha)/r_ij
 
@@ -260,7 +261,7 @@ contains
                 n = n + 1
 
                 if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
-
+   
                    k3x3 = k_vec(:,n3,n2,n1) .outer. k_vec(:,n3,n2,n1)
                    virial = virial &
                    & + ( identity3x3 - 2*(-infac + 1.0_dp/mod2_k(n3,n2,n1))*k3x3 ) * &
@@ -275,14 +276,94 @@ contains
 
     if(present(virial)) virial = virial - identity3x3 * sum(my_charge)**2 * PI / v / alpha**2 / 2
 
-    if(present(e)) e = e / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV
-    if(present(f)) f = f / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV/A
-    if(present(virial)) virial = virial / ( 4.0_dp * PI * EPSILON_0 )
+   ! if(present(e)) e = e / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV
+   ! if(present(f)) f = f / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV/A
+   ! if(present(virial)) virial = virial / ( 4.0_dp * PI * EPSILON_0 )
+
+    if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
+    if(present(virial)) virial = virial * HARTREE*BOHR
+
 
     deallocate( coskr, sinkr )
     deallocate( k_vec, mod2_k, force_factor, energy_factor )
     if (associated(at,my_at)) call finalise(my_at)
 
   endsubroutine Ewald_calc
+
+  subroutine Ewald_corr_calc(at_in,e,f,virial,cutoff,charge)
+
+    type(Atoms), intent(in), target    :: at_in
+
+    real(dp), intent(out), optional                    :: e
+    real(dp), dimension(:,:), intent(out), optional    :: f
+    real(dp), dimension(3,3), intent(out), optional    :: virial
+    real(dp), intent(in), optional                    :: cutoff
+    real(dp), dimension(:), intent(in), optional, target :: charge
+
+    integer  :: i, j, n
+
+    real(dp) :: my_cutoff, r_ij, de
+    real(dp), dimension(3) :: force, u_ij
+
+    real(dp), dimension(:), pointer :: my_charge
+
+    type(Atoms), target :: my_at
+    type(Atoms), pointer :: at
+
+    my_cutoff = optional_default(at_in%cutoff,cutoff)
+
+    if( present(cutoff) .and. (my_cutoff > at_in%cutoff) ) then
+        my_at = at_in
+        call atoms_set_cutoff(my_at,cutoff)
+        call calc_connect(my_at)
+        at => my_at
+    else
+        at => at_in
+    endif
+         
+    if( present(charge) ) then
+       call check_size('charge',charge,(/at%N/),'IPEwald')
+       my_charge => charge
+    elseif( .not. assign_pointer(at, 'charge', my_charge) ) then
+       call system_abort('Ewald_calc: no charge property is present in atoms object and no charge argument has been given')
+    endif
+
+    if( present(e) ) e = 0.0_dp
+    if( present(f) ) f = 0.0_dp
+    if( present(virial) ) virial = 0.0_dp
+
+    do i = 1, at%N
+       !Loop over neighbours
+       do n = 1, atoms_n_neighbours(at,i)
+          j = atoms_neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+          if( r_ij > my_cutoff )  cycle
+           
+          de = 0.5_dp * ( cos(r_ij*PI/my_cutoff) + 1.0_dp ) / r_ij
+
+          if( present(e) ) e = e + 0.5_dp * de * my_charge(i)*my_charge(j)
+
+          if( present(f) .or. present(virial) ) then
+              force = my_charge(i)*my_charge(j) * &
+              & ( -de - 0.5*PI*sin(r_ij*PI/my_cutoff)/my_cutoff ) / r_ij * u_ij
+
+              if(present(f)) then
+                 f(:,i) = f(:,i) + force
+              endif
+
+              if (present(virial)) virial = virial - 0.5_dp * (force .outer. u_ij) * r_ij
+          endif
+ 
+      enddo
+    enddo
+             
+    if(present(e)) e = 0.8_dp * e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(f)) f = 0.8_dp * f * HARTREE*BOHR ! convert from internal units to eV/A
+    if(present(virial)) virial = 0.8_dp * virial * HARTREE*BOHR
+
+    my_charge => null()
+    if (associated(at,my_at)) call finalise(my_at)
+
+  endsubroutine Ewald_corr_calc
 
 endmodule IPEwald_module
