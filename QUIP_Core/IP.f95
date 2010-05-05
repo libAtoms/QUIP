@@ -137,6 +137,9 @@ type IP_type
   type(IPModel_Template) ip_Template
 
   type(mpi_context) :: mpi_glob
+
+  type(IP_type), pointer :: core
+
 end type IP_type
 
 !% Initialise IP_type object defining the IP model and the corresponding parameters. If necessary
@@ -225,12 +228,12 @@ subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj)
 
 end subroutine IP_Initialise_inoutput
 
-subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
+recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   type(IP_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(MPI_context), intent(in), optional :: mpi_obj
 
-  type(Dictionary) :: params
+  type(Dictionary) :: params, gap_dictionary
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_template
 
@@ -271,6 +274,11 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   if (is_GAP) then
     this%functional_form = FF_GAP
     call Initialise(this%ip_gap, args_str, param_str)
+
+    if(this%ip_gap%do_core) then
+       allocate(this%core)
+       call IP_Initialise_str(this%core,trim(this%ip_gap%ip_args),trim(this%ip_gap%quip_string),mpi_obj)
+    endif
   else if (is_LJ) then
     this%functional_form = FF_LJ
     call Initialise(this%ip_lj, args_str, param_str)
@@ -329,8 +337,13 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
 
 end subroutine IP_Initialise_str
 
-subroutine IP_Finalise(this)
+recursive subroutine IP_Finalise(this)
   type(IP_type), intent(inout) :: this
+
+  if(associated(this%core)) then
+     call IP_Finalise(this%core)
+     deallocate(this%core)
+  endif
 
   select case (this%functional_form)
     case (FF_GAP)
@@ -392,47 +405,51 @@ subroutine IP_Finalise(this)
 
 end subroutine IP_Finalise
 
-function IP_cutoff(this)
+recursive function IP_cutoff(this)
   type(IP_type), intent(in) :: this
   real(dp) :: IP_cutoff
+
+  IP_cutoff = 0.0_dp
+  if(associated(this%core)) IP_cutoff = IP_cutoff(this%core)
+  
   select case (this%functional_form)
   case (FF_GAP)
-     IP_cutoff = this%ip_gap%cutoff
+     IP_cutoff = max(this%ip_gap%cutoff, IP_cutoff)
   case (FF_LJ)
-     IP_cutoff = this%ip_lj%cutoff
+     IP_cutoff = max(this%ip_lj%cutoff, IP_cutoff)
   case (FF_Morse)
-     IP_cutoff = this%ip_morse%cutoff
+     IP_cutoff = max(this%ip_morse%cutoff, IP_cutoff)
   case (FF_FC)
-     IP_cutoff = this%ip_fc%cutoff
+     IP_cutoff = max(this%ip_fc%cutoff, IP_cutoff)
   case (FF_SW)
-     IP_cutoff = this%ip_sw%cutoff
+     IP_cutoff = max(this%ip_sw%cutoff, IP_cutoff)
   case (FF_Tersoff)
-     IP_cutoff = this%ip_tersoff%cutoff
+     IP_cutoff = max(this%ip_tersoff%cutoff, IP_cutoff)
   case (FF_EAM_ErcolAd)
-     IP_cutoff = this%ip_EAM_ErcolAd%cutoff
+     IP_cutoff = max(this%ip_EAM_ErcolAd%cutoff, IP_cutoff)
   case(FF_Brenner)
-     IP_Cutoff = this%ip_Brenner%cutoff
+     IP_Cutoff = max(this%ip_Brenner%cutoff, IP_cutoff)
   case(FF_FB)
-     IP_Cutoff = this%ip_FB%cutoff
+     IP_Cutoff = max(this%ip_FB%cutoff, IP_cutoff)
   case(FF_Si_MEAM)
-     IP_Cutoff = this%ip_Si_MEAM%cutoff
+     IP_Cutoff = max(this%ip_Si_MEAM%cutoff, IP_cutoff)
   case (FF_FS)
-     IP_cutoff = this%ip_fs%cutoff
+     IP_cutoff = max(this%ip_fs%cutoff, IP_cutoff)
   case (FF_BOP)
-     IP_cutoff = this%ip_bop%cutoff
+     IP_cutoff = max(this%ip_bop%cutoff, IP_cutoff)
   case (FF_Brenner_Screened)
-     IP_cutoff = this%ip_brenner_screened%cutoff
+     IP_cutoff = max(this%ip_brenner_screened%cutoff, IP_cutoff)
   case (FF_Brenner_2002)
-     IP_cutoff = this%ip_brenner_2002%cutoff
+     IP_cutoff = max(this%ip_brenner_2002%cutoff, IP_cutoff)
   case (FF_ASAP)
-     IP_cutoff = maxval(this%ip_asap%cutoff)*BOHR
+     IP_cutoff = max(maxval(this%ip_asap%cutoff)*BOHR, IP_cutoff)
   case (FF_ASAP2)
-     IP_cutoff = max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR
+     IP_cutoff = max(max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR, IP_cutoff)
   case (FF_GLUE)
-     IP_cutoff = this%ip_Glue%cutoff
+     IP_cutoff = max(this%ip_Glue%cutoff, IP_cutoff)
   ! Add new IP here
   case (FF_Template)
-     IP_cutoff = this%ip_template%cutoff
+     IP_cutoff = max(this%ip_template%cutoff, IP_cutoff)
   case default
      IP_cutoff = 0.0_dp
   end select
@@ -449,7 +466,7 @@ subroutine IP_setup_atoms(this, at)
 
 end subroutine IP_setup_atoms
 
-subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
+recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at                
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
@@ -458,6 +475,11 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
   character(len=*), intent(in), optional      :: args_str 
 
   logical mpi_active
+
+  real(dp) :: energy_core
+  real(dp), dimension(:), allocatable :: local_e_core
+  real(dp), dimension(:,:), allocatable :: f_core
+  real(dp), dimension(3,3) :: virial_core
 
   call system_timer("IP_Calc")
 
@@ -549,11 +571,43 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
       call system_abort("IP_Calc confused by functional_form " // this%functional_form)
   end select
 
+  if(associated(this%core)) then
+     if(present(local_e)) allocate(local_e_core(at%N))
+     if(present(f)) allocate(f_core(3,at%N))
+
+     if( present(energy) .and. present(local_e) .and. present(f) .and. present(virial) ) call IP_calc(this%core, at, energy=energy_core, local_e=local_e_core, f=f_core, virial=virial_core)
+     if( present(energy) .and. present(local_e) .and. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, energy=energy_core, local_e=local_e_core, f=f_core)
+     if( present(energy) .and. present(local_e) .and. .not. present(f) .and. present(virial) ) call IP_calc(this%core, at, energy=energy_core, local_e=local_e_core, virial=virial_core)
+     if( present(energy) .and. present(local_e) .and. .not. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, energy=energy_core, local_e=local_e_core)
+     
+     if( present(energy) .and. .not. present(local_e) .and. present(f) .and. present(virial) ) call IP_calc(this%core, at, energy=energy_core, f=f_core, virial=virial_core)
+     if( present(energy) .and. .not. present(local_e) .and. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, energy=energy_core, f=f_core)
+     if( present(energy) .and. .not. present(local_e) .and. .not. present(f) .and. present(virial) ) call IP_calc(this%core, at, energy=energy_core, virial=virial_core)
+     if( present(energy) .and. .not. present(local_e) .and. .not. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, energy=energy_core)
+
+     if( .not. present(energy) .and. present(local_e) .and. present(f) .and. present(virial) ) call IP_calc(this%core, at, local_e=local_e_core, f=f_core, virial=virial_core)
+     if( .not. present(energy) .and. present(local_e) .and. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, local_e=local_e_core, f=f_core)
+     if( .not. present(energy) .and. present(local_e) .and. .not. present(f) .and. present(virial) ) call IP_calc(this%core, at, local_e=local_e_core, virial=virial_core)
+     if( .not. present(energy) .and. present(local_e) .and. .not. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, local_e=local_e_core)
+     
+     if( .not. present(energy) .and. .not. present(local_e) .and. present(f) .and. present(virial) ) call IP_calc(this%core, at, f=f_core, virial=virial_core)
+     if( .not. present(energy) .and. .not. present(local_e) .and. present(f) .and. .not. present(virial) ) call IP_calc(this%core, at, f=f_core)
+     if( .not. present(energy) .and. .not. present(local_e) .and. .not. present(f) .and. present(virial) ) call IP_calc(this%core, at, virial=virial_core)
+
+     if(present(energy)) energy = energy + energy_core
+     if(present(local_e)) local_e = local_e + local_e_core
+     if(present(f)) f = f + f_core
+     if(present(virial)) virial = virial + virial_core
+     
+     if(allocated(local_e_core)) deallocate(local_e_core)
+     if(allocated(f_core)) deallocate(f_core)
+  endif
+         
   call system_timer("IP_Calc")
 end subroutine IP_Calc
 
 
-subroutine IP_Print(this, file)
+recursive subroutine IP_Print(this, file)
   type(IP_type), intent(inout) :: this
   type(Inoutput), intent(inout),optional :: file
 
@@ -600,6 +654,8 @@ subroutine IP_Print(this, file)
     case default
       call system_abort("IP_Print confused by functional_form " // this%functional_form)
   end select
+
+  if(associated(this%core)) call IP_Print(this%core)
 end subroutine IP_Print
 
 subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
@@ -644,7 +700,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
   call print("Parallelizing IP using group_size " // prev_pgroup_size, ERROR)
 end subroutine IP_setup_parallel
 
-subroutine setup_parallel_groups(this, mpi, pgroup_size)
+recursive subroutine setup_parallel_groups(this, mpi, pgroup_size)
   type(IP_type), intent(inout) :: this
   type(mpi_context), intent(in) :: mpi
   integer, intent(in) :: pgroup_size
@@ -716,6 +772,8 @@ subroutine setup_parallel_groups(this, mpi, pgroup_size)
     case default
       call system_abort("setup_parallel_groups confused by functional_form " // this%functional_form)
   end select
+
+  if(associated(this%core)) call setup_parallel_groups(this%core,mpi,pgroup_size)
 end subroutine setup_parallel_groups
 
 end module IP_module
