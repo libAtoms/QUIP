@@ -36,6 +36,7 @@ private
 
 include 'IPModel_interface.h'
 
+public :: SplineDataContainer
 type SplineDataContainer
     real(dp), allocatable :: spline_potential(:,:)
 end type SplineDataContainer
