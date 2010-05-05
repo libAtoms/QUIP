@@ -63,15 +63,15 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
 
   if( first_run ) then
      call Initialise(pot, "IP GAP", "" )
-     call initialise(at,N,lattice*BOHR)
+     call initialise(at,N,transpose(lattice)*BOHR)
   endif
   
   if( .not. first_run .and. (N /= at%N) ) then
      call finalise(at)
-     call initialise(at,N,lattice*BOHR)
+     call initialise(at,N,transpose(lattice)*BOHR)
   endif
 
-  call set_lattice(at,lattice*BOHR)
+  call set_lattice(at,transpose(lattice)*BOHR)
   
   do i = 1, at%N
      at%Z(i) = atomic_number_from_symbol(symbol(i))
@@ -85,7 +85,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
 
   energy = energy / HARTREE
   force = force / HARTREE * BOHR
-  stress = stress / HARTREE * (BOHR**3)
+  stress = stress / HARTREE
 
   first_run = .false.
   call system_finalise()
