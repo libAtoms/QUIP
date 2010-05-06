@@ -405,53 +405,53 @@ recursive subroutine IP_Finalise(this)
 
 end subroutine IP_Finalise
 
-recursive function IP_cutoff(this)
+recursive function IP_cutoff(this) result(Ipcutoff)
   type(IP_type), intent(in) :: this
-  real(dp) :: IP_cutoff
+  real(dp) :: IPcutoff
 
-  IP_cutoff = 0.0_dp
-  if(associated(this%core)) IP_cutoff = IP_cutoff(this%core)
+  IPcutoff = 0.0_dp
+  if(associated(this%core)) IPcutoff = IP_cutoff(this%core)
   
   select case (this%functional_form)
   case (FF_GAP)
-     IP_cutoff = max(this%ip_gap%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_gap%cutoff, IPcutoff)
   case (FF_LJ)
-     IP_cutoff = max(this%ip_lj%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_lj%cutoff, IPcutoff)
   case (FF_Morse)
-     IP_cutoff = max(this%ip_morse%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_morse%cutoff, IPcutoff)
   case (FF_FC)
-     IP_cutoff = max(this%ip_fc%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_fc%cutoff, IPcutoff)
   case (FF_SW)
-     IP_cutoff = max(this%ip_sw%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_sw%cutoff, IPcutoff)
   case (FF_Tersoff)
-     IP_cutoff = max(this%ip_tersoff%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_tersoff%cutoff, IPcutoff)
   case (FF_EAM_ErcolAd)
-     IP_cutoff = max(this%ip_EAM_ErcolAd%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_EAM_ErcolAd%cutoff, IPcutoff)
   case(FF_Brenner)
-     IP_Cutoff = max(this%ip_Brenner%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_Brenner%cutoff, IPcutoff)
   case(FF_FB)
-     IP_Cutoff = max(this%ip_FB%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_FB%cutoff, IPcutoff)
   case(FF_Si_MEAM)
-     IP_Cutoff = max(this%ip_Si_MEAM%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_Si_MEAM%cutoff, IPcutoff)
   case (FF_FS)
-     IP_cutoff = max(this%ip_fs%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_fs%cutoff, IPcutoff)
   case (FF_BOP)
-     IP_cutoff = max(this%ip_bop%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_bop%cutoff, IPcutoff)
   case (FF_Brenner_Screened)
-     IP_cutoff = max(this%ip_brenner_screened%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_brenner_screened%cutoff, IPcutoff)
   case (FF_Brenner_2002)
-     IP_cutoff = max(this%ip_brenner_2002%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_brenner_2002%cutoff, IPcutoff)
   case (FF_ASAP)
-     IP_cutoff = max(maxval(this%ip_asap%cutoff)*BOHR, IP_cutoff)
+     IPcutoff = max(maxval(this%ip_asap%cutoff)*BOHR, IPcutoff)
   case (FF_ASAP2)
-     IP_cutoff = max(max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR, IP_cutoff)
+     IPcutoff = max(max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR, IPcutoff)
   case (FF_GLUE)
-     IP_cutoff = max(this%ip_Glue%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_Glue%cutoff, IPcutoff)
   ! Add new IP here
   case (FF_Template)
-     IP_cutoff = max(this%ip_template%cutoff, IP_cutoff)
+     IPcutoff = max(this%ip_template%cutoff, IPcutoff)
   case default
-     IP_cutoff = 0.0_dp
+     IPcutoff = 0.0_dp
   end select
 end function IP_cutoff
 
