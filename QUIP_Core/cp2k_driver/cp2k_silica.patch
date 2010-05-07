@@ -1,6 +1,6 @@
-diff -r -c ../cp2k/src_20100324_around1700/barostat_types.F src_20100325_1711/barostat_types.F
-*** ../cp2k/src_20100324_around1700/barostat_types.F	2010-03-29 15:19:07.354332033 +0100
---- src_20100325_1711/barostat_types.F	2010-04-06 16:05:45.094153150 +0100
+diff -r -c src_20100507_latest_orig/barostat_types.F src_20100507_updated/barostat_types.F
+*** src_20100507_latest_orig/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100507_updated/barostat_types.F	2010-04-07 16:00:11.522690660 +0100
 ***************
 *** 21,27 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -29,9 +29,10 @@ diff -r -c ../cp2k/src_20100324_around1700/barostat_types.F src_20100325_1711/ba
           simpar%ensemble == npe_f_ensemble .OR. &
           simpar%ensemble == npe_i_ensemble .OR. &
           simpar%ensemble == nph_uniaxial_ensemble .OR. &
-diff -r -c ../cp2k/src_20100324_around1700/barostat_utils.F src_20100325_1711/barostat_utils.F
-*** ../cp2k/src_20100324_around1700/barostat_utils.F	2010-03-29 15:19:12.064609574 +0100
---- src_20100325_1711/barostat_utils.F	2010-04-06 16:05:43.242601012 +0100
+Only in src_20100507_updated: .#barostat_types.F.1.18
+diff -r -c src_20100507_latest_orig/barostat_utils.F src_20100507_updated/barostat_utils.F
+*** src_20100507_latest_orig/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100507_updated/barostat_utils.F	2010-04-07 16:00:07.961083863 +0100
 ***************
 *** 19,25 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -62,9 +63,10 @@ diff -r -c ../cp2k/src_20100324_around1700/barostat_utils.F src_20100325_1711/ba
       END IF
   
     END SUBROUTINE get_baro_energies
-diff -r -c ../cp2k/src_20100324_around1700/constraint.F src_20100325_1711/constraint.F
-*** ../cp2k/src_20100324_around1700/constraint.F	2010-03-29 15:19:31.080272949 +0100
---- src_20100325_1711/constraint.F	2010-04-06 16:05:44.049612284 +0100
+Only in src_20100507_updated: .#barostat_utils.F.1.5
+diff -r -c src_20100507_latest_orig/constraint.F src_20100507_updated/constraint.F
+*** src_20100507_latest_orig/constraint.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100507_updated/constraint.F	2010-04-07 16:00:09.585167336 +0100
 ***************
 *** 43,49 ****
     USE distribution_1d_types,           ONLY: distribution_1d_type
@@ -105,9 +107,168 @@ diff -r -c ../cp2k/src_20100324_around1700/constraint.F src_20100325_1711/constr
       END IF
       DO k = 1, SIZE(vel,2)
          atomic_kind=>particle_set (k) % atomic_kind
-diff -r -c ../cp2k/src_20100324_around1700/csvr_system_mapping.F src_20100325_1711/csvr_system_mapping.F
-*** ../cp2k/src_20100324_around1700/csvr_system_mapping.F	2010-03-29 15:19:00.198970853 +0100
---- src_20100325_1711/csvr_system_mapping.F	2010-04-06 16:05:56.797447860 +0100
+Only in src_20100507_updated: .#constraint.F.1.79
+Only in src_20100507_updated: cp2k_exyz_1.patch
+Only in src_20100507_updated: cp2k_exyz_2.patch
+Only in src_20100507_updated: cp2k_exyz_3.patch
+Only in src_20100507_updated: cp2k_exyz_4.patch
+Only in src_20100507_updated: cp2k_exyz_5.patch
+Only in src_20100507_updated: cp2k_exyz.patch
+diff -r -c src_20100507_latest_orig/cp_ddapc_methods.F src_20100507_updated/cp_ddapc_methods.F
+*** src_20100507_latest_orig/cp_ddapc_methods.F	2010-04-08 20:18:04.000000000 +0100
+--- src_20100507_updated/cp_ddapc_methods.F	2010-05-07 13:40:29.071037394 +0100
+***************
+*** 506,512 ****
+            DEALLOCATE(AmE, stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         END IF
+!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error)
+         IF (iw>0) THEN
+            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
+         END IF
+--- 506,513 ----
+            DEALLOCATE(AmE, stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+         END IF
+!        !!NB speedup
+!        CALL invert_matrix(Am, AmI, inv_error, "N",error=error, improve=.false.)
+         IF (iw>0) THEN
+            WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
+         END IF
+Only in src_20100507_updated: .#cp_ddapc_methods.F.1.40
+Only in src_20100507_updated: cp_ddapc_methods.F.orig
+Only in src_20100507_updated: .#cp_ddapc_types.F.1.32
+diff -r -c src_20100507_latest_orig/cp_ddapc_util.F src_20100507_updated/cp_ddapc_util.F
+*** src_20100507_latest_orig/cp_ddapc_util.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100507_updated/cp_ddapc_util.F	2010-04-30 18:02:32.538477209 +0100
+***************
+*** 238,243 ****
+--- 238,246 ----
+      TYPE(pw_type), POINTER                   :: rho_tot_g
+      TYPE(qs_charges_type), POINTER           :: qs_charges
+      TYPE(qs_rho_type), POINTER               :: rho
++     !!NB speed
++     REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj
++     !!
+  
+      CALL timeset(routineN,handle)
+      failure         = .FALSE.
+***************
+*** 399,411 ****
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
+            !
+            DO iparticle = 1, SIZE(particle_set)
+               dAm = 0.0_dp
+               dbv = 0.0_dp
+               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
+!              CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
+               IF (debug_this_module) THEN
+                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
+                       gcut, iparticle, Vol, qs_env, error)
+--- 402,424 ----
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
++ 	  !!NB speed
++ 	  ALLOCATE(cvT_AmI(ndim), stat=stat)
++ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 	  ALLOCATE(cvT_AmI_dAmj(ndim), stat=stat)
++ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 	  ALLOCATE(AmI_cv(ndim), stat=stat)
++ 	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++ 	  cvT_AmI = MATMUL(cv, cp_ddapc_env%AmI)
++ 	  AmI_cv = MATMUL(cp_ddapc_env%AmI,cv)
++ 	  !!
+            !
+            DO iparticle = 1, SIZE(particle_set)
+               dAm = 0.0_dp
+               dbv = 0.0_dp
+               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dbv = dbv / Vol
+! !! NB parallelization            CALL mp_sum(dbv,rho_tot_g%pw_grid%para%group)
+               IF (debug_this_module) THEN
+                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
+                       gcut, iparticle, Vol, qs_env, error)
+***************
+*** 413,435 ****
+               END IF
+               CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
+!              CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
+               IF (debug_this_module) THEN
+                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
+                       gcut, iparticle, Vol, qs_env, error)
+                  cp_ddapc_env => qs_env%cp_ddapc_env 
+               END IF
+               DO j = 1, 3
+                  dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
+!                 c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
+!                        DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
+                  c3   = c3 / cp_ddapc_env%c0
+!                 c4 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,cv)))) / &
+!                      cp_ddapc_env%c0
+!                 dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
+!                      c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
+               END DO
+            END DO
+            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
+            IF (.NOT.ASSOCIATED(dq_out)) THEN
+               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
+--- 426,458 ----
+               END IF
+               CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
+                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
+! !! NB parallelization            CALL mp_sum(dAm,rho_tot_g%pw_grid%para%group)             
+               IF (debug_this_module) THEN
+                  CALL debug_der_A_matrix(dAm, particle_set, radii, rho_tot_g,&
+                       gcut, iparticle, Vol, qs_env, error)
+                  cp_ddapc_env => qs_env%cp_ddapc_env 
+               END IF
+               DO j = 1, 3
++ 		!!NB speed
++ 		cvT_AmI_dAmj = MATMUL(cvT_AmI, dAm(:,:,j))
+                  dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
+! 		c3 = - DOT_PRODUCT(cvT_AmI_dAmj,MATMUL(cp_ddapc_env%AmI,bv)) + DOT_PRODUCT(cvT_AmI, dbv(:,j))
+                  c3   = c3 / cp_ddapc_env%c0
+! 		c4 = - DOT_PRODUCT(cvT_AmI_dAmj,AmI_cv) / cp_ddapc_env%c0
+! 		dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - (c3 - c4*c1) * AmI_cv)
+!                 ! dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
+!                 ! c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
+!                        ! DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
+!                 ! c3   = c3 / cp_ddapc_env%c0
+!                 ! c4 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,cv)))) / &
+!                      ! cp_ddapc_env%c0
+!                 ! dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
+!                      ! c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
+               END DO
+            END DO
++ 	  !! NB parallelization
++           CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
++ 	  !!
+            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
+            IF (.NOT.ASSOCIATED(dq_out)) THEN
+               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
+***************
+*** 453,458 ****
+--- 476,487 ----
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            DEALLOCATE(dbv, stat=stat)
+            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++           DEALLOCATE(cvT_AmI, stat=stat)
++           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++           DEALLOCATE(cvT_AmI_dAmj, stat=stat)
++           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++           DEALLOCATE(AmI_cv, stat=stat)
++           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+            CALL timestop(handle3)
+         END IF
+         !
+diff -r -c src_20100507_latest_orig/csvr_system_mapping.F src_20100507_updated/csvr_system_mapping.F
+*** src_20100507_latest_orig/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100507_updated/csvr_system_mapping.F	2010-04-07 16:00:29.847881036 +0100
 ***************
 *** 22,28 ****
          do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
@@ -176,9 +337,1704 @@ diff -r -c ../cp2k/src_20100324_around1700/csvr_system_mapping.F src_20100325_17
   
          CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
               molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
-diff -r -c ../cp2k/src_20100324_around1700/extended_system_init.F src_20100325_1711/extended_system_init.F
-*** ../cp2k/src_20100324_around1700/extended_system_init.F	2010-03-29 15:18:59.985784190 +0100
---- src_20100325_1711/extended_system_init.F	2010-04-06 16:05:42.905608823 +0100
+Only in src_20100507_updated: .#csvr_system_mapping.F.1.18
+diff -r -c src_20100507_latest_orig/CVS/Entries src_20100507_updated/CVS/Entries
+*** src_20100507_latest_orig/CVS/Entries	2010-05-07 13:58:13.802849432 +0100
+--- src_20100507_updated/CVS/Entries	2010-05-07 13:41:11.160580069 +0100
+***************
+*** 1,801 ****
+! /OBJECTDEFS/1.520/Mon Apr 26 15:54:35 2010//
+! /_el_typename__list_types.instantiation/1.6/Sat Aug 18 08:42:04 2007//
+! /_el_typename__list_types.template/1.10/Sun Jan  3 23:41:25 2010//
+! /admm_methods.F/1.8/Mon Feb 22 15:37:35 2010//
+! /admm_types.F/1.4/Tue Feb 16 14:09:41 2010//
+! /ai_angmom.F/1.20/Sun Jan  3 23:41:25 2010//
+! /ai_coulomb.F/1.37/Sun Jan  3 23:41:25 2010//
+! /ai_coulomb_test.F/1.10/Sun Jan  3 23:41:25 2010//
+! /ai_derivatives.F/1.24/Sun Jan  3 23:41:25 2010//
+! /ai_elec_field.F/1.3/Sun Jan  3 23:41:25 2010//
+! /ai_eri_debug.F/1.2/Sun Jan  3 23:41:25 2010//
+! /ai_fermi_contact.F/1.4/Sun Jan  3 23:41:25 2010//
+! /ai_geminals.F/1.12/Sun Jan  3 23:41:25 2010//
+! /ai_geminals_debug.F/1.2/Sun Jan  3 23:41:25 2010//
+! /ai_geminals_utils.F/1.2/Sun Jan  3 23:41:25 2010//
+! /ai_kinetic.F/1.19/Sun Jan  3 23:41:25 2010//
+! /ai_moments.F/1.28/Sun Jan  3 23:41:25 2010//
+! /ai_onecenter.F/1.8/Wed May  5 10:26:37 2010//
+! /ai_os_rr.F/1.6/Sun Jan  3 23:41:25 2010//
+! /ai_overlap_new.F/1.19/Sun Jan  3 23:41:25 2010//
+! /ai_overlap_ppl.F/1.22/Sun Jan  3 23:41:25 2010//
+! /ai_spin_orbit.F/1.6/Sun Jan  3 23:41:25 2010//
+! /ai_verfc.F/1.28/Sun Jan  3 23:41:25 2010//
+! /atom.F/1.16/Sun Jan  3 23:41:25 2010//
+! /atom_basis.F/1.5/Sun Jan  3 23:41:25 2010//
+! /atom_electronic_structure.F/1.12/Wed May  5 10:26:37 2010//
+! /atom_energy.F/1.9/Tue Feb  9 11:43:17 2010//
+! /atom_fit.F/1.18/Wed Mar 24 14:08:32 2010//
+! /atom_kind_orbitals.F/1.13/Wed Mar 24 14:09:56 2010//
+! /atom_operators.F/1.19/Wed Mar 24 14:08:32 2010//
+! /atom_optimization.F/1.6/Sun Jan  3 23:41:26 2010//
+! /atom_output.F/1.20/Wed May  5 10:26:37 2010//
+! /atom_pseudo.F/1.7/Sun Jan  3 23:41:26 2010//
+! /atom_types.F/1.33/Wed May  5 10:26:37 2010//
+! /atom_utils.F/1.24/Wed Mar 24 14:08:32 2010//
+! /atom_xc.F/1.15/Wed Mar 24 14:08:32 2010//
+! /atomic_charges.F/1.12/Sun Jan  3 23:41:26 2010//
+! /atomic_kind_list_types.F/1.25/Sun Jan  3 23:41:26 2010//
+! /atomic_kind_types.F/1.188/Fri Apr  9 09:13:45 2010//
+! /atoms_input.F/1.109/Fri Mar 19 23:02:16 2010//
+! /averages_types.F/1.9/Sun Jan  3 23:41:26 2010//
+! /barostat_types.F/1.19/Sun Jan  3 23:41:26 2010//
+! /barostat_utils.F/1.6/Sun Jan  3 23:41:26 2010//
+! /basis_set_types.F/1.79/Thu Feb  4 17:52:12 2010//
+! /bessel_lib.F/1.15/Sun Jan  3 23:41:26 2010//
+! /beta_gamma_psi.F/1.12/Sun Jan  3 23:41:26 2010//
+! /bfgs_optimizer.F/1.106/Wed Apr 21 15:16:51 2010//
+! /bibliography.F/1.51/Thu Apr  8 18:11:29 2010//
+! /block_p_types.F/1.10/Sun Jan  3 23:41:26 2010//
+! /bsse.F/1.41/Sun Jan  3 23:41:26 2010//
+! /c_mpi_calls.F/1.12/Thu Mar 25 15:48:52 2010//
+! /call_collocate.f90/1.2/Mon Aug 18 11:53:14 2008//
+! /call_collocate_omp.f90/1.2/Mon Aug 18 11:53:14 2008//
+! /call_integrate.f90/1.2/Mon Aug 18 11:53:14 2008//
+! /cell_opt.F/1.5/Sun Jan  3 23:41:26 2010//
+! /cell_opt_types.F/1.6/Sun Jan  3 23:41:26 2010//
+! /cell_opt_utils.F/1.12/Sun Jan  3 23:41:26 2010//
+! /cell_types.F/1.50/Sun Jan  3 23:41:26 2010//
+! /cg_optimizer.F/1.72/Tue Apr 20 19:17:44 2010//
+! /cg_test.F/1.26/Sun Jan  3 23:41:26 2010//
+! /cg_utils.F/1.17/Sun Jan  3 23:41:26 2010//
+! /colloc_int_body.f90/1.9/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop1.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop2.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop3.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop4.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop5.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop6.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop7.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colloc_int_kloop8.f90/1.3/Mon Apr 26 15:54:35 2010//
+! /colvar_methods.F/1.89/Wed May  5 11:23:12 2010//
+! /colvar_types.F/1.56/Wed May  5 11:23:12 2010//
+! /colvar_utils.F/1.8/Sun Jan  3 23:41:26 2010//
+! /constraint.F/1.80/Sun Jan  3 23:41:26 2010//
+! /constraint_3x3.F/1.24/Sun Jan  3 23:41:26 2010//
+! /constraint_4x6.F/1.26/Sun Jan  3 23:41:26 2010//
+! /constraint_clv.F/1.35/Tue Mar  2 17:33:23 2010//
+! /constraint_fxd.F/1.14/Sun Jan  3 23:41:26 2010//
+! /constraint_util.F/1.12/Sun Jan  3 23:41:26 2010//
+! /constraint_vsite.F/1.4/Sun Jan  3 23:41:26 2010//
+! /core_ae.F/1.10/Mon Feb 22 15:37:35 2010//
+! /core_ppl.F/1.13/Mon Feb 22 15:37:35 2010//
+! /core_ppnl.F/1.15/Mon Feb 22 15:37:35 2010//
+! /cp2k.F/1.107/Mon Mar 15 12:55:24 2010//
+! /cp2k_debug.F/1.9/Sun Jan  3 23:41:26 2010//
+! /cp2k_info.F/1.252/Fri May  7 03:17:36 2010//
+! /cp2k_runs.F/1.196/Mon Apr 12 08:15:26 2010//
+! /cp2k_shell.F/1.10/Sun Jan  3 23:41:26 2010//
+! /cp__el_name__pool_types.instantiation/1.11/Thu Mar 26 11:15:36 2009//
+! /cp__el_name__pool_types.template/1.13/Sun Jan  3 23:41:26 2010//
+! /cp_array__nametype1__utils.instantiation/1.8/Wed Nov 12 09:15:30 2003//
+! /cp_array__nametype1__utils.template/1.26/Sun Jan  3 23:41:26 2010//
+! /cp_array_i_utils.F/1.47/Sun Jan  3 23:41:26 2010//
+! /cp_array_logical_utils.F/1.46/Sun Jan  3 23:41:26 2010//
+! /cp_array_r_utils.F/1.47/Sun Jan  3 23:41:26 2010//
+! /cp_array_utils.F/1.14/Sun Jan  3 23:41:26 2010//
+! /cp_blacs_calls.F/1.17/Sun Jan  3 23:41:26 2010//
+! /cp_blacs_env.F/1.38/Sun Jan  3 23:41:26 2010//
+! /cp_cfm_basic_linalg.F/1.35/Sun Jan  3 23:41:26 2010//
+! /cp_cfm_diag.F/1.21/Sun Jan  3 23:41:26 2010//
+! /cp_cfm_types.F/1.34/Sun Jan  3 23:41:26 2010//
+! /cp_common_uses.h/1.7/Tue Dec  4 16:30:29 2007//
+! /cp_control_types.F/1.159/Sat Apr  3 06:08:50 2010//
+! /cp_control_utils.F/1.259/Sat Apr  3 06:08:50 2010//
+! /cp_dbcsr_cholesky.F/1.5/Fri Feb 12 16:10:05 2010//
+! /cp_dbcsr_diag.F/1.8/Thu Mar 11 16:01:36 2010//
+! /cp_dbcsr_operations.F/1.120/Mon Mar 29 10:15:38 2010//
+! /cp_dbcsr_output.F/1.6/Mon Feb 22 15:37:35 2010//
+! /cp_ddapc.F/1.75/Fri Feb 12 16:10:05 2010//
+! /cp_ddapc_forces.F/1.32/Sun Jan  3 23:41:26 2010//
+! /cp_ddapc_methods.F/1.41/Thu Apr  8 19:18:04 2010//
+! /cp_ddapc_types.F/1.35/Sun Jan  3 23:41:26 2010//
+! /cp_ddapc_util.F/1.23/Sun Jan  3 23:41:26 2010//
+! /cp_error_handling.F/1.53/Sun Jan  3 23:41:26 2010//
+! /cp_files.F/1.22/Sun Jan  3 23:41:26 2010//
+! /cp_fm_basic_linalg.F/1.87/Sun Jan  3 23:41:26 2010//
+! /cp_fm_cholesky.F/1.27/Wed Feb 10 12:01:37 2010//
+! /cp_fm_diag.F/1.48/Fri Apr 23 20:07:56 2010//
+! /cp_fm_pool_types.F/1.34/Sun Jan  3 23:41:26 2010//
+! /cp_fm_struct.F/1.51/Sun Jan  3 23:41:26 2010//
+! /cp_fm_types.F/1.93/Wed Apr 21 15:16:51 2010//
+! /cp_fm_vect.F/1.33/Sun Jan  3 23:41:26 2010//
+! /cp_iter_types.F/1.10/Wed Mar  3 19:35:02 2010//
+! /cp_lbfgs.F/1.29/Wed Jun 17 11:31:30 2009//
+! /cp_lbfgs_geo.F/1.16/Sun Jan  3 23:41:26 2010//
+! /cp_lbfgs_optimizer__nametype1_.instantiation/1.11/Fri Jan 18 13:46:34 2008//
+! /cp_lbfgs_optimizer__nametype1_.template/1.62/Tue Apr 20 19:17:44 2010//
+! /cp_lbfgs_optimizer_gopt.F/1.73/Tue Apr 20 19:17:44 2010//
+! /cp_linked_list_3d_r.F/1.31/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list__nametype1_.instantiation/1.23/Mon Jul 27 06:04:16 2009//
+! /cp_linked_list__nametype1_.template/1.30/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_char.F/1.22/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_fm.F/1.39/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_int.F/1.46/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_logical.F/1.23/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_pw.F/1.38/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_real.F/1.22/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_rs.F/1.34/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_sm.F/1.33/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_val.F/1.23/Wed Mar 24 14:21:00 2010//
+! /cp_linked_list_xc_deriv.F/1.28/Wed Mar 24 14:21:00 2010//
+! /cp_log_handling.F/1.66/Sun Jan  3 23:41:27 2010//
+! /cp_matrix_utils.F/1.52/Mon Feb 22 15:37:35 2010//
+! /cp_output_handling.F/1.82/Sun Jan  3 23:41:27 2010//
+! /cp_para_env.F/1.31/Sun Jan  3 23:41:27 2010//
+! /cp_para_types.F/1.25/Sun Jan  3 23:41:27 2010//
+! /cp_parser_buffer_types.F/1.7/Sun Jan  3 23:41:27 2010//
+! /cp_parser_ilist_methods.F/1.4/Sun Jan  3 23:41:27 2010//
+! /cp_parser_ilist_types.F/1.4/Sun Jan  3 23:41:27 2010//
+! /cp_parser_inpp_methods.F/1.7/Sun Jan  3 23:41:27 2010//
+! /cp_parser_inpp_types.F/1.5/Sun Jan  3 23:41:27 2010//
+! /cp_parser_methods.F/1.19/Sun Jan  3 23:41:27 2010//
+! /cp_parser_status_types.F/1.4/Sun Jan  3 23:41:27 2010//
+! /cp_parser_types.F/1.12/Sun Jan  3 23:41:27 2010//
+! /cp_result_methods.F/1.6/Sun Jan  3 23:41:27 2010//
+! /cp_result_types.F/1.13/Sun Jan  3 23:41:27 2010//
+! /cp_sm_fm_interactions.F/1.54/Sun Jan  3 23:41:27 2010//
+! /cp_sm_pool_types.F/1.23/Sun Jan  3 23:41:27 2010//
+! /cp_sm_struct.F/1.29/Sun Jan  3 23:41:27 2010//
+! /cp_subsys_methods.F/1.13/Sun Jan  3 23:41:27 2010//
+! /cp_subsys_types.F/1.9/Sun Jan  3 23:41:27 2010//
+! /cp_symmetry.F/1.5/Sun Jan  3 23:41:27 2010//
+! /cp_units.F/1.35/Sun Jan  3 23:41:27 2010//
+! /cpot_types.F/1.12/Sun Jan  3 23:41:27 2010//
+! /csvr_system_dynamics.F/1.13/Sun Jan  3 23:41:27 2010//
+! /csvr_system_init.F/1.16/Sun Jan  3 23:41:27 2010//
+! /csvr_system_mapping.F/1.19/Sun Jan  3 23:41:27 2010//
+! /csvr_system_types.F/1.17/Sun Jan  3 23:41:27 2010//
+! /csvr_system_utils.F/1.16/Sun Jan  3 23:41:27 2010//
+! /cube_utils.F/1.41/Sun Jan  3 23:41:27 2010//
+! /cuda_cublas.F/1.2/Mon Jan  4 09:47:19 2010//
+! /cuda_memory.F/1.7/Sun Jan  3 23:41:27 2010//
+! /d3_poly.F/1.12/Sun Jan  3 23:41:27 2010//
+! /dbcsr_tests.F/1.8/Tue Feb 23 09:51:28 2010//
+! /dft_plus_u.F/1.34/Mon Feb 22 15:37:36 2010//
+! /dg_rho0_types.F/1.26/Sun Jan  3 23:41:27 2010//
+! /dg_types.F/1.24/Sun Jan  3 23:41:27 2010//
+! /dgs.F/1.49/Sun Jan  3 23:41:27 2010//
+! /dimer_methods.F/1.17/Sun Jan  3 23:41:27 2010//
+! /dimer_types.F/1.14/Sun Jan  3 23:41:27 2010//
+! /dimer_utils.F/1.10/Sun Jan  3 23:41:27 2010//
+! /distribution_1d_types.F/1.27/Sun Jan  3 23:41:27 2010//
+! /distribution_2d_types.F/1.28/Sun Jan  3 23:41:27 2010//
+! /distribution_methods.F/1.40/Sun Jan  3 23:41:27 2010//
+! /distribution_optimize.F/1.15/Wed Mar 24 19:17:12 2010//
+! /dkh_main.F/1.27/Wed Mar 24 15:29:00 2010//
+! /dynamical_coeff_methods.F/1.4/Sun Jan  3 23:41:27 2010//
+! /dynamical_coeff_types.F/1.42/Sun Jan  3 23:41:27 2010//
+! /efield_utils.F/1.5/Thu Jan 21 16:27:00 2010//
+! /eigenvalueproblems.F/1.18/Sun Jan  3 23:41:27 2010//
+! /eip_environment.F/1.31/Sun Jan  3 23:41:27 2010//
+! /eip_environment_types.F/1.14/Sun Jan  3 23:41:27 2010//
+! /eip_main.F/1.23/Sun Jan  3 23:41:27 2010//
+! /eip_silicon.F/1.19/Sun Jan  3 23:41:27 2010//
+! /environment.F/1.195/Sun Jan  3 23:41:27 2010//
+! /ep_methods.F/1.57/Wed May  5 11:23:12 2010//
+! /ep_qs_methods.F/1.14/Sun Jan  3 23:41:27 2010//
+! /ep_qs_types.F/1.16/Sun Jan  3 23:41:27 2010//
+! /ep_types.F/1.19/Sun Jan  3 23:41:27 2010//
+! /erf_fn.F/1.20/Sun Jan  3 23:41:27 2010//
+! /et_coupling.F/1.22/Sun Jan  3 23:41:27 2010//
+! /et_coupling_types.F/1.10/Sun Jan  3 23:41:27 2010//
+! /ewald_environment_types.F/1.54/Fri Apr  9 09:13:46 2010//
+! /ewald_pw_methods.F/1.25/Sun Jan  3 23:41:27 2010//
+! /ewald_pw_types.F/1.65/Sun Jan  3 23:41:27 2010//
+! /ewald_spline_util.F/1.26/Sun Jan  3 23:41:27 2010//
+! /ewalds.F/1.59/Sun Jan  3 23:41:27 2010//
+! /ewalds_multipole.F/1.37/Mon Apr 26 10:47:45 2010//
+! /ewalds_multipole_debug.F/1.11/Sat Mar 20 04:09:38 2010//
+! /ewalds_multipole_debug.h/1.9/Sat Mar 20 04:09:38 2010//
+! /ewalds_multipole_sr.f90/1.5/Sat Mar 20 04:09:38 2010//
+! /extended_system_dynamics.F/1.39/Sun Jan  3 23:41:27 2010//
+! /extended_system_init.F/1.21/Sun Jan  3 23:41:27 2010//
+! /extended_system_mapping.F/1.15/Sun Jan  3 23:41:27 2010//
+! /extended_system_types.F/1.37/Sun Jan  3 23:41:27 2010//
+! /external_potential_methods.F/1.8/Sun Jan  3 23:41:27 2010//
+! /external_potential_types.F/1.70/Wed Mar 24 14:09:56 2010//
+! /f77_blas.F/1.6/Sun Jan  3 23:41:27 2010//
+! /f77_blas_extra.F/1.3/Fri Feb  1 19:55:00 2008//
+! /f77_blas_generic.F/1.3/Fri Feb  1 19:55:00 2008//
+! /f77_blas_netlib.F/1.3/Fri Feb  1 19:55:00 2008//
+! /f77_blas_poison.F/1.3/Fri Feb  1 19:55:00 2008//
+! /f77_int.h/1.2/Mon Jul 27 10:10:15 2009//
+! /f77_int_low.F/1.19/Sun Jan  3 23:41:27 2010//
+! /f77_interface.F/1.87/Sun Jan  3 23:41:27 2010//
+! /farming_methods.F/1.33/Fri Apr  2 11:50:26 2010//
+! /farming_types.F/1.21/Fri Apr  2 11:50:26 2010//
+! /fermi_utils.F/1.10/Sat Apr  3 06:08:50 2010//
+! /fft_tools.F/1.84/Sun Jan  3 23:41:27 2010//
+! /fist_energy_types.F/1.17/Sun Jan  3 23:41:27 2010//
+! /fist_environment.F/1.89/Fri Apr  9 09:13:46 2010//
+! /fist_environment_types.F/1.45/Sun Jan  3 23:41:27 2010//
+! /fist_force.F/1.147/Wed May  5 09:28:28 2010//
+! /fist_intra_force.F/1.74/Tue Apr 20 22:00:29 2010//
+! /fist_main.F/1.67/Sun Jan  3 23:41:27 2010//
+! /fist_neighbor_list_control.F/1.62/Tue Apr 20 22:00:29 2010//
+! /fist_neighbor_list_types.F/1.33/Tue Apr 20 22:00:29 2010//
+! /fist_neighbor_lists.F/1.88/Tue Apr 20 22:00:29 2010//
+! /fist_nonbond_env_types.F/1.40/Fri Apr  9 09:13:46 2010//
+! /fist_nonbond_force.F/1.128/Tue Apr 20 22:00:29 2010//
+! /fist_pol_scf.F/1.12/Sat Mar 27 15:57:34 2010//
+! /force_env_methods.F/1.163/Wed Mar  3 19:35:02 2010//
+! /force_env_types.F/1.89/Tue Jan 19 08:49:07 2010//
+! /force_field_types.F/1.80/Sun Mar 21 20:29:55 2010//
+! /force_fields.F/1.168/Fri Apr  9 09:13:46 2010//
+! /force_fields_all.F/1.48/Fri Apr  9 09:13:46 2010//
+! /force_fields_ext.F/1.4/Sun Jan  3 23:41:27 2010//
+! /force_fields_input.F/1.66/Sun Mar 21 20:29:55 2010//
+! /force_fields_util.F/1.66/Fri Apr  9 09:13:46 2010//
+! /fp_methods.F/1.14/Sun Jan  3 23:41:27 2010//
+! /fp_types.F/1.13/Sun Jan  3 23:41:27 2010//
+! /fparser.F/1.10/Fri Dec 12 20:42:11 2008//
+! /free_energy_methods.F/1.25/Sun Jan  3 23:41:27 2010//
+! /free_energy_types.F/1.11/Sun Jan  3 23:41:27 2010//
+! /gamma.F/1.26/Sun Jan  3 23:41:27 2010//
+! /gauss_colloc.F/1.9/Mon Apr 26 15:54:35 2010//
+! /gaussian_gridlevels.F/1.39/Sun Jan  3 23:41:27 2010//
+! /geo_opt.F/1.64/Sun Jan  3 23:41:27 2010//
+! /gle_system_dynamics.F/1.4/Sun Jan  3 23:41:27 2010//
+! /gle_system_types.F/1.6/Sun Jan  3 23:41:27 2010//
+! /glob_matching.F/1.5/Sun Oct 19 12:01:46 2008//
+! /global_types.F/1.96/Sun Jan  3 23:41:27 2010//
+! /gopt_f77_methods.F/1.21/Sun Jan  3 23:41:27 2010//
+! /gopt_f77_methods.h/1.6/Sun Jan  3 23:41:27 2010//
+! /gopt_f_methods.F/1.26/Tue Apr 20 19:17:44 2010//
+! /gopt_f_types.F/1.74/Sun Jan  3 23:41:27 2010//
+! /gopt_param_types.F/1.12/Sun Jan  3 23:41:27 2010//
+! /graphcon.F/1.12/Sun Jan  3 23:41:27 2010//
+! /harris_energy_types.F/1.17/Sun Jan  3 23:41:27 2010//
+! /harris_env_types.F/1.23/Sun Jan  3 23:41:27 2010//
+! /harris_force.F/1.53/Sun Jan  3 23:41:27 2010//
+! /harris_force_types.F/1.19/Sun Jan  3 23:41:27 2010//
+! /harris_functional.F/1.46/Fri Feb 12 16:10:06 2010//
+! /hartree_local_methods.F/1.54/Sun Jan  3 23:41:29 2010//
+! /hartree_local_types.F/1.32/Sun Jan  3 23:41:29 2010//
+! /header.F/1.44/Sun Jan  3 23:41:29 2010//
+! /helium_common.F/1.5/Thu Feb 18 13:57:21 2010//
+! /helium_interactions.F/1.3/Thu Feb 18 13:57:21 2010//
+! /helium_io.F/1.5/Thu Feb 18 16:41:25 2010//
+! /helium_methods.F/1.4/Thu Feb 18 16:41:25 2010//
+! /helium_sampling.F/1.5/Thu Feb 18 16:41:25 2010//
+! /helium_types.F/1.4/Thu Feb 18 13:57:21 2010//
+! /hfx_communication.F/1.23/Mon Feb 22 15:37:36 2010//
+! /hfx_compression_core_methods.F/1.4/Sun Jan  3 23:41:29 2010//
+! /hfx_compression_methods.F/1.8/Sun Jan  3 23:41:29 2010//
+! /hfx_contract_block.F/1.4/Sun Jan  3 23:41:29 2010//
+! /hfx_contraction_methods.F/1.4/Sun Jan  3 23:41:30 2010//
+! /hfx_derivatives.F/1.46/Sat Apr  3 08:51:53 2010//
+! /hfx_energy_potential.F/1.78/Sat Apr  3 08:51:53 2010//
+! /hfx_get_pmax_val.h/1.1/Tue Jun 16 15:31:59 2009//
+! /hfx_helpers.F/1.9/Sun Jan  3 23:41:30 2010//
+! /hfx_libint_interface.F/1.19/Sun Jan  3 23:41:35 2010//
+! /hfx_libint_wrapper.F/1.7/Sun Jan  3 23:41:35 2010//
+! /hfx_libint_wrapper_types.F/1.2/Sun Jan  3 23:41:35 2010//
+! /hfx_load_balance_methods.F/1.38/Mon Feb 15 07:46:52 2010//
+! /hfx_pair_list_methods.F/1.6/Sun Jan  3 23:41:35 2010//
+! /hfx_ri_gemopt.F/1.3/Sun Jan  3 23:41:35 2010//
+! /hfx_ri_methods.F/1.8/Wed Feb  3 21:18:40 2010//
+! /hfx_screening_methods.F/1.31/Sun Jan  3 23:41:35 2010//
+! /hfx_types.F/1.52/Mon Apr 12 18:39:35 2010//
+! /input_constants.F/1.281/Wed Mar 10 12:51:50 2010//
+! /input_cp2k.F/1.288/Fri Apr  2 11:50:26 2010//
+! /input_cp2k_atom.F/1.20/Mon Mar  8 18:56:43 2010//
+! /input_cp2k_barostats.F/1.14/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_check.F/1.77/Sat Mar 13 23:18:03 2010//
+! /input_cp2k_colvar.F/1.60/Sat Mar 13 23:18:03 2010//
+! /input_cp2k_constraints.F/1.17/Wed Feb 17 10:18:58 2010//
+! /input_cp2k_dft.F/1.418/Thu Apr  8 18:01:36 2010//
+! /input_cp2k_distribution.F/1.12/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_eip.F/1.15/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_force_eval.F/1.16/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_free_energy.F/1.27/Sat Mar 13 23:18:03 2010//
+! /input_cp2k_hfx.F/1.38/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_mixed.F/1.4/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_mm.F/1.106/Sun Mar 21 20:29:55 2010//
+! /input_cp2k_motion.F/1.222/Thu Feb 18 13:57:21 2010//
+! /input_cp2k_poisson.F/1.34/Sat Mar 20 04:09:38 2010//
+! /input_cp2k_qmmm.F/1.47/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_resp.F/1.12/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_restarts.F/1.114/Sat Mar 13 23:18:03 2010//
+! /input_cp2k_rsgrid.F/1.10/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_subsys.F/1.129/Sat Mar 20 04:09:38 2010//
+! /input_cp2k_thermostats.F/1.23/Sun Jan  3 23:41:35 2010//
+! /input_cp2k_vib.F/1.13/Mon Apr 19 10:31:24 2010//
+! /input_cp2k_xc.F/1.2/Sun Jan  3 23:41:35 2010//
+! /input_enumeration_types.F/1.21/Sun Jan  3 23:41:35 2010//
+! /input_keyword_types.F/1.61/Sun Jan  3 23:41:35 2010//
+! /input_parsing.F/1.46/Sun Jan  3 23:41:35 2010//
+! /input_section_types.F/1.98/Sun Jan  3 23:41:35 2010//
+! /input_val_types.F/1.38/Sun Jan  3 23:41:35 2010//
+! /integrator.F/1.193/Thu Feb 11 22:31:20 2010//
+! /integrator_utils.F/1.22/Sun Jan  3 23:41:35 2010//
+! /k290.F/1.21/Mon Jan  4 09:47:19 2010//
+! /kahan_sum.F/1.10/Sun Jan  3 23:41:35 2010//
+! /kg_core.F/1.46/Sun Jan  3 23:41:35 2010//
+! /kg_density.F/1.62/Sun Jan  3 23:41:35 2010//
+! /kg_diis_methods.F/1.23/Tue Jan 26 15:24:49 2010//
+! /kg_diis_types.F/1.20/Sun Jan  3 23:41:35 2010//
+! /kg_energy.F/1.72/Sun Jan  3 23:41:35 2010//
+! /kg_energy_types.F/1.15/Sun Jan  3 23:41:35 2010//
+! /kg_energy_utils.F/1.18/Sun Jan  3 23:41:35 2010//
+! /kg_environment.F/1.125/Sun Jan  3 23:41:35 2010//
+! /kg_environment_methods.F/1.33/Thu Apr 29 13:16:45 2010//
+! /kg_environment_types.F/1.50/Sun Jan  3 23:41:36 2010//
+! /kg_force.F/1.83/Fri Feb 12 16:10:06 2010//
+! /kg_force_types.F/1.21/Sun Jan  3 23:41:36 2010//
+! /kg_gpw_collocate_den.F/1.56/Mon Apr 26 15:54:35 2010//
+! /kg_gpw_correction.F/1.36/Tue Jan 26 15:24:49 2010//
+! /kg_gpw_fm_mol_methods.F/1.47/Mon Feb 22 15:37:36 2010//
+! /kg_gpw_fm_mol_types.F/1.40/Sun Jan  3 23:41:36 2010//
+! /kg_gpw_fm_mol_utils.F/1.54/Wed Mar 24 13:04:05 2010//
+! /kg_gpw_pw_env_methods.F/1.69/Sun Jan  3 23:41:36 2010//
+! /kg_gpw_pw_env_types.F/1.23/Sun Jan  3 23:41:36 2010//
+! /kg_gpw_wf_history.F/1.19/Tue Jan 26 15:24:49 2010//
+! /kg_intra.F/1.38/Sun Jan  3 23:41:36 2010//
+! /kg_kxc.F/1.46/Sun Jan  3 23:41:36 2010//
+! /kg_main.F/1.65/Sun Jan  3 23:41:36 2010//
+! /kg_neighbor_lists.F/1.42/Mon Mar  8 18:56:43 2010//
+! /kg_ppl.F/1.38/Mon Mar  8 18:56:43 2010//
+! /kg_rho_methods.F/1.24/Sun Jan  3 23:41:36 2010//
+! /kg_rho_types.F/1.21/Sun Jan  3 23:41:36 2010//
+! /kg_rspw_methods.F/1.51/Sun Jan  3 23:41:36 2010//
+! /kg_rspw_types.F/1.24/Sun Jan  3 23:41:36 2010//
+! /kg_scf.F/1.98/Mon Feb 22 15:37:36 2010//
+! /kg_scf_post.F/1.20/Tue Jan 26 15:24:49 2010//
+! /kg_scf_types.F/1.21/Sun Jan  3 23:41:36 2010//
+! /kinds.F/1.35/Sun Jan  3 23:41:36 2010//
+! /lapack.F/1.22/Sun Jan  3 23:41:36 2010//
+! /lazy.F/1.10/Sun Jan  3 23:41:36 2010//
+! /lebedev.F/1.19/Sun Jan  3 23:41:36 2010//
+  /lgrid_types.F/1.1/Mon Apr 26 15:54:35 2010//
+! /library_tests.F/1.112/Wed Mar 10 12:51:51 2010//
+! /linear_systems.F/1.15/Sun Jan  3 23:41:36 2010//
+! /lowdin.F/1.19/Mon Feb 22 15:37:36 2010//
+! /machine.F/1.43/Thu Mar 25 16:14:11 2010//
+! /machine_absoft.F/1.31/Sun Jan  3 23:41:36 2010//
+! /machine_aix.F/1.41/Sun Jan  3 23:41:36 2010//
+! /machine_cce.F/1.1/Thu Mar 25 16:14:11 2010//
+! /machine_dec.F/1.34/Sun Jan  3 23:41:36 2010//
+! /machine_g95.F/1.39/Sun Jan  3 23:41:36 2010//
+! /machine_gfortran.F/1.20/Wed Apr 14 12:27:33 2010//
+! /machine_intel.F/1.38/Sun Jan  3 23:41:36 2010//
+! /machine_irix.F/1.34/Sun Jan  3 23:41:36 2010//
+! /machine_nag.F/1.36/Sun Jan  3 23:41:36 2010//
+! /machine_pgi.F/1.37/Sun Jan  3 23:41:36 2010//
+! /machine_sun.F/1.33/Sun Jan  3 23:41:36 2010//
+! /machine_sx.F/1.24/Sun Jan  3 23:41:36 2010//
+! /machine_t3e.F/1.33/Sun Jan  3 23:41:36 2010//
+! /machine_xt3.F/1.28/Sun Jan  3 23:41:36 2010//
+! /machine_xt5.F/1.8/Sun Jan  3 23:41:36 2010//
+! /manybody_eam.F/1.14/Sun Jan  3 23:41:36 2010//
+! /manybody_potential.F/1.41/Sun Jan  3 23:41:36 2010//
+! /manybody_tersoff.F/1.8/Sun Jan  3 23:41:36 2010//
+! /mathconstants.F/1.22/Sun Jan  3 23:41:36 2010//
+! /mathlib.F/1.45/Sun Jan  3 23:41:36 2010//
+! /mc_control.F/1.85/Sun Jan  3 23:41:36 2010//
+! /mc_coordinates.F/1.47/Sun Jan  3 23:41:36 2010//
+! /mc_ensembles.F/1.113/Sun Jan  3 23:41:36 2010//
+! /mc_environment_types.F/1.30/Sun Jan  3 23:41:36 2010//
+! /mc_ge_moves.F/1.102/Sun Jan  3 23:41:36 2010//
+! /mc_misc.F/1.103/Mon Mar  8 18:56:43 2010//
+! /mc_move_control.F/1.40/Sun Jan  3 23:41:36 2010//
+! /mc_moves.F/1.89/Sun Jan  3 23:41:36 2010//
+! /mc_run.F/1.51/Sun Jan  3 23:41:36 2010//
+! /mc_types.F/1.69/Sun Jan  3 23:41:36 2010//
+! /md_conserved_quantities.F/1.78/Sun Jan  3 23:41:36 2010//
+! /md_ener_types.F/1.4/Sun Jan  3 23:41:36 2010//
+! /md_energies.F/1.142/Tue Mar 23 13:42:39 2010//
+! /md_environment_types.F/1.66/Sun Jan  3 23:41:36 2010//
+! /md_run.F/1.181/Tue Mar 23 12:03:28 2010//
+! /md_util.F/1.29/Sun Jan  3 23:41:36 2010//
+! /md_vel_utils.F/1.13/Sun Jan  3 23:41:36 2010//
+! /memory_utilities.F/1.46/Sun Jan  3 23:41:36 2010//
+! /message__nametype1__passing.instantiation/1.1/Fri Nov 27 13:29:00 2009//
+! /message__nametype1__passing.template/1.3/Tue Mar  2 13:43:45 2010//
+! /message_c_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /message_d_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /message_i_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /message_l_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /message_passing.F/1.135/Wed Mar 24 14:30:08 2010//
+! /message_r_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /message_z_passing.F/1.3/Tue Mar  2 13:43:46 2010//
+! /metadynamics.F/1.81/Tue Mar 23 12:03:28 2010//
+! /metadynamics_types.F/1.43/Sat Mar 13 23:18:03 2010//
+! /metadynamics_utils.F/1.18/Sat Mar 13 23:18:03 2010//
+! /mixed_energy_types.F/1.14/Sun Jan  3 23:41:36 2010//
+! /mixed_environment.F/1.23/Sun Jan  3 23:41:36 2010//
+! /mixed_environment_types.F/1.14/Sun Jan  3 23:41:36 2010//
+! /mixed_main.F/1.23/Sun Jan  3 23:41:36 2010//
+! /mm_collocate_potential.F/1.36/Sun Jan  3 23:41:36 2010//
+! /mm_mapping_library.F/1.10/Sun Jan  3 23:41:36 2010//
+! /mod.header/1.7/Sun Jan  3 23:41:36 2010//
+! /mode_selective.F/1.18/Wed Apr 21 15:16:51 2010//
+! /mol_force.F/1.44/Fri Apr  9 09:13:46 2010//
+! /mol_kind_new_list_types.F/1.25/Sun Jan  3 23:41:36 2010//
+! /mol_new_list_types.F/1.23/Sun Jan  3 23:41:36 2010//
+! /molden_utils.F/1.2/Sun Jan  3 23:41:36 2010//
+! /molecular_states.F/1.68/Fri Feb 12 11:45:35 2010//
+! /molecule_kind_types.F/1.93/Fri Feb 19 14:43:10 2010//
+! /molecule_types_new.F/1.37/Sun Jan  3 23:41:36 2010//
+! /molsym.F/1.9/Sun Jan  3 23:41:36 2010//
+! /moments_utils.F/1.9/Sun Jan  3 23:41:36 2010//
+! /motion_utils.F/1.21/Sun Jan  3 23:41:36 2010//
+! /mt_util.F/1.37/Sun Jan  3 23:41:36 2010//
+! /mulliken.F/1.45/Mon Feb 22 15:37:36 2010//
+! /multipole_types.F/1.10/Sat Mar 20 04:09:38 2010//
+! /neb_io.F/1.28/Sun Jan  3 23:41:36 2010//
+! /neb_md_utils.F/1.16/Sun Jan  3 23:41:36 2010//
+! /neb_methods.F/1.37/Sun Jan  3 23:41:36 2010//
+! /neb_opt_utils.F/1.19/Sun Jan  3 23:41:36 2010//
+! /neb_types.F/1.13/Sun Jan  3 23:41:36 2010//
+! /neb_utils.F/1.34/Sun Jan  3 23:41:36 2010//
+! /orbital_pointers.F/1.23/Sun Jan  3 23:41:36 2010//
+! /orbital_symbols.F/1.18/Sun Jan  3 23:41:36 2010//
+! /orbital_transformation_matrices.F/1.33/Sun Jan  3 23:41:36 2010//
+! /pair_potential.F/1.107/Fri Apr  9 09:13:46 2010//
+  /pair_potential_coulomb.F/1.1/Fri Apr  9 09:13:46 2010//
+! /pair_potential_types.F/1.48/Fri Apr  9 09:13:46 2010//
+! /pair_potential_util.F/1.20/Fri Apr  9 09:13:46 2010//
+! /parallel_rng_types.F/1.25/Thu Feb 18 13:57:21 2010//
+! /particle_list_types.F/1.23/Sun Jan  3 23:41:36 2010//
+! /particle_types.F/1.134/Sun Jan  3 23:41:36 2010//
+! /paw_proj_set_types.F/1.42/Sun Jan  3 23:41:36 2010//
+! /periodic_table.F/1.21/Sun Jan  3 23:41:36 2010//
+! /physcon.F/1.24/Sun Jan  3 23:41:36 2010//
+! /pint_io.F/1.5/Thu Feb 18 16:41:25 2010//
+! /pint_methods.F/1.22/Thu Feb 18 13:57:21 2010//
+! /pint_normalmode.F/1.2/Sun Jan  3 23:41:36 2010//
+! /pint_public.F/1.3/Thu Feb 18 13:57:21 2010//
+! /pint_staging.F/1.2/Sun Jan  3 23:41:36 2010//
+! /pint_transformations.F/1.2/Sun Jan  3 23:41:36 2010//
+! /pint_types.F/1.39/Thu Feb 18 13:57:21 2010//
+! /pme.F/1.61/Sun Jan  3 23:41:36 2010//
+! /pme_tools.F/1.13/Sun Jan  3 23:41:36 2010//
+! /powell.F/1.13/Wed Mar 24 19:26:46 2010//
+! /preconditioner.F/1.117/Wed Mar 24 17:13:43 2010//
+! /preconditioner_types.F/1.11/Fri Feb 12 16:10:06 2010//
+! /prep.f90/1.3/Sun Jul 15 00:16:04 2007//
+! /ps_wavelet_base.F/1.14/Sun Jan  3 23:41:36 2010//
+! /ps_wavelet_fft3d.F/1.10/Sun Jan  3 23:41:36 2010//
+! /ps_wavelet_kernel.F/1.14/Sun Jan  3 23:41:36 2010//
+! /ps_wavelet_scaling_function.F/1.9/Sun Jan  3 23:41:36 2010//
+! /ps_wavelet_types.F/1.26/Sun Jan  3 23:41:36 2010//
+! /ps_wavelet_util.F/1.15/Sun Jan  3 23:41:36 2010//
+! /pw_env_methods.F/1.113/Sun Jan  3 23:41:36 2010//
+! /pw_env_types.F/1.36/Sun Jan  3 23:41:36 2010//
+! /pw_grid_info.F/1.9/Sun Jan  3 23:41:36 2010//
+! /pw_grid_types.F/1.33/Sun Jan  3 23:41:36 2010//
+! /pw_grids.F/1.111/Sun Jan  3 23:41:36 2010//
+! /pw_methods.F/1.18/Sun Jan  3 23:41:36 2010//
+! /pw_methods_cuda.F/1.5/Sun Jan  3 23:41:36 2010//
+! /pw_poisson_methods.F/1.25/Sun Jan  3 23:41:36 2010//
+! /pw_poisson_types.F/1.29/Sun Jan  3 23:41:36 2010//
+! /pw_pool_types.F/1.50/Sun Jan  3 23:41:36 2010//
+! /pw_spline_utils.F/1.78/Sun Jan  3 23:41:36 2010//
+! /pw_types.F/1.86/Sun Jan  3 23:41:36 2010//
+! /qmmm_elpot.F/1.39/Sun Jan  3 23:41:36 2010//
+! /qmmm_ff_fist.F/1.18/Sun Jan  3 23:41:36 2010//
+! /qmmm_gaussian_data.F/1.13/Sun Jan  3 23:41:36 2010//
+! /qmmm_gaussian_init.F/1.43/Sun Jan  3 23:41:36 2010//
+! /qmmm_gaussian_input.F/1.38/Sun Jan  3 23:41:36 2010//
+! /qmmm_gaussian_types.F/1.16/Sun Jan  3 23:41:36 2010//
+! /qmmm_gpw_energy.F/1.25/Sun Jan  3 23:41:36 2010//
+! /qmmm_gpw_forces.F/1.18/Sun Jan  3 23:41:36 2010//
+! /qmmm_init.F/1.127/Mon Mar  8 18:56:43 2010//
+! /qmmm_links_methods.F/1.18/Sun Jan  3 23:41:37 2010//
+! /qmmm_main.F/1.16/Sun Jan  3 23:41:37 2010//
+! /qmmm_per_elpot.F/1.33/Sun Jan  3 23:41:37 2010//
+! /qmmm_pw_grid.F/1.33/Sun Jan  3 23:41:37 2010//
+! /qmmm_se_energy.F/1.49/Mon Feb 22 15:37:36 2010//
+! /qmmm_se_forces.F/1.41/Mon Feb 22 15:37:36 2010//
+! /qmmm_topology_util.F/1.45/Sun Jan  3 23:41:37 2010//
+! /qmmm_types.F/1.54/Sun Jan  3 23:41:37 2010//
+! /qmmm_util.F/1.15/Sun Jan  3 23:41:37 2010//
+! /qs_all_potential.F/1.33/Sun Jan  3 23:41:37 2010//
+! /qs_charges_types.F/1.23/Sun Jan  3 23:41:37 2010//
+! /qs_collocate_density.F/1.227/Mon Apr 26 15:54:35 2010//
+! /qs_conductivity.F/1.28/Sun Jan  3 23:41:37 2010//
+! /qs_core_energies.F/1.68/Mon Feb 22 15:37:36 2010//
+! /qs_core_hamiltonian.F/1.194/Mon Feb 22 15:37:36 2010//
+! /qs_dftb_coulomb.F/1.38/Mon Feb 22 15:37:36 2010//
+! /qs_dftb_dispersion.F/1.13/Sun Jan  3 23:41:37 2010//
+! /qs_dftb_matrices.F/1.36/Tue Feb 23 09:21:58 2010//
+! /qs_dftb_parameters.F/1.18/Sun Jan  3 23:41:37 2010//
+! /qs_dftb_types.F/1.8/Sun Jan  3 23:41:37 2010//
+! /qs_dftb_utils.F/1.11/Sun Jan  3 23:41:37 2010//
+! /qs_diis.F/1.60/Fri Feb 12 16:10:06 2010//
+! /qs_diis_types.F/1.18/Sun Jan  3 23:41:37 2010//
+! /qs_dispersion_pairpot.F/1.13/Sun Jan  3 23:41:37 2010//
+! /qs_dispersion_types.F/1.3/Sun Jan  3 23:41:37 2010//
+! /qs_elec_field.F/1.10/Mon Feb 22 15:37:36 2010//
+! /qs_electric_field_gradient.F/1.29/Sun Jan  3 23:41:37 2010//
+! /qs_energy.F/1.95/Sat Apr  3 06:08:50 2010//
+! /qs_energy_types.F/1.46/Wed May  5 11:23:12 2010//
+! /qs_environment.F/1.256/Fri Apr  9 09:13:46 2010//
+! /qs_environment_methods.F/1.114/Thu Apr 29 13:16:45 2010//
+! /qs_environment_types.F/1.203/Wed Feb 17 18:48:19 2010//
+! /qs_epr_hyp.F/1.17/Sun Jan  3 23:41:37 2010//
+! /qs_external_potential.F/1.2/Sun Jan  3 23:41:37 2010//
+! /qs_fermi_contact.F/1.8/Mon Feb 22 15:37:36 2010//
+! /qs_force.F/1.146/Wed May  5 11:23:12 2010//
+! /qs_force_types.F/1.43/Wed May  5 11:23:12 2010//
+! /qs_gapw_densities.F/1.43/Sun Jan  3 23:41:37 2010//
+! /qs_geminals.F/1.16/Tue Mar 23 12:36:22 2010//
+! /qs_grid_atom.F/1.27/Sun Jan  3 23:41:37 2010//
+! /qs_gspace_mixing.F/1.31/Wed May  5 11:23:12 2010//
+! /qs_harmonics_atom.F/1.31/Sun Jan  3 23:41:37 2010//
+! /qs_initial_guess.F/1.95/Mon Mar  1 14:34:57 2010//
+! /qs_integrate_potential.F/1.176/Thu Apr 29 13:16:45 2010//
+! /qs_interactions.F/1.66/Tue Mar 23 12:36:22 2010//
+! /qs_kpp1_env_methods.F/1.111/Fri Feb 12 16:10:06 2010//
+! /qs_kpp1_env_types.F/1.44/Sun Jan  3 23:41:37 2010//
+! /qs_ks_apply_restraints.F/1.15/Wed Feb 17 18:48:19 2010//
+! /qs_ks_atom.F/1.66/Mon Feb 22 15:37:36 2010//
+! /qs_ks_methods.F/1.266/Wed Mar 24 16:20:53 2010//
+! /qs_ks_qmmm_methods.F/1.37/Sun Jan  3 23:41:37 2010//
+! /qs_ks_qmmm_types.F/1.23/Sun Jan  3 23:41:37 2010//
+! /qs_ks_scp_methods.F/1.16/Sun Jan  3 23:41:37 2010//
+! /qs_ks_scp_types.F/1.7/Sun Jan  3 23:41:37 2010//
+! /qs_ks_types.F/1.31/Sun Jan  3 23:41:37 2010//
+! /qs_linres_atom_current.F/1.36/Mon Feb 22 15:37:36 2010//
+! /qs_linres_current.F/1.59/Mon Apr 26 15:54:35 2010//
+! /qs_linres_current_utils.F/1.46/Fri Feb 12 16:10:06 2010//
+! /qs_linres_epr_nablavks.F/1.24/Sun Jan  3 23:41:37 2010//
+! /qs_linres_epr_ownutils.F/1.34/Sun Jan  3 23:41:37 2010//
+! /qs_linres_epr_utils.F/1.27/Sun Jan  3 23:41:37 2010//
+! /qs_linres_issc_utils.F/1.12/Fri Feb 12 16:10:06 2010//
+! /qs_linres_methods.F/1.89/Wed Feb 17 18:48:19 2010//
+! /qs_linres_module.F/1.74/Sun Jan  3 23:41:37 2010//
+! /qs_linres_nmr_epr_common_utils.F/1.9/Sun Jan  3 23:41:37 2010//
+! /qs_linres_nmr_shift.F/1.74/Sun Jan  3 23:41:37 2010//
+! /qs_linres_nmr_utils.F/1.81/Sun Jan  3 23:41:37 2010//
+! /qs_linres_op.F/1.29/Fri Feb 12 16:10:06 2010//
+! /qs_linres_types.F/1.76/Sun Jan  3 23:41:37 2010//
+! /qs_loc_control.F/1.58/Sat Apr  3 06:08:50 2010//
+! /qs_loc_methods.F/1.88/Fri Feb 12 16:10:06 2010//
+! /qs_loc_molecules.F/1.13/Thu Jan 21 12:57:17 2010//
+! /qs_loc_types.F/1.27/Thu Feb  4 16:18:21 2010//
+! /qs_loc_utils.F/1.54/Wed Apr 21 11:50:23 2010//
+! /qs_local_rho_types.F/1.28/Sun Jan  3 23:41:37 2010//
+! /qs_localization_methods.F/1.68/Wed Feb  3 21:28:14 2010//
+! /qs_main.F/1.82/Sun Jan  3 23:41:37 2010//
+! /qs_matrix_pools.F/1.30/Tue Jan 26 15:24:49 2010//
+! /qs_mo_methods.F/1.57/Mon Feb 22 15:37:36 2010//
+! /qs_mo_types.F/1.154/Sat Apr  3 06:08:50 2010//
+! /qs_modify_pab_block.F/1.17/Sun Jan  3 23:41:37 2010//
+! /qs_moments.F/1.40/Mon Feb 22 15:37:36 2010//
+! /qs_neighbor_list_types.F/1.40/Sun Jan  3 23:41:37 2010//
+! /qs_neighbor_lists.F/1.133/Thu Feb  4 17:52:12 2010//
+! /qs_oce_methods.F/1.52/Sun Jan  3 23:41:37 2010//
+! /qs_oce_types.F/1.45/Sun Jan  3 23:41:37 2010//
+! /qs_operators_ao.F/1.58/Mon Feb 22 15:37:36 2010//
+! /qs_ot.F/1.113/Tue Mar 30 08:33:49 2010//
+! /qs_ot_eigensolver.F/1.68/Tue Mar 30 08:33:49 2010//
+! /qs_ot_minimizer.F/1.62/Tue Mar 30 08:33:49 2010//
+! /qs_ot_scf.F/1.93/Sat Apr  3 06:08:50 2010//
+! /qs_ot_types.F/1.18/Thu Feb 25 11:05:50 2010//
+! /qs_outer_scf.F/1.20/Sun Jan  3 23:41:37 2010//
+! /qs_overlap.F/1.74/Fri Feb 12 16:10:06 2010//
+! /qs_p_env_methods.F/1.97/Fri Feb 12 16:10:06 2010//
+! /qs_p_env_types.F/1.45/Sun Jan  3 23:41:37 2010//
+! /qs_p_sparse_psi.F/1.24/Sun Jan  3 23:41:37 2010//
+! /qs_pdos.F/1.29/Wed Feb  3 11:42:07 2010//
+! /qs_resp.F/1.11/Sun Jan  3 23:41:37 2010//
+! /qs_rho0_ggrid.F/1.83/Sun Jan  3 23:41:37 2010//
+! /qs_rho0_methods.F/1.69/Sun Jan  3 23:41:37 2010//
+! /qs_rho0_types.F/1.42/Sat Apr  3 06:08:50 2010//
+! /qs_rho_atom_methods.F/1.89/Mon Feb 22 15:37:36 2010//
+! /qs_rho_atom_types.F/1.23/Sun Jan  3 23:41:37 2010//
+! /qs_rho_methods.F/1.72/Sat Feb 13 13:46:29 2010//
+! /qs_rho_types.F/1.42/Sun Jan  3 23:41:37 2010//
+! /qs_scf.F/1.506/Wed May  5 11:23:12 2010//
+! /qs_scf_diagonalization.F/1.20/Sat Apr  3 06:08:50 2010//
+! /qs_scf_lanczos.F/1.6/Sun Jan  3 23:41:37 2010//
+! /qs_scf_methods.F/1.46/Mon Feb 22 15:37:36 2010//
+! /qs_scf_post_gpw.F/1.69/Sat Apr  3 06:08:50 2010//
+! /qs_scf_post_se.F/1.29/Wed Feb 17 18:48:19 2010//
+! /qs_scf_types.F/1.48/Fri Feb 19 09:36:57 2010//
+! /qs_spin_orbit.F/1.13/Mon Feb 22 15:37:36 2010//
+! /qs_tddfpt_eigensolver.F/1.80/Tue Feb  9 16:30:55 2010//
+! /qs_tddfpt_module.F/1.82/Sun Jan  3 23:41:37 2010//
+! /qs_tddfpt_types.F/1.51/Sun Jan  3 23:41:37 2010//
+! /qs_tddfpt_utils.F/1.88/Sun Jan  3 23:41:37 2010//
+! /qs_util.F/1.21/Sun Jan  3 23:41:37 2010//
+! /qs_vxc_atom.F/1.73/Sun Jan  3 23:41:37 2010//
+! /qs_wf_history_methods.F/1.88/Fri Feb 12 16:10:06 2010//
+! /qs_wf_history_types.F/1.32/Sun Jan  3 23:41:38 2010//
+! /rd_amber_section_1.f90/1.3/Thu Sep 17 22:37:35 2009//
+! /reallocate_1.f90/1.1/Fri Jan 11 14:52:23 2008//
+! /reallocate_2.f90/1.1/Fri Jan 11 14:52:23 2008//
+! /reallocate_3.f90/1.1/Fri Jan 11 14:52:23 2008//
+! /reallocate_4.f90/1.1/Fri Jan 11 14:52:23 2008//
+! /reallocate_5.f90/1.1/Fri Jan 11 14:52:23 2008//
+! /realspace_grid_cube.F/1.21/Sun Jan  3 23:41:38 2010//
+! /realspace_grid_types.F/1.135/Sun Jan  3 23:41:38 2010//
+! /reference_manager.F/1.11/Sun Jan  3 23:41:38 2010//
+! /reftraj_types.F/1.20/Sun Jan  3 23:41:38 2010//
+! /reftraj_util.F/1.28/Sun Jan  3 23:41:38 2010//
+! /rel_control_types.F/1.6/Sun Jan  3 23:41:38 2010//
+! /replica_methods.F/1.28/Sun Jan  3 23:41:38 2010//
+! /replica_types.F/1.34/Sun Jan  3 23:41:38 2010//
+! /restraint.F/1.31/Sun Jan  3 23:41:38 2010//
+! /ri_environment_types.F/1.5/Wed Feb  3 10:28:57 2010//
+! /rmsd.F/1.11/Sun Jan  3 23:41:38 2010//
+! /rt_make_propagators.F/1.11/Sun Jan  3 23:41:38 2010//
+! /rt_matrix_exp.F/1.17/Sun Jan  3 23:41:38 2010//
+! /rt_propagation.F/1.21/Sun Jan  3 23:41:38 2010//
+! /rt_propagation_methods.F/1.23/Fri Feb 12 16:10:06 2010//
+! /rt_propagation_output.F/1.15/Sun Jan  3 23:41:38 2010//
+! /rt_propagation_types.F/1.8/Sun Jan  3 23:41:38 2010//
+! /rt_propagation_utils.F/1.21/Sat Apr  3 06:08:50 2010//
+! /rt_propagator_init.F/1.3/Sun Jan  3 23:41:38 2010//
+! /s_square_methods.F/1.18/Sun Jan  3 23:41:38 2010//
+! /sap_kind_types.F/1.5/Sun Jan  3 23:41:38 2010//
+! /scf_control_types.F/1.83/Sat Apr  3 06:08:50 2010//
+! /scp_coeff_types.F/1.14/Sun Jan  3 23:41:38 2010//
+! /scp_density_methods.F/1.26/Sun Jan  3 23:41:38 2010//
+! /scp_diis_utils.F/1.6/Sun Jan  3 23:41:38 2010//
+! /scp_dispersion.F/1.24/Sun Jan  3 23:41:38 2010//
+! /scp_energy.F/1.15/Sun Jan  3 23:41:38 2010//
+! /scp_energy_types.F/1.10/Sun Jan  3 23:41:38 2010//
+! /scp_environment.F/1.25/Fri Feb 12 16:10:06 2010//
+! /scp_environment_methods.F/1.7/Sun Jan  3 23:41:38 2010//
+! /scp_environment_types.F/1.10/Sun Jan  3 23:41:38 2010//
+! /scp_force_types.F/1.10/Sun Jan  3 23:41:38 2010//
+! /scp_hartree_1center.F/1.24/Mon Feb 22 15:37:36 2010//
+! /scp_nddo_utils.F/1.14/Mon Feb 22 15:37:37 2010//
+! /scp_restarts.F/1.10/Sun Jan  3 23:41:38 2010//
+! /scp_rho_methods.F/1.9/Sun Jan  3 23:41:38 2010//
+! /scp_rho_types.F/1.8/Sun Jan  3 23:41:38 2010//
+! /scp_rspw_methods.F/1.10/Sun Jan  3 23:41:38 2010//
+! /scp_rspw_types.F/1.10/Sun Jan  3 23:41:38 2010//
+! /se_core_core.F/1.3/Sun Jan  3 23:41:38 2010//
+! /se_core_matrix.F/1.12/Mon Feb 22 15:37:37 2010//
+! /se_fock_matrix.F/1.14/Tue Feb 23 09:21:58 2010//
+! /se_fock_matrix_coulomb.F/1.21/Mon Feb 22 15:37:37 2010//
+! /se_fock_matrix_dbg.F/1.7/Fri Feb 12 16:10:06 2010//
+! /se_fock_matrix_exchange.F/1.6/Mon Feb 22 15:37:37 2010//
+! /se_fock_matrix_integrals.F/1.8/Wed Mar 24 18:42:10 2010//
+! /semi_empirical_expns3_methods.F/1.4/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_expns3_types.F/1.3/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int3_utils.F/1.3/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_ana.F/1.63/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_args.h/1.1/Wed Mar 11 22:52:11 2009//
+! /semi_empirical_int_arrays.F/1.16/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_debug.F/1.20/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_debug.h/1.11/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_gks.F/1.18/Mon Jan  4 09:47:19 2010//
+! /semi_empirical_int_num.F/1.34/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_int_utils.F/1.36/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_integrals.F/1.58/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_mpole_methods.F/1.17/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_mpole_types.F/1.8/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_par_utils.F/1.21/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_parameters.F/1.47/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_store_int_types.F/1.9/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_types.F/1.52/Sun Jan  3 23:41:38 2010//
+! /semi_empirical_utils.F/1.58/Sun Jan  3 23:41:38 2010//
+! /shell_opt.F/1.5/Sun Jan  3 23:41:38 2010//
+! /shell_potential_types.F/1.11/Sun Jan  3 23:41:38 2010//
+! /simpar_methods.F/1.8/Sun Jan  3 23:41:38 2010//
+! /simpar_types.F/1.5/Sun Jan  3 23:41:38 2010//
+! /soft_basis_set.F/1.19/Sun Jan  3 23:41:38 2010//
+! /sort.f90/1.1/Tue Jan  8 09:31:56 2008//
+! /sort_m.f90/1.1/Thu Nov  6 23:00:47 2008//
+! /sparse_matrix_output.F/1.23/Sun Jan  3 23:41:38 2010//
+! /sparse_matrix_types.F/1.118/Sun Jan  3 23:41:38 2010//
+! /spherical_harmonics.F/1.33/Sun Jan  3 23:41:38 2010//
+! /splines_methods.F/1.13/Fri Apr  9 09:13:46 2010//
+! /splines_types.F/1.9/Fri Apr  9 09:13:46 2010//
+! /spme.F/1.63/Sun Jan  3 23:41:38 2010//
+! /statistical_methods.F/1.6/Sun Jan  3 23:41:38 2010//
+! /stm_images.F/1.12/Fri Feb 12 16:10:06 2010//
+! /sto_ng.F/1.18/Sun Jan  3 23:41:38 2010//
+! /string_table.F/1.10/Sun Jan  3 23:41:38 2010//
+! /string_utilities.F/1.41/Sun Jan  3 23:41:38 2010//
+! /structure_factor_types.F/1.16/Sun Jan  3 23:41:38 2010//
+! /structure_factors.F/1.19/Sun Jan  3 23:41:38 2010//
+! /sub.header/1.8/Sat Feb  2 15:39:09 2008//
+! /t_c_g0.F/1.4/Sat Apr  3 08:51:53 2010//
+! /taper_types.F/1.4/Sun Jan  3 23:41:38 2010//
+! /task_list_methods.F/1.49/Thu Apr 29 13:16:45 2010//
+! /task_list_types.F/1.8/Thu Apr 29 13:16:45 2010//
+! /termination.F/1.42/Tue Apr 20 19:15:52 2010//
+! /thermal_region_types.F/1.3/Sun Jan  3 23:41:38 2010//
+! /thermal_region_utils.F/1.5/Sun Jan  3 23:41:38 2010//
+! /thermostat_mapping.F/1.16/Sun Jan  3 23:41:38 2010//
+! /thermostat_methods.F/1.37/Sun Jan  3 23:41:38 2010//
+! /thermostat_types.F/1.25/Sun Jan  3 23:41:38 2010//
+! /thermostat_utils.F/1.30/Sun Jan  3 23:41:38 2010//
+! /timings.F/1.67/Sun Jan  3 23:41:38 2010//
+! /timings_mp.F/1.3/Sun Jan  3 23:41:38 2010//
+! /timings_mp.h/1.3/Sun Jan  3 23:41:38 2010//
+! /topology.F/1.140/Sun Jan  3 23:41:38 2010//
+! /topology_amber.F/1.17/Sun Jan  3 23:41:38 2010//
+! /topology_cif.F/1.9/Mon Jan  4 19:27:09 2010//
+! /topology_connectivity_util.F/1.29/Sun Jan  3 23:41:38 2010//
+! /topology_constraint_util.F/1.46/Fri Feb 19 14:43:10 2010//
+! /topology_coordinate_util.F/1.28/Mon Mar  8 18:56:43 2010//
+! /topology_generate_util.F/1.44/Sun Jan  3 23:41:38 2010//
+! /topology_gromos.F/1.36/Sun Jan  3 23:41:38 2010//
+! /topology_input.F/1.102/Sun Jan  3 23:41:38 2010//
+! /topology_multiple_unit_cell.F/1.4/Sun Jan  3 23:41:38 2010//
+! /topology_pdb.F/1.75/Sun Jan  3 23:41:38 2010//
+! /topology_psf.F/1.90/Sat Mar 20 04:09:38 2010//
+! /topology_types.F/1.85/Sun Jan  3 23:41:38 2010//
+! /topology_util.F/1.231/Sun Jan  3 23:41:38 2010//
+! /topology_xtl.F/1.3/Sun Jan  3 23:41:38 2010//
+! /topology_xyz.F/1.34/Sun Jan  3 23:41:38 2010//
+! /util.F/1.33/Sun Jan  3 23:41:38 2010//
+! /velocity_verlet_control.F/1.55/Sun Jan  3 23:41:38 2010//
+! /vibrational_analysis.F/1.45/Sun Jan  3 23:41:38 2010//
+! /virial_methods.F/1.22/Sun Jan  3 23:41:38 2010//
+! /virial_types.F/1.25/Sun Jan  3 23:41:38 2010//
+! /whittaker.F/1.27/Sun Jan  3 23:41:38 2010//
+! /wiener_process.F/1.27/Sun Jan  3 23:41:38 2010//
+! /xas_control.F/1.52/Sat Apr  3 06:08:50 2010//
+! /xas_env_types.F/1.33/Sat Apr 24 11:31:28 2010//
+! /xas_methods.F/1.106/Sat Apr  3 06:08:50 2010//
+! /xas_restart.F/1.26/Wed May  5 11:23:12 2010//
+! /xas_tp_scf.F/1.93/Wed May  5 11:23:12 2010//
+! /xc.F/1.176/Wed Mar 24 22:23:00 2010//
+! /xc_adiabatic_methods.F/1.10/Sun Jan  3 23:41:38 2010//
+! /xc_atom.F/1.46/Sun Jan  3 23:41:38 2010//
+! /xc_b97.F/1.3/Sun Jan  3 23:41:38 2010//
+! /xc_cs1.F/1.21/Sun Jan  3 23:41:38 2010//
+! /xc_derivative_desc.F/1.24/Sun Jan  3 23:41:38 2010//
+! /xc_derivative_set_types.F/1.22/Sun Jan  3 23:41:38 2010//
+! /xc_derivative_types.F/1.35/Sun Jan  3 23:41:38 2010//
+! /xc_derivatives.F/1.74/Sun Jan  3 23:41:38 2010//
+! /xc_exchange_gga.F/1.34/Tue Mar 23 16:03:12 2010//
+! /xc_functionals_utilities.F/1.22/Sun Jan  3 23:41:38 2010//
+! /xc_hcth.F/1.20/Sun Jan  3 23:41:38 2010//
+! /xc_ke_gga.F/1.33/Sun Jan  3 23:41:38 2010//
+! /xc_lyp.F/1.26/Sun Jan  3 23:41:38 2010//
+! /xc_lyp_adiabatic.F/1.13/Sun Jan  3 23:41:38 2010//
+! /xc_optx.F/1.19/Sun Jan  3 23:41:38 2010//
+! /xc_pade.F/1.36/Sun Jan  3 23:41:38 2010//
+! /xc_pbe.F/1.24/Tue Mar  2 11:14:25 2010//
+! /xc_perdew86.F/1.27/Sun Jan  3 23:41:38 2010//
+! /xc_perdew_wang.F/1.26/Sun Jan  3 23:41:38 2010//
+! /xc_perdew_zunger.F/1.26/Sun Jan  3 23:41:38 2010//
+! /xc_pot_saop.F/1.44/Fri Feb 12 16:10:06 2010//
+! /xc_rho_cflags_types.F/1.17/Sun Jan  3 23:41:38 2010//
+! /xc_rho_set_types.F/1.63/Sun Jan  3 23:41:38 2010//
+! /xc_tfw.F/1.21/Sun Jan  3 23:41:38 2010//
+! /xc_thomas_fermi.F/1.22/Sun Jan  3 23:41:38 2010//
+! /xc_tpss.F/1.23/Sun Jan  3 23:41:39 2010//
+! /xc_vwn.F/1.29/Tue Mar 23 16:03:12 2010//
+! /xc_xalpha.F/1.27/Sun Jan  3 23:41:39 2010//
+! /xc_xbecke88.F/1.34/Sun Jan  3 23:41:39 2010//
+! /xc_xbecke88_long_range.F/1.11/Sun Jan  3 23:41:39 2010//
+! /xc_xbecke88_lr_adiabatic.F/1.7/Sun Jan  3 23:41:39 2010//
+! /xc_xbecke_roussel.F/1.5/Sun Jan  3 23:41:39 2010//
+! /xc_xbr_pbe_lda_hole_t_c_lr.F/1.3/Mon Jan  4 09:47:19 2010//
+! /xc_xlda_hole_t_c_lr.F/1.3/Sun Jan  3 23:41:39 2010//
+! /xc_xpbe_hole_t_c_lr.F/1.5/Thu Mar 25 14:31:54 2010//
+! /xc_xwpbe.F/1.18/Sun Jan  3 23:41:39 2010//
+! /xray_diffraction.F/1.31/Sun Jan  3 23:41:39 2010//
+! D
+--- 1,801 ----
+! D/lib////
+! /barostat_types.F/1.19/Result of merge//
+! /barostat_utils.F/1.6/Result of merge//
+! /constraint.F/1.80/Result of merge//
+! /csvr_system_mapping.F/1.19/Result of merge//
+! /extended_system_init.F/1.21/Result of merge//
+! /force_env_methods.F/1.163/Result of merge//
+! /input_constants.F/1.281/Result of merge+Thu Mar 25 12:51:46 2010//
+! /input_cp2k_check.F/1.77/Result of merge//
+! /input_cp2k_mm.F/1.106/Result of merge//
+! /input_cp2k_motion.F/1.222/Result of merge//
+! /input_cp2k_subsys.F/1.129/Result of merge+Thu Mar 25 12:51:51 2010//
+! /integrator.F/1.193/Result of merge//
+! /integrator_utils.F/1.22/Result of merge//
+! /md_conserved_quantities.F/1.78/Result of merge//
+! /md_energies.F/1.142/Result of merge//
+! /md_run.F/1.181/Result of merge//
+! /md_vel_utils.F/1.13/Result of merge//
+! /motion_utils.F/1.21/Result of merge//
+! /particle_types.F/1.134/Result of merge//
+! /simpar_methods.F/1.8/Result of merge//
+! /thermal_region_utils.F/1.5/Result of merge//
+! /thermostat_methods.F/1.37/Result of merge//
+! /thermostat_utils.F/1.30/Result of merge//
+! /topology.F/1.140/Result of merge//
+! /topology_coordinate_util.F/1.28/Result of merge+Thu Mar 25 12:53:14 2010//
+! /velocity_verlet_control.F/1.55/Result of merge//
+! /_el_typename__list_types.instantiation/1.6/Wed Apr  7 15:00:22 2010//
+! /_el_typename__list_types.template/1.10/Wed Apr  7 15:00:41 2010//
+! /admm_methods.F/1.8/Wed Apr  7 15:00:13 2010//
+! /admm_types.F/1.4/Wed Apr  7 15:00:43 2010//
+! /ai_angmom.F/1.20/Wed Apr  7 15:00:29 2010//
+! /ai_coulomb.F/1.37/Wed Apr  7 15:00:29 2010//
+! /ai_coulomb_test.F/1.10/Wed Apr  7 15:00:08 2010//
+! /ai_derivatives.F/1.24/Wed Apr  7 15:00:27 2010//
+! /ai_elec_field.F/1.3/Wed Apr  7 15:00:18 2010//
+! /ai_eri_debug.F/1.2/Wed Apr  7 15:00:12 2010//
+! /ai_fermi_contact.F/1.4/Wed Apr  7 15:00:20 2010//
+! /ai_geminals.F/1.12/Wed Apr  7 15:00:27 2010//
+! /ai_geminals_debug.F/1.2/Wed Apr  7 15:00:21 2010//
+! /ai_geminals_utils.F/1.2/Wed Apr  7 15:00:35 2010//
+! /ai_kinetic.F/1.19/Wed Apr  7 15:00:27 2010//
+! /ai_moments.F/1.28/Wed Apr  7 15:00:07 2010//
+! /ai_os_rr.F/1.6/Wed Apr  7 15:00:30 2010//
+! /ai_overlap_new.F/1.19/Wed Apr  7 15:00:35 2010//
+! /ai_overlap_ppl.F/1.22/Wed Apr  7 15:00:33 2010//
+! /ai_spin_orbit.F/1.6/Wed Apr  7 15:00:33 2010//
+! /ai_verfc.F/1.28/Wed Apr  7 15:00:40 2010//
+! /atom.F/1.16/Wed Apr  7 15:00:17 2010//
+! /atom_basis.F/1.5/Wed Apr  7 15:00:27 2010//
+! /atom_energy.F/1.9/Wed Apr  7 15:00:31 2010//
+! /atom_fit.F/1.18/Wed Apr  7 15:00:09 2010//
+! /atom_kind_orbitals.F/1.13/Wed Apr  7 15:00:11 2010//
+! /atom_operators.F/1.19/Wed Apr  7 14:59:59 2010//
+! /atom_optimization.F/1.6/Wed Apr  7 15:00:37 2010//
+! /atom_pseudo.F/1.7/Wed Apr  7 15:00:15 2010//
+! /atom_utils.F/1.24/Wed Apr  7 15:00:41 2010//
+! /atom_xc.F/1.15/Wed Apr  7 15:00:42 2010//
+! /atomic_charges.F/1.12/Wed Apr  7 15:00:39 2010//
+! /atomic_kind_list_types.F/1.25/Wed Apr  7 15:00:33 2010//
+! /atoms_input.F/1.109/Wed Apr  7 15:00:23 2010//
+! /averages_types.F/1.9/Wed Apr  7 15:00:08 2010//
+! /basis_set_types.F/1.79/Wed Apr  7 15:00:37 2010//
+! /bessel_lib.F/1.15/Wed Apr  7 15:00:15 2010//
+! /beta_gamma_psi.F/1.12/Wed Apr  7 15:00:19 2010//
+! /block_p_types.F/1.10/Wed Apr  7 15:00:12 2010//
+! /bsse.F/1.41/Wed Apr  7 15:00:16 2010//
+! /c_mpi_calls.F/1.12/Wed Apr  7 15:00:23 2010//
+! /call_collocate.f90/1.2/Wed Apr  7 15:00:06 2010//
+! /call_collocate_omp.f90/1.2/Wed Apr  7 15:00:12 2010//
+! /call_integrate.f90/1.2/Wed Apr  7 15:00:32 2010//
+! /cell_opt.F/1.5/Wed Apr  7 15:00:31 2010//
+! /cell_opt_types.F/1.6/Wed Apr  7 15:00:44 2010//
+! /cell_opt_utils.F/1.12/Wed Apr  7 15:00:37 2010//
+! /cell_types.F/1.50/Wed Apr  7 15:00:26 2010//
+! /cg_test.F/1.26/Wed Apr  7 15:00:20 2010//
+! /cg_utils.F/1.17/Wed Apr  7 15:00:35 2010//
+! /colvar_utils.F/1.8/Wed Apr  7 15:00:23 2010//
+! /constraint_3x3.F/1.24/Wed Apr  7 15:00:19 2010//
+! /constraint_4x6.F/1.26/Wed Apr  7 15:00:28 2010//
+! /constraint_clv.F/1.35/Wed Apr  7 15:00:24 2010//
+! /constraint_fxd.F/1.14/Wed Apr  7 15:00:17 2010//
+! /constraint_util.F/1.12/Wed Apr  7 15:00:29 2010//
+! /constraint_vsite.F/1.4/Wed Apr  7 15:00:09 2010//
+! /core_ae.F/1.10/Wed Apr  7 15:00:17 2010//
+! /core_ppl.F/1.13/Wed Apr  7 15:00:33 2010//
+! /core_ppnl.F/1.15/Wed Apr  7 15:00:20 2010//
+! /cp2k.F/1.107/Wed Apr  7 15:00:28 2010//
+! /cp2k_debug.F/1.9/Wed Apr  7 15:00:34 2010//
+! /cp2k_shell.F/1.10/Wed Apr  7 15:00:23 2010//
+! /cp__el_name__pool_types.instantiation/1.11/Wed Apr  7 15:00:38 2010//
+! /cp__el_name__pool_types.template/1.13/Wed Apr  7 15:00:39 2010//
+! /cp_array__nametype1__utils.instantiation/1.8/Wed Apr  7 15:00:29 2010//
+! /cp_array__nametype1__utils.template/1.26/Wed Apr  7 15:00:43 2010//
+! /cp_array_i_utils.F/1.47/Wed Apr  7 15:00:17 2010//
+! /cp_array_logical_utils.F/1.46/Wed Apr  7 15:00:14 2010//
+! /cp_array_r_utils.F/1.47/Wed Apr  7 15:00:41 2010//
+! /cp_array_utils.F/1.14/Wed Apr  7 15:00:31 2010//
+! /cp_blacs_calls.F/1.17/Wed Apr  7 15:00:40 2010//
+! /cp_blacs_env.F/1.38/Wed Apr  7 15:00:10 2010//
+! /cp_cfm_basic_linalg.F/1.35/Wed Apr  7 15:00:30 2010//
+! /cp_cfm_diag.F/1.21/Wed Apr  7 15:00:28 2010//
+! /cp_cfm_types.F/1.34/Wed Apr  7 15:00:30 2010//
+! /cp_common_uses.h/1.7/Wed Apr  7 15:00:41 2010//
+! /cp_control_types.F/1.159/Wed Apr  7 15:00:42 2010//
+! /cp_control_utils.F/1.259/Wed Apr  7 15:00:39 2010//
+! /cp_dbcsr_cholesky.F/1.5/Wed Apr  7 15:00:30 2010//
+! /cp_dbcsr_diag.F/1.8/Wed Apr  7 15:00:00 2010//
+! /cp_dbcsr_operations.F/1.120/Wed Apr  7 15:00:41 2010//
+! /cp_dbcsr_output.F/1.6/Wed Apr  7 15:00:27 2010//
+! /cp_ddapc.F/1.75/Wed Apr  7 15:00:38 2010//
+! /cp_ddapc_forces.F/1.32/Wed Apr  7 15:00:36 2010//
+! /cp_ddapc_types.F/1.35/Wed Apr  7 15:00:21 2010//
+! /cp_ddapc_util.F/1.23/Wed Apr  7 15:00:44 2010//
+! /cp_error_handling.F/1.53/Wed Apr  7 15:00:33 2010//
+! /cp_files.F/1.22/Wed Apr  7 15:00:39 2010//
+! /cp_fm_basic_linalg.F/1.87/Wed Apr  7 15:00:18 2010//
+! /cp_fm_cholesky.F/1.27/Wed Apr  7 15:00:10 2010//
+! /cp_fm_pool_types.F/1.34/Wed Apr  7 15:00:32 2010//
+! /cp_fm_struct.F/1.51/Wed Apr  7 15:00:18 2010//
+! /cp_fm_vect.F/1.33/Wed Apr  7 15:00:26 2010//
+! /cp_iter_types.F/1.10/Wed Apr  7 15:00:00 2010//
+! /cp_lbfgs.F/1.29/Wed Apr  7 15:00:14 2010//
+! /cp_lbfgs_geo.F/1.16/Wed Apr  7 15:00:12 2010//
+! /cp_lbfgs_optimizer__nametype1_.instantiation/1.11/Wed Apr  7 15:00:17 2010//
+! /cp_linked_list_3d_r.F/1.31/Wed Apr  7 15:00:21 2010//
+! /cp_linked_list__nametype1_.instantiation/1.23/Wed Apr  7 15:00:14 2010//
+! /cp_linked_list__nametype1_.template/1.30/Wed Apr  7 15:00:40 2010//
+! /cp_linked_list_char.F/1.22/Wed Apr  7 15:00:11 2010//
+! /cp_linked_list_fm.F/1.39/Wed Apr  7 15:00:15 2010//
+! /cp_linked_list_int.F/1.46/Wed Apr  7 15:00:26 2010//
+! /cp_linked_list_logical.F/1.23/Wed Apr  7 15:00:37 2010//
+! /cp_linked_list_pw.F/1.38/Wed Apr  7 15:00:25 2010//
+! /cp_linked_list_real.F/1.22/Wed Apr  7 15:00:35 2010//
+! /cp_linked_list_rs.F/1.34/Wed Apr  7 15:00:14 2010//
+! /cp_linked_list_sm.F/1.33/Wed Apr  7 15:00:19 2010//
+! /cp_linked_list_val.F/1.23/Wed Apr  7 15:00:22 2010//
+! /cp_linked_list_xc_deriv.F/1.28/Wed Apr  7 15:00:33 2010//
+! /cp_log_handling.F/1.66/Wed Apr  7 15:00:11 2010//
+! /cp_matrix_utils.F/1.52/Wed Apr  7 15:00:11 2010//
+! /cp_output_handling.F/1.82/Wed Apr  7 15:00:25 2010//
+! /cp_para_env.F/1.31/Wed Apr  7 15:00:43 2010//
+! /cp_para_types.F/1.25/Wed Apr  7 15:00:39 2010//
+! /cp_parser_buffer_types.F/1.7/Wed Apr  7 15:00:31 2010//
+! /cp_parser_ilist_methods.F/1.4/Wed Apr  7 15:00:19 2010//
+! /cp_parser_ilist_types.F/1.4/Wed Apr  7 15:00:39 2010//
+! /cp_parser_inpp_methods.F/1.7/Wed Apr  7 15:00:00 2010//
+! /cp_parser_inpp_types.F/1.5/Wed Apr  7 15:00:09 2010//
+! /cp_parser_methods.F/1.19/Wed Apr  7 15:00:14 2010//
+! /cp_parser_status_types.F/1.4/Wed Apr  7 15:00:12 2010//
+! /cp_parser_types.F/1.12/Wed Apr  7 15:00:21 2010//
+! /cp_result_methods.F/1.6/Wed Apr  7 15:00:40 2010//
+! /cp_result_types.F/1.13/Wed Apr  7 15:00:15 2010//
+! /cp_sm_fm_interactions.F/1.54/Wed Apr  7 15:00:40 2010//
+! /cp_sm_pool_types.F/1.23/Wed Apr  7 15:00:09 2010//
+! /cp_sm_struct.F/1.29/Wed Apr  7 15:00:40 2010//
+! /cp_subsys_methods.F/1.13/Wed Apr  7 15:00:33 2010//
+! /cp_subsys_types.F/1.9/Wed Apr  7 15:00:37 2010//
+! /cp_symmetry.F/1.5/Wed Apr  7 15:00:20 2010//
+! /cp_units.F/1.35/Wed Apr  7 15:00:24 2010//
+! /cpot_types.F/1.12/Wed Apr  7 15:00:35 2010//
+! /csvr_system_dynamics.F/1.13/Wed Apr  7 15:00:36 2010//
+! /csvr_system_init.F/1.16/Wed Apr  7 15:00:14 2010//
+! /csvr_system_types.F/1.17/Wed Apr  7 15:00:17 2010//
+! /csvr_system_utils.F/1.16/Wed Apr  7 15:00:24 2010//
+! /cube_utils.F/1.41/Wed Apr  7 15:00:07 2010//
+! /cuda_cublas.F/1.2/Wed Apr  7 15:00:26 2010//
+! /cuda_memory.F/1.7/Wed Apr  7 15:00:39 2010//
+! /d3_poly.F/1.12/Wed Apr  7 15:00:25 2010//
+! /dbcsr_tests.F/1.8/Wed Apr  7 15:00:31 2010//
+! /dft_plus_u.F/1.34/Wed Apr  7 15:00:34 2010//
+! /dg_rho0_types.F/1.26/Wed Apr  7 15:00:39 2010//
+! /dg_types.F/1.24/Wed Apr  7 15:00:35 2010//
+! /dgs.F/1.49/Wed Apr  7 15:00:27 2010//
+! /dimer_methods.F/1.17/Wed Apr  7 15:00:36 2010//
+! /dimer_types.F/1.14/Wed Apr  7 15:00:11 2010//
+! /dimer_utils.F/1.10/Wed Apr  7 15:00:07 2010//
+! /distribution_1d_types.F/1.27/Wed Apr  7 15:00:26 2010//
+! /distribution_2d_types.F/1.28/Wed Apr  7 15:00:24 2010//
+! /distribution_methods.F/1.40/Wed Apr  7 15:00:08 2010//
+! /distribution_optimize.F/1.15/Wed Apr  7 15:00:06 2010//
+! /dkh_main.F/1.27/Wed Apr  7 14:59:59 2010//
+! /dynamical_coeff_methods.F/1.4/Wed Apr  7 15:00:26 2010//
+! /dynamical_coeff_types.F/1.42/Wed Apr  7 15:00:43 2010//
+! /efield_utils.F/1.5/Wed Apr  7 15:00:32 2010//
+! /eigenvalueproblems.F/1.18/Wed Apr  7 15:00:26 2010//
+! /eip_environment.F/1.31/Wed Apr  7 15:00:20 2010//
+! /eip_environment_types.F/1.14/Wed Apr  7 15:00:43 2010//
+! /eip_main.F/1.23/Wed Apr  7 15:00:30 2010//
+! /eip_silicon.F/1.19/Wed Apr  7 15:00:33 2010//
+! /environment.F/1.195/Wed Apr  7 15:00:41 2010//
+! /ep_qs_methods.F/1.14/Wed Apr  7 15:00:11 2010//
+! /ep_qs_types.F/1.16/Wed Apr  7 15:00:26 2010//
+! /ep_types.F/1.19/Wed Apr  7 15:00:13 2010//
+! /erf_fn.F/1.20/Wed Apr  7 15:00:27 2010//
+! /et_coupling.F/1.22/Wed Apr  7 15:00:24 2010//
+! /et_coupling_types.F/1.10/Wed Apr  7 15:00:17 2010//
+! /ewald_pw_methods.F/1.25/Wed Apr  7 15:00:14 2010//
+! /ewald_pw_types.F/1.65/Wed Apr  7 15:00:29 2010//
+! /ewald_spline_util.F/1.26/Wed Apr  7 14:59:59 2010//
+! /ewalds.F/1.59/Wed Apr  7 15:00:15 2010//
+! /ewalds_multipole_debug.F/1.11/Wed Apr  7 15:00:36 2010//
+! /ewalds_multipole_debug.h/1.9/Wed Apr  7 15:00:15 2010//
+! /ewalds_multipole_sr.f90/1.5/Wed Apr  7 15:00:37 2010//
+! /extended_system_dynamics.F/1.39/Wed Apr  7 15:00:33 2010//
+! /extended_system_mapping.F/1.15/Wed Apr  7 15:00:34 2010//
+! /extended_system_types.F/1.37/Wed Apr  7 15:00:27 2010//
+! /external_potential_methods.F/1.8/Wed Apr  7 15:00:26 2010//
+! /external_potential_types.F/1.70/Wed Apr  7 15:00:34 2010//
+! /f77_blas.F/1.6/Wed Apr  7 15:00:42 2010//
+! /f77_blas_extra.F/1.3/Wed Apr  7 15:00:29 2010//
+! /f77_blas_generic.F/1.3/Wed Apr  7 15:00:08 2010//
+! /f77_blas_netlib.F/1.3/Wed Apr  7 15:00:16 2010//
+! /f77_blas_poison.F/1.3/Wed Apr  7 15:00:43 2010//
+! /f77_int.h/1.2/Wed Apr  7 15:00:25 2010//
+! /f77_int_low.F/1.19/Wed Apr  7 15:00:10 2010//
+! /f77_interface.F/1.87/Wed Apr  7 14:59:59 2010//
+! /farming_methods.F/1.33/Wed Apr  7 15:00:07 2010//
+! /farming_types.F/1.21/Wed Apr  7 15:00:10 2010//
+! /fermi_utils.F/1.10/Wed Apr  7 15:00:21 2010//
+! /fft_tools.F/1.84/Wed Apr  7 15:00:21 2010//
+! /fist_energy_types.F/1.17/Wed Apr  7 15:00:32 2010//
+! /fist_environment_types.F/1.45/Wed Apr  7 15:00:10 2010//
+! /fist_main.F/1.67/Wed Apr  7 15:00:42 2010//
+! /fist_pol_scf.F/1.12/Wed Apr  7 15:00:33 2010//
+! /force_env_types.F/1.89/Wed Apr  7 15:00:37 2010//
+! /force_field_types.F/1.80/Wed Apr  7 15:00:31 2010//
+! /force_fields_ext.F/1.4/Wed Apr  7 15:00:24 2010//
+! /force_fields_input.F/1.66/Wed Apr  7 15:00:41 2010//
+! /fp_methods.F/1.14/Wed Apr  7 15:00:12 2010//
+! /fp_types.F/1.13/Wed Apr  7 15:00:34 2010//
+! /fparser.F/1.10/Wed Apr  7 15:00:36 2010//
+! /free_energy_methods.F/1.25/Wed Apr  7 15:00:28 2010//
+! /free_energy_types.F/1.11/Wed Apr  7 15:00:30 2010//
+! /gamma.F/1.26/Wed Apr  7 15:00:26 2010//
+! /gaussian_gridlevels.F/1.39/Wed Apr  7 15:00:42 2010//
+! /geo_opt.F/1.64/Wed Apr  7 15:00:28 2010//
+! /gle_system_dynamics.F/1.4/Wed Apr  7 15:00:20 2010//
+! /gle_system_types.F/1.6/Wed Apr  7 15:00:25 2010//
+! /glob_matching.F/1.5/Wed Apr  7 15:00:19 2010//
+! /global_types.F/1.96/Wed Apr  7 15:00:14 2010//
+! /gopt_f77_methods.F/1.21/Wed Apr  7 15:00:27 2010//
+! /gopt_f77_methods.h/1.6/Wed Apr  7 15:00:09 2010//
+! /gopt_f_types.F/1.74/Wed Apr  7 15:00:10 2010//
+! /gopt_param_types.F/1.12/Wed Apr  7 15:00:43 2010//
+! /graphcon.F/1.12/Wed Apr  7 15:00:27 2010//
+! /harris_energy_types.F/1.17/Wed Apr  7 15:00:29 2010//
+! /harris_env_types.F/1.23/Wed Apr  7 15:00:08 2010//
+! /harris_force.F/1.53/Wed Apr  7 15:00:41 2010//
+! /harris_force_types.F/1.19/Wed Apr  7 15:00:40 2010//
+! /harris_functional.F/1.46/Wed Apr  7 15:00:16 2010//
+! /hartree_local_methods.F/1.54/Wed Apr  7 15:00:38 2010//
+! /hartree_local_types.F/1.32/Wed Apr  7 15:00:17 2010//
+! /header.F/1.44/Wed Apr  7 15:00:41 2010//
+! /helium_common.F/1.5/Wed Apr  7 15:00:00 2010//
+! /helium_interactions.F/1.3/Wed Apr  7 15:00:21 2010//
+! /helium_io.F/1.5/Wed Apr  7 15:00:15 2010//
+! /helium_methods.F/1.4/Wed Apr  7 15:00:21 2010//
+! /helium_sampling.F/1.5/Wed Apr  7 15:00:44 2010//
+! /helium_types.F/1.4/Wed Apr  7 15:00:20 2010//
+! /hfx_communication.F/1.23/Wed Apr  7 15:00:21 2010//
+! /hfx_compression_core_methods.F/1.4/Wed Apr  7 14:59:59 2010//
+! /hfx_compression_methods.F/1.8/Wed Apr  7 15:00:15 2010//
+! /hfx_contract_block.F/1.4/Wed Apr  7 15:00:28 2010//
+! /hfx_contraction_methods.F/1.4/Wed Apr  7 15:00:43 2010//
+! /hfx_derivatives.F/1.46/Wed Apr  7 15:00:42 2010//
+! /hfx_energy_potential.F/1.78/Wed Apr  7 15:00:24 2010//
+! /hfx_get_pmax_val.h/1.1/Wed Apr  7 15:00:35 2010//
+! /hfx_helpers.F/1.9/Wed Apr  7 15:00:37 2010//
+! /hfx_libint_interface.F/1.19/Wed Apr  7 15:00:26 2010//
+! /hfx_libint_wrapper.F/1.7/Wed Apr  7 15:00:14 2010//
+! /hfx_libint_wrapper_types.F/1.2/Wed Apr  7 15:00:24 2010//
+! /hfx_load_balance_methods.F/1.38/Wed Apr  7 15:00:35 2010//
+! /hfx_pair_list_methods.F/1.6/Wed Apr  7 15:00:19 2010//
+! /hfx_ri_gemopt.F/1.3/Wed Apr  7 15:00:08 2010//
+! /hfx_ri_methods.F/1.8/Wed Apr  7 15:00:29 2010//
+! /hfx_screening_methods.F/1.31/Wed Apr  7 15:00:27 2010//
+! /input_cp2k.F/1.288/Wed Apr  7 15:00:32 2010//
+! /input_cp2k_atom.F/1.20/Wed Apr  7 15:00:27 2010//
+! /input_cp2k_barostats.F/1.14/Wed Apr  7 15:00:43 2010//
+! /input_cp2k_colvar.F/1.60/Wed Apr  7 15:00:42 2010//
+! /input_cp2k_constraints.F/1.17/Wed Apr  7 15:00:33 2010//
+! /input_cp2k_distribution.F/1.12/Wed Apr  7 15:00:39 2010//
+! /input_cp2k_eip.F/1.15/Wed Apr  7 15:00:38 2010//
+! /input_cp2k_force_eval.F/1.16/Wed Apr  7 15:00:13 2010//
+! /input_cp2k_free_energy.F/1.27/Wed Apr  7 15:00:41 2010//
+! /input_cp2k_hfx.F/1.38/Wed Apr  7 15:00:40 2010//
+! /input_cp2k_mixed.F/1.4/Wed Apr  7 15:00:13 2010//
+! /input_cp2k_poisson.F/1.34/Wed Apr  7 15:00:42 2010//
+! /input_cp2k_qmmm.F/1.47/Wed Apr  7 15:00:18 2010//
+! /input_cp2k_resp.F/1.12/Wed Apr  7 15:00:13 2010//
+! /input_cp2k_restarts.F/1.114/Wed Apr  7 15:00:43 2010//
+! /input_cp2k_rsgrid.F/1.10/Wed Apr  7 15:00:34 2010//
+! /input_cp2k_thermostats.F/1.23/Wed Apr  7 15:00:32 2010//
+! /input_cp2k_xc.F/1.2/Wed Apr  7 15:00:31 2010//
+! /input_enumeration_types.F/1.21/Wed Apr  7 15:00:16 2010//
+! /input_keyword_types.F/1.61/Wed Apr  7 15:00:17 2010//
+! /input_parsing.F/1.46/Wed Apr  7 15:00:08 2010//
+! /input_section_types.F/1.98/Wed Apr  7 15:00:14 2010//
+! /input_val_types.F/1.38/Wed Apr  7 15:00:36 2010//
+! /k290.F/1.21/Wed Apr  7 15:00:16 2010//
+! /kahan_sum.F/1.10/Wed Apr  7 15:00:26 2010//
+! /kg_core.F/1.46/Wed Apr  7 15:00:28 2010//
+! /kg_density.F/1.62/Wed Apr  7 15:00:31 2010//
+! /kg_diis_methods.F/1.23/Wed Apr  7 15:00:35 2010//
+! /kg_diis_types.F/1.20/Wed Apr  7 15:00:06 2010//
+! /kg_energy.F/1.72/Wed Apr  7 15:00:09 2010//
+! /kg_energy_types.F/1.15/Wed Apr  7 15:00:28 2010//
+! /kg_energy_utils.F/1.18/Wed Apr  7 15:00:33 2010//
+! /kg_environment.F/1.125/Wed Apr  7 15:00:31 2010//
+! /kg_environment_types.F/1.50/Wed Apr  7 15:00:33 2010//
+! /kg_force.F/1.83/Wed Apr  7 15:00:13 2010//
+! /kg_force_types.F/1.21/Wed Apr  7 15:00:33 2010//
+! /kg_gpw_correction.F/1.36/Wed Apr  7 15:00:39 2010//
+! /kg_gpw_fm_mol_methods.F/1.47/Wed Apr  7 15:00:34 2010//
+! /kg_gpw_fm_mol_types.F/1.40/Wed Apr  7 15:00:34 2010//
+! /kg_gpw_fm_mol_utils.F/1.54/Wed Apr  7 15:00:41 2010//
+! /kg_gpw_pw_env_methods.F/1.69/Wed Apr  7 14:59:59 2010//
+! /kg_gpw_pw_env_types.F/1.23/Wed Apr  7 15:00:33 2010//
+! /kg_gpw_wf_history.F/1.19/Wed Apr  7 15:00:29 2010//
+! /kg_intra.F/1.38/Wed Apr  7 15:00:34 2010//
+! /kg_kxc.F/1.46/Wed Apr  7 15:00:12 2010//
+! /kg_main.F/1.65/Wed Apr  7 15:00:34 2010//
+! /kg_neighbor_lists.F/1.42/Wed Apr  7 15:00:00 2010//
+! /kg_ppl.F/1.38/Wed Apr  7 15:00:07 2010//
+! /kg_rho_methods.F/1.24/Wed Apr  7 15:00:42 2010//
+! /kg_rho_types.F/1.21/Wed Apr  7 15:00:32 2010//
+! /kg_rspw_methods.F/1.51/Wed Apr  7 15:00:42 2010//
+! /kg_rspw_types.F/1.24/Wed Apr  7 15:00:38 2010//
+! /kg_scf.F/1.98/Wed Apr  7 15:00:27 2010//
+! /kg_scf_post.F/1.20/Wed Apr  7 15:00:14 2010//
+! /kg_scf_types.F/1.21/Wed Apr  7 14:59:59 2010//
+! /kinds.F/1.35/Wed Apr  7 15:00:06 2010//
+! /lapack.F/1.22/Wed Apr  7 15:00:22 2010//
+! /lazy.F/1.10/Wed Apr  7 15:00:09 2010//
+! /lebedev.F/1.19/Wed Apr  7 15:00:41 2010//
+! /library_tests.F/1.112/Wed Apr  7 15:00:10 2010//
+! /linear_systems.F/1.15/Wed Apr  7 15:00:11 2010//
+! /lowdin.F/1.19/Wed Apr  7 15:00:13 2010//
+! /machine.F/1.43/Wed Apr  7 15:00:07 2010//
+! /machine_absoft.F/1.31/Wed Apr  7 15:00:20 2010//
+! /machine_aix.F/1.41/Wed Apr  7 15:00:30 2010//
+! /machine_cce.F/1.1/Wed Apr  7 15:00:33 2010//
+! /machine_dec.F/1.34/Wed Apr  7 15:00:23 2010//
+! /machine_g95.F/1.39/Wed Apr  7 15:00:34 2010//
+! /machine_intel.F/1.38/Wed Apr  7 15:00:35 2010//
+! /machine_irix.F/1.34/Wed Apr  7 15:00:15 2010//
+! /machine_nag.F/1.36/Wed Apr  7 15:00:08 2010//
+! /machine_pgi.F/1.37/Wed Apr  7 15:00:08 2010//
+! /machine_sun.F/1.33/Wed Apr  7 15:00:13 2010//
+! /machine_sx.F/1.24/Wed Apr  7 15:00:14 2010//
+! /machine_t3e.F/1.33/Wed Apr  7 15:00:43 2010//
+! /machine_xt3.F/1.28/Wed Apr  7 15:00:28 2010//
+! /machine_xt5.F/1.8/Wed Apr  7 15:00:09 2010//
+! /manybody_eam.F/1.14/Wed Apr  7 15:00:20 2010//
+! /manybody_potential.F/1.41/Wed Apr  7 15:00:12 2010//
+! /manybody_tersoff.F/1.8/Wed Apr  7 15:00:25 2010//
+! /mathconstants.F/1.22/Wed Apr  7 15:00:13 2010//
+! /mathlib.F/1.45/Wed Apr  7 15:00:12 2010//
+! /mc_control.F/1.85/Wed Apr  7 15:00:23 2010//
+! /mc_coordinates.F/1.47/Wed Apr  7 15:00:22 2010//
+! /mc_ensembles.F/1.113/Wed Apr  7 15:00:13 2010//
+! /mc_environment_types.F/1.30/Wed Apr  7 15:00:37 2010//
+! /mc_ge_moves.F/1.102/Wed Apr  7 15:00:20 2010//
+! /mc_misc.F/1.103/Wed Apr  7 15:00:11 2010//
+! /mc_move_control.F/1.40/Wed Apr  7 15:00:28 2010//
+! /mc_moves.F/1.89/Wed Apr  7 15:00:19 2010//
+! /mc_run.F/1.51/Wed Apr  7 15:00:14 2010//
+! /mc_types.F/1.69/Wed Apr  7 15:00:33 2010//
+! /md_ener_types.F/1.4/Wed Apr  7 15:00:35 2010//
+! /md_environment_types.F/1.66/Wed Apr  7 15:00:38 2010//
+! /md_util.F/1.29/Wed Apr  7 15:00:39 2010//
+! /memory_utilities.F/1.46/Wed Apr  7 15:00:40 2010//
+! /message__nametype1__passing.instantiation/1.1/Wed Apr  7 15:00:38 2010//
+! /message__nametype1__passing.template/1.3/Wed Apr  7 15:00:30 2010//
+! /message_c_passing.F/1.3/Wed Apr  7 15:00:11 2010//
+! /message_d_passing.F/1.3/Wed Apr  7 15:00:10 2010//
+! /message_i_passing.F/1.3/Wed Apr  7 15:00:24 2010//
+! /message_l_passing.F/1.3/Wed Apr  7 15:00:16 2010//
+! /message_passing.F/1.135/Wed Apr  7 15:00:10 2010//
+! /message_r_passing.F/1.3/Wed Apr  7 15:00:31 2010//
+! /message_z_passing.F/1.3/Wed Apr  7 15:00:44 2010//
+! /metadynamics.F/1.81/Wed Apr  7 15:00:21 2010//
+! /metadynamics_types.F/1.43/Wed Apr  7 15:00:39 2010//
+! /metadynamics_utils.F/1.18/Wed Apr  7 15:00:35 2010//
+! /mixed_energy_types.F/1.14/Wed Apr  7 15:00:29 2010//
+! /mixed_environment.F/1.23/Wed Apr  7 15:00:22 2010//
+! /mixed_environment_types.F/1.14/Wed Apr  7 15:00:17 2010//
+! /mixed_main.F/1.23/Wed Apr  7 15:00:24 2010//
+! /mm_collocate_potential.F/1.36/Wed Apr  7 15:00:14 2010//
+! /mm_mapping_library.F/1.10/Wed Apr  7 15:00:20 2010//
+! /mod.header/1.7/Wed Apr  7 15:00:28 2010//
+! /mol_kind_new_list_types.F/1.25/Wed Apr  7 15:00:19 2010//
+! /mol_new_list_types.F/1.23/Wed Apr  7 15:00:21 2010//
+! /molden_utils.F/1.2/Wed Apr  7 15:00:20 2010//
+! /molecular_states.F/1.68/Wed Apr  7 15:00:44 2010//
+! /molecule_kind_types.F/1.93/Wed Apr  7 15:00:22 2010//
+! /molecule_types_new.F/1.37/Wed Apr  7 15:00:42 2010//
+! /molsym.F/1.9/Wed Apr  7 15:00:28 2010//
+! /moments_utils.F/1.9/Wed Apr  7 15:00:11 2010//
+! /mt_util.F/1.37/Wed Apr  7 15:00:16 2010//
+! /mulliken.F/1.45/Wed Apr  7 15:00:36 2010//
+! /multipole_types.F/1.10/Wed Apr  7 14:59:59 2010//
+! /neb_io.F/1.28/Wed Apr  7 15:00:08 2010//
+! /neb_md_utils.F/1.16/Wed Apr  7 15:00:10 2010//
+! /neb_methods.F/1.37/Wed Apr  7 15:00:12 2010//
+! /neb_opt_utils.F/1.19/Wed Apr  7 15:00:41 2010//
+! /neb_types.F/1.13/Wed Apr  7 15:00:28 2010//
+! /neb_utils.F/1.34/Wed Apr  7 15:00:31 2010//
+! /orbital_pointers.F/1.23/Wed Apr  7 15:00:15 2010//
+! /orbital_symbols.F/1.18/Wed Apr  7 15:00:20 2010//
+! /orbital_transformation_matrices.F/1.33/Wed Apr  7 15:00:22 2010//
+! /parallel_rng_types.F/1.25/Wed Apr  7 15:00:37 2010//
+! /particle_list_types.F/1.23/Wed Apr  7 15:00:08 2010//
+! /paw_proj_set_types.F/1.42/Wed Apr  7 15:00:20 2010//
+! /periodic_table.F/1.21/Wed Apr  7 15:00:38 2010//
+! /physcon.F/1.24/Wed Apr  7 15:00:24 2010//
+! /pint_io.F/1.5/Wed Apr  7 15:00:34 2010//
+! /pint_methods.F/1.22/Wed Apr  7 15:00:33 2010//
+! /pint_normalmode.F/1.2/Wed Apr  7 15:00:17 2010//
+! /pint_public.F/1.3/Wed Apr  7 15:00:25 2010//
+! /pint_staging.F/1.2/Wed Apr  7 15:00:00 2010//
+! /pint_transformations.F/1.2/Wed Apr  7 15:00:10 2010//
+! /pint_types.F/1.39/Wed Apr  7 15:00:07 2010//
+! /pme.F/1.61/Wed Apr  7 15:00:17 2010//
+! /pme_tools.F/1.13/Wed Apr  7 15:00:22 2010//
+! /powell.F/1.13/Wed Apr  7 15:00:07 2010//
+! /preconditioner.F/1.117/Wed Apr  7 15:00:25 2010//
+! /preconditioner_types.F/1.11/Wed Apr  7 15:00:17 2010//
+! /prep.f90/1.3/Wed Apr  7 15:00:35 2010//
+! /ps_wavelet_base.F/1.14/Wed Apr  7 15:00:27 2010//
+! /ps_wavelet_fft3d.F/1.10/Wed Apr  7 15:00:16 2010//
+! /ps_wavelet_kernel.F/1.14/Wed Apr  7 15:00:40 2010//
+! /ps_wavelet_scaling_function.F/1.9/Wed Apr  7 15:00:28 2010//
+! /ps_wavelet_types.F/1.26/Wed Apr  7 15:00:23 2010//
+! /ps_wavelet_util.F/1.15/Wed Apr  7 15:00:31 2010//
+! /pw_env_methods.F/1.113/Wed Apr  7 15:00:23 2010//
+! /pw_env_types.F/1.36/Wed Apr  7 15:00:24 2010//
+! /pw_grid_info.F/1.9/Wed Apr  7 15:00:32 2010//
+! /pw_grid_types.F/1.33/Wed Apr  7 15:00:22 2010//
+! /pw_grids.F/1.111/Wed Apr  7 15:00:26 2010//
+! /pw_methods.F/1.18/Wed Apr  7 15:00:12 2010//
+! /pw_methods_cuda.F/1.5/Wed Apr  7 15:00:08 2010//
+! /pw_poisson_methods.F/1.25/Wed Apr  7 15:00:34 2010//
+! /pw_poisson_types.F/1.29/Wed Apr  7 15:00:29 2010//
+! /pw_pool_types.F/1.50/Wed Apr  7 15:00:11 2010//
+! /pw_spline_utils.F/1.78/Wed Apr  7 15:00:19 2010//
+! /pw_types.F/1.86/Wed Apr  7 15:00:15 2010//
+! /qmmm_elpot.F/1.39/Wed Apr  7 15:00:30 2010//
+! /qmmm_ff_fist.F/1.18/Wed Apr  7 15:00:26 2010//
+! /qmmm_gaussian_data.F/1.13/Wed Apr  7 15:00:43 2010//
+! /qmmm_gaussian_init.F/1.43/Wed Apr  7 15:00:12 2010//
+! /qmmm_gaussian_input.F/1.38/Wed Apr  7 15:00:00 2010//
+! /qmmm_gaussian_types.F/1.16/Wed Apr  7 15:00:29 2010//
+! /qmmm_gpw_energy.F/1.25/Wed Apr  7 15:00:08 2010//
+! /qmmm_gpw_forces.F/1.18/Wed Apr  7 15:00:41 2010//
+! /qmmm_init.F/1.127/Wed Apr  7 15:00:11 2010//
+! /qmmm_links_methods.F/1.18/Wed Apr  7 15:00:40 2010//
+! /qmmm_main.F/1.16/Wed Apr  7 15:00:29 2010//
+! /qmmm_per_elpot.F/1.33/Wed Apr  7 15:00:06 2010//
+! /qmmm_pw_grid.F/1.33/Wed Apr  7 15:00:07 2010//
+! /qmmm_se_energy.F/1.49/Wed Apr  7 15:00:40 2010//
+! /qmmm_se_forces.F/1.41/Wed Apr  7 15:00:00 2010//
+! /qmmm_topology_util.F/1.45/Wed Apr  7 15:00:36 2010//
+! /qmmm_types.F/1.54/Wed Apr  7 15:00:19 2010//
+! /qmmm_util.F/1.15/Wed Apr  7 15:00:32 2010//
+! /qs_all_potential.F/1.33/Wed Apr  7 15:00:22 2010//
+! /qs_charges_types.F/1.23/Wed Apr  7 14:59:59 2010//
+! /qs_conductivity.F/1.28/Wed Apr  7 15:00:35 2010//
+! /qs_core_energies.F/1.68/Wed Apr  7 15:00:38 2010//
+! /qs_core_hamiltonian.F/1.194/Wed Apr  7 15:00:23 2010//
+! /qs_dftb_coulomb.F/1.38/Wed Apr  7 15:00:19 2010//
+! /qs_dftb_dispersion.F/1.13/Wed Apr  7 15:00:23 2010//
+! /qs_dftb_matrices.F/1.36/Wed Apr  7 15:00:22 2010//
+! /qs_dftb_parameters.F/1.18/Wed Apr  7 15:00:11 2010//
+! /qs_dftb_types.F/1.8/Wed Apr  7 15:00:27 2010//
+! /qs_dftb_utils.F/1.11/Wed Apr  7 15:00:33 2010//
+! /qs_diis.F/1.60/Wed Apr  7 15:00:25 2010//
+! /qs_diis_types.F/1.18/Wed Apr  7 15:00:24 2010//
+! /qs_dispersion_pairpot.F/1.13/Wed Apr  7 15:00:43 2010//
+! /qs_dispersion_types.F/1.3/Wed Apr  7 15:00:36 2010//
+! /qs_elec_field.F/1.10/Wed Apr  7 15:00:14 2010//
+! /qs_electric_field_gradient.F/1.29/Wed Apr  7 15:00:30 2010//
+! /qs_energy.F/1.95/Wed Apr  7 15:00:16 2010//
+! /qs_environment_types.F/1.203/Wed Apr  7 15:00:16 2010//
+! /qs_epr_hyp.F/1.17/Wed Apr  7 15:00:39 2010//
+! /qs_external_potential.F/1.2/Wed Apr  7 15:00:42 2010//
+! /qs_fermi_contact.F/1.8/Wed Apr  7 15:00:22 2010//
+! /qs_gapw_densities.F/1.43/Wed Apr  7 15:00:38 2010//
+! /qs_geminals.F/1.16/Wed Apr  7 15:00:17 2010//
+! /qs_grid_atom.F/1.27/Wed Apr  7 14:59:59 2010//
+! /qs_harmonics_atom.F/1.31/Wed Apr  7 15:00:16 2010//
+! /qs_initial_guess.F/1.95/Wed Apr  7 15:00:30 2010//
+! /qs_interactions.F/1.66/Wed Apr  7 15:00:12 2010//
+! /qs_kpp1_env_methods.F/1.111/Wed Apr  7 15:00:42 2010//
+! /qs_kpp1_env_types.F/1.44/Wed Apr  7 15:00:14 2010//
+! /qs_ks_apply_restraints.F/1.15/Wed Apr  7 15:00:21 2010//
+! /qs_ks_atom.F/1.66/Wed Apr  7 15:00:07 2010//
+! /qs_ks_methods.F/1.266/Wed Apr  7 15:00:22 2010//
+! /qs_ks_qmmm_methods.F/1.37/Wed Apr  7 15:00:29 2010//
+! /qs_ks_qmmm_types.F/1.23/Wed Apr  7 15:00:34 2010//
+! /qs_ks_scp_methods.F/1.16/Wed Apr  7 15:00:42 2010//
+! /qs_ks_scp_types.F/1.7/Wed Apr  7 15:00:29 2010//
+! /qs_ks_types.F/1.31/Wed Apr  7 15:00:24 2010//
+! /qs_linres_atom_current.F/1.36/Wed Apr  7 15:00:06 2010//
+! /qs_linres_current_utils.F/1.46/Wed Apr  7 15:00:13 2010//
+! /qs_linres_epr_nablavks.F/1.24/Wed Apr  7 15:00:30 2010//
+! /qs_linres_epr_ownutils.F/1.34/Wed Apr  7 15:00:17 2010//
+! /qs_linres_epr_utils.F/1.27/Wed Apr  7 15:00:09 2010//
+! /qs_linres_issc_utils.F/1.12/Wed Apr  7 15:00:16 2010//
+! /qs_linres_methods.F/1.89/Wed Apr  7 15:00:28 2010//
+! /qs_linres_module.F/1.74/Wed Apr  7 15:00:13 2010//
+! /qs_linres_nmr_epr_common_utils.F/1.9/Wed Apr  7 15:00:16 2010//
+! /qs_linres_nmr_shift.F/1.74/Wed Apr  7 15:00:24 2010//
+! /qs_linres_nmr_utils.F/1.81/Wed Apr  7 15:00:32 2010//
+! /qs_linres_op.F/1.29/Wed Apr  7 15:00:39 2010//
+! /qs_linres_types.F/1.76/Wed Apr  7 15:00:20 2010//
+! /qs_loc_control.F/1.58/Wed Apr  7 15:00:28 2010//
+! /qs_loc_methods.F/1.88/Wed Apr  7 15:00:16 2010//
+! /qs_loc_molecules.F/1.13/Wed Apr  7 15:00:18 2010//
+! /qs_loc_types.F/1.27/Wed Apr  7 15:00:18 2010//
+! /qs_local_rho_types.F/1.28/Wed Apr  7 15:00:34 2010//
+! /qs_localization_methods.F/1.68/Wed Apr  7 15:00:28 2010//
+! /qs_main.F/1.82/Wed Apr  7 15:00:40 2010//
+! /qs_matrix_pools.F/1.30/Wed Apr  7 15:00:26 2010//
+! /qs_mo_methods.F/1.57/Wed Apr  7 15:00:18 2010//
+! /qs_mo_types.F/1.154/Wed Apr  7 15:00:07 2010//
+! /qs_modify_pab_block.F/1.17/Wed Apr  7 15:00:24 2010//
+! /qs_moments.F/1.40/Wed Apr  7 15:00:12 2010//
+! /qs_neighbor_list_types.F/1.40/Wed Apr  7 15:00:22 2010//
+! /qs_neighbor_lists.F/1.133/Wed Apr  7 15:00:42 2010//
+! /qs_oce_methods.F/1.52/Wed Apr  7 15:00:33 2010//
+! /qs_oce_types.F/1.45/Wed Apr  7 15:00:23 2010//
+! /qs_operators_ao.F/1.58/Wed Apr  7 15:00:18 2010//
+! /qs_ot.F/1.113/Wed Apr  7 15:00:29 2010//
+! /qs_ot_eigensolver.F/1.68/Wed Apr  7 15:00:13 2010//
+! /qs_ot_minimizer.F/1.62/Wed Apr  7 15:00:08 2010//
+! /qs_ot_scf.F/1.93/Wed Apr  7 15:00:25 2010//
+! /qs_ot_types.F/1.18/Wed Apr  7 15:00:07 2010//
+! /qs_outer_scf.F/1.20/Wed Apr  7 15:00:40 2010//
+! /qs_overlap.F/1.74/Wed Apr  7 15:00:32 2010//
+! /qs_p_env_methods.F/1.97/Wed Apr  7 15:00:17 2010//
+! /qs_p_env_types.F/1.45/Wed Apr  7 15:00:42 2010//
+! /qs_p_sparse_psi.F/1.24/Wed Apr  7 15:00:42 2010//
+! /qs_pdos.F/1.29/Wed Apr  7 15:00:19 2010//
+! /qs_resp.F/1.11/Wed Apr  7 15:00:21 2010//
+! /qs_rho0_ggrid.F/1.83/Wed Apr  7 15:00:31 2010//
+! /qs_rho0_methods.F/1.69/Wed Apr  7 15:00:33 2010//
+! /qs_rho0_types.F/1.42/Wed Apr  7 15:00:30 2010//
+! /qs_rho_atom_methods.F/1.89/Wed Apr  7 15:00:13 2010//
+! /qs_rho_atom_types.F/1.23/Wed Apr  7 15:00:13 2010//
+! /qs_rho_methods.F/1.72/Wed Apr  7 15:00:06 2010//
+! /qs_rho_types.F/1.42/Wed Apr  7 15:00:27 2010//
+! /qs_scf_diagonalization.F/1.20/Wed Apr  7 15:00:08 2010//
+! /qs_scf_lanczos.F/1.6/Wed Apr  7 15:00:31 2010//
+! /qs_scf_methods.F/1.46/Wed Apr  7 15:00:26 2010//
+! /qs_scf_post_gpw.F/1.69/Wed Apr  7 15:00:34 2010//
+! /qs_scf_post_se.F/1.29/Wed Apr  7 15:00:42 2010//
+! /qs_scf_types.F/1.48/Wed Apr  7 15:00:11 2010//
+! /qs_spin_orbit.F/1.13/Wed Apr  7 15:00:39 2010//
+! /qs_tddfpt_eigensolver.F/1.80/Wed Apr  7 15:00:41 2010//
+! /qs_tddfpt_module.F/1.82/Wed Apr  7 15:00:40 2010//
+! /qs_tddfpt_types.F/1.51/Wed Apr  7 15:00:36 2010//
+! /qs_tddfpt_utils.F/1.88/Wed Apr  7 15:00:40 2010//
+! /qs_util.F/1.21/Wed Apr  7 15:00:42 2010//
+! /qs_vxc_atom.F/1.73/Wed Apr  7 15:00:29 2010//
+! /qs_wf_history_methods.F/1.88/Wed Apr  7 15:00:36 2010//
+! /qs_wf_history_types.F/1.32/Wed Apr  7 15:00:06 2010//
+! /rd_amber_section_1.f90/1.3/Wed Apr  7 15:00:15 2010//
+! /reallocate_1.f90/1.1/Wed Apr  7 15:00:25 2010//
+! /reallocate_2.f90/1.1/Wed Apr  7 15:00:20 2010//
+! /reallocate_3.f90/1.1/Wed Apr  7 15:00:13 2010//
+! /reallocate_4.f90/1.1/Wed Apr  7 15:00:14 2010//
+! /reallocate_5.f90/1.1/Wed Apr  7 15:00:19 2010//
+! /realspace_grid_cube.F/1.21/Wed Apr  7 15:00:33 2010//
+! /realspace_grid_types.F/1.135/Wed Apr  7 15:00:12 2010//
+! /reference_manager.F/1.11/Wed Apr  7 15:00:36 2010//
+! /reftraj_types.F/1.20/Wed Apr  7 15:00:41 2010//
+! /reftraj_util.F/1.28/Wed Apr  7 15:00:09 2010//
+! /rel_control_types.F/1.6/Wed Apr  7 15:00:24 2010//
+! /replica_methods.F/1.28/Wed Apr  7 15:00:43 2010//
+! /replica_types.F/1.34/Wed Apr  7 15:00:37 2010//
+! /restraint.F/1.31/Wed Apr  7 15:00:36 2010//
+! /ri_environment_types.F/1.5/Wed Apr  7 15:00:10 2010//
+! /rmsd.F/1.11/Wed Apr  7 15:00:25 2010//
+! /rt_make_propagators.F/1.11/Wed Apr  7 15:00:17 2010//
+! /rt_matrix_exp.F/1.17/Wed Apr  7 15:00:32 2010//
+! /rt_propagation.F/1.21/Wed Apr  7 15:00:37 2010//
+! /rt_propagation_methods.F/1.23/Wed Apr  7 15:00:42 2010//
+! /rt_propagation_output.F/1.15/Wed Apr  7 15:00:29 2010//
+! /rt_propagation_types.F/1.8/Wed Apr  7 15:00:36 2010//
+! /rt_propagation_utils.F/1.21/Wed Apr  7 15:00:40 2010//
+! /rt_propagator_init.F/1.3/Wed Apr  7 15:00:33 2010//
+! /s_square_methods.F/1.18/Wed Apr  7 15:00:20 2010//
+! /sap_kind_types.F/1.5/Wed Apr  7 15:00:29 2010//
+! /scf_control_types.F/1.83/Wed Apr  7 15:00:40 2010//
+! /scp_coeff_types.F/1.14/Wed Apr  7 15:00:21 2010//
+! /scp_density_methods.F/1.26/Wed Apr  7 15:00:21 2010//
+! /scp_diis_utils.F/1.6/Wed Apr  7 15:00:43 2010//
+! /scp_dispersion.F/1.24/Wed Apr  7 15:00:17 2010//
+! /scp_energy.F/1.15/Wed Apr  7 15:00:14 2010//
+! /scp_energy_types.F/1.10/Wed Apr  7 15:00:21 2010//
+! /scp_environment.F/1.25/Wed Apr  7 15:00:21 2010//
+! /scp_environment_methods.F/1.7/Wed Apr  7 15:00:09 2010//
+! /scp_environment_types.F/1.10/Wed Apr  7 15:00:10 2010//
+! /scp_force_types.F/1.10/Wed Apr  7 15:00:19 2010//
+! /scp_hartree_1center.F/1.24/Wed Apr  7 15:00:39 2010//
+! /scp_nddo_utils.F/1.14/Wed Apr  7 15:00:34 2010//
+! /scp_restarts.F/1.10/Wed Apr  7 15:00:37 2010//
+! /scp_rho_methods.F/1.9/Wed Apr  7 15:00:12 2010//
+! /scp_rho_types.F/1.8/Wed Apr  7 15:00:34 2010//
+! /scp_rspw_methods.F/1.10/Wed Apr  7 15:00:07 2010//
+! /scp_rspw_types.F/1.10/Wed Apr  7 15:00:00 2010//
+! /se_core_core.F/1.3/Wed Apr  7 15:00:21 2010//
+! /se_core_matrix.F/1.12/Wed Apr  7 15:00:13 2010//
+! /se_fock_matrix.F/1.14/Wed Apr  7 15:00:23 2010//
+! /se_fock_matrix_coulomb.F/1.21/Wed Apr  7 15:00:31 2010//
+! /se_fock_matrix_dbg.F/1.7/Wed Apr  7 15:00:32 2010//
+! /se_fock_matrix_exchange.F/1.6/Wed Apr  7 15:00:32 2010//
+! /se_fock_matrix_integrals.F/1.8/Wed Apr  7 15:00:42 2010//
+! /semi_empirical_expns3_methods.F/1.4/Wed Apr  7 15:00:42 2010//
+! /semi_empirical_expns3_types.F/1.3/Wed Apr  7 15:00:19 2010//
+! /semi_empirical_int3_utils.F/1.3/Wed Apr  7 15:00:37 2010//
+! /semi_empirical_int_ana.F/1.63/Wed Apr  7 15:00:12 2010//
+! /semi_empirical_int_args.h/1.1/Wed Apr  7 15:00:38 2010//
+! /semi_empirical_int_arrays.F/1.16/Wed Apr  7 15:00:11 2010//
+! /semi_empirical_int_debug.F/1.20/Wed Apr  7 15:00:43 2010//
+! /semi_empirical_int_debug.h/1.11/Wed Apr  7 15:00:23 2010//
+! /semi_empirical_int_gks.F/1.18/Wed Apr  7 15:00:30 2010//
+! /semi_empirical_int_num.F/1.34/Wed Apr  7 15:00:22 2010//
+! /semi_empirical_int_utils.F/1.36/Wed Apr  7 15:00:17 2010//
+! /semi_empirical_integrals.F/1.58/Wed Apr  7 15:00:37 2010//
+! /semi_empirical_mpole_methods.F/1.17/Wed Apr  7 15:00:40 2010//
+! /semi_empirical_mpole_types.F/1.8/Wed Apr  7 15:00:09 2010//
+! /semi_empirical_par_utils.F/1.21/Wed Apr  7 15:00:14 2010//
+! /semi_empirical_parameters.F/1.47/Wed Apr  7 15:00:10 2010//
+! /semi_empirical_store_int_types.F/1.9/Wed Apr  7 15:00:23 2010//
+! /semi_empirical_types.F/1.52/Wed Apr  7 15:00:16 2010//
+! /semi_empirical_utils.F/1.58/Wed Apr  7 15:00:19 2010//
+! /shell_opt.F/1.5/Wed Apr  7 15:00:43 2010//
+! /shell_potential_types.F/1.11/Wed Apr  7 15:00:25 2010//
+! /simpar_types.F/1.5/Wed Apr  7 15:00:11 2010//
+! /soft_basis_set.F/1.19/Wed Apr  7 15:00:44 2010//
+! /sort.f90/1.1/Wed Apr  7 15:00:26 2010//
+! /sort_m.f90/1.1/Wed Apr  7 15:00:15 2010//
+! /sparse_matrix_output.F/1.23/Wed Apr  7 15:00:32 2010//
+! /sparse_matrix_types.F/1.118/Wed Apr  7 15:00:22 2010//
+! /spherical_harmonics.F/1.33/Wed Apr  7 15:00:36 2010//
+! /spme.F/1.63/Wed Apr  7 15:00:23 2010//
+! /statistical_methods.F/1.6/Wed Apr  7 15:00:13 2010//
+! /stm_images.F/1.12/Wed Apr  7 15:00:41 2010//
+! /sto_ng.F/1.18/Wed Apr  7 15:00:20 2010//
+! /string_table.F/1.10/Wed Apr  7 15:00:34 2010//
+! /string_utilities.F/1.41/Wed Apr  7 15:00:16 2010//
+! /structure_factor_types.F/1.16/Wed Apr  7 15:00:20 2010//
+! /structure_factors.F/1.19/Wed Apr  7 15:00:20 2010//
+! /sub.header/1.8/Wed Apr  7 15:00:12 2010//
+! /t_c_g0.F/1.4/Wed Apr  7 15:00:16 2010//
+! /taper_types.F/1.4/Wed Apr  7 15:00:32 2010//
+! /thermal_region_types.F/1.3/Wed Apr  7 15:00:34 2010//
+! /thermostat_mapping.F/1.16/Wed Apr  7 15:00:06 2010//
+! /thermostat_types.F/1.25/Wed Apr  7 15:00:43 2010//
+! /timings.F/1.67/Wed Apr  7 15:00:23 2010//
+! /timings_mp.F/1.3/Wed Apr  7 15:00:28 2010//
+! /timings_mp.h/1.3/Wed Apr  7 15:00:09 2010//
+! /topology_amber.F/1.17/Wed Apr  7 15:00:34 2010//
+! /topology_cif.F/1.9/Wed Apr  7 15:00:10 2010//
+! /topology_connectivity_util.F/1.29/Wed Apr  7 15:00:09 2010//
+! /topology_constraint_util.F/1.46/Wed Apr  7 15:00:23 2010//
+! /topology_generate_util.F/1.44/Wed Apr  7 15:00:25 2010//
+! /topology_gromos.F/1.36/Wed Apr  7 15:00:12 2010//
+! /topology_input.F/1.102/Wed Apr  7 15:00:14 2010//
+! /topology_multiple_unit_cell.F/1.4/Wed Apr  7 15:00:32 2010//
+! /topology_pdb.F/1.75/Wed Apr  7 15:00:12 2010//
+! /topology_psf.F/1.90/Wed Apr  7 15:00:36 2010//
+! /topology_types.F/1.85/Wed Apr  7 15:00:28 2010//
+! /topology_util.F/1.231/Wed Apr  7 15:00:11 2010//
+! /topology_xtl.F/1.3/Wed Apr  7 15:00:39 2010//
+! /topology_xyz.F/1.34/Wed Apr  7 15:00:07 2010//
+! /util.F/1.33/Wed Apr  7 15:00:19 2010//
+! /vibrational_analysis.F/1.45/Wed Apr  7 15:00:30 2010//
+! /virial_methods.F/1.22/Wed Apr  7 15:00:14 2010//
+! /virial_types.F/1.25/Wed Apr  7 15:00:22 2010//
+! /whittaker.F/1.27/Wed Apr  7 15:00:32 2010//
+! /wiener_process.F/1.27/Wed Apr  7 15:00:25 2010//
+! /xas_control.F/1.52/Wed Apr  7 15:00:15 2010//
+! /xas_methods.F/1.106/Wed Apr  7 15:00:25 2010//
+! /xc.F/1.176/Wed Apr  7 15:00:14 2010//
+! /xc_adiabatic_methods.F/1.10/Wed Apr  7 15:00:23 2010//
+! /xc_atom.F/1.46/Wed Apr  7 15:00:07 2010//
+! /xc_b97.F/1.3/Wed Apr  7 15:00:10 2010//
+! /xc_cs1.F/1.21/Wed Apr  7 15:00:32 2010//
+! /xc_derivative_desc.F/1.24/Wed Apr  7 15:00:10 2010//
+! /xc_derivative_set_types.F/1.22/Wed Apr  7 15:00:41 2010//
+! /xc_derivative_types.F/1.35/Wed Apr  7 15:00:28 2010//
+! /xc_derivatives.F/1.74/Wed Apr  7 15:00:29 2010//
+! /xc_exchange_gga.F/1.34/Wed Apr  7 15:00:14 2010//
+! /xc_functionals_utilities.F/1.22/Wed Apr  7 15:00:13 2010//
+! /xc_hcth.F/1.20/Wed Apr  7 15:00:30 2010//
+! /xc_ke_gga.F/1.33/Wed Apr  7 15:00:40 2010//
+! /xc_lyp.F/1.26/Wed Apr  7 15:00:24 2010//
+! /xc_lyp_adiabatic.F/1.13/Wed Apr  7 15:00:09 2010//
+! /xc_optx.F/1.19/Wed Apr  7 15:00:25 2010//
+! /xc_pade.F/1.36/Wed Apr  7 15:00:26 2010//
+! /xc_pbe.F/1.24/Wed Apr  7 15:00:42 2010//
+! /xc_perdew86.F/1.27/Wed Apr  7 15:00:14 2010//
+! /xc_perdew_wang.F/1.26/Wed Apr  7 15:00:15 2010//
+! /xc_perdew_zunger.F/1.26/Wed Apr  7 15:00:17 2010//
+! /xc_pot_saop.F/1.44/Wed Apr  7 14:59:59 2010//
+! /xc_rho_cflags_types.F/1.17/Wed Apr  7 15:00:33 2010//
+! /xc_rho_set_types.F/1.63/Wed Apr  7 15:00:36 2010//
+! /xc_tfw.F/1.21/Wed Apr  7 15:00:35 2010//
+! /xc_thomas_fermi.F/1.22/Wed Apr  7 15:00:07 2010//
+! /xc_tpss.F/1.23/Wed Apr  7 15:00:10 2010//
+! /xc_vwn.F/1.29/Wed Apr  7 15:00:29 2010//
+! /xc_xalpha.F/1.27/Wed Apr  7 15:00:23 2010//
+! /xc_xbecke88.F/1.34/Wed Apr  7 15:00:13 2010//
+! /xc_xbecke88_long_range.F/1.11/Wed Apr  7 15:00:12 2010//
+! /xc_xbecke88_lr_adiabatic.F/1.7/Wed Apr  7 15:00:22 2010//
+! /xc_xbecke_roussel.F/1.5/Wed Apr  7 15:00:36 2010//
+! /xc_xbr_pbe_lda_hole_t_c_lr.F/1.3/Wed Apr  7 15:00:21 2010//
+! /xc_xlda_hole_t_c_lr.F/1.3/Wed Apr  7 15:00:20 2010//
+! /xc_xpbe_hole_t_c_lr.F/1.5/Wed Apr  7 15:00:17 2010//
+! /xc_xwpbe.F/1.18/Wed Apr  7 15:00:27 2010//
+! /xray_diffraction.F/1.31/Wed Apr  7 15:00:35 2010//
+! /OBJECTDEFS/1.520/Result of merge//
+! /ai_onecenter.F/1.8/Fri May  7 12:40:10 2010//
+! /atom_electronic_structure.F/1.12/Fri May  7 12:40:11 2010//
+! /atom_output.F/1.20/Fri May  7 12:40:12 2010//
+! /atom_types.F/1.33/Fri May  7 12:40:13 2010//
+! /atomic_kind_types.F/1.188/Fri May  7 12:40:13 2010//
+! /bfgs_optimizer.F/1.106/Fri May  7 12:40:13 2010//
+! /bibliography.F/1.51/Fri May  7 12:40:14 2010//
+! /cg_optimizer.F/1.72/Fri May  7 12:40:16 2010//
+! /colloc_int_body.f90/1.9/Fri May  7 12:40:17 2010//
+! /colloc_int_kloop.f90/1.3/Fri May  7 12:40:17 2010//
+! /colloc_int_kloop1.f90/1.3/Fri May  7 12:40:18 2010//
+! /colloc_int_kloop2.f90/1.3/Fri May  7 12:40:20 2010//
+! /colloc_int_kloop3.f90/1.3/Fri May  7 12:40:20 2010//
+! /colloc_int_kloop4.f90/1.3/Fri May  7 12:40:22 2010//
+! /colloc_int_kloop5.f90/1.3/Fri May  7 12:40:22 2010//
+! /colloc_int_kloop6.f90/1.3/Fri May  7 12:40:23 2010//
+! /colloc_int_kloop7.f90/1.3/Fri May  7 12:40:24 2010//
+! /colloc_int_kloop8.f90/1.3/Fri May  7 12:40:24 2010//
+! /colvar_methods.F/1.89/Fri May  7 12:40:25 2010//
+! /colvar_types.F/1.56/Fri May  7 12:40:26 2010//
+! /cp2k_info.F/1.252/Fri May  7 12:40:27 2010//
+! /cp2k_runs.F/1.196/Fri May  7 12:40:28 2010//
+! /cp_ddapc_methods.F/1.41/Result of merge//
+! /cp_fm_diag.F/1.48/Fri May  7 12:40:29 2010//
+! /cp_fm_types.F/1.93/Fri May  7 12:40:30 2010//
+! /cp_lbfgs_optimizer__nametype1_.template/1.62/Fri May  7 12:40:32 2010//
+! /cp_lbfgs_optimizer_gopt.F/1.73/Fri May  7 12:40:32 2010//
+! /ep_methods.F/1.57/Fri May  7 12:40:33 2010//
+! /ewald_environment_types.F/1.54/Fri May  7 12:40:34 2010//
+! /ewalds_multipole.F/1.37/Fri May  7 12:40:35 2010//
+! /fist_environment.F/1.89/Fri May  7 12:40:36 2010//
+! /fist_force.F/1.147/Result of merge+Fri May  7 12:40:37 2010//
+! /fist_intra_force.F/1.74/Result of merge+Fri May  7 12:40:39 2010//
+! /fist_neighbor_list_control.F/1.62/Fri May  7 12:40:40 2010//
+! /fist_neighbor_list_types.F/1.33/Fri May  7 12:40:40 2010//
+! /fist_neighbor_lists.F/1.88/Fri May  7 12:40:42 2010//
+! /fist_nonbond_env_types.F/1.40/Fri May  7 12:40:42 2010//
+! /fist_nonbond_force.F/1.128/Fri May  7 12:40:43 2010//
+! /force_fields.F/1.168/Fri May  7 12:40:43 2010//
+! /force_fields_all.F/1.48/Fri May  7 12:40:44 2010//
+! /force_fields_util.F/1.66/Fri May  7 12:40:44 2010//
+! /gauss_colloc.F/1.9/Fri May  7 12:40:44 2010//
+! /gopt_f_methods.F/1.26/Fri May  7 12:40:45 2010//
+! /hfx_types.F/1.52/Fri May  7 12:40:46 2010//
+! /input_cp2k_dft.F/1.418/Fri May  7 12:40:47 2010//
+! /input_cp2k_vib.F/1.13/Fri May  7 12:40:48 2010//
+! /kg_environment_methods.F/1.33/Fri May  7 12:40:49 2010//
+! /kg_gpw_collocate_den.F/1.56/Fri May  7 12:40:50 2010//
+  /lgrid_types.F/1.1/Mon Apr 26 15:54:35 2010//
+! /machine_gfortran.F/1.20/Fri May  7 12:40:52 2010//
+! /mode_selective.F/1.18/Fri May  7 12:40:52 2010//
+! /mol_force.F/1.44/Fri May  7 12:40:53 2010//
+! /pair_potential.F/1.107/Fri May  7 12:40:53 2010//
+  /pair_potential_coulomb.F/1.1/Fri Apr  9 09:13:46 2010//
+! /pair_potential_types.F/1.48/Fri May  7 12:40:55 2010//
+! /pair_potential_util.F/1.20/Fri May  7 12:40:55 2010//
+! /qs_collocate_density.F/1.227/Fri May  7 12:40:56 2010//
+! /qs_energy_types.F/1.46/Fri May  7 12:40:57 2010//
+! /qs_environment.F/1.256/Fri May  7 12:40:57 2010//
+! /qs_environment_methods.F/1.114/Fri May  7 12:40:58 2010//
+! /qs_force.F/1.146/Fri May  7 12:40:58 2010//
+! /qs_force_types.F/1.43/Fri May  7 12:40:59 2010//
+! /qs_gspace_mixing.F/1.31/Fri May  7 12:41:00 2010//
+! /qs_integrate_potential.F/1.176/Fri May  7 12:41:01 2010//
+! /qs_linres_current.F/1.59/Fri May  7 12:41:02 2010//
+! /qs_loc_utils.F/1.54/Fri May  7 12:41:02 2010//
+! /qs_scf.F/1.506/Fri May  7 12:41:03 2010//
+! /splines_methods.F/1.13/Fri May  7 12:41:04 2010//
+! /splines_types.F/1.9/Fri May  7 12:41:05 2010//
+! /task_list_methods.F/1.49/Fri May  7 12:41:05 2010//
+! /task_list_types.F/1.8/Fri May  7 12:41:06 2010//
+! /termination.F/1.42/Fri May  7 12:41:07 2010//
+! /xas_env_types.F/1.33/Fri May  7 12:41:08 2010//
+! /xas_restart.F/1.26/Fri May  7 12:41:09 2010//
+! /xas_tp_scf.F/1.93/Fri May  7 12:41:10 2010//
+Only in src_20100507_latest_orig/CVS: Entries.Log
+Only in src_20100507_updated: Danny_code
+diff -r -c src_20100507_latest_orig/ewald_spline_util.F src_20100507_updated/ewald_spline_util.F
+*** src_20100507_latest_orig/ewald_spline_util.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100507_updated/ewald_spline_util.F	2010-04-30 18:02:32.599719553 +0100
+***************
+*** 41,46 ****
+--- 41,49 ----
+                                               pw_type
+    USE timings,                         ONLY: timeset,&
+                                               timestop
++   !! NB parallelization
++   USE message_passing,                 ONLY: mp_sum
++   !!
+  #include "cp_common_uses.h"
+  
+    IMPLICIT NONE
+***************
+*** 150,155 ****
+--- 153,161 ----
+                                                  Term, xs1, xs2, xs3
+      TYPE(pw_spline_precond_type), POINTER    :: precond
+      TYPE(section_vals_type), POINTER         :: interp_section
++     !! NB parallelization
++     integer :: iii
++     !!
+  
+      CALL timeset(routineN,handle)
+      n1  = grid%pw_grid%npts(1)
+***************
+*** 171,176 ****
+--- 177,185 ----
+      CALL pw_zero(grid, error=error)
+  
+      ! Used the full symmetry to reduce the evaluation to 1/64th
++     !! NB parallelization
++     iii = 0
++     !!
+      LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+         my_k  = k-gbo(1,3)
+         xs3   = REAL(my_k,dp)*dr3
+***************
+*** 181,197 ****
+            xs1   = 0.0_dp
+            DO i  =  gbo(1,1), gbo(2,1)
+               IF (i > nxlim ) CYCLE
+!              Term  = 0.0_dp
+!              ! Sum over k vectors
+!              DO kg = 1, SIZE(Lg)
+!                 Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
+!              END DO
+!              grid%cr3d(i,j,k) = Term
+               xs1 = xs1 + dr1
+            END DO
+            xs2 = xs2 + dr2
+         END DO
+      END DO LoopOnGrid
+  
+      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+         my_k = k
+--- 190,214 ----
+            xs1   = 0.0_dp
+            DO i  =  gbo(1,1), gbo(2,1)
+               IF (i > nxlim ) CYCLE
+! 	     !! NB parallelization
+! 	     iii = iii + 1
+! 	     IF (mod(iii,grid%pw_grid%para%group_size) == grid%pw_grid%para%my_pos) THEN
+! 	       Term  = 0.0_dp
+! 	       ! Sum over k vectors
+! 	       DO kg = 1, SIZE(Lg)
+! 		  Term = Term + lg(kg)*COS(gx(kg)*xs1+gy(kg)*xs2+gz(kg)*xs3)
+! 	       END DO
+! 	       grid%cr3d(i,j,k) = Term
+! 	     ENDIF
+! 	     !!
+               xs1 = xs1 + dr1
+            END DO
+            xs2 = xs2 + dr2
+         END DO
+      END DO LoopOnGrid
++     !! NB parallelization
++     call mp_sum(grid%cr3d(gbo(1,1):nxlim,gbo(1,2):nylim,gbo(1,3):nzlim), grid%pw_grid%para%group)
++     !!
+  
+      Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
+         my_k = k
+diff -r -c src_20100507_latest_orig/extended_system_init.F src_20100507_updated/extended_system_init.F
+*** src_20100507_latest_orig/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100507_updated/extended_system_init.F	2010-04-07 16:00:07.175403757 +0100
 ***************
 *** 32,38 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -222,12 +2078,13 @@ diff -r -c ../cp2k/src_20100324_around1700/extended_system_init.F src_20100325_1
       END SELECT
       ! initializing velocities
       DO i = 1, SIZE ( npt,1)
-diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_force.F
-*** ../cp2k/src_20100324_around1700/fist_force.F	2010-03-29 15:19:36.511758913 +0100
---- src_20100325_1711/fist_force.F	2010-04-06 16:05:46.648282497 +0100
+Only in src_20100507_updated: .#extended_system_init.F.1.20
+diff -r -c src_20100507_latest_orig/fist_force.F src_20100507_updated/fist_force.F
+*** src_20100507_latest_orig/fist_force.F	2010-05-05 10:28:28.000000000 +0100
+--- src_20100507_updated/fist_force.F	2010-05-07 14:33:57.821822090 +0100
 ***************
-*** 51,56 ****
---- 51,61 ----
+*** 52,57 ****
+--- 52,62 ----
     USE input_section_types,             ONLY: section_get_ival,&
                                                section_vals_get_subs_vals,&
                                                section_vals_type,&
@@ -240,7 +2097,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
     USE kinds,                           ONLY: default_string_length,&
                                                dp
 ***************
-*** 64,70 ****
+*** 65,71 ****
     USE moments_utils,                   ONLY: get_reference_point
     USE multipole_types,                 ONLY: multipole_type
     USE particle_types,                  ONLY: particle_type
@@ -248,7 +2105,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
     USE pme,                             ONLY: pme_evaluate
     USE shell_potential_types,           ONLY: shell_kind_type
     USE spme,                            ONLY: spme_evaluate
---- 69,78 ----
+--- 70,79 ----
     USE moments_utils,                   ONLY: get_reference_point
     USE multipole_types,                 ONLY: multipole_type
     USE particle_types,                  ONLY: particle_type
@@ -260,18 +2117,18 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
     USE shell_potential_types,           ONLY: shell_kind_type
     USE spme,                            ONLY: spme_evaluate
 ***************
-*** 123,128 ****
---- 131,137 ----
+*** 124,129 ****
+--- 132,138 ----
       INTEGER :: do_ipol, ewald_type, fg_coulomb_size, handle, i, ii, ikind, &
         iparticle_kind, iparticle_local, iw, iw2, j, natoms, nlocal_particles, &
         node, nparticle_kind, nparticle_local, nshell, shell_index, stat
 +     INTEGER :: iw_danny, iw_danny_forces
       LOGICAL                                  :: do_multipoles, failure, &
-                                                  shell_model_ad, &
+                                                  scale_cutoff, shell_model_ad, &
                                                   shell_present, use_virial
 ***************
-*** 134,139 ****
---- 143,149 ----
+*** 136,141 ****
+--- 145,151 ----
         fgshell_coulomb, fshell_nonbond, fshell_total
       REAL(KIND=dp), DIMENSION(3, 3) :: ident, pv_bc, pv_bend, pv_bond, pv_g, &
         pv_imptors, pv_nonbond, pv_onef, pv_opbend, pv_torsion, pv_urey_bradley
@@ -280,8 +2137,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
         POINTER                                :: atomic_kind_set
       TYPE(atomic_kind_type), POINTER          :: atomic_kind
 ***************
-*** 156,161 ****
---- 166,176 ----
+*** 158,163 ****
+--- 168,178 ----
                                                   shell_particle_set
       TYPE(section_vals_type), POINTER         :: mm_section, print_section
       TYPE(shell_kind_type), POINTER           :: shell
@@ -294,8 +2151,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
       CALL timeset(routineN,handle)
       failure = .FALSE.
 ***************
-*** 166,173 ****
---- 181,223 ----
+*** 168,175 ****
+--- 183,225 ----
       NULLIFY(atomic_kind,atomic_kind_set,cell,ewald_pw,ewald_env,&
            fist_nonbond_env,mm_section,local_molecules,local_particles,&
            molecule_kind_set,molecule_set,particle_set, print_section,&
@@ -340,8 +2197,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
            extension=".mmLog",error=error)
       iw2= cp_print_key_unit_nr(logger,mm_section,"PRINT%EWALD_INFO",&
 ***************
-*** 250,255 ****
---- 300,307 ----
+*** 255,260 ****
+--- 305,312 ----
          pv_urey_bradley  = 0.0_dp
          pv_nonbond       = 0.0_dp
          pv_g             = 0.0_dp
@@ -351,8 +2208,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
       END IF
   
 ***************
-*** 266,271 ****
---- 318,326 ----
+*** 271,276 ****
+--- 323,331 ----
       vg_coulomb        = 0.0_dp
       thermo%pot        = 0.0_dp
       thermo%harm_shell = 0.0_dp
@@ -363,34 +2220,30 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
       ! Get real-space non-bonded forces:
       IF (iw>0) THEN
 ***************
-*** 485,498 ****
-              pot_urey_bradley, pot_torsion, pot_imptors, pot_opbend, pot_onef, &
-              pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imptors, &
-              pv_opbend, pv_onef, debug%f_bond, debug%f_bend, debug%f_torsion, debug%f_ub, &
-!             debug%f_imptors, debug%f_opbend, debug%f_onef, cell, use_virial, error )
-! 
+*** 500,505 ****
+--- 555,562 ----
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+              debug%f_bond, debug%f_bend, debug%f_torsion, debug%f_ub, &
+              debug%f_imptors, debug%f_opbend, debug%f_onef, cell, use_virial, &
++             pot_danny, pv_danny_2body, pv_danny_3body, do_danny, &
++             danny_cutoff, iw_danny, & !added by Csilla
+              error)
+  
       ELSE
-         CALL force_intra_control ( molecule_set, molecule_kind_set, local_molecules, &
-              particle_set, shell_particle_set, core_particle_set, pot_bond, pot_bend,&
-              pot_urey_bradley, pot_torsion, pot_imptors, pot_opbend, pot_onef, &
-              pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imptors, &
-!             pv_opbend, pv_onef, cell=cell, use_virial=use_virial, error=error)
+***************
+*** 509,515 ****
+              pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imptors, &
+              pot_opbend, pot_onef, pot_shell, pv_bond, pv_bend, &
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+!             cell=cell, use_virial=use_virial, error=error)
       ENDIF
   
       IF (iw>0) THEN
---- 540,557 ----
-              pot_urey_bradley, pot_torsion, pot_imptors, pot_opbend, pot_onef, &
-              pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imptors, &
-              pv_opbend, pv_onef, debug%f_bond, debug%f_bend, debug%f_torsion, debug%f_ub, &
-!             debug%f_imptors, debug%f_opbend, debug%f_onef, cell, use_virial, &
-!             pot_danny, pv_danny_2body, pv_danny_3body, do_danny, &
-!             danny_cutoff, iw_danny, error ) !added by Csilla
-      ELSE
-         CALL force_intra_control ( molecule_set, molecule_kind_set, local_molecules, &
-              particle_set, shell_particle_set, core_particle_set, pot_bond, pot_bend,&
-              pot_urey_bradley, pot_torsion, pot_imptors, pot_opbend, pot_onef, &
-              pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imptors, &
-!             pv_opbend, pv_onef, cell=cell, use_virial=use_virial, &
+--- 566,575 ----
+              pot_bond, pot_bend, pot_urey_bradley, pot_torsion, pot_imptors, &
+              pot_opbend, pot_onef, pot_shell, pv_bond, pv_bend, &
+              pv_urey_bradley, pv_torsion, pv_imptors, pv_opbend, pv_onef, &
+!             cell=cell, use_virial=use_virial, &
 !             pot_danny=pot_danny, pv_danny_2body=pv_danny_2body, &
 !             pv_danny_3body=pv_danny_3body, do_danny=do_danny, danny_cutoff=danny_cutoff, &
 !             iw_danny=iw_danny, error=error) !added by Csilla
@@ -398,24 +2251,26 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
   
       IF (iw>0) THEN
 ***************
-*** 519,525 ****
+*** 535,542 ****
+      END IF
   
       ! add up all the potential energies
-      thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion +pot_opbend + &
+!     thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion + pot_opbend + &
 !          pot_onef + pot_imptors + pot_urey_bradley + pot_manybody + pot_shell
+  
       CALL mp_sum ( thermo%pot, para_env%group )
       IF(shell_present) THEN
-         thermo%harm_shell = pot_shell
---- 578,584 ----
+--- 595,602 ----
+      END IF
   
       ! add up all the potential energies
-      thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion +pot_opbend + &
+!     thermo%pot = pot_nonbond + pot_bond + pot_bend + pot_torsion +pot_opbend + &
 !          pot_onef + pot_imptors + pot_urey_bradley + pot_manybody + pot_shell + pot_danny !Added by Csilla
+  
       CALL mp_sum ( thermo%pot, para_env%group )
       IF(shell_present) THEN
-         thermo%harm_shell = pot_shell
 ***************
-*** 607,625 ****
+*** 625,643 ****
             WRITE(iw,'(3f15.9)')((fcore_total ( j, i ),j=1,3), i = 1, nshell)
          END IF
       END IF
@@ -435,7 +2290,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
             CALL mp_sum (virial%pv_virial, para_env%group)
   
             virial%pv_virial = virial%pv_virial + ident * thermo%e_neut
---- 666,692 ----
+--- 685,711 ----
             WRITE(iw,'(3f15.9)')((fcore_total ( j, i ),j=1,3), i = 1, nshell)
          END IF
       END IF
@@ -464,8 +2319,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
   
             virial%pv_virial = virial%pv_virial + ident * thermo%e_neut
 ***************
-*** 812,817 ****
---- 879,892 ----
+*** 830,835 ****
+--- 898,911 ----
          END IF
          DEALLOCATE ( fshell_nonbond, STAT = stat )
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -480,25 +2335,19 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_force.F src_20100325_1711/fist_f
       END IF
       CALL cp_print_key_finished_output(iw,logger,mm_section,"PRINT%DERIVATIVES",error=error)
       CALL cp_print_key_finished_output(iw2,logger,mm_section,"PRINT%EWALD_INFO",error=error)
-diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/fist_intra_force.F
-*** ../cp2k/src_20100324_around1700/fist_intra_force.F	2010-03-29 15:19:02.165037486 +0100
---- src_20100325_1711/fist_intra_force.F	2010-04-06 16:06:03.346316978 +0100
+Only in src_20100507_updated: fist_force.F~
+Only in src_20100507_updated: .#fist_force.F.1.138
+Only in src_20100507_updated: .#fist_force.F.1.140
+Only in src_20100507_updated: .#fist_force.F.1.144
+Only in src_20100507_updated: fist_force.F_update_charges
+diff -r -c src_20100507_latest_orig/fist_intra_force.F src_20100507_updated/fist_intra_force.F
+*** src_20100507_latest_orig/fist_intra_force.F	2010-04-20 23:00:29.000000000 +0100
+--- src_20100507_updated/fist_intra_force.F	2010-05-07 14:28:26.619215817 +0100
 ***************
-*** 12,22 ****
-  MODULE fist_intra_force
+*** 13,24 ****
+--- 13,34 ----
   
-    USE cell_types,                      ONLY: cell_type,&
-                                               pbc
-    USE distribution_1d_types,           ONLY: distribution_1d_type
-    USE f77_blas
-    USE input_constants,                 ONLY: do_ff_harmonic
-!   USE kinds,                           ONLY: dp
-    USE mol_force,                       ONLY: force_bends,&
-                                               force_bonds,&
-                                               force_imp_torsions,&
---- 12,32 ----
-  MODULE fist_intra_force
-  
+    USE atomic_kind_types,               ONLY: get_atomic_kind
     USE cell_types,                      ONLY: cell_type,&
 + !added by Csilla
 +                                              get_cell, &
@@ -510,17 +2359,18 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 + !added by Csilla
     USE distribution_1d_types,           ONLY: distribution_1d_type
     USE f77_blas
-    USE input_constants,                 ONLY: do_ff_harmonic
-!   USE kinds,                           ONLY: dp, default_string_length
-! !added by Csilla
-!   USE mathconstants,                   ONLY: pi
-! !added by Csilla
+    USE input_constants,                 ONLY: do_ewald_none,&
+                                               do_ff_harmonic
+    USE kinds,                           ONLY: dp
++ !added by Csilla
++   USE mathconstants,                   ONLY: pi
++ !added by Csilla
     USE mol_force,                       ONLY: force_bends,&
                                                force_bonds,&
                                                force_imp_torsions,&
 ***************
-*** 27,37 ****
---- 37,53 ----
+*** 29,40 ****
+--- 39,56 ----
                                                get_pv_torsion
     USE molecule_kind_types,             ONLY: &
          bend_type, bond_type, get_molecule_kind, impr_type, &
@@ -531,6 +2381,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
          ub_type
     USE molecule_types_new,              ONLY: get_molecule,&
                                                molecule_type
+    USE pair_potential_coulomb,          ONLY: potential_coulomb
     USE particle_types,                  ONLY: particle_type
 + !added by Csilla
 +   USE physcon,                         ONLY: angstrom, evolt
@@ -539,8 +2390,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
     USE splines_types,                   ONLY: spline_data_p_type,&
                                                spline_factor_type
 ***************
-*** 45,50 ****
---- 61,134 ----
+*** 48,53 ****
+--- 64,140 ----
     CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'fist_intra_force'
     PUBLIC :: force_intra_control
   
@@ -581,6 +2432,9 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +   real(kind=dp), parameter :: d2_SiSiO = 2.933_dp
 +   real(kind=dp), parameter :: cos_theta0_SiSiO = -1.0_dp/3.0_dp !109.47_dp * deg2rad
 +   real(kind=dp), parameter :: cutoff_SiSiO = 2.8_dp
++   !next line is changed only, also, try proper smoothing for 3body, from 2.4 to 2.6 rather than 2.6 cut off, no smoothing applied from 2.6 to 2.8
++      real(kind=dp), parameter :: cutoff_SiSiO_O = 2.8_dp
++   !
 +   real(kind=dp), parameter :: lambda_SiOSi = 1.400_dp
 +   real(kind=dp), parameter :: gamma1_SiOSi = 1.00_dp
 +   real(kind=dp), parameter :: gamma2_SiOSi = 1.00_dp
@@ -616,26 +2470,27 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
   
   ! *****************************************************************************
 ***************
-*** 58,64 ****
+*** 62,68 ****
          pot_urey_bradley, pot_torsion, pot_imp_torsion, pot_opbend, pot_onef, &
-         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imp_torsion, &
-         pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, f_imptor, f_opbend, &
-!        f_onef, cell, use_virial, error )
+         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
+         pv_imp_torsion, pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, &
+!        f_imptor, f_opbend, f_onef, cell, use_virial, error)
   
       TYPE(molecule_type), POINTER             :: molecule_set( : )
       TYPE(molecule_kind_type), POINTER        :: molecule_kind_set( : )
---- 142,149 ----
+--- 149,157 ----
          pot_urey_bradley, pot_torsion, pot_imp_torsion, pot_opbend, pot_onef, &
-         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, pv_imp_torsion, &
-         pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, f_imptor, f_opbend, &
-!        f_onef, cell, use_virial, &
-!        pot_danny, pv_danny_2body, pv_danny_3body, do_danny, danny_cutoff, iw_danny, error ) !added by Csilla
+         pot_shell, pv_bond, pv_bend, pv_urey_bradley, pv_torsion, &
+         pv_imp_torsion, pv_opbend, pv_onef, f_bond, f_bend, f_torsion, f_ub, &
+!        f_imptor, f_opbend, f_onef, cell, use_virial, &
+!        pot_danny, pv_danny_2body, pv_danny_3body, do_danny, danny_cutoff, iw_danny, & !added by Csilla
+!        error)
   
       TYPE(molecule_type), POINTER             :: molecule_set( : )
       TYPE(molecule_kind_type), POINTER        :: molecule_kind_set( : )
 ***************
-*** 74,84 ****
---- 159,177 ----
+*** 80,90 ****
+--- 169,187 ----
                                                   pv_imp_torsion, pv_opbend, &
                                                   pv_onef
       REAL(KIND=dp), DIMENSION(:, :), &
@@ -656,13 +2511,13 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
   
       CHARACTER(len=*), PARAMETER :: routineN = 'force_intra_control', &
 ***************
-*** 108,113 ****
---- 201,219 ----
+*** 115,120 ****
+--- 212,230 ----
       TYPE(spline_factor_type), POINTER        :: spl_f
       TYPE(torsion_type), POINTER              :: torsion_list( : )
       TYPE(ub_type), POINTER                   :: ub_list( : )
 + !added by Csilla
-+     integer :: natom
++     integer :: natom, handle2
 + !    type(atom_type), pointer :: atom_list(:)
 +     integer :: ii
 +     character(len=4) :: name_a, name_b, name_c
@@ -678,8 +2533,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
       CALL timeset ( routineN, handle )
       NULLIFY(logger)
 ***************
-*** 128,133 ****
---- 234,242 ----
+*** 135,140 ****
+--- 245,253 ----
       pot_opbend =0.0_dp
       pot_onef =  0.0_dp
       pot_shell =  0.0_dp
@@ -690,8 +2545,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
       nkind = SIZE ( molecule_kind_set )
       MOL: DO ikind = 1, nkind
 ***************
-*** 135,140 ****
---- 244,250 ----
+*** 142,147 ****
+--- 255,261 ----
   
          DO imol = 1, nmol_per_kind
             i = local_molecules % list ( ikind ) % array ( imol )
@@ -700,7 +2555,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             molecule_kind => molecule % molecule_kind
             CALL get_molecule_kind ( molecule_kind, nbend = nbends, nbond = nbonds,  &
 ***************
-*** 143,151 ****
+*** 150,162 ****
                                      bond_list = bond_list, ub_list = ub_list, &
                                      bend_list = bend_list, torsion_list = torsion_list, &
                                      impr_list = impr_list, opbend_list = opbend_list, &
@@ -710,7 +2565,11 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
   
             BOND: DO ibond = 1, nbonds
                index_a = bond_list ( ibond ) % a + first_atom - 1
---- 253,410 ----
+               index_b = bond_list ( ibond ) % b + first_atom - 1
+               rij = particle_set ( index_a ) % r - particle_set ( index_b ) % r
+               rij = pbc(rij,cell)
+               CALL force_bonds(bond_list(ibond)%bond_kind%id_type, rij, &
+--- 264,436 ----
                                      bond_list = bond_list, ub_list = ub_list, &
                                      bend_list = bend_list, torsion_list = torsion_list, &
                                      impr_list = impr_list, opbend_list = opbend_list, &
@@ -723,6 +2582,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             CALL get_molecule ( molecule, first_atom=first_atom )
 + !added by Csilla
 +           if (do_danny) then
++     CALL timeset ( routineN//"_d2body", handle2 )
 +              if (any(trim(particle_set(first_atom)%name).eq.(/'SIO','OSB','OSI','HSI'/))) then
 + 
 +                 IF (iw_danny>0) THEN
@@ -778,7 +2638,9 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +                    WRITE(iw_danny,'(A40,F15.9)') ' Elapsed CPU time of 2 body Danny force ',time2-time1
 +                 ENDIF
 +                 call cpu_time(time1)
++     CALL timestop(handle2)
 + 
++     CALL timeset ( routineN//"_d3body", handle2 )
 +                 ! calc 3-body terms
 +                 allocate(danny_force(1:natom,1:3)) !size of the silica
 +                 danny_force = 0._dp
@@ -861,6 +2723,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 + !                cycle
 + 
 +              endif
++     CALL timestop(handle2)
 +           endif
 +           IF (iw_danny>0) THEN
 +              WRITE(iw_danny,'(A20,F15.9)') ' pot_danny: ',pot_danny
@@ -869,9 +2732,20 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
   
             BOND: DO ibond = 1, nbonds
                index_a = bond_list ( ibond ) % a + first_atom - 1
+               index_b = bond_list ( ibond ) % b + first_atom - 1
++ 
++              !only include OSI-HSI pairs
++              if (do_danny .and. any(trim(particle_set(index_a)%name).eq.(/"SIO","OSB","OSI","HSI"/)) .and. &
++                  .not. (any((/trim(particle_set(index_a)%name),trim(particle_set(index_b)%name)/).eq.'OSI') &
++                            .and. &
++                         any((/trim(particle_set(index_a)%name),trim(particle_set(index_b)%name)/).eq.'HSI')) ) cycle
++ 
+               rij = particle_set ( index_a ) % r - particle_set ( index_b ) % r
+               rij = pbc(rij,cell)
+               CALL force_bonds(bond_list(ibond)%bond_kind%id_type, rij, &
 ***************
-*** 181,186 ****
---- 440,455 ----
+*** 188,193 ****
+--- 462,477 ----
                END IF
   
             END DO BOND
@@ -881,7 +2755,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +           ENDIF
 +           if (do_danny) then
 +              if (any(trim(particle_set(first_atom)%name).eq.(/'SIO','OSB','OSI','HSI'/))) then
-+ !TRY!                cycle
++                 cycle
 +              endif
 +           endif
 + !added by Csilla
@@ -889,8 +2763,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             SHELL: DO ishell = 1, nshell
                index_a = shell_list ( ishell ) % a + first_atom - 1
 ***************
-*** 200,205 ****
---- 469,479 ----
+*** 207,212 ****
+--- 491,501 ----
                shell_particle_set ( index_b )% f(3) = shell_particle_set ( index_b ) % f(3)  +rij(3) * fscalar
   
             END DO SHELL
@@ -903,8 +2777,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             UREY_BRADLEY: DO ibend = 1, nub
                index_a = ub_list ( ibend ) % a + first_atom - 1
 ***************
-*** 228,233 ****
---- 502,512 ----
+*** 235,240 ****
+--- 524,534 ----
                END IF
   
             END DO UREY_BRADLEY
@@ -917,8 +2791,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             BEND: DO ibend = 1, nbends
                index_a = bend_list ( ibend ) % a + first_atom - 1
 ***************
-*** 280,285 ****
---- 559,569 ----
+*** 287,292 ****
+--- 581,591 ----
                   f_bend(:,index_c) = f_bend(:,index_c) + fscalar*g3
                END IF
             END DO BEND
@@ -931,8 +2805,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             TORSION: DO itorsion = 1, ntorsions
                index_a = torsion_list ( itorsion ) % a + first_atom - 1
 ***************
-*** 346,351 ****
---- 630,640 ----
+*** 353,358 ****
+--- 652,662 ----
                   END IF
                END DO
             END DO TORSION
@@ -945,8 +2819,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             IMP_TORSION: DO itorsion = 1, nimptors
                index_a = impr_list ( itorsion ) % a + first_atom - 1
 ***************
-*** 381,386 ****
---- 670,686 ----
+*** 388,393 ****
+--- 692,708 ----
                                         impr_list(itorsion)%impr_kind%k, &
                                         impr_list(itorsion)%impr_kind%phi0, &
                                         gt1,gt2,gt3,gt4,energy,fscalar)
@@ -965,8 +2839,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
                particle_set ( index_a )% f(1) = particle_set ( index_a ) % f(1) + gt1(1) * fscalar
                particle_set ( index_a )% f(2) = particle_set ( index_a ) % f(2) + gt1(2) * fscalar
 ***************
-*** 409,414 ****
---- 709,719 ----
+*** 416,421 ****
+--- 731,741 ----
                   f_imptor(:,index_d) = f_imptor(:,index_d) + fscalar*gt4
                END IF
             END DO IMP_TORSION
@@ -979,8 +2853,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             OPBEND: DO iopbend = 1, nopbends
                index_a = opbend_list ( iopbend ) % a + first_atom - 1
 ***************
-*** 474,479 ****
---- 779,789 ----
+*** 481,486 ****
+--- 801,811 ----
                   f_opbend(:,index_d) = f_opbend(:,index_d) + fscalar*gt4
                END IF
             END DO OPBEND
@@ -993,8 +2867,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
             ONEF: DO ionef = 1, nonefs
                index_a = onef_list ( ionef ) % a + first_atom - 1
 ***************
-*** 510,521 ****
---- 820,1874 ----
+*** 535,546 ****
+--- 860,1923 ----
                   f_onef(:,index_b) = f_onef(:,index_b) + rij*fscalar
                END IF
             END DO ONEF
@@ -1836,7 +3710,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +     real(kind=dp) :: d1
 +     real(kind=dp) :: d2
 +     real(kind=dp) :: cos_theta0
-+     real(kind=dp) :: cutoff
++     real(kind=dp) :: cutoff_12
++     real(kind=dp) :: cutoff_23
 +     TYPE(cp_error_type)       :: error
 +     character(len=*), parameter :: routineN = 'force_danny_3body', &
 +       routineP = moduleN//':'//routineN
@@ -1857,25 +3732,29 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +        d1 = d1_SiSiSi
 +        d2 = d2_SiSiSi
 +        cos_theta0 = cos_theta0_SiSiSi
-+        cutoff = cutoff_SiSiSi
++        cutoff_12 = cutoff_SiSiSi
++        cutoff_23 = cutoff_SiSiSi
 +     else
 +        ! Si-Si-O, O could be OSI if cutoff is >2.8
 +        if ( ( trim(name_a).eq.'SIO' .and. trim(name_b).eq.'SIO' .and. any(trim(name_c).eq.(/'OSB','OSI'/)) ) .or. &
 +             ( any(trim(name_a).eq.(/'OSB','OSI'/)) .and. trim(name_b).eq.'SIO' .and. trim(name_c).eq.'SIO' ) ) then
 +           lambda = lambda_SiSiO
 +           cos_theta0 = cos_theta0_SiSiO
-+           cutoff = cutoff_SiSiO
 +           ! 3 body potential is asymmetrical only for Si-Si-O triplet
 +           if (trim(name_a).eq.'SIO') then
 +              gamma1 = gamma1_SiSiO
 +              gamma2 = gamma2_SiSiO
 +              d1 = d1_SiSiO
 +              d2 = d2_SiSiO
++              cutoff_12 = cutoff_SiSiO
++              cutoff_23 = cutoff_SiSiO_O
 +           else
 +              gamma1 = gamma2_SiSiO
 +              gamma2 = gamma1_SiSiO
 +              d1 = d2_SiSiO
 +              d2 = d1_SiSiO
++              cutoff_12 = cutoff_SiSiO_O
++              cutoff_23 = cutoff_SiSiO
 +           endif
 +        else
 +           ! Si-O-Si, O could be OSI if cutoff is >2.8
@@ -1887,7 +3766,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +              d1 = d1_SiOSi
 +              d2 = d2_SiOSi
 +              cos_theta0 = cos_theta0_SiOSi
-+              cutoff = cutoff_SiOSi
++              cutoff_12 = cutoff_SiOSi
++              cutoff_23 = cutoff_SiOSi
 +            else
 +              ! O-Si-O
 +              if (any(trim(name_a).eq.(/'OSB','OSI'/)) .and. trim(name_b).eq.'SIO' .and. any(trim(name_c).eq.(/'OSB','OSI'/))) then
@@ -1897,7 +3777,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +                 d1 = d1_OSiO
 +                 d2 = d2_OSiO
 +                 cos_theta0 = cos_theta0_OSiO
-+                 cutoff = cutoff_OSiO
++                 cutoff_12 = cutoff_OSiO
++                 cutoff_23 = cutoff_OSiO
 +               else
 +                  ! Si-O-H
 +                  if ((trim(name_a).eq.'SIO' .and. trim(name_b).eq.'OSI' .and. trim(name_c).eq.'HSI') .or. &
@@ -1913,7 +3794,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +                        d1 = d2_SiOH
 +                     endif
 +                     cos_theta0 = cos_theta0_SiOH
-+                     cutoff = cutoff_SiOH
++                     cutoff_12 = cutoff_SiOH
++                     cutoff_23 = cutoff_SiOH
 +                  else
 +                    CALL cp_assert(.false.,cp_warning_level,cp_assertion_failed,routineP,&
 +                         "Unknown Danny 3 body term between "//TRIM(name_a)//&
@@ -1928,7 +3810,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 + !    print *, 'Use parameters ',lambda, gamma1, gamma2, d1, d2, cos(theta0)
 + 
 +     !calc the force on the 3 atoms
-+     call force_low_3body(r_ba,r_bc,lambda,gamma1,gamma2,d1,d2,cos_theta0,cutoff,energy,force_matrix, virial, iw_danny)
++     call force_low_3body(r_ba,r_bc,lambda,gamma1,gamma2,d1,d2,cos_theta0,cutoff_12,cutoff_23,energy,force_matrix, virial, iw_danny)
 + 
 +     call get_pv_bend(force_matrix(1:3),force_matrix(7:9),r_ba,r_bc,stress)
 + 
@@ -1936,7 +3818,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 + 
 +   !low level subroutine of force_danny_3body
 +   !calc energy, force and virial contribution from parameter set { lambda, gamma1, gamma2, d1, d2, cos(theta0) }
-+   subroutine force_low_3body(r_ba,r_bc,lambda,gamma1,gamma2,d1,d2,cos_theta0,cutoff,energy,force,virial,iw_danny)
++   subroutine force_low_3body(r_ba,r_bc,lambda,gamma1,gamma2,d1,d2,cos_theta0,cutoff_12,cutoff_23,energy,force,virial,iw_danny)
 + 
 +     real(kind=dp), intent(in) :: r_ba(3)
 +     real(kind=dp), intent(in) :: r_bc(3)
@@ -1946,7 +3828,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +     real(kind=dp), intent(in) :: d1
 +     real(kind=dp), intent(in) :: d2
 +     real(kind=dp), intent(in) :: cos_theta0
-+     real(kind=dp), intent(in) :: cutoff
++     real(kind=dp), intent(in) :: cutoff_12
++     real(kind=dp), intent(in) :: cutoff_23
 +     real(kind=dp), intent(out) :: energy
 +     real(kind=dp), intent(out) :: force(9), virial
 +     integer, intent(in) :: iw_danny
@@ -1966,7 +3849,7 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +        return
 +     endif
 +    ! here we can save computational time:   if   either rba or rbc > 3body cutoff   then   energy, force = 0
-+     if ((rba.gt.cutoff).or.(rbc.gt.cutoff)) then
++     if ((rba.gt.cutoff_12).or.(rbc.gt.cutoff_23)) then
 +        energy = 0._dp
 +        force(1:9) = 0._dp
 +        !print *, 'rba or rbc is out of cutoff function (i.e. > 2.8), save time, skip'
@@ -1988,8 +3871,8 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
 +     ENDIF
 + 
 +    ! atoms j--i--k
-+     fc_Si_ba = calc_fc(rba,dfc_Si_ba_dr,Danny_R=Danny_R_Si,Danny_Delta=Danny_Delta_Si)
-+     fc_Si_bc = calc_fc(rbc,dfc_Si_bc_dr,Danny_R=Danny_R_Si,Danny_Delta=Danny_Delta_Si)
++     fc_Si_ba = calc_fc(rba,dfc_Si_ba_dr,Danny_R=(cutoff_12-Danny_Delta_Si),Danny_Delta=Danny_Delta_Si)
++     fc_Si_bc = calc_fc(rbc,dfc_Si_bc_dr,Danny_R=(cutoff_23-Danny_Delta_Si),Danny_Delta=Danny_Delta_Si)
 +   
 +     term1 = lambda * exp(gamma1/(rba-d1) + gamma2/(rbc-d2))
 +     term2 = (cos(theta)-cos_theta0)**2._dp
@@ -2050,9 +3933,24 @@ diff -r -c ../cp2k/src_20100324_around1700/fist_intra_force.F src_20100325_1711/
   
   END MODULE fist_intra_force
   
-diff -r -c ../cp2k/src_20100324_around1700/force_env_methods.F src_20100325_1711/force_env_methods.F
-*** ../cp2k/src_20100324_around1700/force_env_methods.F	2010-03-29 15:19:32.465768245 +0100
---- src_20100325_1711/force_env_methods.F	2010-04-06 16:05:53.206790691 +0100
+Only in src_20100507_updated: fist_intra_force.F~
+Only in src_20100507_updated: .#fist_intra_force.F.1.69
+Only in src_20100507_updated: .#fist_intra_force.F.1.70
+Only in src_20100507_updated: .#fist_intra_force.F.1.72
+Only in src_20100507_updated: fist_intra_force.F_20100102
+Only in src_20100507_updated: fist_intra_force.F_notyetcleaned
+Only in src_20100507_updated: fist_intra_force.F_o_n
+Only in src_20100507_updated: fist_intra_force.F_o_n2
+Only in src_20100507_updated: fist_intra_force.F_TRIM
+Only in src_20100507_updated: fist_intra_force.F_trimtry
+Only in src_20100507_updated: fist_intra_force.F_update_charges
+Only in src_20100507_updated: fist_intra_force.F_virial
+Only in src_20100507_updated: fist_intra_force.F_wom
+Only in src_20100507_updated: fist_neighbor_list_control.F_trimtry
+Only in src_20100507_updated: fist_neighbor_lists.F_trimtry
+diff -r -c src_20100507_latest_orig/force_env_methods.F src_20100507_updated/force_env_methods.F
+*** src_20100507_latest_orig/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
+--- src_20100507_updated/force_env_methods.F	2010-04-07 16:00:26.095140641 +0100
 ***************
 *** 119,124 ****
 --- 119,127 ----
@@ -2078,9 +3976,19 @@ diff -r -c ../cp2k/src_20100324_around1700/force_env_methods.F src_20100325_1711
          END IF
          CALL cp_print_key_finished_output(output_unit,logger,force_env%force_env_section,&
               "PRINT%PROGRAM_RUN_INFO",error=error)
-diff -r -c ../cp2k/src_20100324_around1700/input_constants.F src_20100325_1711/input_constants.F
-*** ../cp2k/src_20100324_around1700/input_constants.F	2010-03-29 15:19:02.144349156 +0100
---- src_20100325_1711/input_constants.F	2010-04-06 16:05:51.571503097 +0100
+Only in src_20100507_updated: force_env_methods.F~
+Only in src_20100507_updated: .#force_env_methods.F.1.160
+Only in src_20100507_updated: force_fields_all.F~
+Only in src_20100507_updated: force_fields_all.F~~
+Only in src_20100507_updated: .#force_fields_all.F.1.38
+Only in src_20100507_updated: force_fields_all.F_20100102
+Only in src_20100507_updated: force_fields_all.F_oldparams
+Only in src_20100507_updated: force_fields_util.F~
+Only in src_20100507_updated: .#force_fields_util.F.1.57
+Only in src_20100507_updated: force_fields_util.F_20100102
+diff -r -c src_20100507_latest_orig/input_constants.F src_20100507_updated/input_constants.F
+*** src_20100507_latest_orig/input_constants.F	2010-03-10 12:51:50.000000000 +0000
+--- src_20100507_updated/input_constants.F	2010-04-07 16:00:22.985747958 +0100
 ***************
 *** 105,111 ****
                                                 reftraj_ensemble=9,&
@@ -2119,9 +4027,12 @@ diff -r -c ../cp2k/src_20100324_around1700/input_constants.F src_20100325_1711/i
     INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
                                                 do_ff_quartic=1,&
                                                 do_ff_g96=2,&
-diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_check.F src_20100325_1711/input_cp2k_check.F
-*** ../cp2k/src_20100324_around1700/input_cp2k_check.F	2010-03-29 15:19:01.328354679 +0100
---- src_20100325_1711/input_cp2k_check.F	2010-04-06 16:06:00.185100443 +0100
+Only in src_20100507_updated: .#input_constants.F.1.267
+Only in src_20100507_updated: input_constants.F_new_with_extras
+Only in src_20100507_updated: input_constants.F_orig_without_extras
+diff -r -c src_20100507_latest_orig/input_cp2k_check.F src_20100507_updated/input_cp2k_check.F
+*** src_20100507_latest_orig/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
+--- src_20100507_updated/input_cp2k_check.F	2010-04-07 16:00:35.722013784 +0100
 ***************
 *** 22,28 ****
     USE input_constants,                 ONLY: &
@@ -2156,9 +4067,10 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_check.F src_20100325_1711/
                   CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
                   check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
                   CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
-diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_mm.F src_20100325_1711/input_cp2k_mm.F
-*** ../cp2k/src_20100324_around1700/input_cp2k_mm.F	2010-03-29 15:19:29.781426321 +0100
---- src_20100325_1711/input_cp2k_mm.F	2010-04-06 16:05:49.565611537 +0100
+Only in src_20100507_updated: .#input_cp2k_check.F.1.72
+diff -r -c src_20100507_latest_orig/input_cp2k_mm.F src_20100507_updated/input_cp2k_mm.F
+*** src_20100507_latest_orig/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
+--- src_20100507_updated/input_cp2k_mm.F	2010-04-16 13:39:15.185254329 +0100
 ***************
 *** 232,237 ****
 --- 232,238 ----
@@ -2223,9 +4135,42 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_mm.F src_20100325_1711/inp
          CALL create_IMPROPER_section(subsection, error=error)
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
-diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_motion.F src_20100325_1711/input_cp2k_motion.F
-*** ../cp2k/src_20100324_around1700/input_cp2k_motion.F	2010-03-29 15:19:06.730554121 +0100
---- src_20100325_1711/input_cp2k_motion.F	2010-04-06 16:05:49.661425981 +0100
+Only in src_20100507_updated: input_cp2k_mm.F~
+Only in src_20100507_updated: input_cp2k_mm.F~~
+Only in src_20100507_updated: .#input_cp2k_mm.F.1.101
+Only in src_20100507_updated: .#input_cp2k_mm.F.1.97
+Only in src_20100507_updated: input_cp2k_mm.F_update_charges
+diff -r -c src_20100507_latest_orig/input_cp2k_motion.F src_20100507_updated/input_cp2k_motion.F
+*** src_20100507_latest_orig/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
+--- src_20100507_updated/input_cp2k_motion.F	2010-04-13 11:08:56.169683951 +0100
+***************
+*** 128,133 ****
+--- 128,152 ----
+              n_keywords=0, n_subsections=1, repeats=.TRUE., required=.FALSE.,&
+              error=error)
+         NULLIFY(keyword)
++ 
++        CALL cp_print_key_section_create(print_key,"COLVAR_ATOMS",&
++             description="controls the output of a list of atoms. Useful for colvars.",&
++             print_level=low_print_level, common_iter_levels=1,&
++             filename="",error=error)
++        !CALL section_create(subsubsection,name="COLVAR_ATOMS",&
++        !     description=" controls the output of a list of atoms. Useful for colvars.", &
++        !     n_keywords=1, n_subsections=0, repeats=.FALSE., required=.TRUE.,&
++        !     error=error)
++        CALL keyword_create(keyword, name="LIST",&
++             description="Specifies a list of atomic indexes of the isolated ion",&
++             usage="LIST {integer}", type_of_var=integer_t, n_var=-1,&
++             required=.TRUE., repeats=.TRUE.,error=error)
++        CALL section_add_keyword(print_key,keyword,error=error)
++        CALL keyword_release(keyword,error=error)
++ 
++        CALL section_add_subsection(subsection,print_key,error=error)
++        CALL section_release(print_key,error=error)
++ 
+         CALL cp_print_key_section_create(print_key,"trajectory",&
+              description="controls the output of the trajectory",&
+              print_level=low_print_level, common_iter_levels=1,&
 ***************
 *** 1423,1434 ****
               description="The ensemble/integrator that you want to use for MD propagation",&
@@ -2240,7 +4185,7 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_motion.F src_20100325_1711
               "simulate steady shock (uniaxial)",&
               "simulate steady shock (uniaxial) with extra viscosity",&
               "simulate steady shock with hydrostatic pressure",&
---- 1423,1435 ----
+--- 1442,1454 ----
               description="The ensemble/integrator that you want to use for MD propagation",&
               usage="ensemble nve",&
               default_i_val=nve_ensemble,&
@@ -2263,7 +4208,7 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_motion.F src_20100325_1711
               nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
               reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
          CALL section_add_keyword(section,keyword,error=error)
---- 1439,1445 ----
+--- 1458,1464 ----
               "constant pressure ensemble (no thermostat)",&
               "constant pressure ensemble using an isotropic cell (no thermostat)"),&
               citations=(/Evans1983,Minary2003,Kolafa2004/),&
@@ -2271,9 +4216,10 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_motion.F src_20100325_1711
               nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
               reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
          CALL section_add_keyword(section,keyword,error=error)
-diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_subsys.F src_20100325_1711/input_cp2k_subsys.F
-*** ../cp2k/src_20100324_around1700/input_cp2k_subsys.F	2010-03-29 15:19:15.284215910 +0100
---- src_20100325_1711/input_cp2k_subsys.F	2010-04-07 15:24:16.263489459 +0100
+Only in src_20100507_updated: .#input_cp2k_motion.F.1.219
+diff -r -c src_20100507_latest_orig/input_cp2k_subsys.F src_20100507_updated/input_cp2k_subsys.F
+*** src_20100507_latest_orig/input_cp2k_subsys.F	2010-03-20 04:09:38.000000000 +0000
+--- src_20100507_updated/input_cp2k_subsys.F	2010-04-07 16:00:39.103230213 +0100
 ***************
 *** 377,382 ****
 --- 377,387 ----
@@ -2391,9 +4337,12 @@ diff -r -c ../cp2k/src_20100324_around1700/input_cp2k_subsys.F src_20100325_1711
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
-diff -r -c ../cp2k/src_20100324_around1700/integrator.F src_20100325_1711/integrator.F
-*** ../cp2k/src_20100324_around1700/integrator.F	2010-03-29 15:19:27.705018636 +0100
---- src_20100325_1711/integrator.F	2010-04-06 16:05:51.466711871 +0100
+Only in src_20100507_updated: .#input_cp2k_subsys.F.1.123
+Only in src_20100507_updated: input_cp2k_subsys.F_new_with_extras
+Only in src_20100507_updated: input_cp2k_subsys.F_orig_without_extras
+diff -r -c src_20100507_latest_orig/integrator.F src_20100507_updated/integrator.F
+*** src_20100507_latest_orig/integrator.F	2010-02-11 22:31:20.000000000 +0000
+--- src_20100507_updated/integrator.F	2010-04-07 16:00:22.697741925 +0100
 ***************
 *** 100,106 ****
   
@@ -2838,9 +4787,11 @@ diff -r -c ../cp2k/src_20100324_around1700/integrator.F src_20100325_1711/integr
 + 
   END MODULE integrator
   
-diff -r -c ../cp2k/src_20100324_around1700/integrator_utils.F src_20100325_1711/integrator_utils.F
-*** ../cp2k/src_20100324_around1700/integrator_utils.F	2010-03-29 15:19:12.481681275 +0100
---- src_20100325_1711/integrator_utils.F	2010-04-06 16:05:58.757000841 +0100
+Only in src_20100507_updated: .#integrator.F.1.191
+Only in src_20100507_updated: integrator.F_notyetcleaned
+diff -r -c src_20100507_latest_orig/integrator_utils.F src_20100507_updated/integrator_utils.F
+*** src_20100507_latest_orig/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
+--- src_20100507_updated/integrator_utils.F	2010-04-07 16:00:33.268595443 +0100
 ***************
 *** 26,32 ****
     USE input_constants,                 ONLY: &
@@ -2901,9 +4852,373 @@ diff -r -c ../cp2k/src_20100324_around1700/integrator_utils.F src_20100325_1711/
       END SELECT
   
     END SUBROUTINE rescaled_vv_first
-diff -r -c ../cp2k/src_20100324_around1700/md_conserved_quantities.F src_20100325_1711/md_conserved_quantities.F
-*** ../cp2k/src_20100324_around1700/md_conserved_quantities.F	2010-03-29 15:19:06.306023289 +0100
---- src_20100325_1711/md_conserved_quantities.F	2010-04-06 16:05:45.891465651 +0100
+Only in src_20100507_updated: .#integrator_utils.F.1.21
+Only in src_20100507_updated: integrator_utils.F_notyetcleaned
+diff -r -c src_20100507_latest_orig/lib/CVS/Entries src_20100507_updated/lib/CVS/Entries
+*** src_20100507_latest_orig/lib/CVS/Entries	2010-05-07 13:59:52.409175872 +0100
+--- src_20100507_updated/lib/CVS/Entries	2010-05-07 13:41:22.494329524 +0100
+***************
+*** 1,126 ****
+! /OBJECTDEFS/1.7/Wed Mar  3 11:27:50 2010//
+! /array_types.F/1.3/Thu Mar 18 08:08:44 2010//
+! /btree__nametype1__k__nametype2__v.instantiation/1.1/Wed Jan 27 10:26:11 2010//
+! /btree__nametype1__k__nametype2__v.template/1.2/Thu Mar 25 14:27:53 2010//
+! /btree_i8_k_cp2d_v.F/1.2/Thu Mar 25 14:27:53 2010//
+! /btree_i8_k_dp2d_v.F/1.2/Thu Mar 25 14:27:53 2010//
+! /btree_i8_k_i4_v.F/1.2/Thu Mar 25 14:27:53 2010//
+! /btree_i8_k_sp2d_v.F/1.2/Thu Mar 25 14:27:53 2010//
+! /btree_i8_k_zp2d_v.F/1.2/Thu Mar 25 14:27:53 2010//
+! /collocate_fast.F/1.5/Wed Aug 20 07:17:40 2008//
+! /collocate_fast_1.F/1.2/Fri Jul 24 23:08:42 2009//
+! /collocate_fast_2.F/1.2/Fri Jul 24 23:08:42 2009//
+! /collocate_fast_3.F/1.2/Fri Jul 24 23:08:42 2009//
+! /collocate_fast_4.F/1.2/Fri Jul 24 23:08:42 2009//
+! /collocate_fast_5.F/1.2/Fri Jul 24 23:08:42 2009//
+! /collocate_fast_6.F/1.2/Fri Jul 24 23:08:42 2009//
+! /ctrig.F/1.7/Fri Feb  1 19:13:36 2008//
+! /dbcsr_blas_operations.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_block_access.F/1.6/Wed Apr 21 16:46:22 2010//
+! /dbcsr_block_access__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_block_access__nametype1_.template/1.4/Fri Apr  9 08:43:02 2010//
+! /dbcsr_block_access_c.F/1.4/Fri Apr  9 08:43:02 2010//
+! /dbcsr_block_access_d.F/1.4/Fri Apr  9 08:43:02 2010//
+! /dbcsr_block_access_s.F/1.4/Fri Apr  9 08:43:02 2010//
+! /dbcsr_block_access_z.F/1.4/Fri Apr  9 08:43:02 2010//
+! /dbcsr_block_operations.F/1.5/Mon Mar 29 10:15:38 2010//
+! /dbcsr_block_operations__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_block_operations__nametype1_.template/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_block_operations_c.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_block_operations_d.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_block_operations_s.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_block_operations_z.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_c_mpi_calls.F/1.1/Fri Jan 29 09:56:09 2010//
+! /dbcsr_data_operations.F/1.3/Thu Mar 25 14:27:53 2010//
+! /dbcsr_dist_operations.F/1.5/Thu Mar 25 14:27:53 2010//
+! /dbcsr_error_handling.F/1.8/Thu Mar 25 14:27:53 2010//
+! /dbcsr_index_operations.F/1.6/Wed Apr 21 16:46:22 2010//
+! /dbcsr_internal_operations.F/1.13/Tue Apr 13 08:50:48 2010//
+! /dbcsr_internal_operations__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_internal_operations__nametype1_.template/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_internal_operations_c.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_internal_operations_d.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_internal_operations_s.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_internal_operations_z.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_io.F/1.5/Fri Apr  9 11:53:47 2010//
+! /dbcsr_iterator_operations.F/1.7/Mon Apr 26 07:59:44 2010//
+! /dbcsr_iterator_operations__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_iterator_operations__nametype1_.template/1.2/Mon Mar  8 11:26:51 2010//
+! /dbcsr_iterator_operations_c.F/1.2/Mon Mar  8 11:26:51 2010//
+! /dbcsr_iterator_operations_d.F/1.2/Mon Mar  8 11:26:51 2010//
+! /dbcsr_iterator_operations_s.F/1.2/Mon Mar  8 11:26:51 2010//
+! /dbcsr_iterator_operations_z.F/1.2/Mon Mar  8 11:26:51 2010//
+! /dbcsr_kinds.F/1.2/Fri Jan 29 09:56:09 2010//
+! /dbcsr_machine.F/1.3/Mon Feb 15 16:12:21 2010//
+! /dbcsr_message_passing.F/1.7/Fri Mar 12 10:30:53 2010//
+! /dbcsr_message_passing__nametype1_.instantiation/1.1/Fri Jan 29 09:56:09 2010//
+! /dbcsr_message_passing__nametype1_.template/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_c.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_d.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_i.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_l.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_r.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_message_passing_z.F/1.4/Thu Mar 25 14:27:53 2010//
+! /dbcsr_methods.F/1.13/Wed Apr 21 11:46:50 2010//
+! /dbcsr_methods__nametype1__.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_methods__nametype1__.template/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_methods_c_.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_methods_d_.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_methods_s_.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_methods_z_.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_mp_operations.F/1.5/Fri Apr 16 09:21:13 2010//
+! /dbcsr_mp_operations__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_mp_operations__nametype1_.template/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_mp_operations_c.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_mp_operations_d.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_mp_operations_s.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_mp_operations_z.F/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_operations.F/1.15/Wed Apr 21 16:46:22 2010//
+! /dbcsr_operations__nametype1__.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_operations__nametype1__.template/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_operations_c_.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_operations_d_.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_operations_s_.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_operations_z_.F/1.4/Mon Mar 29 10:15:38 2010//
+! /dbcsr_ptr_util.F/1.6/Thu Mar 25 14:27:53 2010//
+! /dbcsr_ptr_util__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_ptr_util__nametype1_.template/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_ptr_util_c.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_ptr_util_d.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_ptr_util_s.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_ptr_util_z.F/1.2/Thu Mar 25 14:27:53 2010//
+! /dbcsr_transformations.F/1.9/Wed Apr 21 11:46:50 2010//
+! /dbcsr_types.F/1.3/Mon Mar  8 11:26:51 2010//
+! /dbcsr_util.F/1.5/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations.F/1.13/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations__nametype1_.instantiation/1.1/Wed Mar  3 11:27:50 2010//
+! /dbcsr_work_operations__nametype1_.template/1.3/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations_c.F/1.3/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations_d.F/1.3/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations_s.F/1.3/Thu Mar 25 14:27:53 2010//
+! /dbcsr_work_operations_z.F/1.3/Thu Mar 25 14:27:53 2010//
+! /fast.F/1.13/Fri Apr 18 08:19:30 2008//
+! /fft_lib.F/1.16/Tue Oct 13 08:21:24 2009//
+! /fft_plan.F/1.5/Tue Oct 13 08:21:24 2009//
+! /fftacml_lib.F/1.5/Fri Feb  1 19:13:36 2008//
+! /fftcu_lib.F/1.4/Fri Apr 18 10:10:45 2008//
+! /fftessl_lib.F/1.6/Sun Jan  3 23:41:40 2010//
+! /fftmkl_lib.F/1.8/Fri Feb  1 19:13:36 2008//
+! /fftpre.F/1.9/Fri Feb  1 19:13:36 2008//
+! /fftrot.F/1.9/Fri Feb  1 19:13:36 2008//
+! /fftsci_lib.F/1.4/Fri Feb  1 19:13:36 2008//
+! /fftsg_lib.F/1.7/Sun Jan  3 23:41:40 2010//
+! /fftstp.F/1.9/Fri Feb  1 19:13:36 2008//
+! /fftw2_lib.F/1.12/Sun Jan  3 23:41:40 2010//
+! /fftw3_lib.F/1.16/Tue Oct 13 11:21:00 2009//
+! /grid_fast.F/1.8/Fri Feb  1 19:13:36 2008//
+! /integrate_fast.F/1.5/Wed Aug 20 07:17:40 2008//
+! /integrate_fast_1.F/1.2/Fri Jul 24 23:08:42 2009//
+! /integrate_fast_2.F/1.2/Fri Jul 24 23:08:42 2009//
+! /integrate_fast_3.F/1.2/Fri Jul 24 23:08:42 2009//
+! /integrate_fast_4.F/1.2/Fri Jul 24 23:08:43 2009//
+! /integrate_fast_5.F/1.2/Fri Jul 24 23:08:43 2009//
+! /integrate_fast_6.F/1.2/Fri Jul 24 23:08:43 2009//
+! /mltfftsg.F/1.17/Sun Jan  3 23:41:40 2010//
+! /mltfftsg_tools.F/1.8/Fri Feb  1 19:13:36 2008//
+  D
+--- 1,126 ----
+! /OBJECTDEFS/1.7/Wed Apr  7 15:00:04 2010//
+! /array_types.F/1.3/Wed Apr  7 15:00:04 2010//
+! /btree__nametype1__k__nametype2__v.instantiation/1.1/Wed Apr  7 15:00:03 2010//
+! /btree__nametype1__k__nametype2__v.template/1.2/Wed Apr  7 15:00:03 2010//
+! /btree_i8_k_cp2d_v.F/1.2/Wed Apr  7 15:00:01 2010//
+! /btree_i8_k_dp2d_v.F/1.2/Wed Apr  7 15:00:03 2010//
+! /btree_i8_k_i4_v.F/1.2/Wed Apr  7 15:00:01 2010//
+! /btree_i8_k_sp2d_v.F/1.2/Wed Apr  7 15:00:03 2010//
+! /btree_i8_k_zp2d_v.F/1.2/Wed Apr  7 15:00:04 2010//
+! /collocate_fast.F/1.5/Wed Apr  7 15:00:04 2010//
+! /collocate_fast_1.F/1.2/Wed Apr  7 15:00:05 2010//
+! /collocate_fast_2.F/1.2/Wed Apr  7 15:00:04 2010//
+! /collocate_fast_3.F/1.2/Wed Apr  7 15:00:04 2010//
+! /collocate_fast_4.F/1.2/Wed Apr  7 15:00:01 2010//
+! /collocate_fast_5.F/1.2/Wed Apr  7 15:00:01 2010//
+! /collocate_fast_6.F/1.2/Wed Apr  7 15:00:03 2010//
+! /ctrig.F/1.7/Wed Apr  7 15:00:00 2010//
+! /dbcsr_blas_operations.F/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_block_access__nametype1_.instantiation/1.1/Wed Apr  7 15:00:04 2010//
+! /dbcsr_block_operations.F/1.5/Wed Apr  7 15:00:04 2010//
+! /dbcsr_block_operations__nametype1_.instantiation/1.1/Wed Apr  7 15:00:04 2010//
+! /dbcsr_block_operations__nametype1_.template/1.4/Wed Apr  7 15:00:05 2010//
+! /dbcsr_block_operations_c.F/1.4/Wed Apr  7 15:00:03 2010//
+! /dbcsr_block_operations_d.F/1.4/Wed Apr  7 15:00:05 2010//
+! /dbcsr_block_operations_s.F/1.4/Wed Apr  7 15:00:04 2010//
+! /dbcsr_block_operations_z.F/1.4/Wed Apr  7 15:00:06 2010//
+! /dbcsr_c_mpi_calls.F/1.1/Wed Apr  7 15:00:05 2010//
+! /dbcsr_data_operations.F/1.3/Wed Apr  7 15:00:02 2010//
+! /dbcsr_dist_operations.F/1.5/Wed Apr  7 15:00:01 2010//
+! /dbcsr_error_handling.F/1.8/Wed Apr  7 15:00:02 2010//
+! /dbcsr_internal_operations__nametype1_.instantiation/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_internal_operations__nametype1_.template/1.1/Wed Apr  7 15:00:05 2010//
+! /dbcsr_internal_operations_c.F/1.1/Wed Apr  7 15:00:05 2010//
+! /dbcsr_internal_operations_d.F/1.1/Wed Apr  7 15:00:03 2010//
+! /dbcsr_internal_operations_s.F/1.1/Wed Apr  7 15:00:01 2010//
+! /dbcsr_internal_operations_z.F/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_iterator_operations__nametype1_.instantiation/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_iterator_operations__nametype1_.template/1.2/Wed Apr  7 15:00:03 2010//
+! /dbcsr_iterator_operations_c.F/1.2/Wed Apr  7 15:00:06 2010//
+! /dbcsr_iterator_operations_d.F/1.2/Wed Apr  7 15:00:02 2010//
+! /dbcsr_iterator_operations_s.F/1.2/Wed Apr  7 15:00:02 2010//
+! /dbcsr_iterator_operations_z.F/1.2/Wed Apr  7 15:00:03 2010//
+! /dbcsr_kinds.F/1.2/Wed Apr  7 15:00:01 2010//
+! /dbcsr_machine.F/1.3/Wed Apr  7 15:00:04 2010//
+! /dbcsr_message_passing.F/1.7/Wed Apr  7 15:00:01 2010//
+! /dbcsr_message_passing__nametype1_.instantiation/1.1/Wed Apr  7 15:00:01 2010//
+! /dbcsr_message_passing__nametype1_.template/1.4/Wed Apr  7 15:00:03 2010//
+! /dbcsr_message_passing_c.F/1.4/Wed Apr  7 15:00:05 2010//
+! /dbcsr_message_passing_d.F/1.4/Wed Apr  7 15:00:02 2010//
+! /dbcsr_message_passing_i.F/1.4/Wed Apr  7 15:00:05 2010//
+! /dbcsr_message_passing_l.F/1.4/Wed Apr  7 15:00:00 2010//
+! /dbcsr_message_passing_r.F/1.4/Wed Apr  7 15:00:01 2010//
+! /dbcsr_message_passing_z.F/1.4/Wed Apr  7 15:00:02 2010//
+! /dbcsr_methods__nametype1__.instantiation/1.1/Wed Apr  7 15:00:01 2010//
+! /dbcsr_methods__nametype1__.template/1.2/Wed Apr  7 15:00:00 2010//
+! /dbcsr_methods_c_.F/1.2/Wed Apr  7 15:00:03 2010//
+! /dbcsr_methods_d_.F/1.2/Wed Apr  7 15:00:01 2010//
+! /dbcsr_methods_s_.F/1.2/Wed Apr  7 15:00:01 2010//
+! /dbcsr_methods_z_.F/1.2/Wed Apr  7 15:00:05 2010//
+! /dbcsr_mp_operations__nametype1_.instantiation/1.1/Wed Apr  7 15:00:05 2010//
+! /dbcsr_mp_operations__nametype1_.template/1.1/Wed Apr  7 15:00:03 2010//
+! /dbcsr_mp_operations_c.F/1.1/Wed Apr  7 15:00:04 2010//
+! /dbcsr_mp_operations_d.F/1.1/Wed Apr  7 15:00:00 2010//
+! /dbcsr_mp_operations_s.F/1.1/Wed Apr  7 15:00:03 2010//
+! /dbcsr_mp_operations_z.F/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_operations__nametype1__.instantiation/1.1/Wed Apr  7 15:00:02 2010//
+! /dbcsr_operations__nametype1__.template/1.4/Wed Apr  7 15:00:06 2010//
+! /dbcsr_operations_c_.F/1.4/Wed Apr  7 15:00:05 2010//
+! /dbcsr_operations_d_.F/1.4/Wed Apr  7 15:00:03 2010//
+! /dbcsr_operations_s_.F/1.4/Wed Apr  7 15:00:03 2010//
+! /dbcsr_operations_z_.F/1.4/Wed Apr  7 15:00:02 2010//
+! /dbcsr_ptr_util.F/1.6/Wed Apr  7 15:00:05 2010//
+! /dbcsr_ptr_util__nametype1_.instantiation/1.1/Wed Apr  7 15:00:01 2010//
+! /dbcsr_ptr_util__nametype1_.template/1.2/Wed Apr  7 15:00:03 2010//
+! /dbcsr_ptr_util_c.F/1.2/Wed Apr  7 15:00:03 2010//
+! /dbcsr_ptr_util_d.F/1.2/Wed Apr  7 15:00:01 2010//
+! /dbcsr_ptr_util_s.F/1.2/Wed Apr  7 15:00:02 2010//
+! /dbcsr_ptr_util_z.F/1.2/Wed Apr  7 15:00:01 2010//
+! /dbcsr_types.F/1.3/Wed Apr  7 15:00:00 2010//
+! /dbcsr_util.F/1.5/Wed Apr  7 15:00:04 2010//
+! /dbcsr_work_operations.F/1.13/Wed Apr  7 15:00:03 2010//
+! /dbcsr_work_operations__nametype1_.instantiation/1.1/Wed Apr  7 15:00:03 2010//
+! /dbcsr_work_operations__nametype1_.template/1.3/Wed Apr  7 15:00:03 2010//
+! /dbcsr_work_operations_c.F/1.3/Wed Apr  7 15:00:02 2010//
+! /dbcsr_work_operations_d.F/1.3/Wed Apr  7 15:00:03 2010//
+! /dbcsr_work_operations_s.F/1.3/Wed Apr  7 15:00:05 2010//
+! /dbcsr_work_operations_z.F/1.3/Wed Apr  7 15:00:04 2010//
+! /fast.F/1.13/Wed Apr  7 15:00:06 2010//
+! /fft_lib.F/1.16/Wed Apr  7 15:00:05 2010//
+! /fft_plan.F/1.5/Wed Apr  7 15:00:02 2010//
+! /fftacml_lib.F/1.5/Wed Apr  7 15:00:05 2010//
+! /fftcu_lib.F/1.4/Wed Apr  7 15:00:04 2010//
+! /fftessl_lib.F/1.6/Wed Apr  7 15:00:02 2010//
+! /fftmkl_lib.F/1.8/Wed Apr  7 15:00:03 2010//
+! /fftpre.F/1.9/Wed Apr  7 15:00:00 2010//
+! /fftrot.F/1.9/Wed Apr  7 15:00:03 2010//
+! /fftsci_lib.F/1.4/Wed Apr  7 15:00:03 2010//
+! /fftsg_lib.F/1.7/Wed Apr  7 15:00:04 2010//
+! /fftstp.F/1.9/Wed Apr  7 15:00:04 2010//
+! /fftw2_lib.F/1.12/Wed Apr  7 15:00:01 2010//
+! /fftw3_lib.F/1.16/Wed Apr  7 15:00:02 2010//
+! /grid_fast.F/1.8/Wed Apr  7 15:00:03 2010//
+! /integrate_fast.F/1.5/Wed Apr  7 15:00:01 2010//
+! /integrate_fast_1.F/1.2/Wed Apr  7 15:00:02 2010//
+! /integrate_fast_2.F/1.2/Wed Apr  7 15:00:00 2010//
+! /integrate_fast_3.F/1.2/Wed Apr  7 15:00:01 2010//
+! /integrate_fast_4.F/1.2/Wed Apr  7 15:00:03 2010//
+! /integrate_fast_5.F/1.2/Wed Apr  7 15:00:04 2010//
+! /integrate_fast_6.F/1.2/Wed Apr  7 15:00:06 2010//
+! /mltfftsg.F/1.17/Wed Apr  7 15:00:04 2010//
+! /mltfftsg_tools.F/1.8/Wed Apr  7 15:00:00 2010//
+! /dbcsr_block_access.F/1.6/Fri May  7 12:41:11 2010//
+! /dbcsr_block_access__nametype1_.template/1.4/Fri May  7 12:41:12 2010//
+! /dbcsr_block_access_c.F/1.4/Fri May  7 12:41:12 2010//
+! /dbcsr_block_access_d.F/1.4/Fri May  7 12:41:13 2010//
+! /dbcsr_block_access_s.F/1.4/Fri May  7 12:41:14 2010//
+! /dbcsr_block_access_z.F/1.4/Fri May  7 12:41:14 2010//
+! /dbcsr_index_operations.F/1.6/Fri May  7 12:41:15 2010//
+! /dbcsr_internal_operations.F/1.13/Fri May  7 12:41:16 2010//
+! /dbcsr_io.F/1.5/Fri May  7 12:41:17 2010//
+! /dbcsr_iterator_operations.F/1.7/Fri May  7 12:41:18 2010//
+! /dbcsr_methods.F/1.13/Fri May  7 12:41:18 2010//
+! /dbcsr_mp_operations.F/1.5/Fri May  7 12:41:19 2010//
+! /dbcsr_operations.F/1.15/Fri May  7 12:41:20 2010//
+! /dbcsr_transformations.F/1.9/Fri May  7 12:41:21 2010//
+  D
+diff -r -c src_20100507_latest_orig/mathlib.F src_20100507_updated/mathlib.F
+*** src_20100507_latest_orig/mathlib.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100507_updated/mathlib.F	2010-04-30 18:02:32.654980599 +0100
+***************
+*** 466,472 ****
+  !>       -            "T" => invert transpose(a)
+  !> \version 1.0
+  ! *****************************************************************************
+!   SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error)
+      REAL(KIND=dp), DIMENSION(:, :), &
+        INTENT(IN)                             :: a
+      REAL(KIND=dp), DIMENSION(:, :), &
+--- 466,472 ----
+  !>       -            "T" => invert transpose(a)
+  !> \version 1.0
+  ! *****************************************************************************
+!   SUBROUTINE invert_matrix_d(a,a_inverse,eval_error,option,error,improve)
+      REAL(KIND=dp), DIMENSION(:, :), &
+        INTENT(IN)                             :: a
+      REAL(KIND=dp), DIMENSION(:, :), &
+***************
+*** 474,479 ****
+--- 474,480 ----
+      REAL(KIND=dp), INTENT(OUT)               :: eval_error
+      CHARACTER(LEN=1), INTENT(IN), OPTIONAL   :: option
+      TYPE(cp_error_type), INTENT(inout)       :: error
++     LOGICAL, INTENT(IN), OPTIONAL            :: improve
+  
+      CHARACTER(LEN=*), PARAMETER :: routineN = 'invert_matrix_d', &
+        routineP = moduleN//':'//routineN
+***************
+*** 488,493 ****
+--- 489,495 ----
+      REAL(KIND=dp), ALLOCATABLE, &
+        DIMENSION(:, :)                        :: a_lu, b
+      REAL(KIND=dp), EXTERNAL                  :: dlange
++     LOGICAL                                  :: do_improve
+  
+      EXTERNAL dgecon,dgerfs,dgetrf,dgetrs
+  
+***************
+*** 500,505 ****
+--- 502,513 ----
+        trans = "N"
+      END IF
+  
++     IF (PRESENT(improve)) THEN
++       do_improve = improve
++     ELSE
++       do_improve = .true.
++     ENDIF
++ 
+      ! Get the dimension of matrix a
+      n = SIZE(a,1)
+  
+***************
+*** 596,617 ****
+  
+      eval_error = 0.0_dp
+  
+!     DO iter=1,10
+  
+!       CALL dgerfs(trans,n,n,a,n,a_lu,n,ipiv,b,n,a_inverse,n,ferr,berr,&
+!                   work,iwork,info)
+  
+!       IF (info /= 0) THEN
+!         CALL stop_program(moduleN,routineN,__LINE__,&
+!                           "Improving the computed solution in dgerfs failed")
+!       END IF
+  
+!       old_eval_error = eval_error
+!       eval_error = MAXVAL(ferr)
+  
+!       IF (ABS(eval_error - old_eval_error) <= EPSILON(1.0_dp)) EXIT
+  
+!     END DO
+  
+      ! Release work storage
+      DEALLOCATE (work,STAT=stat)
+--- 604,627 ----
+  
+      eval_error = 0.0_dp
+  
+!     IF (do_improve) THEN
+!       DO iter=1,10
+  
+! 	CALL dgerfs(trans,n,n,a,n,a_lu,n,ipiv,b,n,a_inverse,n,ferr,berr,&
+! 		    work,iwork,info)
+  
+! 	IF (info /= 0) THEN
+! 	  CALL stop_program(moduleN,routineN,__LINE__,&
+! 			    "Improving the computed solution in dgerfs failed")
+! 	END IF
+  
+! 	old_eval_error = eval_error
+! 	eval_error = MAXVAL(ferr)
+  
+! 	IF (ABS(eval_error - old_eval_error) <= EPSILON(1.0_dp)) EXIT
+  
+!       END DO
+!     ENDIF
+  
+      ! Release work storage
+      DEALLOCATE (work,STAT=stat)
+diff -r -c src_20100507_latest_orig/md_conserved_quantities.F src_20100507_updated/md_conserved_quantities.F
+*** src_20100507_latest_orig/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100507_updated/md_conserved_quantities.F	2010-04-07 16:00:12.682304097 +0100
 ***************
 *** 28,34 ****
          dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
@@ -2938,9 +5253,10 @@ diff -r -c ../cp2k/src_20100324_around1700/md_conserved_quantities.F src_2010032
          CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
          md_ener%temp_baro = md_ener%temp_baro*kelvin
       CASE (  nph_uniaxial_ensemble )
-diff -r -c ../cp2k/src_20100324_around1700/md_energies.F src_20100325_1711/md_energies.F
-*** ../cp2k/src_20100324_around1700/md_energies.F	2010-03-29 15:19:37.334566523 +0100
---- src_20100325_1711/md_energies.F	2010-04-06 16:05:56.514596774 +0100
+Only in src_20100507_updated: .#md_conserved_quantities.F.1.77
+diff -r -c src_20100507_latest_orig/md_energies.F src_20100507_updated/md_energies.F
+*** src_20100507_latest_orig/md_energies.F	2010-03-23 13:42:39.000000000 +0000
+--- src_20100507_updated/md_energies.F	2010-04-27 11:57:31.702009881 +0100
 ***************
 *** 40,45 ****
 --- 40,46 ----
@@ -2952,8 +5268,104 @@ diff -r -c ../cp2k/src_20100324_around1700/md_energies.F src_20100325_1711/md_en
     USE input_cp2k_motion,               ONLY: create_md_section
     USE input_enumeration_types,         ONLY: enum_i2c,&
 ***************
+*** 50,55 ****
+--- 51,58 ----
+                                               section_release,&
+                                               section_type,&
+                                               section_vals_get_subs_vals,&
++                                              section_vals_get,&
++                                              section_vals_val_get,&
+                                               section_vals_type
+    USE kinds,                           ONLY: default_string_length,&
+                                               dp
+***************
+*** 60,71 ****
+--- 63,76 ----
+    USE md_environment_types,            ONLY: get_md_env,&
+                                               md_environment_type,&
+                                               set_md_env
++   USE memory_utilities,                ONLY: reallocate
+    USE motion_utils,                    ONLY: write_simulation_cell,&
+                                               write_stress_tensor,&
+                                               write_trajectory
+    USE particle_list_types,             ONLY: particle_list_type
+    USE particle_types,                  ONLY: write_structure_data
+    USE physcon,                         ONLY: angstrom,&
++                                              evolt, &
+                                               femtoseconds,&
+                                               kelvin
+    USE qmmm_types,                      ONLY: qmmm_env_qm_type
+***************
+*** 312,317 ****
+--- 317,328 ----
+      TYPE(thermostats_type), POINTER          :: thermostats
+      TYPE(virial_type), POINTER               :: virial
+  
++     TYPE(section_vals_type), POINTER         :: colvar_atoms_section, print_section
++     INTEGER, DIMENSION(:), POINTER           :: isolated_atoms, tmp_v, colvar_atoms
++     logical :: explicit
++     integer :: iatom, n_rep, traj_unit, stat
++ 
++ 
+      failure = .FALSE.
+      NULLIFY(logger)
+      logger => cp_error_get_logger(error)
+***************
+*** 476,481 ****
+--- 487,536 ----
+         CALL write_trajectory(force_env, root_section, itimes, time*femtoseconds, dt*femtoseconds, md_ener%epot,&
+              "FORCES", my_pos, my_act, middle_name="frc", extended_xmol_title=.TRUE., error=error)
+  
++        ! Print atoms given in PRINT%COLVAR_ATOMS
++        ! get list
++        print_section => section_vals_get_subs_vals(motion_section,"PRINT",error=error)
++        colvar_atoms_section => section_vals_get_subs_vals(print_section,"COLVAR_ATOMS",error=error)
++        CALL section_vals_get(colvar_atoms_section, explicit=explicit, error=error)
++        nullify(colvar_atoms)
++        ALLOCATE(colvar_atoms(0), stat=stat)
++        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++        IF (explicit) THEN
++           CALL section_vals_val_get(colvar_atoms_section,"LIST", n_rep_val=n_rep, error=error)
++           DO i = 1, n_rep
++              CALL section_vals_val_get(colvar_atoms_section,"LIST", i_vals=tmp_v, i_rep_val=i, error=error)
++              CALL reallocate(colvar_atoms, 1, SIZE(colvar_atoms)+SIZE(tmp_v))
++              colvar_atoms(SIZE(colvar_atoms)-SIZE(tmp_v)+1:SIZE(colvar_atoms)) = tmp_v
++           END DO
++           ! print colvar
++           ! Get the otuput format
++ !          CALL get_output_format(root_section,"MOTION%PRINT%COLVAR_ATOMS",my_form,my_ext,error)
++           traj_unit = cp_print_key_unit_nr(logger,root_section,"MOTION%PRINT%COLVAR_ATOMS",&
++                   extension=".cv", file_position=my_pos, file_action=my_act, is_new_file=new_file, error=error) !&
++ !                  file_form=my_form, middle_name=TRIM(my_middle), is_new_file=new_file,&
++ !                  error=error)
++           IF (traj_unit > 0) THEN
++              IF (new_file) THEN
++                 WRITE (traj_unit,'("#",1X,A,3X,A,2X,A,2X,A,5X,A,5X,A,4X,A,2X,A,2X,A,2X,A,2X,A,2X,A)') &
++                      "Step Nr.","Time[fs]","Atom Nr.", &
++                      "Pos_x[A]","Pos_y[A]","Pos_z[A]",&
++                      "Vel_x[A/fs]","Vel_y[A/fs]","Vel_z[A/fs]", &
++                      "Frc_x[eV/A]","Frc_y[eV/A]","Frc_z[eV/A]"
++              END IF
++              do iatom=1,size(colvar_atoms)
++                WRITE (UNIT=traj_unit,FMT="(I8,F13.3,I8,9F13.8)") &
++                  !"CV| ", &
++                  itimes,time*femtoseconds, colvar_atoms(iatom), &
++                  particles%els(colvar_atoms(iatom))%r(1:3)*angstrom, &
++                  particles%els(colvar_atoms(iatom))%v(1:3)*angstrom/femtoseconds, &
++                  particles%els(colvar_atoms(iatom))%f(1:3)*evolt/angstrom
++              enddo
++           ENDIF
++           DEALLOCATE(colvar_atoms,stat=stat)
++           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++           CALL cp_print_key_finished_output(traj_unit,logger,root_section,"MOTION%PRINT%COLVAR_ATOMS",error=error)
++        END IF
++ 
+         ! Print Simulation Cell 
+         CALL write_simulation_cell(cell, motion_section, itimes, time*femtoseconds, my_pos, my_act, error)
+  
+***************
 *** 675,680 ****
---- 676,682 ----
+--- 730,736 ----
             IF ( simpar%ensemble == nph_uniaxial_ensemble .OR.&
                  simpar%ensemble == nph_uniaxial_damped_ensemble.OR.&
                  simpar%ensemble == npt_i_ensemble.OR.&
@@ -2963,7 +5375,7 @@ diff -r -c ../cp2k/src_20100324_around1700/md_energies.F src_20100325_1711/md_en
                  simpar%ensemble == npe_f_ensemble)  &
 ***************
 *** 753,758 ****
---- 755,761 ----
+--- 809,815 ----
             IF ( simpar%ensemble == nph_uniaxial_ensemble .OR.&
                  simpar%ensemble == nph_uniaxial_damped_ensemble.OR.&
                  simpar%ensemble == npt_i_ensemble.OR.&
@@ -2971,9 +5383,10 @@ diff -r -c ../cp2k/src_20100324_around1700/md_energies.F src_20100325_1711/md_en
                  simpar%ensemble == npt_f_ensemble.OR.&
                  simpar%ensemble == npe_i_ensemble.OR.&
                  simpar%ensemble == npe_f_ensemble) THEN
-diff -r -c ../cp2k/src_20100324_around1700/md_run.F src_20100325_1711/md_run.F
-*** ../cp2k/src_20100324_around1700/md_run.F	2010-03-29 15:19:08.490899442 +0100
---- src_20100325_1711/md_run.F	2010-04-06 16:05:57.580642303 +0100
+Only in src_20100507_updated: .#md_energies.F.1.140
+diff -r -c src_20100507_latest_orig/md_run.F src_20100507_updated/md_run.F
+*** src_20100507_latest_orig/md_run.F	2010-03-23 12:03:28.000000000 +0000
+--- src_20100507_updated/md_run.F	2010-04-07 16:00:31.047606208 +0100
 ***************
 *** 35,46 ****
                                                force_env_type
@@ -3031,9 +5444,12 @@ diff -r -c ../cp2k/src_20100324_around1700/md_run.F src_20100325_1711/md_run.F
            (simpar%ensemble==npe_f_ensemble).OR.&
            (simpar%ensemble==npe_i_ensemble).OR.&
            (simpar%ensemble==nph_uniaxial_ensemble).OR.&
-diff -r -c ../cp2k/src_20100324_around1700/md_vel_utils.F src_20100325_1711/md_vel_utils.F
-*** ../cp2k/src_20100324_around1700/md_vel_utils.F	2010-03-29 15:19:24.810297488 +0100
---- src_20100325_1711/md_vel_utils.F	2010-04-06 16:05:50.587095398 +0100
+Only in src_20100507_updated: .#md_run.F.1.176
+Only in src_20100507_updated: md_run.F_TRIM
+Only in src_20100507_updated: md_run.F_trimtry
+diff -r -c src_20100507_latest_orig/md_vel_utils.F src_20100507_updated/md_vel_utils.F
+*** src_20100507_latest_orig/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100507_updated/md_vel_utils.F	2010-04-07 16:00:21.258957696 +0100
 ***************
 *** 36,42 ****
     USE global_types,                    ONLY: global_environment_type
@@ -3080,9 +5496,12 @@ diff -r -c ../cp2k/src_20100324_around1700/md_vel_utils.F src_20100325_1711/md_v
          IF(simpar%temp_baro_tol > 0.0_dp) THEN
             CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
          END IF
-diff -r -c ../cp2k/src_20100324_around1700/motion_utils.F src_20100325_1711/motion_utils.F
-*** ../cp2k/src_20100324_around1700/motion_utils.F	2010-03-29 15:19:00.359202000 +0100
---- src_20100325_1711/motion_utils.F	2010-04-06 16:06:02.088972227 +0100
+Only in src_20100507_updated: .#md_vel_utils.F.1.12
+Only in src_20100507_updated: molecule_kind_types.F~
+Only in src_20100507_updated: molecule_kind_types.F_20100102
+diff -r -c src_20100507_latest_orig/motion_utils.F src_20100507_updated/motion_utils.F
+*** src_20100507_latest_orig/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100507_updated/motion_utils.F	2010-04-07 16:00:39.438626209 +0100
 ***************
 *** 261,267 ****
       CHARACTER(LEN=4)                         :: id_dcd
@@ -3149,12 +5568,16 @@ diff -r -c ../cp2k/src_20100324_around1700/motion_utils.F src_20100325_1711/moti
             ELSE
               WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
             END IF
-diff -r -c ../cp2k/src_20100324_around1700/OBJECTDEFS src_20100325_1711/OBJECTDEFS
-*** ../cp2k/src_20100324_around1700/OBJECTDEFS	2010-03-29 15:19:12.286725194 +0100
---- src_20100325_1711/OBJECTDEFS	2010-04-06 16:05:49.299283392 +0100
+Only in src_20100507_updated: motion_utils.F~
+Only in src_20100507_updated: .#motion_utils.F.1.17
+Only in src_20100507_updated: .#motion_utils.F.1.20
+Only in src_20100507_updated: motion_utils.F_trimtry
+diff -r -c src_20100507_latest_orig/OBJECTDEFS src_20100507_updated/OBJECTDEFS
+*** src_20100507_latest_orig/OBJECTDEFS	2010-04-26 16:54:35.000000000 +0100
+--- src_20100507_updated/OBJECTDEFS	2010-05-07 13:40:09.320107835 +0100
 ***************
-*** 678,683 ****
---- 678,684 ----
+*** 680,685 ****
+--- 680,686 ----
    topology_util.o\
    topology_xtl.o\
    topology_xyz.o\
@@ -3162,9 +5585,13 @@ diff -r -c ../cp2k/src_20100324_around1700/OBJECTDEFS src_20100325_1711/OBJECTDE
    util.o\
    velocity_verlet_control.o\
    vibrational_analysis.o\
-diff -r -c ../cp2k/src_20100324_around1700/particle_types.F src_20100325_1711/particle_types.F
-*** ../cp2k/src_20100324_around1700/particle_types.F	2010-03-29 15:19:28.560966940 +0100
---- src_20100325_1711/particle_types.F	2010-04-06 16:05:56.885097315 +0100
+Only in src_20100507_updated: .#OBJECTDEFS.1.508
+Only in src_20100507_updated: .#OBJECTDEFS.1.518
+Only in src_20100507_updated: pair_potential.F~
+Only in src_20100507_updated: pair_potential.F_20100102
+diff -r -c src_20100507_latest_orig/particle_types.F src_20100507_updated/particle_types.F
+*** src_20100507_latest_orig/particle_types.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100507_updated/particle_types.F	2010-04-07 16:00:29.986952230 +0100
 ***************
 *** 71,76 ****
 --- 71,80 ----
@@ -3200,9 +5627,12 @@ diff -r -c ../cp2k/src_20100324_around1700/particle_types.F src_20100325_1711/pa
       END DO
   
     END SUBROUTINE allocate_particle_set
-diff -r -c ../cp2k/src_20100324_around1700/simpar_methods.F src_20100325_1711/simpar_methods.F
-*** ../cp2k/src_20100324_around1700/simpar_methods.F	2010-03-29 15:19:30.374680480 +0100
---- src_20100325_1711/simpar_methods.F	2010-04-06 16:05:57.601255252 +0100
+Only in src_20100507_updated: particle_types.F~
+Only in src_20100507_updated: .#particle_types.F.1.133
+Only in src_20100507_updated: particle_types.F_trimtry
+diff -r -c src_20100507_latest_orig/simpar_methods.F src_20100507_updated/simpar_methods.F
+*** src_20100507_latest_orig/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/simpar_methods.F	2010-04-07 16:00:31.066455912 +0100
 ***************
 *** 23,29 ****
     USE input_constants,                 ONLY: &
@@ -3281,9 +5711,10 @@ diff -r -c ../cp2k/src_20100324_around1700/simpar_methods.F src_20100325_1711/si
             tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
             CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
             CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
-diff -r -c ../cp2k/src_20100324_around1700/thermal_region_utils.F src_20100325_1711/thermal_region_utils.F
-*** ../cp2k/src_20100324_around1700/thermal_region_utils.F	2010-03-29 15:19:36.275387627 +0100
---- src_20100325_1711/thermal_region_utils.F	2010-04-06 16:06:02.871957192 +0100
+Only in src_20100507_updated: .#simpar_methods.F.1.7
+diff -r -c src_20100507_latest_orig/thermal_region_utils.F src_20100507_updated/thermal_region_utils.F
+*** src_20100507_latest_orig/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/thermal_region_utils.F	2010-04-07 16:00:40.943904947 +0100
 ***************
 *** 19,24 ****
 --- 19,25 ----
@@ -3304,9 +5735,10 @@ diff -r -c ../cp2k/src_20100324_around1700/thermal_region_utils.F src_20100325_1
                            (simpar%ensemble == npt_i_ensemble)
          IF(apply_thermostat) THEN
            CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
-diff -r -c ../cp2k/src_20100324_around1700/thermostat_methods.F src_20100325_1711/thermostat_methods.F
-*** ../cp2k/src_20100324_around1700/thermostat_methods.F	2010-03-29 15:19:22.464077139 +0100
---- src_20100325_1711/thermostat_methods.F	2010-04-06 16:05:43.507776662 +0100
+Only in src_20100507_updated: .#thermal_region_utils.F.1.4
+diff -r -c src_20100507_latest_orig/thermostat_methods.F src_20100507_updated/thermostat_methods.F
+*** src_20100507_latest_orig/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/thermostat_methods.F	2010-04-07 16:00:08.552566593 +0100
 ***************
 *** 46,52 ****
     USE input_constants,                 ONLY: &
@@ -3344,9 +5776,10 @@ diff -r -c ../cp2k/src_20100324_around1700/thermostat_methods.F src_20100325_171
                            (simpar%ensemble == npe_i_ensemble).OR.&
                            (simpar%ensemble == npe_f_ensemble)
   
-diff -r -c ../cp2k/src_20100324_around1700/thermostat_utils.F src_20100325_1711/thermostat_utils.F
-*** ../cp2k/src_20100324_around1700/thermostat_utils.F	2010-03-29 15:18:57.217927525 +0100
---- src_20100325_1711/thermostat_utils.F	2010-04-06 16:06:00.848109170 +0100
+Only in src_20100507_updated: .#thermostat_methods.F.1.36
+diff -r -c src_20100507_latest_orig/thermostat_utils.F src_20100507_updated/thermostat_utils.F
+*** src_20100507_latest_orig/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/thermostat_utils.F	2010-04-07 16:00:37.125354854 +0100
 ***************
 *** 31,37 ****
          do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
@@ -3381,9 +5814,13 @@ diff -r -c ../cp2k/src_20100324_around1700/thermostat_utils.F src_20100325_1711/
          IF (ensemble==nve_ensemble) check = do_shell
          IF (check) THEN
             SELECT CASE(region)
-diff -r -c ../cp2k/src_20100324_around1700/topology_coordinate_util.F src_20100325_1711/topology_coordinate_util.F
-*** ../cp2k/src_20100324_around1700/topology_coordinate_util.F	2010-03-29 15:19:37.371788627 +0100
---- src_20100325_1711/topology_coordinate_util.F	2010-04-07 15:26:27.195635803 +0100
+Only in src_20100507_updated: .#thermostat_utils.F.1.28
+Only in src_20100507_updated: topology_connectivity_util.F~
+Only in src_20100507_updated: .#topology_connectivity_util.F.1.20
+Only in src_20100507_updated: topology_connectivity_util.F_20100102
+diff -r -c src_20100507_latest_orig/topology_coordinate_util.F src_20100507_updated/topology_coordinate_util.F
+*** src_20100507_latest_orig/topology_coordinate_util.F	2010-03-08 18:56:43.000000000 +0000
+--- src_20100507_updated/topology_coordinate_util.F	2010-04-07 17:37:43.492343101 +0100
 ***************
 *** 27,32 ****
 --- 27,33 ----
@@ -3920,9 +6357,23 @@ diff -r -c ../cp2k/src_20100324_around1700/topology_coordinate_util.F src_201003
                   END IF
                END DO
             END DO
-diff -r -c ../cp2k/src_20100324_around1700/topology.F src_20100325_1711/topology.F
-*** ../cp2k/src_20100324_around1700/topology.F	2010-03-29 15:19:30.653555925 +0100
---- src_20100325_1711/topology.F	2010-04-06 16:06:04.628413446 +0100
+Only in src_20100507_updated: topology_coordinate_util.F~
+Only in src_20100507_updated: topology_coordinate_util.F~~
+Only in src_20100507_updated: .#topology_coordinate_util.F.1.19
+Only in src_20100507_updated: .#topology_coordinate_util.F.1.24
+Only in src_20100507_updated: topology_coordinate_util.F_20091116
+Only in src_20100507_updated: topology_coordinate_util.F_20100102
+Only in src_20100507_updated: topology_coordinate_util.F_bondcons
+Only in src_20100507_updated: topology_coordinate_util.F_new_with_extras
+Only in src_20100507_updated: topology_coordinate_util.F_orig_without_extras
+Only in src_20100507_updated: topology_coordinate_util.F_SiOH
+Only in src_20100507_updated: topology_coordinate_util.F_TRIM
+Only in src_20100507_updated: topology_coordinate_util.F_trimtry
+Only in src_20100507_updated: topology_exyz.F
+Only in src_20100507_updated: topology_exyz.F_trimtry
+diff -r -c src_20100507_latest_orig/topology.F src_20100507_updated/topology.F
+*** src_20100507_latest_orig/topology.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/topology.F	2010-04-07 16:00:44.116303902 +0100
 ***************
 *** 26,32 ****
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
@@ -3961,9 +6412,14 @@ diff -r -c ../cp2k/src_20100324_around1700/topology.F src_20100325_1711/topology
       CASE (do_coord_cif)
          CALL read_coordinate_cif (topology,para_env,subsys_section,error)
       CASE (do_coord_xtl)
-diff -r -c ../cp2k/src_20100324_around1700/velocity_verlet_control.F src_20100325_1711/velocity_verlet_control.F
-*** ../cp2k/src_20100324_around1700/velocity_verlet_control.F	2010-03-29 15:19:14.573770403 +0100
---- src_20100325_1711/velocity_verlet_control.F	2010-04-06 16:05:50.487556423 +0100
+Only in src_20100507_updated: .#topology.F.1.139
+Only in src_20100507_updated: topology.F.orig
+Only in src_20100507_updated: topology_generate_util.F_trimtry
+Only in src_20100507_updated: topology_pdb.F~
+Only in src_20100507_updated: .#topology_pdb.F.1.72
+diff -r -c src_20100507_latest_orig/velocity_verlet_control.F src_20100507_updated/velocity_verlet_control.F
+*** src_20100507_latest_orig/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100507_updated/velocity_verlet_control.F	2010-04-07 16:00:21.047498706 +0100
 ***************
 *** 16,24 ****
     USE input_constants,                 ONLY: &
@@ -3996,3 +6452,4 @@ diff -r -c ../cp2k/src_20100324_around1700/velocity_verlet_control.F src_2010032
       CASE (npt_f_ensemble)
          CALL npt_f (md_env, globenv, error)
       CASE (nph_uniaxial_ensemble)
+Only in src_20100507_updated: .#velocity_verlet_control.F.1.54
