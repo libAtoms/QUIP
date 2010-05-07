@@ -103,72 +103,79 @@ LINKOPTS = ${OPTIM} ${DEBUG} ${SYSLIBS}
 .c.o:	
 	${CPLUSPLUS} ${CPLUSPLUSFLAGS} -c $<  -o $@
 
-Makefile.inc:
-	-rm -f Makefile.inc
+${BUILDDIR}/Makefile.inc: ${BUILDDIR}
+ifneq (${shell [ -f ${BUILDDIR}/Makefile.inc ] && echo 1 || echo 0},1)
+	@echo
+	@echo "In the following, hit enter to accept the defaults."
 ifndef MATH_LINKOPTS
-	@echo ; echo "In the following, hit enter to accept the defaults."
 	@echo
 	@echo "Please enter the linking options for LAPACK and BLAS libraries:"
 	@echo "   Default: ${DEFAULT_MATH_LINKOPTS}"
 	@read MATH_LINKOPTS && if [[ $$MATH_LINKOPTS == "" ]] ; then \
-	echo "MATH_LINKOPTS=${DEFAULT_MATH_LINKOPTS}" >> Makefile.inc ; \
-	else echo "MATH_LINKOPTS=$$MATH_LINKOPTS" >> Makefile.inc ; fi
+	  echo "MATH_LINKOPTS=${DEFAULT_MATH_LINKOPTS}" >> ${BUILDDIR}/Makefile.inc ; \
+	  else echo "MATH_LINKOPTS=$$MATH_LINKOPTS" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef FOX_LIBDIR
-	@echo ; \
-        echo "Please enter directory where FoX libraries are kept:" ; \
-	echo "   Default: use included version ${FOX}" ; \
-        read FOX_LIBDIR && if [[ $$FOX_LIBDIR ]] ; then \
-	  echo "FOX_LIBDIR=$$FOX_LIBDIR" >> Makefile.inc ; echo ; \
+	@echo
+	@echo "Please enter directory where FoX libraries are kept:"
+	@echo "   Default: use included version ${FOX}"
+	@read FOX_LIBDIR && if [[ $$FOX_LIBDIR ]] ; then \
+	  echo "FOX_LIBDIR=$$FOX_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo ; \
 	  echo "Please enter directory where FoX include files are kept:" ; \
-	  read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> Makefile.inc ; \
-	  echo "HAVE_EXTERNAL_FOX=1" >> Makefile.inc ; \
-	else echo "FOX_LIBDIR=$${PWD}/../FoX-4.0.3/objs.${QUIP_ARCH}/lib" >> Makefile.inc; \
-	  echo "FOX_INCDIR=$${PWD}/../FoX-4.0.3/objs.${QUIP_ARCH}/finclude" >> Makefile.inc; \
-	  echo "HAVE_EXTERNAL_FOX=0" >> Makefile.inc ; fi
+	  read FOX_INCDIR && echo "FOX_INCDIR=$$FOX_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_EXTERNAL_FOX=1" >> ${BUILDDIR}/Makefile.inc ; \
+	 else echo "FOX_LIBDIR=$${PWD}/FoX-4.0.3/objs.${QUIP_ARCH}/lib" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "FOX_INCDIR=$${PWD}/FoX-4.0.3/objs.${QUIP_ARCH}/finclude" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_EXTERNAL_FOX=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef NETCDF_LIBDIR
-	@echo ; \
-        echo "Please enter directory where NetCDF libraries are kept:" ; \
-	echo "   Default: no NetCDF present" ; \
-        read NETCDF_LIBDIR && if [[ $$NETCDF_LIBDIR ]] ; then \
-	  echo "NETCDF_LIBDIR=$$NETCDF_LIBDIR" >> Makefile.inc ; echo ; \
+	@echo
+	@echo "Please enter directory where NetCDF libraries are kept:"
+	@echo "   Default: no NetCDF present"
+	@read NETCDF_LIBDIR && if [[ $$NETCDF_LIBDIR ]] ; then \
+	  echo "NETCDF_LIBDIR=$$NETCDF_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo ; \
 	  echo "Please enter directory where NetCDF include files are kept:" ; \
-	  read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> Makefile.inc ; \
-	  echo "HAVE_NETCDF=1" >> Makefile.inc ; \
+	  read NETCDF_INCDIR && echo "NETCDF_INCDIR=$$NETCDF_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_NETCDF=1" >> ${BUILDDIR}/Makefile.inc ; \
 	  if nm $$NETCDF_LIBDIR/libnetcdf.a | grep -q deflate; then \
-            echo "NetCDF version 4 found."; echo "NETCDF4=1" >> Makefile.inc; \
-	  else echo "NetCDF older than version 4 found."; echo "NETCDF4=0" >> Makefile.inc; fi \
-	else echo "HAVE_NETCDF=0" >> Makefile.inc ; fi
+	   echo "NetCDF version 4 found." ; \
+	   echo "NETCDF4=1" >> ${BUILDDIR}/Makefile.inc ; \
+	  else echo "NetCDF older than version 4 found." ; \
+	   echo "NETCDF4=0" >> ${BUILDDIR}/Makefile.inc; fi \
+	 else echo "HAVE_NETCDF=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef LARSPOT_LIBDIR
-	@echo ; \
-        echo "Please enter directory where the Lars Potential libraries are kept:" ; \
-	echo "   Default: no Lars potential present" ; \
-        read LARSPOT_LIBDIR && if [[ $$LARSPOT_LIBDIR ]] ; then \
-	  echo "LARSPOT_LIBDIR=$$LARSPOT_LIBDIR" >> Makefile.inc ; echo ; \
+	@echo
+	@echo "Please enter directory where the Lars Potential libraries are kept:"
+	@echo "   Default: no Lars potential present"
+	@read LARSPOT_LIBDIR && if [[ $$LARSPOT_LIBDIR ]] ; then \
+	  echo "LARSPOT_LIBDIR=$$LARSPOT_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo ; \
 	  echo "Please enter directory where Lars Potential include files are kept:" ; \
-	  read LARSPOT_INCDIR && echo "LARSPOT_INCDIR=$$LARSPOT_INCDIR" >> Makefile.inc ; \
-	  echo "HAVE_LARSPOT=1" >> Makefile.inc ; \
-	else echo "HAVE_LARSPOT=0" >> Makefile.inc ; fi
+	  read LARSPOT_INCDIR && echo "LARSPOT_INCDIR=$$LARSPOT_INCDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_LARSPOT=1" >> ${BUILDDIR}/Makefile.inc ; \
+	 else echo "HAVE_LARSPOT=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef ASAP_LIBDIR
-	@echo ; \
-        echo "Please enter directory where the ASAP Potential libraries are kept:" ; \
-	echo "   Default: no ASAP potential present" ; \
-        read ASAP_LIBDIR && if [[ $$ASAP_LIBDIR ]] ; then \
-	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> Makefile.inc ; echo ; \
-	  echo "HAVE_ASAP=1" >> Makefile.inc ; \
-	else echo "HAVE_ASAP=0" >> Makefile.inc ; fi
+	@echo
+	@echo "Please enter directory where the ASAP Potential libraries are kept:"
+	@echo "   Default: no ASAP potential present"
+	@read ASAP_LIBDIR && if [[ $$ASAP_LIBDIR ]] ; then \
+	  echo "ASAP_LIBDIR=$$ASAP_LIBDIR" >> ${BUILDDIR}/Makefile.inc ; \
+	  echo "HAVE_ASAP=1" >> ${BUILDDIR}/Makefile.inc ; \
+	 else echo "HAVE_ASAP=0" >> ${BUILDDIR}/Makefile.inc ; fi
 endif
 ifndef EXTRA_LINKOPTS
 	@echo
 	@echo "Please enter any other extra linking options:"
 	@echo "   Default: none"
-	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> Makefile.inc
+	@read EXTRA_LINKOPTS && echo "EXTRA_LINKOPTS=$$EXTRA_LINKOPTS" >> ${BUILDDIR}/Makefile.inc
 endif
-	echo "HAVE_LOTF=1" >> Makefile.inc
-	echo "HAVE_GP=0" >> Makefile.inc
-	echo "HAVE_QP=0" >> Makefile.inc
-	echo "OPTIM=${DEFAULT_OPTIM}" >> Makefile.inc
-	echo "DEBUG=${DEFAULT_DEBUG}" >> Makefile.inc
+	@echo "HAVE_LOTF=1" >> ${BUILDDIR}/Makefile.inc
+	@echo "HAVE_GP=0" >> ${BUILDDIR}/Makefile.inc
+	@echo "HAVE_QP=0" >> ${BUILDDIR}/Makefile.inc
+	@echo "OPTIM=${DEFAULT_OPTIM}" >> ${BUILDDIR}/Makefile.inc
+	@echo "DEBUG=${DEFAULT_DEBUG}" >> ${BUILDDIR}/Makefile.inc
+endif
