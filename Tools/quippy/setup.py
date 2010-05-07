@@ -243,11 +243,11 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
 
 
 def read_arch_makefiles_and_environment(quip_root, quip_arch):
-    """Read ${QUIP_ROOT}/Makefiles/Makefile.common, ${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH},
+    """Read ${QUIP_ROOT}/Makefile.rules, ${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH},
     ${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc and then os.environ,
     overriding variables in that order."""
     
-    makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.common'))
+    makefile = parse_makefile(os.path.join(quip_root, 'Makefile.rules'))
     makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.%s' % quip_arch), makefile)
     makefile_inc = os.path.join(quip_root, 'build.%s/Makefile.inc' % quip_arch)
     if os.path.exists(makefile_inc):

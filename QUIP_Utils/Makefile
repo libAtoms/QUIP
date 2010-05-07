@@ -32,7 +32,7 @@ all: libquiputils.a
 
 
 include Makefile.inc
-include Makefile.common
+include Makefile.rules
 ifeq (${QUIP_ARCH},)
   include Makefile.arch
 else

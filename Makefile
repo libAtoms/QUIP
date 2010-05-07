@@ -32,7 +32,8 @@ ifneq (${QUIP_ARCH},)
 	export BUILDDIR=build.${QUIP_ARCH}
 	export QUIP_ARCH
 	include ${BUILDDIR}/Makefile.inc
-	include Makefiles/Makefile.common
+	include Makefile.rules
+	include Makefile.config
 	include Makefiles/Makefile.${QUIP_ARCH}
 else
 	BUILDDIR=crap
@@ -61,12 +62,12 @@ endif
 
 ${FOX}: ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
-	make -C ${FOX} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
+	make -C ${FOX} -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
 
 ${MODULES}: ${BUILDDIR}
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
-	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
+	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_GP},1)
@@ -82,27 +83,27 @@ Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
 QUIP_Programs/Examples/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs/Examples -I${PWD}/Makefiles $${targ#QUIP_Programs/Examples/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs/Examples -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/Examples/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Programs/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD}/Makefiles $${targ#QUIP_Programs/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Core/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Core -I${PWD}/Makefiles $${targ#QUIP_Core/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
 libAtoms/%: libAtoms 
 	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/libAtoms -I${PWD}/Makefiles $${targ#libAtoms/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
 Tools/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/Tools -I${PWD}/Makefiles $${targ#Tools/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
 
@@ -113,7 +114,7 @@ ${BUILDDIR}: arch
 clean:
 	for mods in  ${MODULES} ; do \
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} -I${PWD}/Makefiles clean ; \
+	  ${MAKE} -C ${BUILDDIR} -I${PWD} -I${PWD}/Makefiles clean ; \
 	done ; \
 	for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
@@ -133,4 +134,4 @@ quippy:
 	make -C Tools/quippy install QUIP_ROOT=${PWD}
 
 test:
-	${MAKE} -C Tests -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}
+	${MAKE} -C Tests -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR}
