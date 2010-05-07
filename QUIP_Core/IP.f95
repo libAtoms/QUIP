@@ -138,7 +138,7 @@ type IP_type
 
   type(mpi_context) :: mpi_glob
 
-  type(IP_type), pointer :: core
+  type(IP_type), pointer :: core => null()
 
 end type IP_type
 
