@@ -28,9 +28,17 @@ module teach_sparse_module
   use libatoms_module
   use bispectrum_module
   use IPEwald_module
+  use QUIP_module
 
   implicit none
 
+  type ip_core
+     integer :: do_core = .false.
+     character(len=1000000) :: quip_string = ''
+     character(len=FIELD_LENGTH) :: ip_args = ''
+  endtype ip_core
+     
+     
   interface teach_data_from_xyz
      module procedure xyzfile_teach_data_from_xyz_so4, xyzfile_teach_data_from_xyz_qw_so3
   endinterface teach_data_from_xyz
@@ -41,6 +49,7 @@ module teach_sparse_module
   public :: teach_data_from_xyz
   public :: e0_avg_from_xyz
   public :: w_Z_from_xyz
+  public :: ip_core
 
 contains
 
@@ -120,24 +129,25 @@ contains
 
   end subroutine teach_n_from_xyz
 
-  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     type(fourier_so4), intent(inout) :: f_hat
     type(grad_fourier_so4), intent(inout) :: df_hat
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald, do_core
+    logical, intent(in) :: do_ewald
+    type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                      f_hat = f_hat, df_hat = df_hat)
 
   end subroutine xyzfile_teach_data_from_xyz_so4
 
-  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                                                 x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
@@ -146,23 +156,25 @@ contains
     type(qw_so3), intent(inout) :: qw
     type(grad_qw_so3), intent(inout) :: dqw
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald, do_core
+    logical, intent(in) :: do_ewald
+    type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                      f3_hat = f3_hat, df3_hat = df3_hat, qw = qw, dqw = dqw)
 
   end subroutine xyzfile_teach_data_from_xyz_qw_so3
 
-  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                                            x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                            f_hat, df_hat, f3_hat, df3_hat, qw, dqw)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald, do_core
+    logical, intent(in) :: do_ewald
+    type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
     type(fourier_so4), intent(inout), optional :: f_hat
@@ -174,17 +186,20 @@ contains
 
     type(cinoutput) :: xyzfile
     type(atoms) :: at
-!    type(corepot) :: core
     type(bispectrum_so4) :: bis
     type(grad_bispectrum_so4) :: dbis
+
+    type(Potential) :: core_pot
+    
     logical :: do_qw_so3
     integer :: d
     integer :: n_max, n_con
     integer :: n_ener
     logical :: has_ener, has_force, has_virial
-    real(dp) :: ener, virial(3,3), ener_corr, ener_core, virial_corr(3,3), virial_core(3,3)
+    real(dp) :: ener, ener_ewald, ener_core
+    real(dp), dimension(3,3) :: virial, virial_ewald, virial_core
     real(dp), pointer :: charge(:), f(:,:)
-    real(dp), allocatable :: f_corr(:,:), f_core(:,:)
+    real(dp), allocatable :: f_ewald(:,:), f_core(:,:)
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
     integer :: shift(3)
     real(dp) :: pos(3)
@@ -200,7 +215,7 @@ contains
        d = qw2d(qw)
     endif
 
-!    if( do_core ) call initialise_core(core)
+    if( core%do_core ) call Initialise(core_pot, core%ip_args, core%quip_string)
 
     call initialise(xyzfile,at_file)
     call query(xyzfile)
@@ -225,8 +240,42 @@ contains
        has_force = assign_pointer(at,'f', f) .or. assign_pointer(at,'Force', f) .or. assign_pointer(at,'force', f)
        has_virial = get_value(at%params,'Virial',virial) .or. get_value(at%params,'virial',virial)
 
-       call atoms_set_cutoff(at,r_cut)
-       call calc_connect(at)
+       if( core%do_core ) then
+          allocate(f_core(3,at%N))
+          ener_core = 0.0_dp
+          f_core = 0.0_dp
+          virial_core = 0.0_dp
+
+          call set_cutoff(at, max(cutoff(core_pot),r_cut))
+          call calc_connect(at)
+
+          call calc(core_pot,at,e=ener_core,f=f_core,virial=virial_core)
+
+          if(has_ener) ener = ener - ener_core
+          if(has_force) f = f - f_core
+          if(has_virial) virial = virial - virial_core
+          deallocate(f_core)
+       endif
+
+       if( do_ewald ) then
+          allocate(f_ewald(3,at%N))
+          if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
+          do i = 1, at%N
+             charge(i) = z_eff(at%Z(i))
+          enddo
+          call Ewald_calc(at,e=ener_ewald,f=f_ewald,virial=virial_ewald)
+          if(has_ener) ener = ener - ener_ewald
+          if(has_force) f = f - f_ewald
+          if(has_virial) virial = virial - virial_ewald
+          deallocate(f_ewald)
+       endif
+
+       if(has_ener) ener = ener - at%N*e0     
+
+       if( at%cutoff /= r_cut ) then
+          call atoms_set_cutoff(at,r_cut)
+          call calc_connect(at)
+       endif
 
        nei_max = 0
        do i = 1, at%N
@@ -239,30 +288,6 @@ contains
           jack = 0.0_dp
        endif
        allocate(w(at%N))
-
-       if( do_ewald ) then
-          allocate(f_corr(3,at%N))
-          if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
-          do i = 1, at%N
-             charge(i) = z_eff(at%Z(i))
-          enddo
-          call Ewald_calc(at,e=ener_corr,f=f_corr,virial=virial_corr)
-          if(has_ener) ener = ener - ener_corr
-          if(has_force) f = f - f_corr
-          if(has_virial) virial = virial - virial_corr
-          deallocate(f_corr)
-       endif
-
-!       if( do_core ) then
-!          allocate(f_core(3,at%N))
-!          call calc_core(core,at,e=ener_core,f=f_core,virial=virial_core)
-!          if(has_ener) ener = ener - ener_core
-!          if(has_force) f = f - f_core
-!          if(has_virial) virial = virial - virial_core
-!          deallocate(f_core)
-!       endif
-
-       if(has_ener) ener = ener - at%N*e0     
 
        do i = 1, at%N
           w(i) = w_Z(at%Z(i))
@@ -374,26 +399,31 @@ contains
 
     call finalise(xyzfile)
 
+    if( core%do_core ) then
+       call Finalise(core_pot)
+    endif
+
   end subroutine xyzfile_teach_data_from_xyz
 
-  subroutine e0_avg_from_xyz(at_file, r_cut, do_ewald, z_eff, do_core, e0)
+  subroutine e0_avg_from_xyz(at_file, do_ewald, z_eff, core, e0)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
-    real(dp), intent(in) :: r_cut, z_eff(116)
-    logical, intent(in) :: do_ewald, do_core
+    real(dp), intent(in) :: z_eff(116)
+    logical, intent(in) :: do_ewald
+    type(ip_core), intent(in) :: core
     real(dp), intent(out) :: e0
 
+    type(Potential) :: core_pot
     type(cinoutput) :: xyzfile
     type(atoms) :: at
-!    type(corepot) :: core
     integer :: n_max, n_con
     integer :: n_ener
     logical :: has_ener
-    real(dp) :: ener, ener_corr, ener_core
+    real(dp) :: ener, ener_ewald, ener_core
     real(dp), pointer :: charge(:)
     integer :: i
 
-!    if( do_core ) call initialise_core(core)
+    if( core%do_core ) call Initialise(core_pot, core%ip_args, core%quip_string)
 
     call initialise(xyzfile,at_file)
     call query(xyzfile)
@@ -410,24 +440,24 @@ contains
        has_ener = get_value(at%params,'Energy',ener)
 
        if( has_ener ) then
-          call atoms_set_cutoff(at,r_cut)
-          call calc_connect(at)
-       endif
 
-       if( has_ener ) then
-          ener_corr = 0.0_dp
+          ener_core = 0.0_dp
+          if( core%do_core ) then
+             call set_cutoff(at, cutoff(core_pot))
+             call calc_connect(at)
+             call calc(core_pot,at,e=ener_core)
+          endif
+
+          ener_ewald = 0.0_dp
           if( do_ewald ) then
              if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
              do i = 1, at%N
                 charge(i) = z_eff(at%Z(i))
              enddo
-             call Ewald_calc(at,e=ener_corr)
+             call Ewald_calc(at,e=ener_ewald)
           endif
 
-          ener_core = 0.0_dp
-!          if( do_core ) call calc_core(core,at,e=ener_core)
-
-          e0 = e0 + (ener-ener_corr-ener_core) / at%N
+          e0 = e0 + (ener-ener_ewald-ener_core) / at%N
 
           n_ener = n_ener + 1
        endif
@@ -438,6 +468,8 @@ contains
     e0 = e0 / n_ener
 
     call finalise(xyzfile)
+
+    if( core%do_core ) call Finalise(core_pot)
 
   end subroutine e0_avg_from_xyz
 
@@ -486,16 +518,17 @@ program teach_sparse
   type(gp) :: my_gp
   type(gp_sparse) :: gp_sp
 
-  character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file
+  character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file, ip_args
   integer :: m, j_max, qw_l_max, min_steps
   real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
-  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_ewald, do_test_gp_gradient, has_bispectrum_file, do_core
+  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_ewald, do_test_gp_gradient, has_bispectrum_file, &
+  & do_core
 
   real(dp), dimension(116) :: z_eff
   character(len=FIELD_LENGTH), dimension(232) :: z_eff_fields
-  integer :: num_z_eff_fields
+  integer :: num_z_eff_fields, n_ip_args
   integer :: d
-  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields
+  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, ip_args_fields
   integer :: qw_f_n
   real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
   integer, dimension(99) :: qw_cutoff_f
@@ -516,6 +549,9 @@ program teach_sparse
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
   integer :: i, j, k, dd, dt
   character(len=FIELD_LENGTH) :: gp_file
+
+  type(extendable_str)  :: quip_params_str
+  type(ip_core) :: core
 
   call system_initialise(verbosity=NORMAL, enable_timing=.true.)
 
@@ -547,14 +583,14 @@ program teach_sparse
   call param_register(params, 'z_eff', '', z_eff_string,do_ewald)
   call param_register(params, 'do_test_gp_gradient', 'F', do_test_gp_gradient)
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_bispectrum_file)
-  call param_register(params, 'do_core', 'F', do_core)
+  call param_register(params, 'ip_args', '', ip_args,do_core)
 
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file] [sparse_file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
-     & [do_cluster] [min_steps=10] [z_eff={Ga:1.0:N:-1.0}] [do_test_gp_gradient=F] [bispectrum_file] [do_core]")
+     & [do_cluster] [min_steps=10] [z_eff={Ga:1.0:N:-1.0}] [do_test_gp_gradient=F] [bispectrum_file] ")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
@@ -598,13 +634,20 @@ program teach_sparse
      d = j_max2d(j_max)
   endif
 
+  if(do_core) then
+     call read(quip_params_str, "quip_params.xml")
+     core%ip_args = ip_args
+     core%do_core = do_core
+     core%quip_string = string(quip_params_str)
+  endif
+
   call teach_n_from_xyz(at_file, r_cut, n, nn, ne, n_ener, n_force, n_virial, species_present, n_species)
 
   allocate(species_Z(n_species))
   species_Z = species_present(1:n_species)
 
   if (.not. has_e0) then
-     call e0_avg_from_xyz(at_file, r_cut, do_ewald, z_eff, do_core, e0)
+     call e0_avg_from_xyz(at_file, do_ewald, z_eff, core, e0)
   end if
 
   allocate(w_Z(maxval(species_Z)))
@@ -616,10 +659,11 @@ program teach_sparse
   allocate(sigma(n_ener+n_force+n_virial))
 
   if (do_qw_so3) then
-     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   else
-     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, do_core, sgm, e0, w_Z, &
+     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, 0.0_dp, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   endif
 
@@ -692,6 +736,7 @@ program teach_sparse
   endif
 
   call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(e0,i=1,n_species)/))
+  !call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(0.0_dp,i=1,n_species)/))
   deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
 
   call print('theta_init')
@@ -719,23 +764,27 @@ program teach_sparse
   if (do_qw_so3) then
      my_gp%comment = "coordinates=qw l_max="//qw_l_max//" f_n="//qw_f_n
      do i = 1, qw_f_n
-        my_gp%comment = my_gp%comment//" cutoff_"//i//"="//qw_cutoff(i)
-        my_gp%comment = my_gp%comment//" cutoff_f_"//i//"="//qw_cutoff_f(i)
-        my_gp%comment = my_gp%comment//" cutoff_r1_"//i//"="//qw_cutoff_r1(i)
+        my_gp%comment = trim(my_gp%comment)//" cutoff_"//i//"="//qw_cutoff(i)
+        my_gp%comment = trim(my_gp%comment)//" cutoff_f_"//i//"="//qw_cutoff_f(i)
+        my_gp%comment = trim(my_gp%comment)//" cutoff_r1_"//i//"="//qw_cutoff_r1(i)
      enddo
      if (.not. qw_no_q) then
-        my_gp%comment = my_gp%comment//" do_q=T"
+        my_gp%comment = trim(my_gp%comment)//" do_q=T"
      else
-        my_gp%comment = my_gp%comment//" do_q=F"
+        my_gp%comment = trim(my_gp%comment)//" do_q=F"
      endif
      if (.not. qw_no_w) then
-        my_gp%comment = my_gp%comment//" do_w=T"
+        my_gp%comment = trim(my_gp%comment)//" do_w=T"
      else
-        my_gp%comment = my_gp%comment//" do_w=F"
+        my_gp%comment = trim(my_gp%comment)//" do_w=F"
      endif
   else
      my_gp%comment = "coordinates=bispectrum cutoff="//r_cut//" j_max="//j_max//" z0="//z0//" n_species="//n_species//" Z={"//species_Z//&
-     & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" z_eff={"//z_eff(species_Z)//"} do_core="//do_core
+     & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" z_eff={"//z_eff(species_Z)//"}"
+  endif
+  
+  if( core%do_core ) then
+     my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={" //trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
   endif
 
   call print("model parameters:")
@@ -747,7 +796,6 @@ program teach_sparse
   call print("w         = "//w_Z(species_Z))
   call print("do_ewald  = "//do_ewald)
   call print("z_eff     = "//z_eff(species_Z))
-  call print("do_core   = "//do_core)
 
   gp_file = 'gp_'//m//'.dat'
 
