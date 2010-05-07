@@ -450,6 +450,7 @@ subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_para
   allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
 
   do i = 1, at_in%N
+     call print('Displacing atom '//i//' of '//at_in%N)
      do alpha = 1, 3
         at%pos = pos0
         at%pos(alpha,i) = at%pos(alpha,i) + dx
