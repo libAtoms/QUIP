@@ -31,14 +31,20 @@
 ifneq (${QUIP_ARCH},)
 	export BUILDDIR=build.${QUIP_ARCH}
 	export QUIP_ARCH
+	include ${BUILDDIR}/Makefile.inc
+	include Makefiles/Makefile.common
 	include Makefiles/Makefile.${QUIP_ARCH}
 else
 	BUILDDIR=crap
 endif
 
 
-FOX = FoX-4.0.3
+ifeq (${HAVE_GP},1)
+MODULES = libAtoms gp QUIP_Core QUIP_Utils GAProgs QUIP_Programs # Tests
+else
 MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
+endif
+FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
 all: ${MODULES}
@@ -63,7 +69,13 @@ ${MODULES}: ${BUILDDIR}
 	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
+ifeq (${HAVE_GP},1)
+gp: libAtoms
+QUIP_Core: libAtoms gp ${FOX}
+GAProgs: libAtoms gp ${FOX} QUIP_Core
+else
 QUIP_Core: libAtoms ${FOX}
+endif
 QUIP_Util: libAtoms ${FOX} QUIP_Core
 QUIP_Programs: libAtoms ${FOX} QUIP_Core QUIP_Utils 
 Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
