@@ -40,11 +40,13 @@ if got_cinoutput:
          self.at.params['dummy_real_a'] = [1.0,2.0,3.0]
          self.at.params['dummy_int_a2'] = farray([1,2,3,4,5,6,7,8,9]).reshape(3,3)
          self.at.params['dummy_real_a2'] = farray([1.0,2,3,4,5,6,7,8,9]).reshape(3,3)
+         self.at.params['dummy_log'] = True
+         self.at.params['dummy_log_a'] = [True, True, False]
          self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
          for a in self.al:
             a.params.update(self.at.params)
             
-         self.xyz_ref =  ['64\n', 'dummy_real=1.00000000 dummy_int=2 dummy_int_a="1       2       3" dummy_real_a="1.00000000      2.00000000      3.00000000" dummy_int_a2="1        4        7        2        5        8        3        6        9" dummy_real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
+         self.xyz_ref =  ['64\n', 'dummy_real=1.00000000 dummy_int=2 dummy_int_a="1       2       3" dummy_real_a="1.00000000      2.00000000      3.00000000" dummy_int_a2="1        4        7        2        5        8        3        6        9" dummy_real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" dummy_log=T dummy_log_a="T T F" Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
                           'Si              0.00000000      0.00000000      0.00000000      14    F\n',
                           'Si              1.36000000      1.36000000      1.36000000      14    F\n',
                           'Si              2.72000000      2.72000000      0.00000000      14    F\n',
@@ -279,6 +281,8 @@ class TestPuPyXYZ(QuippyTestCase):
       self.at.params['dummy_real_a'] = [1.0,2.0,3.0]
       self.at.params['dummy_int_a2'] = farray([1,2,3,4,5,6,7,8,9]).reshape(3,3)
       self.at.params['dummy_real_a2'] = farray([1.0,2,3,4,5,6,7,8,9]).reshape(3,3)
+      self.at.params['dummy_log'] = True
+      self.at.params['dummy_log_a'] = [True, True, False]
       self.al = AtomsList(self.at for x in range(5))
       self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
       for a in self.al:
@@ -287,7 +291,8 @@ class TestPuPyXYZ(QuippyTestCase):
 
 
    def tearDown(self):
-      if os.path.exists('test.xyz'): os.remove('test.xyz')
+      pass
+      #if os.path.exists('test.xyz'): os.remove('test.xyz')
 
    def testsinglexyz(self):
       self.at.write(PuPyXYZWriter('test.xyz'))

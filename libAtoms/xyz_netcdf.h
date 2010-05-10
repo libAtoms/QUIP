@@ -86,8 +86,10 @@ typedef struct {
   int param_var_id[MAX_PARAM_COUNT][2];
   int param_int[MAX_PARAM_COUNT];
   double param_real[MAX_PARAM_COUNT];
+  int param_logical[MAX_PARAM_COUNT];
   int param_int_a[MAX_PARAM_COUNT][3];
   double param_real_a[MAX_PARAM_COUNT][3];
+  int param_logical_a[MAX_PARAM_COUNT][3];
   int param_int_a2[MAX_PARAM_COUNT][9];
   double param_real_a2[MAX_PARAM_COUNT][9];
   int param_filter[MAX_ENTRY_COUNT];
@@ -147,8 +149,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
-	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_int_a2, double **param_real_a2,
-	    int **param_filter, double **lattice, int **got_index, int **pnetcdf4);
+	    int **param_int, double **param_real, int **param_logical, int **param_int_a, double **param_real_a, int **param_logical_a,
+	    int **param_int_a2, double **param_real_a2, int **param_filter, double **lattice, int **got_index, int **pnetcdf4);
 int cioquery(Atoms *at, int *frame);
 void ciofree(Atoms *at);
 int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
