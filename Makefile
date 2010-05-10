@@ -73,7 +73,7 @@ ${MODULES}: ${BUILDDIR}
 ifeq (${HAVE_GP},1)
 gp: libAtoms
 QUIP_Core: libAtoms gp ${FOX}
-GAProgs: libAtoms gp ${FOX} QUIP_Core
+GAProgs: libAtoms gp ${FOX} QUIP_Core QUIP_Utils
 else
 QUIP_Core: libAtoms ${FOX}
 endif
@@ -82,7 +82,7 @@ QUIP_Programs: libAtoms ${FOX} QUIP_Core QUIP_Utils
 Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
 ifeq (${HAVE_GP},1)
-GAProgs/%: libAtoms gp ${FOX} QUIP_Core
+GAProgs/%: libAtoms gp ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/GAProgs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
 	rm ${BUILDDIR}/Makefile
