@@ -176,6 +176,48 @@ X
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 HLtext
 
+$headers{"_PYATOMS"} = ["HP", <<'HJtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   pyatoms: atomistic simulations tools
+X
+X   Copyright James Kermode 2010
+X
+X   These portions of the source code are released under the GNU General
+X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+X
+X   If you would like to license the source code under different terms,
+X   please contact James Kermode, james.kermode@gmail.com
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.jrkermode.co.uk/PyAtoms
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HJtext
+
+
+$headers{"_QUIPPY"} = ["HQ", <<'HJtext'];
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X
+X   quippy: Python interface to QUIP atomistic simulation library
+X
+X   Copyright James Kermode 2010
+X
+X   These portions of the source code are released under the GNU General
+X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+X
+X   If you would like to license the source code under different terms,
+X   please contact James Kermode, james.kermode@gmail.com
+X
+X   When using this software, please cite the following reference:
+X
+X   http://www.jrkermode.co.uk/quippy
+X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+HJtext
+
+
 foreach my $file (@ARGV) {
   if (-f $file) {
     warn "FILE $file\n";
