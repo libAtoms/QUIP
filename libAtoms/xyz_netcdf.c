@@ -653,11 +653,11 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
     switch(atoms->param_type[i]) {
     case(T_INTEGER):
       start1[0] = frame;
-      netcdf_check(nc_get_var1_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, &atoms->param_int[i]));
+      netcdf_check(nc_get_var1_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start1, &atoms->param_int[i]));
       break;
     case(T_REAL):
       start1[0] = frame;
-      netcdf_check(nc_get_var1_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, &atoms->param_real[i]));
+      netcdf_check(nc_get_var1_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start1, &atoms->param_real[i]));
       break;
     case(T_CHAR):
       start2[0] = frame;
@@ -665,6 +665,10 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
       count2[0] = 1;
       count2[1] = PARAM_STRING_LENGTH;
       netcdf_check(nc_get_vara_text(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, atoms->param_value[i]));
+      break;
+    case (T_LOGICAL):
+      start1[0] = frame;
+      netcdf_check(nc_get_var1_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start1, &atoms->param_logical[i]));
       break;
     case(T_INTEGER_A):
       start2[0] = frame;
@@ -679,6 +683,13 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
       count2[0] = 1;
       count2[1] = 3;
       netcdf_check(nc_get_vara_double(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, &atoms->param_real_a[i][0]));
+      break;
+    case (T_LOGICAL_A):
+      start2[0] = frame;
+      start2[1] = 0;
+      count2[0] = 1;
+      count2[1] = 3;
+      netcdf_check(nc_get_vara_int(nc_id, atoms->param_var_id[i][NETCDF_IN], start2, count2, &atoms->param_logical_a[i][0]));
       break;
     case(T_INTEGER_A2):
       start3[0] = frame;
@@ -988,6 +999,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
       newvar = 0;
       switch(atoms->param_type[i]) {
       case(T_INTEGER):
+      case(T_LOGICAL):
 	dims1[0] = atoms->frame_dim_id[NETCDF_OUT];
 	if (nc_inq_varid(nc_id, atoms->param_key[i], &atoms->param_var_id[i][NETCDF_OUT]) != NC_NOERR) {
 	  netcdf_check(nc_def_var(nc_id, atoms->param_key[i], NC_INT, 1, dims1, &atoms->param_var_id[i][NETCDF_OUT]));
@@ -1040,6 +1052,7 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	}
 	break;
       case(T_INTEGER_A):
+      case(T_LOGICAL_A):
 	dims2[0] = atoms->frame_dim_id[NETCDF_OUT];
 	dims2[1] = atoms->spatial_dim_id[NETCDF_OUT];
 	if (nc_inq_varid(nc_id, atoms->param_key[i], &atoms->param_var_id[i][NETCDF_OUT]) != NC_NOERR) {
@@ -1386,6 +1399,11 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	count2[1] = PARAM_STRING_LENGTH;
 	netcdf_check(nc_put_vara_text(nc_id, atoms->param_var_id[i][NETCDF_OUT], start2, count2, atoms->param_value[i]));
 	break;
+      case(T_LOGICAL):
+	start1[0] = frame;
+	count1[0] = 1;
+	netcdf_check(nc_put_vara_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], start1, count1, &atoms->param_logical[i]));
+	break;
       case(T_INTEGER_A):
 	start2[0] = frame;
 	start2[1] = 0;
@@ -1399,6 +1417,13 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	count2[0] = 1;
 	count2[1] = 3;
 	netcdf_check(nc_put_vara_double(nc_id, atoms->param_var_id[i][NETCDF_OUT], start2, count2, &atoms->param_real_a[i][0]));
+	break;
+      case(T_LOGICAL_A):
+	start2[0] = frame;
+	start2[1] = 0;
+	count2[0] = 1;
+	count2[1] = 3;
+	netcdf_check(nc_put_vara_int(nc_id, atoms->param_var_id[i][NETCDF_OUT], start2, count2, &atoms->param_logical_a[i][0]));
 	break;
       case(T_INTEGER_A2):
 	start3[0] = frame;
@@ -1974,6 +1999,21 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	continue;
       
       NOT_REAL:
+	for (j=0; j<k; j++)
+	  if (strcmp(fields[j],"F") != 0 && strcmp(fields[j],"T") != 0)
+	    goto NOT_LOGICAL;
+	  
+	if (k == 1)
+	  atoms->param_type[i] = T_LOGICAL;
+	else if (k == 3) 
+	  atoms->param_type[i] = T_LOGICAL_A;
+	else {
+	  fprintf(stderr, "Bad number of fields %d in parameter %s\n", k, atoms->param_key[i]);
+	  return 0;
+	}
+	continue;
+	
+      NOT_LOGICAL:
 	// Fallback option: treat as a single string
 	atoms->param_type[i] = T_CHAR;
 	atoms->param_size[i] = 1;
@@ -1981,7 +2021,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
       }
       
       for (i=0; i<atoms->n_param; i++) {
-	if ((atoms->param_type[i] == T_INTEGER_A || atoms->param_type[i] == T_REAL_A) &&
+	if ((atoms->param_type[i] == T_INTEGER_A || atoms->param_type[i] == T_REAL_A || atoms->param_type[i] == T_LOGICAL_A) &&
 	    atoms->param_size[i] != 3) {
 	  fprintf(stderr,"Parameter %s must have size 1 or 3, but got %d\n", atoms->param_key[i], atoms->param_size[i]);
 	  return 0; 
@@ -2008,7 +2048,8 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	    strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
 
 	strcpy(linebuffer, atoms->param_value[j]);
-	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A || atoms->param_type[j] == T_INTEGER_A2 || atoms->param_type[j] == T_REAL_A2) {
+	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A || atoms->param_type[j] == T_LOGICAL_A 
+	    || atoms->param_type[j] == T_INTEGER_A2 || atoms->param_type[j] == T_REAL_A2) {
 	  k = 0;
 	  p = linebuffer;
 	  while ((p1 = strsep(&p, " ")) != NULL) {
@@ -2029,6 +2070,12 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	case(T_REAL):
 	  atoms->param_real[j] = strtod(atoms->param_value[j], &p);
 	  break;
+	case(T_LOGICAL):
+	  if (atoms->param_value[j][0] == 'T')
+	    atoms->param_logical[j] = 1;
+	  else
+	    atoms->param_logical[j] = 0;
+	  break;
 	case(T_INTEGER_A):
 	  for (m=0; m<k; m++)
 	    atoms->param_int_a[j][m] = strtol(fields[m], &p, 10);
@@ -2036,6 +2083,14 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	case(T_REAL_A):
 	  for (m=0; m<k; m++)
 	    atoms->param_real_a[j][m] = strtod(fields[m], &p);
+	  break;
+	case(T_LOGICAL_A):
+	  for (m=0; m<k; m++) {
+	    if (fields[m][0] == 'T')
+	      atoms->param_logical_a[j][m] = 1;
+	    else
+	      atoms->param_logical_a[j][m] = 0;
+	  }
 	  break;
 	case(T_INTEGER_A2):
 	  for (m=0; m<9; m++)
@@ -2392,6 +2447,12 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
       sprintf(atoms->param_value[i], int_format, atoms->param_int[i]);
     else if (atoms->param_type[i] == T_REAL)
       sprintf(atoms->param_value[i], real_format, atoms->param_real[i]);
+    else if (atoms->param_type[i] == T_LOGICAL) {
+      if (atoms->param_logical[i]) 
+	sprintf(atoms->param_value[i], "T");
+      else
+	sprintf(atoms->param_value[i], "F");
+    }
     else if (atoms->param_type[i] == T_INTEGER_A) {
       atoms->param_value[i][0]='\0';
       for (j=0; j<3; j++) {
@@ -2404,6 +2465,11 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
 	sprintf(tmpbuf, real_format, atoms->param_real_a[i][j]);
 	strcat(atoms->param_value[i], tmpbuf);
       }
+    } else if (atoms->param_type[i] == T_LOGICAL_A) {
+      sprintf(atoms->param_value[i], "%s %s %s", 
+	      atoms->param_logical_a[i][0] ? "T" : "F",
+	      atoms->param_logical_a[i][1] ? "T" : "F",
+	      atoms->param_logical_a[i][2] ? "T" : "F");
     } else if (atoms->param_type[i] == T_INTEGER_A2) {
       sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", int_format, int_format, int_format,
 	      int_format, int_format, int_format, int_format, int_format, int_format);
@@ -2553,6 +2619,10 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
     sprintf(tmpbuf, fmt, at->param_real[j]);
     strcat(linebuffer, tmpbuf);
     break;
+  case (T_LOGICAL):
+    sprintf(tmpbuf, "%s %s", name, at->param_logical[j] ? "T" : "F");
+    strcat(linebuffer, tmpbuf);
+    break;
   case(T_INTEGER_A):
     sprintf(fmt, "%s %s %s %s ", name, intformat, intformat, intformat);
     sprintf(tmpbuf, fmt, at->param_int_a[j][0], at->param_int_a[j][1], at->param_int_a[j][2]);
@@ -2561,6 +2631,13 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
   case(T_REAL_A):
     sprintf(fmt, "%s %s %s %s ", name, realformat, realformat, realformat);
     sprintf(tmpbuf, fmt, at->param_real_a[j][0], at->param_real_a[j][1], at->param_real_a[j][2]);
+    strcat(linebuffer, tmpbuf);
+    break;
+  case (T_LOGICAL_A):
+    sprintf(tmpbuf, "%s %s %s %s ", name, 
+	    at->param_logical_a[0] ? "T" : "F",
+	    at->param_logical_a[1] ? "T" : "F",
+	    at->param_logical_a[2] ? "T" : "F");
     strcat(linebuffer, tmpbuf);
     break;
   case(T_INTEGER_A2):
@@ -3448,7 +3525,8 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
 	    int **n_frame, int **n_atom, int **n_int, int **n_real, int **n_str, int **n_logical,
 	    int **n_param, int **n_property, char **property_name, int **property_type, int **property_ncols,
 	    int **property_start, int **property_filter, char **param_name, int **param_type, int **param_size, char **param_value, 
-	    int **param_int, double **param_real, int **param_int_a, double **param_real_a, int **param_int_a2, double **param_real_a2,
+	    int **param_int, double **param_real, int **param_logical, int **param_int_a, double **param_real_a, int ** param_logical_a,
+	    int **param_int_a2, double **param_real_a2,
 	    int **param_filter, double **lattice, int **got_index, int **pnetcdf4)
 {
   char *p, *q;
@@ -3475,8 +3553,10 @@ int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, 
   if (param_value) *param_value = (char *)(**at).param_value;
   if (param_int) *param_int = (**at).param_int;
   if (param_real) *param_real = (**at).param_real;
+  if (param_logical) *param_logical = (**at).param_logical;
   if (param_int_a) *param_int_a = (int *)(**at).param_int_a;
   if (param_real_a) *param_real_a = (double *)(**at).param_real_a;
+  if (param_logical_a) *param_logical_a = (int *)(**at).param_logical_a;
   if (param_int_a2) *param_int_a2 = (int *)(**at).param_int_a2;
   if (param_real_a2) *param_real_a2 = (double *)(**at).param_real_a2;
   if (param_filter) *param_filter = (**at).param_filter;

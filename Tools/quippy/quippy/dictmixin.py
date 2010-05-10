@@ -121,7 +121,7 @@ class ParamReaderMixin:
            key = m.group(1)
            value = m.group(2)
 
-           # Try to convert to (list of) floats or ints
+           # Try to convert to (list of) floats, ints
            try:
               numvalue = []
               for x in string.split(value):
@@ -141,6 +141,16 @@ class ParamReaderMixin:
               value = numvalue
            except ValueError:
               pass
+
+           # Parse boolean values, e.g 'T' -> True, 'F' -> False, 'T T F' -> [True, True, False]
+           if isinstance(value, str):
+               str_to_bool  = {'T':True, 'F':False}
+               
+               if len(value.split()) > 1:
+                   if all([x in str_to_bool.keys() for x in value.split() ]):
+                       value = [str_to_bool[x] for x in value.split()]
+               elif value in str_to_bool:
+                   value = str_to_bool[value]
 
            self[key] = value
 
