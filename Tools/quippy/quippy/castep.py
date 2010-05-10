@@ -32,12 +32,24 @@ from quippy.xyz_netcdf import make_lattice, get_lattice_params
 from math import pi
 import xml.dom.minidom
 
-# Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 4.3.
-
 castep_units = {
    'ang' : 1,
    'bohr' : BOHR
    }
+
+castep_value_map = {
+   'T': True,
+   'true': True,
+   'F': False,
+   'false': False
+   }
+
+castep_output_map = {
+   True: 'true',
+   False: 'false'
+   }
+
+# Valid CELL and PARAMETER keywords. Generated using get_valid_keywords() in this module with CASTEP 4.3.
 
 valid_cell_keywords = ['lattice_cart', 'lattice_abc', 'positions_frac', 'positions_abs', 
                        'symmetry_generate', 'symmetry_tol', 'ionic_constraints', 'fix_com', 
@@ -140,7 +152,7 @@ valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'chec
                              'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step', 'pspot_beta_phi_type', 
                              'grid_scale', 'fine_grid_scale', 'fine_gmax', 
                              'mix_charge_gmax', 'mix_spin_gmax', 'devel_code',
-                             'max_scf_cycles_dm', 'max_scf_cycles_edft']
+                             'max_scf_cycles_dm', 'max_scf_cycles_edft', 'extcharge_file']
 
 class CastepCell(OrderedDict):
    """Class to wrap a CASTEP cell (.cell) file"""
@@ -243,6 +255,9 @@ class CastepCell(OrderedDict):
                cellfile.write('  '+line+'\n')
             cellfile.write('%ENDBLOCK '+key+'\n\n')
          else:
+            value = str(value)
+            value = value.replace('[','')
+            value = value.replace(']','')
             cellfile.write('%s  %s\n' % (key, value))
 
 
@@ -338,6 +353,10 @@ class CastepCell(OrderedDict):
          for i in frange(at.n):
             self['POSITIONS_ABS'].append(at.species[:,i].stripstrings() +' %f %f %f' % tuple(at.pos[:,i]))
 
+      for p in at.params:
+         if p.lower() in valid_cell_keywords:
+            self[p] = at.params[p]
+
 
    @staticmethod
    @atoms_reader('cell', False)
@@ -358,12 +377,14 @@ AtomsWriters['cell'] = CastepCellWriter
 class CastepParam(OrderedDict):
    "Class to wrap a CASTEP parameter (.param) file"
 
-   def __init__(self, paramfile=None, xml=None):
+   def __init__(self, paramfile=None, xml=None, atoms=None):
       OrderedDict.__init__(self)
       if paramfile is not None:
          self.read(paramfile)
       elif xml is not None:
          self.read_xml(xml)
+      elif atoms is not None:
+         self.update_from_atoms(atoms)
 
    def copy(self):
       new = CastepParam()
@@ -392,7 +413,9 @@ class CastepParam(OrderedDict):
          key = fields[0].lower()
          if not key in valid_parameters_keywords:
             raise ValueError('Unknown PARAMETERS keyword %s' % key)
-         self[key] = ' '.join(fields[1:])
+         value = ' '.join(fields[1:])
+         value = castep_value_map.get(value, value)
+         self[key] = value
 
    def read_xml(self, xml):
       els = xml.documentElement.getElementsByTagName('castep_param')
@@ -410,8 +433,6 @@ class CastepParam(OrderedDict):
 
    def read_from_castep_output(self, castep_output):
       "Read user parameters from .castep output. Input should be filename, file-like object or list of lines"
-
-      value_map = {'T': 'true', 'F': 'false'}
 
       if type(castep_output) == type(''):
          castep_output = open(castep_output, 'r')
@@ -437,13 +458,17 @@ class CastepParam(OrderedDict):
       while castep_output[i].strip():
          line = castep_output[i]
          key, value = map(string.strip, line[:line.index('#')].split(':',1))
-         value = value_map.get(value, value)
          if not key in param_lookup:
             raise ValueError('Unknown parameter %s in castep output file' % key)
          param_lines.append('%s = %s' % (param_lookup[key], value))
          i += 1
 
       self.read(param_lines)
+
+   def update_from_atoms(self, at):
+      for p in at.params:
+         if p.lower() in valid_parameters_keywords:
+            self[p] = at.params[p]
 
    def write(self,paramfile=sys.stdout):
       "Write CASTEP .param file"
@@ -452,6 +477,7 @@ class CastepParam(OrderedDict):
          paramfile = open(paramfile,'w')
          
       for key, value in self.iteritems():
+         value = castep_output_map.get(value, value)
          paramfile.write('%s = %s\n' % (key, value))
 
 @atoms_reader('geom', False)
@@ -595,13 +621,16 @@ CastepGeomReader = CastepMDReader = CastepGeomMDReader
 
 @atoms_reader('castep', False)
 @atoms_reader('castep_log', False)
-def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=False):
+def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
       well"""
 
    if type(castep_file) == type(''):
+      castep_file_name = castep_file
       castep_file = open(castep_file,'r')
+   else:
+      castep_file_name = '<open file>'
    castep_file = iter(castep_file)
 
    param = CastepParam()
@@ -654,9 +683,8 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
          new_param.read_from_castep_output(castep_output)
          param.update(new_param)
       except ValueError:
-         pass
-         #if abort:
-         #   raise
+         if abort:
+            raise
 
       # Next let's extract the lattice and atomic positions
       lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell\n']
@@ -779,7 +807,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
 
       # Have we calculated stress?
       got_virial = False
-      if 'calculate_stress' in param and param['calculate_stress'].lower() == 'true':
+      if 'calculate_stress' in param and param['calculate_stress']:
          try:
             for sn in ('Stress Tensor', 'Symmetrised Stress Tensor'):
                stress_start_lines = [i for i,s in enumerate(castep_output) if s.find('****** %s ******' % sn) != -1 ]
@@ -801,10 +829,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             if abort:
                raise ValueError('No stress tensor found in .castep file')
 
-      spin_polarised = 'spin_polarised' in param and param['spin_polarised'].lower() == 'true'
+      spin_polarised = 'spin_polarised' in param and param['spin_polarised']
 
       # Have we calculated local populations and charges?
-      if 'popn_calculate' in param and param['popn_calculate'].lower() == 'true':
+      if 'popn_calculate' in param and param['popn_calculate']:
          try:
             try:
                popn_start = castep_output.index('     Atomic Populations\n')
@@ -844,15 +872,27 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True, save_params=Fals
             if abort:
                raise ValueError('No populations found in castep file')
 
-      if save_params:
-         atoms.params.update(param)
+      mod_param = param.copy()
+
+      # append K-point information
+      try:
+         kpoint_start = castep_output.index('                              k-Points For BZ Sampling\n')
+         kp_mesh_line = castep_output[kpoint_start+2]
+         fields = kp_mesh_line.split()
+         mod_param['kpoints_mp_grid'] = [int(fields[-3]), int(fields[-2]), int(fields[-1])]
+      except ValueError:
+         pass
+
+      mod_param['castep_file_name'] = castep_file_name
 
       if run_time is not None:
-         atoms.params['castep_run_time'] = run_time
+         mod_param['castep_run_time'] = run_time
 
-      # Convert virial to libAtoms units and add to atoms.params
+      # Convert virial to libAtoms units and add to params
       if got_virial:
-         atoms.params['virial'] = virial*atoms.cell_volume()/GPA
+         mod_param['virial'] = virial*atoms.cell_volume()/GPA
+
+      atoms.params.update(mod_param)
 
       yield atoms
 
@@ -959,15 +999,15 @@ def check_pspots(cluster, cell, param, orig_dir):
                                elements))
 
       log.info('total electrons %.1f' % n_electrons)
-      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() == 'false' and \
+      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() and \
           int(n_electrons) % 2 != 0):
          raise ValueError('spin polarised set to false but got odd number of electrons!')
-      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() == 'true' and \
+      if (param.has_key('spin_polarised') and param['spin_polarised'].lower() and \
           int(n_electrons) % 2 == 0):
          raise ValueError('spin polarised set to true but got even number of electrons!')
 
 
-def run_castep(cell, param,  stem, castep, castep_log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False):
+def run_castep(cell, param, stem, castep, castep_log=None, save_all_check_files=False, save_all_input_files=False, test_mode=False):
    "Invoke castep and return True if it completed successfully"
 
    log = logging.getLogger('castep_driver')
@@ -1055,7 +1095,7 @@ def hash_atoms(at, ndigits):
 from quippy import Potential
 
 class CastepPotential(Potential):
-   def __init__(self, cell, param, castep_exec='castep %s', stem='castep_callback', test_mode=False):
+   def __init__(self, cell=None, param=None, castep_exec='castep %s', stem='castep_callback', test_mode=False):
       Potential.__init__(self, 'CallbackPot')
       self.set_callback(self.run)
 
@@ -1075,18 +1115,30 @@ class CastepPotential(Potential):
       self.test_mode = test_mode
 
    def run(self, at):
-      self.cell.update_from_atoms(at)
+      if self.cell is not None:
+         cell = self.cell.copy()
+      else:
+         cell = CastepCell()
+      cell.update_from_atoms(at)
+
+      if self.param is not None:
+         param = self.param.copy()
+      else:
+         param = CastepParam()
+      param.update_from_atoms(at)
+
       while True:
          stem = '%s_%05d' % (self.stem, self.n)
          self.n += 1
          if not os.path.exists(stem+'.castep'): break
 
-      run_castep(self.cell, self.param, stem, self.castep_exec, test_mode=self.test_mode)
+      run_castep(cell, param, stem, self.castep_exec, test_mode=self.test_mode)
 
       print 'Reading from file %s' % (stem+'.castep')
       result = Atoms(stem+'.castep', atoms_ref=at)
 
-      at.params['castep_file'] = os.path.join(os.getcwd(), stem+'.castep')
+      # Update params -- this includes contents of .cell and .param templates
+      at.params.update(result.params)
 
       # Energy and force
       at.params['energy'] = float(result.energy)
@@ -1102,6 +1154,7 @@ class CastepPotential(Potential):
       for k in result.properties.keys():
          if k.startswith('popn_'):
             at.add_property(k, getattr(result, k))
+
 
 def potential_to_cube(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
