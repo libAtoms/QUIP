@@ -1,9 +1,11 @@
+# USER SETTABLE THINGS ARE MARKED with '#USER'
 &FORCE_EVAL
   &DFT
     BASIS_SET_FILE_NAME ../BASIS_SET
     POTENTIAL_FILE_NAME ../POTENTIAL
     &MGRID
       COMMENSURATE
+#USER CUTOFF: plane-wave cutoff for density, in eV (280 eV seems decent)
       CUTOFF 280.0
       NGRIDS 4
       REL_CUTOFF 30.0
@@ -15,9 +17,10 @@
       POISSON_SOLVER PERIODIC
       &EWALD
         EWALD_TYPE ewald
+#USER EWALD_ACCURACY: accuracy of Ewald sum for pure DFT calculation, 1e-6 is decent
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-#GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
+#USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #        GMAX 33
       &END EWALD
     &END POISSON
@@ -28,9 +31,11 @@
     &END QS
     &SCF
       SCF_GUESS restart
+#USER EPS_SCF: convergence tolerance for self-consistency cycle, 1e-6 seems decent (set same in &SCF nd &OUTER_SCF)
       EPS_SCF 1.0E-6
       MAX_SCF 200
       &OUTER_SCF
+#USER EPS_SCF: convergence tolerance for self-consistency cycle, 1e-6 seems decent (set same in &SCF nd &OUTER_SCF)
          EPS_SCF 1.0E-6
          MAX_SCF 200
       &END
@@ -40,6 +45,7 @@
       &END OT
     &END SCF
     &XC
+#USER XC_FUNCTIONAL: exchange-correlation functional to use, usually BLYP
       &XC_FUNCTIONAL BLYP
       &END XC_FUNCTIONAL
 #density smoothing, VandeVondele 2005
@@ -58,9 +64,10 @@
     &POISSON
       &EWALD
         EWALD_TYPE spme
+#USER EWALD_ACCURACY: Accuracy of Ewald sum for MM calculation (also used by QMMM), 1e-6 seems decent
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-#GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
+#USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #        GMAX 33
       &END EWALD
     &END POISSON
@@ -76,10 +83,11 @@
       GMAX 1.0
       NGRIDS 50 50 50
       &MULTIPOLE
-# RCUT default is system size dependent and marginally OK.
+#USER RCUT default is system size dependent and marginally OK.
 # for some systems, setting it to the system size is significantly faster
 #    (speedup in ewald_ddapc_pot and ewald_ddapc_force)
 #        RCUT 5.0
+#USER EWALD_PRECISION: Accuracy of Ewald sum for QM/MM calculation (overrides &DFT for the QM part), 1e-8 seems decent
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
         ANALYTICAL_GTERM T
@@ -112,6 +120,8 @@
       &END GENERATE
       CHARGE_EXTENDED
     &END TOPOLOGY
+#USER: BASIS_SET - double zeta in valence + polarization (DZVP) is good for most total E calculations
+#USER: make sure to use basis functions consistent with POTENTIAL (e.g. GTH) and XC_FUNCTIONAL (e.g. BLYP)
     &KIND H
       BASIS_SET DZVP-GTH-BLYP
       POTENTIAL GTH-BLYP-q1
