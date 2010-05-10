@@ -382,10 +382,10 @@ develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
       self.assertEqual(self.param.values(), ['SinglePoint',
                                              'PBE',
                                              'speed',
-                                             'false',
-                                             'false',
+                                             False,
+                                             False,
                                              'none',
-                                             'false',
+                                             False,
                                              '60',
                                              '-1',
                                              '3',
@@ -432,7 +432,8 @@ develcode       : EWALD:PREC=25.0:OLD=F:R2R=0.004:ENDEWALD # developers code (S)
       for k,v in self.param.iteritems():
          v2 = p[k]
          for a,b in rep:
-            v2 = v2.replace(a,b)
+            if isinstance(v2, str):
+               v2 = v2.replace(a,b)
          try:
             v = eval(v)
             v2 = eval(v2)
