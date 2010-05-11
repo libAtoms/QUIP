@@ -478,7 +478,6 @@ module gp_sparse_module
          this%d = 0
          this%n = 0
          this%sigma = 0.0_dp
-         this%delta = 0.0_dp
          this%initialised = .false.
 
       endsubroutine GP_finalise
