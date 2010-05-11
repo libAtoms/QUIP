@@ -506,6 +506,7 @@ program teach_sparse
   integer, parameter :: SPARSE_LENGTH = 10000
   integer, parameter :: SPARSE_N_FIELDS = 2000
   integer, parameter :: THETA_LENGTH = 10000
+  real(dp), parameter :: THETA_MIN = 0.000000001
 
   type(inoutput) :: bispectrum_inout, theta_inout, sparse_inout
   type(Dictionary) :: params
@@ -519,7 +520,7 @@ program teach_sparse
   type(gp_sparse) :: gp_sp
 
   character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file, ip_args
-  integer :: m, j_max, qw_l_max, min_steps
+  integer :: m, j_max, qw_l_max, min_steps, min_save
   real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
   logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_ewald, do_test_gp_gradient, has_bispectrum_file, &
   & do_core
@@ -547,7 +548,7 @@ program teach_sparse
   character(len=FIELD_LENGTH), dimension(:), allocatable :: sparse_string_array
   character(len=THETA_LENGTH) :: theta_string
   character(len=FIELD_LENGTH), dimension(:), allocatable :: theta_string_array
-  integer :: i, j, k, dd, dt
+  integer :: i, j, k, l, o, dd, dt
   character(len=FIELD_LENGTH) :: gp_file
 
   type(extendable_str)  :: quip_params_str
@@ -580,17 +581,19 @@ program teach_sparse
   call param_register(params, 'do_f0', 'F', do_f0)
   call param_register(params, 'do_cluster', 'F', do_cluster)
   call param_register(params, 'min_steps', '10', min_steps)
+  call param_register(params, 'min_save', '0', min_save)
   call param_register(params, 'z_eff', '', z_eff_string,do_ewald)
   call param_register(params, 'do_test_gp_gradient', 'F', do_test_gp_gradient)
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_bispectrum_file)
-  call param_register(params, 'ip_args', '', ip_args,do_core)
+  call param_register(params, 'ip_args', '', ip_args, do_core)
 
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file] [sparse_file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
-     & [do_cluster] [min_steps=10] [z_eff={Ga:1.0:N:-1.0}] [do_test_gp_gradient=F] [bispectrum_file] ")
+     & [do_cluster] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] [do_test_gp_gradient=F] [bispectrum_file] &
+     & [ip_args={}]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
@@ -699,8 +702,10 @@ program teach_sparse
   endif
   call sort_array(r)
 
+  call print('')
   call print('r')
   call print(r)
+  call print('')
 
   allocate(theta(d,n_species))
 
@@ -726,7 +731,7 @@ program teach_sparse
 !                          & sum( x(dd,:)**2 ) / size(x(dd,:)) - &
 !                          & (sum( x(dd,:) ) / size(x(dd,:)))**2 )
 
-           if( theta(dd,k) .fne. 0.0_dp ) then
+           if( theta(dd,k) >= THETA_MIN ) then
               theta(dd,k) = theta_fac*theta(dd,k)
            else
               theta(dd,k) = 1.0_dp
@@ -737,10 +742,17 @@ program teach_sparse
 
   call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(e0,i=1,n_species)/))
   !call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(0.0_dp,i=1,n_species)/))
+
   deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
 
-  call print('theta_init')
-  call print(real(gp_sp%theta,kind=dp))
+  call print('')
+  call print('theta')
+  do l = 1, size(gp_sp%theta, 2)
+     do o = 1, size(gp_sp%theta, 1)
+        call print(real(gp_sp%theta(o,l),kind=dp))
+     enddo
+  enddo
+  call print('')
 
   if( do_test_gp_gradient ) then
      call verbosity_push(NERD)
@@ -748,59 +760,95 @@ program teach_sparse
      call verbosity_pop()
   endif
 
-  i = minimise_gp_gradient(gp_sp,max_steps=min_steps,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
-  
-  !call print('sigma')
-  !call print(real(gp_sp%sigma,kind=dp))
-  call print('delta')
-  call print(real(gp_sp%delta,kind=dp))
-  call print('theta')
-  call print(real(gp_sp%theta,kind=dp))
-  call print('f0')
-  call print(real(gp_sp%f0,kind=dp))
+  ! Conjugate gradient minimiser's counter starts at 1, and stops when it reaches min_steps,
+  ! so if min_steps is equal to 1, no iterations are made!
+ 
+  if (min_save == 0) min_save = min_steps
 
-  call initialise(my_gp,gp_sp)
+  k = 0
+  do i = 1, ((min_steps / min_save) + 1)
+     if (k == min_steps) exit
 
-  if (do_qw_so3) then
-     my_gp%comment = "coordinates=qw l_max="//qw_l_max//" f_n="//qw_f_n
-     do i = 1, qw_f_n
-        my_gp%comment = trim(my_gp%comment)//" cutoff_"//i//"="//qw_cutoff(i)
-        my_gp%comment = trim(my_gp%comment)//" cutoff_f_"//i//"="//qw_cutoff_f(i)
-        my_gp%comment = trim(my_gp%comment)//" cutoff_r1_"//i//"="//qw_cutoff_r1(i)
+     if ((min_steps - k) >= min_save) then
+        j = minimise_gp_gradient(gp_sp,max_steps=(min_save + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+        k = k + min_save
+     elseif ((min_steps - k) < min_save) then
+        j = minimise_gp_gradient(gp_sp,max_steps=(min_steps - k + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+        k = min_steps
+     endif
+
+     call print('')
+     call print(k // ' iterations completed:')
+     !call print('sigma')
+     !call print(real(gp_sp%sigma,kind=dp))
+     call print('delta')
+     call print(real(gp_sp%delta,kind=dp))
+     call print('theta')
+     do l = 1, size(gp_sp%theta, 2)
+        do o = 1, size(gp_sp%theta, 1)
+           call print(real(gp_sp%theta(o,l),kind=dp))
+        enddo
      enddo
-     if (.not. qw_no_q) then
-        my_gp%comment = trim(my_gp%comment)//" do_q=T"
+     call print('f0')
+     call print(real(gp_sp%f0,kind=dp))
+     call print('')
+
+     call initialise(my_gp,gp_sp)
+
+     if (do_qw_so3) then
+        my_gp%comment = "coordinates=qw l_max="//qw_l_max//" f_n="//qw_f_n
+        do l = 1, qw_f_n
+           my_gp%comment = trim(my_gp%comment)//" cutoff_"//l//"="//qw_cutoff(i)
+           my_gp%comment = trim(my_gp%comment)//" cutoff_f_"//l//"="//qw_cutoff_f(i)
+           my_gp%comment = trim(my_gp%comment)//" cutoff_r1_"//l//"="//qw_cutoff_r1(i)
+        enddo
+        if (.not. qw_no_q) then
+           my_gp%comment = trim(my_gp%comment)//" do_q=T"
+        else
+           my_gp%comment = trim(my_gp%comment)//" do_q=F"
+        endif
+        if (.not. qw_no_w) then
+           my_gp%comment = trim(my_gp%comment)//" do_w=T"
+        else
+           my_gp%comment = trim(my_gp%comment)//" do_w=F"
+        endif
      else
-        my_gp%comment = trim(my_gp%comment)//" do_q=F"
+        my_gp%comment = "coordinates=bispectrum cutoff="//r_cut//" j_max="//j_max//" z0="//z0//" n_species="//n_species//" Z={"//species_Z//&
+        & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" z_eff={"//z_eff(species_Z)//"}"
      endif
-     if (.not. qw_no_w) then
-        my_gp%comment = trim(my_gp%comment)//" do_w=T"
-     else
-        my_gp%comment = trim(my_gp%comment)//" do_w=F"
-     endif
-  else
-     my_gp%comment = "coordinates=bispectrum cutoff="//r_cut//" j_max="//j_max//" z0="//z0//" n_species="//n_species//" Z={"//species_Z//&
-     & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" z_eff={"//z_eff(species_Z)//"}"
-  endif
   
-  if( core%do_core ) then
-     my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={" //trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
-  endif
+     if( core%do_core ) then
+        my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={" //trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
+     endif
+
+     gp_file = 'gp_'//m//'_'//k//'.dat'
+
+     call gp_print_binary(my_gp,trim(gp_file))
+     call system_command('ln -fs '//trim(gp_file)//' gp.dat')
+
+     call finalise(my_gp)
+  enddo
 
   call print("model parameters:")
   call print("r_cut     = "//r_cut)
-  call print("j_max     = "//j_max)
-  call print("z0        = "//z0)
+  if (do_qw_so3) then
+     call print("l_max     = "//qw_l_max)
+     call print("cutoff    = "//qw_cutoff_string)
+     call print("cutoff_f  = "//qw_cutoff_f_string)
+     call print("cutoff_r1 = "//qw_cutoff_r1_string)
+     call print("q         = "//(.not. qw_no_q))
+     call print("w         = "//(.not. qw_no_w))
+  else
+     call print("j_max     = "//j_max)
+     call print("z0        = "//z0)
+  endif
   call print("n_species = "//n_species)
   call print("species_Z = "//species_Z)
   call print("w         = "//w_Z(species_Z))
   call print("do_ewald  = "//do_ewald)
   call print("z_eff     = "//z_eff(species_Z))
 
-  gp_file = 'gp_'//m//'.dat'
-
-  call gp_print_binary(my_gp,trim(gp_file))
-  call system_command('ln -fs '//trim(gp_file)//' gp.dat')
+  call finalise(gp_sp)
 
   call system_finalise()
 
