@@ -214,7 +214,7 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
 	fi
 
 	if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
-	    tail -$(($N*2+1)) ${stem}.geom | head -$N | awk -v factor=1 '{print $1, $3*factor,$4*factor,$5*factor}' > ${stem}_tmppos
+	    tail -$(($N*2+1)) ${stem}.geom | head -$N | awk -v factor=0.529177 '{print $1, $3*factor,$4*factor,$5*factor}' > ${stem}_tmppos
 	else
 	    print_property $xyzfile pos 1 > ${stem}_tmppos
 	fi
