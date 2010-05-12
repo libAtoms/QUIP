@@ -1119,7 +1119,7 @@ contains
       endif
     endif
 
-    call atoms_set_lattice(cluster, cluster%lattice)
+    call set_lattice(cluster, cluster%lattice, keep_fractional=.false.)
 
     ! Remap positions so any image atoms end up inside the cell
     call map_into_cell(cluster)
@@ -1139,7 +1139,7 @@ contains
     if (do_rescale_r) then
        call print('carve_cluster: rescaling cluster positions and lattice by factor '//r_scale, VERBOSE)
        cluster%pos = r_scale * cluster%pos
-       call set_lattice(cluster, r_scale * cluster%lattice)
+       call set_lattice(cluster, r_scale * cluster%lattice, keep_fractional=.false.)
     end if
 
     if (randomise_buffer .and. .not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) &

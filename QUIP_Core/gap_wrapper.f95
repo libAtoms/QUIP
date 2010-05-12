@@ -71,7 +71,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
      call initialise(at,N,transpose(lattice)*BOHR)
   endif
 
-  call set_lattice(at,transpose(lattice)*BOHR)
+  call set_lattice(at,transpose(lattice)*BOHR, keep_fractional=.false.)
   
   do i = 1, at%N
      at%Z(i) = atomic_number_from_symbol(symbol(i))

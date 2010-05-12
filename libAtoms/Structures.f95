@@ -88,7 +88,7 @@ contains
     call set_lattice(at, at%lattice+reshape((/ &
          20.0_dp,0.0_dp,0.0_dp, &
          0.0_dp, 0.0_dp,0.0_dp, &
-         0.0_dp, 0.0_dp,20.0_dp/), (/3, 3/)))
+         0.0_dp, 0.0_dp,20.0_dp/), (/3, 3/)), keep_fractional=.false.)
          
     call finalise(at1)
     call finalise(removelist)
@@ -167,7 +167,7 @@ contains
     call set_lattice(at, at%lattice+reshape((/ &
          20.0_dp,0.0_dp,0.0_dp, &
          0.0_dp, 0.0_dp,0.0_dp, &
-         0.0_dp, 0.0_dp,20.0_dp/), (/3, 3/)))
+         0.0_dp, 0.0_dp,20.0_dp/), (/3, 3/)), keep_fractional=.false.)
 
     call finalise(at1)
     call finalise(removelist)
@@ -382,7 +382,7 @@ contains
            axes(2,i)*at%lattice(:,2) + &
            axes(3,i)*at%lattice(:,3))/Nrep(i)
    end do
-   call set_lattice(myatoms, myatoms%lattice)
+   call set_lattice(myatoms, myatoms%lattice, keep_fractional=.false.)
 
    ! Form primitive cell by discarding atoms with 
    ! lattice coordinates outside range [-0.5,0.5]
@@ -529,7 +529,7 @@ contains
 
     unit%pos = rot .mult. unit%pos
     lattice = rot .mult. unit%lattice
-    call Atoms_Set_Lattice(unit, lattice)
+    call Set_Lattice(unit, lattice, keep_fractional=.false.)
 
     ! Choose nx and ny so we can cut a width by height square out of the
     ! rotated slab
@@ -542,7 +542,7 @@ contains
     lattice(1,1) = width
     lattice(2,2) = height
     lattice(3,3) = tmp_slab%lattice(3,3)
-    call Atoms_Set_Lattice(tmp_slab, lattice)
+    call Set_Lattice(tmp_slab, lattice, keep_fractional=.false.)
 
     ! Form primitive cell by discarding atoms with 
     ! lattice coordinates outside range [-0.5,0.5]
@@ -604,7 +604,7 @@ contains
 
     unit%pos = rot .mult. unit%pos
     lattice = rot .mult. unit%lattice
-    call Atoms_Set_Lattice(unit, lattice)
+    call Set_Lattice(unit, lattice, keep_fractional=.false.)
 
     ! Choose nx and ny so we can cut an x by y square out of the
     ! rotated unitsheet
@@ -618,7 +618,7 @@ contains
     lattice(2,2) = normy
     lattice(3,3) = unitsheet%lattice(3,3)
 
-    call Atoms_Set_Lattice(unitsheet, lattice)
+    call Set_Lattice(unitsheet, lattice, keep_fractional=.false.)
 
     ! Form primitive cell by discarding atoms with 
     ! lattice coordinates outside range [-0.5,0.5]
@@ -1227,7 +1227,7 @@ contains
    end do
 
    call select(at, a1, mask=unit_cell)
-   call set_lattice(at, lattice)
+   call set_lattice(at, lattice, keep_fractional=.false.)
 
    deallocate(unit_cell)
 
@@ -1518,8 +1518,7 @@ contains
     else
       scale = 1.0_dp/vol**(1.0_dp/3.0_dp) * u_vol_per_atom**(1.0_dp/3.0_dp)
     endif
-    call set_lattice(cell, cell%lattice*scale )
-    cell%pos = cell%pos*scale
+    call set_lattice(cell, cell%lattice*scale, keep_fractional=.true.)
     call supercell(dup_cell, cell, repeat(1), repeat(2), repeat(3))
 
     deallocate(Z_values)
@@ -1531,14 +1530,9 @@ contains
     type(Atoms), intent(out)::at_out  !% Output 
     type(Atoms), intent(in) ::at_in   !% Input 
     real(dp), intent(in)::t(3,3)
-    integer::i
 
     at_out = at_in
-    call set_lattice(at_out,(t .mult. at_in%lattice))
-
-    do i=1,at_out%N
-       at_out%pos(:,i) = t .mult. at_in%pos(:,i)
-    end do
+    call set_lattice(at_out,(t .mult. at_in%lattice), keep_fractional=.true.)
   end subroutine transform
 
 
