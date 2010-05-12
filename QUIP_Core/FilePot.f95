@@ -36,9 +36,11 @@
 !%
 !% it takes an argument string on initialization with one mandatory parameter
 !%>   command=path_to_command
-!% and two optional parameters
+!% and three optional parameters
 !%>   property_list=prop1:T1:N1:prop2:T2:N2...
-!% which defaults to 'pos', and
+!% which defaults to 'pos', 
+!%>    filename=<string>
+!% which defaults to 'filepot', and
 !%>   min_cutoff=cutoff
 !% which default to zero. If min_cutoff is non zero and the cell is narrower
 !% than $2*min_cutoff$ in any direction then it will be replicated before
@@ -84,6 +86,7 @@ public :: FilePot_type
 type FilePot_type
   character(len=1024) :: command
   character(len=1024) :: property_list
+  character(len=1024) :: filename
   real(dp)            :: min_cutoff
 
   character(len=1024) :: init_args_str
@@ -130,7 +133,7 @@ subroutine FilePot_Initialise(this, args_str, mpi)
   type(MPI_Context), intent(in), optional :: mpi
 
   type(Dictionary) ::  params
-  character(len=STRING_LENGTH) :: command, property_list
+  character(len=STRING_LENGTH) :: command, property_list, filename
   real(dp) :: min_cutoff
 
   this%init_args_str = args_str
@@ -138,8 +141,10 @@ subroutine FilePot_Initialise(this, args_str, mpi)
   call initialise(params)
   command=''
   property_list='pos'
+  filename='filepot'
   call param_register(params, 'command', PARAM_MANDATORY, command)
   call param_register(params, 'property_list', 'pos', property_list)
+  call param_register(params, 'filename', 'filepot', filename)
   call param_register(params, 'min_cutoff', '0.0', min_cutoff)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
     call system_abort("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'")
@@ -149,6 +154,7 @@ subroutine FilePot_Initialise(this, args_str, mpi)
   this%command = command
   this%property_list = property_list
   this%min_cutoff = min_cutoff
+  this%filename = filename
   if (present(mpi)) this%mpi = mpi
 
 end subroutine FilePot_Initialise
@@ -166,6 +172,7 @@ subroutine FilePot_Wipe(this)
   this%command=""
   this%property_list=""
   this%min_cutoff = 0.0_dp
+  this%filename = ""
 
 end subroutine FilePot_Wipe
 
@@ -182,6 +189,7 @@ subroutine FilePot_Print(this, file)
   if (current_verbosity() < NORMAL) return
 
   call print("FilePot: command='"//trim(this%command)// &
+       "' filename='"//trim(this%filename)//&
        "' property_list='"//trim(this%property_list)//&
        "' min_cutoff="//this%min_cutoff,file=file)
 
@@ -227,9 +235,12 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   if (.not. this%mpi%active .or. &
        (this%mpi%active .and. this%mpi%my_proc == 0)) then
      
-     xyzfile="filepot."//this%mpi%my_proc//".xyz"
-     outfile="filepot."//this%mpi%my_proc//".out"
+     xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
+     outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
 
+     call print("FilePot: filename seed=`"//trim(this%filename)//"'", VERBOSE)
+     call print("FilePot: outfile=`"//trim(outfile)//"'", VERBOSE)
+     call print("FilePot: xyzfile=`"//trim(xyzfile)//"'", VERBOSE)
      call system_command("rm -f "//trim(outfile), status=status)
      if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", ERROR)
 
