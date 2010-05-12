@@ -1540,13 +1540,27 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_lattice(this,new_lattice,remap,reconnect)
+  subroutine atoms_set_lattice(this,new_lattice,keep_fractional,remap,reconnect)
 
     type(Atoms),              intent(inout) :: this
     real(dp), dimension(3,3), intent(in)    :: new_lattice
+    logical, intent(in)                     :: keep_fractional
     logical, optional,        intent(in)    :: remap, reconnect
+    real(dp), dimension(:,:), allocatable :: frac
+
+    ! only do the allocation if needed
+    if(keep_fractional) then
+       allocate(frac(3,this%N))
+       frac = this%g .mult. this%pos
+    end if
 
     this%lattice = new_lattice
+
+    if(keep_fractional) then
+       this%pos = this%lattice .mult. frac
+       deallocate(frac)
+    end if
+
     call matrix3x3_inverse(this%lattice,this%g)
 
     if (present(reconnect)) then
@@ -4611,7 +4625,7 @@ contains
          lattice(2,2) = 5.0_dp*max_dist
          lattice(3,3) = 5.0_dp*max_dist
 
-         call atoms_set_lattice(this, lattice)
+         call set_lattice(this, lattice, keep_fractional=.false.)
       end if
 
     end subroutine atoms_read_xyz
