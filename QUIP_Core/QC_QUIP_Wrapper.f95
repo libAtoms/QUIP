@@ -283,7 +283,7 @@ call initialise(metapot, str_hybrid, pot_qm, pot_ip)
     if (at%N /= N) then
       call Initialise(at, N, lattice)
     end if
-    call set_lattice(at, lattice)
+    call set_lattice(at, lattice, keep_fractional=.false.)
     at%pos = pos
     at%Z = Z
 

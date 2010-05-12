@@ -124,8 +124,7 @@ contains
           Fm(ii,jj) = Fm(ii,jj) - my_fd
 
           at_t = at_bulk
-          call set_lattice(at_t, Fp .mult. at_t%lattice)
-          at_t%pos = Fp .mult. at_t%pos
+          call set_lattice(at_t, Fp .mult. at_t%lattice, keep_fractional=.true.)
           call calc_connect(at_t)
           call calc(this, at_t, e=e0, virial=V0p, args_str=args_str)
           call verbosity_push_decrement(VERBOSE)
@@ -154,8 +153,7 @@ contains
           endif
 
           at_t = at_bulk
-          call set_lattice(at_t, Fm .mult. at_t%lattice)
-          at_t%pos = Fm .mult. at_t%pos
+          call set_lattice(at_t, Fm .mult. at_t%lattice, keep_fractional=.true.)
           call calc_connect(at_t)
           call calc(this, at_t, e=e0, virial=V0m, args_str=args_str)
           call verbosity_push_decrement(VERBOSE)
@@ -331,8 +329,7 @@ contains
     ! Apply small strain in x direction
     eps = 0.0_dp; call add_identity(eps)
     eps(1,1) = eps(1,1)+0.001_dp
-    call set_lattice(at2, eps .mult. at2%lattice)
-    at2%pos = eps .mult. at2%pos
+    call set_lattice(at2, eps .mult. at2%lattice, keep_fractional=.true.)
 
     fix = .false.
     fix(1,1) = .true.

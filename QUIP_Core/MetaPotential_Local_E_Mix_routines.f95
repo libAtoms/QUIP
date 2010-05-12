@@ -322,8 +322,7 @@
     c_weight = weight_region1(index)
 
     ! rescale cluster
-    cluster%pos = this%r_scale_pot1 * cluster%pos
-    call set_lattice(cluster, this%r_scale_pot1 * cluster%lattice)
+    call set_lattice(cluster, this%r_scale_pot1 * cluster%lattice, keep_fractional=.true.)
 
     call calc_connect(cluster)
 

@@ -926,7 +926,7 @@ contains
              crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
              crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
              crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
-             call atoms_set_lattice(crack_slab, crack_slab%lattice)
+             call set_lattice(crack_slab, crack_slab%lattice, keep_fractional=.false.)
           elseif(params%crack_rescale_x) then 
              !  Rescale in x direction by v 
              if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
@@ -1944,7 +1944,7 @@ contains
              lattice = crack_layer%lattice
              lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
              lattice(2,2) = lattice(2,2) + params%crack_vacuum_size
-             call atoms_set_lattice(crack_layer, lattice)
+             call set_lattice(crack_layer, lattice, keep_fractional=.false.)
 
              do i=1,crack_layer%N
                 crack_layer%pos(2,i) = crack_layer%pos(2,i) + shift
@@ -2256,7 +2256,7 @@ contains
       lattice_tmp = at_tmp%lattice
       lattice_tmp(1,1) = lattice_tmp(1,1) + params%crack_vacuum_size
       lattice_tmp(2,2) = lattice_tmp(2,2) + params%crack_vacuum_size
-      call atoms_set_lattice(at_tmp, lattice_tmp)
+      call set_lattice(at_tmp, lattice_tmp, keep_fractional=.false.)
       !call calc_connect(at_tmp)
 
       neigh_removed = .false.

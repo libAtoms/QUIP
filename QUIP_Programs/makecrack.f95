@@ -241,7 +241,7 @@ program makecrack
         lattice(1,1) = lattice(1,1) + params%crack_vacuum_size
      end if
      lattice(2,2) = lattice(2,2) + params%crack_vacuum_size
-     call atoms_set_lattice(crack_slab, lattice)
+     call set_lattice(crack_slab, lattice, keep_fractional=.false.)
   end if
 
   ! Add various properties to crack_slab
