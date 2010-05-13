@@ -324,7 +324,7 @@ contains
    real(dp), intent(in) :: a ! Lattice vector
    real(dp), intent(in), optional :: c, u, x, y, z ! Lattice vector
    integer, intent(in), optional :: atnum(:) ! atomic numbers
-   character(len=*), intent(inout), optional :: lat_type  ! lattice type (diamond, bcc, fcc)
+   character(len=*), intent(in), optional :: lat_type  ! lattice type (diamond, bcc, fcc)
 
    integer :: i, Nrep(3) ! Number of repeats in x,y and z
    real(dp), dimension(3) :: a1, a2, a3, t, d
