@@ -157,14 +157,30 @@ class TestAtoms_LowLevel(QuippyTestCase):
 
    def test_set_lattice_1(self):
       L = 5.0*fidentity(3)
-      self.at.set_lattice(L)
+      self.at.set_lattice(L, scale_positions=False)
       self.assertArrayAlmostEqual(self.at.lattice, L)
       
    def test_set_lattice_2(self):
       L = 5.0*fidentity(3)
       g = linalg.inv(L)
-      self.at.set_lattice(L)
+      self.at.set_lattice(L, scale_positions=False)
       self.assertArrayAlmostEqual(self.at.g, g)
+
+   def test_set_lattice_scale_positions_1(self):
+      L = 5.0*fidentity(3)
+      p0 = fzeros((3,self.dia.n))
+      p0[:] = self.dia.pos[:]
+      self.dia.set_lattice(L, scale_positions=True)
+      self.assertArrayAlmostEqual(self.dia.lattice, L)
+      self.assert_(all(abs(p0/self.dia.pos - 5.44/5.0) < 1e-7))
+
+   def test_set_lattice_scale_positions_2(self):
+      L = 5.0*fidentity(3)
+      p0 = fzeros((3,self.dia.n))
+      p0[:] = self.dia.pos[:]
+      self.dia.set_lattice(L, scale_positions=False)
+      self.assertArrayAlmostEqual(self.dia.lattice, L)
+      self.assert_(all(abs(p0/self.dia.pos - 1.0) < 1e-7))      
 
    def test_set_atoms_1(self):
       self.at.set_atoms(6)
