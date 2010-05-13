@@ -1540,23 +1540,23 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine atoms_set_lattice(this,new_lattice,keep_fractional,remap,reconnect)
+  subroutine atoms_set_lattice(this,new_lattice,scale_positions,remap,reconnect)
 
     type(Atoms),              intent(inout) :: this
     real(dp), dimension(3,3), intent(in)    :: new_lattice
-    logical, intent(in)                     :: keep_fractional
+    logical, intent(in)                     :: scale_positions
     logical, optional,        intent(in)    :: remap, reconnect
     real(dp), dimension(:,:), allocatable :: frac
 
     ! only do the allocation if needed
-    if(keep_fractional) then
+    if(scale_positions) then
        allocate(frac(3,this%N))
        frac = this%g .mult. this%pos
     end if
 
     this%lattice = new_lattice
 
-    if(keep_fractional) then
+    if(scale_positions) then
        this%pos = this%lattice .mult. frac
        deallocate(frac)
     end if
@@ -4625,7 +4625,7 @@ contains
          lattice(2,2) = 5.0_dp*max_dist
          lattice(3,3) = 5.0_dp*max_dist
 
-         call set_lattice(this, lattice, keep_fractional=.false.)
+         call set_lattice(this, lattice, scale_positions=.false.)
       end if
 
     end subroutine atoms_read_xyz

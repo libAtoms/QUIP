@@ -226,7 +226,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    call set_cutoff(at_bop, this%cutoff)
 !  Recompute connectivity
    call print('IPModel_BOP : cutoff used for connectivity' // at_bop%cutoff, NERD)
-   call set_lattice(at_bop,at_bop%lattice,remap=.true.,reconnect=.true., keep_fractional=.false.)
+   call set_lattice(at_bop,at_bop%lattice,remap=.true.,reconnect=.true., scale_positions=.false.)
 
 !  Atoms to be passed to the Bop library
    this%at = at_bop 

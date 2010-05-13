@@ -560,7 +560,7 @@ contains
 
        volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
        lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
-       call set_lattice(at,lattice_p, keep_fractional=.true.)
+       call set_lattice(at,lattice_p, scale_positions=.true.)
 
        this%epsilon_f1 = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
        & - 3.0_dp * volume_p * this%p
@@ -839,7 +839,7 @@ contains
 
        volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
        lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
-       call set_lattice(at,lattice_p, keep_fractional=.true.)
+       call set_lattice(at,lattice_p, scale_positions=.true.)
 
        this%epsilon_f2 = f_cell - this%epsilon_v*this%W_p*this%gamma_p
 
