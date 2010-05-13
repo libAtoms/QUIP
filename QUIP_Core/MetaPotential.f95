@@ -1117,7 +1117,7 @@ max_atom_rij_change = 1.038_dp
     type(metapotential_minimise), intent(inout) :: am
 
     am%minim_save_lat = at%lattice
-    call set_lattice(at, deform_grad .mult. am%minim_save_lat, keep_fractional=.true.)
+    call set_lattice(at, deform_grad .mult. am%minim_save_lat, scale_positions=.true.)
   end subroutine prep_atoms_deform_grad
 
   ! remove effect of deformation gradient applied by prep_atoms_deform_grad
@@ -1130,7 +1130,7 @@ max_atom_rij_change = 1.038_dp
 
     call inverse(deform_grad, deform_grad_inv)
     at%pos = deform_grad_inv .mult. at%pos
-    call set_lattice(at, am%minim_save_lat, keep_fractional=.false.)
+    call set_lattice(at, am%minim_save_lat, scale_positions=.false.)
 
   end subroutine fix_atoms_deform_grad
 

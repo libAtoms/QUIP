@@ -506,7 +506,7 @@ contains
        end do
 
        call atoms_repoint(at)
-       call set_lattice(at, transpose(this%lattice), keep_fractional=.false.)
+       call set_lattice(at, transpose(this%lattice), scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
           call print ("at%properties", ERROR)

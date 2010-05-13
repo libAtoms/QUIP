@@ -141,7 +141,7 @@ implicit none
   lat(1,1) = (maxval(cluster_qm%pos(1,:))-minval(cluster_qm%pos(1,:)))+vacuum
   lat(2,2) = (maxval(cluster_qm%pos(2,:))-minval(cluster_qm%pos(2,:)))+vacuum
   lat(3,3) = (maxval(cluster_qm%pos(3,:))-minval(cluster_qm%pos(3,:)))+vacuum
-  call set_lattice(cluster_qm, lat, keep_fractional=.false.)
+  call set_lattice(cluster_qm, lat, scale_positions=.false.)
 
   call print("lat", ERROR)
   call print(lat, ERROR)

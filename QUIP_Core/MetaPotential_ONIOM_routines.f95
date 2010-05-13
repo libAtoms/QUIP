@@ -257,7 +257,7 @@
     end if
 
     ! rescale cluster
-    call set_lattice(cluster, this%r_scale_pot1 * cluster%lattice, keep_fractional=.true.)
+    call set_lattice(cluster, this%r_scale_pot1 * cluster%lattice, scale_positions=.true.)
 
     call calc_connect(cluster)
 
@@ -291,7 +291,7 @@
     call system_timer("calc_oniom/calc_cluster_1")
 
     ! unrescale cluster
-    call set_lattice(cluster, cluster%lattice / this%r_scale_pot1, keep_fractional=.true.)
+    call set_lattice(cluster, cluster%lattice / this%r_scale_pot1, scale_positions=.true.)
 
     call calc_connect(cluster)
 
