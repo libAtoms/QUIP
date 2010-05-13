@@ -288,8 +288,8 @@ program crack
   integer, parameter :: STATE_MD_CRACKING = 4
   integer, parameter :: STATE_DAMPED_MD = 5
   integer, parameter :: STATE_MICROCANONICAL = 6
-  character(len=11), dimension(6), parameter :: STATE_NAMES = &
-       (/"THERMALISE", "MD", "MD_LOADING", "MD_CRACKING", "DAMPED_MD", "MICROCANONICAL"/)
+  character(len=14), dimension(6), parameter :: STATE_NAMES = &
+       (/"THERMALISE    ", "MD            ", "MD_LOADING    ", "MD_CRACKING   ", "DAMPED_MD     ", "MICROCANONICAL"/)
 
   ! Objects
   type(InOutput) :: xmlfile
