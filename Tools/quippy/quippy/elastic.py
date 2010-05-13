@@ -234,7 +234,7 @@ def generate_strained_configs(at0, symmetry='triclinic', N_steps=5, delta=1e-2):
          strain = numpy.where(pattern == 1, delta*(step-(N_steps+1)/2.0), 0.0)
          at = at0.copy()
          T = strain_matrix(strain)
-         at.set_lattice(numpy.dot(T,at.lattice))
+         at.set_lattice(numpy.dot(T,at.lattice), scale_positions=False)
          at.pos[:] = numpy.dot(T,at.pos)
          at.params['strain'] = T
          yield at

@@ -564,7 +564,7 @@ def CastepGeomMDReader(source, atoms_ref=None):
          # CASTEP (element, number) to original atom index
          assert n_atoms == atoms_ref.n
          at = atoms_ref.copy()
-         at.set_lattice(lattice)
+         at.set_lattice(lattice, scale_positions=False)
          at.params.update(params)
          species_count = {}
          lookup = {}
@@ -725,7 +725,7 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
          # CASTEP (element, number) to original atom index
          assert n_atoms == atoms_ref.n, 'Number of atoms must match atoms_ref'
          atoms = atoms_ref.copy()
-         atoms.set_lattice(lattice)
+         atoms.set_lattice(lattice, scale_positions=False)
          species_count = {}
          lookup = {}
          for i in frange(atoms.n):
@@ -1156,11 +1156,15 @@ class CastepPotential(Potential):
             at.add_property(k, getattr(result, k))
 
 
-def potential_to_cube(filename):
+def potential_to_cube(filename, header=False):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
-   
-   pot = numpy.loadtxt(filename)
+
+   if header:
+      pot = numpy.loadtxt(filename, skiprows=11)
+   else:
+      pot = numpy.loadtxt(filename)
+      
    nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
    data = fzeros((nx,ny,nz))
    for (i,j,k,value) in pot:

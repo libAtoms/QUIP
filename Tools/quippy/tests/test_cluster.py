@@ -665,7 +665,7 @@ class TestCluster_Surface_Dia(QuippyTestCase):
       self.at = supercell(diamond(5.44, 14), 3, 3, 3)
       lat = self.at.lattice
       lat[3,3] *= 2
-      self.at.set_lattice(lat)
+      self.at.set_lattice(lat, scale_positions=False)
       self.at.calc_connect()
 
       self.at.add_property('hybrid_mark', HYBRID_NO_MARK)
@@ -701,7 +701,7 @@ class TestCluster_Surface_FCC(QuippyTestCase):
 
       lat = self.at.lattice
       lat[3,3] *= 2
-      self.at.set_lattice(lat)
+      self.at.set_lattice(lat, scale_positions=False)
       self.at.set_cutoff(3.0)
       self.at.calc_connect()
 
@@ -752,7 +752,7 @@ class TestCluster_CrackTip(QuippyTestCase):
 
       slab.lattice[1,1] += 50.0
       slab.lattice[2,2] += 50.0
-      slab.set_lattice(slab.lattice)
+      slab.set_lattice(slab.lattice, scale_positions=False)
 
       mask = fzeros(slab.n, dtype=int)
       mask[:] = 1
@@ -931,7 +931,7 @@ class TestCluster_SilicaTetrahedra(QuippyTestCase):
 
             slab.lattice[1,1] += 50.0
             slab.lattice[2,2] += 50.0
-            slab.set_lattice(slab.lattice)
+            slab.set_lattice(slab.lattice, scale_positions=False)
 
             mask = fzeros(slab.n, dtype=int)
             mask[:] = 1

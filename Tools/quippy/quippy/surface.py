@@ -105,7 +105,8 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
       at.map_into_cell()
       at.set_lattice([[2.0*(at.pos[1,:].max() - at.pos[1,:].min()), 0.0, 0.0],
                       [0.0, 2.0*(at.pos[2,:].max() - at.pos[2,:].min()), 0.0],
-                      [0.0, 0.0, 2.0*(at.pos[3,:].max() - at.pos[3,:].min())]])
+                      [0.0, 0.0, 2.0*(at.pos[3,:].max() - at.pos[3,:].min())]],
+                     scale_positions=False)
       at.map_into_cell()
       return at
 
@@ -300,6 +301,6 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
          print 'Shifting positions by %s' % dot(lattice, shift)
       orthorhombic.pos += tile(dot(lattice, shift), [orthorhombic.n, 1]).T
 
-   orthorhombic.set_lattice(lattice)
+   orthorhombic.set_lattice(lattice, scale_positions=False)
    orthorhombic.map_into_cell()
    return orthorhombic
