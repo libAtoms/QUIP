@@ -191,6 +191,11 @@ module system_module
     module procedure writeb_real_dim2_filename
   end interface write_binary
 
+  private :: reada_real_dim1
+  interface read_ascii
+    module procedure reada_real_dim1
+  end interface read_ascii
+
   private :: readb_int_dim0, readb_real_dim0, readb_log_dim0, readb_char_dim0, readb_complex_dim0
   private :: readb_int_dim1, readb_real_dim1, readb_log_dim1, readb_char_dim1, readb_complex_dim1
   private :: readb_int_dim2, readb_real_dim2, readb_log_dim2, readb_char_dim2, readb_complex_dim2
@@ -1670,6 +1675,31 @@ contains
    end subroutine writeb_complex_dim2
 
 
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!% Read scalar and array data from ascii files. These
+!% interfaces are not yet heavily overloaded to cater for all intrinsic and most
+!% derived types.
+!X
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine reada_real_dim1(this,da,status)
+    type(Inoutput), intent(in)     :: this
+    real(dp), intent(out) :: da(:)
+    integer, optional, intent(out) :: status
+
+    integer :: my_status
+
+    if (this%action == OUTPUT) call system_abort('read_line: Cannot read from an output file ('//trim(adjustl(this%filename))//')')
+
+    if (present(status)) then
+       read (this%unit,fmt=*,iostat=status) da
+    else
+       read (this%unit,fmt=*,iostat=my_status) da
+       if (my_status < 0) call system_abort('read_line: End of file when reading '//trim(adjustl(this%filename)))
+       if (my_status > 0) call system_abort('read_line: Error reading file '//trim(adjustl(this%filename)))
+    end if
+  end subroutine reada_real_dim1
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X

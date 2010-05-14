@@ -41,7 +41,8 @@ implicit none
 private
 
 type analysis
-  logical :: density_radial, density_grid, rdfd, integrated_rdfd, & !water
+  character(len=FIELD_LENGTH) :: type ! type of analysis, used to fill in list of logicals
+  logical :: density_radial, density_grid, KE_density_radial, rdfd, integrated_rdfd, adfd, & !water
              geometry, & !general
              density_axial_silica, num_hbond_silica, water_orientation_silica !silica-water interface
   character(len=FIELD_LENGTH) :: outfilename
@@ -53,30 +54,30 @@ type analysis
   integer :: min_frame, max_frame
 
   ! radial density stuff
-  real(dp) :: radial_min_p, radial_bin_width
-  integer :: radial_n_bins
-  real(dp) :: radial_center(3)
-  real(dp) :: radial_gaussian_sigma
-  real(dp), allocatable :: radial_histograms(:,:)
-  real(dp), allocatable :: radial_pos(:)
+  real(dp) :: density_radial_bin_width
+  integer :: density_radial_n_bins
+  integer :: density_radial_center_at
+  real(dp) :: density_radial_center(3)
+  real(dp) :: density_radial_gaussian_sigma
+  real(dp), allocatable :: density_radial_histograms(:,:)
+  real(dp), allocatable :: density_radial_pos(:)
 
-  !uniaxial density - for silica-water interface
-  integer :: axial_axis !x:1,y:2,z:3
-  real(dp) :: axial_bin_width
-  integer :: axial_n_bins
-  integer :: axial_silica_atoms
-  real(dp) :: axial_gaussian_sigma
-  logical :: axial_gaussian_smoothing
-  real(dp), allocatable :: axial_histograms(:,:)
-  real(dp), allocatable :: axial_pos(:)
-  
   ! density grid stuff
-  real(dp) :: grid_min_p(3), grid_bin_width(3)
-  integer :: grid_n_bins(3)
-  logical :: grid_gaussian_smoothing
-  real(dp) :: grid_gaussian_sigma
-  real(dp), allocatable :: grid_histograms(:,:,:,:)
-  real(dp), allocatable :: grid_pos(:,:,:,:)
+  real(dp) :: density_grid_min_p(3), density_grid_bin_width(3)
+  integer :: density_grid_n_bins(3)
+  logical :: density_grid_gaussian_smoothing
+  real(dp) :: density_grid_gaussian_sigma
+  real(dp), allocatable :: density_grid_histograms(:,:,:,:)
+  real(dp), allocatable :: density_grid_pos(:,:,:,:)
+
+  ! radial KE density stuff
+  real(dp) :: KE_density_radial_bin_width
+  integer :: KE_density_radial_n_bins
+  integer :: KE_density_radial_center_at
+  real(dp) :: KE_density_radial_center(3)
+  real(dp) :: KE_density_radial_gaussian_sigma
+  real(dp), allocatable :: KE_density_radial_histograms(:,:)
+  real(dp), allocatable :: KE_density_radial_pos(:)
 
   ! rdfd stuff
   real(dp) :: rdfd_zone_center(3)
@@ -88,6 +89,15 @@ type analysis
   real(dp), allocatable :: rdfds(:,:,:)
   real(dp), allocatable :: rdfd_zone_pos(:), rdfd_bin_pos(:)
 
+  ! adfd stuff
+  real(dp) :: adfd_zone_center(3)
+  character(FIELD_LENGTH) :: adfd_center_mask_str, adfd_neighbour_1_mask_str, adfd_neighbour_2_mask_str
+  real(dp) :: adfd_neighbour_1_max_dist
+  real(dp) :: adfd_zone_width, adfd_dist_bin_width
+  integer :: adfd_n_zones, adfd_n_dist_bins, adfd_n_angle_bins
+  real(dp), allocatable :: adfds(:,:,:,:)
+  real(dp), allocatable :: adfd_zone_pos(:), adfd_dist_bin_pos(:), adfd_angle_bin_pos(:)
+
   !geometry
   character(FIELD_LENGTH) :: geometry_filename
   type(Table) :: geometry_params
@@ -95,6 +105,16 @@ type analysis
   real(dp), allocatable :: geometry_histograms(:,:)
   real(dp), allocatable :: geometry_pos(:)
   character(FIELD_LENGTH), allocatable :: geometry_label(:)
+
+  !uniaxial density - for silica-water interface
+  integer :: density_axial_axis !x:1,y:2,z:3
+  real(dp) :: density_axial_bin_width
+  integer :: density_axial_n_bins
+  integer :: density_axial_silica_atoms
+  real(dp) :: density_axial_gaussian_sigma
+  logical :: density_axial_gaussian_smoothing
+  real(dp), allocatable :: density_axial_histograms(:,:)
+  real(dp), allocatable :: density_axial_pos(:)
 
   !silica_numhb - hydrogen bond distribution for silica-water interface
   integer :: num_hbond_axis !x:1,y:2,z:3
@@ -154,62 +174,68 @@ subroutine analysis_read(this, prev, args_str)
 
   if (.not. present(prev)) then
     ! general
-    this%outfilename=''
-    this%mask_str = ''
     call param_register(params, 'outfile', 'stdout', this%outfilename)
     call param_register(params, 'AtomMask', '', this%mask_str)
     call param_register(params, 'min_time', '-1.0', this%min_time)
     call param_register(params, 'max_time', '-1.0', this%max_time)
     call param_register(params, 'min_frame', '-1', this%min_frame)
     call param_register(params, 'max_frame', '-1', this%max_frame)
-    call param_register(params, 'density_radial', 'F', this%density_radial)
-    call param_register(params, 'density_grid', 'F', this%density_grid)
-    call param_register(params, 'rdfd', 'F', this%rdfd)
-    call param_register(params, 'geometry', 'F', this%geometry)
-    call param_register(params, 'density_axial_silica', 'F', this%density_axial_silica)
-    call param_register(params, 'num_hbond_silica', 'F', this%num_hbond_silica)
-    call param_register(params, 'water_orientation_silica', 'F', this%water_orientation_silica)
+    call param_register(params, 'type', '', this%type)
 
     ! radial density
-    call param_register(params, 'radial_min_p', "0.0", this%radial_min_p)
-    call param_register(params, 'radial_bin_width', '-1.0', this%radial_bin_width)
-    call param_register(params, 'radial_n_bins', '-1', this%radial_n_bins)
-    call param_register(params, 'radial_center', '0.0 0.0 0.0', this%radial_center)
-    call param_register(params, 'radial_sigma', '1.0', this%radial_gaussian_sigma)
+    call param_register(params, 'density_radial_bin_width', '-1.0', this%density_radial_bin_width)
+    call param_register(params, 'density_radial_n_bins', '-1', this%density_radial_n_bins)
+    call param_register(params, 'density_radial_center', '0.0 0.0 0.0', this%density_radial_center)
+    call param_register(params, 'density_radial_center_at', '-1', this%density_radial_center_at)
+    call param_register(params, 'density_radial_sigma', '1.0', this%density_radial_gaussian_sigma)
 
     ! grid density
-    call param_register(params, 'grid_min_p', '0.0 0.0 0.0', this%grid_min_p)
-    call param_register(params, 'grid_bin_width', '-1.0 -1.0 -1.0', this%grid_bin_width)
-    call param_register(params, 'grid_n_bins', '-1 -1 -1', this%grid_n_bins)
-    call param_register(params, 'grid_gaussian', 'F', this%grid_gaussian_smoothing)
-    call param_register(params, 'grid_sigma', '1.0', this%grid_gaussian_sigma)
+    call param_register(params, 'density_grid_min_p', '0.0 0.0 0.0', this%density_grid_min_p)
+    call param_register(params, 'density_grid_bin_width', '-1.0 -1.0 -1.0', this%density_grid_bin_width)
+    call param_register(params, 'density_grid_n_bins', '-1 -1 -1', this%density_grid_n_bins)
+    call param_register(params, 'density_grid_gaussian', 'F', this%density_grid_gaussian_smoothing)
+    call param_register(params, 'density_grid_sigma', '1.0', this%density_grid_gaussian_sigma)
+
+    ! radial KE density
+    call param_register(params, 'KE_density_radial_bin_width', '-1.0', this%KE_density_radial_bin_width)
+    call param_register(params, 'KE_density_radial_n_bins', '-1', this%KE_density_radial_n_bins)
+    call param_register(params, 'KE_density_radial_center', '0.0 0.0 0.0', this%KE_density_radial_center)
+    call param_register(params, 'KE_density_radial_center_at', '-1', this%KE_density_radial_center_at)
+    call param_register(params, 'KE_density_radial_sigma', '1.0', this%KE_density_radial_gaussian_sigma)
 
     ! rdfd
     call param_register(params, 'rdfd_zone_center', '0.0 0.0 0.0', this%rdfd_zone_center)
-    call param_register(params, 'rdfd_bin_width', '-1', this%rdfd_bin_width)
-    call param_register(params, 'rdfd_n_bins', '-1', this%rdfd_n_bins)
     call param_register(params, 'rdfd_zone_width', '-1.0', this%rdfd_zone_width)
     call param_register(params, 'rdfd_n_zones', '1', this%rdfd_n_zones)
-    this%rdfd_center_mask_str=''
+    call param_register(params, 'rdfd_bin_width', '-1', this%rdfd_bin_width)
+    call param_register(params, 'rdfd_n_bins', '-1', this%rdfd_n_bins)
     call param_register(params, 'rdfd_center_mask', '', this%rdfd_center_mask_str)
-    this%rdfd_neighbour_mask_str=''
     call param_register(params, 'rdfd_neighbour_mask', '', this%rdfd_neighbour_mask_str)
     call param_register(params, 'rdfd_gaussian', 'F', this%rdfd_gaussian_smoothing)
     call param_register(params, 'rdfd_sigma', '0.1', this%rdfd_gaussian_sigma)
 
+    ! adfd
+    call param_register(params, 'adfd_zone_center', '0.0 0.0 0.0', this%adfd_zone_center)
+    call param_register(params, 'adfd_zone_width', '-1.0', this%adfd_zone_width)
+    call param_register(params, 'adfd_n_zones', '1', this%adfd_n_zones)
+    call param_register(params, 'adfd_dist_bin_width', '-1', this%adfd_dist_bin_width)
+    call param_register(params, 'adfd_n_dist_bins', '-1', this%adfd_n_dist_bins)
+    call param_register(params, 'adfd_n_angle_bins', '-1', this%adfd_n_angle_bins)
+    call param_register(params, 'adfd_center_mask', '', this%adfd_center_mask_str)
+    call param_register(params, 'adfd_neighbour_1_mask', '', this%adfd_neighbour_1_mask_str)
+    call param_register(params, 'adfd_neighbour_1_max_dist', '-1.0', this%adfd_neighbour_1_max_dist)
+    call param_register(params, 'adfd_neighbour_2_mask', '', this%adfd_neighbour_2_mask_str)
+
     ! geometry
-    this%geometry_filename=''
     call param_register(params, 'geometry_filename', '', this%geometry_filename)
     call param_register(params, 'geometry_central_atom', '-1', this%geometry_central_atom)
 
     ! uniaxial density silica
-    call param_register(params, 'axial_n_bins', '-1', this%axial_n_bins)
-    !call param_register(params, 'axial_bin_width', '-1.0', this%axial_bin_width)
-    call param_register(params, 'axial_axis', '-1', this%axial_axis)
-    call param_register(params, 'axial_silica_atoms', '-1', this%axial_silica_atoms)
-    call param_register(params, 'axial_gaussian', 'F', this%axial_gaussian_smoothing)
-    call param_register(params, 'axial_sigma', '1.0', this%axial_gaussian_sigma)
-    !call param_register(params, 'axial_atommask', '', this%axial_atommask)
+    call param_register(params, 'density_axial_n_bins', '-1', this%density_axial_n_bins)
+    call param_register(params, 'density_axial_axis', '-1', this%density_axial_axis)
+    call param_register(params, 'density_axial_silica_atoms', '-1', this%density_axial_silica_atoms)
+    call param_register(params, 'density_axial_gaussian', 'F', this%density_axial_gaussian_smoothing)
+    call param_register(params, 'density_axial_sigma', '1.0', this%density_axial_gaussian_sigma)
 
     ! num_hbond_silica
     call param_register(params, 'num_hbond_n_bins', '-1', this%num_hbond_n_bins)
@@ -237,48 +263,61 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'max_time', ''//prev%max_time, this%max_time)
     call param_register(params, 'min_frame', ''//prev%min_frame, this%min_frame)
     call param_register(params, 'max_frame', ''//prev%max_frame, this%max_frame)
-    call param_register(params, 'density_radial', ''//prev%density_radial, this%density_radial)
-    call param_register(params, 'density_grid', ''//prev%density_grid, this%density_grid)
-    call param_register(params, 'rdfd', ''//prev%rdfd, this%rdfd)
-    call param_register(params, 'geometry', ''//prev%geometry, this%geometry)
+    call param_register(params, 'type', ''//trim(prev%type), this%type)
 
     ! radial density
-    call param_register(params, 'radial_min_p', ''//this%radial_min_p, this%radial_min_p)
-    call param_register(params, 'radial_bin_width', ''//this%radial_bin_width, this%radial_bin_width)
-    call param_register(params, 'radial_n_bins', ''//this%radial_n_bins, this%radial_n_bins)
-    call param_register(params, 'radial_center', ''//prev%radial_center, this%radial_center)
-    call param_register(params, 'radial_sigma', ''//prev%radial_gaussian_sigma, this%radial_gaussian_sigma)
+    call param_register(params, 'density_radial_bin_width', ''//this%density_radial_bin_width, this%density_radial_bin_width)
+    call param_register(params, 'density_radial_n_bins', ''//this%density_radial_n_bins, this%density_radial_n_bins)
+    call param_register(params, 'density_radial_center', ''//prev%density_radial_center, this%density_radial_center)
+    call param_register(params, 'density_radial_center_at', ''//prev%density_radial_center_at, this%density_radial_center_at)
+    call param_register(params, 'density_radial_sigma', ''//prev%density_radial_gaussian_sigma, this%density_radial_gaussian_sigma)
 
     ! grid density
-    call param_register(params, 'grid_min_p', ''//prev%grid_min_p, this%grid_min_p)
-    call param_register(params, 'grid_bin_width', ''//prev%grid_bin_width, this%grid_bin_width)
-    call param_register(params, 'grid_n_bins', ''//prev%grid_n_bins, this%grid_n_bins)
-    call param_register(params, 'grid_gaussian', ''//prev%grid_gaussian_smoothing, this%grid_gaussian_smoothing)
-    call param_register(params, 'grid_sigma', ''//prev%grid_gaussian_sigma, this%grid_gaussian_sigma)
+    call param_register(params, 'density_grid_min_p', ''//prev%density_grid_min_p, this%density_grid_min_p)
+    call param_register(params, 'density_grid_bin_width', ''//prev%density_grid_bin_width, this%density_grid_bin_width)
+    call param_register(params, 'density_grid_n_bins', ''//prev%density_grid_n_bins, this%density_grid_n_bins)
+    call param_register(params, 'density_grid_gaussian', ''//prev%density_grid_gaussian_smoothing, this%density_grid_gaussian_smoothing)
+    call param_register(params, 'density_grid_sigma', ''//prev%density_grid_gaussian_sigma, this%density_grid_gaussian_sigma)
+
+    ! radial KE_density
+    call param_register(params, 'KE_density_radial_bin_width', ''//this%KE_density_radial_bin_width, this%KE_density_radial_bin_width)
+    call param_register(params, 'KE_density_radial_n_bins', ''//this%KE_density_radial_n_bins, this%KE_density_radial_n_bins)
+    call param_register(params, 'KE_density_radial_center_at', ''//prev%KE_density_radial_center_at, this%KE_density_radial_center_at)
+    call param_register(params, 'KE_density_radial_sigma', ''//prev%KE_density_radial_gaussian_sigma, this%KE_density_radial_gaussian_sigma)
 
     ! rdfd
     call param_register(params, 'rdfd_zone_center', ''//prev%rdfd_zone_center, this%rdfd_zone_center)
-    call param_register(params, 'rdfd_bin_width', ''//prev%rdfd_bin_width, this%rdfd_bin_width)
-    call param_register(params, 'rdfd_n_bins', ''//prev%rdfd_n_bins, this%rdfd_n_bins)
     call param_register(params, 'rdfd_zone_width', ''//prev%rdfd_zone_width, this%rdfd_zone_width)
     call param_register(params, 'rdfd_n_zones', ''//prev%rdfd_n_zones, this%rdfd_n_zones)
+    call param_register(params, 'rdfd_bin_width', ''//prev%rdfd_bin_width, this%rdfd_bin_width)
+    call param_register(params, 'rdfd_n_bins', ''//prev%rdfd_n_bins, this%rdfd_n_bins)
     call param_register(params, 'rdfd_center_mask', trim(prev%rdfd_center_mask_str), this%rdfd_center_mask_str)
     call param_register(params, 'rdfd_neighbour_mask', trim(prev%rdfd_neighbour_mask_str), this%rdfd_neighbour_mask_str)
     call param_register(params, 'rdfd_gaussian', ''//prev%rdfd_gaussian_smoothing, this%rdfd_gaussian_smoothing)
     call param_register(params, 'rdfd_sigma', ''//prev%rdfd_gaussian_sigma, this%rdfd_gaussian_sigma)
+
+    ! adfd
+    call param_register(params, 'adfd_zone_center', ''//prev%adfd_zone_center, this%adfd_zone_center)
+    call param_register(params, 'adfd_zone_width', ''//prev%adfd_zone_width, this%adfd_zone_width)
+    call param_register(params, 'adfd_n_zones', ''//prev%adfd_n_zones, this%adfd_n_zones)
+    call param_register(params, 'adfd_dist_bin_width', ''//prev%adfd_dist_bin_width, this%adfd_dist_bin_width)
+    call param_register(params, 'adfd_n_dist_bins', ''//prev%adfd_n_dist_bins, this%adfd_n_dist_bins)
+    call param_register(params, 'adfd_n_angle_bins', ''//prev%adfd_n_angle_bins, this%adfd_n_angle_bins)
+    call param_register(params, 'adfd_center_mask', trim(prev%adfd_center_mask_str), this%adfd_center_mask_str)
+    call param_register(params, 'adfd_neighbour_1_mask', trim(prev%adfd_neighbour_1_mask_str), this%adfd_neighbour_1_mask_str)
+    call param_register(params, 'adfd_neighbour_1_max_dist', ''//prev%adfd_neighbour_1_max_dist, this%adfd_neighbour_1_max_dist)
+    call param_register(params, 'adfd_neighbour_2_mask', trim(prev%adfd_neighbour_2_mask_str), this%adfd_neighbour_2_mask_str)
 
     ! geometry
     call param_register(params, 'geometry_filename', ''//trim(prev%geometry_filename), this%geometry_filename)
     call param_register(params, 'geometry_central_atom', ''//prev%geometry_central_atom, this%geometry_central_atom)
 
     ! uniaxial density silica
-    call param_register(params, 'axial_n_bins', ''//prev%axial_n_bins, this%axial_n_bins)
-    !call param_register(params, 'axial_bin_width', ''//prev%axial_bin_width, this%axial_bin_width)
-    call param_register(params, 'axial_axis', ''//prev%axial_axis, this%axial_axis)
-    call param_register(params, 'axial_silica_atoms', ''//prev%axial_silica_atoms, this%axial_silica_atoms)
-    call param_register(params, 'axial_gaussian', ''//prev%axial_gaussian_smoothing, this%axial_gaussian_smoothing)
-    call param_register(params, 'axial_sigma', ''//prev%axial_gaussian_sigma, this%axial_gaussian_sigma)
-    !call param_register(params, 'axial_atommask', ''//prev%axial_atommask, this%axial_atommask)
+    call param_register(params, 'density_axial_n_bins', ''//prev%density_axial_n_bins, this%density_axial_n_bins)
+    call param_register(params, 'density_axial_axis', ''//prev%density_axial_axis, this%density_axial_axis)
+    call param_register(params, 'density_axial_silica_atoms', ''//prev%density_axial_silica_atoms, this%density_axial_silica_atoms)
+    call param_register(params, 'density_axial_gaussian', ''//prev%density_axial_gaussian_smoothing, this%density_axial_gaussian_smoothing)
+    call param_register(params, 'density_axial_sigma', ''//prev%density_axial_gaussian_sigma, this%density_axial_gaussian_sigma)
 
     ! num_hbond_silica
     call param_register(params, 'num_hbond_n_bins', ''//prev%num_hbond_n_bins, this%num_hbond_n_bins)
@@ -308,8 +347,43 @@ subroutine analysis_read(this, prev, args_str)
       call system_abort("analysis_read failed to parse command line arguments")
   endif
 
-  if (count ( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /) ) /= 1) &
-    call system_abort("Specified "//count( (/ this%density_radial, this%density_grid, this%rdfd, this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /) )//" types of analysis.  Possiblities: density_radial, density_grid, rdfd, geometry, density_axial_silica, num_hbond_silica, water_orientation_silica.")
+  this%density_radial = .false.
+  this%density_grid = .false.
+  this%KE_density_radial = .false.
+  this%rdfd = .false.
+  this%adfd = .false.
+  this%geometry = .false.
+  this%density_axial_silica = .false.
+  this%num_hbond_silica = .false.
+  this%water_orientation_silica = .false.
+  select case(trim(this%type))
+    case("density_radial")
+      this%density_radial = .true.
+    case("density_grid")
+      this%density_grid = .true.
+    case("KE_density_radial")
+      this%KE_density_radial = .true.
+    case("rdfd")
+      this%rdfd = .true.
+    case("adfd")
+      this%adfd = .true.
+    case("geometry")
+      this%geometry = .true.
+    case("density_axial_silica")
+      this%density_axial_silica = .true.
+    case("num_hbond_silica")
+      this%num_hbond_silica = .true.
+    case("water_orientation_silica")
+      this%water_orientation_silica = .true.
+    case default
+      call system_abort("Unknown analysis type '"//trim(this%type)//"'")
+  end select
+
+  if (count ( (/ this%density_radial, this%density_grid, this%KE_density_radial, this%rdfd, this%adfd, &
+		 this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /) ) /= 1) &
+    call system_abort("Specified "//(/ this%density_radial, this%density_grid, this%KE_density_radial, &
+      this%rdfd, this%adfd, this%geometry, this%density_axial_silica, this%num_hbond_silica, this%water_orientation_silica /)// &
+      " types of analysis.  Possiblities: density_radial, density_grid, KE_density_radial, rdfd, adfd, geometry, density_axial_silica, num_hbond_silica, water_orientation_silica.")
 
 end subroutine analysis_read
 
@@ -320,23 +394,31 @@ subroutine check_analyses(a)
 
   do i_a=1, size(a)
     if (a(i_a)%density_radial) then !density_radial
-      if (a(i_a)%radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%radial_bin_width//" <= 0.0")
-      if (a(i_a)%radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%radial_n_bins//" <= 0")
+      if (a(i_a)%density_radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%density_radial_bin_width//" <= 0.0")
+      if (a(i_a)%density_radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%density_radial_n_bins//" <= 0")
     else if (a(i_a)%density_grid) then !density_grid
-      if (any(a(i_a)%grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%grid_bin_width//" <= 0.0")
-      if (any(a(i_a)%grid_n_bins <= 0)) call system_abort("analysis " // i_a // " has grid_n_bins="//a(i_a)%grid_n_bins//" <= 0")
+      if (any(a(i_a)%density_grid_bin_width <= 0.0_dp)) call system_abort("analysis " // i_a // " has grid_bin_width="//a(i_a)%density_grid_bin_width//" <= 0.0")
+      if (any(a(i_a)%density_grid_n_bins <= 0)) call system_abort("analysis " // i_a // " has grid_n_bins="//a(i_a)%density_grid_n_bins//" <= 0")
+    else if (a(i_a)%KE_density_radial) then !KE_density_radial
+      if (a(i_a)%KE_density_radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has radial_bin_width="//a(i_a)%KE_density_radial_bin_width//" <= 0.0")
+      if (a(i_a)%KE_density_radial_n_bins <= 0) call system_abort("analysis " // i_a // " has radial_n_bins="//a(i_a)%KE_density_radial_n_bins//" <= 0")
     else if (a(i_a)%rdfd) then !rdfd
       if (a(i_a)%rdfd_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has rdfd_bin_width="//a(i_a)%rdfd_bin_width//" <= 0.0")
       if (a(i_a)%rdfd_n_bins <= 0) call system_abort("analysis " // i_a // " has rdfd_n_bins="//a(i_a)%rdfd_n_bins//" <= 0")
       if (a(i_a)%rdfd_n_zones <= 0) call system_abort("analysis " // i_a // " has rdfd_n_zones="//a(i_a)%rdfd_n_zones//" <= 0")
+    else if (a(i_a)%adfd) then !adfd
+      if (a(i_a)%adfd_dist_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has adfd_dist_bin_width="//a(i_a)%adfd_dist_bin_width//" <= 0.0")
+      if (a(i_a)%adfd_n_dist_bins <= 0) call system_abort("analysis " // i_a // " has adfd_n_dist_bins="//a(i_a)%adfd_n_dist_bins//" <= 0")
+      if (a(i_a)%adfd_n_angle_bins <= 0) call system_abort("analysis " // i_a // " has adfd_n_angle_bins="//a(i_a)%adfd_n_angle_bins//" <= 0")
+      if (a(i_a)%adfd_n_zones <= 0) call system_abort("analysis " // i_a // " has adfd_n_zones="//a(i_a)%adfd_n_zones//" <= 0")
     else if (a(i_a)%geometry) then !geometry
       if (trim(a(i_a)%geometry_filename)=="") call system_abort("analysis "//i_a//" has empty geometry_filename")
       !read geometry parameters to calculate from the file into a table
       call read_geometry_params(a(i_a),trim(a(i_a)%geometry_filename))
       if (a(i_a)%geometry_params%N==0) call system_abort("analysis "//i_a//" has no geometry parameters to calculate")
     else if (a(i_a)%density_axial_silica) then !density_axial_silica
-      if (a(i_a)%axial_n_bins <= 0) call system_abort("analysis " // i_a // " has axial_n_bins="//a(i_a)%axial_n_bins//" <= 0")
-      if (.not. any(a(i_a)%axial_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has axial_axis="//a(i_a)%axial_axis//" /= 1, 2 or 3")
+      if (a(i_a)%density_axial_n_bins <= 0) call system_abort("analysis " // i_a // " has density_axial_n_bins="//a(i_a)%density_axial_n_bins//" <= 0")
+      if (.not. any(a(i_a)%density_axial_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has density_axial_axis="//a(i_a)%density_axial_axis//" /= 1, 2 or 3")
     else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
       if (a(i_a)%num_hbond_n_bins <= 0) call system_abort("analysis " // i_a // " has num_hbond_n_bins="//a(i_a)%num_hbond_n_bins//" <= 0")
       if (.not. any(a(i_a)%num_hbond_axis == (/1,2,3/))) call system_abort("analysis " // i_a // " has num_hbond_axis="//a(i_a)%num_hbond_axis//" /= 1, 2 or 3")
@@ -356,6 +438,7 @@ subroutine do_analyses(a, time, frame, at)
   real(dp), intent(in) :: time
   integer, intent(in) :: frame
   type(Atoms), intent(inout) :: at
+  real(dp) :: use_density_radial_center(3)
 
   integer :: i_a
 
@@ -369,37 +452,59 @@ subroutine do_analyses(a, time, frame, at)
       a(i_a)%n_configs = a(i_a)%n_configs + 1
 
       if (a(i_a)%density_radial) then !density_radial
-        call reallocate_data(a(i_a)%radial_histograms, a(i_a)%n_configs, a(i_a)%radial_n_bins)
+        call reallocate_data(a(i_a)%density_radial_histograms, a(i_a)%n_configs, a(i_a)%density_radial_n_bins)
+	if (a(i_a)%density_radial_center_at > 0) then
+	  use_density_radial_center = at%pos(:,a(i_a)%density_radial_center_at)
+	else
+	  use_density_radial_center = a(i_a)%density_radial_center
+	endif
         if (a(i_a)%n_configs == 1) then
-          allocate(a(i_a)%radial_pos(a(i_a)%radial_n_bins))
-          call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
-            rad_bin_width=a(i_a)%radial_bin_width, n_rad_bins=a(i_a)%radial_n_bins, gaussian_sigma=a(i_a)%radial_gaussian_sigma, &
-            mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%radial_pos)
+          allocate(a(i_a)%density_radial_pos(a(i_a)%density_radial_n_bins))
+          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+            rad_bin_width=a(i_a)%density_radial_bin_width, n_rad_bins=a(i_a)%density_radial_n_bins, gaussian_sigma=a(i_a)%density_radial_gaussian_sigma, &
+            mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%density_radial_pos)
         else
-          call density_sample_radial_mesh_Gaussians(a(i_a)%radial_histograms(:,a(i_a)%n_configs), at, center_pos=a(i_a)%radial_center, &
-            rad_bin_width=a(i_a)%radial_bin_width, n_rad_bins=a(i_a)%radial_n_bins, gaussian_sigma= a(i_a)%radial_gaussian_sigma, &
+          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+            rad_bin_width=a(i_a)%density_radial_bin_width, n_rad_bins=a(i_a)%density_radial_n_bins, gaussian_sigma= a(i_a)%density_radial_gaussian_sigma, &
             mask_str=a(i_a)%mask_str)
         endif
       else if (a(i_a)%density_grid) then !density_grid
-        call reallocate_data(a(i_a)%grid_histograms, a(i_a)%n_configs, a(i_a)%grid_n_bins)
-        if (a(i_a)%grid_gaussian_smoothing) then
+        call reallocate_data(a(i_a)%density_grid_histograms, a(i_a)%n_configs, a(i_a)%density_grid_n_bins)
+        if (a(i_a)%density_grid_gaussian_smoothing) then
           if (a(i_a)%n_configs == 1) then
-            allocate(a(i_a)%grid_pos(3,a(i_a)%grid_n_bins(1),a(i_a)%grid_n_bins(2),a(i_a)%grid_n_bins(3)))
-            call density_sample_rectilinear_mesh_Gaussians(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, &
-              a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%grid_gaussian_sigma, a(i_a)%mask_str, a(i_a)%grid_pos)
+            allocate(a(i_a)%density_grid_pos(3,a(i_a)%density_grid_n_bins(1),a(i_a)%density_grid_n_bins(2),a(i_a)%density_grid_n_bins(3)))
+            call density_sample_rectilinear_mesh_Gaussians(a(i_a)%density_grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%density_grid_min_p, &
+              a(i_a)%density_grid_bin_width, a(i_a)%density_grid_n_bins, a(i_a)%density_grid_gaussian_sigma, a(i_a)%mask_str, a(i_a)%density_grid_pos)
           else
-            call density_sample_rectilinear_mesh_Gaussians(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, &
-              a(i_a)%grid_bin_width, a(i_a)%grid_n_bins, a(i_a)%grid_gaussian_sigma, a(i_a)%mask_str)
+            call density_sample_rectilinear_mesh_Gaussians(a(i_a)%density_grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%density_grid_min_p, &
+              a(i_a)%density_grid_bin_width, a(i_a)%density_grid_n_bins, a(i_a)%density_grid_gaussian_sigma, a(i_a)%mask_str)
           endif
         else
           if (a(i_a)%n_configs == 1) then
-            allocate(a(i_a)%grid_pos(3,a(i_a)%grid_n_bins(1),a(i_a)%grid_n_bins(2),a(i_a)%grid_n_bins(3)))
-            call density_bin_rectilinear_mesh(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, &
-              a(i_a)%grid_n_bins, a(i_a)%mask_str, a(i_a)%grid_pos)
+            allocate(a(i_a)%density_grid_pos(3,a(i_a)%density_grid_n_bins(1),a(i_a)%density_grid_n_bins(2),a(i_a)%density_grid_n_bins(3)))
+            call density_bin_rectilinear_mesh(a(i_a)%density_grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%density_grid_min_p, a(i_a)%density_grid_bin_width, &
+              a(i_a)%density_grid_n_bins, a(i_a)%mask_str, a(i_a)%density_grid_pos)
           else
-            call density_bin_rectilinear_mesh(a(i_a)%grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%grid_min_p, a(i_a)%grid_bin_width, &
-              a(i_a)%grid_n_bins, a(i_a)%mask_str)
+            call density_bin_rectilinear_mesh(a(i_a)%density_grid_histograms(:,:,:,a(i_a)%n_configs), at, a(i_a)%density_grid_min_p, a(i_a)%density_grid_bin_width, &
+              a(i_a)%density_grid_n_bins, a(i_a)%mask_str)
           endif
+        endif
+      else if (a(i_a)%KE_density_radial) then ! KE_density_radial
+        call reallocate_data(a(i_a)%KE_density_radial_histograms, a(i_a)%n_configs, a(i_a)%KE_density_radial_n_bins)
+	if (a(i_a)%KE_density_radial_center_at > 0) then
+	  use_density_radial_center = at%pos(:,a(i_a)%KE_density_radial_center_at)
+	else
+	  use_density_radial_center = a(i_a)%KE_density_radial_center
+	endif
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%KE_density_radial_pos(a(i_a)%KE_density_radial_n_bins))
+          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+            rad_bin_width=a(i_a)%KE_density_radial_bin_width, n_rad_bins=a(i_a)%KE_density_radial_n_bins, gaussian_sigma=a(i_a)%KE_density_radial_gaussian_sigma, &
+            mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%KE_density_radial_pos, quantity="KE")
+        else
+          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+            rad_bin_width=a(i_a)%KE_density_radial_bin_width, n_rad_bins=a(i_a)%KE_density_radial_n_bins, gaussian_sigma= a(i_a)%density_radial_gaussian_sigma, &
+            mask_str=a(i_a)%mask_str, quantity="KE")
         endif
       else if (a(i_a)%rdfd) then !rdfd
         call reallocate_data(a(i_a)%rdfds, a(i_a)%n_configs, (/ a(i_a)%rdfd_n_bins, a(i_a)%rdfd_n_zones /) )
@@ -415,6 +520,23 @@ subroutine do_analyses(a, time, frame, at)
             a(i_a)%rdfd_zone_width, a(i_a)%rdfd_n_zones, a(i_a)%rdfd_gaussian_smoothing, a(i_a)%rdfd_gaussian_sigma, &
             a(i_a)%rdfd_center_mask_str, a(i_a)%rdfd_neighbour_mask_str)
         endif
+      else if (a(i_a)%adfd) then !adfd
+        call reallocate_data(a(i_a)%adfds, a(i_a)%n_configs, (/ a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_n_dist_bins, a(i_a)%adfd_n_zones /) )
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%adfd_dist_bin_pos(a(i_a)%adfd_n_dist_bins))
+          allocate(a(i_a)%adfd_angle_bin_pos(a(i_a)%adfd_n_angle_bins))
+          allocate(a(i_a)%adfd_zone_pos(a(i_a)%adfd_n_zones))
+          call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
+	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
+            a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
+            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, &
+            a(i_a)%adfd_angle_bin_pos, a(i_a)%adfd_dist_bin_pos, a(i_a)%adfd_zone_pos)
+        else
+          call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
+	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
+            a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
+            a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str)
+        endif
       else if (a(i_a)%geometry) then !geometry
         call reallocate_data(a(i_a)%geometry_histograms, a(i_a)%n_configs, a(i_a)%geometry_params%N)
         if (a(i_a)%n_configs == 1) then
@@ -426,21 +548,21 @@ subroutine do_analyses(a, time, frame, at)
           call geometry_calc(a(i_a)%geometry_histograms(:,a(i_a)%n_configs), at, a(i_a)%geometry_params, a(i_a)%geometry_central_atom)
         endif
       else if (a(i_a)%density_axial_silica) then !density_axial_silica
-        call reallocate_data(a(i_a)%axial_histograms, a(i_a)%n_configs, a(i_a)%axial_n_bins)
+        call reallocate_data(a(i_a)%density_axial_histograms, a(i_a)%n_configs, a(i_a)%density_axial_n_bins)
         if (a(i_a)%n_configs == 1) then
-           allocate(a(i_a)%axial_pos(a(i_a)%axial_n_bins))
-           call density_axial_calc(a(i_a)%axial_histograms(:,a(i_a)%n_configs), at, &
-             axis=a(i_a)%axial_axis, silica_center_i=a(i_a)%axial_silica_atoms, &
-             n_bins=a(i_a)%axial_n_bins, &
-             gaussian_smoothing=a(i_a)%axial_gaussian_smoothing, &
-             gaussian_sigma=a(i_a)%axial_gaussian_sigma, &
-             mask_str=a(i_a)%mask_str, axial_pos=a(i_a)%axial_pos)
+           allocate(a(i_a)%density_axial_pos(a(i_a)%density_axial_n_bins))
+           call density_axial_calc(a(i_a)%density_axial_histograms(:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%density_axial_axis, silica_center_i=a(i_a)%density_axial_silica_atoms, &
+             n_bins=a(i_a)%density_axial_n_bins, &
+             gaussian_smoothing=a(i_a)%density_axial_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%density_axial_gaussian_sigma, &
+             mask_str=a(i_a)%mask_str, axial_pos=a(i_a)%density_axial_pos)
         else
-           call density_axial_calc(a(i_a)%axial_histograms(:,a(i_a)%n_configs), at, &
-             axis=a(i_a)%axial_axis, silica_center_i=a(i_a)%axial_silica_atoms, &
-             n_bins=a(i_a)%axial_n_bins, &
-             gaussian_smoothing=a(i_a)%axial_gaussian_smoothing, &
-             gaussian_sigma=a(i_a)%axial_gaussian_sigma, &
+           call density_axial_calc(a(i_a)%density_axial_histograms(:,a(i_a)%n_configs), at, &
+             axis=a(i_a)%density_axial_axis, silica_center_i=a(i_a)%density_axial_silica_atoms, &
+             n_bins=a(i_a)%density_axial_n_bins, &
+             gaussian_smoothing=a(i_a)%density_axial_gaussian_smoothing, &
+             gaussian_sigma=a(i_a)%density_axial_gaussian_sigma, &
              mask_str=a(i_a)%mask_str)
         endif
       else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
@@ -556,25 +678,34 @@ subroutine print_analyses(a)
     else
       if (a(i_a)%density_radial) then !density_radial
         call print("# radial density histogram", file=outfile)
-        call print("n_bins="//a(i_a)%radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
-        do i=1, a(i_a)%radial_n_bins
-          call print(a(i_a)%radial_pos(i), file=outfile)
+        call print("n_bins="//a(i_a)%density_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%density_radial_n_bins
+          call print(a(i_a)%density_radial_pos(i), file=outfile)
         end do
         do i=1, a(i_a)%n_configs
-          call print(a(i_a)%radial_histograms(:,i), file=outfile)
+          call print(a(i_a)%density_radial_histograms(:,i), file=outfile)
         end do
       else if (a(i_a)%density_grid) then !density_grid
         call print("# grid density histogram", file=outfile)
-        call print("n_bins="//a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3)//" n_data="//a(i_a)%n_configs, file=outfile)
-        do i1=1, a(i_a)%grid_n_bins(1)
-        do i2=1, a(i_a)%grid_n_bins(2)
-        do i3=1, a(i_a)%grid_n_bins(3)
-          call print(""//a(i_a)%grid_pos(:,i1,i2,i3), file=outfile)
+        call print("n_bins="//a(i_a)%density_grid_n_bins(1)*a(i_a)%density_grid_n_bins(2)*a(i_a)%density_grid_n_bins(3)//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%density_grid_n_bins(1)
+        do i2=1, a(i_a)%density_grid_n_bins(2)
+        do i3=1, a(i_a)%density_grid_n_bins(3)
+          call print(""//a(i_a)%density_grid_pos(:,i1,i2,i3), file=outfile)
         end do
         end do
         end do
         do i=1, a(i_a)%n_configs
-          call print(""//reshape(a(i_a)%grid_histograms(:,:,:,i), (/ a(i_a)%grid_n_bins(1)*a(i_a)%grid_n_bins(2)*a(i_a)%grid_n_bins(3) /) ), file=outfile)
+          call print(""//reshape(a(i_a)%density_grid_histograms(:,:,:,i), (/ a(i_a)%density_grid_n_bins(1)*a(i_a)%density_grid_n_bins(2)*a(i_a)%density_grid_n_bins(3) /) ), file=outfile)
+        end do
+      else if (a(i_a)%KE_density_radial) then !density_radial
+        call print("# radial density histogram", file=outfile)
+        call print("n_bins="//a(i_a)%KE_density_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%KE_density_radial_n_bins
+          call print(a(i_a)%KE_density_radial_pos(i), file=outfile)
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(a(i_a)%KE_density_radial_histograms(:,i), file=outfile)
         end do
       else if (a(i_a)%rdfd) then !rdfd
         call print("# rdfd", file=outfile)
@@ -620,6 +751,24 @@ subroutine print_analyses(a)
         end do
 	deallocate(integrated_rdfds)
 
+      else if (a(i_a)%adfd) then !adfd
+        call print("# adfd", file=outfile)
+        call print("n_bins="//a(i_a)%adfd_n_zones*a(i_a)%adfd_n_dist_bins*a(i_a)%adfd_n_angle_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i1=1, a(i_a)%adfd_n_zones
+        do i2=1, a(i_a)%adfd_n_dist_bins
+        do i3=1, a(i_a)%adfd_n_angle_bins
+          if (a(i_a)%adfd_zone_width > 0.0_dp) then
+            call print(""//a(i_a)%adfd_zone_pos(i1)//" "//a(i_a)%adfd_dist_bin_pos(i2)//" "//a(i_a)%adfd_angle_bin_pos(i3), file=outfile)
+          else
+            call print(""//a(i_a)%adfd_dist_bin_pos(i2)//" "//a(i_a)%adfd_angle_bin_pos(i3), file=outfile)
+          endif
+        end do
+        end do
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(""//reshape(a(i_a)%adfds(:,:,:,i), (/ a(i_a)%adfd_n_zones*a(i_a)%adfd_n_dist_bins*a(i_a)%adfd_n_angle_bins /) ), file=outfile)
+        end do
+
       else if (a(i_a)%geometry) then !geometry
         call print("# geometry histogram", file=outfile)
         call print("n_bins="//a(i_a)%geometry_params%N//" n_data="//a(i_a)%n_configs, file=outfile)
@@ -632,13 +781,13 @@ subroutine print_analyses(a)
         end do
 
       else if (a(i_a)%density_axial_silica) then !density_axial_silica
-        call print("# uniaxial density histogram in direction "//a(i_a)%axial_axis, file=outfile)
-        call print("n_bins="//a(i_a)%axial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
-        do i=1, a(i_a)%axial_n_bins
-          call print(a(i_a)%axial_pos(i), file=outfile)
+        call print("# uniaxial density histogram in direction "//a(i_a)%density_axial_axis, file=outfile)
+        call print("n_bins="//a(i_a)%density_axial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        do i=1, a(i_a)%density_axial_n_bins
+          call print(a(i_a)%density_axial_pos(i), file=outfile)
         end do
         do i=1, a(i_a)%n_configs
-          call print(a(i_a)%axial_histograms(:,i), file=outfile)
+          call print(a(i_a)%density_axial_histograms(:,i), file=outfile)
         end do
 
       else if (a(i_a)%num_hbond_silica) then !num_hbond_silica
@@ -705,7 +854,7 @@ subroutine print_analyses(a)
   end do
 end subroutine print_analyses
 
-subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, mask_str, radial_pos, accumulate)
+subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, center_i, rad_bin_width, n_rad_bins, gaussian_sigma, mask_str, radial_pos, accumulate, quantity)
   real(dp), intent(inout) :: histogram(:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in), optional :: center_pos(3)
@@ -716,6 +865,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   character(len=*), optional, intent(in) :: mask_str
   real(dp), intent(out), optional :: radial_pos(:)
   logical, optional, intent(in) :: accumulate
+  character(len=*), optional, intent(in) :: quantity
 
   logical :: my_accumulate
 
@@ -724,11 +874,30 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   logical, allocatable :: mask_a(:)
   integer :: at_i, rad_sample_i
   real(dp) :: rad_sample_r, exp_arg, ep, em
+  logical :: quantity_1, quantity_KE
+  real(dp) :: sample_scale
 
-  if (present(center_pos) .and. present(center_i)) &
-    call system_abort("density_sample_radial_mesh_Gaussians got both center_pos and center_i")
-  if (.not. present(center_pos) .and. .not. present(center_i)) &
-    call system_abort("density_sample_radial_mesh_Gaussians got neither center_pos nor center_i")
+  if (present(center_pos) .and. present(center_i)) then
+    call system_abort("density_sample_radial_mesh_Gaussians received both center_pos and center_i")
+  else if (.not. present(center_pos) .and. .not. present(center_i)) then
+    call system_abort("density_sample_radial_mesh_Gaussians received neither center_pos nor center_i")
+  endif
+
+  quantity_1 = .false.
+  quantity_KE = .false.
+  if (present(quantity)) then
+    select case (quantity)
+      case("1")
+	quantity_1 = .true.
+      case("KE")
+	quantity_KE = .true.
+      case default
+	call system_abort("density_sample_radial_mesh_Gaussians called with unknown quantity='"//trim(quantity)//"'")
+    end select
+  else
+    quantity_1 = .true.
+  endif
+  if (quantity_1) sample_scale = 1.0_dp
 
   my_accumulate = optional_default(.false., accumulate)
   if (.not. my_accumulate) histogram = 0.0_dp
@@ -751,10 +920,10 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   if (min(norm(at%lattice(:,1)), norm(at%lattice(:,2)), norm(at%lattice(:,3))) < 9.0_dp*gaussian_sigma) &
     call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
 
-  if (present(center_pos)) then
-    use_center_pos = center_pos
-  else
+  if (present(center_i)) then
     use_center_pos = at%pos(:,center_i)
+  else
+    use_center_pos = center_pos
   end if
 
   s_sq = gaussian_sigma**2
@@ -764,6 +933,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     if (present(center_i)) then
       if (at_i == center_i) cycle
     endif
+    if (quantity_KE) sample_scale = kinetic_energy(ElementMass(at%Z(at_i)), at%velo(1:3,at_i))
     d = distance_min_image(at,use_center_pos,at%pos(:,at_i))
     ! skip if atom is outside range
     if (d > (n_rad_bins-1)*rad_bin_width+6.0_dp*gaussian_sigma) cycle
@@ -790,7 +960,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       else
 	h_val = (r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)) /  (4.0_dp * PI * r0**2)
       endif
-      histogram(rad_sample_i) = histogram(rad_sample_i) +  h_val
+      histogram(rad_sample_i) = histogram(rad_sample_i) +  sample_scale*h_val
     end do ! rad_sample_i
   end do ! at_i
 
@@ -895,6 +1065,120 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
   endif
 
 end subroutine rdfd_calc
+
+subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist_bins, zone_width, n_zones, &
+		     center_mask_str, neighbour_1_mask_str, neighbour_1_max_dist, neighbour_2_mask_str, & 
+		     angle_bin_pos, dist_bin_pos, zone_pos)
+  real(dp), intent(inout) :: adfd(:,:,:)
+  type(Atoms), intent(inout) :: at
+  real(dp), intent(in) :: zone_center(3), dist_bin_width, zone_width
+  integer, intent(in) :: n_angle_bins, n_dist_bins, n_zones
+  character(len=*), intent(in) :: center_mask_str, neighbour_1_mask_str, neighbour_2_mask_str
+  real(dp), intent(in) :: neighbour_1_max_dist
+  real(dp), intent(inout), optional :: angle_bin_pos(:), dist_bin_pos(:), zone_pos(:)
+
+  logical, allocatable :: center_mask_a(:), neighbour_1_mask_a(:), neighbour_2_mask_a(:)
+  integer :: i_at, j_at, k_at, i_dist_bin, i_angle_bin, i_zone, ji, ki
+  integer, allocatable :: n_in_zone(:)
+  real(dp) :: dist_bin_inner_rad, dist_bin_outer_rad, angle_bin_width, angle_bin_min, angle_bin_max
+  real(dp) :: r, r_ij, r_jk, jik_angle
+
+  allocate(center_mask_a(at%N), neighbour_1_mask_a(at%N), neighbour_2_mask_a(at%N))
+  call is_in_mask(center_mask_a, at, center_mask_str)
+  call is_in_mask(neighbour_1_mask_a, at, neighbour_1_mask_str)
+  call is_in_mask(neighbour_2_mask_a, at, neighbour_2_mask_str)
+
+  allocate(n_in_zone(n_zones))
+  n_in_zone = 0
+
+  if (present(zone_pos)) then
+    if (zone_width > 0.0_dp) then
+      do i_zone= 1, n_zones
+	zone_pos(i_zone) = (real(i_zone,dp)-0.5_dp)*zone_width
+      end do
+    else
+      zone_pos(1) = -1.0_dp
+    end if
+  end if
+  if (present(dist_bin_pos)) then
+    do i_dist_bin=1, n_dist_bins
+      dist_bin_pos(i_dist_bin) = (real(i_dist_bin,dp)-0.5_dp)*dist_bin_width
+    end do
+  end if
+  angle_bin_width = PI/real(n_angle_bins,dp)
+  if (present(angle_bin_pos)) then
+    do i_angle_bin=1, n_angle_bins
+      angle_bin_pos(i_angle_bin) = (real(i_angle_bin,dp)-0.5_dp)*angle_bin_width
+    end do
+  end if
+
+  adfd = 0.0_dp
+  call set_cutoff(at, n_dist_bins*dist_bin_width)
+  call calc_connect(at)
+  do i_at=1, at%N ! center atom
+    if (.not. center_mask_a(i_at)) cycle
+    if (zone_width > 0.0_dp) then
+      r = distance_min_image(at, zone_center, at%pos(:,i_at))
+      i_zone = int(r/zone_width)+1
+      if (i_zone > n_zones) cycle
+    else
+      i_zone = 1
+    endif
+    n_in_zone(i_zone) = n_in_zone(i_zone) + 1
+    do ji=1, atoms_n_neighbours(at, i_at)
+      j_at = atoms_neighbour(at, i_at, ji, distance=r_ij)
+      if (j_at == i_at) cycle
+      if (.not. neighbour_1_mask_a(j_at)) cycle
+      if (neighbour_1_max_dist > 0.0_dp) then
+	if (r_ij > neighbour_1_max_dist) cycle
+      else
+	if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
+      endif
+      do ki=1, atoms_n_neighbours(at, i_at)
+	k_at = atoms_neighbour(at, i_at, ki)
+	if (k_at == i_at .or. k_at == j_at) cycle
+	if (.not. neighbour_2_mask_a(k_at)) cycle
+	r_jk = distance_min_image(at, j_at, k_at)
+	i_dist_bin = int(r_jk/dist_bin_width)+1
+	if (i_dist_bin > n_dist_bins) cycle
+! call print("doing triplet ijk " // i_at // " " // j_at // " "// k_at, ERROR)
+! call print("  Zijk " // at%Z(i_at) // " " // at%Z(j_at) // " " // at%Z(k_at), ERROR)
+! call print("  pi " // at%pos(:,i_at), ERROR)
+! call print("  pj " // at%pos(:,j_at), ERROR)
+! call print("  pk " // at%pos(:,k_at), ERROR)
+! call print("  r_ij " // diff_min_image(at,i_at,j_at) // "     " // r_ij, ERROR)
+! call print("  r_jk " // diff_min_image(at,j_at,k_at) // "     " // distance_min_image(at, j_at, k_at), ERROR)
+! call print("  r_ik " // diff_min_image(at,i_at,k_at) // "     " // distance_min_image(at, i_at, k_at), ERROR)
+        jik_angle = angle(diff_min_image(at,i_at,j_at), diff_min_image(at,i_at,k_at))
+! call print("  r_ij " // r_ij // " r_jk " // r_jk // " jik_angle " // (jik_angle*180.0/PI), ERROR)
+	i_angle_bin = int(jik_angle/angle_bin_width)+1
+	if (i_angle_bin > n_angle_bins) i_angle_bin = n_angle_bins
+	adfd(i_angle_bin,i_dist_bin,i_zone) = adfd(i_angle_bin,i_dist_bin,i_zone) + 1.0_dp ! /(2.0_dp*PI*sin(jik_angle))
+      end do ! k_at
+    end do ! j_at
+  end do ! i_at
+
+  do i_angle_bin=1, n_angle_bins
+    angle_bin_min = real(i_angle_bin-1,dp)*angle_bin_width
+    angle_bin_max = real(i_angle_bin,dp)*angle_bin_width
+    do i_dist_bin=1, n_dist_bins
+      dist_bin_inner_rad = real(i_dist_bin-1,dp)*dist_bin_width
+      dist_bin_outer_rad = real(i_dist_bin,dp)*dist_bin_width
+      adfd(i_angle_bin,i_dist_bin,:) = adfd(i_angle_bin,i_dist_bin,:) / (2.0_dp*PI * ((dist_bin_outer_rad**3 - dist_bin_inner_rad**3)/3.0_dp) * (cos(angle_bin_min)-cos(angle_bin_max)))
+      ! adfd(i_angle_bin,i_dist_bin,:) = adfd(i_angle_bin,i_dist_bin,:) / (4.0_dp/3.0_dp*PI * (dist_bin_outer_rad**3 - dist_bin_inner_rad**3))
+    end do
+  end do
+
+  ! normalise zones by the number of atoms in that zone
+  do i_zone=1, n_zones
+    if (n_in_zone(i_zone) > 0) adfd(:,:,i_zone) = adfd(:,:,i_zone)/real(n_in_zone(i_zone),dp)
+  end do
+  ! normalise with the global density
+  if (count(neighbour_2_mask_a) > 0) then
+    adfd = adfd / (count(neighbour_2_mask_a)/cell_volume(at))
+  endif
+
+end subroutine adfd_calc
 
 subroutine density_sample_rectilinear_mesh_Gaussians(histogram, at, min_p, sample_dist, n_bins, gaussian_sigma, mask_str, grid_pos, accumulate)
   real(dp), intent(inout) :: histogram(:,:,:)
@@ -1851,7 +2135,6 @@ implicit none
   endif
 
   call initialise(cli_params)
-  commandfilename=''
   call param_register(cli_params, "commandfile", '', commandfilename)
   call param_register(cli_params, "infile", "stdin", infilename)
   call param_register(cli_params, "decimation", "1", decimation)
