@@ -47,6 +47,7 @@ implicit none
   logical :: over_bins, over_time
   real(dp) :: correl_0, correl_mean, correl_std_dev
   real(dp), allocatable :: effective_N(:)
+  integer :: ios
 
   call system_initialise()
 
@@ -101,8 +102,7 @@ implicit none
   end do
   allocate(data(n_bins, n_data))
   do i=1, n_data
-    myline=read_line(infile) ! data
-    read (unit=myline,fmt=*) data(:,i)
+    call read_ascii(infile, data(:,i))
   end do
 
   sz = size(data, other_index)

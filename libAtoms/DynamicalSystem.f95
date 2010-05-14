@@ -146,15 +146,15 @@ module dynamicalsystem_module
    end interface finalise
 
    interface kinetic_energy
-     module procedure raw_kinetic_energy, atoms_kinetic_energy, ds_kinetic_energy
+     module procedure single_kinetic_energy, arrays_kinetic_energy, atoms_kinetic_energy, ds_kinetic_energy
    end interface kinetic_energy
 
    interface angular_momentum
-     module procedure raw_angular_momentum, atoms_angular_momentum, ds_angular_momentum
+     module procedure arrays_angular_momentum, atoms_angular_momentum, ds_angular_momentum
    end interface angular_momentum
 
    interface momentum
-     module procedure raw_momentum, atoms_momentum, ds_momentum
+     module procedure arrays_momentum, atoms_momentum, ds_momentum
    end interface momentum
 
    interface add_thermostat
@@ -807,7 +807,7 @@ contains
 
    !% Return the total momentum $\mathbf{p} = \sum_i \mathbf{m_i} \mathbf{v_i}$.
    !% Optionally only include the contribution of a subset of atoms.
-   pure function raw_momentum(mass, velo, indices) result(p) ! sum(mv) 
+   pure function arrays_momentum(mass, velo, indices) result(p) ! sum(mv) 
      real(dp), intent(in)                         :: mass(:)
      real(dp), intent(in)                        :: velo(:,:)
      integer, optional, dimension(:), intent(in) :: indices
@@ -826,7 +826,7 @@ contains
            p = p + velo(:,i) * mass(i)
         end do
      end if
-   end function raw_momentum
+   end function arrays_momentum
 
    !% Return the angular momentum of all the atoms in this DynamicalSystem, defined by
    !% $\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}$.
@@ -852,7 +852,7 @@ contains
 
    !% Return the angular momentum of all the atoms in this DynamicalSystem, defined by
    !% $\mathbf{L} = \sum_{i} \mathbf{r_i} \times \mathbf{v_i}$.
-   pure function raw_angular_momentum(mass, pos, velo, origin, indices) result(L)
+   pure function arrays_angular_momentum(mass, pos, velo, origin, indices) result(L)
      real(dp), intent(in) :: mass(:)
      real(dp), intent(in) :: pos(:,:), velo(:,:)
      real(dp), intent(in), optional    :: origin(3)
@@ -881,7 +881,7 @@ contains
 	endif
      end do
 
-   end function raw_angular_momentum
+   end function arrays_angular_momentum
 
    !% Return the moment of inertia of all the atoms in this DynamicalSystem about a particular axis
    !% placed at (optional) origin
@@ -958,8 +958,16 @@ contains
       ke = kinetic_energy(this%mass, this%velo)
     end function atoms_kinetic_energy
 
-   !% Return the total kinetic energy given atomic numbers and velocities
-   pure function raw_kinetic_energy(mass, velo) result(ke)
+   !% Return the kinetic energy given a mass and a velocity
+   pure function single_kinetic_energy(mass, velo) result(ke)
+     real(dp), intent(in) :: mass, velo(3)
+     real(dp) :: ke
+
+     ke = 0.5_dp*mass * norm2(velo)
+   end function single_kinetic_energy
+
+   !% Return the total kinetic energy given atomic masses and velocities
+   pure function arrays_kinetic_energy(mass, velo) result(ke)
      real(dp), intent(in) :: mass(:)
      real(dp), intent(in) :: velo(:,:)
      real(dp) :: ke
@@ -970,10 +978,10 @@ contains
 
      ke = 0.0_dp
      do i = 1,N
-        ke = ke + mass(i) * norm2(velo(:,i))
+        ke = ke + kinetic_energy(mass(i), velo(1:3,i))
      end do
      ke = 0.5_dp * ke      
-   end function raw_kinetic_energy
+   end function arrays_kinetic_energy
 
    pure function torque(pos, force, origin) result(tau)
      real(dp), intent(in) :: pos(:,:), force(:,:)
