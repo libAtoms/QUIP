@@ -457,7 +457,33 @@ class Atoms(FortranAtoms):
       `value`.
       """
 
+      if hasattr(value, '__iter__'):
+         value = farray(value)
+         # some kind of array:
+         if len(value.shape) == 1:
+            if value.shape[0] != self.n:
+               raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
+                                % (value.shape[0], self.n))
+            n_cols = 1
+            value_ref = value[1]
+         elif len(value.shape) == 2:
+            if value.shape[1] != self.n:
+               raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
+                                % (value.shape[1], self.n))
+            value_ref = value[1,1]
+            if value.dtype.kind == 'S':
+               n_cols = 1
+            else:
+               n_cols = value.shape[0]
+         else:
+            raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
+      else:
+         # some kind of scalar
+         value_ref = value
+
       if property_type is not None:
+         # override value_ref if property_type is specified
+         
          from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
          
          type_to_value_ref = {
@@ -470,30 +496,6 @@ class Atoms(FortranAtoms):
             value_ref = type_to_value_ref[property_type]
          except KeyError:
             raise ValueError('Unknown property_type %d' % property_type)
-      else:
-         if hasattr(value, '__iter__'):
-            value = farray(value)
-            # some kind of array:
-            if len(value.shape) == 1:
-               if value.shape[0] != self.n:
-                  raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
-                                   % (value.shape[0], self.n))
-               n_cols = 1
-               value_ref = value[1]
-            elif len(value.shape) == 2:
-               if value.shape[1] != self.n:
-                  raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
-                                   % (value.shape[1], self.n))
-               value_ref = value[1,1]
-               if value.dtype.kind == 'S':
-                  n_cols = 1
-               else:
-                  n_cols = value.shape[0]
-            else:
-               raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
-         else:
-            # some kind of scalar
-            value_ref = value
 
       FortranAtoms.add_property(self, name, value_ref, n_cols)
       getattr(self, name.lower())[:] = value            
