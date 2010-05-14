@@ -71,7 +71,7 @@ implicit none
   real(dp), allocatable :: local_E0(:)
   real(dp), allocatable :: F0(:,:)
   real(dp) :: V0(3,3), P0(3,3)
-  real(dp) :: c(6,6), c0(6,6)
+  real(dp) :: c(6,6), c0(6,6), cij_fd, cif_fd_array(3)
 
   real(dp), pointer :: forces_p(:,:), local_E_p(:)
   real(dp), pointer :: phonon(:,:)
@@ -249,24 +249,30 @@ implicit none
      
      if (do_c0ij .or. do_cij) then
         did_something=.true.
-        if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, c0=c0, relax_initial=.false.)
-        else if (do_c0ij) then
-           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c0=c0, relax_initial=.false.)
-        else
-           call calc_elastic_constants(metapot, at, 0.01_dp, calc_args, c=c, relax_initial=.false.)
-        endif
         call print("Elastic constants in GPa")
-        if (do_c0ij) then
-           mainlog%prefix="C0IJ"
-           call print(c0*GPA)
-           mainlog%prefix=""
-        endif
-        if (do_cij) then
-           mainlog%prefix="CIJ"
-           call print(c*GPA)
-           mainlog%prefix=""
-        endif
+        cij_fd_array = (/0.001_dp, 0.002_dp, 0.004/)
+        do i=1,3
+           cij_fd = cij_fd_array(i)
+           call print("Using finite difference = "//cij_fd)
+           if (do_c0ij .and. do_cij) then
+              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c=c, c0=c0, relax_initial=.false.)
+           else if (do_c0ij) then
+              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c0=c0, relax_initial=.false.)
+           else
+              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c=c, relax_initial=.false.)
+           endif
+           if (do_c0ij) then
+              mainlog%prefix="C0IJ"
+              call print(c0*GPA)
+              mainlog%prefix=""
+           endif
+           if (do_cij) then
+              mainlog%prefix="CIJ"
+              call print(c*GPA)
+              mainlog%prefix=""
+           endif
+           call print("")
+        end do
      endif
      
      if (do_dipole_moment) then
