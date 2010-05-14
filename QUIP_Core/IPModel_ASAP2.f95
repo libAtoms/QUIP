@@ -793,11 +793,11 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    character(len=*), optional, intent(in) :: args_str
 
    type(Dictionary) :: params
-   logical :: save_efield, save_dipoles, restart, applied_efield
+   logical :: save_efield, save_dipoles, restart, applied_efield, save_dipole_velo
    real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_int_old(:,:)
    real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
    real(dp), pointer, dimension(:) :: charge
-   real(dp), pointer, dimension(:,:) :: efield, dipoles, efield_old1, efield_old2, efield_old3, ext_efield
+   real(dp), pointer, dimension(:,:) :: efield, dipoles, efield_old1, efield_old2, efield_old3, ext_efield, dip_velo
    logical, pointer, dimension(:) :: fixdip
    real(dp) :: diff, diff_old
    integer :: n_efield_old
@@ -812,6 +812,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       call initialise(params)
       call param_register(params, 'save_efield', 'T', save_efield)
       call param_register(params, 'save_dipoles', 'T', save_dipoles)
+      call param_register(params, 'save_dipole_velo', 'F', save_dipole_velo)
       call param_register(params, 'restart', 'F', restart)
       call param_register(params, 'applied_efield', 'F', applied_efield)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
@@ -821,6 +822,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    else
       save_efield = .true.
       save_dipoles = .true.
+      save_dipole_velo = .false.
       restart = .false.
       applied_efield = .false.
    end if
@@ -847,6 +849,14 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    else
       allocate(thedipoles(3,at%n))
       dipoles => thedipoles
+   end if
+
+   if (save_dipole_velo .and. maxval(abs(dipoles)) > 0.0_dp) then
+      if (.not. assign_pointer(at, 'dip_velo', dip_velo)) &
+           call system_abort('IPModel_ASAP2_calc failed to assign pointer ot "dip_velo" property')
+      do i=1,at%n
+         dip_velo(:,i) = -dipoles(:,i)
+      end do
    end if
 
    if (applied_efield) then
@@ -992,6 +1002,13 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    efield = efield_charge
    if (maxval(abs(dipoles)) > 0.0_dp) then
       call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield)
+
+      if (save_dipole_velo) then
+         ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
+         do i=1,at%n
+            dip_velo(:,i) = dip_velo(:,i) + dipoles(:,i)
+         end do
+      end if
    end if
    
    ! Finally, add the short-range contribution
