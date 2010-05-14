@@ -1156,7 +1156,7 @@ class CastepPotential(Potential):
             at.add_property(k, getattr(result, k))
 
 
-def potential_to_cube(filename, header=False):
+def read_formatted_potential(filename, header=False):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
 
@@ -1169,5 +1169,16 @@ def potential_to_cube(filename, header=False):
    data = fzeros((nx,ny,nz))
    for (i,j,k,value) in pot:
       data[int(i),int(j),int(k)] = value
+   return data
+   
+def read_formatted_density(filename):
+   """Load a potential write by CASTEP pot_write_formatted() routine, and convert
+   to a 3-dimensional FortranArray suitable for writing to a .cube file."""
+
+   den = numpy.loadtxt(filename, skiprows=11)
+   nx, ny, nz = den[:,0].max(), den[:,1].max(), den[:,2].max()
+   data = fzeros((2,nx,ny,nz))
+   for (i,j,k,charge,spin) in den:
+      data[:,int(i),int(j),int(k)] = charge, spin
    return data
    
