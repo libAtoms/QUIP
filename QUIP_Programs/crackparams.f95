@@ -201,6 +201,7 @@ module CrackParams_module
      real(dp) :: md_smooth_loading_arrest_time  !% Crack must move by at least 'smooth_loading_tip_move_tol' A in every 'smooth_loading_arrest_time'
                                                         !% to be considered to be moving.
      real(dp) :: md_smooth_loading_tip_edge_tol !% If tip arrests closer than this distance to edge of slab, consider simulation finished
+     real(dp) :: md_damping_time !% Time constant for damped molecular dynamics
 
 
      ! Minimisation parameters
@@ -455,6 +456,7 @@ contains
     this%md_smooth_loading_tip_move_tol = 3.0_dp ! Angstrom
     this%md_smooth_loading_arrest_time  = 400.0_dp ! fs
     this%md_smooth_loading_tip_edge_tol = 50.0_dp ! Angstrom
+    this%md_damping_time = 100.0_dp ! fs
 
     
     ! Minimisation parameters
@@ -948,6 +950,10 @@ contains
           read (value, *) parse_cp%md_smooth_loading_tip_edge_tol
        end if
 
+       call QUIP_FoX_get_value(attributes, "damping_time", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%md_damping_time
+       end if
 
     elseif (parse_in_crack .and. name == 'minim') then
 
@@ -1427,6 +1433,7 @@ contains
     call Print('     smooth_loading_tip_move_tol = '//this%md_smooth_loading_tip_move_tol//' A', file=file)
     call Print('     smooth_loading_arrest_time  = '//this%md_smooth_loading_arrest_time//' fs', file=file)
     call Print('     smooth_loading_tip_edge_tol = '//this%md_smooth_loading_tip_edge_tol//' A', file=file)
+    call Print('     damping_time ='//this%md_damping_time//' fs', file=file)
     call Print('',file=file)
     call Print('  Minimisation parameters:',file=file)
     call Print('     method                = '//trim(this%minim_method),file=file)

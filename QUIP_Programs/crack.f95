@@ -749,7 +749,7 @@ program crack
 
      else if (state_string(1:9) == 'DAMPED_MD') then
         state = STATE_DAMPED_MD
-        call enable_damping(ds, 1000.0_dp)
+        call enable_damping(ds, params%md_damping_time)
 
      else if (state_string(1:14) == 'MICROCANONICAL') then
         state = STATE_MICROCANONICAL
