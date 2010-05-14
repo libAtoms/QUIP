@@ -51,11 +51,15 @@ AR_ADD = src
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
+ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
+	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
+
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
 QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
 QUIPPY_DEBUG = 1
+QUIPPY_HAVE_ATOMEYE=1
 
 # rules
 
