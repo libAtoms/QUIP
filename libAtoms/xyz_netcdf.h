@@ -27,7 +27,7 @@
 /* H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras                 */
 /* H0 X                                                                            */
 /* H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
-#define LINESIZE 1024
+#define LINESIZE 2048
 
 #define MAX_ENTRY_COUNT 100
 #define MAX_PROP_LENGTH 256
