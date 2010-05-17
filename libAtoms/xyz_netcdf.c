@@ -193,7 +193,7 @@ void atoms_swap_properties(Atoms *atoms, int i, int j)
     tmp_var_id1 = atoms->property_var_id[j][NETCDF_IN];
     tmp_var_id2 = atoms->property_var_id[j][NETCDF_OUT];
     tmp_filter = atoms->property_filter[j];
-    strcpy(tmp_name, atoms->property_name[j]);
+    strncpy(tmp_name, atoms->property_name[j], MAX_PROP_LENGTH);
 
     atoms->property_type[j] = atoms->property_type[i];
     atoms->property_start[j] = atoms->property_start[i];
@@ -201,7 +201,7 @@ void atoms_swap_properties(Atoms *atoms, int i, int j)
     atoms->property_var_id[j][NETCDF_IN] = atoms->property_var_id[i][NETCDF_IN];
     atoms->property_var_id[j][NETCDF_OUT] = atoms->property_var_id[i][NETCDF_OUT];
     atoms->property_filter[j] = atoms->property_filter[i];
-    strcpy(atoms->property_name[j], atoms->property_name[i]);
+    strncpy(atoms->property_name[j], atoms->property_name[i], MAX_PROP_LENGTH);
 
     atoms->property_type[i] = tmp_type;
     atoms->property_start[i] = tmp_start;
@@ -209,7 +209,7 @@ void atoms_swap_properties(Atoms *atoms, int i, int j)
     atoms->property_var_id[i][NETCDF_IN] = tmp_var_id1;
     atoms->property_var_id[i][NETCDF_OUT] = tmp_var_id2;
     atoms->property_filter[i] = tmp_filter;
-    strcpy(atoms->property_name[i], tmp_name);
+    strncpy(atoms->property_name[i], tmp_name, MAX_PROP_LENGTH);
   }
 }
 
@@ -218,7 +218,7 @@ int atoms_add_param(Atoms *atoms, char *key, int type, int size, int var_id, int
   int idx;
   
   idx = atoms->n_param;
-  strcpy(atoms->param_key[idx],key);
+  strncpy(atoms->param_key[idx],key,MAX_PROP_LENGTH);
   atoms->param_type[idx] = type;
   atoms->param_size[idx] = size;
   atoms->param_filter[idx] = 1;
@@ -235,7 +235,7 @@ int atoms_add_property(Atoms *atoms, char *key, int type, int ncols, int var_id,
   int idx;
   
   idx = atoms->n_property;
-  strcpy(atoms->property_name[idx],key);
+  strncpy(atoms->property_name[idx],key,MAX_PROP_LENGTH);
   atoms->property_type[idx] = type;
   atoms->property_ncols[idx] = ncols;
   atoms->property_filter[idx] = 1;
@@ -560,9 +560,9 @@ int read_netcdf (int nc_id, Atoms *atoms, int frame, int *atomlist, int natomlis
     // Translate names: coordinates -> pos and velocities -> velo
     for (i=0; i<atoms->n_property; i++) {
       if (strcmp(atoms->property_name[i],"coordinates") == 0)
-	strcpy(atoms->property_name[i],"pos");
+	strncpy(atoms->property_name[i],"pos",MAX_PROP_LENGTH);
       if (strcmp(atoms->property_name[i],"velocities") == 0)
-	strcpy(atoms->property_name[i],"velo");
+	strncpy(atoms->property_name[i],"velo",MAX_PROP_LENGTH);
     }
 
     debug("got %d frames, %d atoms %d props and %d params\n", atoms->n_frame, atoms->n_atom_total, 
@@ -1196,11 +1196,11 @@ int write_netcdf(int nc_id, Atoms *atoms, int frame, int redefine,
 	
 	// Name mangling for compatibility with AMBER/VMD
 	if (strcmp(atoms->property_name[i], "pos") == 0) 
-	  strcpy(pname, "coordinates");
+	  strncpy(pname, "coordinates", MAX_PROP_LENGTH);
 	else if(strcmp(atoms->property_name[i], "velo") == 0)
-	  strcpy(pname, "velocities");
+	  strncpy(pname, "velocities", MAX_PROP_LENGTH);
 	else
-	  strcpy(pname, atoms->property_name[i]);
+	  strncpy(pname, atoms->property_name[i], MAX_PROP_LENGTH);
 	
 	if (ndims == 1) {
 	  dims2[0] = atoms->frame_dim_id[NETCDF_OUT];
@@ -1672,8 +1672,8 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   int from_scratch, do_update; 
   struct stat xyz_stat, idx_stat;
 
-  strcpy(indexname, fname);
-  strcat(indexname, ".idx");
+  strncpy(indexname, fname, LINESIZE);
+  strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
   if (stat(fname, &xyz_stat) != 0) {
     fprintf(stderr,"Cannot stat xyz file %s\n", fname);
@@ -1684,14 +1684,14 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
 
   if (from_scratch) {
     // Try to read from current dir instead
-    strcpy(buf1, indexname);
+    strncpy(buf1, indexname, LINESIZE);
     bname = basename(buf1);
     if (getcwd(buf2, LINESIZE) != NULL) {
-      strcat(buf2, "/");
-      strcat(buf2, bname);
+      strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
+      strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
       if (stat(buf2, &idx_stat) == 0) {
 	fprintf(stderr,"Found index %s\n",buf2);
-	strcpy(indexname,buf2);
+	strncpy(indexname,buf2, LINESIZE);
 	from_scratch = 0;
       }
     }
@@ -1787,11 +1787,11 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     index = fopen(indexname, "w");
     if (index == NULL) {
       // Try to write in current dir instead
-      strcpy(buf1, indexname);
+      strncpy(buf1, indexname, LINESIZE);
       bname = basename(buf1);
       if (getcwd(buf2, LINESIZE) != NULL) {
-	strcat(buf2, "/");
-	strcat(buf2, bname);
+	strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
+	strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
 	index = fopen(buf2, "w");
 	debug("Writing index to %s\n", buf2);
       }
@@ -1862,7 +1862,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
       k = 0;
       while ((p1 = strsep(&p, " \t")) != NULL) {
 	if (*p1 == '\0') continue;
-	strcpy(fields[k++], p1);
+	strncpy(fields[k++], p1, LINESIZE);
       }
       
       if (k >= 9) {
@@ -1878,7 +1878,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	if (!error) {
 	  sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"\n", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		  fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
-	  strcat(linebuffer, tmpbuf);
+	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 		  
 	} else {
 	  if (!override_lattice) {
@@ -1897,7 +1897,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
       // No Properties key. Add a default one.
       if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-      strcat(linebuffer, "Properties=species:S:1:pos:R:3\n");
+      strncat(linebuffer, "Properties=species:S:1:pos:R:3\n",LINESIZE-strlen(linebuffer)-1);
     }
 
     // Parse parameters. First split on ", ', { or }
@@ -1905,7 +1905,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     k = 0;
     while ((p1 = strsep(&p, "\"'{}")) != NULL) {
       if (*p1 == '\0') continue;
-      strcpy(fields[k++], p1);
+      strncpy(fields[k++], p1, LINESIZE);
     }
     
     // Now split things outside quotes on whitespace
@@ -1916,14 +1916,14 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	j = 0;
 	while ((p1 = strsep(&p, " \t")) != NULL) {
 	  if (*p1 == '\0') continue;
-	  strcpy(subfields[j++], p1);
+	  strncpy(subfields[j++], p1, LINESIZE);
 	}
 	for (n=0; n<j; n++, nfields++) {
-	  strcpy(finalfields[nfields],subfields[n]);
+	  strncpy(finalfields[nfields],subfields[n], LINESIZE);
 	}
 	
       } else {
-	strcat(finalfields[nfields-1],fields[i]);
+	strncat(finalfields[nfields-1],fields[i],LINESIZE-strlen(finalfields[nfields-1])-1);
       }
     }
 
@@ -1931,7 +1931,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
       // Finally, split on '=' to get key/value pairs
       atoms->n_param = 0;
       for (i=0; i<nfields; i++) {
-	strcpy(linebuffer, finalfields[i]);
+	strncpy(linebuffer, finalfields[i], LINESIZE);
 	if ((p = strchr(linebuffer,'=')) == NULL) {
 	  fprintf(stderr,"Badly formed key/value pair %s\n", linebuffer);
 	  return 0;
@@ -1939,7 +1939,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	
 	*p = '\0';
 	idx = atoms_add_param(atoms, linebuffer, 0, 0, -1, NETCDF_IN);
-	strcpy(atoms->param_value[idx], p+1);
+	strncpy(atoms->param_value[idx], p+1, PARAM_STRING_LENGTH);
       }
       
       // Try to guess param types
@@ -1947,16 +1947,16 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	if (strcasecmp(atoms->param_key[i], "Lattice") == 0 ||
 	    strcasecmp(atoms->param_key[i], "Properties") == 0) continue;
 	
-	strcpy(linebuffer, atoms->param_value[i]);
+	strncpy(linebuffer, atoms->param_value[i], LINESIZE);
 	k = 0;
 	p = linebuffer;
 	while ((p1 = strsep(&p, " ")) != NULL) {
 	  if (*p1 == '\0') continue;
-	  strcpy(fields[k++], p1);
+	  strncpy(fields[k++], p1, LINESIZE);
 	}
 	if (k == 0) {
 	  k = 1;
-	  strcpy(fields[0], linebuffer);
+	  strncpy(fields[0], linebuffer, LINESIZE);
 	} 
 	
 	/*       if (k != 1 && k != 3) { */
@@ -2043,18 +2043,18 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 	  return 0;
 	}
 
-	strcpy(atoms->param_value[j], p+1);
+	strncpy(atoms->param_value[j], p+1, PARAM_STRING_LENGTH);
 	if (strcasecmp(atoms->param_key[j], "Lattice") == 0 ||
 	    strcasecmp(atoms->param_key[j], "Properties") == 0) continue;
 
-	strcpy(linebuffer, atoms->param_value[j]);
+	strncpy(linebuffer, atoms->param_value[j], LINESIZE);
 	if (atoms->param_type[j] == T_INTEGER_A || atoms->param_type[j] == T_REAL_A || atoms->param_type[j] == T_LOGICAL_A 
 	    || atoms->param_type[j] == T_INTEGER_A2 || atoms->param_type[j] == T_REAL_A2) {
 	  k = 0;
 	  p = linebuffer;
 	  while ((p1 = strsep(&p, " ")) != NULL) {
 	    if (*p1 == '\0') continue;
-	    strcpy(fields[k++], p1);
+	    strncpy(fields[k++], p1, LINESIZE);
 	  }
 	  if (atoms->param_size[j] != k) {
 	    fprintf(stderr,"Mismatch in number of fields in parameter %s - expected %d but got %d\n", 
@@ -2115,11 +2115,11 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
       }
 
       // Now parse properties
-      strcpy(linebuffer, atoms->param_value[properties_idx]);
+      strncpy(linebuffer, atoms->param_value[properties_idx], PARAM_STRING_LENGTH);
       p = linebuffer;
       k = 0;
       while ((p1 = strsep(&p, ":")) != NULL) {
-	strcpy(fields[k++], p1);
+	strncpy(fields[k++], p1, LINESIZE);
       }
       
       atoms->n_property = 0;
@@ -2235,11 +2235,11 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     return 0;
   }
   
-  strcpy(linebuffer, atoms->param_value[properties_idx]);
+  strncpy(linebuffer, atoms->param_value[properties_idx], PARAM_STRING_LENGTH);
   p = linebuffer;
   k = 0;
   while ((p1 = strsep(&p, ":")) != NULL) {
-    strcpy(fields[k++], p1);
+    strncpy(fields[k++], p1, LINESIZE);
   }
   
   if (k/3 + (atomlist ? 1 : 0) != atoms->n_property)  {
@@ -2313,7 +2313,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
     p = linebuffer;
     while ((p1 = strsep(&p, " \t\n")) != NULL) {
       if (*p1 == '\0') continue;
-      strcpy(fields[k++], p1);
+      strncpy(fields[k++], p1, LINESIZE);
     }
     if (k != entry_count) {
       fprintf(stderr, "incomplete row, atom %d - got %d/%d entries\n", n, k, entry_count);
@@ -2435,7 +2435,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
 	    atoms->property_name[i],
 	    PROPERTY_STRINGS[atoms->property_type[i]],
 	    atoms->property_ncols[i]);
-    strcat(atoms->param_value[properties_idx], tmpbuf);
+    strncat(atoms->param_value[properties_idx], tmpbuf, PARAM_STRING_LENGTH-strlen(atoms->param_value[properties_idx])-1);
   }
   atoms->param_value[properties_idx][strlen(atoms->param_value[properties_idx])-1] = '\0';
 
@@ -2457,13 +2457,13 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
       atoms->param_value[i][0]='\0';
       for (j=0; j<3; j++) {
 	sprintf(tmpbuf, int_format, atoms->param_int_a[i][j]);
-	strcat(atoms->param_value[i], tmpbuf);
+	strncat(atoms->param_value[i], tmpbuf, PARAM_STRING_LENGTH-strlen(atoms->param_value[i])-1);
       }
     } else if (atoms->param_type[i] == T_REAL_A) {
       atoms->param_value[i][0]='\0';
       for (j=0; j<3; j++) {
 	sprintf(tmpbuf, real_format, atoms->param_real_a[i][j]);
-	strcat(atoms->param_value[i], tmpbuf);
+	strncat(atoms->param_value[i], tmpbuf, PARAM_STRING_LENGTH-strlen(atoms->param_value[i])-1);
       }
     } else if (atoms->param_type[i] == T_LOGICAL_A) {
       sprintf(atoms->param_value[i], "%s %s %s", 
@@ -2493,7 +2493,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
 	    strchr(trimmed,' ') != NULL ? "\"" : "", 
 	    trimmed,
 	    strchr(trimmed,' ') != NULL ? "\"" : "");
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
 
   fprintf(out, "%d\n", (int)atoms->n_atom);
@@ -2509,34 +2509,34 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
       case(PROPERTY_INT): 
 	for (j=0; j < atoms->property_ncols[i]; j++) {
 	  sprintf(tmpbuf, int_format, property_int(atoms, i, j, n));
-	  strcat(linebuffer, tmpbuf);
+	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
 
       case(PROPERTY_REAL): 
 	for (j=0; j < atoms->property_ncols[i]; j++) {
 	  sprintf(tmpbuf, real_format, property_real(atoms, i, j, n));
-	  strcat(linebuffer, tmpbuf);
+	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
       
       case(PROPERTY_STR):
-	if (linebuffer[0] != '\0') strcat(linebuffer, " ");
+	if (linebuffer[0] != '\0') strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	for (j=0; j < atoms->property_ncols[i]; j++) {
 	  sprintf(tmpbuf, str_format, &property_str(atoms, i, j, n));
-	  strcat(linebuffer, tmpbuf);
+	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
       
       case(PROPERTY_LOGICAL): 
 	for (j=0; j < atoms->property_ncols[i]; j++) {
 	  sprintf(tmpbuf, logical_format, property_logical(atoms, i, j, n) ? 'T' : 'F');
-	  strcat(linebuffer, tmpbuf);
+	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
       }
     }
-    strcat(linebuffer, "\n");
+    strncat(linebuffer, "\n", LINESIZE-strlen(linebuffer)-1);
     fputs(linebuffer, out);
   }
 
@@ -2568,33 +2568,33 @@ void print_property(Atoms *at, char *name, char *intformat, char *realformat, ch
     case(PROPERTY_INT): 
       for (k=0; k < at->property_ncols[j]; k++) {
 	sprintf(tmpbuf, intformat, property_int(at, j, k, n));
-	strcat(linebuffer, tmpbuf);
+	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
       }
       break;
 
     case(PROPERTY_REAL): 
       for (k=0; k < at->property_ncols[j]; k++) {
       	sprintf(tmpbuf, realformat, property_real(at, j, k, n));
-	strcat(linebuffer, tmpbuf);
+	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
       }
       break;
       
     case(PROPERTY_STR): 
-      if (linebuffer[0] != '\0') strcat(linebuffer, " ");
+      if (linebuffer[0] != '\0') strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
       for (k=0; k < at->property_ncols[j]; k++) {
       	sprintf(tmpbuf, strformat, &property_str(at, j, k, n));
-	strcat(linebuffer, tmpbuf);
+	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
       }
       break;
 		
     case(PROPERTY_LOGICAL): 
       for (k=0; k < at->property_ncols[j]; k++) {
 	sprintf(tmpbuf, logformat, property_logical(at, j, k, n) ? 'T' : 'F');
-	strcat(linebuffer, tmpbuf);
+	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
       }
       break;
     }
-    strcat(linebuffer,"\n");
+    strncat(linebuffer,"\n", LINESIZE-strlen(linebuffer)-1);
     printf(linebuffer);
   }
 }
@@ -2612,33 +2612,33 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
   case(T_INTEGER):
     sprintf(fmt, "%s %s ", name, intformat);
     sprintf(tmpbuf, fmt, at->param_int[j]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_REAL):
     sprintf(fmt, "%s %s ", name, realformat);
     sprintf(tmpbuf, fmt, at->param_real[j]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case (T_LOGICAL):
     sprintf(tmpbuf, "%s %s", name, at->param_logical[j] ? "T" : "F");
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_INTEGER_A):
     sprintf(fmt, "%s %s %s %s ", name, intformat, intformat, intformat);
     sprintf(tmpbuf, fmt, at->param_int_a[j][0], at->param_int_a[j][1], at->param_int_a[j][2]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_REAL_A):
     sprintf(fmt, "%s %s %s %s ", name, realformat, realformat, realformat);
     sprintf(tmpbuf, fmt, at->param_real_a[j][0], at->param_real_a[j][1], at->param_real_a[j][2]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case (T_LOGICAL_A):
     sprintf(tmpbuf, "%s %s %s %s ", name, 
 	    at->param_logical_a[0] ? "T" : "F",
 	    at->param_logical_a[1] ? "T" : "F",
 	    at->param_logical_a[2] ? "T" : "F");
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_INTEGER_A2):
     sprintf(fmt, "%s %s %s %s %s %s %s %s %s %s ", name, intformat, intformat, intformat,
@@ -2647,7 +2647,7 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
 	    at->param_int_a2[j][0], at->param_int_a2[j][1], at->param_int_a2[j][2],
 	    at->param_int_a2[j][3], at->param_int_a2[j][4], at->param_int_a2[j][5],
 	    at->param_int_a2[j][6], at->param_int_a2[j][7], at->param_int_a2[j][8]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_REAL_A2):
     sprintf(fmt, "%s %s %s %s %s %s %s %s %s %s ", name, realformat, realformat, realformat,
@@ -2656,11 +2656,11 @@ int sprint_param(char *linebuffer, Atoms *at, char *name, char *intformat, char 
 	    at->param_real_a2[j][0], at->param_real_a2[j][1], at->param_real_a2[j][2],
 	    at->param_real_a2[j][3], at->param_real_a2[j][4], at->param_real_a2[j][5],
 	    at->param_real_a2[j][6], at->param_real_a2[j][7], at->param_real_a2[j][8]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   case(T_CHAR):
     sprintf(tmpbuf,"%s %s", name, at->param_value[j]);
-    strcat(linebuffer, tmpbuf);
+    strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     break;
   default:
     fprintf(stderr,"Unknown param type %d\n", at->param_type[j]);
