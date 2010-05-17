@@ -84,6 +84,9 @@ endif
 ifeq (${HAVE_QP},1)
   DEFINES += -DHAVE_QP
 endif
+ifeq (${GP_PREDICT_QP},1)
+  DEFINES += -DGP_PREDICT_QP
+endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif
