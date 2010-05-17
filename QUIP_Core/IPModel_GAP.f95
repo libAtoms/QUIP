@@ -139,6 +139,10 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
 
   ! now initialise the potential
 
+#ifndef HAVE_GP
+  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP')
+#endif
+  
   call IPModel_GAP_read_params_xml(this, param_str)
 
 #ifdef HAVE_GP
