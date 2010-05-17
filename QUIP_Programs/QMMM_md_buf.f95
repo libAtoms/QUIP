@@ -519,6 +519,10 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
           endif ! qm_region_pt_ctr
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
+       !even if continue, we need the QM seed.
+       if (Continue_it .and. len_trim(qm_list_filename)/=0) then
+             call read_qmlist(ds%atoms,qm_list_filename,qmlist=qm_seed)
+       endif
 
     endif
     call map_into_cell(ds%atoms)
