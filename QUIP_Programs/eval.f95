@@ -71,7 +71,7 @@ implicit none
   real(dp), allocatable :: local_E0(:)
   real(dp), allocatable :: F0(:,:)
   real(dp) :: V0(3,3), P0(3,3)
-  real(dp) :: c(6,6), c0(6,6), cij_fd, cif_fd_array(3)
+  real(dp) :: c(6,6), c0(6,6), cij_dx 
 
   real(dp), pointer :: forces_p(:,:), local_E_p(:)
   real(dp), pointer :: phonon(:,:)
@@ -127,6 +127,7 @@ implicit none
   call param_register(cli_params, 'local', 'F', do_local)
   call param_register(cli_params, 'cij', 'F', do_cij)
   call param_register(cli_params, 'c0ij', 'F', do_c0ij)
+  call param_register(cli_params, 'cij_dx', '0.001', cij_dx)
   call param_register(cli_params, 'torque', 'F', do_torque)
   call param_register(cli_params, 'phonons', 'F', do_phonons)
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat)
@@ -158,7 +159,7 @@ implicit none
 
   if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_parms.xml)",ERROR)
-    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [torque]", ERROR)
+    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", ERROR)
     call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", ERROR)
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", ERROR)
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", ERROR)
@@ -250,29 +251,25 @@ implicit none
      if (do_c0ij .or. do_cij) then
         did_something=.true.
         call print("Elastic constants in GPa")
-        cij_fd_array = (/0.001_dp, 0.002_dp, 0.004/)
-        do i=1,3
-           cij_fd = cij_fd_array(i)
-           call print("Using finite difference = "//cij_fd)
-           if (do_c0ij .and. do_cij) then
-              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c=c, c0=c0, relax_initial=.false.)
-           else if (do_c0ij) then
-              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c0=c0, relax_initial=.false.)
-           else
-              call calc_elastic_constants(metapot, at, cij_fd, calc_args, c=c, relax_initial=.false.)
-           endif
-           if (do_c0ij) then
-              mainlog%prefix="C0IJ"
-              call print(c0*GPA)
-              mainlog%prefix=""
-           endif
-           if (do_cij) then
-              mainlog%prefix="CIJ"
-              call print(c*GPA)
-              mainlog%prefix=""
-           endif
-           call print("")
-        end do
+        call print("Using finite difference = "//cij_dx)
+        if (do_c0ij .and. do_cij) then
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false.)
+        else if (do_c0ij) then
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c0=c0, relax_initial=.false.)
+        else
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, relax_initial=.false.)
+        endif
+        if (do_c0ij) then
+           mainlog%prefix="C0IJ"
+           call print(c0*GPA)
+           mainlog%prefix=""
+        endif
+        if (do_cij) then
+           mainlog%prefix="CIJ"
+           call print(c*GPA)
+           mainlog%prefix=""
+        endif
+        call print("")
      endif
      
      if (do_dipole_moment) then
