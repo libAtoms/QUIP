@@ -399,6 +399,8 @@ if makefile_test('HAVE_NETCDF'):
 
 # ASAP potential
 if makefile_test('HAVE_ASAP'):
+    include_dirs.append(makefile['ASAP_LIBDIR'])
+    library_dirs.append(makefile['ASAP_LIBDIR'])
     libraries.append('asap')
     macros.append(('HAVE_ASAP',None))
 
