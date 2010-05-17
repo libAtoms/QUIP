@@ -44,7 +44,7 @@ libgp.a: ${GP_F95_OBJS}
 	ar ${AR_ADD} libgp.a $?
 
 clean:
-	rm -f *.o *.mod *.mod.save libquip.a
+	rm -f *.o *.mod *.mod.save libgp.a
 	-rm -r doctmp
 
 allclean: clean
