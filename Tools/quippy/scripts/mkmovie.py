@@ -66,6 +66,9 @@ p.add_option('-a', '--arrows', action='store', help="""Property to use to draw a
 p.add_option('-e', '--exec_code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`.""")
 p.add_option('-u', '--update', action='store_true', help="""Update a previous movie. Requires a previous run with -k, and implies -k on this run.""")
+p.add_option('-W', '--width', action='store', help="""Width of output movie, in pixels.""", type='int')
+p.add_option('-H', '--height', action='store', help="""Height of output movie, in pixels.""", type='int')
+p.add_option('-A', '--aspect', action='store', help="""Aspect ratio. Used if only one of --width or --height is given. Default 0.75.""", default=0.75, type='float')
 
 opt, args = p.parse_args()
 
@@ -144,6 +147,12 @@ view.show(a0, property=opt.property, arrows=opt.arrows)
 if opt.load_view is not None:
    view.run_script(opt.load_view)
    view.redraw()
+
+if opt.width is not None or opt.height is not None:
+   print 'width', opt.width, 'height', opt.height, 'aspect', opt.aspect
+   if opt.width  is None: opt.width = int(opt.height/opt.aspect)
+   if opt.height is None: opt.height = int(opt.width*opt.aspect)
+   view.resize(opt.width, opt.height)
 
 if not opt.nowindow:
    raw_input('Arrange AtomEye view then press enter...')
