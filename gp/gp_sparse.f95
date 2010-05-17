@@ -556,11 +556,13 @@ module gp_sparse_module
          real(dp), dimension(:), intent(in), optional :: x_prime_star !% test point, dimension(d)
          integer, intent(in), optional :: Z
 
-!         real(dp), dimension(:), save, allocatable :: k
-         !real(qp), dimension(gp_data%n) :: k
-         !real(qp), dimension(gp_data%d) :: xixjtheta !, tmp
+#ifdef GP_PREDICT_QP
+         real(qp), dimension(gp_data%n) :: k
+         real(qp), dimension(gp_data%d) :: xixjtheta !, tmp
+#else
          real(dp), dimension(gp_data%n) :: k
          real(dp), dimension(gp_data%d) :: xixjtheta !, tmp
+#endif
          real(dp) :: kappa
 
          integer :: i, do_Z, Z_type
@@ -578,12 +580,15 @@ module gp_sparse_module
             do i = 1, gp_data%n
                !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
                if( do_Z == gp_data%xz(i) ) then
+#ifdef GP_PREDICT_QP
+                  xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+                  & dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
+#else
                   xixjtheta = (gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
                   & dot_product(xixjtheta,x_prime_star/gp_data%theta(:,Z_type))
-                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-                  !& dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
+#endif
                else
                   k(i) = 0.0_dp
                endif
@@ -599,10 +604,13 @@ module gp_sparse_module
             do i = 1, gp_data%n
 !               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
                if( do_Z == gp_data%xz(i) ) then
+#ifdef GP_PREDICT_QP
+                  xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+#else
                   xixjtheta = (gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
-                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+#endif
                else
                   k(i) = 0.0_dp
                endif
@@ -610,8 +618,11 @@ module gp_sparse_module
                !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) )
             enddo
          endif
-         !if( present(mean) ) mean = real(dot_product( k, real(gp_data%alpha,qp) ), dp)
+#ifdef GP_PREDICT_QP
          if( present(mean) ) mean = dot_product( k, gp_data%alpha )
+#else
+         if( present(mean) ) mean = real(dot_product( k, real(gp_data%alpha,qp) ), dp)
+#endif
  !        if( present(variance) ) then
  !           if( present(x_prime_star) ) then
  !              kappa = gp_data%sigma(2)**2 + gp_data%delta**2 * norm2(x_prime_star*gp_data%theta)
