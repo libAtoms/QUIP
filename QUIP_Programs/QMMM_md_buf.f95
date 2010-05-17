@@ -128,6 +128,8 @@ program qmmm_md
   logical                     :: qm_region_pt_ctr
   integer                     :: qm_region_atom_ctr
   character(len=FIELD_LENGTH) :: print_prop
+  logical                     :: print_forces
+  logical                     :: print_forces_at0
   real(dp)                    :: nneightol
   logical                     :: Delete_Metal_Connections
   real(dp)                    :: spline_from
@@ -194,6 +196,8 @@ logical :: have_silica_potential
       call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr)
       call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr)
       call param_register(params_in, 'print_prop', 'all', print_prop)
+      call param_register(params_in, 'print_forces', 'T', print_forces)
+      call param_register(params_in, 'print_forces_at0', 'F', print_forces_at0)
       call param_register(params_in, 'nneightol', '1.2', nneightol)
       call param_register(params_in, 'Delete_Metal_Connections', 'T', Delete_Metal_Connections)
       call param_register(params_in, 'spline_from', '0.0', spline_from)
@@ -329,6 +333,8 @@ logical :: have_silica_potential
       call print('  avg_time '//avg_time)
       call print('  Seed '//Seed)
       call print('  Properties to print '//trim(print_prop))
+      call print('  Print forces? '//print_forces)
+      call print('  Print forces at t=0? '//print_forces_at0)
       call print('  carve_cluster '//do_carve_cluster)
       call print('  have_silica_potential '//have_silica_potential)
       call print('---------------------------------------')
@@ -644,9 +650,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         enddo
      endif
 
-!NB do i=1,ds%atoms%N
-!NB      call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
-!NB enddo
+if (print_forces_at0) then
+ do i=1,ds%atoms%N
+      call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+ enddo
+endif
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
        if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
@@ -782,9 +790,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         f = sum0(f1,ds%atoms)
      endif
 
+if (print_forces) then
 do i=1,ds%atoms%N
      call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
 enddo
+endif
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
        if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
