@@ -79,7 +79,8 @@ ifeq (${HAVE_ASAP},1)
 endif
 ifeq (${HAVE_GP},1)
   DEFINES += -DHAVE_GP
-  SYSLIBS += -lgp
+  GP_LIB=-lgp
+  GP_LIBFILE=libgp.a
 endif
 ifeq (${HAVE_QP},1)
   DEFINES += -DHAVE_QP
