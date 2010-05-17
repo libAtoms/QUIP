@@ -4421,7 +4421,8 @@ contains
            req_num_fields, my_status, n_cols, field_count
       character(len=2048), dimension(200) :: fields
       character(len=1024)                 :: use_comment
-      character(len=1024)                  :: prop_names, tmp
+      character(len=value_len)            :: prop_names
+      character(len=1024)                 :: tmp
       character(3)                        :: delimiters
       real(dp), dimension(9)              :: tmplattice
       integer, dimension(9)               :: tmp_int_lattice
