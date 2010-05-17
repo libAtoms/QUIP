@@ -1297,8 +1297,8 @@ contains
         call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
         args_str=trim(cp2k_calc_args) // &
           ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(driver_PSF_Print) // &
-	  ' clean_up_files=F'
+          ' PSF_Print='//trim(driver_PSF_Print) !// &
+!	  ' clean_up_files=F'
         call print('ARGS_STR | '//trim(args_str))
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_core) then
@@ -1319,7 +1319,7 @@ contains
 	call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
      else ! do force mixing
 
-       slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
+       slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
@@ -1332,7 +1332,7 @@ contains
          endif
        endif
 
-       fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) //' clean_up_files=F'
+       fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
