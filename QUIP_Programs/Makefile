@@ -49,8 +49,8 @@ PROGRAMS = eval md lj_example md_example \
   metapot_test tabletest lotf_metapot lotfpc_metapot ts_calculation\
   lotf_time lotf_time_metapot cxyzreader fix_traj_latest
 
-LIBS =  -L. -lquiputils -lquip -latoms 
-LIBFILES = libatoms.a libquip.a libquiputils.a
+LIBS =  -L. -lquiputils -lquip ${GP_LIB} -latoms 
+LIBFILES = libatoms.a ${GP_LIBFILE} libquip.a libquiputils.a
 
 .PHONY: clean allclean test
 
