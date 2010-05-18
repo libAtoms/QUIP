@@ -1001,14 +1001,36 @@ contains
      end do
    end function torque
 
+   subroutine thermostat_temperatures(this, temps)
+      type(DynamicalSystem), intent(in) :: this
+      real(dp), intent(out) :: temps(:)
+
+      integer :: i
+
+      if (size(temps) /= size(this%thermostat)) &
+	call system_abort("thermostat_temperatures needs a temps array to match size of this%thermostat() " //size(this%thermostat))
+call print("thermostat_temperatures #" // size(this%thermostat), ERROR)
+do i=0, size(this%thermostat)-1
+  call print ("count in thermostat_region " // i // " " // count(this%atoms%thermostat_region == i), ERROR)
+end do
+
+      temps = -1.0_dp
+      if (this%thermostat(0)%type == LANGEVIN) then
+	temps(1) = temperature(this, property='damp_mask', value=1, instantaneous=.true.)
+      endif
+      do i=1, size(this%thermostat)-1
+	if (this%thermostat(i)%type /= NONE) temps(i+1) = temperature(this, property='thermostat_region', value=i, instantaneous=.true.)
+      end do
+   end subroutine thermostat_temperatures
 
    !% Return the temperature, assuming each degree of freedom contributes
    !% $\frac{1}{2}kT$. By default only moving and thermostatted atoms are
    !% included --- this can be overriden by setting 'include_all' to true.
-   function temperature(this, region, include_all, instantaneous)
+   function temperature(this, property, value, include_all, instantaneous)
 
       type(DynamicalSystem), intent(in) :: this
-      integer, intent(in), optional  :: region
+      character(len=*), intent(in), optional  :: property
+      integer, intent(in), optional  :: value
       logical, intent(in), optional  :: include_all
       logical, intent(in), optional  :: instantaneous
       real(dp)                          :: temperature
@@ -1016,17 +1038,25 @@ contains
       logical ::  my_include_all, my_instantaneous
       integer                           :: i, N
       real(dp)                          :: Ndof
+      integer, pointer :: property_p(:)
 
       my_instantaneous = optional_default(.false., instantaneous)
       my_include_all = optional_default(.false., include_all)
 
       if (my_instantaneous) then
+	nullify(property_p)
+	if (present(property)) then
+	  if (.not. present(value)) call system_abort("temperature called with property but no value to match")
+	  if (.not. assign_pointer(this%atoms, trim(property), property_p)) &
+	    call system_abort("temperature failed to assign integer pointer for property '"//trim(property)//"'")
+	endif
+
 	temperature = 0.0_dp
 	N = 0
 	Ndof = 0.0_dp
 	do i = 1,this%N
-	   if (present(region)) then
-	      if (this%atoms%thermostat_region(i) == region .and. this%atoms%move_mask(i) == 1) then
+	   if (associated(property_p)) then
+	      if (property_p(i) == value .and. this%atoms%move_mask(i) == 1) then
 		 temperature = temperature + this%atoms%mass(i) * norm2(this%atoms%velo(:,i))
 		 N = N + 1
 		 Ndof = Ndof + degrees_of_freedom(this,i)
@@ -1072,7 +1102,7 @@ contains
       logical                              ::  my_mass_weighted, my_zero_L
       real(dp)                             :: r, currTemp
 
-      my_mass_weighted = optional_default(.false., mass_weighted)
+      my_mass_weighted = optional_default(.true., mass_weighted)
       my_zero_L = optional_default(.false., zero_L)
       currTemp = temperature(this, instantaneous=.true.)
       write(line, '(a,f8.1,a,f8.1,a)')"Rescaling velocities from ",currTemp," K to ",temp," K"; call print(line)
@@ -1108,7 +1138,7 @@ contains
       real(dp)                             :: r, currTemp
       integer                              :: i
 
-      my_mass_weighted = optional_default(.false., mass_weighted)
+      my_mass_weighted = optional_default(.true., mass_weighted)
       my_zero_L = optional_default(.false., zero_L)
       currTemp = temperature(this, instantaneous=.true.)
       ! write(line, '(a,f8.1,a,f8.1,a)')"Reinitialising velocities from ",currTemp," K to ",temp," K"; call print(line)
@@ -2826,6 +2856,8 @@ contains
      logical, optional :: instantaneous
      logical, save :: firstcall = .true.
      real(dp) :: temp
+     real(dp) :: region_temps(size(this%thermostat))
+     integer :: i
 
      string = " "
      if(present(label)) string = label
@@ -2843,6 +2875,7 @@ contains
      end if
 
      temp = temperature(this, instantaneous=instantaneous)
+     call thermostat_temperatures(this, region_temps)
 
      if(present(epot)) then
         write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') string, this%t, &
@@ -2856,6 +2889,19 @@ contains
 
      end if
      call print(line)
+
+     if (any(region_temps >= 0.0_dp)) then
+       call print("T", nocr=.true.)
+       do i=0, size(region_temps)-1
+	 if (this%thermostat(i)%type /= NONE) then
+	   call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
+	 else
+	   call print(" "// i // " type=NONE", nocr=.true.)
+	 endif
+       end do
+       call print("")
+     endif
+
    end subroutine ds_print_status
 
    !% Print lots of information about this DynamicalSystem in text format.
