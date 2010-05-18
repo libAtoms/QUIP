@@ -33,8 +33,8 @@ module teach_sparse_module
   implicit none
 
   type ip_core
-     integer :: do_core = .false.
-     character(len=1000000) :: quip_string = ''
+     logical :: do_core = .false.
+     character(len=10000) :: quip_string = ''
      character(len=FIELD_LENGTH) :: ip_args = ''
   endtype ip_core
      
@@ -598,6 +598,7 @@ program teach_sparse
   endif
   call finalise(params)
 
+
   z_eff = 0.0_dp
   if(do_ewald) then
      call parse_string(z_eff_string,':',z_eff_fields,num_z_eff_fields)
@@ -818,7 +819,7 @@ program teach_sparse
      endif
   
      if( core%do_core ) then
-        my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={" //trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
+        my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={"//trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
      endif
 
      gp_file = 'gp_'//m//'_'//k//'.dat'
