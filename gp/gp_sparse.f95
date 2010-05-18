@@ -104,7 +104,7 @@ module gp_sparse_module
       logical :: initialised = .false.
 
       character(len=1024) :: label
-      character(len=1000000 ) :: comment
+      character(len=10000) :: comment
 
    endtype gp
 
