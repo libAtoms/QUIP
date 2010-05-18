@@ -66,9 +66,7 @@ program qmmm_md
   integer, pointer                    :: cluster_mark_p(:)
 
   !Thermostat
-  real(dp)                            :: Q_QM, Q_MM, ndof_QM, ndof_MM, temp
-  real(dp)                            :: Q_QM_heavy, Q_QM_H
-  integer, pointer                    :: thermostat_region_p(:)
+  real(dp)                            :: temp
 
   !Spline
 
@@ -119,7 +117,7 @@ program qmmm_md
   logical                     :: Use_Constraints         !_0_ no, 1 yes
   character(len=FIELD_LENGTH) :: constraint_file
   integer                     :: Charge
-  real(dp)                    :: Tau
+  real(dp)                    :: Tau, Nose_Hoover_Tau
   logical                     :: Buffer_general, do_general
   logical                     :: Continue_it
   logical                     :: reinitialise_qm_region
@@ -188,6 +186,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'constraint_file', 'constraints.dat',constraint_file) 
       call param_register(params_in, 'Charge', '0', Charge)
       call param_register(params_in, 'Tau', '500.0', Tau)
+      call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau)
       call param_register(params_in, 'Buffer_general', 'F', Buffer_general)
       call param_register(params_in, 'Continue', 'F', Continue_it)
       call param_register(params_in, 'reinitialise_qm_region', 'F', reinitialise_qm_region)
@@ -277,16 +276,20 @@ logical :: have_silica_potential
       call print('  Run_Type2 '//Run_Type2)
       call print('  IO_Rate '//IO_Rate)
       if (Thermostat_Type.eq.1) then
-         call print('  Thermostat_Type '//'Langevin')
+         call print('  Thermostat_Type 1: '//'Langevin everywhere')
          call print('  Tau '//Tau)
       elseif (Thermostat_Type.eq.2) then
-         call print('  Thermostat_Type: QM core & buffer atoms in the 1st thermostat')
-         call print('                   classical O & H in the 3rd thermostat')
-         call system_abort('no more used. Use Thermostat_Type=5 instead.')
+         call print('  Thermostat_Type 1: '//'Nose-Hoover everywhere')
+         call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.5) then
-         call print('  Thermostat_Type: QM core & buffer heavy atoms in the 1st thermostat')
-         call print('                   QM core & buffer H in the 2nd thermostat')
-         call print('                   classical O & H in the 3rd thermostat')
+         call print('  Thermostat_Type 5: QM core & buffer heavy atoms in the 1st thermostat')
+         call print('                     QM core & buffer H in the 2nd thermostat')
+         call print('                     classical O & H in the 3rd thermostat')
+         call print('  Tau '//Tau // ', Nose_Hoover_Tau ' // Nose_Hoover_Tau)
+      elseif (Thermostat_Type.eq.6) then
+         call print('  Thermostat_Type: 3 regions (QM, buffer, MM) x  2 types (H, heavy)')
+         call print('                   each with its own Nose-Hoover thermostat')
+         call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
       endif
       call print('  PSF_Print '//PSF_Print)
       call print('  nneightol '//nneightol)
@@ -376,45 +379,13 @@ logical :: have_silica_potential
       endif
     endif
 
-  !THERMOSTAT
-
     ds%avg_time = avg_time
-    if (Thermostat_Type.eq.1) then
-       call add_thermostat(ds,type=LANGEVIN,T=Simulation_Temperature,tau=Tau)
-       call print('Langevin Thermostat added')
-    elseif (Thermostat_Type.eq.2) then
-      !ndof is the estimated number of atoms in the QM zone (= core + buffer)
-       call print('Cell_volume: '//cell_volume(ds%atoms))
-       call print('Number of atoms: '//ds%atoms%N)
-       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
-       ndof_QM = nint(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
-       call print('density: '//(real(ds%atoms%N,dp)/cell_volume(ds%atoms)))
-       ndof_MM = 3._dp * ds%atoms%N - ndof_QM
-       call print('Estimated ndof QM: '//ndof_QM)
-       call print('Estimated ndof MM: '//ndof_MM)
-       Q_QM = nose_hoover_mass(Ndof=ndof_QM,T=Simulation_Temperature,tau=74._dp)
-       Q_MM = nose_hoover_mass(Ndof=ndof_MM,T=Simulation_Temperature,tau=74._dp)
-       call add_thermostat(ds,type=NOSE_HOOVER,T=Simulation_Temperature,Q=Q_QM,gamma=0._dp)
-       call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=Simulation_Temperature,tau=Tau,Q=Q_MM)
-    elseif (Thermostat_Type.eq.5) then
-      !ndof is the estimated number of atoms in the QM zone (= core + buffer)
-       call print('Cell_volume: '//cell_volume(ds%atoms))
-       call print('Number of atoms: '//ds%atoms%N)
-       call print('Estimated volume of QM zone: '//(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp ))
-       ndof_QM = nint(4._dp * ( (Inner_QM_Region_Radius + Outer_QM_Region_Radius + Inner_Buffer_Radius + Outer_Buffer_Radius) * 0.5_dp )**3._dp * PI / 3._dp * real(ds%atoms%N,dp) / cell_volume(ds%atoms)) * 3
-       call print('density: '//(real(ds%atoms%N,dp)/cell_volume(ds%atoms)))
-       ndof_MM = 3._dp * ds%atoms%N - ndof_QM
-       call print('Estimated ndof QM: '//ndof_QM)
-       call print('     out of which ndof QM heavy atom: '//(ndof_QM/3.0_dp))
-       call print('     out of which ndof QM H: '//(ndof_QM*2.0_dp/3.0_dp))
-       call print('Estimated ndof MM: '//ndof_MM)
-       Q_QM_heavy = nose_hoover_mass(Ndof=(ndof_QM/3.0_dp),T=Simulation_Temperature,tau=74._dp)
-       Q_QM_H = nose_hoover_mass(Ndof=(ndof_QM*2.0_dp/3.0_dp),T=Simulation_Temperature,tau=74._dp)
-       Q_MM = nose_hoover_mass(Ndof=ndof_MM,T=Simulation_Temperature,tau=74._dp)
-       call add_thermostat(ds,type=NOSE_HOOVER,T=Simulation_Temperature,Q=Q_QM_heavy,gamma=0._dp)
-       call add_thermostat(ds,type=NOSE_HOOVER,T=Simulation_Temperature,Q=Q_QM_H,gamma=0._dp)
-       call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=Simulation_Temperature,tau=Tau,Q=Q_MM)
-    endif
+
+  !THERMOSTAT
+    call add_thermostats(ds, thermostat_type, Simulation_Temperature)
+    call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
+      Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius)
+
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
 
@@ -641,8 +612,13 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         f = sum0(f1,ds%atoms)
      endif
 
-  !PRINT DS,CONSTRAINT
 
+  !THERMOSTATTING now - hybrid_mark was updated only in calc
+     call set_thermostat_regions(ds%atoms, Thermostat_Type)
+     call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
+	 Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius)
+
+  !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
      call print(ds%thermostat)
      if (Use_Constraints) then
@@ -650,54 +626,15 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         do i=1,constraints%N
            TI_force = force_on_collective_variable(ds%atoms,(/f(1:3,constraints%int(1,i)),f(1:3,constraints%int(2,i)),f(1:3,constraints%int(3,i))/),constraints%int(1:3,i), TI_corr, check)
            call print('constrained bond length diff: '//round(check,10))
-           call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+	   call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
         enddo
      endif
 
-if (print_forces_at0) then
- do i=1,ds%atoms%N
-      call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
- enddo
-endif
-
-  !THERMOSTATTING now - hybrid_mark was updated only in calc
-       if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
-          if (Thermostat_Type.eq.2) then !match thermostat_region to cluster_mark property
-!             if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
-             if (.not.(assign_pointer(ds%atoms, "cluster_mark", qm_flag_p))) &
-!                call system_abort("couldn't find hybrid_mark property")
-                call system_abort("couldn't find cluster_mark property")
-             if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
-                call system_abort("couldn't find thermostat_region property")
-             do i=1,ds%atoms%N
-                select case(qm_flag_p(i))
-                   case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
-                     thermostat_region_p(i) = 2
-                   case default
-                     thermostat_region_p(i) = 1
-                end select
-             enddo
-          elseif (Thermostat_Type.eq.5) then !match thermostat_region to cluster_mark property
-             if (.not.(assign_pointer(ds%atoms, "cluster_mark", qm_flag_p))) &
-                call system_abort("couldn't find cluster_mark property")
-             if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
-                call system_abort("couldn't find thermostat_region property")
-             do i=1,ds%atoms%N
-                select case(qm_flag_p(i))
-                   case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
-                     thermostat_region_p(i) = 3
-                   case default
-                     if (ds%atoms%Z(i).eq.1) then !QM or buffer H
-                        thermostat_region_p(i) = 2
-                     else !QM or buffer heavy atom
-                        thermostat_region_p(i) = 1
-                     endif
-                end select
-             enddo
-          else
-            ! all atoms are in thermostat 1 by default
-          endif
-       endif
+    if (print_forces_at0) then
+       do i=1,ds%atoms%N
+	  call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+       enddo
+    endif
 
   !ADVANCE VERLET 1
 
@@ -794,56 +731,16 @@ endif
         f = sum0(f1,ds%atoms)
      endif
 
-if (print_forces) then
-do i=1,ds%atoms%N
-     call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
-enddo
-endif
+     if (print_forces) then
+       do i=1,ds%atoms%N
+	   call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+       enddo
+     endif
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
-       if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
-          if (Thermostat_Type.eq.2) then !match thermostat_region to QM_flag property
-!             if (.not.(assign_pointer(ds%atoms, "hybrid_mark", qm_flag_p))) &
-             if (.not.(assign_pointer(ds%atoms, "cluster_mark", qm_flag_p))) &
-!                call system_abort("couldn't find hybrid_mark property")
-                call system_abort("couldn't find cluster_mark property")
-             if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
-                call system_abort("couldn't find thermostat_region property")
-             do i=1,ds%atoms%N
-                select case(qm_flag_p(i))
-                   case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
-                     thermostat_region_p(i) = 2
-!                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
-                   case default
-                     thermostat_region_p(i) = 1
-!                   case default
-!                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
-                end select
-             enddo
-          elseif (Thermostat_Type.eq.5) then !match thermostat_region to cluster_mark property
-             if (.not.(assign_pointer(ds%atoms, "cluster_mark", qm_flag_p))) &
-                call system_abort("couldn't find cluster_mark property")
-             if (.not.(assign_pointer(ds%atoms, "thermostat_region", thermostat_region_p))) &
-                call system_abort("couldn't find thermostat_region property")
-             do i=1,ds%atoms%N
-                select case(qm_flag_p(i))
-                   case(HYBRID_NO_MARK, HYBRID_TERM_MARK)
-                     thermostat_region_p(i) = 3
-!                   case(HYBRID_ACTIVE_MARK, HYBRID_BUFFER_MARK)
-                   case default
-                     if (ds%atoms%Z(i).eq.1) then !QM or buffer H
-                        thermostat_region_p(i) = 2
-                     else !QM or buffer heavy atom
-                        thermostat_region_p(i) = 1
-                     endif
-!                   case default
-!                     call system_abort('Unknown cluster_mark '//qm_flag_p(i))
-                end select
-             enddo
-          else
-            ! all atoms are in thermostat 1 by default
-          endif
-       endif
+       call set_thermostat_regions(ds%atoms, Thermostat_Type)
+       call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
+	 Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius)
 
   !ADVANCE VERLET 2
 
@@ -1377,5 +1274,144 @@ contains
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
   end subroutine setup_pot
+
+  subroutine add_thermostats(ds, thermostat_type, T)
+    type(DynamicalSystem), intent(inout) :: ds
+    integer, intent(in) :: thermostat_type
+    real(dp), intent(in) :: T
+
+    select case(Thermostat_Type)
+      case(0)
+	call print("WARNING: No thermostat!!", ERROR)
+      case(1)
+	call add_thermostat(ds,type=LANGEVIN,T=T,tau=Tau)
+	call print('Added single Langevin Thermostat')
+      case(2)
+	call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
+	call print('Added single Nose-Hoover Thermostat')
+      case(5)
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
+	call add_thermostat(ds, type=NOSE_HOOVER_LANGEVIN,T=T,tau=Tau,Q=1.0_dp) ! MM
+	call print("Added 1 Nose-Hoover for QM+buffer heavy, 1 Nose-Hoover for QM+buffer H, and 1 Nose-Hoover-Langevin for MM")
+      case(6)
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
+	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
+	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
+      case default
+	call system_abort("Unknown Thermostat_Type="//Thermostat_type)
+    end select
+  end subroutine add_thermostats
+
+  subroutine set_thermostat_masses(at, Thermostat_type, T, Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius)
+    type(Atoms), intent(in) :: at
+    integer, intent(in) :: thermostat_type
+    real(dp) :: T
+    real(dp), intent(in) :: Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius
+
+    integer, pointer :: cluster_mark_p(:)
+
+    real(dp) :: QM_vol, Buffer_vol, cell_vol
+    integer :: Ndof_QM_H, Ndof_QM_heavy
+    integer :: Ndof_Buffer_H, Ndof_Buffer_heavy
+    integer :: Ndof_MM_H, Ndof_MM_heavy
+    real(dp) :: n_H, n_heavy
+
+    if (.not. assign_pointer(at, "cluster_mark", cluster_mark_p)) then
+      QM_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius + Outer_QM_Region_Radius)/2.0_dp)**3
+      Buffer_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius+Inner_Buffer_Radius + Outer_QM_Region_Radius+Outer_Buffer_Radius)/2.0_dp)**3 - QM_vol
+      cell_vol = cell_volume(at)
+      n_H = count(at%Z == 1)
+      n_heavy = at%N - n_H
+      Ndof_QM_H = 3*int(QM_vol * n_H/cell_vol)
+      Ndof_QM_heavy = 3*int(QM_vol * n_heavy/cell_vol)
+      Ndof_Buffer_H = 3*int(Buffer_vol * n_H/cell_vol)
+      Ndof_Buffer_heavy = 3*int(Buffer_vol * n_heavy/cell_vol)
+      Ndof_MM_H = 3*n_H - ndof_QM_H - ndof_Buffer_H
+      Ndof_MM_heavy = 3*n_heavy - ndof_QM_heavy - ndof_Buffer_heavy
+      call print("no cluster_mark, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
+    else
+      Ndof_QM_H = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK .and. at%Z == 1)
+      Ndof_QM_heavy = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK) - Ndof_QM_H
+      Ndof_Buffer_H = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK .and. at%Z == 1)
+      Ndof_Buffer_heavy = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK) - Ndof_Buffer_H
+      n_H = count(at%Z == 1)
+      n_heavy = at%N - n_H
+      Ndof_MM_H = 3*n_H - (Ndof_QM_H+Ndof_Buffer_H)
+      Ndof_MM_heavy = 3*n_heavy - (Ndof_QM_heavy+Ndof_Buffer_heavy)
+    endif
+
+    call print("set_thermostat_masses got NDOFs (H, heavy) QM " // Ndof_QM_H // " " // Ndof_QM_heavy // " Buffer " // Ndof_Buffer_H // " " // Ndof_Buffer_heavy // " MM " // Ndof_MM_H // " " // Ndof_MM_heavy)
+
+    select case(Thermostat_Type)
+      case (0, 1)
+	continue
+      case (2)
+	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=3*at%N, T=T, tau=Nose_Hoover_tau)
+      case(5)
+	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy+Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H+Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_MM_H+Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
+      case(6)
+	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(4)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(5)%Q = nose_hoover_mass(Ndof=Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
+	ds%thermostat(6)%Q = nose_hoover_mass(Ndof=Ndof_MM_H, T=T, tau=Nose_Hoover_tau)
+      case default
+	call system_abort("Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
+    end select
+  end subroutine set_thermostat_masses
+
+  subroutine set_thermostat_regions(at, thermostat_type)
+    type(Atoms), intent(inout) :: at
+    integer, intent(in) :: thermostat_type
+
+    integer, pointer :: cluster_mark_p(:)
+
+    select case(Thermostat_Type)
+      case(1, 2)
+	  at%thermostat_region = 1
+      case (5)
+	if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
+	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
+	at%thermostat_region = 3 ! MM
+	where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z /= 1) ! QM+Buffer heave
+	  at%thermostat_region = 1
+	end where
+	where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z == 1) ! QM+Buffer H
+	  at%thermostat_region = 2
+	end where
+      case(6)
+	if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
+	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
+	where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z /= 1) ! QM heavy
+	  at%thermostat_region = 1
+	end where
+	where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z == 1) ! QM H
+	  at%thermostat_region = 2
+	end where
+	where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! Buffer heavy
+	  at%thermostat_region = 3
+	end where
+	where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z == 1) ! Buffer H
+	  at%thermostat_region = 4
+	end where
+	where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! MM heavy
+	  at%thermostat_region = 5
+	end where
+	where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z == 1) ! MM H
+	  at%thermostat_region = 6
+	end where
+      case default
+	call system_abort("set_thermostat_regions got unknown thermostat_type="//thermostat_type)
+    end select
+
+  end subroutine set_thermostat_regions
 
 end program qmmm_md

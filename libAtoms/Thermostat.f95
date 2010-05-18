@@ -165,15 +165,15 @@ contains
        
     case(LANGEVIN)
        
-       if (.not.present(gamma)) call system_abort('initialise: gamma is required for Langevin thermostat')
+       if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin thermostat')
        this%T = T
        this%gamma = gamma
        this%Q = 0.0_dp
        
     case(NOSE_HOOVER)
        
-       if (.not.present(Q)) call system_abort('initialise: Q is required for Nose-Hoover thermostat')
-       if (Q <= 0.0_dp) call system_abort('initialise: Q must be > 0')
+       if (.not.present(Q)) call system_abort('thermostat initialise: Q is required for Nose-Hoover thermostat')
+       if (Q <= 0.0_dp) call system_abort('thermostat initialise: Q must be > 0')
        this%T = T      
        this%gamma = 0.0_dp
        this%Q = Q
@@ -181,10 +181,10 @@ contains
     case(NOSE_HOOVER_LANGEVIN)
        
        if (.not.present(gamma)) &
-            call system_abort('initialise: gamma is required for Nose-Hoover-Langevin thermostat')
-       if (gamma < 0.0_dp) call system_abort('initialise: gamma must be >= 0')
-       if (.not.present(Q)) call system_abort('initialise: Q is required for Nose-Hoover-Langevin thermostat')
-       if (Q <= 0.0_dp) call system_abort('initialise: Q must be > 0')
+            call system_abort('thermostat initialise: gamma is required for Nose-Hoover-Langevin thermostat')
+       if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0')
+       if (.not.present(Q)) call system_abort('thermostat initialise: Q is required for Nose-Hoover-Langevin thermostat')
+       if (Q <= 0.0_dp) call system_abort('thermostat initialise: Q must be > 0')
        this%T = T       
        this%gamma = gamma
        this%Q = Q
@@ -192,7 +192,7 @@ contains
     case(LANGEVIN_NPT)
        
        if (.not.present(gamma) .or. .not.present(gamma_p) .or. .not.present(W_p) ) &
-       & call system_abort('initialise: gamma, gamma_p, W_p are required for Langevin NPT baro-thermostat')
+       & call system_abort('thermostat initialise: gamma, gamma_p, W_p are required for Langevin NPT baro-thermostat')
        this%T = T
        this%gamma = gamma
        this%Q = 0.0_dp
@@ -342,21 +342,21 @@ contains
 
     case(LANGEVIN)
        call print('Langevin, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, work = '//&
-            round(this%work,5)//' eV',file=file)
+            round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
     case(NOSE_HOOVER)
        call print('Nose-Hoover, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-            round(this%eta,5)//' (#), p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV',file=file)
+            round(this%eta,5)//' (#), p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV, Ndof = ' // round(this%Ndof,1),file=file)
 
     case(NOSE_HOOVER_LANGEVIN)
        call print('Nose-Hoover-Langevin, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//&
             ' eV fs^2, gamma = '//round(this%gamma,5)//' fs^-1, eta = '//round(this%eta,5)//&
-            ' , p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV',file=file)
+            ' , p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV, Ndof = ' // round(this%Ndof,1),file=file)
        
     case(LANGEVIN_NPT)
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, work = '// &
             & round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
-            & round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au',file=file)
+            & round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
     end select
     
