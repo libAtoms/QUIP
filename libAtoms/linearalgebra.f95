@@ -3234,7 +3234,7 @@ CONTAINS
       call system_abort("matrix_randomise_vweight incompatible sizes : m " // shape(m) // " a " // shape(a))
     do i=1,size(m,1)
       do j=1,size(m,2)
-        m(i,j)=m(i,j)+(ran_uniform()-0.5_dp)*a(i)
+        m(i,j)=m(i,j)+(ran_uniform()-0.5_dp)*a(j)
       end do
     end do
   end subroutine matrix_randomise_vweight
