@@ -31,15 +31,9 @@
 MATH_LINKOPTS=-L/opt/intel/ict/3.0.1/cmkl/current/lib/em64t -lmkl_lapack  -lmkl_em64t
 FOX_LIBDIR=/home/bernstei/src/work/QUIP/source/QUIP/build.linux_x86_64_ifort_icc_serial/../FoX-4.0.3/objs.linux_x86_64_ifort_icc_serial/lib
 FOX_INCDIR=/home/bernstei/src/work/QUIP/source/QUIP/build.linux_x86_64_ifort_icc_serial/../FoX-4.0.3/objs.linux_x86_64_ifort_icc_serial/finclude
-HAVE_EXTERNAL_FOX=0
 NETCDF_LIBDIR=/mnt/cfs/pkgs/PTOOLS/lib
 NETCDF_INCDIR=/mnt/cfs/pkgs/PTOOLS/include
-HAVE_NETCDF=1
 NETCDF4=1
-HAVE_LARSPOT=0
-HAVE_ASAP=0
 EXTRA_LINKOPTS=
-HAVE_LOTF=0
-HAVE_GP=0
 OPTIM = -O3 -vec-report0 -unroll -xP -p
 # DEBUG=-g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
