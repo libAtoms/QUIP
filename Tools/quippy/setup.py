@@ -246,7 +246,7 @@ def read_arch_makefiles_and_environment(quip_root, quip_arch):
     """Read ${QUIP_ROOT}/Makefile.rules, ${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH},
     ${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc and then os.environ,
     overriding variables in that order."""
-    
+
     makefile = parse_makefile(os.path.join(quip_root, 'Makefile.rules'))
     makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.%s' % quip_arch), makefile)
     makefile_inc = os.path.join(quip_root, 'build.%s/Makefile.inc' % quip_arch)
@@ -359,8 +359,16 @@ for key in ('QUIPPY_FCOMPILER', 'QUIPPY_CPP'):
 # C preprocessor
 cpp = makefile.get('QUIPPY_CPP', 'cpp').split()
 
-include_dirs = [ makefile[key] for key in makefile.keys() if key.endswith('INCDIR') and makefile[key] != '']
-library_dirs = [ makefile[key] for key in makefile.keys() if key.endswith('LIBDIR') and makefile[key] != '']
+include_dirs_raw = [ makefile[key] for key in makefile.keys() if key.endswith('INCDIR') and makefile[key] != '']
+include_dirs = []
+for dir in include_dirs_raw:
+  for i in dir.split():
+    include_dirs.append(i)
+library_dirs_raw = [ makefile[key] for key in makefile.keys() if key.endswith('LIBDIR') and makefile[key] != '']
+library_dirs = []
+for dir in library_dirs_raw:
+  for i in dir.split():
+    library_dirs.append(i)
 
 # Default libraries and macros
 libraries = []
@@ -394,6 +402,8 @@ if makefile_test('HAVE_NETCDF'):
     if makefile_test('NETCDF4'):
         libraries += [lib[2:] for lib in makefile['NETCDF4_LIBS'].split()]
         macros.append(('NETCDF4',None))
+	if makefile_test('NETCDF4_CURL'):
+	    libraries += [lib[2:] for lib in makefile['NETCDF4_CURL_LIBS'].split()]
     else:
         libraries += [lib[2:] for lib in makefile['NETCDF_LIBS'].split()]
 
