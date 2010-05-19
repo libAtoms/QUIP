@@ -1305,15 +1305,28 @@ contains
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine reallocate_int1d(array, d1, zero)
+  subroutine reallocate_int1d(array, d1, zero, copy)
     integer, allocatable, dimension(:), intent(inout) :: array
     integer,                            intent(in)    :: d1
-    logical, optional,                  intent(in)    :: zero
+    logical, optional,                  intent(in)    :: zero, copy
+
+    logical :: do_copy
+    integer, allocatable :: tmp(:)
 
     if (allocated(array)) then
        if (size(array) /= d1) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array)))
+	    tmp = array
+	  endif
           deallocate(array)
           allocate(array(d1))
+	  if (do_copy) then
+	    array = 0
+	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+	    deallocate(tmp)
+	  endif
        end if
     else
        allocate(array(d1))
@@ -1345,15 +1358,28 @@ contains
 
   end subroutine reallocate_real1d
 
-  subroutine reallocate_int2d(array, d1, d2, zero)
+  subroutine reallocate_int2d(array, d1, d2, zero, copy)
     integer, allocatable, dimension(:,:), intent(inout) :: array
     integer,                              intent(in)    :: d1,d2
-    logical, optional,                    intent(in)    :: zero
+    logical, optional,                    intent(in)    :: zero, copy
+
+    logical :: do_copy
+    integer, allocatable :: tmp(:,:)
 
     if (allocated(array)) then
        if (.not. all(shape(array) == (/d1,d2/))) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array,1),size(array,2)))
+	    tmp = array
+	  endif
           deallocate(array)
           allocate(array(d1,d2))
+	  if (do_copy) then
+	    array = 0
+	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
+	    deallocate(tmp)
+	  endif
        end if
     else
        allocate(array(d1,d2))
@@ -1365,15 +1391,28 @@ contains
 
   end subroutine reallocate_int2d
 
-  subroutine reallocate_real2d(array, d1, d2, zero)
+  subroutine reallocate_real2d(array, d1, d2, zero, copy)
     real(dp), allocatable, dimension(:,:), intent(inout) :: array
     integer,                               intent(in)    :: d1,d2
-    logical, optional,                     intent(in)    :: zero
+    logical, optional,                     intent(in)    :: zero, copy
+
+    logical :: do_copy
+    real(dp), allocatable :: tmp(:,:)
 
     if (allocated(array)) then
        if (.not. all(shape(array) == (/d1,d2/))) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array,1),size(array,2)))
+	    tmp = array
+	  endif
           deallocate(array)
           allocate(array(d1,d2))
+	  if (do_copy) then
+	    array = 0.0_dp
+	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
+	    deallocate(tmp)
+	  endif
        end if
     else
        allocate(array(d1,d2))
