@@ -59,7 +59,8 @@ implicit none
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
-  type(inoutput) :: relax_io, infile
+  type(CInOutput) :: relax_io
+  type(CInOutput) :: infile
   real(dp) :: absorption_polarization_in(6)
   complex(dp) :: absorption_polarization(3)
   real(dp) :: absorption_freq_range(3), absorption_gamma
@@ -199,7 +200,7 @@ implicit none
 
   ! main loop over frames
   do 
-     call read_xyz(at, infile, status=status)!, mpi_comm=mpi_glob%communicator)
+     call read(at, infile, status=status)
      if(status /= 0) exit
 
      call set_cutoff(at, cutoff(metapot)+0.5_dp)
@@ -235,7 +236,7 @@ implicit none
         if (len(trim(relax_print_file)) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
            n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
-                print_inoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
+                print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
                 eps_guess=relax_eps, use_n_minim = use_n_minim)
            call finalise(relax_io)
         else
