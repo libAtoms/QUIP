@@ -254,11 +254,11 @@ implicit none
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
-           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false.)
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, c0=c0, relax_initial=.false., relax_tol=relax_tol)
         else if (do_c0ij) then
-           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c0=c0, relax_initial=.false.)
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c0=c0, relax_initial=.false., relax_tol=relax_tol)
         else
-           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, relax_initial=.false.)
+           call calc_elastic_constants(metapot, at, cij_dx, calc_args, c=c, relax_initial=.false., relax_tol=relax_tol)
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
