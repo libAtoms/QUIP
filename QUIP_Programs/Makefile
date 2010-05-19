@@ -47,7 +47,7 @@ PROGRAMS = eval md lj_example md_example \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search\
   metapot_test tabletest lotf_metapot lotfpc_metapot ts_calculation\
-  lotf_time lotf_time_metapot cxyzreader fix_traj_latest
+  lotf_time lotf_time_metapot cxyzreader fix_traj_latest randomise_calc
 
 LIBS =  -L. -lquiputils -lquip ${GP_LIB} -latoms 
 LIBFILES = libatoms.a ${GP_LIBFILE} libquip.a libquiputils.a
