@@ -57,7 +57,7 @@ QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none -fopenmp
 QUIPPY_CFLAGS = -fopenmp
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_HAVE_ATOMEYE = 1
+QUIPPY_INSTALL_OPTS = --home=${HOME}
 
 export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 

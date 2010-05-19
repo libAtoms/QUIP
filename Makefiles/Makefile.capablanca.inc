@@ -31,15 +31,10 @@
 MATH_LINKOPTS=-L/usr/local/Cluster-Apps/intel/mkl/10.0.1.014/lib/em64t -Bstatic -lmkl_lapack -lmkl_em64t -lguide -Bdynamic -lpthread
 FOX_LIBDIR=/home/kermode/QUIP/build.linux_x86_64_ifort_icc/../FoX-4.0.3/objs.linux_x86_64_ifort_icc/lib
 FOX_INCDIR=/home/kermode/QUIP/build.linux_x86_64_ifort_icc/../FoX-4.0.3/objs.linux_x86_64_ifort_icc/finclude
-HAVE_EXTERNAL_FOX=0
 NETCDF_LIBDIR=/home/kermode/lib
 NETCDF_INCDIR=/home/kermode/include
-HAVE_NETCDF=1
 NETCDF4=1
-HAVE_LARSPOT=0
-HAVE_ASAP=0
 EXTRA_LINKOPTS=
-HAVE_LOTF=0
 OPTIM=${DEFAULT_OPTIM}
 
 
