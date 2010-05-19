@@ -1,0 +1,7 @@
+How to install gcc, python, and numpy to work with MacPorts 1.8.2
+  port install gcc44 gcc_select
+  gcc_select mp-gcc44
+  port install python26 python_select
+  python_select python26
+  port install py26-numpy +no_atlas
+  port install hdf5-18 netcdf-devel +static
