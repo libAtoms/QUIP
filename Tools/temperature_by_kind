@@ -2,10 +2,10 @@
 
 from quippy import *
 
-if (len(sys.argv) > 2):
+if (len(sys.argv) > 2 or ((len(sys.argv) == 2) and (sys.argv[1] == "-h"))):
   print "Computes the temperature, instantaneous and exponentially smoothed (0.01)"
   print "  for each atomic number and, optionally, arbitrary property (like cluster_mark) value"
-  print "Usage: %s [type]"
+  print "Usage: %s [arb_property]"
   sys.exit(1)
 
 type = None
