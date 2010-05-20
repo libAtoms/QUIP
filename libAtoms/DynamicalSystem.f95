@@ -1009,10 +1009,6 @@ contains
 
       if (size(temps) /= size(this%thermostat)) &
 	call system_abort("thermostat_temperatures needs a temps array to match size of this%thermostat() " //size(this%thermostat))
-call print("thermostat_temperatures #" // size(this%thermostat), ERROR)
-do i=0, size(this%thermostat)-1
-  call print ("count in thermostat_region " // i // " " // count(this%atoms%thermostat_region == i), ERROR)
-end do
 
       temps = -1.0_dp
       if (this%thermostat(0)%type == LANGEVIN) then
