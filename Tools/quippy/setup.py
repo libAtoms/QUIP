@@ -241,38 +241,72 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
 
     return func
 
+def expand_addsuffix(s):
+    add_suffix = re.compile(r'\$[\(\{]addsuffix (.*?),(.*?)[\)\}]')
+    try:
+        m = add_suffix.search(s)
+    except TypeError:
+        return s
+    if m:
+        while m is not None:
+            suffix, files = m.groups()
+            s = add_suffix.sub(' '.join([f + suffix for f in files.split()]),s,1).strip()
+            m = add_suffix.search(s)
+    return s
+
+def expand_addprefix(s):
+    add_prefix =  re.compile(r'\$[\(\{]addprefix (.*?),(.*?)[\}\)]')
+    try:
+        m = add_prefix.search(s)
+    except TypeError:
+        return s
+    if m:
+        while m is not None:
+            prefix, files = m.groups()
+            s = add_prefix.sub(' '.join([prefix + f for f in files.split()]),s,1).strip()
+            m = add_prefix.search(s)
+    return s
+
 
 def read_arch_makefiles_and_environment(quip_root, quip_arch):
-    """Read ${QUIP_ROOT}/Makefile.rules, ${QUIP_ROOT}/Makefiles/Makefile.${QUIP_ARCH},
-    ${QUIP_ROOT}/build.${QUIP_ARCH}/Makefile.inc and then os.environ,
-    overriding variables in that order."""
 
-    makefile = parse_makefile(os.path.join(quip_root, 'Makefile.rules'))
-    makefile = parse_makefile(os.path.join(quip_root, 'Makefiles/Makefile.%s' % quip_arch), makefile)
-    makefile_inc = os.path.join(quip_root, 'build.%s/Makefile.inc' % quip_arch)
-    if os.path.exists(makefile_inc):
-        makefile = parse_makefile(makefile_inc, makefile)
+    # Write a Makefile which simply includes Makefile.inc, Makefile.rules and Makefile.${QUIP_ARCH}
+    f = open('Makefile.quippy', 'w')
+    f.write("""include Makefile.inc
+include Makefile.rules
+ifeq (${QUIP_ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${QUIP_ARCH}
+endif""")
+    f.close()
+
+    # Dump make database to file
+    os.system('make -f Makefile.quippy -I %s -I %s -I %s -p > make.dump' %
+              (quip_root,
+               os.path.join(quip_root, 'Makefiles'),
+               os.path.join(quip_root, 'build.%s' % quip_arch)))
+
+    # Parse dumped file
+    makefile = parse_makefile('make.dump')
+
+    # Tidy up
+    os.remove('make.dump')
+    os.remove('Makefile.quippy')
+
+    # Allow environment variables to override contents of Makefiles
     makefile.update(os.environ)
+
+    # Expand prefices and suffices
+    for k, v in makefile.iteritems():
+        v = expand_addprefix(v)
+        v = expand_addsuffix(v)
+        makefile[k] = v
 
     return makefile
 
 
 def find_sources(makefile, quip_root):
-
-    def expand_addsuffix(s):
-        add_suffix = re.compile(r'\$\{addsuffix (.*?),(.*?)\}')
-
-        m = add_suffix.match(s)
-        if m:
-            res = []
-            while m is not None:
-                suffix, files = m.groups()
-                res.extend([f + suffix for f in files.split()])
-                s = add_suffix.sub('',s,1).strip()
-                m = add_suffix.match(s)
-        else:
-            res = s.split()
-        return res
 
     source_dirs  = []
     all_sources  = []
@@ -282,9 +316,9 @@ def find_sources(makefile, quip_root):
     libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
     makefile_libatoms   = parse_makefile(os.path.join(libatoms_dir,'Makefile'))
     libatoms_sources = [os.path.join(libatoms_dir,f) for f in
-                        (expand_addsuffix(makefile_libatoms['LIBATOMS_F77_SOURCES']) +
-                         expand_addsuffix(makefile_libatoms['LIBATOMS_F95_SOURCES']) +
-                         expand_addsuffix(makefile_libatoms['LIBATOMS_C_SOURCES']))]
+                        (expand_addsuffix(makefile_libatoms['LIBATOMS_F77_SOURCES']).split() +
+                         expand_addsuffix(makefile_libatoms['LIBATOMS_F95_SOURCES']).split() +
+                         expand_addsuffix(makefile_libatoms['LIBATOMS_C_SOURCES']).split())]
     all_sources += libatoms_sources
     wrap_sources += ['System.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
@@ -295,9 +329,9 @@ def find_sources(makefile, quip_root):
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     makefile_quip_core = parse_makefile(os.path.join(quip_core_dir, 'Makefile'))
     quip_core_sources = [os.path.join(quip_core_dir,f) for f in
-                         (expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']) +
-                          expand_addsuffix(makefile_quip_core['ALL_F95_FILES'])  + 
-                          expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']))]
+                         (expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']).split() +
+                          expand_addsuffix(makefile_quip_core['ALL_F95_FILES']).split()  + 
+                          expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']).split())]
     all_sources += quip_core_sources
     wrap_sources += ['Potential.f95', 'MetaPotential.f95']
     wrap_types += ['potential', 'metapotential']
@@ -330,17 +364,6 @@ def find_sources(makefile, quip_root):
     return source_dirs, all_sources, wrap_sources, wrap_types
 
 
-def split_libraries_library_dirs(s):
-    """Given a string of the form '-L/path/one -llib1 -llib2 -L/path/two',
-    return a pair of lists ['lib1', 'lib2'] and ['/path/one', '/path/two']."""
-    
-    tmp = s.split()
-    libraries = [s.startswith('-l') and s[2:] or s  for s in tmp
-                 if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl') ]
-    library_dirs  = [s[2:] for s in tmp if s[:2] == '-L']
-    return libraries, library_dirs
-
-
 type_map = {}
 
 quip_root, quip_arch = find_quip_root_and_arch()
@@ -359,87 +382,38 @@ for key in ('QUIPPY_FCOMPILER', 'QUIPPY_CPP'):
 # C preprocessor
 cpp = makefile.get('QUIPPY_CPP', 'cpp').split()
 
-include_dirs_raw = [ makefile[key] for key in makefile.keys() if key.endswith('INCDIR') and makefile[key] != '']
+# Find all include directories in Makefile
 include_dirs = []
-for dir in include_dirs_raw:
-  for i in dir.split():
-    include_dirs.append(i)
-library_dirs_raw = [ makefile[key] for key in makefile.keys() if key.endswith('LIBDIR') and makefile[key] != '']
-library_dirs = []
-for dir in library_dirs_raw:
-  for i in dir.split():
-    library_dirs.append(i)
+for key in makefile:
+    if key.endswith('INCDIR') and makefile[key] != '':
+          include_dirs.extend(makefile[key].split())
 
-# Default libraries and macros
-libraries = []
-extra_link_args = []
+# extract libraries and library_dirs from SYSLIBS Makefile variable
+fields = makefile['SYSLIBS'].split()
+libraries = [s.startswith('-l') and s[2:] or s  for s in fields
+             if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl') ]
+library_dirs  = [s[2:] for s in fields if s[:2] == '-L']
+
+# everything else in SYSLIBS is an extra link argument
+extra_link_args = [s for s in fields if not s[2:] in libraries and not s[2:] in library_dirs and not s[2:] in include_dirs]
+
+# Preprocessor macros
 macros = [('HAVE_QUIPPY',None), ('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
+for defn in makefile['DEFINES'].split():
+    if defn[:2] == '-D':
+        if '=' in defn:
+            n, v = defn[2:].split('=')
+            macros.append((n,v))
+        else:
+            macros.append((defn[2:], None))
+    elif defn[:2] == '-U':
+        macros.append(defn[2:])
 
-# Maths libraries
-if 'QUIPPY_MATH_LINKOPTS' in makefile:
-    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['QUIPPY_MATH_LINKOPTS'])
-    libraries.extend(maths_libs)
-    library_dirs.extend(maths_libdirs)
-elif 'MATH_LINKOPTS' in makefile:
-    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['MATH_LINKOPTS'])
-    libraries.extend(maths_libs)
-    library_dirs.extend(maths_libdirs)
-elif 'DEFAULT_MATH_LINKOPTS' in makefile:
-    maths_libs, maths_libdirs = split_libraries_library_dirs(makefile['DEFAULT_MATH_LINKOPTS'])
-    libraries.extend(maths_libs)
-    library_dirs.extend(maths_libdirs)
-else:
-    raise ValueError('Neither QUIPPY_MATH_LINKOPTS, MATHS_LINKOPT nor DEFAULT_MATHS_LINKOPTS are defined in either Makefile.arch or Makefile.inc')
-
-# FoX libraries
-if not ('FOX_LIBDIR' in makefile and 'FOX_INCDIR' in makefile and 'FOX_LIBS' in makefile):
-    raise ValueError('FOX_LIBDIR, FOX_INCDIR and FOX_LIBS must all be set in Makefile or environment')
-extra_link_args.extend([os.path.join(makefile['FOX_LIBDIR'],'lib%s.a' % lib[2:]) for lib in makefile['FOX_LIBS'].split() ])
-
-# NetCDF libraries
-if makefile_test('HAVE_NETCDF'):
-    macros.append(('HAVE_NETCDF',None))
-    if makefile_test('NETCDF4'):
-        libraries += [lib[2:] for lib in makefile['NETCDF4_LIBS'].split()]
-        macros.append(('NETCDF4',None))
-	if makefile_test('NETCDF4_CURL'):
-	    libraries += [lib[2:] for lib in makefile['NETCDF4_CURL_LIBS'].split()]
-    else:
-        libraries += [lib[2:] for lib in makefile['NETCDF_LIBS'].split()]
-
-# ASAP potential
-if makefile_test('HAVE_ASAP'):
-    include_dirs.append(makefile['ASAP_LIBDIR'])
-    library_dirs.append(makefile['ASAP_LIBDIR'])
-    libraries.append('asap')
-    macros.append(('HAVE_ASAP',None))
-
-# MDCore library
-if makefile_test('HAVE_LARSPOT'):
-    libraries.append('mdcore')
-    macros.append(('HAVE_LARSPOT',None))
-
-# CP2K macro
-if makefile_test('HAVE_CP2K'):
-    macros.append(('HAVE_CP2K',None))
-
-# LOTF macro
-if makefile_test('HAVE_LOTF'):
-    macros.append(('HAVE_LOTF',None))
-
-if 'QUIPPY_DEFINES' in makefile:
-    for defn in makefile['QUIPPY_DEFINES'].split():
-        if defn[:2] == '-D':
-            if '=' in defn:
-                n, v = defn[2:].split('=')
-                macros.append((n,v))
-            else:
-                macros.append((defn[2:], None))
-        elif defn[:2] == '-U':
-            macros.append(defn[2:])
-
-if 'EXTRA_LINKOPTS' in makefile:
-    extra_link_args.extend([arg for arg in makefile['EXTRA_LINKOPTS'].split()])
+print 'include_dirs', include_dirs
+print 'libraries', libraries
+print 'lib_dirs', library_dirs
+print 'macros', macros
+print 'extra_link_args', extra_link_args
 
 # Default distutils options -- will be overriden by command line options
 # once setup() is invoked.
@@ -544,11 +518,13 @@ if makefile_test('QUIPPY_HAVE_ATOMEYE'):
     atomeye_dir =  os.path.join(quip_root, 'Tools/AtomEye')
 
     if 'QUIPPY_ATOMEYE_LIBS' in makefile:
-        atomeye_libs, atomeye_libdirs = split_libraries_library_dirs(makefile['QUIPPY_ATOMEYE_LIBS'])
+        atomeye_libs = [k[2:] for k in makefile['QUIPPY_ATOMEYE_LIBS'].split() if k.startswith('-l')]
+        atomeye_libdirs = [k[2:] for k in makefile['QUIPPY_ATOMEYE_LIBS'].split() if k.startswith('-L')]
     elif 'ATOMEYE_LIBS' in makefile:
-        atomeye_libs, atomeye_libdirs = split_libraries_library_dirs(makefile['ATOMEYE_LIBS'])
+        atomeye_libs = [k[2:] for k in makefile['ATOMEYE_LIBS'].split() if k.startswith('-l')]
+        atomeye_libdirs = [k[2:] for k in makefile['ATOMEYE_LIBS'].split() if k.startswith('-L')]
     else:
-        raise ValueError('Missing variable ATOMEYE_LIBS or QUIPPY_ATOMEYE_LIBS')
+        raise ValueError('Missing Makefile variable ATOMEYE_LIBS or QUIPPY_ATOMEYE_LIBS')
 
     atomeye_ext = Extension(name='quippy._atomeye',
                             sources=['atomeyemodule.c'],
