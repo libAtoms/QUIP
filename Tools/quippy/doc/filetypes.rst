@@ -29,9 +29,13 @@ used by the :class:`Atoms` constructor, :meth:`Atoms.write`, the
 how to read or write a particular file type, based on the filename
 extension.
 
-The quippy native formats are `extended XYZ
-<http://www.jrkermode.co.uk/ExtendedXYZ>`_ and `NetCDF
-<https://camtools.cam.ac.uk/access/wiki/site/5b59f819-0806-4a4d-0046-bcad6b9ac70f/netcdf.html>`_.
+The quippy native formats are Extended XYZ and NetCDF.
+
+.. toctree::
+   :maxdepth: 1
+
+   extended_xyz.rst
+   netcdf.rst
 
 .. attribute:: AtomsReaders
 
