@@ -3,6 +3,8 @@
 from quippy import *
 
 if (len(sys.argv) > 2):
+  print "Computes the temperature, instantaneous and exponentially smoothed (0.01)"
+  print "  for each atomic number and, optionally, arbitrary property (like cluster_mark) value"
   print "Usage: %s [type]"
   sys.exit(1)
 
