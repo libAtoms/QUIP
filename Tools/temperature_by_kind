@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+from quippy import *
+
+if (len(sys.argv) > 2):
+  print "Usage: %s [type]"
+  sys.exit(1)
+
+type = None
+if (len(sys.argv) == 2):
+  type = sys.argv[1]
+
+ar = AtomsReader("stdin")
+
+counts = {}
+T_sums = {}
+Ts = {}
+Ts_avg = {}
+i_config = 1
+for at in ar:
+  counts.clear()
+  T_sums.clear()
+  Ts.clear()
+  for i in frange(at.n):
+    if type is None:
+      type_str = "%d" % at.z[i]
+    else:
+      type_str = "%d %s" % (at.z[i], getattr(at, type)[i])
+    if not (type_str in T_sums):
+      T_sums[type_str] = 0.0
+      counts[type_str] = 0
+    T_sums[type_str] += (ElementMass[at.z[i]]*MASSCONVERT*at.velo[:,i].norm2())/(3.0*BOLTZMANN_K)
+    counts[type_str] += 1
+
+  for type_str in sorted(counts.keys()):
+    Ts[type_str] = T_sums[type_str]/counts[type_str]
+
+  for type_str in sorted(counts.keys()):
+    if type_str in Ts_avg:
+      Ts_avg[type_str] = 0.99*Ts_avg[type_str] + 0.01*Ts[type_str]
+    else :
+      Ts_avg[type_str] = Ts[type_str]
+
+  for type_str in sorted(Ts_avg.keys()):
+    if type_str not in Ts:
+      del Ts_avg[type_str]
+
+  if "time" in at.params:
+    print ("T %f " % at.params['time']),
+  else:
+    print ("T %d " % i_config),
+  for type_str in sorted(counts.keys()):
+    print ("%s %f" % (type_str, Ts_avg[type_str])),
+  print ""
+
+  if "time" in at.params:
+    print ("TI %f " % at.params['time']),
+  else:
+    print ("TI %d " % i_config),
+  for type_str in sorted(counts.keys()):
+    print ("%s %f" % (type_str, Ts[type_str])),
+  print ""
+  i_config += 1
