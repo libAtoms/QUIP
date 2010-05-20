@@ -1,6 +1,6 @@
-diff -r -c src_20100507_latest_orig/barostat_types.F src_20100507_updated/barostat_types.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_types.F src_20100507_patched/barostat_types.F
 *** src_20100507_latest_orig/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_updated/barostat_types.F	2010-04-07 16:00:11.522690660 +0100
+--- src_20100507_patched/barostat_types.F	2010-05-20 09:35:01.684715303 +0100
 ***************
 *** 21,27 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -29,9 +29,9 @@ diff -r -c src_20100507_latest_orig/barostat_types.F src_20100507_updated/barost
           simpar%ensemble == npe_f_ensemble .OR. &
           simpar%ensemble == npe_i_ensemble .OR. &
           simpar%ensemble == nph_uniaxial_ensemble .OR. &
-diff -r -c src_20100507_latest_orig/barostat_utils.F src_20100507_updated/barostat_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_utils.F src_20100507_patched/barostat_utils.F
 *** src_20100507_latest_orig/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_updated/barostat_utils.F	2010-04-07 16:00:07.961083863 +0100
+--- src_20100507_patched/barostat_utils.F	2010-05-20 09:35:39.955088019 +0100
 ***************
 *** 19,25 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -62,9 +62,9 @@ diff -r -c src_20100507_latest_orig/barostat_utils.F src_20100507_updated/barost
       END IF
   
     END SUBROUTINE get_baro_energies
-diff -r -c src_20100507_latest_orig/constraint.F src_20100507_updated/constraint.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/constraint.F src_20100507_patched/constraint.F
 *** src_20100507_latest_orig/constraint.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_updated/constraint.F	2010-04-07 16:00:09.585167336 +0100
+--- src_20100507_patched/constraint.F	2010-05-20 09:36:20.563035366 +0100
 ***************
 *** 43,49 ****
     USE distribution_1d_types,           ONLY: distribution_1d_type
@@ -105,9 +105,9 @@ diff -r -c src_20100507_latest_orig/constraint.F src_20100507_updated/constraint
       END IF
       DO k = 1, SIZE(vel,2)
          atomic_kind=>particle_set (k) % atomic_kind
-diff -r -c src_20100507_latest_orig/cp_ddapc_methods.F src_20100507_updated/cp_ddapc_methods.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_methods.F src_20100507_patched/cp_ddapc_methods.F
 *** src_20100507_latest_orig/cp_ddapc_methods.F	2010-04-08 20:18:04.000000000 +0100
---- src_20100507_updated/cp_ddapc_methods.F	2010-05-07 13:40:29.071037394 +0100
+--- src_20100507_patched/cp_ddapc_methods.F	2010-05-20 09:36:31.130325067 +0100
 ***************
 *** 506,512 ****
             DEALLOCATE(AmE, stat=stat)
@@ -126,9 +126,9 @@ diff -r -c src_20100507_latest_orig/cp_ddapc_methods.F src_20100507_updated/cp_d
          IF (iw>0) THEN
             WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
          END IF
-diff -r -c src_20100507_latest_orig/cp_ddapc_util.F src_20100507_updated/cp_ddapc_util.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_util.F src_20100507_patched/cp_ddapc_util.F
 *** src_20100507_latest_orig/cp_ddapc_util.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_updated/cp_ddapc_util.F	2010-04-30 18:02:32.538477209 +0100
+--- src_20100507_patched/cp_ddapc_util.F	2010-05-20 09:35:11.478264709 +0100
 ***************
 *** 238,243 ****
 --- 238,246 ----
@@ -254,9 +254,9 @@ diff -r -c src_20100507_latest_orig/cp_ddapc_util.F src_20100507_updated/cp_ddap
             CALL timestop(handle3)
          END IF
          !
-diff -r -c src_20100507_latest_orig/csvr_system_mapping.F src_20100507_updated/csvr_system_mapping.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/csvr_system_mapping.F src_20100507_patched/csvr_system_mapping.F
 *** src_20100507_latest_orig/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_updated/csvr_system_mapping.F	2010-04-07 16:00:29.847881036 +0100
+--- src_20100507_patched/csvr_system_mapping.F	2010-05-20 09:35:03.553094658 +0100
 ***************
 *** 22,28 ****
          do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
@@ -325,9 +325,10 @@ diff -r -c src_20100507_latest_orig/csvr_system_mapping.F src_20100507_updated/c
   
          CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
               molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
-diff -r -c src_20100507_latest_orig/ewald_spline_util.F src_20100507_updated/ewald_spline_util.F
+Common subdirectories: src_20100507_latest_orig/CVS and src_20100507_patched/CVS
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/ewald_spline_util.F src_20100507_patched/ewald_spline_util.F
 *** src_20100507_latest_orig/ewald_spline_util.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_updated/ewald_spline_util.F	2010-04-30 18:02:32.599719553 +0100
+--- src_20100507_patched/ewald_spline_util.F	2010-05-20 09:34:30.960151570 +0100
 ***************
 *** 41,46 ****
 --- 41,49 ----
@@ -409,9 +410,9 @@ diff -r -c src_20100507_latest_orig/ewald_spline_util.F src_20100507_updated/ewa
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
          my_k = k
-diff -r -c src_20100507_latest_orig/extended_system_init.F src_20100507_updated/extended_system_init.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/extended_system_init.F src_20100507_patched/extended_system_init.F
 *** src_20100507_latest_orig/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_updated/extended_system_init.F	2010-04-07 16:00:07.175403757 +0100
+--- src_20100507_patched/extended_system_init.F	2010-05-20 09:36:41.425230851 +0100
 ***************
 *** 32,38 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -455,9 +456,9 @@ diff -r -c src_20100507_latest_orig/extended_system_init.F src_20100507_updated/
       END SELECT
       ! initializing velocities
       DO i = 1, SIZE ( npt,1)
-diff -r -c src_20100507_latest_orig/fist_force.F src_20100507_updated/fist_force.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_force.F src_20100507_patched/fist_force.F
 *** src_20100507_latest_orig/fist_force.F	2010-05-05 10:28:28.000000000 +0100
---- src_20100507_updated/fist_force.F	2010-05-07 14:33:57.821822090 +0100
+--- src_20100507_patched/fist_force.F	2010-05-20 09:36:34.366753880 +0100
 ***************
 *** 52,57 ****
 --- 52,62 ----
@@ -711,9 +712,9 @@ diff -r -c src_20100507_latest_orig/fist_force.F src_20100507_updated/fist_force
       END IF
       CALL cp_print_key_finished_output(iw,logger,mm_section,"PRINT%DERIVATIVES",error=error)
       CALL cp_print_key_finished_output(iw2,logger,mm_section,"PRINT%EWALD_INFO",error=error)
-diff -r -c src_20100507_latest_orig/fist_intra_force.F src_20100507_updated/fist_intra_force.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_intra_force.F src_20100507_patched/fist_intra_force.F
 *** src_20100507_latest_orig/fist_intra_force.F	2010-04-20 23:00:29.000000000 +0100
---- src_20100507_updated/fist_intra_force.F	2010-05-07 14:28:26.619215817 +0100
+--- src_20100507_patched/fist_intra_force.F	2010-05-20 09:34:39.912577973 +0100
 ***************
 *** 13,24 ****
 --- 13,34 ----
@@ -2304,9 +2305,9 @@ diff -r -c src_20100507_latest_orig/fist_intra_force.F src_20100507_updated/fist
   
   END MODULE fist_intra_force
   
-diff -r -c src_20100507_latest_orig/force_env_methods.F src_20100507_updated/force_env_methods.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/force_env_methods.F src_20100507_patched/force_env_methods.F
 *** src_20100507_latest_orig/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
---- src_20100507_updated/force_env_methods.F	2010-04-07 16:00:26.095140641 +0100
+--- src_20100507_patched/force_env_methods.F	2010-05-20 09:36:22.491424008 +0100
 ***************
 *** 119,124 ****
 --- 119,127 ----
@@ -2332,9 +2333,9 @@ diff -r -c src_20100507_latest_orig/force_env_methods.F src_20100507_updated/for
          END IF
          CALL cp_print_key_finished_output(output_unit,logger,force_env%force_env_section,&
               "PRINT%PROGRAM_RUN_INFO",error=error)
-diff -r -c src_20100507_latest_orig/input_constants.F src_20100507_updated/input_constants.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_constants.F src_20100507_patched/input_constants.F
 *** src_20100507_latest_orig/input_constants.F	2010-03-10 12:51:50.000000000 +0000
---- src_20100507_updated/input_constants.F	2010-04-07 16:00:22.985747958 +0100
+--- src_20100507_patched/input_constants.F	2010-05-20 09:36:19.426458956 +0100
 ***************
 *** 105,111 ****
                                                 reftraj_ensemble=9,&
@@ -2373,9 +2374,9 @@ diff -r -c src_20100507_latest_orig/input_constants.F src_20100507_updated/input
     INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
                                                 do_ff_quartic=1,&
                                                 do_ff_g96=2,&
-diff -r -c src_20100507_latest_orig/input_cp2k_check.F src_20100507_updated/input_cp2k_check.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_check.F src_20100507_patched/input_cp2k_check.F
 *** src_20100507_latest_orig/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
---- src_20100507_updated/input_cp2k_check.F	2010-04-07 16:00:35.722013784 +0100
+--- src_20100507_patched/input_cp2k_check.F	2010-05-20 09:34:33.142933600 +0100
 ***************
 *** 22,28 ****
     USE input_constants,                 ONLY: &
@@ -2410,9 +2411,9 @@ diff -r -c src_20100507_latest_orig/input_cp2k_check.F src_20100507_updated/inpu
                   CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
                   check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
                   CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
-diff -r -c src_20100507_latest_orig/input_cp2k_mm.F src_20100507_updated/input_cp2k_mm.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_mm.F src_20100507_patched/input_cp2k_mm.F
 *** src_20100507_latest_orig/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
---- src_20100507_updated/input_cp2k_mm.F	2010-04-16 13:39:15.185254329 +0100
+--- src_20100507_patched/input_cp2k_mm.F	2010-05-20 09:33:51.136686552 +0100
 ***************
 *** 232,237 ****
 --- 232,238 ----
@@ -2477,9 +2478,9 @@ diff -r -c src_20100507_latest_orig/input_cp2k_mm.F src_20100507_updated/input_c
          CALL create_IMPROPER_section(subsection, error=error)
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
-diff -r -c src_20100507_latest_orig/input_cp2k_motion.F src_20100507_updated/input_cp2k_motion.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_motion.F src_20100507_patched/input_cp2k_motion.F
 *** src_20100507_latest_orig/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
---- src_20100507_updated/input_cp2k_motion.F	2010-04-13 11:08:56.169683951 +0100
+--- src_20100507_patched/input_cp2k_motion.F	2010-05-20 09:34:15.975742774 +0100
 ***************
 *** 128,133 ****
 --- 128,152 ----
@@ -2553,9 +2554,9 @@ diff -r -c src_20100507_latest_orig/input_cp2k_motion.F src_20100507_updated/inp
               nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
               reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
          CALL section_add_keyword(section,keyword,error=error)
-diff -r -c src_20100507_latest_orig/input_cp2k_subsys.F src_20100507_updated/input_cp2k_subsys.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_subsys.F src_20100507_patched/input_cp2k_subsys.F
 *** src_20100507_latest_orig/input_cp2k_subsys.F	2010-03-20 04:09:38.000000000 +0000
---- src_20100507_updated/input_cp2k_subsys.F	2010-04-07 16:00:39.103230213 +0100
+--- src_20100507_patched/input_cp2k_subsys.F	2010-05-20 09:35:02.652974358 +0100
 ***************
 *** 377,382 ****
 --- 377,387 ----
@@ -2673,9 +2674,9 @@ diff -r -c src_20100507_latest_orig/input_cp2k_subsys.F src_20100507_updated/inp
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
-diff -r -c src_20100507_latest_orig/integrator.F src_20100507_updated/integrator.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator.F src_20100507_patched/integrator.F
 *** src_20100507_latest_orig/integrator.F	2010-02-11 22:31:20.000000000 +0000
---- src_20100507_updated/integrator.F	2010-04-07 16:00:22.697741925 +0100
+--- src_20100507_patched/integrator.F	2010-05-20 09:35:38.641921864 +0100
 ***************
 *** 100,106 ****
   
@@ -3120,9 +3121,9 @@ diff -r -c src_20100507_latest_orig/integrator.F src_20100507_updated/integrator
 + 
   END MODULE integrator
   
-diff -r -c src_20100507_latest_orig/integrator_utils.F src_20100507_updated/integrator_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator_utils.F src_20100507_patched/integrator_utils.F
 *** src_20100507_latest_orig/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
---- src_20100507_updated/integrator_utils.F	2010-04-07 16:00:33.268595443 +0100
+--- src_20100507_patched/integrator_utils.F	2010-05-20 09:34:12.908289641 +0100
 ***************
 *** 26,32 ****
     USE input_constants,                 ONLY: &
@@ -3183,9 +3184,10 @@ diff -r -c src_20100507_latest_orig/integrator_utils.F src_20100507_updated/inte
       END SELECT
   
     END SUBROUTINE rescaled_vv_first
-diff -r -c src_20100507_latest_orig/mathlib.F src_20100507_updated/mathlib.F
+Common subdirectories: src_20100507_latest_orig/lib and src_20100507_patched/lib
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/mathlib.F src_20100507_patched/mathlib.F
 *** src_20100507_latest_orig/mathlib.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_updated/mathlib.F	2010-04-30 18:02:32.654980599 +0100
+--- src_20100507_patched/mathlib.F	2010-05-20 09:34:41.343281552 +0100
 ***************
 *** 466,472 ****
   !>       -            "T" => invert transpose(a)
@@ -3287,9 +3289,9 @@ diff -r -c src_20100507_latest_orig/mathlib.F src_20100507_updated/mathlib.F
   
       ! Release work storage
       DEALLOCATE (work,STAT=stat)
-diff -r -c src_20100507_latest_orig/md_conserved_quantities.F src_20100507_updated/md_conserved_quantities.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_conserved_quantities.F src_20100507_patched/md_conserved_quantities.F
 *** src_20100507_latest_orig/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_updated/md_conserved_quantities.F	2010-04-07 16:00:12.682304097 +0100
+--- src_20100507_patched/md_conserved_quantities.F	2010-05-20 09:35:49.670018166 +0100
 ***************
 *** 28,34 ****
          dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
@@ -3324,9 +3326,9 @@ diff -r -c src_20100507_latest_orig/md_conserved_quantities.F src_20100507_updat
          CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
          md_ener%temp_baro = md_ener%temp_baro*kelvin
       CASE (  nph_uniaxial_ensemble )
-diff -r -c src_20100507_latest_orig/md_energies.F src_20100507_updated/md_energies.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_energies.F src_20100507_patched/md_energies.F
 *** src_20100507_latest_orig/md_energies.F	2010-03-23 13:42:39.000000000 +0000
---- src_20100507_updated/md_energies.F	2010-04-27 11:57:31.702009881 +0100
+--- src_20100507_patched/md_energies.F	2010-05-20 09:34:53.448608162 +0100
 ***************
 *** 40,45 ****
 --- 40,46 ----
@@ -3453,9 +3455,9 @@ diff -r -c src_20100507_latest_orig/md_energies.F src_20100507_updated/md_energi
                  simpar%ensemble == npt_f_ensemble.OR.&
                  simpar%ensemble == npe_i_ensemble.OR.&
                  simpar%ensemble == npe_f_ensemble) THEN
-diff -r -c src_20100507_latest_orig/md_run.F src_20100507_updated/md_run.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_run.F src_20100507_patched/md_run.F
 *** src_20100507_latest_orig/md_run.F	2010-03-23 12:03:28.000000000 +0000
---- src_20100507_updated/md_run.F	2010-04-07 16:00:31.047606208 +0100
+--- src_20100507_patched/md_run.F	2010-05-20 09:35:44.530905871 +0100
 ***************
 *** 35,46 ****
                                                force_env_type
@@ -3513,9 +3515,9 @@ diff -r -c src_20100507_latest_orig/md_run.F src_20100507_updated/md_run.F
            (simpar%ensemble==npe_f_ensemble).OR.&
            (simpar%ensemble==npe_i_ensemble).OR.&
            (simpar%ensemble==nph_uniaxial_ensemble).OR.&
-diff -r -c src_20100507_latest_orig/md_vel_utils.F src_20100507_updated/md_vel_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_vel_utils.F src_20100507_patched/md_vel_utils.F
 *** src_20100507_latest_orig/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_updated/md_vel_utils.F	2010-04-07 16:00:21.258957696 +0100
+--- src_20100507_patched/md_vel_utils.F	2010-05-20 09:35:46.554465018 +0100
 ***************
 *** 36,42 ****
     USE global_types,                    ONLY: global_environment_type
@@ -3562,9 +3564,9 @@ diff -r -c src_20100507_latest_orig/md_vel_utils.F src_20100507_updated/md_vel_u
          IF(simpar%temp_baro_tol > 0.0_dp) THEN
             CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
          END IF
-diff -r -c src_20100507_latest_orig/motion_utils.F src_20100507_updated/motion_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/motion_utils.F src_20100507_patched/motion_utils.F
 *** src_20100507_latest_orig/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_updated/motion_utils.F	2010-04-07 16:00:39.438626209 +0100
+--- src_20100507_patched/motion_utils.F	2010-05-20 09:33:59.418094842 +0100
 ***************
 *** 261,267 ****
       CHARACTER(LEN=4)                         :: id_dcd
@@ -3631,9 +3633,9 @@ diff -r -c src_20100507_latest_orig/motion_utils.F src_20100507_updated/motion_u
             ELSE
               WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
             END IF
-diff -r -c src_20100507_latest_orig/OBJECTDEFS src_20100507_updated/OBJECTDEFS
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/OBJECTDEFS src_20100507_patched/OBJECTDEFS
 *** src_20100507_latest_orig/OBJECTDEFS	2010-04-26 16:54:35.000000000 +0100
---- src_20100507_updated/OBJECTDEFS	2010-05-07 13:40:09.320107835 +0100
+--- src_20100507_patched/OBJECTDEFS	2010-05-20 09:35:43.097168309 +0100
 ***************
 *** 680,685 ****
 --- 680,686 ----
@@ -3644,9 +3646,9 @@ diff -r -c src_20100507_latest_orig/OBJECTDEFS src_20100507_updated/OBJECTDEFS
    util.o\
    velocity_verlet_control.o\
    vibrational_analysis.o\
-diff -r -c src_20100507_latest_orig/particle_types.F src_20100507_updated/particle_types.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/particle_types.F src_20100507_patched/particle_types.F
 *** src_20100507_latest_orig/particle_types.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_updated/particle_types.F	2010-04-07 16:00:29.986952230 +0100
+--- src_20100507_patched/particle_types.F	2010-05-20 09:33:55.689486830 +0100
 ***************
 *** 71,76 ****
 --- 71,80 ----
@@ -3682,9 +3684,9 @@ diff -r -c src_20100507_latest_orig/particle_types.F src_20100507_updated/partic
       END DO
   
     END SUBROUTINE allocate_particle_set
-diff -r -c src_20100507_latest_orig/simpar_methods.F src_20100507_updated/simpar_methods.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/simpar_methods.F src_20100507_patched/simpar_methods.F
 *** src_20100507_latest_orig/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/simpar_methods.F	2010-04-07 16:00:31.066455912 +0100
+--- src_20100507_patched/simpar_methods.F	2010-05-20 09:33:51.052472689 +0100
 ***************
 *** 23,29 ****
     USE input_constants,                 ONLY: &
@@ -3763,9 +3765,9 @@ diff -r -c src_20100507_latest_orig/simpar_methods.F src_20100507_updated/simpar
             tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
             CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
             CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
-diff -r -c src_20100507_latest_orig/thermal_region_utils.F src_20100507_updated/thermal_region_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermal_region_utils.F src_20100507_patched/thermal_region_utils.F
 *** src_20100507_latest_orig/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/thermal_region_utils.F	2010-04-07 16:00:40.943904947 +0100
+--- src_20100507_patched/thermal_region_utils.F	2010-05-20 09:34:00.862842523 +0100
 ***************
 *** 19,24 ****
 --- 19,25 ----
@@ -3786,9 +3788,9 @@ diff -r -c src_20100507_latest_orig/thermal_region_utils.F src_20100507_updated/
                            (simpar%ensemble == npt_i_ensemble)
          IF(apply_thermostat) THEN
            CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
-diff -r -c src_20100507_latest_orig/thermostat_methods.F src_20100507_updated/thermostat_methods.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_methods.F src_20100507_patched/thermostat_methods.F
 *** src_20100507_latest_orig/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/thermostat_methods.F	2010-04-07 16:00:08.552566593 +0100
+--- src_20100507_patched/thermostat_methods.F	2010-05-20 09:36:16.920982185 +0100
 ***************
 *** 46,52 ****
     USE input_constants,                 ONLY: &
@@ -3826,9 +3828,9 @@ diff -r -c src_20100507_latest_orig/thermostat_methods.F src_20100507_updated/th
                            (simpar%ensemble == npe_i_ensemble).OR.&
                            (simpar%ensemble == npe_f_ensemble)
   
-diff -r -c src_20100507_latest_orig/thermostat_utils.F src_20100507_updated/thermostat_utils.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_utils.F src_20100507_patched/thermostat_utils.F
 *** src_20100507_latest_orig/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/thermostat_utils.F	2010-04-07 16:00:37.125354854 +0100
+--- src_20100507_patched/thermostat_utils.F	2010-05-20 09:34:23.794638503 +0100
 ***************
 *** 31,37 ****
          do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
@@ -3863,9 +3865,9 @@ diff -r -c src_20100507_latest_orig/thermostat_utils.F src_20100507_updated/ther
          IF (ensemble==nve_ensemble) check = do_shell
          IF (check) THEN
             SELECT CASE(region)
-diff -r -c src_20100507_latest_orig/topology_coordinate_util.F src_20100507_updated/topology_coordinate_util.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinate_util.F src_20100507_patched/topology_coordinate_util.F
 *** src_20100507_latest_orig/topology_coordinate_util.F	2010-03-08 18:56:43.000000000 +0000
---- src_20100507_updated/topology_coordinate_util.F	2010-04-07 17:37:43.492343101 +0100
+--- src_20100507_patched/topology_coordinate_util.F	2010-05-20 09:35:47.761830867 +0100
 ***************
 *** 27,32 ****
 --- 27,33 ----
@@ -4402,9 +4404,253 @@ diff -r -c src_20100507_latest_orig/topology_coordinate_util.F src_20100507_upda
                   END IF
                END DO
             END DO
-diff -r -c src_20100507_latest_orig/topology.F src_20100507_updated/topology.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_exyz.F src_20100507_patched/topology_exyz.F
+*** src_20100507_latest_orig/topology_exyz.F	1970-01-01 01:00:00.000000000 +0100
+--- src_20100507_patched/topology_exyz.F	2010-05-20 09:35:55.446684995 +0100
+***************
+*** 0 ****
+--- 1,238 ----
++ MODULE topology_exyz
++   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
++                                              cp_print_key_unit_nr
++   USE cp_para_types,                   ONLY: cp_para_env_type
++   USE cp_parser_methods,               ONLY: parser_get_next_line,&
++                                              parser_get_object
++   USE cp_parser_types,                 ONLY: cp_parser_type,&
++                                              parser_create,&
++                                              parser_release
++   USE cp_units,                        ONLY: cp_unit_to_cp2k
++   USE f77_blas
++   USE input_section_types,             ONLY: section_vals_type
++   USE kinds,                           ONLY: default_string_length,&
++                                              dp
++   USE memory_utilities,                ONLY: reallocate
++   USE termination,                     ONLY: stop_program
++   USE timings,                         ONLY: timeset,&
++                                              timestop
++   USE topology_types,                  ONLY: atom_info_type,&
++                                              topology_parameters_type
++   USE libatoms_module,                 ONLY: atoms, &
++                                              extendable_str, &
++                                              zero,&
++                                              concat,&
++                                              assign_pointer,&
++                                              initialise,&
++                                              read_xyz,&
++                                              TABLE_STRING_LENGTH, &
++                                              finalise
++ #include "cp_common_uses.h"
++ 
++   IMPLICIT NONE
++ 
++   CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'topology_exyz'
++ 
++   PRIVATE
++   PUBLIC :: read_coordinate_exyz
++ 
++ CONTAINS
++ 
++ ! *****************************************************************************
++ !> \author Teodoro Laino
++ ! *****************************************************************************
++   SUBROUTINE read_coordinate_exyz (topology,para_env,subsys_section,error)
++     TYPE(topology_parameters_type)           :: topology
++     TYPE(cp_para_env_type), POINTER          :: para_env
++     TYPE(section_vals_type), POINTER         :: subsys_section
++     TYPE(cp_error_type), INTENT(inout)       :: error
++ 
++     CHARACTER(len=*), PARAMETER :: routineN = 'read_coordinate_exyz', &
++       routineP = moduleN//':'//routineN
++     INTEGER, PARAMETER                       :: nblock_atom = 1000
++ 
++     CHARACTER(LEN=default_string_length)     :: my_default_index
++     INTEGER                                  :: frame, handle, iw, j, natom
++     LOGICAL                                  :: failure, my_end
++     TYPE(atom_info_type), POINTER            :: atom_info
++     TYPE(cp_logger_type), POINTER            :: logger
++     TYPE(cp_parser_type), POINTER            :: parser
++     TYPE(Extendable_Str)                     :: es
++     TYPE(atoms)                              :: at
++     character(len=TABLE_STRING_LENGTH), pointer :: atmname(:), molname(:), resname(:), element(:)
++     integer, pointer                         :: resid(:)
++     REAL(KIND=dp), pointer                   :: atm_mass(:), atm_charge(:), occup(:), beta(:)
++ 
++     NULLIFY(parser, logger)
++     failure = .FALSE.
++     logger => cp_error_get_logger(error)
++     iw = cp_print_key_unit_nr(logger,subsys_section,"PRINT%TOPOLOGY_INFO/EXYZ_INFO",&
++          extension=".subsysLog",error=error)
++     CALL timeset(routineN,handle)
++ 
++     atom_info => topology%atom_info
++ 
++     IF(iw>0) WRITE(iw,*) "    Reading in EXYZ file ",TRIM(topology%coord_file_name)
++     CALL parser_create(parser,topology%coord_file_name, para_env=para_env, &
++                        parse_white_lines=.TRUE.,error=error)
++ 
++     call initialise(es)
++ 
++     natom = 0
++     frame = 0
++     CALL parser_get_next_line(parser,1,error=error)
++     Frames: DO
++        ! Atom numbers
++        CALL parser_get_object  (parser,natom,error=error)
++        frame = frame + 1
++        IF (frame == 1) THEN
++           CALL reallocate(atom_info%label_molname, 1,    natom)
++           CALL reallocate(atom_info%label_resname, 1,    natom)
++           CALL reallocate(atom_info%label_resid,   1,    natom)
++           CALL reallocate(atom_info%label_atmname, 1,    natom)
++           CALL reallocate(atom_info%r,             1,3,1,natom)
++           CALL reallocate(atom_info%atm_mass,      1,    natom)
++           CALL reallocate(atom_info%atm_charge,    1,    natom)
++           CALL reallocate(atom_info%occup,         1,    natom)
++           CALL reallocate(atom_info%beta,          1,    natom)
++           CALL reallocate(atom_info%element,       1,    natom)
++        ELSE IF(natom > SIZE(atom_info%label_atmname)) THEN
++           CALL stop_program (routineP,&
++                "Atom number differs in different frames!")
++        END IF
++ 
++        ! zero Extendable_Str, and concatentate number line
++        call zero(es)
++        call concat(es, trim(parser%input_line) // char(13))
++ 
++        ! concatentate comment line
++        CALL parser_get_next_line(parser,1,error=error)
++        call concat(es, trim(parser%input_line) // char(13))
++ 
++        DO j = 1, natom
++          ! concatentate atom line
++          CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
++          call concat(es, trim(parser%input_line) // char(13))
++          IF (my_end) THEN 
++             CALL cp_assert(j==natom,cp_fatal_level,cp_assertion_failed,routineP,&
++                  "Number of lines in EXYZ format not equal to the number of atoms."//&
++                  " Please check the EXYZ file and rerun your job!"//CPSourceFileRef,only_ionode=.TRUE.)
++             EXIT Frames
++          END IF
++        END DO
++ 
++        call read_xyz(at, es)
++        if (.not. assign_pointer(at, 'atom_type', atmname)) nullify(atmname)
++        if (.not. assign_pointer(at, 'atom_mol_name', molname)) nullify(molname)
++        if (.not. assign_pointer(at, 'atom_res_name', resname)) nullify(resname)
++        if (.not. assign_pointer(at, 'atom_res_number', resid)) nullify(resid)
++        if (.not. assign_pointer(at, 'element', element)) nullify(element)
++        if (.not. assign_pointer(at, 'atm_mass', atm_mass)) nullify(atm_mass)
++        if (.not. assign_pointer(at, 'atom_charge', atm_charge)) nullify(atm_charge)
++        if (.not. assign_pointer(at, 'occup', occup)) nullify(occup)
++        if (.not. assign_pointer(at, 'beta', beta)) nullify(beta)
++ 
++        DO j = 1, natom
++          if (associated(atmname)) then
++            atom_info%label_atmname(j) = trim(atmname(j))
++          else if (associated(at%species)) then
++            atom_info%label_atmname(j) = trim(at%species(j))
++          else if (associated(at%Z)) then
++            WRITE(my_default_index,'(I0)') at%Z(j)   
++            atom_info%label_atmname(j) = trim(my_default_index)
++          else
++            CALL stop_program (routineP,&
++                "read_coordinate_exyz couldn't find atmname, species, or Z property")
++          endif
++ 
++          WRITE(my_default_index,'(I0)')j   
++          if (associated(at%pos)) then
++            atom_info%r(:,j) = at%pos(:,j)
++          else
++            CALL stop_program (routineP,&
++                "read_coordinate_exyz couldn't find pos property")
++          endif
++          if (associated(molname)) then
++            atom_info%label_molname(j) = trim(molname(j))
++          else
++            atom_info%label_molname(j) = trim(atom_info%label_atmname(j)) // TRIM(my_default_index)
++          endif
++          if (associated(resname)) then
++            atom_info%label_resname(j) = trim(resname(j))
++          else
++            atom_info%label_resname(j) = trim(atom_info%label_molname(j))
++          endif
++          if (associated(resid)) then
++            atom_info%label_resid(j) = resid(j)
++          else
++            atom_info%label_resid(j) = 1
++          endif
++          if (associated(element)) then
++            atom_info%element(j) = element(j)
++          else if (associated(at%species)) then
++            atom_info%element(j) = trim(at%species(j))
++          else if (associated(at%Z)) then
++            WRITE(my_default_index,'(I0)') at%Z(j)   
++            atom_info%element(j) = trim(my_default_index)
++          else
++            CALL stop_program (routineP,&
++                "read_coordinate_exyz couldn't find element, species, or Z property")
++          endif
++          if (associated(atm_mass)) then
++            atom_info%atm_mass(j) = atm_mass(j)
++          else
++            atom_info%atm_mass(j) = HUGE(0.0_dp)
++          endif
++          if (associated(atm_charge)) then
++            atom_info%atm_charge(j) = atm_charge(j)
++          else
++            atom_info%atm_charge(j) = -HUGE(0.0_dp)
++          endif
++          if (associated(occup)) then
++            atom_info%occup(j) = occup(j)
++          else
++            atom_info%occup(j) = -HUGE(0.0_dp)
++          endif
++          if (associated(beta)) then
++            atom_info%beta(j) = beta(j)
++          else
++            atom_info%beta(j) = -HUGE(0.0_dp)
++          endif
++          if (topology%charge_occup) atom_info%atm_charge(j) = atom_info%occup(j)
++          if (topology%charge_beta) atom_info%atm_charge(j) = atom_info%beta(j)
++ 
++           IF(iw>0) WRITE(iw,'(T2,"EXYZ_INFO| ",A4,3F8.3,A4,I4)') &
++                TRIM(atom_info%label_atmname(j)),&
++                atom_info%r(1,j),&
++                atom_info%r(2,j),&
++                atom_info%r(3,j),&
++                TRIM(atom_info%label_resname(j)),&
++                atom_info%label_resid(j)
++           atom_info%r(1,j) = cp_unit_to_cp2k(atom_info%r(1,j),"angstrom",error=error)
++           atom_info%r(2,j) = cp_unit_to_cp2k(atom_info%r(2,j),"angstrom",error=error)
++           atom_info%r(3,j) = cp_unit_to_cp2k(atom_info%r(3,j),"angstrom",error=error)
++ 
++        END DO
++ 
++        ! If there's a white line or end of file exit.. otherwise read other available
++        ! snapshots
++        CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
++        my_end = my_end .OR. (LEN_TRIM(parser%input_line)==0)
++        IF (my_end) EXIT Frames
++ 
++     END DO Frames
++     CALL parser_release(parser,error=error)
++ 
++     topology%natoms            = natom
++     topology%molname_generated = .TRUE.
++ 
++     call finalise(es)
++     call finalise(at)
++ 
++     CALL timestop(handle)
++     CALL cp_print_key_finished_output(iw,logger,subsys_section,&
++          "PRINT%TOPOLOGY_INFO/EXYZ_INFO",error=error)
++ 
++   END SUBROUTINE read_coordinate_exyz
++ 
++ END MODULE topology_exyz
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology.F src_20100507_patched/topology.F
 *** src_20100507_latest_orig/topology.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/topology.F	2010-04-07 16:00:44.116303902 +0100
+--- src_20100507_patched/topology.F	2010-05-20 09:33:54.027135567 +0100
 ***************
 *** 26,32 ****
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
@@ -4443,9 +4689,9 @@ diff -r -c src_20100507_latest_orig/topology.F src_20100507_updated/topology.F
       CASE (do_coord_cif)
          CALL read_coordinate_cif (topology,para_env,subsys_section,error)
       CASE (do_coord_xtl)
-diff -r -c src_20100507_latest_orig/velocity_verlet_control.F src_20100507_updated/velocity_verlet_control.F
+diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/velocity_verlet_control.F src_20100507_patched/velocity_verlet_control.F
 *** src_20100507_latest_orig/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_updated/velocity_verlet_control.F	2010-04-07 16:00:21.047498706 +0100
+--- src_20100507_patched/velocity_verlet_control.F	2010-05-20 09:36:39.002534615 +0100
 ***************
 *** 16,24 ****
     USE input_constants,                 ONLY: &
