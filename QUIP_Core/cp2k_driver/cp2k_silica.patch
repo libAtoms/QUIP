@@ -1,6 +1,6 @@
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_types.F src_20100507_patched/barostat_types.F
-*** src_20100507_latest_orig/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_patched/barostat_types.F	2010-05-20 09:35:01.684715303 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/barostat_types.F src_20100521_patched/barostat_types.F
+*** src_20100521_latest_orig/barostat_types.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100521_patched/barostat_types.F	2010-05-21 10:49:13.863092489 +0100
 ***************
 *** 21,27 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -29,9 +29,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_types.F s
           simpar%ensemble == npe_f_ensemble .OR. &
           simpar%ensemble == npe_i_ensemble .OR. &
           simpar%ensemble == nph_uniaxial_ensemble .OR. &
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_utils.F src_20100507_patched/barostat_utils.F
-*** src_20100507_latest_orig/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_patched/barostat_utils.F	2010-05-20 09:35:39.955088019 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/barostat_utils.F src_20100521_patched/barostat_utils.F
+*** src_20100521_latest_orig/barostat_utils.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100521_patched/barostat_utils.F	2010-05-21 10:49:25.839546042 +0100
 ***************
 *** 19,25 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -62,9 +62,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/barostat_utils.F s
       END IF
   
     END SUBROUTINE get_baro_energies
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/constraint.F src_20100507_patched/constraint.F
-*** src_20100507_latest_orig/constraint.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_patched/constraint.F	2010-05-20 09:36:20.563035366 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/constraint.F src_20100521_patched/constraint.F
+*** src_20100521_latest_orig/constraint.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100521_patched/constraint.F	2010-05-21 10:50:37.700636851 +0100
 ***************
 *** 43,49 ****
     USE distribution_1d_types,           ONLY: distribution_1d_type
@@ -105,9 +105,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/constraint.F src_2
       END IF
       DO k = 1, SIZE(vel,2)
          atomic_kind=>particle_set (k) % atomic_kind
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_methods.F src_20100507_patched/cp_ddapc_methods.F
-*** src_20100507_latest_orig/cp_ddapc_methods.F	2010-04-08 20:18:04.000000000 +0100
---- src_20100507_patched/cp_ddapc_methods.F	2010-05-20 09:36:31.130325067 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/cp_ddapc_methods.F src_20100521_patched/cp_ddapc_methods.F
+*** src_20100521_latest_orig/cp_ddapc_methods.F	2010-04-08 20:18:04.000000000 +0100
+--- src_20100521_patched/cp_ddapc_methods.F	2010-05-21 10:49:54.114502147 +0100
 ***************
 *** 506,512 ****
             DEALLOCATE(AmE, stat=stat)
@@ -126,9 +126,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_methods.F
          IF (iw>0) THEN
             WRITE(iw,'(T3,A,F15.9)')" Error inverting the A matrix: ", inv_error
          END IF
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_util.F src_20100507_patched/cp_ddapc_util.F
-*** src_20100507_latest_orig/cp_ddapc_util.F	2010-01-03 23:41:26.000000000 +0000
---- src_20100507_patched/cp_ddapc_util.F	2010-05-20 09:35:11.478264709 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/cp_ddapc_util.F src_20100521_patched/cp_ddapc_util.F
+*** src_20100521_latest_orig/cp_ddapc_util.F	2010-01-03 23:41:26.000000000 +0000
+--- src_20100521_patched/cp_ddapc_util.F	2010-05-21 10:50:17.879752449 +0100
 ***************
 *** 238,243 ****
 --- 238,246 ----
@@ -254,9 +254,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/cp_ddapc_util.F sr
             CALL timestop(handle3)
          END IF
          !
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/csvr_system_mapping.F src_20100507_patched/csvr_system_mapping.F
-*** src_20100507_latest_orig/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_patched/csvr_system_mapping.F	2010-05-20 09:35:03.553094658 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/csvr_system_mapping.F src_20100521_patched/csvr_system_mapping.F
+*** src_20100521_latest_orig/csvr_system_mapping.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100521_patched/csvr_system_mapping.F	2010-05-21 10:49:40.047388500 +0100
 ***************
 *** 22,28 ****
          do_thermo_no_communication, do_thermo_only_master, isokin_ensemble, &
@@ -325,10 +325,10 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/csvr_system_mappin
   
          CALL setup_csvr_thermostat(csvr, thermostat_info, deg_of_freedom, massive_shell_list,&
               molecule_kind_set, local_molecules, molecule_set, para_env, nshell_local, &
-Common subdirectories: src_20100507_latest_orig/CVS and src_20100507_patched/CVS
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/ewald_spline_util.F src_20100507_patched/ewald_spline_util.F
-*** src_20100507_latest_orig/ewald_spline_util.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_patched/ewald_spline_util.F	2010-05-20 09:34:30.960151570 +0100
+Common subdirectories: src_20100521_latest_orig/CVS and src_20100521_patched/CVS
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/ewald_spline_util.F src_20100521_patched/ewald_spline_util.F
+*** src_20100521_latest_orig/ewald_spline_util.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100521_patched/ewald_spline_util.F	2010-05-21 10:50:12.519608415 +0100
 ***************
 *** 41,46 ****
 --- 41,49 ----
@@ -410,9 +410,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/ewald_spline_util.
   
       Fake_LoopOnGrid: DO k = gbo(1,3), gbo(2,3)
          my_k = k
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/extended_system_init.F src_20100507_patched/extended_system_init.F
-*** src_20100507_latest_orig/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
---- src_20100507_patched/extended_system_init.F	2010-05-20 09:36:41.425230851 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/extended_system_init.F src_20100521_patched/extended_system_init.F
+*** src_20100521_latest_orig/extended_system_init.F	2010-01-03 23:41:27.000000000 +0000
+--- src_20100521_patched/extended_system_init.F	2010-05-21 10:50:25.852322017 +0100
 ***************
 *** 32,38 ****
                                                nph_uniaxial_damped_ensemble,&
@@ -456,9 +456,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/extended_system_in
       END SELECT
       ! initializing velocities
       DO i = 1, SIZE ( npt,1)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_force.F src_20100507_patched/fist_force.F
-*** src_20100507_latest_orig/fist_force.F	2010-05-05 10:28:28.000000000 +0100
---- src_20100507_patched/fist_force.F	2010-05-20 09:36:34.366753880 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_force.F src_20100521_patched/fist_force.F
+*** src_20100521_latest_orig/fist_force.F	2010-05-05 10:28:28.000000000 +0100
+--- src_20100521_patched/fist_force.F	2010-05-21 10:51:01.185903534 +0100
 ***************
 *** 52,57 ****
 --- 52,62 ----
@@ -712,9 +712,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_force.F src_2
       END IF
       CALL cp_print_key_finished_output(iw,logger,mm_section,"PRINT%DERIVATIVES",error=error)
       CALL cp_print_key_finished_output(iw2,logger,mm_section,"PRINT%EWALD_INFO",error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_intra_force.F src_20100507_patched/fist_intra_force.F
-*** src_20100507_latest_orig/fist_intra_force.F	2010-04-20 23:00:29.000000000 +0100
---- src_20100507_patched/fist_intra_force.F	2010-05-20 09:34:39.912577973 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/fist_intra_force.F src_20100521_patched/fist_intra_force.F
+*** src_20100521_latest_orig/fist_intra_force.F	2010-05-09 18:40:05.000000000 +0100
+--- src_20100521_patched/fist_intra_force.F	2010-05-21 10:50:56.656168845 +0100
 ***************
 *** 13,24 ****
 --- 13,34 ----
@@ -1239,8 +1239,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_intra_force.F
             ONEF: DO ionef = 1, nonefs
                index_a = onef_list ( ionef ) % a + first_atom - 1
 ***************
-*** 535,546 ****
---- 860,1923 ----
+*** 532,543 ****
+--- 857,1920 ----
                   f_onef(:,index_b) = f_onef(:,index_b) + rij*fscalar
                END IF
             END DO ONEF
@@ -2305,9 +2305,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/fist_intra_force.F
   
   END MODULE fist_intra_force
   
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/force_env_methods.F src_20100507_patched/force_env_methods.F
-*** src_20100507_latest_orig/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
---- src_20100507_patched/force_env_methods.F	2010-05-20 09:36:22.491424008 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/force_env_methods.F src_20100521_patched/force_env_methods.F
+*** src_20100521_latest_orig/force_env_methods.F	2010-03-03 19:35:02.000000000 +0000
+--- src_20100521_patched/force_env_methods.F	2010-05-21 10:49:13.779471031 +0100
 ***************
 *** 119,124 ****
 --- 119,127 ----
@@ -2333,9 +2333,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/force_env_methods.
          END IF
          CALL cp_print_key_finished_output(output_unit,logger,force_env%force_env_section,&
               "PRINT%PROGRAM_RUN_INFO",error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_constants.F src_20100507_patched/input_constants.F
-*** src_20100507_latest_orig/input_constants.F	2010-03-10 12:51:50.000000000 +0000
---- src_20100507_patched/input_constants.F	2010-05-20 09:36:19.426458956 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_constants.F src_20100521_patched/input_constants.F
+*** src_20100521_latest_orig/input_constants.F	2010-03-10 12:51:50.000000000 +0000
+--- src_20100521_patched/input_constants.F	2010-05-21 10:51:04.602050468 +0100
 ***************
 *** 105,111 ****
                                                 reftraj_ensemble=9,&
@@ -2374,9 +2374,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_constants.F 
     INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
                                                 do_ff_quartic=1,&
                                                 do_ff_g96=2,&
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_check.F src_20100507_patched/input_cp2k_check.F
-*** src_20100507_latest_orig/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
---- src_20100507_patched/input_cp2k_check.F	2010-05-20 09:34:33.142933600 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_check.F src_20100521_patched/input_cp2k_check.F
+*** src_20100521_latest_orig/input_cp2k_check.F	2010-03-13 23:18:03.000000000 +0000
+--- src_20100521_patched/input_cp2k_check.F	2010-05-21 12:04:07.241788111 +0100
 ***************
 *** 22,28 ****
     USE input_constants,                 ONLY: &
@@ -2407,13 +2407,13 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_check.F
             flag = check_restart(input_file, restart_file, "MOTION%MD", error)
             IF(flag) THEN
                CALL section_vals_val_get(input_file,"MOTION%MD%ENSEMBLE",i_val=ensemble,error=error)
-!              IF(ensemble == npt_i_ensemble .OR. ensemble==npt_f_ensemble .or. npt_y_ensemble) THEN
+!              IF(ensemble == npt_i_ensemble .OR. ensemble==npt_f_ensemble .or. ensemble==npt_y_ensemble) THEN
                   CALL section_vals_val_get(r_section,"RESTART_BAROSTAT_THERMOSTAT",l_val=flag,error=error)
                   check = check_restart(input_file, restart_file, "MOTION%MD%BAROSTAT", error)
                   CALL restart_thermostat(flag, input_file, restart_file, "MOTION%MD%BAROSTAT%THERMOSTAT", &
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_mm.F src_20100507_patched/input_cp2k_mm.F
-*** src_20100507_latest_orig/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
---- src_20100507_patched/input_cp2k_mm.F	2010-05-20 09:33:51.136686552 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_mm.F src_20100521_patched/input_cp2k_mm.F
+*** src_20100521_latest_orig/input_cp2k_mm.F	2010-03-21 20:29:55.000000000 +0000
+--- src_20100521_patched/input_cp2k_mm.F	2010-05-21 10:49:25.597764156 +0100
 ***************
 *** 232,237 ****
 --- 232,238 ----
@@ -2478,9 +2478,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_mm.F sr
          CALL create_IMPROPER_section(subsection, error=error)
          CALL section_add_subsection(section, subsection, error=error)
          CALL section_release(subsection,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_motion.F src_20100507_patched/input_cp2k_motion.F
-*** src_20100507_latest_orig/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
---- src_20100507_patched/input_cp2k_motion.F	2010-05-20 09:34:15.975742774 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_motion.F src_20100521_patched/input_cp2k_motion.F
+*** src_20100521_latest_orig/input_cp2k_motion.F	2010-02-18 13:57:21.000000000 +0000
+--- src_20100521_patched/input_cp2k_motion.F	2010-05-21 10:51:03.649012174 +0100
 ***************
 *** 128,133 ****
 --- 128,152 ----
@@ -2554,9 +2554,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_motion.
               nph_uniaxial_ensemble,nph_uniaxial_damped_ensemble,nph_ensemble,isokin_ensemble,&
               reftraj_ensemble,langevin_ensemble, npe_f_ensemble, npe_i_ensemble/),error=error)
          CALL section_add_keyword(section,keyword,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_subsys.F src_20100507_patched/input_cp2k_subsys.F
-*** src_20100507_latest_orig/input_cp2k_subsys.F	2010-03-20 04:09:38.000000000 +0000
---- src_20100507_patched/input_cp2k_subsys.F	2010-05-20 09:35:02.652974358 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/input_cp2k_subsys.F src_20100521_patched/input_cp2k_subsys.F
+*** src_20100521_latest_orig/input_cp2k_subsys.F	2010-05-07 17:59:31.000000000 +0100
+--- src_20100521_patched/input_cp2k_subsys.F	2010-05-21 10:49:33.924112388 +0100
 ***************
 *** 377,382 ****
 --- 377,387 ----
@@ -2637,11 +2637,11 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_subsys.
 +        CALL section_add_keyword(section,keyword,error=error)
 +        CALL keyword_release(keyword,error=error)
 + 
-         CALL keyword_create(keyword, name="MULTIPLE_UNIT_CELL",&
-              description="Specifies the numbers of repetition in space (X, Y, Z) of the defined cell, "//&
-              "assuming it as a unit cell. This keyword affects only the coordinates specification. The same keyword "//&
+         CALL keyword_create(keyword, name="AUTOGEN_EXCLUDE_LISTS",&
+              description="When True, the exclude lists are solely based on"//&
+                          " the bond data in the topology. The (minimal)"//&
 ***************
-*** 1676,1687 ****
+*** 1694,1705 ****
               "applied to all bond kinds. When this section is present the 1-2 exclusion "//&
               "is applied ONLY to the bonds defined herein. This section allows ONLY fine tuning of 1-2 "//&
               "interactions. ",&
@@ -2654,7 +2654,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_subsys.
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
---- 1703,1721 ----
+--- 1721,1739 ----
               "applied to all bond kinds. When this section is present the 1-2 exclusion "//&
               "is applied ONLY to the bonds defined herein. This section allows ONLY fine tuning of 1-2 "//&
               "interactions. ",&
@@ -2674,9 +2674,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/input_cp2k_subsys.
               n_var=2, error=error)
          CALL section_add_keyword(section,keyword,error=error)
          CALL keyword_release(keyword,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator.F src_20100507_patched/integrator.F
-*** src_20100507_latest_orig/integrator.F	2010-02-11 22:31:20.000000000 +0000
---- src_20100507_patched/integrator.F	2010-05-20 09:35:38.641921864 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/integrator.F src_20100521_patched/integrator.F
+*** src_20100521_latest_orig/integrator.F	2010-02-11 22:31:20.000000000 +0000
+--- src_20100521_patched/integrator.F	2010-05-21 10:50:20.567241702 +0100
 ***************
 *** 100,106 ****
   
@@ -3121,9 +3121,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator.F src_2
 + 
   END MODULE integrator
   
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator_utils.F src_20100507_patched/integrator_utils.F
-*** src_20100507_latest_orig/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
---- src_20100507_patched/integrator_utils.F	2010-05-20 09:34:12.908289641 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/integrator_utils.F src_20100521_patched/integrator_utils.F
+*** src_20100521_latest_orig/integrator_utils.F	2010-01-03 23:41:35.000000000 +0000
+--- src_20100521_patched/integrator_utils.F	2010-05-21 10:50:12.851241591 +0100
 ***************
 *** 26,32 ****
     USE input_constants,                 ONLY: &
@@ -3184,10 +3184,10 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/integrator_utils.F
       END SELECT
   
     END SUBROUTINE rescaled_vv_first
-Common subdirectories: src_20100507_latest_orig/lib and src_20100507_patched/lib
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/mathlib.F src_20100507_patched/mathlib.F
-*** src_20100507_latest_orig/mathlib.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_patched/mathlib.F	2010-05-20 09:34:41.343281552 +0100
+Common subdirectories: src_20100521_latest_orig/lib and src_20100521_patched/lib
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/mathlib.F src_20100521_patched/mathlib.F
+*** src_20100521_latest_orig/mathlib.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100521_patched/mathlib.F	2010-05-21 10:50:08.419205856 +0100
 ***************
 *** 466,472 ****
   !>       -            "T" => invert transpose(a)
@@ -3289,9 +3289,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/mathlib.F src_2010
   
       ! Release work storage
       DEALLOCATE (work,STAT=stat)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_conserved_quantities.F src_20100507_patched/md_conserved_quantities.F
-*** src_20100507_latest_orig/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_patched/md_conserved_quantities.F	2010-05-20 09:35:49.670018166 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_conserved_quantities.F src_20100521_patched/md_conserved_quantities.F
+*** src_20100521_latest_orig/md_conserved_quantities.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100521_patched/md_conserved_quantities.F	2010-05-21 10:51:03.165539728 +0100
 ***************
 *** 28,34 ****
          dyn_coeff_mass_global, isokin_ensemble, langevin_ensemble, &
@@ -3326,9 +3326,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_conserved_quant
          CALL get_econs_npt (md_env, md_ener,  para_env, error=error)
          md_ener%temp_baro = md_ener%temp_baro*kelvin
       CASE (  nph_uniaxial_ensemble )
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_energies.F src_20100507_patched/md_energies.F
-*** src_20100507_latest_orig/md_energies.F	2010-03-23 13:42:39.000000000 +0000
---- src_20100507_patched/md_energies.F	2010-05-20 09:34:53.448608162 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_energies.F src_20100521_patched/md_energies.F
+*** src_20100521_latest_orig/md_energies.F	2010-03-23 13:42:39.000000000 +0000
+--- src_20100521_patched/md_energies.F	2010-05-21 10:50:31.828053746 +0100
 ***************
 *** 40,45 ****
 --- 40,46 ----
@@ -3455,9 +3455,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_energies.F src_
                  simpar%ensemble == npt_f_ensemble.OR.&
                  simpar%ensemble == npe_i_ensemble.OR.&
                  simpar%ensemble == npe_f_ensemble) THEN
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_run.F src_20100507_patched/md_run.F
-*** src_20100507_latest_orig/md_run.F	2010-03-23 12:03:28.000000000 +0000
---- src_20100507_patched/md_run.F	2010-05-20 09:35:44.530905871 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_run.F src_20100521_patched/md_run.F
+*** src_20100521_latest_orig/md_run.F	2010-03-23 12:03:28.000000000 +0000
+--- src_20100521_patched/md_run.F	2010-05-21 10:50:09.776159542 +0100
 ***************
 *** 35,46 ****
                                                force_env_type
@@ -3515,9 +3515,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_run.F src_20100
            (simpar%ensemble==npe_f_ensemble).OR.&
            (simpar%ensemble==npe_i_ensemble).OR.&
            (simpar%ensemble==nph_uniaxial_ensemble).OR.&
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_vel_utils.F src_20100507_patched/md_vel_utils.F
-*** src_20100507_latest_orig/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_patched/md_vel_utils.F	2010-05-20 09:35:46.554465018 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/md_vel_utils.F src_20100521_patched/md_vel_utils.F
+*** src_20100521_latest_orig/md_vel_utils.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100521_patched/md_vel_utils.F	2010-05-21 10:50:40.235795540 +0100
 ***************
 *** 36,42 ****
     USE global_types,                    ONLY: global_environment_type
@@ -3564,9 +3564,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/md_vel_utils.F src
          IF(simpar%temp_baro_tol > 0.0_dp) THEN
             CALL scale_velocity_baro(md_env, md_ener, simpar%temp_baro_ext, simpar%temp_baro_tol, iw, error)
          END IF
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/motion_utils.F src_20100507_patched/motion_utils.F
-*** src_20100507_latest_orig/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_patched/motion_utils.F	2010-05-20 09:33:59.418094842 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/motion_utils.F src_20100521_patched/motion_utils.F
+*** src_20100521_latest_orig/motion_utils.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100521_patched/motion_utils.F	2010-05-21 10:49:41.700606632 +0100
 ***************
 *** 261,267 ****
       CHARACTER(LEN=4)                         :: id_dcd
@@ -3633,9 +3633,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/motion_utils.F src
             ELSE
               WRITE (UNIT=title,FMT="(A,I8,A,F20.10)")" i = ",it,", E = ",etot
             END IF
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/OBJECTDEFS src_20100507_patched/OBJECTDEFS
-*** src_20100507_latest_orig/OBJECTDEFS	2010-04-26 16:54:35.000000000 +0100
---- src_20100507_patched/OBJECTDEFS	2010-05-20 09:35:43.097168309 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/OBJECTDEFS src_20100521_patched/OBJECTDEFS
+*** src_20100521_latest_orig/OBJECTDEFS	2010-04-26 16:54:35.000000000 +0100
+--- src_20100521_patched/OBJECTDEFS	2010-05-21 10:49:46.695289556 +0100
 ***************
 *** 680,685 ****
 --- 680,686 ----
@@ -3646,9 +3646,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/OBJECTDEFS src_201
    util.o\
    velocity_verlet_control.o\
    vibrational_analysis.o\
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/particle_types.F src_20100507_patched/particle_types.F
-*** src_20100507_latest_orig/particle_types.F	2010-01-03 23:41:36.000000000 +0000
---- src_20100507_patched/particle_types.F	2010-05-20 09:33:55.689486830 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/particle_types.F src_20100521_patched/particle_types.F
+*** src_20100521_latest_orig/particle_types.F	2010-01-03 23:41:36.000000000 +0000
+--- src_20100521_patched/particle_types.F	2010-05-21 10:50:11.225476639 +0100
 ***************
 *** 71,76 ****
 --- 71,80 ----
@@ -3684,9 +3684,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/particle_types.F s
       END DO
   
     END SUBROUTINE allocate_particle_set
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/simpar_methods.F src_20100507_patched/simpar_methods.F
-*** src_20100507_latest_orig/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/simpar_methods.F	2010-05-20 09:33:51.052472689 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/simpar_methods.F src_20100521_patched/simpar_methods.F
+*** src_20100521_latest_orig/simpar_methods.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/simpar_methods.F	2010-05-21 10:50:07.938386715 +0100
 ***************
 *** 23,29 ****
     USE input_constants,                 ONLY: &
@@ -3765,9 +3765,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/simpar_methods.F s
             tmp_section => section_vals_get_subs_vals(md_section,"BAROSTAT",error=error)
             CALL section_vals_val_get(tmp_section,"PRESSURE",r_val=simpar%p_ext,error=error)
             CALL section_vals_val_get(tmp_section,"TIMECON",r_val=simpar%tau_cell,error=error)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermal_region_utils.F src_20100507_patched/thermal_region_utils.F
-*** src_20100507_latest_orig/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/thermal_region_utils.F	2010-05-20 09:34:00.862842523 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermal_region_utils.F src_20100521_patched/thermal_region_utils.F
+*** src_20100521_latest_orig/thermal_region_utils.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/thermal_region_utils.F	2010-05-21 10:49:20.593330620 +0100
 ***************
 *** 19,24 ****
 --- 19,25 ----
@@ -3788,9 +3788,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermal_region_uti
                            (simpar%ensemble == npt_i_ensemble)
          IF(apply_thermostat) THEN
            CALL cp_assert(.FALSE.,cp_warning_level,cp_assertion_failed,routineP,&
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_methods.F src_20100507_patched/thermostat_methods.F
-*** src_20100507_latest_orig/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/thermostat_methods.F	2010-05-20 09:36:16.920982185 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermostat_methods.F src_20100521_patched/thermostat_methods.F
+*** src_20100521_latest_orig/thermostat_methods.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/thermostat_methods.F	2010-05-21 10:50:36.696949179 +0100
 ***************
 *** 46,52 ****
     USE input_constants,                 ONLY: &
@@ -3828,9 +3828,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_methods
                            (simpar%ensemble == npe_i_ensemble).OR.&
                            (simpar%ensemble == npe_f_ensemble)
   
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_utils.F src_20100507_patched/thermostat_utils.F
-*** src_20100507_latest_orig/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/thermostat_utils.F	2010-05-20 09:34:23.794638503 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/thermostat_utils.F src_20100521_patched/thermostat_utils.F
+*** src_20100521_latest_orig/thermostat_utils.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/thermostat_utils.F	2010-05-21 10:50:29.164615777 +0100
 ***************
 *** 31,37 ****
          do_thermo_no_communication, do_thermo_nose, dyn_coeff_mass_global, &
@@ -3865,9 +3865,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/thermostat_utils.F
          IF (ensemble==nve_ensemble) check = do_shell
          IF (check) THEN
             SELECT CASE(region)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinate_util.F src_20100507_patched/topology_coordinate_util.F
-*** src_20100507_latest_orig/topology_coordinate_util.F	2010-03-08 18:56:43.000000000 +0000
---- src_20100507_patched/topology_coordinate_util.F	2010-05-20 09:35:47.761830867 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_coordinate_util.F src_20100521_patched/topology_coordinate_util.F
+*** src_20100521_latest_orig/topology_coordinate_util.F	2010-05-07 17:59:32.000000000 +0100
+--- src_20100521_patched/topology_coordinate_util.F	2010-05-21 10:50:14.077244229 +0100
 ***************
 *** 27,32 ****
 --- 27,33 ----
@@ -3879,28 +3879,17 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
     USE kinds,                           ONLY: default_string_length,&
                                                dp
 ***************
-*** 97,108 ****
-      CHARACTER(LEN=default_string_length), &
-        POINTER                                :: work(:)
-      INTEGER :: counter, dim0, dim1, dim2, dim3, first, handle, handle2, i, &
-!       iatom, ikind, iw, j, k, last, method_name_id, n, natom, position, stat
+*** 99,110 ****
+--- 100,114 ----
+      INTEGER :: atom_i, atom_j, counter, dim0, dim1, dim2, dim3, first, &
+        handle, handle2, i, iatom, ikind, iw, j, k, last, method_name_id, n, &
+        natom, position, stat
++     INTEGER :: n_rep12, n_rep13
       INTEGER, DIMENSION(:), POINTER           :: iatomlist, kind_of, list, &
                                                   list2, molecule_list, &
                                                   natom_of_kind, wlist
-      LOGICAL :: check, do_center, explicit, failure, found, my_qmmm, &
-        present_12_excl_ei_list, present_12_excl_vdw_list
-      REAL(KIND=dp)                            :: bounds(2,3), cdims(3), &
-                                                  dims(3), qeff, vec(3)
-      REAL(KIND=dp), DIMENSION(:), POINTER     :: charge, cpoint, mass
---- 98,111 ----
-      CHARACTER(LEN=default_string_length), &
-        POINTER                                :: work(:)
-      INTEGER :: counter, dim0, dim1, dim2, dim3, first, handle, handle2, i, &
-!       iatom, ikind, iw, j, k, last, method_name_id, n, natom, position, stat, n_rep12, n_rep13
-      INTEGER, DIMENSION(:), POINTER           :: iatomlist, kind_of, list, &
-                                                  list2, molecule_list, &
-                                                  natom_of_kind, wlist
-      LOGICAL :: check, do_center, explicit, failure, found, my_qmmm, &
+      INTEGER, DIMENSION(:, :), POINTER        :: pairs
+      LOGICAL :: autogen, check, do_center, explicit, failure, found, my_qmmm, &
         present_12_excl_ei_list, present_12_excl_vdw_list
 +     LOGICAL ::  present_13_excl_ei_list, present_13_excl_vdw_list, &
 +       exclude_14_vdw, exclude_14_ei
@@ -3908,8 +3897,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
                                                   dims(3), qeff, vec(3)
       REAL(KIND=dp), DIMENSION(:), POINTER     :: charge, cpoint, mass
 ***************
-*** 110,115 ****
---- 113,120 ----
+*** 112,117 ****
+--- 116,123 ----
         POINTER                                :: ex_bend_list, ex_bond_list, &
                                                   ex_bond_list_ei, &
                                                   ex_bond_list_vdw, ex_onfo_list
@@ -3919,8 +3908,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
       TYPE(atom_type), DIMENSION(:), POINTER   :: atom_list
       TYPE(atomic_kind_type), POINTER          :: atomic_kind
 ***************
-*** 120,125 ****
---- 125,131 ----
+*** 122,127 ****
+--- 128,134 ----
       TYPE(molecule_type), POINTER             :: molecule
       TYPE(section_vals_type), POINTER         :: exclude_section, &
                                                   topology_section
@@ -3929,8 +3918,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
       failure = .FALSE.
       NULLIFY(logger)
 ***************
-*** 372,377 ****
---- 378,389 ----
+*** 374,379 ****
+--- 381,392 ----
          END IF
          particle_set(i)%atomic_kind => atomic_kind_set(ikind)
          particle_set(i)%r(:) = atom_info%r(:,i) - dims
@@ -3944,7 +3933,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          NULLIFY(particle_set(i)%list_exclude_ei)
       END DO
 ***************
-*** 399,412 ****
+*** 401,414 ****
         CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
       END IF
   
@@ -3959,7 +3948,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          ALLOCATE(ex_bond_list_vdw(natom),stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
---- 411,455 ----
+--- 414,458 ----
         CALL reorder_structure(ex_bond_list, conn_info%bond_a, conn_info%bond_b, N, error)
       END IF
   
@@ -4006,7 +3995,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
 ***************
-*** 414,429 ****
+*** 416,431 ****
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          ENDDO
          CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
@@ -4023,7 +4012,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          ALLOCATE(ex_bond_list_ei(natom),stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
---- 457,493 ----
+--- 460,496 ----
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          ENDDO
          CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_vdw,&
@@ -4062,7 +4051,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          DO I=1,natom
 ***************
-*** 431,454 ****
+*** 433,495 ****
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          ENDDO
          CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
@@ -4072,22 +4061,61 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
       END IF
 ! 
 ! 
+!     CALL section_vals_val_get(topology_section, "AUTOGEN_EXCLUDE_LISTS", &
+!          l_val=autogen, error=error)
 !     ! Reorder bends
 !     ALLOCATE(ex_bend_list(natom),stat=stat)
 !     CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 !     DO I=1,natom
 !        ALLOCATE(ex_bend_list(I)%array1(0),stat=stat)
-         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 !     ENDDO
-!     N = 0
-!     IF(ASSOCIATED(conn_info%theta_a)) THEN
-!       N = SIZE(conn_info%theta_a)
-!       CALL reorder_structure(ex_bend_list, conn_info%theta_a, conn_info%theta_c, N, error)
+!     IF (autogen) THEN
+!        ! Construct autogenerated 1-3 pairs, i.e. all possible 1-3 pairs instead
+!        ! of only the bends that are present in the topology.
+!        ALLOCATE(pairs(0,2),stat=stat)
+!        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+!        N = 0
+!        DO iatom = 1, natom
+!           DO i = 1, SIZE(ex_bond_list(iatom)%array1)
+!              ! a neighboring atom of iatom:
+!              atom_i = ex_bond_list(iatom)%array1(i)
+!              DO j = 1, i-1
+!                 ! another neighboring atom of iatom
+!                 atom_j = ex_bond_list(iatom)%array1(j)
+!                 ! It is only a true bend if there is no shorter path.
+!                 ! No need to check if i and j correspond to the same atom.
+!                 ! Check if i and j are not involved in a bond:
+!                 check = .FALSE.
+!                 DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
+!                   IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
+!                      check = .TRUE.
+!                      EXIT
+!                   END IF
+!                 END DO
+!                 IF (check) CYCLE
+!                 ! Add the genuine 1-3 pair
+!                 N = N + 1
+!                 IF (SIZE(pairs,dim=1)<=N) THEN
+!                    CALL reallocate(pairs, 1, N+5, 1, 2)
+!                 END IF
+!                 pairs(N,1) = atom_i
+!                 pairs(N,2) = atom_j
+!              END DO
+!           END DO
+!        END DO
+!        CALL reorder_structure(ex_bend_list, pairs(:,1), pairs(:,2), N, error)
+!        DEALLOCATE(pairs,stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      ELSE
+!        IF (ASSOCIATED(conn_info%theta_a)) THEN
+!           N = SIZE(conn_info%theta_a)
+!           CALL reorder_structure(ex_bend_list, conn_info%theta_a, conn_info%theta_c, N, error)
+!        END IF
       END IF
+  
       ! Reorder onfo
-      ALLOCATE(ex_onfo_list(natom),stat=stat)
-      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
---- 495,518 ----
+--- 498,519 ----
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
          ENDDO
          CALL setup_exclusion_list(exclude_section,"BOND", ex_bond_list, ex_bond_list_ei,&
@@ -4099,44 +4127,104 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
 !        !1-3 exclusion list
 !        ALLOCATE(ex_bend_list_ei(natom),stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        DO I=1,natom
-!           ALLOCATE(ex_bend_list_ei(I)%array1(0),stat=stat)
-!           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
-!        ENDDO
-!        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_ei,&
-!                                  particle_set, shortcut, error)
-!     ELSE
++        DO I=1,natom
++           ALLOCATE(ex_bend_list_ei(I)%array1(0),stat=stat)
++           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++        ENDDO
++        CALL setup_exclusion_list(exclude_section,"BEND", ex_bend_list, ex_bend_list_ei,&
++                                  particle_set, shortcut, error)
+      ELSE
 !        ex_bend_list_ei => ex_bend_list
       END IF
-+ 
+  
       ! Reorder onfo
-      ALLOCATE(ex_onfo_list(natom),stat=stat)
-      CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 ***************
-*** 461,466 ****
---- 525,544 ----
-        N = SIZE(conn_info%onfo_a)
-        CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
-      END IF
-+ 
-+     CALL section_vals_val_get(topology_section,"EXCLUDE_VDW_14", explicit=explicit, error=error)
-+     if (explicit) then
-+        exclude_14_vdw = section_get_lval(topology_section,"EXCLUDE_VDW_14",error=error)
-+     else
-+        exclude_14_vdw = .true.
-+     endif
-+     CALL section_vals_val_get(topology_section,"EXCLUDE_EI_14", explicit=explicit, error=error)
-+     if (explicit) then
-+        exclude_14_ei = section_get_lval(topology_section,"EXCLUDE_EI_14",error=error)
-+     else
-+        exclude_14_ei = .true.
-+     endif
-+ 
+*** 499,557 ****
+         ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      ENDDO
+-     IF (autogen) THEN
+-        ! Construct autogenerated 1-4 pairs, i.e. all possible 1-4 pairs instead
+-        ! of only the onfo's that are present in the topology.
+-        ALLOCATE(pairs(0,2),stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-        N = 0
+-        DO iatom = 1, natom
+-           DO i = 1, SIZE(ex_bond_list(iatom)%array1)
+-              ! a neighboring atom of iatom:
+-              atom_i = ex_bond_list(iatom)%array1(i)
+-              DO j = 1, SIZE(ex_bend_list(iatom)%array1)
+-                 ! a next neighboring atom of iatom:
+-                 atom_j = ex_bend_list(iatom)%array1(j)
+-                 ! It is only a true onfo if there is no shorter path.
+-                 ! check if i and j are not the same atom
+-                 IF (atom_i==atom_j) CYCLE
+-                 ! check if i and j are not involved in a bond
+-                 check = .FALSE.
+-                 DO counter = 1, SIZE(ex_bond_list(atom_i)%array1)
+-                   IF (ex_bond_list(atom_i)%array1(counter) == atom_j) THEN
+-                      check = .TRUE.
+-                      EXIT
+-                   END IF
+-                 END DO
+-                 IF (check) CYCLE
+-                 ! check if i and j are not involved in a bend
+-                 check = .FALSE.
+-                 DO counter = 1, SIZE(ex_bend_list(atom_i)%array1)
+-                   IF (ex_bend_list(atom_i)%array1(counter) == atom_j) THEN
+-                      check = .TRUE.
+-                      EXIT
+-                   END IF
+-                 END DO
+-                 IF (check) CYCLE
+-                 ! Add the true onfo.
+-                 N = N + 1
+-                 IF (SIZE(pairs,dim=1)<=N) THEN
+-                    CALL reallocate(pairs, 1, N+5, 1, 2)
+-                 END IF
+-                 pairs(N,1) = atom_i
+-                 pairs(N,2) = atom_j
+-              END DO
+-           END DO
+-        END DO
+-        CALL reorder_structure(ex_onfo_list, pairs(:,1), pairs(:,2), N, error)
+-        DEALLOCATE(pairs,stat=stat)
+-        CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+-     ELSE
+         IF(ASSOCIATED(conn_info%onfo_a)) THEN
+            N = SIZE(conn_info%onfo_a)
+            CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
+         END IF
+!     END IF
+  
       !
       DO iatom = 1, SIZE(particle_set)
-         !  Setup exclusion list for VDW : always exclude itself
+--- 523,545 ----
+         ALLOCATE(ex_onfo_list(I)%array1(0),stat=stat)
+         CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+      ENDDO
+         IF(ASSOCIATED(conn_info%onfo_a)) THEN
+            N = SIZE(conn_info%onfo_a)
+            CALL reorder_structure(ex_onfo_list, conn_info%onfo_a, conn_info%onfo_b, N, error)
+         END IF
+! 
+!     CALL section_vals_val_get(topology_section,"EXCLUDE_VDW_14", explicit=explicit, error=error)
+!     if (explicit) then
+!        exclude_14_vdw = section_get_lval(topology_section,"EXCLUDE_VDW_14",error=error)
+!     else
+!        exclude_14_vdw = .true.
+!     endif
+!     CALL section_vals_val_get(topology_section,"EXCLUDE_EI_14", explicit=explicit, error=error)
+!     if (explicit) then
+!        exclude_14_ei = section_get_lval(topology_section,"EXCLUDE_EI_14",error=error)
+!     else
+!        exclude_14_ei = .true.
+!     endif
+  
+      !
+      DO iatom = 1, SIZE(particle_set)
 ***************
-*** 473,482 ****
+*** 565,574 ****
          dim1 = dim1 + dim0
          dim2 = 0
          IF  (topology%exclude_vdw==do_skip_13.OR. &
@@ -4147,7 +4235,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          dim3 = dim2 + dim3
          IF (dim3 /= 0) THEN
             NULLIFY(list, wlist)
---- 551,564 ----
+--- 553,566 ----
          dim1 = dim1 + dim0
          dim2 = 0
          IF  (topology%exclude_vdw==do_skip_13.OR. &
@@ -4163,7 +4251,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          IF (dim3 /= 0) THEN
             NULLIFY(list, wlist)
 ***************
-*** 484,490 ****
+*** 576,582 ****
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
             wlist(  dim0:dim0) = iatom
             IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
@@ -4171,7 +4259,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
             IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
             ! Get a unique list
             DO i = 1, SIZE(wlist)-1
---- 566,572 ----
+--- 568,574 ----
             CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
             wlist(  dim0:dim0) = iatom
             IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_vdw(iatom)%array1
@@ -4180,7 +4268,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
             ! Get a unique list
             DO i = 1, SIZE(wlist)-1
 ***************
-*** 520,529 ****
+*** 612,621 ****
                dim1 = dim1 + dim0
                dim2 = 0
                IF  (topology%exclude_ei==do_skip_13.OR. &
@@ -4191,7 +4279,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
                dim3 = dim2 + dim3
   
                IF (dim3 /= 0) THEN
---- 602,615 ----
+--- 604,617 ----
                dim1 = dim1 + dim0
                dim2 = 0
                IF  (topology%exclude_ei==do_skip_13.OR. &
@@ -4207,7 +4295,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
   
                IF (dim3 /= 0) THEN
 ***************
-*** 531,537 ****
+*** 623,629 ****
                   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
                   wlist(  dim0:dim0) = iatom
                   IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
@@ -4215,7 +4303,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
                   IF (dim3>dim2) wlist(dim2+1:dim3) = ex_onfo_list(iatom)%array1
                   ! Get a unique list
                   DO i = 1, SIZE(wlist)-1
---- 617,623 ----
+--- 619,625 ----
                   CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
                   wlist(  dim0:dim0) = iatom
                   IF (dim1>dim0) wlist(dim0+1:dim1) = ex_bond_list_ei(iatom)%array1
@@ -4224,8 +4312,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
                   ! Get a unique list
                   DO i = 1, SIZE(wlist)-1
 ***************
-*** 557,562 ****
---- 643,653 ----
+*** 649,654 ****
+--- 645,655 ----
          END IF
          particle_set(iatom)%list_exclude_vdw => list
          particle_set(iatom)%list_exclude_ei  => list2
@@ -4238,8 +4326,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          DO i=1,SIZE(ex_onfo_list(iatom)%array1)
             CPPostcondition(ANY(list==ex_onfo_list(iatom)%array1(i)),cp_failure_level,routineP,error,failure)
 ***************
-*** 583,588 ****
---- 674,699 ----
+*** 675,680 ****
+--- 676,701 ----
       DEALLOCATE(ex_onfo_list,stat=stat)
       CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
       ! deallocate bends
@@ -4267,7 +4355,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
          DEALLOCATE(ex_bend_list(I)%array1,stat=stat)
          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 ***************
-*** 687,699 ****
+*** 779,791 ****
   !>      Teodoro Laino [tlaino] - 12.2009
   ! *****************************************************************************
     SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
@@ -4281,7 +4369,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
       TYPE(cp_error_type), INTENT(inout)       :: error
   
       CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
---- 798,811 ----
+--- 800,813 ----
   !>      Teodoro Laino [tlaino] - 12.2009
   ! *****************************************************************************
     SUBROUTINE setup_exclusion_list(exclude_section, keyword, ex_bond_list,&
@@ -4297,7 +4385,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
   
       CHARACTER(len=*), PARAMETER :: routineN = 'setup_exclusion_list', &
 ***************
-*** 704,721 ****
+*** 796,813 ****
         DIMENSION(:), POINTER                  :: names
       INTEGER                                  :: i, ind, j, k, l, m, n_rep
       LOGICAL                                  :: failure
@@ -4316,7 +4404,7 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
             m = SIZE(ex_bond_list(j)%array1)
             CALL reallocate(ex_bond_list_w(j)%array1,1,m)
   
---- 816,857 ----
+--- 818,859 ----
         DIMENSION(:), POINTER                  :: names
       INTEGER                                  :: i, ind, j, k, l, m, n_rep
       LOGICAL                                  :: failure
@@ -4360,8 +4448,8 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
             CALL reallocate(ex_bond_list_w(j)%array1,1,m)
   
 ***************
-*** 723,735 ****
---- 859,900 ----
+*** 815,827 ****
+--- 861,902 ----
             DO k =1, m
                ind = ex_bond_list(j)%array1(k)
                flag2=particle_set(ind)%atomic_kind%name
@@ -4404,9 +4492,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_coordinat
                   END IF
                END DO
             END DO
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_exyz.F src_20100507_patched/topology_exyz.F
-*** src_20100507_latest_orig/topology_exyz.F	1970-01-01 01:00:00.000000000 +0100
---- src_20100507_patched/topology_exyz.F	2010-05-20 09:35:55.446684995 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology_exyz.F src_20100521_patched/topology_exyz.F
+*** src_20100521_latest_orig/topology_exyz.F	1970-01-01 01:00:00.000000000 +0100
+--- src_20100521_patched/topology_exyz.F	2010-05-21 10:50:03.714331210 +0100
 ***************
 *** 0 ****
 --- 1,238 ----
@@ -4648,9 +4736,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology_exyz.F sr
 +   END SUBROUTINE read_coordinate_exyz
 + 
 + END MODULE topology_exyz
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology.F src_20100507_patched/topology.F
-*** src_20100507_latest_orig/topology.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/topology.F	2010-05-20 09:33:54.027135567 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/topology.F src_20100521_patched/topology.F
+*** src_20100521_latest_orig/topology.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/topology.F	2010-05-21 10:51:01.707467679 +0100
 ***************
 *** 26,32 ****
          do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
@@ -4689,9 +4777,9 @@ diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/topology.F src_201
       CASE (do_coord_cif)
          CALL read_coordinate_cif (topology,para_env,subsys_section,error)
       CASE (do_coord_xtl)
-diff --new-file --exclude '.#*' -C 3 src_20100507_latest_orig/velocity_verlet_control.F src_20100507_patched/velocity_verlet_control.F
-*** src_20100507_latest_orig/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
---- src_20100507_patched/velocity_verlet_control.F	2010-05-20 09:36:39.002534615 +0100
+diff --new-file --exclude '.#*' -C 3 src_20100521_latest_orig/velocity_verlet_control.F src_20100521_patched/velocity_verlet_control.F
+*** src_20100521_latest_orig/velocity_verlet_control.F	2010-01-03 23:41:38.000000000 +0000
+--- src_20100521_patched/velocity_verlet_control.F	2010-05-21 10:50:22.102636247 +0100
 ***************
 *** 16,24 ****
     USE input_constants,                 ONLY: &
