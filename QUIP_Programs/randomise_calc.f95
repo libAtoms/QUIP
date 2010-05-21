@@ -56,7 +56,7 @@ implicit none
      call randomise(at%pos, 0.2_dp)
      lat = at%lattice
      call randomise(lat, 0.5_dp)
-     call set_lattice(at, lat)
+     call set_lattice(at, lat, scale_positions=.true.)
      call calc(pot, at, e=e, f=f, virial=v)
      call add_property(at, 'f', f)
      call print_xyz(at, 'output.xyz', properties='pos:f', comment='Energy='//e//' virial={'//reshape(v, (/9/))//'}', append=.true.)
