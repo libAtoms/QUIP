@@ -97,11 +97,6 @@ import periodic;    from periodic import *
 import xyz_netcdf;  from xyz_netcdf import *
 import util;        from util import *
 
-try:
-   import atomeye
-except ImportError:
-   logging.warning('_atomeye extension module not available - atomeye interface disabled')
-
 import sio2, povray, aseinterface, cube
 
 try:

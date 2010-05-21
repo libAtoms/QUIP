@@ -388,7 +388,7 @@ try:
    netcdf_file = Dataset
 except ImportError:
    from pupynere import netcdf_file
-   logging.warning('netCDF4 not found. falling back on (slower) pupynere.')
+
 
 def netcdf_dimlen(obj, name):
    """Return length of dimension 'name'. Works for both netCDF4 and pupynere."""

@@ -513,27 +513,6 @@ quippy_ext = Extension(name='quippy._quippy',
 
 exts = [arraydata_ext, quippy_ext]
 
-# Optionally compile AtomEye extension module
-if makefile_test('QUIPPY_HAVE_ATOMEYE'):
-    atomeye_dir =  os.path.join(quip_root, 'Tools/AtomEye')
-
-    if 'QUIPPY_ATOMEYE_LIBS' in makefile:
-        atomeye_libs = [k[2:] for k in makefile['QUIPPY_ATOMEYE_LIBS'].split() if k.startswith('-l')]
-        atomeye_libdirs = [k[2:] for k in makefile['QUIPPY_ATOMEYE_LIBS'].split() if k.startswith('-L')]
-    elif 'ATOMEYE_LIBS' in makefile:
-        atomeye_libs = [k[2:] for k in makefile['ATOMEYE_LIBS'].split() if k.startswith('-l')]
-        atomeye_libdirs = [k[2:] for k in makefile['ATOMEYE_LIBS'].split() if k.startswith('-L')]
-    else:
-        raise ValueError('Missing Makefile variable ATOMEYE_LIBS or QUIPPY_ATOMEYE_LIBS')
-
-    atomeye_ext = Extension(name='quippy._atomeye',
-                            sources=['atomeyemodule.c'],
-                            library_dirs=atomeye_libdirs + [os.path.join(atomeye_dir, 'lib')],
-                            libraries=['AtomEye', 'AX', 'Atoms', 'VecMat3', 'VecMat', 'IO', 'Scalar', 'Timer'] + atomeye_libs,
-                            include_dirs=[os.path.join(atomeye_dir,'include')] + source_dirs,
-                            define_macros= macros)
-    exts.append(atomeye_ext)
-
 # Finally, call setup() to run command
 setup(name='quippy',
       packages = ['quippy'],
