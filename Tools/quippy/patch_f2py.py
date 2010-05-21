@@ -34,7 +34,7 @@ is generated. We make several changes to f2py:
 """
 
 import numpy
-if not tuple([int(x) for x in numpy.__version__.split('.')]) >= (1,2,1):
+if not tuple([int(x) for x in numpy.__version__.split('.')[0:2]]) >= (1,2,1):
    raise ImportError('patch_f2py only tested with numpy version 1.2.1 or later')
 
 from numpy.f2py.rules import f2py_version
