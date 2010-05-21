@@ -28,8 +28,10 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-all: libatoms.a
+PROGRAMS = minimal_md xyz2pdb xyz2xyz
 
+default: libatoms.a 
+all: default ${PROGRAMS}
 
 include Makefile.inc
 include Makefile.rules
@@ -100,7 +102,7 @@ allclean: clean docclean
 ${LIBATOMS_C_OBJS}  : %.o : %.c
 	${CC} ${CFLAGS} -c $< 
 
-md:  libatoms.a md.o
+minimal_md:  libatoms.a minimal_md.o
 	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
 xyz2pdb:  libatoms.a xyz2pdb.o
@@ -119,4 +121,3 @@ install-converters: xyz2xyz
 	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyzstat
 
 -include depend
-

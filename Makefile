@@ -48,7 +48,9 @@ endif
 FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
-all: ${MODULES}
+default: ${MODULES}
+all: default
+	@for f in ${MODULES}; do ${MAKE} $$f/all; done
 
 .PHONY: arch ${MODULES} doc
 
@@ -125,6 +127,34 @@ clean:
 	done ; \
 	for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
+	done
+
+install:
+	@if [ "x${QUIP_INSTDIR}" == "x" ]; then \
+	  echo "make install needs QUIP_INSTDIR defined"; \
+	  exit 1; \
+	fi; \
+	if [ ! -d ${QUIP_INSTDIR} ]; then \
+	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist"; \
+	fi
+	${MAKE} install-build.QUIP_ARCH install-Tools
+
+install-build.QUIP_ARCH:
+	@echo "installing from build.${QUIP_ARCH}"; \
+	for f in `/bin/ls build.${QUIP_ARCH} | egrep -v '\.o|\.a|\.mod|Makefile*'`; do \
+	  if [ -x build.${QUIP_ARCH}/$$f ]; then \
+	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
+	    cp build.${QUIP_ARCH}/$$f ${QUIP_INSTDIR}; \
+	  fi; \
+	done
+
+install-Tools:
+	@echo "installing from Tools"; \
+	for f in `/bin/ls Tools | egrep -v '\.f95|Makefile*'`; do \
+	  if [ -f Tools/$$f ] && [ -x Tools/$$f ]; then \
+	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
+	    cp Tools/$$f ${QUIP_INSTDIR}; \
+	  fi; \
 	done
 
 

@@ -55,7 +55,7 @@ program xyz2pdb
                                      INPUT, OUTPUT, &
                                      SILENT, NORMAL, ANAL, NERD
   use table_module,            only: table, finalise, int_part, delete
-  use topology_module,         only: create_residue_labels, delete_metal_connects, &
+  use topology_module,         only: create_residue_labels_arb_pos, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
                                      MM_RUN, silica_2body_cutoff
@@ -176,9 +176,11 @@ program xyz2pdb
     call print('Identifying residues...')
     call set_value(my_atoms%params,'Library',trim(Library))
     if (use_avgpos) then
-       call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,pos_field_for_connectivity="avgpos")
+       call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+	have_silica_potential=have_silica_potential,pos_field_for_connectivity="avgpos")
     else !use actual positions
-       call create_residue_labels(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,pos_field_for_connectivity="pos")
+       call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+	have_silica_potential=have_silica_potential,pos_field_for_connectivity="pos")
     endif
 
    ! print output PDB and PSF files
