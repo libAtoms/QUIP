@@ -92,6 +92,9 @@ endif
 ifeq (${GP_PREDICT_QP},1)
   DEFINES += -DGP_PREDICT_QP
 endif
+ifeq (${HAVE_QR},1)
+  DEFINES += -DHAVE_QR
+endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif
