@@ -161,7 +161,14 @@ module gp_sparse_module
 
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
          type(LA_matrix) :: LA_k_mm, LA_q_mm
+#ifdef HAVE_QR
+         integer :: i, j, n, m, info, lwork
+         real(dp), dimension(:,:), allocatable :: a, y
+         real(dp), dimension(:), allocatable :: work, tau
+#else
          integer :: n, m, info
+#endif         
+
 
          this%d = sparse%d
          this%n = sparse%sr
@@ -183,9 +190,53 @@ module gp_sparse_module
          this%xz = sparse%xz_sparse
          this%sp = sparse%sp
 
-         call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,(1.0_qp/sparse%lambda)) ! O(NM)
+#ifdef HAVE_QR
+         call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,sqrt(1.0_qp/sparse%lambda)) ! O(NM)
+         call initialise(LA_k_mm,sparse%k_mm)
+         call LA_Matrix_Factorise(LA_k_mm,inverse_k_mm,info=info)
+         if( info /= 0 ) call system_abort('GP_initialise: LA_k_mm')
+         call finalise(LA_k_mm)
 
-         !call matrix_product_sub(k_mn_l_k_nm, k_mn_inverse_lambda, sparse%k_mn, m2_transpose = .true. )    ! O(NM^2)
+         do i = 1, m-1
+            do j = i+1, m
+               inverse_k_mm(j,i) = 0.0_qp
+            enddo
+         enddo
+         
+         allocate(a(n+m,m))
+         a(1:n,:) = transpose(k_mn_inverse_lambda)
+         a(n+1:,:) = inverse_k_mm
+         
+         allocate(work(1),tau(m))
+         lwork = -1
+         call dgeqrf(n+m, m, a, n+m, tau, work, lwork, info)
+         lwork = nint(work(1))
+         deallocate(work)
+         allocate(work(lwork))
+         call dgeqrf(n+m, m, a, n+m, tau, work, lwork, info)
+         deallocate(work)
+
+         allocate(y(n+m,1))
+         y = 0.0_dp
+         y(1:n,1) = sparse%y*sqrt(1.0_qp/sparse%lambda)
+         lwork = -1
+         allocate(work(1))
+         call dormqr('L', 'T', n+m, 1, m, a, n+m, tau, y, n+m, work, lwork, info)
+         lwork = nint(work(1))
+         deallocate(work)
+         allocate(work(lwork))
+         call dormqr('L', 'T', n+m, 1, m, a, n+m, tau, y, n+m, work, lwork, info)
+         deallocate(work)
+
+         do j = m, 2, -1
+            y(j,1) = y(j,1)/a(j,j)
+            y(1:j-1,1) = y(1:j-1,1) - y(j,1)*a(1:j-1,j)
+         enddo
+         y(1,1) = y(1,1) / a(1,1)
+         this%alpha = y(1:m,1)
+         this%c = 0.0_dp
+         deallocate(a,y,tau)
+#else
          k_mn_l_k_nm = matmul(k_mn_inverse_lambda,transpose(sparse%k_mn))
 
          call initialise(LA_q_mm,sparse%k_mm + k_mn_l_k_nm)
@@ -193,18 +244,16 @@ module gp_sparse_module
          if( info /= 0 ) call system_abort('GP_initialise: LA_q_mm')
 
          call finalise(LA_q_mm)
-!         inverse_q_mm = sparse%k_mm + k_mn_l_k_nm                                                        ! O(M^2)
-!         call inverse(inverse_q_mm)                                                                      ! O(M^3)
 
          this%alpha = real( matmul(inverse_q_mm,matmul(k_mn_inverse_lambda, sparse%y)),kind=dp)          ! O(NM)
+
          call initialise(LA_k_mm,sparse%k_mm)
          call LA_Matrix_Inverse(LA_k_mm,inverse_k_mm,info=info)
          if( info /= 0 ) call system_abort('GP_initialise: LA_k_mm')
 
          call finalise(LA_k_mm)
-!         call inverse(sparse%k_mm,inverse_k_mm)                                                          ! O(M^3)
          this%c = real(inverse_k_mm - inverse_q_mm,kind=dp)                                                            ! O(M^2)
-
+#endif
          deallocate( k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm )
          
          this%initialised = .true.
