@@ -556,6 +556,7 @@ program teach_sparse
 
   call system_initialise(verbosity=NORMAL, enable_timing=.true.)
 
+  call initialise(params)
   call param_register(params, 'at_file', PARAM_MANDATORY, at_file)
   call param_register(params, 'm', '50', m)
   call param_register(params, 'r_cut', '2.75', r_cut)
