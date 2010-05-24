@@ -598,9 +598,25 @@ end subroutine IPModel_GAP_read_params_xml
 subroutine IPModel_GAP_Print (this, file)
   type(IPModel_GAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
+  integer :: i
 
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
   call Print("IPModel_GAP : datafile = "//trim(this%datafile), file=file)
+  call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
+  call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
+  call Print("IPModel_GAP : z0 = "//this%z0, file=file)
+  call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
+  call Print("IPModel_GAP : do_ewald = "//this%do_ewald, file=file)
+  call Print("IPModel_GAP : do_ewald_corr = "//this%do_ewald_corr, file=file)
+  call Print("IPModel_GAP : ip_args = "//trim(this%ip_args), file=file)
+#ifdef HAVE_GP
+  do i = 1, this%n_species
+     call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
+     call Print("IPModel_GAP : z_eff = "//this%z_eff(this%Z(i)), file=file)
+     call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
+     call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
+  enddo
+#endif
 
 end subroutine IPModel_GAP_Print
 
