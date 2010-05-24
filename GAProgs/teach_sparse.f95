@@ -523,7 +523,7 @@ program teach_sparse
   integer :: m, j_max, qw_l_max, min_steps, min_save
   real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
   logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_ewald, do_test_gp_gradient, has_bispectrum_file, &
-  & do_core
+  & do_core, test_gp_gradient_result
 
   real(dp), dimension(116) :: z_eff
   character(len=FIELD_LENGTH), dimension(232) :: z_eff_fields
@@ -758,7 +758,7 @@ program teach_sparse
 
   if( do_test_gp_gradient ) then
      call verbosity_push(NERD)
-     print*,test_gp_gradient(gp_sp,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+     test_gp_gradient_result = test_gp_gradient(gp_sp,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
      call verbosity_pop()
   endif
 
