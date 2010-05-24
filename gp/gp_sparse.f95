@@ -108,6 +108,14 @@ module gp_sparse_module
 
    endtype gp
 
+   type gp_minimise
+      type(gp_sparse), pointer :: minim_gp => null()
+      logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false.
+      integer :: li_sigma = 0, ui_sigma = 0, li_delta = 0, ui_delta = 0, li_theta = 0, ui_theta = 0, &
+      & li_sparx = 0, ui_sparx = 0, li_f0 = 0, ui_f0 = 0
+   endtype gp_minimise
+
+
    interface Initialise
       module procedure GP_Initialise
    endinterface Initialise
@@ -446,7 +454,7 @@ module gp_sparse_module
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      subroutine gp_update(this, x_in, x_sparse_in, y_in, sigma_in, delta_in, theta_in, f0_in)
+      subroutine gp_update(this, x_in, x_sparse_in, y_in, sigma_in, delta_in, theta_in, f0_in, do_covariance)
 
          type(gp_sparse), intent(inout)                 :: this       !% gp object to update
          real(qp), dimension(:,:), intent(in), optional :: x_in       !% update teaching points, dimension(d,n)
@@ -456,8 +464,13 @@ module gp_sparse_module
          real(qp), dimension(:), intent(in), optional   :: delta_in   !% update hyperparameters, dimension(p)
          real(qp), dimension(:,:), intent(in), optional :: theta_in   !% update hyperparameters, dimension(p)
          real(qp), dimension(:), intent(in), optional :: f0_in   !% update hyperparameters, dimension(p)
+         logical, intent(in), optional :: do_covariance
+
+         logical :: my_do_covariance
 
          if( .not. this%initialised ) return
+
+         my_do_covariance = optional_default(.true.,do_covariance)
 
          if( present(x_in) ) then
              if( all( shape(this%x) /= shape(x_in) ) ) call system_abort('gp_update: array sizes do not conform')
@@ -485,9 +498,11 @@ module gp_sparse_module
              this%theta = theta_in
          endif
 
-         if( present(x_in) .or. present(y_in) .or. present(x_sparse_in) .or. &
-         & present(sigma_in) .or. present(delta_in) .or. present(theta_in) .or. present(f0_in) ) &
-         & call covariance_matrix_sparse(this)
+         if( my_do_covariance ) then
+            if( present(x_in) .or. present(y_in) .or. present(x_sparse_in) .or. &
+            & present(sigma_in) .or. present(delta_in) .or. present(theta_in) .or. present(f0_in) ) &
+            & call covariance_matrix_sparse(this)
+         endif
          
       endsubroutine gp_update
 
@@ -957,13 +972,15 @@ deallocate(diff_xijt)
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      subroutine likelihood(this,l,dl_dsigma, dl_ddelta,dl_dtheta,dl_dx,dl_df0)
+      subroutine likelihood(this,l,dl_dsigma, dl_ddelta,dl_dtheta,dl_dx,dl_df0,&
+      & do_l, do_sigma, do_delta, do_theta, do_x, do_f0)
 
          type(gp_sparse), intent(inout)                :: this
          real(qp), intent(out), optional               :: l
          real(qp), dimension(2), intent(out), optional :: dl_dsigma
          real(qp), dimension(:), intent(out), optional :: dl_ddelta, dl_df0
          real(qp), dimension(:), intent(out), optional :: dl_dtheta, dl_dx
+         logical, intent(in), optional :: do_l, do_sigma, do_delta, do_theta, do_x, do_f0
 
          type(LA_Matrix) :: LA_mm, LA_k_mm
 
@@ -982,14 +999,23 @@ deallocate(diff_xijt)
          & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n
          integer :: i, j, d, j1, j2, lj, uj, info, xj, xj1, xj2, jd, id, num_threads, k, Z_type
 
+         logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_x, my_do_f0
+
          use_intrinsic_blas = .false.
 
-         if(present(l)) l = 0.0_qp
-         if(present(dl_dsigma)) dl_dsigma = 0.0_qp
-         if(present(dl_ddelta)) dl_ddelta = 0.0_qp
-         if(present(dl_dtheta)) dl_dtheta = 0.0_qp
-         if(present(dl_dx)) dl_dx = 0.0_qp
-         if(present(dl_df0)) dl_df0 = 0.0_qp
+         my_do_l = present(l) .and. optional_default(present(l), do_l)
+         my_do_sigma = present(dl_dsigma) .and. optional_default(present(dl_dsigma), do_sigma)
+         my_do_delta = present(dl_ddelta) .and. optional_default(present(dl_ddelta), do_delta)
+         my_do_theta = present(dl_dtheta) .and. optional_default(present(dl_dtheta), do_theta)
+         my_do_x = present(dl_dx) .and. optional_default(present(dl_dx), do_x)
+         my_do_f0 = present(dl_df0) .and. optional_default(present(dl_df0), do_f0)
+
+         if(my_do_l) l = 0.0_qp
+         if(my_do_sigma) dl_dsigma = 0.0_qp
+         if(my_do_delta) dl_ddelta = 0.0_qp
+         if(my_do_theta) dl_dtheta = 0.0_qp
+         if(my_do_x) dl_dx = 0.0_qp
+         if(my_do_f0) dl_df0 = 0.0_qp
 
          allocate( inverse_lambda(this%m), y_inverse_lambda(this%m), &
          & k_mn_inverse_lambda(this%sr,this%m), k_mn_l_k_nm(this%sr,this%sr), &
@@ -1020,14 +1046,14 @@ deallocate(diff_xijt)
 
          det3 = 0.5_qp*sum(log(this%lambda))                      ! O(N)
 
-         if( present(l) ) &
+         if( my_do_l ) &
            & l = -(det1-det2+det3) &
            & - 0.5_qp*dot_product(y_inverse_lambda,this%y) &      ! O(N)
            & + 0.5_qp*dot_product(y_l_k_nm,y_l_k_nm_inverse_mm) & ! O(M)
            & - 0.5_qp * this%m * log(2.0_qp * PI)
 
-         if( present(dl_dsigma) .or. present(dl_ddelta) &
-             & .or. present(dl_dtheta) .or. present(dl_dx) .or. present(dl_df0) ) then
+         if( my_do_sigma .or. my_do_delta &
+             & .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
             allocate( y_inverse_k(this%m),y_inverse_c(this%m), inverse_mm_k_mn_inverse_lambda(this%sr,this%m) )
             y_inverse_k = matmul(y_l_k_nm_inverse_mm,k_mn_inverse_lambda) ! O(NM)
             y_inverse_c = y_inverse_lambda-y_inverse_k  ! O(N)
@@ -1037,7 +1063,7 @@ deallocate(diff_xijt)
          endif
 
              !lambda_dtheta = (this%lambda - this%theta(1)**2) / this%theta(2) ! O(N)
-         if( present(dl_dsigma) .or. present(dl_ddelta) ) then
+         if( my_do_sigma .or. my_do_delta ) then
             allocate(diag_il_k_nm_inverse_mm_k_mn_il(this%m))
             !allocate(k_mn_ll_k_nm(this%sr,this%sr),k_mn_ll_k_nm_inverse_mm(this%sr,this%sr))
             !call matrix_product_sub(k_mn_ll_k_nm, k_mn_inverse_lambda, k_mn_inverse_lambda, m2_transpose = .true. ) ! O(NM^2)
@@ -1058,7 +1084,7 @@ deallocate(diff_xijt)
             !& - sum(inverse_mm_k_mn_inverse_lambda(:,this%mf+1:)*k_mn_inverse_lambda(:,this%mf+1:)) ! O(N) + O(NM)
          endif
 
-         if( present(dl_ddelta) .or. present(dl_dtheta) .or. present(dl_dx) .or. present(dl_df0) ) then
+         if( my_do_delta .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
             allocate( inverse_k_mm_k_mn_l_k_nm(this%sr,this%sr), &
             & inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm(this%sr,this%sr), &
             & y_inverse_c_k_nm_inverse_k_mm(this%sr), y_l_k_nm_inverse_k_mm(this%sr), &
@@ -1081,7 +1107,7 @@ deallocate(diff_xijt)
             & inverse_mm_k_mn_l_k_nm_inverse_k_mm )
          endif
 
-         if( present(dl_dsigma) ) then
+         if( my_do_sigma ) then
             dl_dsigma(1) = this%sigma(1) * ( norm2_y_inverse_c1 - trace_inverse_c1 )
             dl_dsigma(2) = this%sigma(2) * ( norm2_y_inverse_c2 - trace_inverse_c2 )
          endif
@@ -1101,7 +1127,7 @@ deallocate(diff_xijt)
 !            & + gp_jitter*(trace(inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) &
 !            & - sum( diag_k_n_inverse_k_mm_inverse_k_mm_k_n * diag_il_k_nm_inverse_mm_k_mn_il ) ) ) / this%delta
 !         endif
-         if( present(dl_dtheta) .or. present(dl_dx) .or. present(dl_ddelta) .or. present(dl_df0) ) then
+         if( my_do_delta .or. my_do_x .or. present(dl_ddelta) .or. my_do_f0 ) then
 
             allocate( inverse_k_mm_k_mn_l_k_nm_inverse_k_mm(this%sr,this%sr), &
             & inverse_k_mm_k_mn_inverse_k(this%sr,this%m) )
@@ -1122,7 +1148,7 @@ deallocate(diff_xijt)
             & inverse_mm_k_mn_inverse_lambda ) ! O(NM^2)
          endif
 
-         if( present(dl_ddelta) ) then
+         if( my_do_delta ) then
             dl_ddelta = 0.0_qp
             allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
 
@@ -1238,7 +1264,7 @@ deallocate(diff_xijt)
             deallocate( inverse_k_mm_k_mn_inverse_lambda, theta2 )
          endif
 
-         if( present(dl_df0) ) then
+         if( my_do_f0 ) then
             dl_df0 = 0.0_qp
             allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
 
@@ -1341,7 +1367,7 @@ deallocate(diff_xijt)
 !$omp end parallel            
             deallocate( inverse_k_mm_k_mn_inverse_lambda, theta2 )
          endif
-         if( present(dl_dtheta) ) then
+         if( my_do_theta ) then
             allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
 
             theta2 = 1.0_qp / this%theta**2
@@ -1470,7 +1496,7 @@ deallocate(diff_xijt)
 !$omp end parallel            
          endif
 
-         if( present(dl_dx) ) then
+         if( my_do_x ) then
             call LA_Matrix_Inverse(LA_k_mm,inverse_k_mm,info=info)
             if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
@@ -1626,7 +1652,7 @@ deallocate(diff_xijt)
          allocate( x(this%d*this%nsp) )
          x = real(reshape(this%theta,(/this%d*this%nsp/)),kind=dp)
 
-         minimise_gp_ns = ns(x,l,theta_min,theta_max,N_live,max_iter,tighten)
+         !minimise_gp_ns = ns(x,l,theta_min,theta_max,N_live,max_iter,tighten)
 
          deallocate( x )
 
@@ -1659,406 +1685,85 @@ deallocate(diff_xijt)
 
       function test_gp_gradient(this,sigma,delta,theta,sparx,f0)
 
-         type(gp_sparse), intent(inout) :: this                 !% GP
+         type(gp_sparse), intent(inout), target :: this                 !% GP
          logical, intent(in), optional :: sigma, delta, theta, sparx, f0
-         logical :: my_sigma, my_delta, my_theta, my_sparx, my_f0
          logical                 :: test_gp_gradient
          real(dp), dimension(:), allocatable :: xx_dp
          real(qp), dimension(:), allocatable :: xx
-         integer :: n, li, ui, li_sigma, ui_sigma, li_delta, ui_delta, li_theta, ui_theta, li_sparx, ui_sparx, li_f0, ui_f0
+         integer :: n, li, ui
 
-         my_sigma = optional_default(.true.,sigma)
-         my_delta = optional_default(.true.,delta)
-         my_theta = optional_default(.true.,theta)
-         my_sparx = optional_default(.true.,sparx)
-         my_f0 = optional_default(.true.,f0)
+         type(gp_minimise) :: am
+         character, dimension(:), allocatable :: am_data
+         integer :: am_data_size
+
+         am_data_size = size(transfer(am,am_data))
+         allocate(am_data(am_data_size))
+
+         am%minim_gp => this
+
+         am%do_sigma = optional_default(.true.,sigma)
+         am%do_delta = optional_default(.true.,delta)
+         am%do_theta = optional_default(.true.,theta)
+         am%do_sparx = optional_default(.true.,sparx)
+         am%do_f0 = optional_default(.true.,f0)
 
          test_gp_gradient = .false.
-         if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) return
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) ) return
 
          n = 0
          li = 0
          ui = 0
-         if( my_sigma ) n = n + 2
-         if( my_delta ) n = n + this%nsp
-         if( my_theta ) n = n + this%d*this%nsp
-         if( my_sparx ) n = n + this%sr*this%d
-         if( my_f0 ) n = n + this%nsp
+         if( am%do_sigma ) n = n + 2
+         if( am%do_delta ) n = n + this%nsp
+         if( am%do_theta ) n = n + this%d*this%nsp
+         if( am%do_sparx ) n = n + this%sr*this%d
+         if( am%do_f0 ) n = n + this%nsp
 
          allocate( xx(n), xx_dp(n) )
 
-         if(my_sigma) then
+         if(am%do_sigma) then
             li = li + 1
             ui = li + 1
-            li_sigma = li
-            ui_sigma = ui
+            am%li_sigma = li
+            am%ui_sigma = ui
             xx(li:ui) = this%sigma
          endif
-         if(my_delta) then
+         if(am%do_delta) then
             li = ui + 1
             ui = li + this%nsp - 1
-            li_delta = li
-            ui_delta = ui
+            am%li_delta = li
+            am%ui_delta = ui
             xx(li:ui) = this%delta
          endif
-         if(my_theta) then
+         if(am%do_theta) then
             li = ui + 1
             ui = li + this%d*this%nsp - 1
-            li_theta = li
-            ui_theta = ui
+            am%li_theta = li
+            am%ui_theta = ui
             xx(li:ui) = reshape(this%theta,(/this%d*this%nsp/))
          endif
-         if(my_sparx) then
+         if(am%do_sparx) then
             li = ui + 1
             ui = li + this%sr*this%d - 1
-            li_sparx = li
-            ui_sparx = ui
+            am%li_sparx = li
+            am%ui_sparx = ui
             xx(li:ui) = reshape(this%x_sparse,(/this%sr*this%d/))
          endif
-         if(my_f0) then
+         if(am%do_f0) then
             li = ui + 1
             ui = li + this%nsp - 1
-            li_f0 = li
-            ui_f0 = ui
+            am%li_f0 = li
+            am%ui_f0 = ui
             xx(li:ui) = this%f0
          endif
 
          xx_dp = real(xx,kind=dp)
-         test_gp_gradient = test_gradient(xx_dp, l, dl_out)
 
-         deallocate(xx,xx_dp)
+         am_data = transfer(am, am_data)
 
-         contains
+         test_gp_gradient = test_gradient(xx_dp, likelihood_function, likelihood_gradient, data=am_data)
 
-            function l(x_in, data)
-
-               real(dp), dimension(:) :: x_in
-               real(dp)               :: l
-               character,optional     :: data(:)
-               real(qp), dimension(:), allocatable :: x
-               real(qp) :: l_qp
-
-               l = 0.0_dp
-               allocate(x(size(x_in)))
-               x = real(x_in,kind=qp)
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 1
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma) )  
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 2
-               & call gp_update( this, delta_in=x(li_delta:ui_delta) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 3
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 4
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 5
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 6
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &               ! 7
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) & ! 8
-               & call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &        ! 9
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &        ! 10
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &               ! 11
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &        ! 12
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &               ! 13
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &               ! 14
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &                      ! 15
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 16
-               & call gp_update( this, f0_in=x(li_f0:ui_f0) )  
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 17
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), f0_in=x(li_f0:ui_f0) )  
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 18
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) &        ! 19
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) ) 
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) & ! 20
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &        ! 21
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &        ! 22
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &               ! 23
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) & ! 24
-               & call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &        ! 25
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &        ! 26
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &               ! 27
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) &        ! 28
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) &               ! 29
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) &               ! 30
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) &                      ! 31
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               call likelihood(this,l=l_qp)
-               l = real(l_qp,kind=dp)
-               deallocate(x)
-
-            endfunction l
-
-            function dl_out(x_in,data)
-
-               real(dp), dimension(:)          :: x_in
-               real(dp), dimension(size(x_in)) :: dl_out
-               character,optional              :: data(:)
-               real(qp), dimension(:), allocatable :: x, dl
-
-               allocate(x(size(x_in)),dl(size(x_in)))
-
-               x = real(x_in,kind=qp)
-               dl = 0.0_qp
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 1
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma) )  
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma))
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 2
-                   call gp_update( this, delta_in=x(li_delta:ui_delta) )
-                   call likelihood(this, dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 3
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 4
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 5
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 6
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then               ! 7
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then ! 8
-                   call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this, dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then        ! 9
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then        ! 10
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then               ! 11
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then        ! 12
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then               ! 13
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then               ! 14
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then                      ! 15
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), & 
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), &
-                   & dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 0
-                   call gp_update( this,f0_in=x(li_f0:ui_f0) )  
-                   call likelihood(this,dl_df0=dl(li_f0:ui_f0))
-               endif
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 1
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), f0_in=x(li_f0:ui_f0) )  
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_df0=dl(li_f0:ui_f0))
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 2
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this, dl_ddelta=dl(li_delta:ui_delta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then        ! 3
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) ) 
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then ! 4
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then        ! 5
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then        ! 6
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then               ! 7
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then ! 8
-                   call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this, dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then        ! 9
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then        ! 10
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then               ! 11
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) then        ! 12
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) then               ! 13
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) then               ! 14
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) then                      ! 15
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), & 
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), &
-                   & dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               dl_out = real(dl,kind=dp)
-               deallocate(x,dl)
-            endfunction dl_out
+         deallocate(xx,xx_dp,am_data)
 
       endfunction test_gp_gradient
 
@@ -2071,428 +1776,93 @@ deallocate(diff_xijt)
 
       function minimise_gp_gradient(this,convergence_tol,max_steps,always_do_test_gradient,sigma,delta,theta,sparx,f0)
 
-         type(gp_sparse), intent(inout) :: this                       !% GP
+         type(gp_sparse), intent(inout), target :: this                       !% GP
          integer, intent(in), optional :: max_steps            !% maximum number of steps, default: 100
          real(dp), intent(in), optional :: convergence_tol     !% convergence tolerance, default: 0.1
          logical, intent(in), optional :: always_do_test_gradient
          logical, intent(in), optional :: sigma, delta, theta, sparx, f0
-         logical :: my_sigma, my_delta, my_theta, my_sparx, my_f0
          integer                 :: minimise_gp_gradient      
          real(dp), dimension(:), allocatable :: xx_dp
          real(qp), dimension(:), allocatable :: xx
-         integer :: n, li, ui, li_sigma, ui_sigma, li_delta, ui_delta, li_theta, ui_theta, li_sparx, ui_sparx, li_f0, ui_f0
+         integer :: n, li, ui
 
          integer :: do_max_steps
          real(dp) :: do_convergence_tol
+         type(gp_minimise) :: am
+         character, dimension(:), allocatable :: am_data
+         integer :: am_data_size
 
          do_max_steps = optional_default(100,max_steps)
          do_convergence_tol = optional_default(0.0001_dp,convergence_tol)
 
-         my_sigma = optional_default(.true.,sigma)
-         my_delta = optional_default(.true.,delta)
-         my_theta = optional_default(.true.,theta)
-         my_sparx = optional_default(.true.,sparx)
-         my_f0 = optional_default(.true.,f0)
+         am_data_size = size(transfer(am,am_data))
+         allocate(am_data(am_data_size))
+
+         am%minim_gp => this
+
+         am%do_sigma = optional_default(.true.,sigma)
+         am%do_delta = optional_default(.true.,delta)
+         am%do_theta = optional_default(.true.,theta)
+         am%do_sparx = optional_default(.true.,sparx)
+         am%do_f0 = optional_default(.true.,f0)
 
          minimise_gp_gradient = 0
-         if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) return
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) ) return
 
          n = 0
          li = 0
          ui = 0
-         if( my_sigma ) n = n + 2
-         if( my_delta ) n = n + this%nsp
-         if( my_theta ) n = n + this%d*this%nsp
-         if( my_sparx ) n = n + this%sr*this%d
-         if( my_f0 ) n = n + this%nsp
+         if( am%do_sigma ) n = n + 2
+         if( am%do_delta ) n = n + this%nsp
+         if( am%do_theta ) n = n + this%d*this%nsp
+         if( am%do_sparx ) n = n + this%sr*this%d
+         if( am%do_f0 ) n = n + this%nsp
 
          allocate( xx(n), xx_dp(n) )
 
-         if(my_sigma) then
+         if(am%do_sigma) then
             li = li + 1
             ui = li + 1
-            li_sigma = li
-            ui_sigma = ui
+            am%li_sigma = li
+            am%ui_sigma = ui
             xx(li:ui) = this%sigma
          endif
-         if(my_delta) then
+         if(am%do_delta) then
             li = ui + 1
             ui = li + this%nsp - 1
-            li_delta = li
-            ui_delta = ui
+            am%li_delta = li
+            am%ui_delta = ui
             xx(li:ui) = this%delta
          endif
-         if(my_theta) then
+         if(am%do_theta) then
             li = ui + 1
             ui = li + this%d*this%nsp - 1
-            li_theta = li
-            ui_theta = ui
+            am%li_theta = li
+            am%ui_theta = ui
             xx(li:ui) = reshape(this%theta,(/this%d*this%nsp/))
          endif
-         if(my_sparx) then
+         if(am%do_sparx) then
             li = ui + 1
             ui = li + this%sr*this%d - 1
-            li_sparx = li
-            ui_sparx = ui
+            am%li_sparx = li
+            am%ui_sparx = ui
             xx(li:ui) = reshape(this%x_sparse,(/this%sr*this%d/))
          endif
-         if(my_f0) then
+         if(am%do_f0) then
             li = ui + 1
             ui = li + this%nsp - 1
-            li_f0 = li
-            ui_f0 = ui
+            am%li_f0 = li
+            am%ui_f0 = ui
             xx(li:ui) = this%f0
          endif
 
          xx_dp = real(xx,kind=dp)
-         minimise_gp_gradient = minim(xx_dp,l,dl_out,method='cg',convergence_tol=do_convergence_tol,max_steps=do_max_steps,&
-         & hook = save_parameters, hook_print_interval=1,always_do_test_gradient=always_do_test_gradient)
-         deallocate(xx,xx_dp)
-
-         contains
-            subroutine save_parameters(x,dx,e,done,do_print,data)
-               real(dp), dimension(:) :: x
-               real(dp), dimension(:) :: dx
-               real(dp) :: e
-               logical :: done
-               logical, optional :: do_print
-               character,optional :: data(:)
-
-               if( present(do_print) ) then
-                   if( do_print ) call print('SAVE HYPERS:'//x)
-               endif
-               done = .false.
-
-            endsubroutine save_parameters
-
-            function l(x_in, data)
-
-               real(dp), dimension(:) :: x_in
-               real(dp)               :: l
-               character,optional     :: data(:)
-               real(qp), dimension(:), allocatable :: x
-               real(qp) :: l_qp
-
-               l = 0.0_dp
-               allocate(x(size(x_in)))
-               x = real(x_in,kind=qp)
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 1
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma) )  
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 2
-               & call gp_update( this, delta_in=x(li_delta:ui_delta) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 3
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 4
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 5
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &        ! 6
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) &               ! 7
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) & ! 8
-               & call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &        ! 9
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &        ! 10
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) &               ! 11
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &        ! 12
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &               ! 13
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &               ! 14
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) &                      ! 15
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 16
-               & call gp_update( this, f0_in=x(li_f0:ui_f0) )  
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 17
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), f0_in=x(li_f0:ui_f0) )  
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) & ! 18
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) &        ! 19
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) ) 
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) & ! 20
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &        ! 21
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &        ! 22
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) &               ! 23
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) & ! 24
-               & call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &        ! 25
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &        ! 26
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) &               ! 27
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) &        ! 28
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) &               ! 29
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) &               ! 30
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) &                      ! 31
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-
-               call likelihood(this,l=l_qp)
-               l = -real(l_qp,kind=dp)
-               deallocate(x)
-
-            endfunction l
-
-            function dl_out(x_in,data)
-
-               real(dp), dimension(:)          :: x_in
-               real(dp), dimension(size(x_in)) :: dl_out
-               character,optional              :: data(:)
-               real(qp), dimension(:), allocatable :: x, dl
-
-               allocate(x(size(x_in)),dl(size(x_in)))
-
-               x = real(x_in,kind=qp)
-               dl = 0.0_qp
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 1
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma) )  
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma))
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 2
-                   call gp_update( this, delta_in=x(li_delta:ui_delta) )
-                   call likelihood(this, dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 3
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then ! 4
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 5
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then        ! 6
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. (.not.my_f0) ) then               ! 7
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then ! 8
-                   call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this, dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then        ! 9
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then        ! 10
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. (.not.my_f0) ) then               ! 11
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then        ! 12
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then               ! 13
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then               ! 14
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. (.not.my_f0) ) then                      ! 15
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), & 
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), &
-                   & dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 0
-                   call gp_update( this,f0_in=x(li_f0:ui_f0) )  
-                   call likelihood(this,dl_df0=dl(li_f0:ui_f0))
-               endif
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 1
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), f0_in=x(li_f0:ui_f0) )  
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_df0=dl(li_f0:ui_f0))
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then ! 2
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this, dl_ddelta=dl(li_delta:ui_delta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) .and. my_f0 ) then        ! 3
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), f0_in=x(li_f0:ui_f0) ) 
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then ! 4
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then        ! 5
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then        ! 6
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) .and. my_f0 ) then               ! 7
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then ! 8
-                   call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this, dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then        ! 9
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then        ! 10
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx .and. my_f0 ) then               ! 11
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) then        ! 12
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx .and. my_f0 ) then               ! 13
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) then               ! 14
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx .and. my_f0 ) then                      ! 15
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), & 
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)), f0_in=x(li_f0:ui_f0) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), &
-                   & dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx),dl_df0=dl(li_f0:ui_f0) )
-               endif
-               dl_out = -real(dl,kind=dp)
-               deallocate(x,dl)
-            endfunction dl_out
+         am_data = transfer(am, am_data)
+
+         minimise_gp_gradient = minim(xx_dp,likelihood_function,likelihood_gradient,&
+         & method='cg',convergence_tol=do_convergence_tol,max_steps=do_max_steps,&
+         & hook = save_likelihood_parameters, hook_print_interval=1,data=am_data, always_do_test_gradient=always_do_test_gradient)
+         deallocate(xx,xx_dp,am_data)
 
       endfunction minimise_gp_gradient
 
@@ -2647,232 +2017,95 @@ deallocate(diff_xijt)
 
       endfunction ns
 
-      subroutine print_likelihood(this,sigma,delta,theta,sparx)
+      function likelihood_function(x_in, am_data) result(l)
 
-         type(gp_sparse), intent(inout) :: this                 !% GP
-         logical, intent(in), optional :: sigma, delta, theta, sparx
-         logical :: my_sigma, my_delta, my_theta, my_sparx
+         real(dp), dimension(:) :: x_in
+         real(dp)               :: l
+         character,optional     :: am_data(:)
          real(qp), dimension(:), allocatable :: x
-         integer :: n, li, ui, li_sigma, ui_sigma, li_delta, ui_delta, li_theta, ui_theta, li_sparx, ui_sparx 
+         real(qp) :: l_qp
 
-         my_sigma = optional_default(.true.,sigma)
-         my_delta = optional_default(.true.,delta)
-         my_theta = optional_default(.true.,theta)
-         my_sparx = optional_default(.true.,sparx)
+         type(gp_minimise) :: am
 
-         n = 0
-         li = 0
-         ui = 0
-         if( my_sigma ) n = n + 2
-         if( my_delta ) n = n + this%nsp
-         if( my_theta ) n = n + this%d*this%nsp
-         if( my_sparx ) n = n + this%sr*this%d
+         l = 0.0_dp
+         allocate(x(size(x_in)))
+         x = real(x_in,kind=qp)
 
-         allocate( x(n) )
+         am = transfer(am_data,am)
 
-         if(my_sigma) then
-            li = li + 1
-            ui = li + 1
-            li_sigma = li
-            ui_sigma = ui
-            x(li:ui) = this%sigma
-         endif
-         if(my_delta) then
-            li = ui + 1
-            ui = li + this%nsp - 1
-            li_delta = li
-            ui_delta = ui
-            x(li:ui) = this%delta
-         endif
-         if(my_theta) then
-            li = ui + 1
-            ui = li + this%d*this%nsp - 1
-            li_theta = li
-            ui_theta = ui
-            x(li:ui) = reshape(this%theta,(/this%d*this%nsp/))
-         endif
-         if(my_sparx) then
-            li = ui + 1
-            ui = li + this%sr*this%d - 1
-            li_sparx = li
-            ui_sparx = ui
-            x(li:ui) = reshape(this%x_sparse,(/this%sr*this%d/))
-         endif
+         if( am%do_sigma ) call gp_update( am%minim_gp, sigma_in=x(am%li_sigma:am%ui_sigma), do_covariance = .false. )
+         if( am%do_delta ) call gp_update( am%minim_gp, delta_in=x(am%li_delta:am%ui_delta), do_covariance = .false. )
+         if( am%do_theta ) call gp_update( am%minim_gp, theta_in= &
+         & reshape(x(am%li_theta:am%ui_theta),(/am%minim_gp%d,am%minim_gp%nsp/)), &
+         & do_covariance = .false. )
+         if( am%do_sparx ) call gp_update( am%minim_gp, &
+         & x_sparse_in=reshape(x(am%li_sparx:am%ui_sparx),(/am%minim_gp%d,am%minim_gp%sr/)), do_covariance = .false. )
+         if( am%do_f0 ) call gp_update( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
 
+         call covariance_matrix_sparse(am%minim_gp)
+
+         am_data = transfer(am, am_data)
+
+         call likelihood(am%minim_gp,l=l_qp)
+         l = -real(l_qp,kind=dp)
          deallocate(x)
 
-         contains
+      endfunction likelihood_function
 
-            function l(x, data)
+      function likelihood_gradient(x_in,am_data) result(dl_out)
 
-               real(qp), dimension(:) :: x
-               real(qp)               :: l
-               character,optional     :: data(:)
+         real(dp), dimension(:)          :: x_in
+         real(dp), dimension(size(x_in)) :: dl_out
+         character,optional              :: am_data(:)
 
-               l = 0.0_qp
+         real(qp), dimension(:), allocatable :: x, dl
+         type(gp_minimise) :: am
 
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) ) & ! 1
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma) )  
+         allocate(x(size(x_in)),dl(size(x_in)))
 
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) ) & ! 2
-               & call gp_update( this, delta_in=x(li_delta:ui_delta) )
+         x = real(x_in,kind=qp)
+         dl = 0.0_qp
 
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) ) &        ! 3
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
+         am = transfer(am_data,am)
 
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) ) & ! 4
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
+         if( am%do_sigma ) call gp_update( am%minim_gp, sigma_in=x(am%li_sigma:am%ui_sigma), do_covariance = .false. )
+         if( am%do_delta ) call gp_update( am%minim_gp, delta_in=x(am%li_delta:am%ui_delta), do_covariance = .false. )
+         if( am%do_theta ) call gp_update( am%minim_gp, theta_in= &
+         & reshape(x(am%li_theta:am%ui_theta),(/am%minim_gp%d,am%minim_gp%nsp/)), &
+         & do_covariance = .false. )
+         if( am%do_sparx ) call gp_update( am%minim_gp, &
+         & x_sparse_in=reshape(x(am%li_sparx:am%ui_sparx),(/am%minim_gp%d,am%minim_gp%sr/)), do_covariance = .false. )
+         if( am%do_f0 ) call gp_update( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
 
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) ) &        ! 5
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
+         call covariance_matrix_sparse(am%minim_gp)
 
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) ) &        ! 6
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
+         am_data = transfer(am, am_data)
 
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) ) &               ! 7
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
+         call likelihood(am%minim_gp,dl_dsigma=dl(am%li_sigma:am%ui_sigma),do_sigma = am%do_sigma, &
+         & dl_ddelta=dl(am%li_delta:am%ui_delta), do_delta = am%do_delta, &
+         & dl_dtheta=dl(am%li_theta:am%ui_theta), do_theta = am%do_theta, &
+         & dl_dx = dl(am%li_sparx:am%ui_sparx), do_x = am%do_sparx, &
+         & dl_df0=dl(am%li_f0:am%ui_f0), do_f0 = am%do_f0 )
 
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx ) & ! 8
-               & call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
+         dl_out = -real(dl,kind=dp)
+         deallocate(x,dl)
 
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx ) &        ! 9
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
+      endfunction likelihood_gradient
 
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx ) &        ! 10
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
+      subroutine save_likelihood_parameters(x,dx,e,done,do_print,data)
+         real(dp), dimension(:) :: x
+         real(dp), dimension(:) :: dx
+         real(dp) :: e
+         logical :: done
+         logical, optional :: do_print
+         character,optional :: data(:)
 
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx ) &               ! 11
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
+         if( present(do_print) ) then
+             if( do_print ) call print('SAVE HYPERS:'//x)
+         endif
+         done = .false.
 
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx ) &        ! 12
-               & call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx ) &               ! 13
-               & call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx ) &               ! 14
-               & call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx ) &                      ! 15
-               & call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-               & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-               & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-
-               call likelihood(this,l=l)
-
-            endfunction l
-
-            function dl(x,data)
-
-               real(qp), dimension(:)       :: x
-               real(qp), dimension(size(x)) :: dl
-               character,optional           :: data(:)
-
-               dl = 0.0_qp
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) ) & ! 0
-               & return
-               
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. (.not.my_sparx) ) then ! 1
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma) )  
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma))
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) ) then ! 2
-                   call gp_update( this, delta_in=x(li_delta:ui_delta) )
-                   call likelihood(this, dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. (.not.my_sparx) ) then        ! 3
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta) ) 
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) ) then ! 4
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. (.not.my_sparx) ) then        ! 5
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. (.not.my_sparx) ) then        ! 6
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. (.not.my_sparx) ) then               ! 7
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx ) then ! 8
-                   call gp_update( this, x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this, dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. (.not.my_theta) .and. my_sparx ) then        ! 9
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. (.not.my_theta) .and. my_sparx ) then        ! 10
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. (.not.my_theta) .and. my_sparx ) then               ! 11
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. (.not.my_delta) .and. my_theta .and. my_sparx ) then        ! 12
-                   call gp_update( this, theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. (.not.my_delta) .and. my_theta .and. my_sparx ) then               ! 13
-                   call gp_update( this, sigma_in=x(li_sigma:ui_sigma), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( (.not.my_sigma) .and. my_delta .and. my_theta .and. my_sparx ) then               ! 14
-                   call gp_update( this, delta_in=x(li_delta:ui_delta), theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_ddelta=dl(li_delta:ui_delta),dl_dtheta=dl(li_theta:ui_theta), &
-                   & dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-               if( my_sigma .and. my_delta .and. my_theta .and. my_sparx ) then                      ! 15
-                   call gp_update( this,sigma_in=x(li_sigma:ui_sigma), delta_in=x(li_delta:ui_delta), &
-                   & theta_in=reshape(x(li_theta:ui_theta),(/this%d,this%nsp/)), &
-                   & x_sparse_in=reshape(x(li_sparx:ui_sparx),(/this%d,this%sr/)) )
-                   call likelihood(this,dl_dsigma=dl(li_sigma:ui_sigma),dl_ddelta=dl(li_delta:ui_delta), &
-                   & dl_dtheta=dl(li_theta:ui_theta), dl_dx = dl(li_sparx:ui_sparx) )
-               endif
-
-            endfunction dl
-
-      endsubroutine print_likelihood
+      endsubroutine save_likelihood_parameters
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
