@@ -382,11 +382,9 @@ for key in ('QUIPPY_FCOMPILER', 'QUIPPY_CPP'):
 # C preprocessor
 cpp = makefile.get('QUIPPY_CPP', 'cpp').split()
 
-# Find all include directories in Makefile
-include_dirs = []
-for key in makefile:
-    if key.endswith('INCDIR') and makefile[key] != '':
-          include_dirs.extend(makefile[key].split())
+# extract include directories from INCLUDES Makefile variable
+fields = makefile['INCLUDES'].split()
+include_dirs  = [s[2:] for s in fields if s[:2] == '-I']
 
 # extract libraries and library_dirs from SYSLIBS Makefile variable
 fields = makefile['SYSLIBS'].split()
