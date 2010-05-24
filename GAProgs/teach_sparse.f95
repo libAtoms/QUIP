@@ -821,6 +821,7 @@ program teach_sparse
      if( core%do_core ) then
         my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={"//trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
      endif
+     my_gp%comment = trim(my_gp%comment)//" sgm={"//sgm//"}"
 
      gp_file = 'gp_'//m//'_'//k//'.dat'
 
