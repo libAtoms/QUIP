@@ -616,6 +616,7 @@ subroutine IPModel_GAP_Print (this, file)
      call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
      call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
   enddo
+  call Print("IPModel_GAP : comment = "//trim(this%my_gp%comment),file=file)
 #endif
 
 end subroutine IPModel_GAP_Print
