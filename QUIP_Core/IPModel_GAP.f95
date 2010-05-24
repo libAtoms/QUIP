@@ -95,7 +95,7 @@ type IPModel_GAP
 #ifdef HAVE_GP
   type(gp) :: my_gp
 #endif
-  character(len=1000000) :: quip_string = ''
+  character(len=10000) :: quip_string = ''
   character(len=value_len) :: ip_args = ''
 
   logical :: initialised = .false.
