@@ -129,25 +129,25 @@ contains
 
   end subroutine teach_n_from_xyz
 
-  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     type(fourier_so4), intent(inout) :: f_hat
     type(grad_fourier_so4), intent(inout) :: df_hat
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald
+    logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                      f_hat = f_hat, df_hat = df_hat)
 
   end subroutine xyzfile_teach_data_from_xyz_so4
 
-  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                                                 x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
@@ -156,24 +156,24 @@ contains
     type(qw_so3), intent(inout) :: qw
     type(grad_qw_so3), intent(inout) :: dqw
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald
+    logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                                      x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                      f3_hat = f3_hat, df3_hat = df3_hat, qw = qw, dqw = dqw)
 
   end subroutine xyzfile_teach_data_from_xyz_qw_so3
 
-  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                                            x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
                                            f_hat, df_hat, f3_hat, df3_hat, qw, dqw)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
-    logical, intent(in) :: do_ewald
+    logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
     integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
@@ -196,10 +196,10 @@ contains
     integer :: n_max, n_con
     integer :: n_ener
     logical :: has_ener, has_force, has_virial
-    real(dp) :: ener, ener_ewald, ener_core
-    real(dp), dimension(3,3) :: virial, virial_ewald, virial_core
+    real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
+    real(dp), dimension(3,3) :: virial, virial_ewald, virial_ewald_corr, virial_core
     real(dp), pointer :: charge(:), f(:,:)
-    real(dp), allocatable :: f_ewald(:,:), f_core(:,:)
+    real(dp), dimension(:,:), allocatable :: f_ewald, f_ewald_corr, f_core
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
     integer :: shift(3)
     real(dp) :: pos(3)
@@ -268,6 +268,14 @@ contains
           if(has_force) f = f - f_ewald
           if(has_virial) virial = virial - virial_ewald
           deallocate(f_ewald)
+          if( do_ewald_corr ) then
+             allocate(f_ewald_corr(3,at%N))
+             call Ewald_corr_calc(at,e=ener_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr)
+             if(has_ener) ener = ener + ener_ewald_corr
+             if(has_force) f = f + f_ewald_corr
+             if(has_virial) virial = virial + virial_ewald_corr
+             deallocate(f_ewald_corr)
+          endif
        endif
 
        if(has_ener) ener = ener - at%N*e0     
@@ -405,11 +413,11 @@ contains
 
   end subroutine xyzfile_teach_data_from_xyz
 
-  subroutine e0_avg_from_xyz(at_file, do_ewald, z_eff, core, e0)
+  subroutine e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, e0)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     real(dp), intent(in) :: z_eff(116)
-    logical, intent(in) :: do_ewald
+    logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: e0
 
@@ -419,7 +427,7 @@ contains
     integer :: n_max, n_con
     integer :: n_ener
     logical :: has_ener
-    real(dp) :: ener, ener_ewald, ener_core
+    real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
     real(dp), pointer :: charge(:)
     integer :: i
 
@@ -449,15 +457,17 @@ contains
           endif
 
           ener_ewald = 0.0_dp
+          ener_ewald_corr = 0.0_dp
           if( do_ewald ) then
              if( .not. assign_pointer(at, 'charge', charge) ) call system_abort('Could not assign pointer')
              do i = 1, at%N
                 charge(i) = z_eff(at%Z(i))
              enddo
              call Ewald_calc(at,e=ener_ewald)
+             if( do_ewald_corr ) call Ewald_corr_calc(at,e=ener_ewald_corr)
           endif
 
-          e0 = e0 + (ener-ener_ewald-ener_core) / at%N
+          e0 = e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
 
           n_ener = n_ener + 1
        endif
@@ -522,8 +532,9 @@ program teach_sparse
   character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file, ip_args
   integer :: m, j_max, qw_l_max, min_steps, min_save
   real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
-  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_ewald, do_test_gp_gradient, has_bispectrum_file, &
-  & do_core, test_gp_gradient_result
+  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, &
+  & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_test_gp_gradient, has_bispectrum_file, &
+  & do_core, do_ewald, do_ewald_corr, test_gp_gradient_result
 
   real(dp), dimension(116) :: z_eff
   character(len=FIELD_LENGTH), dimension(232) :: z_eff_fields
@@ -587,13 +598,14 @@ program teach_sparse
   call param_register(params, 'do_test_gp_gradient', 'F', do_test_gp_gradient)
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_bispectrum_file)
   call param_register(params, 'ip_args', '', ip_args, do_core)
+  call param_register(params, 'do_ewald_corr', 'F', do_ewald_corr)
 
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file] [sparse_file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
-     & [do_cluster] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] [do_test_gp_gradient=F] [bispectrum_file] &
+     & [do_cluster] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] [do_ewald_corr=F] [do_test_gp_gradient=F] [bispectrum_file] &
      & [ip_args={}]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
@@ -608,6 +620,7 @@ program teach_sparse
         z_eff(j) = string_to_real(z_eff_fields(i+1))
      enddo
   endif
+  do_ewald_corr = do_ewald .and. do_ewald_corr
 
   if (do_qw_so3) then
      qw_cutoff = 0.0_dp
@@ -652,7 +665,7 @@ program teach_sparse
   species_Z = species_present(1:n_species)
 
   if (.not. has_e0) then
-     call e0_avg_from_xyz(at_file, do_ewald, z_eff, core, e0)
+     call e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, e0)
   end if
 
   allocate(w_Z(maxval(species_Z)))
@@ -664,11 +677,11 @@ program teach_sparse
   allocate(sigma(n_ener+n_force+n_virial))
 
   if (do_qw_so3) then
-     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
+     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   else
-     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, e0, w_Z, &
-     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, z_eff, core, sgm, 0.0_dp, w_Z, &
+     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
+     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, 0.0_dp, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   endif
 
@@ -816,7 +829,7 @@ program teach_sparse
         endif
      else
         my_gp%comment = "coordinates=bispectrum cutoff="//r_cut//" j_max="//j_max//" z0="//z0//" n_species="//n_species//" Z={"//species_Z//&
-        & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" z_eff={"//z_eff(species_Z)//"}"
+        & "} w={"//w_Z(species_Z)//"} do_ewald="//do_ewald//" do_ewald_corr="//do_ewald_corr//" z_eff={"//z_eff(species_Z)//"}"
      endif
   
      if( core%do_core ) then
@@ -848,8 +861,9 @@ program teach_sparse
   call print("n_species = "//n_species)
   call print("species_Z = "//species_Z)
   call print("w         = "//w_Z(species_Z))
-  call print("do_ewald  = "//do_ewald)
   call print("z_eff     = "//z_eff(species_Z))
+  call print("do_ewald  = "//do_ewald)
+  call print("do_ewald_corr  = "//do_ewald_corr)
 
   call finalise(gp_sp)
 
