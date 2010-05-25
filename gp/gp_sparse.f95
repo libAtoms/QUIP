@@ -138,7 +138,7 @@ module gp_sparse_module
    private
    public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, &
            & likelihood, test_gp_gradient, minimise_gp_gradient, &
-           & minimise_gp_ns, gp_sparsify, print_likelihood, gp_print_binary, &
+           & minimise_gp_ns, gp_sparsify, gp_print_binary, &
            & gp_read_binary, minimise_gp_ns_new, fill_random_integer
 
    contains
