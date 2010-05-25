@@ -357,9 +357,9 @@ contains
       enddo
     enddo
              
-    if(present(e)) e = 0.8_dp * e * HARTREE*BOHR ! convert from internal units to eV
-    if(present(f)) f = 0.8_dp * f * HARTREE*BOHR ! convert from internal units to eV/A
-    if(present(virial)) virial = 0.8_dp * virial * HARTREE*BOHR
+    if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
+    if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
+    if(present(virial)) virial = virial * HARTREE*BOHR
 
     my_charge => null()
     if (associated(at,my_at)) call finalise(my_at)
