@@ -1750,7 +1750,7 @@ contains
 
     real(dp)::mydiff(3), norm_mydiff
     integer ::myshift(3)
-    integer ::i_n1n, j_n1n, i_njn, k, m
+    integer ::i_n1n, j_n1n, i_njn, m
     type(Connection), pointer :: use_connect
 
     if (present(alt_connect)) then

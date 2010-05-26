@@ -141,10 +141,10 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    type(Dictionary)                :: params
    integer                         :: i, nreplicate_x, nreplicate_y, nreplicate_z
    logical                         :: lpbc, lreplicate_cell, lprint_xyz, lcrack,latoms
-   integer, pointer, dimension(:)  :: map,map_bop, neigh, active, original_cell, hybrid 
+   integer, pointer, dimension(:)  :: map,map_bop, active, original_cell, hybrid 
    real(dp), pointer, dimension(:,:):: forces_bop
 !   real(dp), pointer, dimension(:) :: local_energy 
-   integer :: nsafe, nn, natoms_active
+   integer :: nsafe, natoms_active
 
    lpbc = .false.
    if (present(args_str)) then
@@ -226,7 +226,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    call set_cutoff(at_bop, this%cutoff)
 !  Recompute connectivity
    call print('IPModel_BOP : cutoff used for connectivity' // at_bop%cutoff, NERD)
-   call set_lattice(at_bop,at_bop%lattice,remap=.true.,reconnect=.true., scale_positions=.false.)
+   call set_lattice(at_bop,at_bop%lattice,scale_positions=.false., remap=.true.,reconnect=.true.)
 
 !  Atoms to be passed to the Bop library
    this%at = at_bop 
@@ -370,7 +370,7 @@ subroutine IPModel_BOP_Print(this, file)
   type(IPModel_BOP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj
+  integer :: ti
 
   call Print("IPModel_BOP : Bond-Order-Potential", file=file)
   call Print("IPModel_BOP : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)

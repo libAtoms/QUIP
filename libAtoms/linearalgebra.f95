@@ -1002,7 +1002,7 @@ CONTAINS
       logical, intent(in), optional :: m_transpose
       real(dp), intent(in), optional :: lhs_factor, rhs_factor
 
-     integer::M,N,maxd,K
+     integer::M,N,maxd
      character(len=1) :: m_transp
      integer :: m_r, m_c
      real(dp) :: my_lhs_factor, my_rhs_factor
@@ -1595,7 +1595,7 @@ CONTAINS
 
      real(dp), dimension(:), allocatable :: wr, wi, work
      real(dp), dimension(:,:), allocatable :: a, vl, vr
-     integer :: i, n, lwork, info
+     integer :: n, lwork, info
 
      n = size(this,1)
      allocate(a(n,n), wr(n), wi(n), vr(n,n), vl(n,n) )

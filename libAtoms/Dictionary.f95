@@ -1070,9 +1070,9 @@ subroutine dictionary_read_string(this, str, append)
   logical :: do_append
   character(len=dict_field_length) :: field
   integer equal_pos
-  character(len=dict_field_length), dimension(dict_n_fields) :: fields, sub_fields, final_fields
+  character(len=dict_field_length), dimension(dict_n_fields) :: final_fields
   character(len=dict_field_length) :: key, value
-  integer :: num_fields, i, j,  k, num_sub_fields, num_pairs
+  integer :: i, num_pairs
 
   do_append = optional_default(.false., append)
 

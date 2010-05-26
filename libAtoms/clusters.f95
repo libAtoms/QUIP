@@ -1248,7 +1248,7 @@ contains
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
-    integer :: i, j, jj, first_active, old_n, n_cluster, shift(3)
+    integer :: i, j, jj, first_active, old_n, n_cluster
     integer, pointer :: hybrid_mark(:), modified_hybrid_mark(:)
     integer :: prev_cluster_info_n
     integer, allocatable, dimension(:) :: uniqed, tmp_index

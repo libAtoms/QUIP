@@ -291,18 +291,15 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    real*8 raggio_in,rcut_in,gcut_in
    real(dp), allocatable :: asap_f(:,:)
    real(dp), pointer :: dipoles_ptr(:,:)
-   integer :: i, ti, tj
+   integer :: i
    logical :: do_restart, calc_dipoles
    integer at0, atf
    integer idebug
    real(dp) dtold,dtnew
-   logical  tzeroc
    logical sumewald
    real(dp) mass_cel
-   logical tscaled
    logical readnat
    logical texist
-   logical tpow,tgmin
    integer nesr
 
 #ifdef HAVE_ASAP
