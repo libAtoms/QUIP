@@ -338,7 +338,6 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   real(dp), pointer :: scf_orbital_n(:), scf_orbital_m(:,:)
   real(dp) :: global_N
   real(dp), pointer :: local_N(:), local_mom(:,:)
-  logical :: got_local_N, got_local_mom
   logical do_evecs
 
   integer diag_err

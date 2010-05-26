@@ -688,7 +688,7 @@ contains
     real(dp),          intent(in)    :: t, dt !% the current time, and the time step
     logical, optional, intent(in)    :: store_constraint_force
 
-    integer                             :: i,j,n, nn, Nobj, Nat, iterations, o, pos_indices(3), cf_index
+    integer                             :: i,j,n, nn, Nobj, Nat, iterations, pos_indices(3), cf_index
     real(dp)                            :: da(3), m, df(3)
     logical                             :: converged, do_store
 
@@ -802,7 +802,7 @@ contains
     real(dp),          intent(in)    :: dt
     logical, optional, intent(in)    :: store_constraint_force 
 
-    integer                          :: i,j,n, nn, Nobj, Nat, iterations, o, cf_index, pos_indices(3)
+    integer                          :: i,j,n, nn, Nobj, Nat, iterations, cf_index, pos_indices(3)
     real(dp)                         :: da(3), m, df(3)
     logical                          :: converged, do_store
 

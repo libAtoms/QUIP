@@ -1622,7 +1622,7 @@ contains
 
     integer                  :: discards(7)
 !    logical :: use_hysteretic_neighbours
-    real(dp) :: cutoff
+!    real(dp) :: cutoff
 
     call print("find_motif", verbosity=ANAL)
     call print(motif, verbosity=ANAL)

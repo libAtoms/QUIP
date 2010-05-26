@@ -579,7 +579,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear)
   integer, intent(in) :: at_N, at_Z(:)
   logical, intent(in), optional :: noncollinear
 
-  integer :: i_at, i_man, man_offset, last_man_offset, man_min, man_max
+  integer :: i_at, i_man, man_offset, last_man_offset
   integer :: n_mag
 
   call Wipe(this)
@@ -748,7 +748,6 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
   complex(dp) :: expf
 
   integer :: block_nr, block_nc
-  complex(dp), allocatable :: R_i(:,:), R_j(:,:)
 
   logical :: u_do_S, u_do_S_block, u_do_H, u_no_S_spin, u_do_dipole
 
@@ -983,7 +982,6 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   logical, intent(out), optional, target :: diag_mask(:), offdiag_mask(:)
 
   integer :: i, ji, j, ik, ii, jj
-  integer :: n_i, n_j
   real(dp), allocatable :: block_dH(:,:,:), block_dS(:,:,:)
   complex(dp), allocatable :: block_dH_z(:,:,:), block_dS_z(:,:,:)
   complex(dp), allocatable :: block_dH_z_phase(:,:,:), block_dS_z_phase(:,:,:)
@@ -995,7 +993,6 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
   logical :: do_S, do_S_block
   logical :: block_active
 
-  complex(dp), allocatable :: R_i(:,:), R_j(:,:)
   complex(dp) :: expf
 
   integer block_nr, block_nc
@@ -2309,7 +2306,7 @@ subroutine Self_Consistency_Term_fill_sc_matrices(this, at, U, stoner_param, fir
   type(TBModel), intent(in) :: tbm
 
   real(dp), allocatable :: block_H_up(:,:), block_H_down(:,:), block_S(:,:)
-  integer :: i_at, i_orb, i_man, n_i, orb_offset, man_offset
+  integer :: i_at, i_man, n_i, orb_offset, man_offset
 
   select case(this%type)
     case (SCF_NONE)
@@ -2691,8 +2688,6 @@ subroutine add_term_dSCFE_dn(this, tbsys, global_at_weight, dSCFE_dn)
   real(dp), intent(in), pointer :: global_at_weight(:)
   real(dp), intent(out) :: dSCFE_dn(:)
 
-  integer :: i
-
   dSCFE_dn = 0.0_dp
 
   select case (this%type)
@@ -2729,7 +2724,7 @@ subroutine add_term_dSCFE_dm(this, tbsys, global_at_weight, dSCFE_dm)
   real(dp), intent(in), pointer :: global_at_weight(:)
   real(dp), intent(out) :: dSCFE_dm(:,:)
 
-  integer :: i_at, i_man, i_orb
+  integer :: i_man, i_orb
   real(dp) :: e(3)
 
   dSCFE_dm = 0.0_dp

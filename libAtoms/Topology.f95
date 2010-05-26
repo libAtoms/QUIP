@@ -221,8 +221,8 @@ contains
     logical                              :: found_residues
     type(Table)                          :: atom_Si, atom_SiO, SiOH_list
     real(dp), dimension(:), allocatable  :: charge
-integer :: j,k, atom_i, ji
-logical :: silanol
+integer :: j,atom_i, ji
+!logical :: silanol
     type(Table) :: bondH,bondSi
     integer :: bond_H,bond_Si
 !    integer                             :: qm_flag_index, pos_indices(3)
@@ -233,7 +233,7 @@ type(Table) :: O_atom, O_neighb
 integer :: hydrogen
 logical :: silica_potential
 
-    integer, pointer :: mol_id(:)
+!    integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
 
     call system_timer('create_residue_labels_pos')
@@ -788,14 +788,12 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(103)           :: sor !Brookhaven only uses 88
     integer                  :: mm
     character(4)             :: QM_prefix_atom_mol_name
-    integer                  :: qm_flag_index, &
-                                atom_type_index, &
+    integer                  :: atom_type_index, &
                                 atom_res_name_index, &
                                 atom_mol_name_index, &
                                 atom_res_number_index, &
                                 atom_charge_index
     character(len=1024)      :: my_run_type_string
-    integer                  :: run_type
     real(dp)                 :: cell_lengths(3), cell_angles(3)
 
     call system_timer('write_pdb_file')
@@ -945,7 +943,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
-    character(len=TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
+    !character(len=TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
     logical :: use_pos_is_pos, do_add_silica_23body
 
     ! save a copy
@@ -1003,8 +1001,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(*), parameter :: int_format = 'I8'
     integer                 :: mm, i
     character(4)            :: QM_prefix_atom_mol_name
-    integer                 :: qm_flag_index, &
-                               atom_type_index, &
+    integer                 :: atom_type_index, &
                                atom_type_PDB_index, &
                                atom_res_name_index, &
                                atom_mol_name_index, &
@@ -1014,7 +1011,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     type(Table)             :: angles
     type(Table)             :: dihedrals, impropers
     character(len=1024)     :: my_run_type_string
-    integer                 :: run_type
+    !integer                 :: run_type
     logical                 :: do_add_silica_23body
 
     call system_timer('write_psf_file_pos')
