@@ -613,6 +613,9 @@ program teach_sparse
   endif
   call finalise(params)
 
+  if( count( (/has_sparse_file,do_cluster,do_pivot/) ) > 1 ) &
+  & call system_abort('There has been more than one method specified for sparsification.')
+     
   z_eff = 0.0_dp
   if(do_ewald) then
      call parse_string(z_eff_string,':',z_eff_fields,num_z_eff_fields)
