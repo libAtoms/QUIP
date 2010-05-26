@@ -48,14 +48,17 @@ module clustering_module
   
   contains
 
-  subroutine distance_matrix(x,dm)
+  subroutine distance_matrix(x,dm,theta_fac)
      real(dp), dimension(:,:), intent(in) :: x
      real(dp), dimension(:,:), intent(out) :: dm
+     real(dp), intent(in), optional :: theta_fac
      real(dp), dimension(:), allocatable :: theta
 
      real(dp), dimension(:,:), allocatable :: my_x
+     real(dp) :: my_theta_fac
      integer :: i, j, d, n
 
+     my_theta_fac = optional_default(1.0_dp, theta_fac)
      d = size(x,1)
      n = size(x,2)
 
@@ -70,6 +73,7 @@ module clustering_module
 !                         & (sum( x(i,:) ) / size(x(i,:)))**2 )
         if( theta(i) .feq. 0.0_dp ) theta(i) = 1.0_dp
      enddo
+     theta = theta * my_theta_fac
 
      do i = 1, n
         my_x(:,i) = x(:,i) / theta
@@ -86,10 +90,80 @@ module clustering_module
      deallocate(theta,my_x)
   endsubroutine distance_matrix
 
-  subroutine bisect_kmedoids(x,n_clusters_in,c,med)
+  subroutine pivot(x,pivout,theta_fac)
+     real(dp), dimension(:,:), intent(in) :: x
+     integer, dimension(:), intent(out) :: pivout
+     real(dp), intent(in), optional :: theta_fac
+     
+     real(dp), dimension(:,:), allocatable :: knn
+     real(dp), dimension(:), allocatable :: ktmp
+     integer, dimension(:), allocatable :: pivin
+     
+     integer :: i, j, k, d, m, n, jtmp, jmax
+     real(dp) :: dmax
+     
+     d = size(x,1)
+     n = size(x,2)
+     
+     m = size(pivout)
+     allocate(knn(n,n),pivin(n),ktmp(n))
+     
+     call distance_matrix(x,knn,theta_fac)
+     do i = 1, n
+        do j = 1, n
+           knn(j,i) = exp(-0.5_dp*knn(j,i))
+        enddo
+     enddo
+     
+     pivin = (/ (i, i=1,n) /)
+     
+     do k = 1, m
+        dmax = 0.0_dp
+        do j = k, n
+           if( dmax < knn(j,j) ) then
+              jmax = j
+              dmax = knn(j,j)
+           endif
+        enddo
+        if( jmax /= k ) then
+            jtmp = pivin(jmax)
+            pivin(jmax) = pivin(k)
+            pivin(k) = jtmp
+
+            ktmp = knn(k,:)
+            knn(k,:) = knn(jmax,:)
+            knn(jmax,:) = ktmp
+
+            ktmp = knn(:,k)
+            knn(:,k) = knn(:,jmax)
+            knn(:,jmax) = ktmp
+         endif
+
+         knn(k,k) = sqrt(knn(k,k))
+
+         knn(k+1:n,k) = knn(k+1:n,k)/knn(k,k)
+         do j = k+1, n
+            knn(j:n,j) = knn(j:n,j) - knn(j:n,k)*knn(j,k)
+         enddo
+
+         do j = 1, n
+            do i = j+1,n
+               knn(j,i) = knn(i,j)
+            enddo
+         enddo
+      enddo
+        
+      pivout = pivin(1:m)
+     
+      deallocate(knn,pivin,ktmp)
+  
+  endsubroutine pivot
+
+  subroutine bisect_kmedoids(x,n_clusters_in,c,med,theta_fac)
      real(dp), dimension(:,:), intent(in) :: x
      integer, intent(in) :: n_clusters_in
      integer, dimension(:), intent(out),optional :: c, med
+     real(dp), intent(in), optional :: theta_fac
 
      type(clstr) :: my_cluster, tmp
 
@@ -104,7 +178,7 @@ module clustering_module
      n = size(x,2)
      if(present(c) ) c = 0
      allocate(my_cluster%dm(n,n))
-     call distance_matrix(x,my_cluster%dm)
+     call distance_matrix(x,my_cluster%dm,theta_fac)
 
      ! start clustering
      my_cluster%N = 1                               ! start with one big cluster
