@@ -533,7 +533,7 @@ program teach_sparse
   integer :: m, j_max, qw_l_max, min_steps, min_save
   real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
   logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, &
-  & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_cluster, do_test_gp_gradient, has_bispectrum_file, &
+  & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_test_gp_gradient, has_bispectrum_file, do_cluster, do_pivot, &
   & do_core, do_ewald, do_ewald_corr, test_gp_gradient_result
 
   real(dp), dimension(116) :: z_eff
@@ -592,6 +592,7 @@ program teach_sparse
   call param_register(params, 'do_sparx', 'F', do_sparx)
   call param_register(params, 'do_f0', 'F', do_f0)
   call param_register(params, 'do_cluster', 'F', do_cluster)
+  call param_register(params, 'do_pivot', 'F', do_pivot)
   call param_register(params, 'min_steps', '10', min_steps)
   call param_register(params, 'min_save', '0', min_save)
   call param_register(params, 'z_eff', '', z_eff_string,do_ewald)
@@ -603,14 +604,14 @@ program teach_sparse
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
-     & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file] [sparse_file] [theta_fac=3.0] &
+     & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
-     & [do_cluster] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] [do_ewald_corr=F] [do_test_gp_gradient=F] [bispectrum_file] &
+     & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
+     & [do_ewald_corr=F] [do_test_gp_gradient=F] [bispectrum_file=file] &
      & [ip_args={}]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
-
 
   z_eff = 0.0_dp
   if(do_ewald) then
@@ -710,7 +711,10 @@ program teach_sparse
      call finalise(sparse_inout)
   elseif(do_cluster ) then
      allocate(r(m))
-     call bisect_kmedoids(x,m,med=r)
+     call bisect_kmedoids(x,m,med=r,theta_fac=theta_fac)
+  elseif(do_pivot) then
+     allocate(r(m))
+     call pivot(x, r,theta_fac=theta_fac)
   else
      allocate(r(m))
      call fill_random_integer(r,size(x,2))
@@ -718,7 +722,7 @@ program teach_sparse
   call sort_array(r)
 
   call print('')
-  call print('r')
+  call print('Atomic environments used in sparsification')
   call print(r)
   call print('')
 
@@ -740,7 +744,7 @@ program teach_sparse
   else
      do k = 1, n_species
         do dd = 1, d
-!           theta(dd) = ( maxval(x(dd,:)) - minval(x(dd,:)) )
+!           theta(dd,k) = ( maxval(x(dd,:),mask=(xz(:)==species_Z(k))) - minval(x(dd,:),mask=(xz(:)==species_Z(k))) )
            theta(dd,k) = ( maxval(x(dd,r),mask=(xz(r)==species_Z(k))) - minval(x(dd,r),mask=(xz(r)==species_Z(k))) )
 !           theta(dd) = sqrt( & !take square root
 !                          & sum( x(dd,:)**2 ) / size(x(dd,:)) - &
