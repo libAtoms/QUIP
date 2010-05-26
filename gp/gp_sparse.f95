@@ -245,15 +245,16 @@ module gp_sparse_module
          this%c = 0.0_dp
          deallocate(a,y,tau)
 #else
+         call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,1.0_qp/sparse%lambda) ! O(NM)
          k_mn_l_k_nm = matmul(k_mn_inverse_lambda,transpose(sparse%k_mn))
 
          call initialise(LA_q_mm,sparse%k_mm + k_mn_l_k_nm)
          call LA_Matrix_Inverse(LA_q_mm,inverse_q_mm,info=info)
          if( info /= 0 ) call system_abort('GP_initialise: LA_q_mm')
 
+         !this%alpha = real( matmul(inverse_q_mm,matmul(k_mn_inverse_lambda, sparse%y)),kind=dp)          ! O(NM)
+         call Matrix_Solve(LA_q_mm,matmul(k_mn_inverse_lambda, sparse%y),this%alpha)
          call finalise(LA_q_mm)
-
-         this%alpha = real( matmul(inverse_q_mm,matmul(k_mn_inverse_lambda, sparse%y)),kind=dp)          ! O(NM)
 
          call initialise(LA_k_mm,sparse%k_mm)
          call LA_Matrix_Inverse(LA_k_mm,inverse_k_mm,info=info)
