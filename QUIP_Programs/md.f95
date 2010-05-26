@@ -43,8 +43,9 @@ private
     real(dp) :: velocity_rescaling_time 
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
-    logical :: calc_virial, const_T, const_P
+    logical :: calc_virial, calc_energy, const_T, const_P
     character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
+    character(len=FIELD_LENGTH) :: pot1_init_args, pot2_init_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
@@ -91,7 +92,10 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'rescale_velocity', 'F', params%rescale_velocity)
   call param_register(md_params_dict, 'langevin_tau', '100.0', params%langevin_tau)
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial)
+  call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy)
   call param_register(md_params_dict, 'metapot_init_args', PARAM_MANDATORY, params%metapot_init_args)
+  call param_register(md_params_dict, 'pot1_init_args', '', params%pot1_init_args)
+  call param_register(md_params_dict, 'pot2_init_args', '', params%pot2_init_args)
   call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval)
@@ -154,6 +158,8 @@ subroutine print_params(params)
   integer :: i
 
   call print("md_params%metapot_init_args='" // trim(params%metapot_init_args) // "'")
+  call print("md_params%pot1_init_args='" // trim(params%pot1_init_args) // "'")
+  call print("md_params%pot2_init_args='" // trim(params%pot2_init_args) // "'")
   call print("md_params%metapot_calc_args='" // trim(params%metapot_calc_args) // "'")
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
@@ -183,6 +189,7 @@ subroutine print_params(params)
   call print("md_params%p_ext=" // params%p_ext)
   call print("md_params%thermalise_wait_time=" // params%thermalise_wait_time)
   call print("md_params%calc_virial=" // params%calc_virial)
+  call print("md_params%calc_energy=" // params%calc_energy)
   call print("md_params%summary_interval=" // params%summary_interval)
   call print("md_params%params_print_interval=" // params%params_print_interval)
   call print("md_params%at_print_interval=" // params%at_print_interval)
@@ -374,7 +381,7 @@ use md_module
 use libatoms_misc_utils_module
 
 implicit none
-  type (Potential) :: pot
+  type (Potential) :: pot1, pot2
   type (MetaPotential) :: metapot
   type(MPI_context) :: mpi_glob
   type(extendable_str) :: es
@@ -407,8 +414,16 @@ implicit none
 
   call read_xyz(at_in, params%atoms_in_file, mpi_comm=mpi_glob%communicator)
 
-  call potential_initialise_filename(pot, params%metapot_init_args, params%params_in_file, mpi_obj=mpi_glob)
-  call initialise(metapot, "Simple", pot, mpi_obj=mpi_glob)
+  if (len_trim(params%pot1_init_args) == 0 .and. len_trim(params%pot2_init_args) == 0) then
+    call potential_initialise_filename(pot1, params%metapot_init_args, params%params_in_file, mpi_obj=mpi_glob)
+    call initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
+  else if (len_trim(params%pot1_init_args) /= 0 .and. len_trim(params%pot2_init_args) /= 0) then
+    call potential_initialise_filename(pot1, params%pot1_init_args, params%params_in_file, mpi_obj=mpi_glob)
+    call potential_initialise_filename(pot2, params%pot2_init_args, params%params_in_file, mpi_obj=mpi_glob)
+    call initialise(metapot, params%metapot_init_args, pot1, pot2, mpi_obj=mpi_glob)
+  else
+    call system_abort("Can only handle just metapot_init_args (for Simple), or all of pot1_init_args, pot2_init_args, and metapot_init_args")
+  endif
 
   call print(metapot)
 
@@ -433,10 +448,18 @@ implicit none
   ! calculate f(t)
   call calc_connect(ds%atoms)
   if (params%quiet_calc) call verbosity_push_decrement()
-  if (params%calc_virial) then
-    call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+  if (params%calc_energy) then
+    if (params%calc_virial) then
+      call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+    else
+      call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+    endif
   else
-    call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+    if (params%calc_virial) then
+      call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+    else
+      call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+    endif
   endif
   if (params%quiet_calc) call verbosity_pop()
   call set_value(ds%atoms%params, 'time', ds%t)
@@ -505,12 +528,22 @@ contains
     if (params%advance_md_substeps > 0) then
       call calc_connect(ds%atoms)
       if (params%quiet_calc) call verbosity_push_decrement()
-      if (params%calc_virial) then
-	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args // &
-	  'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+      if (params%calc_energy) then
+	if (params%calc_virial) then
+	  call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args // &
+	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+	else
+	  call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args // &
+	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+	endif
       else
-	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args // &
-	  'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+	if (params%calc_virial) then
+	  call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args // &
+	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+	else
+	  call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args // &
+	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
+	endif
       endif
       if (params%quiet_calc) call verbosity_pop()
       has_new_pos = assign_pointer(ds%atoms, 'new_pos', new_pos)
@@ -572,10 +605,18 @@ contains
     ! calc f(t+dt)
     call system_timer("md/calc")
     if (params%quiet_calc) call verbosity_push_decrement()
-    if (params%calc_virial) then
-      call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+    if (params%calc_energy) then
+      if (params%calc_virial) then
+	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      else
+	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+      endif
     else
-      call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+      if (params%calc_virial) then
+	call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      else
+	call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+      endif
     endif
     if (params%quiet_calc) call verbosity_pop()
     call system_timer("md/calc")
@@ -595,10 +636,18 @@ contains
     ! call calc again if needed for v dep. forces
     if (params%v_dep_quants_extra_calc) then
       if (params%quiet_calc) call verbosity_push_decrement()
-      if (params%calc_virial) then
-	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      if (params%calc_energy) then
+	if (params%calc_virial) then
+	  call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	else
+	  call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+	endif
       else
-	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+	if (params%calc_virial) then
+	  call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	else
+	  call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+	endif
       endif
       if (params%quiet_calc) call verbosity_pop()
     end if

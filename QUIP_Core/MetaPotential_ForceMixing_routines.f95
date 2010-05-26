@@ -254,7 +254,7 @@
     integer :: fit_hops
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
-    integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4
+    integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
     integer, allocatable, dimension(:) :: embed, fit
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
@@ -587,6 +587,9 @@
        case ('user')
           weight_method = USER_WEIGHT
           call print('conserve_momentum: using user defined weighting', VERBOSE)
+       case ('weight_region1')
+          weight_method = CM_WEIGHT_REGION1
+          call print('conserve_momentum: using user defined weighting', VERBOSE)
        case default
           call system_abort('MetaPotential_FM_Calc: unknown conserve_momentum_weight method: '//&
                trim(conserve_momentum_weight_method))
@@ -621,6 +624,8 @@
              weight = at%mass(fit(i))*at%mass(fit(i))
           case(USER_WEIGHT)
              weight = conserve_momentum_weight(fit(i))
+          case(CM_WEIGHT_REGION1)
+             weight = weight_region1(fit(i))
           end select
           df_fit(:,i) = -weight * f_tot
           w_tot = w_tot + weight
