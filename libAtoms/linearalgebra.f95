@@ -2133,8 +2133,8 @@ CONTAINS
      integer, intent(out), optional :: info
 
      real(qp), dimension(:,:), allocatable :: my_b, my_x
-     real(qp), dimension(:), allocatable :: work, ferr, berr
-     integer, dimension(:), allocatable :: iwork
+     !real(qp), dimension(:), allocatable :: work, ferr, berr
+     !integer, dimension(:), allocatable :: iwork
      integer :: i, m, my_info
 
      logical :: my_refine
@@ -4585,8 +4585,6 @@ CONTAINS
   function permutation_symbol() result(eps)
     real(dp) :: eps(3,3,3)
 
-    integer i, j, k
-    
     eps = 0.0_dp
 
     eps(1,2,3) =  1.0_dp
