@@ -427,7 +427,7 @@ subroutine TBModel_get_HS_blocks(this, at, i, j, dv_hat, dv_mag, b_H, b_S, i_mag
     case (FF_DFTB)
       call get_HS_blocks(this%tbmodel_dftb, at, i, j, dv_hat, dv_mag, b_H, b_S, i_mag)
     case (FF_GSP)
-      call get_HS_blocks(this%tbmodel_gsp, at, i, j, dv_hat, dv_mag, b_H, b_S, i_mag)
+      call get_HS_blocks(this%tbmodel_gsp, at, i, j, dv_hat, dv_mag, b_H, b_S)
     case default
       call system_abort ('TBModel_get_HS_blocks confused by functional_form' // this%functional_form)
   end select
@@ -448,7 +448,7 @@ subroutine TBModel_get_dHS_masks(this, at, at_ind, d_mask, od_mask)
     case (FF_DFTB)
       call get_dHS_masks(this%tbmodel_dftb, at, at_ind, d_mask, od_mask)
     case (FF_GSP)
-      call get_dHS_masks(this%tbmodel_gsp, at, at_ind, d_mask, od_mask)
+      call get_dHS_masks(this%tbmodel_gsp, at_ind, d_mask, od_mask)
     case default
       call system_abort ('TBModel_get_HS_masks confused by functional_form' // this%functional_form)
   end select
@@ -473,7 +473,7 @@ function TBModel_get_dHS_blocks(this, at, i, j, dv_hat, dv_mag, at_ind, b_dH, b_
     case (FF_DFTB)
       TBModel_get_dHS_blocks = get_dHS_blocks(this%tbmodel_dftb, at, i, j, dv_hat, dv_mag, at_ind, b_dH, b_dS, i_mag)
     case (FF_GSP)
-      TBModel_get_dHS_blocks = get_dHS_blocks(this%tbmodel_gsp, at, i, j, dv_hat, dv_mag, at_ind, b_dH, b_dS, i_mag)
+      TBModel_get_dHS_blocks = get_dHS_blocks(this%tbmodel_gsp, at, i, j, dv_hat, dv_mag, at_ind, b_dH, b_dS)
     case default
       call system_abort ('TBModel_get_HS_blocks confused by functional_form' // this%functional_form)
   end select
