@@ -137,7 +137,7 @@ install:
 	if [ ! -d ${QUIP_INSTDIR} ]; then \
 	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist"; \
 	fi
-	${MAKE} install-build.QUIP_ARCH install-Tools
+	${MAKE} install-build.QUIP_ARCH install-Tools install-structures
 
 install-build.QUIP_ARCH:
 	@echo "installing from build.${QUIP_ARCH}"; \
@@ -157,6 +157,31 @@ install-Tools:
 	  fi; \
 	done
 
+install-structures:
+	@if [ "x${QUIP_STRUCTS_DIR}" == "x" ]; then \
+	  if [ "x${QUIP_DIR}" == "x" ]; then \
+	    if [ -d ${HOME}/share/quip_structures ]; then \
+	      echo "QUIP_STRUCTURS_DIR, QUIP_DIR not defined, copying structures into HOME/share/quip_structures"; \
+	      cp structures/*xyz ${HOME}/share/quip_structures; \
+	    else \
+	      echo "No QUIP_STRUCTS_DIR or QUIP_DIR defined, and HOME/share/quip_structures is not a directory"; \
+	    fi; \
+	  else \
+	    if [ -d ${QUIP_DIR}/structures ]; then \
+	      echo "QUIP_STRUCTURS_DIR not defined, copying structures into QUIP_DIR/structures"; \
+	      cp structures/*xyz ${QUIP_DIR}/structures; \
+	    else \
+	      echo "QUIP_DIR defined as ${QUIP_DIR}, but ${QUIP_DIR}/structures is not a directory"; \
+	    fi; \
+	  fi; \
+	else \
+	  if [ -d ${QUIP_STRUCTS_DIR}/structures ]; then \
+	    echo "copying structures into QUIP_STRUCTS_DIR"; \
+	    cp structures/*xyz ${QUIP_STRUCTS_DIR}/structures; \
+	  else \
+	    echo "QUIP_STRUCTS_DIR defined as ${QUIP_STRUCTS_DIR}, but it is not a directory"; \
+	  fi; \
+	fi
 
 doc: quip-reference-manual.pdf
 
