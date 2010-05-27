@@ -336,9 +336,9 @@ module paramreader_module
 
       character(len=FIELD_LENGTH) :: field
       integer equal_pos
-      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: fields, sub_fields, final_fields
+      character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: final_fields
       character(len=FIELD_LENGTH) :: key, value
-      integer :: num_fields, i, j,  k, num_sub_fields, num_pairs
+      integer :: i, num_pairs
       type(ParamEntry) :: entry
       type(DictData) :: data
       logical :: my_ignore_unknown

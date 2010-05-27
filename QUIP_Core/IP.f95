@@ -233,7 +233,7 @@ recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   character(len=*), intent(in) :: args_str, param_str
   type(MPI_context), intent(in), optional :: mpi_obj
 
-  type(Dictionary) :: params, gap_dictionary
+  type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_template
 

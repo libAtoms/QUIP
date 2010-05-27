@@ -667,17 +667,15 @@ function TBModel_GSP_n_elecs_of_Z(this, Z)
   TBModel_GSP_n_elecs_of_Z = this%n_elecs(get_type(this%type_of_atomic_num,Z))
 end function TBModel_GSP_n_elecs_of_Z
 
-subroutine TBModel_GSP_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H, b_S, i_mag)
+subroutine TBModel_GSP_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H, b_S)
   type(TBModel_GSP), intent(in) :: this
   type(Atoms), intent(in) :: at
   integer, intent(in) :: at_i, at_j
   real(dp), intent(in) :: dv_hat(3), dv_mag
   real(dp), intent(out) :: b_H(:,:)
   real(dp), intent(out) :: b_S(:,:)
-  integer, intent(in), optional :: i_mag
 
-  integer ti, tj, is, js, i_set, j_set
-  integer i, j, nr, nc
+  integer i, j, ti, tj, is, js, i_set, j_set
   real(dp) SK_frad_H(10)
   real(dp) dv_hat_sq(3)
 
@@ -708,7 +706,7 @@ subroutine TBModel_GSP_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H, 
       j = 1
       do j_set=1, this%n_orb_sets(tj)
       call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-        is, js, SK_frad_H)
+         SK_frad_H)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
         b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
@@ -723,9 +721,8 @@ subroutine TBModel_GSP_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H, 
 
 end subroutine TBModel_GSP_get_HS_blocks
 
-subroutine TBModel_GSP_get_dHS_masks(this, at, at_ind, d_mask, od_mask)
+subroutine TBModel_GSP_get_dHS_masks(this, at_ind, d_mask, od_mask)
   type(TBModel_GSP), intent(in) :: this
-  type(Atoms), intent(in) :: at
   integer, intent(in) :: at_ind
   logical, intent(out), optional :: d_mask(:), od_mask(:)
 
@@ -741,7 +738,7 @@ subroutine TBModel_GSP_get_dHS_masks(this, at, at_ind, d_mask, od_mask)
   endif
 end subroutine
 
-function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind, b_dH, b_dS, i_mag)
+function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind, b_dH, b_dS)
   type(TBModel_GSP), intent(in) :: this
   type(Atoms), intent(in) :: at
   integer, intent(in) :: at_i, at_j
@@ -749,11 +746,9 @@ function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind
   integer, intent(in) :: at_ind
   real(dp), intent(out) :: b_dH(:,:,:)
   real(dp), intent(out) :: b_dS(:,:,:)
-  integer, intent(in), optional :: i_mag
   logical :: TBModel_GSP_get_dHS_blocks
 
-  integer ti, tj, is, js, i_set, j_set
-  integer i, j, nr, nc
+  integer :: i, j, ti, tj, is, js, i_set, j_set
   real(dp) SK_frad_H(10) 
   real(dp) SK_dfrad_H(10)
   real(dp) dv_hat_sq(3)
@@ -780,9 +775,9 @@ function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind
     j = 1
     do j_set=1, this%n_orb_sets(tj)
     call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-      is, js, SK_frad_H)
+      SK_frad_H)
     call dradial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-      is, js, SK_dfrad_H)
+      SK_dfrad_H)
     do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
       if (at_ind > 0) then
@@ -807,12 +802,11 @@ function TBModel_GSP_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_ind
 
 end function TBModel_GSP_get_dHS_blocks
 
-subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, is, js, f_H)
+subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, f_H)
   type(TBModel_GSP), intent(in) :: this
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  integer, intent(in) :: is, js
   real(dp), intent(out) :: f_H(10)
 
   if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_D) then
@@ -822,12 +816,11 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
   endif
 end subroutine radial_functions
 
-subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, is, js, f_dH)
+subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, f_dH)
   type(TBModel_GSP), intent(in) :: this
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dv_mag
   integer, intent(in) :: orb_set_type_i, orb_set_type_j
-  integer, intent(in) :: is, js
   real(dp), intent(out) :: f_dH(10)
 
   if (orb_set_type_i == ORB_D .and. orb_set_type_j == ORB_D) then
@@ -933,9 +926,9 @@ function TBModel_GSP_screening(this,sk_ind,at,i,j,dist,ti,tj)
 
   TBModel_GSP_screening =  &
        (TBModel_GSP_screening_c(this,sk_ind,at,i,j,dist,ti,tj) &
-              - TBModel_GSP_screening_mu(this,sk_ind,i,j,dist,ti,tj) )/ &
+              - TBModel_GSP_screening_mu(this) )/ &
      (1._dp + TBModel_GSP_calc_O_coeff(this,sk_ind,dist,ti,tj)**2.0_dp - &
-            2._dp * TBModel_GSP_screening_mu(this,sk_ind,i,j,dist,ti,tj) )
+            2._dp * TBModel_GSP_screening_mu(this) )
 
 end function TBModel_GSP_screening
 
@@ -967,7 +960,8 @@ function TBModel_GSP_screening_c(this,sk_ind,at, i,j,dist,ti,tj)
      g_j = TBModel_GSP_screening_g(sk_ind,theta_j)
      g_j2 = TBModel_GSP_screening_g(sk_ind,-theta_j)
 
-     call TBModel_GSP_calc_c_terms(this,sk_ind,dist,rik,rjk,ti,tj,tk,g_i,g_j,g_j2,cterm)
+     call TBModel_GSP_calc_c_terms(this)
+     !call TBModel_GSP_calc_c_terms(this,sk_ind,dist,rik,rjk,ti,tj,tk,g_i,g_j,g_j2,cterm)
 
      c_temp = c_temp + (cterm(1)*cterm(2) + cterm(3)*cterm(4))*cterm(5)*cterm(6) - &
                         cterm(7) *cterm(8) *cterm(9) *cterm(10)*cterm(10) - &
@@ -995,7 +989,8 @@ function TBModel_GSP_screening_c(this,sk_ind,at, i,j,dist,ti,tj)
      g_j = TBModel_GSP_screening_g(sk_ind,theta_j)
      g_j2 = TBModel_GSP_screening_g(sk_ind,-theta_j)
 
-     call TBModel_GSP_calc_c_terms(this,sk_ind,dist,rik,rjk,ti,tj,tk,g_i,g_j,g_j2,cterm)
+     !call TBModel_GSP_calc_c_terms(this,sk_ind,dist,rik,rjk,ti,tj,tk,g_i,g_j,g_j2,cterm)
+     call TBModel_GSP_calc_c_terms(this)
 
      c_temp = c_temp + (cterm(1)*cterm(2) + cterm(3)*cterm(4))*cterm(5)*cterm(6) - &
                         cterm(7) *cterm(8) *cterm(9) *cterm(10)*cterm(10) - &
@@ -1008,25 +1003,16 @@ function TBModel_GSP_screening_c(this,sk_ind,at, i,j,dist,ti,tj)
 
 end function TBModel_GSP_screening_c
 
-function TBModel_GSP_screening_c_deriv(this,sk_ind,at, i,j,dist,ti,tj)
+function TBModel_GSP_screening_c_deriv(this)
   type(TBModel_GSP), intent(in) :: this
-  type(Atoms), intent(in)        :: at 
-  integer, intent(in)            :: sk_ind
-  real(dp), intent(in)           :: dist
-  integer, intent(in)            :: ti, tj
-  integer                        :: i,j
   real(dp)                       :: TBModel_GSP_screening_c_deriv
     
    TBModel_GSP_screening_c_deriv = 0.d0
 
 end function TBModel_GSP_screening_c_deriv
 
-function TBModel_GSP_screening_mu(this,sk_ind,i,j,dist,ti,tj) 
+function TBModel_GSP_screening_mu(this) 
   type(TBModel_GSP), intent(in) :: this
-  integer, intent(in)            :: sk_ind
-  real(dp), intent(in)           :: dist
-  integer, intent(in)            :: ti, tj
-  integer                        :: i,j
   real(dp)                       :: TBModel_GSP_screening_mu
 
   TBModel_GSP_screening_mu = 0._dp
@@ -1048,13 +1034,13 @@ function TBModel_GSP_screening_g(sk_ind,theta)
 
 end function TBModel_GSP_screening_g
 
-subroutine TBModel_GSP_calc_c_terms(this,sk_ind,rij,rik,rjk,ti,tj,tk,g_i,g_j,g_j2,cterm)  
+subroutine TBModel_GSP_calc_c_terms(this)  
   type(TBModel_GSP), intent(in) :: this
-  integer, intent(in)            :: sk_ind
-  integer, intent(in)            :: ti, tj, tk
-  real(dp), intent(in)           :: rij, rik, rjk
-  real(dp)                       :: g_i, g_j, g_j2
-  real(dp)                       :: cterm(15)
+! integer, intent(in)            :: sk_ind
+! integer, intent(in)            :: ti, tj, tk
+! real(dp), intent(in)           :: rij, rik, rjk
+! real(dp)                       :: g_i, g_j, g_j2
+! real(dp)                       :: cterm(15)
 
 !     cterm(1) = TBModel_GSP_calc_H_coeff(this,SK_SDS,rik,ti,tk)
 !     cterm(2) = TBModel_GSP_calc_O_coeff(this,SK_SDS,rjk,tk,tj)
@@ -1072,13 +1058,13 @@ subroutine TBModel_GSP_calc_c_terms(this,sk_ind,rij,rik,rjk,ti,tj,tk,g_i,g_j,g_j
 !     cterm(14)= g_j 
 end subroutine TBModel_GSP_calc_c_terms
 
-subroutine TBModel_GSP_calc_c_terms_deriv(this,sk_ind,rij,rik,rjk,ti,tj,tk,dg_i,dg_j,dg_j2,cterm_deriv)  
+subroutine TBModel_GSP_calc_c_terms_deriv(this)  
   type(TBModel_GSP), intent(in) :: this
-  integer, intent(in)            :: sk_ind
-  integer, intent(in)            :: ti, tj, tk
-  real(dp), intent(in)           :: rij, rik, rjk
-  real(dp)                       :: dg_i, dg_j, dg_j2
-  real(dp)                       :: cterm_deriv(15)
+!  integer, intent(in)            :: sk_ind
+!  integer, intent(in)            :: ti, tj, tk
+!  real(dp), intent(in)           :: rij, rik, rjk
+!  real(dp)                       :: dg_i, dg_j, dg_j2
+!  real(dp)                       :: cterm_deriv(15)
 
 !       cterm_deriv(1) = TBModel_GSP_calc_H_coeff_deriv(this,SK_SDS,rik,ti,tk)
 !       cterm_deriv(2) = TBModel_GSP_calc_O_coeff_deriv(this,SK_SDS,rjk,tk,tj)
@@ -1135,7 +1121,6 @@ function TBModel_GSP_Vrep_env(this,dist,lambda,ti,tj)
   real(dp)                       :: lambda
   integer, intent(in)            :: ti, tj
   real(dp)                       :: TBModel_GSP_Vrep_env 
-  real(dp)                       :: TBModel_GSP_Vrep_env_emb
 
   TBModel_GSP_Vrep_env = this%B(ti,tj)/dist * &
               dexp(-lambda*(dist - 2.0_dp* this%Rcore(ti,tj)))
@@ -1307,12 +1292,11 @@ function TBModel_GSP_get_local_rep_E_force(this, at, i) result(force)
   integer, intent(in)            :: i
   real(dp)                       :: force(3,at%N)
 
-  real(dp) :: dE_dr, dist, dist_k, dv_hat(3), dv_mag
+  real(dp) :: dE_dr, dist, dist_k, dv_hat(3)
   real(dp) :: emb_i, emb_j 
   real(dp) :: lambda_ij
   integer  :: ji, j, ti, tj
   integer  :: k, ik, jk
-  real(dp) :: aaa(1)
 
   force = 0.0_dp
 
@@ -1356,7 +1340,7 @@ function TBModel_GSP_get_local_rep_E_virial(this, at, i) result(virial)
   real(dp) :: lambda_ij
 
   real(dp) :: emb_i, emb_j 
-  real(dp) :: dE_dr, dist, dist_k, dv_hat(3), dv_mag
+  real(dp) :: dE_dr, dist, dist_k, dv_hat(3)
   integer  :: ji, j, ti, tj, k, ik, jk
 
   virial = 0.0_dp

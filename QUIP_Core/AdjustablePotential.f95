@@ -169,7 +169,7 @@ contains
     character(len=*),optional,intent(in):: method
 
 
-    real(dp):: ratio, evals(3), evecs(3,3), small_evec(3), r_ij, u_ij(3), cos_theta, oldratio, r
+    real(dp):: ratio, evals(3), evecs(3,3), small_evec(3), r_ij, u_ij(3), cos_theta, oldratio
     real(dp), allocatable, dimension(:)::default_row
     real(dp), allocatable, dimension(:,:) :: df
     integer::Nfit_components, i, j, fi, fj, nj, n, hops, atomcount, oldn, &
@@ -177,9 +177,6 @@ contains
     type(Table) :: springs, newsprings, tmpsprings,cand_springs
     logical :: do_map, do_nnonly
     logical :: do_refit
-
-    integer, allocatable, dimension(:) :: s1, s2
-    logical, save :: first_time = .true.
 
     do_map = .false.
     if (present(map)) do_map = map
@@ -977,7 +974,7 @@ contains
     real(dp):: err, ferr(3, atomlist%N)
     real(dp), parameter::eigenvalue_threshold=1e-10_dp
     real(dp), allocatable::full_forcematrix(:,:), X(:,:), S(:), WORK(:), precondition(:)
-    integer::LWORK, INFO, maxmn, minmn, M,N, RANK, a1, a2, error_code
+    integer::LWORK, INFO, maxmn, minmn, M,N, RANK, a1, a2
     optional :: prec_func
 
 #ifdef _MPI

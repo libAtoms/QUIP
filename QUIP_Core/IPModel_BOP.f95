@@ -93,7 +93,6 @@ subroutine IPModel_BOP_Initialise_str(this, args_str, param_str, mpi)
   type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
-  character(len=FIELD_LENGTH) label
 
   call Finalise(this)
 
@@ -448,8 +447,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=FIELD_LENGTH) :: value
 
-  logical shifted
-  integer ti, tj
+  integer ti
 
   if (name == 'BOP_params') then ! new BOP stanza
 
@@ -530,11 +528,10 @@ subroutine IPModel_BOP_compute_buffer(this,at,at_bop)
   type(IPModel_BOP), intent(inout):: this
   type(Atoms), intent(inout)  :: at
   type(Atoms), intent(inout) :: at_bop
-  integer                  :: cellsNa,cellsNb,cellsNc,atom1, n_atom
+  integer                  :: cellsNa,cellsNb,cellsNc, n_atom
   integer                  :: cellsNa2,cellsNb2,cellsNc2
-  integer                  :: cell_image_Na, cell_image_Nb, cell_image_Nc
   real(dp)                 :: cutoff
-  integer                  :: i_atom, i, j, k,  ntot
+  integer                  :: i_atom, i, j, k
   type(table)              :: list
 
   cutoff = this%cutoff
@@ -580,7 +577,7 @@ subroutine  build_cluster(at, list, at_bop)
   type(table)                :: list
   real(dp), dimension(3)     :: dist, rmax, length
   integer, dimension(3)      :: n_cell_rep
-  integer                    :: iatom, jatom, i , idir 
+  integer                    :: iatom, jatom, i
 
   call print ('Number of atoms belonging to the cluster : ' // list%N )
   call print ('Cluster center atom                      : ' // list%int(1,1) )   
@@ -681,7 +678,7 @@ end function pos_j
     type(Atoms), intent(in)::a    !% Input cell
     integer, intent(inout)::n1, n2, n3
     real(dp)::lattice(3,3), p(3)
-    integer::i,j,k,n,nn
+    integer::i,j,k,n
     type(Table) :: big_data
     integer     :: nn1, n1save, n2save, n3save
     integer, pointer, dimension(:)  :: map_new, map

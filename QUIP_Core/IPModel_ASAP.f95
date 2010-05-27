@@ -283,25 +283,6 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional, intent(in) :: args_str
 
-   type(Dictionary) :: params
-   real(dp) :: asap_e, asap_stress(3,3), a_ew, f_ew
-   logical smlra,smlrc,smlgc,smlrc2,smlrc3,smlrc4
-   logical nsmlra,nsmlrc,nsmlgc
-   real*8 rarec,gcrec,rcrec,root2
-   real*8 raggio_in,rcut_in,gcut_in
-   real(dp), allocatable :: asap_f(:,:)
-   real(dp), pointer :: dipoles_ptr(:,:)
-   integer :: i
-   logical :: do_restart, calc_dipoles
-   integer at0, atf
-   integer idebug
-   real(dp) dtold,dtnew
-   logical sumewald
-   real(dp) mass_cel
-   logical readnat
-   logical texist
-   integer nesr
-
 #ifdef HAVE_ASAP
 
    allocate(asap_f(3,at%N))

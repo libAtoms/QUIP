@@ -541,7 +541,6 @@ contains
     type(Atoms), intent(inout) :: at_array(0:)
     real(dp), intent(out) :: force_errors(4,at_array(0)%N,size(at_array) - 1)
     real(dp), intent(out), optional :: forces1(4,at_array(0)%N,size(at_array) - 1), forces2(4,at_array(0)%N,size(at_array) - 1)
-    integer :: i
     real(dp) :: forces1_temporary(4,at_array(0)%N,size(at_array) - 1), forces2_temporary(4,at_array(0)%N,size(at_array) - 1)
 
     call calculate_forces(pot1, at_array, forces1_temporary)
@@ -929,7 +928,6 @@ contains
     type(Potential), intent(inout) :: pot1, pot2
     type(Atoms), intent(inout) :: at
     type(Inoutput), intent(inout) :: log
-    real(dp) :: bulk_e, atom_e, bind_e
 
     call print("# :::: TEST BULK ENERGY", file = log)
 
@@ -1349,7 +1347,6 @@ contains
     real(dp), intent(out), optional :: def_e
     type(MetaPotential) :: mpot
     real(dp) :: def_bulk_e, bulk_e
-    integer :: i
 
     if (associated(pot%ip)) call initialise(mpot, 'Simple', pot, mpi_obj = pot%ip%mpi_glob)
     if (associated(pot%tb)) call initialise(mpot, 'Simple', pot, mpi_obj = pot%tb%mpi)

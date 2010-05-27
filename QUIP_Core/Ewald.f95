@@ -98,8 +98,8 @@ subroutine add_madelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, madelung_matrix, 
     real(dp) conv_crit, prev_conv_crit
 
     integer ni, nip1, nip2
-    real(dp) b1mag, b2mag, b3mag, bmag_a(3)
-    real(dp) a1mag, a2mag, a3mag, amag_a(3)
+    real(dp) b1mag, b2mag, b3mag
+    real(dp) a1mag, a2mag, a3mag
 
     logical use_this_one
     real(dp) convf
@@ -470,7 +470,7 @@ subroutine add_dmadelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, dmadelung_matrix
 
     !NO PARALLEL real(dp), allocatable:: t_dmadelung_matrix(:,:,:)
 
-    integer i, j, range_a(3)
+    integer i, j
     integer s_a(3)
     real(dp) b1(3), b2(3), b3(3), h(3,3)
     real(dp) vol
@@ -485,9 +485,6 @@ subroutine add_dmadelung_matrix(N_A, a1_in, a2_in, a3_in, A_in, dmadelung_matrix
     real(dp) epsilon, fourepsilonsq
     real(dp) recip_space_prefac, K_dep_factor
     real(dp) phase
-
-    real(dp) bmag_a(3)
-    real(dp) amag_a(3)
 
     allocate(A(3,N_A))
     a1 = a1_in / Bohr
@@ -602,7 +599,7 @@ subroutine add_dmadelung_matrix_dr(N_A, a1_in, a2_in, a3_in, A_in, component, dm
     integer  :: component
     real(dp) :: dmadelung_matrix_dr(N_A,N_A,3)  !% derivative of Madelung matrix dotted with atomic positions (output)
 
-    integer i, j, range_a(3)
+    integer i, j
     integer s_a(3)
     real(dp) b1(3), b2(3), b3(3), h(3,3)
     real(dp) vol
@@ -618,9 +615,6 @@ subroutine add_dmadelung_matrix_dr(N_A, a1_in, a2_in, a3_in, A_in, component, dm
     real(dp) epsilon, fourepsilonsq
     real(dp) recip_space_prefac, K_dep_factor
     real(dp) phase
-
-    real(dp) bmag_a(3)
-    real(dp) amag_a(3)
 
     allocate(A(3,N_A))
     a1 = a1_in / Bohr
