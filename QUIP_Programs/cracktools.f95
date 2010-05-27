@@ -562,7 +562,6 @@ contains
     if (params%crack_double_ended) then
        if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
     else
-       call print_xyz(crack_slab,'pippo.xyz')
        if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
     end if
 
