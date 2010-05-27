@@ -1265,14 +1265,14 @@ contains
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
-    integer :: p, i, j, surface, age, ti
+    integer :: p, i, j, surface, age
     type(Table) :: old_embed, selectlist(2), tmp_select, embedlist, temptable, crack_tips
     type(Table), dimension(2) :: new_embed
     integer, allocatable, dimension(:) :: sindex
     real(dp), allocatable, dimension(:) :: sorted, tip_dist
     real(dp), dimension(2,3) :: selection_ellipse
     real(dp) :: ellipse_bias(3), crack_pos(3)
-    integer :: dislo_seed, temp_N, crack_tip_atom 
+    integer :: dislo_seed, temp_N
 
     integer, pointer, dimension(:) :: nn, changed_nn, hybrid, edge_mask
 
@@ -1574,7 +1574,7 @@ contains
     type(Connection) :: connect
     type(Table) :: minima
     integer :: cellsna, cellsnb, cellsnc, min_dist
-    integer :: start_i, start_j, start_k, i, j, k, nstep, crack_cell(3), d_i, d_j
+    integer :: start_i, start_j, start_k, i, j, k, nstep, d_i, d_j
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
     integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_occupied
     real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), sum, sum_2, occ_mu, occ_sigma
@@ -2171,7 +2171,7 @@ contains
       type(Atoms), optional            :: at_for_connectivity
       logical                          :: my_x_boundaries
       real(dp)                         :: rmin, rij
-      integer                          :: i, ji, k, kj, n2, who_closest
+      integer                          :: i, ji, n2, who_closest
       integer, allocatable,dimension(:)  :: who, who_nn, who_absolute_index
  
       my_x_boundaries = optional_default(.false.,x_boundaries)
@@ -2249,8 +2249,7 @@ contains
       real(dp), dimension(3,3)         :: lattice_tmp
       integer                          :: i
       logical, dimension(at%n)         :: neigh_removed
-      logical :: ccc
-      real(dp) :: width, height
+      real(dp) :: width
 
       at_tmp = at
       lattice_tmp = at_tmp%lattice

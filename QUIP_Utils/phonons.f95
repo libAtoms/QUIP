@@ -383,13 +383,12 @@ subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_para
   integer, dimension(3), intent(in), optional :: phonon_supercell
 
   type(Atoms) :: at
-  integer :: i, ii, j, k, l, alpha, beta, nk, n1, n2, n3, jn, ni, nj, nj_orig, &
-  & ni1, ni2, ni3, nj1, nj2, nj3
-  integer, dimension(3) :: do_phonon_supercell, shift
+  integer :: i, j, k, alpha, beta, nk, n1, n2, n3, jn
+  integer, dimension(3) :: do_phonon_supercell
 
-  real(dp), dimension(3) :: pp, diff_ij, diff_1k, diff_i1, diff_jk
+  real(dp), dimension(3) :: pp, diff_ij
   real(dp), dimension(:,:), allocatable :: evals
-  real(dp), dimension(:,:), allocatable :: dm, q, pos0
+  real(dp), dimension(:,:), allocatable :: q, pos0
   real(dp), dimension(:,:,:,:), allocatable :: fp0, fm0
   complex(dp), dimension(:,:), allocatable :: dmft
   complex(dp), dimension(:,:,:), allocatable :: evecs

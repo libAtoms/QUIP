@@ -87,7 +87,6 @@ subroutine IPModel_Template_Initialise_str(this, args_str, param_str, mpi)
   type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
-  character(len=FIELD_LENGTH) label
 
   call Finalise(this)
 
@@ -139,7 +138,7 @@ subroutine IPModel_Template_Print(this, file)
   type(IPModel_Template), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
-  integer :: ti, tj
+  integer :: ti
 
   call Print("IPModel_Template : Template Potential", file=file)
   call Print("IPModel_Template : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
@@ -193,8 +192,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=FIELD_LENGTH) :: value
 
-  logical shifted
-  integer ti, tj
+  integer ti
 
   if (name == 'Template_params') then ! new Template stanza
 

@@ -55,7 +55,6 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
   type(Potential), save :: pot
 
   integer :: i
-  real(dp), dimension(:), pointer :: charge
 
   logical, save :: first_run = .true.
 
