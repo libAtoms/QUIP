@@ -49,14 +49,17 @@ module linearalgebra_module
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
   !% multiplication. Can be changed at runtime. The default is true.
+  integer, parameter :: NOT_FACTORISED = 0
+  integer, parameter :: CHOLESKY       = 1
+  integer, parameter :: QR             = 2
 
   type LA_Matrix
      real(qp), dimension(:,:), allocatable :: matrix, factor
-     real(qp), dimension(:), allocatable :: s
-     integer :: n
+     real(qp), dimension(:), allocatable :: s, tau
+     integer :: n, m
      logical :: initialised = .false.
      logical :: equilibrated = .false.
-     logical :: factorised = .false.
+     integer :: factorised = NOT_FACTORISED
   endtype LA_Matrix
 
   interface Initialise
@@ -70,6 +73,10 @@ module linearalgebra_module
   interface Matrix_Solve
     module procedure LA_Matrix_Solve_Vector, LA_Matrix_Solve_Matrix
   endinterface Matrix_Solve
+
+  interface Matrix_QR_Solve
+    module procedure LA_Matrix_QR_Solve_Vector, LA_Matrix_QR_Solve_Matrix
+  endinterface Matrix_QR_Solve
 
   interface find
      module procedure find_indices
@@ -1891,7 +1898,9 @@ CONTAINS
      !& call system_abort('LA_Matrix_Initialise: matrix not square')
 
      this%n = size(matrix,1)
-     allocate(this%matrix(this%n,this%n), this%factor(this%n,this%n), this%s(this%n) )
+     this%m = size(matrix,2)
+     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
+     & this%tau(this%m) )
 
      this%matrix = matrix
      this%initialised = .true.
@@ -1905,12 +1914,13 @@ CONTAINS
      if(.not. this%initialised) return
 
      this%n = 0
+     this%m = 0
      if(allocated(this%matrix) ) deallocate(this%matrix)
      if(allocated(this%factor) ) deallocate(this%factor)
      if(allocated(this%s) ) deallocate(this%s)
      this%initialised = .false.
      this%equilibrated = .false.
-     this%factorised = .false.
+     this%factorised = NOT_FACTORISED
 
   endsubroutine LA_Matrix_Finalise
 
@@ -1924,6 +1934,7 @@ CONTAINS
      real(dp) :: scond, amax
 
      if(.not. this%initialised) call system_abort('LA_Matrix_Factorise: Initialise first')
+     if( this%n /= this%m ) call system_abort('LA_Matrix_Factorise: matrix not square')
 
      this%s = 1.0_qp
 
@@ -1954,12 +1965,9 @@ CONTAINS
 
      if( present(info) ) then
         info = my_info
-        return
      else
         if( my_info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, error: '//my_info)
      endif
-
-     this%factorised = .true.
 
      if( present(factor) ) then
         !call check_size('factor',factor,shape(this%matrix),'LA_Matrix_Factorise')
@@ -1974,6 +1982,8 @@ CONTAINS
            factor = this%factor
         endif
      endif
+
+     this%factorised = CHOLESKY
         
   endsubroutine LA_Matrix_Factorise
 
@@ -2057,7 +2067,12 @@ CONTAINS
 
      integer :: i, j, my_info
 
-     if( .not. this%factorised ) call LA_Matrix_Factorise(this, info=info)
+     if( this%factorised == NOT_FACTORISED ) then
+        call LA_Matrix_Factorise(this, info=info)
+     elseif( this%factorised /= CHOLESKY ) then
+        call system_abort('LA_Matrix_Inverse: matrix not Cholesky-factorised')
+     endif
+
      if( present(info) ) then
         if( info /= 0 ) return
      endif
@@ -2146,11 +2161,13 @@ CONTAINS
      
      my_refine = optional_default(.false.,refine)
 
-     if( .not. this%factorised ) then
+     if( this%factorised == NOT_FACTORISED ) then
         call LA_Matrix_Factorise(this,info=info)
         if( present(info) ) then
            if( info /= 0 ) return
         endif
+     elseif( this%factorised /= CHOLESKY ) then
+        call system_abort('LA_Matrix_Solve_Matrix: matrix not Cholesky-factorised')
      else
         if( present(info) ) info = 0
      endif
@@ -2218,11 +2235,15 @@ CONTAINS
      real(dp) :: LA_Matrix_LogDet
      integer :: i
 
-     if( .not. this%factorised ) then
+     if( this%factorised == NOT_FACTORISED ) then
         call LA_Matrix_Factorise(this,info=info)
         if( present(info) ) then
            if( info /= 0 ) return
         endif
+     elseif( this%factorised /= CHOLESKY ) then
+        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised')
+     else
+        if( present(info) ) info = 0
      endif
 
      LA_Matrix_LogDet = 0.0_dp
@@ -2242,11 +2263,15 @@ CONTAINS
      real(dp) :: LA_Matrix_Det
      integer :: i
 
-     if( .not. this%factorised ) then
+     if( this%factorised == NOT_FACTORISED ) then
         call LA_Matrix_Factorise(this,info=info)
         if( present(info) ) then
            if( info /= 0 ) return
         endif
+     elseif( this%factorised /= CHOLESKY ) then
+        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised')
+     else
+        if( present(info) ) info = 0
      endif
 
      LA_Matrix_Det = 1.0_dp
@@ -2258,6 +2283,110 @@ CONTAINS
      LA_Matrix_Det = LA_Matrix_Det**2
 
   endfunction LA_Matrix_Det
+
+  subroutine LA_Matrix_QR_Factorise(this,info)
+     type(LA_Matrix), intent(inout) :: this         
+     integer, intent(out), optional :: info
+
+     real(dp), dimension(:), allocatable :: work
+     integer :: my_info, lwork
+
+     this%factor = this%matrix
+
+     allocate(work(1))
+     lwork = -1
+     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+     lwork = nint(work(1))
+     deallocate(work)
+
+     allocate(work(lwork))
+     call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+     deallocate(work)
+
+     if( present(info) ) then
+        info = my_info
+     elseif( my_info /= 0 ) then
+        call system_abort('LA_Matrix_QR_Factorise: '//(-my_info)//'-th parameter had an illegal value.')
+     endif
+
+     this%factorised = QR
+
+  endsubroutine LA_Matrix_QR_Factorise
+
+  subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,info)
+     type(LA_Matrix), intent(inout) :: this
+     real(dp), dimension(:,:), intent(in) :: matrix
+     real(dp), dimension(:,:), intent(out) :: result
+     integer, intent(out), optional :: info
+
+     real(dp), dimension(:), allocatable :: work
+     real(dp), dimension(:,:), allocatable :: my_result
+     integer :: my_info, lwork, i, j, n, o
+
+     if(this%factorised == NOT_FACTORISED) then
+        call LA_Matrix_QR_Factorise(this,info)
+     elseif(this%factorised /= QR) then
+        call system_abort('LA_Matrix_QR_Solve_Matrix: matrix not QR-factorised')
+     endif
+
+     n = size(matrix,1)
+     o = size(matrix,2)
+     call check_size('result', result, (/this%m,o/),'LA_Matrix_QR_Solve_Matrix')
+
+     if( n /= this%n ) call  system_abort('LA_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.')
+
+     allocate(my_result(n,o))
+     my_result = matrix
+
+     lwork = -1
+     allocate(work(1))
+     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+     lwork = nint(work(1))
+     deallocate(work)
+
+     allocate(work(lwork))
+     call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+     deallocate(work)
+
+     if( present(info) ) then
+        info = my_info
+     elseif( my_info /= 0 ) then
+        call system_abort('LA_Matrix_QR_QR_Solve_Matrix: '//(-my_info)//'-th parameter had an illegal value.')
+     endif
+
+     do i = 1, o
+        do j = this%m, 2, -1
+           my_result(j,i) = my_result(j,i)/this%factor(j,j)
+           my_result(1:j-1,i) = my_result(1:j-1,i) - my_result(j,i)*this%factor(1:j-1,j)
+        enddo
+        my_result(1,i) = my_result(1,i) / this%factor(1,1)
+     enddo
+
+     result = my_result(1:this%m,:)
+     deallocate(my_result)
+
+  endsubroutine LA_Matrix_QR_Solve_Matrix
+
+  subroutine LA_Matrix_QR_Solve_Vector(this,vector,result,info)
+     type(LA_Matrix), intent(inout) :: this
+     real(dp), dimension(:), intent(in) :: vector
+     real(dp), dimension(:), intent(out) :: result
+     integer, intent(out), optional :: info
+
+     real(dp), dimension(:,:), allocatable :: my_result
+     integer :: n, m
+
+     n = size(vector)
+     m = size(result)
+
+     allocate(my_result(m,1))
+
+     call LA_Matrix_QR_Solve_Matrix(this,reshape(vector,(/n,1/)),my_result,info)
+     result = my_result(:,1)
+
+     deallocate(my_result)
+
+  endsubroutine LA_Matrix_QR_Solve_Vector
 
   subroutine Matrix_CholFactorise(A,A_factor)
 
