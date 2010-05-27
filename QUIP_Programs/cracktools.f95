@@ -562,6 +562,7 @@ contains
     if (params%crack_double_ended) then
        if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
     else
+       call print_xyz(crack_slab,'pippo.xyz')
        if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
     end if
 
@@ -1990,7 +1991,8 @@ contains
           call Print('Graphene sheet contains '//crack_slab%N//' atoms.')
 
        else if (trim(params%crack_structure) == 'diamond'.or.trim(params%crack_structure) == 'bcc' &
-            .or.trim(params%crack_structure) == 'fcc' .or. trim(params%crack_structure) == 'alpha_quartz' ) then
+            .or.trim(params%crack_structure) == 'fcc' .or. trim(params%crack_structure) == 'alpha_quartz' &
+            .or.trim(params%crack_structure) == 'anatase' .or. trim(params%crack_structure) == 'rutile') then
 
           if(trim(params%crack_structure) == 'diamond') then
              call print_title('Diamond Structure Crack')
@@ -2007,6 +2009,14 @@ contains
              call print_title('Alpha Quartz Crack')
              call alpha_quartz(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u, &
                   x=params%crack_lattice_x, y=params%crack_lattice_y, z=params%crack_lattice_z)
+             call set_cutoff(bulk, cutoff(simple))
+          elseif(trim(params%crack_structure) == 'anatase') then
+             call print_title('TiO2 Anatase Crack')
+             call anatase(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
+             call set_cutoff(bulk, cutoff(simple))
+          elseif(trim(params%crack_structure) == 'rutile') then
+             call print_title('TiO2 Rutile Crack')
+             call rutile(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
              call set_cutoff(bulk, cutoff(simple))
           endif
 
