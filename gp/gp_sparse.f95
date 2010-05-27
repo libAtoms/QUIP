@@ -167,13 +167,13 @@ module gp_sparse_module
          type(gp), intent(inout)     :: this        !% gp to initialise
          type(gp_sparse), intent(in) :: sparse
 
-         real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
          type(LA_matrix) :: LA_k_mm, LA_q_mm
 #ifdef HAVE_QR
-         integer :: i, j, n, m, info, lwork
-         real(dp), dimension(:,:), allocatable :: a, y
-         real(dp), dimension(:), allocatable :: work, tau
+         integer :: i, j, n, m, info
+         real(dp), dimension(:,:), allocatable :: a, k_mn_sq_inverse_lambda, factor_k_mm
+         real(dp), dimension(:), allocatable :: y
 #else
+         real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
          integer :: n, m, info
 #endif         
 
@@ -188,7 +188,6 @@ module gp_sparse_module
          allocate( this%x(this%d,this%n), this%alpha(this%n), this%theta(this%d,this%nsp), &
          & this%delta(this%nsp), this%f0(this%nsp), this%c(this%n,this%n) )
          allocate( this%xz(this%n), this%sp(this%nsp) )
-         allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m) )
 
          this%sigma = real(sparse%sigma(1),kind=dp) ! temporary
          this%delta = real(sparse%delta,kind=dp)
@@ -199,52 +198,34 @@ module gp_sparse_module
          this%sp = sparse%sp
 
 #ifdef HAVE_QR
-         call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,sqrt(1.0_qp/sparse%lambda)) ! O(NM)
+         allocate( k_mn_sq_inverse_lambda(m,n), factor_k_mm(m,m), a(n+m,m), y(n+m))
+
+         call matrix_product_vect_asdiagonal_sub(k_mn_sq_inverse_lambda,sparse%k_mn,sqrt(1.0_qp/sparse%lambda)) ! O(NM)
+
          call initialise(LA_k_mm,sparse%k_mm)
-         call LA_Matrix_Factorise(LA_k_mm,inverse_k_mm,info=info)
+         call LA_Matrix_Factorise(LA_k_mm,factor_k_mm,info=info)
          if( info /= 0 ) call system_abort('GP_initialise: LA_k_mm')
          call finalise(LA_k_mm)
 
          do i = 1, m-1
             do j = i+1, m
-               inverse_k_mm(j,i) = 0.0_qp
+               factor_k_mm(j,i) = 0.0_qp
             enddo
          enddo
          
-         allocate(a(n+m,m))
-         a(1:n,:) = transpose(k_mn_inverse_lambda)
-         a(n+1:,:) = inverse_k_mm
-         
-         allocate(work(1),tau(m))
-         lwork = -1
-         call dgeqrf(n+m, m, a, n+m, tau, work, lwork, info)
-         lwork = nint(work(1))
-         deallocate(work)
-         allocate(work(lwork))
-         call dgeqrf(n+m, m, a, n+m, tau, work, lwork, info)
-         deallocate(work)
+         a(1:n,:) = transpose(k_mn_sq_inverse_lambda)
+         a(n+1:,:) = factor_k_mm
 
-         allocate(y(n+m,1))
          y = 0.0_dp
-         y(1:n,1) = sparse%y*sqrt(1.0_qp/sparse%lambda)
-         lwork = -1
-         allocate(work(1))
-         call dormqr('L', 'T', n+m, 1, m, a, n+m, tau, y, n+m, work, lwork, info)
-         lwork = nint(work(1))
-         deallocate(work)
-         allocate(work(lwork))
-         call dormqr('L', 'T', n+m, 1, m, a, n+m, tau, y, n+m, work, lwork, info)
-         deallocate(work)
+         y(1:n) = sparse%y*sqrt(1.0_qp/sparse%lambda)
 
-         do j = m, 2, -1
-            y(j,1) = y(j,1)/a(j,j)
-            y(1:j-1,1) = y(1:j-1,1) - y(j,1)*a(1:j-1,j)
-         enddo
-         y(1,1) = y(1,1) / a(1,1)
-         this%alpha = y(1:m,1)
+         call initialise(LA_q_mm,a)
+         call LA_Matrix_QR_Solve_Vector(LA_q_mm,y,this%alpha)
+         call finalise(LA_q_mm)
+         deallocate( k_mn_sq_inverse_lambda, factor_k_mm, a, y)
          this%c = 0.0_dp
-         deallocate(a,y,tau)
 #else
+         allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m) )
          call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,1.0_qp/sparse%lambda) ! O(NM)
          k_mn_l_k_nm = matmul(k_mn_inverse_lambda,transpose(sparse%k_mn))
 
@@ -262,8 +243,8 @@ module gp_sparse_module
 
          call finalise(LA_k_mm)
          this%c = real(inverse_k_mm - inverse_q_mm,kind=dp)                                                            ! O(M^2)
-#endif
          deallocate( k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm )
+#endif
          
          this%initialised = .true.
 
@@ -990,7 +971,7 @@ deallocate(diff_xijt)
          & diff_xijt_dot_x_prime_j1, diff_xijt_dot_x_prime_j2
 
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_mm, &
-         & inverse_k_mm, k_mn_ll_k_nm, k_mn_ll_k_nm_inverse_mm, d_big_k_mn, d_k_mn, d_k_mm, &
+         & k_mn_ll_k_nm, k_mn_ll_k_nm_inverse_mm, d_big_k_mn, d_k_mn, d_k_mm, &
          & inverse_k_mm_k_mn_l_k_nm_inverse_k_mm, inverse_mm_k_mn_inverse_lambda, dk_mm_dx, inverse_k_mm_k_mn_l_k_nm, &
          & inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm, inverse_k_mm_k_mn_inverse_lambda, &
          & inverse_k_mm_k_mn_inverse_k, inverse_mm_k_mn_l_k_nm_inverse_k_mm, theta2
@@ -1021,7 +1002,7 @@ deallocate(diff_xijt)
          allocate( inverse_lambda(this%m), y_inverse_lambda(this%m), &
          & k_mn_inverse_lambda(this%sr,this%m), k_mn_l_k_nm(this%sr,this%sr), &
          & inverse_mm(this%sr,this%sr), y_l_k_nm(this%sr), &
-         & y_l_k_nm_inverse_mm(this%sr), inverse_k_mm(this%sr,this%sr) )
+         & y_l_k_nm_inverse_mm(this%sr) )
 
          inverse_lambda = 1.0_qp / this%lambda                    ! O(N)
          y_inverse_lambda = this%y/this%lambda                 ! O(N)
@@ -1033,7 +1014,7 @@ deallocate(diff_xijt)
          call initialise(LA_mm,this%k_mm + k_mn_l_k_nm)
 !         call LA_Matrix_Inverse(LA_mm,inverse_mm)
          det1 = LA_Matrix_LogDet(LA_mm,info=info) / 2.0_qp
-         if( info /= 0 ) call system_abort('likelihood: LA_mm')
+         if( info /= 0 ) call system_abort('likelihood: LA_mm 1')
 
          y_l_k_nm = matmul( k_mn_inverse_lambda, this%y )         ! O(NM)
          call Matrix_Solve(LA_mm,y_l_k_nm,y_l_k_nm_inverse_mm,info=info)
@@ -1128,7 +1109,7 @@ deallocate(diff_xijt)
 !            & + gp_jitter*(trace(inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) &
 !            & - sum( diag_k_n_inverse_k_mm_inverse_k_mm_k_n * diag_il_k_nm_inverse_mm_k_mn_il ) ) ) / this%delta
 !         endif
-         if( my_do_delta .or. my_do_x .or. present(dl_ddelta) .or. my_do_f0 ) then
+         if( my_do_delta .or. my_do_x .or. my_do_f0 ) then
 
             allocate( inverse_k_mm_k_mn_l_k_nm_inverse_k_mm(this%sr,this%sr), &
             & inverse_k_mm_k_mn_inverse_k(this%sr,this%m) )
@@ -1149,14 +1130,19 @@ deallocate(diff_xijt)
             & inverse_mm_k_mn_inverse_lambda ) ! O(NM^2)
          endif
 
+         if( my_do_delta .or. my_do_f0 .or. my_do_theta .or. my_do_x ) then
+            allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m) )
+            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda,info=info)
+            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
+         endif
+
+         if( my_do_delta .or. my_do_theta ) then
+            allocate( theta2(this%d,this%nsp) )
+            theta2 = 1.0_qp / this%theta**2
+         endif
+
          if( my_do_delta ) then
             dl_ddelta = 0.0_qp
-            allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
-
-            theta2 = 1.0_qp / this%theta**2
-            !inverse_k_mm_k_mn_inverse_lambda = matmul( inverse_k_mm, k_mn_inverse_lambda ) ! O(NM^2)
-            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda, info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
 !$omp parallel private(d_big_k_mn,d_k_mm,d_k_mn,diff_xijt,lambda_dtheta,lknnl,lj,uj,j1,j2,diff_xijt_dot_x_prime_j1,diff_xijt_dot_x_prime_j2,tr_dlambda_inverse_k,id,xj1,xj2)
             allocate( d_big_k_mn(this%sr,this%n), d_k_mm(this%sr,this%sr), d_k_mn(this%sr,this%m), &
@@ -1262,17 +1248,10 @@ deallocate(diff_xijt)
 !$omp end do
             deallocate( d_big_k_mn, d_k_mm, d_k_mn, lambda_dtheta, diff_xijt )
 !$omp end parallel            
-            deallocate( inverse_k_mm_k_mn_inverse_lambda, theta2 )
          endif
 
          if( my_do_f0 ) then
             dl_df0 = 0.0_qp
-            allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
-
-            theta2 = 1.0_qp / this%theta**2
-            !inverse_k_mm_k_mn_inverse_lambda = matmul( inverse_k_mm, k_mn_inverse_lambda ) ! O(NM^2)
-            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda,info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
 !$omp parallel private(d_big_k_mn,d_k_mm,d_k_mn,diff_xijt,lambda_dtheta,lknnl,lj,uj,j1,j2,diff_xijt_dot_x_prime_j1,diff_xijt_dot_x_prime_j2,tr_dlambda_inverse_k,id,xj1,xj2)
             allocate( d_big_k_mn(this%sr,this%n), d_k_mm(this%sr,this%sr), d_k_mn(this%sr,this%m), &
@@ -1366,16 +1345,8 @@ deallocate(diff_xijt)
 !$omp end do
             deallocate( d_big_k_mn, d_k_mm, d_k_mn, lambda_dtheta, diff_xijt )
 !$omp end parallel            
-            deallocate( inverse_k_mm_k_mn_inverse_lambda, theta2 )
          endif
          if( my_do_theta ) then
-            allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), theta2(this%d,this%nsp) )
-
-            theta2 = 1.0_qp / this%theta**2
-            !inverse_k_mm_k_mn_inverse_lambda = matmul( inverse_k_mm, k_mn_inverse_lambda ) ! O(NM^2)
-            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda,info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
-
             num_threads = 1
 !$omp parallel
 !$omp master
@@ -1498,8 +1469,6 @@ deallocate(diff_xijt)
          endif
 
          if( my_do_x ) then
-            call LA_Matrix_Inverse(LA_k_mm,inverse_k_mm,info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
 !$omp parallel private(d_big_k_mn_dx,dk_mn_dx,dk_mm_dx,dk_mm_inverse_k_mm_k_j,lambda_dtheta,tr_dlambda_inverse_k)
             allocate( d_big_k_mn_dx(this%n), dk_mn_dx(this%m), &
@@ -1558,13 +1527,14 @@ deallocate(diff_xijt)
                       tr_dlambda_inverse_k = tr_dlambda_inverse_k + &
                       & lambda_dtheta(j) * dot_product( k_mn_inverse_lambda(:,j),inverse_mm_k_mn_inverse_lambda(:,j) )
                    enddo
+
                    dl_dx((i-1)*this%d+d) = &
                    & 2.0_qp * dot_product(y_inverse_c,dk_mn_dx) * y_inverse_c_k_nm_inverse_k_mm(i) - &
                    & dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(dk_mm_dx,y_inverse_c_k_nm_inverse_k_mm) ) + &
                    & dot_product( y_inverse_c*lambda_dtheta, y_inverse_c) - &
-                   & 2.0_qp * sum( (inverse_k_mm(:,i) .outer. dk_mn_dx)*k_mn_inverse_lambda) + &
+                   & 2.0_qp * dot_product(dk_mn_dx,inverse_k_mm_k_mn_inverse_lambda(i,:)) + & !#1
                    & sum( dk_mm_dx * inverse_k_mm_k_mn_l_k_nm_inverse_k_mm ) - sum(lambda_dtheta * inverse_lambda) + &
-                   & 2.0_qp * sum( dk_mn_dx * inverse_k_mm_k_mn_inverse_k(i,:) ) - &
+                   & 2.0_qp * dot_product( dk_mn_dx, inverse_k_mm_k_mn_inverse_k(i,:) ) - &  !#2
                    & sum( dk_mm_dx * inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) &
                    & + tr_dlambda_inverse_k
                    dl_dx((i-1)*this%d+d) = 0.5_qp * dl_dx((i-1)*this%d+d) / this%theta(d,Z_type)**2 
@@ -1574,6 +1544,9 @@ deallocate(diff_xijt)
             deallocate( d_big_k_mn_dx, dk_mn_dx, dk_mm_dx, dk_mm_inverse_k_mm_k_j, lambda_dtheta)
 !$omp end parallel
          endif
+                   !& 2.0_qp * dot_product(inverse_k_mm(:,i),matmul(k_mn_inverse_lambda,dk_mn_dx)) + & !#1
+                   !& 2.0_qp * sum( (inverse_k_mm(:,i) .outer. dk_mn_dx)*k_mn_inverse_lambda) + & !#1
+                   !& 2.0_qp * sum( dk_mn_dx * inverse_k_mm_k_mn_inverse_k(i,:) ) - & !#2
 
          call finalise(LA_mm)
          call finalise(LA_k_mm)
@@ -1585,7 +1558,6 @@ deallocate(diff_xijt)
          if(allocated(inverse_mm)) deallocate(inverse_mm)
          if(allocated(y_l_k_nm)) deallocate(y_l_k_nm)
          if(allocated(y_l_k_nm_inverse_mm)) deallocate(y_l_k_nm_inverse_mm)
-         if(allocated(inverse_k_mm)) deallocate(inverse_k_mm)
 
          if(allocated(y_inverse_k)) deallocate(y_inverse_k)
          if(allocated(y_inverse_c)) deallocate(y_inverse_c)
