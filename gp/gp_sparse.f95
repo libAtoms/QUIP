@@ -111,8 +111,8 @@ module gp_sparse_module
    type gp_minimise
       type(gp_sparse), pointer :: minim_gp => null()
       logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false.
-      integer :: li_sigma = 0, ui_sigma = 0, li_delta = 0, ui_delta = 0, li_theta = 0, ui_theta = 0, &
-      & li_sparx = 0, ui_sparx = 0, li_f0 = 0, ui_f0 = 0
+      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, &
+      & li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1
    endtype gp_minimise
 
 
@@ -964,21 +964,22 @@ deallocate(diff_xijt)
          real(qp), dimension(:), intent(out), optional :: dl_dtheta, dl_dx
          logical, intent(in), optional :: do_l, do_sigma, do_delta, do_theta, do_x, do_f0
 
-         type(LA_Matrix) :: LA_mm, LA_k_mm
+         type(LA_Matrix) :: LA_q_mm, LA_k_mm
 
          real(qp) :: det1, det2, det3, tr_dlambda_inverse_k, lknnl, norm2_y_inverse_c1, norm2_y_inverse_c2, &
          & trace_inverse_c1, trace_inverse_c2, &
          & diff_xijt_dot_x_prime_j1, diff_xijt_dot_x_prime_j2
 
-         real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_mm, &
+         real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_sq_inverse_lambda, k_mn_l_k_nm, inverse_mm, &
          & k_mn_ll_k_nm, k_mn_ll_k_nm_inverse_mm, d_big_k_mn, d_k_mn, d_k_mm, &
          & inverse_k_mm_k_mn_l_k_nm_inverse_k_mm, inverse_mm_k_mn_inverse_lambda, dk_mm_dx, inverse_k_mm_k_mn_l_k_nm, &
          & inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm, inverse_k_mm_k_mn_inverse_lambda, &
-         & inverse_k_mm_k_mn_inverse_k, inverse_mm_k_mn_l_k_nm_inverse_k_mm, theta2
+         & inverse_k_mm_k_mn_inverse_k, inverse_mm_k_mn_l_k_nm_inverse_k_mm, theta2, factor_k_mm, a, Q_q_mm, R_q_mm, Q_q_mm_sq_inverse_lambda, &
+         & inverse_k_mm_k_mn_sq_inverse_lambda
          real(qp), dimension(:), allocatable   :: inverse_lambda, y_inverse_lambda, y_l_k_nm, &
          & y_l_k_nm_inverse_mm, y_inverse_k, lambda_dtheta, &
          & d_big_k_mn_dx, dk_mn_dx, y_inverse_c, y_inverse_c_k_nm_inverse_k_mm, y_l_k_nm_inverse_k_mm, &
-         & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n
+         & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n, y
          integer :: i, j, d, j1, j2, lj, uj, info, xj, xj1, xj2, jd, id, num_threads, k, Z_type
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_x, my_do_f0
@@ -1002,27 +1003,45 @@ deallocate(diff_xijt)
          allocate( inverse_lambda(this%m), y_inverse_lambda(this%m), &
          & k_mn_inverse_lambda(this%sr,this%m), k_mn_l_k_nm(this%sr,this%sr), &
          & inverse_mm(this%sr,this%sr), y_l_k_nm(this%sr), &
-         & y_l_k_nm_inverse_mm(this%sr) )
+         & y_l_k_nm_inverse_mm(this%sr),  k_mn_sq_inverse_lambda(this%sr,this%m), &
+         & factor_k_mm(this%sr,this%sr), a(this%sr+this%m,this%sr), y(this%sr+this%m) )
 
          inverse_lambda = 1.0_qp / this%lambda                    ! O(N)
          y_inverse_lambda = this%y/this%lambda                 ! O(N)
 
          call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,this%k_mn,inverse_lambda) ! O(NM)
+         call matrix_product_vect_asdiagonal_sub(k_mn_sq_inverse_lambda,this%k_mn,sqrt(1.0_qp/this%lambda)) ! O(NM)
 !         call matrix_product_sub(k_mn_l_k_nm, k_mn_inverse_lambda, this%k_mn, m2_transpose = .true. ) ! O(NM^2)
          k_mn_l_k_nm = matmul( k_mn_inverse_lambda,transpose(this%k_mn) )
+         call initialise(LA_k_mm,this%k_mm)
+         call LA_Matrix_Factorise(LA_k_mm,factor_k_mm,info=info)
+         if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
-         call initialise(LA_mm,this%k_mm + k_mn_l_k_nm)
+         do i = 1, this%sr-1
+            do j = i+1, this%sr
+               factor_k_mm(j,i) = 0.0_qp
+            enddo
+         enddo
+
+         a(1:this%m,:) = transpose(k_mn_sq_inverse_lambda)
+         a(this%m+1:,:) = factor_k_mm
+
+         y = 0.0_qp
+         y(1:this%m) = this%y*sqrt(1.0_qp/this%lambda)
+
+         call initialise(LA_q_mm,a)
+         call LA_Matrix_QR_Solve_Vector(LA_q_mm,y,y_l_k_nm_inverse_mm)
+
+!         call initialise(LA_mm,this%k_mm + k_mn_l_k_nm)
 !         call LA_Matrix_Inverse(LA_mm,inverse_mm)
-         det1 = LA_Matrix_LogDet(LA_mm,info=info) / 2.0_qp
-         if( info /= 0 ) call system_abort('likelihood: LA_mm 1')
+!         det1 = LA_Matrix_LogDet(LA_mm,info=info) / 2.0_qp
+         det1 = LA_Matrix_LogDet(LA_q_mm,info=info) !/ 2.0_qp
+         if( info /= 0 ) call system_abort('likelihood: LA_q_mm det1')
 
          y_l_k_nm = matmul( k_mn_inverse_lambda, this%y )         ! O(NM)
-         call Matrix_Solve(LA_mm,y_l_k_nm,y_l_k_nm_inverse_mm,info=info)
-         if( info /= 0 ) call system_abort('likelihood: LA_mm')
+         !call Matrix_Solve(LA_mm,y_l_k_nm,y_l_k_nm_inverse_mm,info=info)
+         !if( info /= 0 ) call system_abort('likelihood: LA_mm')
 
-         !y_l_k_nm_inverse_mm = matmul( y_l_k_nm, inverse_mm )     ! O(M^2)
-
-         call initialise(LA_k_mm,this%k_mm)
          det2 = LA_Matrix_LogDet(LA_k_mm,info=info) / 2.0_qp
          if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
@@ -1037,11 +1056,26 @@ deallocate(diff_xijt)
          if( my_do_sigma .or. my_do_delta &
              & .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
             allocate( y_inverse_k(this%m),y_inverse_c(this%m), inverse_mm_k_mn_inverse_lambda(this%sr,this%m) )
+            allocate( Q_q_mm(this%m+this%sr,this%sr), R_q_mm(this%sr,this%sr), Q_q_mm_sq_inverse_lambda(this%sr,this%m) )
             y_inverse_k = matmul(y_l_k_nm_inverse_mm,k_mn_inverse_lambda) ! O(NM)
             y_inverse_c = y_inverse_lambda-y_inverse_k  ! O(N)
             !inverse_mm_k_mn_inverse_lambda = matmul( inverse_mm, k_mn_inverse_lambda ) ! O(NM^2)
-            call Matrix_Solve(LA_mm,k_mn_inverse_lambda,inverse_mm_k_mn_inverse_lambda,info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_mm')
+            !call Matrix_Solve(LA_mm,k_mn_inverse_lambda,inverse_mm_k_mn_inverse_lambda,info=info)
+            !if( info /= 0 ) call system_abort('likelihood: LA_mm')
+
+            call LA_Matrix_GetQR(LA_q_mm,q=Q_q_mm,r=R_q_mm)
+            y = 0.0_qp
+            y(1:this%m) = sqrt(1.0_qp/this%lambda)
+            call matrix_product_vect_asdiagonal_sub(Q_q_mm_sq_inverse_lambda,transpose(Q_q_mm(1:this%m,:)),sqrt(1.0_qp/this%lambda)) ! O(NM)
+
+            inverse_mm_k_mn_inverse_lambda = Q_q_mm_sq_inverse_lambda
+            do i = 1, this%m
+               do j = this%sr, 2, -1
+                  inverse_mm_k_mn_inverse_lambda(j,i) = inverse_mm_k_mn_inverse_lambda(j,i)/R_q_mm(j,j)
+                  inverse_mm_k_mn_inverse_lambda(1:j-1,i) = inverse_mm_k_mn_inverse_lambda(1:j-1,i) - inverse_mm_k_mn_inverse_lambda(j,i)*R_q_mm(1:j-1,j)
+               enddo
+               inverse_mm_k_mn_inverse_lambda(1,i) = inverse_mm_k_mn_inverse_lambda(1,i) / R_q_mm(1,1)
+            enddo
          endif
 
              !lambda_dtheta = (this%lambda - this%theta(1)**2) / this%theta(2) ! O(N)
@@ -1070,7 +1104,7 @@ deallocate(diff_xijt)
             allocate( inverse_k_mm_k_mn_l_k_nm(this%sr,this%sr), &
             & inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm(this%sr,this%sr), &
             & y_inverse_c_k_nm_inverse_k_mm(this%sr), y_l_k_nm_inverse_k_mm(this%sr), &
-            & inverse_mm_k_mn_l_k_nm_inverse_k_mm(this%sr,this%sr))
+            & inverse_mm_k_mn_l_k_nm_inverse_k_mm(this%sr,this%sr), inverse_k_mm_k_mn_sq_inverse_lambda(this%sr,this%sr+this%m) )
              
             call Matrix_Solve(LA_k_mm,k_mn_l_k_nm,inverse_k_mm_k_mn_l_k_nm,info=info)
             if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
@@ -1078,12 +1112,18 @@ deallocate(diff_xijt)
             call Matrix_Solve(LA_k_mm,y_l_k_nm,y_l_k_nm_inverse_k_mm,info=info)
             if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
 
+            call Matrix_Solve(LA_k_mm,k_mn_sq_inverse_lambda,inverse_k_mm_k_mn_sq_inverse_lambda(:,1:this%m),info=info)
+            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
+            inverse_k_mm_k_mn_sq_inverse_lambda(:,this%m+1:) = 0.0_qp
+
             y_inverse_c_k_nm_inverse_k_mm = y_l_k_nm_inverse_k_mm - &
             & matmul( inverse_k_mm_k_mn_l_k_nm, y_l_k_nm_inverse_mm )
 
-            call Matrix_Solve(LA_mm,transpose(inverse_k_mm_k_mn_l_k_nm), &
-            & inverse_mm_k_mn_l_k_nm_inverse_k_mm, info=info )
-            if( info /= 0 ) call system_abort('likelihood: LA_mm')
+            !call Matrix_Solve(LA_mm,transpose(inverse_k_mm_k_mn_l_k_nm), &
+            !& inverse_mm_k_mn_l_k_nm_inverse_k_mm, info=info )
+            !if( info /= 0 ) call system_abort('likelihood: LA_mm')
+
+            call LA_Matrix_QR_Solve_Matrix(LA_q_mm,transpose(inverse_k_mm_k_mn_sq_inverse_lambda),inverse_mm_k_mn_l_k_nm_inverse_k_mm)
 
             inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm = matmul( inverse_k_mm_k_mn_l_k_nm, &
             & inverse_mm_k_mn_l_k_nm_inverse_k_mm )
@@ -1109,31 +1149,20 @@ deallocate(diff_xijt)
 !            & + gp_jitter*(trace(inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) &
 !            & - sum( diag_k_n_inverse_k_mm_inverse_k_mm_k_n * diag_il_k_nm_inverse_mm_k_mn_il ) ) ) / this%delta
 !         endif
-         if( my_do_delta .or. my_do_x .or. my_do_f0 ) then
 
+         if( my_do_delta .or. my_do_f0 .or. my_do_theta .or. my_do_x ) then
             allocate( inverse_k_mm_k_mn_l_k_nm_inverse_k_mm(this%sr,this%sr), &
-            & inverse_k_mm_k_mn_inverse_k(this%sr,this%m) )
-
-            !inverse_k_mm_k_mn_l_k_nm = matmul( inverse_k_mm, k_mn_l_k_nm )     ! O(M^3)
-!            inverse_k_mm_k_mn_l_k_nm_inverse_k_mm = matmul( inverse_k_mm_k_mn_l_k_nm, inverse_k_mm )     ! O(M^3)
+            & inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m), inverse_k_mm_k_mn_inverse_k(this%sr,this%m) )
+            
+            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda,info=info)
+            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
+            
             call Matrix_Solve(LA_k_mm,transpose(inverse_k_mm_k_mn_l_k_nm), &
             & inverse_k_mm_k_mn_l_k_nm_inverse_k_mm, info=info )
             if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
-             
-            !inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm = matmul( matmul( inverse_k_mm_k_mn_l_k_nm, inverse_mm ), &
-            !& transpose(inverse_k_mm_k_mn_l_k_nm) )
-             
-            !y_inverse_c_k_nm_inverse_k_mm = matmul( y_l_k_nm, inverse_k_mm) - &
-            !& matmul( matmul( y_l_k_nm_inverse_mm, k_mn_l_k_nm ), inverse_k_mm )
 
             inverse_k_mm_k_mn_inverse_k = matmul( inverse_k_mm_k_mn_l_k_nm, &   ! O(M^3)
             & inverse_mm_k_mn_inverse_lambda ) ! O(NM^2)
-         endif
-
-         if( my_do_delta .or. my_do_f0 .or. my_do_theta .or. my_do_x ) then
-            allocate( inverse_k_mm_k_mn_inverse_lambda(this%sr,this%m) )
-            call Matrix_Solve(LA_k_mm,k_mn_inverse_lambda,inverse_k_mm_k_mn_inverse_lambda,info=info)
-            if( info /= 0 ) call system_abort('likelihood: LA_k_mm')
          endif
 
          if( my_do_delta .or. my_do_theta ) then
@@ -1529,13 +1558,12 @@ deallocate(diff_xijt)
                    enddo
 
                    dl_dx((i-1)*this%d+d) = &
-                   & 2.0_qp * dot_product(y_inverse_c,dk_mn_dx) * y_inverse_c_k_nm_inverse_k_mm(i) - &
-                   & dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(dk_mm_dx,y_inverse_c_k_nm_inverse_k_mm) ) + &
-                   & dot_product( y_inverse_c*lambda_dtheta, y_inverse_c) - &
-                   & 2.0_qp * dot_product(dk_mn_dx,inverse_k_mm_k_mn_inverse_lambda(i,:)) + & !#1
-                   & sum( dk_mm_dx * inverse_k_mm_k_mn_l_k_nm_inverse_k_mm ) - sum(lambda_dtheta * inverse_lambda) + &
-                   & 2.0_qp * dot_product( dk_mn_dx, inverse_k_mm_k_mn_inverse_k(i,:) ) - &  !#2
-                   & sum( dk_mm_dx * inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) &
+                   & 2.0_qp * dot_product(y_inverse_c,dk_mn_dx) * y_inverse_c_k_nm_inverse_k_mm(i) &
+                   & - dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(dk_mm_dx,y_inverse_c_k_nm_inverse_k_mm) ) &
+                   & + dot_product( y_inverse_c*lambda_dtheta, y_inverse_c) &
+                   & - 2.0_qp * dot_product(dk_mn_dx,(inverse_k_mm_k_mn_inverse_lambda(i,:)-inverse_k_mm_k_mn_inverse_k(i,:))) & !#1
+                   & + sum( dk_mm_dx * (inverse_k_mm_k_mn_l_k_nm_inverse_k_mm-inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm) ) &
+                   & - sum(lambda_dtheta * inverse_lambda) &  !#2
                    & + tr_dlambda_inverse_k
                    dl_dx((i-1)*this%d+d) = 0.5_qp * dl_dx((i-1)*this%d+d) / this%theta(d,Z_type)**2 
                 enddo
@@ -1548,7 +1576,7 @@ deallocate(diff_xijt)
                    !& 2.0_qp * sum( (inverse_k_mm(:,i) .outer. dk_mn_dx)*k_mn_inverse_lambda) + & !#1
                    !& 2.0_qp * sum( dk_mn_dx * inverse_k_mm_k_mn_inverse_k(i,:) ) - & !#2
 
-         call finalise(LA_mm)
+         call finalise(LA_q_mm)
          call finalise(LA_k_mm)
 
          if(allocated(inverse_lambda)) deallocate(inverse_lambda)
@@ -1590,6 +1618,14 @@ deallocate(diff_xijt)
          if(allocated(dk_mm_inverse_k_mm_k_j)) deallocate(dk_mm_inverse_k_mm_k_j )
          if(allocated(diag_il_k_nm_inverse_mm_k_mn_il)) deallocate(diag_il_k_nm_inverse_mm_k_mn_il )
          if(allocated(diag_k_n_inverse_k_mm_inverse_k_mm_k_n)) deallocate(diag_k_n_inverse_k_mm_inverse_k_mm_k_n )
+         if(allocated(k_mn_sq_inverse_lambda)) deallocate(k_mn_sq_inverse_lambda )
+         if(allocated(factor_k_mm)) deallocate(factor_k_mm )
+         if(allocated(a)) deallocate(a)
+         if(allocated(y)) deallocate(y)
+         if(allocated(Q_q_mm)) deallocate(Q_q_mm)
+         if(allocated(R_q_mm)) deallocate(R_q_mm)
+         if(allocated(Q_q_mm_sq_inverse_lambda)) deallocate(Q_q_mm_sq_inverse_lambda)
+         if(allocated(inverse_k_mm_k_mn_sq_inverse_lambda)) deallocate(inverse_k_mm_k_mn_sq_inverse_lambda)
 
       endsubroutine likelihood
       
