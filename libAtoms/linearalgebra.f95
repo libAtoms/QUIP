@@ -2232,7 +2232,7 @@ CONTAINS
 
      type(LA_Matrix), intent(inout) :: this         
      integer, intent(out), optional :: info
-     real(dp) :: LA_Matrix_LogDet
+     real(qp) :: LA_Matrix_LogDet
      integer :: i
 
      if( this%factorised == NOT_FACTORISED ) then
@@ -2240,19 +2240,24 @@ CONTAINS
         if( present(info) ) then
            if( info /= 0 ) return
         endif
-     elseif( this%factorised /= CHOLESKY ) then
-        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised')
      else
         if( present(info) ) info = 0
      endif
 
-     LA_Matrix_LogDet = 0.0_dp
-     do i = 1, this%n
+     LA_Matrix_LogDet = 0.0_qp
+     do i = 1, this%m
         LA_Matrix_LogDet = LA_Matrix_LogDet + log(this%factor(i,i)) 
      enddo
 
      if(this%equilibrated) LA_Matrix_LogDet = LA_Matrix_LogDet - sum( log(this%s) )
-     LA_Matrix_LogDet = LA_Matrix_LogDet*2
+
+     if( this%factorised == CHOLESKY ) then
+        LA_Matrix_LogDet = LA_Matrix_LogDet*2
+     elseif( this%factorised == QR ) then
+        LA_Matrix_LogDet = LA_Matrix_LogDet*1
+     else
+        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised')
+     endif
 
   endfunction LA_Matrix_LogDet
 
@@ -2260,7 +2265,7 @@ CONTAINS
 
      type(LA_Matrix), intent(inout) :: this         
      integer, intent(out), optional :: info
-     real(dp) :: LA_Matrix_Det
+     real(qp) :: LA_Matrix_Det
      integer :: i
 
      if( this%factorised == NOT_FACTORISED ) then
@@ -2268,40 +2273,54 @@ CONTAINS
         if( present(info) ) then
            if( info /= 0 ) return
         endif
-     elseif( this%factorised /= CHOLESKY ) then
-        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised')
      else
         if( present(info) ) info = 0
      endif
 
-     LA_Matrix_Det = 1.0_dp
+     LA_Matrix_Det = 1.0_qp
      do i = 1, this%n
         LA_Matrix_Det = LA_Matrix_Det * this%factor(i,i)
      enddo
 
      if(this%equilibrated) LA_Matrix_Det = LA_Matrix_Det / product( this%s )
-     LA_Matrix_Det = LA_Matrix_Det**2
+
+     if( this%factorised == CHOLESKY ) then
+        LA_Matrix_Det = LA_Matrix_Det**2
+     elseif( this%factorised == QR ) then
+        LA_Matrix_Det = LA_Matrix_Det*1
+     else
+        call system_abort('LA_Matrix_LogDet: matrix not Cholesky-factorised or QR-factorised')
+     endif
 
   endfunction LA_Matrix_Det
 
-  subroutine LA_Matrix_QR_Factorise(this,info)
+  subroutine LA_Matrix_QR_Factorise(this,q,r,info)
      type(LA_Matrix), intent(inout) :: this         
+     real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: info
 
-     real(dp), dimension(:), allocatable :: work
+     real(qp), dimension(:), allocatable :: work
      integer :: my_info, lwork
 
      this%factor = this%matrix
 
      allocate(work(1))
      lwork = -1
+#ifndef HAVE_QP
      call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+#endif
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
+#ifndef HAVE_QP
      call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
+#endif
      deallocate(work)
+
+     this%factorised = QR
+
+     if( present(q) .or. present(r) ) call LA_Matrix_GetQR(this,q,r,info)
 
      if( present(info) ) then
         info = my_info
@@ -2309,9 +2328,55 @@ CONTAINS
         call system_abort('LA_Matrix_QR_Factorise: '//(-my_info)//'-th parameter had an illegal value.')
      endif
 
-     this%factorised = QR
-
   endsubroutine LA_Matrix_QR_Factorise
+
+  subroutine LA_Matrix_GetQR(this,q,r,info)
+     type(LA_Matrix), intent(inout) :: this         
+     real(dp), dimension(:,:), intent(out), optional :: q, r
+     integer, intent(out), optional :: info
+
+     real(dp), dimension(:), allocatable :: work
+     integer :: j, my_info, lwork
+
+     my_info = 0
+
+     if( this%factorised /= QR ) &
+     & call system_abort('LA_Matrix_GetQR: not QR-factorised, call LA_Matrix_QR_Factorise first.')
+
+     if(present(q)) then
+        call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR')
+        q = this%factor
+
+        allocate(work(1))
+        lwork = -1
+#ifndef HAVE_QP
+        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
+#endif
+        lwork = nint(work(1))
+        deallocate(work)
+
+        allocate(work(lwork))
+#ifndef HAVE_QP
+        call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
+#endif
+        deallocate(work)
+     endif
+
+     if(present(r)) then
+        call check_size('r', r, (/this%m,this%m/),'LA_Matrix_GetQR')
+        r = this%factor(1:this%m,1:this%m)
+        do j = 1, this%m - 1
+           r(j+1:this%m,j) = 0.0_dp
+        enddo
+     endif
+
+     if( present(info) ) then
+        info = my_info
+     elseif( my_info /= 0 ) then
+        call system_abort('LA_Matrix_QR_Factorise: '//(-my_info)//'-th parameter had an illegal value.')
+     endif
+
+  endsubroutine LA_Matrix_GetQR
 
   subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,info)
      type(LA_Matrix), intent(inout) :: this
@@ -2324,7 +2389,7 @@ CONTAINS
      integer :: my_info, lwork, i, j, n, o
 
      if(this%factorised == NOT_FACTORISED) then
-        call LA_Matrix_QR_Factorise(this,info)
+        call LA_Matrix_QR_Factorise(this,info=info)
      elseif(this%factorised /= QR) then
         call system_abort('LA_Matrix_QR_Solve_Matrix: matrix not QR-factorised')
      endif
@@ -2340,12 +2405,16 @@ CONTAINS
 
      lwork = -1
      allocate(work(1))
+#ifndef HAVE_QP
      call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+#endif
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
+#ifndef HAVE_QP
      call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
+#endif
      deallocate(work)
 
      if( present(info) ) then
