@@ -135,7 +135,8 @@ install:
 	  exit 1; \
 	fi; \
 	if [ ! -d ${QUIP_INSTDIR} ]; then \
-	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist"; \
+	  echo "make install QUIP_INSTDIR '${QUIP_INSTDIR}' doesn't exist or isn't a directory"; \
+	  exit 1; \
 	fi
 	${MAKE} install-build.QUIP_ARCH install-Tools install-structures
 
