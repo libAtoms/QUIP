@@ -42,16 +42,29 @@ implicit none
   real(dp):: lat(3,3), v(3,3)
   real(dp), allocatable::f(:,:)
   integer :: i
+  type(Dictionary) :: cli
+  character(len=FIELD_LENGTH) :: infile, pot_init_args
+  integer :: rng_seed, n_configs
 
   call system_initialise()
-  
+
+  call initialise(cli)
+  call param_register(cli, "pot_init_args", PARAM_MANDATORY, pot_init_args)
+  call param_register(cli, "infile", "stdin", infile)
+  call param_register(cli, "rng_seed", "-1", rng_seed)
+  call param_register(cli, "n_configs", "10", n_configs)
+  if (.not. param_read_args(cli, do_check=.true., ignore_unknown=.false.)) &
+    call system_abort ("Failed to parse command line arguments")
+  call finalise(cli)
+
+  if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 
   !call Initialise(pot, 'FilePot command=./castep_driver.sh')
-  call Initialise(pot, 'FilePot command=./castep_driver.py')
+  call Initialise(pot, trim(pot_init_args))
 
-  call read_xyz(at2, 'FeSb3La.xyz')
+  call read_xyz(at2, trim(infile))
   allocate(f(3,at2%N))
-  do i=1,20
+  do i=1,n_configs
      at=at2
      call randomise(at%pos, 0.2_dp)
      lat = at%lattice
@@ -65,7 +78,4 @@ implicit none
 
   call system_finalise()
 
-
 end program randomise_calc
-
-
