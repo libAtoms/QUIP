@@ -49,8 +49,10 @@ FOX = FoX-4.0.3
 EXTRA_CLEAN_DIRS = Tools/quippy
 
 default: ${MODULES}
+
+EXTRA_ALL_DIRS = Tools
 all: default
-	@for f in ${MODULES}; do ${MAKE} $$f/all; done
+	@for f in ${MODULES} ${EXTRA_ALL_DIRS}; do ${MAKE} $$f/all; done
 
 .PHONY: arch ${MODULES} doc
 
