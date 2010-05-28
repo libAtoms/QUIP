@@ -4095,7 +4095,7 @@ module bispectrum_module
        my_denom = optional_default(1,denom)
 
        v = sin(omega/2.0_dp)*sin(theta)*CPLX_ONE
-       u = cos(omega/2.0_dp)*CPLX_ONE + -sin(omega/2.0_dp)*cos(theta)*CPLX_IMAG
+       u = cos(omega/2.0_dp)*CPLX_ONE -sin(omega/2.0_dp)*cos(theta)*CPLX_IMAG
   
        tmp1 = 0.0_dp
   
