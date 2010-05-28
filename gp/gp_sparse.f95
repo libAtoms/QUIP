@@ -174,6 +174,7 @@ module gp_sparse_module
          real(dp), dimension(:), allocatable :: y
 #else
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
+         real(qp), dimension(:), allocatable :: alpha
          integer :: n, m, info
 #endif         
 
@@ -225,7 +226,7 @@ module gp_sparse_module
          deallocate( k_mn_sq_inverse_lambda, factor_k_mm, a, y)
          this%c = 0.0_dp
 #else
-         allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m) )
+         allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m), alpha(m))
          call matrix_product_vect_asdiagonal_sub(k_mn_inverse_lambda,sparse%k_mn,1.0_qp/sparse%lambda) ! O(NM)
          k_mn_l_k_nm = matmul(k_mn_inverse_lambda,transpose(sparse%k_mn))
 
@@ -234,8 +235,9 @@ module gp_sparse_module
          if( info /= 0 ) call system_abort('GP_initialise: LA_q_mm')
 
          !this%alpha = real( matmul(inverse_q_mm,matmul(k_mn_inverse_lambda, sparse%y)),kind=dp)          ! O(NM)
-         call Matrix_Solve(LA_q_mm,matmul(k_mn_inverse_lambda, sparse%y),this%alpha)
+         call Matrix_Solve(LA_q_mm,matmul(k_mn_inverse_lambda, sparse%y),alpha)
          call finalise(LA_q_mm)
+         this%alpha = real(alpha,kind=dp)
 
          call initialise(LA_k_mm,sparse%k_mm)
          call LA_Matrix_Inverse(LA_k_mm,inverse_k_mm,info=info)
@@ -243,7 +245,7 @@ module gp_sparse_module
 
          call finalise(LA_k_mm)
          this%c = real(inverse_k_mm - inverse_q_mm,kind=dp)                                                            ! O(M^2)
-         deallocate( k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm )
+         deallocate( k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm, alpha )
 #endif
          
          this%initialised = .true.
