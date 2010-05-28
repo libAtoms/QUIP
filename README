@@ -19,14 +19,18 @@ file based on an existing file.
    Note that the `make' command has to be executed from the top level
    directory, even for targets in subdirectories. 
 
-   Most useful <progname> include
-    eval : evaluate energies, forces, minimize energy etc
-    md : basic md program
+   Most useful make targets include
+    all : pretty much every vaguely useful program
+    QUIP_Programs/eval : evaluate energies, forces, minimize energy etc
+    QUIP_Programs/md : basic md program
+    install : copies all compiled programs it can find to QUIP_INSTDIR,
+      if it's defined and is a directory
 
 The Makefile will create a build directory, build.${QUIP_ARCH}, and all
 the building happen there. First it will ask you some questions about
 where you keep libraries and other stuff, if you don't use something it
 is asking for, just leave it blank. The answers will be stored in
 Makefile.inc in the build.${QUIP_ARCH} directory, and you can edit them 
-later (e.g. to change optimisation or debug options).
-
+later (e.g. to change optimisation or debug options).  Note that the
+default state is usually with rather heavy debugging on, including
+bounds checking, which makes the code quite slow.
