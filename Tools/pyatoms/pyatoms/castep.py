@@ -133,7 +133,7 @@ valid_parameters_keywords = ['comment', 'iprint', 'continuation', 'reuse', 'chec
                              'nlxc_div_corr_tol', 'nlxc_div_corr_npts_step', 'pspot_beta_phi_type', 
                              'grid_scale', 'fine_grid_scale', 'fine_gmax', 
                              'mix_charge_gmax', 'mix_spin_gmax', 'devel_code',
-                             'max_scf_cycles_dm', 'max_scf_cycles_edft','extcharge_file']
+                             'max_scf_cycles_dm', 'max_scf_cycles_edft','extcharge_file','calculate_hirshfeld']
 
 class CastepCell(OrderedDict):
    """Class to wrap a CASTEP cell (.cell) file"""
@@ -657,8 +657,8 @@ def read_castep_output(castep_file, cluster=None, abort=True):
    # Calculate cartesian postions from fractional positions
    cluster.pos[:] = numpy.array([ numpy.dot(cluster.frac_pos[i,:],cluster.lattice)for i in range(cluster.n) ])
 
-   if param.has_key('finite_basis_corr') and ( param['finite_basis_corr'].lower() == 'automatic' or
-         param['finite_basis_corr'].lower() == 'manual' ):
+   if ( ( param.has_key('calculate_stress') and param['calculate_stress'].lower() == 'true' ) or
+         ( param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() == 'manual' ) ) :
       energy_lines = filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), \
                             castep_output)
    elif param.has_key('task') and param['task'].lower() == 'geometryoptimization':
