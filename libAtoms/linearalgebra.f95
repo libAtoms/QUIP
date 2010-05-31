@@ -2246,7 +2246,7 @@ CONTAINS
 
      LA_Matrix_LogDet = 0.0_qp
      do i = 1, this%m
-        LA_Matrix_LogDet = LA_Matrix_LogDet + log(this%factor(i,i)) 
+        LA_Matrix_LogDet = LA_Matrix_LogDet + log(abs(this%factor(i,i)))
      enddo
 
      if(this%equilibrated) LA_Matrix_LogDet = LA_Matrix_LogDet - sum( log(this%s) )
