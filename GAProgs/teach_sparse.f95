@@ -538,9 +538,9 @@ program teach_sparse
 
   real(dp), dimension(116) :: z_eff
   character(len=FIELD_LENGTH), dimension(232) :: z_eff_fields
-  integer :: num_z_eff_fields, n_ip_args
+  integer :: num_z_eff_fields
   integer :: d
-  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields, ip_args_fields
+  character(len=FIELD_LENGTH), dimension(99) :: qw_cutoff_fields, qw_cutoff_f_fields, qw_cutoff_r1_fields
   integer :: qw_f_n
   real(dp), dimension(99) :: qw_cutoff, qw_cutoff_r1
   integer, dimension(99) :: qw_cutoff_f
