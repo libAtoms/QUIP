@@ -480,6 +480,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   endif
 
   if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
+  if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
 
   if(allocated(local_e_core)) deallocate(local_e_core)
