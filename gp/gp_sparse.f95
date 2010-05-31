@@ -1705,9 +1705,10 @@ deallocate(diff_xijt)
 
          type(gp_minimise) :: am
          character, dimension(:), allocatable :: am_data
+         character, dimension(1) :: am_mold
          integer :: am_data_size
 
-         am_data_size = size(transfer(am,am_data))
+         am_data_size = size(transfer(am,am_mold))
          allocate(am_data(am_data_size))
 
          am%minim_gp => this
@@ -1801,12 +1802,13 @@ deallocate(diff_xijt)
          real(dp) :: do_convergence_tol
          type(gp_minimise) :: am
          character, dimension(:), allocatable :: am_data
+         character, dimension(1) :: am_mold
          integer :: am_data_size
 
          do_max_steps = optional_default(100,max_steps)
          do_convergence_tol = optional_default(0.0001_dp,convergence_tol)
 
-         am_data_size = size(transfer(am,am_data))
+         am_data_size = size(transfer(am,am_mold))
          allocate(am_data(am_data_size))
 
          am%minim_gp => this
