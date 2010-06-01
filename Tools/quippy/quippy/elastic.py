@@ -249,7 +249,7 @@ def calc_stress(configs, metapot, relax=False, relax_tol=1e-3, relax_steps=100):
       if relax:
          metapot.minim(at2, 'cg', relax_tol, relax_steps, do_pos=True, do_lat=False)
       metapot.calc(at2, calc_virial=True)
-      at2.params['stress'] = -at2.virial*GPA/at2.cell_volume()
+      at2.params['stress'] = -at2.params['virial']*GPA/at2.cell_volume()
       yield at2
 
 
@@ -341,8 +341,8 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
    for pindex, (pattern, fit_pairs) in fenumerate(strain_patterns[symmetry]):
       for step in frange(N_steps):
          at = configs.next()
-         strain[pindex, step, :] = strain_vector(at.strain)
-         stress[pindex, step, :] = stress_vector(at.stress)
+         strain[pindex, step, :] = strain_vector(at.params['strain'])
+         stress[pindex, step, :] = stress_vector(at.params['stress'])
 
    # Do the linear regression
    for pindex, (pattern, fit_pairs) in fenumerate(strain_patterns[symmetry]):
