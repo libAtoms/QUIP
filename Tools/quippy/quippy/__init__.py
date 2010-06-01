@@ -67,6 +67,9 @@ else:
 
 classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'], prefix='qp_')
 
+QUIP_ROOT = spec['quip_root']
+QUIP_ARCH = spec['quip_arch']
+
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)
 
@@ -90,6 +93,9 @@ del routines
 del params
 del wrap_all
 del fortran_class_prefix
+del spec_file
+del spec
+del trial_spec_files
 
 import farray;      from farray import *
 import atomslist;   from atomslist import *
