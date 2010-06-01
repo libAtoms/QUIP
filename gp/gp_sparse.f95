@@ -170,8 +170,8 @@ module gp_sparse_module
          type(LA_matrix) :: LA_k_mm, LA_q_mm
 #ifdef HAVE_QR
          integer :: i, j, n, m, info
-         real(dp), dimension(:,:), allocatable :: a, k_mn_sq_inverse_lambda, factor_k_mm
-         real(dp), dimension(:), allocatable :: y
+         real(qp), dimension(:,:), allocatable :: a, k_mn_sq_inverse_lambda, factor_k_mm
+         real(qp), dimension(:), allocatable :: y, alpha
 #else
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
          real(qp), dimension(:), allocatable :: alpha
@@ -199,7 +199,7 @@ module gp_sparse_module
          this%sp = sparse%sp
 
 #ifdef HAVE_QR
-         allocate( k_mn_sq_inverse_lambda(m,n), factor_k_mm(m,m), a(n+m,m), y(n+m))
+         allocate( k_mn_sq_inverse_lambda(m,n), factor_k_mm(m,m), a(n+m,m), y(n+m), alpha(m) )
 
          call matrix_product_vect_asdiagonal_sub(k_mn_sq_inverse_lambda,sparse%k_mn,sqrt(1.0_qp/sparse%lambda)) ! O(NM)
 
@@ -221,9 +221,10 @@ module gp_sparse_module
          y(1:n) = sparse%y*sqrt(1.0_qp/sparse%lambda)
 
          call initialise(LA_q_mm,a)
-         call LA_Matrix_QR_Solve_Vector(LA_q_mm,y,this%alpha)
+         call LA_Matrix_QR_Solve_Vector(LA_q_mm,y,alpha)
+         this%alpha = real(alpha,dp)
          call finalise(LA_q_mm)
-         deallocate( k_mn_sq_inverse_lambda, factor_k_mm, a, y)
+         deallocate( k_mn_sq_inverse_lambda, factor_k_mm, a, y, alpha)
          this%c = 0.0_dp
 #else
          allocate( k_mn_inverse_lambda(m,n), k_mn_l_k_nm(m,m), inverse_q_mm(m,m), inverse_k_mm(m,m), alpha(m))
