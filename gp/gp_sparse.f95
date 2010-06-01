@@ -89,7 +89,7 @@ module gp_sparse_module
       !% Hyperparameters.
       !% Error parameter, range parameter, sensitivity parameters.
       real(dp), dimension(:,:), allocatable       :: theta
-      real(qp), dimension(2) :: sigma
+      real(dp), dimension(2) :: sigma
       real(dp), dimension(:), allocatable :: delta, f0
 
       integer, dimension(:), allocatable :: xz, sp
