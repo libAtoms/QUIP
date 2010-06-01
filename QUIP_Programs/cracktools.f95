@@ -1558,7 +1558,7 @@ contains
   !% with realsize=3 containing the coordinates of the crack tips detected. 
   !% If a through-going crack is detected the result table will have size zero.
 #ifdef HAVE_QUIPPY
-  subroutine crack_find_tips(at, params, crack_tips, cells, min_cells)
+  subroutine crack_find_tips(at, params, crack_tips, n_cell_out, cells_out, min_cells_out)
 #else
   subroutine crack_find_tips(at, params, crack_tips)
 #endif
@@ -1566,266 +1566,338 @@ contains
     type(CrackParams), intent(in) :: params
     type(Table), intent(out) :: crack_tips
 #ifdef HAVE_QUIPPY
-    integer, dimension(:,:,:), intent(inout), target :: cells, min_cells
-#else
-    integer, dimension(:,:,:), allocatable, target :: cells, min_cells
+    integer, dimension(:,:,:), intent(inout), target :: n_cell_out, cells_out, min_cells_out
 #endif
-
+    integer, dimension(:,:,:), allocatable, target :: n_cell, cells, min_cells, old_cells
     type(Connection) :: connect
     type(Table) :: minima
     integer :: cellsna, cellsnb, cellsnc, min_dist
-    integer :: start_i, start_j, start_k, i, j, k, nstep, d_i, d_j
+    integer :: start_i, start_j, start_k, i, j, k, nstep, d_i, d_j, grid_i, u, v, w, grid_factor
     integer :: min_i, max_i, min_j, max_j, min_k, max_k, fill
-    integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_occupied
-    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), sum, sum_2, occ_mu, occ_sigma
+    integer :: top_edge, bottom_edge, left_edge, right_edge, occ_threshold, n_slab
+    real(dp) :: crack_t(3), crack_pos(3), orig_width, start_pos(3), sum, occ_mu, occ_sigma, grid_size
     logical :: duplicate
     integer, pointer, dimension(:) :: horz_slice, vert_slice
-
+    integer, pointer, dimension(:,:,:) :: n_cell_slab
+    
     call system_timer('crack_find_tip')
-
+    
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_tips: "OrigWidth" parameter missing from atoms')
-
-    ! Construct temporary Connection object and partition atoms into cells
-    call print('crack_find_tips: allocating percolation grid with cell size '//params%crack_tip_grid_size//' A', VERBOSE)
-    call divide_cell(at%lattice, params%crack_tip_grid_size, cellsNa, cellsNb, cellsNc)
-    call connection_initialise(connect, at%N, at%pos, at%lattice, at%g)
-    call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
-    call partition_atoms(connect, at)
-
-#ifndef HAVE_QUIPPY
-    allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
-    allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
-#endif
-    call allocate(crack_tips, 0, 3, 0, 0)
-
-    ! Calculate mean and standard deviation of cell occupancies, excluding empty cells
-    sum = 0.0_dp
-    sum_2 = 0.0_dp
-    n_occupied = 0
-    do k=1,connect%cellsnc
-       do j=1,connect%cellsnb
-          do i=1,connect%cellsna
-             if (connect%cell(i,j,k)%n == 0) cycle
-             sum = sum + real(connect%cell(i,j,k)%n,dp)
-             sum_2 = sum_2 + real(connect%cell(i,j,k)%n*connect%cell(i,j,k)%n,dp)
-             n_occupied = n_occupied + 1
-          end do
-       end do
-    end do
-    occ_mu = sum/n_occupied
-    occ_sigma = sqrt(sum_2/n_occupied - occ_mu**2.0_dp)
-
-    occ_threshold = 1 !floor(occ_mu - occ_sigma)
-    call print('crack_find_tips: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
-
-    ! Mark cells with occupancy <= occ_threshold for percolation
-    cells = 0
-    do k=1,connect%cellsnc
-       do j=1,connect%cellsnb
-          do i=1,connect%cellsna
-             if (connect%cell(i,j,k)%n <= occ_threshold) cells(i,j,k) = 1
-          end do
-       end do
-    end do
-
-    if (params%crack_double_ended) then
-       start_pos = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
-    else
-       start_pos = (/ -orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
-    end if
-
-    call cell_of_pos(connect, at%g, start_pos, start_i, start_j, start_k)
-
-    if (cells(start_i, start_j, start_k) /= 1) &
-         call system_abort('crack_find_tips: cannot start percolation since start_pos='//start_pos//' is not in void')
-
-    call print('crack_find_tips: seeding percolation in cell ('//i//','//j//','//k//')', VERBOSE)
-
-    ! For single ended crack, stop percolation from going backwards
-    if (.not. params%crack_double_ended) cells(1:start_i,:,:) = 0
-
-    ! Seed percolation at start_pos then allow "fire" to percolate through cells
-    cells(start_i,start_j,start_k) = 2
-    nstep = 0
-    do while (percolation_step(cells))
-       nstep = nstep + 1
-    end do
-    call print('crack_find_tips: percolation completed in '//nstep//' steps', VERBOSE)
-
-    ! Check for presence of a through-going crack
-
-    ! Find cells containing top and bottom edges of slab
-    vert_slice => cells(max(1,size(cells,1)/2),:,max(1,size(cells,3)/2))
-    top_edge = 1
-    do while (vert_slice(top_edge) /= 1)
-       top_edge = top_edge + 1
-    end do
-    top_edge = top_edge + 2
-
-    bottom_edge = size(vert_slice)
-    do while (vert_slice(bottom_edge) /= 1)
-       bottom_edge = bottom_edge - 1
-    end do
-    bottom_edge = bottom_edge - 2
-
-    ! Find cells containing left and right edges of slab
-    if (params%crack_double_ended) then
-       left_edge = 1
-       right_edge = size(cells,1)
-    else
-       horz_slice => cells(:,max(1,size(cells,2)/2),max(1,size(cells,3)/2))
-
-       left_edge = 1
-       do while (horz_slice(left_edge) /= 1)
-          left_edge = left_edge + 1
-       end do
-       left_edge = left_edge + 2
+    
+    call allocate(crack_tips, 0, 3, 0, 0)   
+    
+    do grid_i=0,2
+       grid_factor = 2**grid_i
+       grid_size = params%crack_tip_grid_size/grid_factor
        
-       right_edge = size(horz_slice)
-       do while (horz_slice(right_edge) /= 1)
-          right_edge = right_edge - 1
+       if (grid_factor /= 1) then
+          if (allocated(old_cells)) deallocate(old_cells)
+          allocate(old_cells(cellsNa,cellsNb,cellsNc))
+          old_cells = cells
+          call print('old_cells allocated to shape '//shape(old_cells))
+          call print('cells allocated to shape '//shape(cells))
+          deallocate(n_cell, cells, min_cells)
+       end if
+       
+       ! Construct temporary Connection object and partition atoms into cells
+       call print('crack_find_tips: allocating percolation grid with cell size '//grid_size//' A', VERBOSE)
+       
+       if (grid_i == 0) then
+          call divide_cell(at%lattice, grid_size, cellsNa, cellsNb, cellsNc)
+       else
+          cellsNa = cellsNa*2
+          cellsNb = cellsNb*2
+          cellsNc = cellsNc*2
+       end if
+       call connection_initialise(connect, at%N, at%pos, at%lattice, at%g)
+       call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
+       call partition_atoms(connect, at)
+       
+       allocate(n_cell(connect%cellsNa,connect%cellsNb, connect%cellsNc))
+       allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
+       allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
+
+       call print('crack_find_tips: shape(cells)='//shape(cells))
+       
+       n_cell = 0
+       do k=1,connect%cellsnc
+          do j=1,connect%cellsnb
+             do i=1,connect%cellsna
+                n_cell(i,j,k) = connect%cell(i,j,k)%n
+             end do
+          end do
        end do
-       right_edge = right_edge - 2
-    end if
+       
+       ! Find top and bottom edges of slab
+       vert_slice => n_cell(max(1,size(n_cell,1)/2),:,max(1,size(n_cell,3)/2))
+       top_edge = 1
+       do while (vert_slice(top_edge) == 0)
+          top_edge = top_edge + 1
+       end do
+       top_edge = top_edge + 2
+       
+       bottom_edge = size(vert_slice)
+       do while (vert_slice(bottom_edge) == 0)
+          bottom_edge = bottom_edge - 1
+       end do
+       bottom_edge = bottom_edge - 2
+       
+       ! Find left and right edges of slab
+       if (params%crack_double_ended) then
+          left_edge = 1
+          right_edge = size(n_cell,1)
+       else
+          horz_slice => n_cell(:,max(1,size(n_cell,2)/2),max(1,size(n_cell,3)/2))
+          
+          left_edge = 1
+          do while (horz_slice(left_edge) == 0)
+             left_edge = left_edge + 1
+          end do
+          left_edge = left_edge + 2
+          
+          right_edge = size(horz_slice)
+          do while (horz_slice(right_edge) == 0)
+             right_edge = right_edge - 1
+          end do
+          right_edge = right_edge - 2
+       end if
+       
+       call print('crack_find_tips: edges left='//left_edge//' right='//right_edge//' top='//top_edge//' bottom='//bottom_edge)
+       
+       n_slab = (right_edge-left_edge+1)*(bottom_edge-top_edge+1)*cellsnc
+       
+       call print('crack_find_tips: n_slab='//n_slab)
+       
+       n_cell_slab => n_cell(left_edge:right_edge,top_edge:bottom_edge,:)
+       
+       occ_mu = real(sum(n_cell_slab),dp)/size(n_cell_slab)
+       occ_sigma = sqrt(real(sum(n_cell_slab**2),dp)/size(n_cell_slab) - occ_mu**2.0_dp)
+       
+       occ_threshold = max(0,floor(occ_mu - occ_sigma))
+       call print('crack_find_tips: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
+       
+       ! Mark cells with occupancy <= occ_threshold for percolation
+       cells = 0
+       
+       where (n_cell <= occ_threshold) cells = 1
 
-    if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
-       call print('crack_find_tips: through-going crack detected')
-    else
+       call print('crack_find_tips: before filtration count(cells == 1) = '//count(cells == 1))
 
+       ! Clear marks not visited in previous percolation
+       if (grid_factor /= 1) then
+
+          call print('fill = '//fill)
+          call print('crack_find_tips: count(old_cells == fill) = '//count(old_cells == fill))
+
+          do k=1,size(old_cells,3)
+             do j=1,size(old_cells,2)
+                do i=1,size(old_cells,1)
+                   if (old_cells(i,j,k) == fill) then
+                      do w=0,1
+                         do v=0,1
+                            do u = 0,1
+                               cells(2*i+u,2*j+v,2*k+w) = 0
+                            end do
+                         end do
+                      end do
+                   end if
+                end do
+             end do
+          end do
+       end if
+
+       call print('crack_find_tips: after filtration count(cells == 1) = '//count(cells == 1))
+       
+       if (params%crack_double_ended) then
+          start_pos = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
+       else
+          start_pos = (/ -orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
+       end if
+       
+       call cell_of_pos(connect, at%g, start_pos, start_i, start_j, start_k)
+       
+       if (cells(start_i, start_j, start_k) /= 1) &
+            call system_abort('crack_find_tips: cannot start percolation since start_pos='//start_pos//' is not in void')
+       
+       call print('crack_find_tips: seeding percolation in cell ('//i//','//j//','//k//')', VERBOSE)
+       
+       ! Stop percolation from going outside slab
+       cells(:left_edge,:,:) = 0
+       cells(right_edge:,:,:) = 0
+       cells(:,:top_edge,:) = 0
+       cells(:,bottom_edge:,:) = 0
+       
+       ! Seed percolation at start_pos then allow "fire" to percolate through cells
+       cells(start_i,start_j,start_k) = 2
+       nstep = 0
+       do while (percolation_step(cells))
+          nstep = nstep + 1
+       end do
+       call print('crack_find_tips: percolation completed in '//nstep//' steps', VERBOSE)
+       
+       if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
+          call print('crack_find_tips: through-going crack detected')
+          
+#ifdef HAVE_QUIPPY
+          n_cell_out = old_cells
+          cells_out = cells
+          min_cells_out = min_cells
+#endif
+          deallocate(n_cell)
+          deallocate(cells)
+          deallocate(min_cells)    
+          if (allocated(old_cells)) deallocate(old_cells)
+          
+          call finalise(connect)
+          call finalise(minima)
+          call system_timer('crack_find_tip')
+          return
+
+       end if
+       
        ! Fill cells outside the slab and those containing atoms to avoid them showing up as minima
        fill = 2*maxval(cells)
        where(cells == 0 .or. cells == 1)
           cells = fill
        end where
-
-       min_dist = params%crack_tip_min_separation/params%crack_tip_grid_size
-       call print('crack_find_tips: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', VERBOSE)
-
-       ! minimum filter: each point on the grid is set to the minimum of nearby points
-       ! Equivalent to 
-       !   min_cells(i,j,k) = minval(cells(i-min_dist/2:i+min_dist/2, j-min_dist/2:j+min_dist/2, k-min_dist/2:j+min_dist/2)
-       ! but without overflowing any array boundaries
-       min_cells = 0
-       do k=1,connect%cellsnc
-          min_k = min(max(k - min_dist/2, 1), connect%cellsnc)
-          max_k = min(max(k + min_dist/2, 1), connect%cellsnc)
-
-          do j=1,connect%cellsnb
-             min_j = min(max(j - min_dist/2, 1), connect%cellsnb)
-             max_j = min(max(j + min_dist/2, 1), connect%cellsnb)
-
-             do i=1,connect%cellsna
-                min_i = min(max(i - min_dist/2, 1), connect%cellsna)
-                max_i = min(max(i + min_dist/2, 1), connect%cellsna)
-
-                min_cells(i,j,k) = minval(cells(min_i:max_i, min_j:max_j, min_k:max_k))
-             end do
+       
+    end do
+    
+    
+    ! minimum filter: each point on the grid is set to the minimum of nearby points
+    ! Equivalent to 
+    !   min_cells(i,j,k) = minval(cells(i-min_dist/2:i+min_dist/2, j-min_dist/2:j+min_dist/2, k-min_dist/2:j+min_dist/2)
+    ! but without overflowing any array boundaries
+    
+    min_dist = params%crack_tip_min_separation/grid_size
+    call print('crack_find_tips: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', VERBOSE)
+    
+    min_cells = 0
+    do k=1,connect%cellsnc
+       min_k = min(max(k - min_dist/2, 1), connect%cellsnc)
+       max_k = min(max(k + min_dist/2, 1), connect%cellsnc)
+       
+       do j=1,connect%cellsnb
+          min_j = min(max(j - min_dist/2, 1), connect%cellsnb)
+          max_j = min(max(j + min_dist/2, 1), connect%cellsnb)
+          
+          do i=1,connect%cellsna
+             min_i = min(max(i - min_dist/2, 1), connect%cellsna)
+             max_i = min(max(i + min_dist/2, 1), connect%cellsna)
+             
+             min_cells(i,j,k) = minval(cells(min_i:max_i, min_j:max_j, min_k:max_k))
           end do
        end do
-
-       ! Find all the local minima
-       call allocate(minima, 3,0,0,0)
-       do k=1,connect%cellsnc
-          do j=1,connect%cellsnb
-             do i=1,connect%cellsna
-                if (min_cells(i,j,k) == cells(i,j,k) .and. min_cells(i,j,k) /= fill) call append(minima, (/i,j,k/))
-             end do
+    end do
+    
+    ! Find all the local minima
+    call allocate(minima, 3,0,0,0)
+    do k=1,connect%cellsnc
+       do j=1,connect%cellsnb
+          do i=1,connect%cellsna
+             if (min_cells(i,j,k) == cells(i,j,k) .and. min_cells(i,j,k) /= fill) call append(minima, (/i,j,k/))
           end do
        end do
-
-       call print('crack_find_tips: got '//minima%n//' tips before duplicate removal', VERBOSE)
-       if (current_verbosity() >= VERBOSE) then
-          do i=1,minima%n
-             crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
-             crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
-             crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
-             crack_t = crack_t - 0.5_dp
-             call print(' tip #'//i//' cell '//minima%int(:,i)//' position '//(at%lattice .mult. crack_t))
-          end do
-       end if
-
-       ! Remove duplicate minima of same depth within params%crack_tip_min_separation of one another
-       do while (.true.)
-          duplicate = .false.
-          OUTER: do i=1,minima%N
-             do j=i+1,minima%N
-                if (dot_product((minima%int(:,i) - minima%int(:,j)),(minima%int(:,i) - minima%int(:,j))) < min_dist**2) then
-                   duplicate = .true.
-                   exit OUTER
-                end if
-             end do
-          end do OUTER
-
-          if (duplicate) then
-             d_i = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
-             d_j = dot_product((minima%int(:,j) - (/start_i, start_j, start_k/)),(minima%int(:,j) - (/start_i, start_j, start_k/)))
-
-             call print('duplicates '//i//' and '//j//' d_i='//d_i//' d_j='//d_j)
-
-             if (d_i > d_j) then
-                call print('removing j '//j)
-                call delete(minima, j, .true.)
-             else
-                call print('removing i '//i)
-                call delete(minima, i, .true.)
-             end if
-          else
-             exit
-          end if
-       end do
-
-       call print('crack_find_tips: found '//minima%n//' crack tips')
-
+    end do
+    
+    call print('crack_find_tips: got '//minima%n//' tips before duplicate removal', VERBOSE)
+    if (current_verbosity() >= VERBOSE) then
        do i=1,minima%n
           crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
           crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
           crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
           crack_t = crack_t - 0.5_dp
-          crack_pos = at%lattice .mult. crack_t
-
-          ! Insert in crack_tips table such that results are ordered by increasing x coordinate
-          j = 1
-          do while (j <= crack_tips%N)
-             if (crack_tips%real(1,j) > crack_pos(1)) exit
-             j = j + 1
-          end do
-          
-          call print('crack_find_tips: inserting x='//crack_pos(1)//' at position '//j)
-          call insert(crack_tips, j, realpart=crack_pos)
+          call print(' tip #'//i//' cell '//minima%int(:,i)//' position '//(at%lattice .mult. crack_t))
        end do
-
     end if
-
-#ifndef HAVE_QUIPPY
-    deallocate(cells)
-    deallocate(min_cells)
+    
+    ! Remove duplicate minima of same depth within params%crack_tip_min_separation of one another
+    do while (.true.)
+       duplicate = .false.
+       OUTER: do i=1,minima%N
+          do j=i+1,minima%N
+             if (dot_product((minima%int(:,i) - minima%int(:,j)),(minima%int(:,i) - minima%int(:,j))) < min_dist**2) then
+                duplicate = .true.
+                exit OUTER
+             end if
+          end do
+       end do OUTER
+       
+       if (duplicate) then
+          d_i = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
+          d_j = dot_product((minima%int(:,j) - (/start_i, start_j, start_k/)),(minima%int(:,j) - (/start_i, start_j, start_k/)))
+          
+          call print('duplicates '//i//' and '//j//' d_i='//d_i//' d_j='//d_j)
+          
+          if (d_i > d_j) then
+             call print('removing j '//j)
+             call delete(minima, j, .true.)
+          else
+             call print('removing i '//i)
+             call delete(minima, i, .true.)
+          end if
+       else
+          exit
+       end if
+    end do
+    
+    call print('crack_find_tips: found '//minima%n//' crack tips')
+    
+    do i=1,minima%n
+       crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
+       crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
+       crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
+       crack_t = crack_t - 0.5_dp
+       crack_pos = at%lattice .mult. crack_t
+       
+       ! Insert in crack_tips table such that results are ordered by increasing x coordinate
+       j = 1
+       do while (j <= crack_tips%N)
+          if (crack_tips%real(1,j) > crack_pos(1)) exit
+          j = j + 1
+       end do
+       
+       call print('crack_find_tips: inserting x='//crack_pos(1)//' at position '//j)
+       call insert(crack_tips, j, realpart=crack_pos)
+    end do
+    
+#ifdef HAVE_QUIPPY
+    n_cell_out = old_cells
+    cells_out = cells
+    min_cells_out = min_cells
 #endif
+    
+    deallocate(n_cell)
+    deallocate(cells)
+    deallocate(min_cells)    
+    if (allocated(old_cells)) deallocate(old_cells)
+    
     call finalise(connect)
     call finalise(minima)
     call system_timer('crack_find_tip')
-
+    
   end subroutine crack_find_tips
-
+  
   subroutine crack_print_cio(at, cio, params)
     type(Atoms), intent(inout) :: at
     type(CInoutput), intent(inout) :: cio
     type(CrackParams), intent(in) :: params
-
+    
     if (params%io_print_all_properties) then
        call write(cio, at)
     else
        call write(cio, at, properties=params%io_print_properties)
     end if
   end subroutine crack_print_cio
-
+  
   subroutine crack_print_filename(at, filename, params)
     type(Atoms), intent(inout) :: at
     character(*), intent(in) :: filename
     type(CrackParams), intent(in) :: params
-
+    
     type(CInOutput) :: cio
-
+    
     call initialise(cio, filename, action=OUTPUT)
     if (params%io_print_all_properties) then
        call write(cio, at)
