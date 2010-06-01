@@ -2332,7 +2332,7 @@ CONTAINS
 
   subroutine LA_Matrix_GetQR(this,q,r,info)
      type(LA_Matrix), intent(inout) :: this         
-     real(dp), dimension(:,:), intent(out), optional :: q, r
+     real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: info
 
      real(dp), dimension(:), allocatable :: work
@@ -2344,7 +2344,9 @@ CONTAINS
      & call system_abort('LA_Matrix_GetQR: not QR-factorised, call LA_Matrix_QR_Factorise first.')
 
      if(present(q)) then
+#ifndef HAVE_QP
         call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR')
+#endif
         q = this%factor
 
         allocate(work(1))
@@ -2363,7 +2365,9 @@ CONTAINS
      endif
 
      if(present(r)) then
+#ifndef HAVE_QP
         call check_size('r', r, (/this%m,this%m/),'LA_Matrix_GetQR')
+#endif
         r = this%factor(1:this%m,1:this%m)
         do j = 1, this%m - 1
            r(j+1:this%m,j) = 0.0_dp
@@ -2380,12 +2384,12 @@ CONTAINS
 
   subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,info)
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:,:), intent(in) :: matrix
-     real(dp), dimension(:,:), intent(out) :: result
+     real(qp), dimension(:,:), intent(in) :: matrix
+     real(qp), dimension(:,:), intent(out) :: result
      integer, intent(out), optional :: info
 
      real(dp), dimension(:), allocatable :: work
-     real(dp), dimension(:,:), allocatable :: my_result
+     real(qp), dimension(:,:), allocatable :: my_result
      integer :: my_info, lwork, i, j, n, o
 
      if(this%factorised == NOT_FACTORISED) then
@@ -2396,7 +2400,9 @@ CONTAINS
 
      n = size(matrix,1)
      o = size(matrix,2)
+#ifndef HAVE_QP
      call check_size('result', result, (/this%m,o/),'LA_Matrix_QR_Solve_Matrix')
+#endif
 
      if( n /= this%n ) call  system_abort('LA_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.')
 
@@ -2438,11 +2444,11 @@ CONTAINS
 
   subroutine LA_Matrix_QR_Solve_Vector(this,vector,result,info)
      type(LA_Matrix), intent(inout) :: this
-     real(dp), dimension(:), intent(in) :: vector
-     real(dp), dimension(:), intent(out) :: result
+     real(qp), dimension(:), intent(in) :: vector
+     real(qp), dimension(:), intent(out) :: result
      integer, intent(out), optional :: info
 
-     real(dp), dimension(:,:), allocatable :: my_result
+     real(qp), dimension(:,:), allocatable :: my_result
      integer :: n, m
 
      n = size(vector)
