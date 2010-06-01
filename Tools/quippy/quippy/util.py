@@ -18,6 +18,8 @@
 
 """Utility functions which will be imported into top-level quippy namespace"""
 
+import os, xml.dom.minidom
+
 def args_str(D):
    """Construct args string from file, string or mapping object"""
    from dictmixin import PuPyDictionary
@@ -58,4 +60,53 @@ except ImportError:
    pass
 
         
-    
+def quip_xml_parameters(name, label=None):
+   """Search for an QUIP XML parameter set matching `name' and, optionally `label`.
+
+   Result is the XML stanza as a string. Looks under
+   ${QUIP_ROOT}/QUIP_Core/parameters for a file matching `name`,
+   `name`.xml, ip.parms.`name`.xml or tightbind.params.`name`.xml. If
+   `label` is given, it should be a text string matching the label
+   attribute of a QUIP <params> XML stanza. If a matching parameter
+   set can't be found, we raise an :exc:`IOError`.
+   """
+   
+   from quippy import QUIP_ROOT
+   from xml.parsers.expat import ExpatError
+   from xml.dom.minidom import Element
+   
+   param_dir = os.path.join(QUIP_ROOT, 'QUIP_Core/parameters')
+
+   xml_files = [ os.path.join(param_dir, name),
+                 os.path.join(param_dir, name) + '.xml',
+                 os.path.join(param_dir, 'ip.parms.'+name) + '.xml',
+                 os.path.join(param_dir, 'tightbind.parms.'+name) + '.xml' ]
+
+   for xml_file in xml_files:
+      if os.path.exists(xml_file): break
+   else:
+      raise IOError('Cannot find XML parameter file matching "%s"' % name)
+
+   xml_string = open(xml_file).read()
+
+   if label is not None:
+      # Read XML and extract tag with matching label attribute
+      try:
+         d = xml.dom.minidom.parseString(xml_string)
+      except ExpatError:
+         # Add surrounding document element
+         xml_string = r'<params>%s</params>' % xml_string
+         d = xml.dom.minidom.parseString(xml_string).firstChild
+
+      for child in d.childNodes:
+         if not isinstance(child, Element): continue
+         if child.hasAttribute('label'):
+            if child.getAttribute('label') == label:
+               break
+      else:
+         raise IOError('Cannot find XML stanza in file "%s" matching label "%s"' % (xml_file, label))
+
+      return str(child.toxml())
+   else:
+      # Return entire contents of file
+      return str(xml_string)
