@@ -395,11 +395,17 @@ module linearalgebra_module
   !% constructed from the 'arrayname' and 'caller' arguments.
   private :: check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
   private :: check_size_real_dim1,check_size_real_dim1_s, check_size_real_dim2
+#ifdef HAVE_QP
+  private :: check_size_quad_dim1,check_size_quad_dim1_s, check_size_quad_dim2
+#endif
   private :: check_size_complex_dim1,check_size_complex_dim1_s, check_size_complex_dim2
   private :: check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
   interface check_size
      module procedure check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
      module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2
+#ifdef HAVE_QP
+     module procedure check_size_quad_dim1, check_size_quad_dim1_s, check_size_quad_dim2
+#endif
      module procedure check_size_complex_dim1, check_size_complex_dim1_s, check_size_complex_dim2
      module procedure check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
   end interface check_size
@@ -2299,24 +2305,28 @@ CONTAINS
      real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: info
 
+     integer :: my_info
+#ifndef HAVE_QP
      real(qp), dimension(:), allocatable :: work
-     integer :: my_info, lwork
+     integer :: lwork
+#endif
 
      this%factor = this%matrix
 
+#ifdef HAVE_QP
+     call qgeqrf(this%factor,this%tau,my_info)
+#else
+
      allocate(work(1))
      lwork = -1
-#ifndef HAVE_QP
      call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
-#endif
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
-#ifndef HAVE_QP
      call dgeqrf(this%n, this%m, this%factor, this%n, this%tau, work, lwork, my_info)
-#endif
      deallocate(work)
+#endif
 
      this%factorised = QR
 
@@ -2335,8 +2345,11 @@ CONTAINS
      real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: info
 
+     integer :: j, my_info
+#ifndef HAVE_QP
      real(dp), dimension(:), allocatable :: work
-     integer :: j, my_info, lwork
+     integer :: lwork
+#endif
 
      my_info = 0
 
@@ -2344,30 +2357,26 @@ CONTAINS
      & call system_abort('LA_Matrix_GetQR: not QR-factorised, call LA_Matrix_QR_Factorise first.')
 
      if(present(q)) then
-#ifndef HAVE_QP
         call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR')
-#endif
         q = this%factor
 
+#ifdef HAVE_QP
+        call qorgqr(this%factor,this%tau,q,my_info)
+#else
         allocate(work(1))
         lwork = -1
-#ifndef HAVE_QP
         call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
-#endif
         lwork = nint(work(1))
         deallocate(work)
 
         allocate(work(lwork))
-#ifndef HAVE_QP
         call dorgqr(this%n, this%m, this%m, q, this%n, this%tau, work, lwork, my_info)
-#endif
         deallocate(work)
+#endif
      endif
 
      if(present(r)) then
-#ifndef HAVE_QP
         call check_size('r', r, (/this%m,this%m/),'LA_Matrix_GetQR')
-#endif
         r = this%factor(1:this%m,1:this%m)
         do j = 1, this%m - 1
            r(j+1:this%m,j) = 0.0_dp
@@ -2388,9 +2397,12 @@ CONTAINS
      real(qp), dimension(:,:), intent(out) :: result
      integer, intent(out), optional :: info
 
-     real(dp), dimension(:), allocatable :: work
      real(qp), dimension(:,:), allocatable :: my_result
-     integer :: my_info, lwork, i, j, n, o
+     integer :: my_info, i, j, n, o
+#ifndef HAVE_QP
+     real(dp), dimension(:), allocatable :: work
+     integer :: lwork
+#endif
 
      if(this%factorised == NOT_FACTORISED) then
         call LA_Matrix_QR_Factorise(this,info=info)
@@ -2400,28 +2412,25 @@ CONTAINS
 
      n = size(matrix,1)
      o = size(matrix,2)
-#ifndef HAVE_QP
      call check_size('result', result, (/this%m,o/),'LA_Matrix_QR_Solve_Matrix')
-#endif
 
      if( n /= this%n ) call  system_abort('LA_Matrix_QR_Solve_Matrix: dimensions of Q and matrix do not match.')
 
      allocate(my_result(n,o))
      my_result = matrix
-
+#ifdef HAVE_QP
+     call qormqr(this%factor, this%tau, my_result, my_info)
+#else
      lwork = -1
      allocate(work(1))
-#ifndef HAVE_QP
      call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
-#endif
      lwork = nint(work(1))
      deallocate(work)
 
      allocate(work(lwork))
-#ifndef HAVE_QP
      call dormqr('L', 'T', this%n, o, this%m, this%factor, this%n, this%tau, my_result, this%n, work, lwork, my_info)
-#endif
      deallocate(work)
+#endif
 
      if( present(info) ) then
         info = my_info
@@ -2463,6 +2472,128 @@ CONTAINS
 
   endsubroutine LA_Matrix_QR_Solve_Vector
 
+  subroutine house_qp(x,v,beta)
+     real(qp), dimension(:), intent(in) :: x
+     real(qp), dimension(size(x)), intent(out) :: v
+     real(qp), intent(out) :: beta
+
+     integer :: n
+     real(qp) :: sigma, mu
+
+     n = size(x)
+     sigma = dot_product(x(2:n),x(2:n))
+     v = (/ 1.0_qp, x(2:n) /)
+
+     if( sigma == 0.0_qp ) then
+        beta = 0.0_qp
+     else
+        mu = sqrt(x(1)**2+sigma)
+        if( x(1) <= 0.0_qp ) then
+           v(1) = x(1) - mu
+        else
+           v(1) = -sigma / (x(1)+mu)
+        endif
+        beta = 2.0_qp * v(1)**2 / (sigma + v(1)**2)
+        v = v / v(1)
+     endif
+  
+  endsubroutine house_qp
+
+  subroutine qgeqrf(a,beta,info)
+     real(qp), dimension(:,:), intent(inout) :: a
+     real(qp), dimension(size(a,2)), intent(out) :: beta
+     integer, intent(out), optional :: info
+
+     integer :: m, n, i, j
+     real(qp), dimension(:), allocatable :: v, vTa, beta_v
+
+     m = size(a,1)
+     n = size(a,2)
+
+     allocate(v(m), vTa(n), beta_v(m))
+
+     do j = 1, n
+        call house_qp(a(j:m,j),v(j:m),beta(j))
+        vTa(j:n) = matmul(v(j:m),a(j:m,j:n))
+        beta_v(j:m) = beta(j)*v(j:m)
+
+        do i = j, n
+           a(j:m,i) = a(j:m,i) - beta_v(j:m)*vTa(i)
+        enddo
+        if (j < m) a(j+1:m,j) = v(j+1:m) 
+     enddo
+
+     if( present(info) ) info = 0
+     deallocate(v, vTa, beta_v)
+     
+  endsubroutine qgeqrf
+  
+  subroutine qormqr(a, beta, c, info)
+
+     real(qp), dimension(:,:), intent(in) :: a
+     real(qp), dimension(size(a,2)), intent(in) :: beta
+     real(qp), dimension(:,:), intent(inout) :: c
+     integer, intent(out), optional :: info
+
+     integer :: m, n, q, i, j
+     real(qp), dimension(:), allocatable :: v, vTc, beta_v
+
+     m = size(a,1)
+     n = size(a,2)
+     q = size(c,2)
+
+     allocate(v(m), vTc(q), beta_v(m))
+
+     do j = 1, n
+        v(j:m) = (/ 1.0_qp, a(j+1:m,j) /)
+        vTc = matmul(v(j:m),c(j:m,:))
+        beta_v(j:m) = beta(j)*v(j:m)
+
+        do i = 1, q
+           c(j:m,i) = c(j:m,i) - beta_v(j:m)*vTc(i)
+        enddo
+     enddo
+
+     if( present(info) ) info = 0
+     deallocate(v, vTc, beta_v)
+
+  endsubroutine qormqr
+  
+  subroutine qorgqr(a,beta,q,info)
+
+     real(qp), dimension(:,:), intent(in) :: a
+     real(qp), dimension(size(a,2)), intent(in) :: beta
+     real(qp), dimension(:,:), intent(out) :: q
+     integer, intent(out), optional :: info
+
+     integer :: m, n, i, j
+     real(qp), dimension(:), allocatable :: v, vTq, beta_v
+
+     m = size(a,1)
+     n = size(a,2)
+
+     allocate(v(m), vTq(n), beta_v(m))
+
+     q = 0.0_qp
+     do j = 1, n
+        q(j,j) = 1.0_qp
+     enddo
+
+     do j = n, 1, -1
+        v(j:m) = (/1.0_qp, a(j+1:m,j) /)
+        vTq(j:n) = matmul(v(j:m), q(j:m,j:n))
+        beta_v(j:m) = beta(j)*v(j:m)
+
+        do i = j, n
+           q(j:m,i) = q(j:m,i) - beta_v(j:m)*vTq(i)
+        enddo
+     enddo
+
+     if( present(info) ) info = 0
+     deallocate(v, vTq, beta_v)
+
+  endsubroutine qorgqr
+  
   subroutine Matrix_CholFactorise(A,A_factor)
 
      real(dp), dimension(:,:), intent(inout), target :: A
@@ -3972,6 +4103,93 @@ CONTAINS
     end if
 
   end subroutine check_size_real_dim2
+
+#ifdef HAVE_QP
+  subroutine check_size_quad_dim1(arrayname,quadarray,n,caller)
+
+    character(*),            intent(in) :: arrayname
+    real(qp), dimension(:),  intent(in) :: quadarray 
+    integer,  dimension(:),  intent(in) :: n         
+    character(*),            intent(in) :: caller     
+
+    integer, dimension(:), allocatable :: actual_size 
+    logical                            :: failed      
+    integer                            :: i           
+
+    failed = .false.
+    allocate( actual_size( size(shape(quadarray)) ) )
+    actual_size = shape(quadarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       write(line,'(a)') caller//': Size checking failed'
+       call system_abort(line)
+    end if
+
+  end subroutine check_size_quad_dim1
+
+  !overloaded subroutine which allows a scalar 'n' in the one dimensional case
+  subroutine check_size_quad_dim1_s(arrayname,quadarray,n,caller)
+    character(*),           intent(in) :: arrayname 
+    real(qp), dimension(:), intent(in) :: quadarray  
+    integer,                intent(in) :: n         
+    character(*),           intent(in) :: caller
+    call check_size(arrayname,quadarray,(/n/),caller)
+  end subroutine check_size_quad_dim1_s
+
+  subroutine check_size_quad_dim2(arrayname,quadarray,n,caller)
+
+    character(*),              intent(in) :: arrayname 
+    real(qp), dimension(:,:),  intent(in) :: quadarray 
+    integer,  dimension(:),    intent(in) :: n        
+    character(*),              intent(in) :: caller   
+
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed      
+    integer                            :: i          
+
+    failed = .false.
+    allocate( actual_size( size(shape(quadarray)) ) )
+    actual_size = shape(quadarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       write(line,'(a)') caller//': Size checking failed'
+       call system_abort(line)
+    end if
+
+  end subroutine check_size_quad_dim2
+#endif
 
   subroutine check_size_complex_dim1(arrayname,realarray,n,caller)
 
