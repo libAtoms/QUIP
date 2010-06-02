@@ -475,7 +475,7 @@ contains
        call finalise(at)
     enddo
 
-    e0 = e0 / n_ener
+    if( n_ener > 0 ) e0 = e0 / n_ener
 
     call finalise(xyzfile)
 
