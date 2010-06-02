@@ -199,7 +199,7 @@ module bispectrum_module
    endtype per
 
    real(dp), dimension(:,:,:,:,:,:), allocatable :: cg_array
-   integer :: j1_max=0, m1_max=0, j2_max=0, m2_max=0, j_max=0, m_max=0 
+   integer :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0 
    logical :: cg_initialised = .false.
 
    real(dp), parameter :: factorial_table(0:16) = (/&
@@ -1287,8 +1287,12 @@ module bispectrum_module
 
         if( .not. this%initialised ) call initialise(this,f%j_max)
 
-        if( .not. cg_initialised ) &
-        & call cg_initialise(f%j_max,2)
+        if( .not. cg_initialised ) then
+           call cg_initialise(f%j_max,2)
+        elseif( f%j_max > cg_j_max ) then
+           call cg_finalise()
+           call cg_initialise(f%j_max,2)
+        endif
 
         j_max = min(this%j_max,f%j_max)
 
@@ -1334,8 +1338,12 @@ module bispectrum_module
 
         if( .not. this%initialised ) call initialise(this,f%j_max)
 
-        if( .not. cg_initialised ) &
-        & call cg_initialise(f%j_max,2)
+        if( .not. cg_initialised ) then
+           call cg_initialise(f%j_max,2)
+        elseif( f%j_max > cg_j_max ) then
+           call cg_finalise()
+           call cg_initialise(f%j_max,2)
+        endif
 
         j_max = min(this%j_max,f%j_max,df%j_max)
 
@@ -4208,15 +4216,15 @@ module bispectrum_module
 
        my_denom = optional_default(1,denom)
 
-       j1_max = j
-       m1_max = j
-       j2_max = j
-       m2_max = j
-       j_max = j !(j1_max+j2_max)
-       m_max = j !(j1_max+j2_max)
+       cg_j1_max = j
+       cg_m1_max = j
+       cg_j2_max = j
+       cg_m2_max = j
+       cg_j_max = j !(j1_max+j2_max)
+       cg_m_max = j !(j1_max+j2_max)
 
-       allocate( cg_array(0:j1_max,-m1_max:m1_max,0:j2_max,-m2_max:m2_max,&
-       & 0:j_max,-j_max:j_max) )
+       allocate( cg_array(0:cg_j1_max,-cg_m1_max:cg_m1_max,0:cg_j2_max,-cg_m2_max:cg_m2_max,&
+       & 0:cg_j_max,-cg_j_max:cg_j_max) )
  
        cg_array = 0.0_dp
 
@@ -4235,11 +4243,11 @@ module bispectrum_module
 !       enddo
 !       enddo
 !       enddo
-       do i_j1 = 0, j1_max
+       do i_j1 = 0, cg_j1_max
        do i_m1 = -i_j1, i_j1, my_denom
-       do i_j2 = 0, j2_max
+       do i_j2 = 0, cg_j2_max
        do i_m2 = -i_j2, i_j2, my_denom
-       do i_j = abs(i_j1-i_j2), min(j_max,i_j1+i_j2)
+       do i_j = abs(i_j1-i_j2), min(cg_j_max,i_j1+i_j2)
        do i_m = -i_j, i_j, my_denom
 
 
@@ -4263,12 +4271,12 @@ module bispectrum_module
 
     subroutine cg_finalise
 
-       j1_max = 0
-       m1_max = 0
-       j2_max = 0
-       m2_max = 0
-       j_max = 0
-       m_max = 0
+       cg_j1_max = 0
+       cg_m1_max = 0
+       cg_j2_max = 0
+       cg_m2_max = 0
+       cg_j_max = 0
+       cg_m_max = 0
 
        if(allocated(cg_array)) deallocate( cg_array )
        cg_initialised = .false.
@@ -4293,8 +4301,8 @@ module bispectrum_module
          return
       endif
 
-      if( j1<=j1_max .and. j2<=j2_max .and. j<=j_max .and. &
-        & abs(m1)<=m1_max .and. abs(m2)<=m2_max .and. abs(m) <= m_max .and. &
+      if( j1<=cg_j1_max .and. j2<=cg_j2_max .and. j<=cg_j_max .and. &
+        & abs(m1)<=cg_m1_max .and. abs(m2)<=cg_m2_max .and. abs(m) <= cg_m_max .and. &
         & cg_initialised ) then
           cg = cg_array(j1,m1,j2,m2,j,m)
       else
