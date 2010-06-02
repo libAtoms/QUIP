@@ -106,6 +106,9 @@ module clustering_module
      n = size(x,2)
      
      m = size(pivout)
+
+     if( m > n ) call system_abort('pivot: required number of changes greater than possible number of changes')
+     
      allocate(knn(n,n),pivin(n),ktmp(n))
      
      call distance_matrix(x,knn,theta_fac)
@@ -176,6 +179,9 @@ module clustering_module
      & lo_med, hi_med, lo_med_new, hi_med_new, lo_med_min, hi_med_min, n1, n2, n1_min, n2_min
 
      n = size(x,2)
+
+     if( n_clusters_in > n ) call system_abort('bisect_kmedoids: required number of cluster greater than total number of data points')
+
      if(present(c) ) c = 0
      allocate(my_cluster%dm(n,n))
      call distance_matrix(x,my_cluster%dm,theta_fac)
