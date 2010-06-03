@@ -518,6 +518,7 @@ contains
   !% OMIT
   ! Initialise pointers for convenient access to special columns of this%data
   subroutine atoms_repoint(this)
+    use Dictionary_module, only: lower_case
     type(Atoms), target, intent(inout) :: this
     integer :: i, lookup(3)
     character(len=key_len) :: key
@@ -539,10 +540,10 @@ contains
        ! If this%N is zero then point at zero length arrays
        if (this%N == 0) then
 
-          select case(trim(key))
+          select case(trim(lower_case(key)))
 
           ! Integer properties
-          case('Z')
+          case('z')
              this%Z               => this%data%int(lookup(2),:)
           case('travel')
              this%travel          => this%data%int(lookup(2):lookup(3),:)
@@ -578,10 +579,10 @@ contains
 
        else
 
-          select case(trim(key))
+          select case(trim(lower_case(key)))
 
           ! Integer properties
-          case('Z')
+          case('z')
              this%Z               => this%data%int(lookup(2),1:this%N)
           case('travel')
              this%travel          => this%data%int(lookup(2):lookup(3),1:this%N)
