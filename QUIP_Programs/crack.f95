@@ -492,6 +492,7 @@ program crack
   ! <stem>.nc
   ! <stem>.xyz
 
+  texist=.false.
   if (params%io_netcdf) then
      inquire(file=trim(stem)//'_check.nc', exist=texist)
      if (texist) then
