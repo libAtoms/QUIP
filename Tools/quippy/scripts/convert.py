@@ -104,10 +104,9 @@ if opt.atoms_ref is not None:
 
 if opt.merge is not None:
    if opt.atoms_ref is not None:
-      merge_config = Atoms(opt.merge, atoms_ref=opt.atoms_ref)
+      merge_configs = AtomsList(opt.merge, store=False, atoms_ref=opt.atoms_ref)
    else:
-      merge_config = Atoms(opt.merge)
-   
+      merge_configs = AtomsList(opt.merge, store=False)
 
    if opt.merge_properties is not None:
       opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
@@ -128,12 +127,13 @@ def process(at, frame):
 
    # Merge from merge_config
    if opt.merge:
+      at_merge = merge_configs[frame]
       for k in opt.merge_properties:
          # specify property type explicity - needed because of NumPy ambiguity between logical and integer
-         at.add_property(k, getattr(merge_config, k.lower()), property_type=merge_config.properties[k][1])
+         at.add_property(k, getattr(at_merge, k.lower()), property_type=at_merge.properties[k][1])
 
       if opt.merge_params is not None:
-         at.params.update(merge_config.params)
+         at.params.update(at_merge.params)
 
    # Execute user code
    do_print = True
