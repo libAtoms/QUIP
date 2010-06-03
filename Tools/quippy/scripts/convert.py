@@ -47,13 +47,16 @@ For XYZ output these parameters are in addition to the special
 parameters "Lattice" and "Properties" which are always written.
 The original order of parameters in the input file is preserved.""")
 p.add_option('-f', '--format', action='store', help="""Explicitly specify output format, e.g. --format=xyz
-Supported formats: cell, nc, pos, pov, xyz.""")
+Supported formats: %s.""" % ', '.join([s for s in AtomsWriters.keys() if isinstance(s, str)]))
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
 p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
+p.add_option('-g', '--merge-params', action='store_true', help="""Merge params as well as properties from MERGE file.""", default=False)
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`.""")
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
+p.add_option('-n', '--rename-property', action='append', help="""Old and new names for a property to be renamed. Can appear multiple times.""", nargs=2)
+p.add_option('-N', '--rename-param', action='append', help="""Old and new names for a param to be renamed. Can appear multiple times.""", nargs=2)
 
 opt, args = p.parse_args()
 
@@ -129,10 +132,25 @@ def process(at, frame):
          # specify property type explicity - needed because of NumPy ambiguity between logical and integer
          at.add_property(k, getattr(merge_config, k.lower()), property_type=merge_config.properties[k][1])
 
+      if opt.merge_params is not None:
+         at.params.update(merge_config.params)
+
    # Execute user code
    do_print = True
    if opt.exec_code is not None:
       exec(opt.exec_code)
+
+   # Rename properties
+   if opt.rename_property is not None:
+      for (old, new) in opt.rename_property:
+         at.properties[new] = at.properties[old]
+         del at.properties[old]
+
+   # Rename parameters
+   if opt.rename_param is not None:
+      for (old, new) in opt.rename_param:
+         at.params[new] = at.params[old]
+         del at.params[old]
 
    # Verbose output
    if opt.verbose and frame == 1:
