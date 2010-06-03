@@ -51,6 +51,9 @@ module teach_sparse_module
   public :: w_Z_from_xyz
   public :: ip_core
 
+  character(len=FIELD_LENGTH)::energy_property_name, force_property_name, virial_property_name
+  public :: energy_property_name, force_property_name, virial_property_name
+
 contains
 
   subroutine teach_n_from_xyz(at_file, r_cut, n, nn, ne, n_ener, n_force, n_virial, species_present, n_species)
@@ -85,9 +88,9 @@ contains
        call read(xyzfile,at,frame=n_con-1)
        call add_property(at,'charge',0.0_dp,n_cols=1)
 
-       has_ener = get_value(at%params,'Energy',ener) .or. get_value(at%params,'energy',ener)
-       has_force = assign_pointer(at,'f', f) .or. assign_pointer(at,'Force', f) .or. assign_pointer(at,'force', f)
-       has_virial = get_value(at%params,'Virial',virial) .or. get_value(at%params,'virial',virial)
+       has_ener = get_value(at%params,energy_property_name,ener)
+       has_force = assign_pointer(at,force_property_name, f)
+       has_virial = get_value(at%params,virial_property_name,virial)
 
        if( has_ener .or. has_force .or. has_virial ) then
           call atoms_set_cutoff(at,r_cut)
@@ -236,9 +239,9 @@ contains
        call read(xyzfile,at,frame=n_con-1)
        call add_property(at, 'charge',0.0_dp,n_cols=1)
 
-       has_ener = get_value(at%params,'Energy',ener) .or. get_value(at%params,'energy',ener)
-       has_force = assign_pointer(at,'f', f) .or. assign_pointer(at,'Force', f) .or. assign_pointer(at,'force', f)
-       has_virial = get_value(at%params,'Virial',virial) .or. get_value(at%params,'virial',virial)
+       has_ener = get_value(at%params,energy_property_name,ener)
+       has_force = assign_pointer(at,force_property_name, f)
+       has_virial = get_value(at%params,virial_property_name,virial)
 
        if( core%do_core ) then
           allocate(f_core(3,at%N))
@@ -566,7 +569,7 @@ program teach_sparse
   type(ip_core) :: core
 
   call system_initialise(verbosity=NORMAL, enable_timing=.true.)
-
+  call initialise(params)
   call initialise(params)
   call param_register(params, 'at_file', PARAM_MANDATORY, at_file)
   call param_register(params, 'm', '50', m)
@@ -600,6 +603,9 @@ program teach_sparse
   call param_register(params, 'bispectrum_file', '', bispectrum_file, has_bispectrum_file)
   call param_register(params, 'ip_args', '', ip_args, do_core)
   call param_register(params, 'do_ewald_corr', 'F', do_ewald_corr)
+  call param_register(params, 'energy_property_name', 'energy', energy_property_name)
+  call param_register(params, 'force_property_name', 'force', force_property_name)
+  call param_register(params, 'virial_property_name', 'virial', virial_property_name)
 
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
@@ -621,6 +627,7 @@ program teach_sparse
      call parse_string(z_eff_string,':',z_eff_fields,num_z_eff_fields)
      do i = 1, num_z_eff_fields, 2
         j = atomic_number_from_symbol(z_eff_fields(i))
+        if(j < 1 .or. j > 116) call system_abort("Invalid atomic number "//j//" parsed from "//z_eff_fields(i))
         z_eff(j) = string_to_real(z_eff_fields(i+1))
      enddo
   endif
