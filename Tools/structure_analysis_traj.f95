@@ -875,7 +875,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   integer :: at_i, rad_sample_i
   real(dp) :: rad_sample_r, exp_arg, ep, em
   logical :: quantity_1, quantity_KE
-  real(dp) :: sample_scale
+  real(dp) :: sample_weight
 
   if (present(center_pos) .and. present(center_i)) then
     call system_abort("density_sample_radial_mesh_Gaussians received both center_pos and center_i")
@@ -897,7 +897,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   else
     quantity_1 = .true.
   endif
-  if (quantity_1) sample_scale = 1.0_dp
+  if (quantity_1) sample_weight = 1.0_dp
 
   my_accumulate = optional_default(.false., accumulate)
   if (.not. my_accumulate) histogram = 0.0_dp
@@ -933,7 +933,13 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     if (present(center_i)) then
       if (at_i == center_i) cycle
     endif
-    if (quantity_KE) sample_scale = kinetic_energy(ElementMass(at%Z(at_i)), at%velo(1:3,at_i))
+    if (quantity_KE) then
+      if (associated(at%velo)) then
+	sample_weight = kinetic_energy(ElementMass(at%Z(at_i)), at%velo(1:3,at_i))
+      else
+	sample_weight = 0.0_dp
+      endif
+    endif
     d = distance_min_image(at,use_center_pos,at%pos(:,at_i))
     ! skip if atom is outside range
     if (d > (n_rad_bins-1)*rad_bin_width+6.0_dp*gaussian_sigma) cycle
@@ -960,7 +966,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       else
 	h_val = (r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)) /  (4.0_dp * PI * r0**2)
       endif
-      histogram(rad_sample_i) = histogram(rad_sample_i) +  sample_scale*h_val
+      histogram(rad_sample_i) = histogram(rad_sample_i) +  sample_weight*h_val
     end do ! rad_sample_i
   end do ! at_i
 
