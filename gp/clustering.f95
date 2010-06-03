@@ -107,7 +107,7 @@ module clustering_module
      
      m = size(pivout)
 
-     if( m > n ) call system_abort('pivot: required number of changes greater than possible number of changes')
+     if( m > n ) call system_abort('pivot: required number of changes ('//m//') greater than possible number of changes ('//n//')')
      
      allocate(knn(n,n),pivin(n),ktmp(n))
      
