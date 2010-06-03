@@ -53,6 +53,7 @@ p.add_option('-M', '--merge-properties', action='store', help="""List of propert
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`.""")
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
+p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 
 opt, args = p.parse_args()
 
@@ -110,7 +111,7 @@ if opt.merge is not None:
    else:
       opt.merge_properties = merge_config.properties.keys()
 
-def process(at):
+def process(at, frame):
    # Override lattice
    if opt.lattice is not None:
       at.set_lattice(opt.lattice)
@@ -129,11 +130,18 @@ def process(at):
          at.add_property(k, getattr(merge_config, k.lower()), property_type=merge_config.properties[k][1])
 
    # Execute user code
+   do_print = True
    if opt.exec_code is not None:
       exec(opt.exec_code)
+
+   # Verbose output
+   if opt.verbose and frame == 1:
+      print 'N_ATOMS', at.n
+      print 'PROPERTIES:', at.properties.keys()
+      print 'PARAMS:', at.params.keys()
       
    # Do the writing
-   if outfile is not None:
+   if do_print and outfile is not None:
       if opt.properties is None:
          outfile.write(at)
       else:
@@ -178,7 +186,7 @@ if isinstance(opt.range, slice):
       pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
 
    for i, at in fenumerate(itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)):
-      process(at)
+      process(at, i)
       if got_length:
          pb(i)
 
@@ -186,7 +194,7 @@ if isinstance(opt.range, slice):
                     
 else:
    # single frame
-   process(AtomsList(infile)[opt.range])
+   process(AtomsList(infile)[opt.range], 1)
 
 if outfile is not None:
    try:
