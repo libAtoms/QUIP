@@ -46,7 +46,7 @@ implicit none
   character(len=FIELD_LENGTH) :: infile, pot_init_args
   integer :: rng_seed, n_configs
 
-  call system_initialise()
+  call system_initialise(enable_timing=.true.)
 
   call initialise(cli)
   call param_register(cli, "pot_init_args", PARAM_MANDATORY, pot_init_args)
@@ -70,9 +70,13 @@ implicit none
      lat = at%lattice
      call randomise(lat, 0.5_dp)
      call set_lattice(at, lat, scale_positions=.true.)
+     call system_timer("calc")
      call calc(pot, at, e=e, f=f, virial=v)
+     call system_timer("calc")
      call add_property(at, 'f', f)
-     call print_xyz(at, 'output.xyz', properties='pos:f', comment='Energy='//e//' virial={'//reshape(v, (/9/))//'}', append=.true.)
+     mainlog%prefix="RAND"
+     call print_xyz(at, mainlog, properties='pos:f', comment='Energy='//e//' Virial={'//reshape(v, (/9/))//'}')
+     mainlog%prefix=""
   end do
   deallocate(f)
 
