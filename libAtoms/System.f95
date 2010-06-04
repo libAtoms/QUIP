@@ -248,6 +248,14 @@ module system_module
      end subroutine system_command
   end interface
 
+#ifdef HAVE_QUIPPY
+  interface system_abort
+     subroutine system_abort(message)
+       character(*), intent(in) :: message
+     end subroutine system_abort
+  end interface system_abort
+#endif
+
 #ifdef NO_FORTRAN_ISNAN
   INTERFACE 	
      elemental function fisnan(r)
