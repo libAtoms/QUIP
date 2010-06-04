@@ -110,3 +110,7 @@ try:
 except ImportError:
    logging.warning('quippy.castep import failed.')
 
+try:
+   import atomeye
+except ImportError:
+   pass
