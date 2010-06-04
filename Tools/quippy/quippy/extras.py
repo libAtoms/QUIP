@@ -279,12 +279,16 @@ class Atoms(FortranAtoms):
 
    def _update_hook(self):
       if self.n == 0: return
+      if hasattr(self, 'property_prefix'):
+         property_prefix = self.property_prefix
+      else:
+         property_prefix = ''
       
       # Remove existing pointers
       if hasattr(self, '_props'):
          for prop in self._props:
             try:
-               delattr(self, prop)
+               delattr(self, property_prefix+prop)
             except AttributeError:
                pass
 
@@ -296,7 +300,7 @@ class Atoms(FortranAtoms):
                     PROPERTY_LOGICAL: "logical"}
       self._props = {}
       for prop,(ptype,col_start,col_end) in self.properties.iteritems():
-         prop = prop.lower()
+         prop = property_prefix+prop.lower()
          self._props[prop] = (ptype,col_start,col_end)
          doc = "%s : %s property with %d %s" % (prop, type_names[ptype], col_end-col_start+1, 
                                                 {True:"column",False:"columns"}[col_start==col_end])
