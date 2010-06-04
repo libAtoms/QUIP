@@ -16,7 +16,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""Simple interface between :mod:`quippy` and :mod:`ase` <ttps://wiki.fysik.dtu.dk/ase>"""
+"""Simple interface between :mod:`quippy` and :mod:`ase` <https://wiki.fysik.dtu.dk/ase>"""
 
 def atoms_to_ase(at):
    """Return a copy of `at` as an :class:`ase.Atoms` instance.
@@ -149,5 +149,108 @@ try:
 except ImportError:
    pass
 
+
+from ase import Atoms as aseAtoms
+from quippy import (Atoms as quippyAtoms,
+                    PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL)
+import numpy as np
+
+class MixedAtoms(aseAtoms, quippyAtoms):
+
+   def __new__(cls, symbols=None,
+                 positions=None, numbers=None,
+                 tags=None, momenta=None, masses=None,
+                 magmoms=None, charges=None,
+                 scaled_positions=None,
+                 cell=None, pbc=None,
+                 constraint=None,
+                 calculator=None):
+      return aseAtoms.__new__(cls, symbols, positions, numbers, tags, momenta, masses,
+                        magmoms, charges, scaled_positions, cell, pbc, constraint, calculator)
+
+   def __init__(self, symbols=None,
+                 positions=None, numbers=None,
+                 tags=None, momenta=None, masses=None,
+                 magmoms=None, charges=None,
+                 scaled_positions=None,
+                 cell=None, pbc=None,
+                 constraint=None,
+                 calculator=None):
+
+      if cell is None:
+         lattice = np.eye(3)
+      else:
+         lattice = cell.T
+      quippyAtoms.__init__(self, n=len(symbols), lattice=lattice)
+      aseAtoms.__init__(self, symbols, positions, numbers, tags, momenta, masses,
+                        magmoms, charges, scaled_positions, cell, pbc,
+                        constraint, calculator)
+      self.set_atoms(self.z) # initialise species from z
+
+   def new_array(self, name, a, dtype=None, shape=None):
+      """Add new array.
+
+      If *shape* is not *None*, the shape of *a* will be checked.
+      Overridden to store the data in the Table `self.data`.
+      """
+
+      type_map = {'i': PROPERTY_INT,
+                  'f': PROPERTY_REAL,
+                  'S': PROPERTY_STR,
+                  'b': PROPERTY_LOGICAL}
+
+      name_map = {'positions': 'pos',
+                  'masses': 'mass',
+                  'numbers': 'z'}
+            
+      a = np.array(a, dtype=dtype)
+
+      if name not in name_map and name in self.arrays:
+         raise RuntimeError
+
+      for b in self.arrays.values():
+         if len(a) != len(b):
+            raise ValueError('Array has wrong length: %d != %d.' %
+                             (len(a), len(b)))
+         break
+
+      if shape is not None and a.shape[1:] != shape:
+         raise ValueError('Array has wrong shape %s != %s.' %
+                          (a.shape, (a.shape[0:1] + shape)))
+
+      quippy_name = name_map.get(name, name)
+
+      self.add_property(quippy_name, a.T, property_type=type_map[a.dtype.kind])
+
+   def get_cell(self):
+      return self.lattice.view(np.ndarray).T.copy()
+
+   def set_cell(self, cell, scale_positions=False, fix=None):
+      quippyAtoms.set_lattice(self, cell.T, scale_positions)
+      aseAtoms.set_cell(self, cell, scale_positions, fix)
+
+   def _getcell(self):
+      return self.lattice.view(np.ndarray).T
+
+   cell = property(_getcell, set_cell)
+
+   def write(self, filename, format=None, properties=None, *args, **kwargs):
+      try:
+         quippyAtoms.write(self, filename, format=format, properties=properties, *args, **kwargs)
+      except ValueError:
+         aseAtoms.write(self, filename, format=format)
+
+
+   def _update_hook(self):
+      quippyAtoms._update_hook(self)
+      self.arrays = {}     
+      for name in self._props:
+         name_map = {'pos': 'positions',
+                     'mass': 'masses',
+                     'z': 'numbers'}
+         ase_name = name_map.get(name, name)
+         self.arrays[ase_name] = getattr(self, name).view(np.ndarray).T
+
    
-      
+
+
