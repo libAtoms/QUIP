@@ -341,17 +341,11 @@ def find_sources(makefile, quip_root):
 
     if (not 'QUIPPY_NO_TOOLS' in makefile or
         ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))):
-        tools_dir = os.path.join(quip_root, 'Tools/')
-        makefile_tools = parse_makefile(os.path.join(tools_dir, 'Makefile'))
-        tools_sources = [os.path.join(tools_dir,f)+'.f95' for f in makefile_tools['PROGRAMS'].split()]
-        all_sources += tools_sources
-        source_dirs.append(tools_dir)
-
         quip_utils_dir = os.path.join(quip_root, 'QUIP_Utils/')
         makefile_quip_utils = parse_makefile(os.path.join(quip_utils_dir, 'Makefile'))
         quip_utils_sources = [os.path.join(quip_utils_dir,f)+'.f95' for f in makefile_quip_utils['F95_FILES'].split()]
         all_sources += quip_utils_sources
-        wrap_sources += ['elasticity.f95', 'elastic_fields.f95']
+        wrap_sources += ['elasticity.f95']
         source_dirs.append(quip_utils_dir)
 
     if (not 'QUIPPY_NO_CRACK' in makefile or
@@ -361,7 +355,7 @@ def find_sources(makefile, quip_root):
         all_sources += crack_sources
         wrap_sources += ['cracktools.f95', 'crackparams.f95']
         wrap_types += ['crackparams']
-        source_dirs.append(quip_utils_dir)
+        source_dirs.append(crack_dir)
 
     return source_dirs, all_sources, wrap_sources, wrap_types
 
