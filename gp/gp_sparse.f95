@@ -77,7 +77,8 @@ module gp_sparse_module
 
       character(len=1024) :: label, comment
 
-   endtype gp_sparse
+   end type gp_sparse
+
 
    type gp
 
@@ -106,40 +107,37 @@ module gp_sparse_module
       character(len=1024) :: label
       character(len=10000) :: comment
 
-   endtype gp
+   end type gp
+
 
    type gp_minimise
       type(gp_sparse), pointer :: minim_gp => null()
       logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false.
-      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, &
-      & li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1
-   endtype gp_minimise
+      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1
+   end type gp_minimise
 
 
    interface Initialise
       module procedure GP_Initialise
-   endinterface Initialise
+   end interface Initialise
 
    interface Finalise
       module procedure GP_Finalise_sparse, GP_Finalise_sparse_more, GP_Finalise
-   endinterface Finalise
+   end interface Finalise
 
    interface apply_l
       module procedure apply_l_matrix, apply_l_vector
-   endinterface apply_l
+   end interface apply_l
 
    interface covSEard
       module procedure covSEard_dp
 #ifdef HAVE_QP
       module procedure covSEard_qp
 #endif      
-   endinterface covSEard
+   end interface covSEard
 
    private
-   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, &
-           & likelihood, test_gp_gradient, minimise_gp_gradient, &
-           & minimise_gp_ns, gp_sparsify, gp_print_binary, &
-           & gp_read_binary, minimise_gp_ns_new, fill_random_integer
+   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer
 
    contains
 
@@ -211,8 +209,8 @@ module gp_sparse_module
          do i = 1, m-1
             do j = i+1, m
                factor_k_mm(j,i) = 0.0_qp
-            enddo
-         enddo
+            end do
+         end do
          
          a(1:n,:) = transpose(k_mn_sq_inverse_lambda)
          a(n+1:,:) = factor_k_mm
@@ -251,7 +249,7 @@ module gp_sparse_module
          
          this%initialised = .true.
 
-      endsubroutine GP_initialise
+      end subroutine GP_initialise
 
       subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in)
          type(gp_sparse), intent(inout)                 :: this        !% gp to initialise
@@ -292,7 +290,7 @@ module gp_sparse_module
             this%nsp = size(sp_in)
          else
             this%nsp = 1
-         endif
+         end if
 
          this%n = this%nx + this%nxd
 
@@ -321,14 +319,14 @@ module gp_sparse_module
             this%xz = xz_in
          else
             this%xz = 1
-         endif
+         end if
 
          if( this%mf>0 ) then
             this%l(:this%mf) = lf_in
             lmf = lf_in(this%mf)
          else
             lmf = 0
-         endif
+         end if
          if( this%mdf>0 ) this%l(this%mf+1:) = ldf_in + lmf
 
          this%xf = xf_in
@@ -340,20 +338,20 @@ module gp_sparse_module
             this%sp = sp_in
          else
             this%sp = 1
-         endif
+         end if
 
          if(present(f0_in)) then
             this%f0 = f0_in
          else
             this%f0 = 0.0_qp
-         endif
+         end if
          
          call covariance_matrix_sparse(this)
 
          this%initialised = .true.
          !deallocate(r)
 
-      endsubroutine GP_sparsify
+      end subroutine GP_sparsify
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -394,7 +392,7 @@ module gp_sparse_module
          this%xz = 0
          this%xz_sparse = 0
 
-      endsubroutine gp_allocate
+      end subroutine gp_allocate
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -431,7 +429,7 @@ module gp_sparse_module
          if(allocated(this%delta)) deallocate( this%delta )
          if(allocated(this%f0)) deallocate( this%f0 )
 
-      endsubroutine gp_deallocate
+      end subroutine gp_deallocate
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -460,17 +458,17 @@ module gp_sparse_module
          if( present(x_in) ) then
              if( all( shape(this%x) /= shape(x_in) ) ) call system_abort('gp_update: array sizes do not conform')
              this%x = x_in
-         endif
+         end if
 
          if( present(x_sparse_in) ) then
              if( all( shape(this%x_sparse) /= shape(x_sparse_in) ) ) call system_abort('gp_update: array sizes do not conform')
              this%x_sparse = x_sparse_in
-         endif
+         end if
 
          if( present(y_in) ) then
              if( all( shape(this%y) /= shape(y_in) ) ) call system_abort('gp_update: array sizes do not conform')
              this%y = y_in
-         endif
+         end if
 
          if( present(sigma_in) ) this%sigma = sigma_in
 
@@ -481,15 +479,15 @@ module gp_sparse_module
          if( present(theta_in) ) then
              if( all( shape(this%theta) /= shape(theta_in) ) ) call system_abort('gp_update: array sizes do not conform')
              this%theta = theta_in
-         endif
+         end if
 
          if( my_do_covariance ) then
             if( present(x_in) .or. present(y_in) .or. present(x_sparse_in) .or. &
             & present(sigma_in) .or. present(delta_in) .or. present(theta_in) .or. present(f0_in) ) &
             & call covariance_matrix_sparse(this)
-         endif
+         end if
          
-      endsubroutine gp_update
+      end subroutine gp_update
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -515,7 +513,7 @@ module gp_sparse_module
          this%mdf = 0
          this%initialised = .false.
 
-      endsubroutine GP_finalise_sparse
+      end subroutine GP_finalise_sparse
 
       subroutine GP_finalise(this)
 
@@ -529,7 +527,7 @@ module gp_sparse_module
          this%sigma = 0.0_dp
          this%initialised = .false.
 
-      endsubroutine GP_finalise
+      end subroutine GP_finalise
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -553,7 +551,7 @@ module gp_sparse_module
          if( present(this8) ) call GP_finalise_sparse(this8)
          if( present(this9) ) call GP_finalise_sparse(this9)
 
-      endsubroutine GP_finalise_sparse_more
+      end subroutine GP_finalise_sparse_more
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -571,7 +569,7 @@ module gp_sparse_module
 
          call gp_predict(gp_data = gp_in, mean = gp_mean, x_star = x_star, x_prime_star = x_prime_star, Z=Z)
 
-      endfunction gp_mean
+      end function gp_mean
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -589,7 +587,7 @@ module gp_sparse_module
 
          call gp_predict(gp_data = gp_in, variance = gp_variance, x_star = x_star, x_prime_star = x_prime_star, Z=Z)
 
-      endfunction gp_variance
+      end function gp_variance
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -623,7 +621,7 @@ module gp_sparse_module
 
          do_Z = optional_default(gp_data%xz(1),Z)
          
-         do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; enddo
+         do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; end do
          
          if(present(x_prime_star)) then
             do i = 1, gp_data%n
@@ -640,7 +638,7 @@ module gp_sparse_module
 #endif
                else
                   k(i) = 0.0_dp
-               endif
+               end if
                
                !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
                !& dot_product(xixjtheta,real(x_prime_star,qp)/real(gp_data%theta,qp))
@@ -648,7 +646,7 @@ module gp_sparse_module
 
                !k(i) = gp_data%delta**2 * exp( - 0.5_dp * norm2(xixjtheta) ) * dot_product(xixjtheta,x_prime_star*tmp)
                !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
-            enddo
+            end do
          else
             do i = 1, gp_data%n
 !               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
@@ -662,11 +660,11 @@ module gp_sparse_module
 #endif
                else
                   k(i) = 0.0_dp
-               endif
+               end if
                !xixjtheta = (real(gp_data%x(:,i),qp)-real(x_star,qp))/real(gp_data%theta,qp)
                !k(i) = exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) )
-            enddo
-         endif
+            end do
+         end if
 #ifdef GP_PREDICT_QP
          if( present(mean) ) mean = dot_product( k, gp_data%alpha )
 #else
@@ -677,14 +675,14 @@ module gp_sparse_module
  !              kappa = gp_data%sigma(2)**2 + gp_data%delta**2 * norm2(x_prime_star*gp_data%theta)
  !           else
  !              kappa = gp_data%sigma(1)**2 + gp_data%delta**2
- !           endif
+ !           end if
  !           variance = sqrt( kappa - dot_product(k,matmul(gp_data%c,k)) )
- !        endif
+ !        end if
          !& variance = sqrt( gp_data%delta + gp_data%sigma**2 - dot_product(k,matmul(gp_data%c,k)) )
 
 !         deallocate( k )
 
-      endsubroutine gp_predict
+      end subroutine gp_predict
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -705,7 +703,7 @@ module gp_sparse_module
 !
 !         covSEard_xx = delta**2 * exp( - 0.5_dp * norm2( (xi-xj)*theta ) )
 !
-!      endfunction covSEard_xx
+!      end function covSEard_xx
 
       pure function covSEard_dp(delta,theta,xi,xj,dxj)
 
@@ -722,7 +720,7 @@ module gp_sparse_module
          covSEard_dp = delta**2 * exp( - 0.5_dp * norm2(xixjtheta) ) 
          if(present(dxj)) covSEard_dp = covSEard_dp * dot_product(xixjtheta,dxj/theta)
 
-      endfunction covSEard_dp
+      end function covSEard_dp
 
       pure function covSEard_qp(delta,theta,xi,xj,dxj)
 
@@ -739,7 +737,7 @@ module gp_sparse_module
          covSEard_qp = delta**2 * exp( - 0.5_qp * norm2(xixjtheta) ) 
          if(present(dxj)) covSEard_qp = covSEard_qp * dot_product(xixjtheta,dxj/theta)
 
-      endfunction covSEard_qp
+      end function covSEard_qp
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -766,7 +764,7 @@ module gp_sparse_module
          do j = 1, this%nx
             xj = this%xf(j)
             
-            do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; enddo
+            do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
 
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
@@ -775,17 +773,17 @@ module gp_sparse_module
                else
                   this%big_raw_k_mn(i,j) = 0.0_qp
                   this%big_k_mn(i,j) = 0.0_qp
-               endif
+               end if
               !& dot_product(( this%x_sparse(:,i) - this%x(:,j) )*theta2,this%x_prime(:,j))
-            enddo
-         enddo
+            end do
+         end do
 
 !$omp parallel do private(jd,xj,k,Z_type)
          do j = 1, this%nxd
             jd = j + this%nx
             xj = this%xdf(j)
             
-            do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; enddo
+            do k = 1, this%nsp; if( this%sp(k) == this%xz(xj) ) Z_type = k; end do
             
             do i = 1, this%sr
                if( this%xz(xj) == this%xz_sparse(i) ) then
@@ -795,28 +793,28 @@ module gp_sparse_module
               else
                  this%big_raw_k_mn(i,jd) = 0.0_qp
                  this%big_k_mn(i,jd) = 0.0_qp
-              endif
-            enddo
-         enddo
+              end if
+            end do
+         end do
 
 !$omp parallel do private(k,Z_type)
          do j = 1, this%sr
          
-            do k = 1, this%nsp; if( this%sp(k) == this%xz_sparse(j) ) Z_type = k; enddo
+            do k = 1, this%nsp; if( this%sp(k) == this%xz_sparse(j) ) Z_type = k; end do
 
             do i = 1, this%sr
                if( this%xz_sparse(j) == this%xz_sparse(i) ) then
                   this%k_mm(i,j) = covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x_sparse(:,j), this%x_sparse(:,i) ) + this%f0(Z_type)**2
                else
                   this%k_mm(i,j) = 0.0_qp
-               endif
-            enddo
-         enddo
+               end if
+            end do
+         end do
 
          ep = gp_jitter !*trace(this%k_mm)/this%sr
          do i = 1, this%sr
             this%k_mm(i,i) = this%k_mm(i,i) + ep
-         enddo
+         end do
 
          lknnl = 0.0_qp
 
@@ -826,20 +824,20 @@ module gp_sparse_module
                lj = 1
             else
                lj = this%lf(i-1)+1
-            endif
+            end if
             uj = this%lf(i)
             do j1 = lj, uj
                xj1 = this%xf(j1)
 
-               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; enddo
+               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; end do
 
                do j2 = lj, uj
                   xj2 = this%xf(j2)
                   if( this%xz(xj1) == this%xz(xj2) ) &
                   & lknnl(i) = lknnl(i) + covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj1), this%x(:,xj2) )+ this%f0(Z_type)**2
-               enddo
-            enddo
-         enddo
+               end do
+            end do
+         end do
 !$omp end do 
 
 !$omp parallel private(diff_xijt)
@@ -851,12 +849,12 @@ allocate(diff_xijt(this%d))
                lj = 1
             else
                lj = this%ldf(i-1)+1
-            endif
+            end if
             uj = this%ldf(i)
             do j1 = lj, uj
                xj1 = this%xdf(j1)
               
-               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; enddo
+               do k = 1, this%nsp; if( this%sp(k) == this%xz(xj1) ) Z_type = k; end do
               
                do j2 = lj, uj
                   xj2 = this%xdf(j2)
@@ -865,10 +863,10 @@ allocate(diff_xijt(this%d))
                      lknnl(id) = lknnl(id) + covSEard( this%delta(Z_type), this%theta(:,Z_type), this%x(:,xj1), this%x(:,xj2) ) * &
                      & ( dot_product( this%x_prime(:,j1) * theta2(:,Z_type), this%x_prime(:,j2) ) - &
                      & dot_product( diff_xijt,this%x_prime(:,j1) ) * dot_product( diff_xijt,this%x_prime(:,j2) ) )
-                  endif
-               enddo
-            enddo
-         enddo
+                  end if
+               end do
+            end do
+         end do
 !$omp end do 
 deallocate(diff_xijt)
 !$omp end parallel
@@ -885,11 +883,11 @@ deallocate(diff_xijt)
 !         call matrix_product_sub(this%inverse_k_mm_k_mn, inverse_k_mm, this%k_mn)
          do i = 1, this%m
             this%lambda(i) = lknnl(i) - dot_product( this%inverse_k_mm_k_mn(:,i), this%k_mn(:,i) ) + this%sigma(i)**2
-         enddo
+         end do
 
          deallocate( inverse_k_mm, lknnl, theta2) !, diff_xijt )
 
-      endsubroutine covariance_matrix_sparse
+      end subroutine covariance_matrix_sparse
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -919,16 +917,16 @@ deallocate(diff_xijt)
                    lj = 1
                else
                    lj = l(j-1)+1
-               endif
+               end if
                uj = l(j)
 
                lx(:,j) = sum( x(:,lj:uj), dim=2 )
-            enddo
+            end do
          else
             lx = x
-         endif
+         end if
 
-      endsubroutine apply_l_matrix
+      end subroutine apply_l_matrix
 
       subroutine apply_l_vector(x,l,lx)
          real(qp), dimension(:), intent(in)  :: x
@@ -945,11 +943,11 @@ deallocate(diff_xijt)
              lx(1) = sum( x(1:l(1)) )
              do i = 2, m
                 lx(i) = sum( x(l(i-1)+1:l(i)) )
-             enddo
+             end do
          else
             lx = x
-         endif
-      endsubroutine apply_l_vector
+         end if
+      end subroutine apply_l_vector
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -1023,8 +1021,8 @@ deallocate(diff_xijt)
          do i = 1, this%sr-1
             do j = i+1, this%sr
                factor_k_mm(j,i) = 0.0_qp
-            enddo
-         enddo
+            end do
+         end do
 
          a(1:this%m,:) = transpose(k_mn_sq_inverse_lambda)
          a(this%m+1:,:) = factor_k_mm
@@ -1076,10 +1074,10 @@ deallocate(diff_xijt)
                do j = this%sr, 2, -1
                   inverse_mm_k_mn_inverse_lambda(j,i) = inverse_mm_k_mn_inverse_lambda(j,i)/R_q_mm(j,j)
                   inverse_mm_k_mn_inverse_lambda(1:j-1,i) = inverse_mm_k_mn_inverse_lambda(1:j-1,i) - inverse_mm_k_mn_inverse_lambda(j,i)*R_q_mm(1:j-1,j)
-               enddo
+               end do
                inverse_mm_k_mn_inverse_lambda(1,i) = inverse_mm_k_mn_inverse_lambda(1,i) / R_q_mm(1,1)
-            enddo
-         endif
+            end do
+         end if
 
              !lambda_dtheta = (this%lambda - this%theta(1)**2) / this%theta(2) ! O(N)
          if( my_do_sigma .or. my_do_delta ) then
@@ -1101,7 +1099,7 @@ deallocate(diff_xijt)
             !& - sum(inverse_mm_k_mn_inverse_lambda(:,:this%mf)*k_mn_inverse_lambda(:,:this%mf)) ! O(N) + O(NM)
             !trace_inverse_c2 = sum(inverse_lambda(this%mf+1:)) &
             !& - sum(inverse_mm_k_mn_inverse_lambda(:,this%mf+1:)*k_mn_inverse_lambda(:,this%mf+1:)) ! O(N) + O(NM)
-         endif
+         end if
 
          if( my_do_delta .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
             allocate( inverse_k_mm_k_mn_l_k_nm(this%sr,this%sr), &
@@ -1130,12 +1128,12 @@ deallocate(diff_xijt)
 
             inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm = matmul( inverse_k_mm_k_mn_l_k_nm, &
             & inverse_mm_k_mn_l_k_nm_inverse_k_mm )
-         endif
+         end if
 
          if( my_do_sigma ) then
             dl_dsigma(1) = this%sigma(1) * ( norm2_y_inverse_c1 - trace_inverse_c1 )
             dl_dsigma(2) = this%sigma(2) * ( norm2_y_inverse_c2 - trace_inverse_c2 )
-         endif
+         end if
 
 !         if( present(dl_ddelta) ) then           
 !            allocate( diag_k_n_inverse_k_mm_inverse_k_mm_k_n(this%m) )
@@ -1166,12 +1164,12 @@ deallocate(diff_xijt)
 
             inverse_k_mm_k_mn_inverse_k = matmul( inverse_k_mm_k_mn_l_k_nm, &   ! O(M^3)
             & inverse_mm_k_mn_inverse_lambda ) ! O(NM^2)
-         endif
+         end if
 
          if( my_do_delta .or. my_do_theta ) then
             allocate( theta2(this%d,this%nsp) )
             theta2 = 1.0_qp / this%theta**2
-         endif
+         end if
 
          if( my_do_delta ) then
             dl_ddelta = 0.0_qp
@@ -1189,9 +1187,9 @@ deallocate(diff_xijt)
                          d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) / this%delta(k)
                       else
                          d_big_k_mn(i,j) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 do j = 1, this%nxd
                    xj = this%xdf(j)
                    jd = j + this%nx
@@ -1200,9 +1198,9 @@ deallocate(diff_xijt)
                          d_big_k_mn(i,jd) = this%big_k_mn(i,jd) / this%delta(k)
                       else
                          d_big_k_mn(i,jd) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 do j = 1, this%sr
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz_sparse(j) ) .and. (this%xz_sparse(j) == this%xz_sparse(i)) ) then
@@ -1210,13 +1208,13 @@ deallocate(diff_xijt)
                             d_k_mm(i,j) = (this%k_mm(i,j) -this%f0(k)**2 -gp_jitter)/ this%delta(k)
                          else
                             d_k_mm(i,j) = (this%k_mm(i,j) -this%f0(k)**2 )/ this%delta(k)
-                         endif
+                         end if
 
                       else
                          d_k_mm(i,j) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 call apply_l(d_big_k_mn,this%l,d_k_mn)
 
                 do i = 1, this%mf
@@ -1225,7 +1223,7 @@ deallocate(diff_xijt)
                       lj = 1
                    else
                       lj = this%lf(i-1)+1
-                   endif
+                   end if
                    uj = this%lf(i)
                    do j1 = lj, uj
                       xj1 = this%xf(j1)
@@ -1233,11 +1231,11 @@ deallocate(diff_xijt)
                          xj2 = this%xf(j2)
                          if( (this%sp(k) == this%xz(xj1)) .and. (this%xz(xj1) == this%xz(xj2)) ) &
                          & lknnl = lknnl + covSEard( this%delta(k), this%theta(:,k), this%x(:,xj1), this%x(:,xj2) ) / this%delta(k)
-                      enddo
-                   enddo
+                      end do
+                   end do
                    lambda_dtheta(i) = lknnl - 2.0_qp * dot_product( d_k_mn(:,i), this%inverse_k_mm_k_mn(:,i) ) + &
                    & dot_product( this%inverse_k_mm_k_mn(:,i), matmul(d_k_mm,this%inverse_k_mm_k_mn(:,i)) )
-                enddo
+                end do
 
                 do i = 1, this%mdf
                    id = i + this%mf
@@ -1246,7 +1244,7 @@ deallocate(diff_xijt)
                       lj = 1
                    else
                       lj = this%ldf(i-1)+1
-                   endif
+                   end if
                    uj = this%ldf(i)
                    do j1 = lj, uj
                       xj1 = this%xdf(j1)
@@ -1257,17 +1255,17 @@ deallocate(diff_xijt)
                             lknnl = lknnl + covSEard( this%delta(k), this%theta(:,k), this%x(:,xj1), this%x(:,xj2) ) * &
                             & ( dot_product( this%x_prime(:,j1) * theta2(:,k), this%x_prime(:,j2) ) - &
                             & dot_product( diff_xijt,this%x_prime(:,j1) ) * dot_product( diff_xijt,this%x_prime(:,j2) ) )/ this%delta(k)
-                         endif
-                      enddo
-                   enddo
+                         end if
+                      end do
+                   end do
                    lambda_dtheta(id) = lknnl - 2.0_qp * dot_product( d_k_mn(:,id), this%inverse_k_mm_k_mn(:,id) ) + &
                    & dot_product( this%inverse_k_mm_k_mn(:,id), matmul(d_k_mm,this%inverse_k_mm_k_mn(:,id)) )
-                enddo
+                end do
                 tr_dlambda_inverse_k = 0.0_qp
                 do i = 1, this%m
                    tr_dlambda_inverse_k = tr_dlambda_inverse_k + &
                    & lambda_dtheta(i) * dot_product( k_mn_inverse_lambda(:,i),inverse_mm_k_mn_inverse_lambda(:,i) )
-                enddo
+                end do
                 dl_ddelta(k) = 2.0_qp * dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(d_k_mn,y_inverse_c) ) - &
                 & dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(d_k_mm,y_inverse_c_k_nm_inverse_k_mm) ) + &
                 & dot_product( y_inverse_c*lambda_dtheta, y_inverse_c) - &
@@ -1276,11 +1274,11 @@ deallocate(diff_xijt)
                 & 2.0_qp * sum( d_k_mn * inverse_k_mm_k_mn_inverse_k ) - &
                 & sum( d_k_mm * inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm ) + tr_dlambda_inverse_k
 
-            enddo
+            end do
 !$omp end do
             deallocate( d_big_k_mn, d_k_mm, d_k_mn, lambda_dtheta, diff_xijt )
 !$omp end parallel            
-         endif
+         end if
 
          if( my_do_f0 ) then
             dl_df0 = 0.0_qp
@@ -1298,25 +1296,25 @@ deallocate(diff_xijt)
                          d_big_k_mn(i,j) = this%f0(k)
                       else
                          d_big_k_mn(i,j) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 do j = 1, this%nxd
                    xj = this%xdf(j)
                    jd = j + this%nx
                    do i = 1, this%sr
                       d_big_k_mn(i,jd) = 0.0_qp
-                   enddo
-                enddo
+                   end do
+                end do
                 do j = 1, this%sr
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz_sparse(j) ) .and. (this%xz_sparse(j) == this%xz_sparse(i)) ) then
                          d_k_mm(i,j) = this%f0(k)
                       else
                          d_k_mm(i,j) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 call apply_l(d_big_k_mn,this%l,d_k_mn)
 
                 do i = 1, this%mf
@@ -1325,7 +1323,7 @@ deallocate(diff_xijt)
                       lj = 1
                    else
                       lj = this%lf(i-1)+1
-                   endif
+                   end if
                    uj = this%lf(i)
                    do j1 = lj, uj
                       xj1 = this%xf(j1)
@@ -1333,11 +1331,11 @@ deallocate(diff_xijt)
                          xj2 = this%xf(j2)
                          if( (this%sp(k) == this%xz(xj1)) .and. (this%xz(xj1) == this%xz(xj2)) ) &
                          & lknnl = lknnl + this%f0(k)
-                      enddo
-                   enddo
+                      end do
+                   end do
                    lambda_dtheta(i) = lknnl - 2.0_qp * dot_product( d_k_mn(:,i), this%inverse_k_mm_k_mn(:,i) ) + &
                    & dot_product( this%inverse_k_mm_k_mn(:,i), matmul(d_k_mm,this%inverse_k_mm_k_mn(:,i)) )
-                enddo
+                end do
 
                 do i = 1, this%mdf
                    id = i + this%mf
@@ -1346,7 +1344,7 @@ deallocate(diff_xijt)
                       lj = 1
                    else
                       lj = this%ldf(i-1)+1
-                   endif
+                   end if
                    uj = this%ldf(i)
                    do j1 = lj, uj
                       xj1 = this%xdf(j1)
@@ -1354,17 +1352,17 @@ deallocate(diff_xijt)
                          xj2 = this%xdf(j2)
                          if( (this%sp(k) == this%xz(xj1)) .and. (this%xz(xj1) == this%xz(xj2)) ) then
                             lknnl = 0.0_qp
-                         endif
-                      enddo
-                   enddo
+                         end if
+                      end do
+                   end do
                    lambda_dtheta(id) = lknnl - 2.0_qp * dot_product( d_k_mn(:,id), this%inverse_k_mm_k_mn(:,id) ) + &
                    & dot_product( this%inverse_k_mm_k_mn(:,id), matmul(d_k_mm,this%inverse_k_mm_k_mn(:,id)) )
-                enddo
+                end do
                 tr_dlambda_inverse_k = 0.0_qp
                 do i = 1, this%m
                    tr_dlambda_inverse_k = tr_dlambda_inverse_k + &
                    & lambda_dtheta(i) * dot_product( k_mn_inverse_lambda(:,i),inverse_mm_k_mn_inverse_lambda(:,i) )
-                enddo
+                end do
                 dl_df0(k) = 2.0_qp * dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(d_k_mn,y_inverse_c) ) - &
                 & dot_product(y_inverse_c_k_nm_inverse_k_mm, matmul(d_k_mm,y_inverse_c_k_nm_inverse_k_mm) ) + &
                 & dot_product( y_inverse_c*lambda_dtheta, y_inverse_c) - &
@@ -1373,11 +1371,11 @@ deallocate(diff_xijt)
                 & 2.0_qp * sum( d_k_mn * inverse_k_mm_k_mn_inverse_k ) - &
                 & sum( d_k_mm * inverse_k_mm_k_mn_inverse_k_k_nm_inverse_k_mm ) + tr_dlambda_inverse_k
 
-            enddo
+            end do
 !$omp end do
             deallocate( d_big_k_mn, d_k_mm, d_k_mn, lambda_dtheta, diff_xijt )
 !$omp end parallel            
-         endif
+         end if
          if( my_do_theta ) then
             num_threads = 1
 !$omp parallel
@@ -1400,9 +1398,9 @@ deallocate(diff_xijt)
                          d_big_k_mn(i,j) = this%big_raw_k_mn(i,j) * (this%x(d,xj) - this%x_sparse(d,i))**2
                       else
                          d_big_k_mn(i,j) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 do j = 1, this%nxd
                    xj = this%xdf(j)
                    jd = j + this%nx
@@ -1412,9 +1410,9 @@ deallocate(diff_xijt)
                          & 2.0_qp * this%big_raw_k_mn(i,jd) * ( this%x_sparse(d,i) - this%x(d,xj) ) * this%x_prime(d,j) 
                       else
                          d_big_k_mn(i,jd) = 0.0_qp
-                      endif
-                   enddo
-                enddo
+                      end if
+                   end do
+                end do
                 do j = 1, this%sr
                    do i = 1, this%sr
                       if( (this%sp(k) == this%xz_sparse(j) ) .and. (this%xz_sparse(j) == this%xz_sparse(i)) ) then
@@ -1630,7 +1628,7 @@ deallocate(diff_xijt)
          if(allocated(Q_q_mm_sq_inverse_lambda)) deallocate(Q_q_mm_sq_inverse_lambda)
          if(allocated(inverse_k_mm_k_mn_sq_inverse_lambda)) deallocate(inverse_k_mm_k_mn_sq_inverse_lambda)
 
-      endsubroutine likelihood
+      end subroutine likelihood
       
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -1685,9 +1683,9 @@ deallocate(diff_xijt)
                l = real(l_qp,kind=dp)
                deallocate(x)
 
-            endfunction l
+            end function l
 
-      endfunction minimise_gp_ns
+      end function minimise_gp_ns
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -1778,7 +1776,7 @@ deallocate(diff_xijt)
 
          deallocate(xx,xx_dp,am_data)
 
-      endfunction test_gp_gradient
+      end function test_gp_gradient
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -1878,7 +1876,7 @@ deallocate(diff_xijt)
          & hook = save_likelihood_parameters, hook_print_interval=1,data=am_data, always_do_test_gradient=always_do_test_gradient)
          deallocate(xx,xx_dp,am_data)
 
-      endfunction minimise_gp_gradient
+      end function minimise_gp_gradient
 
       subroutine minimise_gp_ns_new(this,N_live,max_steps)
          type(gp_sparse), intent(inout) :: this                       !% GP
@@ -1931,7 +1929,7 @@ deallocate(diff_xijt)
          stat = minimise_gp_gradient(this,max_steps=10,sigma=.true.,delta=.true.,theta=.false.,sparx=.false.)
 
          deallocate(r, lklhd)
-      endsubroutine minimise_gp_ns_new
+      end subroutine minimise_gp_ns_new
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -1954,8 +1952,8 @@ deallocate(diff_xijt)
              use system_module
              real(dp) :: func
              real(dp), dimension(:), intent(in) :: x
-           endfunction func
-        endinterface
+           end function func
+        end interface
 
         integer               :: iter, i, do_N_live, do_max_iter
         integer, dimension(1) :: ml
@@ -2027,9 +2025,9 @@ deallocate(diff_xijt)
 
              x = x * (x_max-x_min) + x_min
 
-          endsubroutine get_random_vector
+          end subroutine get_random_vector
 
-      endfunction ns
+      end function ns
 
       function likelihood_function(x_in, am_data) result(l)
 
@@ -2064,7 +2062,7 @@ deallocate(diff_xijt)
          l = -real(l_qp,kind=dp)
          deallocate(x)
 
-      endfunction likelihood_function
+      end function likelihood_function
 
       function likelihood_gradient(x_in,am_data) result(dl_out)
 
@@ -2104,7 +2102,7 @@ deallocate(diff_xijt)
          dl_out = -real(dl,kind=dp)
          deallocate(x,dl)
 
-      endfunction likelihood_gradient
+      end function likelihood_gradient
 
       subroutine save_likelihood_parameters(x,dx,e,done,do_print,data)
          real(dp), dimension(:) :: x
@@ -2119,7 +2117,7 @@ deallocate(diff_xijt)
          endif
          done = .false.
 
-      endsubroutine save_likelihood_parameters
+      end subroutine save_likelihood_parameters
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
@@ -2182,7 +2180,7 @@ deallocate(diff_xijt)
 
          close(unit=666)
          
-      endsubroutine gp_print_binary
+      end subroutine gp_print_binary
 
       subroutine gp_read_binary(this,filename)
 
@@ -2207,7 +2205,7 @@ deallocate(diff_xijt)
 
          do i = 1, this%nsp
             read(666) this%delta(i)
-         enddo
+         end do
 
          do j = 1, this%nsp
             do i = 1, this%d
@@ -2259,7 +2257,7 @@ deallocate(diff_xijt)
          close(unit=666)
          
          this%initialised = .true.
-      endsubroutine gp_read_binary
+      end subroutine gp_read_binary
 
       subroutine fill_random_integer(r,n,b)
          integer, dimension(:), intent(out) :: r
@@ -2288,6 +2286,6 @@ deallocate(diff_xijt)
             r(i) = irnd
          enddo
 
-      endsubroutine fill_random_integer
+      end subroutine fill_random_integer
 
-endmodule gp_sparse_module
+end module gp_sparse_module
