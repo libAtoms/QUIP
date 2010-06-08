@@ -159,7 +159,7 @@ implicit none
   call param_register(cli_params, 'minim_method', 'cg', minim_method)
 
   if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
-    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_parms.xml)",ERROR)
+    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",ERROR)
     call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", ERROR)
     call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", ERROR)
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", ERROR)
