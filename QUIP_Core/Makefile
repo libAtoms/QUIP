@@ -28,7 +28,9 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-all: libquip.a
+default: libquip.a 
+
+all: libquip.a cp2k_filepot
 
 include Makefile.inc
 include Makefile.rules
