@@ -34,20 +34,21 @@
 program mean_var_correl
 use libatoms_module
 implicit none
-  integer :: n_bins, n_data, i
+  integer :: n_bins, n_data, i, j, bin_i
   real(dp), allocatable :: data(:,:)
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
-  logical :: do_mean, do_var, do_correl, correlation_subtract_mean, do_effective_N
+  logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_effective_N
+  integer :: histogram_n_bins
+  real(dp) :: histogram_min_v, histogram_max_v, histogram_bin_width
   character(len=FIELD_LENGTH) :: infile_name, outfile_name
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
-  real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:)
+  real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:)
   integer :: reduction_index, other_index, sz, correlation_max_lag, i_lag, n_correl_print, correlation_effective_N_long_lag
   logical :: over_bins, over_time
   real(dp) :: correl_0, correl_mean, correl_std_dev
   real(dp), allocatable :: effective_N(:)
-  integer :: ios
 
   call system_initialise()
 
@@ -61,6 +62,8 @@ implicit none
   call param_register(cli_params, "correlation_subtract_mean", "T", correlation_subtract_mean)
   call param_register(cli_params, "correlation_max_lag", "1000", correlation_max_lag)
   call param_register(cli_params, "correlation_effective_N_long_lag", "1001", correlation_effective_N_long_lag)
+  call param_register(cli_params, "histogram", "F", do_histogram)
+  call param_register(cli_params, "histogram_n_bins", "10", histogram_n_bins)
   call param_register(cli_params, "over_bins", "F", over_bins)
   call param_register(cli_params, "over_time", "F", over_time)
   if (.not.param_read_args(cli_params, do_check=.true.)) then
@@ -244,6 +247,52 @@ implicit none
 	endif
       endif
       call print(trim(myline), file=outfile)
+    end do
+  end if
+
+  if (do_histogram) then
+    ! data(n_bins, n_data)
+    allocate(data_histogram(2, histogram_n_bins, sz))
+    data_histogram = 0.0_dp
+    do i=1, sz
+      if (over_bins) then
+	histogram_min_v = minval(data(:,i))
+	histogram_max_v = maxval(data(:,i))
+      else
+	histogram_min_v = minval(data(i,:))
+	histogram_max_v = maxval(data(i,:))
+      endif
+      histogram_bin_width = (histogram_max_v-histogram_min_v)/histogram_n_bins
+      if (histogram_bin_width == 0.0_dp) histogram_bin_width = 1.0e-8_dp
+      do bin_i=1, histogram_n_bins
+	data_histogram(1, bin_i, i) = histogram_min_v+(real(bin_i,dp)-0.5_dp)*histogram_bin_width
+      end do
+      do j=1, size(data, reduction_index)
+	if (over_bins) then
+	  bin_i = (data(j,i) - histogram_min_v)/histogram_bin_width
+	else
+	  bin_i = (data(i,j) - histogram_min_v)/histogram_bin_width
+	endif
+	bin_i = max(1, bin_i)
+	bin_i = min(histogram_n_bins, bin_i)
+	data_histogram(2,bin_i,i) = data_histogram(2,bin_i,i) + 1.0_dp/histogram_bin_width
+      end do
+    end do
+
+    call print("# v p(v)", file=outfile)
+
+    do i=1, sz
+      if (over_bins) then
+	myline = "#"
+      else
+	myline = "# "//trim(bin_labels(i))
+      endif
+      call print(trim(myline), file=outfile)
+      do bin_i=1, histogram_n_bins
+	call print(data_histogram(:,bin_i,i), file=outfile)
+      end do
+      call print("", file=outfile)
+      call print("", file=outfile)
     end do
   end if
 
