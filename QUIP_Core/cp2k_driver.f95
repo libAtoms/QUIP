@@ -869,6 +869,7 @@ contains
     integer :: i, j, comment_i
 
     section_str = ""
+    new_section_str = ""
     do i=1, size(l_a)
       comment_i = index(l_a(i), "#")
       if (comment_i /= 0) then
