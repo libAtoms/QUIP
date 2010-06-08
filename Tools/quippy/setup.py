@@ -328,6 +328,16 @@ def find_sources(makefile, quip_root):
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'dynamicalsystem', 'cinoutput']
     source_dirs.append(libatoms_dir)
 
+    if 'HAVE_GP' in makefile and int(makefile['HAVE_GP']) == 1:
+        gp_dir = os.path.join(quip_root, 'gp')
+        gp_makefile = parse_makefile(os.path.join(gp_dir, 'Makefile'))
+        gp_sources = [os.path.join(gp_dir, f) for f in expand_addsuffix(gp_makefile['GP_F95_SOURCES']).split()]        
+        all_sources += gp_sources
+        # wrap_sources += ... # list of Fortran files to wrap
+        # wrap_types += .... # list of types to wrap
+        source_dirs.append(gp_dir)
+
+
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     makefile_quip_core = parse_makefile(os.path.join(quip_core_dir, 'Makefile'))
     quip_core_sources = [os.path.join(quip_core_dir,f) for f in
