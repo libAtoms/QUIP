@@ -161,7 +161,9 @@ contains
     logical :: dummy, have_silica_potential
     type(Table) :: intrares_impropers
 
-    integer :: mol_id_lookup(3), atom_res_number_lookup(3)
+    integer :: mol_id_lookup(3), atom_res_number_lookup(3), sort_index_lookup(3)
+    integer, pointer :: sort_index_p(:)
+    integer :: at_i
 
     call system_timer('do_cp2k_calc')
 
@@ -274,12 +276,46 @@ contains
 
     endif
 
+    ! if writing PSF file, calculate residue labels, before sort
+    if (run_type /= "QS") then
+      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
+      end if
+    end if
+
+    ! sort by molecule, residue ID
+    nullify(sort_index_p)
+    if (.not. assign_pointer(at, 'sort_index', sort_index_p)) then
+      call add_property(at, 'sort_index', 0)
+      if (.not. assign_pointer(at, 'sort_index', sort_index_p)) &
+	call print("WARNING: do_cp2k_calc failed to assign pointer for sort_index, not sorting")
+    endif
+    if (associated(sort_index_p)) then
+      do at_i=1, at%N
+	sort_index_p(at_i) = at_i
+      end do
+    endif
     if (.not.(has_property(at,'mol_id',mol_id_lookup)) .or. .not. has_property(at,'atom_res_number',atom_res_number_lookup)) then
       call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain")
     else
       call sort(at%data, int_cols= (/ mol_id_lookup(2), atom_res_number_lookup(2) /) )
+      if (associated(sort_index_p)) then
+	do at_i=1, at%N
+	  if (sort_index_p(at_i) /= at_i) then
+	    call print("sort() of at%data by mol_id, atom_res_number reordered some atoms")
+	    exit
+	  endif
+	end do
+      endif
       call calc_connect(at)
     end if
+
+    ! write PSF file, if requested
+    if (run_type /= "QS") then
+      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
+	call write_psf_file_arb_pos(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+      endif
+    endif
 
     ! put in method
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
@@ -516,15 +552,6 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
-    ! write psf file if necessary
-
-    if (run_type /= "QS") then
-      if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
-	call write_psf_file_arb_pos(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
-      endif
-    endif
-
     run_dir = make_run_directory()
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
@@ -543,6 +570,13 @@ contains
       at%pos(2,:) = at%pos(2,:) + cp2k_centre_pos(2)
       at%pos(3,:) = at%pos(3,:) + cp2k_centre_pos(3)
       call map_into_cell(at)
+    endif
+
+    ! unsort
+    if (associated(sort_index_p)) then
+      if (.not.(has_property(at,'sort_index',sort_index_lookup))) &
+	call system_abort("do_cp2k_calc failed to get sort_index_loopup for undoing sorting by sort_index")
+      call sort(at%data, int_cols= (/ sort_index_lookup(2) /) )
     endif
 
     if (maxval(abs(f)) > max_force_warning) &
