@@ -313,7 +313,14 @@ contains
     ! write PSF file, if requested
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	call write_psf_file_arb_pos(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+	if (has_property(at, 'avgpos')) then
+	  call write_psf_file_arb_pos(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+	else if (has_property(at, 'pos')) then
+	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
+	  call write_psf_file_arb_pos(at, "quip_cp2k.psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos')
+	else
+	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
+	endif
       endif
     endif
 
