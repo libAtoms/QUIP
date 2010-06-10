@@ -103,7 +103,12 @@ import periodic;    from periodic import *
 import xyz_netcdf;  from xyz_netcdf import *
 import util;        from util import *
 
-import sio2, povray, aseinterface, cube
+import sio2, povray, cube
+
+try:
+   import aseinterface
+except ImportError:
+   pass
 
 try:
    import castep
