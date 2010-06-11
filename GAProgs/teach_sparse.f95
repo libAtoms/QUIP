@@ -568,7 +568,7 @@ program teach_sparse
   type(extendable_str)  :: quip_params_str
   type(ip_core) :: core
 
-  call system_initialise(verbosity=NORMAL, enable_timing=.true.)
+  call system_initialise(verbosity=NORMAL)
   call initialise(params)
   call initialise(params)
   call param_register(params, 'at_file', PARAM_MANDATORY, at_file)
@@ -719,7 +719,7 @@ program teach_sparse
      enddo
      deallocate(sparse_string_array)
      call finalise(sparse_inout)
-  elseif(do_cluster ) then
+  elseif(do_cluster) then
      allocate(r(m))
      call bisect_kmedoids(x,m,med=r,theta_fac=theta_fac)
   elseif(do_pivot) then
@@ -783,6 +783,9 @@ program teach_sparse
   enddo
   call print('')
 
+
+  call enable_timing()
+  
   if( do_test_gp_gradient ) then
      call verbosity_push(NERD)
      test_gp_gradient_result = test_gp_gradient(gp_sp,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
