@@ -678,6 +678,7 @@ contains
        !previous timestep.
 
        decay_matrix = -0.5_dp*dt*( this%gamma*matrix_one + this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       decay_matrix = ( decay_matrix + transpose(decay_matrix) ) / 2.0_dp ! Making sure the matrix is exactly symmetric
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
@@ -743,6 +744,7 @@ contains
        !Decay the velocity for dt/2. 
 
        decay_matrix = -0.5_dp*dt*( this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       decay_matrix = ( decay_matrix + transpose(decay_matrix) ) / 2.0_dp ! Making sure the matrix is exactly symmetric
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
@@ -1026,6 +1028,7 @@ contains
 
        !Decay the velocities for dt/2 again
        decay_matrix = -0.5_dp*dt*( this%gamma*matrix_one + this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       decay_matrix = ( decay_matrix + transpose(decay_matrix) ) / 2.0_dp ! Making sure the matrix is exactly symmetric
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
@@ -1072,6 +1075,7 @@ contains
 
        !Decay the velocities for dt/2 again
        decay_matrix = -0.5_dp*dt*( this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       decay_matrix = ( decay_matrix + transpose(decay_matrix) ) / 2.0_dp ! Making sure the matrix is exactly symmetric
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
