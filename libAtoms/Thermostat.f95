@@ -46,11 +46,20 @@ module thermostat_module
 
   implicit none
 
+  real(dp), dimension(3,3), parameter :: matrix_one = reshape( (/ 1.0_dp, 0.0_dp, 0.0_dp, &
+                                                                & 0.0_dp, 1.0_dp, 0.0_dp, &
+                                                                & 0.0_dp, 0.0_dp, 1.0_dp/), (/3,3/) )
+
+  real(dp), parameter :: MIN_TEMP = 1.0_dp ! K
+
   integer, parameter :: NONE                 = 0, &
                         LANGEVIN             = 1, &
                         NOSE_HOOVER          = 2, &
                         NOSE_HOOVER_LANGEVIN = 3, &
-                        LANGEVIN_NPT         = 4
+                        LANGEVIN_NPT         = 4, &
+                        LANGEVIN_PR          = 5, &
+                        NPH_ANDERSEN         = 6, &
+                        NPH_PR               = 7
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
@@ -75,10 +84,14 @@ module thermostat_module
      real(dp) :: p = 0.0_dp       !% External pressure
      real(dp) :: gamma_p = 0.0_dp !% Friction coefficient for cell in Langevin NPT
      real(dp) :: W_p = 0.0_dp     !% Fictious cell mass in Langevin NPT
+     real(dp) :: epsilon_r = 0.0_dp !% Position of barostat variable
      real(dp) :: epsilon_v = 0.0_dp !% Velocity of barostat variable
      real(dp) :: epsilon_f = 0.0_dp !% Force on barostat variable
      real(dp) :: epsilon_f1 = 0.0_dp !% Force on barostat variable
      real(dp) :: epsilon_f2 = 0.0_dp !% Force on barostat variable
+     real(dp) :: volume_0 = 0.0_dp !% Reference volume
+     real(dp), dimension(3,3) :: lattice_v = 0.0_dp
+     real(dp), dimension(3,3) :: lattice_f = 0.0_dp
 
   end type thermostat
 
@@ -126,7 +139,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine thermostat_initialise(this,type,T,gamma,Q,p,gamma_p,W_p)
+  subroutine thermostat_initialise(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0)
 
     type(thermostat),   intent(inout) :: this
     integer,            intent(in)    :: type
@@ -136,6 +149,7 @@ contains
     real(dp), optional, intent(in)    :: p
     real(dp), optional, intent(in)    :: gamma_p
     real(dp), optional, intent(in)    :: W_p
+    real(dp), optional, intent(in)    :: volume_0
 
     if (present(T)) then
        if (T < 0.0_dp) call system_abort('initialise: Temperature must be >= 0')
@@ -149,11 +163,15 @@ contains
     this%eta = 0.0_dp
     this%p_eta = 0.0_dp
     this%f_eta = 0.0_dp
+    this%epsilon_r = 0.0_dp
     this%epsilon_v = 0.0_dp
     this%epsilon_f = 0.0_dp
     this%epsilon_f1 = 0.0_dp
     this%epsilon_f2 = 0.0_dp
+    this%volume_0 = 0.0_dp
     this%p = 0.0_dp
+    this%lattice_v = 0.0_dp
+    this%lattice_f = 0.0_dp
 
     select case(this%type)
 
@@ -191,13 +209,48 @@ contains
        
     case(LANGEVIN_NPT)
        
-       if (.not.present(gamma) .or. .not.present(gamma_p) .or. .not.present(W_p) ) &
-       & call system_abort('thermostat initialise: gamma, gamma_p, W_p are required for Langevin NPT baro-thermostat')
+       if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not.present(W_p) .or. .not.present(volume_0) ) &
+       & call system_abort('thermostat initialise: p, gamma, gamma_p, W_p and volume_0 are required for Langevin NPT baro-thermostat')
        this%T = T
        this%gamma = gamma
        this%Q = 0.0_dp
        this%p = p
        this%gamma_p = gamma_p
+       this%W_p = W_p
+       this%volume_0 = volume_0
+       
+    case(LANGEVIN_PR)
+       
+       if (.not.present(gamma) .or. .not.present(p) .or. .not.present(W_p) ) &
+       & call system_abort('initialise: p, gamma, W_p are required for Langevin Parrinello-Rahman baro-thermostat')
+       this%T = T
+       this%gamma = gamma
+       this%Q = 0.0_dp
+       this%p = p
+       this%gamma_p = 0.0_dp
+       this%W_p = W_p
+       
+    case(NPH_ANDERSEN)
+       
+       if (.not.present(W_p) .or. .not.present(p) .or. .not.present(volume_0) ) &
+       & call system_abort('thermostat initialise: p, W_p and volume_0 are required for Andersen NPH barostat')
+       this%T = 0.0_dp
+       this%gamma = 0.0_dp
+       this%Q = 0.0_dp
+       this%p = p
+       this%gamma_p = 0.0_dp
+       this%W_p = W_p
+       this%volume_0 = volume_0
+       
+    case(NPH_PR)
+       
+       if (.not.present(p) .or. .not.present(W_p) ) &
+       & call system_abort('initialise: p and W_p are required for NPH Parrinello-Rahman barostat')
+       this%T = 0.0_dp
+       this%gamma = 0.0_dp
+       this%Q = 0.0_dp
+       this%p = p
+       this%gamma_p = 0.0_dp
        this%W_p = W_p
        
     end select
@@ -220,10 +273,13 @@ contains
     this%p     = 0.0_dp
     this%gamma_p = 0.0_dp
     this%W_p = 0.0_dp
+    this%epsilon_r = 0.0_dp
     this%epsilon_v = 0.0_dp
     this%epsilon_f = 0.0_dp
     this%epsilon_f1 = 0.0_dp
     this%epsilon_f2 = 0.0_dp
+    this%lattice_v = 0.0_dp
+    this%lattice_f = 0.0_dp
     
   end subroutine thermostat_finalise
 
@@ -243,10 +299,14 @@ contains
     to%p     = from%p
     to%gamma_p = from%gamma_p
     to%W_p = from%W_p
+    to%epsilon_r = from%epsilon_r
     to%epsilon_v = from%epsilon_v
     to%epsilon_f = from%epsilon_f
     to%epsilon_f1 = from%epsilon_f1
     to%epsilon_f2 = from%epsilon_f2
+    to%volume_0 = from%volume_0
+    to%lattice_v = from%lattice_v
+    to%lattice_f = from%lattice_f
 
   end subroutine thermostat_assignment
 
@@ -285,7 +345,7 @@ contains
 
   end subroutine thermostats_finalise
 
-  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p)
+  subroutine thermostats_add_thermostat(this,type,T,gamma,Q,p,gamma_p,W_p,volume_0)
 
     type(thermostat), allocatable, intent(inout) :: this(:)
     integer,                       intent(in)    :: type
@@ -295,6 +355,7 @@ contains
     real(dp), optional,            intent(in)    :: p
     real(dp), optional,            intent(in)    :: gamma_p
     real(dp), optional,            intent(in)    :: W_p
+    real(dp), optional,            intent(in)    :: volume_0
 
     type(thermostat), allocatable                :: temp(:)
     integer                                      :: i, l, u, la(1), ua(1)
@@ -321,7 +382,7 @@ contains
        call finalise(temp)
     end if
 
-    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p)
+    call initialise(this(u+1),type,T,gamma,Q,p,gamma_p,W_p,volume_0)
 
   end subroutine thermostats_add_thermostat
 
@@ -357,6 +418,17 @@ contains
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, work = '// &
             & round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             & round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+
+    case(LANGEVIN_PR)
+       call print('Langevin PR, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, work = '// &
+            & round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            & round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au',file=file)
+
+    case(NPH_ANDERSEN)
+       call print('Andersen NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
+
+    case(NPH_PR)
+       call print('Parrinello-Rahman NPH, work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
     end select
     
@@ -459,7 +531,8 @@ contains
     real(dp), dimension(3,3), intent(in), optional :: virial
 
     real(dp) :: decay, K, volume_p
-    real(dp), dimension(3,3) :: lattice_p
+    real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
+    real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i, prop_index, pos_indices(3)
 
     if (get_value(at%properties,property,pos_indices)) then
@@ -549,7 +622,7 @@ contains
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
-       !X LANGEVIN NPT
+       !X LANGEVIN NPT, Andersen barostat
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -558,7 +631,8 @@ contains
        if( .not. present(virial) ) call system_abort('thermostat1: NPT &
        & simulation, but virial has not been passed')
 
-       volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
+       this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
+       volume_p = exp(3.0_dp*this%epsilon_r)*this%volume_0
        lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
        call set_lattice(at,lattice_p, scale_positions=.false.)
 
@@ -575,9 +649,108 @@ contains
        do i = 1, at%N
           if (at%data%int(prop_index,i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
+          at%pos(:,i) = at%pos(:,i)*( 1.0_dp + this%epsilon_v * dt )
        end do
-       at%pos = at%pos*( 1.0_dp + this%epsilon_v * dt )
        !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
+
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X LANGEVIN NPT, Parrinello-Rahman barostat
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    case(LANGEVIN_PR)
+              
+       if( .not. present(virial) ) call system_abort('thermostat1: NPT &
+       & simulation, but virial has not been passed')
+
+       lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
+
+       call set_lattice(at,lattice_p, scale_positions=.false.)
+       volume_p = cell_volume(at)
+
+       ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
+
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+       this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
+       
+       !Decay the velocity for dt/2. The random force will have been added to acc during the
+       !previous timestep.
+
+       decay_matrix = -0.5_dp*dt*( this%gamma*matrix_one + this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
+       exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
+          !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
+          at%pos(:,i) = at%pos(:,i) + matmul(this%lattice_v,at%pos(:,i))*dt
+       end do
+       !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
+
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X NPH, Andersen barostat
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    case(NPH_ANDERSEN)
+              
+       if( .not. present(virial) ) call system_abort('thermostat1: NPH &
+       & simulation, but virial has not been passed')
+
+       this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
+       volume_p = exp(3.0_dp*this%epsilon_r)*this%volume_0
+       lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
+       call set_lattice(at,lattice_p, scale_positions=.false.)
+
+       this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
+       & - 3.0_dp * volume_p * this%p
+
+       this%epsilon_v = this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p
+
+       !Decay the velocity for dt/2. The random force will have been added to acc during the
+       !previous timestep.
+
+       decay = exp(-0.5_dp*dt*(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v)
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+          at%pos(:,i) = at%pos(:,i)*( 1.0_dp + this%epsilon_v * dt )
+       end do
+
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+       !X
+       !X NPH, Parrinello-Rahman barostat
+       !X
+       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    case(NPH_PR)
+              
+       if( .not. present(virial) ) call system_abort('thermostat1: NPH &
+       & simulation, but virial has not been passed')
+
+       lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
+
+       call set_lattice(at,lattice_p, scale_positions=.false.)
+       volume_p = cell_volume(at)
+
+       ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
+
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+       this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
+       
+       !Decay the velocity for dt/2. 
+
+       decay_matrix = -0.5_dp*dt*( this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
+       exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
+          !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
+          at%pos(:,i) = at%pos(:,i) + matmul(this%lattice_v,at%pos(:,i))*dt
+       end do
 
     end select
 
@@ -665,7 +838,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    case(LANGEVIN,LANGEVIN_NPT)
+    case(LANGEVIN,LANGEVIN_NPT,LANGEVIN_PR)
      
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
@@ -719,7 +892,8 @@ contains
     real(dp), dimension(3,3), intent(in), optional :: virial
 
     real(dp) :: decay, K, volume_p, f_cell
-    real(dp), dimension(3,3) :: lattice_p
+    real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
+    real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i, prop_index, pos_indices(3)
 
     if (get_value(at%properties,property,pos_indices)) then
@@ -831,17 +1005,88 @@ contains
           at%velo(:,i) = at%velo(:,i)*decay
        end do
        
+       volume_p = cell_volume(at)
        this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
        & - 3.0_dp * volume_p * this%p + f_cell
 
        this%epsilon_v = ( this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p ) / &
        & ( 1.0_dp + 0.5_dp * dt * this%gamma_p )
 
-       volume_p = cell_volume(at)*(1.0_dp + 1.5_dp*dt*this%epsilon_v)
+       this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
+       volume_p = exp(3.0_dp*this%epsilon_r)*this%volume_0
        lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
        call set_lattice(at,lattice_p, scale_positions=.false.)
 
        this%epsilon_f2 = f_cell - this%epsilon_v*this%W_p*this%gamma_p
+
+    case(LANGEVIN_PR)
+
+       if( .not. present(virial) ) call system_abort('thermostat4: NPT Parrinello-Rahman&
+       & simulation, but virial has not been passed')
+
+       !Decay the velocities for dt/2 again
+       decay_matrix = -0.5_dp*dt*( this%gamma*matrix_one + this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
+       exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
+          !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
+       end do
+       
+       volume_p = cell_volume(at)
+       ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+
+       this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
+       lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
+       call set_lattice(at,lattice_p, scale_positions=.false.)
+
+    case(NPH_ANDERSEN)
+
+       if( .not. present(virial) ) call system_abort('thermostat4: NPH &
+       & simulation, but virial has not been passed')
+
+       !Decay the velocities for dt/2 again
+       decay = exp(-0.5_dp*dt*(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v)
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = at%velo(:,i)*decay
+       end do
+       
+       volume_p = cell_volume(at)
+       this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
+       & - 3.0_dp * volume_p * this%p
+
+       this%epsilon_v = ( this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p ) 
+
+       this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
+       volume_p = exp(3.0_dp*this%epsilon_r)*this%volume_0
+       lattice_p = at%lattice * (volume_p/cell_volume(at))**(1.0_dp/3.0_dp)
+       call set_lattice(at,lattice_p, scale_positions=.false.)
+
+    case(NPH_PR)
+
+       if( .not. present(virial) ) call system_abort('thermostat4: NPH Parrinello-Rahman&
+       & simulation, but virial has not been passed')
+
+       !Decay the velocities for dt/2 again
+       decay_matrix = -0.5_dp*dt*( this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
+       call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
+       exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
+       do i = 1, at%N
+          if (at%data%int(prop_index,i) /= value) cycle
+          at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
+          !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
+       end do
+       
+       volume_p = cell_volume(at)
+       ke_virial = matmul(at%velo*spread(at%mass,dim=1,ncopies=3),transpose(at%velo))
+       this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
+
+       this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
+       lattice_p = at%lattice + 0.5_dp * dt * matmul(this%lattice_v,at%lattice)
+       call set_lattice(at,lattice_p, scale_positions=.false.)
 
     end select
 

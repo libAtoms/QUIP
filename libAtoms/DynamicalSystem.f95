@@ -722,7 +722,7 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,p)
+   subroutine ds_add_thermostat(this,type,T,gamma,Q,tau,tau_cell,p)
 
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
@@ -730,9 +730,10 @@ contains
      real(dp), optional,    intent(in)    :: gamma
      real(dp), optional,    intent(in)    :: Q
      real(dp), optional,    intent(in)    :: tau
+     real(dp), optional,    intent(in)    :: tau_cell
      real(dp), optional,    intent(in)    :: p
 
-     real(dp) :: w_p, cell_gamma, mass1,mass2
+     real(dp) :: w_p, gamma_cell, mass1, mass2, volume_0
      real(dp) :: gamma_eff
 
      if (count( (/present(gamma), present(tau) /) ) /= 1 ) call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present')
@@ -744,15 +745,23 @@ contains
      endif
 
      if(present(p)) then
-        cell_gamma = gamma_eff * 0.1_dp
-
-        mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((cell_gamma*2*PI)**2)
-        mass2 = (this%Ndof+3.0_dp)*T/((cell_gamma*2*PI)**2)
-
-        w_p = max(mass1,mass2)
+        if(present(tau_cell)) then
+           gamma_cell = 1.0_dp / tau_cell
+        else
+           gamma_cell = gamma_eff * 0.1_dp
+        endif
+        select case(type)
+        case(LANGEVIN_NPT,NPH_ANDERSEN)
+           mass1 = 9.0_dp*abs(p)*cell_volume(this%atoms)/((gamma_cell*2*PI)**2)
+           mass2 = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)
+           w_p = max(mass1,mass2)
+        case(LANGEVIN_PR,NPH_PR)
+           w_p = (this%Ndof+3.0_dp)*BOLTZMANN_K*max(T,MIN_TEMP)/((gamma_cell*2*PI)**2)/3.0_dp
+        endselect
+        volume_0 = cell_volume(this%atoms)
      endif
 
-     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,0.1_dp*gamma_eff,w_p)
+     call add_thermostat(this%thermostat,type,T,gamma_eff,Q,p,gamma_cell,w_p,volume_0)
      
    end subroutine ds_add_thermostat
 
