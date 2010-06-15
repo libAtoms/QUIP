@@ -534,8 +534,8 @@ program teach_sparse
 
   character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file, ip_args
   integer :: m, j_max, qw_l_max, min_steps, min_save
-  real(dp) :: r_cut, z0, e0, sgm(3), dlt, theta_fac
-  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_theta_file, has_sparse_file, &
+  real(dp) :: r_cut, z0, e0, f0, sgm(3), dlt, theta_fac
+  logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_f0, has_theta_file, has_sparse_file, &
   & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_test_gp_gradient, has_bispectrum_file, do_cluster, do_pivot, &
   & do_core, do_ewald, do_ewald_corr, test_gp_gradient_result
 
@@ -570,7 +570,6 @@ program teach_sparse
 
   call system_initialise(verbosity=NORMAL)
   call initialise(params)
-  call initialise(params)
   call param_register(params, 'at_file', PARAM_MANDATORY, at_file)
   call param_register(params, 'm', '50', m)
   call param_register(params, 'r_cut', '2.75', r_cut)
@@ -584,6 +583,7 @@ program teach_sparse
   call param_register(params, 'no_q', 'F', qw_no_q)
   call param_register(params, 'no_w', 'F', qw_no_w)
   call param_register(params, 'e0', '0.0', e0, has_e0)
+  call param_register(params, 'f0', '0.0', f0, has_f0)
   call param_register(params, 'sgm', '0.1 0.1 0.1', sgm)
   call param_register(params, 'dlt', '1.0', dlt)
   call param_register(params, 'theta_file', '', theta_file, has_theta_file)
@@ -610,14 +610,17 @@ program teach_sparse
   if (.not. param_read_args(params, do_check = .true.)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
-     & [e0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
+     & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
-     & [do_ewald_corr=F] [do_test_gp_gradient=F] [bispectrum_file=file] &
-     & [ip_args={}]")
+     & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [do_ewald_corr=F] &
+     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
+
+  if( count( (/has_e0,has_f0/) ) > 1 ) &
+  & call print('Warning - you have specified both e0 and f0 - careful!')
 
   if( count( (/has_sparse_file,do_cluster,do_pivot/) ) > 1 ) &
   & call system_abort('There has been more than one method specified for sparsification.')
@@ -675,8 +678,8 @@ program teach_sparse
   allocate(species_Z(n_species))
   species_Z = species_present(1:n_species)
 
-  if (.not. has_e0) then
-     call e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, e0)
+  if (.not. has_f0) then
+     call e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, f0)
   end if
 
   allocate(w_Z(maxval(species_Z)))
@@ -691,8 +694,7 @@ program teach_sparse
      call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   else
-     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, 0.0_dp, w_Z, &
+     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
   endif
 
@@ -769,8 +771,7 @@ program teach_sparse
      enddo
   endif
 
-  call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(e0,i=1,n_species)/))
-  !call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(0.0_dp,i=1,n_species)/))
+  call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(f0,i=1,n_species)/))
 
   deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
 
@@ -782,7 +783,6 @@ program teach_sparse
      enddo
   enddo
   call print('')
-
 
   call enable_timing()
   
