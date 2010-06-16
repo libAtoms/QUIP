@@ -60,7 +60,7 @@ module gp_sparse_module
       !% Therefore adding new data points is easy and fast.
       real(qp), dimension(:,:), allocatable :: x, x_prime, x_sparse, k_mn, big_raw_k_mn, big_k_mn, k_mm, inverse_k_mm_k_mn
       real(qp), dimension(:), allocatable   :: y, lambda
-      integer, dimension(:), allocatable    :: l, lf, ldf, xf, xdf, xz, xz_sparse, sp
+      integer, dimension(:), allocatable    :: l, lf, ldf, xf, xdf, xz, xz_sparse, sp, target_type
 
       !% Hyperparameters.
       !% Error parameter, range parameter, sensitivity parameters.
@@ -71,7 +71,7 @@ module gp_sparse_module
       !% n: number of teaching points
       !% m: number of teaching function values
       !% p: number of hyperparameters
-      integer :: d, n, m, sr, nx, nxx, nxd, mf, mdf, nsp
+      integer :: d, n, m, sr, nx, nxx, nxd, mf, mdf, nsp, n_target_type
 
       logical :: initialised = .false.
 
@@ -251,7 +251,7 @@ module gp_sparse_module
 
       end subroutine GP_initialise
 
-      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in)
+      subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in)
          type(gp_sparse), intent(inout)                 :: this        !% gp to initialise
          !integer, intent(in)                            :: sr
          integer, dimension(:), intent(in)              :: r
@@ -269,8 +269,10 @@ module gp_sparse_module
          integer, dimension(:), intent(in), optional    :: xz_in        !% how the sum is formed from teaching point(m)
          integer, dimension(:), intent(in), optional    :: sp_in        !% how the sum is formed from teaching point(m)
          real(dp), dimension(:), intent(in), optional   :: f0_in    !% hyperparameters, dimension(p)
+         integer, dimension(:), intent(in), optional    :: target_type_in        !% what type of target is the function value
 
          integer :: i, lmf, nsp
+         integer, dimension(:), allocatable :: my_target_type
          !integer, dimension(:), allocatable             :: r
          !integer, intent(in)                            :: sr
 
@@ -285,6 +287,7 @@ module gp_sparse_module
          this%mf  = size(lf_in)
          this%mdf = size(ldf_in)
          this%sr  = size(r)
+         this%n_target_type = size(sigma_in)
          
          if(present(sp_in)) then
             this%nsp = size(sp_in)
@@ -302,6 +305,20 @@ module gp_sparse_module
          call print('Dimensions: '//this%d)
 
          if( (size(lf_in,1) + size(ldf_in,1)) /= this%m ) call system_abort('GP_Initialise: y_in and l_in do not conform')
+
+         allocate(my_target_type(this%m))
+         if( present( target_type_in ) ) then
+            call check_size('target_type_in',target_type_in,(/this%m/),'GP_initialise')
+            if( maxval(target_type_in) > this%n_target_type ) &
+            & call system_abort('GP_initialise: target_type_in contains more types ('//maxval(target_type_in)//') than the dimensionality of sigma_in ('//this%n_target_type//')')
+            if( minval(target_type_in) < 1 ) call system_abort('GP_initialise: target_type_in contains zeros')
+            my_target_type = target_type_in
+         else
+            if( this%n_target_type < 2 ) &
+            & call system_abort('GP_initialise: the dimensionality of sigma_in is '//this%n_target_type//', less than 2, cannot associate sigmas to different target function values')
+            my_target_type(:this%mf) = 1
+            my_target_type(this%mf+1:) = 2
+         endif
 
          call gp_allocate(this)
 
@@ -345,11 +362,12 @@ module gp_sparse_module
          else
             this%f0 = 0.0_qp
          end if
+         this%target_type = my_target_type
          
          call covariance_matrix_sparse(this)
 
          this%initialised = .true.
-         !deallocate(r)
+         deallocate(my_target_type)
 
       end subroutine GP_sparsify
 
@@ -366,7 +384,7 @@ module gp_sparse_module
          call gp_deallocate(this)
 
 
-         allocate( this%sigma(this%m), this%theta(this%d,this%nsp), this%delta(this%nsp), this%f0(this%nsp), this%sp(this%nsp) )
+         allocate( this%sigma(this%n_target_type), this%theta(this%d,this%nsp), this%delta(this%nsp), this%f0(this%nsp), this%sp(this%nsp), this%target_type(this%m) )
 
          allocate( this%x(this%d,this%nxx), this%x_prime(this%d,this%nxd), this%xf(this%nx), this%xdf(this%nxd) )
 
@@ -391,6 +409,7 @@ module gp_sparse_module
 
          this%xz = 0
          this%xz_sparse = 0
+         this%target_type = 0
 
       end subroutine gp_allocate
 
@@ -428,6 +447,7 @@ module gp_sparse_module
          if(allocated(this%theta)) deallocate( this%theta )
          if(allocated(this%delta)) deallocate( this%delta )
          if(allocated(this%f0)) deallocate( this%f0 )
+         if(allocated(this%target_type)) deallocate( this%target_type )
 
       end subroutine gp_deallocate
 
@@ -470,11 +490,20 @@ module gp_sparse_module
              this%y = y_in
          end if
 
-         if( present(sigma_in) ) this%sigma = sigma_in
+         if( present(sigma_in) ) then
+            call check_size('sigma_in',sigma_in,shape(this%sigma),'gp_update')
+            this%sigma = sigma_in
+         endif
 
-         if( present(delta_in) ) this%delta = delta_in
+         if( present(delta_in) ) then
+            call check_size('delta_in',delta_in,shape(this%delta),'gp_update')
+            this%delta = delta_in
+         endif
 
-         if( present(f0_in) ) this%f0 = f0_in
+         if( present(f0_in) ) then
+            call check_size('f0_in',f0_in,shape(this%f0),'gp_update')
+            this%f0 = f0_in
+         endif
 
          if( present(theta_in) ) then
              if( all( shape(this%theta) /= shape(theta_in) ) ) call system_abort('gp_update: array sizes do not conform')
@@ -511,6 +540,7 @@ module gp_sparse_module
          this%m = 0
          this%mf  = 0
          this%mdf = 0
+         this%n_target_type = 0
          this%initialised = .false.
 
       end subroutine GP_finalise_sparse
@@ -882,7 +912,7 @@ deallocate(diff_xijt)
 !         call factorise_inverse_symmetric_matrix(this%k_mm,A_inverse=inverse_k_mm)            ! O(M^3)
 !         call matrix_product_sub(this%inverse_k_mm_k_mn, inverse_k_mm, this%k_mn)
          do i = 1, this%m
-            this%lambda(i) = lknnl(i) - dot_product( this%inverse_k_mm_k_mn(:,i), this%k_mn(:,i) ) + this%sigma(i)**2
+            this%lambda(i) = lknnl(i) - dot_product( this%inverse_k_mm_k_mn(:,i), this%k_mn(:,i) ) + this%sigma(this%target_type(i))**2
          end do
 
          deallocate( inverse_k_mm, lknnl, theta2) !, diff_xijt )
@@ -960,15 +990,14 @@ deallocate(diff_xijt)
 
          type(gp_sparse), intent(inout)                :: this
          real(qp), intent(out), optional               :: l
-         real(qp), dimension(2), intent(out), optional :: dl_dsigma
+         real(qp), dimension(:), intent(out), optional :: dl_dsigma
          real(qp), dimension(:), intent(out), optional :: dl_ddelta, dl_df0
          real(qp), dimension(:), intent(out), optional :: dl_dtheta, dl_dx
          logical, intent(in), optional :: do_l, do_sigma, do_delta, do_theta, do_x, do_f0
 
          type(LA_Matrix) :: LA_q_mm, LA_k_mm
 
-         real(qp) :: det1, det2, det3, tr_dlambda_inverse_k, lknnl, norm2_y_inverse_c1, norm2_y_inverse_c2, &
-         & trace_inverse_c1, trace_inverse_c2, &
+         real(qp) :: det1, det2, det3, tr_dlambda_inverse_k, lknnl, &
          & diff_xijt_dot_x_prime_j1, diff_xijt_dot_x_prime_j2
 
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_sq_inverse_lambda, k_mn_l_k_nm, inverse_mm, &
@@ -980,7 +1009,8 @@ deallocate(diff_xijt)
          real(qp), dimension(:), allocatable   :: inverse_lambda, y_inverse_lambda, y_l_k_nm, &
          & y_l_k_nm_inverse_mm, y_inverse_k, lambda_dtheta, &
          & d_big_k_mn_dx, dk_mn_dx, y_inverse_c, y_inverse_c_k_nm_inverse_k_mm, y_l_k_nm_inverse_k_mm, &
-         & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n, y
+         & dk_mm_inverse_k_mm_k_j, diff_xijt, diag_il_k_nm_inverse_mm_k_mn_il, diag_k_n_inverse_k_mm_inverse_k_mm_k_n, y, &
+         & norm2_y_inverse_c, trace_inverse_c
          integer :: i, j, d, j1, j2, lj, uj, info, xj, xj1, xj2, jd, id, num_threads, k, Z_type
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_x, my_do_f0
@@ -995,7 +1025,10 @@ deallocate(diff_xijt)
          my_do_f0 = present(dl_df0) .and. optional_default(present(dl_df0), do_f0)
 
          if(my_do_l) l = 0.0_qp
-         if(my_do_sigma) dl_dsigma = 0.0_qp
+         if(my_do_sigma) then
+            call check_size('dl_dsigma',dl_dsigma,shape(this%sigma),'likelihood')
+            dl_dsigma = 0.0_qp
+         endif
          if(my_do_delta) dl_ddelta = 0.0_qp
          if(my_do_theta) dl_dtheta = 0.0_qp
          if(my_do_x) dl_dx = 0.0_qp
@@ -1054,8 +1087,7 @@ deallocate(diff_xijt)
            & + 0.5_qp*dot_product(y_l_k_nm,y_l_k_nm_inverse_mm) & ! O(M)
            & - 0.5_qp * this%m * log(2.0_qp * PI)
 
-         if( my_do_sigma .or. my_do_delta &
-             & .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
+         if( my_do_sigma .or. my_do_delta .or. my_do_theta .or. my_do_x .or. my_do_f0 ) then
             allocate( y_inverse_k(this%m),y_inverse_c(this%m), inverse_mm_k_mn_inverse_lambda(this%sr,this%m) )
             allocate( Q_q_mm(this%m+this%sr,this%sr), R_q_mm(this%sr,this%sr), Q_q_mm_sq_inverse_lambda(this%sr,this%m) )
             y_inverse_k = matmul(y_l_k_nm_inverse_mm,k_mn_inverse_lambda) ! O(NM)
@@ -1082,18 +1114,24 @@ deallocate(diff_xijt)
              !lambda_dtheta = (this%lambda - this%theta(1)**2) / this%theta(2) ! O(N)
          if( my_do_sigma .or. my_do_delta ) then
             allocate(diag_il_k_nm_inverse_mm_k_mn_il(this%m))
+            allocate(norm2_y_inverse_c(this%n_target_type),trace_inverse_c(this%n_target_type))
             !allocate(k_mn_ll_k_nm(this%sr,this%sr),k_mn_ll_k_nm_inverse_mm(this%sr,this%sr))
             !call matrix_product_sub(k_mn_ll_k_nm, k_mn_inverse_lambda, k_mn_inverse_lambda, m2_transpose = .true. ) ! O(NM^2)
             !call Matrix_Solve(LA_mm,k_mn_ll_k_nm,k_mn_ll_k_nm_inverse_mm)
             !trace_inverse_c = sum(inverse_lambda) - trace( k_mn_ll_k_nm_inverse_mm ) ! O(N) + O(M^2)
-            norm2_y_inverse_c1 = norm2(y_inverse_c(:this%mf))      ! O(N)
-            norm2_y_inverse_c2 = norm2(y_inverse_c(this%mf+1:))      ! O(N)
             diag_il_k_nm_inverse_mm_k_mn_il = sum( inverse_mm_k_mn_inverse_lambda*k_mn_inverse_lambda, dim = 1 )
+            do i = 1, this%n_target_type
+               norm2_y_inverse_c(i) = sum( y_inverse_c**2, mask = (this%target_type==i) )
+               trace_inverse_c(i) = sum(inverse_lambda, mask = (this%target_type==i) ) - sum(diag_il_k_nm_inverse_mm_k_mn_il, mask = (this%target_type==i) )
+            enddo
+               
+            !norm2_y_inverse_c1 = norm2(y_inverse_c(:this%mf))      ! O(N)
+            !norm2_y_inverse_c2 = norm2(y_inverse_c(this%mf+1:))      ! O(N)
 
-            trace_inverse_c1 = sum(inverse_lambda(:this%mf)) &
-            & - sum(diag_il_k_nm_inverse_mm_k_mn_il(:this%mf))
-            trace_inverse_c2 = sum(inverse_lambda(this%mf+1:)) &
-            & - sum(diag_il_k_nm_inverse_mm_k_mn_il(this%mf+1:))
+            !trace_inverse_c1 = sum(inverse_lambda(:this%mf)) &
+            !& - sum(diag_il_k_nm_inverse_mm_k_mn_il(:this%mf))
+            !trace_inverse_c2 = sum(inverse_lambda(this%mf+1:)) &
+            !& - sum(diag_il_k_nm_inverse_mm_k_mn_il(this%mf+1:))
 
             !trace_inverse_c1 = sum(inverse_lambda(:this%mf)) &
             !& - sum(inverse_mm_k_mn_inverse_lambda(:,:this%mf)*k_mn_inverse_lambda(:,:this%mf)) ! O(N) + O(NM)
@@ -1131,8 +1169,9 @@ deallocate(diff_xijt)
          end if
 
          if( my_do_sigma ) then
-            dl_dsigma(1) = this%sigma(1) * ( norm2_y_inverse_c1 - trace_inverse_c1 )
-            dl_dsigma(2) = this%sigma(2) * ( norm2_y_inverse_c2 - trace_inverse_c2 )
+            !dl_dsigma(1) = this%sigma(1) * ( norm2_y_inverse_c1 - trace_inverse_c1 )
+            !dl_dsigma(2) = this%sigma(2) * ( norm2_y_inverse_c2 - trace_inverse_c2 )
+            dl_dsigma = this%sigma * ( norm2_y_inverse_c - trace_inverse_c )
          end if
 
 !         if( present(dl_ddelta) ) then           
@@ -1627,6 +1666,8 @@ deallocate(diff_xijt)
          if(allocated(R_q_mm)) deallocate(R_q_mm)
          if(allocated(Q_q_mm_sq_inverse_lambda)) deallocate(Q_q_mm_sq_inverse_lambda)
          if(allocated(inverse_k_mm_k_mn_sq_inverse_lambda)) deallocate(inverse_k_mm_k_mn_sq_inverse_lambda)
+         if(allocated(norm2_y_inverse_c)) deallocate(norm2_y_inverse_c)
+         if(allocated(trace_inverse_c)) deallocate(trace_inverse_c)
 
       end subroutine likelihood
       
@@ -1724,7 +1765,7 @@ deallocate(diff_xijt)
          n = 0
          li = 0
          ui = 0
-         if( am%do_sigma ) n = n + 2
+         if( am%do_sigma ) n = n + this%n_target_type
          if( am%do_delta ) n = n + this%nsp
          if( am%do_theta ) n = n + this%d*this%nsp
          if( am%do_sparx ) n = n + this%sr*this%d
@@ -1734,7 +1775,7 @@ deallocate(diff_xijt)
 
          if(am%do_sigma) then
             li = li + 1
-            ui = li + 1
+            ui = li + this%n_target_type - 1
             am%li_sigma = li
             am%ui_sigma = ui
             xx(li:ui) = this%sigma
@@ -1824,7 +1865,7 @@ deallocate(diff_xijt)
          n = 0
          li = 0
          ui = 0
-         if( am%do_sigma ) n = n + 2
+         if( am%do_sigma ) n = n + this%n_target_type
          if( am%do_delta ) n = n + this%nsp
          if( am%do_theta ) n = n + this%d*this%nsp
          if( am%do_sparx ) n = n + this%sr*this%d
@@ -1834,7 +1875,7 @@ deallocate(diff_xijt)
 
          if(am%do_sigma) then
             li = li + 1
-            ui = li + 1
+            ui = li + this%n_target_type - 1
             am%li_sigma = li
             am%ui_sigma = ui
             xx(li:ui) = this%sigma
