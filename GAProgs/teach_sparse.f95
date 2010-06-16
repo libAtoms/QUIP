@@ -132,54 +132,54 @@ contains
 
   end subroutine teach_n_from_xyz
 
-  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
+  subroutine xyzfile_teach_data_from_xyz_so4(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type )
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     type(fourier_so4), intent(inout) :: f_hat
     type(grad_fourier_so4), intent(inout) :: df_hat
-    real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
+    real(dp), intent(in) :: r_cut, z_eff(116), e0, w_Z(:)
     logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
-    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
-    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
+    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:)
+    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:), target_type(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type, &
                                      f_hat = f_hat, df_hat = df_hat)
 
   end subroutine xyzfile_teach_data_from_xyz_so4
 
-  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                                                x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
+  subroutine xyzfile_teach_data_from_xyz_qw_so3(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                                                x, xd, yf, ydf, lf, ldf, xf, xdf, xz , target_type)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     type(fourier_so3), intent(inout) :: f3_hat
     type(grad_fourier_so3), intent(inout) :: df3_hat
     type(qw_so3), intent(inout) :: qw
     type(grad_qw_so3), intent(inout) :: dqw
-    real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
+    real(dp), intent(in) :: r_cut, z_eff(116), e0, w_Z(:)
     logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
-    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
-    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
+    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:)
+    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:), target_type(:)
 
-    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
+    call xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                                     x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type, &
                                      f3_hat = f3_hat, df3_hat = df3_hat, qw = qw, dqw = dqw)
 
   end subroutine xyzfile_teach_data_from_xyz_qw_so3
 
-  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                                           x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma, &
+  subroutine xyzfile_teach_data_from_xyz(at_file, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                                           x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type, &
                                            f_hat, df_hat, f3_hat, df3_hat, qw, dqw)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
-    real(dp), intent(in) :: r_cut, z_eff(116), sgm(3), e0, w_Z(:)
+    real(dp), intent(in) :: r_cut, z_eff(116), e0, w_Z(:)
     logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
-    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:), sigma(:)
-    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:)
+    real(dp), intent(out) :: x(:,:), xd(:,:), yf(:), ydf(:)
+    integer, intent(out) :: lf(:), ldf(:), xf(:), xdf(:), xz(:), target_type(:)
     type(fourier_so4), intent(inout), optional :: f_hat
     type(grad_fourier_so4), intent(inout), optional :: df_hat
     type(fourier_so3), intent(inout), optional :: f3_hat
@@ -358,7 +358,8 @@ contains
 
                    ydf(nn) = -f(k,i)
                    ldf(nn) = ui
-                   sigma(nn+n_ener) = sgm(2)
+                   !sigma(nn+n_ener) = sgm(2)
+                   target_type(nn+n_ener) = 2
                 enddo
              endif
           enddo
@@ -386,7 +387,8 @@ contains
 
                    ydf(nn) = -virial(l,k) 
                    ldf(nn) = ui
-                   sigma(nn+n_ener) = sgm(3)
+                   !sigma(nn+n_ener) = sgm(3)
+                   target_type(nn+n_ener) = 3
                 enddo
              enddo
           endif
@@ -397,7 +399,8 @@ contains
              i_ener = i_ener + 1
              yf(i_ener) = ener
              lf(i_ener) = ie
-             sigma(i_ener) = sgm(1)
+             !sigma(i_ener) = sgm(1)
+             target_type(i_ener) = 1
           endif
        endif
 
@@ -554,8 +557,8 @@ program teach_sparse
   real(dp), dimension(:), allocatable :: w_Z
   real(dp), dimension(:,:), allocatable :: x, xd
   real(dp), dimension(:), allocatable :: yf, ydf
-  integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz 
-  real(dp), dimension(:), allocatable :: sigma, dlta
+  integer, dimension(:), allocatable :: lf, ldf, xf, xdf, xz, target_type 
+  real(dp), dimension(:), allocatable :: dlta
   real(dp), dimension(:,:), allocatable :: theta
   integer, dimension(:), allocatable :: r
   character(len=SPARSE_LENGTH) :: sparse_string
@@ -688,14 +691,15 @@ program teach_sparse
 
   allocate(x(d,nn),xd(d,n),yf(n_ener),ydf(n_force+n_virial),lf(n_ener),ldf(n_force+n_virial),xf(ne),xdf(n))
   allocate(xz(nn))
-  allocate(sigma(n_ener+n_force+n_virial))
+  allocate(target_type(n_ener+n_force+n_virial))
 
   if (do_qw_so3) then
-     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                              x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
+     call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+                              x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type)
   else
-     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, sgm, e0, w_Z, &
-                              x, xd, yf, ydf, lf, ldf, xf, xdf, xz, sigma)
+     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
+     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, 0.0_dp, w_Z, &
+                              x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type)
   endif
 
   if( has_bispectrum_file ) then
@@ -770,8 +774,8 @@ program teach_sparse
         enddo
      enddo
   endif
-
-  call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(f0,i=1,n_species)/))
+  call gp_sparsify(gp_sp,r,sgm,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(e0,i=1,n_species)/),target_type)
+  !call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(0.0_dp,i=1,n_species)/))
 
   deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
 
