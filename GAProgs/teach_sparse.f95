@@ -853,6 +853,7 @@ program teach_sparse
         my_gp%comment = trim(my_gp%comment)//" do_core=T ip_args={"//trim(core%ip_args)//"} quip_string={"//trim(core%quip_string)//"}"
      endif
      my_gp%comment = trim(my_gp%comment)//" sgm={"//sgm//"}"
+     my_gp%comment = trim(my_gp%comment)//" e0="//e0//" f0="//f0
 
      gp_file = 'gp_'//m//'_'//k//'.dat'
 
@@ -881,6 +882,7 @@ program teach_sparse
   call print("z_eff     = "//z_eff(species_Z))
   call print("do_ewald  = "//do_ewald)
   call print("do_ewald_corr  = "//do_ewald_corr)
+  call print("e0        = "//e0)
 
   call finalise(gp_sp)
 

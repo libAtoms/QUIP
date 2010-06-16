@@ -76,6 +76,8 @@ type IPModel_GAP
   logical :: do_core = .false.
   real(dp), dimension(116) :: z_eff = 0.0_dp
   real(dp), dimension(116) :: w_Z = 1.0_dp
+  real(dp) :: e0 = 0.0_dp
+  real(dp) :: f0 = 0.0_dp
 
   ! qw parameters
   integer :: qw_l_max = 0
@@ -206,7 +208,9 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   if( .not. get_value(my_dictionary,'do_ewald_corr',this%do_ewald_corr) ) this%do_ewald_corr = .false.
   if( .not. get_value(my_dictionary,'do_core',this%do_core) ) this%do_core = .false.
   if( .not. get_value(my_dictionary,'ip_args',this%ip_args) ) this%ip_args = ''
-     
+  if( .not. get_value(my_dictionary,'e0',this%e0) ) this%e0 = 0.0_dp
+  if( .not. get_value(my_dictionary,'f0',this%f0) ) this%f0 = 0.0_dp
+
   call finalise(my_dictionary)
 
   if( this%do_core ) then
@@ -420,6 +424,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 #ifdef HAVE_GP
         call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i))
 #endif
+        local_e_in(i) = local_e_in(i) + this%e0
      endif
 
      if(present(f).or.present(virial)) then
