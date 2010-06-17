@@ -697,8 +697,7 @@ program teach_sparse
      call teach_data_from_xyz(at_file, f3_hat, df3_hat, qw, dqw, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type)
   else
-     !call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
-     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, 0.0_dp, w_Z, &
+     call teach_data_from_xyz(at_file, f_hat, df_hat, r_cut, do_ewald, do_ewald_corr, z_eff, core, e0, w_Z, &
                               x, xd, yf, ydf, lf, ldf, xf, xdf, xz, target_type)
   endif
 
@@ -774,8 +773,8 @@ program teach_sparse
         enddo
      enddo
   endif
-  call gp_sparsify(gp_sp,r,sgm,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(e0,i=1,n_species)/),target_type)
-  !call gp_sparsify(gp_sp,r,sigma,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(0.0_dp,i=1,n_species)/))
+
+  call gp_sparsify(gp_sp,r,sgm,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(f0,i=1,n_species)/),target_type)
 
   deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
 
