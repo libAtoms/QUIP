@@ -974,7 +974,6 @@ contains
     if (.not. assign_pointer(at, "Z", Z_p)) &
 	call system_abort("calc_charge_lsd could not find Z property")
 
-
     if (size(qm_list_a) > 0) then
       if (.not. assign_pointer(at, "atom_charge", atom_charge)) &
 	call system_abort("calc_charge_lsd could not find atom_charge")
@@ -985,6 +984,7 @@ contains
     else
       sum_Z = sum(Z_p)
       do_lsd = .false.
+      charge = 0 
       dummy = (get_value(at%params, 'LSD', do_lsd))
       !if charge is saved, also check if we have an odd number of electrons
       if (get_value(at%params, 'Charge', charge)) then
