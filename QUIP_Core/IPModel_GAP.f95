@@ -345,7 +345,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      d = j_max2d(this%j_max)
      call cg_initialise(this%j_max,2)
   elseif (trim(this%datafile_coordinates) == 'qw') then
-     d = ((this%qw_l_max / 2) + 1) * this%qw_f_n
+     d = (this%qw_l_max / 2) * this%qw_f_n
      if (this%qw_do_q .and. this%qw_do_w) d = d * 2
   endif
 #endif
