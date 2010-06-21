@@ -146,9 +146,11 @@ contains
       if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
 	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
       if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
-    else
-      if (.not. assign_pointer(at, 'avgpos', use_pos)) &
-	call system_abort("calc_topology can't find default pos field avgpos")
+    else if (.not. assign_pointer(at, 'avgpos', use_pos)) then
+      call print("WARNING: calc_topology can't find default pos field 'avgpos', trying to use pos instead")
+      if (.not. assign_pointer(at, 'pos', use_pos)) &
+	call system_abort("calc_topology can't find avgpos or pos fields")
+      use_pos_is_pos = .true.
     endif
 
     do_have_silica_potential = optional_default(.false.,have_silica_potential)
