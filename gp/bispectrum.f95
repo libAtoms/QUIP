@@ -29,6 +29,8 @@ module bispectrum_module
 
    implicit none
 
+   real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
+
    type real_3
         real(dp), dimension(3) :: x
    endtype real_3
@@ -292,6 +294,8 @@ module bispectrum_module
    public :: fourier_coefficient_atom, fourier_coefficient_pair, &
    & bispectrum_coefficient_atom, bispectrum_coefficient_pair
 
+   public :: test_qw_gradient
+
    public :: order_lattice_vectors
    public :: transpose_bispectrum_pair, conjugate_bispectrum_pair
    public :: cg, cg_initialise, cg_finalise, wigner3j
@@ -378,8 +382,8 @@ module bispectrum_module
        this%cutoff_f = cutoff_f
        this%cutoff_r1 = cutoff_r1
 
-       allocate(this%Y_times_R(0:l_max / 2,1:size(cutoff)))
-       do l = 0, l_max, 2
+       allocate(this%Y_times_R(1:l_max / 2,1:size(cutoff)))
+       do l = 2, l_max, 2
           do f = 1, size(cutoff)
              allocate(this%Y_times_R(l / 2,f)%m(-l:l))
              this%Y_times_R(l / 2,f)%m = CPLX_ZERO
@@ -408,8 +412,8 @@ module bispectrum_module
        this%cutoff_f = cutoff_f
        this%cutoff_r1 = cutoff_r1
 
-       allocate(this%Y_times_R(0:l_max / 2,1:size(cutoff)))
-       do l = 0, l_max, 2
+       allocate(this%Y_times_R(1:l_max / 2,1:size(cutoff)))
+       do l = 2, l_max, 2
           do f = 1, size(cutoff)
              allocate(this%Y_times_R(l / 2,f)%m(3,-l:l))
              this%Y_times_R(l / 2,f)%m = CPLX_ZERO
@@ -490,8 +494,8 @@ module bispectrum_module
 
        if ((.not. my_do_q) .and. (.not. my_do_w)) call system_abort('initialise_qw_so3: nothing to initialise')
 
-       if (my_do_q) allocate(this%q(0:l_max / 2,1:f_n))
-       if (my_do_w) allocate(this%w(0:l_max / 2,1:f_n))
+       if (my_do_q) allocate(this%q(1:l_max / 2,1:f_n))
+       if (my_do_w) allocate(this%w(1:l_max / 2,1:f_n))
 
        if (my_do_q) this%q(:,:) = CPLX_ZERO
        if (my_do_w) this%w(:,:) = CPLX_ZERO
@@ -524,10 +528,10 @@ module bispectrum_module
 
        if ((.not. my_do_q) .and. (.not. my_do_w)) call system_abort('initialise_grad_qw_so3: nothing to initialise')
 
-       if (my_do_q) allocate(this%q(0:l_max / 2,1:f_n))
-       if (my_do_w) allocate(this%w(0:l_max / 2,1:f_n))
+       if (my_do_q) allocate(this%q(1:l_max / 2,1:f_n))
+       if (my_do_w) allocate(this%w(1:l_max / 2,1:f_n))
 
-       do l = 0, (l_max / 2)
+       do l = 2, (l_max / 2)
           do f = 1, f_n
              if (my_do_q) this%q(l,f)%x(:) = CPLX_ZERO
              if (my_do_w) this%w(l,f)%x(:) = CPLX_ZERO
@@ -580,7 +584,7 @@ module bispectrum_module
         integer :: l, f
 
         if (.not. this%initialised) return
-        do l = 0, (this%l_max / 2)
+        do l = 1, (this%l_max / 2)
            do f = 1, size(this%cutoff)
               deallocate(this%Y_times_R(l,f)%m)
            enddo
@@ -599,7 +603,7 @@ module bispectrum_module
         integer :: l, f
 
         if (.not. this%initialised) return
-        do l = 0, (this%l_max / 2)
+        do l = 1, (this%l_max / 2)
            do f = 1, size(this%cutoff)
               deallocate(this%Y_times_R(l,f)%m)
            enddo
@@ -1196,7 +1200,7 @@ module bispectrum_module
        if (.not. this%initialised) call system_abort('fourier_transform_so3: fourier_so3 not initialised')
        if (at%cutoff < maxval(this%cutoff)) call system_abort('fourier_transform_so3: radial function cutoff greater than atoms connectivity cutoff')
 
-       do l = 0, this%l_max, 2
+       do l = 2, this%l_max, 2
           do f = 1, size(this%cutoff)
              this%Y_times_R(l / 2,f)%m(:) = CPLX_ZERO
           enddo
@@ -1209,7 +1213,7 @@ module bispectrum_module
              if (jn /= 0) then
                 R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
 
-                do l = 0, this%l_max, 2
+                do l = 2, this%l_max, 2
                    do m = -l, l
                       this%Y_times_R(l / 2,f)%m(m) = this%Y_times_R(l / 2,f)%m(m) &
                                                    + (SphericalYCartesian(l, m, x_ij) * R)
@@ -1232,7 +1236,7 @@ module bispectrum_module
        if (.not. this%initialised) call system_abort('grad_fourier_transform_so3: grad_fourier_so3 not initialised')
        if (at%cutoff < maxval(this%cutoff)) call system_abort('grad_fourier_transform_so3: radial function cutoff greater than atoms connectivity cutoff')
 
-       do l = 0, this%l_max, 2
+       do l = 2, this%l_max, 2
           do f = 1, size(this%cutoff)
              this%Y_times_R(l / 2,f)%m(:,:) = CPLX_ZERO
           enddo
@@ -1247,7 +1251,7 @@ module bispectrum_module
                    R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
                    dR = GradRadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
 
-                   do l = 0, this%l_max, 2
+                   do l = 2, this%l_max, 2
                       do m = -l, l
                          this%Y_times_R(l / 2,f)%m(:,m) = this%Y_times_R(l / 2,f)%m(:,m) &
                                                         - (GradSphericalYCartesian(l, m, x_ij) * R) &
@@ -1265,7 +1269,7 @@ module bispectrum_module
                 R = RadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
                 dR = GradRadialFunction(this%cutoff(f), x_ij, this%cutoff_f(f), this%cutoff_r1(f))
 
-                do l = 0, this%l_max, 2
+                do l = 2, this%l_max, 2
                    do m = -l, l
                       this%Y_times_R(l / 2,f)%m(:,m) = this%Y_times_R(l / 2,f)%m(:,m) &
                                                      + (GradSphericalYCartesian(l, m, x_ij) * R) &
@@ -1394,11 +1398,15 @@ module bispectrum_module
        integer :: l, n, m1, m2, m3
 
        do n = 1, this%f_n
-          do l = 0, this%l_max, 2
+          do l = 2, this%l_max, 2
              m_norm2_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
 
              if (this%do_q) then
-                this%q(l / 2,n) = sqrt(4.0_dp * PI * m_norm2_sum / ((2.0_dp * l) + 1.0_dp))
+                if (abs(m_norm2_sum) < QW_FP_ZERO) then
+                   this%q(l / 2,n) = 0.0_dp
+                else
+                   this%q(l / 2,n) = sqrt(4.0_dp * PI * m_norm2_sum / ((2.0_dp * l) + 1.0_dp))
+                endif
              endif
 
              if (this%do_w) then
@@ -1417,7 +1425,7 @@ module bispectrum_module
                    enddo
                 enddo
 
-                if (m_norm2_sum .feq. 0.0_dp) then
+                if (abs(m_norm2_sum) < QW_FP_ZERO) then
                    wc = CPLX_ZERO
                 else
                    wc = wc / (m_norm2_sum**1.5_dp)
@@ -1440,7 +1448,7 @@ module bispectrum_module
        integer :: l, n, k, m1, m2, m3
 
        do n = 1, this%f_n
-          do l = 0, this%l_max, 2
+          do l = 2, this%l_max, 2
              m_norm2_sum = sum(real(f%Y_times_R(l / 2,n)%m * conjg(f%Y_times_R(l / 2,n)%m), dp))
 
              do k = 1, 3
@@ -1449,7 +1457,7 @@ module bispectrum_module
              end do
 
              if (this%do_q) then
-                if (m_norm2_sum .feq. 0.0_dp) then
+                if (abs(m_norm2_sum) < QW_FP_ZERO) then
                    this%q(l / 2,n)%x = 0.0_dp
                 else
                    this%q(l / 2,n)%x = 2.0_dp * PI * dm_norm2_sum / sqrt(4.0_dp * PI * m_norm2_sum * ((2.0_dp * l) + 1.0_dp))
@@ -1478,7 +1486,7 @@ module bispectrum_module
                    enddo
                 enddo
 
-                if (m_norm2_sum .feq. 0.0_dp) then
+                if (abs(m_norm2_sum) < QW_FP_ZERO) then
                    wc = CPLX_ZERO
                    dwc = CPLX_ZERO
                 else
@@ -1560,14 +1568,14 @@ module bispectrum_module
 
        integer :: d, i, l, f
 
-       d = ((this%l_max / 2) + 1) * this%f_n
+       d = (this%l_max / 2) * this%f_n
        if (this%do_q .and. this%do_w) d = d * 2
 
        if (size(vec) < d) call system_abort('qw2vec_so3: vec too small')
 
        vec = 0.0_dp
        i = 1
-       do l = 0, this%l_max, 2
+       do l = 2, this%l_max, 2
           do f = 1, this%f_n
              if (this%do_q .and. this%do_w) then
                 vec(i) = this%q(l / 2,f)
@@ -1589,14 +1597,14 @@ module bispectrum_module
 
        integer :: d, i, l, f
 
-       d = ((this%l_max / 2) + 1) * this%f_n
+       d = (this%l_max / 2) * this%f_n
        if (this%do_q .and. this%do_w) d = d * 2
 
        if (size(vec) < (3 * d)) call system_abort('qw2vec_grad_so3: vec too small')
 
        vec = 0.0_dp
        i = 1
-       do l = 0, this%l_max, 2
+       do l = 2, this%l_max, 2
           do f = 1, this%f_n
              if (this%do_q .and. this%do_w) then
                 vec(i,:) = this%q(l / 2,f)%x(:)
@@ -1653,14 +1661,108 @@ module bispectrum_module
        integer :: qw2d_so3
 
        if (present(qw)) then
-          qw2d_so3 = ((qw%l_max / 2) + 1) * qw%f_n
+          qw2d_so3 = (qw%l_max / 2) * qw%f_n
           if (qw%do_q .and. qw%do_w) qw2d_so3 = qw2d_so3 * 2
        elseif (present(dqw)) then
-          qw2d_so3 = ((dqw%l_max / 2) + 1) * dqw%f_n
+          qw2d_so3 = (dqw%l_max / 2) * dqw%f_n
           if (dqw%do_q .and. dqw%do_w) qw2d_so3 = qw2d_so3 * 2
        endif
 
      endfunction qw2d_so3
+
+     function test_qw_gradient(f, df, qw, dqw, at, x0)
+       logical :: test_qw_gradient
+       type(fourier_so3), intent(inout) :: f
+       type(grad_fourier_so3), intent(inout) :: df
+       type(qw_so3), intent(inout) :: qw
+       type(grad_qw_so3), intent(inout) :: dqw
+       type(atoms), intent(inout) :: at
+       real(dp), intent(in) :: x0(3)
+       real(dp) :: x00(3)
+       real(dp), allocatable :: vec(:), dvec(:,:)
+       integer :: i, j, n
+
+       allocate (vec(qw2d(qw)), dvec(qw2d(qw),3))
+
+       test_qw_gradient = .true.
+
+       call add_atoms(at, x0, 1)
+       call calc_connect(at)
+
+       do n = 0, atoms_n_neighbours(at, at%N)
+          call print("neighbour: "//n)
+          call print("")
+
+          if (n == 0) then
+             j = at%N
+          else
+             j = atoms_neighbour(at, at%N, n)
+          end if
+
+          x00 = at%pos(:,j)
+
+          do i = 1, qw2d(qw)
+             call print("qw dimension: "//i)
+             call print("")
+
+             test_qw_gradient = test_qw_gradient .and. test_gradient(x00, test_qw, test_dqw)
+             call print("")
+          end do
+       end do
+
+       call remove_atoms(at, at%N)
+       call calc_connect(at)
+
+       if (test_qw_gradient) then
+          call print("TEST_QW_GRADIENT: PASS")
+       else
+          call print("TEST_QW_GRADIENT: FAIL")
+       end if
+
+       contains
+
+       function test_qw(x, data)
+         real(dp) :: test_qw
+         real(dp) :: x(:)
+         character, optional :: data(:)
+         real(dp) :: x_old(3)
+
+         x_old = at%pos(:,j)
+         at%pos(:,j) = x
+         call calc_connect(at)
+         call fourier_transform(f, at, at%N)
+         call calc_qw(qw, f)
+         call qw2vec(qw, vec)
+
+         test_qw = vec(i)
+
+         at%pos(:,j) = x_old
+         call calc_connect(at)
+
+       endfunction test_qw
+
+       function test_dqw(x, data)
+         real(dp) :: test_dqw(3)
+         real(dp) :: x(:)
+         character, optional :: data(:)
+         real(dp) :: x_old(3)
+
+         x_old = at%pos(:,j)
+         at%pos(:,j) = x
+         call calc_connect(at)
+         call fourier_transform(f, at, at%N)
+         call fourier_transform(df, at, at%N, n)
+         call calc_qw(dqw, f, df)
+         call qw2vec(dqw, dvec)
+
+         test_dqw = dvec(i,:)
+
+         at%pos(:,j) = x_old
+         call calc_connect(at)
+
+       endfunction test_dqw
+
+     endfunction test_qw_gradient
 
      subroutine get_weights(this,w)
 
