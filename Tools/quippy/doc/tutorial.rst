@@ -568,6 +568,15 @@ include the XML string easily::
     </SW_params>
     """)
 
+Alternatively, you can read the XML string from a file::
+
+   >>> pot = Potential('IP SW', open('sw.xml').read())
+
+or search the QUIP parameter database (located under
+:envvar:`QUIP_ROOT`:file:`/QUIP_Core/parameters`)::
+  
+   >>> pot = Potential('IP SW', quip_xml_parameters('SW'))
+
 Our new potential object has several methods, the most important being
 :meth:`~Potential.calc` which is used whenever we want to calculate
 energies, forces or virial stresses. :meth:`~Potential.calc` operates
