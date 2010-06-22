@@ -1,4 +1,6 @@
 # USER SETTABLE THINGS ARE MARKED with '#USER'
+# USER set the DFT functional, e.g. BLYP or PBE
+@SET DFT BLYP
 &FORCE_EVAL
   &DFT
     BASIS_SET_FILE_NAME ../BASIS_SET
@@ -13,15 +15,25 @@
 #periodic QS calculation. Blochl 1995, decoupling of periodic QM images is NOT applied.
 #this is ignored if &QMMM&PERIODIC is present
     &POISSON
-      PERIODIC XYZ
+      PERIODIC ${PERIODIC}
+@IF ${PERIODIC} == XYZ
       POISSON_SOLVER PERIODIC
+@ENDIF
+@IF ${PERIODIC} == NONE
+      POISSON_SOLVER MT
+@ENDIF
+@IF ${PERIODIC} /= XYZ
+@IF ${PERIODIC} /= NONE
+  POISSON_SOLVER NO_IDEA_WHAT_SOLVER_TO_USE_FOR_PERIODIC_${PERIODIC}
+@ENDIF
+@ENDIF
       &EWALD
         EWALD_TYPE ewald
 #USER EWALD_ACCURACY: accuracy of Ewald sum for pure DFT calculation, 1e-6 is decent
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
 #USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
-#        GMAX 33
+	GMAX ${MAX_CELL_SIZE_INT}
       &END EWALD
     &END POISSON
     &QS
@@ -46,7 +58,7 @@
     &END SCF
     &XC
 #USER XC_FUNCTIONAL: exchange-correlation functional to use, usually BLYP
-      &XC_FUNCTIONAL BLYP
+      &XC_FUNCTIONAL ${DFT}
       &END XC_FUNCTIONAL
 #density smoothing, VandeVondele 2005
       &XC_GRID
@@ -62,13 +74,25 @@
       PARM_FILE_NAME ../charmm.pot
     &END FORCEFIELD
     &POISSON
+      PERIODIC ${PERIODIC}
+@IF ${PERIODIC} == XYZ
+      POISSON_SOLVER PERIODIC
+@ENDIF
+@IF ${PERIODIC} == NONE
+      POISSON_SOLVER MT
+@ENDIF
+@IF ${PERIODIC} /= XYZ
+@IF ${PERIODIC} /= NONE
+  POISSON_SOLVER NO_IDEA_WHAT_SOLVER_TO_USE_FOR_PERIODIC_${PERIODIC}
+@ENDIF
+@ENDIF
       &EWALD
         EWALD_TYPE spme
 #USER EWALD_ACCURACY: Accuracy of Ewald sum for MM calculation (also used by QMMM), 1e-6 seems decent
         EWALD_ACCURACY 1.E-6
         ALPHA 0.35
-#USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
-#        GMAX 33
+#USER GMAX: Default to the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
+	GMAX ${MAX_CELL_SIZE_INT}
       &END EWALD
     &END POISSON
   &END MM
@@ -84,9 +108,9 @@
       NGRIDS 50 50 50
       &MULTIPOLE
 #USER RCUT default is system size dependent and marginally OK.
-# for some systems, setting it to the system size is significantly faster
+# for some systems, setting it to the system size (by uncommenting this RCUT) line is significantly faster
 #    (speedup in ewald_ddapc_pot and ewald_ddapc_force)
-#        RCUT 5.0
+#        RCUT ${MAX_CELL_SIZE_INT}
 #USER EWALD_PRECISION: Accuracy of Ewald sum for QM/MM calculation (overrides &DFT for the QM part), 1e-8 seems decent
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50
@@ -106,7 +130,7 @@
   &END QMMM
   &SUBSYS
     &CELL
-      PERIODIC XYZ
+      PERIODIC ${PERIODIC}
     &END CELL
     &TOPOLOGY
       &DUMP_PSF
@@ -123,24 +147,24 @@
 #USER: BASIS_SET - double zeta in valence + polarization (DZVP) is good for most total E calculations
 #USER: make sure to use basis functions consistent with POTENTIAL (e.g. GTH) and XC_FUNCTIONAL (e.g. BLYP)
     &KIND H
-      BASIS_SET DZVP-GTH-BLYP
-      POTENTIAL GTH-BLYP-q1
+      BASIS_SET DZVP-GTH-${DFT}
+      POTENTIAL GTH-${DFT}-q1
     &END KIND
     &KIND C
-      BASIS_SET DZVP-GTH-BLYP
-      POTENTIAL GTH-BLYP-q4
+      BASIS_SET DZVP-GTH-${DFT}
+      POTENTIAL GTH-${DFT}-q4
     &END KIND
     &KIND N
-      BASIS_SET DZVP-GTH-BLYP
-      POTENTIAL GTH-BLYP-q5
+      BASIS_SET DZVP-GTH-${DFT}
+      POTENTIAL GTH-${DFT}-q5
     &END KIND
     &KIND O
-      BASIS_SET DZVP-GTH-BLYP
-      POTENTIAL GTH-BLYP-q6
+      BASIS_SET DZVP-GTH-${DFT}
+      POTENTIAL GTH-${DFT}-q6
     &END KIND
     &KIND Cl
-      BASIS_SET DZVP-GTH-BLYP
-      POTENTIAL GTH-BLYP-q7
+      BASIS_SET DZVP-GTH-${DFT}
+      POTENTIAL GTH-${DFT}-q7
     &END KIND
   &END SUBSYS
 &END FORCE_EVAL

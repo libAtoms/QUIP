@@ -109,8 +109,8 @@ contains
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
-    real(dp) :: cp2k_centre_pos(3)
-    logical :: centre_cp2k, has_cp2k_centre_pos
+    real(dp) :: centre_pos(3), cp2k_box_centre_pos(3)
+    logical :: auto_centre, has_centre_pos
     logical :: try_reuse_wfn
 
     character(len=128) :: method
@@ -165,6 +165,8 @@ contains
     integer, pointer :: sort_index_p(:)
     integer :: at_i
 
+    logical :: at_periodic
+
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
@@ -185,8 +187,8 @@ contains
       call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum)
       call param_register(cli, 'try_reuse_wfn', 'T', try_reuse_wfn)
       call param_register(cli, 'have_silica_potential', 'F', have_silica_potential) !if yes, use 2.8A SILICA_CUTOFF for the connectivities
-      call param_register(cli, 'centre_cp2k', 'F', centre_cp2k)
-      call param_register(cli, 'cp2k_centre_pos', '0.0 0.0 0.0', cp2k_centre_pos, has_cp2k_centre_pos)
+      call param_register(cli, 'auto_centre', 'F', auto_centre)
+      call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_centre_pos)
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
@@ -211,12 +213,11 @@ contains
     call print("  qm_vacuum " // qm_vacuum)
     call print("  try_reuse_wfn " // try_reuse_wfn)
     call print('  have_silica_potential '//have_silica_potential)
-    call print('  centre_cp2k '//centre_cp2k)
-    if (has_cp2k_centre_pos) then
-      call print('  cp2k_centre_pos '//cp2k_centre_pos)
-    else
-      call print('  cp2k_centre_pos not present')
-    endif
+    call print('  auto_centre '//auto_centre)
+    call print('  centre_pos '//centre_pos)
+
+    if (auto_centre .and. has_centre_pos) &
+      call system_abort("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin")
 
     ! read template file
     call initialise(template_io, trim(cp2k_template_file), INPUT)
@@ -324,6 +325,17 @@ contains
       endif
     endif
 
+    ! set variables having to do with periodic configs
+    if (.not. get_value(at%params, 'Periodic', at_periodic)) at_periodic = .true.
+    insert_pos = 0
+    if (at_periodic) then
+      call insert_cp2k_input_line(cp2k_template_a, " @SET PERIODIC XYZ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    else
+      call insert_cp2k_input_line(cp2k_template_a, " @SET PERIODIC NONE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+    endif
+    call insert_cp2k_input_line(cp2k_template_a, " @SET MAX_CELL_SIZE_INT "//int(max(norm(at%lattice(:,1)),norm(at%lattice(:,2)), norm(at%lattice(:,3)))), &
+      after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+
     ! put in method
     insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "", "&FORCE_EVAL")
     call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL METHOD "//trim(method), after_line = insert_pos, n_l = template_n_lines)
@@ -381,19 +393,25 @@ contains
       allocate(qm_and_link_list_a(0))
     endif
 
-    if (centre_cp2k) then
-      if (.not. has_cp2k_centre_pos) then
-	if (qm_list%N > 0) then
-	  cp2k_centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
-	else
-	  cp2k_centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
-	endif
-	call print("centering got automatic center " // cp2k_centre_pos, VERBOSE)
+    if (auto_centre) then
+      if (qm_list%N > 0) then
+	centre_pos = pbc_aware_centre(at%pos(:,qm_list_a), at%lattice, at%g)
+      else
+	centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
       endif
-      at%pos(1,:) = at%pos(1,:) - cp2k_centre_pos(1)
-      at%pos(2,:) = at%pos(2,:) - cp2k_centre_pos(2)
-      at%pos(3,:) = at%pos(3,:) - cp2k_centre_pos(3)
-      call map_into_cell(at)
+      call print("centering got automatic center " // centre_pos, VERBOSE)
+    endif
+    ! move specified centre to origin (centre is already 0 if not specified)
+    at%pos(1,:) = at%pos(1,:) - centre_pos(1)
+    at%pos(2,:) = at%pos(2,:) - centre_pos(2)
+    at%pos(3,:) = at%pos(3,:) - centre_pos(3)
+    ! move origin into center of CP2K box (0.5 0.5 0.5 lattice coords)
+    call map_into_cell(at)
+    if (.not. at_periodic) then
+      cp2k_box_centre_pos(1:3) = 0.5_dp*sum(at%lattice,2)
+      at%pos(1,:) = at%pos(1,:) + cp2k_box_centre_pos(1)
+      at%pos(2,:) = at%pos(2,:) + cp2k_box_centre_pos(2)
+      at%pos(3,:) = at%pos(3,:) + cp2k_box_centre_pos(3)
     endif
 
     if (qm_list%N == at%N) then
@@ -572,12 +590,10 @@ contains
     ! parse output
     call read_energy_forces(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
 
-    if (centre_cp2k) then
-      at%pos(1,:) = at%pos(1,:) + cp2k_centre_pos(1)
-      at%pos(2,:) = at%pos(2,:) + cp2k_centre_pos(2)
-      at%pos(3,:) = at%pos(3,:) + cp2k_centre_pos(3)
-      call map_into_cell(at)
-    endif
+    at%pos(1,:) = at%pos(1,:) + centre_pos(1) - cp2k_box_centre_pos(1)
+    at%pos(2,:) = at%pos(2,:) + centre_pos(2) - cp2k_box_centre_pos(2)
+    at%pos(3,:) = at%pos(3,:) + centre_pos(3) - cp2k_box_centre_pos(3)
+    call map_into_cell(at)
 
     ! unsort
     if (associated(sort_index_p)) then
@@ -721,7 +737,7 @@ contains
     real(dp), intent(inout) :: new_f(:,:)
 
     real(dp) :: shift(3)
-    integer, allocatable :: oldpos(:)
+    integer, allocatable :: reordering_index(:)
     integer :: i, j
 
     ! shifted cell in case of QMMM (cp2k/src/toplogy_coordinate_util.F)
@@ -731,37 +747,50 @@ contains
 	shift(i) = 0.5_dp * qmmm_qm_abc(i) - (minval(at%pos(i,qm_list_a)) + maxval(at%pos(i,qm_list_a)))*0.5_dp
       end do
     endif
+    allocate(reordering_index(at%N))
+    call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+    if (any(reordering_index == 0)) then
+      ! try again with shift of a/2 b/2 c/2 in case TOPOLOGY%CENTER_COORDINATES is set
+      shift = sum(at%lattice(:,:),2)/2.0_dp - &
+	      (minval(at%pos(:,:),2)+maxval(at%pos(:,:),2))/2.0_dp
+      call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+      if (any(reordering_index == 0)) then
+	! try again with uniform shift (module periodic cell)
+	shift = new_p(:,1) - at%pos(:,1)
+	call check_reordering(at%pos, shift, new_p, at%g, reordering_index)
+	if (any(reordering_index == 0)) &
+	  call system_abort("Could not match original and read in atom objects")
+      endif
+    endif
 
-    allocate(oldpos(at%N))
+    new_f(1,reordering_index(:)) = new_f(1,:)
+    new_f(2,reordering_index(:)) = new_f(2,:)
+    new_f(3,reordering_index(:)) = new_f(3,:)
 
-    do i=1, at%N
-      do j=1, size(new_p,2)
-	if (norm(at%pos(:,i)+shift-new_p(:,j)) <= 1.0e-4_dp) then
-	  oldpos(i) = j
+    deallocate(reordering_index)
+  end subroutine reorder_if_necessary
+
+  subroutine check_reordering(old_p, shift, new_p, recip_lattice, reordering_index)
+    real(dp), intent(in) :: old_p(:,:), shift(3), new_p(:,:), recip_lattice(3,3)
+    integer, intent(out) :: reordering_index(:)
+
+    integer :: N, i, j
+    real(dp) :: dpos(3), dpos_i(3)
+
+    N = size(old_p,2)
+
+    reordering_index = 0
+    do i=1, N
+      do j=1, N
+	dpos = matmul(recip_lattice(1:3,1:3), old_p(1:3,i) + shift(1:3) - new_p(1:3,j))
+	dpos_i = nint(dpos)
+	if (all(abs(dpos-dpos_i) <= 1.0e-4_dp)) then
+	  reordering_index(i) = j
 	  cycle
 	endif
       end do
     end do
-
-    if (any(oldpos == 0)) then
-      ! try again with shift of a/2 b/2 c/2 in case TOPOLOGY%CENTER_COORDINATES is set
-      shift = sum(at%lattice(:,:),2)/2.0_dp - &
-	      (minval(at%pos(:,:),2)+maxval(at%pos(:,:),2))/2.0_dp
-      do i=1, at%N
-	do j=1, size(new_p,2)
-	  if (norm(at%pos(:,i) + shift - new_p(:,j)) <= 1.0e-4_dp) oldpos(i) = j
-	end do
-      end do
-    endif
-
-    if (any(oldpos == 0)) &
-      call system_abort("Could not match orig and read in atom objects")
-
-    new_f(1,oldpos(:)) = new_f(1,:)
-    new_f(2,oldpos(:)) = new_f(2,:)
-    new_f(3,oldpos(:)) = new_f(3,:)
-
-  end subroutine reorder_if_necessary
+  end subroutine check_reordering
 
   subroutine run_cp2k_program(cp2k_program, run_dir, max_n_tries)
     character(len=*), intent(in) :: cp2k_program, run_dir
@@ -884,6 +913,35 @@ contains
     arg = adjustl(arg)
 
   end subroutine split_cp2k_input_line
+
+  subroutine substitute_cp2k_input(l_a, s_source, s_targ, n_l)
+    character(len=*), intent(inout) :: l_a(:)
+    character(len=*), intent(in) :: s_source, s_targ
+    integer, intent(in) :: n_l
+
+    character(len=len(l_a(1))) :: t
+    integer :: i, p, l_targ, l_source, len_before, len_after
+
+    l_targ = len(s_targ)
+    l_source = len(s_source)
+
+    do i=1, n_l
+      p = index(l_a(i), s_source)
+      if (p > 0) then
+	len_before = p-1
+	len_after = len_trim(l_a(i)) - l_source - p + 1
+	t = ""
+	if (len_before > 0) then
+	  t(1:len_before) = l_a(i)(1:len_before)
+	endif
+	t(len_before+1:len_before+1+l_targ-1) = s_targ(1:l_targ)
+	if (len_after > 0) then
+	  t(len_before+1+l_targ:len_before+1+l_targ+len_after-1) = l_a(i)(len_before+l_source+1:len_before+l_source+1+len_after-1)
+	endif
+	l_a(i) = t
+      end if
+    end do
+  end subroutine substitute_cp2k_input
 
   subroutine insert_cp2k_input_line(l_a, l, after_line, n_l)
     character(len=*), allocatable, intent(inout) :: l_a(:)
