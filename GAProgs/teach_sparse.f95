@@ -833,9 +833,9 @@ program teach_sparse
      if (do_qw_so3) then
         my_gp%comment = "coordinates=qw l_max="//qw_l_max//" f_n="//qw_f_n
         do l = 1, qw_f_n
-           my_gp%comment = trim(my_gp%comment)//" cutoff_"//l//"="//qw_cutoff(i)
-           my_gp%comment = trim(my_gp%comment)//" cutoff_f_"//l//"="//qw_cutoff_f(i)
-           my_gp%comment = trim(my_gp%comment)//" cutoff_r1_"//l//"="//qw_cutoff_r1(i)
+           my_gp%comment = trim(my_gp%comment)//" cutoff_"//l//"="//qw_cutoff(l)
+           my_gp%comment = trim(my_gp%comment)//" cutoff_f_"//l//"="//qw_cutoff_f(l)
+           my_gp%comment = trim(my_gp%comment)//" cutoff_r1_"//l//"="//qw_cutoff_r1(l)
         enddo
         if (.not. qw_no_q) then
            my_gp%comment = trim(my_gp%comment)//" do_q=T"
