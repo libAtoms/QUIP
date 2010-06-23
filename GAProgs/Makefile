@@ -35,7 +35,7 @@ endif
 
 OBJS = 
 
-PROGRAMS = teach_sparse
+PROGRAMS = teach_sparse test_qw_gradient
 
 LIBS = -L. -lquiputils -lquip -lgp -latoms 
 LIBFILES = libatoms.a libgp.a libquip.a libquiputils.a
