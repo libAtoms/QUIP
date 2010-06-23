@@ -48,7 +48,7 @@ implicit none
 
   character(len=FIELD_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, do_hybrid, &
-	     do_phonons, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
+	     do_phonons, do_frozen_phonons, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
              & do_fine_phonons
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
@@ -131,6 +131,7 @@ implicit none
   call param_register(cli_params, 'cij_dx', '0.001', cij_dx)
   call param_register(cli_params, 'torque', 'F', do_torque)
   call param_register(cli_params, 'phonons', 'F', do_phonons)
+  call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons)
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat)
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons)
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment)
@@ -324,7 +325,6 @@ implicit none
              call system_abort("Failed to assign pointer for phonon property")
         do i=1, at%N*3
            phonon = reshape(phonon_evecs(:,i), (/ 3, at%N /))
-           mainlog%prefix = "PHONON"
            call set_value(at%params, "phonon_i", i)
            if (phonon_evals(i) > 0.0_dp) then
               call set_value(at%params, "phonon_freq", sqrt(phonon_evals(i)))
@@ -335,19 +335,28 @@ implicit none
            if (do_dipole_moment) then
               call set_value(at%params, "IR_intensity", 10**6*IR_intensities(i))
            endif
+
+	   if (do_frozen_phonons) then
+	      call verbosity_push(VERBOSE)
+              eval_froz = eval_frozen_phonon(metapot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
+	      if (eval_froz > 0.0_dp) then
+		 call set_value(at%params, "frozen_phonon_freq", sqrt(eval_froz))
+	      else
+		 call set_value(at%params, "frozen_phonon_freq", "I*"//sqrt(-eval_froz))
+	      endif
+	      call verbosity_pop()
+           endif
+
+           mainlog%prefix = "PHONON"
            if (do_dipole_moment) then
-              call print_xyz(at,mainlog,properties="pos:phonon:local_dn",real_format='f14.10')
+              call print_xyz(at,mainlog,properties="pos:phonon:local_dn",real_format='f14.6')
            else
-              call print_xyz(at,mainlog,properties="pos:phonon",real_format='f14.10')
+              call print_xyz(at,mainlog,properties="pos:phonon",real_format='f14.6')
            endif
            mainlog%prefix = ""
-           
-           call verbosity_push(VERBOSE)
-           if (phonon_evals(i) < 0.0_dp) then
-              eval_froz = eval_frozen_phonon(metapot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
-              call print("eval " // i // " diag " // phonon_evals(i) // " " // eval_froz // " mass " // phonon_masses(i))
-           endif
-           call verbosity_pop()
+
+	   if (do_frozen_phonons) call remove_value(at%params, "frozen_phonon_freq")
+
         end do
         if (do_dipole_moment) then
            deallocate(IR_intensities)
@@ -355,6 +364,9 @@ implicit none
         deallocate(phonon_evals)
         deallocate(phonon_masses)
         deallocate(phonon_evecs)
+        call remove_property(at,"phonon")
+	if (do_frozen_phonons) call remove_value(at%params, 'frozen_phonon_freq')
+	if (do_dipole_moment) call remove_value(at%params, 'IR_intensity')
      endif
 
      if (do_fine_phonons) then
