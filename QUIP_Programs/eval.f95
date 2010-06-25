@@ -48,7 +48,7 @@ implicit none
 
   character(len=FIELD_LENGTH) verbosity, test_dir_field
   logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, do_hybrid, &
-	     do_phonons, do_frozen_phonons, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
+	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
              & do_fine_phonons
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
@@ -132,6 +132,7 @@ implicit none
   call param_register(cli_params, 'torque', 'F', do_torque)
   call param_register(cli_params, 'phonons', 'F', do_phonons)
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons)
+  call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation)
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat)
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons)
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment)
@@ -290,18 +291,21 @@ implicit none
            allocate(IR_intensities(at%N*3))
            if (do_force_const_mat) then
               call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-                   IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
+                   IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
+		   force_const_mat=force_const_mat)
            else
               call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-                   IR_intensities=IR_intensities, do_parallel=do_parallel_phonons)
+                   IR_intensities=IR_intensities, zero_rotation=do_phonons_zero_rotation, &
+		   do_parallel=do_parallel_phonons)
            endif
         else
            if (do_force_const_mat) then
               call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-                   do_parallel=do_parallel_phonons, force_const_mat=force_const_mat)
+                   do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
+		   force_const_mat=force_const_mat)
            else
               call phonons(metapot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
-                   do_parallel=do_parallel_phonons)
+                   do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation)
            endif
         endif
         

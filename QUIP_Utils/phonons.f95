@@ -50,7 +50,10 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   real(dp) :: eval_frozen_phonon ! result
 
   real(dp) :: Ep, E0, Em
+! for potentially more accurate, 4th order fit
+!  real(dp) :: Ep2, Em2
   real(dp), allocatable :: pos0(:,:), dpos(:,:)
+  real(dp) :: b, d, t1, t2
 
   allocate(pos0(3,at%N))
   allocate(dpos(3,at%N))
@@ -63,7 +66,9 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   call calc_dists(at)
   call calc(metapot, at, E=E0, args_str=calc_args)
   mainlog%prefix="FROZ_E0"
-  call print_xyz(at, mainlog, real_format='f14.10', properties="pos:phonon")
+  call set_value(at%params, "frozen_phonon_E0", E0)
+  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call remove_value(at%params, "frozen_phonon_E0")
   mainlog%prefix=""
 
   at%pos = pos0 + dx*dpos
@@ -71,7 +76,9 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   call calc_dists(at)
   call calc(metapot, at, E=Ep, args_str=calc_args)
   mainlog%prefix="FROZ_EP"
-  call print_xyz(at, mainlog, real_format='f14.10', properties="pos:phonon")
+  call set_value(at%params, "frozen_phonon_Ep", Ep)
+  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call remove_value(at%params, "frozen_phonon_Ep")
   mainlog%prefix=""
 
   at%pos = pos0 - dx*dpos
@@ -79,12 +86,41 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   call calc_dists(at)
   call calc(metapot, at, E=Em, args_str=calc_args)
   mainlog%prefix="FROZ_EM"
-  call print_xyz(at, mainlog, real_format='f14.10', properties="pos:phonon")
+  call set_value(at%params, "frozen_phonon_Em", Em)
+  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call remove_value(at%params, "frozen_phonon_Em")
   mainlog%prefix=""
 
-  call print("Em " // Em // " E0 " // E0 // " Ep " // Ep, VERBOSE)
+  call print("frozen phonon Em " // Em // " E0 " // E0 // " Ep " // Ep, VERBOSE)
 
   eval_frozen_phonon = ((Ep-E0)/dx - (E0-Em)/dx)/dx
+
+! more accurate 4th order fit.
+!
+!   at%pos = pos0 + 2.0_dp*dx*dpos
+! 
+!   call calc_dists(at)
+!   call calc(metapot, at, E=Ep2, args_str=calc_args)
+!   mainlog%prefix="FROZ_EP2"
+!   call set_value(at%params, "frozen_phonon_Ep2", Ep2)
+!   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+!   call remove_value(at%params, "frozen_phonon_Ep2")
+!   mainlog%prefix=""
+! 
+!   at%pos = pos0 - 2.0_dp*dx*dpos
+! 
+!   call calc_dists(at)
+!   call calc(metapot, at, E=Em2, args_str=calc_args)
+!   mainlog%prefix="FROZ_EM2"
+!   call set_value(at%params, "frozen_phonon_Em2", Em2)
+!   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+!   call remove_value(at%params, "frozen_phonon_Em2")
+!   mainlog%prefix=""
+!   t1 = (Ep + Em - 2.0_dp*E0)/(2.0_dp*dx**2)
+!   t2 = (Ep2 + Em2 - 2.0_dp*E0)/(8.0_dp*dx**2)
+!   d = (t2-t1)/(3.0_dp*dx**2)
+!   b = t1 - d*dx**2
+!   eval_frozen_phonon = 2.0_dp*b
 
   at%pos = pos0
   call calc_dists(at)
@@ -110,7 +146,8 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 
   integer i, j, alpha, beta
   integer err
-  real(dp), allocatable :: pos0(:,:), fp(:,:), fm(:,:)
+  real(dp), allocatable :: pos0(:,:), f0(:,:), fp(:,:), fm(:,:)
+  real(dp) :: E0, Ep, Em
   real(dp), allocatable :: dm(:,:)
 
   logical :: override_zero_freq_phonons = .true.
@@ -120,6 +157,7 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
   real(dp) :: mu_m(3), mu_p(3), dmu_dq(3)
   real(dp), allocatable :: dmu_dr(:,:,:)
   real(dp), pointer :: local_dn(:), mass(:)
+  real(dp) :: sym_val
 
   integer :: n_zero
   logical :: do_zero_translation, do_zero_rotation
@@ -134,10 +172,11 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
     call initialise(mpi_glob)
   endif
 
-  do_zero_translation = optional_default(zero_translation, .true.)
-  do_zero_rotation = optional_default(zero_rotation, .false.)
+  do_zero_translation = optional_default(.true., zero_translation)
+  do_zero_rotation = optional_default(.false., zero_rotation)
 
   allocate(pos0(3,at%N))
+  allocate(f0(3,at%N))
   allocate(fp(3,at%N))
   allocate(fm(3,at%N))
   allocate(dm(at%N*3,at%N*3))
@@ -165,7 +204,8 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 
   call set_cutoff(at, cutoff(metapot))
   call calc_connect(at)
-  
+
+  call calc(metapot, at, E=E0, f=f0, args_str=calc_args)
   pos0 = at%pos
 
   ! calculate dynamical matrix with finite differences
@@ -180,7 +220,7 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
       at%pos = pos0
       at%pos(alpha,i) = at%pos(alpha,i) + dx
       call calc_dists(at)
-      call calc(metapot, at, f=fp, args_str=calc_args)
+      call calc(metapot, at, E=Ep, f=fp, args_str=calc_args)
       if (present(IR_intensities)) then
 	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
 	  call system_abort("phonons impossible failure to assign pointer for local_dn")
@@ -190,12 +230,18 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
       at%pos = pos0
       at%pos(alpha,i) = at%pos(alpha,i) - dx
       call calc_dists(at)
-      call calc(metapot, at, f=fm, args_str=calc_args)
+      call calc(metapot, at, E=Em, f=fm, args_str=calc_args)
       if (present(IR_intensities)) then
 	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
 	  call system_abort("phonons impossible failure to assign pointer for local_dn")
 	mu_m = dipole_moment(at%pos, local_dn)
       endif
+
+      call print("dynamical matrix energy check (Em-E0) " // (Em-E0) // " (Ep-E0) " // (Ep-E0), NERD)
+      call print("dynamical matrix magnitude check |fp-f0| " // sqrt(sum(norm2(fp-f0,2))) // " |fm-f0| " // sqrt(sum(norm2(fm-f0,2))) // &
+	" |fp-f0|-|fm-f0| " // (sqrt(sum(norm2(fp-f0,2)))-sqrt(sum(norm2(fm-f0,2)))), NERD)
+      call print("dynamical matrix harmonicity check (|fp+fm|/2 - f0)/(0.5*(|fp-f0|+|fm-f0|)) "// &
+	(sqrt(sum(norm2(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(norm2(fp-f0,2)))+sqrt(sum(norm2(fm-f0,2)))))) , NERD)
 
       dmu_dr(alpha, i, :) = (mu_p-mu_m)/(2.0_dp*dx)
 
@@ -242,17 +288,20 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
   if (do_zero_rotation) n_zero = n_zero + 3
 
   if (n_zero > 0) then
-
     allocate(zero_phonon(at%N*3,n_zero))
     allocate(zero_phonon_p(at%N*3,n_zero))
     allocate(phonon(3,at%N))
     do i=1, n_zero
-      if (do_zero_translation .and. i <= 3) then ! translation
+      if (do_zero_translation .and. i <= 3) then ! if zeroing both, then 1st 3 are translation
 	beta = i
 	phonon = 0.0_dp
 	phonon(beta,:) = 1.0_dp
       else ! rotation
-	beta = i-3
+	if (i > 3) then ! must have already done zero_rotation
+	  beta = i-3
+	else
+	  beta = i
+	end if
 	CoM = centre_of_mass(at)
 	axis = 0.0_dp; axis(beta) = 1.0_dp
 	do j=1, at%N
@@ -301,7 +350,9 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
   ! symmetrize dynamical matrix exactly
   do i=1, 3*at%N
     do j=i+1, 3*at%N
-      dm(i,j) = dm(j,i)
+      sym_val = 0.5_dp*(dm(j,i)+dm(i,j))
+      dm(i,j) = sym_val
+      dm(j,i) = sym_val
     end do
   end do
 
