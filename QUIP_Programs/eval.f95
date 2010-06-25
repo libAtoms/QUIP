@@ -182,7 +182,6 @@ implicit none
 
   call Initialise(mpi_glob)
 
-
   if (do_hybrid) then
     call Potential_Initialise_filename(pot1, init_args_pot1, param_file, mpi_obj=mpi_glob, &
       no_parallel=do_parallel_phonons)
@@ -365,7 +364,9 @@ implicit none
         deallocate(phonon_masses)
         deallocate(phonon_evecs)
         call remove_property(at,"phonon")
-	if (do_frozen_phonons) call remove_value(at%params, 'frozen_phonon_freq')
+	call remove_value(at%params, 'phonon_i')
+	call remove_value(at%params, 'phonon_freq')
+	call remove_value(at%params, 'phonon_eff_mass')
 	if (do_dipole_moment) call remove_value(at%params, 'IR_intensity')
      endif
 
