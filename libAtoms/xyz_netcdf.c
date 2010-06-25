@@ -1757,7 +1757,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     debug("starting to build index from file pos %ld nframes=%d\n", ftell(in), nframes);
 
     while (fgets(linebuffer,LINESIZE,in)) {
-      realloc_frames(frames, atoms, frames_array_size, nframes+1);
+      realloc_frames(frames, atoms, frames_array_size, nframes+2);
       (*frames)[nframes] = ftell(in)-strlen(linebuffer);
       /*
       if (nframes+1 > XYZ_MAX_FRAMES) {
