@@ -7,6 +7,7 @@ p = optparse.OptionParser(usage='%prog [option] [file1] [file2] ...')
 p.add_option('-b', '--bond_by_cutoff', action='store_true', default=False, help="""add bond_by_cutoff statement""")
 p.add_option('-t', '--type', action='store', help="""property to use for atom type""")
 p.add_option('-v', '--value', action='append', help="""property to use for values (may be repeated)""")
+p.add_option('-V', '--vector', action='store', help="""property to use for vector field""")
 p.add_option('-p', '--post_config_command', action='append', help="""commands to add after each config""")
 p.add_option('-P', '--post_file_command', action='append', help="""commands to add after each input file""")
 p.add_option('-e', '--end_command', action='append', help="""commands to add at the very end""")
@@ -47,6 +48,10 @@ for file in args:
 	  for iv in range(len(opt.value)):
 	    print " value %d %s" % (iv+1, getattr(at,opt.value[iv])[i_at]),
 	print ""
+	if (opt.vector is not None):
+	  if (hasattr(at,opt.vector)):
+	    print "vector %f %f %f   %f %f %f" % ( at.pos[1,i_at], at.pos[2,i_at], at.pos[3,i_at], 
+	      getattr(at,opt.vector)[1,i_at], getattr(at,opt.vector)[2,i_at], getattr(at,opt.vector)[3,i_at])
     if opt.bond_by_cutoff:
       print "bond_by_cutoff"
     if (opt.post_config_command is not None):
