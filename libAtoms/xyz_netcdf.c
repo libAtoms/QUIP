@@ -1707,7 +1707,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
       return 0;
     }
     sscanf(linebuffer, "%d", &nframes);
-    realloc_frames(frames, atoms, frames_array_size, nframes+1);
+    realloc_frames(frames, atoms, frames_array_size, nframes+2);
     // if (nframes+1 >= XYZ_MAX_FRAMES) {
       // fprintf(stderr,"nframes(%d)+1 >= XYZ_MAX_FRAMES(%d)\n",nframes,XYZ_MAX_FRAMES);
       // return 0;
