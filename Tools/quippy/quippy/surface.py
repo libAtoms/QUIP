@@ -118,6 +118,30 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
       t = dot(g, at.pos[:,indices])
       return indices[ logical_and(t[dirs,:] >= -keep_fraction/2.0, t[dirs,:] < keep_fraction/2.0).all(axis=1) ]
 
+   def check_candidate_plane(at, ref_plane, cand_plane, dirs, verbose=False, label=''):
+      """Check whether in-plane displacements of atoms listed in `ref_plane` match those of `cand_plane` in directions given by `dirs`"""
+      
+      # Which pair of planes has more atoms, reference or candidate?
+      if len(ref_plane) < len(cand_plane):
+         smaller = ref_plane
+         larger  = cand_plane
+      else:
+         smaller = cand_plane
+         larger  = ref_plane
+
+      matches = {}
+      for j in smaller:
+         for k in larger:
+            if at.z[k] == at.z[j] and abs(at.pos[dirs,k] - at.pos[dirs,j]).max() < tol:
+               matches[j] = k
+               break
+
+      if verbose:
+         print '   ', label, len(matches), '/', len(smaller), 'matches'
+            
+      return len(matches) == len(smaller)
+
+
    if rot is not None:
       at = transform(at, rot)
 
@@ -233,39 +257,22 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
                highlight[cand_plane1] = 0
                highlight[cand_plane2] = 0
 
-            # Take union of two planes
-            ref_plane = list(set(ref_plane1) ^ set(ref_plane2))
-            cand_plane = list(set(cand_plane1) ^ set(cand_plane2))
-
             # Remove cand_plane1 from list of candidates
             candidates = sort_by_distance(box, ref_atom1, dir, set(candidates) - set(cand_plane1))
 
-            # Which pair of planes has more atoms, reference or candidate?
-            if len(ref_plane) < len(cand_plane):
-               smaller = ref_plane
-               larger  = cand_plane
-            else:
-               smaller = cand_plane
-               larger  = ref_plane
-
-            matches = {}
-            for j in smaller:
-               for k in larger:
-                  if box.z[k] == box.z[j] and abs(box.pos[other_dirs,k] - box.pos[other_dirs,j]).max() < tol:
-                     matches[j] = k
-                     break
-
-            if verbose:
-               print '   ', len(matches), '/', len(smaller), 'matches\n'
-
-            # Have we found all the atoms in smaller plane?
-            if len(matches) == len(smaller):
+            # Check ref_plane1 against cand_plane1 and ref_plane2 against cand_plane2 in directions
+            # listed in other_dirs
+            match1 = check_candidate_plane(box, ref_plane1, cand_plane1, other_dirs, verbose, 'Plane #1:')
+            match2 = check_candidate_plane(box, ref_plane2, cand_plane2, other_dirs, verbose, 'Plane #2:')
+            
+            if match1 and match2:
                periodicity[dir] = box.pos[dir,cand1] - box.pos[dir,ref_atom1]
                if verbose:
-                  print '  Periodicity in direction %d is %f\n' % (dir, box.pos[dir,cand1] - box.pos[dir,ref_atom1])
+                  print '\n  Periodicity in direction %d is %f\n' % (dir, box.pos[dir,cand1] - box.pos[dir,ref_atom1])
 
                if graphics:
-                  highlight[cand_plane] = 3
+                  highlight[cand_plane1] = 3
+                  highlight[cand_plane2] = 3
                   box.show(highlight)
                   atomeye.view.wait()
                   raw_input('continue...')
