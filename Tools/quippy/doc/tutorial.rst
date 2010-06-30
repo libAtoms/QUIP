@@ -20,6 +20,9 @@
 
 .. currentmodule:: quippy
 
+Tutorial
+********
+
 This tutorial assumes you've successfully installed quippy and that
 all the tests pass. If not, see :ref:`installation`. We make use
 `matplotlib <http://matplotlib.sourceforge.net>`_, `scipy
