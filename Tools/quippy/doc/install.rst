@@ -92,17 +92,17 @@ Fortran 95 source code. quippy itself lives in the
 :file:`{QUIP_ROOT}/Tools/quippy` directory
 
 If you want to include the AtomEye extension, you should check it out
-under :file:`${QUIP_ROOT}/Tools`, and then compile it as a static
-library::
+under :file:`${QUIP_ROOT}/Tools`, and then compile it as a Python extension
+module::
 
   cd ${QUIP_ROOT}/Tools
   svn checkout svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye AtomEye
-  cd AtomEye
-  make atomeyelib
+  cd AtomEye/Python
+  python setup.py install
 
 .. note::
    If you've previously compiled AtomEye as an exectuable, you should do
-   a `make clean` before the `make atomeyelib`.
+   a `make clean` first.
 
 Again, if you don't have an account you can download a `snapshot
 <http://src.tcm.phy.cam.ac.uk/viewvc/jrk33/repo/trunk/AtomEye?view=tar>`_
@@ -319,6 +319,25 @@ to install somewhere else.
 Common Problems
 ---------------
 
+Permission errors when installing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are installing as root, you may need to make sure the value of
+the :envvar:`QUIP_ARCH` gets through to the install script, e.g. ::
+
+   sudo QUIP_ARCH=darwin_x86_64_gfortran python setup.py install
+
+
+Installating on Mac OS X with macports
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Macports requires various packages to be installed to compile
+everything, and may require extra linking arguments. See the
+:file:`README.macports` for the latest details.
+
+RuntimeError when importing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If, after installing quippy, you get the error shown below when you
 try to import it for the first time, then you are a victim of a bug in
 early versions of Python 2.6.
@@ -340,9 +359,14 @@ either by compiling numpy from source from an up-to-date svn snapshot,
 or by applying `the patch manually
 <http://projects.scipy.org/numpy/changeset/6193>`_.
 
+ImportError when importing
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you get an :exc:`ImportError` with a message about unresolved
 dependancies then something went wrong with the linking process -
-check that all the libraries you're linking against are correct.
+check that all the libraries you're linking against are correct. You
+can used `ldd` on Linux of `otool -L` on Mac OS X to check which
+libraries the :file:`_quippy.so` Python extension is linked against.
 
 
 Installing the ipython profile
