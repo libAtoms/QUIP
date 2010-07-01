@@ -265,6 +265,12 @@ module system_module
   end INTERFACE
 #endif
 
+  interface mem_info
+     subroutine mem_info(total_mem)
+       real(8), intent(out) :: total_mem
+     endsubroutine mem_info
+  endinterface mem_info
+
   private :: Stack_Initialise
   interface Initialise
     module procedure Stack_Initialise
