@@ -539,7 +539,7 @@ program teach_sparse
   integer :: m, j_max, qw_l_max, min_steps, min_save
   real(dp) :: r_cut, z0, e0, f0, sgm(3), dlt, theta_fac, mem_required, mem_available
   logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_f0, has_theta_file, has_sparse_file, &
-  & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_test_gp_gradient, has_bispectrum_file, do_cluster, do_pivot, &
+  & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_theta_fac, do_test_gp_gradient, has_bispectrum_file, do_cluster, do_pivot, &
   & do_core, do_ewald, do_ewald_corr, test_gp_gradient_result
 
   real(dp), dimension(116) :: z_eff
@@ -597,6 +597,7 @@ program teach_sparse
   call param_register(params, 'do_theta', 'F', do_theta)
   call param_register(params, 'do_sparx', 'F', do_sparx)
   call param_register(params, 'do_f0', 'F', do_f0)
+  call param_register(params, 'do_theta_fac', 'F', do_theta_fac)
   call param_register(params, 'do_cluster', 'F', do_cluster)
   call param_register(params, 'do_pivot', 'F', do_pivot)
   call param_register(params, 'min_steps', '10', min_steps)
@@ -614,7 +615,7 @@ program teach_sparse
      call print("Usage: teach_sparse [at_file=file] [m=50] &
      & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
-     & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] &
+     & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
      & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [do_ewald_corr=F] &
      & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial]")
@@ -801,7 +802,7 @@ program teach_sparse
   
   if( do_test_gp_gradient ) then
      call verbosity_push(NERD)
-     test_gp_gradient_result = test_gp_gradient(gp_sp,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+     test_gp_gradient_result = test_gp_gradient(gp_sp,sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0,theta_fac=do_theta_fac)
      call verbosity_pop()
   endif
 
@@ -815,10 +816,10 @@ program teach_sparse
      if (k == min_steps) exit
 
      if ((min_steps - k) >= min_save) then
-        j = minimise_gp_gradient(gp_sp,max_steps=(min_save + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+        j = minimise_gp_gradient(gp_sp,max_steps=(min_save + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0,theta_fac=do_theta_fac)
         k = k + min_save
      elseif ((min_steps - k) < min_save) then
-        j = minimise_gp_gradient(gp_sp,max_steps=(min_steps - k + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0)
+        j = minimise_gp_gradient(gp_sp,max_steps=(min_steps - k + 1),sigma=do_sigma,delta=do_delta,theta=do_theta,sparx=do_sparx,f0=do_f0,theta_fac=do_theta_fac)
         k = min_steps
      endif
 
