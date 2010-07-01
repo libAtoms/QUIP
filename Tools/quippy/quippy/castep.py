@@ -1063,7 +1063,7 @@ def run_castep(cell, param, stem, castep, castep_log=None, save_all_check_files=
          error_text = open(f).read().strip()
          if error_text != '':
             got_error = True
-            error(error_text)
+            log.error(error_text)
 
    # Write log file here so that it will always be written
    if castep_log is not None and os.path.exists('%s.castep' % stem):
