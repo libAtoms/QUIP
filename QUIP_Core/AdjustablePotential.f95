@@ -974,7 +974,7 @@ contains
     real(dp):: err, ferr(3, atomlist%N)
     real(dp), parameter::eigenvalue_threshold=1e-10_dp
     real(dp), allocatable::full_forcematrix(:,:), X(:,:), S(:), WORK(:), precondition(:)
-    integer::LWORK, INFO, maxmn, minmn, M,N, RANK, a1, a2
+    integer::LWORK, INFO, maxmn, minmn, M,N, RANK, a1, a2, error_code
     optional :: prec_func
 
 #ifdef _MPI
