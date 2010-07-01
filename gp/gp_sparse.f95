@@ -112,8 +112,10 @@ module gp_sparse_module
 
    type gp_minimise
       type(gp_sparse), pointer :: minim_gp => null()
-      logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false.
-      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1
+      real(qp), dimension(:,:), pointer :: theta_0 => null()
+      logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false., do_theta_fac = .false.
+      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1, &
+      & li_theta_fac = 1, ui_theta_fac = 1
    end type gp_minimise
 
 
@@ -1734,10 +1736,10 @@ deallocate(diff_xijt)
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      function test_gp_gradient(this,sigma,delta,theta,sparx,f0)
+      function test_gp_gradient(this,sigma,delta,theta,sparx,f0,theta_fac)
 
          type(gp_sparse), intent(inout), target :: this                 !% GP
-         logical, intent(in), optional :: sigma, delta, theta, sparx, f0
+         logical, intent(in), optional :: sigma, delta, theta, sparx, f0, theta_fac
          logical                 :: test_gp_gradient
          real(dp), dimension(:), allocatable :: xx_dp
          real(qp), dimension(:), allocatable :: xx
@@ -1747,6 +1749,7 @@ deallocate(diff_xijt)
          character, dimension(:), allocatable :: am_data
          character, dimension(1) :: am_mold
          integer :: am_data_size
+         real(qp), dimension(:,:), allocatable, target :: theta_0
 
          am_data_size = size(transfer(am,am_mold))
          allocate(am_data(am_data_size))
@@ -1758,9 +1761,21 @@ deallocate(diff_xijt)
          am%do_theta = optional_default(.true.,theta)
          am%do_sparx = optional_default(.true.,sparx)
          am%do_f0 = optional_default(.true.,f0)
+         am%do_theta_fac = optional_default(.false.,theta_fac)
+
+         if(am%do_theta .and. am%do_theta_fac) then
+            call print_warning('test_gp_gradient called with both theta and theta_fac active. Switching theta_fac to false.')
+            am%do_theta_fac = .false.
+         endif
+
+         if(am%do_theta_fac) then
+            allocate(theta_0(this%d,this%nsp))
+            theta_0 = this%theta
+            am%theta_0 => theta_0
+         endif
 
          test_gp_gradient = .false.
-         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) ) return
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) .and. (.not.am%do_theta_fac)  ) return
 
          n = 0
          li = 0
@@ -1770,6 +1785,7 @@ deallocate(diff_xijt)
          if( am%do_theta ) n = n + this%d*this%nsp
          if( am%do_sparx ) n = n + this%sr*this%d
          if( am%do_f0 ) n = n + this%nsp
+         if( am%do_theta_fac ) n = n + this%nsp
 
          allocate( xx(n), xx_dp(n) )
 
@@ -1808,14 +1824,23 @@ deallocate(diff_xijt)
             am%ui_f0 = ui
             xx(li:ui) = this%f0
          endif
+         if(am%do_theta_fac) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_theta_fac = li
+            am%ui_theta_fac = ui
+            xx(li:ui) = 1.0_qp
+         endif
 
          xx_dp = real(xx,kind=dp)
-
          am_data = transfer(am, am_data)
 
          test_gp_gradient = test_gradient(xx_dp, likelihood_function, likelihood_gradient, data=am_data)
 
          deallocate(xx,xx_dp,am_data)
+         am%minim_gp => null()
+         am%theta_0 => null()
+         if(allocated(theta_0)) deallocate(theta_0)
 
       end function test_gp_gradient
 
@@ -1826,14 +1851,14 @@ deallocate(diff_xijt)
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      function minimise_gp_gradient(this,convergence_tol,max_steps,always_do_test_gradient,sigma,delta,theta,sparx,f0)
+      function minimise_gp_gradient(this,convergence_tol,max_steps,always_do_test_gradient,sigma,delta,theta,sparx,f0,theta_fac)
 
          type(gp_sparse), intent(inout), target :: this                       !% GP
          integer, intent(in), optional :: max_steps            !% maximum number of steps, default: 100
          real(dp), intent(in), optional :: convergence_tol     !% convergence tolerance, default: 0.1
          logical, intent(in), optional :: always_do_test_gradient
-         logical, intent(in), optional :: sigma, delta, theta, sparx, f0
-         integer                 :: minimise_gp_gradient      
+         logical, intent(in), optional :: sigma, delta, theta, sparx, f0, theta_fac
+         integer                 :: minimise_gp_gradient
          real(dp), dimension(:), allocatable :: xx_dp
          real(qp), dimension(:), allocatable :: xx
          integer :: n, li, ui
@@ -1844,6 +1869,7 @@ deallocate(diff_xijt)
          character, dimension(:), allocatable :: am_data
          character, dimension(1) :: am_mold
          integer :: am_data_size
+         real(qp), dimension(:,:), allocatable, target :: theta_0
 
          do_max_steps = optional_default(100,max_steps)
          do_convergence_tol = optional_default(0.0001_dp,convergence_tol)
@@ -1858,9 +1884,21 @@ deallocate(diff_xijt)
          am%do_theta = optional_default(.true.,theta)
          am%do_sparx = optional_default(.true.,sparx)
          am%do_f0 = optional_default(.true.,f0)
+         am%do_theta_fac = optional_default(.false.,theta_fac)
+
+         if(am%do_theta .and. am%do_theta_fac) then
+            call print_warning('minimise_gp_gradient called with both theta and theta_fac active. Switching theta_fac to false.')
+            am%do_theta_fac = .false.
+         endif
+
+         if(am%do_theta_fac) then
+            allocate(theta_0(this%d,this%nsp))
+            theta_0 = this%theta
+            am%theta_0 => theta_0
+         endif
 
          minimise_gp_gradient = 0
-         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) ) return
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_sparx) .and. (.not.am%do_f0) .and. (.not.am%do_theta_fac) ) return
 
          n = 0
          li = 0
@@ -1870,6 +1908,7 @@ deallocate(diff_xijt)
          if( am%do_theta ) n = n + this%d*this%nsp
          if( am%do_sparx ) n = n + this%sr*this%d
          if( am%do_f0 ) n = n + this%nsp
+         if( am%do_theta_fac ) n = n + this%nsp
 
          allocate( xx(n), xx_dp(n) )
 
@@ -1908,6 +1947,13 @@ deallocate(diff_xijt)
             am%ui_f0 = ui
             xx(li:ui) = this%f0
          endif
+         if(am%do_theta_fac) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_theta_fac = li
+            am%ui_theta_fac = ui
+            xx(li:ui) = 1.0_qp
+         endif
 
          xx_dp = real(xx,kind=dp)
          am_data = transfer(am, am_data)
@@ -1915,7 +1961,11 @@ deallocate(diff_xijt)
          minimise_gp_gradient = minim(xx_dp,likelihood_function,likelihood_gradient,&
          & method='cg',convergence_tol=do_convergence_tol,max_steps=do_max_steps,&
          & hook = save_likelihood_parameters, hook_print_interval=1,data=am_data, always_do_test_gradient=always_do_test_gradient)
+
          deallocate(xx,xx_dp,am_data)
+         am%minim_gp => null()
+         am%theta_0 => null()
+         if(allocated(theta_0)) deallocate(theta_0)
 
       end function minimise_gp_gradient
 
@@ -2094,6 +2144,8 @@ deallocate(diff_xijt)
          if( am%do_sparx ) call gp_update( am%minim_gp, &
          & x_sparse_in=reshape(x(am%li_sparx:am%ui_sparx),(/am%minim_gp%d,am%minim_gp%sr/)), do_covariance = .false. )
          if( am%do_f0 ) call gp_update( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
+         if( am%do_theta_fac ) call gp_update( am%minim_gp, theta_in= &
+         & spread(x(am%li_theta_fac:am%ui_theta_fac),dim=1,ncopies=am%minim_gp%d)*am%theta_0, do_covariance = .false. )
 
          call covariance_matrix_sparse(am%minim_gp)
 
@@ -2111,7 +2163,7 @@ deallocate(diff_xijt)
          real(dp), dimension(size(x_in)) :: dl_out
          character,optional              :: am_data(:)
 
-         real(qp), dimension(:), allocatable :: x, dl
+         real(qp), dimension(:), allocatable :: x, dl, dl_dtheta
          type(gp_minimise) :: am
 
          allocate(x(size(x_in)),dl(size(x_in)))
@@ -2129,6 +2181,10 @@ deallocate(diff_xijt)
          if( am%do_sparx ) call gp_update( am%minim_gp, &
          & x_sparse_in=reshape(x(am%li_sparx:am%ui_sparx),(/am%minim_gp%d,am%minim_gp%sr/)), do_covariance = .false. )
          if( am%do_f0 ) call gp_update( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
+         if( am%do_theta_fac ) call gp_update( am%minim_gp, theta_in= &
+         & spread(x(am%li_theta_fac:am%ui_theta_fac),dim=1,ncopies=am%minim_gp%d)*am%theta_0, do_covariance = .false. )
+
+         if(am%do_theta .or. am%do_theta_fac) allocate(dl_dtheta(am%minim_gp%d*am%minim_gp%nsp))
 
          call covariance_matrix_sparse(am%minim_gp)
 
@@ -2136,12 +2192,16 @@ deallocate(diff_xijt)
 
          call likelihood(am%minim_gp,dl_dsigma=dl(am%li_sigma:am%ui_sigma),do_sigma = am%do_sigma, &
          & dl_ddelta=dl(am%li_delta:am%ui_delta), do_delta = am%do_delta, &
-         & dl_dtheta=dl(am%li_theta:am%ui_theta), do_theta = am%do_theta, &
+         & dl_dtheta=dl_dtheta, do_theta = (am%do_theta .or.am%do_theta_fac) , &
          & dl_dx = dl(am%li_sparx:am%ui_sparx), do_x = am%do_sparx, &
          & dl_df0=dl(am%li_f0:am%ui_f0), do_f0 = am%do_f0 )
 
+         if( am%do_theta ) dl(am%li_theta:am%ui_theta) = dl_dtheta
+         if( am%do_theta_fac ) dl(am%li_theta_fac:am%ui_theta_fac) = sum(reshape(dl_dtheta,(/am%minim_gp%d,am%minim_gp%nsp/))*am%theta_0,dim=1)
+
          dl_out = -real(dl,kind=dp)
          deallocate(x,dl)
+         if(allocated(dl_dtheta)) deallocate(dl_dtheta)
 
       end function likelihood_gradient
 
