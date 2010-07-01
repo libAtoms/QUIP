@@ -35,6 +35,7 @@
 #include <string.h>
 #include <math.h>
 #include <sys/resource.h>
+#include <sys/sysinfo.h>
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //X
@@ -126,6 +127,15 @@ int c_increase_stack_(int *stack_size) {
 
 int pointer_to_(void *p) {
   return ((int) p);
+}
+
+void mem_info_(double *total_mem)
+{
+   struct sysinfo s_info;
+   int error;
+
+   error = sysinfo(&s_info);
+   *total_mem = s_info.totalram*s_info.mem_unit;
 }
 
 typedef struct{
