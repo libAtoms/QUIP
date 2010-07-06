@@ -2134,9 +2134,10 @@ module bispectrum_module
      !#
      !#################################################################################
 
-     subroutine calc_qw_at(at,l)
+     subroutine calc_qw_at(at,l,q_global,w_global)
         type(Atoms), intent(inout) :: at     !% atoms object, q and w added as properties: q//l and w//l
         integer, intent(in), optional :: l   !% which L spherical harmonics to use
+        real(dp), optional :: q_global, w_global
 
         real(dp), dimension(:), pointer :: at_q, at_w
 
@@ -2144,8 +2145,9 @@ module bispectrum_module
         real(dp), dimension(3) :: u_ij, polar
         real(dp), dimension(:), allocatable :: q
 
-        integer :: i, j, n, m, m1, m2, m3
-        complex(dp), dimension(:), allocatable :: w
+        integer :: i, j, n, m, m1, m2, m3, n_bond
+        complex(dp) :: qm_bond
+        complex(dp), dimension(:), allocatable :: w, qm_global
         complex(dp), dimension(:,:), allocatable :: qm
 
         my_l = optional_default(4,l)
@@ -2159,22 +2161,30 @@ module bispectrum_module
         if( .not. assign_pointer(at, 'w'//my_l, at_w) ) &
         & call system_abort('at_qw: could not assign pointer to atoms object')
 
-        allocate(qm(-my_l:my_l,at%N), q(at%N), w(at%N) )
+        allocate(qm(-my_l:my_l,at%N), q(at%N), w(at%N), qm_global(-my_l:my_l) )
 
         qm = CPLX_ZERO
         w = CPLX_ZERO
 
+        n_bond = 0
+        qm_global = CPLX_ZERO
         do i = 1, at%N
            do n = 1, atoms_n_neighbours(at,i)
               j = atoms_neighbour(at,i,n,cosines=u_ij)
               polar = xyz2spherical(u_ij)
+              n_bond = n_bond + 1
               do m = -my_l, my_l
-                 qm(m,i) = qm(m,i) + SphericalY(my_l,m,polar(2),polar(3))/atoms_n_neighbours(at,i)
+                 qm_bond = SphericalY(my_l,m,polar(2),polar(3))
+                 qm(m,i) = qm(m,i) + qm_bond/atoms_n_neighbours(at,i)
+                 qm_global(m) = qm_global(m) + qm_bond
               enddo
            enddo
         enddo
+        n_bond = max(n_bond,1)
+        qm_global = qm_global / real(n_bond, dp)
 
         q = sum( real( qm*conjg(qm) ), dim=1 )
+        if ( present(q_global) ) q_global = sqrt( PI * 4.0_dp * sum( real( qm_global*conjg(qm_global) ) ) / (2.0_dp * my_l + 1.0_dp ) )
 
         do i = 1, at%N
            do m1 = -my_l, my_l
@@ -2186,13 +2196,26 @@ module bispectrum_module
               enddo
            enddo
         enddo
-        
+
+        if ( present(w_global) ) then
+           w_global = 0.0_dp
+           do m1 = -my_l, my_l
+              do m2 = -my_l, my_l
+                 do m3 = -my_l, my_l
+                    if( m1+m2+m3 /= 0 ) cycle
+                    w_global = w_global + real( wigner3j(my_l,m1,my_l,m2,my_l,m3) * qm_global(m1) * qm_global(m2) * qm_global(m3) ) 
+                 enddo
+              enddo
+           enddo
+           w_global = w_global / ( sum( real( qm_global*conjg(qm_global) ) )**(3.0_dp/2.0_dp) )
+        endif
+
         w = w / (q**(3.0_dp/2.0_dp))
         q = sqrt(4.0_dp*PI/(2.0_dp * my_l + 1.0_dp)*q)
         at_q = q
         at_w = real(w)
 
-        deallocate(qm, q, w)
+        deallocate(qm, q, w, qm_global)
 
         at_q=>null()
         at_w=>null()
