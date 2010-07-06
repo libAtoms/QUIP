@@ -886,11 +886,35 @@ contains
   !
   ! beta_tin(myatoms, a, c, Z)
   !
-  !% Creates a 4-atom diamond-structure with lattice constants of a and c
+  !% Creates a 2-atom beta-tin structure with lattice constants of a and c
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine beta_tin(myatoms, a, c, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a, c
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 2, &
+         reshape((/        a,   0.0_dp,   0.0_dp, &
+                  &   0.0_dp,        a,   0.0_dp, &
+                  & 0.5_dp*a, 0.5_dp*a, 0.5_dp*c /), (/3,3/) ))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ -0.125_dp, -0.375_dp,  0.25_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/  0.125_dp,  0.375_dp, -0.25_dp /))
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine beta_tin
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! beta_tin4(myatoms, a, c, Z)
+  !
+  !% Creates a 4-atom beta-tin structure with lattice constants of a and c
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine beta_tin4(myatoms, a, c, Z)
     type(Atoms), intent(out)      :: myatoms
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
@@ -901,11 +925,10 @@ contains
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp,        0.00_dp,        0.00_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.50_dp,        0.50_dp,        0.50_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 0.00_dp,        0.50_dp,        0.25_dp /))
-
     myatoms%pos(:,4) = matmul(myatoms%lattice, (/ 0.50_dp,        0.00_dp,        0.75_dp /))
     if (present(Z)) call set_atoms(myatoms,Z)
 
-  end subroutine beta_tin
+  end subroutine beta_tin4
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -956,6 +979,30 @@ contains
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine hcp
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! sh(myatoms, a, Z)
+  !
+  !% Creates a 1-atom simple hexagonal lattice with lattice constants of 'a' and 'c'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine sh(myatoms, a, c, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a, c
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 1, &
+         reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.0_dp,   0.0_dp,                c /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/        0.0_dp,        0.0_dp, 0.0_dp /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine sh
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
