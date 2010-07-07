@@ -35,7 +35,13 @@
 #include <string.h>
 #include <math.h>
 #include <sys/resource.h>
+
+#ifndef DARWIN
 #include <sys/sysinfo.h>
+#else
+#include <sys/sysctl.h>
+#endif
+
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //X
@@ -131,11 +137,21 @@ int pointer_to_(void *p) {
 
 void mem_info_(double *total_mem)
 {
+#ifndef DARWIN
    struct sysinfo s_info;
+#else
+   long int totalram;
+   size_t size = sizeof(totalram);
+#endif
    int error;
 
+#ifndef DARWIN
    error = sysinfo(&s_info);
    *total_mem = s_info.totalram*s_info.mem_unit;
+#else
+   error = sysctlbyname("hw.memsize", &totalram, &size, NULL, 0);
+   *total_mem = totalram;
+#endif
 }
 
 typedef struct{
