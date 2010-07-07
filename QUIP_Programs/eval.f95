@@ -74,6 +74,12 @@ implicit none
   real(dp) :: V0(3,3), P0(3,3)
   real(dp) :: c(6,6), c0(6,6), cij_dx 
 
+  real(dp) :: iso_pressure
+  real(dp), dimension(3) :: diag_pressure
+  real(dp), dimension(9) :: pressure
+  real(dp), dimension(3,3) :: external_pressure
+  logical :: has_iso_pressure, has_diag_pressure, has_pressure
+
   real(dp), pointer :: forces_p(:,:), local_E_p(:)
   real(dp), pointer :: phonon(:,:)
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
@@ -159,6 +165,9 @@ implicit none
   call param_register(cli_params, 'init_args_pot2', '', init_args_pot2)
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method)
   call param_register(cli_params, 'minim_method', 'cg', minim_method)
+  call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, has_iso_pressure)
+  call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, has_diag_pressure)
+  call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, has_pressure)
 
   if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",ERROR)
@@ -199,6 +208,20 @@ implicit none
 
   call initialise(infile, trim(at_file))
 
+  if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
+  external_pressure = 0.0_dp
+  if(has_iso_pressure) then
+     external_pressure(1,1) = iso_pressure
+     external_pressure(2,2) = iso_pressure
+     external_pressure(3,3) = iso_pressure
+  endif
+  if(has_diag_pressure) then
+     external_pressure(1,1) = diag_pressure(1)
+     external_pressure(2,2) = diag_pressure(2)
+     external_pressure(3,3) = diag_pressure(3)
+  endif
+  if(has_pressure) external_pressure = reshape(pressure, (/3,3/))
+
   ! main loop over frames
   do 
      call read(at, infile, status=status)
@@ -238,11 +261,11 @@ implicit none
            call initialise(relax_io, relax_print_file, OUTPUT)
            n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
                 print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                eps_guess=relax_eps, use_n_minim = use_n_minim)
+                eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA)
            call finalise(relax_io)
         else
            n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim)
+                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA)
         endif
         mainlog%prefix='RELAXED_POS'
         call print_xyz(at,mainlog,real_format='f12.5')
