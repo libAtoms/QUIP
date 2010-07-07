@@ -172,6 +172,7 @@ module MetaPotential_module
      type(Inoutput), pointer :: minim_inoutput_movie => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
      logical, dimension(3,3) :: lattice_fix
+     real(dp), dimension(3,3) :: external_pressure = 0.0_dp
   end type metapotential_minimise
 
 
@@ -405,7 +406,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
 
   function metapotential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, hook_print_interval, status)
+       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, external_pressure, hook_print_interval, status)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Metapotential), intent(inout), target :: this !% metapotential to evaluate energy/forces with
     character(*), intent(in)    :: method !% passed to minim()
@@ -422,6 +423,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     logical, intent(in), optional :: use_n_minim !% if true, use n_minim instead of minim
     logical, intent(in), optional :: use_fire   !% if true, use fire_minim instead of minim
     logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
+    real(dp), dimension(3,3), optional :: external_pressure
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: status !% set to 1 if an error occurred during minimisation
     integer::metapotential_minim
@@ -438,9 +440,10 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     type(metapotential_minimise) am
     integer :: am_data_size
     character, allocatable :: am_data(:)
+    character, dimension(1) :: am_mold
 
 
-    am_data_size = size(transfer(am, am_data))
+    am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
     my_use_n_minim = optional_default(.false., use_n_minim)
@@ -472,6 +475,24 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     am%lattice_fix = .false.
     if (present(lattice_fix)) am%lattice_fix = lattice_fix
+
+    am%external_pressure = 0.0_dp
+    if (present(external_pressure)) then
+       am%external_pressure = external_pressure
+       if( (am%external_pressure(1,1) .fne. am%external_pressure(2,2)) .or. &
+       & (am%external_pressure(1,1) .fne. am%external_pressure(3,3)) .or. &
+       & (am%external_pressure(1,2) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(1,3) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(2,1) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(2,3) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
+       & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
+          if( .not. my_use_fire ) then
+             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             my_use_fire = .true.
+          endif
+       endif
+    endif
 
     my_do_print = optional_default(.false., do_print)
 
@@ -575,8 +596,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     integer :: am_data_size
     type(metapotential_minimise) :: am
     character, allocatable :: am_data(:)
+    character, dimension(1) :: am_mold
 
-    am_data_size = size(transfer(am, am_data))
+    am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
     metapot_test_gradient = .true.
@@ -646,8 +668,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     integer :: am_data_size
     type(metapotential_minimise) :: am
     character, allocatable :: am_data(:)
+    character, dimension(1) :: am_mold
 
-    am_data_size = size(transfer(am, am_data))
+    am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
     if (present(args_str)) then
@@ -844,6 +867,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     call calc(am%minim_metapot, am%minim_at, e = energy_func, args_str = am%minim_args_str)
     call print ("energy_func got energy " // energy_func, NERD)
 
+    energy_func = energy_func + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
+    call print ("energy_func got enthalpy " // energy_func, NERD)
+
     call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
 
@@ -935,12 +961,14 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
        end do
     end if
 
-    if (current_verbosity() >= NERD) then
-      call print ("gradient_func got f", NERD)
-      call print(f, NERD)
-      call print ("gradient_func got virial", NERD)
-      call print(virial, NERD)
-    endif
+    call print ("gradient_func got f", NERD)
+    call print(f, NERD)
+    call print ("gradient_func got virial", NERD)
+    call print(virial, NERD)
+
+    virial = virial - am%external_pressure*cell_volume(am%minim_at)
+    call print ("gradient_func got virial, external pressure subtracted", NERD)
+    call print(virial, NERD)
 
     f = transpose(deform_grad) .mult. f
 
@@ -1038,11 +1066,18 @@ max_atom_rij_change = 1.038_dp
     else
       call calc(am%minim_metapot, am%minim_at, e = val, virial = virial, args_str = am%minim_args_str)
     endif
+
     call print ("both_func got f", NERD)
     call print(f, NERD)
     call print ("both_func got virial", NERD)
     call print(virial, NERD)
 
+    virial = virial - am%external_pressure*cell_volume(am%minim_at)
+    call print ("both_func got virial, external pressure subtracted", NERD)
+    call print(virial, NERD)
+
+    val = val + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
+    call print ("both_func got enthalpy " // val, NERD)
     ! zero forces if fixed by metapotential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_metapot", fixed_metapot)) then
       do i=1, am%minim_at%N
