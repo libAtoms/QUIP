@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from quippy import *
+from itertools import izip
 import optparse, sys
 
 p = optparse.OptionParser(usage='%prog file1 [file2 ... ]')
@@ -22,20 +23,8 @@ for i in range(len(args)):
 
 co = CInOutput(opt.file,OUTPUT)
 
-##
-configs_to_merge=[]
-for i in range(len(ar)):
-  configs_to_merge.append(None)
-##
-
 config_i = 0
-# for configs_to_merge in zip(*ar):
-for at0 in ar[0]:
-  ##
-  configs_to_merge[0] = at0
-  for i in range(1,len(ar)):
-    configs_to_merge[i] = ar[i].next()
-  ##
+for configs_to_merge in izip(*ar):
   config_i += 1
   print config_i
   for i in range(len(args)):
