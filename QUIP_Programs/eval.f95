@@ -270,6 +270,7 @@ implicit none
         mainlog%prefix='RELAXED_POS'
         call print_xyz(at,mainlog,real_format='f12.5')
         mainlog%prefix=''
+        call print('Cell Volume: '//cell_volume(at)//' A^3')
         call calc_connect(at)
      end if
      
