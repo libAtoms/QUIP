@@ -998,11 +998,36 @@ contains
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c /),(/3,3/)))
     
-    myatoms%pos(:,1) = matmul(myatoms%lattice, (/        0.0_dp,        0.0_dp, 0.0_dp /))
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
 
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine sh
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! sh2(myatoms, a, Z)
+  !
+  !% Creates a 2-atom simple hexagonal lattice with lattice constants of 'a' and 'c'
+  !
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine sh2(myatoms, a, c, Z)
+    type(Atoms), intent(out)      :: myatoms
+    real(dp), intent(in)          :: a, c
+    integer, intent(in), optional :: Z
+
+    call atoms_initialise(myatoms, 2, &
+         reshape( (/     a,         0.0_dp, 0.0_dp, &
+                  & 0.0_dp, sqrt(3.0_dp)*a, 0.0_dp, &
+                  & 0.0_dp,         0.0_dp, c /),(/3,3/)))
+    
+    myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
+    myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.5_dp, 0.5_dp, 0.0_dp /))
+
+    if (present(Z)) call set_atoms(myatoms,Z)
+
+  end subroutine sh2
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
