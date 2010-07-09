@@ -380,7 +380,7 @@ contains
        endif
 
        !If needed, read QM/MM link_template_file
-       if (size(link_list_a).gt.0) then
+       if (allocated(link_list_a)) then
           if (trim(link_template_file).eq."") call system_abort("There are QM/MM links, but qmmm_link_template is not defined.")
           call initialise(link_template_io, trim(link_template_file), INPUT)
           call read_file(link_template_io, link_template_a, link_template_n_lines)
