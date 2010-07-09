@@ -43,7 +43,7 @@ private
 type analysis
   character(len=FIELD_LENGTH) :: type ! type of analysis, used to fill in list of logicals
   logical :: density_radial, density_grid, KE_density_radial, rdfd, integrated_rdfd, adfd, & !water
-             KEdf_radial, geometry, & !general
+             KEdf_radial, propdf_radial, geometry, & !general
              density_axial_silica, num_hbond_silica, water_orientation_silica !silica-water interface
   character(len=FIELD_LENGTH) :: outfilename
   character(len=FIELD_LENGTH) :: mask_str
@@ -106,6 +106,16 @@ type analysis
   real(dp) :: KEdf_radial_zone_width, KEdf_radial_bin_width
   integer :: KEdf_radial_n_zones, KEdf_radial_n_bins
   real(dp), allocatable :: KEdf_radial_bin_pos(:), KEdf_radial_zone_pos(:), KEdf_radial_histograms(:,:,:)
+
+  ! r-dep |F| distribution
+  character(FIELD_LENGTH) :: propdf_radial_mask_str
+  real(dp) :: propdf_radial_gaussian_sigma
+  real(dp) :: propdf_radial_zone_center(3)
+  integer :: propdf_radial_zone_center_at
+  real(dp) :: propdf_radial_zone_width, propdf_radial_bin_width
+  integer :: propdf_radial_n_zones, propdf_radial_n_bins
+  real(dp), allocatable :: propdf_radial_bin_pos(:), propdf_radial_zone_pos(:), propdf_radial_histograms(:,:,:)
+  character(len=FIELD_LENGTH) :: propdf_radial_property
 
   !geometry
   character(FIELD_LENGTH) :: geometry_filename
@@ -242,8 +252,19 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'KEdf_radial_bin_width', '0.002', this%KEdf_radial_bin_width)
     call param_register(params, 'KEdf_radial_n_bins', '500', this%KEdf_radial_n_bins)
     call param_register(params, 'KEdf_radial_n_zones', '1', this%KEdf_radial_n_zones)
-    call param_register(params, 'KEdf_radial_gaussian_sigma', '0.01', this%KEdf_radial_gaussian_sigma)
+    call param_register(params, 'KEdf_radial_gaussian_sigma', '0.005', this%KEdf_radial_gaussian_sigma)
     call param_register(params, 'KEdf_radial_mask', '', this%KEdf_radial_mask_str)
+
+    ! r-dep |F| distribution
+    call param_register(params, 'propdf_radial_zone_center', '0.0 0.0 0.0', this%propdf_radial_zone_center)
+    call param_register(params, 'propdf_radial_zone_center_at', '-1', this%propdf_radial_zone_center_at)
+    call param_register(params, 'propdf_radial_zone_width', '-1.0', this%propdf_radial_zone_width)
+    call param_register(params, 'propdf_radial_n_zones', '1', this%propdf_radial_n_zones)
+    call param_register(params, 'propdf_radial_bin_width', '0.0', this%propdf_radial_bin_width)
+    call param_register(params, 'propdf_radial_n_bins', '0', this%propdf_radial_n_bins)
+    call param_register(params, 'propdf_radial_gaussian_sigma', '0.0', this%propdf_radial_gaussian_sigma)
+    call param_register(params, 'propdf_radial_mask', '', this%propdf_radial_mask_str)
+    call param_register(params, 'propdf_radial_property', '', this%propdf_radial_property)
 
     ! geometry
     call param_register(params, 'geometry_filename', '', this%geometry_filename)
@@ -325,6 +346,17 @@ subroutine analysis_read(this, prev, args_str)
     call param_register(params, 'KEdf_radial_gaussian_sigma', ''//prev%KEdf_radial_gaussian_sigma, this%KEdf_radial_gaussian_sigma)
     call param_register(params, 'KEdf_radial_mask', ''//trim(prev%KEdf_radial_mask_str), this%KEdf_radial_mask_str)
 
+    ! r-dep |F| distribution
+    call param_register(params, 'propdf_radial_zone_center', ''//prev%propdf_radial_zone_center, this%propdf_radial_zone_center)
+    call param_register(params, 'propdf_radial_zone_center_at', ''//prev%propdf_radial_zone_center_at, this%propdf_radial_zone_center_at)
+    call param_register(params, 'propdf_radial_zone_width', ''//prev%propdf_radial_zone_width, this%propdf_radial_zone_width)
+    call param_register(params, 'propdf_radial_n_zones', ''//prev%propdf_radial_n_zones, this%propdf_radial_n_zones)
+    call param_register(params, 'propdf_radial_bin_width', ''//prev%propdf_radial_bin_width, this%propdf_radial_bin_width)
+    call param_register(params, 'propdf_radial_n_bins', ''//prev%propdf_radial_n_bins, this%propdf_radial_n_bins)
+    call param_register(params, 'propdf_radial_gaussian_sigma', ''//prev%propdf_radial_gaussian_sigma, this%propdf_radial_gaussian_sigma)
+    call param_register(params, 'propdf_radial_mask', ''//trim(prev%propdf_radial_mask_str), this%propdf_radial_mask_str)
+    call param_register(params, 'propdf_radial_property', ''//trim(prev%propdf_radial_property), this%propdf_radial_property)
+
     ! adfd
     call param_register(params, 'adfd_zone_center', ''//prev%adfd_zone_center, this%adfd_zone_center)
     call param_register(params, 'adfd_zone_width', ''//prev%adfd_zone_width, this%adfd_zone_width)
@@ -382,6 +414,7 @@ subroutine analysis_read(this, prev, args_str)
   this%rdfd = .false.
   this%adfd = .false.
   this%KEdf_radial = .false.
+  this%propdf_radial = .false.
   this%geometry = .false.
   this%density_axial_silica = .false.
   this%num_hbond_silica = .false.
@@ -399,6 +432,8 @@ subroutine analysis_read(this, prev, args_str)
       this%adfd = .true.
     case("KEdf_radial")
       this%KEdf_radial = .true.
+    case("propdf_radial")
+      this%propdf_radial = .true.
     case("geometry")
       this%geometry = .true.
     case("density_axial_silica")
@@ -412,12 +447,12 @@ subroutine analysis_read(this, prev, args_str)
   end select
 
   if (count ( (/ this%density_radial, this%density_grid, this%KE_density_radial, this%rdfd, this%adfd, &
-		 this%KEdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
+		 this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
 		 this%water_orientation_silica /) ) /= 1) &
     call system_abort("Specified "//(/ this%density_radial, this%density_grid, this%KE_density_radial, &
-      this%rdfd, this%adfd, this%KEdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
+      this%rdfd, this%adfd, this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
       this%water_orientation_silica /)// &
-      " types of analysis.  Possiblities: density_radial, density_grid, KE_density_radial, rdfd, adfd, KEdf_radial, geometry, " // &
+      " types of analysis.  Possiblities: density_radial, density_grid, KE_density_radial, rdfd, adfd, KEdf_radial, propdf_radial, geometry, " // &
       " density_axial_silica, num_hbond_silica, water_orientation_silica.")
 
 end subroutine analysis_read
@@ -450,6 +485,11 @@ subroutine check_analyses(a)
       if (a(i_a)%KEdf_radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has KEdf_radial_bin_width="//a(i_a)%KEdf_radial_bin_width//" <= 0.0")
       if (a(i_a)%KEdf_radial_n_bins <= 0) call system_abort("analysis " // i_a // " has KEdf_radial_n_bins="//a(i_a)%KEdf_radial_n_bins//" <= 0")
       if (a(i_a)%KEdf_radial_n_zones <= 0) call system_abort("analysis " // i_a // " has KEdf_radial_n_zones="//a(i_a)%KEdf_radial_n_zones//" <= 0")
+    else if (a(i_a)%propdf_radial) then !propdf_radial
+      if (a(i_a)%propdf_radial_bin_width <= 0.0_dp) call system_abort("analysis " // i_a // " has propdf_radial_bin_width="//a(i_a)%propdf_radial_bin_width//" <= 0.0")
+      if (a(i_a)%propdf_radial_n_bins <= 0) call system_abort("analysis " // i_a // " has propdf_radial_n_bins="//a(i_a)%propdf_radial_n_bins//" <= 0")
+      if (a(i_a)%propdf_radial_gaussian_sigma <= 0) call system_abort("analysis " // i_a // " has propdf_radial_gaussian_sigma="//a(i_a)%propdf_radial_gaussian_sigma//" <= 0")
+      if (a(i_a)%propdf_radial_n_zones <= 0) call system_abort("analysis " // i_a // " has propdf_radial_n_zones="//a(i_a)%propdf_radial_n_zones//" <= 0")
     else if (a(i_a)%geometry) then !geometry
       if (trim(a(i_a)%geometry_filename)=="") call system_abort("analysis "//i_a//" has empty geometry_filename")
       !read geometry parameters to calculate from the file into a table
@@ -477,7 +517,7 @@ subroutine do_analyses(a, time, frame, at)
   real(dp), intent(in) :: time
   integer, intent(in) :: frame
   type(Atoms), intent(inout) :: at
-  real(dp) :: use_density_radial_center(3), use_KEdf_radial_zone_center(3)
+  real(dp) :: use_radial_center(3)
 
   integer :: i_a
 
@@ -493,17 +533,17 @@ subroutine do_analyses(a, time, frame, at)
       if (a(i_a)%density_radial) then !density_radial
         call reallocate_data(a(i_a)%density_radial_histograms, a(i_a)%n_configs, a(i_a)%density_radial_n_bins)
 	if (a(i_a)%density_radial_center_at > 0) then
-	  use_density_radial_center = at%pos(:,a(i_a)%density_radial_center_at)
+	  use_radial_center = at%pos(:,a(i_a)%density_radial_center_at)
 	else
-	  use_density_radial_center = a(i_a)%density_radial_center
+	  use_radial_center = a(i_a)%density_radial_center
 	endif
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%density_radial_pos(a(i_a)%density_radial_n_bins))
-          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
             rad_bin_width=a(i_a)%density_radial_bin_width, n_rad_bins=a(i_a)%density_radial_n_bins, gaussian_sigma=a(i_a)%density_radial_gaussian_sigma, &
             mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%density_radial_pos)
         else
-          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+          call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
             rad_bin_width=a(i_a)%density_radial_bin_width, n_rad_bins=a(i_a)%density_radial_n_bins, gaussian_sigma= a(i_a)%density_radial_gaussian_sigma, &
             mask_str=a(i_a)%mask_str)
         endif
@@ -531,17 +571,17 @@ subroutine do_analyses(a, time, frame, at)
       else if (a(i_a)%KE_density_radial) then ! KE_density_radial
         call reallocate_data(a(i_a)%KE_density_radial_histograms, a(i_a)%n_configs, a(i_a)%KE_density_radial_n_bins)
 	if (a(i_a)%KE_density_radial_center_at > 0) then
-	  use_density_radial_center = at%pos(:,a(i_a)%KE_density_radial_center_at)
+	  use_radial_center = at%pos(:,a(i_a)%KE_density_radial_center_at)
 	else
-	  use_density_radial_center = a(i_a)%KE_density_radial_center
+	  use_radial_center = a(i_a)%KE_density_radial_center
 	endif
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%KE_density_radial_pos(a(i_a)%KE_density_radial_n_bins))
-          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
             rad_bin_width=a(i_a)%KE_density_radial_bin_width, n_rad_bins=a(i_a)%KE_density_radial_n_bins, gaussian_sigma=a(i_a)%KE_density_radial_gaussian_sigma, &
             mask_str=a(i_a)%mask_str, radial_pos=a(i_a)%KE_density_radial_pos, quantity="KE")
         else
-          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_density_radial_center, &
+          call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
             rad_bin_width=a(i_a)%KE_density_radial_bin_width, n_rad_bins=a(i_a)%KE_density_radial_n_bins, gaussian_sigma= a(i_a)%density_radial_gaussian_sigma, &
             mask_str=a(i_a)%mask_str, quantity="KE")
         endif
@@ -579,20 +619,39 @@ subroutine do_analyses(a, time, frame, at)
       else if (a(i_a)%KEdf_radial) then
 	call reallocate_data(a(i_a)%KEdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%KEdf_radial_n_bins, a(i_a)%KEdf_radial_n_zones /) )
 	if (a(i_a)%KEdf_radial_zone_center_at > 0) then
-	  use_KEdf_radial_zone_center = at%pos(:,a(i_a)%KEdf_radial_zone_center_at)
+	  use_radial_center = at%pos(:,a(i_a)%KEdf_radial_zone_center_at)
 	else
-	  use_KEdf_radial_zone_center = a(i_a)%KEdf_radial_zone_center
+	  use_radial_center = a(i_a)%KEdf_radial_zone_center
 	endif
 	if (a(i_a)%n_configs == 1) then
 	  allocate(a(i_a)%KEdf_radial_bin_pos(a(i_a)%KEdf_radial_n_bins))
 	  allocate(a(i_a)%KEdf_radial_zone_pos(a(i_a)%KEdf_radial_n_zones))
-	  call KEdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
-	    use_KEdf_radial_zone_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
-	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, a(i_a)%KEdf_radial_bin_pos, a(i_a)%KEdf_radial_zone_pos)
+	  call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
+	    use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
+	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE', a(i_a)%KEdf_radial_bin_pos, a(i_a)%KEdf_radial_zone_pos)
 	else
-	  call KEdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
-	    use_KEdf_radial_zone_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
-	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str)
+	  call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
+	    use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
+	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE')
+	endif
+      else if (a(i_a)%propdf_radial) then
+	call reallocate_data(a(i_a)%propdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%propdf_radial_n_bins, a(i_a)%propdf_radial_n_zones /) )
+	if (a(i_a)%propdf_radial_zone_center_at > 0) then
+	  use_radial_center = at%pos(:,a(i_a)%propdf_radial_zone_center_at)
+	else
+	  use_radial_center = a(i_a)%propdf_radial_zone_center
+	endif
+	if (a(i_a)%n_configs == 1) then
+	  allocate(a(i_a)%propdf_radial_bin_pos(a(i_a)%propdf_radial_n_bins))
+	  allocate(a(i_a)%propdf_radial_zone_pos(a(i_a)%propdf_radial_n_zones))
+	  call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
+	    use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
+	    a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, A(i_a)%propdf_radial_property, &
+	    a(i_a)%propdf_radial_bin_pos, a(i_a)%propdf_radial_zone_pos)
+	else
+	  call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
+	    use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
+	    a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, a(i_a)%propdf_radial_property)
 	endif
       else if (a(i_a)%geometry) then !geometry
         call reallocate_data(a(i_a)%geometry_histograms, a(i_a)%n_configs, a(i_a)%geometry_params%N)
@@ -841,6 +900,23 @@ subroutine print_analyses(a)
         end do
         do i=1, a(i_a)%n_configs
           call print(""//reshape(a(i_a)%KEdf_radial_histograms(:,:,i), (/ a(i_a)%KEdf_radial_n_zones*a(i_a)%KEdf_radial_n_bins /) ), file=outfile)
+        end do
+
+      else if (a(i_a)%propdf_radial) then !r-dep |F| density
+	call print("# r-dependent prop density", file=outfile)
+	call print("n_bins="//a(i_a)%propdf_radial_n_zones*a(i_a)%propdf_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+
+        do i1=1, a(i_a)%propdf_radial_n_zones
+        do i2=1, a(i_a)%propdf_radial_n_bins
+          if (a(i_a)%propdf_radial_zone_width > 0.0_dp) then
+            call print(""//a(i_a)%propdf_radial_zone_pos(i1)//" "//a(i_a)%propdf_radial_bin_pos(i2), file=outfile)
+          else
+            call print(""//a(i_a)%propdf_radial_bin_pos(i2), file=outfile)
+          endif
+        end do
+        end do
+        do i=1, a(i_a)%n_configs
+          call print(""//reshape(a(i_a)%propdf_radial_histograms(:,:,i), (/ a(i_a)%propdf_radial_n_zones*a(i_a)%propdf_radial_n_bins /) ), file=outfile)
         end do
 
       else if (a(i_a)%geometry) then !geometry
@@ -1146,29 +1222,53 @@ subroutine rdfd_calc(rdfd, at, zone_center, bin_width, n_bins, zone_width, n_zon
 
 end subroutine rdfd_calc
 
-subroutine KEdf_radial_calc(histograms, at, bin_width, n_bins, &
-  zone_center, zone_width, n_zones, gaussian_sigma, mask_str, bin_pos, zone_pos)
+subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
+  zone_center, zone_width, n_zones, gaussian_sigma, mask_str, property, bin_pos, zone_pos)
   real(dp), intent(inout) :: histograms(:,:)
   type(Atoms), intent(in) :: at
   real(dp), intent(in) :: bin_width, zone_width
   integer, intent(in) :: n_bins, n_zones
   real(dp), intent(in) :: gaussian_sigma
   real(dp), intent(in) :: zone_center(3)
-  character(len=*), intent(in) :: mask_str
+  character(len=*), intent(in) :: mask_str, property
   real(dp), intent(inout), optional :: bin_pos(:), zone_pos(:)
 
   logical, allocatable :: mask_a(:)
   integer :: i_at, i_bin_ctr, i_bin, i_zone
   integer, allocatable :: n_in_zone(:)
-  real(dp) :: n, ke, r, bin_ctr
+  real(dp) :: n, quant, r, bin_ctr
   logical :: has_mass
+  logical :: doing_KE
+  character(len=100) :: use_property
+  real(dp), pointer :: prop_a(:), prop_3a(:,:)
+  logical :: prop_is_scalar
+  integer :: lookup(3)
 
   allocate(mask_a(at%N))
   call is_in_mask(mask_a, at, mask_str)
 
-  has_mass = has_property(at, 'mass')
-  if (.not. has_property(at, 'velo')) &
-    call system_abort("KEdf_calc has no velocity property in Atoms structure")
+  doing_KE = (trim(property) == 'KE') 
+
+  if (len_trim(property) == 0) &
+    call system_abort("propdf_radial_calc has no property specified.  Are you sure you passed a propdf_radial_property value?")
+
+  if (doing_KE) then ! KE is a special case
+    has_mass = has_property(at, 'mass')
+    if (.not. has_property(at, 'velo')) &
+      call system_abort("propdf_radial_calc has no 'velo' property in Atoms structure")
+  else ! assign pointers for property
+    if (.not. has_property(at, property, lookup)) &
+      call system_abort("propdf_radial_calc has no '"//trim(property)//"' property in Atoms structure")
+
+    prop_is_scalar = .false.
+    if (lookup(3)-lookup(2)+1 == 1) then
+      if (.not. assign_pointer(at, trim(property), prop_a)) &
+	call system_abort("propdf_radial_calc failed to assign scalar pointer for property '"//trim(property)//"'")
+      prop_is_scalar = .true.
+    else if (.not. assign_pointer(at, trim(property), prop_3a)) then
+      call system_abort("propdf_radial_calc failed to assign 3-array pointer for property '"//trim(property)//"' which has " // (lookup(3)-lookup(2)+1) // "-vectors")
+    endif
+  endif
 
   allocate(n_in_zone(n_zones))
   n_in_zone = 0
@@ -1204,16 +1304,24 @@ subroutine KEdf_radial_calc(histograms, at, bin_width, n_bins, &
     !count the number of atoms in that zone
     n_in_zone(i_zone) = n_in_zone(i_zone) + 1
 
-    !calc KE for this atom
-    if (has_mass) then
-      ke = kinetic_energy(at%mass(i_at), at%velo(:,i_at))
+    if (doing_KE) then
+      !calc KE for this atom
+      if (has_mass) then
+	quant = kinetic_energy(at%mass(i_at), at%velo(:,i_at))
+      else
+	quant = kinetic_energy(ElementMass(at%Z(i_at)), at%velo(:,i_at))
+      endif
     else
-      ke = kinetic_energy(ElementMass(at%Z(i_at)), at%velo(:,i_at))
+      if (prop_is_scalar) then
+	quant = prop_a(i_at)
+      else
+	quant = norm(prop_3a(:,i_at))
+      endif
     endif
-    i_bin_ctr = ke/bin_width
+    i_bin_ctr = quant/bin_width
     do i_bin=max(1,i_bin_ctr-floor(6*gaussian_sigma/bin_width)), min(n_bins,i_bin_ctr+floor(6*gaussian_sigma/bin_width))
       bin_ctr = (i_bin-1)*bin_width
-      histograms(i_bin,i_zone) = histograms(i_bin,i_zone) + exp(-0.5*(ke-bin_ctr)**2/gaussian_sigma**2)
+      histograms(i_bin,i_zone) = histograms(i_bin,i_zone) + exp(-0.5*(quant-bin_ctr)**2/gaussian_sigma**2)
     end do
   end do ! i_at
 
@@ -1223,7 +1331,7 @@ subroutine KEdf_radial_calc(histograms, at, bin_width, n_bins, &
     if (n_in_zone(i_zone) > 0) histograms(:,i_zone) = n*histograms(:,i_zone)/real(n_in_zone(i_zone),dp)
   end do
 
-end subroutine KEdf_radial_calc
+end subroutine propdf_radial_calc
 
 subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist_bins, zone_width, n_zones, &
 		     center_mask_str, neighbour_1_mask_str, neighbour_1_max_dist, neighbour_2_mask_str, & 
