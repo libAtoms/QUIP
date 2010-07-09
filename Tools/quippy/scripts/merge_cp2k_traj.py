@@ -43,7 +43,7 @@ for configs_to_merge in izip(*ar):
     elif (args[i].count("-frc-") == 1):
       in_name="frc"
       out_name="force"
-      unit_conv=HARTREE*BOHR
+      unit_conv=HARTREE/BOHR
     else:
       print "Don't know what property comes from file names '%s', aborting" % args[i]
       sys.exit(2)
