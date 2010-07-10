@@ -620,7 +620,7 @@ program crack
         if (trim(params%selection_method) == 'coordination' .and. all(changed_nn == 0)) &
              call system_abort('No seed atoms found - rerun makecrack')
         call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
-        call crack_update_selection(ds%atoms, params, classicalpot)
+        call crack_update_selection(ds%atoms, params)
 
      else
         call print('Static QM region')
@@ -894,7 +894,7 @@ program crack
            !****************************************************************    
            call system_timer('selection')
            call print_title('Quantum Selection')
-           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params, classicalpot)
+           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
            call system_timer('selection')
 
            !****************************************************************
@@ -1035,7 +1035,7 @@ program crack
 
            call print_title('Quantum Selection')
            call system_timer('selection')
-           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params, classicalpot)
+           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
            call system_timer('selection')
 
            call print_title('Force Computation')
@@ -1281,9 +1281,9 @@ program crack
 
         call crack_update_connect(ds%atoms, params)
         if (params%simulation_classical) then
-           crack_pos = crack_find_crack_pos(ds%atoms, params)
+           call crack_find_tip(ds%atoms, params, crack_tips)
         else
-           call crack_update_selection(ds%atoms, params, classicalpot)
+           call crack_update_selection(ds%atoms, params)
            dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
         end if
 
