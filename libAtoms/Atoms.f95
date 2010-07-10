@@ -778,6 +778,8 @@ contains
     logical, intent(in), optional :: mask(:)
     integer, intent(in), optional :: list(:)
 
+    integer :: i
+    integer, pointer, dimension(:) :: orig_index
 
     if ((.not. present(list) .and. .not. present(mask)) .or. (present(list) .and. present(mask))) &
          call system_abort('atoms_select: either list or mask must be present (but not both)')
@@ -788,6 +790,7 @@ contains
             call system_abort("atoms_select: mismatched sizes of from " // from%N // " and mask " // size(mask))
        call atoms_initialise(to, count(mask), from%lattice)
     else
+
        call atoms_initialise(to, size(list), from%lattice)
     end if
 
@@ -804,6 +807,16 @@ contains
        call select(to%data, from%data, row_mask=mask)
     else
        call select(to%data, from%data, row_list=list)
+    end if
+
+    call add_property(to, 'orig_index', 0)
+    if (.not. assign_pointer(to, 'orig_index', orig_index)) &
+         call system_abort('atoms_select: cannot assign pointer to orig_index')
+       
+    if (present(mask)) then
+       orig_index(:) = pack((/ (i, i=1,from%n) /), mask)
+    else
+       orig_index(:) = list(:)
     end if
 
     call atoms_repoint(to)
@@ -5605,5 +5618,30 @@ contains
     end if
 
   end subroutine atoms_bcast
+
+
+  !% Find the indices of the atoms within the cone with its point at the atom 'origin',
+  !% defined by direction 'dir' and opening angle with cosine 'cos_theta'. The indices
+  !% are returned in the Table 'output' which has a single integer column.
+  subroutine atoms_filter_cone(this, origin, dir, cos_theta, output)
+    type(Atoms), intent(in) :: this
+    integer, intent(in) :: origin
+    real(dp), intent(in), dimension(3) :: dir
+    real(dp), intent(in) :: cos_theta
+    type(Table), intent(out) :: output
+
+    real(dp) :: d(3)
+    integer :: i
+
+    call allocate(output, 1,0,0,0)
+    do i=1,this%n
+       if (i == origin) cycle
+       d = diff_min_image(this, origin, i)
+       if ((d .dot. dir)/(norm(d)*norm(dir)) > cos_theta) call append(output, i)
+    end do
+
+    call print(output)
+
+  end subroutine atoms_filter_cone
 
 end module atoms_module
