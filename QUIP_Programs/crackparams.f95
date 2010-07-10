@@ -170,9 +170,12 @@ module CrackParams_module
      integer  :: crack_check_coordination_atom_type       !% Atom type we check the coordination for 
      integer  :: crack_check_coordination_critical_nneigh !% Critical number of neighbours in the connectivity checking
      real(dp) :: crack_check_coordination_region          !% Region (+/- around y=0 level) where the atomic coordination is checked.  
-     logical :: crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
+     logical ::  crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
      real(dp) :: crack_tip_grid_size       !% Size (in A) of grid used for locating crack tips
      real(dp) :: crack_tip_min_separation  !% Minimum seperation (in A) between a pair of crack tips for them to be considered distinct
+     character(STRING_LENGTH) :: crack_tip_method  !% One of 'coordination', 'percolation' or 'local_e'
+     logical  :: crack_free_surfaces       !% If true, crack is 3D with free surfaces at z= +/- depth/2
+     real(dp) :: crack_front_window_size   !% Size of windows along crack front. Should be roughly equal to lattice periodicity in this direction.
  
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
@@ -240,8 +243,7 @@ module CrackParams_module
 
      ! Selection parameters
      integer  :: selection_max_qm_atoms   !% Maximum number of QM atoms to select
-     logical  :: selection_dynamic        !% Should QM region be changed dynamically during simulation? If this is false, the 'hybrid'
-                                          !% property will be read from input file and fixed for the entire simulation.
+     character(STRING_LENGTH) :: selection_method !% One of 'static', 'coordination', 'crack_front'
      real(dp) :: selection_ellipse(3)     !% Principal radii of selection ellipse along $x$, $y$ and $z$ in \AA{}.
      real(dp) :: selection_ellipse_bias   !% Shift applied to ellipses, expressed as fraction of ellipse radius in $x$ direction.
      real(dp) :: selection_ellipse_buffer !% Difference in size between inner and outer selection ellipses, i.e. amount of hysteresis.
@@ -416,6 +418,9 @@ contains
     this%crack_double_ended     = .false.
     this%crack_tip_grid_size    = 3.0_dp    ! Angstrom
     this%crack_tip_min_separation = 20.0_dp ! Angstrom
+    this%crack_tip_method    = 'neighbour'
+    this%crack_free_surfaces = .false.
+    this%crack_front_window_size = 5.44_dp ! Angstrom
 
     ! Graphene specific crack parameters
     this%crack_graphene_theta        = 0.0_dp  ! Angle
@@ -493,7 +498,7 @@ contains
 
      ! Selection parameters
     this%selection_max_qm_atoms   = 200
-    this%selection_dynamic        = .true.
+    this%selection_method         = "coordination"
     this%selection_ellipse        = (/8.0_dp, 5.0_dp, 10.0_dp /)  ! Angstrom
     this%selection_ellipse_bias   = 0.5_dp   ! Fraction of principal radius in x direction
     this%selection_ellipse_buffer = 1.3_dp   ! Angstrom
@@ -829,6 +834,21 @@ contains
           read (value, *) parse_cp%crack_tip_min_separation
        end if
 
+       call QUIP_FoX_get_value(attributes, "tip_method", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_tip_method
+       end if
+
+       call QUIP_FoX_get_value(attributes, "free_surfaces", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_free_surfaces
+       end if
+
+       call QUIP_FoX_get_value(attributes, "front_window_size", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%crack_front_window_size
+       end if
+
 
     elseif (parse_in_crack .and. name == 'simulation') then
 
@@ -1113,9 +1133,9 @@ contains
           read (value, *) parse_cp%selection_max_qm_atoms
        end if
 
-       call QUIP_FoX_get_value(attributes, "dynamic", value, status)
+       call QUIP_FoX_get_value(attributes, "method", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%selection_dynamic
+          read (value, *) parse_cp%selection_method
        end if
 
        call QUIP_FoX_get_value(attributes, "ellipse", value, status)
@@ -1406,6 +1426,9 @@ contains
     call Print('     doubled_ended         = '//this%crack_double_ended, file=file)
     call Print('     tip_grid_size         = '//this%crack_tip_grid_size, file=file)
     call Print('     tip_min_separation    = '//this%crack_tip_min_separation, file=file)
+    call Print('     tip_method            = '//trim(this%crack_tip_method), file=file)
+    call Print('     free_surfaces         = '//this%crack_free_surfaces, file=file)
+    call Print('     front_window_size     = '//this%crack_front_window_size, file=file)
     call Print('',file=file)
     call Print('  Simulation parameters:',file=file)
     call Print('     task                  = '//trim(this%simulation_task),file=file)
@@ -1469,7 +1492,7 @@ contains
     call Print('',file=file)
     call Print('  Selection parameters:',file=file)
     call Print('     max_qm_atoms          = '//this%selection_max_qm_atoms,file=file)
-    call Print('     dynamic               = '//this%selection_dynamic,file=file)
+    call Print('     method                = '//trim(this%selection_method),file=file)
     call Print('     ellipse               = '//this%selection_ellipse//' A',file=file)
     call Print('     ellipse_bias          = '//this%selection_ellipse_bias//' radius fraction',file=file)
     call Print('     ellipse_buffer        = '//this%selection_ellipse_buffer//' A',file=file)
