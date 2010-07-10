@@ -35,6 +35,7 @@ module CrackTools_module
   use elasticity_module
   use CrackParams_module
   use atoms_module
+  use linearalgebra_module
 
   implicit none
 
@@ -553,17 +554,10 @@ contains
     call crack_update_connect(crack_slab, params)
 
     ! Find position of crack tips
-#ifndef HAVE_QUIPPY
-    call crack_find_tips(crack_slab, params, crack_tips)
-#endif
-    call print('crack_update_selection: crack_tips=')
-    call print(crack_tips)
+    call crack_find_tip(crack_slab, params, crack_tips)
 
-    if (params%crack_double_ended) then
-       if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
-    else
-       if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
-    end if
+    call print('crack_setup_marks: crack_tips=')
+    call print(crack_tips)
 
     ! We'll follow the right-most crack tip which is last entry in list
     call set_value(crack_slab%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
@@ -585,7 +579,7 @@ contains
 
     call Print('Seeded embed region with '//count(changed_nn /= 0)//' atoms.')
 
-    call crack_update_selection(crack_slab, params)
+!    call crack_update_selection(crack_slab, params)
 
   end subroutine crack_setup_marks
 
@@ -1113,9 +1107,9 @@ contains
     call append(list, (/c,0,0,0/))
 
     if (at%use_uniform_cutoff) then
-       cutoff = at%cutoff*bond_length(at%Z(c),at%Z(c))
-    else
        cutoff = at%cutoff
+    else
+       cutoff = at%cutoff*bond_length(at%Z(c),at%Z(c))
     endif
 
     ! Grow in all directions by enough steps to select sphere of 2*principal radius.
@@ -1159,7 +1153,6 @@ contains
          abs(slab%pos(1,i)) > width/2.0_dp - edge_gap
 
   end function crack_is_edge_atom
-
 
   !% Update the connectivity of a crack slab. calc_connect is only called if 
   !% necessary (i.e. if the maximal atomic displacement is bigger than
@@ -1255,13 +1248,28 @@ contains
 
   end subroutine crack_update_connect
 
+  subroutine crack_update_selection(at, params)
+    type(Atoms), intent(inout) :: at
+    type(CrackParams), intent(in) :: params
+
+    if (trim(params%selection_method) == 'coordination') then
+       call crack_update_selection_coordination(at, params)
+
+    else if  (trim(params%selection_method) == 'crack_front') then
+       call crack_update_selection_crack_front(at, params)
+
+    else
+       call system_abort('crack_update_selection: unknown selection_method '//trim(params%selection_method))
+    end if
+    
+  end subroutine crack_update_selection
 
   !% Update QM selection region for a crack configuration using the 'nn' and 'changed_nn'
   !% properties and the 'CrackPos' parameter from the atoms structure, as well as the
   !% selection parameters in 'params'. If 'update_embed' is true then the embed region is
   !% updated, otherwise we simply recompute the fit region from the embed region.
   !% The value of 'num_directionality' returned can be passed to adjustable_potential_init.
-  subroutine crack_update_selection(at, params)
+  subroutine crack_update_selection_coordination(at, params)
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
@@ -1279,23 +1287,23 @@ contains
     call system_timer('selection update')
 
     if (.not. assign_pointer(at, 'nn', nn)) &
-         call system_abort('crack_update_selection: nn property missing from atoms')
+         call system_abort('crack_update_selection_coordination: nn property missing from atoms')
 
     if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
-         call system_abort('crack_update_selection: nn property missing from atoms')
+         call system_abort('crack_update_selection_coordination: nn property missing from atoms')
 
     if (.not. assign_pointer(at, 'changed_nn', changed_nn)) &
-         call system_abort('crack_update_selection: changed_nn property missing from atoms')
+         call system_abort('crack_update_selection_coordination: changed_nn property missing from atoms')
 
     if (.not. assign_pointer(at, 'hybrid', hybrid)) &
-         call system_abort('crack_update_selection: atoms structure is missing hybrid property')
+         call system_abort('crack_update_selection_coordination: atoms structure is missing hybrid property')
 
 
     if (.not. get_value(at%params, 'CrackPosx', crack_pos(1))) &
-         call system_abort('crack_update_selection: CrackPosx parameter missing from atoms')
+         call system_abort('crack_update_selection_coordination: CrackPosx parameter missing from atoms')
 
     if (.not. get_value(at%params, 'CrackPosy', crack_pos(2))) &
-         call system_abort('crack_update_selection: CrackPosy parameter missing from atoms')
+         call system_abort('crack_update_selection_coordination: CrackPosy parameter missing from atoms')
 
     call print('Building QM selection zone...')
     
@@ -1433,17 +1441,9 @@ contains
     call finalise(tmp_select)
 
     ! Find new position of crack tips
-#ifndef HAVE_QUIPPY
-    call crack_find_tips(at, params, crack_tips)
-#endif
-    call print('crack_update_selection: crack_tips=')
+    call crack_find_tip(at, params, crack_tips)
+    call print('crack_update_selection_coordination: crack_tips=')
     call print(crack_tips)
-
-    if (params%crack_double_ended) then
-       if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
-    else
-       if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
-    end if
 
     ! We'll follow the right-most crack tip which is last entry in list
     call set_value(at%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
@@ -1467,11 +1467,161 @@ contains
 
     call finalise(embedlist)
 
-  end subroutine crack_update_selection
+  end subroutine crack_update_selection_coordination
 
+
+  subroutine crack_update_selection_crack_front(at, params)
+    type(Atoms), intent(inout) :: at
+    type(CrackParams), intent(in) :: params
+
+    integer :: p, i, j, surface, age
+    type(Table) :: old_embed, tmp_select, embedlist, temptable, crack_tips
+    integer, allocatable, dimension(:,:) :: selectmask
+    real(dp), allocatable, dimension(:) :: sorted, tip_dist
+    real(dp), dimension(2,3) :: selection_ellipse
+    real(dp) :: ellipse_bias(3)
+    integer :: dislo_seed, temp_N
+
+    integer, pointer, dimension(:) :: hybrid
+    logical, pointer, dimension(:) :: crack_front
+
+    call system_timer('selection update')
+
+    if (.not. assign_pointer(at, 'crack_front', crack_front)) &
+         call system_abort('crack_update_selection_crack_front: crack_front property missing from atoms')
+    if (.not. assign_pointer(at, 'hybrid', hybrid)) &
+         call system_abort('crack_update_selection: atoms structure is missing hybrid property')
+
+    call allocate(embedlist, 1,0,0,0)
+    call allocate(old_embed, 1,0,0,0)
+    call print('Got '//count(hybrid == HYBRID_ACTIVE_MARK)//' old embed atoms')
+    if (count(hybrid == HYBRID_ACTIVE_MARK) /= 0) &
+         call append(old_embed, find(hybrid == HYBRID_ACTIVE_MARK))
+
+    selection_ellipse(1,:) = params%selection_ellipse
+    selection_ellipse(2,:) = params%selection_ellipse
+    do i=1,3
+       selection_ellipse(2,i) = selection_ellipse(2,i) + params%selection_ellipse_buffer
+    end do
+    ellipse_bias = 0.0_dp
+    ! bias ellipse forward by arbitrary fraction of a radius (0.5 => 1/4 back, 3/4 ahead)
+    ellipse_bias(1) = params%selection_ellipse_bias*selection_ellipse(1,1)
+
+    ! Find new position of crack front
+    call crack_find_tip_local_e(at, params)
+
+    allocate(selectmask(2,at%n))
+    selectmask = 0
+
+    ! Do selection twice, once to get inner and once to get outer surface
+    do surface=1,2
+
+       ! Mark ellipsoid around each atom with crack_front /= 0
+       do i=1,at%N
+          if (.not. crack_front(i)) cycle
+          
+
+          selectmask(surface,i) = 1
+             
+          if (old_embed%N == 0) then
+             ! First time we do embedding, use ellipse halfway between inner and outer
+             call select_ellipse(at, 0.5_dp*(selection_ellipse(1,:) + selection_ellipse(2,:)), &
+                  ellipse_bias, tmp_select, i)
+          else
+             call select_ellipse(at, selection_ellipse(surface,:), ellipse_bias, tmp_select, i)
+          end if
+
+          call print('marking '//tmp_select%n//' atoms in ellipse around atom '//i)
+          
+          selectmask(surface,tmp_select%int(1,1:tmp_select%n)) = 1
+       end do
+       
+       write (line,'(a,i0,a,i0,a)') 'Surface ',surface,' Now embedding ', count(selectmask(surface,:) == 1), ' atoms'
+       call print(line)
+       
+       ! First time there's no need to go round twice
+       if(old_embed%N == 0) exit
+    end do
+
+
+    call wipe(embedlist)
+
+    ! Keep old embed atoms unless they're now outside outer surface
+    do i=1,old_embed%N
+       if (selectmask(2,old_embed%int(1,i)) == 1) call append(embedlist, old_embed%int(1,i))
+    end do
+    
+    ! Add atoms inside inner surface
+    do i=1,at%N
+       if (selectmask(1,i) == 0) cycle
+       if (.not. is_in_array(embedlist%int(1,1:embedlist%N), i)) &
+            call append(embedlist, i)
+    end do
+    
+    call Print('Embedding '//embedlist%N//' atoms.')
+
+    ! Copy embedlist to 'hybrid' property
+    hybrid = 0
+    hybrid(int_part(embedlist,1)) = HYBRID_ACTIVE_MARK
+
+    call finalise(old_embed)
+    call finalise(tmp_select)
+    call finalise(embedlist)
+    deallocate(selectmask)
+    call system_timer('selection update')
+
+  end subroutine crack_update_selection_crack_front
+
+
+  subroutine crack_find_tip(at, params, crack_tips)
+    type(Atoms), intent(inout) :: at
+    type(CrackParams), intent(in) :: params
+    type(Table), intent(out) :: crack_tips
+
+    integer, pointer, dimension(:) :: crack_front
+    real(dp) :: crack_tip(2)
+    integer :: i, n
+
+    if (trim(params%crack_tip_method) == 'coordination') then
+       call allocate(crack_tips, 0, 3, 0, 0)   
+       crack_tip = crack_find_tip_coordination(at, params)
+       call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
+
+    else if (trim(params%crack_tip_method) == 'percolation') then
+       call crack_find_tip_percolation(at, params, crack_tips)
+
+    else if (trim(params%crack_tip_method) == 'local_e') then
+       call crack_find_tip_local_e(at, params)
+
+       if (.not. assign_pointer(at, 'crack_front', crack_front)) &
+            call system_abort('crack_find_tip_local_e: crack_front property missing from atoms')
+    
+       ! Calculate crack tip position as average along crack front
+       crack_tip = 0.0_dp
+       do i=1,at%N
+          if (crack_front(i) /= 1) cycle
+          crack_tip(1) = crack_tip(1) + at%pos(1,i)
+          crack_tip(2) = crack_tip(2) + at%pos(2,i)
+          n = n + 1
+       end do
+       crack_tip = crack_tip / real(n, dp)
+       
+    else
+       call system_abort('crack_find_tip: unknown tip_method '//trim(params%crack_tip_method))
+
+    end if
+
+
+    if (params%crack_double_ended) then
+       if (crack_tips%N /= 2) call system_abort('Expected two, but found '//crack_tips%N//' crack tips')
+    else
+       if (crack_tips%N /= 1) call system_abort('Expected one, but found '//crack_tips%N//' crack tips')
+    end if
+
+  end subroutine crack_find_tip
 
   !% Return $x$ coordinate of rightmost undercoordinated atom
-  function crack_find_crack_pos(at, params) result(crack_pos)
+  function crack_find_tip_coordination(at, params) result(crack_pos)
     type(Atoms), intent(inout) :: at
     type(CrackParams) :: params
     real(dp), dimension(2) :: crack_pos
@@ -1506,7 +1656,7 @@ contains
     call set_value(at%params, 'CrackPosx', crack_pos(1))
     call set_value(at%params, 'CrackPosy', crack_pos(2))
 
-  end function crack_find_crack_pos
+  end function crack_find_tip_coordination
 
   function percolation_step(grid)
     integer, dimension(:,:,:), intent(inout) :: grid
@@ -1557,17 +1707,10 @@ contains
   !% 'params%crack_tip_min_separation' cells from one another. The result is a Table
   !% with realsize=3 containing the coordinates of the crack tips detected. 
   !% If a through-going crack is detected the result table will have size zero.
-#ifdef HAVE_QUIPPY
-  subroutine crack_find_tips(at, params, crack_tips, n_cell_out, cells_out, min_cells_out)
-#else
-  subroutine crack_find_tips(at, params, crack_tips)
-#endif
+  subroutine crack_find_tip_percolation(at, params, crack_tips)
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
     type(Table), intent(out) :: crack_tips
-#ifdef HAVE_QUIPPY
-    integer, dimension(:,:,:), intent(inout), target :: n_cell_out, cells_out, min_cells_out
-#endif
     integer, dimension(:,:,:), allocatable, target :: n_cell, cells, min_cells, old_cells
     type(Connection) :: connect
     type(Table) :: minima
@@ -1583,7 +1726,7 @@ contains
     call system_timer('crack_find_tip')
     
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
-         call system_abort('crack_find_tips: "OrigWidth" parameter missing from atoms')
+         call system_abort('crack_find_tip_percolation: "OrigWidth" parameter missing from atoms')
     
     call allocate(crack_tips, 0, 3, 0, 0)   
     
@@ -1601,7 +1744,7 @@ contains
        end if
        
        ! Construct temporary Connection object and partition atoms into cells
-       call print('crack_find_tips: allocating percolation grid with cell size '//grid_size//' A', VERBOSE)
+       call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A', VERBOSE)
        
        if (grid_i == 0) then
           call divide_cell(at%lattice, grid_size, cellsNa, cellsNb, cellsNc)
@@ -1618,7 +1761,7 @@ contains
        allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
        allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
 
-       call print('crack_find_tips: shape(cells)='//shape(cells))
+       call print('crack_find_tip_percolation: shape(cells)='//shape(cells))
        
        n_cell = 0
        do k=1,connect%cellsnc
@@ -1663,11 +1806,11 @@ contains
           right_edge = right_edge - 2
        end if
        
-       call print('crack_find_tips: edges left='//left_edge//' right='//right_edge//' top='//top_edge//' bottom='//bottom_edge)
+       call print('crack_find_tip_percolation: edges left='//left_edge//' right='//right_edge//' top='//top_edge//' bottom='//bottom_edge)
        
        n_slab = (right_edge-left_edge+1)*(bottom_edge-top_edge+1)*cellsnc
        
-       call print('crack_find_tips: n_slab='//n_slab)
+       call print('crack_find_tip_percolation: n_slab='//n_slab)
        
        n_cell_slab => n_cell(left_edge:right_edge,top_edge:bottom_edge,:)
        
@@ -1675,20 +1818,20 @@ contains
        occ_sigma = sqrt(real(sum(n_cell_slab**2),dp)/size(n_cell_slab) - occ_mu**2.0_dp)
        
        occ_threshold = max(0,floor(occ_mu - occ_sigma))
-       call print('crack_find_tips: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
+       call print('crack_find_tip_percolation: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
        
        ! Mark cells with occupancy <= occ_threshold for percolation
        cells = 0
        
        where (n_cell <= occ_threshold) cells = 1
 
-       call print('crack_find_tips: before filtration count(cells == 1) = '//count(cells == 1))
+       call print('crack_find_tip_percolation: before filtration count(cells == 1) = '//count(cells == 1))
 
        ! Clear marks not visited in previous percolation
        if (grid_factor /= 1) then
 
           call print('fill = '//fill)
-          call print('crack_find_tips: count(old_cells == fill) = '//count(old_cells == fill))
+          call print('crack_find_tip_percolation: count(old_cells == fill) = '//count(old_cells == fill))
 
           do k=1,size(old_cells,3)
              do j=1,size(old_cells,2)
@@ -1707,7 +1850,7 @@ contains
           end do
        end if
 
-       call print('crack_find_tips: after filtration count(cells == 1) = '//count(cells == 1))
+       call print('crack_find_tip_percolation: after filtration count(cells == 1) = '//count(cells == 1))
        
        if (params%crack_double_ended) then
           start_pos = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
@@ -1718,9 +1861,9 @@ contains
        call cell_of_pos(connect, at%g, start_pos, start_i, start_j, start_k)
        
        if (cells(start_i, start_j, start_k) /= 1) &
-            call system_abort('crack_find_tips: cannot start percolation since start_pos='//start_pos//' is not in void')
+            call system_abort('crack_find_tip_percolation: cannot start percolation since start_pos='//start_pos//' is not in void')
        
-       call print('crack_find_tips: seeding percolation in cell ('//i//','//j//','//k//')', VERBOSE)
+       call print('crack_find_tip_percolation: seeding percolation in cell ('//i//','//j//','//k//')', VERBOSE)
        
        ! Stop percolation from going outside slab
        cells(:left_edge,:,:) = 0
@@ -1734,16 +1877,11 @@ contains
        do while (percolation_step(cells))
           nstep = nstep + 1
        end do
-       call print('crack_find_tips: percolation completed in '//nstep//' steps', VERBOSE)
+       call print('crack_find_tip_percolation: percolation completed in '//nstep//' steps', VERBOSE)
        
        if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
-          call print('crack_find_tips: through-going crack detected')
+          call print('crack_find_tip_percolation: through-going crack detected')
           
-#ifdef HAVE_QUIPPY
-          n_cell_out = old_cells
-          cells_out = cells
-          min_cells_out = min_cells
-#endif
           deallocate(n_cell)
           deallocate(cells)
           deallocate(min_cells)    
@@ -1771,7 +1909,7 @@ contains
     ! but without overflowing any array boundaries
     
     min_dist = params%crack_tip_min_separation/grid_size
-    call print('crack_find_tips: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', VERBOSE)
+    call print('crack_find_tip_percolation: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', VERBOSE)
     
     min_cells = 0
     do k=1,connect%cellsnc
@@ -1801,7 +1939,7 @@ contains
        end do
     end do
     
-    call print('crack_find_tips: got '//minima%n//' tips before duplicate removal', VERBOSE)
+    call print('crack_find_tip_percolation: got '//minima%n//' tips before duplicate removal', VERBOSE)
     if (current_verbosity() >= VERBOSE) then
        do i=1,minima%n
           crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
@@ -1842,7 +1980,7 @@ contains
        end if
     end do
     
-    call print('crack_find_tips: found '//minima%n//' crack tips')
+    call print('crack_find_tip_percolation: found '//minima%n//' crack tips')
     
     do i=1,minima%n
        crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
@@ -1858,15 +1996,9 @@ contains
           j = j + 1
        end do
        
-       call print('crack_find_tips: inserting x='//crack_pos(1)//' at position '//j)
+       call print('crack_find_tip_percolation: inserting x='//crack_pos(1)//' at position '//j)
        call insert(crack_tips, j, realpart=crack_pos)
     end do
-    
-#ifdef HAVE_QUIPPY
-    n_cell_out = old_cells
-    cells_out = cells
-    min_cells_out = min_cells
-#endif
     
     deallocate(n_cell)
     deallocate(cells)
@@ -1877,8 +2009,121 @@ contains
     call finalise(minima)
     call system_timer('crack_find_tip')
     
-  end subroutine crack_find_tips
-  
+  end subroutine crack_find_tip_percolation
+
+
+  subroutine crack_find_tip_local_e(at, params)
+    type(Atoms), intent(inout) :: at
+    type(CrackParams), intent(in) :: params
+
+    real(dp), allocatable, dimension(:,:) :: filtered_local_e
+    real(dp), allocatable, dimension(:) :: surface_x, surface_z, surface_x_band, front_z
+    real(dp), pointer, dimension(:) :: local_e
+    integer, pointer, dimension(:) :: edge_mask
+    integer, allocatable, dimension(:) :: surface_i, surface_i_band, assign, front_i, idx
+    logical, pointer, dimension(:) :: crack_surface, crack_front
+    logical, allocatable, dimension(:) :: filtered_surface
+    real(dp) :: z, means(2,1)
+    integer :: i, n, surface_cluster(1)
+    type(Table) :: candidates
+
+    if (.not. assign_pointer(at, 'local_e', local_e)) &
+         call system_abort('crack_find_tip_local_e: local_e property missing from atoms')
+
+    if (.not. assign_pointer(at, 'crack_front', crack_front)) &
+         call system_abort('crack_find_tip_local_e: crack_front property missing from atoms')
+
+    if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
+         call system_abort('crack_find_tip_local_e: edge_mask property missing from atoms')
+
+    if (.not. assign_pointer(at, 'crack_surface', crack_surface)) &
+         call system_abort('crack_find_tip_local_e: crack_surface property missing from atoms')
+
+    ! **************************************************************************
+    ! Phase 1 - identify crack surface atoms
+    ! **************************************************************************
+
+    ! Carry out k-means clustering by the filtered local energies:
+    ! will give two clusters one for bulk and other for surface.
+    ! crack surface atoms are those in highest energy cluster and with
+    ! edge_mask == 0
+
+    allocate(filtered_local_e(count(edge_mask == 0),1), assign(count(edge_mask == 0)))
+    filtered_local_e(:,1) = pack(local_e, edge_mask == 0)
+    call kmeans(filtered_local_e, 2, means, assign, initialisation='random_partition')
+    allocate(filtered_surface(size(assign)))
+    surface_cluster = maxloc(means(:,1))
+    filtered_surface = assign == surface_cluster(1)
+    crack_surface = unpack(filtered_surface, edge_mask == 0, .false.)
+    deallocate(filtered_local_e, assign, filtered_surface)
+
+    call print('crack_find_tip_local_e: found '//count(crack_surface)//' surface atoms.')
+
+
+    ! **************************************************************************
+    ! Phase 2: identify crack front
+    ! **************************************************************************
+
+    crack_front(:) = .false.
+
+    allocate(surface_i(count(crack_surface)), surface_i_band(count(crack_surface)), &
+         surface_z(count(crack_surface)), &
+         surface_x(count(crack_surface)), surface_x_band(count(crack_surface)))
+
+    ! Indices and (x,z) coordinates of surface atoms
+    surface_i = pack( (/ (i, i=1,at%N) /), crack_surface)
+    surface_x = pack(at%pos(1,:), crack_surface)
+    surface_z = pack(at%pos(3,:), crack_surface)
+
+    z = minval(surface_z)
+    do while (z <= maxval(surface_z))
+       surface_i_band = 0
+       surface_x_band = -huge(1.0_dp)
+       where (surface_z >= z .and. surface_z < z + params%crack_front_window_size)
+          surface_i_band = surface_i
+          surface_x_band = surface_x
+       end where
+
+       if (count(surface_i_band /= 0) == 0) cycle ! continue if there are no atoms in this band
+
+       ! Mark the right-most atom in the band as being part of the crack front
+       crack_front(surface_i_band(maxloc(surface_x_band))) = .true.
+       z = z + params%crack_front_window_size
+    end do
+
+    deallocate(surface_i, surface_x, surface_z, surface_i_band, surface_x_band)
+    call print('crack_find_tip_local_e: found '//count(crack_front)//' crack front atoms.')
+
+    ! **************************************************************************
+    ! Phase 3 - expand crack front to edges of cell
+    ! **************************************************************************
+    
+    allocate(front_i(count(crack_front)),front_z(count(crack_front)),idx(count(crack_front)))
+    
+    front_i = pack( (/ (i, i=1,at%N) /), crack_front)
+    front_z = at%pos(3,front_i)
+
+    call insertion_sort(front_z, idx)
+    front_i = front_i(idx) ! now in order of increasing z
+    
+    call atoms_filter_cone(at, origin=front_i(2), dir=(at%pos(:,front_i(1)) - at%pos(:,front_i(2))), &
+         cos_theta=0.995_dp, output=candidates)
+    do i=1,candidates%n
+       if (edge_mask(candidates%int(1,i)) == 1) crack_front(candidates%int(1,i)) = .true.
+    end do
+
+    call wipe(candidates)
+    call atoms_filter_cone(at, origin=front_i(size(front_i)-1), dir=(at%pos(:,front_i(size(front_i))) - at%pos(:,front_i(size(front_i)-1))), &
+         cos_theta=0.995_dp, output=candidates)
+    do i=1,candidates%n
+       if (edge_mask(candidates%int(1,i)) == 1) crack_front(candidates%int(1,i)) = .true.
+    end do
+
+    deallocate(front_i, front_z, idx)
+    call print('crack_find_tip_local_e: expanded crack front contains '//count(crack_front)//' atoms.')
+    
+  end subroutine crack_find_tip_local_e
+
   subroutine crack_print_cio(at, cio, params)
     type(Atoms), intent(inout) :: at
     type(CInoutput), intent(inout) :: cio
