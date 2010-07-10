@@ -425,3 +425,17 @@ def elastic_constants(metapot, at, sym='cubic', relax=True, verbose=True, graphi
 
    return C
 
+
+def atomic_strain(at, r0, crystal_factor=1.0):
+   """Atomic strain as defined by JA Zimmerman in `Continuum and Atomistic Modeling of
+   Dislocation Nucleation at Crystal Surface Ledges`, PhD Thesis, Stanford University (1999)."""
+
+   strain = fzeros((3,3,at.n))
+
+   for l in frange(at.n):
+      for n in at.neighbours[l]:
+         for i in frange(3):
+            for j in frange(3):
+               strain[i,j,l] += n.diff[i]*n.diff[j]/r0**2.0
+               
+   return strain/crystal_factor
