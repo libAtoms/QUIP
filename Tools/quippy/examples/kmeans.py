@@ -18,6 +18,7 @@
 
 # K-means clustering
 
+from numpy import *
 
 def kmeans(data, K, means=None):
    data = array(data)
@@ -25,7 +26,7 @@ def kmeans(data, K, means=None):
 
    if means is None:
       # Initialise centroids randomly within range of input data
-      means = array([[uniform(low=data[:,i].min(), high=data[:,i].max()) for i in range(M)]
+      means = array([[random.uniform(low=data[:,i].min(), high=data[:,i].max()) for i in range(M)]
                      for j in range(K) ])
    else:
       means = array(means)
