@@ -475,6 +475,16 @@ class FortranArray(numpy.ndarray):
             obj = obj.view(FortranArray)
         return obj
 
+    def mean(self, axis=None, dtype=None, out=None):
+        """One-based analogue of :meth:`numpy.ndarray.mean`"""
+	if axis is not None and axis > 0:
+	    axis -= 1
+	obj = numpy.ndarray.mean(self, axis, out).view(FortranArray)
+        if isinstance(obj, numpy.ndarray):
+            obj = obj.view(FortranArray)
+        return obj
+
+
     def stripstrings(self):
         """Return contents as string (0- and 1-dimensional arrays) or array of strings with
         trailing spaces removed (2-dimensional arrays).
