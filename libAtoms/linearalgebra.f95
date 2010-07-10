@@ -5063,4 +5063,109 @@ CONTAINS
 
    end function pbc_aware_centre
 
+
+   !% K-means clustering. Algorithm is as described in Numerical Recipes
+   !% (Third Edition, Section 16.1.2, pp. 848-849).
+   subroutine kmeans(data, K, means, assign, err, initialisation)
+     real(dp), dimension(:, :), intent(in) :: data
+     integer, intent(in) :: K
+     real(dp), intent(inout), dimension(:,:) :: means
+     integer, dimension(:), intent(inout) :: assign
+     real(dp), intent(out), optional :: err
+     character(*), intent(in), optional :: initialisation
+
+     character(30) :: do_initialisation
+     integer :: N, M, nn, mm, kk, kmin
+     logical :: change
+     real(dp) :: dmin, d
+
+     N = size(data, 1)
+     M = size(data, 2)
+
+     do_initialisation = optional_default('none', initialisation)
+     if (trim(do_initialisation) /= 'none' .and. &
+         trim(do_initialisation) /= 'random_means' .and. &
+         trim(do_initialisation) /= 'random_partition') &
+         call system_abort('kmeans: initialisation argument should be one of "none" (default), "random_means", "random_partition"')
+
+     if (trim(do_initialisation) == 'random_means') then
+        ! Initialise centroids randomly within range of input data
+        do kk=1,K
+           do mm=1,M
+              means(kk,mm) = ran_uniform()*(maxval(data(:,mm))-minval(data(:,mm))) + minval(data(:,mm))
+           end do
+           call print('random_means('//kk//'): '//means(kk,:), VERBOSE)
+        end do
+     end if
+     
+     assign(:) = 0
+
+     if (trim(do_initialisation) == 'random_partition') then
+        ! Assign each centroid randomly to one of the K centroids
+        do nn=1,N
+           assign(nn) = mod(ran(), K)+1
+        end do
+        call print('random_partition: '//assign, VERBOSE)
+
+        ! Compute the initial means from the random partition
+        means(:,:) = 0.0_dp
+        do nn=1,N
+           do mm=1,M
+              means(assign(nn),mm) = means(assign(nn),mm) + data(nn,mm)
+           end do
+        end do
+        do kk=1,K
+           if (any(assign == kk)) then
+              means(kk,:) = means(kk,:) / count(assign == kk)
+           end if
+        end do
+     end if
+
+     change = .true.
+
+     do while (change)
+        change = .false.
+
+        ! E-step -- assign each point to the component whose mean it is closest to
+        do nn=1,N
+           dmin = huge(1.0_dp)
+           do kk=1,K
+              d = (data(nn,:) - means(kk,:)) .dot. (data(nn,:) - means(kk,:))
+              if (d < dmin) then
+                 dmin = d
+                 kmin = kk
+              end if
+           end do
+           
+           if (assign(nn) /= kmin) then
+              assign(nn) = kmin
+              change = .true.
+           end if
+        end do
+
+        ! M-step -- update each mean to the average of the data points assigned to it
+        means(:,:) = 0.0_dp
+        do nn=1,N
+           do mm=1,M
+              means(assign(nn),mm) = means(assign(nn),mm) + data(nn,mm)
+           end do
+        end do
+        do kk=1,K
+           if (any(assign == kk)) then
+              means(kk,:) = means(kk,:) / count(assign == kk)
+           end if
+        end do
+     end do
+
+     if (present(err)) then
+        ! Compute residual error
+        err = 0.0_dp
+        do nn=1,N
+           err = err + (data(nn,:) - means(assign(nn),:)) .dot. (data(nn,:) - means(assign(nn),:))
+        end do
+     end if
+
+   end subroutine kmeans
+
+
 end module linearalgebra_module
