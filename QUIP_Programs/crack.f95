@@ -613,14 +613,14 @@ program crack
 
   ! Initialise QM region
   if (.not. params%simulation_classical) then
-     if (params%selection_dynamic) then
+     if (trim(params%selection_method) /= 'static') then
         call print('Initialising dynamic QM region')
 
         ! See if we read changed_nn from file
-        if (all(changed_nn == 0)) &
+        if (trim(params%selection_method) == 'coordination' .and. all(changed_nn == 0)) &
              call system_abort('No seed atoms found - rerun makecrack')
-        call print('count(changed_nn /=0) = '//count(changed_nn /= 0))
-        call crack_update_selection(ds%atoms, params)
+        call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
+        call crack_update_selection(ds%atoms, params, classicalpot)
 
      else
         call print('Static QM region')
@@ -740,7 +740,7 @@ program crack
         state = STATE_MD_LOADING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
-        call crack_find_tips(ds%atoms, params, old_crack_tips)
+        call crack_find_tip(ds%atoms, params, old_crack_tips)
         crack_tips = old_crack_tips
 
      else if (state_string(1:11) == 'MD_CRACKING') then
@@ -839,7 +839,7 @@ program crack
         case(STATE_MD_LOADING)
            ! If tip has moved by more than smooth_loading_tip_move_tol then
            ! turn off loading. 
-           call crack_find_tips(ds%atoms, params, crack_tips)
+           call crack_find_tip(ds%atoms, params, crack_tips)
 
            if (crack_tips%N /= old_crack_tips%N) &
                 call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
@@ -859,7 +859,7 @@ program crack
            ! time smooth_loading_arrest_time then switch back to loading
            if (ds%t - last_state_change_time >= params%md_smooth_loading_arrest_time) then
 
-              call crack_find_tips(ds%atoms, params, crack_tips)
+              call crack_find_tip(ds%atoms, params, crack_tips)
 
               if (crack_tips%N == 0) then
                  call print_title('Cracked Through')
@@ -894,7 +894,7 @@ program crack
            !****************************************************************    
            call system_timer('selection')
            call print_title('Quantum Selection')
-           if (params%selection_dynamic) call crack_update_selection(ds%atoms, params)
+           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params, classicalpot)
            call system_timer('selection')
 
            !****************************************************************
@@ -1035,7 +1035,7 @@ program crack
 
            call print_title('Quantum Selection')
            call system_timer('selection')
-           if (params%selection_dynamic)  call crack_update_selection(ds%atoms, params)
+           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params, classicalpot)
            call system_timer('selection')
 
            call print_title('Force Computation')
@@ -1283,7 +1283,7 @@ program crack
         if (params%simulation_classical) then
            crack_pos = crack_find_crack_pos(ds%atoms, params)
         else
-           call crack_update_selection(ds%atoms, params)
+           call crack_update_selection(ds%atoms, params, classicalpot)
            dummy = get_value(ds%atoms%params, 'CrackPosx', crack_pos(1))
         end if
 
