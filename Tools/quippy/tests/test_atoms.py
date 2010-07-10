@@ -245,12 +245,14 @@ class TestAtoms_LowLevel(QuippyTestCase):
       cp1 = self.dia.copy()
       cp1.remove_atoms(1)
       cp2 = self.dia.select(list=[8,2,3,4,5,6,7])
+      cp2.remove_property('orig_index')
       self.assertEqual(cp1, cp2)
 
    def test_remove_atoms_3(self):
       cp1 = self.dia.copy()
       cp1.remove_atoms([1,5])
       cp2 = self.dia.select(list=[8,2,3,4,7,6])
+      cp2.remove_property('orig_index')
       self.assertEqual(cp1, cp2)
 
    def test_map_into_cell_range(self):
@@ -462,6 +464,7 @@ class TestAtoms_Extras(QuippyTestCase):
 
    def test_select_mask_all(self):
       sub_at = self.at.select(mask=[1]*self.at.n)
+      sub_at.remove_property('orig_index')
       self.assertEqual(self.at, sub_at)
 
    def test_select_mask_one(self):
@@ -895,7 +898,7 @@ class TestGeometry(QuippyTestCase):
       dia = diamond(5.44, 14)
       dia.add_property('mass', [ElementMass[z] for z in dia.z])
       self.assertArrayAlmostEqual(dia.centre_of_mass(),
-                                  farray([dia.diff_min_image(1,i) for i in frange(dia.n)]).mean(axis=1))
+                                  farray([dia.diff_min_image(1,i) for i in frange(dia.n)]).mean(axis=2))
       
 
 if __name__ == '__main__':
