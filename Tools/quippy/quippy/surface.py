@@ -167,7 +167,7 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
          print '\n\nSupercell %d' % nrep
       sup = supercell(at, nrep, nrep, nrep)
       box = orthorhombic_box(sup)
-      zero_sum(box.pos)
+      box.pos[:] = box.pos - tile(box.pos.mean(axis=2), [box.n, 1]).T
 
       for dir in set([1,2,3]) - set(periodicity.keys()):
 
