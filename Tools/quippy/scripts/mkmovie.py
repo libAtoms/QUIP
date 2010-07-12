@@ -23,6 +23,7 @@ import sys, optparse, shutil, os
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from quippy.progbar import ProgressBar
+import atomeye
 
 def skip_bad_times(seq, fill_value=9969209968386869046778552952102584320.0):
    """Skip frames with no Time param or with Time == fill_value."""
