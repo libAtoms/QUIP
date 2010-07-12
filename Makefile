@@ -127,6 +127,8 @@ clean:
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} -I${PWD} -I${PWD}/Makefiles clean ; \
 	done ; \
+
+deepclean: clean
 	for dir in ${EXTRA_CLEAN_DIRS}; do \
 	  cd $$dir; make clean; \
 	done
