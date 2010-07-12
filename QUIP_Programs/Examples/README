@@ -1,0 +1,4 @@
+If you want to compile one of these example programs please copy to
+the QUIP_Programs/ directory (one level up) and add to the PROGRAMS
+Makefile variable.
+
