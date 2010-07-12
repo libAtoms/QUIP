@@ -92,11 +92,6 @@ GAProgs/%: libAtoms gp ${FOX} QUIP_Core QUIP_Utils
 	rm ${BUILDDIR}/Makefile
 endif
 
-QUIP_Programs/Examples/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
-	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs/Examples -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/Examples/}
-	rm ${BUILDDIR}/Makefile
-
 QUIP_Programs/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
