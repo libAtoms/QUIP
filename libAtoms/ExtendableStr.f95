@@ -105,12 +105,27 @@ interface index
   module procedure extendable_str_index
 end interface index
 
+public :: operator(//)
+interface operator(//)
+   module procedure extendable_str_cat_string, string_cat_extendable_str
+   module procedure extendable_str_cat_extendable_str
+end interface operator(//)
+
 contains
 
-subroutine extendable_str_initialise(this)
+subroutine extendable_str_initialise(this, copy_from)
   type(extendable_str), intent(inout) :: this
+  type(extendable_str), intent(in), optional :: copy_from
 
   call finalise(this)
+
+  if (present(copy_from)) then
+     this%len = copy_from%len
+     this%increment = copy_from%increment
+     this%cur = copy_from%cur
+     allocate(this%s(this%len))
+     this%s = copy_from%s
+  endif
 end subroutine extendable_str_initialise
 
 subroutine extendable_str_finalise(this)
@@ -419,5 +434,41 @@ subroutine extendable_str_parse_line(this, delimiters, fields, num_fields, statu
     call parse_string(local_line, delimiters, fields, num_fields)
   endif
 end subroutine extendable_str_parse_line
+
+function extendable_str_cat_string(this, str)
+  type(extendable_str), intent(in)  :: this
+  character(*), intent(in)          :: str
+
+  type(extendable_str)              :: extendable_str_cat_string
+
+  ! ---
+
+  call initialise(extendable_str_cat_string, this)
+  call concat(extendable_str_cat_string, str)
+end function
+
+function string_cat_extendable_str(str, this)
+  character(*), intent(in)          :: str
+  type(extendable_str), intent(in)  :: this
+
+  character(len(str)+this%len)      :: string_cat_extendable_str
+
+  ! ---
+
+  string_cat_extendable_str = str
+  string_cat_extendable_str(len(str):) = string(this)
+end function
+
+function extendable_str_cat_extendable_str(this, str)
+  type(extendable_str), intent(in)  :: this
+  type(extendable_str), intent(in)  :: str
+
+  type(extendable_str)              :: extendable_str_cat_extendable_str
+
+  ! ---
+
+  call initialise(extendable_str_cat_extendable_str, this)
+  call concat(extendable_str_cat_extendable_str, string(str))
+end function
 
 end module extendable_str_module
