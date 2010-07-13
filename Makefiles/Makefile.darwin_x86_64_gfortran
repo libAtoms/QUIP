@@ -41,10 +41,10 @@ LINKER = gfortran
 DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
 DEFAULT_OPTIM = -O3
 
-DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN
+DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN
 F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore -Wunused
 F77FLAGS += -x f77-cpp-input -fno-second-underscore
-CFLAGS += -fPIC -DDARWIN
+CFLAGS += -fPIC
 
 MAKEDEP_ARGS = -lc -suffix .mod
 AR_ADD = src
