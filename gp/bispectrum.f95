@@ -1705,7 +1705,7 @@ module bispectrum_module
              call print("qw dimension: "//i)
              call print("")
 
-             test_qw_gradient = test_qw_gradient .and. test_gradient(x00, test_qw, test_dqw)
+             !test_qw_gradient = test_qw_gradient .and. test_gradient(x00, test_qw, test_dqw)
              call print("")
           end do
        end do
