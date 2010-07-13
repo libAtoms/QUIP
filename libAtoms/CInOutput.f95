@@ -28,6 +28,8 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module CInOutput_module
 
   !% Interface to C routines for reading and writing Atoms objects to and from XYZ and NetCDF files.
@@ -35,6 +37,7 @@ module CInOutput_module
   !% atoms_read_xyz. 
 
   use iso_c_binding
+  use error_module
   use Atoms_module
   use Dictionary_module
   use Table_module
@@ -195,7 +198,7 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi, ierror)
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
@@ -203,6 +206,7 @@ contains
     logical, optional, intent(in) :: netcdf4
     logical, optional, intent(in) :: no_compute_index
     type(MPI_context), optional, intent(in) :: mpi
+    integer, optional, intent(inout) :: ierror
 
     integer :: do_append, do_netcdf4, do_no_compute_index
 
@@ -231,7 +235,7 @@ contains
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
             this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
-            call system_abort("Error opening file "//filename)
+            RAISE_ERROR("Error opening file "//filename, ierror)
     else
        if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
@@ -239,7 +243,7 @@ contains
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
             this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
-            call system_abort("Error allocating C structure")
+            RAISE_ERROR("Error allocating C structure", ierror)
     end if
 
     call c_f_pointer(this%c_n_frame, this%n_frame)
@@ -301,10 +305,10 @@ contains
     call cinoutput_close(this)
   end subroutine cinoutput_finalise
 
-  subroutine cinoutput_query(this, frame, status)
+  subroutine cinoutput_query(this, frame, ierror)
     type(CInOutput), intent(inout) :: this
     integer, optional, intent(in) :: frame
-    integer, optional, intent(out) :: status
+    integer, optional, intent(out) :: ierror
     integer(C_INT) :: do_frame
 
     integer :: cioquery_status, cioskip_status
@@ -316,12 +320,14 @@ contains
 	  call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
 	cioskip_status = cioskip(this%c_at, frame-this%current_frame);
 	if (cioskip_status == 0) then
-	  if (present(status)) then
-	    status = 1
-	    return
-	  else
-	    call system_abort("Error querying CInOutput file while skipping to desired frame")
-	  endif
+! Lars
+!	  if (present(status)) then
+!	    status = 1
+!	    return
+!	  else
+!	    call system_abort("Error querying CInOutput file while skipping to desired frame")
+!	  endif
+          RAISE_ERROR("Error querying CInOutput file while skipping to desired frame", ierror)
 	endif
       endif
     endif
@@ -330,12 +336,14 @@ contains
 
     cioquery_status = cioquery(this%c_at, do_frame)
     if (cioquery_status == 0) then
-      if (present(status)) then
-	status = 1
-	return
-      else
-        call system_abort("Error querying CInOutput file")
-      endif
+! Lars
+!      if (present(status)) then
+!	status = 1
+!	return
+!      else
+!        call system_abort("Error querying CInOutput file")
+!      endif
+       RAISE_ERROR("Error querying CInOutput file", ierror)
     endif
 
     call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
@@ -360,13 +368,13 @@ contains
 
   end subroutine cinoutput_query
 
-  subroutine cinoutput_read(this, at, frame, zero, status)
+  subroutine cinoutput_read(this, at, frame, zero, ierror)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(inout) :: status
+    integer, optional, intent(inout) :: ierror
 
     type(Dictionary) :: properties
     type(Table) :: data
@@ -379,7 +387,8 @@ contains
     integer :: n_skip
     integer :: cioskip_status
 
-    if (present(status)) status = 0
+! Lars
+!    if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
@@ -395,12 +404,14 @@ contains
              n_skip = frame-this%current_frame
              cioskip_status = cioskip(this%c_at, n_skip)
              if (cioskip_status == 0) then
-                if (present(status)) then
-                   status = 1
-                   return
-                else
-                   call system_abort("Error querying CInOutput file while skipping to desired frame")
-                endif
+                RAISE_ERROR("Error querying CInOutput file while skipp!ing to desired frame", ierror)
+! Lars
+!                if (present(status)) then
+!                   status = 1
+!                   return
+!                else
+!                   call system_abort("Error querying CInOutput file while skipp!ing to desired frame")
+!                endif
              endif
              this%current_frame = this%current_frame + n_skip
           endif
@@ -411,15 +422,22 @@ contains
        if (this%got_index == 1) then
           if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
           if (do_frame < 0 .or. do_frame >= this%n_frame) then
-             if (present(status)) then
-                call finalise(properties)
-                call finalise(data)
-                call finalise(at)
-                status = 1
-                return
-             else
-                call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
-             end if
+             call finalise(properties)
+             call finalise(data)
+             call finalise(at)
+             RAISE_ERROR("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), ierror)
+
+
+! Lars
+!             if (present(status)) then
+!                call finalise(properties)
+!                call finalise(data)
+!                call finalise(at)
+!                status = 1
+!                return
+!             else
+!                call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
+!             end if
           end if
        end if
 
@@ -430,13 +448,19 @@ contains
 
        if (this%got_index == 1) then
           tmp_do_frame = do_frame
-          call cinoutput_query(this, tmp_do_frame, status=status)
+! Lars
+!          call cinoutput_query(this, tmp_do_frame, status=ierror)
+          call cinoutput_query(this, tmp_do_frame, ierror=ierror)
        else
-          call cinoutput_query(this, status=status)
+! Lars
+!          call cinoutput_query(this, status=ierror)
+          call cinoutput_query(this, ierror=ierror)
        end if
-       if (present(status)) then
-          if (status /= 0) return
-       endif
+! Lars
+!       if (present(status)) then
+!          if (status /= 0) return
+!       endif
+       PASS_ERROR(ierror)
 
        call initialise(properties)
        do i=1,this%n_property
@@ -467,15 +491,20 @@ contains
        if (this%n_logical /= 0) log_ptr = c_loc(at%data%logical(1,1))
 
        if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
-          if (present(status)) then
-             call finalise(properties)
-             call finalise(data)
-             call finalise(at)
-             status = 1
-             return
-          else
-             call system_abort("Error reading from file")
-          end if
+          call finalise(properties)
+          call finalise(data)
+          call finalise(at)
+          RAISE_ERROR("Error reading from file", ierror)
+! Lars
+!          if (present(status)) then
+!             call finalise(properties)
+!             call finalise(data)
+!             call finalise(at)
+!             status = 1
+!             return
+!          else
+!             call system_abort("Error reading from file")
+!          end if
        end if
 
        do i=1,this%n_param
@@ -772,30 +801,33 @@ contains
   end subroutine f_string_to_c_array
 
 
-  subroutine atoms_read(this, filename, frame, zero, status)
+  subroutine atoms_read(this, filename, frame, zero, ierror)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: filename
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(out) :: status
+    integer, optional, intent(inout) :: ierror
 
     type(CInOutput) :: cio
 
-    call initialise(cio, filename, INPUT)
-    call read(cio, this, frame, zero, status)
-    call finalise(cio)    
+    call initialise(cio, filename, INPUT, ierror=ierror)
+    PASS_ERROR_WITH_INFO('While reading "' // filename // '".', ierror)
+    call read(cio, this, frame, zero, ierror=ierror)
+    PASS_ERROR_WITH_INFO('While reading "' // filename // '".', ierror)
+    call finalise(cio)
 
   end subroutine atoms_read
 
-  subroutine atoms_read_cinoutput(this, cio, frame, zero, status)
+  subroutine atoms_read_cinoutput(this, cio, frame, zero, ierror)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(inout) :: status
+    integer, optional, intent(inout) :: ierror
 
-    call cinoutput_read(cio, this, frame, zero, status)
+    call cinoutput_read(cio, this, frame, zero, ierror=ierror)
+    PASS_ERROR(ierror)
 
   end subroutine atoms_read_cinoutput
 
