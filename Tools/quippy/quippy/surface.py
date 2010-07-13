@@ -17,7 +17,10 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
-import atomeye
+try:
+   import atomeye
+except ImportError:
+   pass
 
 J_PER_M2 = ELEM_CHARGE*1.0e20
 
