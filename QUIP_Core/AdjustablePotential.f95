@@ -63,7 +63,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#ifdef HAVE_LOTF
 
 module AdjustablePotential_module
   use libAtoms_module
@@ -1297,4 +1296,3 @@ contains
 
 end module AdjustablePotential_module
 
-#endif HAVE_LOTF
