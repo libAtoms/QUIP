@@ -1041,6 +1041,7 @@ contains
        if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
           call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
           if (present(lookup)) lookup = use_lookup
+          this%data%real(use_lookup(2):use_lookup(3), 1:this%data%N) = value
           return
        else
           call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
