@@ -495,8 +495,6 @@
 
     if (method(1:4) == 'lotf') then
        
-#ifdef HAVE_LOTF
-       
        if (trim(method) == 'lotf_adj_pot_svd' .or. trim(method) == 'lotf_adj_pot_minim') then
 
           if (trim(method) == 'lotf_adj_pot_svd') then
@@ -563,10 +561,6 @@
 !!$          deallocate(df)
 
        end if
-
-#else
-       call system_abort('MetaPotential_FM_Calc: support for method '//trim(method)//' not compiled in')
-#endif
 
     else if (trim(method) == 'conserve_momentum') then
        
