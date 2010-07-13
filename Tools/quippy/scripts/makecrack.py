@@ -58,7 +58,7 @@ def makecrack(params):
       crack_slab.lattice[1,1] = crack_slab.lattice[1,1] + params.crack_vacuum_size
 
    crack_slab.lattice[2,2] = crack_slab.lattice[2,2] + params.crack_vacuum_size
-   crack_slab.set_lattice(crack_slab.lattice)
+   crack_slab.set_lattice(crack_slab.lattice, False)
 
    # Add various properties to crack_slab
    crack_slab.add_property('hybrid', 0)
