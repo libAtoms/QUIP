@@ -88,18 +88,18 @@ Tests: libAtoms ${FOX} QUIP_Core QUIP_Utils
 ifeq (${HAVE_GP},1)
 GAProgs/%: libAtoms gp ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/GAProgs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 QUIP_Programs/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Programs/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/QUIP_Programs -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Programs/}
 	rm ${BUILDDIR}/Makefile
 
 QUIP_Core/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/QUIP_Core/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/QUIP_Core -I${PWD} -I${PWD}/Makefiles $${targ#QUIP_Core/}
 	rm ${BUILDDIR}/Makefile
 
 libAtoms/%: libAtoms 
@@ -109,7 +109,7 @@ libAtoms/%: libAtoms
 
 Tools/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/Tools/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/Tools -I${PWD} -I${PWD}/Makefiles $${targ#Tools/}
 	rm ${BUILDDIR}/Makefile
 
 
@@ -189,7 +189,7 @@ quip-reference-manual.pdf:
 	./Tools/mkdoc
 
 atomeye:
-	if [[ ! -d Tools/AtomEye ]]; then svn co svn+ssh://cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye Tools/AtomEye; fi
+	if [[ ! -d Tools/AtomEye ]]; then svn co svn+ssh://pastewka@cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye Tools/AtomEye; fi
 	make -C Tools/AtomEye QUIP_ROOT=${PWD}
 
 quippy:

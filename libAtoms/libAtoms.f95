@@ -39,6 +39,7 @@
 
 module libAtoms_module
   use system_module
+  use error_module
   use units_module
   use linearalgebra_module
   use minimization_module
