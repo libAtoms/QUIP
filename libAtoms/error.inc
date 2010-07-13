@@ -66,6 +66,19 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
+!X MPI errors
+!X
+!% MPI error string are obtained using mpi_error_string and then pushed
+!% onto the error stack.
+!%
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#define PASS_MPI_ERROR(mpierror, ierror)  if (mpierror /= MPI_SUCCESS) then ; call push_MPI_error(mpierror, __FILE__, __LINE__) ; if (present(ierror)) then ; ierror = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif ; endif
+
+
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
 !X Delayed errors - for OpenMP loops
 !X
 !% A subroutine currently in an OpenMP section cannot be quit using
