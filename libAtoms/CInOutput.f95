@@ -234,16 +234,18 @@ contains
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
-            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
-            RAISE_ERROR("Error opening file "//filename, ierror)
+            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
+          RAISE_ERROR("Error opening file "//filename, ierror)
+       endif
     else
        if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
             this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
             this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
-            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) &
-            RAISE_ERROR("Error allocating C structure", ierror)
+            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
+          RAISE_ERROR("Error allocating C structure", ierror)
+       endif
     end if
 
     call c_f_pointer(this%c_n_frame, this%n_frame)
