@@ -68,10 +68,11 @@
 !X
 !X Delayed errors - for OpenMP loops
 !X
-!% An OpenMP section cannot be quit using the *return* statement. Hence, the
-!% error flag is set using RAISE_DELAYED_ERROR and TRACE_DELAYED_ERROR. After
-!% the OpenMP section is finished, INVOKE_DELAYED_ERROR will raise the error
-!% and exit the current subroutine if an error occured in the OpenMP section.
+!% A subroutine currently in an OpenMP section cannot be quit using
+!% the *return* statement. Hence, the error flag is set using
+!% RAISE_DELAYED_ERROR and TRACE_DELAYED_ERROR. After the OpenMP section
+!% has finished, INVOKE_DELAYED_ERROR will raise the error and exit
+!% the current subroutine if an error occured in the OpenMP section.
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

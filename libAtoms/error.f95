@@ -137,8 +137,25 @@ contains
   endsubroutine push_error_with_info
 
 
+  !% This error has been handled, clear it.
+  subroutine clear_error(ierror)
+    implicit none
+
+    integer, intent(inout) :: ierror
+
+    ! ---
+
+    ierror = ERROR_NONE
+
+    error_stack_position = 0
+    
+  endsubroutine clear_error
+
+
   !% Construct a string describing the error.
   function get_error_string_and_clear(ierror) result(str)
+    use iso_c_binding
+
     implicit none
 
     integer, intent(inout), optional  :: ierror
@@ -152,23 +169,23 @@ contains
     ! ---
 
     call initialise(str)
-    call concat(str, "Internal error. Traceback (most recent call last):")
+    call concat(str, "Traceback (most recent call last):")
     do i = error_stack_position, 1, -1
 
        if (error_stack(i)%kind == ERROR_HAS_INFO) then
        
-          call concat(str, "\n" // &
+          call concat(str, C_NEW_LINE // &
                '  File "' // &
                string(error_stack(i)%fn) // &
                '", line ' // &
                error_stack(i)%line // &
-               "\n" // &
+               C_NEW_LINE // &
                "    " // &
                string(error_stack(i)%doc))
 
        else
 
-          call concat(str, "\n" // &
+          call concat(str, C_NEW_LINE // &
                '  File "' // &
                string(error_stack(i)%fn) // &
                '", line ' // &

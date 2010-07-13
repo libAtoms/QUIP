@@ -142,17 +142,19 @@ subroutine extendable_str_zero(this)
 end subroutine extendable_str_zero
 
 subroutine extendable_str_print(this,verbosity,out)
+  use iso_c_binding
+  implicit none
   type(extendable_str),    intent(in)           :: this
   integer,        intent(in), optional :: verbosity
   type(Inoutput), intent(inout),optional:: out
 
-  integer i
-
   call print ("extendable_str, len " // this%len // " size " // size(this%s), verbosity, out)
   if (allocated(this%s)) then
-    do i=1, this%len
-      call print (this%s(i), verbosity, out)
-    end do
+     call print(this%s(1:this%len))
+! OLD IMPLEMENTATION
+!    do i=1, this%len
+!      call print (this%s(i), verbosity, out)
+!    end do
   endif
 end subroutine extendable_str_print
 
