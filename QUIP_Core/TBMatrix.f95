@@ -388,7 +388,7 @@ subroutine TBMatrix_Print(this,file)
 
   integer::i
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('TBMatrix : ', file=file)
 
@@ -482,7 +482,7 @@ subroutine TBVector_Print(this,file)
 
   integer::i
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('TBVector : ', file=file)
 
@@ -584,7 +584,7 @@ subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, err)
   if (present(err)) then
     if (err /= 0) then
       mainlog%mpi_all_inoutput_flag=.true.
-      call print("TBMatrix_diagonalise got err " // err // " from diagonalise", ERROR)
+      call print("TBMatrix_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
       mainlog%mpi_all_inoutput_flag=.false.
     endif
   endif

@@ -1497,8 +1497,8 @@ module gp_module
         real(dp), dimension(:), allocatable   :: e, x_temp
         real(dp), dimension(:,:), allocatable :: x_hold
 
-        call print_title('Nested sampling',verbosity=NORMAL)
-        call print('Number of variables is '//size(x_inout),verbosity=NORMAL)
+        call print_title('Nested sampling',verbosity=PRINT_NORMAL)
+        call print('Number of variables is '//size(x_inout),verbosity=PRINT_NORMAL)
         call random_seed()
 
         ns = .false.
@@ -1536,8 +1536,8 @@ module gp_module
               x_max = maxval( x_hold, dim=2)
            endif
 
-           call print('Iteration: '//iter//', function value dropped: '//e_old,verbosity=NORMAL)
-           call print('Point dropped: '//x_temp(:),verbosity=NERD)
+           call print('Iteration: '//iter//', function value dropped: '//e_old,verbosity=PRINT_NORMAL)
+           call print('Point dropped: '//x_temp(:),verbosity=PRINT_NERD)
 
            e_old_prev = e_old
         enddo

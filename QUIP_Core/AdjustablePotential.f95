@@ -194,7 +194,7 @@ contains
     if(do_map) then
        ! this save makes the twobody_old equal to twobody
        call adjustable_potential_save_parameters
-       call print("Saving old parameters ....", VERBOSE)
+       call print("Saving old parameters ....", PRINT_VERBOSE)
     end if
 
 !!$    if (first_time) then
@@ -208,7 +208,7 @@ contains
 !!$       call sort_array(s2)
 !!$
 !!$       if (all(int_part(fitlist) == int_part(fitlist_old))) then
-!!$          call print('fitlist unchanged, nothing to be done in adjustable_potential_init', VERBOSE)
+!!$          call print('fitlist unchanged, nothing to be done in adjustable_potential_init', PRINT_VERBOSE)
 !!$          deallocate(s1)
 !!$          deallocate(s2)
           
@@ -241,7 +241,7 @@ contains
 !!$    call wipe(fitlist_old)
 !!$    call append(fitlist_old, fitlist)
 
-    call print("Setting up adjustable potential....", VERBOSE)
+    call print("Setting up adjustable potential....", PRINT_VERBOSE)
 
     ! test table size
     if(fitlist%intsize /= 4 .and. fitlist%intsize /= 1)  &
@@ -252,12 +252,12 @@ contains
     if (multiple_images(fitlist)) &
          call system_abort('adjustable_potential_init: fitlist contains repeated atom indices')
 
-    call print("Fitting on atoms:", VERBOSE)
-    call print(fitlist, VERBOSE)
-    call print("", VERBOSE)
+    call print("Fitting on atoms:", PRINT_VERBOSE)
+    call print(fitlist, PRINT_VERBOSE)
+    call print("", PRINT_VERBOSE)
 
     ! allocate globals
-    call print("Allocating target_force", NERD)
+    call print("Allocating target_force", PRINT_NERD)
     Nfit_components = fitlist%N*3
 
     call reallocate(target_force,Nfit_components)
@@ -273,7 +273,7 @@ contains
     ! and the associated potential parameters (initialized to 0)
 
     ! wipe previous table
-    call print("Wiping twobody table", NERD)
+    call print("Wiping twobody table", PRINT_NERD)
     call wipe(twobody)
     call Table_Allocate(twobody, 5, 1+2*adjustable_potential_nparams,0,0)
 
@@ -322,7 +322,7 @@ contains
     end do
     write(line, '(a,i0,a)') 'Got ', twobody%N, ' springs' ; call print(line)
     write(line, '(a,f0.2)') 'Searching for difficult atoms, anisotropy threshold: ', AP_bad_atom_threshold
-    call print(line, VERBOSE)
+    call print(line, PRINT_VERBOSE)
 
     oldn = twobody%N		
     atomcount = 0
@@ -355,8 +355,8 @@ contains
 
           write (line,'(a,i6,a,i6,a,f10.3)'), 'Atom ', i, ' with ', springs%N, &
                ' springs has ratio ', ratio
-          call print(line, VERBOSE)
-          call print('Smallest evect ='//small_evec, VERBOSE)
+          call print(line, PRINT_VERBOSE)
+          call print('Smallest evect ='//small_evec, PRINT_VERBOSE)
           
           ! Not well enough
           atomcount = atomcount + 1
@@ -422,7 +422,7 @@ contains
                 call append(twobody,(/min(fi,best_fj),max(fi,best_fj),sign(1,best_fj-fi)*best_shift/), default_row)
                 
                 write (line, '(a,i0,a,f0.3)') '  Now got ', springs%N,' springs. Ratio improved to ', ratio
-                call print(line, VERBOSE)
+                call print(line, PRINT_VERBOSE)
              end if
 
              n = n + 1
@@ -479,7 +479,7 @@ contains
 !!$          ratio = minval(evals)/maxval(evals)
 !!$
 !!$          write (line, '(a,i0,a,f0.3)') '  Now got ', springs%N,' springs. Ratio improved to ', ratio
-!!$          call print(line, VERBOSE)
+!!$          call print(line, PRINT_VERBOSE)
 !!$
 !!$          n = n + 1
           end do
@@ -501,7 +501,7 @@ contains
     call finalise(tmpsprings)
     deallocate(default_row)
 
-    call print("Allocating twobody table to proper size", NERD)
+    call print("Allocating twobody table to proper size", PRINT_NERD)
     call table_allocate(twobody) ! reduce table to proper length
 
     write(line, '(a,i0)') "Number of force components: ", size(target_force) ; call print(line)
@@ -773,8 +773,8 @@ contains
        if(present(energy)) energy = energy + r*fij
        if(present(power))  power  = power  + r*dalpha ! (since dV_dalpha = r, and dt = 1 here)
 
-       if (value(mainlog%verbosity_stack) >= NERD) &
-            call print(i//' '//a1//' '//a2//' '//r//' '//fij//' <-- SPRING', NERD)
+       if (value(mainlog%verbosity_stack) >= PRINT_NERD) &
+            call print(i//' '//a1//' '//a2//' '//r//' '//fij//' <-- SPRING', PRINT_NERD)
 
        ! get force
        f = direction_cosines(atoms_in,a1,a2,shift)*fij
@@ -821,10 +821,10 @@ contains
     if(.not.adjustable_potential_initialised) & 
          call system_abort("adjustable_potential_force_error: not initialised!")
 
-    if(value(mainlog%verbosity_stack) .ge. NERD) then
+    if(value(mainlog%verbosity_stack) .ge. PRINT_NERD) then
        write(line, *) "adjustable_potential_force_error: params(", size(params), ")"
-       call print(line, NERD)
-       call print(params, NERD)
+       call print(line, PRINT_NERD)
+       call print(params, PRINT_NERD)
     end if
 
     error = norm2(target_force - (forcematrix .mult. params))
@@ -848,10 +848,10 @@ contains
     if(.not.adjustable_potential_initialised) & 
          call system_abort("adjustable_potential_force_error_deriv: not initialised!")
 
-    if(value(mainlog%verbosity_stack) .ge. NERD) then
+    if(value(mainlog%verbosity_stack) .ge. PRINT_NERD) then
        write(line, *) "adjustable_potential_force_error_deriv: params(", size(params), ")"
-       call print(line, NERD)
-       call print(params, NERD)
+       call print(line, PRINT_NERD)
+       call print(params, PRINT_NERD)
     end if
 
     force = (forcematrix .mult. params)
@@ -885,8 +885,8 @@ contains
     integer, allocatable::colcounter(:), tmpcolumns(:,:)
 
 
-    write(line, *) "Setting up adjustable potential forcematrix.." ; call print(line, VERBOSE)
-    write(line, *) ; call print(line, VERBOSE)
+    write(line, *) "Setting up adjustable potential forcematrix.." ; call print(line, PRINT_VERBOSE)
+    write(line, *) ; call print(line, PRINT_VERBOSE)
 
     allocate(tmpmatrix(size(target_force), twobody%N*nparams))
     allocate(colcounter(size(target_force)))
@@ -941,10 +941,10 @@ contains
     deallocate(colcounter)
 
     ! print it
-    if(value(mainlog%verbosity_stack) .ge. NERD) then
-       call print('Forcematrix:',NERD)
-       call print(forcematrix, NERD)
-       call print('',NERD)
+    if(value(mainlog%verbosity_stack) .ge. PRINT_NERD) then
+       call print('Forcematrix:',PRINT_NERD)
+       call print(forcematrix, PRINT_NERD)
+       call print('',PRINT_NERD)
     end if
   end subroutine adjustable_potential_create_forcematrix
 
@@ -1039,8 +1039,8 @@ contains
     if(.not.adjustable_potential_initialised) & 
          call system_abort("adjustable_potential_optimise: not initialised!")
 
-    call print("Target force:", NERD)
-    call print(target_force, NERD)
+    call print("Target force:", PRINT_NERD)
+    call print(target_force, PRINT_NERD)
 
     call print('Optimising '//nparamtot//' adjustable parameters')
     call print("RMS force component error before optimisation : "// &
@@ -1124,7 +1124,7 @@ contains
     err = sqrt(adjustable_potential_force_error(params)/(real(atomlist%N,dp)*3.0_dp))
 
     ! Print all magnitudes of force errors if we're a NERD
-    call print('Force errors', NERD)
+    call print('Force errors', PRINT_NERD)
     ferr = reshape(target_force - (forcematrix .mult. params), &
          (/3, atomlist%N/))
 
@@ -1134,9 +1134,9 @@ contains
     
     do i=1,atomlist%N
        write (line, '(i4,f12.6)') i, sqrt(norm2(ferr(:,i)))
-       call print(line, NERD)
+       call print(line, PRINT_NERD)
     end do
-    call Print('', NERD)
+    call Print('', PRINT_NERD)
 
     write(line, '(a,e10.2)') "RMS force component error after  optimisation : ", err
     call print(line)
@@ -1144,13 +1144,13 @@ contains
          maxval(abs(target_force - (forcematrix .mult. params)))
     call print(line)
 
-    if (value(mainlog%verbosity_stack) >= NERD) then
-       call Print('Final Springs:', NERD)
+    if (value(mainlog%verbosity_stack) >= PRINT_NERD) then
+       call Print('Final Springs:', PRINT_NERD)
        do i=1,twobody%N
           write (line, '(3i8,4f16.8)') i, atomlist%int(1,twobody%int(1,i)), atomlist%int(1,twobody%int(2,i)), twobody%real(1,i), precondition(i), params(i), params(i)*precondition(i)
-          call Print(line, NERD)
+          call Print(line, PRINT_NERD)
        end do
-       call Print('', NERD)
+       call Print('', PRINT_NERD)
     end if
 
     ! Get physical spring constants by multiplying by precondition factor

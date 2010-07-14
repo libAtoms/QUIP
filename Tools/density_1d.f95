@@ -94,7 +94,7 @@ program density_1d
     logical                             :: do_statistics
 
   !Start up LOTF, suppressing messages
-    call system_initialise(NORMAL)
+    call system_initialise(PRINT_NORMAL)
 
 #ifdef DEBUG
     call print('********** DEBUG BUILD **********')
@@ -151,7 +151,7 @@ program density_1d
     call print('       IO_Rate: '//IO_Rate)
     call print('       Density_Time_Evolution_Rate: '//Density_Time_Evolution_Rate)
     if (IO_Rate > 0 .and. Density_Time_Evolution_Rate > 0) then
-      call print('WARNING: IO_Rate = ' // IO_Rate // ' will effectively override Density_Time_Evolution_Rate='//Density_Time_Evolution_Rate, ERROR)
+      call print('WARNING: IO_Rate = ' // IO_Rate // ' will effectively override Density_Time_Evolution_Rate='//Density_Time_Evolution_Rate, PRINT_ALWAYS)
     endif
     call print('     Gaussians: '//Gaussian_smoothing)
     if (Gaussian_smoothing) call print('        sigma: '//round(Gaussian_sigma,3))
@@ -337,7 +337,7 @@ program density_1d
     structure_ll_entry => structure_ll%first
 
     frame_count = from
-    if (min_time > 0.0_dp) call print("WARNING: min_time > 0, frame_count will be wrong if frames were skipped", ERROR)
+    if (min_time > 0.0_dp) call print("WARNING: min_time > 0, frame_count will be wrong if frames were skipped", PRINT_ALWAYS)
 
     do while (associated(structure_ll_entry))
 

@@ -42,8 +42,8 @@ program elastic
   character(len=2048) :: comment, arg1, arg2, missing_params
   real(dp) :: a, C11, C12, C44, cutoff, nneightol
 
-  call system_initialise(SILENT)
-  call verbosity_push(NORMAL)
+  call system_initialise(PRINT_SILENT)
+  call verbosity_push(PRINT_NORMAL)
 
   call initialise(params)
 
@@ -61,7 +61,7 @@ program elastic
      call print('')
      call print('Parameters and default values are:')
      call param_print(params)
-     call verbosity_push(SILENT)
+     call verbosity_push(PRINT_SILENT)
      call system_finalise()
      stop
   end if
@@ -101,7 +101,7 @@ program elastic
   end do
   call print('Done '//n//' frames!')
 
-  call verbosity_push(SILENT)
+  call verbosity_push(PRINT_SILENT)
   call system_finalise
 
 end program elastic

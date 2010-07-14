@@ -205,9 +205,9 @@ contains
       r1_hat = r2_hat .cross. l_hat
     endif
 
-    call print("disloc_noam: r1_hat " // r1_hat, VERBOSE)
-    call print("disloc_noam: r2_hat " // r2_hat, VERBOSE)
-    call print("disloc_noam: l_hat " // l_hat, VERBOSE)
+    call print("disloc_noam: r1_hat " // r1_hat, PRINT_VERBOSE)
+    call print("disloc_noam: r2_hat " // r2_hat, PRINT_VERBOSE)
+    call print("disloc_noam: l_hat " // l_hat, PRINT_VERBOSE)
 
     do i_at = 1, at%N
       delta_p = at%pos(:,i_at) - p
@@ -219,7 +219,7 @@ contains
 	delta_p_rot(3) = delta_p .dot. l_hat
 	theta = atan2(delta_p_rot(2), delta_p_rot(1))
       endif
-      call print("atom " // i_at // " pos " // at%pos(:,i_at) // " delta_p " // delta_p // " theta " // theta, ANAL)
+      call print("atom " // i_at // " pos " // at%pos(:,i_at) // " delta_p " // delta_p // " theta " // theta, PRINT_ANAL)
       delta_p = b*theta/(2.0_dp*PI)
       at%pos(:,i_at) = at%pos(:,i_at) + delta_p
     end do
@@ -236,7 +236,7 @@ contains
 	if (present(close_threshold)) then
 	  if (r < close_threshold) then
 	    if (j_at == i_at) then
-	      call print("WARNING: disloc_noam found atom too close to itself", ERROR)
+	      call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
 	    else
 	      atoms_remove(j_at) = .true.
 	    endif
@@ -244,7 +244,7 @@ contains
 	else
 	  if (r < 0.5_dp*bond_length(at%Z(i_at), at%Z(j_at))) then
 	    if (i_at == j_at) then
-	      call print("WARNING: disloc_noam found atom too close to itself", ERROR)
+	      call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
 	    else
 	      atoms_remove(j_at) = .true.
 	    endif
@@ -453,7 +453,7 @@ contains
       call system_abort(line)
    end if
 
-   call print('slab_width_height_nz: nx='//nx//' ny='//ny//' nz='//nz, VERBOSE)
+   call print('slab_width_height_nz: nx='//nx//' ny='//ny//' nz='//nz, PRINT_VERBOSE)
 
    call supercell(layer, unit, nx, ny, 1)
    ! z layers last for symmetrise
@@ -1696,8 +1696,8 @@ contains
 !    logical :: use_hysteretic_neighbours
 !    real(dp) :: cutoff
 
-    call print("find_motif", verbosity=ANAL)
-    call print(motif, verbosity=ANAL)
+    call print("find_motif", verbosity=PRINT_ANAL)
+    call print(motif, verbosity=PRINT_ANAL)
 
     discards = 0
     do_find_all_possible_matches = optional_default(.false., find_all_possible_matches)
@@ -1765,7 +1765,7 @@ contains
     allocate(neighbour_Z(count(A(opt_atom,:)==1)))
     neighbour_Z = pack(Z,(A(opt_atom,:)==1))
 
-    call print("opt_atom " // opt_atom // " Z " // at%Z(opt_atom), verbosity=ANAL)
+    call print("opt_atom " // opt_atom // " Z " // at%Z(opt_atom), verbosity=PRINT_ANAL)
 
     my_start = 1
     if (present(start)) then
@@ -1782,11 +1782,11 @@ contains
 
     do i = my_start, my_end
 
-       call print("check atom " // i // " Z " // at%Z(i), verbosity=ANAL)
+       call print("check atom " // i // " Z " // at%Z(i), verbosity=PRINT_ANAL)
 
        if (present(mask)) then
           if (.not.mask(i)) then
-	    call print("   i not in mask, skipping", verbosity=ANAL)
+	    call print("   i not in mask, skipping", verbosity=PRINT_ANAL)
 	    cycle
 	   endif
        end if
@@ -1798,7 +1798,7 @@ contains
        ! Discard atoms which don't match the atomic number of the optimum atom
 
        if (at%Z(i) /= Z(opt_atom)) then
-	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=ANAL)
+	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=PRINT_ANAL)
           discards(1) = discards(1) + 1
           cycle
        end if
@@ -1813,7 +1813,7 @@ contains
 
        if (.not.atoms_compatible(at,i,A,Z,opt_atom,nneighb_only=nneighb_only,alt_connect=alt_connect)) then
           discards(2) = discards(2) + 1
-	  call print("   i has incompatible neighbour list, skipping", verbosity=ANAL)
+	  call print("   i has incompatible neighbour list, skipping", verbosity=PRINT_ANAL)
           cycle
        end if
 
@@ -1830,7 +1830,7 @@ contains
 
        ! If the number of atoms in the cluster is less than those in the motif we can't have a match
        if (core%N < N) then
-	  call print("   i's cluster is too small, skipping", verbosity=ANAL)
+	  call print("   i's cluster is too small, skipping", verbosity=PRINT_ANAL)
           discards(3) = discards(3) + 1
           cycle
        end if
@@ -1876,7 +1876,7 @@ contains
        call finalise(num_species_motif)
        call finalise(num_species_at)
        if (.not.match) then
-	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=ANAL)
+	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=PRINT_ANAL)
           discards(4) = discards(4) + 1
           cycle
        end if
@@ -1910,10 +1910,10 @@ contains
           end do
        end do
 
-       call print("core", verbosity=ANAL)
-       call print(core, verbosity=ANAL)
-       call print("adjacency mat", verbosity=ANAL)
-       call print(B, verbosity=ANAL)
+       call print("core", verbosity=PRINT_ANAL)
+       call print(core, verbosity=PRINT_ANAL)
+       call print("adjacency mat", verbosity=PRINT_ANAL)
+       call print(B, verbosity=PRINT_ANAL)
 
        ! Find depth of connectivity for real atoms
        allocate(depth_real(core%N))
@@ -1926,7 +1926,7 @@ contains
 
        ! If there are atoms which aren't deep enough in the real structure then a match is impossible
        if (max_depth > max_depth_real) then
-	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=ANAL)
+	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=PRINT_ANAL)
           deallocate(B,depth_real)
           discards(5) = discards(5) + 1
           cycle
@@ -1962,7 +1962,7 @@ contains
 
        ! Check to see if any atoms have no possibilities
        if (any(sum(M0,dim=2)==0)) then
-	  call print("   i has some neighbor that doesn't match, skipping", verbosity=ANAL)
+	  call print("   i has some neighbor that doesn't match, skipping", verbosity=PRINT_ANAL)
           deallocate(M0,B)
           discards(6) = discards(6) + 1
           cycle
@@ -1976,7 +1976,7 @@ contains
        match = .false.
        do 
 
-	  call print("  check permutation loop start", verbosity=ANAL)
+	  call print("  check permutation loop start", verbosity=PRINT_ANAL)
           ! For each trial matrix create the permuted adjacency matrix
           C = matmul(M,transpose(matmul(M,B))) ! ***** THIS LINE IS ANOTHER CANDIDATE FOR OPTIMISATION *****
                                                ! Use sparse matrices maybe?
@@ -2009,12 +2009,12 @@ contains
 	     if (do_append) then
 		call append(matches,match_indices)
 		assigned_to_motif(match_indices) = .true.
-		call print("  found match, indices " // match_indices, verbosity=ANAL)
+		call print("  found match, indices " // match_indices, verbosity=PRINT_ANAL)
 	     endif
 	     deallocate(match_indices)
 
 	     if (.not. do_find_all_possible_matches) then
-	       call print("  not looking for _all_ matches, finished", verbosity=ANAL)
+	       call print("  not looking for _all_ matches, finished", verbosity=PRINT_ANAL)
 	       exit
 	     endif
           end if ! match
@@ -2028,7 +2028,7 @@ contains
           ! If next_trial_matrix deletes the only atom we know to be fitted then all
           ! permutations have been exhausted
           if (M(opt_atom,1)==0) then
-	     call print("   i has no more premutations, leaving loop", verbosity=ANAL)
+	     call print("   i has no more premutations, leaving loop", verbosity=PRINT_ANAL)
              discards(7) = discards(7) + 1
              exit
           end if

@@ -58,7 +58,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
 
   logical, save :: first_run = .true.
 
-  call system_initialise(verbosity=SILENT)
+  call system_initialise(verbosity=PRINT_SILENT)
 
   if( first_run ) then
      call Initialise(pot, "IP GAP", "" )

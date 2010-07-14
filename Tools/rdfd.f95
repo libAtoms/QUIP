@@ -69,8 +69,8 @@ program RDFD
     real(dp)                              :: Gaussian_sigma
 
     !Start up LOTF, suppressing messages
-    call system_initialise(NORMAL)
-    call verbosity_push(NORMAL)
+    call system_initialise(PRINT_NORMAL)
+    call verbosity_push(PRINT_NORMAL)
 
 #ifdef DEBUG
     call print('********** DEBUG BUILD **********')

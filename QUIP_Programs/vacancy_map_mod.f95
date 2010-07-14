@@ -85,7 +85,7 @@ subroutine init_lotf_forcemix(pot1, pot2, lotfpot, buffer_hops, lotf_args_str)
   call set_cutoff(bulk1, cutoff(pot1)+0.5_dp)
   call calc_connect(bulk1)
 
-  call print("WARNING: No way to r_scale in init_lotf_forcemix", ERROR)
+  call print("WARNING: No way to r_scale in init_lotf_forcemix", PRINT_ALWAYS)
 
   ! should do minimise_bulk instead, but no mechanism for doing it just for pot1
   call initialise(lotfpot, "LOTF fit_method=force_mixing_abrupt small_clusters=F periodic_y terminate=F buffer_hops="//buffer_hops//" "// trim(lotf_args_str), pot2, pot1, bulk1)

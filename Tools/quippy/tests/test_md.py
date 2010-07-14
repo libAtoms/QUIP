@@ -25,7 +25,7 @@ if hasattr(quippy, 'Potential'):
    class TestMD(QuippyTestCase):
 
       def setUp(self):
-         verbosity_push(SILENT)
+         verbosity_push(PRINT_SILENT)
          system_reseed_rng(1)
          s = supercell(diamond(5.44, 14), 2, 2, 2)
          s.set_cutoff(5.0)

@@ -103,13 +103,13 @@ implicit none
   end if
   select case(verbosity)
     case ("NORMAL")
-      call verbosity_push(NORMAL)
+      call verbosity_push(PRINT_NORMAL)
     case ("VERBOSE")
-      call verbosity_push(VERBOSE)
+      call verbosity_push(PRINT_VERBOSE)
     case ("NERD")
-      call verbosity_push(NERD)
+      call verbosity_push(PRINT_NERD)
     case ("ANAL")
-      call verbosity_push(ANAL)
+      call verbosity_push(PRINT_ANAL)
     case default
       call system_abort("confused by verbosity " // trim(verbosity))
   end select
@@ -172,15 +172,15 @@ implicit none
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, has_pressure)
 
   if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
-    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",ERROR)
-    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", ERROR)
-    call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", ERROR)
-    call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", ERROR)
-    call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", ERROR)
-    call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", ERROR)
-    call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(NORMAL)] [use_n_minim]", ERROR)
-    call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", ERROR)
-    call print("  [minim_method=string(cg)]", ERROR)
+    call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
+    call print("  [E|energy] [F|forces] [V|virial] [L|local] [cij] [c0ij] [cij_dx=0.001] [torque]", PRINT_ALWAYS)
+    call print("  [phonons] [phonons_dx=0.001] [force_const_mat] [test] [n_test]", PRINT_ALWAYS)
+    call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
+    call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
+    call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [use_n_minim]", PRINT_ALWAYS)
+    call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
+    call print("  [minim_method=string(cg)]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
@@ -238,7 +238,7 @@ implicit none
      if (do_test .or. do_n_test) then
         did_something=.true.
         if (do_test) then
-           call verbosity_set_minimum(NERD)
+           call verbosity_set_minimum(PRINT_NERD)
            if (len(trim(test_dir_field)) > 0) then
               test_ok = test_gradient(metapot, at, do_F, do_V, args_str = calc_args, dir_field=trim(test_dir_field))
            else
@@ -366,7 +366,7 @@ implicit none
            endif
 
 	   if (do_frozen_phonons) then
-	      call verbosity_push(VERBOSE)
+	      call verbosity_push(PRINT_VERBOSE)
               eval_froz = eval_frozen_phonon(metapot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
 	      if (eval_froz > 0.0_dp) then
 		 call set_value(at%params, "frozen_phonon_freq", sqrt(eval_froz))
@@ -485,7 +485,7 @@ implicit none
         
         if (do_torque) then
            if (.not. do_F) then
-              call print("ERROR: Can't do torque without forces", ERROR)
+              call print("ERROR: Can't do torque without forces", PRINT_ALWAYS)
            else
               tau = torque(at%pos, F0)
               call print("Torque " // tau)

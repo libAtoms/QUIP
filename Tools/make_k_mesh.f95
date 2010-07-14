@@ -10,14 +10,14 @@ implicit none
   integer :: mesh(3)
   logical :: monkhorst_pack
 
-  call system_initialise(verbosity=SILENT)
+  call system_initialise(verbosity=PRINT_SILENT)
 
   call initialise(cli_params)
   call param_register(cli_params, "outfile", "stdout", outfile)
   call param_register(cli_params, "mesh", "1 1 1", mesh)
   call param_register(cli_params, "monkhorst_pack", "F", monkhorst_pack)
   if (.not. param_read_args(cli_params, do_check=.true., ignore_unknown=.false.)) then
-    call print("Usage: make_k_mesh outfile=filename(stdout) mesh='n1 n2 n3'(1 1 1 ) monkhorst_pack=L(F)", ERROR)
+    call print("Usage: make_k_mesh outfile=filename(stdout) mesh='n1 n2 n3'(1 1 1 ) monkhorst_pack=L(F)", PRINT_ALWAYS)
     call system_abort("Failed to parse command line arguments")
   endif
 

@@ -385,16 +385,16 @@ subroutine TBModel_Print(this,file)
   type(TBModel),    intent(in)           :: this
   type(Inoutput), intent(inout),optional :: file
 
-  call print("TBModel: is_orthogonal " // this%is_orthogonal, VERBOSE)
-  call print("TBModel: functional_form " // ff_names(this%functional_form), VERBOSE)
+  call print("TBModel: is_orthogonal " // this%is_orthogonal, PRINT_VERBOSE)
+  call print("TBModel: functional_form " // ff_names(this%functional_form), PRINT_VERBOSE)
   call print("TBModel: has_default_fermi_e " // this%has_default_fermi_e // " default_fermi_e " // &
-    this%default_fermi_e, VERBOSE)
+    this%default_fermi_e, PRINT_VERBOSE)
   call print("TBModel: has_default_fermi_T " // this%has_default_fermi_T // " default_fermi_T " // &
-    this%default_fermi_T, VERBOSE)
+    this%default_fermi_T, PRINT_VERBOSE)
   call print("TBModel: has_default_band_width " // this%has_default_band_width // " default_band_width " // &
-    this%default_band_width, VERBOSE)
+    this%default_band_width, PRINT_VERBOSE)
   call print("TBModel: has_default_k_density " // this%has_default_k_density // " default_k_density " // &
-    this%default_k_density, VERBOSE)
+    this%default_k_density, PRINT_VERBOSE)
 
   select case(this%functional_form)
     case (FF_NRL_TB)

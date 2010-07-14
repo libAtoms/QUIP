@@ -70,7 +70,7 @@ contains
       this_run_i = this_run_i + 1
     endif
 
-    call print("do_cp2k_calc_fake run_i " // this_run_i, ERROR)
+    call print("do_cp2k_calc_fake run_i " // this_run_i, PRINT_ALWAYS)
 
     call initialise(force_cio, "cp2k_force_file_log")
     call read(force_cio, for, frame=this_run_i-1)
@@ -399,7 +399,7 @@ contains
       else
 	centre_pos = pbc_aware_centre(at%pos, at%lattice, at%g)
       endif
-      call print("centering got automatic center " // centre_pos, VERBOSE)
+      call print("centering got automatic center " // centre_pos, PRINT_VERBOSE)
     endif
     ! move specified centre to origin (centre is already 0 if not specified)
     at%pos(1,:) = at%pos(1,:) - centre_pos(1)
@@ -415,7 +415,7 @@ contains
     endif
 
     if (qm_list%N == at%N) then
-      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", ERROR)
+      call print("WARNING: requested '"//trim(run_type)//"' but all atoms are in QM region, doing full QM run instead", PRINT_ALWAYS)
       run_type='QS'
       use_QM = .true.
       use_MM = .false.
@@ -439,9 +439,9 @@ contains
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&QMMM", "&CELL")
       call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least '//(qm_vacuum/2.0_dp)// &
 			' Angstrom around the QM atoms.')
-      call print('WARNING! Please check if your cell is centreed around the QM region!',ERROR)
-      call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',ERROR)
-      call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',ERROR)
+      call print('WARNING! Please check if your cell is centreed around the QM region!',PRINT_ALWAYS)
+      call print('WARNING! CP2K centreing algorithm fails if QM atoms are not all in the',PRINT_ALWAYS)
+      call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',PRINT_ALWAYS)
       cur_qmmm_qm_abc = qmmm_qm_abc(at, qm_list_a, qm_vacuum)
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL ABC " // cur_qmmm_qm_abc, after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&QMMM&CELL PERIODIC XYZ", after_line=insert_pos, n_l=template_n_lines); insert_pos = insert_pos + 1
@@ -604,7 +604,7 @@ contains
 
     if (maxval(abs(f)) > max_force_warning) &
       call print('WARNING cp2k forces max component ' // maxval(abs(f)) // ' at ' // maxloc(abs(f)) // &
-		 ' exceeds warning threshold ' // max_force_warning, ERROR)
+		 ' exceeds warning threshold ' // max_force_warning, PRINT_ALWAYS)
 
     ! save output
 
@@ -812,7 +812,7 @@ contains
       call system_timer('cp2k_run_command')
       call system_command(trim(cp2k_run_command), status=stat)
       call system_timer('cp2k_run_command')
-      call print('grep -i warning '//trim(run_dir)//'/cp2k_output.out', ERROR)
+      call print('grep -i warning '//trim(run_dir)//'/cp2k_output.out', PRINT_ALWAYS)
       call system_command("fgrep -i 'warning' "//trim(run_dir)//"/cp2k_output.out")
       call system_command("fgrep -i 'error' "//trim(run_dir)//"/cp2k_output.out", status=error_stat)
       if (stat /= 0) &
@@ -824,14 +824,14 @@ contains
       if (stat == 0) then ! QS or QMMM run
 	call system_command('grep "FAILED to converge" '//trim(run_dir)//'/cp2k_output.out',status=stat)
 	if (stat == 0) then
-	  call print("WARNING: cp2k_driver failed to converge, trying again",ERROR)
+	  call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
 	  converged = .false.
 	else
 	  call system_command('grep "SCF run converged" '//trim(run_dir)//'/cp2k_output.out',status=stat)
 	  if (stat == 0) then
 	    converged = .true.
 	  else
-	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",ERROR)
+	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",PRINT_ALWAYS)
 	    converged = .false.
 	  endif
 	end if

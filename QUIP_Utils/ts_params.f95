@@ -124,7 +124,7 @@ subroutine tsParams_initialise(this)
    this%minim_end_eps_guess         = 0.01_dp  ! Angstrom
    this%minim_end_max_steps         = 1000     ! number
 
-   this%io_verbosity            = NORMAL
+   this%io_verbosity            = PRINT_NORMAL
    this%io_print_interval          = 10
 
    this%simulation_hybrid     = .false. 

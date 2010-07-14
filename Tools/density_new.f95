@@ -70,7 +70,7 @@ implicit none
   integer :: i_lag, i1, i2, i3
   real(dp), allocatable :: autocorr(:,:,:,:)
 
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
   call register_cli_params(cli_params,.true., infilename, infile_is_list, outfilename, commandfilename, &
@@ -235,16 +235,16 @@ contains
       my_exec_name=EXEC_NAME
     endif
 
-    call print("Usage: " // trim(my_exec_name)//" infile=filename [infile_is_list=logical(F)]", ERROR)
-    call print("       outfile=filename [commandfile=filename()] [AtomMask=species()] [min_p={x y z}]", ERROR)
-    call print("       bin_width={x y z}(y,z ignored for radial_histo) n_bins={nx ny nz}(y,z ignored for radial_histo)", ERROR)
-    call print("       [mean=logical(T)] [mean_decorrelation_time=t(0.0)]", ERROR)
-    call print("       [autocorrelation=logical(F)] [autocorrelation_max_lag=N(10000)]", ERROR)
-    call print("       [decimation=n(1)] [min_time=t(-1.0)] [max_time=t(-1.0)]", ERROR)
-    call print("       [gaussian=logical(F)(always true for radial_histo)] [sigma=s(1.0)] [radial_histo=logical(F)]", ERROR)
-    call print("       [radial_center={x y z}] [random_samples=logical(F)(radial_histo only)] [n_samples={2 4})(component 2 ignored for random)]", ERROR)
-    call print("       [sort_Time(F)] [no_Time_dups(F)]", ERROR)
-    call print("       [quiet=logical(F)]", ERROR)
+    call print("Usage: " // trim(my_exec_name)//" infile=filename [infile_is_list=logical(F)]", PRINT_ALWAYS)
+    call print("       outfile=filename [commandfile=filename()] [AtomMask=species()] [min_p={x y z}]", PRINT_ALWAYS)
+    call print("       bin_width={x y z}(y,z ignored for radial_histo) n_bins={nx ny nz}(y,z ignored for radial_histo)", PRINT_ALWAYS)
+    call print("       [mean=logical(T)] [mean_decorrelation_time=t(0.0)]", PRINT_ALWAYS)
+    call print("       [autocorrelation=logical(F)] [autocorrelation_max_lag=N(10000)]", PRINT_ALWAYS)
+    call print("       [decimation=n(1)] [min_time=t(-1.0)] [max_time=t(-1.0)]", PRINT_ALWAYS)
+    call print("       [gaussian=logical(F)(always true for radial_histo)] [sigma=s(1.0)] [radial_histo=logical(F)]", PRINT_ALWAYS)
+    call print("       [radial_center={x y z}] [random_samples=logical(F)(radial_histo only)] [n_samples={2 4})(component 2 ignored for random)]", PRINT_ALWAYS)
+    call print("       [sort_Time(F)] [no_Time_dups(F)]", PRINT_ALWAYS)
+    call print("       [quiet=logical(F)]", PRINT_ALWAYS)
   end subroutine print_usage
 
   subroutine register_cli_params(cli_params, initial, infilename, infile_is_list, outfilename, commandfilename, &
@@ -569,7 +569,7 @@ contains
     if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
          (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
          (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
-      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
     if (present(histo_grid)) then
       do bin_i=1, n_bins
@@ -627,7 +627,7 @@ contains
     if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
          (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
          (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
-      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+      call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
     w = 1.0_dp / (gaussian_sigma*sqrt(2.0_dp*PI))**3
 

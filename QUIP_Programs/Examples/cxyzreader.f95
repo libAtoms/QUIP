@@ -38,7 +38,7 @@ implicit none
   call system_initialise()
 
   call system_command("rm -f test.xyz test.xyz.idx")
-  call print("writing test.xyz", ERROR)
+  call print("writing test.xyz", PRINT_ALWAYS)
   call initialise(io,"test.xyz", OUTPUT)
   call diamond(prim, 5.43_dp, (/ 14 /) )
   call supercell(at, prim, 3, 3, 3)
@@ -49,7 +49,7 @@ implicit none
   call finalise(io)
   call finalise(at)
 
-  call print("reading test.xyz", ERROR)
+  call print("reading test.xyz", PRINT_ALWAYS)
   call initialise(io,"test.xyz", INPUT)
   call read(io, at)
   call print("first read at%pos(1,1) " // at%pos(1,1))

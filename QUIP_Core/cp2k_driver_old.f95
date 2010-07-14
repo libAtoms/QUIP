@@ -70,14 +70,14 @@
 !S  get_qm_list_int_rec(my_atoms,qmflag,qmlist,do_recursive)
 !S  get_qm_list_array(my_atoms,qmflags,qmlist)
 !F  get_property(my_atoms,prop) result(prop_index)
-!S  read_qmlist(my_atoms,qmlistfilename,verbose)
+!S  read_qmlist(my_atoms,qmlistfilename,PRINT_verbose)
 !F  num_of_bonds(at) result(bonds)
 !S  check_neighbour_numbers(at)
 !F  check_list_change(old_list,new_list) result(list_changed)
 !S  write_cp2k_input_files(my_atoms,qm_list,param,run_type,PSF_print)
 !S  write_cp2k_input_file(my_atoms,qm_list,param,run_type,PSF_print)
-!S  read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
-!S  read_convert_back_pos(forces,param,my_atoms,run_type,verbose)
+!S  read_cp2k_forces(forces,energy,param,my_atoms,run_type,PRINT_verbose)
+!S  read_convert_back_pos(forces,param,my_atoms,run_type,PRINT_verbose)
 !S  QUIP_combine_forces(qmmm_forces,mm_forces,combined_forces,my_atoms)
 !S  abrupt_force_mixing(qmmm_forces,mm_forces,combined_forces,my_atoms)
 !F  spline_force(at, i, my_spline, pot) result(force)
@@ -127,7 +127,7 @@ module cp2k_driver_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      operator(//), &
-                                     ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
+                                     ERROR, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANAL, &
 				     verbosity_push_decrement, verbosity_pop, current_verbosity, &
 				     mainlog
   use table_module,            only: table, initialise, finalise, &
@@ -344,9 +344,9 @@ contains
   if (any(run_type.eq.(/QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
    ! let's have 3 Angstroms on any side of the cell
     call print('INFO: The size of the QM cell is either the MM cell itself, or it will have at least 3-3 Angstrom around the QM atoms.')
-    call print('WARNING! Please check if your cell is centered around the QM region!',verbosity=SILENT)
-    call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',verbosity=SILENT)
-    call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',verbosity=SILENT)
+    call print('WARNING! Please check if your cell is centered around the QM region!',verbosity=PRINT_SILENT)
+    call print('WARNING! CP2K centering algorithm fails if QM atoms are not all in the',verbosity=PRINT_SILENT)
+    call print('WARNING! 0,0,0 cell. If you have checked it, please ignore this message.',verbosity=PRINT_SILENT)
     this%qmmm%qmmm_cell = 0._dp
     call get_qm_list_int_rec(at,run_type,fitlist, do_recursive=.true.)  ! with QM_flag 1 or 2
     if (any(at%Z(int_part(fitlist,1)).gt.8)) this%dft%mgrid_cutoff = 300._dp
@@ -393,15 +393,15 @@ contains
        if (old_QM_cell(1:3) .feq. this%qmmm%qmmm_cell(1:3)) then
           this%qmmm%reuse_wfn = .true.
           if (Run_Type.eq.QMMM_RUN_CORE) call print('QM cell size have not changed. Reuse previous wavefunction.')
-          call print('QM_cell size has not changed in at%params, will reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3)//' if QM list has not changed', VERBOSE)
+          call print('QM_cell size has not changed in at%params, will reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3)//' if QM list has not changed', PRINT_VERBOSE)
        else
           this%qmmm%reuse_wfn = .false.
-          call print('QM_cell size changed in at%params, will not reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3), VERBOSE)
+          call print('QM_cell size changed in at%params, will not reuse wfn'//old_QM_cell(1:3)//this%qmmm%qmmm_cell(1:3), PRINT_VERBOSE)
           call set_value(at%params,'QM_cell',this%qmmm%qmmm_cell(1:3))
        endif
     else !for the first step there is no QM_cell, no wavefunction
        this%qmmm%reuse_wfn = .false.
-       call print('did not find QM_cell property in at%params, will not reuse wfn', VERBOSE)
+       call print('did not find QM_cell property in at%params, will not reuse wfn', PRINT_VERBOSE)
        call set_value(at%params,'QM_cell',this%qmmm%qmmm_cell(1:3))
        call print('set_value QM_cell :'//this%qmmm%qmmm_cell(1:3))
     endif
@@ -412,9 +412,9 @@ contains
        if (ex) then
           this%qmmm%reuse_wfn = this%qmmm%reuse_wfn .and. (.not.QM_list_changed)
           if (QM_list_changed) then
-             call print('QM list changed, will not use wfn', VERBOSE)
+             call print('QM list changed, will not use wfn', PRINT_VERBOSE)
           else
-             call print('QM list has not changed, will use wfn if QM cell is the same', VERBOSE)
+             call print('QM list has not changed, will use wfn if QM cell is the same', PRINT_VERBOSE)
           endif
        else
           this%qmmm%reuse_wfn = .false.
@@ -888,7 +888,7 @@ contains
        call get_qm_list_int_rec(my_atoms,run_type,qmlist, do_recursive=.true.)
       !check if all the atoms are QM, QS used instead
        if (qmlist%N.eq.my_atoms%N) then
-          call print('WARNING: go_cp2k: QM/MM calculation was requested, but all the atoms are within the quantum zone: fully QS will be run!',verbosity=ERROR)
+          call print('WARNING: go_cp2k: QM/MM calculation was requested, but all the atoms are within the quantum zone: fully QS will be run!',verbosity=PRINT_ALWAYS)
           run_type = QS_RUN
           call print ('Run type: QS')
        endif
@@ -928,14 +928,14 @@ contains
       if (status == 0) then ! QS or QMMM run
 	call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
 	if (status == 0) then
-	  call print("WARNING: cp2k_driver failed to converge, trying again",ERROR)
+	  call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
 	  converged = .false.
 	else
 	  call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
 	  if (status == 0) then
 	    converged = .true.
 	  else
-	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",ERROR)
+	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",PRINT_ALWAYS)
 	    converged = .false.
 	  endif
 	end if
@@ -960,7 +960,7 @@ contains
     call read_cp2k_forces(CP2K_forces,CP2K_energy,param,my_atoms,run_type=run_type)
     if (maxval(abs(CP2K_forces)) > max_force_warning) then
       call print("WARNING: CP2K_forces maximum component " // maxval(abs(CP2K_forces)) // " at " // maxloc(abs(CP2K_forces)) // &
-		 " exceeds max_force_warning="//max_force_warning, ERROR)
+		 " exceeds max_force_warning="//max_force_warning, PRINT_ALWAYS)
     endif
 
     if (present(energy)) energy = CP2K_energy
@@ -1024,7 +1024,7 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=PRINT_SILENT)
 
   end subroutine get_qm_list_int
 
@@ -1066,7 +1066,7 @@ contains
        enddo
     endif
 
-    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflag,verbosity=PRINT_SILENT)
 
   end subroutine get_qm_list_int_rec
 
@@ -1096,7 +1096,7 @@ contains
           call append(qmlist,(/i,0,0,0/))
     enddo
 
-    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflags(1:size(qmflags)),verbosity=SILENT)
+    if (qmlist%N.eq.0) call print('Empty QM list with cluster_mark '//qmflags(1:size(qmflags)),verbosity=PRINT_SILENT)
 
   end subroutine get_qm_list_array
 
@@ -1129,7 +1129,7 @@ contains
   !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
   !% marking the QM atoms with 1, otherwise 0.
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,PRINT_verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
@@ -1146,7 +1146,7 @@ contains
 
 
     my_verbose = .false.
-    if (present(verbose)) my_verbose = verbose
+    if (present(verbose)) my_verbose = PRINT_verbose
 
     if (my_verbose) call print('In Read_QM_list:')
     call print('Reading the QM list from file '//trim(qmlistfilename)//'...')
@@ -1167,7 +1167,7 @@ contains
     end if
 
     num_qm_atoms = string_to_int(fields(1))
-    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=ERROR)
+    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=PRINT_ALWAYS)
     call print('Number of QM atoms: '//num_qm_atoms)
     call allocate(qm_list,4,0,0,0,num_qm_atoms)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
 
@@ -1959,7 +1959,7 @@ endif
   !% Read the forces and the energy from the CP2K output file.
   !% Check for reordering, and converts the energy units into eV, the forces to eV/A.
   !
-  subroutine read_cp2k_forces(forces,energy,param,my_atoms,run_type,verbose)
+  subroutine read_cp2k_forces(forces,energy,param,my_atoms,run_type,PRINT_verbose)
 
     real(dp),allocatable,dimension(:,:),intent(out) :: forces
     real(dp),                           intent(out) :: energy
@@ -1978,7 +1978,7 @@ endif
     logical :: energy_found
 
     my_verbose = .false.
-    if (present(verbose)) my_verbose = verbose
+    if (present(verbose)) my_verbose = PRINT_verbose
 
     call initialise(force_file,trim(param%wenv%working_directory)//'/'//trim(param%wenv%force_file),action=INPUT,isformatted=.true.)
     call print('Reading forces from file '//trim(force_file%filename)//'...')
@@ -2016,7 +2016,7 @@ endif
     call finalise(force_file)
 
    ! re-reorder atoms/forces in case CP2K reordered them
-    call read_convert_back_pos(forces,param,my_atoms,run_type=run_type,verbose=my_verbose)
+    call read_convert_back_pos(forces,param,my_atoms,run_type=run_type,PRINT_verbose=my_verbose)
 
     call print('')
     call print('The energy of the system: '//energy)
@@ -2041,7 +2041,7 @@ endif
   !% As an output the forces are in the same order as the atoms in the original
   !% atoms object.
   !
-  subroutine read_convert_back_pos(forces,param,my_atoms,run_type,verbose)
+  subroutine read_convert_back_pos(forces,param,my_atoms,run_type,PRINT_verbose)
 
     real(dp), allocatable, dimension(:,:), intent(inout) :: forces
     type(param_cp2k),                      intent(in)  :: param
@@ -2063,7 +2063,7 @@ integer :: i_inner, i_outer
     if (.not.any(run_type.eq.(/QS_RUN,MM_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) &
        call system_abort('read_convert_back_matrix: Run type is not recognized: '//run_type)
 
-    my_verbose = optional_default(.false.,verbose)
+    my_verbose = optional_default(.false.,PRINT_verbose)
     if (my_verbose) &
        call print_title('Reading matrix of new atomic coordinates from CP2K output')
 
@@ -2592,12 +2592,12 @@ integer :: i_inner, i_outer
 !
 !    if (buffer_general) then
 !       call print('Not element specific buffer selection')
-!       call construct_buffer(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       call construct_buffer(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=PRINT_NORMAL)
 !       !call print('Atoms in inner buffer:')
 !       !do i=1,inner_buffer%N
 !       !   call print(inner_buffer%int(1,i))
 !       !enddo
-!       call construct_buffer(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       call construct_buffer(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=PRINT_NORMAL)
 !       !call print('Atoms in outer buffer:')
 !       !do i=1,outer_buffer%N
 !       !   call print(outer_buffer%int(1,i))
@@ -2608,12 +2608,12 @@ integer :: i_inner, i_outer
 !       !enddo
 !    else
 !       call print('Element specific buffer selection, only heavy atoms count')
-!       call construct_buffer_RADIUS(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       call construct_buffer_RADIUS(fake,core,inner,inner_buffer,use_avgpos=.false.,verbosity=PRINT_NORMAL)
 !       !call print('Atoms in inner buffer:')
 !       !do i=1,inner_buffer%N
 !       !   call print(inner_buffer%int(1,i))
 !       !enddo
-!       call construct_buffer_RADIUS(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=NORMAL)
+!       call construct_buffer_RADIUS(fake,core,outer,outer_buffer,use_avgpos=.false.,verbosity=PRINT_NORMAL)
 !       !call print('Atoms in outer buffer:')
 !       !do i=1,outer_buffer%N
 !       !   call print(outer_buffer%int(1,i))
@@ -2623,7 +2623,7 @@ integer :: i_inner, i_outer
 !       !   call print(ext_qmlist%int(1,i))
 !       !enddo
 !    endif
-!    call select_hysteretic_quantum_region(fake,inner_buffer,outer_buffer,ext_qmlist,verbosity=NORMAL)
+!    call select_hysteretic_quantum_region(fake,inner_buffer,outer_buffer,ext_qmlist,verbosity=PRINT_NORMAL)
 !    !call print('Atoms in hysteretic quantum region:')
 !    !do i=1,ext_qmlist%N
 !    !   call print(ext_qmlist%int(1,i))

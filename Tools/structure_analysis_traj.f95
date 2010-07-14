@@ -1068,7 +1068,7 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   ! ratio of 20/2.22=9 is fine  (error 2e-5)
   ! ratio of 20/2=10 is definitely fine
   if (min(norm(at%lattice(:,1)), norm(at%lattice(:,2)), norm(at%lattice(:,3))) < 9.0_dp*gaussian_sigma) &
-    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
   if (present(center_i)) then
     use_center_pos = at%pos(:,center_i)
@@ -1408,16 +1408,16 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
 	r_jk = distance_min_image(at, j_at, k_at)
 	i_dist_bin = int(r_jk/dist_bin_width)+1
 	if (i_dist_bin > n_dist_bins) cycle
-! call print("doing triplet ijk " // i_at // " " // j_at // " "// k_at, ERROR)
-! call print("  Zijk " // at%Z(i_at) // " " // at%Z(j_at) // " " // at%Z(k_at), ERROR)
-! call print("  pi " // at%pos(:,i_at), ERROR)
-! call print("  pj " // at%pos(:,j_at), ERROR)
-! call print("  pk " // at%pos(:,k_at), ERROR)
-! call print("  r_ij " // diff_min_image(at,i_at,j_at) // "     " // r_ij, ERROR)
-! call print("  r_jk " // diff_min_image(at,j_at,k_at) // "     " // distance_min_image(at, j_at, k_at), ERROR)
-! call print("  r_ik " // diff_min_image(at,i_at,k_at) // "     " // distance_min_image(at, i_at, k_at), ERROR)
+! call print("doing triplet ijk " // i_at // " " // j_at // " "// k_at, PRINT_ALWAYS)
+! call print("  Zijk " // at%Z(i_at) // " " // at%Z(j_at) // " " // at%Z(k_at), PRINT_ALWAYS)
+! call print("  pi " // at%pos(:,i_at), PRINT_ALWAYS)
+! call print("  pj " // at%pos(:,j_at), PRINT_ALWAYS)
+! call print("  pk " // at%pos(:,k_at), PRINT_ALWAYS)
+! call print("  r_ij " // diff_min_image(at,i_at,j_at) // "     " // r_ij, PRINT_ALWAYS)
+! call print("  r_jk " // diff_min_image(at,j_at,k_at) // "     " // distance_min_image(at, j_at, k_at), PRINT_ALWAYS)
+! call print("  r_ik " // diff_min_image(at,i_at,k_at) // "     " // distance_min_image(at, i_at, k_at), PRINT_ALWAYS)
         jik_angle = angle(diff_min_image(at,i_at,j_at), diff_min_image(at,i_at,k_at))
-! call print("  r_ij " // r_ij // " r_jk " // r_jk // " jik_angle " // (jik_angle*180.0/PI), ERROR)
+! call print("  r_ij " // r_ij // " r_jk " // r_jk // " jik_angle " // (jik_angle*180.0/PI), PRINT_ALWAYS)
 	i_angle_bin = int(jik_angle/angle_bin_width)+1
 	if (i_angle_bin > n_angle_bins) i_angle_bin = n_angle_bins
 	adfd(i_angle_bin,i_dist_bin,i_zone) = adfd(i_angle_bin,i_dist_bin,i_zone) + 1.0_dp ! /(2.0_dp*PI*sin(jik_angle))
@@ -1476,7 +1476,7 @@ subroutine density_sample_rectilinear_mesh_Gaussians(histogram, at, min_p, sampl
   if ( (norm(at%lattice(:,1)) < 9.0_dp*gaussian_sigma) .or. &
        (norm(at%lattice(:,2)) < 9.0_dp*gaussian_sigma) .or. &
        (norm(at%lattice(:,3)) < 9.0_dp*gaussian_sigma) ) &
-    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
   w = 1.0_dp / (gaussian_sigma*sqrt(2.0_dp*PI))**3
 
@@ -1717,7 +1717,7 @@ subroutine read_geometry_params(this,filename)
   num_geom = string_to_int(fields(1))
   comment=""
   comment = read_line(geom_lib,status)
-  call print(trim(comment),VERBOSE)
+  call print(trim(comment),PRINT_VERBOSE)
 
   do i=1,num_geom
     call parse_line(geom_lib,' ',fields,num_fields)
@@ -1932,7 +1932,7 @@ subroutine density_axial_calc(histogram, at, axis, silica_center_i,n_bins, gauss
   ! ratio of 20/2.22=9 is fine  (error 2e-5)
   ! ratio of 20/2=10 is fine
   if ( gaussian_smoothing .and. (at%lattice(axis,axis) < 9.0_dp*gaussian_sigma) ) &
-    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
   if (gaussian_smoothing) then
 
@@ -2062,7 +2062,7 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
   ! ratio of 20/2.22=9 is fine  (error 2e-5)
   ! ratio of 20/2=10 is fine
   if ( gaussian_smoothing .and. (at%lattice(axis,axis) < 9.0_dp*gaussian_sigma) ) &
-    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", ERROR)
+    call print("WARNING: at%lattice may be too small for sigma, errors (noticeably too low a density) may result", PRINT_ALWAYS)
 
 !  call set_cutoff(at,dist_O2_H1)
 !  call calc_connect(at)
@@ -2071,7 +2071,7 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
   do H1=1, at%N
      if(at%Z(H1)/=1) cycle !find H: H1
      !Count the atoms
-     call print('Found H'//H1//ElementName(at%Z(H1)),ANAL)
+     call print('Found H'//H1//ElementName(at%Z(H1)),PRINT_ANAL)
      num_atoms = num_atoms + 1
 
      !find closest O: O1
@@ -2101,23 +2101,23 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
         !check H1-O1-O2 angle for definition
         HOO_angle = angle(diff_min_image(at,O1,H1), &
                           diff_min_image(at,O1,O2)) *180._dp/PI
-        call print('HOO_ANGLE '//ElementName(at%Z(H1))//H1//' '//ElementName(at%Z(O1))//O1//' '//ElementName(at%Z(O2))//O2//' '//HOO_angle,ANAL)
+        call print('HOO_ANGLE '//ElementName(at%Z(H1))//H1//' '//ElementName(at%Z(O1))//O1//' '//ElementName(at%Z(O2))//O2//' '//HOO_angle,PRINT_ANAL)
         if (HOO_angle.gt.angle_H1_O1_O2) cycle
 
         !We've found a H-bond.
 
         !Find out the type (what-to-what)
         if (O1>silica_center_i .and. O2>silica_center_i) then  ! water - water
-           call print('Found water-water H-bond.',ANAL)
+           call print('Found water-water H-bond.',PRINT_ANAL)
            hbond_type = 1
         elseif (O1>silica_center_i .and. O2<=silica_center_i) then  ! water - silica
-           call print('Found water-silica H-bond.',ANAL)
+           call print('Found water-silica H-bond.',PRINT_ANAL)
            hbond_type = 2
         elseif (O1<=silica_center_i .and. O2>silica_center_i) then  ! silica - water
-           call print('Found silica-water H-bond.',ANAL)
+           call print('Found silica-water H-bond.',PRINT_ANAL)
            hbond_type = 3
         elseif (O1<=silica_center_i .and. O2<=silica_center_i) then  ! silica - silica
-           call print('Found silica-silica H-bond.',ANAL)
+           call print('Found silica-silica H-bond.',PRINT_ANAL)
            hbond_type = 4
         endif
 
@@ -2191,9 +2191,9 @@ real(dp) :: dist, exp_arg
 
   use_dipole = optional_default(.true.,use_dipole_rather_than_angle_bisector)
   if (use_dipole) then
-     call print("Using dipole to calculate angle with the surface normal.",VERBOSE)
+     call print("Using dipole to calculate angle with the surface normal.",PRINT_VERBOSE)
   else
-     call print("Using HOH angle bisector to calculate angle with the surface normal.",VERBOSE)
+     call print("Using HOH angle bisector to calculate angle with the surface normal.",PRINT_VERBOSE)
   endif
 
   !pos bin labels along axis
@@ -2246,7 +2246,7 @@ real(dp) :: dist, exp_arg
   do O=silica_center_i+1, at%N !only check water molecules
      if(at%Z(O)==1) cycle !find O
      !Count the atoms
-     call print('Found O'//O//ElementName(at%Z(O)),ANAL)
+     call print('Found O'//O//ElementName(at%Z(O)),PRINT_ANAL)
      num_atoms = num_atoms + 1
 
      !find H neighbours
@@ -2324,8 +2324,8 @@ real(dp) :: dist, exp_arg
      endif
 !call print ('angle '//(orientation_angle*180._dp/pi))
 
-     call print('Storing angle for water '//O//'--'//H1//'--'//H2//' with reference = '//round(orientation_angle,5)//'degrees',ANAL)
-     call print('   with distance -1/2 b -- '//O//' = '//round(r,5)//'A',ANAL)
+     call print('Storing angle for water '//O//'--'//H1//'--'//H2//' with reference = '//round(orientation_angle,5)//'degrees',PRINT_ANAL)
+     call print('   with distance -1/2 b -- '//O//' = '//round(r,5)//'A',PRINT_ANAL)
 
      if (gaussian_smoothing) then !smear the position along axis
         !call system_abort('not implemented.')
@@ -2391,7 +2391,7 @@ implicit none
   type(Atoms) :: structure
   logical :: do_verbose
 
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params, "verbose", "F", do_verbose)
@@ -2399,7 +2399,7 @@ implicit none
     call system_abort("Impossible failure to parse verbosity")
   call finalise(cli_params)
   if (do_verbose) then
-    call system_initialise(verbosity=VERBOSE)
+    call system_initialise(verbosity=PRINT_VERBOSE)
   endif
 
   call initialise(cli_params)

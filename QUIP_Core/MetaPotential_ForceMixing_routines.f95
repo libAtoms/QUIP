@@ -174,7 +174,7 @@
     type(MetaPotential_FM), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
 
-    if (current_verbosity() < NORMAL) return
+    if (current_verbosity() < PRINT_NORMAL) return
 
     call Print('MetaPotential_FM:',file=file)
     call Print(' minimise_mm='//this%minimise_mm,file=file)
@@ -307,7 +307,7 @@
       call system_abort("MetaPotential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
-    if (current_verbosity().ge.NERD) call print(this)
+    if (current_verbosity().ge.PRINT_NERD) call print(this)
 
     call initialise(calc_create_hybrid_weights_params)
     call read_string(calc_create_hybrid_weights_params, write_string(this%create_hybrid_weights_params))
@@ -385,7 +385,7 @@
        where (hybrid_mark == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
        where (hybrid == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
 
-       call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', VERBOSE)
+       call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', PRINT_VERBOSE)
 
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) &
             call system_abort('MetaPotential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
@@ -428,7 +428,7 @@
        return
     end if
 
-    call print('MetaPotential_FM_Calc: reweighting classical forces by '//mm_reweight//' in active region', VERBOSE)
+    call print('MetaPotential_FM_Calc: reweighting classical forces by '//mm_reweight//' in active region', PRINT_VERBOSE)
     do i=1,at%N
        if (hybrid_mark(i) /= HYBRID_ACTIVE_MARK) cycle
        f_mm(:,i) = mm_reweight*f_mm(:,i)
@@ -509,7 +509,7 @@
           df(:,1:this%embedlist%N) = f_qm(:,embed) - f_mm(:,embed)
     
           if (lotf_do_init) then
-             call print('Initialising adjustable potential with map='//lotf_do_map, VERBOSE)
+             call print('Initialising adjustable potential with map='//lotf_do_map, PRINT_VERBOSE)
              call adjustable_potential_init(at, this%fitlist, directionN=this%embedlist%N, &
                   method=AP_method, nnonly=lotf_nneighb_only, &
                   spring_hops=lotf_spring_hops, map=lotf_do_map)
@@ -564,26 +564,26 @@
 
     else if (trim(method) == 'conserve_momentum') then
        
-       call verbosity_push(NORMAL)
+       call verbosity_push(PRINT_NORMAL)
 
-       call print('Conserving momentum using fit list with '//this%fitlist%N//' atoms', VERBOSE)
+       call print('Conserving momentum using fit list with '//this%fitlist%N//' atoms', PRINT_VERBOSE)
 
        select case(conserve_momentum_weight_method)
        case ('uniform')
           weight_method = UNIFORM_WEIGHT
-          call print('conserve_momentum: uniform weighting', VERBOSE)
+          call print('conserve_momentum: uniform weighting', PRINT_VERBOSE)
        case ('mass')
           weight_method = MASS_WEIGHT
-          call print('conserve_momentum: using mass weighting', VERBOSE)
+          call print('conserve_momentum: using mass weighting', PRINT_VERBOSE)
        case ('mass^2')
           weight_method = MASS2_WEIGHT
-          call print('conserve_momentum: using mass squared weighting', VERBOSE)
+          call print('conserve_momentum: using mass squared weighting', PRINT_VERBOSE)
        case ('user')
           weight_method = USER_WEIGHT
-          call print('conserve_momentum: using user defined weighting', VERBOSE)
+          call print('conserve_momentum: using user defined weighting', PRINT_VERBOSE)
        case ('weight_region1')
           weight_method = CM_WEIGHT_REGION1
-          call print('conserve_momentum: using user defined weighting', VERBOSE)
+          call print('conserve_momentum: using user defined weighting', PRINT_VERBOSE)
        case default
           call system_abort('MetaPotential_FM_Calc: unknown conserve_momentum_weight method: '//&
                trim(conserve_momentum_weight_method))
@@ -605,7 +605,7 @@
        end do
 
        f_tot = sum(df,dim=2)
-       call print('conserve_momentum: norm(sum of target forces) = '//round(norm(f_tot),15), VERBOSE)
+       call print('conserve_momentum: norm(sum of target forces) = '//round(norm(f_tot),15), PRINT_VERBOSE)
 
        w_tot = 0.0_dp
        do i = 1, this%fitlist%N
@@ -627,7 +627,7 @@
        df_fit = (df_fit / w_tot)
 
        !NB workaround for pgf90 bug (as of 9.0-1)
-       t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15), VERBOSE)
+       t_norm = norm(sum(df_fit,dim=2));call print('conserve_momentum: norm(sum of    fit forces) = '//round(t_norm, 15), PRINT_VERBOSE)
        !NB end of workaround for pgf90 bug (as of 9.0-1)
 
        ! Final forces are classical forces plus corrected QM forces

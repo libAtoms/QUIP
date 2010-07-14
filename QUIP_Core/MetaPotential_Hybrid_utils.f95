@@ -48,7 +48,7 @@
     type(MetaPotential) :: region1_metapot, region2_metapot
     integer :: it
 
-    call verbosity_push_decrement(NERD)
+    call verbosity_push_decrement(PRINT_NERD)
     call print("metapotential_local_e_mix_initialise called with reference_bulk")
     call print_xyz(reference_bulk, "stdout")
     call verbosity_pop()
@@ -58,7 +58,7 @@
     call calc_connect(bulk_region1)
     call initialise(region1_metapot, "Simple", region1_pot)
     if (minimise_bulk) then
-      call print("MINIMISING bulk in region1 potential", VERBOSE)
+      call print("MINIMISING bulk in region1 potential", PRINT_VERBOSE)
       call verbosity_push_decrement()
       it = minim(region1_metapot, at=bulk_region1, method='cg', convergence_tol=0.001_dp, max_steps=100, linminroutine='NR_LINMIN', &
 	do_print = .false., do_lat = .true., args_str='solver=DIAG SCF_NONE')
@@ -86,7 +86,7 @@
     call set_cutoff(bulk_region2, cutoff(region2_metapot)+0.5_dp)
     call calc_connect(bulk_region2)
     if (minimise_bulk) then
-      call print("MINIMISING bulk in region2 potential", VERBOSE)
+      call print("MINIMISING bulk in region2 potential", PRINT_VERBOSE)
       call verbosity_push_decrement()
       it = minim(region2_metapot, at=bulk_region2, method='cg', convergence_tol=0.001_dp, max_steps=100, linminroutine='NR_LINMIN', &
 	do_print = .false., do_lat = .true.)
@@ -156,9 +156,9 @@
 
     if (minval(constrained_list) < 1 .or. maxval(constrained_list) > size(fixed_metapot)) then
       call print("do_minimise_mm: size(fixed_metapot) " // size(fixed_metapot) // &
-	" size(constrained_list) " // size(constrained_list), ERROR)
-      call print("do_minimise_mm: constrained_list", ERROR)
-      call print(constrained_list, ERROR)
+	" size(constrained_list) " // size(constrained_list), PRINT_ALWAYS)
+      call print("do_minimise_mm: constrained_list", PRINT_ALWAYS)
+      call print(constrained_list, PRINT_ALWAYS)
       call system_abort("do_minimise_mm with invalid value in constrained list")
     endif
 
@@ -174,11 +174,11 @@
         print_cinoutput=minim_cinoutput_movie)
     mainlog%prefix=""
     call verbosity_pop()
-    call print("MetaPotential_local_e_mix_calc minimise_mm got mm_steps " // mm_steps, VERBOSE)
+    call print("MetaPotential_local_e_mix_calc minimise_mm got mm_steps " // mm_steps, PRINT_VERBOSE)
 
     call calc_connect(at)
 
-    call print("MM minimisation done in "//mm_steps//" steps", VERBOSE)
+    call print("MM minimisation done in "//mm_steps//" steps", PRINT_VERBOSE)
 
     fixed_metapot=0
 

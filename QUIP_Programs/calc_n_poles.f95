@@ -50,7 +50,7 @@ implicit none
 
   call Initialise(af, 0.0_dp, fermi_T, band_width)
 
-  call verbosity_push(VERBOSE)
+  call verbosity_push(PRINT_VERBOSE)
   call print(af)
   call verbosity_pop()
 

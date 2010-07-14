@@ -200,12 +200,12 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
 
    if(lreplicate_cell) then
       nsafe = 1
-      call print("Replicate cell : "//nreplicate_x//" "// nreplicate_y //" "// nreplicate_z, NERD)
+      call print("Replicate cell : "//nreplicate_x//" "// nreplicate_y //" "// nreplicate_z, PRINT_NERD)
       call supercell_minus_plus(at_bop, at_tmp, nreplicate_x, nsafe, nsafe)
       call supercell_minus_plus(at_tmp, at_bop, nsafe, nreplicate_y, nsafe)
       call supercell_minus_plus(at_bop, at_tmp, nsafe, nsafe,nreplicate_z)
    elseif(lpbc) then
-      call print ("Periodic boundary condition applied", NERD)
+      call print ("Periodic boundary condition applied", PRINT_NERD)
       call IPModel_BOP_compute_buffer(this,at,at_bop)
       at_bop = at_tmp
    else   ! no pbc
@@ -224,7 +224,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
 !  Cutoff set to the potential value in order to reduce the number of neighbours for the BOP library 
    call set_cutoff(at_bop, this%cutoff)
 !  Recompute connectivity
-   call print('IPModel_BOP : cutoff used for connectivity' // at_bop%cutoff, NERD)
+   call print('IPModel_BOP : cutoff used for connectivity' // at_bop%cutoff, PRINT_NERD)
    call set_lattice(at_bop,at_bop%lattice,scale_positions=.false., remap=.true.,reconnect=.true.)
 
 !  Atoms to be passed to the Bop library
@@ -250,7 +250,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    if (present(virial)) virial = 0.0_dp
   
 !  Compute the two pointer vectors required by the BOP library for the at_bop object
-   call print('Computing pointers for BOP library', NERD)
+   call print('Computing pointers for BOP library', PRINT_NERD)
    call IPModel_BOP_Calc_ptr(this)
 
    if(allocated(f_bop)) deallocate(f_bop)
@@ -304,9 +304,9 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    endif
    if(present(e)) e = e_bop 
 !   if (present(e)) e = sum(this%mpi, e_bop)
-   call print('Energy computed with BOP library : ' // e_bop // " eV ",NERD)
+   call print('Energy computed with BOP library : ' // e_bop // " eV ",PRINT_NERD)
    if (present(local_e)) call sum_in_place(this%mpi, local_e)
-   if(current_verbosity()  >= NERD) then
+   if(current_verbosity()  >= PRINT_NERD) then
      do i =1, this%n
        call print('Forces computed with BOP library on atom ' // i // " : " // f_bop(1,i) // " "// f_bop(2,i) // " " // f_bop(3,i) )
      enddo
@@ -359,7 +359,7 @@ subroutine IPModel_BOP_Calc_ptr(this)
       endif
    enddo
    this%bptr(this%bptr_num) = 0
-   if(current_verbosity()  >= VERBOSE) then
+   if(current_verbosity()  >= PRINT_VERBOSE) then
      call print(this,this%aptr,this%bptr)
    endif
 
@@ -563,9 +563,9 @@ subroutine IPModel_BOP_compute_buffer(this,at,at_bop)
 
   call append(list, (/i_atom,0,0,0/)) 
   call BFS_grow(at, list, 4)
-  call print('---------------cluster--------------------', NERD)
-  call print(list, NERD)
-  call print('--------------end cluster-----------------', NERD)
+  call print('---------------cluster--------------------', PRINT_NERD)
+  call print(list, PRINT_NERD)
+  call print('--------------end cluster-----------------', PRINT_NERD)
 
   call build_cluster(at, list, at_bop)
 
@@ -625,9 +625,9 @@ subroutine add_cells(at, n_cell_rep, at_bop)
 
        periodicity    = 0
        periodicity(i) = int( (ic-1)/cells(i) + 1 )
-       call print ("ic_right_p   " // ic_right_p  // "  ; ic    " // ic, NERD)
-       call print ("ic_right_m   " // ic_right_m  // "  ; ic    " // ic, NERD)
-       call print ("periodicity  " // periodicity, NERD)
+       call print ("ic_right_p   " // ic_right_p  // "  ; ic    " // ic, PRINT_NERD)
+       call print ("ic_right_m   " // ic_right_m  // "  ; ic    " // ic, PRINT_NERD)
+       call print ("periodicity  " // periodicity, PRINT_NERD)
 
        if(i.eq.1) then
           do j = 1, cells(2)

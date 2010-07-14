@@ -481,7 +481,7 @@ contains
     this%minim_mm_use_n_minim    = .false.
 
     ! I/O parameters
-    this%io_verbosity            = NORMAL
+    this%io_verbosity            = PRINT_NORMAL
     this%io_netcdf               = .false.
     this%io_print_interval       = 10.0_dp  ! fs
     this%io_print_all_properties = .false.

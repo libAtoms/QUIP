@@ -280,11 +280,11 @@ contains
        ! Beware, interface change!
        if (.not. present(Nint) .or. .not. present(Nreal) .or. & 
             .not. present(Nstr)  .or. .not. present(Nlogical)) then
-          call print('WARNING: The interface to table_allocate (allocate(table,...) and', ERROR)
-	  call print('         initialise(table,...)) has changed!', ERROR)
-          call print(' from call allocate(table,Nint,Nreal,length)', ERROR)
-          call print(' to   call allocate(table,Nint,Nreal,Nstr,Nlogical,length)', ERROR)
-          call print('Please update your code!', ERROR)
+          call print('WARNING: The interface to table_allocate (allocate(table,...) and', PRINT_ALWAYS)
+	  call print('         initialise(table,...)) has changed!', PRINT_ALWAYS)
+          call print(' from call allocate(table,Nint,Nreal,length)', PRINT_ALWAYS)
+          call print(' to   call allocate(table,Nint,Nreal,Nstr,Nlogical,length)', PRINT_ALWAYS)
+          call print('Please update your code!', PRINT_ALWAYS)
           call system_abort('table_allocate: if one of Nint, Nreal, Nstr, Nlogical is present then all must be!')
        end if
 

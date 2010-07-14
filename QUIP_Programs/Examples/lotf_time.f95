@@ -71,7 +71,7 @@ program lotf_time
   type(CInOutput) :: movie
   
   
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
   call initialise(pot, 'FilePot command=./castep_driver.sh')
   call initialise(movie, "movie.xyz", action=OUTPUT)
 

@@ -75,7 +75,7 @@ program bulktest
   character(5)::prefix
 
   ! initialise program
-  call system_initialise(NORMAL,1)
+  call system_initialise(PRINT_NORMAL,1)
   call initialise(movie, "movie.xyz")
   !call initialise(datafile, 'forcediff.dat')
 

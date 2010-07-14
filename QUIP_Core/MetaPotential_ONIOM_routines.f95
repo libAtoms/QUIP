@@ -160,7 +160,7 @@
       call system_abort("MetaPotential_ONIOM_calc_energy failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
     if (calc_weights) then
-      call print("MetaPotential_ONIOM_calc got calc_weights core_hops " // core_hops, VERBOSE)
+      call print("MetaPotential_ONIOM_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
       call add_property(at, "hybrid_mark", HYBRID_NO_MARK)
       if (.not. assign_pointer(at, "hybrid", hybrid)) &
@@ -314,7 +314,7 @@
     call system_timer("calc_oniom/calc_cluster_2")
 
     call system_timer("calc_oniom/combine")
-    if(current_verbosity() > VERBOSE) &
+    if(current_verbosity() > PRINT_VERBOSE) &
          call print_cfg(cluster, "cluster.cfg", all_properties = .true.)
 
     ! redistribute local energies and weights from the cluster to region 1

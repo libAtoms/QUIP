@@ -65,8 +65,8 @@ program solvate_silica
   real(dp)                    :: surface_normal(3)
   logical                     :: rotation2_pluspi
 
-  call system_initialise(verbosity=SILENT)
-!  call verbosity_push(NORMAL)
+  call system_initialise(verbosity=PRINT_SILENT)
+!  call verbosity_push(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params,"file","stdin", filename)
@@ -84,7 +84,7 @@ program solvate_silica
   call param_register(cli_params,"rotation2_pluspi",'F', rotation2_pluspi)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
     !call system_abort("Usage: decimate [file=(stdin)] [waterfile=(stdin)] silica_atoms atom1_point atom2_vector atom3_plane atom1_pos atom12_vector atom123_plane_point exclusion rotation1_sign rotation2_sign2 rotation2_pluspi")
-    call verbosity_push(NORMAL)
+    call verbosity_push(PRINT_NORMAL)
     call print_usage
     call system_abort('could not parse argument line')
   endif
@@ -227,7 +227,7 @@ call print_xyz(at, mainlog, all_properties=.true.)
   enddo
 
   call map_into_cell(at2)
-  call verbosity_push(NORMAL)
+  call verbosity_push(PRINT_NORMAL)
   if (stat == 0) call print_xyz(at2, mainlog, all_properties=.true.)
 
   call verbosity_pop()

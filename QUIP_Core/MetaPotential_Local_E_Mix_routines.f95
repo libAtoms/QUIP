@@ -181,7 +181,7 @@
     call finalise(params)
 
     if (calc_weights) then
-      call print("MetaPotential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, VERBOSE)
+      call print("MetaPotential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
       call add_property(at, "hybrid_mark", HYBRID_NO_MARK)
       if (.not. assign_pointer(at, "hybrid", hybrid)) &
@@ -343,7 +343,7 @@
     call system_timer("calc_local_energy_mix/calc_region_1")
 
     call system_timer("calc_local_energy_mix/combine")
-    if(current_verbosity() > VERBOSE) &
+    if(current_verbosity() > PRINT_VERBOSE) &
          call print_cfg(cluster, "cluster.cfg", all_properties = .true.)
 
     ! redistribute local energies and weights from the cluster to region 1

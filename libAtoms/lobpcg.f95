@@ -51,7 +51,7 @@
     real(dp) :: max_r, max_r_hist(10)
     integer :: n_needed
 
-    call print("matrix_general_diagonlise_lobpcg_sandia", VERBOSE)
+    call print("matrix_general_diagonlise_lobpcg_sandia", PRINT_VERBOSE)
 
     N = size(A, 1)
 
@@ -63,9 +63,9 @@
       call system_abort("called matrix_general_digonalise_lobpcg_sandia with mismatched evals and evecs size")
 
     call print("matrix_general_diagonalise_lpbpcg_sandia n_evecs " // &
-      n_evecs // " block_size " // max_bs, VERBOSE)
+      n_evecs // " block_size " // max_bs, PRINT_VERBOSE)
 
-    call print("n_full_blocks " // n_full_blocks // " extra_block_size " // extra_block_size, VERBOSE)
+    call print("n_full_blocks " // n_full_blocks // " extra_block_size " // extra_block_size, PRINT_VERBOSE)
 
     ! randomise evecs
     if (my_no_guess) then
@@ -104,7 +104,7 @@
       last_eval = min(first_eval+max_bs-1, N)
       bs = last_eval-first_eval+1
 
-      call print("doing block " // first_eval // " - " // last_eval, VERBOSE)
+      call print("doing block " // first_eval // " - " // last_eval, PRINT_VERBOSE)
 
       n_needed = n_evecs-first_eval
       ! copy block of eigenvectors
@@ -133,7 +133,7 @@
       done = .false.
       max_r_hist = 1e38_dp
       do while (iter < max_n_iter .and. .not. done .and. .not. failed)
-        call print("doing iter "//iter, NERD)
+        call print("doing iter "//iter, PRINT_NERD)
         if (present(precond)) then
           call matrix_product_sub(HI(1:N,1:cbs), precond(1:N,1:N), RI(1:N,1:cbs))
         else
@@ -180,12 +180,12 @@
             YI(1:nrr,cbs) = Y(1:nrr,i)
           endif
         end do
-        call print("residual max " // max_r // " cbs " // cbs, VERBOSE)
+        call print("residual max " // max_r // " cbs " // cbs, PRINT_VERBOSE)
         max_r_hist(1:9) = max_r_hist(2:10)
         max_r_hist(10) = max_r
 
 	if (prev_cbs < cbs) then
-          call print("diverging, but block partially converged " // (bs-cbs), VERBOSE)
+          call print("diverging, but block partially converged " // (bs-cbs), PRINT_VERBOSE)
           done = .true.
           n_needed = n_evecs-first_eval+1
           got_n_evals = got_n_evals + (bs-cbs)
@@ -200,7 +200,7 @@
           evecs(1:N,first_eval:min(last_eval,n_evecs)) = X(1:N,1:min(bs,n_needed))
           evals(first_eval:min(last_eval,n_evecs)) = Y_evals(1:min(bs,n_needed))
 	else if (got_n_evals+(bs-cbs) >= n_evecs) then
-          call print("enough evecs done, but block partially converged " // (bs-cbs), VERBOSE)
+          call print("enough evecs done, but block partially converged " // (bs-cbs), PRINT_VERBOSE)
           done = .true.
           n_needed = n_evecs-first_eval+1
           got_n_evals = got_n_evals + (bs-cbs)
@@ -208,7 +208,7 @@
           evecs(1:N,first_eval:min(first_eval+(bs)-1,n_evecs)) = X(1:N,1:min(bs,n_needed))
           evals(first_eval:min(first_eval+(bs-cbs)-1,n_evecs)) = Y_evals(1:min(bs-cbs,n_needed))
         else if (cbs /= bs .and. (iter > max_n_new_block .or. max_r_hist(10) > max_r_hist(5)*0.75_dp)) then
-          call print("block partially converged " // (bs-cbs), VERBOSE)
+          call print("block partially converged " // (bs-cbs), PRINT_VERBOSE)
           done = .true.
           n_needed = n_evecs-first_eval+1
           got_n_evals = got_n_evals + (bs-cbs)
@@ -354,10 +354,10 @@
 !    integer :: i_max, rr_min, rr_max, rr_step
 !    real(dp) :: mag
 !
-!    call print("matrix_general_diagonlise_lobpcg", VERBOSE)
+!    call print("matrix_general_diagonlise_lobpcg", PRINT_VERBOSE)
 !
 !    N = size(A, 1)
-!    call print("N " // N, VERBOSE)
+!    call print("N " // N, PRINT_VERBOSE)
 !
 !    my_no_guess = optional_default(.true., no_guess)
 !    my_largest = optional_default(.false., largest)
@@ -369,9 +369,9 @@
 !      call system_abort("lobpcg can't handle non integer number of blocks yet")
 !
 !    call print("matrix_general_diagonalise_lobpcg n_evecs " // &
-!      my_n_evecs // " block_size " // my_block_size, VERBOSE)
+!      my_n_evecs // " block_size " // my_block_size, PRINT_VERBOSE)
 !
-!    call print("n_full_blocks " // n_full_blocks // " extra_block_size " // extra_block_size, VERBOSE)
+!    call print("n_full_blocks " // n_full_blocks // " extra_block_size " // extra_block_size, PRINT_VERBOSE)
 !
 !    allocate(evecs_block(N, my_block_size))
 !    allocate(A_evecs_block(N, my_block_size))
@@ -399,12 +399,12 @@
 !    max_n_iter = 100
 !
 !    do i_block=1, n_full_blocks
-!      call print("doing block " // i_block, VERBOSE)
+!      call print("doing block " // i_block, PRINT_VERBOSE)
 !
 !      ! copy block of eigenvectors
 !      evecs_block = evecs(:,(i_block-1)*my_block_size+1:i_block*my_block_size)
-!      call print("raw evecs_block", ANAL)
-!      call print(evecs_block, ANAL)
+!      call print("raw evecs_block", PRINT_ANAL)
+!      call print(evecs_block, PRINT_ANAL)
 !
 !      ! A orthogonalize evecs_block w.r.t. previous blocks
 !      do ii_block=1, i_block-1
@@ -412,14 +412,14 @@
 !	    evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
 !      end do
 !
-!      call print("orthogonalized evecs_block", ANAL)
-!      call print(evecs_block, ANAL)
+!      call print("orthogonalized evecs_block", PRINT_ANAL)
+!      call print(evecs_block, PRINT_ANAL)
 !
 !      P = 0.0_dp
 !      iter = 1
 !      done = .false.
 !      do while (iter <= max_n_iter .and. .not. done)
-!        call print("doing iter " // iter, NERD)
+!        call print("doing iter " // iter, PRINT_NERD)
 !
 !	! evaluate eigenvalues
 !	call matrix_product_sub(A_evecs_block, A, evecs_block)
@@ -428,21 +428,21 @@
 !	  evals_block(:) = sum(evecs_block*B_evecs_block,1)/ &
 !			   sum(evecs_block*A_evecs_block,1)
 !
-!	call print("evals_block", NERD)
-!	call print(evals_block, NERD)
-!	call print("evecs_block", ANAL)
-!	call print(evecs_block, ANAL)
+!	call print("evals_block", PRINT_NERD)
+!	call print(evals_block, PRINT_NERD)
+!	call print("evecs_block", PRINT_ANAL)
+!	call print(evecs_block, PRINT_ANAL)
 !
 !	! evaluate residual
 !	do i=1, block_size
 !	  R(:,i) = B_evecs_block(:,i) - evals_block(i)*A_evecs_block(:,i)
 !	end do
 !
-!	call print("R", ANAL)
-!	call print(R, ANAL)
+!	call print("R", PRINT_ANAL)
+!	call print(R, PRINT_ANAL)
 !
 !	mainlog%default_real_precision=16
-!	call print("residual max " // maxval(abs(R)), VERBOSE)
+!	call print("residual max " // maxval(abs(R)), PRINT_VERBOSE)
 !	mainlog%default_real_precision=8
 !	done = (maxval(abs(R)) < 1.0e-8_dp)
 !
@@ -455,8 +455,8 @@
 !	    W = R
 !	  endif
 !
-!          call print("W", ANAL)
-!          call print(W, ANAL)
+!          call print("W", PRINT_ANAL)
+!          call print(W, PRINT_ANAL)
 !
 !	  ! A orthogonalize W w.r.t. previous blocks
 !	  do ii_block=1, i_block-1
@@ -464,11 +464,11 @@
 !		evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
 !	  end do
 !
-!	  call print("orthogonalized W", ANAL)
-!	  call print(W, ANAL)
+!	  call print("orthogonalized W", PRINT_ANAL)
+!	  call print(W, PRINT_ANAL)
 !
-!	  call print("P", ANAL)
-!	  call print(P, ANAL)
+!	  call print("P", PRINT_ANAL)
+!	  call print(P, PRINT_ANAL)
 !
 !	  ! evaluate Rayleigh-Ritz basis
 !	  RR_basis(:,1:my_block_size) = evecs_block
@@ -476,37 +476,37 @@
 !	  RR_basis(:,2*my_block_size+1:3*my_block_size) = P
 !
 !
-!	  call print("RR_basis", ANAL)
-!	  call print(RR_basis, ANAL)
+!	  call print("RR_basis", PRINT_ANAL)
+!	  call print(RR_basis, PRINT_ANAL)
 !
 !	  ! evaluate Rayleigh-Ritz matrices
 !	  call matrix_product_sub(RR_basis_AorB, A, RR_basis)
 !
 !	  call matrix_product_sub(RR_mat_A, RR_basis_AorB, RR_basis, &
 !	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_A", ANAL)
-!	  call print(RR_mat_A, ANAL)
+!	  call print("RR_mat_A", PRINT_ANAL)
+!	  call print(RR_mat_A, PRINT_ANAL)
 !	  call matrix_product_sub(RR_basis_AorB, B, RR_basis)
 !	  call matrix_product_sub(RR_mat_B, RR_basis_AorB, RR_basis, &
 !	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_B", ANAL)
-!	  call print(RR_mat_B, ANAL)
+!	  call print("RR_mat_B", PRINT_ANAL)
+!	  call print(RR_mat_B, PRINT_ANAL)
 !
 !	  ! diagonalise Rayleigh-Ritz matrix
 !	  if (iter == 1) then
 !	    call diagonalise(RR_mat_B(1:2*block_size,1:2*block_size), &
 !	      RR_mat_A(1:2*block_size,1:2*block_size), &
 !	      RR_evals(1:2*block_size), RR_evecs(1:2*block_size,1:2*block_size))
-!	      call print("RR_evals", NERD)
-!	      call print(RR_evals(1:2*block_size), NERD)
-!	      call print("RR_evecs", ANAL)
-!	      call print(RR_evecs(1:2*block_size,1:2*block_size), ANAL)
+!	      call print("RR_evals", PRINT_NERD)
+!	      call print(RR_evals(1:2*block_size), PRINT_NERD)
+!	      call print("RR_evecs", PRINT_ANAL)
+!	      call print(RR_evecs(1:2*block_size,1:2*block_size), PRINT_ANAL)
 !	  else
 !	    call diagonalise(RR_mat_B, RR_mat_A, RR_evals, RR_evecs)
-!	    call print("RR_evals", NERD)
-!	    call print(RR_evals, NERD)
-!	    call print("RR_evecs", ANAL)
-!	    call print(RR_evecs, ANAL)
+!	    call print("RR_evals", PRINT_NERD)
+!	    call print(RR_evals, PRINT_NERD)
+!	    call print("RR_evecs", PRINT_ANAL)
+!	    call print(RR_evecs, PRINT_ANAL)
 !	  endif
 !
 !	  if (iter == 1) then

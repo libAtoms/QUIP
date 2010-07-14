@@ -1095,7 +1095,7 @@ subroutine dictionary_read_string(this, str, append)
         key = field(1:equal_pos-1)
         value = field(equal_pos+1:len(trim(field)))
      endif
-     call print("dictionary_read_string key='"//trim(key)//"' value='"//trim(value)//"'",NERD)
+     call print("dictionary_read_string key='"//trim(key)//"' value='"//trim(value)//"'",PRINT_NERD)
      if (len_trim(value) > value_len) then
         call system_abort("dictionary_read_string: value "//trim(value)//" too long")
         return

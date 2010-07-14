@@ -295,10 +295,10 @@ contains
     if (present(err)) err = 0
 
     if (present(args_str)) then
-      call print('potential_calc got args_str "'//trim(args_str)//'"', VERBOSE)
+      call print('potential_calc got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
       my_args_str = args_str
     else
-      call print('potential_calc got not args_str', VERBOSE)
+      call print('potential_calc got not args_str', PRINT_VERBOSE)
       my_args_str = ""
     endif
 
@@ -363,11 +363,11 @@ contains
           if (present(mpi_obj)) then
              if (mpi_obj%active) then
                 n = n + 1
-                call print('potential_calc: cluster '//n//' around atom '//i//'  assigned to proc '//mod(n-1,mpi_obj%n_procs)//' of '//(mpi_obj%n_procs), VERBOSE)
+                call print('potential_calc: cluster '//n//' around atom '//i//'  assigned to proc '//mod(n-1,mpi_obj%n_procs)//' of '//(mpi_obj%n_procs), PRINT_VERBOSE)
                 if (mod(n-1, mpi_obj%n_procs) .ne. mpi_obj%my_proc) cycle
              end if
           end if
-          call print('potential_calc: constructing little_cluster around atom '//i, VERBOSE)
+          call print('potential_calc: constructing little_cluster around atom '//i, PRINT_VERBOSE)
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, new_args_str)
@@ -382,13 +382,13 @@ contains
           if (has_property(at, 'weight_region1')) &
                dummy = assign_pointer(at, 'weight_region1', weight_region1)
 
-	  if (current_verbosity() >= NERD) then
+	  if (current_verbosity() >= PRINT_NERD) then
 	    prefix_save = mainlog%prefix
 	    mainlog%prefix="LITTLE_CLUSTER_"//i
 	    call print_xyz(cluster, mainlog, all_properties=.true.)
 	    mainlog%prefix=prefix_save
 	  endif
-          call print('ARGS0 | '//new_args_str,VERBOSE)
+          call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
 
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
@@ -429,10 +429,10 @@ contains
        call finalise(params)
 
        ! call ourselves on a cluster formed from marked atoms
-       call print('potential_calc: constructing single_cluster', VERBOSE)
+       call print('potential_calc: constructing single_cluster', PRINT_VERBOSE)
 
        if (do_carve_cluster) then
-	 call print('potential_calc: carving cluster', VERBOSE)
+	 call print('potential_calc: carving cluster', PRINT_VERBOSE)
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
@@ -442,7 +442,7 @@ contains
 
 	 cluster = carve_cluster(at, new_args_str, cluster_info)
 	 call finalise(cluster_info)
-	 if (current_verbosity() >= NERD) then
+	 if (current_verbosity() >= PRINT_NERD) then
 	   prefix_save = mainlog%prefix
 	   mainlog%prefix="CLUSTER"
 	   call print_xyz(cluster, mainlog, all_properties=.true.)
@@ -453,7 +453,7 @@ contains
 	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
 	      call system_abort('potential_calc: cluster is missing termindex property')
 	 allocate(f_cluster(3,cluster%N))
-         call print('ARGS1 | '//new_args_str,VERBOSE)
+         call print('ARGS1 | '//new_args_str,PRINT_VERBOSE)
 
 	 call calc(this, cluster, f=f_cluster, args_str=new_args_str)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
@@ -473,28 +473,28 @@ contains
 	 deallocate(f_cluster)   
 	 call finalise(cluster)
        else ! not do_carve_cluster
-	 call print('potential_calc: not carving cluster', VERBOSE)
+	 call print('potential_calc: not carving cluster', PRINT_VERBOSE)
 	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds)
 
          !save cluster in cluster_mark property and optionally cluster_mark_postfix property
          call add_property(at,'cluster_mark',HYBRID_NO_MARK)
          if (trim(cluster_mark_postfix)/="") then
-           call print('Add cluster_mark'//trim(cluster_mark_postfix),ANAL)
+           call print('Add cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
            call add_property(at,'cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
          else
-           call print('NOT Add cluster_mark'//trim(cluster_mark_postfix),ANAL)
+           call print('NOT Add cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
          endif
          !save the previous cluster_mark[_postfix] into old_cluster_mark[_postfix]
          call add_property(at,'old_cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
-	 call print('Add old_cluster_mark'//trim(cluster_mark_postfix),ANAL)
+	 call print('Add old_cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
 	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer")
          if (trim(cluster_mark_postfix)/="") then
 	   if (.not. assign_pointer(at, 'cluster_mark'//trim(cluster_mark_postfix), cluster_mark_p_postfix)) &
 	     call system_abort("potential_calc failed to assing pointer for cluster_mark pointer")
-           call print('Assign cluster_mark'//trim(cluster_mark_postfix),ANAL)
+           call print('Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
          else
-           call print('NOT Assign cluster_mark'//trim(cluster_mark_postfix),ANAL)
+           call print('NOT Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
          endif
 	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(cluster_mark_postfix), old_cluster_mark_p)) &
 	   call system_abort("potential_calc failed to assing pointer for old_cluster_mark pointer")
@@ -536,22 +536,22 @@ contains
 	   if (cut_bonds_p(zero_loc(1),i_inner) == 0) then ! free space for a cut bond
 	     cut_bonds_p(zero_loc(1),i_inner) = i_outer
 	   else
-	     call print("cut_bonds table:", VERBOSE)
-	     call print(cut_bonds, VERBOSE)
-	     call print("ERROR: potential_calc ran out of space to store cut_bonds information", ERROR)
+	     call print("cut_bonds table:", PRINT_VERBOSE)
+	     call print(cut_bonds, PRINT_VERBOSE)
+	     call print("ERROR: potential_calc ran out of space to store cut_bonds information", PRINT_ALWAYS)
 	     call print("ERROR: inner atom " // i_inner // " already has cut_bonds to " // cut_bonds_p(:,i_inner) // &
-	      " no space to add cut bond to " // i_outer, ERROR)
+	      " no space to add cut bond to " // i_outer, PRINT_ALWAYS)
 	     call system_abort("potential_calc out of space to store cut_bonds information")
 	   endif
 	 end do
 	 call finalise(cut_bonds)
-	 if (current_verbosity() >= ANAL) then
+	 if (current_verbosity() >= PRINT_ANAL) then
 	   prefix_save = mainlog%prefix
 	   mainlog%prefix="UNCARVED_CLUSTER"
 	   call print_xyz(at, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
 	 endif
-call print('ARGS2 | '//new_args_str,VERBOSE)
+call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
 	 call calc(this, at, f=f, args_str=new_args_str)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster

@@ -25,7 +25,7 @@ if hasattr(quippy, 'Potential'):
    class TestMDIonImplant(QuippyTestCase):
        def setUp(self):
 
-          verbosity_push(SILENT)
+          verbosity_push(PRINT_SILENT)
 
           self.pot = Potential('IP Brenner', """<Brenner_params n_types="1" label="graphene">
  <!-- 2nd set of parameters from Brenner (1990), with Re scaled to

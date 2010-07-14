@@ -1141,7 +1141,7 @@ contains
 
     call print("# :::: CONVERGE KPOINTS", file = log)
 
-    if (current_verbosity() > NORMAL) then
+    if (current_verbosity() > PRINT_NORMAL) then
        call print("# potential:", file = log)
        call print(pot, file = log)
     end if
@@ -1199,7 +1199,7 @@ contains
 
     call print("# :::: CONVERGE FERMI TEMPERATURE", file = log)
 
-    if (current_verbosity() > NORMAL) then
+    if (current_verbosity() > PRINT_NORMAL) then
        call print("# potential:", file = log)
        call print(pot, file = log)
     end if

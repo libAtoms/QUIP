@@ -1744,7 +1744,7 @@ contains
        end if
        
        ! Construct temporary Connection object and partition atoms into cells
-       call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A', VERBOSE)
+       call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A', PRINT_VERBOSE)
        
        if (grid_i == 0) then
           call divide_cell(at%lattice, grid_size, cellsNa, cellsNb, cellsNc)
@@ -1863,7 +1863,7 @@ contains
        if (cells(start_i, start_j, start_k) /= 1) &
             call system_abort('crack_find_tip_percolation: cannot start percolation since start_pos='//start_pos//' is not in void')
        
-       call print('crack_find_tip_percolation: seeding percolation in cell ('//i//','//j//','//k//')', VERBOSE)
+       call print('crack_find_tip_percolation: seeding percolation in cell ('//i//','//j//','//k//')', PRINT_VERBOSE)
        
        ! Stop percolation from going outside slab
        cells(:left_edge,:,:) = 0
@@ -1877,7 +1877,7 @@ contains
        do while (percolation_step(cells))
           nstep = nstep + 1
        end do
-       call print('crack_find_tip_percolation: percolation completed in '//nstep//' steps', VERBOSE)
+       call print('crack_find_tip_percolation: percolation completed in '//nstep//' steps', PRINT_VERBOSE)
        
        if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
           call print('crack_find_tip_percolation: through-going crack detected')
@@ -1909,7 +1909,7 @@ contains
     ! but without overflowing any array boundaries
     
     min_dist = params%crack_tip_min_separation/grid_size
-    call print('crack_find_tip_percolation: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', VERBOSE)
+    call print('crack_find_tip_percolation: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', PRINT_VERBOSE)
     
     min_cells = 0
     do k=1,connect%cellsnc
@@ -1939,8 +1939,8 @@ contains
        end do
     end do
     
-    call print('crack_find_tip_percolation: got '//minima%n//' tips before duplicate removal', VERBOSE)
-    if (current_verbosity() >= VERBOSE) then
+    call print('crack_find_tip_percolation: got '//minima%n//' tips before duplicate removal', PRINT_VERBOSE)
+    if (current_verbosity() >= PRINT_VERBOSE) then
        do i=1,minima%n
           crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
           crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb

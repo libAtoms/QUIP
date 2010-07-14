@@ -154,7 +154,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
   real(dp), allocatable :: private_f(:,:), private_local_e(:)
 #endif
 
-  call print("IPModel_SW_Calc starting ", ANAL)
+  call print("IPModel_SW_Calc starting ", PRINT_ANAL)
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
@@ -183,7 +183,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
     endif
     ti = get_type(this%type_of_atomic_num, at%Z(i))
-    if (current_verbosity() >= ANAL) call print ("IPModel_SW_Calc i " // i // " " // atoms_n_neighbours(at,i), ANAL)
+    if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
     n_neigh_i = atoms_n_neighbours(at, i)
     do ji=1, n_neigh_i
@@ -195,7 +195,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 
       if (drij_mag/this%sigma(ti,tj) > this%a(ti,tj)) cycle
 
-      if (current_verbosity() >= ANAL) call print ("IPModel_SW_Calc i j " // i // " " // j, ANAL)
+      if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i j " // i // " " // j, PRINT_ANAL)
 
       if (associated(w_e)) then
 	w_f = 0.5_dp*(w_e(i)+w_e(j))
@@ -540,37 +540,37 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer ti, tj, tk, Zi, Zj, Zk
 
   if (name == 'SW_params') then ! new SW stanza
-    call print("startElement_handler SW_params", NERD)
+    call print("startElement_handler SW_params", PRINT_NERD)
     if (parse_in_ip) &
       call system_abort("IPModel_startElement_handler entered SW_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
 
     if (parse_matched_label) then 
-       call print("SW_params startElement_handler bailing because we already matched our label", NERD)
+       call print("SW_params startElement_handler bailing because we already matched our label", PRINT_NERD)
        return ! we already found an exact match for this label
     end if
 
     call QUIP_FoX_get_value(attributes, 'label', value, status)
     if (status /= 0) value = ''
 
-    call print("SW_params startElement_handler found xml label '"//trim(value)//"'", NERD)
+    call print("SW_params startElement_handler found xml label '"//trim(value)//"'", PRINT_NERD)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-      call print("SW_params startElement_handler was passed in label '"//trim(parse_ip%label)//"'", NERD)
+      call print("SW_params startElement_handler was passed in label '"//trim(parse_ip%label)//"'", PRINT_NERD)
       if (value == parse_ip%label) then ! exact match
         parse_matched_label = .true.
         parse_in_ip = .true.
       else ! no match
-	call print("SW_params startElement_handler got label didn't match", NERD)
+	call print("SW_params startElement_handler got label didn't match", PRINT_NERD)
         parse_in_ip = .false.
       endif
     else ! no label passed in
-      call print("SW_params startElement_handler was not passed in a label", NERD)
+      call print("SW_params startElement_handler was not passed in a label", PRINT_NERD)
       parse_in_ip = .true.
     endif
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call print("SW_params startElement_handler finalising old data, restarting to parse new section", NERD)
+	call print("SW_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
         call finalise(parse_ip)
       endif
 
@@ -701,7 +701,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
 
   if (parse_in_ip) then
     if (name == 'SW_params') then
-      call print("endElement_handler SW_params", NERD)
+      call print("endElement_handler SW_params", PRINT_NERD)
       parse_in_ip = .false.
     endif
   endif

@@ -674,8 +674,8 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
   prev_time = 1.0e38_dp
   prev_pgroup_size = 0
 
-  call print('setup_parallel timings', VERBOSE)
-  call print('group_size  time/sec', VERBOSE)
+  call print('setup_parallel timings', PRINT_VERBOSE)
+  call print('group_size  time/sec', PRINT_VERBOSE)
   
   call setup_atoms(this, at)
   do pgroup_size=1, this%mpi_glob%n_procs
@@ -686,7 +686,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
       call calc(this, at, energy, local_e, f, virial, args_str)
       call system_timer("IP_parallel", do_always = .true., time_elapsed = this_time)
       this_time = max(this%mpi_glob, this_time)
-      call print(pgroup_size//' '//this_time, VERBOSE)
+      call print(pgroup_size//' '//this_time, PRINT_VERBOSE)
       if (this_time > prev_time) then
 	call setup_parallel_groups(this, this%mpi_glob, prev_pgroup_size)
 	exit
@@ -697,7 +697,7 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
     endif
   end do
 
-  call print("Parallelizing IP using group_size " // prev_pgroup_size, ERROR)
+  call print("Parallelizing IP using group_size " // prev_pgroup_size, PRINT_ALWAYS)
 end subroutine IP_setup_parallel
 
 recursive subroutine setup_parallel_groups(this, mpi, pgroup_size)

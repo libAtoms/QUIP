@@ -1304,7 +1304,7 @@ subroutine TBSystem_Print(this,file)
   type(TBSystem),    intent(in)           :: this
   type(Inoutput), intent(inout),optional:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print ('TBSystem : N N_atoms ' // this%N // " " //  this%N_atoms, file=file)
 
@@ -1325,7 +1325,7 @@ subroutine TBSystem_Print(this,file)
   endif
 
   if (this%N > 0) then
-    call verbosity_push_decrement(NERD)
+    call verbosity_push_decrement(PRINT_NERD)
       call Print("first_orb_of_atom", file=file)
       call Print(this%first_orb_of_atom, file=file)
 
@@ -1626,7 +1626,7 @@ subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom)
 
     if (.not. got_atomic_n) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_n but didn't find " // &
-		 "atomic_n allocated in any terms", ERROR)
+		 "atomic_n allocated in any terms", PRINT_ALWAYS)
   end if
 
   if (associated(atomic_mom)) then
@@ -1645,7 +1645,7 @@ subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom)
 
     if (.not. got_manifold_mom) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_mom but didn't find " // &
-		"manifold_mom allocated in any terms", ERROR)
+		"manifold_mom allocated in any terms", PRINT_ALWAYS)
   end if
 
 end subroutine TBSystem_scf_get_atomic_n_mom
@@ -1699,7 +1699,7 @@ subroutine SC_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, 'tolerance', value, status)
     if (status /= 0) then
-      call print("Can't find tolerance in self_consistency", ERROR)
+      call print("Can't find tolerance in self_consistency", PRINT_ALWAYS)
     else
       read (value, *) parse_self_consistency%conv_tol
     endif
@@ -2113,7 +2113,7 @@ subroutine TB_Dipole_Model_Print(this,file)
 
   integer :: i_type, i_orb_set
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('TB_Dipole_Model : active='//this%active, file=file)
   call Print('TB_Dipole_Model : n_types='//this%n_types, file=file)
@@ -2134,7 +2134,7 @@ subroutine TB_Spin_Orbit_Coupling_Print(this,file)
 
   integer :: i_type, i_orb_set
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('TB_Spin_Orbit_Coupling : active='//this%active, file=file)
   call Print('TB_Spin_Orbit_Coupling : n_types='//this%n_types, file=file)
@@ -2155,7 +2155,7 @@ subroutine Self_Consistency_Print(this,file)
 
   integer::i
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('Self_Consistency : active='//this%active, file=file)
 
@@ -2212,7 +2212,7 @@ subroutine Self_Consistency_Term_Print(this, file)
 
   integer :: i
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   if (.not. this%active) return
 
@@ -2493,11 +2493,11 @@ function TBSystem_update_orb_local_pot(this, at, iter, global_at_weight, new_orb
   done = (resid < this%scf%conv_tol)
 
   if (.not. done .and. this%scf%mix_simple .and. resid < this%scf%mix_simple_end_tol) then
-    call print("mix_simple is active, resid < this%scf%mix_simple_end_tol, switching simple mixing off", ERROR)
+    call print("mix_simple is active, resid < this%scf%mix_simple_end_tol, switching simple mixing off", PRINT_ALWAYS)
     this%scf%mix_simple = .false.
   endif
   if (.not. done .and. .not. this%scf%mix_simple .and. resid > this%scf%mix_simple_start_tol) then
-    call print("mix_simple is not active, resid > this%scf%mix_simple_start_tol, switching simple mixing on", ERROR)
+    call print("mix_simple is not active, resid > this%scf%mix_simple_start_tol, switching simple mixing on", PRINT_ALWAYS)
     this%scf%mix_simple = .true.
   endif
 
@@ -2540,8 +2540,8 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_LCN")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n0
       control_vec = this%atomic_local_pot
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_LCN delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_LCN delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case(SCF_GCN)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_GCN")
@@ -2549,8 +2549,8 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
 	call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
       to_zero_vec = sum(global_at_weight*(atom_orbital_sum(tbsys, new_orbital_n)-this%atomic_n0))
       control_vec = this%global_pot
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_GCN delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_GCN delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case(SCF_GLOBAL_U)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_GLOBAL_U")
@@ -2558,29 +2558,29 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
 	call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
       to_zero_vec = sum(global_at_weight*(atom_orbital_sum(tbsys, new_orbital_n)))-this%global_N
       control_vec = this%global_N
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_GLOBAL_U delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_GLOBAL_U delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_LOCAL_U)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_LOCAL_U")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_LOCAL_U delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_LOCAL_U delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_NONLOCAL_U_DFTB)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_NONLOCAL_U_DFTB")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_NONLOCAL_U_DFTB delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_NONLOCAL_U_DFTB delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_NONLOCAL_U_NRL_TB)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_NONLOCAL_U_NRL_TB")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_NONLOCAL_U_NRL_TB delta_n" // to_zero_vec, NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_NONLOCAL_U_NRL_TB delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_SPIN_DIR)
       if (.not. associated(new_orbital_m)) call system_abort("get_vecs needs new_orbital_m for SCF_SPIN_DIR")
@@ -2593,10 +2593,10 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       control_vec(1:3*N_mom:3) = this%manifold_mom(1,1:N_mom)
       control_vec(2:3*N_mom:3) = this%manifold_mom(2,1:N_mom)
       control_vec(3:3*N_mom:3) = this%manifold_mom(3,1:N_mom)
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_SPIN_DIR current manifold moment", NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_SPIN_DIR current manifold moment", PRINT_NERD)
 	do i=1, tbsys%N_manifolds
-	  call print("  " // i // " " // new_manifold_m(:,i), NERD)
+	  call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
 	end do
       endif
       deallocate(new_manifold_m)
@@ -2605,10 +2605,10 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       allocate(new_manifold_m(3,tbsys%N_manifolds))
       N_mom = tbsys%N_manifolds
       new_manifold_m = manifold_orbital_sum(tbsys, new_orbital_m)
-      if (current_verbosity() >= NERD) then
-	call print("get_vecs SCF_SPIN_STONER current manifold moment", NERD)
+      if (current_verbosity() >= PRINT_NERD) then
+	call print("get_vecs SCF_SPIN_STONER current manifold moment", PRINT_NERD)
 	do i=1, tbsys%N_manifolds
-	  call print("  " // i // " " // new_manifold_m(:,i), NERD)
+	  call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
 	end do
       endif
       to_zero_vec(1:3*N_mom:3) = new_manifold_m(1,1:N_mom) - this%manifold_mom(1,1:N_mom)

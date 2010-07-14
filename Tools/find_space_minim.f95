@@ -57,9 +57,9 @@ function func(x,data)
   if (size(x) /= 3) call system_abort("find_space_minim_mod func needs x(1:3)")
 
   at = transfer(data, at)
-! call print("BOB 00", ERROR)
+! call print("BOB 00", PRINT_ALWAYS)
   call atoms_repoint(at)
-! call print("JOE 00", ERROR)
+! call print("JOE 00", PRINT_ALWAYS)
 
   func = 0.0_dp
   do i=1, at%N
@@ -85,9 +85,9 @@ function dfunc(x,data)
   if (size(x) /= 3) call system_abort("find_space_minifind_space_minimeds x(1:3)")
 
   at = transfer(data, at)
-! call print("BOB 10", ERROR)
+! call print("BOB 10", PRINT_ALWAYS)
   call atoms_repoint(at)
-! call print("JOE 10", ERROR)
+! call print("JOE 10", PRINT_ALWAYS)
 
   dfunc = 0.0_dp
   do i=1, at%N
@@ -116,9 +116,9 @@ subroutine bothfunc(x,E,f,my_error,data)
   if (size(x) /= 3) call system_abort("find_space_minim_mod bothfunc needs x(1:3)")
 
   at = transfer(data, at)
-! call print("BOB 00", ERROR)
+! call print("BOB 00", PRINT_ALWAYS)
   call atoms_repoint(at)
-! call print("JOE 00", ERROR)
+! call print("JOE 00", PRINT_ALWAYS)
 
   f = 0.0_dp
   E = 0.0_dp
@@ -238,7 +238,7 @@ real(dp) :: vi, vf
     prev_r = r
     prev_val = final_val
     rad = i_r*0.1_dp
-    call verbosity_push(SILENT)
+    call verbosity_push(PRINT_SILENT)
     ! n_iter = minim(r, func, dfunc, 'cg', 1.0e-6_dp, 1000, 'NR_LINMIN', eps_guess=1e-3_dp, hook=hook, data=data)
     expected_red = 1.0e-2_dp
     n_iter = n_minim(r, bothfunc, vi, vf, expected_red, 1000, 1e-8_dp, hook=hook, data=data)

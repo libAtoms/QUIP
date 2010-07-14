@@ -109,12 +109,12 @@ module system_module
 
 
   ! output labels
-  integer,parameter::ERROR   = -100000
-  integer,parameter::SILENT  =  -1
-  integer,parameter::NORMAL  =   0
-  integer,parameter::VERBOSE =   1
-  integer,parameter::NERD    =   1000  ! aleph0
-  integer,parameter::ANAL    =   10000 ! aleph1
+  integer,parameter::PRINT_ALWAYS   = -100000
+  integer,parameter::PRINT_SILENT  =  -1
+  integer,parameter::PRINT_NORMAL  =   0
+  integer,parameter::PRINT_VERBOSE =   1
+  integer,parameter::PRINT_NERD    =   1000  ! aleph0
+  integer,parameter::PRINT_ANAL    =   10000 ! aleph1
 
   integer,parameter::INPUT=0
   integer,parameter::OUTPUT=1
@@ -422,7 +422,7 @@ contains
 	    stat = 0
 	  endif
           if(stat.NE.0)then 
-             call system_abort('IO error opening "'//trim(filename)//'", error number: '//stat)
+             call system_abort('IO error opening "'//trim(filename)//'", PRINT_ALWAYS number: '//stat)
           end if
 
        end if
@@ -440,7 +440,7 @@ contains
     if (present(verbosity)) then
       call push(this%verbosity_stack, verbosity)
     else
-      call push(this%verbosity_stack, NORMAL)
+      call push(this%verbosity_stack, PRINT_NORMAL)
     endif
 
     call initialise(this%verbosity_cascade_stack)
@@ -551,7 +551,7 @@ contains
     if(present(file)) myoutput => file
 
     ! check verbosity request
-    myverbosity = NORMAL
+    myverbosity = PRINT_NORMAL
     if(present(verbosity)) myverbosity = verbosity
 
     ! if we are not active, do nothing
@@ -925,7 +925,7 @@ contains
 	closing_quote_pos = find_closing_delimiter(this(i+1:length), closing_quotes(opening_quote_index:opening_quote_index), &
 						   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
 	if (closing_quote_pos <= 0) then
-	  call print("splitting string '"//trim(this)//"'", ERROR)
+	  call print("splitting string '"//trim(this)//"'", PRINT_ALWAYS)
 	  call system_abort("split_string on '"//trim(this)//"' couldn't find closing quote matching opening at char " // i)
 	endif
 	if (in_token) then ! add string from t_start to tmp_field
@@ -1060,7 +1060,7 @@ contains
 	n_delims = len(delimiters)/2
       else
         if (present(status)) then 
-          call print("ERROR: parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)), ERROR)
+          call print("ERROR: parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)), PRINT_ALWAYS)
           status = 1
           return
         else
@@ -1084,7 +1084,7 @@ contains
 	    num_fields = num_fields + 1
 	    if (num_fields > size(fields)) then
               if (present(status)) then
-                call print("ERROR: parse_string ran out of space for fields", ERROR)
+                call print("ERROR: parse_string ran out of space for fields", PRINT_ALWAYS)
                 status = 1
                 return
               else
@@ -1104,7 +1104,7 @@ contains
 	  num_fields = num_fields + 1
           if (num_fields > size(fields)) then
             if (present(status)) then
-              call print("ERROR: parse_string ran out of space for fields", ERROR)
+              call print("ERROR: parse_string ran out of space for fields", PRINT_ALWAYS)
               status = 1
               return
             else
@@ -1125,10 +1125,10 @@ contains
       endif
       if (delim_pos == 0) then ! didn't find closing delimiter
 	if (do_matching) then
-	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), ERROR)
-	  call print("parse_string string='"//this//"'", ERROR)
+	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), PRINT_ALWAYS)
+	  call print("parse_string string='"//this//"'", PRINT_ALWAYS)
           if (present(status)) then
-            call print("ERROR: parse_string failed to find closing delimiter", ERROR)
+            call print("ERROR: parse_string failed to find closing delimiter", PRINT_ALWAYS)
             status = 1
             return
           else
@@ -1143,7 +1143,7 @@ contains
 	num_fields = num_fields + 1
         if (num_fields > size(fields)) then
           if (present(status)) then
-            call print("ERROR: parse_string ran out of space for fields", ERROR)
+            call print("ERROR: parse_string ran out of space for fields", PRINT_ALWAYS)
             status = 1
             return
           else
@@ -2359,15 +2359,15 @@ contains
     integer       :: status, i, n
 
 #ifdef _MPI
-    integer::error
+    integer::PRINT_ALWAYS
     integer :: is_initialised
     include "mpif.h"
 
-    call MPI_initialized(is_initialised, error)
-    call abort_on_mpi_error(error, "system_initialise, mpi_initialised()")
+    call MPI_initialized(is_initialised, PRINT_ALWAYS)
+    call abort_on_mpi_error(PRINT_ALWAYS, "system_initialise, mpi_initialised()")
     if (is_initialised == 0) then
-      call MPI_INIT(error)
-      call abort_on_mpi_error(error, "system_initialise, mpi_init()")
+      call MPI_INIT(PRINT_ALWAYS)
+      call abort_on_mpi_error(PRINT_ALWAYS, "system_initialise, mpi_init()")
     endif
     call get_mpi_size_rank(MPI_COMM_WORLD, mpi_n, mpi_myid)
     if (mpi_n < 1 .or. mpi_myid < 0) &
@@ -2474,7 +2474,7 @@ contains
   subroutine system_finalise()
     integer :: values(8)
 #ifdef _MPI
-    integer :: error
+    integer :: PRINT_ALWAYS
     include "mpif.h"
 #endif
 
@@ -2485,8 +2485,8 @@ contains
     call finalise(mainlog)
     call finalise(errorlog)
 #ifdef _MPI
-    call mpi_finalize(error)
-    call abort_on_mpi_error(error, "system_finalise, mpi_finalise()")
+    call mpi_finalize(PRINT_ALWAYS)
+    call abort_on_mpi_error(PRINT_ALWAYS, "system_finalise, mpi_finalise()")
 #endif
   end subroutine system_finalise
 
@@ -2502,7 +2502,7 @@ contains
     integer, parameter :: SIGUSR1 = 30
 #endif
 #ifdef _MPI
-    integer::error
+    integer::PRINT_ALWAYS
     include "mpif.h"
 #endif
 
@@ -2513,7 +2513,7 @@ contains
 #endif
 
 #ifdef _MPI
-    call MPI_Abort(MPI_COMM_WORLD, 1, error)
+    call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
 #endif
 
 #ifdef IFORT_TRACEBACK_ON_ABORT
@@ -2586,7 +2586,7 @@ contains
     integer:: values(20) ! for time inquiry function
     logical :: use_common_seed
 #ifdef _MPI
-    integer :: error
+    integer :: PRINT_ALWAYS
     include "mpif.h"    
 #endif
 
@@ -2615,8 +2615,8 @@ contains
           call print('system::Hello World: MPI run with the same seed on each process')
 
           ! Broadcast seed from process 0 to all others
-          call MPI_Bcast(actual_seed, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, error)
-          call abort_on_mpi_error(error, 'Hello_World: MPI_Bcast()')
+          call MPI_Bcast(actual_seed, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, PRINT_ALWAYS)
+          call abort_on_mpi_error(PRINT_ALWAYS, 'Hello_World: MPI_Bcast()')
        end if
 #endif
     end if
@@ -2630,13 +2630,13 @@ contains
 
   subroutine system_resync_rng
 #ifdef _MPI
-    integer :: error
+    integer :: PRINT_ALWAYS
     include "mpif.h"    
-    call print('Resyncronising random number generator', VERBOSE)
+    call print('Resyncronising random number generator', PRINT_VERBOSE)
 
     ! Broadcast seed from process 0 to all others
-    call MPI_Bcast(idum, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, error)
-    call abort_on_mpi_error(error, 'system_resync_rng')
+    call MPI_Bcast(idum, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, PRINT_ALWAYS)
+    call abort_on_mpi_error(PRINT_ALWAYS, 'system_resync_rng')
 #endif
   end subroutine system_resync_rng
 
@@ -2674,7 +2674,7 @@ contains
   subroutine system_reseed_rng(new_seed)
     integer, intent(in) :: new_seed
 
-    call print('System::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,VERBOSE)
+    call print('System::Reseed_RNG: Reseeding random number generator, new seed = '//new_seed,PRINT_VERBOSE)
     call system_set_random_seeds(new_seed)
   end subroutine system_reseed_rng
 
@@ -2952,17 +2952,17 @@ contains
     character(10) :: str
 
     select case(val)
-       case(ERROR)
+       case(PRINT_ALWAYS)
           str = 'ERROR'
-       case(SILENT)
+       case(PRINT_SILENT)
           str = 'SILENT'
-       case(NORMAL)
+       case(PRINT_NORMAL)
           str = 'NORMAL'
-       case(VERBOSE)
+       case(PRINT_VERBOSE)
           str = 'VERBOSE'
-       case(NERD)
+       case(PRINT_NERD)
           str = 'NERD'
-       case(ANAL)
+       case(PRINT_ANAL)
           str = 'ANAL'
     end select
   end function verbosity_to_str
@@ -2973,17 +2973,17 @@ contains
     integer :: val
 
     if (trim(str) == 'ERROR') then
-       val = ERROR
+       val = PRINT_ALWAYS
     else if (trim(str) == 'SILENT') then
-       val = SILENT
+       val = PRINT_SILENT
     else if (trim(str) == 'NORMAL') then
-       val = NORMAL
+       val = PRINT_NORMAL
     else if (trim(str) == 'VERBOSE') then
-       val = VERBOSE
+       val = PRINT_VERBOSE
     else if (trim(str) == 'NERD') then
-       val = NERD
+       val = PRINT_NERD
     else if (trim(str) == 'ANAL') then
-       val = ANAL
+       val = PRINT_ANAL
     end if
   end function str_to_verbosity
     
@@ -3000,13 +3000,13 @@ contains
     else
       call push(mainlog%verbosity_stack, value(mainlog%verbosity_stack))
     endif
-    !call print('verbosity_push now '//current_verbosity(), ERROR)
+    !call print('verbosity_push now '//current_verbosity(), PRINT_ALWAYS)
   end subroutine verbosity_push
 
   !% pop the current verbosity value off the stack
   subroutine verbosity_pop()
     call pop(mainlog%verbosity_stack)
-    !call print('verbosity_pop now '//current_verbosity(), ERROR)
+    !call print('verbosity_pop now '//current_verbosity(), PRINT_ALWAYS)
   end subroutine verbosity_pop
 
   !% return the current value of verbosity

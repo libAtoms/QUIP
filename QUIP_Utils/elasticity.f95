@@ -79,8 +79,8 @@ contains
     at_bulk = at
     call calc_connect(at_bulk)
 
-    if (current_verbosity() > VERBOSE) then
-       call verbosity_push_decrement(NERD)
+    if (current_verbosity() > PRINT_VERBOSE) then
+       call verbosity_push_decrement(PRINT_NERD)
        call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
        call verbosity_pop()
        call print("initial config")
@@ -91,13 +91,13 @@ contains
     endif
 
     if (my_relax_initial) then
-       call verbosity_push_decrement(VERBOSE)
+       call verbosity_push_decrement(PRINT_VERBOSE)
        iter = minim(this, at_bulk, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
             do_pos=.true., do_lat=.true., args_str=args_str, use_n_minim=.true.)
        call verbosity_pop()
 
-       if (current_verbosity() >= VERBOSE) then
-          call verbosity_push_decrement(VERBOSE)
+       if (current_verbosity() >= PRINT_VERBOSE) then
+          call verbosity_push_decrement(PRINT_VERBOSE)
           call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
           call verbosity_pop()
           call print("relaxed config")
@@ -112,11 +112,11 @@ contains
 
     volume = cell_volume(at_bulk)
 
-    call print("volume " // volume, VERBOSE)
+    call print("volume " // volume, PRINT_VERBOSE)
 
     do ii=1, 3
        do jj=ii, 3
-          call print("doing ii " // ii // " jj " // jj, VERBOSE)
+          call print("doing ii " // ii // " jj " // jj, PRINT_VERBOSE)
           Fp = 0.0_dp; call add_identity(Fp)
           Fm = 0.0_dp; call add_identity(Fm)
 
@@ -127,7 +127,7 @@ contains
           call set_lattice(at_t, Fp .mult. at_t%lattice, scale_positions=.true.)
           call calc_connect(at_t)
           call calc(this, at_t, e=e0, virial=V0p, args_str=args_str)
-          call verbosity_push_decrement(VERBOSE)
+          call verbosity_push_decrement(PRINT_VERBOSE)
           call print("plus perturbed config")
           call print_xyz(at_t, mainlog)
           call print("E0p" // e0)
@@ -136,14 +136,14 @@ contains
           call verbosity_pop()
 
           if (present(c)) then
-             call verbosity_push_decrement(VERBOSE)
+             call verbosity_push_decrement(PRINT_VERBOSE)
              iter = minim(this, at_t, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
              call calc_connect(at_t)
              call calc(this, at_t, e=e0, virial=Vp, args_str=args_str)
-             call verbosity_push_decrement(VERBOSE)
+             call verbosity_push_decrement(PRINT_VERBOSE)
              call print("plus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
              call print("Ep" // e0)
@@ -156,7 +156,7 @@ contains
           call set_lattice(at_t, Fm .mult. at_t%lattice, scale_positions=.true.)
           call calc_connect(at_t)
           call calc(this, at_t, e=e0, virial=V0m, args_str=args_str)
-          call verbosity_push_decrement(VERBOSE)
+          call verbosity_push_decrement(PRINT_VERBOSE)
           call print("minus perturbed config")
           call print_xyz(at_t, mainlog)
           call print("E0m" // e0)
@@ -165,14 +165,14 @@ contains
           call verbosity_pop()
 
           if (present(c)) then
-             call verbosity_push_decrement(VERBOSE)
+             call verbosity_push_decrement(PRINT_VERBOSE)
              iter = minim(this, at_t, 'cg', my_relax_tol, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false., args_str=args_str, use_n_minim=.true.)
              call verbosity_pop()
 
              call calc_connect(at_t)
              call calc(this, at_t, e=e0, virial=Vm, args_str=args_str)
-             call verbosity_push_decrement(VERBOSE)
+             call verbosity_push_decrement(PRINT_VERBOSE)
              call print("minus perturbed relaxed config")
              call print_xyz(at_t, mainlog)
              call print("Em" // e0)
@@ -354,7 +354,7 @@ contains
        tube_i = 1
        tube_r = 0.0_dp
        tube_energy = 0.0_dp
-       call verbosity_push_decrement(VERBOSE)
+       call verbosity_push_decrement(PRINT_VERBOSE)
        do n=10,20,2
           do m=0,n,n
              radius = graphene_tube(tube, a, n, m, 3)
@@ -546,7 +546,7 @@ contains
                 cycle
              end if
 
-             call print(nn//': '//dist(nn)//ndiff(:,nn), VERBOSE)
+             call print(nn//': '//dist(nn)//ndiff(:,nn), PRINT_VERBOSE)
              if (nn > 5) exit
           end if
        end do
@@ -560,9 +560,9 @@ contains
           n2 = ndiff(:,3)-ndiff(:,1)
           n3 = ndiff(:,4)-ndiff(:,1)
 
-          call print('n1 '//norm(n1)//n1, VERBOSE)
-          call print('n2 '//norm(n2)//n2, VERBOSE)
-          call print('n3 '//norm(n3)//n3, VERBOSE)
+          call print('n1 '//norm(n1)//n1, PRINT_VERBOSE)
+          call print('n2 '//norm(n2)//n2, PRINT_VERBOSE)
+          call print('n3 '//norm(n3)//n3, PRINT_VERBOSE)
 
           e123(:,1) = (n1 + n2 - n3)/a
           e123(:,2) = (n2 + n3 - n1)/a
@@ -573,13 +573,13 @@ contains
 
           if (all(e123 < 0.0_dp)) e123 = -e123
 
-          call print('det(e) = '//matrix3x3_det(e123), VERBOSE)
-          call print(e123, VERBOSE)
+          call print('det(e) = '//matrix3x3_det(e123), PRINT_VERBOSE)
+          call print(e123, PRINT_VERBOSE)
 
           if (matrix3x3_det(e123) < 0) then
              e123(:,3) = -e123(:,3)
-             call print('reflected axis 3', VERBOSE)
-             call print(e123, VERBOSE)
+             call print('reflected axis 3', PRINT_VERBOSE)
+             call print(e123, PRINT_VERBOSE)
           end if
 
           ! Find polar decomposition: e123 = S*R where S is symmetric, 
@@ -592,15 +592,15 @@ contains
 
           ! Check positive definite
           if (any(D < 0)) then
-             call print(e123, VERBOSE)
+             call print(e123, PRINT_VERBOSE)
              call system_abort("EE' is not positive definite")
           end if
 
           S = V .mult. diag(sqrt(D)) .mult. transpose(V)
           R = V .mult. diag(D ** (-0.5_dp)) .mult. transpose(V) .mult. e123
 
-          call print('S:', VERBOSE); call print(S, VERBOSE)
-          call print('R:', VERBOSE); call print(R, VERBOSE)
+          call print('S:', PRINT_VERBOSE); call print(S, PRINT_VERBOSE)
+          call print('R:', PRINT_VERBOSE); call print(R, PRINT_VERBOSE)
 
           RtE = transpose(R) .mult. e123
 
@@ -615,9 +615,9 @@ contains
 
           SS = transpose(R) .mult. S .mult. R
 
-          call print('R:', VERBOSE);    call print(R, VERBOSE)
-          call print('RtE:', VERBOSE);  call print(RtE, VERBOSE)
-          call print('RtSR:', VERBOSE); call print(SS, VERBOSE)
+          call print('R:', PRINT_VERBOSE);    call print(R, PRINT_VERBOSE)
+          call print('RtE:', PRINT_VERBOSE);  call print(RtE, PRINT_VERBOSE)
+          call print('RtSR:', PRINT_VERBOSE); call print(SS, PRINT_VERBOSE)
 
           ! Strain(1:6) = (/eps11,eps22,eps33,eps23,eps13,eps12/)
           strain(1) = SS(1,1) - 1.0_dp

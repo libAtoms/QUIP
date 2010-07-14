@@ -38,8 +38,8 @@ implicit none
   character(len=FIELD_LENGTH) :: filename
   type(inoutput) :: xyzfile
 
-  call system_initialise(verbosity=SILENT)
-  call verbosity_push(NORMAL)
+  call system_initialise(verbosity=PRINT_SILENT)
+  call verbosity_push(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params,"n",PARAM_MANDATORY, n)

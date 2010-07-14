@@ -359,7 +359,7 @@ subroutine GreensFunctions_calc_Gs(this, at, SelfEnergy)
 !$omp parallel do
   do i=1, this%N_G
     mainlog%mpi_all_inoutput_flag=.true.
-    call print("GreensFunctions_calc_Gs doing i="//i, NERD)
+    call print("GreensFunctions_calc_Gs doing i="//i, PRINT_NERD)
     mainlog%mpi_all_inoutput_flag=.false.
     call scaled_sum(this%G(i), this%z(i), this%tbsys%S, -1.0_dp, this%tbsys%H)
     if (present(SelfEnergy)) then
@@ -442,7 +442,7 @@ subroutine GreensFunctions_calc_mod_dm_from_Gs(this, w_e, w_n, do_const_N)
 !$omp do
   do i=1, this%N_G
     mainlog%mpi_all_inoutput_flag=.true.
-    call print("GreensFunctions_calc_mod_dm_from_Gs doing i="//i, NERD)
+    call print("GreensFunctions_calc_mod_dm_from_Gs doing i="//i, PRINT_NERD)
     mainlog%mpi_all_inoutput_flag=.false.
     call multDiag(GWE, this%G(i), ww_e)
     if (const_N) call multDiag(GWN, this%G(i), ww_n)

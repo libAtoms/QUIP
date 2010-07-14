@@ -91,7 +91,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   call remove_value(at%params, "frozen_phonon_Em")
   mainlog%prefix=""
 
-  call print("frozen phonon Em " // Em // " E0 " // E0 // " Ep " // Ep, VERBOSE)
+  call print("frozen phonon Em " // Em // " E0 " // E0 // " Ep " // Ep, PRINT_VERBOSE)
 
   eval_frozen_phonon = ((Ep-E0)/dx - (E0-Em)/dx)/dx
 
@@ -237,11 +237,11 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 	mu_m = dipole_moment(at%pos, local_dn)
       endif
 
-      call print("dynamical matrix energy check (Em-E0) " // (Em-E0) // " (Ep-E0) " // (Ep-E0), NERD)
+      call print("dynamical matrix energy check (Em-E0) " // (Em-E0) // " (Ep-E0) " // (Ep-E0), PRINT_NERD)
       call print("dynamical matrix magnitude check |fp-f0| " // sqrt(sum(norm2(fp-f0,2))) // " |fm-f0| " // sqrt(sum(norm2(fm-f0,2))) // &
-	" |fp-f0|-|fm-f0| " // (sqrt(sum(norm2(fp-f0,2)))-sqrt(sum(norm2(fm-f0,2)))), NERD)
+	" |fp-f0|-|fm-f0| " // (sqrt(sum(norm2(fp-f0,2)))-sqrt(sum(norm2(fm-f0,2)))), PRINT_NERD)
       call print("dynamical matrix harmonicity check (|fp+fm|/2 - f0)/(0.5*(|fp-f0|+|fm-f0|)) "// &
-	(sqrt(sum(norm2(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(norm2(fp-f0,2)))+sqrt(sum(norm2(fm-f0,2)))))) , NERD)
+	(sqrt(sum(norm2(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(norm2(fp-f0,2)))+sqrt(sum(norm2(fm-f0,2)))))) , PRINT_NERD)
 
       dmu_dr(alpha, i, :) = (mu_p-mu_m)/(2.0_dp*dx)
 
@@ -356,8 +356,8 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
     end do
   end do
 
-  call print("dm", NERD)
-  call print(dm, NERD)
+  call print("dm", PRINT_NERD)
+  call print(dm, PRINT_NERD)
 
   ! diagonalise dynamical matrix
   call diagonalise(dm, evals, evecs, err)
@@ -401,19 +401,19 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
     end do
   endif
 
-  call print("evals", VERBOSE)
-  call print(evals, VERBOSE)
+  call print("evals", PRINT_VERBOSE)
+  call print(evals, PRINT_VERBOSE)
   if (present(evecs)) then
-    call print("evecs", NERD)
-    call print(evecs, NERD)
+    call print("evecs", PRINT_NERD)
+    call print(evecs, PRINT_NERD)
   endif
   if (present(effective_masses)) then
-    call print("effective masses", VERBOSE)
-    call print(effective_masses, VERBOSE)
+    call print("effective masses", PRINT_VERBOSE)
+    call print(effective_masses, PRINT_VERBOSE)
   endif
   if (present(IR_intensities)) then
-    call print("IR intensities", VERBOSE)
-    call print(IR_intensities, VERBOSE)
+    call print("IR intensities", PRINT_VERBOSE)
+    call print(IR_intensities, PRINT_VERBOSE)
   endif
 
   deallocate(dmu_dr)

@@ -345,7 +345,7 @@ contains
     real(dp)::vectout(this%Nrows)
     integer::i,j
 #ifdef _MPI
-    integer::mpi_size, mpi_rank, error
+    integer::mpi_size, mpi_rank, PRINT_ALWAYS
     include "mpif.h"
     real(dp)::vectout_all(this%Nrows)
 
@@ -373,8 +373,8 @@ contains
 #ifdef _MPI
        ! collect mpi results
        call MPI_ALLREDUCE(vectout, vectout_all, &
-            size(vectout), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, error)
-       call abort_on_mpi_error(error, "Sparse .mult. vector: MPI_ALL_REDUCE()")
+            size(vectout), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, PRINT_ALWAYS)
+       call abort_on_mpi_error(PRINT_ALWAYS, "Sparse .mult. vector: MPI_ALL_REDUCE()")
        vectout = vectout_all
 #endif
   end function sparse_mult_vector
@@ -386,7 +386,7 @@ contains
     real(dp)::vectout(this%Ncols)
     integer::N,i,k,M
 #ifdef _MPI
-    integer::mpi_size, mpi_rank, error
+    integer::mpi_size, mpi_rank, PRINT_ALWAYS
     include "mpif.h"
     real(dp)::vectout_all(this%Ncols)
 
@@ -417,8 +417,8 @@ contains
 #ifdef _MPI
        ! collect mpi results
        call MPI_ALLREDUCE(vectout, vectout_all, &
-            size(vectout), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, error)
-       call abort_on_mpi_error(error, "Sparse .mult. vector: MPI_ALL_REDUCE()")
+            size(vectout), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, PRINT_ALWAYS)
+       call abort_on_mpi_error(PRINT_ALWAYS, "Sparse .mult. vector: MPI_ALL_REDUCE()")
        vectout = vectout_all
 #endif
   end function vector_mult_sparse

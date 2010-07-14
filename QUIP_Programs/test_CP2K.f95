@@ -85,7 +85,7 @@ program test_CP2K
   character(len=FIELD_LENGTH) :: qm_list_filename        !QM list file with a strange format
   character(len=FIELD_LENGTH) :: Residue_Library
 
-    call system_initialise(verbosity=normal)
+    call system_initialise(verbosity=PRINT_normal)
 
       call initialise(params_in)
       call param_register(params_in, 'Run_Type1', 'MM', Run_Type1)

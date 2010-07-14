@@ -45,7 +45,7 @@ program lotf_metapot
   type(MetaPotential) :: lotf, forcemix
   type(DynamicalSystem) :: ds, ds_saved
 
-  call system_initialise(NORMAL,seed=2)
+  call system_initialise(PRINT_NORMAL,seed=2)
   call initialise(xml, 'lotf_params.xml')
   call initialise(pot1, 'IP SW label="PRB_31_plus_H"', xml)
   call rewind(xml)

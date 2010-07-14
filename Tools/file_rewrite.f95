@@ -43,7 +43,7 @@ implicit none
   integer i
   integer :: ierror = ERROR_NONE
 
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params, 'infile', 'stdin', infilename)
@@ -87,7 +87,7 @@ contains
       my_exec_name=EXEC_NAME
     endif
 
-    call print("Usage: " // trim(my_exec_name)//" infile=filename(stdin) outfile=filename(stdout)[=file.nc for NETCDF] [netcdf4 (for output)]", ERROR)
+    call print("Usage: " // trim(my_exec_name)//" infile=filename(stdin) outfile=filename(stdout)[=file.nc for NETCDF] [netcdf4 (for output)]", PRINT_ALWAYS)
   end subroutine print_usage
 
 end program file_rewrite

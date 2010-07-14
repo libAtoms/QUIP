@@ -49,7 +49,7 @@ implicit none
   type(Atoms_ll) :: structure_ll
   type(Atoms_ll_entry), pointer :: entry
 
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params, 'infile', param_mandatory, infilename)
@@ -106,12 +106,12 @@ contains
       my_exec_name=EXEC_NAME
     endif
 
-    call print("Usage: " // trim(my_exec_name)//" infile=filename [infile_is_list=logical(F)]", ERROR)
-    call print("       outfile=filename [decimation=n(1)]", ERROR)
-    call print("       [min_time=t(-1.0)] [max_time=t(-1.0)]", ERROR)
-    call print("       [sort_Time(F)] [no_Time_dups(F)] [quiet(F)]", ERROR)
-    call print("       [scale_lattice=scale(1.0)] [scale_pos=scale(1.0)]", ERROR)
-    call print("       [properties=prop1:prop2...(species:pos:Z,use blank for all props.)]", ERROR)
+    call print("Usage: " // trim(my_exec_name)//" infile=filename [infile_is_list=logical(F)]", PRINT_ALWAYS)
+    call print("       outfile=filename [decimation=n(1)]", PRINT_ALWAYS)
+    call print("       [min_time=t(-1.0)] [max_time=t(-1.0)]", PRINT_ALWAYS)
+    call print("       [sort_Time(F)] [no_Time_dups(F)] [quiet(F)]", PRINT_ALWAYS)
+    call print("       [scale_lattice=scale(1.0)] [scale_pos=scale(1.0)]", PRINT_ALWAYS)
+    call print("       [properties=prop1:prop2...(species:pos:Z,use blank for all props.)]", PRINT_ALWAYS)
   end subroutine print_usage
 
 end program clean_traj

@@ -276,7 +276,7 @@ contains
 
       this%initialised = .true.
       
-      call verbosity_push_decrement(ANAL)
+      call verbosity_push_decrement(PRINT_ANAL)
       call print(this)
       call verbosity_pop()
          
@@ -2587,7 +2587,7 @@ contains
 !        this%atoms%oldpos(:,i) = tmp_realpos
 !     end do
 !
-!     call print('dW = '//this%dW, NERD)
+!     call print('dW = '//this%dW, PRINT_NERD)
 !
 !     ! Add new finishing terms to this%work and this%thermostat_work
 !     this%work = this%work + 1.0_dp/2.0_dp*this%dW*dt
@@ -2933,13 +2933,13 @@ contains
       call print('Thermostat')
       call print(this%thermostat)
 
-      call print('-------------------------------------------------------------------------------', VERBOSE, file)
-      call print('| Index  |   Average Position   |      Velocity        |     Acceleration     |', VERBOSE, file)
-      call print('-------------------------------------------------------------------------------', VERBOSE, file)
+      call print('-------------------------------------------------------------------------------', PRINT_VERBOSE, file)
+      call print('| Index  |   Average Position   |      Velocity        |     Acceleration     |', PRINT_VERBOSE, file)
+      call print('-------------------------------------------------------------------------------', PRINT_VERBOSE, file)
       do i = 1, this%N
-	 call print('| '//i//' |'//this%atoms%avgpos(:,i)//' |'//this%atoms%velo(:,i)//' |'//this%atoms%acc(:,i)//' |', VERBOSE, file)
+	 call print('| '//i//' |'//this%atoms%avgpos(:,i)//' |'//this%atoms%velo(:,i)//' |'//this%atoms%acc(:,i)//' |', PRINT_VERBOSE, file)
       end do
-      call print('-------------------------------------------------------------------------------', VERBOSE,file)
+      call print('-------------------------------------------------------------------------------', PRINT_VERBOSE,file)
 
       call verbosity_push_decrement()
       call print(this%atoms,file)

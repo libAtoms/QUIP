@@ -610,7 +610,7 @@ subroutine IPModel_FC_Print (this, file)
     call verbosity_pop()
   end do
 
-  call verbosity_push_decrement(NERD)
+  call verbosity_push_decrement(PRINT_NERD)
   call print("IPModel_FC : ideal_struct_file='"//trim(this%ideal_struct_file)//"'", file=file)
   call print("IPModel_FC : ideal_struct", file=file)
   call print_xyz(this%ideal_struct,xyzfile=file)

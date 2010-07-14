@@ -186,7 +186,7 @@ subroutine FilePot_Print(this, file)
   type(FilePot_type),    intent(in)           :: this
   type(Inoutput), intent(inout),optional,target:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call print("FilePot: command='"//trim(this%command)// &
        "' filename='"//trim(this%filename)//&
@@ -238,11 +238,11 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
      outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
 
-     call print("FilePot: filename seed=`"//trim(this%filename)//"'", VERBOSE)
-     call print("FilePot: outfile=`"//trim(outfile)//"'", VERBOSE)
-     call print("FilePot: xyzfile=`"//trim(xyzfile)//"'", VERBOSE)
+     call print("FilePot: filename seed=`"//trim(this%filename)//"'", PRINT_VERBOSE)
+     call print("FilePot: outfile=`"//trim(outfile)//"'", PRINT_VERBOSE)
+     call print("FilePot: xyzfile=`"//trim(xyzfile)//"'", PRINT_VERBOSE)
      call system_command("rm -f "//trim(outfile), status=status)
-     if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", ERROR)
+     if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", PRINT_ALWAYS)
 
      call initialise(xyzio, xyzfile, action=OUTPUT)
 
@@ -342,7 +342,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   if (at_out%N /= at%N) then
     if (present(err)) then
-      call print("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N, ERROR)
+      call print("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N, PRINT_ALWAYS)
       err = 1
       return
     else
@@ -352,7 +352,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   if (.not. assign_pointer(at_out,'Z',Z_p)) then
     if (present(err)) then
-      call print("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z", ERROR)
+      call print("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z", PRINT_ALWAYS)
       err = 1
       return
     else
@@ -363,7 +363,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
     if (at%Z(i) /= Z_p(i)) then
       if (present(err)) then
 	call print("filepot_read_output in '"//trim(outfile)//"' got Z("//i//")="// &
-	  at_out%Z(i)//" /= at%Z("//i//")="// at%Z(i), ERROR)
+	  at_out%Z(i)//" /= at%Z("//i//")="// at%Z(i), PRINT_ALWAYS)
 	err = 1
 	return
       else
@@ -376,7 +376,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (present(energy)) then
     if (.not. get_value(at_out%params,'energy',energy)) then
       if (present(err)) then
-	call print("filepot_read_output needed energy, but couldn't find energy in '"//trim(outfile)//"'", ERROR)
+	call print("filepot_read_output needed energy, but couldn't find energy in '"//trim(outfile)//"'", PRINT_ALWAYS)
 	err = 1
 	return
       else
@@ -395,7 +395,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
     if (.not. get_value(at_out%params,'virial',virial_1d)) then
       if (present(err)) then
-	call print("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'", ERROR)
+	call print("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'", PRINT_ALWAYS)
 	err = 1
 	return
       else
@@ -410,7 +410,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (present(local_e)) then
     if (.not. assign_pointer(at_out, 'local_e', local_e_p)) then
       if (present(err)) then
-	call print("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", ERROR)
+	call print("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", PRINT_ALWAYS)
 	err = 1
 	return
       else
@@ -423,7 +423,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (present(forces)) then
     if (.not. assign_pointer(at_out, 'force', forces_p)) then
       if (present(err)) then
-	call print("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", ERROR)
+	call print("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", PRINT_ALWAYS)
 	err = 1
 	return
       else

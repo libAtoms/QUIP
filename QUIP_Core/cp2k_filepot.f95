@@ -54,8 +54,8 @@ program cp2k_filepot_template
     character(len=10240) :: arg, args_str
     integer :: i, index_insert
 
-    call system_initialise(verbosity=SILENT,enable_timing=.true.)
-    call verbosity_push(NORMAL)
+    call system_initialise(verbosity=PRINT_SILENT,enable_timing=.true.)
+    call verbosity_push(PRINT_NORMAL)
     mainlog%prefix="CP2K_FILEPOT"
     call system_timer('cp2k_filepot_template')
 
@@ -72,7 +72,7 @@ program cp2k_filepot_template
         if (index(trim(arg)," ").ne.0) then
             index_insert = index(trim(arg),"=")
             arg(index_insert+1:len_trim(arg)+2) = "{"//arg(index_insert+1:len_trim(arg))//"}"
-            call print('arg: '//trim(arg),SILENT)
+            call print('arg: '//trim(arg),PRINT_SILENT)
         endif
 	args_str = trim(args_str) // " " // trim(arg)
       end do
@@ -80,7 +80,7 @@ program cp2k_filepot_template
 
     call read_xyz(my_atoms,infile)
 
-    call print('cp2k_filepot_template args_str '//trim(args_str), ERROR)
+    call print('cp2k_filepot_template args_str '//trim(args_str), PRINT_ALWAYS)
 
     !call CP2K
     allocate(f0(3,my_atoms%N))
@@ -104,7 +104,7 @@ program cp2k_filepot_template
     call finalise(my_atoms)
     call system_timer('cp2k_filepot_template')
     mainlog%prefix=""
-    call verbosity_push(SILENT)
+    call verbosity_push(PRINT_SILENT)
     call system_finalise
 
 contains
