@@ -42,7 +42,7 @@ type MPI_context
   logical :: active = .false.
   integer :: communicator
   integer :: n_procs = 1, my_proc = 0
-  logical :: is_cart
+  logical :: is_cart = .false.
   integer :: my_coords(3) = 0
   ! support later?
   ! logical is_grid
@@ -118,6 +118,11 @@ public :: cart_shift
 interface cart_shift
    module procedure MPI_context_cart_shift
 end interface cart_shift
+
+public :: sendrecv
+interface sendrecv
+   module procedure MPI_context_sendrecv_ra
+end interface sendrecv
 
 contains
 
@@ -974,6 +979,41 @@ subroutine MPI_context_cart_shift(this, direction, displ, source, dest, ierror)
   PASS_MPI_ERROR(err, ierror)
 #endif
 end subroutine MPI_context_cart_shift
+
+
+subroutine MPI_context_sendrecv_ra(this, &
+     sendbuf, dest, sendtag, &
+     recvbuf, source, recvtag, &
+     nrecv, &
+     ierror)
+  type(MPI_context), intent(in) :: this
+  real(DP), intent(in) :: sendbuf(:)
+  integer, intent(in) :: dest, sendtag
+  real(DP), intent(out) :: recvbuf(:)
+  integer, intent(in) :: source, recvtag
+  integer, optional, intent(out) :: nrecv
+  integer, optional, intent(inout) :: ierror
+
+  ! ---
+
+#ifdef _MPI
+  include 'mpif.h'
+
+  integer :: err
+  integer :: status(MPI_STATUS_SIZE)
+
+  call mpi_sendrecv( &
+       sendbuf, size(sendbuf), MPI_DOUBLE_PRECISION, dest, sendtag, &
+       recvbuf, size(recvbuf), MPI_DOUBLE_PRECISION, source, recvtag, &
+       this%communicator, status, err)
+  PASS_MPI_ERROR(err, ierror)
+  if (present(nrecv)) then
+     call mpi_get_count(status, MPI_DOUBLE_PRECISION, nrecv, err)
+     PASS_MPI_ERROR(err, ierror)
+  endif
+#endif
+endsubroutine MPI_context_sendrecv_ra
+
 
 subroutine push_MPI_error(info, fn, line)
   integer, intent(inout)    :: info  !% MPI error code
