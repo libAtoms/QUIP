@@ -422,7 +422,7 @@ contains
 	    stat = 0
 	  endif
           if(stat.NE.0)then 
-             call system_abort('IO error opening "'//trim(filename)//'", PRINT_ALWAYS number: '//stat)
+             call system_abort('IO error opening "'//trim(filename)//'", error number: '//stat)
           end if
 
        end if
