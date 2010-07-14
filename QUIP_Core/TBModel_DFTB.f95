@@ -229,43 +229,43 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
   call zero(parse_cur_data)
 
   if (name == 'DFTB_params') then ! new DFTB stanza
-    call print("DFTB_params startElement_handler", NERD)
+    call print("DFTB_params startElement_handler", PRINT_NERD)
 
     if (parse_in_tbm) &
       call system_abort("IPModel_startElement_handler entered DFTB_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
 
     if (parse_matched_label) then
-      call print("DFTB_params startElement_handler bailing because we already matched our label", NERD)
+      call print("DFTB_params startElement_handler bailing because we already matched our label", PRINT_NERD)
       return ! we already found an exact match for this label
     endif
 
     call QUIP_FoX_get_value(attributes, 'label', value, status)
     if (status /= 0) value = ''
 
-    call print("DFTB_params startElement_handler found xml label '"//trim(value)//"'", NERD)
+    call print("DFTB_params startElement_handler found xml label '"//trim(value)//"'", PRINT_NERD)
 
     if (len(trim(parse_tbm%label)) > 0) then ! we were passed in a label
-      call print("DFTB_params startElement_handler was passed in label '"//trim(parse_tbm%label)//"'", NERD)
+      call print("DFTB_params startElement_handler was passed in label '"//trim(parse_tbm%label)//"'", PRINT_NERD)
       if (value == parse_tbm%label) then ! exact match
-	call print("DFTB_params startElement_handler got label exact match", NERD)
+	call print("DFTB_params startElement_handler got label exact match", PRINT_NERD)
         parse_matched_label = .true.
         parse_in_tbm = .true.
       else ! no match
-	call print("DFTB_params startElement_handler got label didn't match", NERD)
+	call print("DFTB_params startElement_handler got label didn't match", PRINT_NERD)
         parse_in_tbm = .false.
       endif
     else ! no label passed in
-      call print("DFTB_params startElement_handler was not passed in a label", NERD)
+      call print("DFTB_params startElement_handler was not passed in a label", PRINT_NERD)
       parse_in_tbm = .true.
-      call print("DFTB_params startElement_handler was not passed in a label", NERD)
+      call print("DFTB_params startElement_handler was not passed in a label", PRINT_NERD)
     endif
 
-    call print("DFTB_params startElement_handler parse_in_tbm " // parse_in_tbm, NERD)
+    call print("DFTB_params startElement_handler parse_in_tbm " // parse_in_tbm, PRINT_NERD)
 
     if (parse_in_tbm) then
       call initialise(parse_cur_data)
       if (parse_tbm%n_types /= 0) then
-	call print("DFTB_params startElement_handler finalising old data, restarting to parse new section", NERD)
+	call print("DFTB_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
         call finalise(parse_tbm)
       endif
     endif
@@ -474,7 +474,7 @@ subroutine TBModel_DFTB_read_params_xml(this, param_str)
 
   err = increase_stack(5*len(param_str))
   if (err /= 0)then
-    call print("TBModel_DfTB_Initialise_str Failed to increase stack before calling parse_xml", ERROR)
+    call print("TBModel_DfTB_Initialise_str Failed to increase stack before calling parse_xml", PRINT_ALWAYS)
   endif
 
   call open_xml_string(fxml, param_str)
@@ -724,8 +724,8 @@ subroutine TBModel_DFTB_Print(this,file)
     endif
   end do
 
-  call verbosity_push_decrement(NERD)
-  if (current_verbosity() >= NORMAL) then
+  call verbosity_push_decrement(PRINT_NERD)
+  if (current_verbosity() >= PRINT_NORMAL) then
     do ti=1, this%n_types
     do tj=1, this%n_types
       call Print ("TBModel_DFTB interaction " // ti // " " // tj // " Z " // this%atomic_num(ti) //  " " // &

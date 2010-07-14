@@ -229,7 +229,7 @@ module paramreader_module
       entry%N = N
       entry%param_type = param_type
 
-! call print("parser register entry " // trim(key) // " value " // trim(value), ERROR)
+! call print("parser register entry " // trim(key) // " value " // trim(value), PRINT_ALWAYS)
 
       if (present(has_value_target)) then
 	entry%has_value => has_value_target
@@ -363,9 +363,9 @@ module paramreader_module
       end do
 
       if (present(task)) then
-        call print("parser doing "//trim(task), VERBOSE)
+        call print("parser doing "//trim(task), PRINT_VERBOSE)
       else
-        call print("parser doing UNKNOWN", VERBOSE)
+        call print("parser doing UNKNOWN", PRINT_VERBOSE)
       endif
       ! Set the new entries
       do i=1,num_pairs
@@ -383,7 +383,7 @@ module paramreader_module
 	  key = field(1:equal_pos-1)
 	  value = field(equal_pos+1:len(trim(field)))
 	 endif
-	 call print("param_read_line key='"//trim(key)//"' value='"//trim(value)//"'", NERD)
+	 call print("param_read_line key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
          if (len_trim(value) > VALUE_LENGTH) then
             call print("param_read_line: value "//trim(value)//" too long")
             status = .false.
@@ -404,7 +404,7 @@ module paramreader_module
 	   if (associated(entry%has_value)) then
 	     entry%has_value = .true.
 	   endif
-           call print ("parser got: " // trim(paramentry_write_string(key, entry)), VERBOSE)
+           call print ("parser got: " // trim(paramentry_write_string(key, entry)), PRINT_VERBOSE)
 	   status = param_parse_value(entry)
 	   if (.not. status) then
 	      call Print('Error parsing value '//trim(entry%value))
@@ -417,11 +417,11 @@ module paramreader_module
          end if
       end do
 
-      if (current_verbosity() >= VERBOSE) then
+      if (current_verbosity() >= PRINT_VERBOSE) then
         do i=1, dict%N
           entry = transfer(dict%entries(i)%d%d,entry)
           if (.not. my_has_value(i)) then
-            call print ("parser defaulted: "//trim(paramentry_write_string(dict%keys(i),entry)), VERBOSE)
+            call print ("parser defaulted: "//trim(paramentry_write_string(dict%keys(i),entry)), PRINT_VERBOSE)
           endif
         end do
       endif
@@ -533,7 +533,7 @@ module paramreader_module
          endif
       end do
 
-      call print("param_read_args got command_line '"//trim(command_line)//"'", VERBOSE)
+      call print("param_read_args got command_line '"//trim(command_line)//"'", PRINT_VERBOSE)
       ! Free local copy before there's a chance we return
       deallocate(xargs)
 

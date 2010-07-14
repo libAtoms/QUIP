@@ -120,7 +120,7 @@ CONTAINS
     call verbosity_push_decrement()
     Ea=func(tmpa,data)
     call verbosity_pop()
-    call print("  Linmin: Ea = " // Ea // " a = " // 0.0_dp, NORMAL)
+    call print("  Linmin: Ea = " // Ea // " a = " // 0.0_dp, PRINT_NORMAL)
     Eb= Ea + 1.0_dp !just to start us off
 
     a=0.0_dp
@@ -138,12 +138,12 @@ CONTAINS
        call verbosity_push_decrement()
        Eb=func(tmpb,data)
        call verbosity_pop()
-       call print("  Linmin: Eb = " // Eb // " b = " // b, VERBOSE)
+       call print("  Linmin: Eb = " // Eb // " b = " // b, PRINT_VERBOSE)
        it = it+1
 
        if(b.LT.1.0e-20) then
 
-          write(line,*) "  Linmin: Direction points the wrong way\n" ; call print(line, NORMAL)
+          write(line,*) "  Linmin: Direction points the wrong way\n" ; call print(line, PRINT_NORMAL)
 
           epsilon=0.0_dp
           linmin=0
@@ -164,7 +164,7 @@ CONTAINS
 
        epsilon=b
        linmin=1
-       call print("  Linmin: Eb.feq.Ea, returning after one step", VERBOSE)
+       call print("  Linmin: Eb.feq.Ea, returning after one step", PRINT_VERBOSE)
        return
     end if
 
@@ -172,14 +172,14 @@ CONTAINS
 
     fallback = b ! b is the best point so far, make that the fallback
 
-    write(line,*)  "  Linmin: xdir is ok.."; call print(line,VERBOSE)
+    write(line,*)  "  Linmin: xdir is ok.."; call print(line,PRINT_VERBOSE)
 
     c = b + GOLD*b   !first guess for c */
     tmpc = x0 + c*xdir
     call verbosity_push_decrement()
     Ec = func(tmpc,data)
     call verbosity_pop()
-    call print("  Linmin: Ec = " // Ec // " c = " // c, VERBOSE)
+    call print("  Linmin: Ec = " // Ec // " c = " // c, PRINT_VERBOSE)
     it = it + 1
     !    ! does it work in fortran?
     !    four:   if(isnan(Ec)) then
@@ -198,9 +198,9 @@ CONTAINS
 
     do while(Eb.GT.Ec)
 
-       write(line,*) a,Ea; call print(line,VERBOSE)
-       write(line,*) b,Eb; call print(line,VERBOSE)
-       write(line,*) c,Ec; call print(line,VERBOSE)
+       write(line,*) a,Ea; call print(line,PRINT_VERBOSE)
+       write(line,*) b,Eb; call print(line,PRINT_VERBOSE)
+       write(line,*) c,Ec; call print(line,PRINT_VERBOSE)
 
 
 
@@ -215,18 +215,18 @@ CONTAINS
 
        ulim = b+MAXFIT*(c-b)
 
-       write(line,*) "u= ",u ; call print(line,VERBOSE)
+       write(line,*) "u= ",u ; call print(line,PRINT_VERBOSE)
 
 
        if((u-b)*(c-u).GT. 0) then ! b < u < c
 
-          write(line,*)"b < u < c" ; call print(line,VERBOSE)
+          write(line,*)"b < u < c" ; call print(line,PRINT_VERBOSE)
           
           tmpu = x0 + u*xdir
           call verbosity_push_decrement()
           Eu = func(tmpu,data)
           call verbosity_pop()
-	  call print("linmin got one Eu " // Eu // " " // u, NERD)
+	  call print("linmin got one Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
           if(Eu .LT. Ec) then ! Eb > Eu < Ec 
@@ -248,17 +248,17 @@ CONTAINS
           call verbosity_push_decrement()
           Eu = func(tmpu,data)
           call verbosity_pop()
-	  call print("linmin got second Eu " // Eu // " " // u, NERD)
+	  call print("linmin got second Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
        else if((u-c)*(ulim-u) .GT. 0) then ! c < u < ulim
 
-          write(line,*) "  c < u < ulim= ", ulim; call print(line,VERBOSE)
+          write(line,*) "  c < u < ulim= ", ulim; call print(line,PRINT_VERBOSE)
           tmpu = x0 + u*xdir
           call verbosity_push_decrement()
           Eu = func(tmpu,data)
           call verbosity_pop()
-	  call print("linmin got one(2) Eu " // Eu // " " // u, NERD)
+	  call print("linmin got one(2) Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
           if(Eu .LT. Ec) then
@@ -271,23 +271,23 @@ CONTAINS
              call verbosity_push_decrement()
              Eu = func(tmpu,data)
              call verbosity_pop()
-	     call print("linmin got second(2) Eu " // Eu // " " // u, NERD)
+	     call print("linmin got second(2) Eu " // Eu // " " // u, PRINT_NERD)
              it = it + 1
           end if
 
        else ! c < ulim < u or u is garbage (we are in a linear regime)
-          write(line,*) "  ulim=",ulim," < u or u garbage"; call print(line,VERBOSE)
+          write(line,*) "  ulim=",ulim," < u or u garbage"; call print(line,PRINT_VERBOSE)
           u = ulim
           tmpu = x0 + u*xdir
           call verbosity_push_decrement()
           Eu = func(tmpu,data)
           call verbosity_pop()
           it = it + 1
-	  call print("linmin got one(3) Eu " // Eu // " " // u, NERD)
+	  call print("linmin got one(3) Eu " // Eu // " " // u, PRINT_NERD)
        end if
 
-       write(line,*) "  "; call print(line,VERBOSE)
-       write(line,*) "  "; call print(line,VERBOSE)
+       write(line,*) "  "; call print(line,PRINT_VERBOSE)
+       write(line,*) "  "; call print(line,PRINT_VERBOSE)
 
        ! test to see if we change any component too much
 
@@ -300,14 +300,14 @@ CONTAINS
              call verbosity_push_decrement()
              Eb = func(tmpb,data)
              call verbosity_pop()
-	     call print("linmin got new Eb " // Eb // " " // b, NERD)
+	     call print("linmin got new Eb " // Eb // " " // b, PRINT_NERD)
              it = it + 1
              y = tmpb
              write(line,*) " bracket: step too big", b, Eb
-             call print(line, VERBOSE)
+             call print(line, PRINT_VERBOSE)
              write(line,'("I= ",I4," C= ",F16.12," xdir(i)= ",F16.12," DXLIM =",F16.12)')&
                   i, c, xdir(i), DXLIM 
-             call print(line, VERBOSE)
+             call print(line, PRINT_VERBOSE)
 
 
              epsilon = b
@@ -331,17 +331,17 @@ CONTAINS
     fallback = b 
 
     bracket_it = it
-    call print("  Linmin: bracket OK in "//bracket_it//" steps", VERBOSE)
+    call print("  Linmin: bracket OK in "//bracket_it//" steps", PRINT_VERBOSE)
 
 
 
     ! ahhh.... now we have a minimum between a and c,  Ea > Eb < Ec 
 
-    write(line,*) " "; call print(line,VERBOSE)
-    write(line,*) a,Ea; call print(line,VERBOSE)
-    write(line,*) b,Eb; call print(line,VERBOSE)
-    write(line,*) c,Ec; call print(line,VERBOSE)
-    write(line,*) " "; call print(line,VERBOSE)
+    write(line,*) " "; call print(line,PRINT_VERBOSE)
+    write(line,*) a,Ea; call print(line,PRINT_VERBOSE)
+    write(line,*) b,Eb; call print(line,PRINT_VERBOSE)
+    write(line,*) c,Ec; call print(line,PRINT_VERBOSE)
+    write(line,*) " "; call print(line,PRINT_VERBOSE)
 
 
 
@@ -363,7 +363,7 @@ CONTAINS
     !    Eu = (*func)(y);
     !  }
     !  
-    !  if(current_verbosity() > SILENT)
+    !  if(current_verbosity() > PRINT_SILENT)
     !    logger("      simple quadratic fit: %25.16e%25.16e\n\n", u, Eu);
     !
     !  //return(u);
@@ -381,7 +381,7 @@ CONTAINS
     d = 0.0_dp
     sizeflag = 0
 
-    call print("linmin got bracket", NERD)
+    call print("linmin got bracket", PRINT_NERD)
 
     ! main loop for parabolic search
     DO it = 1, ITER
@@ -397,7 +397,7 @@ CONTAINS
           call verbosity_push_decrement()
           Ex = func(y,data)
           call verbosity_pop()
-	  call print("linmin got new Ex " // Ex // " " // x, NERD)
+	  call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
 
           if(sizeflag.gt.0) call print('Linmin: DXlim exceeded')
 
@@ -410,7 +410,7 @@ CONTAINS
              call verbosity_push_decrement()
              Ex = func(tmpa,data)
              call verbosity_pop()
-	     call print("linmin got new Ex " // Ex // " " // x, NERD)
+	     call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
              y = tmpa
           else
              epsilon = x
@@ -438,7 +438,7 @@ CONTAINS
           if(abs(p) .GE. abs(0.5_dp*q*etmp) .OR.&
                p .LE. q*(a-x) .OR. p .GE. q*(b-x)) then
              ! no, take a golden section step
-             call print('  Linmin: Taking Golden Section step', VERBOSE+1)
+             call print('  Linmin: Taking Golden Section step', PRINT_VERBOSE+1)
              if(x .GE. xm) then
                 e = a-x
              else
@@ -446,7 +446,7 @@ CONTAINS
              end if
              d = CGOLD*e
           else
-             call print('  Linmin: Taking parabolic step', VERBOSE+1)
+             call print('  Linmin: Taking parabolic step', PRINT_VERBOSE+1)
              ! yes, take the parabolic step
              d = p/q
              u = x+d
@@ -475,7 +475,7 @@ CONTAINS
        call verbosity_push_decrement()
        Eu = func(x0+tmpa,data)
        call verbosity_pop()
-       call print('  Linmin: new point u= '//u//' Eu= '//Eu, VERBOSE)
+       call print('  Linmin: new point u= '//u//' Eu= '//Eu, PRINT_VERBOSE)
        if(any(abs(tmpa) > DXLIM)) then
           if(sizeflag .EQ. 0) then
              call print('  Linmin: an element of x moved more than '//DXLIM)
@@ -485,7 +485,7 @@ CONTAINS
 
        ! analyse new point result
        if(Eu .LE. Ex) then
-          call print('  Linmin: new point best so far', VERBOSE+1)
+          call print('  Linmin: new point best so far', PRINT_VERBOSE+1)
           if(u .GE. x) then
              a = x
           else
@@ -495,7 +495,7 @@ CONTAINS
           v=w;w=x;x=u
           Ev=Ew;Ew=Ex;Ex=Eu
        else 
-          call print('  Linmin: new point is no better', VERBOSE+1)
+          call print('  Linmin: new point is no better', PRINT_VERBOSE+1)
           if(u < x) then
              a = u
           else
@@ -510,11 +510,11 @@ CONTAINS
              Ev = Eu
           end if
        end if
-       call print('  Linmin: a='//a//' b='//b//' x='//x, VERBOSE+1)
+       call print('  Linmin: a='//a//' b='//b//' x='//x, PRINT_VERBOSE+1)
 
     end do
 
-    write(line,*) "  Linmin: too many iterations"; call print(line, NORMAL)
+    write(line,*) "  Linmin: too many iterations"; call print(line, PRINT_NORMAL)
 
 
 
@@ -570,7 +570,7 @@ CONTAINS
     allocate(xb(N))
     allocate(xc(N))
 
-    call print("Welcome to linmin_fast", NORMAL)
+    call print("Welcome to linmin_fast", PRINT_NORMAL)
 
     reject_quadratic_extrap = .true.
     do while(reject_quadratic_extrap)
@@ -585,12 +585,12 @@ CONTAINS
        fxc = func(xc,data)
        call verbosity_pop()
 
-       write(line,*) "      abc = ", a, b, c; call print(line, NORMAL)
-       write(line,*) "      f   = ",fx0, fxb, fxc; call print(line, NORMAL)
+       write(line,*) "      abc = ", a, b, c; call print(line, PRINT_NORMAL)
+       write(line,*) "      f   = ",fx0, fxb, fxc; call print(line, PRINT_NORMAL)
 
        if(abs(fx0-fxb) < abs(ftol*fx0))then
           write(line,*) "*** fast_linmin is stuck, returning 0" 
-          call print(line,SILENT)
+          call print(line,PRINT_SILENT)
           
           linmin=0
           return 
@@ -615,14 +615,14 @@ CONTAINS
        q = (b-c)*(fxb-fx0)
        new_eps = b-((b-c)*q-(b-a)*r)/(2.0*max(abs(q-r), 1.0_dp-20)*sign(1.0_dp,q-r))
 
-       write(line,*) "      neweps = ", new_eps; call print(line, NORMAL)
+       write(line,*) "      neweps = ", new_eps; call print(line, PRINT_NORMAL)
 
        if (abs(fxb) .GT. 100.0_dp*abs(fx0) .OR. abs(fxc) .GT. 100.0_dp*abs(fx0)) then ! extrapolation gave stupid results
           epsilon = epsilon/10.0_dp
           reject_quadratic_extrap = .true.
        else if(new_eps > 10.0_dp*(b-a))then
           write(line,*) "*** new epsilon > 10.0 * old epsilon, capping at factor of 10.0 increase"
-          call print(line, NORMAL)
+          call print(line, PRINT_NORMAL)
           epsilon = 10.0_dp*(b-a)
           a = c
           fx0 = fxc
@@ -632,11 +632,11 @@ CONTAINS
           if(fxb < fx0 .and. fxc < fx0 .and. fxc < fxb) then
              ! increase epsilon
              epsilon = epsilon*2.0_dp
-             call print("*** quadratic extrapolation resulted in backward step, increasing epsilon: "//epsilon, NORMAL)
+             call print("*** quadratic extrapolation resulted in backward step, increasing epsilon: "//epsilon, PRINT_NORMAL)
           else
              epsilon = epsilon/10.0_dp
              write(line,*)"*** xdir wrong way, reducing epsilon ",epsilon
-             call print(line, NORMAL)
+             call print(line, PRINT_NORMAL)
           endif
           reject_quadratic_extrap = .true.
        else if(new_eps < epsilon/10.0_dp) then
@@ -702,7 +702,7 @@ CONTAINS
     linmin = 0
     dirdx0 = xdir .DOT. dx0
     if( dirdx0 > 0.0_dp) then ! should be negative
-       call print("WARNING: linmin_deriv: xdir*dx0 > 0 !!!!!", ERROR)
+       call print("WARNING: linmin_deriv: xdir*dx0 > 0 !!!!!", PRINT_ALWAYS)
        return
     endif
 
@@ -714,17 +714,17 @@ CONTAINS
        dirdx1 = xdir .DOT. dx1
 
        if(abs(dirdx1) > abs(dirdx0)) then ! this eps leads to a point with larger abs gradient
-          call print("WARNING: linmin_deriv: |dirdx1| > |dirdx0|, reducing epsilon by factor of 5", NORMAL)
+          call print("WARNING: linmin_deriv: |dirdx1| > |dirdx0|, reducing epsilon by factor of 5", PRINT_NORMAL)
           new_eps = new_eps/5.0_dp
           if(new_eps < 1.0e-12_dp) then
-             call print("WARNING: linmin_deriv: new_eps < 1e-12 !!!!!", NORMAL)
+             call print("WARNING: linmin_deriv: new_eps < 1e-12 !!!!!", PRINT_NORMAL)
              linmin = 0
              return
           endif
        else
           gamma = dirdx0/(dirdx0-dirdx1)
           if(gamma > 2.0_dp) then
-             call print("*** gamma > 2.0, capping at 2.0", NORMAL)
+             call print("*** gamma > 2.0, capping at 2.0", PRINT_NORMAL)
              gamma = 2.0_dp
           endif
           new_eps = gamma*epsilon
@@ -733,7 +733,7 @@ CONTAINS
     end do
 
     write (line,'(a,e10.2,a,e10.2)') '  gamma = ', gamma, ' new_eps = ', new_eps
-    call Print(line, NORMAL)
+    call Print(line, PRINT_NORMAL)
 
     y = x0+new_eps*xdir
     epsilon = new_eps
@@ -778,7 +778,7 @@ CONTAINS
 
     if (present(do_line_scan)) then
        if (do_line_scan) then
-          call print('line scan:', NORMAL)
+          call print('line scan:', PRINT_NORMAL)
           new_eps = 1.0e-5_dp
           do i=1,50
              xn = x0 + new_eps*xdir
@@ -787,7 +787,7 @@ CONTAINS
              call verbosity_pop()
              dirdx_new = xdir .DOT. dxn
           
-             call print(new_eps//' '//dirdx_new//' <-- LS', NORMAL)
+             call print(new_eps//' '//dirdx_new//' <-- LS', PRINT_NORMAL)
        
              new_eps = new_eps*1.15
           enddo
@@ -802,7 +802,7 @@ CONTAINS
     dirdx1 = xdir .DOT. dx0
     dirdx2 = dirdx1
     if( dirdx1 > 0.0_dp) then ! should be negative
-       call print("WARNING: linmin_deriv_iter: xdir*dx0 > 0 !!!!!", ERROR)
+       call print("WARNING: linmin_deriv_iter: xdir*dx0 > 0 !!!!!", PRINT_ALWAYS)
        return
     endif
 
@@ -818,14 +818,14 @@ CONTAINS
 
           linmin = linmin + 1
 
-          call print('eps1   = '//eps1//' eps2   = '//eps2//' new_eps   = '//new_eps, NORMAL)
-          call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, NORMAL)
+          call print('eps1   = '//eps1//' eps2   = '//eps2//' new_eps   = '//new_eps, PRINT_NORMAL)
+          call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, PRINT_NORMAL)
 
           extrap = .false.
           if (dirdx_new > 0.0_dp) then 
              if(abs(dirdx_new) < 2.0_dp*abs(dirdx1)) then
                 ! projected gradient at new point +ve, but not too large. 
-                call print("dirdx_new > 0, but not too large", NORMAL)
+                call print("dirdx_new > 0, but not too large", PRINT_NORMAL)
                 eps2 = new_eps
                 dirdx2 = dirdx_new
                 extrap_steps = 0
@@ -836,7 +836,7 @@ CONTAINS
                 dirdx1 = 1.0_dp
                 do while (dirdx1 > 0.0_dp)
                    eps11 = eps1+step
-                   call print("Trying to bring in eps1: "//eps11, NORMAL)
+                   call print("Trying to bring in eps1: "//eps11, PRINT_NORMAL)
                    xn = x0 + eps11*xdir
                    call verbosity_push_decrement()
                    dxn = dfunc(xn,data)
@@ -850,13 +850,13 @@ CONTAINS
              else
                 ! projected gradient at new point +ve and large
                 ! let's decrease the step we take
-                call print("*** reducing trial epsilon by factor of 2, making eps2=current new_eps", NORMAL)
+                call print("*** reducing trial epsilon by factor of 2, making eps2=current new_eps", PRINT_NORMAL)
                 eps2 = new_eps
                 dirdx2 = dirdx_new
                 new_eps = (eps1+new_eps)/2.0_dp
                 ! check if we are just fiddling around
                 if(new_eps < 1.0e-12_dp) then
-                   call print("WARNING: linmin_deriv_iter: total_eps < 1e-12 !!!!!", NORMAL)
+                   call print("WARNING: linmin_deriv_iter: total_eps < 1e-12 !!!!!", PRINT_NORMAL)
                    linmin = 0
                    return
                 endif
@@ -866,7 +866,7 @@ CONTAINS
                 ! projected gradient smaller than  at x1
                 if(dirdx2 > 0.0_dp) then
                    ! we have good bracketing, so interpolate
-                   call print("dirdx_new <= 0, and we have good bracketing", NORMAL)
+                   call print("dirdx_new <= 0, and we have good bracketing", PRINT_NORMAL)
                    eps1 = new_eps
                    dirdx1 = dirdx_new
                    extrap_steps = 0
@@ -876,7 +876,7 @@ CONTAINS
                    dirdx2 = -1.0_dp
                    do while(dirdx2 < 0.0_dp)
                       eps11 = eps2-step
-                      call print("Trying to bring in eps2: "//eps11, NORMAL)
+                      call print("Trying to bring in eps2: "//eps11, PRINT_NORMAL)
                       xn = x0 + eps11*xdir
                       call verbosity_push_decrement()
                       dxn = dfunc(xn,data)
@@ -891,11 +891,11 @@ CONTAINS
                    ! we have not bracketed yet, but can take this point and extrapolate to a bigger stepsize
                    old_eps = new_eps
                    new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
-                   call print("we have not bracketed yet, extrapolating: "//new_eps, NORMAL)
+                   call print("we have not bracketed yet, extrapolating: "//new_eps, PRINT_NORMAL)
                    extrap_steps = extrap_steps + 1
                    if(new_eps > 5.0_dp*old_eps) then
                       ! extrapolation is too large, let's just move closer
-                      call print("capping extrapolation at "//2.0_dp*old_eps, NORMAL)
+                      call print("capping extrapolation at "//2.0_dp*old_eps, PRINT_NORMAL)
                       eps1 = old_eps
                       new_eps = 2.0_dp*old_eps
                    else
@@ -907,14 +907,14 @@ CONTAINS
              else
                 if (dirdx2 < 0.0_dp) then
                    ! have not bracketed yet, and projected gradient too big - minimum is behind us! lets move forward
-                   call print("dirdx2 < 0.0_dp and projected gradient too big, closest stationary point is behind us!", NORMAL)
+                   call print("dirdx2 < 0.0_dp and projected gradient too big, closest stationary point is behind us!", PRINT_NORMAL)
                    eps1 = new_eps
                    dirdx1 = dirdx_new
                    new_eps = eps1*2.0_dp
                    eps2 = new_eps
                    extrap_steps = extrap_steps+1
                 else
-                   call print("abs(dirdx_new) > abs(dirdx1) but dirdx2 > 0, should only happen when new_eps is converged. try to bring in eps2", NORMAL)
+                   call print("abs(dirdx_new) > abs(dirdx1) but dirdx2 > 0, should only happen when new_eps is converged. try to bring in eps2", PRINT_NORMAL)
                    eps2 = 0.5_dp*(new_eps+eps2)
                    xn = x0 + eps2*xdir
                    call verbosity_push_decrement()
@@ -932,7 +932,7 @@ CONTAINS
     end do
 
     if (extrap_steps == max_extrap_steps) then
-       call Print('*** linmin_deriv: max consequtive extrapolation steps exceeded', ERROR)
+       call Print('*** linmin_deriv: max consequtive extrapolation steps exceeded', PRINT_ALWAYS)
        linmin = 0
        return
     end if
@@ -984,7 +984,7 @@ CONTAINS
 
     if (present(do_line_scan)) then
        if (do_line_scan) then
-          call print('line scan:', NORMAL)
+          call print('line scan:', PRINT_NORMAL)
           new_eps = 1.0e-5_dp
           do i=1,50
              xn = x0 + new_eps*xdir
@@ -993,7 +993,7 @@ CONTAINS
              call verbosity_pop()
              dirdx_new = xdir .DOT. dxn
              
-             call print(new_eps//' '//dirdx_new, NORMAL)
+             call print(new_eps//' '//dirdx_new, PRINT_NORMAL)
           
              new_eps = new_eps*1.15
           enddo
@@ -1010,7 +1010,7 @@ CONTAINS
     dirdx1 = xdir .DOT. dx0
     dirdx2 = 0.0_dp
     if( dirdx1 > 0.0_dp) then ! should be negative
-       call print("WARNING: linmin_deriv_iter_simple: xdir*dx0 > 0 !!!!!", ERROR)
+       call print("WARNING: linmin_deriv_iter_simple: xdir*dx0 > 0 !!!!!", PRINT_ALWAYS)
        return
     endif
 
@@ -1027,13 +1027,13 @@ CONTAINS
        
        linmin = linmin + 1
        
-       call print('eps1   = '//eps1//' eps2   = '//eps2//' new_eps   = '//new_eps, NORMAL)
-       call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, NORMAL)
+       call print('eps1   = '//eps1//' eps2   = '//eps2//' new_eps   = '//new_eps, PRINT_NORMAL)
+       call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, PRINT_NORMAL)
        extrap = .false.
        if (dirdx_new > 0.0_dp) then 
           if(abs(dirdx_new) < 10.0_dp*abs(dirdx1)) then
              ! projected gradient at new point +ve, but not too large. 
-             call print("dirdx_new > 0, but not too large", NORMAL)
+             call print("dirdx_new > 0, but not too large", PRINT_NORMAL)
              eps2 = new_eps
              dirdx2 = dirdx_new
              extrap_steps = 0
@@ -1041,14 +1041,14 @@ CONTAINS
           else
              ! projected gradient at new point +ve and large
              ! let's decrease the step we take
-             call print("*** reducing trial epsilon by factor of 2, making eps2=current new_eps", NORMAL)
+             call print("*** reducing trial epsilon by factor of 2, making eps2=current new_eps", PRINT_NORMAL)
              eps2 = new_eps
              dirdx2 = dirdx_new
              old_eps = new_eps
              new_eps = (eps1+new_eps)/2.0_dp
              ! check if we are just fiddling around
              if(new_eps < 1.0e-12_dp) then
-                call print("WARNING: linmin_deriv_iter_simple: new_eps < 1e-12 !!!!!", NORMAL)
+                call print("WARNING: linmin_deriv_iter_simple: new_eps < 1e-12 !!!!!", PRINT_NORMAL)
                 linmin = 0
                 return
              endif
@@ -1059,7 +1059,7 @@ CONTAINS
              ! projected gradient smaller than  at x1
              if(dirdx2 > 0.0_dp) then
                 ! we have good bracketing, so interpolate
-                call print("dirdx_new <= 0, and we have good bracketing", NORMAL)
+                call print("dirdx_new <= 0, and we have good bracketing", PRINT_NORMAL)
                 eps1 = new_eps
                 dirdx1 = dirdx_new
                 extrap_steps = 0
@@ -1067,10 +1067,10 @@ CONTAINS
                 ! we have not bracketed yet, but can take this point and extrapolate to a bigger stepsize
                 old_eps = new_eps
                 new_eps = eps1-dirdx1/(dirdx_new-dirdx1)*(new_eps-eps1)
-                call print("we have not bracketed yet, extrapolating: "//new_eps, NORMAL)
+                call print("we have not bracketed yet, extrapolating: "//new_eps, PRINT_NORMAL)
                 if(new_eps > 5.0_dp*old_eps) then
                    ! extrapolation is too large, let's just move closer
-                   call print("capping extrapolation at "//2.0_dp*old_eps, NORMAL)
+                   call print("capping extrapolation at "//2.0_dp*old_eps, PRINT_NORMAL)
                    eps1 = old_eps
                    new_eps = 2.0_dp*old_eps
                 else
@@ -1084,7 +1084,7 @@ CONTAINS
           else
              if (dirdx2 .eq. 0.0_dp) then
                 ! have not bracketed yet, and projected gradient too big - minimum is behind us! lets move forward
-                call print("dirdx2 < 0.0_dp and projected gradient too big, closest stationary point is behind us!", NORMAL)
+                call print("dirdx2 < 0.0_dp and projected gradient too big, closest stationary point is behind us!", PRINT_NORMAL)
                 eps1 = new_eps
                 dirdx1 = dirdx_new
                 old_eps = new_eps
@@ -1093,7 +1093,7 @@ CONTAINS
                 extrap_steps = extrap_steps+1
                 cycle
              else
-                call print("dirdx_new < 0, abs(dirdx_new) > abs(dirdx1) but dirdx2 > 0, function not monotonic?", NORMAL)
+                call print("dirdx_new < 0, abs(dirdx_new) > abs(dirdx1) but dirdx2 > 0, function not monotonic?", PRINT_NORMAL)
                 eps1 = new_eps
                 dirdx1 = dirdx_new
              endif
@@ -1105,7 +1105,7 @@ CONTAINS
     end do
 
     if (extrap_steps == max_extrap_steps) then
-       call Print('*** linmin_deriv_iter_simple: max consequtive extrapolation steps exceeded', ERROR)
+       call Print('*** linmin_deriv_iter_simple: max consequtive extrapolation steps exceeded', PRINT_ALWAYS)
        linmin = 0
        return
     end if
@@ -1205,8 +1205,8 @@ CONTAINS
        call verbosity_push_decrement()
        f = func(x,data)
        call verbosity_pop()
-       call print("f=" // f, VERBOSE)
-       call print(x, NERD)
+       call print("f=" // f, PRINT_VERBOSE)
+       call print(x, PRINT_NERD)
 
     end do
     ! 
@@ -1322,11 +1322,11 @@ CONTAINS
     integer :: lbfgs_flag
     integer, parameter :: lbfgs_M = 40
 
-    if (current_verbosity() >= VERBOSE) then
+    if (current_verbosity() >= PRINT_VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
-    else if (current_verbosity() >= NORMAL) then
+    else if (current_verbosity() >= PRINT_NORMAL) then
       my_hook_print_interval = optional_default(10, hook_print_interval)
-    else if (current_verbosity() >= SILENT) then
+    else if (current_verbosity() >= PRINT_SILENT) then
       my_hook_print_interval = optional_default(100000, hook_print_interval)
     endif
 
@@ -1342,8 +1342,8 @@ CONTAINS
     extra_report = 0
     if (present(status)) status = 0
 
-    call print("Welcome to minim()", NORMAL)
-    call print("space is "//size(x)//" dimensional", NORMAL)
+    call print("Welcome to minim()", PRINT_NORMAL)
+    call print("space is "//size(x)//" dimensional", PRINT_NORMAL)
     do_sd = .false.
     do_cg = .false.
     do_pcg = .false.
@@ -1351,17 +1351,17 @@ CONTAINS
 
     if(trim(method).EQ."sd") then
        do_sd = .TRUE.
-       call print("Method: Steepest Descent", NORMAL)
+       call print("Method: Steepest Descent", PRINT_NORMAL)
     else if(trim(method).EQ."cg")then
        do_cg = .TRUE.
-       call print("Method: Conjugate Gradients", NORMAL)
+       call print("Method: Conjugate Gradients", PRINT_NORMAL)
     else if(trim(method).EQ."pcg")then
        do_cg = .TRUE.
        do_pcg = .TRUE.
-       call print("Method: Preconditioned Conjugate Gradients", NORMAL)
+       call print("Method: Preconditioned Conjugate Gradients", PRINT_NORMAL)
     else if(trim(method).EQ."lbfgs") then
        do_lbfgs = .TRUE.
-       call print("Method: LBFGS by Jorge Nocedal, please cite D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528", NORMAL)
+       call print("Method: LBFGS by Jorge Nocedal, please cite D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528", PRINT_NORMAL)
        allocate(lbfgs_diag(size(x)))
        allocate(lbfgs_work(size(x)*(lbfgs_M*2+1)+2*lbfgs_M))
        call print("Allocating LBFGS work array: "//(size(x)*(lbfgs_M*2+1)+2*lbfgs_M)//" bytes")
@@ -1383,18 +1383,18 @@ CONTAINS
           call print("Minim warning: a linminroutine was specified for LBFGS")
        if(trim(linminroutine) .EQ. "FAST_LINMIN") then
           do_fast_linmin =.TRUE.
-          call print("Using FAST_LINMIN linmin", NORMAL)
+          call print("Using FAST_LINMIN linmin", PRINT_NORMAL)
        else if(trim(linminroutine).EQ."NR_LINMIN") then
-          call print("Using NR_LINMIN linmin", NORMAL)
+          call print("Using NR_LINMIN linmin", PRINT_NORMAL)
        else if(trim(linminroutine).EQ."LINMIN_DERIV") then
           do_linmin_deriv = .TRUE.
-          call print("Using LINMIN_DERIV linmin", NORMAL)
+          call print("Using LINMIN_DERIV linmin", PRINT_NORMAL)
        else
           call System_abort("Invalid linminroutine: "//linminroutine)
        end if
     end if
 
-    if (current_verbosity() .GE. NERD .and. .not. do_linmin_deriv) then 
+    if (current_verbosity() .GE. PRINT_NERD .and. .not. do_linmin_deriv) then 
        dumbool=test_gradient(x, func, dfunc,data=data)
     end if
 
@@ -1415,11 +1415,11 @@ CONTAINS
       if (present(hook)) then 
 	call hook(x, grad_f, f, done, .true., data)
 	if (done) then
-	  call print('hook reports that minim finished, exiting.', NORMAL)
+	  call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
 	  exit_flag = 1
 	end if
       else
-	call print("hook is not present", VERBOSE)
+	call print("hook is not present", PRINT_VERBOSE)
       end if
     endif
 
@@ -1459,7 +1459,7 @@ CONTAINS
     if(norm2grad_f .LT. convergence_tol)then  
        call print("Minimization is already converged!")
        call print(method//" iter = "// 0 //" df^2 = " // norm2grad_f // " f = " // f &
-            &// " "//lsteps//" linmin steps eps = "//eps,VERBOSE)
+            &// " "//lsteps//" linmin steps eps = "//eps,PRINT_VERBOSE)
        exit_flag = 1
     end if
 
@@ -1470,7 +1470,7 @@ CONTAINS
     do while((main_counter .LT. max_steps) .AND. (.NOT.(exit_flag.gt.0)))
       call system_timer("minim/main_loop/"//main_counter)
        
-       if ((current_verbosity() >= ANAL .or. do_test_gradient) & 
+       if ((current_verbosity() >= PRINT_ANAL .or. do_test_gradient) & 
             .and. .not. do_linmin_deriv) then
 	  dumbool=test_gradient(x, func, dfunc,data=data)
           if (.not. dumbool) call print("Gradient test failed")
@@ -1485,21 +1485,21 @@ CONTAINS
 
        if (my_hook_print_interval == 1 .or. mod(main_counter,my_hook_print_interval) == 1) call verbosity_push_increment()
        call print(trim(method)//" iter = "//main_counter//" df^2 = "//norm2grad_f//" f = "//f// &
-            ' max(abs(df)) = '//maxval(abs(grad_f)),VERBOSE)
+            ' max(abs(df)) = '//maxval(abs(grad_f)),PRINT_VERBOSE)
        if(.not. do_lbfgs) &
-            call print(" dcos = "//dcosine//" q = " //linmin_quality,VERBOSE)
+            call print(" dcos = "//dcosine//" q = " //linmin_quality,PRINT_VERBOSE)
        if (my_hook_print_interval == 1 .or. mod(main_counter,my_hook_print_interval) == 1) call verbosity_pop()
 
        ! call the hook function
        if (present(hook)) then 
           call hook(x, grad_f, f, done, (mod(main_counter-1,my_hook_print_interval) == 0), data)
           if (done) then
-             call print('hook reports that minim finished, exiting.', NORMAL)
+             call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
              exit_flag = 1
              cycle
           end if
        else
-          call print("hook is not present", VERBOSE)
+          call print("hook is not present", PRINT_VERBOSE)
        end if
 
        !**********************************************************************
@@ -1529,7 +1529,7 @@ CONTAINS
           !**********************************************************************/
           
           oldeps = eps
-          ! no output from linmin unless level >= VERBOSE
+          ! no output from linmin unless level >= PRINT_VERBOSE
 	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
           call verbosity_push_decrement()
           if(do_fast_linmin) then
@@ -1562,7 +1562,7 @@ CONTAINS
              hdir = -1.0 * grad_f
              eps = my_eps_guess
 
-	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              
              bad_iter_counter = bad_iter_counter + 1
              if(bad_iter_counter .EQ. max_bad_iter) then  
@@ -1646,8 +1646,8 @@ CONTAINS
              call print("*** Minim is not going down at step " // main_counter //" ==> eps /= 10")
              eps = oldeps / 10.0_dp
 
-	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
-             if(current_verbosity() >= NERD .and. .not. do_linmin_deriv) then     
+	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then     
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!!")
                 end if
@@ -1669,21 +1669,21 @@ CONTAINS
              
           else        ! minim went downhill, but not a lot
           
-             call print("*** Minim is stuck at step " // main_counter // ", trying to unstick", VERBOSE)
+             call print("*** Minim is stuck at step " // main_counter // ", trying to unstick", PRINT_VERBOSE)
           
-             if (current_verbosity() >= NORMAL) then
+             if (current_verbosity() >= PRINT_NORMAL) then
                 call verbosity_push_increment()
                 extra_report = extra_report + 1
              end if
       
-	     if (current_verbosity() >= NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              !**********************************************************************
              !*
              !* do gradient test if we need to
              !*
              !**********************************************************************/
              ! 
-             if(current_verbosity() >= NERD .and. .not. do_linmin_deriv) then     
+             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then     
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!! Exiting linmin!")
                    exit_flag = 1
@@ -1694,7 +1694,7 @@ CONTAINS
           
              bad_iter_counter=bad_iter_counter+1 ! increment BAD counter
              eps = my_eps_guess ! try to unstick
-             call print("resetting eps to " // eps,VERBOSE)
+             call print("resetting eps to " // eps,PRINT_VERBOSE)
              resetflag = 1 ! reset CG
           end if
 
@@ -1752,9 +1752,9 @@ CONTAINS
           if( bad_cg_counter == max_bad_cg .OR.(resetflag > 0)) then ! reset the conj grad cycle
              
              if( bad_cg_counter .EQ. max_bad_cg)  then 
-                call print("*** bad_cg_counter == "//  max_bad_cg, VERBOSE)
+                call print("*** bad_cg_counter == "//  max_bad_cg, PRINT_VERBOSE)
              end if
-             call print("*** Resetting conjugacy", VERBOSE)
+             call print("*** Resetting conjugacy", PRINT_VERBOSE)
              
              
              hdir = -1.0_dp * grad_f
@@ -1903,7 +1903,7 @@ CONTAINS
     allocate(x(N), dx(N), x_0(N))
     x=xx
 
-    if(current_verbosity() > VERBOSE) then 
+    if(current_verbosity() > PRINT_VERBOSE) then 
        printit = .TRUE.
        loopend=0
     else
@@ -1988,8 +1988,8 @@ CONTAINS
 
           if(.NOT.monitor_ratio) then
              if(abs((f-f0)/f0) .LT. NUMERICAL_ZERO) then ! we ran out of precision, gradient is really bad
-		call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, ANAL)
-		call print("ran out of precision, quitting loop", ANAL)
+		call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, PRINT_ANAL)
+		call print("ran out of precision, quitting loop", PRINT_ANAL)
                 exit
              end if
           end if
@@ -2014,11 +2014,11 @@ CONTAINS
 
     end do
     if(printit) then
-       write(line,*)" "; call print(line, NORMAL)
+       write(line,*)" "; call print(line, PRINT_NORMAL)
     end if
 
     if(ok) then
-       write(line,*)"Gradient test OK"; call print(line, VERBOSE)
+       write(line,*)"Gradient test OK"; call print(line, PRINT_VERBOSE)
     end if
     test_gradient= ok
 
@@ -2154,11 +2154,11 @@ CONTAINS
 
     if (present(status)) status = 0
 
-    if (current_verbosity() >= VERBOSE) then
+    if (current_verbosity() >= PRINT_VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
-    else if (current_verbosity() >= NORMAL) then
+    else if (current_verbosity() >= PRINT_NORMAL) then
       my_hook_print_interval = optional_default(10, hook_print_interval)
-    else if (current_verbosity() >= SILENT) then
+    else if (current_verbosity() >= PRINT_SILENT) then
       my_hook_print_interval = optional_default(100000, hook_print_interval)
     endif
 
@@ -2170,7 +2170,7 @@ CONTAINS
     dt_max = 20.0_dp*dt
     Pcount = 0
 
-    call Print('Welcome to fire_minim', NORMAL)
+    call Print('Welcome to fire_minim', PRINT_NORMAL)
 
     velo = 0
     acc = -dfunc(x,data)/mass
@@ -2184,20 +2184,20 @@ CONTAINS
 
        if (df2 < tol) then
           write (line, '(i4,a,e10.2)')  i, ' force^2 = ', df2
-          call Print(line, NORMAL)
+          call Print(line, PRINT_NORMAL)
 
           write (line, '(a,i0,a)') 'Converged in ', i, ' steps.'
-          call Print(line, NORMAL)
+          call Print(line, PRINT_NORMAL)
           exit
        else if(mod(i, my_hook_print_interval) == 0) then
           f = func(x,data)
           write (line, '(i4,a,e24.16,a,e24.16,a,f0.3)') i,' f=',f,' df^2=',df2,' dt=', dt
-          call Print(line, NORMAL)
+          call Print(line, PRINT_NORMAL)
 
           if(present(hook)) then 
              call hook(x, force, f, done, (mod(i-1,my_hook_print_interval) == 0), data)
              if (done) then
-                call print('hook reports that fire_minim is finished, exiting.', NORMAL)
+                call print('hook reports that fire_minim is finished, exiting.', PRINT_NORMAL)
                 exit
              end if
           end if
@@ -2225,16 +2225,16 @@ CONTAINS
        x = x + dt*velo
        x = x + (0.5_dp*dt*dt)*acc
 
-       if(current_verbosity() >= NERD) then
+       if(current_verbosity() >= PRINT_NERD) then
           write (line, '(a,e24.16)')  'E=', func(x,data)
-          call print(line,NERD)
-          call print(x,NERD)
+          call print(line,PRINT_NERD)
+          call print(x,PRINT_NERD)
        end if
     end do
 
     if(i == max_steps) then
        write (line, '(a,i0,a)') 'fire_minim: Failed to converge in ', i, ' steps.'
-       call Print(line, ERROR)
+       call Print(line, PRINT_ALWAYS)
        if (present(status)) status = 1
     end if
 
@@ -2305,9 +2305,9 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     allocate(new_p_ng(size(x)))
     allocate(t_projected(size(x)))
 
-    call print ("n_linmin starting line minimization", NERD)
+    call print ("n_linmin starting line minimization", PRINT_NERD)
     call print ("n_linmin initial |x| " // norm(x) // " |neg_gradient| " // &
-      norm(neg_gradient) // " |search_dir| " // norm(search_dir), NERD)
+      norm(neg_gradient) // " |search_dir| " // norm(search_dir), PRINT_NERD)
 
     search_dir_mag = norm(search_dir)
     ! search_dir = search_dir / search_dir_mag
@@ -2317,7 +2317,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     t_projected = search_dir*p0_dot
     if (norm2(t_projected) .lt. accuracy) then
-	call print ("n_linmin initial config is converged " // norm(t_projected) // " " // accuracy, NERD)
+	call print ("n_linmin initial config is converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
 	new_x = x
 	new_neg_gradient = neg_gradient
 	new_E = E
@@ -2331,7 +2331,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     p0_E = E
 
     p0_dot = p0_ng .dot. search_dir
-    call print("initial p0_dot " // p0_dot, NERD)
+    call print("initial p0_dot " // p0_dot, PRINT_NERD)
 
     if (p0_dot .lt. 0.0_dp) then
 	p0_ng = -p0_ng
@@ -2339,7 +2339,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     endif
 
     call print("cg_n " // p0_pos // " " // p0_e // " " // p0_dot // " " // &
-	       norm2(p0_ng) // " " // N_evals // " bracket starting", VERBOSE)
+	       norm2(p0_ng) // " " // N_evals // " bracket starting", PRINT_VERBOSE)
 
     est_step_size = 4.0_dp*maxval(abs(p0_ng))**2/p0_dot
     if (max_step_size .gt. 0.0_dp .and. est_step_size .gt. max_step_size) then
@@ -2352,17 +2352,17 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     error = 1
     do while (error .ne. 0)
 	N_evals = N_evals + 1
-	call bothfunc(p1, p1_e, p1_ng, error,data); p1_ng = -p1_ng
+	call bothfunc(p1, p1_e, p1_ng, error, data); p1_ng = -p1_ng
 	if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
 	if (error .ne. 0) then
 	    call print("cg_n " // p1_pos // " " // p1_e // " " // 0.0_dp // " " // &
-		       0.0_dp // " " // N_evals // " bracket first step ERROR", ERROR)
+		       0.0_dp // " " // N_evals // " bracket first step ERROR", PRINT_ALWAYS)
 	    est_step_size = est_step_size*0.5_dp
 	    p1_pos = est_step_size
 	    p1 = x + p1_pos*search_dir
 	endif
 	if (N_evals .gt. max_N_evals) then
-	    call print ("n_linmin ran out of iterations", ERROR)
+	    call print ("n_linmin ran out of iterations", PRINT_ALWAYS)
 	    return
 	endif
     end do
@@ -2370,7 +2370,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     p1_dot = p1_ng .dot. search_dir
 
     call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-	       norm2(p1_ng) // " " // N_evals // " bracket first step", VERBOSE)
+	       norm2(p1_ng) // " " // N_evals // " bracket first step", PRINT_VERBOSE)
 
     t_projected = search_dir*p1_dot
 !     if (object_norm(t_projected,norm_type) .lt. accuracy) then
@@ -2384,7 +2384,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 ! 	return
 !     endif
 
-    call print ("starting bracketing loop", NERD)
+    call print ("starting bracketing loop", PRINT_NERD)
 
     ! bracket solution
     do while (p1_dot .ge. 0.0_dp)
@@ -2396,23 +2396,23 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
 	p1_pos = p1_pos + est_step_size
 
-	call print ("checking bracketing for " // p1_pos, NERD)
+	call print ("checking bracketing for " // p1_pos, PRINT_NERD)
 
 	p1 = x + p1_pos*search_dir
 	error = 1
 	do while (error .ne. 0)
 	    N_evals = N_evals + 1
-	    call bothfunc (p1, p1_E, p1_ng, error,data); p1_ng = -p1_ng
+	    call bothfunc (p1, p1_E, p1_ng, error, data); p1_ng = -p1_ng
 	    if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
 	    if (done) then
-	      call print("hook reported done", NERD)
+	      call print("hook reported done", PRINT_NERD)
 	      search_dir = search_dir * search_dir_mag
 	      return
 	    endif
 	    if (error .ne. 0) then
 	      call print("cg_n " // p0_pos // " " // p0_e // " " // 0.0_dp // " " // &
-			 0.0_dp // " " // N_evals // " bracket loop ERROR", ERROR)
-	      call print ("Error in bracket loop " // error // " stepping back", ERROR)
+			 0.0_dp // " " // N_evals // " bracket loop ERROR", PRINT_ALWAYS)
+	      call print ("Error in bracket loop " // error // " stepping back", PRINT_ALWAYS)
 	      p1_pos = p1_pos - est_step_size
 	      est_step_size = est_step_size*0.5_dp
 	      p1_pos = p1_pos + est_step_size
@@ -2420,7 +2420,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	    endif
 	    if (N_evals .gt. max_N_evals) then
 	      search_dir = search_dir * search_dir_mag
-	      call print ("n_linmin ran out of iterations", ERROR)
+	      call print ("n_linmin ran out of iterations", PRINT_ALWAYS)
 	      return
 	    endif
 	end do
@@ -2435,16 +2435,16 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 !	end if
 
       call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-		 norm2(p1_ng) // " " // N_evals // " bracket loop", VERBOSE)
+		 norm2(p1_ng) // " " // N_evals // " bracket loop", PRINT_VERBOSE)
     end do
     
-    call print ("bracketed by" // p0_pos // " " // p1_pos, NERD)
+    call print ("bracketed by" // p0_pos // " " // p1_pos, PRINT_NERD)
 
     done = .false.
     t_projected = 2.0_dp*sqrt(accuracy)
     !new_p_dot = accuracy*2.0_dp
     do while (norm2(t_projected) .ge. accuracy .and. (.not. done))
-        call print ("n_linmin starting true minimization loop", NERD)
+        call print ("n_linmin starting true minimization loop", PRINT_NERD)
 
 	use_cubic = .false.
 	if (use_cubic) then
@@ -2465,7 +2465,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 		new_p_pos = p0_pos + soln_2
 		got_valid_cubic = .true.
 	    else
-		call print ("n_linmin warning: no valid solution for cubic", ERROR)
+		call print ("n_linmin warning: no valid solution for cubic", PRINT_ALWAYS)
 		!!!! use only derivative information to find pt. where derivative = 0
 		tt = -p0_dot/(p1_dot-p0_dot)
 		new_p_pos = p0_pos + tt*(p1_pos-p0_pos)
@@ -2481,7 +2481,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
 	new_p = x + new_p_pos*search_dir
 	N_evals = N_evals + 1
-	call bothfunc (new_p, new_p_E, new_p_ng, error,data); new_p_ng = -new_p_ng
+	call bothfunc (new_p, new_p_E, new_p_ng, error, data); new_p_ng = -new_p_ng
 	if (error .ne. 0) then
 	    call system_abort("n_linmin: Error in line search " // error)
 	endif
@@ -2494,7 +2494,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 	new_p_dot = new_p_ng .dot. search_dir
 
 	call print("cg_n " // new_p_pos // " " // new_p_E // " " // new_p_dot // " " // &
-		   norm2(new_p_ng) // " " // N_evals // " during line search", VERBOSE)
+		   norm2(new_p_ng) // " " // N_evals // " during line search", PRINT_VERBOSE)
 
 	if (new_p_dot .gt. 0) then
 	    p0 = new_p
@@ -2520,7 +2520,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     max_step_size = new_p_pos
     search_dir = search_dir * search_dir_mag
 
-    call print ("done with line search", NERD)
+    call print ("done with line search", PRINT_NERD)
 end subroutine n_linmin
 
 function n_minim(x_i, bothfunc, initial_E, final_E, &
@@ -2575,11 +2575,11 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 
     if (present(status)) status = 0
 
-    if (current_verbosity() >= VERBOSE) then
+    if (current_verbosity() >= PRINT_VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
-    else if (current_verbosity() >= NORMAL) then
+    else if (current_verbosity() >= PRINT_NORMAL) then
       my_hook_print_interval = optional_default(10, hook_print_interval)
-    else if (current_verbosity() >= SILENT) then
+    else if (current_verbosity() >= PRINT_SILENT) then
       my_hook_print_interval = optional_default(100000, hook_print_interval)
     endif
 
@@ -2588,7 +2588,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
     allocate(g_ip1(size(x_i)))
     allocate(h_i(size(x_i)))
     N_evals = 1
-    call bothfunc(x_i, E_i, g_i, error,data); g_i = -g_i
+    call bothfunc(x_i, E_i, g_i, error, data); g_i = -g_i
     if (present(hook)) call hook(x_i, g_i, E_i, done, .true., data)
     if (error .ne. 0) then
       call system_abort("Error in first evaluation" // error)
@@ -2603,7 +2603,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	       norm2(g_i) // " " // N_evals // " INITIAL_VAL")
 
     if (norm2(g_i) .lt. accuracy) then
-	call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, VERBOSE)
+	call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, PRINT_VERBOSE)
 	final_E = initial_E
 	return
     endif
@@ -2628,7 +2628,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 		      x_ip1, g_ip1, E_ip1, &
 		      max_step_size, accuracy, N_evals, max_N_evals, hook,data)
 	if (N_evals > max_N_evals) then
-	  call print ("n_minim error: Ran out of iterations in linmin", ERROR)
+	  call print ("n_minim error: Ran out of iterations in linmin", PRINT_ALWAYS)
 	  final_E = E_i
           if (present(status)) status = 1
 	  return
@@ -2638,7 +2638,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 		    norm2(g_ip1) // " " // N_evals // " n_minim post linmin")
 
 	if (norm2(g_ip1) .lt. accuracy) then
-	    call print("n_minim is converged", VERBOSE)
+	    call print("n_minim is converged", PRINT_VERBOSE)
 	    E_i = E_ip1
 	    x_i = x_ip1
 	    g_i = g_ip1
@@ -2677,7 +2677,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 		    norm2(g_i) // " " // N_evals // " n_minim with new dir")
 
 	call print("n_minim loop end, N_evals " // N_evals // " max_N_evals " // max_N_evals // &
-	  " done " // done, VERBOSE)
+	  " done " // done, PRINT_VERBOSE)
 
 	iter = iter + 1
 
@@ -2723,7 +2723,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
   allocate(dxn(size(x0)))
 
   fn = 0.0_dp
-  call print('line scan:', NORMAL)
+  call print('line scan:', PRINT_NORMAL)
   new_eps = 1.0e-5_dp
   do i=1,50
      xn = x0 + new_eps*xdir
@@ -2733,7 +2733,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
      call verbosity_pop()
      dirdx_new = xdir .DOT. dxn
 
-     call print('LINE_SCAN ' // new_eps//' '//fn// ' '//dirdx_new, NORMAL)
+     call print('LINE_SCAN ' // new_eps//' '//fn// ' '//dirdx_new, PRINT_NORMAL)
 
      new_eps = new_eps*1.15
   enddo

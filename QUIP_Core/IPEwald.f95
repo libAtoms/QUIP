@@ -103,7 +103,7 @@ contains
     ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
     & minval(sqrt( sum(at_in%lattice(:,:)**2,dim=1) )) / at_in%N**(1.0_dp/6.0_dp)
 
-    call print('Ewald cutoff = '//ewald_cutoff,ANAL)
+    call print('Ewald cutoff = '//ewald_cutoff,PRINT_ANAL)
 
     if( my_use_ewald_cutoff .and. (ewald_cutoff > at_in%cutoff) ) then
         my_at = at_in
@@ -122,14 +122,14 @@ contains
 
          
     alpha = sqrt(ewald_precision)/at%cutoff
-    call print('Ewald alpha = '//alpha,ANAL)
+    call print('Ewald alpha = '//alpha,PRINT_ANAL)
 
     kmax = 2.0_dp * ewald_precision / at%cutoff
     kmax2 = kmax**2
-    call print('Ewald kmax = '//kmax,ANAL)
+    call print('Ewald kmax = '//kmax,PRINT_ANAL)
 
     nmax = nint( kmax * h / 2.0_dp / PI )
-    call print('Ewald nmax = '//nmax,ANAL)
+    call print('Ewald nmax = '//nmax,PRINT_ANAL)
 
     two_alpha_over_sqrt_pi = 2.0_dp * alpha / sqrt(PI)
 

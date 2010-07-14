@@ -59,7 +59,7 @@ implicit none
 
   integer :: vac_qm_hops, buffer_hops
 
-  call system_initialise(enable_timing=.true.,verbosity=NORMAL)
+  call system_initialise(enable_timing=.true.,verbosity=PRINT_NORMAL)
 
   call initialise(mpi)
 
@@ -75,10 +75,10 @@ implicit none
   call param_register(cli_params, "imax", "0", imax)
   call param_register(cli_params, "dmax", "1.0e38", dmax)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
-    call print("Usage: vacancy_map_hybrid_generate [buffer_hops=i(1)]", ERROR)
-    call print("  [core_qm=l(T)] [core_qm_x=r(10.0)] core_qm_z=r(5.0)]", ERROR)
-    call print("  [vac_qm=l(F)] vac_qm_hops=i(1)] [n_supercell=i(4)]", ERROR)
-    call print("  [imin=i(0)] [imax=i(0)] [dmax=r(1.0e38)]", ERROR)
+    call print("Usage: vacancy_map_hybrid_generate [buffer_hops=i(1)]", PRINT_ALWAYS)
+    call print("  [core_qm=l(T)] [core_qm_x=r(10.0)] core_qm_z=r(5.0)]", PRINT_ALWAYS)
+    call print("  [vac_qm=l(F)] vac_qm_hops=i(1)] [n_supercell=i(4)]", PRINT_ALWAYS)
+    call print("  [imin=i(0)] [imax=i(0)] [dmax=r(1.0e38)]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
@@ -158,7 +158,7 @@ implicit none
         if(r2 < 1.0_dp) call append(core_list, (/i, 0, 0 ,0/))
      end do
 
-     call print(core_list, VERBOSE)
+     call print(core_list, PRINT_VERBOSE)
      
      hybrid_mark(int_part(core_list, 1)) = HYBRID_ACTIVE_MARK
 

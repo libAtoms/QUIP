@@ -74,8 +74,8 @@ implicit none
     call param_register(cli_params, "fix_rotation", "F", fix_rotation)
     call param_register(cli_params, "regular_eigenproblem", "F", regular_eigenproblem)
     if (.not. param_read_args(cli_params)) then
-      call print("Usage: analyze_md_phonons [phonons_file=file(phonons.xyz)] [fix_rotation=T/F(F)]", ERROR)
-      call print("       [regular_eigenproblem=T/F(F)]", ERROR)
+      call print("Usage: analyze_md_phonons [phonons_file=file(phonons.xyz)] [fix_rotation=T/F(F)]", PRINT_ALWAYS)
+      call print("       [regular_eigenproblem=T/F(F)]", PRINT_ALWAYS)
       call system_abort("Confused by parameters")
     endif
   call finalise(cli_params)
@@ -115,7 +115,7 @@ call atoms_repoint(config)
 config%mass = ElementMass(config%Z)
 MoI = moment_of_inertia_tensor(config, centre_of_mass(config))
 call diagonalise(MoI, MoI_evals, MoI_evecs_orig)
-call print(MoI_evecs_orig, VERBOSE)
+call print(MoI_evecs_orig, PRINT_VERBOSE)
 
   done = .false.
   config_i = 0
@@ -140,7 +140,7 @@ call print(MoI_evecs_orig, VERBOSE)
 	do i=1,3
 	if ((MoI_evecs(:,i) .dot. MoI_evecs_orig(:,i)) < 0) MoI_evecs(:,i) = - MoI_evecs(:,i)
 	end do
-	call print(MoI_evecs, VERBOSE)
+	call print(MoI_evecs, PRINT_VERBOSE)
 	R = transpose(MoI_evecs_orig) .mult. MoI_evecs
 	config%velo = R .mult. config%velo
       endif
@@ -157,11 +157,11 @@ call print(MoI_evecs_orig, VERBOSE)
 	  ke_proj(i) = mode_vel**2/2.0_dp
 	end do
       endif
-      call print("check " // config_i // " p " // p // " L ", VERBOSE)
+      call print("check " // config_i // " p " // p // " L ", PRINT_VERBOSE)
       call print("check ke_tot " // ke_tot // " sum(ke_proj) " // sum(ke_proj) // &
 	" sum(ke_proj(1:6)) " // sum(ke_proj(1:6)) // &
 	" sum(ke_proj(7:)) " // sum(ke_proj(7:)) // " ratio " // &
-	(sum(ke_proj(7:))/sum(ke_proj)), VERBOSE)
+	(sum(ke_proj(7:))/sum(ke_proj)), PRINT_VERBOSE)
       call print("config " // config_i // " ke_proj " // ke_proj)
     endif
   end do

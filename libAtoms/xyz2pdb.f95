@@ -53,7 +53,7 @@ program xyz2pdb
                                      print, verbosity_push, &
                                      operator(//), &
                                      INPUT, OUTPUT, &
-                                     SILENT, NORMAL, ANAL, NERD
+                                     SILENT, PRINT_NORMAL, PRINT_ANAL, PRINT_NERD
   use table_module,            only: table, finalise, int_part, delete
   use topology_module,         only: create_residue_labels_arb_pos, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
@@ -82,8 +82,8 @@ program xyz2pdb
     logical                     :: have_silica_potential
     logical                     :: use_avgpos
 
-    call system_initialise(verbosity=silent,enable_timing=.true.)
-    call verbosity_push(NORMAL)
+    call system_initialise(verbosity=PRINT_silent,enable_timing=.true.)
+    call verbosity_push(PRINT_NORMAL)
     call system_timer('program')
 
    ! reading in run parameters

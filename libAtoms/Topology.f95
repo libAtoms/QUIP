@@ -52,7 +52,7 @@ module topology_module
                                      print, print_title, &
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
-                                     ERROR, SILENT, NORMAL, VERBOSE, NERD, ANAL, &
+                                     PRINT_ALWAYS, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANAL, &
                                      operator(//), allocatable_array_pointers, &
 				     verbosity_push, verbosity_pop
 #ifndef HAVE_QUIPPY
@@ -304,7 +304,7 @@ logical :: silica_potential
           if (remove_Si_H_silica_bonds) then
              do i=1,atom_SiO%N !check Hs bonded to Si. There shouldn't be any,removing the bond.
                  if (at%Z(atom_SiO%int(1,i)).eq.1) then
-                    call print('WARNING! Si and H are very close',verbosity=ERROR)
+                    call print('WARNING! Si and H are very close',verbosity=PRINT_ALWAYS)
                     bond_H = atom_SiO%int(1,i)
                     call initialise(bondH,4,0,0,0,0)
                     call append(bondH,(/bond_H,0,0,0/))
@@ -312,7 +312,7 @@ logical :: silica_potential
                     do j = 1,bondSi%N
                        if (at%Z(bondSi%int(1,i)).eq.14) then
                           bond_Si = bondSi%int(1,i)
-                          call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=ERROR)
+                          call print('WARNING! Remove Si '//bond_Si//' and H '//bond_H//' bond ('//distance_min_image(at,bond_H,bond_Si)//')',verbosity=PRINT_ALWAYS)
                           call remove_bond(use_connect,bond_H,bond_Si)
                        endif
                     enddo
@@ -359,7 +359,7 @@ logical :: silica_potential
                 call bfs_step(at,O_atom,O_neighb,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
                 !check nearest neighbour number = 2
                 if (O_neighb%N.ne.2) then
-                   call print('WARNING! silica O '//atom_i//'has '//O_neighb%N//'/=2 nearest neighbours',ERROR)
+                   call print('WARNING! silica O '//atom_i//'has '//O_neighb%N//'/=2 nearest neighbours',PRINT_ALWAYS)
                    call print('neighbours: '//O_neighb%int(1,1:O_neighb%N))
                 endif
                 !check if it has a H nearest neighbour
@@ -402,10 +402,10 @@ logical :: silica_potential
           atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
           atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
 call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_list%N))))
-          call print('Atomic charges: ',ANAL)
-          call print('   ATOM     CHARGE',ANAL)
+          call print('Atomic charges: ',PRINT_ANAL)
+          call print('   ATOM     CHARGE',PRINT_ANAL)
           do i=1,at%N
-             call print('   '//i//'   '//atom_charge(i),verbosity=ANAL)
+             call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANAL)
           enddo
 
           call finalise(atom_Si)
@@ -413,7 +413,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
           call finalise(SiOH_list)
 
        else
-          call print('WARNING! have_silica_potential is true, but found no silicon atoms in the atoms object!',ERROR)
+          call print('WARNING! have_silica_potential is true, but found no silicon atoms in the atoms object!',PRINT_ALWAYS)
        endif
 
     endif
@@ -440,7 +440,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
        pdb_res_name(n) = pres_name
 
        ! Search the atom structure for this residue
-       call print('|-Looking for '//cres_name//'...',verbosity=ANAL)
+       call print('|-Looking for '//cres_name//'...',verbosity=PRINT_ANAL)
        call find_motif(at,motif,list,mask=unidentified,nneighb_only=nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
@@ -481,7 +481,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 
        end if
 
-       call print('|',verbosity=ANAL)
+       call print('|',verbosity=PRINT_ANAL)
 
     end do
 
@@ -492,16 +492,16 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     call print(nres//' residues found in total')
 
     if (any(unidentified)) then
-       call print(count(unidentified)//' unidentified atoms',verbosity=ERROR)
+       call print(count(unidentified)//' unidentified atoms',verbosity=PRINT_ALWAYS)
        call print(find(unidentified))
        do i=1,at%N
 	  if (unidentified(i)) then
 	    call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
-	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=ERROR)
-	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=ERROR)
+	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=PRINT_ALWAYS)
+	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=PRINT_ALWAYS)
 	    do ji=1, atoms_n_neighbours(at, i)
 	      j = atoms_neighbour(at, i, ji)
-	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=ERROR)
+	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=PRINT_ALWAYS)
 	    end do
 	  endif
        enddo
@@ -748,7 +748,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !    if (abs(mod(check_charge,1.0_dp)).ge.0.0001_dp .and. &
 !        abs(mod(check_charge,1.0_dp)+1._dp).ge.0.0001_dp .and. &    !for -0.9999...
 !        abs(mod(check_charge,1.0_dp)-1._dp).ge.0.0001_dp) then    !for +0.9999...
-!       call print('WARNING next_motif: Charge of '//res_name//' residue is :'//round(check_charge,4),verbosity=ERROR)
+!       call print('WARNING next_motif: Charge of '//res_name//' residue is :'//round(check_charge,4),verbosity=PRINT_ALWAYS)
 !    endif
 
     allocate(motif(motif_table%N,7))
@@ -1019,7 +1019,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     call system_timer('write_psf_file_pos')
 
     !intraresidual impropers: table or read in from file
-    if (.not.present(intrares_impropers).and..not.present(imp_filename)) call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!',verbosity=ERROR)
+    if (.not.present(intrares_impropers).and..not.present(imp_filename)) call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!',verbosity=PRINT_ALWAYS)
     if (present(imp_filename)) then
        call system_abort('Not yet implemented.')
     endif
@@ -1089,7 +1089,7 @@ call print('PSF| '//bonds%n//' bonds')
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
-          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=ERROR)
+          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=PRINT_ALWAYS)
        enddo
        call system_abort('write_psf_file_pos: element(s) of angles not within (0;at%N]')
     endif
@@ -1537,7 +1537,7 @@ call print('PSF| '//impropers%n//' impropers')
     if (any(angles%int(1:3,1:angles%N).le.0) .or. any(angles%int(1:3,1:angles%N).gt.at%N)) then
        do i = 1, angles%N
           if (any(angles%int(1:3,i).le.0) .or. any(angles%int(1:3,i).gt.at%N)) &
-          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=ERROR)
+          call print('angle: '//angles%int(1,i)//' -- '//angles%int(2,i)//' -- '//angles%int(3,i),verbosity=PRINT_ALWAYS)
        enddo
        call system_abort('create_angle_list: element(s) of angles not within (0;at%N]')
     endif
@@ -1810,7 +1810,7 @@ call print('PSF| '//impropers%n//' impropers')
 !                      trim(ElementName(at%Z(intrares_impropers%int(4,i_impr))))//intrares_impropers%int(4,i_impr))
        enddo
     else
-       call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!!!',verbosity=ERROR)
+       call print('WARNING!!! NO INTRARESIDUAL IMPROPERS USED!!!',verbosity=PRINT_ALWAYS)
     endif
 
    ! final check
@@ -1860,7 +1860,7 @@ call print('PSF| '//impropers%n//' impropers')
 !    if (size(residue_names).ne.at%N) call system_abort('Residue names have a different size '//size(residue_names)//'then the number of atoms '//at%N)
 
     if (at%cutoff.lt.SILICON_2BODY_CUTOFF) call print('WARNING! The connection cutoff value '//at%cutoff// &
-       ' is less than the silica_cutoff. The charges can be totally wrong. Check your connection object.',ERROR)
+       ' is less than the silica_cutoff. The charges can be totally wrong. Check your connection object.',PRINT_ALWAYS)
 
     allocate(charge(at%N))
     charge = 0._dp
@@ -1882,7 +1882,7 @@ call print('PSF| '//impropers%n//' impropers')
 !                 ('TIP' .eq.trim(residue_names(atom_j)))) then
                  cycle
 !             else
-!                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=ERROR)
+!                call print('Not found atom '//ElementName(at%Z(atom_j))//' '//atom_j//' in '//SiOH_list%int(1,1:SiOH_list%N),verbosity=PRINT_ALWAYS)
 !                call print('Unknown residue '//trim(residue_names(atom_j)))
 !                call system_abort('Found a neighbour that is not part of the SiO2 residue')
 !             endif
@@ -1918,7 +1918,7 @@ call print('PSF| '//impropers%n//' impropers')
                       charge(atom_i) = charge(atom_i) - 0.4_dp * fcq
                       charge(atom_j) = charge(atom_j) + 0.4_dp * fcq
                    else
-                      call print(atom_i//trim(ElementName(at%Z(atom_i)))//'--'//atom_j//trim(ElementName(at%Z(atom_j)))//' of silica is none of H,O,Si!',verbosity=ERROR)
+                      call print(atom_i//trim(ElementName(at%Z(atom_i)))//'--'//atom_j//trim(ElementName(at%Z(atom_j)))//' of silica is none of H,O,Si!',verbosity=PRINT_ALWAYS)
                       call system_abort('create_pos_dep_charge: unknown neighbour pair')
                    endif
                 endif
@@ -1929,9 +1929,9 @@ call print('PSF| '//impropers%n//' impropers')
 
     deallocate(silica_mask)
 
-    call print('Calculated charge on atoms:',verbosity=ANAL)
+    call print('Calculated charge on atoms:',verbosity=PRINT_ANAL)
     do jj = 1, at%N
-       call print ('   atom '//jj//': '//charge(jj),verbosity=ANAL)
+       call print ('   atom '//jj//': '//charge(jj),verbosity=PRINT_ANAL)
     enddo
 
     call system_timer('create_pos_dep_charges')

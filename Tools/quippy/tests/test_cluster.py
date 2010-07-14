@@ -654,7 +654,7 @@ class TestCluster_SplitQM(QuippyTestCase):
    def test_split_qm_raises_runtime_error(self):
       # Split QM region by marking another atom
       self.at.hybrid_mark[107] = HYBRID_ACTIVE_MARK
-      verbosity_push(SILENT)
+      verbosity_push(PRINT_SILENT)
       self.assertRaises(RuntimeError, create_cluster_info_from_hybrid_mark, self.at, args_str(self.args))
       verbosity_pop()
   

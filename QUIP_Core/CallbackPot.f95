@@ -221,7 +221,7 @@ subroutine Callbackpot_Print(this, file)
   type(Callbackpot_type),    intent(in)           :: this
   type(Inoutput), intent(inout),optional,target:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call print("Callbackpot: callback_id="//this%callback_id)
   call print("Callbackpot: label="//this%label)

@@ -67,8 +67,8 @@ implicit none
   call param_register(cli_params, "over_bins", "F", over_bins)
   call param_register(cli_params, "over_time", "F", over_time)
   if (.not.param_read_args(cli_params, do_check=.true.)) then
-    call print("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F effective_N=F", ERROR)
-    call print("        correlation_max_lag=1000 correlation_effective_N_long_lag=1001 over_bins=F over_time=T", ERROR)
+    call print("Usage: "//trim(EXEC_NAME)//" infile=stdin outfile=stdout mean=F variance=F correlation=F effective_N=F", PRINT_ALWAYS)
+    call print("        correlation_max_lag=1000 correlation_effective_N_long_lag=1001 over_bins=F over_time=T", PRINT_ALWAYS)
     call system_abort("Unable to parse command line")
   endif
   call finalise(cli_params)

@@ -264,7 +264,7 @@ subroutine TS_Calc(this,metapot,niter,params,file, mpi)
     endif
     energy(i) = this%cos%image(i)%energy
     call print(this,i, file, mpi)
-    if(params%io_verbosity.gt.NORMAL) call print(this,i, forces_pot(i,:,:), mpi)
+    if(params%io_verbosity.gt.PRINT_NORMAL) call print(this,i, forces_pot(i,:,:), mpi)
   enddo
 
   lcheck = .false.
@@ -275,7 +275,7 @@ subroutine TS_Calc(this,metapot,niter,params,file, mpi)
 
     call calc_force_perp(this, forces_pot, tau, forces)
     do im = 1, this%cos%N 
-      call print('NEB: image ' // im // ' perpendicular REAL ' // (sqrt(sum(forces(im,:,:)*forces(im,:,:) )) ), NORMAL ) 
+      call print('NEB: image ' // im // ' perpendicular REAL ' // (sqrt(sum(forces(im,:,:)*forces(im,:,:) )) ), PRINT_NORMAL ) 
     enddo
 
     if(this%lneb) then
@@ -295,7 +295,7 @@ subroutine TS_Calc(this,metapot,niter,params,file, mpi)
       endif
 
       do im=1, this%cos%N 
-        call print('NEB: image ' // im // ' parallel spring ' // (sqrt(sum(forces_spring(im,:,:)*forces_spring(im,:,:) )) ), NORMAL) 
+        call print('NEB: image ' // im // ' parallel spring ' // (sqrt(sum(forces_spring(im,:,:)*forces_spring(im,:,:) )) ), PRINT_NORMAL) 
       enddo
 
     endif

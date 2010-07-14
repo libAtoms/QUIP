@@ -898,7 +898,7 @@ contains
     if (get_value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_INT .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -913,7 +913,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_int
 
@@ -934,7 +934,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_INT .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -949,7 +949,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_int_a
 
@@ -970,7 +970,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -985,7 +985,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_real
 
@@ -1006,7 +1006,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -1021,7 +1021,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_real_a
 
@@ -1039,7 +1039,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           this%data%real(use_lookup(2):use_lookup(3), 1:this%data%N) = value
           return
@@ -1056,7 +1056,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_real_2Da
 
@@ -1077,7 +1077,7 @@ contains
     if (get_value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_STR .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -1092,7 +1092,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_str
 
@@ -1113,7 +1113,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_STR .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -1128,7 +1128,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_str_a
 
@@ -1149,7 +1149,7 @@ contains
     if (get_value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_LOGICAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -1164,7 +1164,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_logical
 
@@ -1185,7 +1185,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_LOGICAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
           if (present(lookup)) lookup = use_lookup
           return
        else
@@ -1200,7 +1200,7 @@ contains
 
     ! Append column will have moved this%data in memory and invalidated pointers
     call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', VERBOSE)
+    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
 
   end subroutine atoms_add_property_logical_a
 
@@ -2215,8 +2215,8 @@ contains
        ! collect mpi results
        if (Nelements > 0) then
 	 call mpi_allreduce(mpi_send, mpi_recv, &
-	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, error)
-	 call abort_on_mpi_error(error, "Calc_Dists: MPI_ALL_REDUCE()")
+	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, PRINT_ALWAYS)
+	 call abort_on_mpi_error(PRINT_ALWAYS, "Calc_Dists: MPI_ALL_REDUCE()")
        end if
 
        mpi_pos = 1
@@ -2878,9 +2878,9 @@ contains
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL) then
-       call print('Entering test_form_bond, i = '//i//' j = '//j, ANAL)
-       call print('use_uniform_cutoff = '//use_uniform_cutoff, ANAL)
+    if(current_verbosity() >= PRINT_ANAL) then
+       call print('Entering test_form_bond, i = '//i//' j = '//j, PRINT_ANAL)
+       call print('use_uniform_cutoff = '//use_uniform_cutoff, PRINT_ANAL)
     end if
 #endif
 
@@ -2910,7 +2910,7 @@ contains
       index = find(this%neighbour1(i)%t, (/ j, shift /)) 
       if (index /= 0) then ! bond is already in table
 #ifdef DEBUG
-	if (current_verbosity() >= ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', ANAL)
+	if (current_verbosity() >= PRINT_ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANAL)
 #endif
 	this%neighbour1(i)%t%real(1,index) = d
 	return
@@ -2918,7 +2918,7 @@ contains
     endif
 
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL)  call print('d = '//d, ANAL)
+    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d, PRINT_ANAL)
 #endif
 
     if (d < use_cutoff) then
@@ -2926,7 +2926,7 @@ contains
     end if
 
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL) call print('Leaving test_form_bond', ANAL)
+    if(current_verbosity() >= PRINT_ANAL) call print('Leaving test_form_bond', PRINT_ANAL)
 #endif
 
   end subroutine test_form_bond
@@ -2953,9 +2953,9 @@ contains
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL) then
-       call print('Entering test_break_bond, i = '//i//' j = '//j, ANAL)
-       call print('use_uniform_cutoff = '//use_uniform_cutoff // " cutoff_break = "// cutoff_break, ANAL)
+    if(current_verbosity() >= PRINT_ANAL) then
+       call print('Entering test_break_bond, i = '//i//' j = '//j, PRINT_ANAL)
+       call print('use_uniform_cutoff = '//use_uniform_cutoff // " cutoff_break = "// cutoff_break, PRINT_ANAL)
     end if
 #endif
 
@@ -2968,18 +2968,18 @@ contains
 
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, ANAL)
+    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutoff = '//cutoff//' i = '//i//' j = '//j, PRINT_ANAL)
 #endif
     if (d > cutoff) then
 #ifdef DEBUG
-       if(current_verbosity() >= ANAL) call print('removing bond from tables', ANAL)
+       if(current_verbosity() >= PRINT_ANAL) call print('removing bond from tables', PRINT_ANAL)
 #endif
        call remove_bond(this, i, j, shift)
        test_break_bond = .true.
     end if
 
 #ifdef DEBUG
-    if(current_verbosity() >= ANAL) call print('Leaving test_break_bond', ANAL)
+    if(current_verbosity() >= PRINT_ANAL) call print('Leaving test_break_bond', PRINT_ANAL)
 #endif
 
   end function test_break_bond
@@ -3087,10 +3087,10 @@ contains
 	if (n_removed == 0) then
 	  if (present(shift)) then
 	    call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // &
-		       " couldn't find a bond to remove", ERROR)
+		       " couldn't find a bond to remove", PRINT_ALWAYS)
 	  else
 	    call print("WARNING: remove bond called for i " // i // " j " // j // &
-		       " couldn't find a bond to remove", ERROR)
+		       " couldn't find a bond to remove", PRINT_ALWAYS)
 	  endif
 	endif
       else ! r_index /= 0
@@ -3182,7 +3182,7 @@ contains
        cutoff = (2.0_dp * cutoff) * this%cutoff
     end if
 
-    call print("calc_connect: cutoff calc_connect " // cutoff, NERD)
+    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_NERD)
 
     if (present(origin) .and. present(extent)) then
       cellsNa = 1
@@ -3192,7 +3192,7 @@ contains
       call divide_cell(this%lattice, cutoff, cellsNa, cellsNb, cellsNc)
     endif
 
-    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, NERD)
+    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_NERD)
 
     ! If the lattice has changed, then the cells need de/reallocating
     if ((cellsNa /= use_connect%cellsNa) .or. &
@@ -3212,7 +3212,7 @@ contains
     ! half will go in neighbour1, half in neighbour2.
     nn_guess = int(0.5_dp*4.0_dp/3.0_dp*PI*cutoff**3*this%N/cell_volume(this%lattice)*cell_image_na*cell_image_nb*cell_image_nc)
 
-    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, NERD)
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, PRINT_NERD)
 
     ! Allocate space for the connection object if needed
     if (present(origin) .and. present(extent)) then
@@ -3408,11 +3408,11 @@ contains
        cutoff = (2.0_dp * cutoff) * this%cutoff
     end if
 
-    call print("calc_connect: cutoff calc_connect " // cutoff, VERBOSE)
+    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_VERBOSE)
 
     call divide_cell(this%lattice, cutoff, cellsNa, cellsNb, cellsNc)
 
-    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, VERBOSE)
+    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_VERBOSE)
 
     ! If the lattice has changed, then the cells need de/reallocating
     if ((cellsNa /= use_connect%cellsNa) .or. &
@@ -3428,7 +3428,7 @@ contains
     cell_image_Nb = max(1,(cell_image_Nb+1)/2)
     cell_image_Nc = max(1,(cell_image_Nc+1)/2)
 
-    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, VERBOSE)
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, PRINT_VERBOSE)
 
     ! Allocate space for the connection object if needed
     if (.not.use_connect%initialised) then
@@ -3463,8 +3463,8 @@ contains
        ! Sphere of radius "cutoff", assume roughly half neighbours in neighbour1 and half in neighbour2
        nn_guess = int(4.0_dp/3.0_dp*PI*cutoff**3*density)/2
 
-       call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), VERBOSE)
-       call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, VERBOSE)
+       call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), PRINT_VERBOSE)
+       call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, PRINT_VERBOSE)
 
        call connection_fill(use_connect, this%n, this%pos, this%lattice, this%g, nn_guess=nn_guess)
     end if
@@ -3670,7 +3670,7 @@ contains
       Nb = max(1,int( cellVol / (cutoff * norm(c .cross. a) ) ))
       Nc = max(1,int( cellVol / (cutoff * norm(a .cross. b) ) ))
 
-      call print('divide_cell: '//Na//'x'//Nb//'x'//Nc//' cells.', NERD)
+      call print('divide_cell: '//Na//'x'//Nb//'x'//Nc//' cells.', PRINT_NERD)
 
    end subroutine divide_cell
 
@@ -4096,7 +4096,7 @@ contains
 
       if(.not.this%initialised) call system_abort('Atoms_Print: Atoms structure not initialised')
 
-      if(current_verbosity() <= SILENT) return ! for efficiency
+      if(current_verbosity() <= PRINT_SILENT) return ! for efficiency
 
       if (present(file)) then
          my_out => file
@@ -4104,21 +4104,21 @@ contains
          my_out => mainlog
       end if
 
-      call print('Atoms Structure: ', NORMAL, my_out)
-      call print('Number of atoms = '//this%N, NORMAL, my_out)
+      call print('Atoms Structure: ', PRINT_NORMAL, my_out)
+      call print('Number of atoms = '//this%N, PRINT_NORMAL, my_out)
 
       if(this%use_uniform_cutoff) then
-         call print('Bond-formation cutoff radius = '//this%cutoff//' Angstroms', NORMAL, my_out)
-         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' Angstroms', NORMAL, my_out)
+         call print('Bond-formation cutoff radius = '//this%cutoff//' Angstroms', PRINT_NORMAL, my_out)
+         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' Angstroms', PRINT_NORMAL, my_out)
       else
-         call print('Bond-formation cutoff radius = '//this%cutoff//' *bond_length', NORMAL, my_out)
-         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' *bond_length', NORMAL, my_out)
+         call print('Bond-formation cutoff radius = '//this%cutoff//' *bond_length', PRINT_NORMAL, my_out)
+         call print('Bond-breaking cutoff radius = '//this%cutoff_break//' *bond_length', PRINT_NORMAL, my_out)
       end if
 
-      call print('Lattice vectors:', NORMAL, my_out)
-      call print('a = ('//this%lattice(:,1)//')', NORMAL, my_out)
-      call print('b = ('//this%lattice(:,2)//')', NORMAL, my_out)
-      call print('c = ('//this%lattice(:,3)//')', NORMAL, my_out)
+      call print('Lattice vectors:', PRINT_NORMAL, my_out)
+      call print('a = ('//this%lattice(:,1)//')', PRINT_NORMAL, my_out)
+      call print('b = ('//this%lattice(:,2)//')', PRINT_NORMAL, my_out)
+      call print('c = ('//this%lattice(:,3)//')', PRINT_NORMAL, my_out)
 
       if (present(properties)) then
 	 call print_xyz(this, my_out, properties=properties,human_readable=.true., real_format='f10.5')
@@ -4132,7 +4132,7 @@ contains
 	call verbosity_pop()
       end if
 
-      call print('',NORMAL, my_out)
+      call print('',PRINT_NORMAL, my_out)
    end subroutine atoms_print
 
 
@@ -4172,7 +4172,7 @@ contains
 
       ! Try to fill in species from Z
       if (all(this%species == repeat(' ',TABLE_STRING_LENGTH))) then
-         call print('atoms_print_xyz: filling in species from Z',VERBOSE)
+         call print('atoms_print_xyz: filling in species from Z',PRINT_VERBOSE)
          do i=1,this%N
             this%species(i) = ElementName(this%Z(i))
          end do
@@ -4605,7 +4605,7 @@ contains
 
       ! Set species from Z if we didn't read a species property from file
       if (.not. species_found) then
-         call print('Atoms_read_xyz: Setting species from Z', VERBOSE)
+         call print('Atoms_read_xyz: Setting species from Z', PRINT_VERBOSE)
          if (.not. Z_found) then
            call system_abort("Neither Z nor species found")
          endif
@@ -4619,7 +4619,7 @@ contains
       endif
       ! Set Z from species if we didn't read a Z property from file
       if (.not. Z_found) then
-         call print('Atoms_read_xyz: Setting Z from species', VERBOSE)
+         call print('Atoms_read_xyz: Setting Z from species', PRINT_VERBOSE)
          if (.not. species_found) then
            call system_abort("Neither Z nor species found")
          endif
@@ -5029,7 +5029,7 @@ contains
 
 
     !Print the cell lists if they exist
-    if (this%cells_initialised .and. current_verbosity() > NORMAL) then
+    if (this%cells_initialised .and. current_verbosity() > PRINT_NORMAL) then
        call verbosity_push_decrement()
 
        write(line,'(a11)')'Cell Lists:'
@@ -5420,7 +5420,7 @@ contains
 	      ! atoms with non-zero shift should not have been touched before
 	      if (touched(j)) then
 		if (present(stat)) then
-		  call print("ERROR: undo_pbcs tried to move atom " // j // " twice", ERROR)
+		  call print("ERROR: undo_pbcs tried to move atom " // j // " twice", PRINT_ALWAYS)
 		  stat = 1
 		else
 		  call system_abort("undo_pbcs tried to move atom " // j // " twice")
@@ -5598,14 +5598,14 @@ contains
 
     if (mpi%my_proc == 0) then
 
-       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, VERBOSE)
+       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_VERBOSE)
        call bcast(mpi, at%n)
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%data)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
     else
-       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, VERBOSE)
+       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, PRINT_VERBOSE)
        call finalise(at)
        call bcast(mpi, at%n)
        call bcast(mpi, at%lattice)

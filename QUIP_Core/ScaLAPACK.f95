@@ -201,7 +201,7 @@ subroutine ScaLAPACK_Initialise(this, MPI_obj)
       this%blacs_context = MPI_obj%communicator
 
       call calc_n_proc_rows_cols(this%MPI_obj%n_procs, this%n_proc_rows, this%n_proc_cols)
-      call print("ScaLAPACK_Initialise using proc grid " // this%n_proc_rows // " x " // this%n_proc_cols, VERBOSE)
+      call print("ScaLAPACK_Initialise using proc grid " // this%n_proc_rows // " x " // this%n_proc_cols, PRINT_VERBOSE)
 
       call blacs_gridinit (this%blacs_context, 'R', this%n_proc_rows, this%n_proc_cols)
       call blacs_gridinfo (this%blacs_context, this%n_proc_rows, this%n_proc_cols, this%my_proc_row, this%my_proc_col)
@@ -588,28 +588,28 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
     iwork, liwork, ifail, icluster, gap, info)
 
   if (info .ne. 0) then
-      call print("ScaLAPACK_diagonalise_r got info " // info, ERROR)
+      call print("ScaLAPACK_diagonalise_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", ERROR)
+	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-          call print("   eigenvectors failed to orthogonalize", ERROR)
+          call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
 	  do i=1, size(icluster), 2
 	      if (icluster(i) /= 0) then
 	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", ERROR)
+		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
 	      else
 	          exit
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", ERROR)
+	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", ERROR)
+	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), ERROR)
+	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -623,7 +623,7 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
     if (present(err)) then
       err = info
-      call print("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, ERROR)
+      call print("ScaLAPACK_diagonalise_r: Failed to diagonalise info="//info, PRINT_ALWAYS)
     else
       call system_abort("ScaLAPACK_diagonalise_r: Failed to diagonalise")
     endif
@@ -699,28 +699,28 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
     rwork, lrwork, iwork, liwork, ifail, icluster, gap, info)
 
   if (info .ne. 0) then
-      call print("ScaLAPACK_diagonlise_c got info " // info, ERROR)
+      call print("ScaLAPACK_diagonlise_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", ERROR)
+	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-          call print("   eigenvectors failed to orthogonalize", ERROR)
+          call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
 	  do i=1, size(icluster), 2
 	      if (icluster(i) /= 0) then
 	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", ERROR)
+		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
 	      else
 	          exit
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", ERROR)
+	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", ERROR)
+	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), ERROR)
+	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -735,7 +735,7 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
     if (present(err)) then
       err = info
-      call print("ScaLAPACK_diagonalise_c: Failed to diagonalise info="//info, ERROR)
+      call print("ScaLAPACK_diagonalise_c: Failed to diagonalise info="//info, PRINT_ALWAYS)
     else
       call system_abort("ScaLAPACK_diagonalise_c: Failed to diagonalise")
     endif
@@ -809,38 +809,38 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
 ! " shape(overlap_data_copy) " // shape(overlap_data_copy) // " shape(evals) " // shape(evals) // &
 ! " shape(evecs_data) "  // shape(evecs_data) // " shape(work) " // shape(work) // " lwork " // lwork // &
 ! " shape(iwork) " // shape(iwork) // " liwork " // liwork //  " shape(ifail) " // shape(ifail) // &
-! " shape(icluster) " // shape(icluster), ERROR)
+! " shape(icluster) " // shape(icluster), PRINT_ALWAYS)
   call pdsygvx(1, 'V', 'A', 'U', this%N_R, &
     data_copy, 1, 1, this%desc, &
     overlap_data_copy, 1, 1, overlap_ScaLAPACK_obj%desc, &
     0.0_dp, 0.0_dp, 1, 1, -1.0_dp, M, NZ, evals, &
     orfac, evecs_data, 1, 1, evecs_ScaLAPACK_obj%desc, work, lwork, &
     iwork, liwork, ifail, icluster, gap, info)
-! call print("done pdsygvx", ERROR)
+! call print("done pdsygvx", PRINT_ALWAYS)
 
   if (info .ne. 0) then
-      call print("ScaLAPACK_diagonlise_gen_r got info " // info, ERROR)
+      call print("ScaLAPACK_diagonlise_gen_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", ERROR)
+	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-	  call print("   eigenvectors failed to orthogonalize", ERROR)
+	  call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
 	  do i=1, size(icluster), 2
 	      if (icluster(i) /= 0) then
 	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", ERROR)
+		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
 	      else
 	          exit
 	      endif
 	  end do
 	  do i=1, this%N_R
-	      call print(" eigenvalue " // i // " " // evals(i), ANAL)
+	      call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
 	  end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", ERROR)
+	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", ERROR)
+	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), ERROR)
+	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -856,7 +856,7 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
     if (present(err)) then
       err = info
-      call print("ScaLAPACK_diagonalise_gen_r: Failed to diagonalise info="//info, ERROR)
+      call print("ScaLAPACK_diagonalise_gen_r: Failed to diagonalise info="//info, PRINT_ALWAYS)
     else
       call system_abort("ScaLAPACK_diagonalise_gen_r: Failed to diagonalise")
     endif
@@ -939,28 +939,28 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
     rwork, lrwork, iwork, liwork, ifail, icluster, gap, info)
 
   if (info .ne. 0) then
-      call print("ScaLAPACK_diagonlise_gen_c got info " // info, ERROR)
+      call print("ScaLAPACK_diagonlise_gen_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", ERROR)
+	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-          call print("   eigenvectors failed to orthogonalize", ERROR)
+          call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
 	  do i=1, size(icluster), 2
 	      if (icluster(i) /= 0) then
 	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", ERROR)
+		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
 	      else
 	          exit
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", ERROR)
+	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", ERROR)
+	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), ERROR)
+	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -976,7 +976,7 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   if (M /= this%N_R .or. NZ /= this%N_R) then ! bad enough error to report
     if (present(err)) then
       err = info
-      call print("ScaLAPACK_diagonalise_gen_c: Failed to diagonalise info="//info, ERROR)
+      call print("ScaLAPACK_diagonalise_gen_c: Failed to diagonalise info="//info, PRINT_ALWAYS)
     else
       call system_abort("ScaLAPACK_diagonalise_gen_c: Failed to diagonalise")
     endif

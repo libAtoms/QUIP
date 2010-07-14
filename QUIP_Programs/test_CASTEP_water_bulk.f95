@@ -84,11 +84,11 @@ implicit none
 
   call calc_connect(bulk)
 
-  call print("past calc_connect(bulk)", ERROR)
+  call print("past calc_connect(bulk)", PRINT_ALWAYS)
 
   ! create qm and mm lists
   do i=1, bulk%N
-    if (mod(i,1000) == 1) call print("creating qm and mm lists for atom " // i, ERROR)
+    if (mod(i,1000) == 1) call print("creating qm and mm lists for atom " // i, PRINT_ALWAYS)
     if (bulk%Z(i) == 8) then
       r = distance_min_image(bulk, i, qm_center_i)
       if (r <= r_qm) then
@@ -109,7 +109,7 @@ implicit none
     endif
   end do
 
-  call print("past creating cluster_mm and cluster_qm", ERROR)
+  call print("past creating cluster_mm and cluster_qm", PRINT_ALWAYS)
 
   ! move qm_center to origin
   do i=1, cluster_qm%N
@@ -119,19 +119,19 @@ implicit none
     cluster_mm%pos(:,i) = cluster_mm%pos(:,i) - bulk%pos(:,qm_center_i)
   end do
 
-  call print("past shifting positions cluster_mm and cluster_qm", ERROR)
+  call print("past shifting positions cluster_mm and cluster_qm", PRINT_ALWAYS)
 
   ! map back into cell with original (bulk) lattice
   call map_into_cell(cluster_mm)
   call map_into_cell(cluster_qm)
 
-  call print("past map_into_cell positions cluster_mm and cluster_qm", ERROR)
+  call print("past map_into_cell positions cluster_mm and cluster_qm", PRINT_ALWAYS)
 
   call calc_connect(cluster_mm)
-  call print("past calc_connect cluster_mm", ERROR)
+  call print("past calc_connect cluster_mm", PRINT_ALWAYS)
   ! make sure MM molecules aren't broken up by PBCs
   do i=1, cluster_mm%N, 3
-    if (mod(i,1000) == 1) call print("coalescing molecule for atom " // i, ERROR)
+    if (mod(i,1000) == 1) call print("coalescing molecule for atom " // i, PRINT_ALWAYS)
     call coalesce_in_one_periodic_image(cluster_mm, i)
   end do
 
@@ -143,8 +143,8 @@ implicit none
   lat(3,3) = (maxval(cluster_qm%pos(3,:))-minval(cluster_qm%pos(3,:)))+vacuum
   call set_lattice(cluster_qm, lat, scale_positions=.false.)
 
-  call print("lat", ERROR)
-  call print(lat, ERROR)
+  call print("lat", PRINT_ALWAYS)
+  call print(lat, PRINT_ALWAYS)
 
   do i=1, cluster_qm%N
     cluster_qm%pos(:,i) = cluster_qm%pos(:,i) + sum(lat,2)/2.0_dp

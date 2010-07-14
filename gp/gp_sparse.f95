@@ -2007,7 +2007,7 @@ deallocate(diff_xijt)
                if(lklhd_new > lklhd_old) exit
             enddo
             lklhd(ml(1)) = lklhd_new
-            !call print('Iteration: '//i//', function value dropped: '//lklhd_old,verbosity=NORMAL)
+            !call print('Iteration: '//i//', function value dropped: '//lklhd_old,verbosity=PRINT_NORMAL)
          enddo
 
          ml = maxloc(lklhd)
@@ -2054,8 +2054,8 @@ deallocate(diff_xijt)
         real(dp), dimension(:), allocatable   :: e, x_temp
         real(dp), dimension(:,:), allocatable :: x_hold
 
-        call print_title('Nested sampling',verbosity=NORMAL)
-        call print('Number of variables is '//size(x_inout),verbosity=NORMAL)
+        call print_title('Nested sampling',verbosity=PRINT_NORMAL)
+        call print('Number of variables is '//size(x_inout),verbosity=PRINT_NORMAL)
 
         ns = .false.
         e_old_prev = huge(1.0_dp)
@@ -2092,8 +2092,8 @@ deallocate(diff_xijt)
               x_max = maxval( x_hold, dim=2)
            endif
 
-           call print('Iteration: '//iter//', function value dropped: '//e_old,verbosity=NORMAL)
-           call print('Point dropped: '//x_temp(:),verbosity=NORMAL)
+           call print('Iteration: '//iter//', function value dropped: '//e_old,verbosity=PRINT_NORMAL)
+           call print('Point dropped: '//x_temp(:),verbosity=PRINT_NORMAL)
 
            e_old_prev = e_old
         enddo

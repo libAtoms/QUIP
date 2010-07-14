@@ -43,7 +43,7 @@ program metapot_test
   real(dp), allocatable :: f1(:,:), f2(:,:)
   integer, pointer :: hybrid(:), hybrid_mark(:)
 
-  call system_initialise(VERBOSE,seed=2)
+  call system_initialise(PRINT_VERBOSE,seed=2)
   call initialise(xml, 'metapot_test_params.xml')
   call initialise(pot1, 'IP SW label="PRB_31_plus_H"', xml)
   call rewind(xml)

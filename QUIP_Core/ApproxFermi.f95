@@ -102,7 +102,7 @@ subroutine ApproxFermi_Print(this,out)
 
   if (this%n_poles > 0) then
     do i=1, size(this%a)
-      call Print ('GreensFunc : a z ' //  i // ' ' // this%a(i) // ' ' // this%z(i), VERBOSE, out)
+      call Print ('GreensFunc : a z ' //  i // ' ' // this%a(i) // ' ' // this%z(i), PRINT_VERBOSE, out)
     end do
   endif
 

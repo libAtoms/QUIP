@@ -104,7 +104,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
                                           [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
                                             0.18959684]])
 
-         verbosity_push(SILENT)
+         verbosity_push(PRINT_SILENT)
 
       def tearDown(self):
          verbosity_pop()
@@ -290,7 +290,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
          self.pot = Potential('IP SW', self.xml)
          self.metapot = MetaPotential('Simple', self.pot)
-         verbosity_push(SILENT)
+         verbosity_push(PRINT_SILENT)
 
       def tearDown(self):
          verbosity_pop()

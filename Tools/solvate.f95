@@ -52,8 +52,8 @@ program solvate
   real(dp)                    :: shift(3)
   real(dp), pointer           :: pos_p(:,:), avgpos_p(:,:)
 
-  call system_initialise(verbosity=SILENT)
-  call verbosity_push(NORMAL)
+  call system_initialise(verbosity=PRINT_SILENT)
+  call verbosity_push(PRINT_NORMAL)
 
   call initialise(cli_params)
   call param_register(cli_params,"file","stdin", filename)

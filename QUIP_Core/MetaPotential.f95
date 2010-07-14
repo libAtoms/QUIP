@@ -235,12 +235,12 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   end if
 
   if (this%is_simple) then
-    if (present(bulk_scale)) call print("MetaPotential_initialise Simple ignoring bulk_scale passed in", ERROR)
+    if (present(bulk_scale)) call print("MetaPotential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
 
     this%pot => pot
 
   else if (this%is_sum) then
-    if (present(bulk_scale)) call print("MetaPotential_initialise Sum ignoring bulk_scale passed in", ERROR)
+    if (present(bulk_scale)) call print("MetaPotential_initialise Sum ignoring bulk_scale passed in", PRINT_ALWAYS)
 
     if (.not. present(pot2)) &
       call system_abort('MetaPotential_initialise: two potentials needs for sum metapotential')
@@ -441,7 +441,6 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     character, allocatable :: am_data(:)
     character, dimension(1) :: am_mold
 
-
     am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
 
@@ -554,7 +553,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
        n_iter = minim(x, energy_func, gradient_func, method, convergence_tol, max_steps, linminroutine, &
             print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
     endif
-    call print("minim relax w.r.t. both n_iter " // n_iter, VERBOSE)
+    call print("minim relax w.r.t. both n_iter " // n_iter, PRINT_VERBOSE)
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
     call calc_connect(am%minim_at)
@@ -563,7 +562,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     deallocate(am%last_connect_x)
     deallocate(x)
     call print("MINIM_N_EVAL E " // am%minim_n_eval_e // " F " // am%minim_n_eval_f // &
-      " EF " // am%minim_n_eval_ef, VERBOSE)
+      " EF " // am%minim_n_eval_ef, PRINT_VERBOSE)
 
     metapotential_minim = n_iter_tot
 
@@ -842,7 +841,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     max_atom_rij_change = max_rij_change(am%last_connect_x, x, cutoff(am%minim_metapot), &
       1.0_dp/am%pos_lat_preconditioner_factor)
 
-    call print("energy_func got x " // x, NERD)
+    call print("energy_func got x " // x, PRINT_NERD)
 
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -851,23 +850,23 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     ! Note: TB will return 0 for cutoff(am%minim_metapot), but TB does its own calc_connect, so doesn't matter
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_metapot)) then
       call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
-        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_connect(am%minim_at)
       am%last_connect_x = x
     else
       call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
-        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_dists(am%minim_at)
     end if
 
-    call print("energy_func using am%minim_at", NERD)
-    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
+    call print("energy_func using am%minim_at", PRINT_NERD)
+    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
 
     call calc(am%minim_metapot, am%minim_at, e = energy_func, args_str = am%minim_args_str)
-    call print ("energy_func got energy " // energy_func, NERD)
+    call print ("energy_func got energy " // energy_func, PRINT_NERD)
 
     energy_func = energy_func + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
-    call print ("energy_func got enthalpy " // energy_func, NERD)
+    call print ("energy_func got enthalpy " // energy_func, PRINT_NERD)
 
     call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
@@ -912,7 +911,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     max_atom_rij_change = max_rij_change(am%last_connect_x, x, cutoff(am%minim_metapot), &
       1.0_dp/am%pos_lat_preconditioner_factor)
 
-    if (current_verbosity() >= NERD) call print("gradient_func got x " // x, NERD)
+    if (current_verbosity() >= PRINT_NERD) call print("gradient_func got x " // x, PRINT_NERD)
 
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -921,16 +920,16 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     ! Note: TB will return 0 for cutoff(am%minim_metapot), but TB does its own calc_connect, so doesn't matter
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_metapot)) then
       call print("gradient_func: Do calc_connect, atoms moved " // max_atom_rij_change // &
-        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        "*1.1 >= buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_connect(am%minim_at)
       am%last_connect_x = x
     else
       call print("gradient_func: Do calc_dists, atoms moved " // max_atom_rij_change // &
-        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        " *1.1 < buffer " // (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_dists(am%minim_at)
     end if
 
-    if (current_verbosity() >= NERD) call add_property(am%minim_at, "force", 0.0_dp, 3)
+    if (current_verbosity() >= PRINT_NERD) call add_property(am%minim_at, "force", 0.0_dp, 3)
 
     allocate(f(3,am%minim_at%N))
     f = 0.0_dp
@@ -943,8 +942,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
       call calc(am%minim_metapot, am%minim_at, virial = virial, args_str = am%minim_args_str)
     endif
 
-    call print("gradient_func used am%minim_at, got forces", NERD)
-    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
+    call print("gradient_func used am%minim_at, got forces", PRINT_NERD)
+    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
 
     ! zero forces if fixed by metapotential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_metapot", fixed_metapot)) then
@@ -960,14 +959,14 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
        end do
     end if
 
-    call print ("gradient_func got f", NERD)
-    call print(f, NERD)
-    call print ("gradient_func got virial", NERD)
-    call print(virial, NERD)
+    call print ("gradient_func got f", PRINT_NERD)
+    call print(f, PRINT_NERD)
+    call print ("gradient_func got virial", PRINT_NERD)
+    call print(virial, PRINT_NERD)
 
     virial = virial - am%external_pressure*cell_volume(am%minim_at)
-    call print ("gradient_func got virial, external pressure subtracted", NERD)
-    call print(virial, NERD)
+    call print ("gradient_func got virial, external pressure subtracted", PRINT_NERD)
+    call print(virial, PRINT_NERD)
 
     f = transpose(deform_grad) .mult. f
 
@@ -978,9 +977,9 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     virial = merge(0.0_dp, virial, am%lattice_fix)
 
     call pack_pos_dg(-f, -virial, gradient_func, 1.0_dp/am%pos_lat_preconditioner_factor)
-    if (current_verbosity() >= NERD) then
-      call print ("gradient_func packed as", NERD)
-      call print (gradient_func, NERD)
+    if (current_verbosity() >= PRINT_NERD) then
+      call print ("gradient_func packed as", PRINT_NERD)
+      call print (gradient_func, PRINT_NERD)
     endif
 
     t_i = maxloc(abs(f))
@@ -1034,7 +1033,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
       1.0_dp/am%pos_lat_preconditioner_factor)
 max_atom_rij_change = 1.038_dp
 
-    call print("both_func got x " // x, NERD)
+    call print("both_func got x " // x, PRINT_NERD)
 
     call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
@@ -1043,17 +1042,17 @@ max_atom_rij_change = 1.038_dp
     ! Note: TB will return 0 for cutoff(am%minim_metapot), but TB does its own calc_connect, so doesn't matter
     if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_metapot)) then
       call print("both_func: Do calc_connect, atoms moved " // max_atom_rij_change // "*1.1 >= buffer " // &
-        (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_connect(am%minim_at)
       am%last_connect_x = x
     else
       call print("both_func: Do calc_dists, atoms moved " // max_atom_rij_change // " *1.1 < buffer " // &
-        (am%minim_at%cutoff - cutoff(am%minim_metapot)), NERD)
+        (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
       call calc_dists(am%minim_at)
     end if
 
-    call print("both_func using am%minim_at", NERD)
-    if (current_verbosity() >= NERD) call print_xyz(am%minim_at,mainlog,real_format="f10.6")
+    call print("both_func using am%minim_at", PRINT_NERD)
+    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f10.6")
 
     allocate(f(3,am%minim_at%N))
     f = 0.0_dp
@@ -1066,17 +1065,17 @@ max_atom_rij_change = 1.038_dp
       call calc(am%minim_metapot, am%minim_at, e = val, virial = virial, args_str = am%minim_args_str)
     endif
 
-    call print ("both_func got f", NERD)
-    call print(f, NERD)
-    call print ("both_func got virial", NERD)
-    call print(virial, NERD)
+    call print ("both_func got f", PRINT_NERD)
+    call print(f, PRINT_NERD)
+    call print ("both_func got virial", PRINT_NERD)
+    call print(virial, PRINT_NERD)
 
     virial = virial - am%external_pressure*cell_volume(am%minim_at)
-    call print ("both_func got virial, external pressure subtracted", NERD)
-    call print(virial, NERD)
+    call print ("both_func got virial, external pressure subtracted", PRINT_NERD)
+    call print(virial, PRINT_NERD)
 
     val = val + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
-    call print ("both_func got enthalpy " // val, NERD)
+    call print ("both_func got enthalpy " // val, PRINT_NERD)
     ! zero forces if fixed by metapotential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_metapot", fixed_metapot)) then
       do i=1, am%minim_at%N
@@ -1097,8 +1096,8 @@ max_atom_rij_change = 1.038_dp
     virial = virial .mult. transpose(deform_grad_inv)
 
     call pack_pos_dg(-f, -virial, grad, 1.0_dp/am%pos_lat_preconditioner_factor)
-    call print ("both_func gradient packed as", NERD)
-    call print (grad, NERD)
+    call print ("both_func gradient packed as", PRINT_NERD)
+    call print (grad, PRINT_NERD)
 
     t_i = maxloc(abs(f))
     call print ("both_func got max force component " // f(t_i(1),t_i(2)) // " on atom " // t_i(2) // &
@@ -1124,7 +1123,7 @@ max_atom_rij_change = 1.038_dp
     real(dp) :: F0(3,3), F0_evals(3), dF(3,3), dF_evals(3)
 
     call print("max_rij_change, size(last_connect_x) " // size(last_connect_x) // &
-      " size(x) " // size(x), NERD)
+      " size(x) " // size(x), PRINT_NERD)
     if (size(last_connect_x) == size(x)) then
       F0 = lat_factor*reshape(last_connect_x(1:9), (/ 3,3 /))
       dF = lat_factor*reshape(x(1:9), (/ 3,3 /)) - F0
@@ -1134,7 +1133,7 @@ max_atom_rij_change = 1.038_dp
       dF_evals = sqrt(dF_evals)
       call print("max_rij_change = " // maxval(abs(F0_evals)) //"*2.0_dp*"// &
         maxval(abs(last_connect_x-x))*sqrt(3.0_dp)  // &
-        " + " // maxval(abs(dF_evals))//"*"//r_cut, VERBOSE)
+        " + " // maxval(abs(dF_evals))//"*"//r_cut, PRINT_VERBOSE)
       max_rij_change = maxval(abs(F0_evals))*2.0_dp*maxval(abs(last_connect_x-x))*sqrt(3.0_dp) + &
                  maxval(abs(dF_evals))*r_cut
     else

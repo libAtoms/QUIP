@@ -9,7 +9,7 @@ implicit none
 
   type(Atoms) :: dup_cell
 
-  call system_initialise(verbosity=SILENT)
+  call system_initialise(verbosity=PRINT_SILENT)
 
   call initialise(cli_params)
   call param_register(cli_params,"struct", PARAM_MANDATORY, struct)
@@ -19,11 +19,11 @@ implicit none
   call param_register(cli_params,"repeat", "1 1 1", repeat)
   call param_register(cli_params,"Z_values", "", Z_values_str)
   if (.not. param_read_args(cli_params, do_check=.true.)) then
-    call print("Usage: make_bulk_supercell struct=[struct_name] outfile=[filename](stdout)", ERROR)
-    call print("       [ vol_per_atom=volume | vol_per_unit_cell=volume ] [ repeat='n1 n2 n3'(1 1 1) ]", ERROR)
-    call print("       [ Z_values='Z1 Z2 ...' ]", ERROR)
-    call print("In addition, struct names that do not begin with . or / will be searched for", ERROR)
-    call print("  in $QUIP_DIR/structures/ or $HOME/share/quip_structures/, in that order", ERROR)
+    call print("Usage: make_bulk_supercell struct=[struct_name] outfile=[filename](stdout)", PRINT_ALWAYS)
+    call print("       [ vol_per_atom=volume | vol_per_unit_cell=volume ] [ repeat='n1 n2 n3'(1 1 1) ]", PRINT_ALWAYS)
+    call print("       [ Z_values='Z1 Z2 ...' ]", PRINT_ALWAYS)
+    call print("In addition, struct names that do not begin with . or / will be searched for", PRINT_ALWAYS)
+    call print("  in $QUIP_DIR/structures/ or $HOME/share/quip_structures/, in that order", PRINT_ALWAYS)
     call system_abort("Failed to parse command line arguments")
   endif
   call finalise(cli_params)

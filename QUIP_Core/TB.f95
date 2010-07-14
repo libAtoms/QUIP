@@ -252,7 +252,7 @@ subroutine TB_Print(this, file)
   type(TB_type),    intent(in)           :: this
   type(Inoutput), intent(inout),optional,target:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print('TB : ', file=file)
 
@@ -375,23 +375,23 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
     if (my_use_prev_charge) then
 
       if (assign_pointer(this%at, 'local_N', local_N)) then
-	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_N", VERBOSE)
+	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_N", PRINT_VERBOSE)
       else
-	call print("TB_solve_diag got use_prev_charge, but no local_N value is defined", ERROR)
+	call print("TB_solve_diag got use_prev_charge, but no local_N value is defined", PRINT_ALWAYS)
       endif
       if (assign_pointer(this%at, 'local_mom', local_mom)) then
-	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_mom", VERBOSE)
+	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_mom", PRINT_VERBOSE)
       else
-	call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", ERROR)
+	call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", PRINT_ALWAYS)
       endif
       call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom)
 
       if (get_value(this%at%params, 'global_N', global_N)) then
-	call print("TB_solve_diag calling set_global_N(this%tbsys%scf from this%at:global_N", VERBOSE)
+	call print("TB_solve_diag calling set_global_N(this%tbsys%scf from this%at:global_N", PRINT_VERBOSE)
 	call scf_set_global_N(this%tbsys, w_n, global_N)
       else
 	call scf_set_global_N(this%tbsys, w_n)
-	call print("TB_solve_diag got use_prev_charge, but no global_N value is defined", ERROR)
+	call print("TB_solve_diag got use_prev_charge, but no global_N value is defined", PRINT_ALWAYS)
       endif
 
     else
@@ -468,7 +468,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
     endif
     iter = iter + 1
 
-    if (current_verbosity() >= VERBOSE) then
+    if (current_verbosity() >= PRINT_VERBOSE) then
       if (this%tbsys%scf%active) then
 	if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom)) &
 	   call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom)
@@ -485,7 +485,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   end do
 
   if (.not. scf_converged) then
-    call print("WARNING: TB_solve_diag failed to converge SCF in TB_solve_diag", ERROR)
+    call print("WARNING: TB_solve_diag failed to converge SCF in TB_solve_diag", PRINT_ALWAYS)
     if (present(err)) err = -1
   endif
 
@@ -558,9 +558,9 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
   endif
   call setup_atoms(this, at, noncollinear, args_str)
 
-  if(current_verbosity() > NERD) then
+  if(current_verbosity() > PRINT_NERD) then
      call initialise(atomslog, "tb_calc_atomslog.xyz", action=OUTPUT, append=.true.)
-     call verbosity_set_minimum(VERBOSE)
+     call verbosity_set_minimum(PRINT_VERBOSE)
      call print_xyz(this%at, atomslog)
      call verbosity_unset_minimum()
      call finalise(atomslog)
@@ -693,21 +693,21 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
 
   call system_timer("TB_calc_diag")
   call system_timer("TB_calc_diag/prep")
-  call print("TB_calc_diag starting", VERBOSE)
+  call print("TB_calc_diag starting", PRINT_VERBOSE)
 
   if (.not. assign_pointer(this%at, "weight", w_e)) then
     nullify(w_e)
   else
-    call print("Using weight from atom properties for w_e", VERBOSE)
+    call print("Using weight from atom properties for w_e", PRINT_VERBOSE)
   endif
   if (.not. assign_pointer(this%at, "weight_n", w_n)) then
     if (.not. assign_pointer(this%at, "weight", w_n)) then
       nullify(w_n)
     else
-      call print("Using weight from atom properties for w_n", VERBOSE)
+      call print("Using weight from atom properties for w_n", PRINT_VERBOSE)
     endif
   else
-    call print("Using weight_n from atom properties for w_n", VERBOSE)
+    call print("Using weight_n from atom properties for w_n", PRINT_VERBOSE)
   endif
 
   if (associated(w_e) .and. (present(forces) .or. present(virial))) then
@@ -742,7 +742,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   u_do_evecs = optional_default(.false., do_evecs) .or. present(forces) .or. present(virial) .or. &
 	     do_local_e .or. associated(w_e) .or. &
 	     do_local_N .or. associated(w_n) .or. this%tbsys%scf%active
-  if (u_do_evecs) call print("evecs are needed", VERBOSE)
+  if (u_do_evecs) call print("evecs are needed", PRINT_VERBOSE)
 
   if (.not. has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str)) &
     call system_abort("TB_calc_diag called without fermi_T for a TB model without default fermi T")
@@ -756,13 +756,13 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   call finalise(params)
 
   call system_timer("TB_calc_diag/solve_diag")
-  call print("TB_calc_diag solve_diag", VERBOSE)
+  call print("TB_calc_diag solve_diag", PRINT_VERBOSE)
   call solve_diag(this, u_do_evecs, use_fermi_e, Fermi_E, w_n, use_prev_charge=use_prev_charge, AF=AF, err=err)
   call system_timer("TB_calc_diag/solve_diag")
 
   if (present(err)) then
     if (err /= 0) then
-      call print("TB_calc got err " // err // " from solve_diag", ERROR)
+      call print("TB_calc got err " // err // " from solve_diag", PRINT_ALWAYS)
       call system_timer("TB_calc_diag")
       return
     endif
@@ -789,13 +789,13 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   call calc_E_fillings(this, use_fermi_E, fermi_E, AF, w_n)
   call system_timer("TB_calc_diag/calc_EFV/calc_E_fillings")
   if (present(AF)) then
-    call print("TB_calc_diag using AF Fermi_E " // AF%Fermi_E // " band_width " // AF%band_width // " n_poles " // AF%n_poles, VERBOSE)
+    call print("TB_calc_diag using AF Fermi_E " // AF%Fermi_E // " band_width " // AF%band_width // " n_poles " // AF%n_poles, PRINT_VERBOSE)
   else
-    call print("TB_calc_diag has Fermi_E " // this%Fermi_E // " Fermi_T " // this%Fermi_T, VERBOSE)
+    call print("TB_calc_diag has Fermi_E " // this%Fermi_E // " Fermi_T " // this%Fermi_T, PRINT_VERBOSE)
   endif
 
   if (do_local_e .or. associated(w_e) .or. do_local_N .or. associated(w_n)) then
-    call print("TB_calc_diag calculating per atom stuff", VERBOSE)
+    call print("TB_calc_diag calculating per atom stuff", PRINT_VERBOSE)
     call system_timer("TB_calc_diag/calc_EFV/calc_dm_for_local_stuff")
     call calc_dm_from_evecs(this, .false.)
     call system_timer("TB_calc_diag/calc_EFV/calc_dm_for_local_stuff")
@@ -811,7 +811,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
     call calc_local_atomic_energy(this, u_local_e)
     call local_scf_e_correction(this%tbsys, this%at, local_e_scf, global_e_scf, w_n)
     call print("TB_calc_diag got sum(local_energies) eval " // sum(u_local_e) // &
-	       " scf " // sum(local_e_scf) // " rep " // sum(local_e_rep), VERBOSE)
+	       " scf " // sum(local_e_scf) // " rep " // sum(local_e_rep), PRINT_VERBOSE)
     u_local_e = u_local_e + local_e_scf + local_e_rep
 
     if (associated(w_e)) then
@@ -833,13 +833,13 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
     u_e = ksum_dup(this%tbsys%kpoints, sum(this%evals%data_d*this%E_fillings%data_d,dim=1))
     u_e_rep = sum(local_e_rep)
     u_e_scf = scf_e_correction(this%tbsys, this%at, w_n)
-    call print("TB_calc_diag got energies eval " // u_e // " scf " // u_e_scf // " rep " // u_e_rep, VERBOSE)
+    call print("TB_calc_diag got energies eval " // u_e // " scf " // u_e_scf // " rep " // u_e_rep, PRINT_VERBOSE)
     TB_calc_diag = u_e + u_e_rep + u_e_scf
     call system_timer("TB_calc_diag/calc_EFV/E_calc")
   endif
 
   if (present(forces) .or. present(virial)) then
-    call print("TB_calc_diag calculating forces", VERBOSE)
+    call print("TB_calc_diag calculating forces", PRINT_VERBOSE)
     call calc_F_fillings(this, .not. this%tbsys%tbmodel%is_orthogonal, AF)
     call system_timer("TB_calc_diag/calc_EFV/calc_dm_for_FV")
     call calc_dm_from_evecs(this, .true.)
@@ -864,7 +864,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
 
   call system_timer("TB_calc_diag/calc_EFV")
   call system_timer("TB_calc_diag")
-  call print("TB_calc_diag ending", VERBOSE)
+  call print("TB_calc_diag ending", PRINT_VERBOSE)
 
 end function TB_calc_diag
 
@@ -899,7 +899,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   logical :: do_local_e, do_local_N
 
   call system_timer("TB_calc_GF")
-  call print("TB_calc_GF starting", VERBOSE)
+  call print("TB_calc_GF starting", PRINT_VERBOSE)
 
   do_local_N = .false.
   if (present(local_N)) then
@@ -928,12 +928,12 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   if (.not. assign_pointer(this%at, "weight", w_e)) then
     nullify(w_e)
   else
-    call print("Using weights from atom properties for w_e", VERBOSE)
+    call print("Using weights from atom properties for w_e", PRINT_VERBOSE)
   endif
   if (.not. assign_pointer(this%at, "weight", w_n)) then
     nullify(w_n)
   else
-    call print("Using weights from atom properties for w_n", VERBOSE)
+    call print("Using weights from atom properties for w_n", PRINT_VERBOSE)
   endif
 
   find_new_fermi_E = .false.
@@ -961,7 +961,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   endif
 
   if (find_new_fermi_E) then
-    call print("TB_calc_GF: finding our own Fermi level", VERBOSE)
+    call print("TB_calc_GF: finding our own Fermi level", PRINT_VERBOSE)
 
     if (.not. has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str)) &
       call system_abort("TB_calc_GF called without Fermi_T for TB Model without default Fermi_T")
@@ -977,14 +977,14 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
         has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str) .and. &
         has_band_width(use_band_width, this%tbsys%tbmodel, band_width, this%calc_args_str)) then
       call print("Initialising ApproxFermi using fermi_e " // this%fermi_e // " fermi_T " // this%fermi_T // &
-	" band_width "// use_band_width, VERBOSE)
+	" band_width "// use_band_width, PRINT_VERBOSE)
       call Initialise(u_AF, this%Fermi_E, this%fermi_T, use_band_width)
     else
       call system_abort("find_new_fermi_E is false, but we are missing fermi_e, fermi_T or band_width for Initialise(AF...)")
     endif
   endif
 
-  call print("TB_calc_diag has Fermi_E " // this%Fermi_E // " Fermi_T " // this%Fermi_T, VERBOSE)
+  call print("TB_calc_diag has Fermi_E " // this%Fermi_E // " Fermi_T " // this%Fermi_T, PRINT_VERBOSE)
 
   call verbosity_push_decrement()
   call print("TB_calc_GF using ApproxFermi:")
@@ -1000,15 +1000,15 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   call system_timer("TB_calc_GF_prep")
 
   call system_timer("TB_calc_GF_calc_Gs")
-  call print("TB_calc_GF calculating Gs", VERBOSE)
+  call print("TB_calc_GF calculating Gs", PRINT_VERBOSE)
   call calc_Gs(this%gf, this%at, SelfEnergy)
   call system_timer("TB_calc_GF_calc_Gs")
 
   call system_timer("TB_calc_GF_calc_EFV")
-  call print("TB_calc_GF calculating dm from Gs", VERBOSE)
+  call print("TB_calc_GF calculating dm from Gs", PRINT_VERBOSE)
   call calc_dm_from_Gs(this%gf)
 
-  call print("TB_calc_GF calculating energy, number", VERBOSE)
+  call print("TB_calc_GF calculating energy, number", PRINT_VERBOSE)
 
   if (do_local_e) then
     u_local_e => local_e
@@ -1041,7 +1041,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   if (do_local_N) call calc_local_atomic_num_GF(this, local_N)
 
   if (present(forces)) then
-    call print("TB_calc_GF calculating forces", VERBOSE)
+    call print("TB_calc_GF calculating forces", PRINT_VERBOSE)
     forces = calculate_forces_GF(this, w_e, w_n)
     allocate(forces_scf(3,this%at%N))
     forces_scf = scf_f_correction(this%gf%tbsys, this%at)
@@ -1051,7 +1051,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   call system_timer("TB_calc_GF_calc_EFV")
   call system_timer("TB_calc_GF")
 
-  call print("TB_calc_GF finished", VERBOSE)
+  call print("TB_calc_GF finished", PRINT_VERBOSE)
 
 end function TB_calc_GF
 
@@ -1873,12 +1873,12 @@ subroutine TB_calc_E_fillings(this, use_fermi_E, fermi_E, AF, w_n)
   find_new_fermi_E = .true.
   if (present(use_fermi_E)) find_new_fermi_E = .not. use_fermi_E
 
-  if (present(AF)) call print("calc_E_fillings using approx fermi function", VERBOSE)
+  if (present(AF)) call print("calc_E_fillings using approx fermi function", PRINT_VERBOSE)
 
   if (find_new_fermi_E) then
-    call print("calc_E_fillings finding new fermi level", VERBOSE)
+    call print("calc_E_fillings finding new fermi level", PRINT_VERBOSE)
   else
-    call print("calc_E_fillings using current fermi level", VERBOSE)
+    call print("calc_E_fillings using current fermi level", PRINT_VERBOSE)
   endif
 
   call realloc_match_tbsys(this%tbsys, this%E_fillings)
@@ -1889,7 +1889,7 @@ subroutine TB_calc_E_fillings(this, use_fermi_E, fermi_E, AF, w_n)
     ! can be restored if necessary, but should probably have a different
     ! name for the property than weight_n
     call find_fermi_E(this, AF)
-    call print ("TB_calc_E_fillings got new Fermi_E " // this%Fermi_E, VERBOSE)
+    call print ("TB_calc_E_fillings got new Fermi_E " // this%Fermi_E, PRINT_VERBOSE)
   else
     if (present(fermi_E)) then
       this%fermi_E = fermi_E
@@ -1946,7 +1946,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
   real(dp) :: EPS
   real(dp) :: degeneracy
 
-  call print("called find_fermi_E fermi_T " // this%fermi_T // " " // (this%fermi_T < 1e-8_dp), ANAL)
+  call print("called find_fermi_E fermi_T " // this%fermi_T // " " // (this%fermi_T < 1e-8_dp), PRINT_ANAL)
 
   have_w_n = .false.
   if (present(w_n)) then
@@ -1967,7 +1967,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
     e_min = min(this%tbsys%kpoints, this%evals%data_d(1,:)) - 10.0_dp
     e_max = max(this%tbsys%kpoints, this%evals%data_d(this%evals%N,:)) + 10.0_dp
 
-    call Print("find_Fermi_E N_e " // N_e // " e_min " // e_min // " e_max " // e_max, ANAL)
+    call Print("find_Fermi_E N_e " // N_e // " e_min " // e_min // " e_max " // e_max, PRINT_ANAL)
 
     if (have_w_n) allocate(local_N(this%tbsys%N_atoms))
 
@@ -1996,7 +1996,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
       else
 	N_try = ksum_dup(this%tbsys%kpoints, sum(this%E_fillings%data_d,dim=1))
       endif
-      call Print("find_Fermi_E e_try n_try " // (iter+1) // " " // e_try // " " // n_try, ANAL)
+      call Print("find_Fermi_E e_try n_try " // (iter+1) // " " // e_try // " " // n_try, PRINT_ANAL)
       if (N_try < N_e) then
 	e_min = e_try
       else
@@ -2004,19 +2004,19 @@ subroutine TB_find_fermi_E(this, AF, w_n)
       endif
       iter = iter + 1
       if (iter .gt. max_iter) then
-	call print("N_e " // N_e // " N_try " // N_try, ERROR)
-	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, ERROR)
-	call print("this%evals", ERROR)
-	call verbosity_push(NORMAL)
+	call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
+	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
+	call print("this%evals", PRINT_ALWAYS)
+	call verbosity_push(PRINT_NORMAL)
 	call print(this%evals)
 	call verbosity_pop()
 	call system_abort("Ran out of iterations in find_fermi_E")
       endif
       if ((abs(N_try-N_e) > this%fermi_E_precision) .and. (e_min == e_max)) then
-	call print("N_e " // N_e // " N_try " // N_try, ERROR)
-	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, ERROR)
-	call print("this%evals", ERROR)
-	call verbosity_push(NORMAL)
+	call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
+	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
+	call print("this%evals", PRINT_ALWAYS)
+	call verbosity_push(PRINT_NORMAL)
 	call print(this%evals)
 	call verbosity_pop()
 	call system_abort("Ran out of precision in find_fermi_E")
@@ -2223,7 +2223,7 @@ subroutine dipole_matrix(this, dipole_evecs)
 
   call fill_these_matrices(this%tbsys, this%at, do_dipole=.true., dipole=dipole_basis)
 
-  call verbosity_push_decrement(NERD)
+  call verbosity_push_decrement(PRINT_NERD)
     call print("dipole_basis(1)")
     call print(dipole_basis(1))
     call print("dipole_basis(2)")

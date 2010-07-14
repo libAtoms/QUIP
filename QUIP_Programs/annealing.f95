@@ -95,7 +95,7 @@ logical :: with_restraints
 real(dp) :: harmonic !depth of the harmonic restraint potential
 real(dp) :: QQ
 
-    call system_initialise(verbosity=normal,enable_timing=.true.)
+    call system_initialise(verbosity=PRINT_normal,enable_timing=.true.)
     call system_timer('program')
 
       call initialise(params_in)

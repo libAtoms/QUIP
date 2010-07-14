@@ -317,7 +317,7 @@ Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Propert
          self.pot = Potential('TB NRL-TB', xml)
          self.at = Atoms(xyz, format='string')
 
-         verbosity_push(SILENT)
+         verbosity_push(PRINT_SILENT)
 
       def tearDown(self):
          verbosity_pop()
@@ -411,7 +411,7 @@ Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Propert
 
       def test_bad_label(self):
          p3 = Potential('CallbackPot label=BAD')
-         verbosity_push(SILENT) # suppress warning about energy not being computed
+         verbosity_push(PRINT_SILENT) # suppress warning about energy not being computed
          self.assertRaises(ValueError, p3.calc, self.a, calc_energy=True)
          verbosity_pop()
          

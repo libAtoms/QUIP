@@ -77,10 +77,10 @@ implicit none
   call print("n_args " // cmd_arg_count())
 
   if (.not. param_read_args(cli_params, do_check = .true.)) then
-    call print("Usage: eval fd_index=i fd_vec='x y z'", ERROR)
-    call print("  init_args='str' [at_file=file(stdin)] [param_file=file(quip_parms.xml)]",ERROR)
-    call print("  [calc_args='str'] [verbosity=VERBOSITY(NORMAL)]", ERROR)
-    call print("  [hybrid] [init_args_pot1] [init_args_pot2]", ERROR)
+    call print("Usage: eval fd_index=i fd_vec='x y z'", PRINT_ALWAYS)
+    call print("  init_args='str' [at_file=file(stdin)] [param_file=file(quip_parms.xml)]",PRINT_ALWAYS)
+    call print("  [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)]", PRINT_ALWAYS)
+    call print("  [hybrid] [init_args_pot1] [init_args_pot2]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
@@ -106,13 +106,13 @@ implicit none
 
   select case(verbosity)
     case ("NORMAL")
-      call verbosity_push(NORMAL)
+      call verbosity_push(PRINT_NORMAL)
     case ("VERBOSE")
-      call verbosity_push(VERBOSE)
+      call verbosity_push(PRINT_VERBOSE)
     case ("NERD")
-      call verbosity_push(NERD)
+      call verbosity_push(PRINT_NERD)
     case ("ANAL")
-      call verbosity_push(ANAL)
+      call verbosity_push(PRINT_ANAL)
     case default
       call system_abort("confused by verbosity " // trim(verbosity))
   end select

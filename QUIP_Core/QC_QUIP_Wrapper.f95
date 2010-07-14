@@ -37,12 +37,12 @@
 
 module QC_QUIP_Wrapper_module
 use libatoms_module, only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
-    atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, SILENT, operator(//)
+    atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
 use potential_module, only : potential, initialise, finalise
 use metapotential_module, only : metapotential, initialise, calc
 use mpi_context_module, only : mpi_context
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-use libatoms_module, only : table, append, ERROR, bfs_grow, int_part, wipe, print, initialise, finalise
+use libatoms_module, only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
 use metapotential_module, only : print
 use libatoms_module, only : print_xyz, mainlog, optional_default
 #endif
@@ -55,7 +55,7 @@ private
 
   real(dp), private :: vacuum_dist = 5.0_dp
 
-  public :: verbosity_push, verbosity_pop, SILENT
+  public :: verbosity_push, verbosity_pop, PRINT_SILENT
   public :: QC_QUIP_initialise, QC_QUIP_calc,MakeLine
   type (Potential) pot_ip
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
@@ -148,7 +148,7 @@ contains
       if (.not. matching_array_sizes(Z, pos = pos)) then
 	call system_abort("Mismatched array sizes in QC_QUIP_initialise_hybrid")
       endif
-call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it", ERROR)
+call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it", PRINT_ALWAYS)
 !      call initialise(bulk, size(Z), lat)
 !      bulk%Z = Z
 !      bulk%pos = pos

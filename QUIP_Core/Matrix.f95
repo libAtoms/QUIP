@@ -422,7 +422,7 @@ subroutine MatrixD_Print(this,file)
   type(MatrixD),    intent(in)           :: this
   type(Inoutput), intent(inout),optional:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print ("MatrixD : ", file=file)
 
@@ -443,7 +443,7 @@ subroutine MatrixZ_Print(this,file)
   type(MatrixZ),    intent(in)           :: this
   type(Inoutput), intent(inout),optional:: file
 
-  if (current_verbosity() < NORMAL) return
+  if (current_verbosity() < PRINT_NORMAL) return
 
   call Print ("MatrixZ : ", file=file)
 
@@ -545,7 +545,7 @@ subroutine MatrixD_diagonalise(this, evals, evecs, err)
   if (present(err)) then
     if (err /= 0) then
       mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixD_diagonalise got err " // err // " from diagonalise", ERROR)
+      call print("MatrixD_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
       mainlog%mpi_all_inoutput_flag=.false.
     endif
   endif
@@ -586,7 +586,7 @@ subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, err)
   if (present(err)) then
     if (err /= 0) then
       mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixD_diagonalise_gen got err " // err // " from diagonalise", ERROR)
+      call print("MatrixD_diagonalise_gen got err " // err // " from diagonalise", PRINT_ALWAYS)
       mainlog%mpi_all_inoutput_flag=.false.
     endif
   endif
@@ -625,7 +625,7 @@ subroutine MatrixZ_diagonalise(this, evals, evecs, err)
   if (present(err)) then
     if (err /= 0) then
       mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixZ_diagonalise got err " // err // " from diagonalise", ERROR)
+      call print("MatrixZ_diagonalise got err " // err // " from diagonalise", PRINT_ALWAYS)
       mainlog%mpi_all_inoutput_flag=.false.
     endif
   endif
@@ -664,7 +664,7 @@ subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, err)
   if (present(err)) then
     if (err /= 0) then
       mainlog%mpi_all_inoutput_flag=.true.
-      call print("MatrixZ_diagonalise_gen got err " // err // " from diagonalise", ERROR)
+      call print("MatrixZ_diagonalise_gen got err " // err // " from diagonalise", PRINT_ALWAYS)
       mainlog%mpi_all_inoutput_flag=.false.
     endif
   endif

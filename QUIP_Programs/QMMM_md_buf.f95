@@ -154,10 +154,10 @@ type(inoutput) :: csilla_out
 logical :: have_silica_potential
   integer :: stat
 
-!    call system_initialise(verbosity=ANAL,enable_timing=.true.)
-!    call system_initialise(verbosity=NERD,enable_timing=.true.)
-    call system_initialise(verbosity=VERBOSE,enable_timing=.true.)
-!    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
+    call system_initialise(verbosity=PRINT_VERBOSE,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !INPUT
@@ -1052,7 +1052,7 @@ contains
   !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
   !% marking the QM atoms with 1, otherwise 0.
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,PRINT_verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
@@ -1071,7 +1071,7 @@ contains
 
 
     my_verbose = .false.
-    if (present(verbose)) my_verbose = verbose
+    if (present(verbose)) my_verbose = PRINT_verbose
 
     if (my_verbose) call print('In Read_QM_list:')
     call print('Reading the QM list from file '//trim(qmlistfilename)//'...')
@@ -1092,7 +1092,7 @@ contains
     end if
 
     num_qm_atoms = string_to_int(fields(1))
-    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=ERROR)
+    if (num_qm_atoms.gt.my_atoms%N) call print('WARNING! read_qmlist: more QM atoms then atoms in the atoms object, possible redundant QM list file',verbosity=PRINT_ALWAYS)
     call print('Number of QM atoms: '//num_qm_atoms)
     call allocate(qm_list,4,0,0,0,num_qm_atoms)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
 
@@ -1199,7 +1199,7 @@ contains
         call print('ARGS_STR | '//trim(args_str))
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_core) then
-	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', ERROR)
+	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
 	    call calc(empty_qm_metapot,at,e=energy,f=f1,args_str=trim(args_str))
 	  else
 	    args_str = trim(args_str) // &
@@ -1282,7 +1282,7 @@ contains
 
     select case(Thermostat_Type)
       case(0)
-	call print("WARNING: No thermostat!!", ERROR)
+	call print("WARNING: No thermostat!!", PRINT_ALWAYS)
       case(1)
 	call add_thermostat(ds,type=LANGEVIN,T=T,tau=Tau)
 	call print('Added single Langevin Thermostat')

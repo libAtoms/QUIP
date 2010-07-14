@@ -12,7 +12,7 @@ program comb
   
   character(len=FIELD_LENGTH) :: in_file, out_file
 
-  call system_initialise(verbosity=SILENT)
+  call system_initialise(verbosity=PRINT_SILENT)
 
   call initialise(params)
   call param_register(params, 'in_file', PARAM_MANDATORY, in_file)
@@ -20,7 +20,7 @@ program comb
   call param_register(params, 'n', '20', n)
 
   if (.not. param_read_args(params, do_check = .true.)) then
-     call verbosity_push(NORMAL)
+     call verbosity_push(PRINT_NORMAL)
      call print("Usage: comb [in_file=file] [out_file=stdout] [n=20]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif

@@ -72,7 +72,7 @@ program bulktest
   
 
   ! initialise program
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
   call initialise(movie, "movie.xyz")
 
   ! Setup parameters

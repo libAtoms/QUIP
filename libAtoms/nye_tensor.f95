@@ -88,12 +88,12 @@ contains
       call find_lattice_correspondence(n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
 				       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
 				       n_matches(i_at), match_list(:,i_at), Qplus(:,:,i_at), G_p(:,:,i_at))
-      call print("atom i_at " // i_at, NERD)
-      call print("n_matches " // n_matches(i_at) // " match_list " // match_list(1:n_matches(i_at),i_at), NERD)
-      call print("Qplus", NERD)
-      call print(Qplus(1:3,1:n_matches(i_at),i_at), NERD)
-      call print("G", NERD)
-      call print(G_p(1:3,1:3,i_at), NERD)
+      call print("atom i_at " // i_at, PRINT_NERD)
+      call print("n_matches " // n_matches(i_at) // " match_list " // match_list(1:n_matches(i_at),i_at), PRINT_NERD)
+      call print("Qplus", PRINT_NERD)
+      call print(Qplus(1:3,1:n_matches(i_at),i_at), PRINT_NERD)
+      call print("G", PRINT_NERD)
+      call print(G_p(1:3,1:3,i_at), PRINT_NERD)
     end do
 
     eps = permutation_symbol()
@@ -101,16 +101,16 @@ contains
     do i_at = 1, at%N
       do i_gamma = 1, n_matches(i_at)
 	Delta_G(:,:,i_gamma) = G_p(:,:,match_list(i_gamma,i_at)) - G_p(:,:,i_at)
-	call print("Delta_G(:,:,"//i_gamma//")", NERD)
-	call print(Delta_G(:,:,i_gamma), NERD)
+	call print("Delta_G(:,:,"//i_gamma//")", PRINT_NERD)
+	call print(Delta_G(:,:,i_gamma), PRINT_NERD)
       end do
       do II = 1, 3
       do MM = 1, 3
 	Delta_G_vec(1:n_matches(i_at)) = Delta_G(II,MM,1:n_matches(i_at))
-	call print("II " // II // " MM " // MM, NERD)
-	call print("Delta_G_vec " // Delta_G_vec, NERD)
+	call print("II " // II // " MM " // MM, PRINT_NERD)
+	call print("Delta_G_vec " // Delta_G_vec, PRINT_NERD)
 	A(II,MM,1:3) = matmul(Qplus(1:3,1:n_matches(i_at),i_at), Delta_G_vec(1:n_matches(i_at)))
-	call print("A " // A(II, MM, 1:3), NERD)
+	call print("A " // A(II, MM, 1:3), PRINT_NERD)
       end do
       end do
 
@@ -125,10 +125,10 @@ contains
       end do
       end do
 
-      call print("alpha(:,:,"//i_at//")", VERBOSE)
-      call print(alpha(1,:,i_at), VERBOSE)
-      call print(alpha(2,:,i_at), VERBOSE)
-      call print(alpha(3,:,i_at), VERBOSE)
+      call print("alpha(:,:,"//i_at//")", PRINT_VERBOSE)
+      call print(alpha(1,:,i_at), PRINT_VERBOSE)
+      call print(alpha(2,:,i_at), PRINT_VERBOSE)
+      call print(alpha(3,:,i_at), PRINT_VERBOSE)
 
     end do
 
@@ -237,16 +237,16 @@ contains
     Qplus(1:3,1:n_matches) = matmul(QTQ_inv(1:3,1:3),transpose(Q(1:n_matches,1:3)))
     G(1:3,1:3) = matmul(Qplus(1:3,1:n_matches), P(1:n_matches,1:3))
 
-    call print("P", NERD)
-    call print(P, NERD)
-    call print("Q", NERD)
-    call print(Q, NERD)
-    call print("Q - P", NERD)
-    call print((Q - P), NERD)
-    call print("Q.G - P", NERD)
-    call print(((Q.mult.G) - P), NERD)
-    call print("rms Q-P " // sum((Q-P)**2), NERD)
-    call print("rms Q.G-P " // sum(((Q.mult.G)-P)**2), NERD)
+    call print("P", PRINT_NERD)
+    call print(P, PRINT_NERD)
+    call print("Q", PRINT_NERD)
+    call print(Q, PRINT_NERD)
+    call print("Q - P", PRINT_NERD)
+    call print((Q - P), PRINT_NERD)
+    call print("Q.G - P", PRINT_NERD)
+    call print(((Q.mult.G) - P), PRINT_NERD)
+    call print("rms Q-P " // sum((Q-P)**2), PRINT_NERD)
+    call print("rms Q.G-P " // sum(((Q.mult.G)-P)**2), PRINT_NERD)
 
     deallocate(P,Q)
 

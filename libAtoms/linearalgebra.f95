@@ -1402,7 +1402,7 @@ CONTAINS
           call write_binary(this, "this")
 	  if (present(err)) then
 	    mainlog%mpi_all_inoutput_flag=.true.
-	    call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', ERROR)
+	    call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
 	    mainlog%mpi_all_inoutput_flag=.false.
 	  else
 	    call system_abort ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')')
@@ -1417,7 +1417,7 @@ CONTAINS
        if (.not. (present(evects) .and. dp == 8)) deallocate(r8_evects)
     else
        if (present(err)) then
-	 call print('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',ERROR) 
+	 call print('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',PRINT_ALWAYS) 
 	 err = -1
        else
 	 call system_abort('Matrix_diagonalise: Non symmetric diagonalisation is not permitted') 
@@ -1475,7 +1475,7 @@ CONTAINS
           !call write_binary(this, "this")
 	  if (present(err)) then
 	    mainlog%mpi_all_inoutput_flag=.true.
-	    call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', ERROR)
+	    call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
 	    mainlog%mpi_all_inoutput_flag=.false.
 	  else
 	    call system_abort ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')')
@@ -1491,7 +1491,7 @@ CONTAINS
        if (.not.(present(evects) .and. dp == 8)) deallocate(z8_evects)
     else
        if (present(err)) then
-	 call print('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted', ERROR) 
+	 call print('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted', PRINT_ALWAYS) 
 	 err=-1
        else
 	 call system_abort('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted') 
@@ -1539,7 +1539,7 @@ CONTAINS
        call write_binary(other, "other")
        if (present(err)) then
 	 mainlog%mpi_all_inoutput_flag=.true.
-	 call print ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')', ERROR)
+	 call print ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')', PRINT_ALWAYS)
 	 mainlog%mpi_all_inoutput_flag=.false.
 	else
 	 call system_abort ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')')
@@ -1590,7 +1590,7 @@ CONTAINS
     if (INFO.NE.0) then
        if (present(err)) then
 	 mainlog%mpi_all_inoutput_flag=.true.
-	 call print ('Matrix_z_general_diagonalise: Error in calling ZHEGV! (info = '//INFO//')', ERROR)
+	 call print ('Matrix_z_general_diagonalise: Error in calling ZHEGV! (info = '//INFO//')', PRINT_ALWAYS)
 	 mainlog%mpi_all_inoutput_flag=.false.
        else
 	 call system_abort ('Matrix_z_general_diagonalise: Error in calling ZHEGV! (info = '//INFO//')')
@@ -1972,7 +1972,7 @@ CONTAINS
      if( present(info) ) then
         info = my_info
      else
-        if( my_info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, error: '//my_info)
+        if( my_info /= 0 ) call system_abort('LA_Matrix_Factorise: cannot factorise, PRINT_ALWAYS: '//my_info)
      endif
 
      if( present(factor) ) then
@@ -2205,7 +2205,7 @@ CONTAINS
         x = my_x
      endif
 
-     if( my_info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, error: '//info)
+     if( my_info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, PRINT_ALWAYS: '//info)
      deallocate(my_x,my_b) !,work, iwork, ferr, berr)
 
   endsubroutine LA_Matrix_Solve_Matrix
@@ -2616,7 +2616,7 @@ CONTAINS
 
      call dpotrf('U', n, my_A_factor, n, info)
 
-     if( info /= 0 ) call system_abort('Matrix_CholFactorise: cannot factorise, error: '//info)
+     if( info /= 0 ) call system_abort('Matrix_CholFactorise: cannot factorise, PRINT_ALWAYS: '//info)
 
      do i = 1, n
         do j = i+1, n
@@ -4967,15 +4967,15 @@ CONTAINS
 
     ! Check positive definite
     if (any(D < 0)) then
-      call print(m, VERBOSE)
+      call print(m, PRINT_VERBOSE)
       call system_abort("polar decomposition 'm' is not positive definite")
     end if
 
     S = V .mult. diag(sqrt(D)) .mult. transpose(V)
     R = V .mult. diag(D ** (-0.5_dp)) .mult. transpose(V) .mult. m
 
-    call print('S:', ANAL); call print(S, ANAL)
-    call print('R:', ANAL); call print(R, ANAL)
+    call print('S:', PRINT_ANAL); call print(S, PRINT_ANAL)
+    call print('R:', PRINT_ANAL); call print(R, PRINT_ANAL)
 
   end subroutine polar_decomposition
   
@@ -5094,7 +5094,7 @@ CONTAINS
            do mm=1,M
               means(kk,mm) = ran_uniform()*(maxval(data(:,mm))-minval(data(:,mm))) + minval(data(:,mm))
            end do
-           call print('random_means('//kk//'): '//means(kk,:), VERBOSE)
+           call print('random_means('//kk//'): '//means(kk,:), PRINT_VERBOSE)
         end do
      end if
      
@@ -5105,7 +5105,7 @@ CONTAINS
         do nn=1,N
            assign(nn) = mod(ran(), K)+1
         end do
-        call print('random_partition: '//assign, VERBOSE)
+        call print('random_partition: '//assign, PRINT_VERBOSE)
 
         ! Compute the initial means from the random partition
         means(:,:) = 0.0_dp

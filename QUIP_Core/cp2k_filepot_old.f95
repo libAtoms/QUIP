@@ -86,8 +86,8 @@ logical :: dummy
 integer, pointer :: old_cluster_mark_p(:), cluster_mark_p(:)
 integer :: i
   real(dp),dimension(3)          :: old_QM_cell
-!    call system_initialise(verbosity=SILENT,enable_timing=.true.)
-    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_SILENT,enable_timing=.true.)
+    call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !read parameters
@@ -194,7 +194,7 @@ endif
        args_str = trim(args_str)//' have_silica_potential=F'
     endif
 
-    call print('FILEPOT |'//args_str,verbosity=SILENT)
+    call print('FILEPOT |'//args_str,verbosity=PRINT_SILENT)
 
     !call CP2K
     allocate(f0(3,my_atoms%N))
@@ -220,9 +220,9 @@ endif
 
     deallocate(f0)
     call finalise(my_atoms)
-    call verbosity_push(NORMAL)
+    call verbosity_push(PRINT_NORMAL)
     call system_timer('FILEPOT |')
-    call verbosity_push(SILENT)
+    call verbosity_push(PRINT_SILENT)
     call system_finalise
 
 contains

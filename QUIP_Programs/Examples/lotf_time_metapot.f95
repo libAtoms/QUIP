@@ -45,7 +45,7 @@ program lotf_metapot
   type(DynamicalSystem) :: ds, ds_saved
   type(CInOutput) :: movie
 
-  call system_initialise(NORMAL)
+  call system_initialise(PRINT_NORMAL)
   call initialise(pot, 'FilePot command=./castep_driver.sh')
 
   call read(at, "start.xyz")

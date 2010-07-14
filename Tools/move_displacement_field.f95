@@ -53,8 +53,8 @@ implicit none
   call param_register(cli_params, "cutoff", "5.0", cutoff)
   call param_register(cli_params, "dist_tol", "0.3", dist_tol)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
-    call print("Usage: move_displacement_field config_filename=file ref_config_filename=file shift_vec={x y z}", ERROR)
-    call print("       cutoff=r(5.0) dist_tol=t(0.3)", ERROR)
+    call print("Usage: move_displacement_field config_filename=file ref_config_filename=file shift_vec={x y z}", PRINT_ALWAYS)
+    call print("       cutoff=r(5.0) dist_tol=t(0.3)", PRINT_ALWAYS)
     call system_abort("confused by command line arguments")
   endif
   call finalise(cli_params)
@@ -94,7 +94,7 @@ implicit none
     ! atom closest to displaced position
     shifted_i = closest_atom(ref_config, ref_config%pos(:,i)+shift_vec, cell_image_Na, cell_image_Nb, cell_image_Nc, dist=dist)
 
-    if (current_verbosity() >= VERBOSE) then
+    if (current_verbosity() >= PRINT_VERBOSE) then
       if (shifted_i > 0) then
 	call print("mapping displacement cur " // i // " " // config%pos(:,i) // " to " // shifted_i // " " // config%pos(:,shifted_i) // " dist " // dist)
       endif
@@ -106,7 +106,7 @@ implicit none
       ! new position of atom shifted_i from current displacement of atom i
       new_pos(:,shifted_i) = ref_config%pos(:,shifted_i) + cur_displacement
     else
-      if (current_verbosity() >= VERBOSE) then
+      if (current_verbosity() >= PRINT_VERBOSE) then
 	call print("no mapping for " // i // " " // config%pos(:,i))
       endif
     endif

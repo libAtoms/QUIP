@@ -111,7 +111,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
          self.assertArrayAlmostEqual(v1, v2)
 
       def testminim(self):
-         verbosity_push(SILENT)
+         verbosity_push(PRINT_SILENT)
          nsteps = self.metapot.minim(self.at, 'cg', 1e-3, 100, do_pos=True, do_lat=True)
          verbosity_pop()
 

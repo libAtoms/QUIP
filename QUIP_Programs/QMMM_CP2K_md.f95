@@ -80,7 +80,7 @@ program qmmm_md
 !                                     system_reseed_rng, &
 !                                     print, print_title, &
 !                                     operator(//), round, &
-!                                     NORMAL, ANAL, NERD
+!                                     NORMAL, PRINT_ANAL, PRINT_NERD
 !  use table_module,            only: table, finalise, &
 !                                     append, allocate
 !  use thermostat_module,       only: NONE, LANGEVIN, NOSE_HOOVER, &
@@ -173,7 +173,7 @@ integer, pointer :: qm_flag_p(:), thermostat_region_p(:)
 real(dp), pointer :: pot_p(:)
 
 
-    call system_initialise(verbosity=normal,enable_timing=.true.)
+    call system_initialise(verbosity=PRINT_normal,enable_timing=.true.)
     call system_timer('program')
 
       call initialise(params_in)

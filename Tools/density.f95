@@ -69,8 +69,8 @@ program density
     integer                               :: j,k,l
     integer                               :: bin_j,bin_k,bin_l
 
-    call system_initialise(SILENT)
-    call verbosity_push(NORMAL)
+    call system_initialise(PRINT_SILENT)
+    call verbosity_push(PRINT_NORMAL)
 
     call initialise(params_in)
     call param_register(params_in, 'xyzfile', param_mandatory, xyzfilename)

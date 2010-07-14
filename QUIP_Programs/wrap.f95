@@ -44,7 +44,7 @@ implicit none
   call param_register(cli_params, 'seed', '1', seed)
   call param_register(cli_params, 'cutoff_factor', '1.0', cutoff_factor)
   if (.not. param_read_args(cli_params, do_check = .true.)) then
-    call print("Usage: wrap [seed=1] [cutoff_factor=1.0]", ERROR)
+    call print("Usage: wrap [seed=1] [cutoff_factor=1.0]", PRINT_ALWAYS)
     call system_abort("Confused by CLI parameters")
   endif
   call finalise(cli_params)

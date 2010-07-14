@@ -397,7 +397,7 @@ contains
 
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
 
-       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, VERBOSE)
+       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, PRINT_VERBOSE)
 
        if (present(frame) .and. this%got_index == 0) then
           if (frame /= this%current_frame) then
@@ -540,8 +540,8 @@ contains
        call set_lattice(at, transpose(this%lattice), scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
-          call print ("at%properties", ERROR)
-          call print(at%properties, ERROR)
+          call print ("at%properties", PRINT_ALWAYS)
+          call print(at%properties, PRINT_ALWAYS)
           call system_abort('cinoutput_read: atoms object read from file has neither Z nor species')
        else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
           call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))

@@ -69,9 +69,9 @@ program extract_cv
   logical                       :: input_in_cp2k_units
 
 
-!    call system_initialise(verbosity=ANAL,enable_timing=.true.)
-!    call system_initialise(verbosity=VERBOSE,enable_timing=.true.)
-    call system_initialise(verbosity=NORMAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_VERBOSE,enable_timing=.true.)
+    call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
     call system_timer('program')
 
     !INPUT

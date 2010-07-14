@@ -109,7 +109,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and quippy.
             ds = DynamicalSystem(self.at)
             f = fzeros((3,self.at.n))
             f_hyb = fzeros((3,self.at.n))
-            verbosity_push(SILENT)
+            verbosity_push(PRINT_SILENT)
             self.lotf.calc(ds.atoms, f=f)
             self.forcemix.calc(ds.atoms, f=f_hyb)
             ds.advance_verlet(1.0, f_hyb)
@@ -155,7 +155,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and quippy.
             self.ds = DynamicalSystem(self.at)
             self.ds_saved = DynamicalSystem(self.at)
 
-            verbosity_push(SILENT)
+            verbosity_push(PRINT_SILENT)
             extrap_force_err, interp_force_err = self.do_predictor_corrector(10)
             verbosity_pop()
 
@@ -184,7 +184,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and quippy.
             self.ds = DynamicalSystem(self.at)
             self.ds_saved = DynamicalSystem(self.at)
 
-            verbosity_push(SILENT)
+            verbosity_push(PRINT_SILENT)
             extrap_force_err_1, interp_force_err_1 = self.do_predictor_corrector(5)
             self.ds.atoms.calc_connect()
             extrap_force_err_2, interp_force_err_2 = self.do_predictor_corrector(5)
