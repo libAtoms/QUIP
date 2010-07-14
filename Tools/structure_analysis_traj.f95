@@ -2384,6 +2384,7 @@ implicit none
 
   logical :: more_files
   integer :: status, arg_line_no
+  integer :: ierror = ERROR_NONE
   real(dp) :: time
 
   integer :: i_a, frame_count, raw_frame_count
@@ -2449,8 +2450,8 @@ implicit none
 
     call print(trim(infilename))
     call initialise(infile, infilename, INPUT)
-    call read(structure, infile, status=status, frame=raw_frame_count)
-    do while (status == 0)
+    call read(structure, infile, ierror=ierror, frame=raw_frame_count)
+    do while (ierror == ERROR_NONE)
       frame_count = frame_count + 1
       if (.not. quiet) then
         if (mod(frame_count,1000) == 1) write (mainlog%unit,'(I7,a,$)') frame_count," "
@@ -2466,8 +2467,10 @@ implicit none
 
       raw_frame_count = raw_frame_count + decimation
       ! get ready for next structure
-      call read(structure, infile, status=status, frame=raw_frame_count)
+      call read(structure, infile, ierror=ierror, frame=raw_frame_count)
     end do
+    ! We do not want to handle this error
+    call clear_error(ierror)
     raw_frame_count = raw_frame_count - decimation
 
     ! get ready for next file

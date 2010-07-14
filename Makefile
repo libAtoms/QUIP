@@ -71,7 +71,7 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 
 ${MODULES}: ${BUILDDIR}
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
-	${MAKE} -C ${BUILDDIR} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_GP},1)
@@ -104,7 +104,7 @@ QUIP_Core/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
 
 libAtoms/%: libAtoms 
 	ln -sf ${PWD}/libAtoms/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/libAtoms -I${PWD} -I${PWD}/Makefiles $${targ#libAtoms/}
 	rm ${BUILDDIR}/Makefile
 
 Tools/%: libAtoms ${FOX} QUIP_Core QUIP_Utils
