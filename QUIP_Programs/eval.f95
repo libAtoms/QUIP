@@ -88,7 +88,7 @@ implicit none
 
   logical did_something
   logical test_ok
-  integer status
+  integer ierror
 
   integer i, n_iter, j
 
@@ -224,8 +224,7 @@ implicit none
 
   ! main loop over frames
   do 
-     call read(at, infile, status=status)
-     if(status /= 0) exit
+     call read(at, infile, ierror)
 
      call set_cutoff(at, cutoff(metapot)+0.5_dp)
 
