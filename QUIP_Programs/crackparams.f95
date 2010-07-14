@@ -418,7 +418,7 @@ contains
     this%crack_double_ended     = .false.
     this%crack_tip_grid_size    = 3.0_dp    ! Angstrom
     this%crack_tip_min_separation = 20.0_dp ! Angstrom
-    this%crack_tip_method    = 'neighbour'
+    this%crack_tip_method    = 'coordination'
     this%crack_free_surfaces = .false.
     this%crack_front_window_size = 5.44_dp ! Angstrom
 
