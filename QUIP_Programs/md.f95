@@ -28,6 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
 module md_module
 use libatoms_module
 use quip_module
@@ -385,7 +386,7 @@ implicit none
   type (MetaPotential) :: metapot
   type(MPI_context) :: mpi_glob
   type(extendable_str) :: es
-  type(Cinoutput) :: traj_out
+  type(Cinoutput) :: traj_out, atoms_in_cio
   type(Atoms) :: at_in
   type(DynamicalSystem) :: ds
 
@@ -398,6 +399,7 @@ implicit none
 
   integer i, i_step
   type(md_params) :: params
+  integer :: ierror = ERROR_NONE
 
   call system_initialise()
 
@@ -412,7 +414,9 @@ implicit none
 
   if (params%rng_seed >= 0) call system_reseed_rng(params%rng_seed)
 
-  call read_xyz(at_in, params%atoms_in_file, mpi_comm=mpi_glob%communicator)
+  call initialise(atoms_in_cio, mpi=mpi_glob)
+  call read(at_in, atoms_in_cio, ierror=ierror)
+  HANDLE_ERROR(ierror)
 
   if (len_trim(params%pot1_init_args) == 0 .and. len_trim(params%pot2_init_args) == 0) then
     call potential_initialise_filename(pot1, params%metapot_init_args, params%params_in_file, mpi_obj=mpi_glob)
