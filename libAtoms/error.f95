@@ -76,7 +76,7 @@ module error_module
   ! ---
 
   public :: push_error, push_error_with_info, get_error_string_and_clear
-  public :: abort_on_error
+  public :: abort_on_error, clear_error
 
 contains
 

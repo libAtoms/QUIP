@@ -28,6 +28,8 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 program test_potential
 
 use libAtoms_module
@@ -224,7 +226,8 @@ implicit none
 
   ! main loop over frames
   do 
-     call read(at, infile, ierror)
+     call read(at, infile, ierror=ierror)
+     HANDLE_ERROR(ierror)
 
      call set_cutoff(at, cutoff(metapot)+0.5_dp)
 
