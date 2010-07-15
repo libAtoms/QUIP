@@ -51,8 +51,8 @@
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
-!%  When a type Potential is defined
-!%>   type(Potential) :: pot
+!%  When a type MetaPotential is defined
+!%>   type(MetaPotential) :: pot
 !%  it is then necessary to initialise the IP parameters (readable from an external input file or 
 !%  from an internal string) and to define the IP type:
 !%>   call Initialise(pot, IP_type, params) 

@@ -39,8 +39,8 @@
   subroutine MetaPotential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi)
     type(MetaPotential_FM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: qmpot
-    type(Potential), optional, intent(in), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
+    type(MetaPotential), intent(inout), target :: qmpot
+    type(MetaPotential), optional, intent(inout), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi
 
@@ -151,7 +151,8 @@
     end if
 
     if (this%minimise_mm .and. present(mmpot)) then
-      call initialise(this%relax_metapot, "Simple", mmpot)
+      ! call initialise(this%relax_metapot, "Simple", mmpot)
+      this%relax_metapot => mmpot
     endif
 
     if (present(mpi)) this%mpi = mpi
@@ -459,7 +460,7 @@
        ! then potential calc() will do cluster carving. 
        ! We pass along our mpi context object to allow little clusters to be split over
        ! nodes.
-       call calc(this%qmpot, at, f=f_qm, err=err, args_str=qm_args_str, mpi_obj=this%mpi)
+       call calc(this%qmpot, at, f=f_qm, args_str=qm_args_str, err=err)
     end if
 
     !Fitlist construction has been moved here.

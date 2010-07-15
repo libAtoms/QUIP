@@ -297,8 +297,8 @@ program crack
   type(DynamicalSystem), target :: ds, ds_save
   type(Atoms) :: crack_slab, fd_start, fd_end, bulk
   type(CrackParams) :: params
-  type(Potential) :: classicalpot, qmpot
-  type(MetaPotential) :: simple_metapot, hybrid_metapot, forcemix_metapot
+  type(MetaPotential) :: classicalpot, qmpot
+  type(MetaPotential) :: hybrid_metapot, forcemix_metapot
   type(Dictionary) :: metapot_params
   type(mpi_context) :: mpi_glob
   type(Table) :: crack_tips, old_crack_tips
@@ -385,10 +385,6 @@ program crack
   call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj = mpi_glob)
   call Print(classicalpot)
 
-  call print('Initialising metapotential')
-  call initialise(simple_metapot, 'Simple', classicalpot, mpi_obj = mpi_glob)
-  call print(simple_metapot)
-
   if (.not. params%simulation_classical) then
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
@@ -464,10 +460,10 @@ program crack
         call read_xyz(bulk, trim(stem)//'_bulk.xyz')
 
         call initialise(hybrid_metapot, 'ForceMixing '//write_string(metapot_params), &
-             classicalpot, qmpot, bulk, mpi_obj=mpi_glob)
+             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
      else
         call initialise(hybrid_metapot, 'ForceMixing '//write_string(metapot_params), &
-             classicalpot, qmpot, mpi_obj=mpi_glob)
+             pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
      end if
 
      call print_title('Hybrid Metapotential')
@@ -476,11 +472,11 @@ program crack
      call set_value(metapot_params, 'method', 'force_mixing')
      if (params%qm_rescale_r) then
         call initialise(forcemix_metapot, 'ForceMixing '//write_string(metapot_params), &
-             classicalpot, qmpot, bulk, mpi_obj=mpi_glob)
+             pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
         call finalise(bulk)
      else
         call initialise(forcemix_metapot, 'ForceMixing '//write_string(metapot_params), &
-             classicalpot, qmpot, mpi_obj=mpi_glob)
+             pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
      end if
      call finalise(metapot_params)
 
@@ -654,7 +650,7 @@ program crack
 
   if (.not. has_property(ds%atoms, 'load')) then
      call print_title('Applying Initial Load')
-     call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, & 
+     call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, & 
           .true., mpi_glob)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
@@ -868,7 +864,7 @@ program crack
 
               if (crack_tips%real(1,crack_tips%N) - old_crack_tips%real(1,crack_tips%N) < params%md_smooth_loading_tip_move_tol) then
                  call print_title('Crack Arrested')
-                 call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
+                 call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, &
                       .false., mpi_glob)
                  call print('STATE changing MD_CRACKING -> MD_LOADING')
                  state = STATE_MD_LOADING
@@ -912,7 +908,7 @@ program crack
            do i = 1, params%md_extrapolate_steps
 
               if (params%simulation_classical) then
-                 call calc(simple_metapot, ds%atoms, f=f, args_str=params%classical_args_str)
+                 call calc(classicalpot, ds%atoms, f=f, args_str=params%classical_args_str)
               else
                  if (i== 1) then
                     call calc(hybrid_metapot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
@@ -1041,7 +1037,7 @@ program crack
            call print_title('Force Computation')
            call system_timer('force computation/optimisation')
            if (params%simulation_classical) then
-              call calc(simple_metapot, ds%atoms, e=energy, f=f, args_str=params%classical_args_str)
+              call calc(classicalpot, ds%atoms, e=energy, f=f, args_str=params%classical_args_str)
            else
               call calc(hybrid_metapot, ds%atoms, f=f)
            end if
@@ -1174,7 +1170,7 @@ program crack
         call calc_connect(ds%atoms, store_is_min_image=.true.)
 
         if (params%simulation_classical) then
-           call calc(simple_metapot, ds%atoms, f=f, e=energy, args_str=params%classical_args_str)
+           call calc(classicalpot, ds%atoms, f=f, e=energy, args_str=params%classical_args_str)
            if (i == 0) fd_e0 = energy
         else
            call calc(hybrid_metapot, ds%atoms, f=f)
@@ -1224,7 +1220,7 @@ program crack
      call print('Starting geometry optimisation...')
 
      if (params%simulation_classical) then
-        steps = minim(simple_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
+        steps = minim(classicalpot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., use_fire=trim(params%minim_method)=='fire', &
              print_cinoutput=movie, args_str=params%classical_args_str, eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
@@ -1254,7 +1250,7 @@ program crack
 
      if (.not. has_property(ds%atoms, 'load')) then
         call print('No load field found. Regenerating load.')
-        call crack_calc_load_field(ds%atoms, params, classicalpot, simple_metapot, params%crack_loading, &
+        call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, &
              .true., mpi_glob)
      end if
 
@@ -1266,7 +1262,7 @@ program crack
      do while (abs(crack_pos(1) - orig_crack_pos) < params%quasi_static_tip_move_tol)
 
         if (params%simulation_classical) then
-           steps = minim(simple_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
+           steps = minim(classicalpot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
                 max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, &
@@ -1306,7 +1302,6 @@ program crack
   call finalise(movie)
   call finalise(ds)
 
-  call finalise(simple_metapot)
   call finalise(hybrid_metapot)
   call finalise(forcemix_metapot)
   call finalise(classicalpot)

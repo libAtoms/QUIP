@@ -103,13 +103,11 @@ end module mylj
 program local_random_search
 
 use libAtoms_module
-use Potential_module
 use MetaPotential_module
 use mylj
 
 implicit none
 
-  type(Potential) pot
   type(MetaPotential) mpot
   type(inoutput) params, movie
   type(Atoms), target:: at
@@ -128,15 +126,13 @@ implicit none
   call system_initialise()
   
 !  call Initialise(params, "quip_params.xml")
-!  call Initialise(pot, 'IP LJ', params)
-!  call Initialise(pot, 'IP LJ', '<LJ_params n_types="1" label="default"><per_type_data type="1" atomic_num="1" /><per_pair_data type1="1" type2="1" sigma="1.0" eps6="1.0" eps12="1.0" cutoff="10.0" shifted="T" /></LJ_params>')
+!  call Initialise(mpot, 'IP LJ', params)
+!  call Initialise(mpot, 'IP LJ', '<LJ_params n_types="1" label="default"><per_type_data type="1" atomic_num="1" /><per_pair_data type1="1" type2="1" sigma="1.0" eps6="1.0" eps12="1.0" cutoff="10.0" shifted="T" /></LJ_params>')
 
-!  call Initialise(mpot, 'Simple', pot)
-
-  call Initialise(pot, 'FilePot command=./castep_driver.sh')
+  call Initialise(mpot, 'FilePot command=./castep_driver.sh')
   
   call initialise(at, N, reshape((/50.0_dp,0.0_dp,0.0_dp,0.0_dp,50.0_dp,0.0_dp,0.0_dp,0.0_dp, 50.0_dp/), (/3,3/)))
-  call set_cutoff(at, cutoff(pot)+0.2)
+  call set_cutoff(at, cutoff(mpot)+0.2)
   call add_property(at, "local_e", 0.0_dp);
   call initialise(movie, 'movie.xyz', OUTPUT)
   call set_atoms(at, 1)
@@ -198,7 +194,7 @@ implicit none
  
 
         at%pos = reshape(x0, (/3,at%N/))
-        call Calc(pot, at, e=eold)
+        call Calc(mpot, at, e=eold)
         call read_xyz(at, 'filepot.0.out')
         call zero_sum(at%pos)
         call add_property(at, "local_e", 0.0_dp);

@@ -145,8 +145,7 @@ program makecrack
   ! Objects
   type(Atoms), target :: bulk, crack_slab, crack_layer
   type(CrackParams) :: params
-  type(Potential) :: classicalpot
-  type(Metapotential) :: simple
+  type(MetaPotential) :: classicalpot
   type(MPI_context) :: mpi_glob
   type(Inoutput) :: xmlfile
   type(CInoutput) :: netcdf
@@ -213,12 +212,8 @@ program makecrack
   call finalise(xmlfile)
   call Print(classicalpot)
 
-  call print('Initialising metapotential')
-  call initialise(simple, 'Simple', classicalpot, mpi_obj=mpi_glob)
-  call print(simple)
-
   ! Crack structure specific code
-  call crack_make_slab(params, classicalpot, simple, crack_slab, width, height, E, v, v2, bulk)
+  call crack_make_slab(params, classicalpot, crack_slab, width, height, E, v, v2, bulk)
 
   ! Save bulk cube (used for qm_rescale_r parameter in crack code)
   call print_xyz(bulk, trim(stem)//'_bulk.xyz')
@@ -298,13 +293,13 @@ program makecrack
      end if
      
      ! Apply initial load
-     call crack_calc_load_field(crack_slab, params, classicalpot, simple, params%crack_loading, overwrite_pos=.true., &
+     call crack_calc_load_field(crack_slab, params, classicalpot, params%crack_loading, overwrite_pos=.true., &
           mpi=mpi_glob)
   end if
 
   call Print_title('Initialising QM region')
 
-  crack_pos = crack_find_crack_pos(crack_slab, params)
+  crack_pos = crack_find_tip_coordination(crack_slab, params)
   call set_value(crack_slab%params, 'CrackPosx', crack_pos(1))
   call set_value(crack_slab%params, 'CrackPosy', crack_pos(2))
 
@@ -329,7 +324,6 @@ program makecrack
   call finalise(crack_slab)
   call finalise(crack_layer)
   call finalise(classicalpot)
-  call finalise(simple)
   call system_finalise()
 
 end program makecrack

@@ -37,8 +37,8 @@ program ts_main
   implicit none
 
   type(Dynamicalsystem) :: ds_in, ds_fin 
-  type(Potential)     :: classicalpot, qmpot
-  type(MetaPotential) :: simple_metapot, hybrid_metapot
+  type(MetaPotential)     :: classicalpot, qmpot
+  type(MetaPotential) :: hybrid_metapot
   type(Atoms)         :: at_in, at_fin, at_image
   type(inoutput)      :: xmlfile, in_image, in_in, in_fin, file_res
   type(Cinoutput)     :: outimage 
@@ -77,10 +77,6 @@ program ts_main
   call rewind(xmlfile)
   call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj = mpi)
   call Print(classicalpot)
-
-  call print('Initialising metapotential')
-  call initialise(simple_metapot, 'Simple', classicalpot, mpi_obj = mpi)
-  call print(simple_metapot)
 
   if (params%simulation_hybrid) then
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
@@ -127,7 +123,7 @@ program ts_main
         call Print_title('First Image Optimisation')
         if (.not. params%simulation_hybrid) then
           call calc_connect(ds_in%Atoms)
-          steps = minim(simple_metapot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
+          steps = minim(classicalpot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
@@ -141,7 +137,7 @@ program ts_main
         call Print_title('Last Image Optimisation')
         if (.not. params%simulation_hybrid) then
           call calc_connect(ds_in%Atoms)
-          steps = minim(simple_metapot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
+          steps = minim(classicalpot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
@@ -183,7 +179,7 @@ program ts_main
 
   call print_title('Transition state calculation')
   if (.not. params%simulation_hybrid) then
-     call calc(tts,simple_metapot,niter, params, file_res, mpi)
+     call calc(tts,classicalpot,niter, params, file_res, mpi)
   else
      call calc(tts,hybrid_metapot, niter, params, file_res, mpi)
   endif

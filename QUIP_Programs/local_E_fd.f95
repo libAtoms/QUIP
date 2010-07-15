@@ -39,7 +39,6 @@ use phonons_module
 
 implicit none
 
-  type(Potential) pot1, pot2
   type(MetaPotential) metapot
   type(MPI_context) mpi_glob
   type(Atoms) at
@@ -47,8 +46,7 @@ implicit none
   type(Dictionary) :: cli_params
 
   character(len=100) verbosity
-  logical :: do_hybrid
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
+  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file
 
   real(dp) :: E0
   real(dp), allocatable :: local_E_p(:), local_E_m(:), local_N_p(:), local_N_m(:)
@@ -59,8 +57,6 @@ implicit none
   call system_initialise()
 
   init_args = ''
-  init_args_pot1 = ''
-  init_args_pot2 = ''
   calc_args = ''
   call initialise(cli_params)
   call param_register(cli_params, 'fd_index', PARAM_MANDATORY, fd_index)
@@ -70,9 +66,6 @@ implicit none
   call param_register(cli_params, 'param_file', 'quip_params.xml', param_file)
   call param_register(cli_params, 'calc_args', '', calc_args)
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
-  call param_register(cli_params, 'hybrid', 'F', do_hybrid)
-  call param_register(cli_params, 'init_args_pot1', '', init_args_pot1)
-  call param_register(cli_params, 'init_args_pot2', '', init_args_pot2)
 
   call print("n_args " // cmd_arg_count())
 
@@ -80,29 +73,17 @@ implicit none
     call print("Usage: eval fd_index=i fd_vec='x y z'", PRINT_ALWAYS)
     call print("  init_args='str' [at_file=file(stdin)] [param_file=file(quip_parms.xml)]",PRINT_ALWAYS)
     call print("  [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)]", PRINT_ALWAYS)
-    call print("  [hybrid] [init_args_pot1] [init_args_pot2]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
 
   call print ("Using init args " // trim(init_args))
   call print ("Using calc args " // trim(calc_args))
-  if (do_hybrid) then
-    call print("Hybrid using init args pot1 " // trim(init_args_pot1))
-    call print("Hybrid using init args pot2 " // trim(init_args_pot2))
-  endif
 
   call Initialise(mpi_glob)
 
   call read_xyz(at, at_file, mpi_comm=mpi_glob%communicator)
-  if (do_hybrid) then
-    call Potential_Initialise_filename(pot1, init_args_pot1, param_file, mpi_obj=mpi_glob)
-    call Potential_Initialise_filename(pot2, init_args_pot2, param_file, mpi_obj=mpi_glob)
-    call Initialise(metapot, init_args, pot1, pot2, mpi_obj=mpi_glob)
-  else
-    call Potential_Initialise_filename(pot1, init_args, param_file, mpi_obj=mpi_glob)
-    call Initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
-  endif
+  call MetaPotential_filename_Initialise(metapot, init_args, param_file, mpi_obj=mpi_glob)
 
   select case(verbosity)
     case ("NORMAL")

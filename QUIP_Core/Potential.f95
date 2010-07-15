@@ -81,7 +81,7 @@ module Potential_module
 
 !% Initialise a Potential object (selecting the force field) and, if necessary, the  input file for potential parameters.
   public :: Initialise
-  public :: Potential_Initialise_filename
+  public :: Potential_Filename_Initialise
   interface Initialise
      module procedure Potential_Initialise_inoutput, Potential_Initialise_str
   end interface Initialise
@@ -123,7 +123,7 @@ module Potential_module
 
 contains
 
-  subroutine Potential_Initialise_filename(this, args_str, filename, mpi_obj, no_parallel)
+  subroutine Potential_Filename_Initialise(this, args_str, filename, mpi_obj, no_parallel)
     type(Potential), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in) :: filename
@@ -136,7 +136,7 @@ contains
     call Initialise(this, args_str, io, mpi_obj, no_parallel)
     call Finalise(io)
 
-  end subroutine Potential_Initialise_filename
+  end subroutine Potential_Filename_Initialise
 
   subroutine Potential_Initialise_inoutput(this, args_str, io_obj, mpi_obj, no_parallel)
     type(Potential), intent(inout) :: this
@@ -170,6 +170,7 @@ contains
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in), optional :: param_str
     type(MPI_context), intent(in), optional :: mpi_obj
+
     logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot
     type(Dictionary) :: params
 
@@ -555,7 +556,7 @@ call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
 	 call calc(this, at, f=f, args_str=new_args_str)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
-    else ! little_clusters is false..
+    else ! little_clusters and single_cluster are false..
 
        ! For IP, call setup_atoms() hook now in case any properties must be added.
        ! This must be done *before* we assign pointers to force, local_e etc.

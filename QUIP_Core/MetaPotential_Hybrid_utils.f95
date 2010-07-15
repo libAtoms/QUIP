@@ -35,17 +35,17 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
+  subroutine do_reference_bulk(reference_bulk, region1_metapot, region2_metapot, minimise_bulk, do_rescale_r, do_rescale_E, &
 			       r_scale_pot1, E_scale_pot1, do_tb_defaults)
     type(Atoms), intent(inout) :: reference_bulk
-    type(Potential), intent(in), target :: region1_pot, region2_pot
+    type(MetaPotential), intent(inout), target :: region1_metapot, region2_metapot
     logical, intent(in) :: minimise_bulk, do_rescale_r, do_rescale_E, do_tb_defaults
     real(dp), intent(inout) :: r_scale_pot1, E_scale_pot1
 
     real(dp) :: e_bulk !, B_region2, B_region1
 
     type(Atoms) :: bulk_region1, bulk_region2
-    type(MetaPotential) :: region1_metapot, region2_metapot
+!    type(MetaPotential) :: region1_metapot, region2_metapot
     integer :: it
 
     call verbosity_push_decrement(PRINT_NERD)
@@ -56,7 +56,7 @@
     ! set up region1 stuff
     bulk_region1 = reference_bulk
     call calc_connect(bulk_region1)
-    call initialise(region1_metapot, "Simple", region1_pot)
+!    call initialise(region1_metapot, "Simple", region1_pot)
     if (minimise_bulk) then
       call print("MINIMISING bulk in region1 potential", PRINT_VERBOSE)
       call verbosity_push_decrement()
@@ -82,7 +82,7 @@
 
     ! set up region2 stuff
     bulk_region2 = reference_bulk
-    call initialise(region2_metapot, "Simple", region2_pot)
+!    call initialise(region2_metapot, "Simple", region2_pot)
     call set_cutoff(bulk_region2, cutoff(region2_metapot)+0.5_dp)
     call calc_connect(bulk_region2)
     if (minimise_bulk) then

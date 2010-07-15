@@ -38,7 +38,7 @@
   subroutine metapotential_ONIOM_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj)
     type(MetaPotential_ONIOM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: region1_pot, region2_pot
+    type(MetaPotential), intent(in), target :: region1_pot, region2_pot
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi_obj
 

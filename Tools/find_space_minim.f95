@@ -101,6 +101,14 @@ function dfunc(x,data)
 
 end function dfunc
 
+subroutine apply_precond_dummy(x,g,P_g,my_error,data)
+  real(dp) :: x(:), g(:), P_g(:)
+  integer :: my_error
+  character, optional :: data(:)
+
+  P_g = g
+end subroutine apply_precond_dummy
+
 subroutine bothfunc(x,E,f,my_error,data)
   real(dp) :: x(:), E, f(:)
   integer :: my_error
@@ -241,7 +249,7 @@ real(dp) :: vi, vf
     call verbosity_push(PRINT_SILENT)
     ! n_iter = minim(r, func, dfunc, 'cg', 1.0e-6_dp, 1000, 'NR_LINMIN', eps_guess=1e-3_dp, hook=hook, data=data)
     expected_red = 1.0e-2_dp
-    n_iter = n_minim(r, bothfunc, vi, vf, expected_red, 1000, 1e-8_dp, hook=hook, data=data)
+    n_iter = n_minim(r, bothfunc, .false., apply_precond_dummy, vi, vf, expected_red, 1000, 1e-8_dp, hook=hook, data=data)
     final_val = func(r, data)
     call verbosity_pop()
     call find_closest(at, r, closest_list(1:1))

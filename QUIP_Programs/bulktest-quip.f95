@@ -67,7 +67,7 @@ program bulktest
   real(dp), allocatable :: f(:,:)
   integer :: i, step
 
-  type(Potential) :: classicalpot, qmpot
+  type(MetaPotential) :: classicalpot, qmpot
   type(MetaPotential) :: metapot
   
 

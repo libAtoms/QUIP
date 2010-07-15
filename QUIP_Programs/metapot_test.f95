@@ -39,7 +39,7 @@ program metapot_test
   type(Table) :: embedlist
   type(MetaPotential) :: metapot
   type(InOutput) :: xml
-  type(Potential) :: pot1, pot2
+  type(MetaPotential) :: pot1, pot2
   real(dp), allocatable :: f1(:,:), f2(:,:)
   integer, pointer :: hybrid(:), hybrid_mark(:)
 

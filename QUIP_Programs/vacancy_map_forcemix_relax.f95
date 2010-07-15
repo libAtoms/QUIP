@@ -38,7 +38,7 @@ use vacancy_map_module
 
 implicit none
   type(Atoms) at
-  type(Potential), target ::pot1, pot2
+  type(MetaPotential), target ::pot1, pot2
   type(MetaPotential)         ::lotfpot
   type(inoutput) params, out
   integer :: it
@@ -93,8 +93,8 @@ implicit none
   endif
 
   call initialise(mpi)
-  call Potential_Initialise_filename(pot1, 'TB NRL-TB label=Aluminum', 'quip_params_hybrid_relax.xml', mpi_obj=mpi)
-  call Potential_Initialise_filename(pot2, 'IP EAM_Ercolessi_Adams', 'quip_params_hybrid_relax.xml', mpi_obj=mpi)
+  call MetaPotential_Initialise_filename(pot1, 'TB NRL-TB label=Aluminum', 'quip_params_hybrid_relax.xml', mpi_obj=mpi)
+  call MetaPotential_Initialise_filename(pot2, 'IP EAM_Ercolessi_Adams', 'quip_params_hybrid_relax.xml', mpi_obj=mpi)
 
   call init_lotf_forcemix(pot1, pot2, lotfpot, buffer_hops, trim(lotf_args_str))
 
