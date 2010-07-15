@@ -537,7 +537,7 @@ program teach_sparse
 
   character(len=FIELD_LENGTH) :: at_file, qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, theta_file, sparse_file, z_eff_string, bispectrum_file, ip_args
   integer :: m, j_max, qw_l_max, min_steps, min_save
-  real(dp) :: r_cut, z0, e0, f0, sgm(3), dlt, theta_fac, mem_required, mem_available
+  real(dp) :: r_cut, z0, e0, f0, sgm(3), dlt, theta_fac, mem_required, mem_total, mem_free
   logical :: do_qw_so3, qw_no_q, qw_no_w, has_e0, has_f0, has_theta_file, has_sparse_file, &
   & do_sigma, do_delta, do_theta, do_sparx, do_f0, do_theta_fac, do_test_gp_gradient, has_bispectrum_file, do_cluster, do_pivot, &
   & do_core, do_ewald, do_ewald_corr, test_gp_gradient_result
@@ -780,10 +780,12 @@ program teach_sparse
   ! number of sparse points, nx and nxd are the number of bispectra and partial
   ! derivatives.
   mem_required = 2.0_dp * real(size(r),dp) * (real(size(xf),dp) + real(size(xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
-  call mem_info(mem_available)
-  mem_available = mem_available / (1024.0_dp**3)
+  call mem_info(mem_total,mem_free)
+  mem_total = mem_total / (1024.0_dp**3)
+  mem_free = mem_free / (1024.0_dp**3)
 
-  if( mem_required > mem_available ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_available//' GB).')
+  call print('Memory required (approx.): '//mem_required//' GB')
+  if( mem_required > mem_free ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_free//' GB).')
 
   call gp_sparsify(gp_sp,r,sgm,dlta,theta,yf,ydf,x,xd,xf,xdf,lf,ldf,xz,species_Z,(/(f0,i=1,n_species)/),target_type)
 
