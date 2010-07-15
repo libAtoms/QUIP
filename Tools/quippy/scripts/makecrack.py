@@ -89,7 +89,7 @@ def makecrack(params):
 
    print_title('Initialising QM region')
 
-   crack_pos = crack_find_crack_pos(crack_slab, params)
+   crack_pos = crack_find_tip_coordination(crack_slab, params)
    crack_slab.params['CrackPosx'] = crack_pos[1]
    crack_slab.params['CrackPosy'] = crack_pos[2]
 
