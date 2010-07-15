@@ -70,6 +70,7 @@ LIBATOMS_F95_FILES = \
   nye_tensor \
   Topology \
   Atoms_ll \
+  ringstat \
   libAtoms \
   libAtoms_misc_utils
 
