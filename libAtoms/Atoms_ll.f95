@@ -206,7 +206,7 @@ contains
   !%  ignoring things outside of min_time--max_time, sorting by Time value and eliminating configs with
   !%  duplicate Time values.
   subroutine atoms_ll_read_xyz_filename(this, filename, file_is_list, decimation, min_time, max_time, sort_Time, no_Time_dups, quiet, no_compute_index, &
-                                        properties, all_properties, ierror)
+                                        properties, all_properties, error)
     type(atoms_ll) :: this !% object to read configs into
     character(len=*), intent(in) :: filename !% file name to read from
     logical, intent(in) :: file_is_list !% is true, file is list of files to read from rather than xyz file
@@ -214,7 +214,7 @@ contains
     real(dp), intent(in), optional :: min_time, max_time !% ignore frames before min_time or after max_time
     character(len=*), intent(in), optional :: properties !% properties to include in objects in list
     logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties 
-    integer, intent(inout), optional :: ierror
+    integer, intent(inout), optional :: error
        !% sort_time: if true, sort configurations by time
        !% no_Times_dups: if true, eliminate configs that have same time value
        !% quiet: if true, don't output progress bar
@@ -268,24 +268,24 @@ contains
     last_file_frame_n = 0
     frame_count = 1
     status = 0
-    do while (ierror == ERROR_NONE) ! loop over files
+    do while (error == ERROR_NONE) ! loop over files
       call initialise(cfile,trim(my_filename),action=INPUT, no_compute_index=do_no_compute_index)
       initial_frame_count = frame_count
-      do while (ierror == ERROR_NONE) ! loop over frames in this file
+      do while (error == ERROR_NONE) ! loop over frames in this file
 	if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
 	  ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
 !	if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
 !	     ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, ierror=ierror)
+	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, error=error)
 
-	if (ierror == ERROR_NONE) then ! we succesfully read a structure
+	if (error == ERROR_NONE) then ! we succesfully read a structure
 	  skip_frame = .false.
 	  is_a_dup = .false.
 	  if (do_min_time > 0.0_dp .or. do_max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
 	    if (get_value(structure_in%params,"Time",cur_time, case_sensitive=.false.)) then
 	      if ((do_min_time >= 0.0_dp .and. cur_time < do_min_time) .or. (do_max_time >= 0.0_dp .and. cur_time > do_max_time)) skip_frame = .true.
 	    else
-              PASS_ERROR_WITH_INFO("ERROR: min_time="//do_min_time//" < 0 or max_time="//do_max_time//" < 0 or sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count, ierror)
+              PASS_ERROR_WITH_INFO("ERROR: min_time="//do_min_time//" < 0 or max_time="//do_max_time//" < 0 or sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count, error)
 	    endif
 	  endif
 	  if (.not. skip_frame) then ! frame is in appropriate time range
@@ -350,9 +350,9 @@ contains
 !	    if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
 	  endif ! skip_frame
 	  frame_count = frame_count + do_decimation
-	endif ! ierror == 0 for reading this structure
+	endif ! error == 0 for reading this structure
 
-      end do ! while ierror == 0 for frames in this file
+      end do ! while error == 0 for frames in this file
       if (cfile%got_index == 1) then
 	last_file_frame_n = last_file_frame_n + cfile%n_frame
       else

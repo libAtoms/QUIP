@@ -41,7 +41,7 @@ implicit none
   type(CInOutput) :: infile, outfile
   type(Atoms) :: at
   integer i
-  integer :: ierror = ERROR_NONE
+  integer :: error = ERROR_NONE
 
   call system_initialise(PRINT_NORMAL)
 
@@ -61,15 +61,15 @@ implicit none
   call initialise(outfile, outfilename, action=OUTPUT, netcdf4=netcdf4)
 
   i = 1
-  call read(infile, at, ierror=ierror)
-  do while (ierror == ERROR_NONE) 
+  call read(infile, at, error=error)
+  do while (error == ERROR_NONE) 
     call write(outfile, at)
     if (mod(i,100) == 0) write (*,'(I1,$)') mod(i/100,10)
-    call read(infile, at, ierror=ierror)
+    call read(infile, at, error=error)
     i = i + 1
   end do
   ! We do not want to handle this error
-  call clear_error(ierror)
+  call clear_error(error)
 
   call finalise(outfile)
   call finalise(infile)

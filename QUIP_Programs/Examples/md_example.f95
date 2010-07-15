@@ -44,7 +44,7 @@ implicit none
   real(dp), allocatable :: f(:,:)
   integer it
 
-  integer :: ierror = ERROR_NONE
+  integer :: error = ERROR_NONE
 
   call system_initialise()
 
@@ -57,8 +57,8 @@ implicit none
 
   call print(pot)
 
-  call read(at, "md.xyz", ierror=ierror)
-  HANDLE_ERROR(ierror)
+  call read(at, "md.xyz", error=error)
+  HANDLE_ERROR(error)
   call ds_initialise(ds, at)
 
   call set_cutoff(ds%atoms, cutoff(pot))

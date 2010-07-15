@@ -33,15 +33,15 @@
 !X Error handling, see error.f90 for the functions called in these macros.
 !X
 !% Error passing works as follows:
-!% - *ierror* needs to be intent(inout) and optional
-!% - RAISE_ERROR is used whenever an error occurs. If *ierror* is not present,
-!%   the program execution will be terminated immediately. If *ierror* is
+!% - *error* needs to be intent(inout) and optional
+!% - RAISE_ERROR is used whenever an error occurs. If *error* is not present,
+!%   the program execution will be terminated immediately. If *error* is
 !%   present it will be set to some value not equal ERROR_NONE and the execution
 !%   of the subroutine will be stopped.
-!% - PASS_ERROR is used after a function that returns ierror, i.e.
-!%     call func(..., ierror=ierror)
+!% - PASS_ERROR is used after a function that returns error, i.e.
+!%     call func(..., error=error)
 !%     PASS_ERROR
-!%   If no error occurs (i.e. ierror==ERROR_NONE), execution will proceed as
+!%   If no error occurs (i.e. error==ERROR_NONE), execution will proceed as
 !%   usual. If an error occured, the current function will be terminated after
 !%   the location of the error is passed to the error module.
 !% - PASS_ERROR_WITH_INFO is like PASS_ERROR, just an additional string can be
@@ -54,13 +54,13 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-#define RAISE_ERROR(info, ierror)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(ierror)) then ; ierror = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif
+#define RAISE_ERROR(info, error)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif
 
-#define PASS_ERROR(ierror)  if (present(ierror)) then ; if (ierror /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
+#define PASS_ERROR(error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
 
-#define PASS_ERROR_WITH_INFO(info, ierror)  if (present(ierror)) then ; if (ierror /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; return ; endif ; endif
+#define PASS_ERROR_WITH_INFO(info, error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; return ; endif ; endif
 
-#define HANDLE_ERROR(ierror)  if (ierror /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; call abort_on_error ; endif
+#define HANDLE_ERROR(error)  if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; call abort_on_error ; endif
 
 
 
@@ -73,7 +73,7 @@
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#define PASS_MPI_ERROR(mpierror, ierror)  if (mpierror /= MPI_SUCCESS) then ; call push_MPI_error(mpierror, __FILE__, __LINE__) ; if (present(ierror)) then ; ierror = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif ; endif
+#define PASS_MPI_ERROR(mperror, error)  if (mperror /= MPI_SUCCESS) then ; call push_MPI_error(mperror, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif ; endif
 
 
 
@@ -89,11 +89,11 @@
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#define RAISE_DELAYED_ERROR(info, ierror_loc)   if (ierror_loc == ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; ierror_loc = ERROR_OCCURED ; endif
+#define RAISE_DELAYED_ERROR(info, error_loc)   if (error_loc == ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; error_loc = ERROR_OCCURED ; endif
 
-#define TRACE_DELAYED_ERROR(ierror_loc)  if (ierror_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; endif
+#define TRACE_DELAYED_ERROR(error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; endif
 
-#define TRACE_DELAYED_ERROR_WITH_INFO(info, ierror_loc)  if (ierror_loc /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; endif
+#define TRACE_DELAYED_ERROR_WITH_INFO(info, error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; endif
 
-#define INVOKE_DELAYED_ERROR(ierror_loc, ierror)  if (ierror_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; if (present(ierror)) then ; ierror = ierror_loc ; else ; call abort_on_error ; endif ; endif
+#define INVOKE_DELAYED_ERROR(error_loc, error)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; if (present(error)) then ; error = error_loc ; else ; call abort_on_error ; endif ; endif
 

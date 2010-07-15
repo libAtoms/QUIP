@@ -45,7 +45,7 @@ program rings
   type(CInOutput) :: infile
   type(Atoms) :: at
   integer i
-  integer :: ierror = ERROR_NONE
+  integer :: error = ERROR_NONE
 
   integer                :: diameter, o
 
@@ -68,8 +68,8 @@ program rings
   call initialise(infile, infilename, action=INPUT, no_compute_index=.true.)
 
   i = 1
-  call read(infile, at, ierror=ierror)
-  HANDLE_ERROR(ierror)
+  call read(infile, at, error=error)
+  HANDLE_ERROR(error)
 
   call set_cutoff(at, CC_cutoff)
   call calc_connect(at)

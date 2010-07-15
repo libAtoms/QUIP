@@ -121,18 +121,18 @@ end interface cart_shift
 
 public :: sendrecv
 interface sendrecv
-   module procedure MPI_context_sendrecv_ra
+   module procedure MPI_context_sendrecv_c1a, MPI_context_sendrecv_ra
 end interface sendrecv
 
 contains
 
-subroutine MPI_context_Initialise(this, communicator, context, dims, periods, ierror)
+subroutine MPI_context_Initialise(this, communicator, context, dims, periods, error)
   type(MPI_context), intent(inout) :: this
   integer, intent(in), optional :: communicator
   type(MPI_context), intent(in), optional :: context
   integer, intent(in), optional :: dims(3)
   logical, intent(in), optional :: periods(3)
-  integer, intent(inout), optional :: ierror
+  integer, intent(inout), optional :: error
 
 #ifdef _MPI
   integer err
@@ -146,7 +146,7 @@ include 'mpif.h'
 #endif
 
   if (present(communicator) .and. present(context)) then
-     RAISE_ERROR("Please specify either *communicator* or *context* upon call to MPI_context_Initialise.", ierror)
+     RAISE_ERROR("Please specify either *communicator* or *context* upon call to MPI_context_Initialise.", error)
   endif
 
   call Finalise(this)
@@ -174,39 +174,39 @@ include 'mpif.h'
         this%is_cart = .true.
         call mpi_cart_create(comm, 3, dims, my_periods, .true., &
              this%communicator, err)
-        PASS_MPI_ERROR(err, ierror)
+        PASS_MPI_ERROR(err, error)
      endif
 
   else
 
     this%communicator = MPI_COMM_WORLD
     call mpi_initialized(is_initialized, err)
-    PASS_MPI_ERROR(err, ierror)
+    PASS_MPI_ERROR(err, error)
     if (is_initialized == 0) then
       call mpi_init(err)
-      PASS_MPI_ERROR(err, ierror)
+      PASS_MPI_ERROR(err, error)
     endif
 
   endif
 
   call mpi_comm_size(this%communicator, this%n_procs, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
   call mpi_comm_rank(this%communicator, this%my_proc, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
   this%active = .true.
 
   if (this%is_cart) then
      call mpi_cart_coords(this%communicator, this%my_proc, 3, &
           this%my_coords, err)
-     PASS_MPI_ERROR(err, ierror)
+     PASS_MPI_ERROR(err, error)
   endif
 #endif
 end subroutine MPI_context_Initialise
 
-subroutine MPI_context_Finalise(this, end_of_program, ierror)
+subroutine MPI_context_Finalise(this, end_of_program, error)
   type(MPI_context), intent(inout) :: this
   logical, optional, intent(in) :: end_of_program 
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -223,19 +223,19 @@ include 'mpif.h'
   if (present(end_of_program)) then
     if (end_of_program) then
       call mpi_initialized(is_initialized, err)
-      PASS_MPI_ERROR(err, ierror)
+      PASS_MPI_ERROR(err, error)
       if (is_initialized == 0) then
 	call mpi_finalize(err)
-        PASS_MPI_ERROR(err, ierror)
+        PASS_MPI_ERROR(err, error)
       endif
     endif
   endif
 #endif
 end subroutine MPI_context_Finalise
 
-subroutine MPI_context_free_context(this, ierror)
+subroutine MPI_context_free_context(this, error)
   type(MPI_context), intent(inout) :: this
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -249,16 +249,16 @@ include 'mpif.h'
 
 #ifdef _MPI
   call mpi_comm_free(this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
   this%active = .false.
 #endif
 end subroutine MPI_context_free_context
 
-subroutine MPI_context_Split_context(this, split_index, new_context, ierror)
+subroutine MPI_context_Split_context(this, split_index, new_context, error)
   type(MPI_context), intent(in) :: this
   integer, intent(in) :: split_index
   type(MPI_context), intent(out) :: new_context
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -278,17 +278,17 @@ include 'mpif.h'
 
 #ifdef _MPI
   call mpi_comm_split(this%communicator, split_index, this%my_proc, new_comm, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 
   call Initialise(new_context, new_comm)
 
 end subroutine MPI_context_Split_context
 
-function MPI_context_min_real(this, v, ierror)
+function MPI_context_min_real(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
   real(dp) :: MPI_context_min_real
 
 #ifdef _MPI
@@ -306,16 +306,16 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_allreduce(v, MPI_context_min_real, 1, MPI_DOUBLE_PRECISION, MPI_MIN, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #else
   MPI_context_min_real = v
 #endif
 end function MPI_context_min_real
 
-function MPI_context_max_real(this, v, ierror)
+function MPI_context_max_real(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
   real(dp) :: MPI_context_max_real
 
 #ifdef _MPI
@@ -333,16 +333,16 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_allreduce(v, MPI_context_max_real, 1, MPI_DOUBLE_PRECISION, MPI_MAX, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #else
   MPI_context_max_real = v
 #endif
 end function MPI_context_max_real
 
-function MPI_context_sum_real(this, v, ierror)
+function MPI_context_sum_real(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
   real(dp) :: MPI_context_sum_real
 
 #ifdef _MPI
@@ -360,16 +360,16 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_allreduce(v, MPI_context_sum_real, 1, MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #else
   MPI_context_sum_real = v
 #endif
 end function  MPI_context_sum_real
 
-function MPI_context_sum_complex(this, v, ierror)
+function MPI_context_sum_complex(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(in) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
   complex(dp) :: MPI_context_sum_complex
 
 #ifdef _MPI
@@ -387,16 +387,16 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_allreduce(v, MPI_context_sum_complex, 1, MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #else
   MPI_context_sum_complex = v
 #endif
 end function MPI_context_sum_complex
 
-subroutine MPI_context_sum_in_place_real2(this, v, ierror)
+subroutine MPI_context_sum_in_place_real2(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef MPI_1
   real(dp), allocatable :: v_sum(:,:)
@@ -420,14 +420,14 @@ include 'mpif.h'
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_sum_in_place_real2
 
-subroutine MPI_context_sum_in_place_real3(this, v, ierror)
+subroutine MPI_context_sum_in_place_real3(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v(:,:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef MPI_1
   real(dp), allocatable :: v_sum(:,:,:)
@@ -451,14 +451,14 @@ include 'mpif.h'
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine  MPI_context_sum_in_place_real3
 
-subroutine MPI_context_sum_in_place_complex2(this, v, ierror)
+subroutine MPI_context_sum_in_place_complex2(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef MPI_1
   complex(dp), allocatable :: v_sum(:,:)
@@ -482,14 +482,14 @@ include 'mpif.h'
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine  MPI_context_sum_in_place_complex2
 
-subroutine MPI_context_sum_in_place_real1(this, v, ierror)
+subroutine MPI_context_sum_in_place_real1(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef MPI_1
   real(dp), allocatable :: v_sum(:)
@@ -513,14 +513,14 @@ include 'mpif.h'
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_sum_in_place_real1
 
-subroutine MPI_context_sum_in_place_complex1(this, v, ierror)
+subroutine MPI_context_sum_in_place_complex1(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef MPI_1
   complex(dp), allocatable :: v_sum(:)
@@ -544,14 +544,14 @@ include 'mpif.h'
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine  MPI_context_sum_in_place_complex1
 
-subroutine MPI_context_bcast_int(this, v, ierror)
+subroutine MPI_context_bcast_int(this, v, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -565,14 +565,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, 1, MPI_INTEGER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int
 
-subroutine MPI_context_bcast_int1(this, v, ierror)
+subroutine MPI_context_bcast_int1(this, v, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -586,14 +586,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int1
 
-subroutine MPI_context_bcast_int2(this, v, ierror)
+subroutine MPI_context_bcast_int2(this, v, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -607,15 +607,15 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int2
 
 
-subroutine MPI_context_bcast_logical(this, v, ierror)
+subroutine MPI_context_bcast_logical(this, v, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -629,14 +629,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, 1, MPI_LOGICAL, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical
 
-subroutine MPI_context_bcast_logical1(this, v, ierror)
+subroutine MPI_context_bcast_logical1(this, v, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -650,14 +650,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical1
 
-subroutine MPI_context_bcast_logical2(this, v, ierror)
+subroutine MPI_context_bcast_logical2(this, v, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -671,15 +671,15 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical2
 
 
-subroutine MPI_context_bcast_c(this, v, ierror)
+subroutine MPI_context_bcast_c(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -693,14 +693,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c
 
-subroutine MPI_context_bcast_c1(this, v, ierror)
+subroutine MPI_context_bcast_c1(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -714,14 +714,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c1
 
-subroutine MPI_context_bcast_c2(this, v, ierror)
+subroutine MPI_context_bcast_c2(this, v, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -735,14 +735,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c2
 
-subroutine MPI_context_bcast_real(this, v, ierror)
+subroutine MPI_context_bcast_real(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -756,14 +756,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_real
 
-subroutine MPI_context_bcast_real1(this, v, ierror)
+subroutine MPI_context_bcast_real1(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -777,14 +777,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_real1
 
-subroutine MPI_context_bcast_real2(this, v, ierror)
+subroutine MPI_context_bcast_real2(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -798,14 +798,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_real2
 
-subroutine MPI_context_bcast_char(this, v, ierror)
+subroutine MPI_context_bcast_char(this, v, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -819,14 +819,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, len(v), MPI_CHARACTER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char
 
-subroutine MPI_context_bcast_char1(this, v, ierror)
+subroutine MPI_context_bcast_char1(this, v, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v(:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -840,14 +840,14 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, len(v(1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char1
 
-subroutine MPI_context_bcast_char2(this, v, ierror)
+subroutine MPI_context_bcast_char2(this, v, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
   integer err
@@ -861,7 +861,7 @@ include 'mpif.h'
 
 #ifdef _MPI
   call MPI_Bcast(v, len(v(1,1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char2
 
@@ -894,11 +894,11 @@ subroutine MPI_Print(this, lines)
 
 end subroutine MPI_Print
 
-subroutine MPI_context_collect_real2(this, v_in, v_out, ierror)
+subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v_in(:,:)
   real(dp), intent(out) :: v_out(:,:)
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
   integer err, i
   integer my_count
@@ -911,7 +911,7 @@ include 'mpif.h'
   if (.not. this%active) then
     if (size(v_in,1) /= size(v_out,1) .or. &
         size(v_in,2) /= size(v_out,2)) then
-      RAISE_ERROR("MPI_context_collect_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), ierror)
+      RAISE_ERROR("MPI_context_collect_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -923,10 +923,10 @@ include 'mpif.h'
   allocate(displs(this%n_procs))
   allocate(counts(this%n_procs))
   call mpi_allgather(my_count, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 
   if (sum(counts) /= size(v_out)) then
-    RAISE_ERROR("MPI_context_collect_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), ierror)
+    RAISE_ERROR("MPI_context_collect_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
   endif
 
   displs(1) = 0
@@ -937,7 +937,7 @@ include 'mpif.h'
   call MPI_allgatherv(v_in, my_count, MPI_DOUBLE_PRECISION, &
 		      v_out, counts, displs, MPI_DOUBLE_PRECISION, &
 		      this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 
   deallocate(displs)
   deallocate(counts)
@@ -946,9 +946,9 @@ include 'mpif.h'
 
 end subroutine MPI_context_collect_real2
 
-subroutine MPI_context_barrier(this, ierror)
+subroutine MPI_context_barrier(this, error)
   type(MPI_context), intent(in) :: this
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
 #ifdef _MPI
 include 'mpif.h'
@@ -958,15 +958,15 @@ include 'mpif.h'
   integer err
 
   call mpi_barrier(this%communicator, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_barrier
 
-subroutine MPI_context_cart_shift(this, direction, displ, source, dest, ierror)
+subroutine MPI_context_cart_shift(this, direction, displ, source, dest, error)
   type(MPI_context), intent(in) :: this
   integer, intent(in) :: direction, displ
   integer, intent(out) :: source, dest
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
   ! ---
 
@@ -976,23 +976,57 @@ subroutine MPI_context_cart_shift(this, direction, displ, source, dest, ierror)
   integer :: err
 
   call mpi_cart_shift(this%communicator, direction, displ, source, dest, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_cart_shift
+
+
+subroutine MPI_context_sendrecv_c1a(this, &
+     sendbuf, dest, sendtag, &
+     recvbuf, source, recvtag, &
+     nrecv, &
+     error)
+  type(MPI_context), intent(in) :: this
+  character(1), intent(in) :: sendbuf(:)
+  integer, intent(in) :: dest, sendtag
+  character(1), intent(out) :: recvbuf(:)
+  integer, intent(in) :: source, recvtag
+  integer, optional, intent(out) :: nrecv
+  integer, optional, intent(inout) :: error
+
+  ! ---
+
+#ifdef _MPI
+  include 'mpif.h'
+
+  integer :: err
+  integer :: status(MPI_STATUS_SIZE)
+
+  call mpi_sendrecv( &
+       sendbuf, size(sendbuf), MPI_CHARACTER, dest, sendtag, &
+       recvbuf, size(recvbuf), MPI_CHARACTER, source, recvtag, &
+       this%communicator, status, err)
+  PASS_MPI_ERROR(err, error)
+  if (present(nrecv)) then
+     call mpi_get_count(status, MPI_CHARACTER, nrecv, err)
+     PASS_MPI_ERROR(err, error)
+  endif
+#endif
+endsubroutine MPI_context_sendrecv_c1a
 
 
 subroutine MPI_context_sendrecv_ra(this, &
      sendbuf, dest, sendtag, &
      recvbuf, source, recvtag, &
      nrecv, &
-     ierror)
+     error)
   type(MPI_context), intent(in) :: this
   real(DP), intent(in) :: sendbuf(:)
   integer, intent(in) :: dest, sendtag
   real(DP), intent(out) :: recvbuf(:)
   integer, intent(in) :: source, recvtag
   integer, optional, intent(out) :: nrecv
-  integer, optional, intent(inout) :: ierror
+  integer, optional, intent(inout) :: error
 
   ! ---
 
@@ -1006,10 +1040,10 @@ subroutine MPI_context_sendrecv_ra(this, &
        sendbuf, size(sendbuf), MPI_DOUBLE_PRECISION, dest, sendtag, &
        recvbuf, size(recvbuf), MPI_DOUBLE_PRECISION, source, recvtag, &
        this%communicator, status, err)
-  PASS_MPI_ERROR(err, ierror)
+  PASS_MPI_ERROR(err, error)
   if (present(nrecv)) then
      call mpi_get_count(status, MPI_DOUBLE_PRECISION, nrecv, err)
-     PASS_MPI_ERROR(err, ierror)
+     PASS_MPI_ERROR(err, error)
   endif
 #endif
 endsubroutine MPI_context_sendrecv_ra

@@ -138,14 +138,14 @@ contains
 
 
   !% This error has been handled, clear it.
-  subroutine clear_error(ierror)
+  subroutine clear_error(error)
     implicit none
 
-    integer, intent(inout) :: ierror
+    integer, intent(inout) :: error
 
     ! ---
 
-    ierror = ERROR_NONE
+    error = ERROR_NONE
 
     error_stack_position = 0
     
@@ -153,12 +153,12 @@ contains
 
 
   !% Construct a string describing the error.
-  function get_error_string_and_clear(ierror) result(str)
+  function get_error_string_and_clear(error) result(str)
     use iso_c_binding
 
     implicit none
 
-    integer, intent(inout), optional  :: ierror
+    integer, intent(inout), optional  :: error
 
     type(extendable_str)              :: str
 
@@ -197,22 +197,22 @@ contains
 
     error_stack_position = 0
 
-    if (present(ierror)) then
-       ierror  = ERROR_NONE
+    if (present(error)) then
+       error  = ERROR_NONE
     endif
 
   endfunction get_error_string_and_clear
 
 
   !% Stop program execution since this error is not handled properly
-  subroutine abort_on_error(ierror)
+  subroutine abort_on_error(error)
     implicit none
 
-    integer, intent(inout), optional :: ierror
+    integer, intent(inout), optional :: error
 
     ! ---
 
-    call system_abort(string(get_error_string_and_clear(ierror)))
+    call system_abort(string(get_error_string_and_clear(error)))
 
   endsubroutine abort_on_error
 
