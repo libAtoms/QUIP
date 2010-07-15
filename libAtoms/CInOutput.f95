@@ -322,13 +322,6 @@ contains
 	  call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
 	cioskip_status = cioskip(this%c_at, frame-this%current_frame);
 	if (cioskip_status == 0) then
-! Lars
-!	  if (present(status)) then
-!	    status = 1
-!	    return
-!	  else
-!	    call system_abort("Error querying CInOutput file while skipping to desired frame")
-!	  endif
           RAISE_ERROR("Error querying CInOutput file while skipping to desired frame", error)
 	endif
       endif
@@ -338,13 +331,6 @@ contains
 
     cioquery_status = cioquery(this%c_at, do_frame)
     if (cioquery_status == 0) then
-! Lars
-!      if (present(status)) then
-!	status = 1
-!	return
-!      else
-!        call system_abort("Error querying CInOutput file")
-!      endif
        RAISE_ERROR("Error querying CInOutput file", error)
     endif
 
@@ -389,9 +375,6 @@ contains
     integer :: n_skip
     integer :: cioskip_status
 
-! Lars
-!    if (present(status)) status = 0
-
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= INPUT .and. this%action /= INOUT) call system_abort("Cannot read from action=OUTPUT CInOutput object")
 
@@ -407,13 +390,6 @@ contains
              cioskip_status = cioskip(this%c_at, n_skip)
              if (cioskip_status == 0) then
                 RAISE_ERROR("Error querying CInOutput file while skipp!ing to desired frame", error)
-! Lars
-!                if (present(status)) then
-!                   status = 1
-!                   return
-!                else
-!                   call system_abort("Error querying CInOutput file while skipp!ing to desired frame")
-!                endif
              endif
              this%current_frame = this%current_frame + n_skip
           endif
@@ -428,18 +404,6 @@ contains
              call finalise(data)
              call finalise(at)
              RAISE_ERROR("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error)
-
-
-! Lars
-!             if (present(status)) then
-!                call finalise(properties)
-!                call finalise(data)
-!                call finalise(at)
-!                status = 1
-!                return
-!             else
-!                call system_abort("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame))
-!             end if
           end if
        end if
 
@@ -450,18 +414,10 @@ contains
 
        if (this%got_index == 1) then
           tmp_do_frame = do_frame
-! Lars
-!          call cinoutput_query(this, tmp_do_frame, status=error)
           call cinoutput_query(this, tmp_do_frame, error=error)
        else
-! Lars
-!          call cinoutput_query(this, status=error)
           call cinoutput_query(this, error=error)
        end if
-! Lars
-!       if (present(status)) then
-!          if (status /= 0) return
-!       endif
        PASS_ERROR(error)
 
        call initialise(properties)
@@ -497,16 +453,6 @@ contains
           call finalise(data)
           call finalise(at)
           RAISE_ERROR("Error reading from file", error)
-! Lars
-!          if (present(status)) then
-!             call finalise(properties)
-!             call finalise(data)
-!             call finalise(at)
-!             status = 1
-!             return
-!          else
-!             call system_abort("Error reading from file")
-!          end if
        end if
 
        do i=1,this%n_param
@@ -566,7 +512,7 @@ contains
 
 
   subroutine cinoutput_write(this, at, properties, int_format, real_format, frame, &
-       shuffle, deflate, deflate_level, status)
+       shuffle, deflate, deflate_level, error)
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(in) :: at
     character(*), intent(in), optional :: properties(:)
@@ -574,7 +520,7 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
-    integer, optional, intent(out) :: status
+    integer, optional, intent(inout) :: error
 
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
@@ -586,8 +532,6 @@ contains
     character(len=KEY_LEN) :: do_int_format, do_real_format
     integer :: do_shuffle, do_deflate
     integer :: do_deflate_level, do_swap
-
-    if (present(status)) status = 0
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= OUTPUT .and. this%action /= INOUT) call system_abort("Cannot write to action=INPUT CInOutput object")
@@ -743,11 +687,7 @@ contains
     if (ciowrite(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
          trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
          do_shuffle, do_deflate, do_deflate_level, do_swap) == 0) then
-       if (present(status)) then
-          status = 1
-       else
-          call system_abort("Error writing file")
-       end if
+       RAISE_ERROR("Error writing file.", error)
     end if
 
     call finalise(selected_properties)
@@ -833,23 +773,25 @@ contains
 
   end subroutine atoms_read_cinoutput
 
-  subroutine atoms_write(this, filename, append, properties, status)
+  subroutine atoms_write(this, filename, append, properties, error)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: filename
     logical, optional, intent(in) :: append
     character(*), intent(in), optional :: properties(:)    
-    integer, optional, intent(out) :: status
+    integer, optional, intent(inout) :: error
 
     type(CInOutput) :: cio
 
-    call initialise(cio, filename, OUTPUT, append)
-    call write(cio, this, properties, status=status)
+    call initialise(cio, filename, OUTPUT, append, error=error)
+    PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
+    call write(cio, this, properties, error=error)
+    PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
     call finalise(cio)
     
   end subroutine atoms_write
 
-  subroutine atoms_write_cinoutput(this, cio, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, status)
+  subroutine atoms_write_cinoutput(this, cio, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties(:)    
@@ -857,9 +799,10 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
-    integer, optional, intent(out) :: status
+    integer, optional, intent(inout) :: error
 
-    call cinoutput_write(cio, this, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, status)
+    call cinoutput_write(cio, this, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, error=error)
+    PASS_ERROR(error)
 
   end subroutine atoms_write_cinoutput
 
