@@ -93,10 +93,12 @@ interface max
 end interface
 public :: sum
 interface sum
+  module procedure MPI_context_sum_int
   module procedure MPI_context_sum_real, MPI_context_sum_complex
 end interface
 public :: sum_in_place
 interface sum_in_place
+  module procedure MPI_context_sum_in_place_int1
   module procedure MPI_context_sum_in_place_real1, MPI_context_sum_in_place_real2
   module procedure MPI_context_sum_in_place_real3
   module procedure MPI_context_sum_in_place_complex1, MPI_context_sum_in_place_complex2
@@ -339,6 +341,33 @@ include 'mpif.h'
 #endif
 end function MPI_context_max_real
 
+function MPI_context_sum_int(this, v, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: v
+  integer, optional, intent(inout) :: error
+  integer :: MPI_context_sum_int
+
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) then
+    MPI_context_sum_int = v
+    return
+  endif
+
+#ifdef _MPI
+  call MPI_allreduce(v, MPI_context_sum_int, 1, MPI_INTEGER, MPI_SUM, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#else
+  MPI_context_sum_int = v
+#endif
+end function  MPI_context_sum_int
+
 function MPI_context_sum_real(this, v, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v
@@ -485,6 +514,37 @@ include 'mpif.h'
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine  MPI_context_sum_in_place_complex2
+
+subroutine MPI_context_sum_in_place_int1(this, v, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(inout) :: v(:)
+  integer, optional, intent(inout) :: error
+
+#ifdef MPI_1
+  integer, allocatable :: v_sum(:)
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+include 'mpif.h'
+#endif
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  allocate(v_sum(size(v,1)))
+  call MPI_allreduce(v, v_sum, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
+  v = v_sum
+  deallocate(v_sum)
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
+#endif
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_sum_in_place_int1
 
 subroutine MPI_context_sum_in_place_real1(this, v, error)
   type(MPI_context), intent(in) :: this
