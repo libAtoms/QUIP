@@ -30,6 +30,8 @@
 
 ! Reads a sequence of configs and writes them back, mostly to convert from xyz to netcdf and back
 
+#include "error.inc"
+
 program file_rewrite
 use libatoms_module
 implicit none
@@ -63,9 +65,11 @@ implicit none
   i = 1
   call read(infile, at, error=error)
   do while (error == ERROR_NONE) 
-    call write(outfile, at)
+    call write(outfile, at, error=error)
+    HANDLE_ERROR(error)
     if (mod(i,100) == 0) write (*,'(I1,$)') mod(i/100,10)
     call read(infile, at, error=error)
+    HANDLE_ERROR(error)
     i = i + 1
   end do
   ! We do not want to handle this error
