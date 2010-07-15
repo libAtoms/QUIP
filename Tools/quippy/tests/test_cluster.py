@@ -496,9 +496,10 @@ class TestCluster_TerminationClash(QuippyTestCase):
       self.assertArrayAlmostEqual(self.t.int[1:4,1:self.embed.n], self.embed.int[1:4,1:self.embed.n])
 
    def test_i_shift_clash(self):
-      # Last entry should be [clash_atom, 0,0,0]
+      # Last entry should be [clash_atom, 0,-1,0]
       self.assertNotEqual(self.clash_ind,-1)
-      self.assertEqual(list(self.t.int[1:4,self.clash_ind]), [self.clash_atom, 0, 0, 0])
+      # now 0 -1 0, because of no map_into_cell()
+      self.assertEqual(list(self.t.int[1:4,self.clash_ind]), [self.clash_atom, 0, -1, 0])
 
 # clash marking implicitly tested by test_i_shift_clash
 #   def test_mark_clash(self):

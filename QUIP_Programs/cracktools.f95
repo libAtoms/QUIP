@@ -1858,7 +1858,7 @@ contains
           start_pos = (/ -orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
        end if
        
-       call cell_of_pos(connect, at%g, start_pos, start_i, start_j, start_k)
+       call cell_of_pos(connect, at%g .mult. start_pos, start_i, start_j, start_k)
        
        if (cells(start_i, start_j, start_k) /= 1) &
             call system_abort('crack_find_tip_percolation: cannot start percolation since start_pos='//start_pos//' is not in void')

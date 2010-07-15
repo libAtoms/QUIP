@@ -347,10 +347,12 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.assertAlmostEqual(d1, d2)
 
    def test_realpos(self):
-      rp1 = self.dia.realpos(1)
-      self.dia.travel[:] = 1
-      rp2 = self.dia.realpos(1)
-      self.assertArrayAlmostEqual(rp2 - rp1, dot(self.dia.lattice, [1,1,1]))
+      t_dia = self.dia.copy()
+      t_dia.map_into_cell()
+      rp1 = t_dia.realpos(1)
+      t_dia.travel[:] = 1
+      rp2 = t_dia.realpos(1)
+      self.assertArrayAlmostEqual(rp2 - rp1, dot(t_dia.lattice, [1,1,1]))
 
    def test_cosine(self):
       c1 = fzeros(3)
