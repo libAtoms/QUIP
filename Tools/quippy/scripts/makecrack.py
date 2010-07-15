@@ -83,18 +83,14 @@ def makecrack(params):
    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
    crack_make_seed(crack_slab, params)
+   crack_setup_marks(crack_slab, params)
 
    if (params.crack_apply_initial_load):
       crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
 
-   print_title('Initialising QM region')
-
-   crack_pos = crack_find_tip_coordination(crack_slab, params)
-   crack_slab.params['CrackPosx'] = crack_pos[1]
-   crack_slab.params['CrackPosy'] = crack_pos[2]
-
-   crack_setup_marks(crack_slab, params)
-
+   if (not params.simulation_classical):
+      crack_update_selection(crack_slab, params)
+   
    return crack_slab
 
 
