@@ -37,7 +37,7 @@
 !% It is initialised like this:
 !%> 	  call initialise(MyAtoms,N,lattice)
 !% where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
-!% matrix of lattice vectors given as column vectors.
+!% matrix of lattice vectors given as column vectors, so that lattice(:,i) is the i-th lattice vector.
 !% 
 !% Atoms also contains a Connection object, which stores distance information about
 !% the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
@@ -1048,7 +1048,7 @@ contains
     if (Get_Value(this%properties, name, use_lookup)) then
        ! Does it match this type and number of columns?
        if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
+          call print('Add_Property: property '//trim(name)//' already present')
           if (present(lookup)) lookup = use_lookup
           this%data%real(use_lookup(2):use_lookup(3), 1:this%data%N) = value
           return
