@@ -1754,8 +1754,6 @@ contains
 
     do while (total_embedlist%N < n_region1)
 
-       call print('total_embedlist%N = '//total_embedlist%N)
-
        call wipe(currentlist)
        call wipe(activelist)
        call wipe(nextlist)    
@@ -1794,9 +1792,7 @@ contains
        ! periodic shifts
        
        hybrid_number = 1
-       call print('entering loop')
        do while (hybrid_number .ne. 0)
-          call print('hybrid_number '//hybrid_number)
           if (hysteretic_connect) then
             call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = min_images_only, alt_connect=at%hysteretic_connect)
           else
