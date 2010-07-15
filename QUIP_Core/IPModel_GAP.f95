@@ -373,8 +373,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
   endif
 #endif
+
 !$omp do private(n)
   do i = 1, at%N
+     if (this%mpi%active) then
+       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     endif
 
 #ifdef HAVE_GP
      if (trim(this%datafile_coordinates) == 'bispectrum') then
@@ -403,6 +407,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 #endif
   enddo
 !$omp end do 
+
+  call sum_in_place(this%mpi, vec)
+  if(present(f).or.present(virial)) call sum_in_place(this%mpi,jack)
+
 #ifdef HAVE_GP
   if (trim(this%datafile_coordinates) == 'bispectrum') then
      call finalise(f_hat)
@@ -420,6 +428,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
     
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
   do i = 1, at%N
+     if (this%mpi%active) then
+        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     endif
      if(present(e) .or. present(local_e)) then
 #ifdef HAVE_GP
         call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i))
@@ -455,6 +466,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   deallocate(vec,jack)
 
+  if(present(f)) call sum_in_place(this%mpi,f)
+  if(present(virial)) call sum_in_place(this%mpi,virial_in)
+
   if( this%do_ewald ) then
      allocate(charge(at%N))
      if(present(f)) allocate(f_ewald(3,at%N))
@@ -484,6 +498,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      if(allocated(f_ewald)) deallocate(f_ewald)
   endif
 
+  if(present(e) .or. present(local_e) ) call sum_in_place(this%mpi,local_e_in)
   if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
