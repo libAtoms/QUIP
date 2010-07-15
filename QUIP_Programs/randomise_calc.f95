@@ -36,7 +36,7 @@ use MetaPotential_module
 
 implicit none
 
-  type(Potential) pot
+  type(MetaPotential) pot
   type(Atoms):: at, at2
   real(dp)::e
   real(dp):: lat(3,3), v(3,3)

@@ -583,11 +583,10 @@ contains
 
   end subroutine crack_setup_marks
 
-  subroutine crack_calc_load_field(crack_slab, params, classicalpot, metapot, load_method, overwrite_pos, mpi) 
+  subroutine crack_calc_load_field(crack_slab, params, classicalpot, load_method, overwrite_pos, mpi) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
-    type(Potential), intent(in) :: classicalpot
-    type(MetaPotential), intent(inout) :: metapot
+    type(MetaPotential), intent(inout) :: classicalpot
     character(*), intent(in) :: load_method
     logical, intent(in) :: overwrite_pos
     type(MPI_Context), intent(in) :: mpi
@@ -658,7 +657,7 @@ contains
        initial_pos = crack_slab%pos
 
        !create a bulk slab
-       call crack_make_slab(params, classicalpot, metapot, crack_slab1, width1, height1, E, v, v2, bulk)
+       call crack_make_slab(params, classicalpot, crack_slab1, width1, height1, E, v, v2, bulk)
 
        ! Apply loading field   
        if (trim(load_method) == 'saved') then
@@ -666,7 +665,7 @@ contains
           !relax the positions of the original slab 
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
-             steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+             steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                print_cinoutput=movie)
@@ -685,7 +684,7 @@ contains
           !relax the positions of the original slab 
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
-             steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+             steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                print_cinoutput=movie)
@@ -718,7 +717,7 @@ contains
 
          if (params%crack_relax_loading_field) then
               ! now relax
-            steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+            steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                  do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                  print_cinoutput=movie)
@@ -772,7 +771,7 @@ contains
           end do
  
          if (params%crack_relax_loading_field) then
-            steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+            steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                  do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                  print_cinoutput=movie)
@@ -819,7 +818,7 @@ contains
        if (params%crack_relax_loading_field) then
        
           ! now re-relax
-           steps = minim(metapot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
+           steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., use_fire=(trim(params%minim_mm_method)=='fire'), &
                print_cinoutput=movie)
@@ -2153,10 +2152,9 @@ contains
 
   end subroutine crack_print_filename
 
-  subroutine crack_make_slab(params, classicalpot, simple, crack_slab,width, height, E, v, v2, bulk)
+  subroutine crack_make_slab(params, classicalpot, crack_slab,width, height, E, v, v2, bulk)
     type(CrackParams), intent(in) :: params
-    type(Potential), intent(in) :: classicalpot
-    type(Metapotential), intent(in) :: simple
+    type(MetaPotential), intent(inout) :: classicalpot
     type(Atoms), intent(out) :: crack_slab
     real(dp), intent(out) :: width, height, E, v, v2
     type(Atoms), intent(out) :: bulk
@@ -2167,7 +2165,6 @@ contains
     real (dp), dimension(3,3) :: axes, lattice
     integer :: i, atom1, atom2, n, j, nx, ny
     real(dp), dimension(6,6) :: c, c0
-    type(Metapotential) :: simple_metapot
 
     if (trim(params%crack_bulk_filename) /= '') then
 
@@ -2177,8 +2174,7 @@ contains
        if (params%elastic_read) then
           c = params%elastic_cij/GPA
        else
-          simple_metapot = simple
-          call calc_elastic_constants(simple_metapot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+          call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
           
           call print('Relaxed elastic constants (GPa):')
           call print(c*GPA)
@@ -2231,7 +2227,7 @@ contains
 
           call print_title('Graphene Crack')
 
-!!$     call graphene_elastic(simple, a, v, E)
+!!$     call graphene_elastic(classicalpot, a, v, E)
 
           a = 1.42_dp
           v = 0.144_dp
@@ -2316,31 +2312,30 @@ contains
           elseif(trim(params%crack_structure) == 'bcc') then
              call print_title('BCC Structure Crack')
              call bcc(bulk, params%crack_lattice_guess, params%crack_z(1))
-             call set_cutoff(bulk, cutoff(simple))
+             call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'fcc') then
              call print_title('FCC Structure Crack')
              call fcc(bulk, params%crack_lattice_guess, params%crack_z(1))
-             call set_cutoff(bulk, cutoff(simple))
+             call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'alpha_quartz') then
              call print_title('Alpha Quartz Crack')
              call alpha_quartz(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u, &
                   x=params%crack_lattice_x, y=params%crack_lattice_y, z=params%crack_lattice_z)
-             call set_cutoff(bulk, cutoff(simple))
+             call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'anatase') then
              call print_title('TiO2 Anatase Crack')
              call anatase(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
-             call set_cutoff(bulk, cutoff(simple))
+             call set_cutoff(bulk, cutoff(classicalpot))
           elseif(trim(params%crack_structure) == 'rutile') then
              call print_title('TiO2 Rutile Crack')
              call rutile(bulk, a=params%crack_lattice_a, c=params%crack_lattice_c, u=params%crack_lattice_u)
-             call set_cutoff(bulk, cutoff(simple))
+             call set_cutoff(bulk, cutoff(classicalpot))
           endif
 
           if (params%elastic_read) then
              c = params%elastic_cij/GPA
           else
-             simple_metapot = simple
-             call calc_elastic_constants(simple_metapot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
+             call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=.true., return_relaxed=.true.)
 
              call print('Relaxed elastic constants (GPa):')
              call print(c*GPA)

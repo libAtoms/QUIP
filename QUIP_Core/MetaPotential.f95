@@ -83,10 +83,13 @@ module MetaPotential_module
   public :: MetaPotential
   type MetaPotential
      type(MPI_context) :: mpi
+     character(len=FIELD_LENGTH) init_args_pot1, init_args_pot2
      
      logical :: is_simple = .false.
-     type(Potential), pointer :: pot => null()
+     type(Potential) :: pot
 
+     type(MetaPotential), pointer :: l_mpot1 => null() ! local copies of potentials, if they are created by metapotential_initialise from an args string
+     type(MetaPotential), pointer :: l_mpot2 => null() ! local copies of potentials, if they are created by metapotential_initialise from an args string
 
      logical :: is_sum = .false.
      type(MetaPotential_Sum), pointer :: sum => null()
@@ -109,21 +112,26 @@ module MetaPotential_module
   type MetaPotential_Sum
      type(MPI_context) :: mpi
 
-     type(Potential), pointer :: pot1 => null() 
-     type(Potential), pointer :: pot2 => null() 
+     type(MetaPotential), pointer :: pot1 => null() 
+     type(MetaPotential), pointer :: pot2 => null() 
 
      logical  :: subtract_pot1
      logical  :: subtract_pot2
   end type MetaPotential_Sum
 
-  public :: Initialise
+  public :: Initialise, MetaPotential_Filename_Initialise
   interface Initialise
-     module procedure MetaPotential_Initialise, MetaPotential_Sum_Initialise
+     module procedure MetaPotential_Initialise, MetaPotential_Initialise_inoutput, MetaPotential_Sum_Initialise
   end interface
 
   public :: Finalise
   interface Finalise
      module procedure MetaPotential_Finalise, MetaPotential_Sum_Finalise
+  end interface
+
+  public :: Setup_Parallel
+  interface Setup_Parallel
+     module procedure MetaPotential_Setup_Parallel
   end interface
 
   public :: Print
@@ -192,20 +200,54 @@ module MetaPotential_module
   !*
   !*************************************************************************
 
-subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_obj)
+subroutine metapotential_filename_initialise(this, args_str, param_filename, bulk_scale, mpi_obj)
   type(MetaPotential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Simple', 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM'
-  type(Potential), intent(in), target :: pot !% Potential upon which this MetaPotential is based
-  type(Potential), optional, intent(in), target :: pot2 !% Optional second potential
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  character(len=*), intent(in) :: param_filename !% name of xml parameter file for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
 
-  type(Dictionary) :: params
+  type(inoutput) :: io
 
+  call initialise(io, param_filename, INPUT, master_only=.true.)
+  call initialise(this, args_str, io, bulk_scale, mpi_obj)
+end subroutine metapotential_filename_initialise
+
+subroutine metapotential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi_obj)
+  type(MetaPotential), intent(inout) :: this
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  type(InOutput), intent(in) :: io_obj !% name of xml parameter inoutput for potential initializers
+  type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
+  type(MPI_Context), intent(in), optional :: mpi_obj
+
+  type(extendable_str) :: es
+
+  call initialise(es)
+  if (present(mpi_obj)) then
+    call read(es, io_obj%unit, convert_to_string=.true., mpi_comm=mpi_obj%communicator)
+  else
+    call read(es, io_obj%unit, convert_to_string=.true.)
+  endif
+
+  call initialise(this, args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj)
+end subroutine metapotential_initialise_inoutput
+
+subroutine metapotential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj)
+  type(MetaPotential), intent(inout) :: this
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  type(MetaPotential), optional, intent(in), target :: pot1 !% Optional first Potential upon which this MetaPotential is based
+  type(MetaPotential), optional, intent(in), target :: pot2 !% Optional second potential
+  character(len=*), optional, intent(in) :: param_str !% contents of xml parameter file for potential initializers, if needed
+  type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
+  type(MPI_Context), optional, intent(in) :: mpi_obj
+
+  type(MetaPotential), pointer :: u_pot1, u_pot2
+  type(Dictionary) :: params
 
   call finalise(this)
   call initialise(params)
-  call param_register(params, 'Simple', 'false', this%is_simple)
+  call param_register(params, 'init_args_pot1', '', this%init_args_pot1)
+  call param_register(params, 'init_args_pot2', '', this%init_args_pot2)
   call param_register(params, 'Sum', 'false', this%is_sum)
   call param_register(params, 'ForceMixing', 'false', this%is_forcemixing)
 #ifdef HAVE_LOCAL_E_MIX
@@ -220,7 +262,39 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   end if
   call finalise(params)
 
+  if (present(pot1) .and. len_trim(this%init_args_pot1) > 0) &
+    call system_abort("MetaPotential_initialise got both pot and args_str with init_args_pot1 passed in, conflict")
+  if (present(pot2) .and. len_trim(this%init_args_pot2) > 0) &
+    call system_abort("MetaPotential_initialise got both pot2 and args_str with init_args_pot2 passed in, conflict")
+  if (len_trim(this%init_args_pot1) > 0) then
+    allocate(this%l_mpot1)
+    call initialise(this%l_mpot1, args_str=this%init_args_pot1, param_str=param_str, bulk_scale=bulk_scale, mpi_obj=mpi_obj)
+    u_pot1 => this%l_mpot1
+  else
+    u_pot1 => pot1
+  endif
+  if (len_trim(this%init_args_pot2) > 0) then
+    allocate(this%l_mpot2)
+    call initialise(this%l_mpot2, args_str=this%init_args_pot2, param_str=param_str, bulk_scale=bulk_scale, mpi_obj=mpi_obj)
+    u_pot2 => this%l_mpot2
+  else
+    if (present(pot2)) then
+      u_pot2 => pot2
+    else
+      nullify(u_pot2)
+    endif
+  endif
+
   if (present(mpi_obj)) this%mpi = mpi_obj
+
+  this%is_simple = .not. any( (/ this%is_sum, this%is_forcemixing &
+#ifdef HAVE_LOCAL_E_MIX
+  , this%is_local_e_mix &
+#endif
+#ifdef HAVE_ONIOM
+  , this%is_oniom  &
+#endif
+  /) )
 
   if (count( (/this%is_simple, this%is_sum, this%is_forcemixing &
 #ifdef HAVE_LOCAL_E_MIX
@@ -237,42 +311,42 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   if (this%is_simple) then
     if (present(bulk_scale)) call print("MetaPotential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
 
-    this%pot => pot
+    call initialise(this%pot, args_str, param_str, mpi_obj)
 
   else if (this%is_sum) then
     if (present(bulk_scale)) call print("MetaPotential_initialise Sum ignoring bulk_scale passed in", PRINT_ALWAYS)
 
-    if (.not. present(pot2)) &
+    if (.not. associated(u_pot2)) &
       call system_abort('MetaPotential_initialise: two potentials needs for sum metapotential')
 
     allocate(this%sum)
-    call initialise(this%sum, args_str, pot, pot2, mpi_obj)
+    call initialise(this%sum, args_str, u_pot1, u_pot2, mpi_obj)
 
   else if (this%is_forcemixing) then
 
     allocate(this%forcemixing)
-    if(present(pot2)) then
-       call initialise(this%forcemixing, args_str, pot, pot2, bulk_scale, mpi_obj)
+    if(associated(u_pot2)) then
+       call initialise(this%forcemixing, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj)
     else
        ! if only one pot is given, assign it to QM. this is useful for time-embedding LOTF
-       call initialise(this%forcemixing, args_str, qmpot=pot, reference_bulk=bulk_scale, mpi=mpi_obj)
+       call initialise(this%forcemixing, args_str, qmpot=u_pot1, reference_bulk=bulk_scale, mpi=mpi_obj)
     endif
 
 #ifdef HAVE_LOCAL_E_MIX
   else if (this%is_local_e_mix) then
-    if (.not. present(pot2)) &
+    if (.not. associated(u_pot2)) &
       call system_abort('MetaPotential_initialise: two potentials needs for local_e_mix metapotential')
 
     allocate(this%local_e_mix)
-    call initialise(this%local_e_mix, args_str, pot, pot2, bulk_scale, mpi_obj)
+    call initialise(this%local_e_mix, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj)
 #endif HAVE_LOCAL_E_MIX
 #ifdef HAVE_ONIOM
   else if (this%is_oniom) then
-    if (.not. present(pot2)) &
+    if (.not. associated(u_pot2)) &
       call system_abort('MetaPotential_initialise: two potentials needs for oniom metapotential')
 
     allocate(this%oniom)
-    call initialise(this%oniom, args_str, pot, pot2, bulk_scale, mpi_obj)
+    call initialise(this%oniom, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj)
 #endif HAVE_ONIOM
   end if
 
@@ -282,7 +356,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     type(MetaPotential), intent(inout) :: this
 
     if (this%is_simple) then
-       nullify(this%pot)
+       call finalise(this%pot)
     else if (this%is_sum) then
        call finalise(this%sum)
        deallocate(this%sum)
@@ -300,6 +374,11 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
        deallocate(this%oniom)
 #endif HAVE_ONIOM
     end if
+
+    if (associated(this%l_mpot1)) call finalise(this%l_mpot1)
+    if (associated(this%l_mpot2)) call finalise(this%l_mpot2)
+    nullify(this%l_mpot1)
+    nullify(this%l_mpot2)
 
     this%is_simple = .false.
     this%is_sum = .false.
@@ -346,6 +425,20 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     endif
 
   end subroutine
+
+  subroutine MetaPotential_setup_parallel(this, at, e, local_e, f, virial, args_str)
+    type(MetaPotential), intent(inout) :: this
+    type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
+    real(dp), intent(out), optional :: e                   !% Total energy
+    real(dp), intent(out), optional :: local_e(:)          !% Energy per atom    
+    real(dp), intent(out), optional :: f(:,:)              !% Forces, dimensioned \texttt{(3,at%N)}
+    real(dp), intent(out), optional :: virial(3,3)         !% Virial
+    character(len=*), intent(in), optional :: args_str
+
+    if(this%is_simple) then
+       call setup_parallel(this%pot, at, e, local_e, f, virial)
+    endif
+  end subroutine MetaPotential_setup_parallel
 
   subroutine metapotential_print(this, file)
     type(MetaPotential), intent(inout) :: this
@@ -1286,7 +1379,7 @@ max_atom_rij_change = 1.038_dp
   subroutine MetaPotential_Sum_Initialise(this, args_str, pot1, pot2, mpi)
     type(MetaPotential_Sum), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: pot1, pot2
+    type(MetaPotential), intent(in), target :: pot1, pot2
     type(MPI_Context), intent(in), optional :: mpi
 
     type(Dictionary) :: params

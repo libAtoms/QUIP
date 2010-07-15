@@ -38,8 +38,8 @@
   public :: MetaPotential_FM
   type MetaPotential_FM
 
-     type(Potential), pointer :: mmpot => null() 
-     type(Potential), pointer :: qmpot => null() 
+     type(MetaPotential), pointer :: mmpot => null() 
+     type(MetaPotential), pointer :: qmpot => null() 
      type(MPI_context) :: mpi
 
      character(1024) :: init_args_str
@@ -93,7 +93,7 @@
 
      type(Dictionary) :: create_hybrid_weights_params !% extra arguments to pass create_hybrid_weights
 
-     type(MetaPotential) :: relax_metapot
+     type(MetaPotential), pointer :: relax_metapot
      type(Inoutput), pointer :: minim_inoutput_movie
      type(CInoutput), pointer :: minim_cinoutput_movie
 

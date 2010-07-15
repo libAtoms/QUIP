@@ -37,7 +37,7 @@ use vacancy_map_module
 
 implicit none
   type(Atoms) at
-  type(Potential), target ::pot1, pot2
+  type(MetaPotential), target ::metapot1, metapot2
   type(MetaPotential)         ::hybridpot
   type(inoutput) params, out
   integer :: it
@@ -86,10 +86,10 @@ implicit none
   endif
 
   call initialise(mpi)
-  call Potential_Initialise_filename(pot1, 'TB NRL-TB label=Aluminum SCF=GLOBAL_U GLOBAL_U=20', 'quip_params_hybrid.xml', mpi_obj=mpi)
-  call Potential_Initialise_filename(pot2, 'IP EAM_Ercolessi_Adams', 'quip_params_hybrid.xml', mpi_obj=mpi)
+  call Potential_Initialise_filename(metapot1, 'TB NRL-TB label=Aluminum SCF=GLOBAL_U GLOBAL_U=20', 'quip_params_hybrid.xml', mpi_obj=mpi)
+  call Potential_Initialise_filename(metapot2, 'IP EAM_Ercolessi_Adams', 'quip_params_hybrid.xml', mpi_obj=mpi)
 
-  call init_hybrid(pot1, pot2, hybridpot, hybrid_args_str)
+  call init_hybrid(metapot1, metapot2, hybridpot, hybrid_args_str)
 
   call initialise(out, 'out.xyz', action=OUTPUT)
   call read_xyz(at, in_file, comment=comment, mpi_comm=mpi%communicator)
@@ -113,10 +113,10 @@ implicit none
 
   allocate(f(3,at%N))
 
-  call set_cutoff(at, cutoff(pot2)+0.5_dp)
+  call set_cutoff(at, cutoff(metapot2)+0.5_dp)
   call calc_connect(at)
   call verbosity_push_increment(5)
-  call setup_parallel(pot2, at, e=e, f=f)
+  call setup_parallel(metapot2, at, e=e, f=f)
   it = minim(hybridpot, at, 'cg', 0.001_dp, 500, 'NR_LINMIN', do_print = .true., print_inoutput = out, &
     do_pos = .true., eps_guess = eps_guess, use_n_minim=use_n_minim)
   call verbosity_pop()

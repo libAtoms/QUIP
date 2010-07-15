@@ -52,7 +52,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
   real(dp), dimension(3,3), intent(out) :: stress
   
   type(atoms), save     :: at
-  type(Potential), save :: pot
+  type(MetaPotential), save :: pot
 
   integer :: i
 
@@ -61,7 +61,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
   call system_initialise(verbosity=PRINT_SILENT)
 
   if( first_run ) then
-     call Initialise(pot, "IP GAP", "" )
+     call Initialise(pot, "IP GAP", param_str="")
      call initialise(at,N,transpose(lattice)*BOHR)
   endif
   

@@ -50,7 +50,7 @@ program qmmm_md
   character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
-  type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
+  type(MetaPotential)                     :: cp2k_fast_pot, cp2k_slow_pot 
   type(MetaPotential)                 :: metapot, empty_qm_metapot
   character(len=STRING_LENGTH)        :: args_str
   real(dp)                            :: energy,check,TI_force, TI_corr
@@ -1260,7 +1260,7 @@ contains
   end subroutine do_calc_call
 
   subroutine setup_pot(pot, Run_Type, filepot_program)
-    type(Potential), intent(inout) :: pot
+    type(MetaPotential), intent(inout) :: pot
     character(len=*), intent(in) :: Run_Type, filepot_program
     if (trim(Run_Type) == 'QS') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')

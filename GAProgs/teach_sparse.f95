@@ -192,7 +192,7 @@ contains
     type(bispectrum_so4) :: bis
     type(grad_bispectrum_so4) :: dbis
 
-    type(Potential) :: core_pot
+    type(MetaPotential) :: core_pot
     
     logical :: do_qw_so3
     integer :: d
@@ -218,7 +218,7 @@ contains
        d = qw2d(qw)
     endif
 
-    if( core%do_core ) call Initialise(core_pot, core%ip_args, core%quip_string)
+    if( core%do_core ) call Initialise(core_pot, core%ip_args, args_str=core%quip_string)
 
     call initialise(xyzfile,at_file)
     call query(xyzfile)
@@ -427,7 +427,7 @@ contains
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: e0
 
-    type(Potential) :: core_pot
+    type(MetaPotential) :: core_pot
     type(cinoutput) :: xyzfile
     type(atoms) :: at
     integer :: n_max, n_con
@@ -437,7 +437,7 @@ contains
     real(dp), pointer :: charge(:)
     integer :: i
 
-    if( core%do_core ) call Initialise(core_pot, core%ip_args, core%quip_string)
+    if( core%do_core ) call Initialise(core_pot, core%ip_args, param_str=core%quip_string)
 
     call initialise(xyzfile,at_file)
     call query(xyzfile)

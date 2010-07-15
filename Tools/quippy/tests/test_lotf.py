@@ -83,8 +83,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and quippy.
 </quip_params>"""
 
             system_reseed_rng(2)
-            self.pot1 = Potential('IP SW label="PRB_31_plus_H"', xml)
-            self.pot2 = Potential('IP SW label="eps_2.3"', xml)
+            self.pot1 = MetaPotential('IP SW label="PRB_31_plus_H"', param_str=xml)
+            self.pot2 = MetaPotential('IP SW label="eps_2.3"', param_str=xml)
          
             self.dia = diamond(5.44, 14)
             self.at = supercell(self.dia, 4, 4, 4)
@@ -100,10 +100,10 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and quippy.
 
             self.lotf = MetaPotential('ForceMixing method=lotf_adj_pot_svd fit_hops=3 buffer_hops=3 '+
                                       'randomise_buffer=T qm_args_str={carve_cluster=T single_cluster=T cluster_calc_connect=T}', 
-                                      self.pot1, self.pot2, self.dia)
+                                      self.pot1, self.pot2, bulk_scale=self.dia)
             self.forcemix = MetaPotential('ForceMixing method=force_mixing buffer_hops=3 '+
                                           'qm_args_str={carve_cluster=T single_cluster=T cluster_calc_connect=T}', 
-                                          self.pot1, self.pot2, self.dia)
+                                          self.pot1, self.pot2, bulk_scale=self.dia)
 
         def test_no_predictor_corrector(self):
             ds = DynamicalSystem(self.at)

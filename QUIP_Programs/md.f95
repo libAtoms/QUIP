@@ -46,7 +46,6 @@ private
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P
     character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
-    character(len=FIELD_LENGTH) :: pot1_init_args, pot2_init_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
@@ -95,8 +94,6 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial)
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy)
   call param_register(md_params_dict, 'metapot_init_args', PARAM_MANDATORY, params%metapot_init_args)
-  call param_register(md_params_dict, 'pot1_init_args', '', params%pot1_init_args)
-  call param_register(md_params_dict, 'pot2_init_args', '', params%pot2_init_args)
   call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval)
@@ -159,8 +156,6 @@ subroutine print_params(params)
   integer :: i
 
   call print("md_params%metapot_init_args='" // trim(params%metapot_init_args) // "'")
-  call print("md_params%pot1_init_args='" // trim(params%pot1_init_args) // "'")
-  call print("md_params%pot2_init_args='" // trim(params%pot2_init_args) // "'")
   call print("md_params%metapot_calc_args='" // trim(params%metapot_calc_args) // "'")
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
@@ -382,7 +377,6 @@ use md_module
 use libatoms_misc_utils_module
 
 implicit none
-  type (Potential) :: pot1, pot2
   type (MetaPotential) :: metapot
   type(MPI_context) :: mpi_glob
   type(extendable_str) :: es
@@ -418,16 +412,7 @@ implicit none
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
-  if (len_trim(params%pot1_init_args) == 0 .and. len_trim(params%pot2_init_args) == 0) then
-    call potential_initialise_filename(pot1, params%metapot_init_args, params%params_in_file, mpi_obj=mpi_glob)
-    call initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
-  else if (len_trim(params%pot1_init_args) /= 0 .and. len_trim(params%pot2_init_args) /= 0) then
-    call potential_initialise_filename(pot1, params%pot1_init_args, params%params_in_file, mpi_obj=mpi_glob)
-    call potential_initialise_filename(pot2, params%pot2_init_args, params%params_in_file, mpi_obj=mpi_glob)
-    call initialise(metapot, params%metapot_init_args, pot1, pot2, mpi_obj=mpi_glob)
-  else
-    call system_abort("Can only handle just metapot_init_args (for Simple), or all of pot1_init_args, pot2_init_args, and metapot_init_args")
-  endif
+  call metapotential_filename_initialise(metapot, params%metapot_init_args, param_filename=params%params_in_file, mpi_obj=mpi_glob)
 
   call print(metapot)
 

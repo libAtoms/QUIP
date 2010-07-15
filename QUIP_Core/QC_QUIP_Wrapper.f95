@@ -57,9 +57,9 @@ private
 
   public :: verbosity_push, verbosity_pop, PRINT_SILENT
   public :: QC_QUIP_initialise, QC_QUIP_calc,MakeLine
-  type (Potential) pot_ip
+  type (MetaPotential) pot_ip
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-  type (Potential) pot_qm
+  type (MetaPotential) pot_qm
   public :: QC_QUIP_initialise_hybrid, QC_QUIP_calc_hybrid
 #endif
 
@@ -85,9 +85,8 @@ contains
     call Initialise(params_str)
     call read(params_str, params%unit)
 
-    call Initialise(pot_ip, str, string(params_str))
+    call Initialise(metapot, str, string(params_str))
     if (present(err)) err = 0
-    call Initialise(metapot, "Simple", pot_ip)
   end subroutine
 
   subroutine QC_QUIP_calc(Lz, pos, Z, w, local_e, f, err)
@@ -154,9 +153,9 @@ call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it"
 !      bulk%pos = pos
 !      call initialise(metapot, str_hybrid, pot_qm, pot_ip, bulk) 
 !      call finalise(bulk)
-call initialise(metapot, str_hybrid, pot_qm, pot_ip)
+call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
     else if (n_present == 0) then
-      call initialise(metapot, str_hybrid, pot_qm, pot_ip)
+      call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
     else
       call system_abort("QC_QUIP_initialise_hybrid called with some but not all of lat, Z, pos present")
     endif

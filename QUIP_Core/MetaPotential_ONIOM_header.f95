@@ -38,8 +38,8 @@
 
   public :: MetaPotential_ONIOM
   type MetaPotential_ONIOM
-     type(Potential), pointer :: pot_region1
-     type(Potential), pointer :: pot_region2
+     type(MetaPotential), pointer :: pot_region1
+     type(MetaPotential), pointer :: pot_region2
      logical :: terminate = .true.
      real(dp):: r_scale_pot1 = 1.0_dp, E_scale_pot1 = 1.0_dp
 

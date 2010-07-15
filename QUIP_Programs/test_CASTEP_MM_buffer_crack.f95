@@ -36,7 +36,7 @@ implicit none
   type(Inoutput) :: io
   character(len=FIELD_LENGTH) :: infile, init_args, calc_args
   real(dp) :: rqm, rmm, g_width
-  type(Potential) :: pot
+  type(MetaPotential) :: pot
   type(Dictionary) :: cli
   type(Table) :: cluster_info
   integer, pointer :: idx(:)

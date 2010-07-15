@@ -41,7 +41,6 @@ use phonons_module
 
 implicit none
 
-  type(Potential) pot1, pot2
   type(MetaPotential) metapot
   type(MPI_context) mpi_glob
   type(Atoms) at
@@ -49,7 +48,7 @@ implicit none
   type(Dictionary) :: cli_params
 
   character(len=FIELD_LENGTH) verbosity, test_dir_field
-  logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, do_hybrid, &
+  logical :: do_E, do_F, do_V, do_cij, do_c0ij, do_local, do_test, do_n_test, do_relax, &
 	     do_phonons, do_frozen_phonons, do_phonons_zero_rotation, do_force_const_mat, do_parallel_phonons, do_dipole_moment, do_absorption, &
              & do_fine_phonons
   real(dp) :: mu(3)
@@ -58,7 +57,7 @@ implicit none
   logical :: use_n_minim, do_torque, precond_n_minim
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
+  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
@@ -118,8 +117,6 @@ implicit none
   call enable_timing()
 
   init_args = ''
-  init_args_pot1 = ''
-  init_args_pot2 = ''
   calc_args = ''
   relax_print_file=''
   test_dir_field=''
@@ -163,9 +160,6 @@ implicit none
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
   call param_register(cli_params, 'use_n_minim', 'F', use_n_minim)
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim)
-  call param_register(cli_params, 'hybrid', 'F', do_hybrid)
-  call param_register(cli_params, 'init_args_pot1', '', init_args_pot1)
-  call param_register(cli_params, 'init_args_pot2', '', init_args_pot2)
   call param_register(cli_params, 'linmin_method', 'FAST_LINMIN', linmin_method)
   call param_register(cli_params, 'minim_method', 'cg', minim_method)
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, has_iso_pressure)
@@ -180,7 +174,7 @@ implicit none
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
     call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
-    call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
+    call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
     call print("  [minim_method=string(cg)]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
@@ -188,24 +182,10 @@ implicit none
 
   call print ("Using init args " // trim(init_args))
   call print ("Using calc args " // trim(calc_args))
-  if (do_hybrid) then
-    call print("Hybrid using init args pot1 " // trim(init_args_pot1))
-    call print("Hybrid using init args pot2 " // trim(init_args_pot2))
-  endif
 
   call Initialise(mpi_glob)
 
-  if (do_hybrid) then
-    call Potential_Initialise_filename(pot1, init_args_pot1, param_file, mpi_obj=mpi_glob, &
-      no_parallel=do_parallel_phonons)
-    call Potential_Initialise_filename(pot2, init_args_pot2, param_file, mpi_obj=mpi_glob, &
-      no_parallel=do_parallel_phonons)
-    call Initialise(metapot, init_args, pot1, pot2, mpi_obj=mpi_glob)
-  else
-    call Potential_Initialise_filename(pot1, init_args, param_file, mpi_obj=mpi_glob, &
-      no_parallel=do_parallel_phonons)
-    call Initialise(metapot, "Simple", pot1, mpi_obj=mpi_glob)
-  endif
+  call MetaPotential_filename_Initialise(metapot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
 
   call print(metapot)
 
