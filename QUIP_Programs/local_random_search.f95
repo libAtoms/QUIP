@@ -113,7 +113,8 @@ implicit none
   type(Atoms), target:: at
 
 
-  integer, parameter :: N = 38
+  integer, parameter :: N = 13
+  real, parameter :: SIGMA = 2.35_dp
 
   real(dp) :: r(3), r0(3), etmp(N), e(N), v, eold, rr
   real(dp), pointer :: atlocale(:)
@@ -131,36 +132,21 @@ implicit none
 
   call Initialise(mpot, 'FilePot command=./castep_driver.sh')
   
-  call initialise(at, N, reshape((/50.0_dp,0.0_dp,0.0_dp,0.0_dp,50.0_dp,0.0_dp,0.0_dp,0.0_dp, 50.0_dp/), (/3,3/)))
+  call initialise(at, N, reshape((/10.0_dp,0.0_dp,0.0_dp,0.0_dp,10.0_dp,0.0_dp,0.0_dp,0.0_dp, 10.0_dp/), (/3,3/)))
   call set_cutoff(at, cutoff(mpot)+0.2)
-  call add_property(at, "local_e", 0.0_dp);
   call initialise(movie, 'movie.xyz', OUTPUT)
-  call set_atoms(at, 1)
+  call set_atoms(at, 14)
 
-  allocate(x(N*3), x0(N*3), rrr(N*3))
+  call add_property(at, "local_e", 0.0_dp);
   status = assign_pointer(at, 'local_e', atlocale)
 
-  do k=1,10000
 
-     at%pos = 0.0_dp
-     call randomise(at%pos, 3.0_dp)
-!     at%pos = at%pos+50.0_dp
-     
-     allok = .false.
-     do while(allok .eqv. .false.)
-        x = reshape(at%pos, (/at%N*3/))
-        atlocale = elj(x)
-!        call calc(mpot, at, local_e=e)
-        call print (atlocale)
-        allok = .true.
-        do i=1,N
-           if(atlocale(i) > 100.0_dp) then 
-              call randomise(at%pos(:,i), 2.0_dp)
-              allok = .false.
-           end if
-        end do
-     end do
-     
+  allocate(x(N*3), x0(N*3), rrr(N*3))
+
+  do k=1,1000
+
+     call random_initial_pos_chris(at, 5.0_dp)
+
      ! TIMING TEST
      
      !x = reshape(at%pos, (/at%N*3/))
@@ -175,11 +161,11 @@ implicit none
      !stop
 
 
-     x0 = reshape(at%pos, (/at%N*3/))
+     !x0 = reshape(at%pos, (/at%N*3/))
      !atlocale = elj(x0)
      !call print_xyz(at, movie, ('ljenergy='//sum(atlocale)), all_properties=.true.)
      
-     do i=1,1
+     do i=1,10
 !        niter =  minim(mpot, at, 'cg', 1.0e-10_dp, 5000, &
 !             do_pos=.true., do_print=.false., print_inoutput=movie)
 !        call calc_connect(at)
@@ -190,19 +176,19 @@ implicit none
         !call print('Relaxation finished after '//niter//' iterations')
         !atlocale = elj(x)
         !at%pos = reshape(x, (/3,at%N/))
-        !call print_xyz(at, movie, ('comment="quip cg" Energy='//sum(atlocale)), all_properties=.true.)
+        !call print_xyz(at, movie, ('comment="quipcg" Energy='//sum(atlocale)), all_properties=.true.)
  
 
-        at%pos = reshape(x0, (/3,at%N/))
+        !at%pos = reshape(x0, (/3,at%N/))
+
         call Calc(mpot, at, e=eold)
         call read_xyz(at, 'filepot.0.out')
         call zero_sum(at%pos)
         call add_property(at, "local_e", 0.0_dp);
         status = assign_pointer(at, 'local_e', atlocale)
         x = reshape(at%pos, (/at%N*3/))
-
         atlocale = elj(x)
-        call print_xyz(at, movie, ('comment="castep bfgs" ljenergy='//sum(atlocale)), all_properties=.true.)
+        call print_xyz(at, movie, ('comment="castepbfgs" ljenergy='//sum(atlocale)), all_properties=.true.)
         
         !r = 0
         !call randomise(r, 0.7_dp)
@@ -217,13 +203,12 @@ implicit none
         !   end if
         !end do     
         
-        ! find highest energy atoms
+        !find highest energy atoms
         etmp = elj(x)
         idx = (/ (i, i=1,size(etmp)) /)
         call sort_array(etmp, idx)
-
-        rr = 6.0_dp ! randomize by max this amount
-
+        rr = 3.0_dp ! randomize by max this amount
+        
         do j=1,1
            jj = idx(N-j+1)
            call print('Randomising '//jj)
@@ -236,9 +221,9 @@ implicit none
               atlocale = elj(x)
            end do
         enddo
-
+        
         at%pos = reshape(x, (/3,at%N/))
-        x0 = x
+        
 
      end do
   end do
@@ -246,6 +231,66 @@ implicit none
   call system_finalise()
 
 contains
+
+subroutine random_initial_pos(at, rad)
+  type(Atoms), intent(inout) :: at
+  real(dp), intent(in) :: rad
+  logical :: bad
+  real(dp), allocatable :: x(:)
+  real(dp), pointer :: atlocale(:)
+  integer :: i
+
+  allocate(x(at%N*3))
+
+  at%pos = 0.0_dp
+  call randomise(at%pos, rad)
+  !     at%pos = at%pos+50.0_dp
+  
+  bad = .true.
+  do while(bad)
+     x = reshape(at%pos, (/at%N*3/))
+     atlocale = elj(x)
+     !        call calc(mpot, at, local_e=e)
+     call print (atlocale)
+     bad = .false.
+     do i=1,at%N
+        if(atlocale(i) > 10.0_dp) then 
+           call randomise(at%pos(:,i), 2.0_dp)
+           bad = .true.
+        end if
+     end do
+  end do
+  
+end subroutine random_initial_pos
+
+subroutine random_initial_pos_chris(at, rad)
+  type(Atoms), intent(inout) :: at
+  real(dp), intent(in) :: rad
+  logical :: bad
+  real(dp) :: cut
+
+  cut = rad/(real(at%N)**0.3333333_dp)*0.6_dp
+
+  at%pos = 0.0_dp
+  do i=1,at%N
+     bad = .true.
+     do while(bad)
+        r = 0.0_dp
+        call randomise(r, rad)
+        if(norm(r) > rad) then
+           bad = .true.
+           cycle
+        end if
+
+        bad = .false.
+        do j=1,i-1
+           if(norm(at%pos(:,j)-r) < cut) bad = .true.
+        end do
+     end do
+     at%pos(:,i) = r
+  end do
+
+end subroutine random_initial_pos_chris
 
 end program local_random_search
 
