@@ -1309,11 +1309,13 @@ contains
     ! Calculate centre of cluster
     call allocate(cluster_list, 1,0,0,0)
     call append(cluster_list, find(hybrid_mark /= HYBRID_NO_MARK))
-    centre = 0.0_dp
-    do i=1,cluster_list%N
-       centre = centre + at%pos(:,cluster_list%int(1,i))
-    end do
-    centre = centre / cluster_list%N
+    ! unreliable when cluster extends across periodic boundaries
+    ! centre = 0.0_dp
+    ! do i=1,cluster_list%N
+       ! centre = centre + at%pos(:,cluster_list%int(1,i)) + (at%lattice .mult. cluster_list%int(2:4,i))
+    ! end do
+    ! centre = centre / cluster_list%N
+    centre = at%pos(:,cluster_list%int(1,1))
 !!$    call print('centre = '//centre)
 
     ! Find atom closest to centre of cluster, using min image convention  

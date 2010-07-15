@@ -198,6 +198,7 @@ module  atoms_module
      ! (  |a| |b| |c|  )    =   (  (2,1) (2,2) (2,3)  )
      ! (  | | | | | |  )        (                     )
      !  ( | | | | | | )          ( (3,1) (3,2) (3,3) ) 
+     logical :: is_orthorhombic, is_periodic(3)
 
 
      real(dp),              dimension(3,3) :: g          !% Inverse lattice (stored for speed)
@@ -509,8 +510,7 @@ contains
        endif
     end if
 
-    this%lattice = lattice
-    call matrix3x3_inverse(this%lattice,this%g)
+    call atoms_set_lattice(this, lattice, .false.)
 
     this%initialised = .true.
   end subroutine atoms_initialise
@@ -707,8 +707,7 @@ contains
          call system_abort("atoms_copy_without_connect: 'from' object is not initialised")
 
     to%N = from%N
-    to%lattice = from%lattice
-    to%g = from%g
+    call set_lattice(to, from%lattice, .false.)
 
     if (present(properties)) then
       call finalise(to%data)
@@ -1586,8 +1585,15 @@ contains
     end if
 
     if (present(remap)) then
-       if (remap) call map_into_cell(this)
+       if (remap) call set_map_shift(this)
     end if
+
+    this%is_orthorhombic = ( (count(this%lattice(:,1) == 0.0_dp) <= 1) .and. &
+			     (count(this%lattice(:,2) == 0.0_dp) <= 1) .and. &
+			     (count(this%lattice(:,3) == 0.0_dp) <= 1) )
+    this%is_periodic(1) = any(this%lattice(:,1) /= 0.0_dp)
+    this%is_periodic(2) = any(this%lattice(:,2) /= 0.0_dp)
+    this%is_periodic(3) = any(this%lattice(:,3) /= 0.0_dp)
 
   end subroutine atoms_set_lattice
 
@@ -2057,6 +2063,7 @@ contains
     integer      :: i,j, n, m
     integer      :: shift(3)
     logical      :: mapped
+    integer, pointer :: map_shift(:,:)
 
 
     ! Loop over all atoms
@@ -2090,6 +2097,8 @@ contains
 	end if ! this%connect%initialised
       end if ! mapped
     end do ! i=1..N
+
+    if (assign_pointer(this, 'map_shift', map_shift)) map_shift = 0
 
   end subroutine atoms_map_into_cell
 
@@ -2339,7 +2348,11 @@ contains
     integer,     intent(in) :: i
     real(dp), dimension(3)  :: realpos
 
-    realpos = (this%lattice .mult. this%travel(:,i)) + this%pos(:,i)
+    if (associated(this%travel)) then
+       realpos = (this%lattice .mult. this%travel(:,i)) + this%pos(:,i)
+    else
+       realpos = this%pos(:,i)
+    endif
 
   end function realpos
 
@@ -2412,11 +2425,12 @@ contains
     real(dp)                                        :: distance8_vec_vec, dist2, tmp
     real(dp),           dimension(3)                :: dvw, lattice_coord
     integer,            dimension(3)                :: init_val
-    integer                                         :: i,j,k
+    integer                                         :: i,j,k, i_shift(3)
 
     !get the difference vector and convert to lattice co-ordinates
     !use the precomputed matrix inverse if possible
     dvw = w - v
+    call vec_map_into_cell(dvw, this%lattice, this%g, i_shift)
     lattice_coord = this%g .mult. dvw
 
     init_val = (/0,0,0/)
@@ -2436,7 +2450,7 @@ contains
              !test if it is the smallest so far and store the shift if necessary
              if (tmp < dist2) then
                 dist2 = tmp
-                if (present(shift)) shift = (/i,j,k/)
+                if (present(shift)) shift = (/i,j,k/) + i_shift
              end if
 
           end do
@@ -3140,10 +3154,14 @@ contains
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
+    integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
+                                            min_cell_image_Nc, max_cell_image_Nc
     real(dp)                             :: cutoff
     integer :: ji, s_ij(3), nn_guess
     logical my_own_neighbour, my_store_is_min_image
     type(Connection), pointer :: use_connect
+    logical :: change_i, change_j, change_k
+    integer, pointer :: map_shift(:,:)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -3235,7 +3253,8 @@ contains
 
     ! Partition the atoms into cells
     call partition_atoms(use_connect, this)
-
+    if (.not. assign_pointer(this, 'map_shift', map_shift)) &
+       call system_abort("calc_connect impossibly failed to assign map_shift pointer")
 
     ! look for bonds that have been broken, and remove them
     do i=1, this%N
@@ -3264,8 +3283,17 @@ contains
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
     ! Loop over all cells
     do k = 1, cellsNc
+       change_k = .true.
        do j = 1, cellsNb
+	  change_j = .true.
           do i = 1, cellsNa
+	     change_i = .true.
+	     call get_min_max_images(this%is_periodic, cellsNa, cellsNb, cellsNc, &
+	        cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
+	        min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+	     change_i = .false.
+	     change_j = .false.
+	     change_k = .false.
 
              !Loop over atoms in cell(i,j,k)
              do n1 = 1, use_connect%cell(i,j,k)%N
@@ -3310,7 +3338,9 @@ contains
                                  (i==i3 .and. j==j3 .and. k==k3))) cycle
 
                             call test_form_bond(use_connect, this%cutoff, this%use_uniform_cutoff, &
-                                 this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .true.)
+                                 this%Z, this%pos, this%lattice, atom1,atom2, &
+				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
+				 .true.)
 
                          end do ! n2
 
@@ -3372,9 +3402,13 @@ contains
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
+    integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
+                                            min_cell_image_Nc, max_cell_image_Nc
     real(dp)                             :: cutoff, density, volume_per_cell
     logical my_own_neighbour, my_store_is_min_image, do_fill
     type(Connection), pointer :: use_connect
+    logical :: change_i, change_j, change_k
+    integer, pointer :: map_shift(:,:)
 
     if (present(alt_connect)) then
       use_connect => alt_connect
@@ -3445,6 +3479,8 @@ contains
 
     ! Partition the atoms into cells
     call partition_atoms(use_connect, this)
+    if (.not. assign_pointer(this, 'map_shift', map_shift)) &
+       call system_abort("calc_connect impossibly failed to assign map_shift pointer")
 
     if (do_fill) then
        volume_per_cell = cell_volume(this%lattice)/real(cellsNa*cellsNb*cellsNc,dp)
@@ -3476,66 +3512,75 @@ contains
     ! defaults for cellsNx = 1
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
 
-    ! Loop over all cells
+    ! loop over all cells i,j,k, and all atoms in each cell n1
     do k = 1, cellsNc
+       change_k = .true.
        do j = 1, cellsNb
-          do i = 1, cellsNa
+	  change_j = .true.
+	  do i = 1, cellsNa
+	     change_i = .true.
+	     call get_min_max_images(this%is_periodic, cellsNa, cellsNb, cellsNc, &
+	        cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
+	        min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+	     change_i = .false.
+	     change_j = .false.
+	     change_k = .false.
+	     do n1=1, use_connect%cell(i,j,k)%N
 
-             !Loop over atoms in cell(i,j,k)
-             do n1 = 1, use_connect%cell(i,j,k)%N
+		atom1 = use_connect%cell(i,j,k)%int(1,n1)
 
-                atom1 = use_connect%cell(i,j,k)%int(1,n1)
+		! Loop over neighbouring cells, applying PBC
 
-                ! Loop over neighbouring cells, applying PBC
-                do k2 = -cell_image_Nc, +cell_image_Nc
+		do k2 = min_cell_image_Nc, max_cell_image_Nc
 
-                   ! the stored cell we are in 
-                   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+		   ! the stored cell we are in 
+		   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
 
-                   ! the shift we need to get to the cell image
-                   k4 = (k+k2-k3)/cellsNc
+		   ! the shift we need to get to the cell image
+		   k4 = (k+k2-k3)/cellsNc
 
-                   do j2 = -cell_image_Nb, +cell_image_Nb
-                      ! the stored cell we are in                 
-                      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+		   do j2 = min_cell_image_Nb, max_cell_image_Nb
+		      ! the stored cell we are in                 
+		      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
 
-                      ! the shift we need to get to the cell image
-                      j4 = (j+j2-j3)/cellsNb
+		      ! the shift we need to get to the cell image
+		      j4 = (j+j2-j3)/cellsNb
 
-                      do i2 = -cell_image_Na, +cell_image_Na
-                         ! the stored cell we are in                 
-                         if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+		      do i2 = min_cell_image_Na, max_cell_image_Na
+			 ! the stored cell we are in                 
+			 if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
 
-                         ! the shift we need to get to the cell image
-                         i4 = (i+i2-i3)/cellsNa
+			 ! the shift we need to get to the cell image
+			 i4 = (i+i2-i3)/cellsNa
 
-                         ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
-                         ! with shift (i4,j4,k4)
-                         ! loop over it's atoms and test connectivity if atom1 < atom2
+			 ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
+			 ! with shift (i4,j4,k4)
+			 ! loop over it's atoms and test connectivity if atom1 < atom2
 
-                         do n2 = 1, use_connect%cell(i3,j3,k3)%N
+			 do n2 = 1, use_connect%cell(i3,j3,k3)%N
 
-                            atom2 = use_connect%cell(i3,j3,k3)%int(1,n2)
-                            ! omit atom2 < atom1
-                            if (atom1 > atom2) cycle
-                            ! omit self in the same cell without shift
-                            if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
-                                 (i4==0 .and. j4==0 .and. k4==0) .and. &
-                                 (i==i3 .and. j==j3 .and. k==k3))) cycle
+			    atom2 = use_connect%cell(i3,j3,k3)%int(1,n2)
+			    ! omit atom2 < atom1
+			    if (atom1 > atom2) cycle
+			    ! omit self in the same cell without shift
+			    if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
+				 (i4==0 .and. j4==0 .and. k4==0) .and. &
+				 (i==i3 .and. j==j3 .and. k==k3))) cycle
+			    call test_form_bond(use_connect,this%cutoff, this%use_uniform_cutoff, &
+			      this%Z, this%pos, this%lattice, atom1,atom2, &
+				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
+				 .false.)
 
-                            call test_form_bond(use_connect,this%cutoff, this%use_uniform_cutoff, &
-			      this%Z, this%pos, this%lattice, atom1,atom2, (/i4,j4,k4/), .false.)
+			 end do ! n2
 
-                         end do
+		      end do ! i2
+		   end do ! j2
+		end do ! k2
 
-                      end do
-                   end do
-                end do
-             end do
-
-          end do
-       end do
-    end do
+	     end do ! n1
+	  end do ! i
+       end do ! j
+    end do ! k
 
     if (my_store_is_min_image) then
        if (allocated(use_connect%is_min_image)) deallocate(use_connect%is_min_image)
@@ -3546,6 +3591,66 @@ contains
     end if
 
   end subroutine calc_connect
+
+   subroutine get_min_max_images(is_periodic, cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, do_i, do_j, do_k, &
+	 min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+      logical, intent(in) :: is_periodic(3)
+      integer, intent(in) :: cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k
+      logical, intent(in) :: do_i, do_j, do_k
+      integer, intent(out) :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
+
+      if (do_i) then
+	 if (is_periodic(3)) then
+	   min_cell_image_Na = -cell_image_Na
+	   max_cell_image_Na = cell_image_Na
+	 else
+	   if (cell_image_Na < i) then 
+	      min_cell_image_Na = -cell_image_Na
+	   else
+	      min_cell_image_Na = -i+1
+	   endif
+	   if (cell_image_Na < cellsNa-i) then
+	      max_cell_image_Na = cell_image_Na
+	   else
+	      max_cell_image_Na = cellsNa - i
+	   endif
+	 endif
+      endif
+      if (do_j) then
+	 if (is_periodic(3)) then
+	   min_cell_image_Nb = -cell_image_Nb
+	   max_cell_image_Nb = cell_image_Nb
+	 else
+	   if (cell_image_Nb < j) then 
+	      min_cell_image_Nb = -cell_image_Nb
+	   else
+	      min_cell_image_Nb = -j+1
+	   endif
+	   if (cell_image_Nb < cellsNb-j) then
+	      max_cell_image_Nb = cell_image_Nb
+	   else
+	      max_cell_image_Nb = cellsNb - j
+	   endif
+	 endif
+      endif
+      if (do_k) then
+	 if (is_periodic(3)) then
+	   min_cell_image_Nc = -cell_image_Nc
+	   max_cell_image_Nc = cell_image_Nc
+	 else
+	   if (cell_image_Nc < k) then 
+	      min_cell_image_Nc = -cell_image_Nc
+	   else
+	      min_cell_image_Nc = -k+1
+	   endif
+	   if (cell_image_Nc < cellsNc-k) then
+	      max_cell_image_Nc = cell_image_Nc
+	   else
+	      max_cell_image_Nc = cellsNc - k
+	   endif
+	 endif
+      endif
+   end subroutine get_min_max_images
 
   !
   !% Spatially partition the atoms into cells. The number of cells in each dimension must already be
@@ -3559,6 +3664,8 @@ contains
 
     logical                          :: my_dont_wipe, neighbour1_allocated
     integer                          :: i,j,k,n
+    real(dp) :: lat_pos(3)
+    integer, pointer :: map_shift(:,:)
 
     ! Check inputs
     if (.not.this%cells_initialised) call system_abort('Partition_Atoms: Cells have not been initialised')
@@ -3568,8 +3675,13 @@ contains
     ! Wipe the cells
     if (.not.my_dont_wipe) call wipe_cells(this)
 
-    ! Make sure all atomic positions are within the cell
-    call map_into_cell(at)
+!!    ! Make sure all atomic positions are within the cell
+!!    call map_into_cell(at)
+    if (.not. assign_pointer(at, 'map_shift', map_shift)) then
+       call add_property(at, 'map_shift', 0, 3)
+       if (.not. assign_pointer(at, 'map_shift', map_shift)) &
+	  call system_abort("partition_atoms impossibly failed to assign map_shift pointer")
+    endif
 
     neighbour1_allocated = allocated(this%neighbour1)
 
@@ -3578,22 +3690,47 @@ contains
           if (.not. associated(this%neighbour1(n)%t)) cycle ! not in active subregion
        end if
 
-       call cell_of_pos(this, at%g, at%pos(:,n), i, j, k)
+       ! figure out shift to map atom into cell
+       lat_pos = at%g .mult. at%pos(:,n)
+       map_shift(:,n) = - floor(lat_pos+0.5_dp)
+       ! do the mapping
+       lat_pos = lat_pos + map_shift(:,n)
+
+       call cell_of_pos(this, lat_pos, i, j, k)
        !Add the atom to this cell
        call append( this%cell(i,j,k), (/n/) )
     end do
 
   end subroutine partition_atoms
 
-  subroutine cell_of_pos(this, g, pos, i, j, k)
+   subroutine set_map_shift(this)
+      type(Atoms), intent(inout) :: this
+
+      integer, pointer :: map_shift(:,:)
+      integer n
+      real(dp) :: lat_pos(3)
+
+      if (.not. assign_pointer(this, 'map_shift', map_shift)) then
+	 call add_property(this, 'map_shift', 0, 3)
+	 if (.not. assign_pointer(this, 'map_shift', map_shift)) &
+	    call system_abort("partition_atoms impossibly failed to assign map_shift pointer")
+      endif
+
+      do n = 1, this%N
+	 lat_pos = this%g .mult. this%pos(:,n)
+	 map_shift(:,n) = - floor(lat_pos+0.5_dp)
+      end do
+   end subroutine
+
+
+  subroutine cell_of_pos(this, lat_pos, i, j, k)
     type(Connection), intent(in) :: this
-    real(dp), intent(in) :: g(3,3)
-    real(dp), intent(in) :: pos(3)
+    real(dp), intent(in) :: lat_pos(3)
     integer, intent(out) :: i, j, k
 
     real(dp) :: t(3)
 
-     t = g .mult. pos
+     t = lat_pos
      i = floor(real(this%cellsNa,dp) * (t(1)+0.5_dp)) + 1
      j = floor(real(this%cellsNb,dp) * (t(2)+0.5_dp)) + 1
      k = floor(real(this%cellsNc,dp) * (t(3)+0.5_dp)) + 1
@@ -5474,21 +5611,26 @@ contains
     integer i2, j2, k2, i3, j3, k3, i4, j4, k4, n2, atom_i
     integer :: cellsNa, cellsNb, cellsNc
     real(dp) :: pos(3), cur_dist, min_dist
+    integer :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
 
     if (.not. this%connect%initialised) call system_abort("closest_atom must have initialised connection object")
 
-    call cell_of_pos(this%connect, this%g, r, i, j, k)
+    call cell_of_pos(this%connect, this%g .mult. r, i, j, k)
 
     cellsNa = this%connect%cellsNa
     cellsNb = this%connect%cellsNb
     cellsNc = this%connect%cellsNc
+
+    call get_min_max_images(this%is_periodic, cellsNa, cellsNb, cellsNc,&
+      cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, .true., .true., .true., &
+      min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
 
     k3 = 1; k4 = 1; j3 = 1; j4 = 1; i3 = 1; i4 = 1
 
     min_dist = 1.0e38_dp
     closest_atom = 0
     ! Loop over neighbouring cells, applying PBC
-    do k2 = -cell_image_Nc, +cell_image_Nc
+    do k2 = min_cell_image_Nc, max_cell_image_Nc
 
        ! the stored cell we are in 
        if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
@@ -5496,14 +5638,14 @@ contains
        ! the shift we need to get to the cell image
        k4 = (k+k2-k3)/cellsNc
 
-       do j2 = -cell_image_Nb, +cell_image_Nb
+       do j2 = min_cell_image_Nb, max_cell_image_Nb
 	  ! the stored cell we are in                 
 	  if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
 
 	  ! the shift we need to get to the cell image
 	  j4 = (j+j2-j3)/cellsNb
 
-	  do i2 = -cell_image_Na, +cell_image_Na
+	  do i2 = min_cell_image_Na, max_cell_image_Na
 	     ! the stored cell we are in                 
 	     if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
 

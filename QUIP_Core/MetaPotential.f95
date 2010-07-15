@@ -573,10 +573,10 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
   subroutine undo_travel(at)
     type(Atoms), intent(inout) :: at
 
-    if (any(at%travel /= 0)) then
-      at%pos = at%pos + (at%lattice .mult. at%travel)
-      at%travel = 0
-    endif
+!    if (any(at%travel /= 0)) then
+!      at%pos = at%pos + (at%lattice .mult. at%travel)
+!      at%travel = 0
+!    endif
   end subroutine
 
   ! test the gradient given a metapotential, string to pass to calc, and atoms structure
@@ -1179,7 +1179,7 @@ max_atom_rij_change = 1.038_dp
     dg = lat_factor*reshape(xx(1:9), (/ 3,3 /) )
     at%pos = reshape(xx(10:), (/ 3, at%N /) )
 
-    at%pos = at%pos - (at%lattice .mult. at%travel)
+!    at%pos = at%pos - (at%lattice .mult. at%travel)
   end subroutine
 
   ! pack a 3xN 2-D array into a 1-D array
@@ -1207,11 +1207,11 @@ max_atom_rij_change = 1.038_dp
 
     x(1:9) = lat_factor*reshape(dg2d, (/ 9 /) )
 
-    if (present(travel)) then
-      x(10:) = reshape(x2d + (lattice .mult. travel), (/ size(x2d) /))
-    else
+!    if (present(travel)) then
+!      x(10:) = reshape(x2d + (lattice .mult. travel), (/ size(x2d) /))
+!    else
       x(10:) = reshape(x2d, (/ size(x2d) /) )
-    endif
+!    endif
 
   end subroutine
 

@@ -117,6 +117,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 
          self.assertEqual(nsteps, self.nsteps_ref)
          self.assertArrayAlmostEqual(self.at.lattice, self.lat_ref)
+	 self.at.map_into_cell() # self.pos_ref is already mapped
          self.assertArrayAlmostEqual(self.at.pos, self.pos_ref)
 
       if hasattr(MetaPotential, 'calc_elastic_constants'):
@@ -208,7 +209,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
          self.at.hybrid_mark[self.at.hybrid != 0] = HYBRID_ACTIVE_MARK
 
       def test_embedlist(self):
-         self.assertArrayAlmostEqual(self.embedlist.int, string_to_array("""
+         self.assertArrayAlmostEqual(self.embedlist.int[:,1], string_to_array("""
         1        0        0        0
         2        0        0        0
       128        0        0        0
@@ -225,7 +226,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
       413        0        0        0
       103        0        0        0
       389        0        0        0
-      483        0        0        0"""))
+      483        0        0        0""")[:,0])
 
       def test_no_multiple_images(self):
          self.assert_(not multiple_images(self.embedlist))
