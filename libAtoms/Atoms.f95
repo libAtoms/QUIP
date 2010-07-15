@@ -2150,7 +2150,7 @@ contains
     real(dp), dimension(3)     :: j_pos
     logical :: do_parallel
 #ifdef _MPI
-    integer::error, Nelements, mpi_pos, mpi_old_pos
+    integer:: Nelements, mpi_pos, mpi_old_pos
     include "mpif.h"
     real(dp), allocatable :: mpi_send(:), mpi_recv(:)
 #endif
