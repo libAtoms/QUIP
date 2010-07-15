@@ -303,6 +303,7 @@ module gp_sparse_module
          !call fill_random_integer(r,this%n)
 
          call print('Number of function values to sparsify: '//this%m)
+         call print('Number of environments: '//this%nxx)
          call print('Sparse teaching points: '//this%sr)
          call print('Dimensions: '//this%d)
 
