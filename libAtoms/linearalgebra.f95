@@ -5167,5 +5167,36 @@ CONTAINS
 
    end subroutine kmeans
 
+   subroutine symmetric_linear_solve(M, a, M_inv_a)
+    real(dp), intent(in) :: M(:,:), a(:)
+    real(dp), intent(out):: M_inv_a(:)
+
+    integer :: N
+    integer :: lwork, info
+    real(dp), allocatable :: work(:)
+    integer, allocatable :: ipiv(:)
+
+    N = size(a)
+
+    allocate(ipiv(N))
+    M_inv_a = a
+
+    allocate(work(1))
+    lwork = -1
+    call dsysv('U', N, 1, M, N, ipiv, M_inv_a, N, work, lwork, info)
+    if (info /= 0) &
+      call system_abort("symmetric_linear_solve failed in lwork computation dsysv " // info)
+    lwork = work(1)
+    deallocate(work)
+
+    allocate(work(lwork))
+    call dsysv('U', N, 1, M, N, ipiv, M_inv_a, N, work, lwork, info)
+    if (info /= 0) &
+      call system_abort("symmetric_linear_solve failed in dsysv " // info)
+
+    deallocate(work)
+    deallocate(ipiv)
+   end subroutine symmetric_linear_solve
+
 
 end module linearalgebra_module

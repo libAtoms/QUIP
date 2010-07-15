@@ -55,7 +55,7 @@ implicit none
   real(dp) :: mu(3)
   real(dp), pointer :: local_dn(:)
   real(dp) :: phonons_dx
-  logical use_n_minim, do_torque
+  logical :: use_n_minim, do_torque, precond_n_minim
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
   character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, init_args_pot1, init_args_pot2
@@ -162,6 +162,7 @@ implicit none
   call param_register(cli_params, 'calc_args', '', calc_args)
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
   call param_register(cli_params, 'use_n_minim', 'F', use_n_minim)
+  call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim)
   call param_register(cli_params, 'hybrid', 'F', do_hybrid)
   call param_register(cli_params, 'init_args_pot1', '', init_args_pot1)
   call param_register(cli_params, 'init_args_pot2', '', init_args_pot2)
@@ -178,7 +179,7 @@ implicit none
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [use_n_minim]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
     call print("  [hybrid] [init_args_pot1] [init_args_pot2] [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
     call print("  [minim_method=string(cg)]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
@@ -227,7 +228,7 @@ implicit none
   ! main loop over frames
   do 
      call read(at, infile, ierror=ierror)
-     HANDLE_ERROR(ierror)
+     if (ierror /= 0) exit
 
      call set_cutoff(at, cutoff(metapot)+0.5_dp)
 
@@ -263,11 +264,13 @@ implicit none
            call initialise(relax_io, relax_print_file, OUTPUT)
            n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
                 print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA)
+                eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA, &
+		use_precond=precond_n_minim)
            call finalise(relax_io)
         else
            n_iter = minim(metapot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
-                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, external_pressure=external_pressure/GPA)
+                do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, &
+		external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
         endif
         mainlog%prefix='RELAXED_POS'
         call print_xyz(at,mainlog,real_format='f12.5')

@@ -405,7 +405,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
 
   function metapotential_minim(this, at, method, convergence_tol, max_steps, linminroutine, do_print, print_inoutput, print_cinoutput, &
-       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, external_pressure, hook_print_interval, status)
+       do_pos, do_lat, args_str, eps_guess, use_n_minim, use_fire, lattice_fix, external_pressure, use_precond, hook_print_interval, status)
     type(Atoms), intent(inout), target :: at !% starting configuration
     type(Metapotential), intent(inout), target :: this !% metapotential to evaluate energy/forces with
     character(*), intent(in)    :: method !% passed to minim()
@@ -423,10 +423,12 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     logical, intent(in), optional :: use_fire   !% if true, use fire_minim instead of minim
     logical, dimension(3,3), optional :: lattice_fix !% Mask to fix some components of lattice. Defaults to all false.
     real(dp), dimension(3,3), optional :: external_pressure
+    logical, intent(in), optional :: use_precond
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: status !% set to 1 if an error occurred during minimisation
     integer::metapotential_minim
 
+    logical :: my_use_precond
     integer n_iter, n_iter_tot
     real(dp), allocatable :: x(:)
     real(dp) :: deform_grad(3,3)
@@ -440,6 +442,8 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     integer :: am_data_size
     character, allocatable :: am_data(:)
     character, dimension(1) :: am_mold
+
+    my_use_precond = optional_default(.false., use_precond)
 
     am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
@@ -535,11 +539,11 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     allocate(am%last_connect_x(size(x)))
     am%last_connect_x=1.0e38_dp
     deform_grad = 0.0_dp; call add_identity(deform_grad)
-    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
+    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
     am_data = transfer(am, am_data)
     if (my_use_n_minim) then
-       n_iter = n_minim(x, both_func, initial_E, final_E, my_eps_guess, max_steps, convergence_tol, print_hook, &
+       n_iter = n_minim(x, both_func, my_use_precond, apply_precond_func, initial_E, final_E, my_eps_guess, max_steps, convergence_tol, print_hook, &
             hook_print_interval=hook_print_interval, data=am_data, status=status)
     else if (my_use_fire) then
        if (has_property(at, 'mass')) then
@@ -554,7 +558,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
             print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
     endif
     call print("minim relax w.r.t. both n_iter " // n_iter, PRINT_VERBOSE)
-    call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
     call calc_connect(am%minim_at)
     n_iter_tot = n_iter
@@ -632,7 +636,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     allocate(am%last_connect_x(at%N*3+9))
     am%last_connect_x=1.0e38_dp
     dg = 0.0_dp; call add_identity(dg)
-    call pack_pos_dg(at%pos, dg, x, am%pos_lat_preconditioner_factor, at%travel, at%lattice)
+    call pack_pos_dg(at%pos, dg, x, am%pos_lat_preconditioner_factor)
     if (associated(dir_p)) then
       allocate(dir_x(at%N*3+9))
       dg = 0.0_dp
@@ -702,7 +706,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     allocate(am%last_connect_x(at%N*3+9))
     am%last_connect_x=1.0e38_dp
     dg = 0.0_dp; call add_identity(dg)
-    call pack_pos_dg(at%pos, dg, x, am%pos_lat_preconditioner_factor, at%travel, at%lattice)
+    call pack_pos_dg(at%pos, dg, x, am%pos_lat_preconditioner_factor)
     if (associated(dir_p)) then
       allocate(dir_x(at%N*3+9))
       dg = 0.0_dp
@@ -748,7 +752,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
       if (size(x) /= am%minim_at%N*3+9) call system_abort("Called gradient_func() with size mismatch " // &
         size(x) // " /= " // am%minim_at%N // "*3+9")
 
-      call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+      call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
       call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
       allocate(f(3,am%minim_at%N))
@@ -843,7 +847,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     call print("energy_func got x " // x, PRINT_NERD)
 
-    call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
     ! Safety factor of 1.1, just in case
@@ -869,7 +873,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     call print ("energy_func got enthalpy " // energy_func, PRINT_NERD)
 
     call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
-    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
+    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
     am_data = transfer(am, am_data)
 
@@ -913,7 +917,7 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
 
     if (current_verbosity() >= PRINT_NERD) call print("gradient_func got x " // x, PRINT_NERD)
 
-    call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
     ! Safety factor of 1.1, just in case
@@ -989,12 +993,81 @@ subroutine metapotential_initialise(this, args_str, pot, pot2, bulk_scale, mpi_o
     deallocate(f)
 
     call fix_atoms_deform_grad(deform_grad, am%minim_at,am)
-    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
+    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
     am_data = transfer(am, am_data)
 
     call system_timer("gradient_func")
 
   end function gradient_func
+
+! Cristoph Ortner's simple Hessian preconditioner, dense matrix inverse right now
+  subroutine apply_precond_func(x,g,P_g,error,am_data)
+    real(dp) :: x(:), g(:), P_g(:)
+    integer :: error
+    character, optional :: am_data(:)
+
+    type(metapotential_minimise) :: am
+    real(dp) :: deform_grad(3,3)
+    real(dp), allocatable :: P(:,:)
+    real(dp) :: c0, c1
+    integer :: i, jj, j
+    real(dp) :: max_atom_rij_change
+    integer :: n_nearest
+
+    am = transfer(am_data, am)
+    call atoms_repoint(am%minim_at)
+
+    max_atom_rij_change = max_rij_change(am%last_connect_x, x, cutoff(am%minim_metapot), &
+      1.0_dp/am%pos_lat_preconditioner_factor)
+max_atom_rij_change = 1.038_dp
+
+    call print("both_func got x " // x, PRINT_NERD)
+
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
+
+    ! Safety factor of 1.1, just in case
+    ! Note: TB will return 0 for cutoff(am%minim_metapot), but TB does its own calc_connect, so doesn't matter
+    if (1.1*max_atom_rij_change >= am%minim_at%cutoff - cutoff(am%minim_metapot)) then
+      call print("both_func: Do calc_connect, atoms moved " // max_atom_rij_change // "*1.1 >= buffer " // &
+        (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
+      call calc_connect(am%minim_at)
+      am%last_connect_x = x
+    else
+      call print("both_func: Do calc_dists, atoms moved " // max_atom_rij_change // " *1.1 < buffer " // &
+        (am%minim_at%cutoff - cutoff(am%minim_metapot)), PRINT_NERD)
+      call calc_dists(am%minim_at)
+    end if
+
+    ! identity
+    ! c0 = 1.0_dp
+    ! c1 = 0.0_dp
+    ! simplest expression of connectivity
+    c0 = 0.01_dp
+    c1 = 1.0_dp
+
+    allocate(P(3*am%minim_at%N,3*am%minim_at%N))
+    P = 0.0_dp
+    do i=1, am%minim_at%N
+      n_nearest = 0
+      do jj=1, atoms_n_neighbours(am%minim_at, i)
+	if (is_nearest_neighbour(am%minim_at, i, jj)) then
+	  n_nearest = n_nearest + 1
+	  j = atoms_neighbour(am%minim_at, i, jj)
+	  P(3*(i-1)+1,3*(j-1)+1) = -c1
+	  P(3*(i-1)+2,3*(j-1)+2) = -c1
+	  P(3*(i-1)+3,3*(j-1)+3) = -c1
+	endif
+      end do
+      P(3*(i-1)+1,3*(i-1)+1) = c0+c1*n_nearest
+      P(3*(i-1)+2,3*(i-1)+2) = c0+c1*n_nearest
+      P(3*(i-1)+3,3*(i-1)+3) = c0+c1*n_nearest
+    end do
+
+    P_g(1:9) = g(1:9)
+    call symmetric_linear_solve(P, g(10:10+am%minim_at%N*3-1), P_g(10:10+am%minim_at%N*3-1))
+
+  end subroutine apply_precond_func
 
   ! compute energy and gradient (forces and virial)
   ! x is vectorized version of atomic positions
@@ -1035,7 +1108,7 @@ max_atom_rij_change = 1.038_dp
 
     call print("both_func got x " // x, PRINT_NERD)
 
-    call unpack_pos_dg(x, am%minim_at, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
+    call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
 
     ! Safety factor of 1.1, just in case
@@ -1106,7 +1179,7 @@ max_atom_rij_change = 1.038_dp
     deallocate(f)
 
     call fix_atoms_deform_grad(deform_grad, am%minim_at,am)
-    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor, am%minim_at%travel, am%minim_at%lattice)
+    call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
     am_data = transfer(am, am_data)
 
@@ -1168,33 +1241,26 @@ max_atom_rij_change = 1.038_dp
   end subroutine fix_atoms_deform_grad
 
   ! unpack a deformation grad and a pos array from 1-D array into a atoms%pos 2-D array
-  subroutine unpack_pos_dg(xx, at, dg, lat_factor)
+  subroutine unpack_pos_dg(xx, at_N, at_pos, dg, lat_factor)
     real(dp), intent(in) :: xx(:)
-    type(Atoms), intent(inout) :: at
+    integer :: at_N
+    real(dp), intent(inout) :: at_pos(:,:)
     real(dp) :: dg(3,3)
     real(dp), intent(in) :: lat_factor
 
-    if (3*at%N+9 /= size(xx)) call system_abort("Called unpack_pos with mismatching sizes x " // size(xx) // " at " // at%N)
+    if (3*at_N+9 /= size(xx)) call system_abort("Called unpack_pos with mismatching sizes x " // size(xx) // " at " // at_N)
 
     dg = lat_factor*reshape(xx(1:9), (/ 3,3 /) )
-    at%pos = reshape(xx(10:), (/ 3, at%N /) )
+    at_pos = reshape(xx(10:), (/ 3, at_N /) )
 
-!    at%pos = at%pos - (at%lattice .mult. at%travel)
   end subroutine
 
   ! pack a 3xN 2-D array into a 1-D array
-  subroutine pack_pos_dg(x2d, dg2d, x, lat_factor, travel, lattice)
+  subroutine pack_pos_dg(x2d, dg2d, x, lat_factor)
     real(dp), intent(in) :: x2d(:,:)
     real(dp), intent(in)  :: dg2d(3,3)
     real(dp), intent(out) :: x(:)
     real(dp), intent(in)  :: lat_factor
-    integer, intent(in), optional :: travel(:,:)
-    real(dp), intent(in), optional :: lattice(3,3)
-
-    if ((present(travel) .and. .not. present(lattice)) .or. &
-	(.not. present(travel) .and. present(lattice))) then
-      call system_abort("Called pack with travel and no lattice or vice versa")
-    endif
 
     if (size(x2d,1) /= 3) call system_abort("Called pack with mismatching size(x2d,1) " // &
       size(x2d,1) // " != 3")
@@ -1207,11 +1273,7 @@ max_atom_rij_change = 1.038_dp
 
     x(1:9) = lat_factor*reshape(dg2d, (/ 9 /) )
 
-!    if (present(travel)) then
-!      x(10:) = reshape(x2d + (lattice .mult. travel), (/ size(x2d) /))
-!    else
       x(10:) = reshape(x2d, (/ size(x2d) /) )
-!    endif
 
   end subroutine
 

@@ -2317,12 +2317,13 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     t_projected = search_dir*p0_dot
     if (norm2(t_projected) .lt. accuracy) then
-	call print ("n_linmin initial config is converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
-	new_x = x
-	new_neg_gradient = neg_gradient
-	new_E = E
-	search_dir = search_dir * search_dir_mag
-	return
+!	call print ("n_linmin initial config is converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
+call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
+!	new_x = x
+!	new_neg_gradient = neg_gradient
+!	new_E = E
+!	search_dir = search_dir * search_dir_mag
+!	return
     endif
 
     p0_pos = 0.0_dp
@@ -2523,7 +2524,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     call print ("done with line search", PRINT_NERD)
 end subroutine n_linmin
 
-function n_minim(x_i, bothfunc, initial_E, final_E, &
+! with preconditioning from Cristoph Ortner
+function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, final_E, &
     expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, status) result(N_evals)
     real(dp), intent(inout) :: x_i(:)
     interface 
@@ -2535,6 +2537,15 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	 integer :: my_error
 	 character,optional::data(:)
        end subroutine bothfunc
+    end interface 
+    logical :: use_precond
+    interface 
+       subroutine apply_precond_func(x,g,P_g,my_error,data)
+         use system_module
+         real(dp)::x(:),g(:),P_g(:)
+	 integer :: my_error
+	 character,optional::data(:)
+       end subroutine apply_precond_func
     end interface 
     real(dp), intent(out) :: initial_E, final_E
     real(dp), intent(inout) :: expected_reduction
@@ -2566,8 +2577,9 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
     real(dp), allocatable :: g_i(:)
     real(dp), allocatable :: x_ip1(:), g_ip1(:)
     real(dp), allocatable :: h_i(:)
+    real(dp), allocatable :: P_g(:)
    
-    real(dp) :: g_i_mag_sq
+    real(dp) :: g_i_dot_g_i, g_ip1_dot_g_i, g_ip1_dot_g_ip1
     real(dp) :: gamma_i
 
     integer :: error
@@ -2595,6 +2607,16 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
     endif
     initial_E = E_i
 
+    allocate(P_g(size(x_i)))
+    ! need to get P into the routine somehow
+    if (use_precond) then
+      call apply_precond_func(x_i, g_i, P_g, error, data)
+    else
+      P_g = g_i
+    Endif
+
+    call print("#cg_n use_precond="//use_precond)
+
     call print("#cg_n " // "              x" // &
                            "             val" // &
                            "            -grad.dir" // &
@@ -2608,19 +2630,18 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	return
     endif
 
-    initial_step_size = 4.0_dp*expected_reduction / norm(g_i)
-    if (initial_step_size .gt. 1.0_dp) then
-	initial_step_size = 1.0_dp
-    endif
-
-    max_step_size = initial_step_size
-    ! if (i_am_master_node) print *, "initial_step_size ", initial_step_size
-
-    h_i = g_i
+    h_i = P_g
 
     iter = 1
     done = .false.
     do while (N_evals .le. max_N_evals .and. (.not.(done)))
+
+	!! max_step_size = 4.0_dp*expected_reduction / norm(g_i)
+	max_step_size = 4.0_dp*expected_reduction / (g_i .dot. (h_i/norm(h_i))) ! dividing by norm(h_i) because n_linmin will normalize h_i
+	if (max_step_size .gt. 1.0_dp) then
+	    max_step_size = 1.0_dp
+	endif
+	! if (i_am_master_node) print *, "max_step_size ", max_step_size
 
 	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
 		  norm2(g_i) // " " // N_evals // " n_minim pre linmin")
@@ -2646,12 +2667,20 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	endif
 
 	! gamma_i = sum(g_ip1*g_ip1)/sum(g_i*g_i) ! Fletcher-Reeves
-
 	! gamma_i = sum((g_ip1-g_i)*g_ip1)/sum(g_i*g_i) ! Polak-Ribiere
-	g_i_mag_sq = g_i .dot. g_i
-	gamma_i = ((g_ip1 .dot. g_ip1) - (g_ip1 .dot. g_i))/g_i_mag_sq
-
-	h_i = gamma_i*h_i + g_ip1
+	g_i_dot_g_i = g_i .dot. P_g
+	g_ip1_dot_g_i = g_ip1 .dot. P_g
+	!! perhaps have some way of telling apply_precond_func to update/not update preconitioner?
+	if (use_precond) then
+	  call apply_precond_func(x_ip1, g_ip1, P_g, error, data)
+	else
+	  P_g = g_ip1
+	endif
+	g_ip1_dot_g_ip1 = g_ip1 .dot. P_g
+	gamma_i = (g_ip1_dot_g_ip1 - g_ip1_dot_g_i)/g_i_dot_g_i
+	! steepest descent
+	! gamma_i = 0.0_dp
+	h_i = gamma_i*h_i + P_g
 
 	if (iter .eq. 1) then
 	  expected_reduction = abs(E_i - E_ip1)/10.0_dp
@@ -2662,11 +2691,7 @@ function n_minim(x_i, bothfunc, initial_E, final_E, &
 	E_i = E_ip1
 	x_i = x_ip1
 	g_i = g_ip1
-
-	max_step_size = 4.0_dp*expected_reduction / norm(g_i)
-	if (max_step_size .gt. 1.0_dp) then
-	    max_step_size = 1.0_dp
-	endif
+	! P_g is already P_g_ip1 from gamma_i evaluation code
 
 	if (present(hook)) then
 	  call hook(x_i,g_i,E_i,hook_done,(mod(iter-1,my_hook_print_interval) == 0), data)
