@@ -50,14 +50,14 @@ contains
 
   !% Look for the shortest distance starting at atom *root*,
   !% look only for atoms where *mask* is true
-  subroutine find_shortest_distances(at, root, dist, mask, ierror)
+  subroutine find_shortest_distances(at, root, dist, mask, error)
     implicit none
 
     type(Atoms), intent(in)           :: at
     integer, intent(in)               :: root
     integer, intent(out)              :: dist(at%N)
     logical, intent(in), optional     :: mask(at%N)
-    integer, intent(inout), optional  :: ierror
+    integer, intent(inout), optional  :: error
 
     ! ---
 
@@ -93,7 +93,7 @@ contains
 
                 n_new_walker              = n_new_walker+1
                 if (n_new_walker > MAX_WALKER) then
-                   RAISE_ERROR("MAX_WALKER exceeded.", ierror)
+                   RAISE_ERROR("MAX_WALKER exceeded.", error)
                 endif
 
                 new_walker(n_new_walker)  = j
@@ -118,14 +118,14 @@ contains
 
   !% Look for the shortest distance starting at atom *root*,
   !% look only for atoms where *mask* is true
-  subroutine distance_map(at, dist, mask, diameter, ierror)
+  subroutine distance_map(at, dist, mask, diameter, error)
     implicit none
 
     type(Atoms), intent(in)           :: at
     integer, intent(out)              :: dist(at%N, at%N)
     logical, intent(in), optional     :: mask(at%N)
     integer, intent(out), optional    :: diameter
-    integer, intent(inout), optional  :: ierror
+    integer, intent(inout), optional  :: error
 
     ! ---
 
@@ -142,8 +142,8 @@ contains
     do i = 1, at%N
        if ( .not. present(mask) .or. mask(i) ) then
 
-          call find_shortest_distances(at, i, dist(:, i), mask, ierror)
-          PASS_ERROR(ierror)
+          call find_shortest_distances(at, i, dist(:, i), mask, error)
+          PASS_ERROR(error)
 
           if (present(diameter)) then
              diameter = max(diameter, maxval(dist(:, i)))
@@ -154,7 +154,7 @@ contains
 
     ! Check that matrix is symmetric
     if (any(dist /= transpose(dist))) then
-       RAISE_ERROR("*dist* matrix not symmetric.", ierror)
+       RAISE_ERROR("*dist* matrix not symmetric.", error)
     endif
 
   endsubroutine distance_map
@@ -162,7 +162,7 @@ contains
 
   !% Look for the "shortest path" ring starting at atom *at*,
   !% look only for atoms where *mask* is true
-  subroutine count_sp_rings(at, cutoff, dist, max_ring_len, stat, mask, ierror)
+  subroutine count_sp_rings(at, cutoff, dist, max_ring_len, stat, mask, error)
     implicit none
 
     type(Atoms), intent(in)                     :: at
@@ -171,7 +171,7 @@ contains
     integer, intent(in)                         :: max_ring_len
     integer, intent(inout)                      :: stat(max_ring_len)
     logical, intent(in), optional               :: mask(at%N)
-    integer, intent(inout), optional            :: ierror
+    integer, intent(inout), optional            :: error
 
     ! ---
 
@@ -276,7 +276,7 @@ contains
 
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", ierror)
+                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = j
@@ -298,7 +298,7 @@ contains
                                         ! Reverse search direction
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", ierror)
+                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = -j
@@ -313,7 +313,7 @@ contains
 
                                      else
 
-                                        RAISE_ERROR("Something is wrong with the distance map.", ierror)
+                                        RAISE_ERROR("Something is wrong with the distance map.", error)
 
                                      endif
 
@@ -375,7 +375,7 @@ contains
 
                                         n_new_walker              = n_new_walker+1
                                         if (n_new_walker > MAX_WALKER) then
-                                           RAISE_ERROR("MAX_WALKER exceeded.", ierror)
+                                           RAISE_ERROR("MAX_WALKER exceeded.", error)
                                         endif
 
                                         new_walker(n_new_walker)  = -j

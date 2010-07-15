@@ -55,7 +55,7 @@ program density_1d
     type(CInoutput)                       :: cxyzfile
     integer                               :: frame_count, frames_processed, frames_processed_intermed
     integer                               :: status
-    integer                               :: ierror = ERROR_NONE
+    integer                               :: error = ERROR_NONE
     integer                               :: i, j
 
     !Input
@@ -292,8 +292,8 @@ program density_1d
         status = 0
         do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
           write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(xyzfilename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-          call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, ierror=ierror)
-          if (ierror == ERROR_NONE) then
+          call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, error=error)
+          if (error == ERROR_NONE) then
             skip_frame = .false.
             if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
               if (get_value(structure_in%params,"Time",cur_time)) then
@@ -311,7 +311,7 @@ program density_1d
             endif
             frame_count = frame_count + decimation
           else
-            call clear_error(ierror)
+            call clear_error(error)
             status = 1
           endif
         end do

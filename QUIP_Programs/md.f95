@@ -399,7 +399,7 @@ implicit none
 
   integer i, i_step
   type(md_params) :: params
-  integer :: ierror = ERROR_NONE
+  integer :: error = ERROR_NONE
 
   call system_initialise()
 
@@ -415,8 +415,8 @@ implicit none
   if (params%rng_seed >= 0) call system_reseed_rng(params%rng_seed)
 
   call initialise(atoms_in_cio, mpi=mpi_glob)
-  call read(at_in, atoms_in_cio, ierror=ierror)
-  HANDLE_ERROR(ierror)
+  call read(at_in, atoms_in_cio, error=error)
+  HANDLE_ERROR(error)
 
   if (len_trim(params%pot1_init_args) == 0 .and. len_trim(params%pot2_init_args) == 0) then
     call potential_initialise_filename(pot1, params%metapot_init_args, params%params_in_file, mpi_obj=mpi_glob)
