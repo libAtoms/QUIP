@@ -50,11 +50,14 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module table_module
   use system_module
   use linearalgebra_module
   use dictionary_module
   use mpi_context_module
+  use error_module
   implicit none
 
   integer, parameter, private :: DEFAULT_TABLE_LENGTH = 100
@@ -237,9 +240,15 @@ module table_module
      module procedure table_select
   end interface select
 
+  private :: table_bcast
   interface bcast
      module procedure table_bcast
   end interface
+
+  private :: table_copy_entry
+  interface copy_entry
+     module procedure table_copy_entry
+  endinterface copy_entry
 
 contains
 
@@ -253,7 +262,7 @@ contains
 
 
   ! Table_Allocate: Initialises a Table object ready for use.
-  subroutine table_allocate(this,Nint,Nreal,Nstr,Nlogical,max_length)
+  subroutine table_allocate(this,Nint,Nreal,Nstr,Nlogical,max_length,error)
 
     type(table),       intent(inout) :: this
     integer, optional, intent(in)    :: Nint   !% Number of integer columns
@@ -262,6 +271,7 @@ contains
     integer, optional, intent(in)    :: Nlogical !% Number of logical columns
     integer, optional, intent(in)    :: max_length !%  Number of rows to initially allocate
     type(table)                      :: temp
+    integer, optional, intent(inout) :: error
 
     if (present(Nint) .or. present(Nreal) .or. present(Nstr) .or. present(Nlogical)) then
 
@@ -285,7 +295,7 @@ contains
           call print(' from call allocate(table,Nint,Nreal,length)', PRINT_ALWAYS)
           call print(' to   call allocate(table,Nint,Nreal,Nstr,Nlogical,length)', PRINT_ALWAYS)
           call print('Please update your code!', PRINT_ALWAYS)
-          call system_abort('table_allocate: if one of Nint, Nreal, Nstr, Nlogical is present then all must be!')
+          RAISE_ERROR('table_allocate: if one of Nint, Nreal, Nstr, Nlogical is present then all must be!', error)
        end if
 
        if (present(Nint)) then
@@ -328,7 +338,9 @@ contains
           this%max_length = max_length
           this%increment = max(1,max_length/10)
        end if
-       if (temp%N > this%max_length) call system_abort('Table_Allocate: Max_Length is smaller than number of rows')
+       if (temp%N > this%max_length) then
+          RAISE_ERROR('Table_Allocate: Max_Length is smaller than number of rows', error)
+       endif
 
        if (temp%intsize > 0) then
           this%intsize = temp%intsize
@@ -2707,5 +2719,35 @@ subroutine table_bcast(mpi, this)
   end if
 
 end subroutine table_bcast
+
+
+!% Move a single entry from one location to another one.
+!% The destination will be overriden.
+subroutine table_copy_entry(this, src, dst)
+  implicit none
+  
+  type(Table), intent(inout)  :: this
+  integer, intent(in)         :: src
+  integer, intent(in)         :: dst
+
+  ! ---
+
+  if (allocated(this%int)) then
+     this%int(:, dst) = this%int(:, src)
+  endif
+
+  if (allocated(this%real)) then
+     this%real(:, dst) = this%real(:, src)
+  endif
+
+  if (allocated(this%str)) then
+     this%str(:, dst) = this%str(:, src)
+  endif
+
+  if (allocated(this%logical)) then
+     this%logical(:, dst) = this%logical(:, src)
+  endif
+
+endsubroutine table_copy_entry
 
 end module table_module
