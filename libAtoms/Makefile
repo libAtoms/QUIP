@@ -54,6 +54,7 @@ LIBATOMS_F95_FILES = \
   PeriodicTable \
   minimization \
   Atoms \
+  DomainDecomposition \
   Quaternions \
   RigidBody \
   Group \
@@ -72,7 +73,8 @@ LIBATOMS_F95_FILES = \
   Atoms_ll \
   ringstat \
   libAtoms \
-  libAtoms_misc_utils
+  libAtoms_misc_utils \
+  ringstat
 
 LIBATOMS_F77_FILES= \
    lbfgs	
