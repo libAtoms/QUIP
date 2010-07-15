@@ -41,9 +41,11 @@ implicit none
   real(dp)::e
   real(dp):: lat(3,3), v(3,3)
   real(dp), allocatable::f(:,:)
+  real(dp):: pos_delta, lattice_delta
+  logical:: lattice_pull, lattice_pull1, lattice_pull2, lattice_pull3, scale_positions, dryrun
   integer :: i
   type(Dictionary) :: cli
-  character(len=FIELD_LENGTH) :: infile, pot_init_args
+  character(len=FIELD_LENGTH) :: infile, outfile, pot_init_args
   integer :: rng_seed, n_configs
 
   call system_initialise(enable_timing=.true.)
@@ -51,32 +53,56 @@ implicit none
   call initialise(cli)
   call param_register(cli, "pot_init_args", PARAM_MANDATORY, pot_init_args)
   call param_register(cli, "infile", "stdin", infile)
+  call param_register(cli, "outfile", "stdout", outfile)
   call param_register(cli, "rng_seed", "-1", rng_seed)
   call param_register(cli, "n_configs", "10", n_configs)
+  call param_register(cli, "positions_delta", "0.2", pos_delta)
+  call param_register(cli, "lattice_delta", "0.2", lattice_delta)
+  call param_register(cli, "lattice_pull1", "F", lattice_pull1)
+  call param_register(cli, "lattice_pull2", "F", lattice_pull2)
+  call param_register(cli, "lattice_pull3", "F", lattice_pull3)
+  call param_register(cli, "scale_positions", "T", scale_positions)
+  call param_register(cli, "dryrun", "F", dryrun)
+
   if (.not. param_read_args(cli, do_check=.true., ignore_unknown=.false.)) &
     call system_abort ("Failed to parse command line arguments")
   call finalise(cli)
 
   if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 
-  !call Initialise(pot, 'FilePot command=./castep_driver.sh')
   call Initialise(pot, trim(pot_init_args))
 
   call read_xyz(at2, trim(infile))
   allocate(f(3,at2%N))
+
+  lattice_pull = .false.
+  if((lattice_pull1 == .true.) .or. (lattice_pull2 == .true.) .or. (lattice_pull3 == .true.)) lattice_pull = .true.
+
+  at=at2
   do i=1,n_configs
-     at=at2
-     call randomise(at%pos, 0.2_dp)
-     lat = at%lattice
-     call randomise(lat, 0.5_dp)
-     call set_lattice(at, lat, scale_positions=.true.)
-     call system_timer("calc")
-     call calc(pot, at, e=e, f=f, virial=v)
-     call system_timer("calc")
+     if(.not. lattice_pull) at=at2
+
+     if(pos_delta /= 0.0_dp) call randomise(at%pos, pos_delta)
+     if(lattice_delta /= 0.0_dp) then
+        if(lattice_pull) then
+           lat = at%lattice
+           if(lattice_pull1 == .true.) lat(:,1) = lat(:,1)*(1.0_dp+lattice_delta)
+           if(lattice_pull2 == .true.) lat(:,2) = lat(:,2)*(1.0_dp+lattice_delta)
+           if(lattice_pull3 == .true.) lat(:,3) = lat(:,3)*(1.0_dp+lattice_delta)
+        else
+           lat = at%lattice
+           call randomise(lat, lattice_delta)
+        end if
+
+        call set_lattice(at, lat, scale_positions=scale_positions)
+     end if
+     if(.not. dryrun) then
+        call system_timer("calc")
+        call calc(pot, at, e=e, f=f, virial=v)
+        call system_timer("calc")
+     end if
      call add_property(at, 'f', f)
-     mainlog%prefix="RAND"
-     call print_xyz(at, mainlog, properties='pos:f', comment='Energy='//e//' Virial={'//reshape(v, (/9/))//'}')
-     mainlog%prefix=""
+     call print_xyz(at, outfile, properties='pos:f', comment='Energy='//e//' virial={'//reshape(v, (/9/))//'}', append=.true.)
   end do
   deallocate(f)
 
