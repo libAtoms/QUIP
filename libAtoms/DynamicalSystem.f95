@@ -48,9 +48,13 @@
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#include "error.inc"
+
 module dynamicalsystem_module
  
    use system_module
+   use error_module
    use table_module
    use atoms_module
    use periodictable_module
@@ -1334,7 +1338,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     
-   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
+   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
@@ -1342,6 +1346,7 @@ contains
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force, do_calc_dists
+     integer, optional,     intent(inout)  :: error
 
      logical                               :: do_parallel, do_store, my_do_calc_dists
      integer                               :: i, j, g, n, ntherm
@@ -1597,7 +1602,10 @@ contains
      end if
 #endif
 
-     if (my_do_calc_dists) call calc_dists(this%atoms,parallel=do_parallel)
+     if (my_do_calc_dists) then
+        call calc_dists(this%atoms,parallel=do_parallel,error=error)
+        PASS_ERROR(error)
+     endif
 
    end subroutine advance_verlet1
 

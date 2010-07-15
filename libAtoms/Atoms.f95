@@ -46,10 +46,13 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module  atoms_module
 
   use system_module
   use extendable_str_module
+  use error_module
   use table_module
   use dictionary_module
   use linearalgebra_module
@@ -160,7 +163,8 @@ module  atoms_module
   type Atoms
 
      logical                               :: initialised = .false.
-     integer                               :: N = 0 !% The number of atoms held
+     integer                               :: N = 0 !% The number of atoms held (including ghost particles)
+     integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
 
      logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
                                                                            !% default is variable cutoff.
@@ -424,6 +428,10 @@ module  atoms_module
      module procedure atoms_bcast
   end interface
 
+  private :: atoms_copy_entry
+  interface copy_entry
+     module procedure atoms_copy_entry
+  endinterface copy_entry
 
 contains
 
@@ -494,6 +502,7 @@ contains
     end if
 
     this%N = N
+    this%Ndomain = N
 
     call atoms_repoint(this)
 
@@ -639,6 +648,7 @@ contains
     call connection_finalise(this%hysteretic_connect)
 
     this%N = 0
+    this%Ndomain = 0
 
     this%initialised = .false.
 
@@ -1930,6 +1940,7 @@ contains
     if (present(data)) then
 
        this%N = this%N + data%N
+       this%Ndomain = this%N
 
        if (this%data%intsize /= data%intsize) &
             call system_abort('Add_Atoms: this%data%intsize /= data%intsize')
@@ -1943,6 +1954,7 @@ contains
        if (.not. present(Z)) call system_abort('Atoms_Add: Z must be present if data is not')
        oldN = this%N
        this%N = this%N + size(Z)
+       this%Ndomain = this%N
 
        !Check the sizes of the input arrays for consistency
        call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom')
@@ -2043,6 +2055,7 @@ contains
 
     ! update N
     this%N = this%N - size(atom_indices)
+    this%Ndomain = this%N
 
     call atoms_repoint(this)
 
@@ -2141,10 +2154,11 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine calc_dists(this, parallel)
+  subroutine calc_dists(this, parallel, error)
 
     type(Atoms), intent(inout) :: this
     logical, optional, intent(in) :: parallel
+    integer, optional, intent(inout) :: error
     integer                    :: i, j, n, index
     integer, dimension(3)      :: shift
     real(dp), dimension(3)     :: j_pos
@@ -2178,8 +2192,9 @@ contains
     end if
 #endif
 
-    if (.not.this%connect%initialised) &
-         call system_abort('CalcDists: Connect is not yet initialised')
+    if (.not.this%connect%initialised) then
+         RAISE_ERROR('CalcDists: Connect is not yet initialised', error)
+      endif
 
     do i = 1, this%N
 
@@ -5786,5 +5801,21 @@ contains
     call print(output)
 
   end subroutine atoms_filter_cone
+
+
+  !% Move a single atom from one location to another one.
+  !% The destination will be overriden.
+  subroutine atoms_copy_entry(this, src, dst)
+    implicit none
+
+    type(Atoms), intent(inout)  :: this
+    integer, intent(in)         :: src
+    integer, intent(in)         :: dst
+
+    ! ---
+
+    call copy_entry(this%data, src, dst)
+
+  endsubroutine atoms_copy_entry
 
 end module atoms_module
