@@ -566,7 +566,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               println('type %s_ptr_type' %  t.name)
               println('type(%s), pointer :: p' % t.name)
               println('end type %s_ptr_type' % t.name)
-              if mytype.startswith('type') and mytype.lower() != t.name.lower():
+              if mytype.startswith('type') and strip_type(mytype).lower() != t.name.lower():
                  println('type %s_ptr_type' %  strip_type(mytype))
                  println('type(%s), pointer :: p' % strip_type(mytype))
                  println('end type %s_ptr_type' % strip_type(mytype))
@@ -635,7 +635,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               println('type %s_ptr_type' %  t.name)
               println('type(%s), pointer :: p' % t.name)
               println('end type %s_ptr_type' % t.name)
-              if mytype.startswith('type') and mytype.lower() != t.name.lower():
+              if mytype.startswith('type') and strip_type(mytype).lower() != t.name.lower():
                  println('type %s_ptr_type' %  strip_type(mytype))
                  println('type(%s), pointer :: p' % strip_type(mytype))
                  println('end type %s_ptr_type' % strip_type(mytype))
