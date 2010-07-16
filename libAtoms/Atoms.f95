@@ -345,16 +345,6 @@ module  atoms_module
      module procedure diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
   end interface
 
-  !% Write a binary representation of an Atoms or Connection object to a file
-  interface write_binary
-     module procedure Atoms_File_Write, Connection_File_Write, Table_Pointer_write_binary_a
-  end interface
-
-  !% Read an Atoms or Connection object from a binary file
-  interface read_binary
-     module procedure Atoms_File_Read, Connection_File_Read, Table_Pointer_read_binary_a
-  end interface
-
   !% Print a verbose textual description of an Atoms or Connection object to the default logger or to
   !% a specificied Inoutput object.
   interface print
@@ -5034,84 +5024,6 @@ contains
 
     end subroutine atoms_print_cfg_filename
 
-
-
-   subroutine atoms_file_write(this,outfile)
-
-      type(Atoms),     intent(inout) :: this
-      type(Inoutput),  intent(inout) :: outfile
-
-      !Header
-      call write_binary('Atoms',outfile)
-
-      !Scalar logicals
-      call write_binary(this%initialised,outfile)        !1
-      if (.not.this%initialised) return
-      call write_binary(this%use_uniform_cutoff,outfile) !2
-      !Scalar integers
-      call write_binary(this%N,outfile)                  !1
-
-      !Scalar reals
-      call write_binary(this%cutoff,outfile)             !1
-      call write_binary(this%cutoff_break,outfile)             !1
-
-      !Real arrays
-      call write_binary(this%lattice,outfile)            !1
-
-      !Derived types
-      call write_binary(this%data, outfile)              !1
-      call write_binary(this%properties, outfile)        !2
-      call write_binary(this%params, outfile)            !3
-      call write_binary(this%connect,outfile)            !4
-
-   end subroutine atoms_file_write
-
-
-   subroutine atoms_file_read(this,infile)
-
-      type(Atoms),     intent(inout) :: this
-      type(Inoutput),  intent(inout) :: infile
-      integer                        :: N
-      real(dp)                       :: cutoff, cutoff_break
-      character(5)                   :: id
-      logical                        :: initialised, use_uniform_cutoff
-      real(dp), dimension(3,3)       :: lattice            
-
-      call atoms_finalise(this)
-
-      call read_binary(id,infile)
-      if (id /= 'Atoms') then
-         write(line,'(a,a)') 'Atoms_File_Read: Bad Atoms structure in file ',trim(infile%filename)
-         call system_abort(line)
-      end if
-      !Scalar logicals
-      call read_binary(initialised,infile)                !1
-      if (.not.initialised) return
-      call read_binary(use_uniform_cutoff,infile)         !2
-      !Scalar integers
-      call read_binary(N,infile)                          !1
-      !Scalar reals
-      call read_binary(cutoff,infile)                     !1
-      call read_binary(cutoff_break,infile)                     !1
-      !Real arrays
-      call read_binary(lattice,infile)                    !1
-
-      call atoms_initialise(this, N, lattice)
-
-      this%use_uniform_cutoff = use_uniform_cutoff
-      this%cutoff = cutoff
-      this%cutoff_break = cutoff_break
-
-      !Derived types
-      call read_binary(this%data,   infile)               !1
-      call read_binary(this%properties, infile)           !2
-      call read_binary(this%params, infile)               !3
-      call read_binary(this%connect,infile)               !4
-
-      call atoms_repoint(this)
-
-   end subroutine atoms_file_read
-
   subroutine connection_print(this,file)
 
     type(Connection), intent(in)    :: this
@@ -5215,98 +5127,6 @@ contains
     end if
 
   end subroutine connection_print
-
-  subroutine table_pointer_write_binary_a(this, outfile)
-    type(Table_Pointer), intent(in) :: this(:)
-    type(Inoutput), intent(inout) :: outfile
-
-    integer i
-
-    call write_binary(size(this), outfile)
-    do i=1, size(this)
-      call write_binary(this(i)%t, outfile)
-    end do
-  end subroutine table_pointer_write_binary_a
-
-
-  subroutine connection_file_write(this,outfile)
-    type(Connection), intent(in) :: this
-    type(Inoutput),   intent(inout) :: outfile
-    integer                         :: N
-
-    N = size(this%neighbour1)
-    call write_binary('Connection',outfile)
-    call write_binary(this%initialised,outfile)
-    if (.not.this%initialised) return
-    call write_binary(this%cells_initialised,outfile)
-    call write_binary(this%too_few_cells_warning_issued, outfile)
-    call write_binary(N,outfile)
-    call write_binary(this%cellsNa,outfile)
-    call write_binary(this%cellsNb,outfile)
-    call write_binary(this%cellsNc,outfile)
-
-    call write_binary(this%neighbour1,outfile)
-    call write_binary(this%neighbour2,outfile)
-
-    if (this%cells_initialised) &
-         call write_binary(this%cell,outfile)
-
-  end subroutine connection_file_write
-
-  subroutine table_pointer_read_binary_a(this, outfile)
-    type(Table_Pointer), allocatable, intent(inout) :: this(:)
-    type(Inoutput), intent(inout) :: outfile
-
-    integer i, N
-
-    call read_binary(N, outfile)
-    allocate(this(N))
-    do i=1, N
-      call read_binary(this(i)%t, outfile)
-    end do
-  end subroutine table_pointer_read_binary_a
-
-  subroutine connection_file_read(this,infile)
-    type(Connection), intent(inout) :: this
-    type(Inoutput), intent(inout)   :: infile
-    integer                         :: cellsNa,cellsNb,cellsNc,N
-    character(10)                   :: id
-    logical                         :: initialised, cells_initialised
-
-    call connection_finalise(this)
-
-    call read_binary(id,infile)
-    if (id /= 'Connection') then
-       write(line,'(a,a)')'Connection_File_Read: Bad Connection structure in file ',trim(infile%filename)
-       call system_abort(line)
-    end if
-
-    call read_binary(initialised,infile)
-    if (.not.initialised) return
-    call read_binary(cells_initialised,infile)
-    call read_binary(this%too_few_cells_warning_issued, infile)
-    call read_binary(N,infile)
-    call read_binary(cellsNa,infile)
-    call read_binary(cellsNb,infile)
-    call read_binary(cellsNc,infile)
-
-    call connection_initialise(this,N)
-
-    call read_binary(this%neighbour1, infile)
-    call read_binary(this%neighbour2, infile)
-
-    if (cells_initialised) then
-       call read_binary(this%cell, infile)
-
-       this%cellsNa = cellsNa
-       this%cellsNb = cellsNb
-       this%cellsNc = cellsNc
-
-       this%cells_initialised = .true.
-    end if
-
-  end subroutine connection_file_read
-
 
   !Bond_Length
   !% Returns the sum of the covalent radii of two atoms

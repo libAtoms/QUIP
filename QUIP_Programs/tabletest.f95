@@ -265,15 +265,6 @@ program tabletest
   call print('copy taken before deletions:')
   call print(t1)
 
-  call print('testing binary I/O')
-  call initialise(f, 'table.bin', isformatted=.false., action=INOUT)
-  call write_binary(t1, f)
-  call finalise(t1)
-  call rewind(f)
-  call read_binary(t1, f)
-  call print('read from file:')
-  call print(t1)
-
   call finalise(t1)
 
   call system_finalise
