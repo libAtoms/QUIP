@@ -76,7 +76,7 @@ implicit none
   allocate(f(3,at2%N))
 
   lattice_pull = .false.
-  if((lattice_pull1 == .true.) .or. (lattice_pull2 == .true.) .or. (lattice_pull3 == .true.)) lattice_pull = .true.
+  if(lattice_pull1 .or. lattice_pull2 .or. lattice_pull3) lattice_pull = .true.
 
   at=at2
   do i=1,n_configs
@@ -86,9 +86,9 @@ implicit none
      if(lattice_delta /= 0.0_dp) then
         if(lattice_pull) then
            lat = at%lattice
-           if(lattice_pull1 == .true.) lat(:,1) = lat(:,1)*(1.0_dp+lattice_delta)
-           if(lattice_pull2 == .true.) lat(:,2) = lat(:,2)*(1.0_dp+lattice_delta)
-           if(lattice_pull3 == .true.) lat(:,3) = lat(:,3)*(1.0_dp+lattice_delta)
+           if(lattice_pull1) lat(:,1) = lat(:,1)*(1.0_dp+lattice_delta)
+           if(lattice_pull2) lat(:,2) = lat(:,2)*(1.0_dp+lattice_delta)
+           if(lattice_pull3) lat(:,3) = lat(:,3)*(1.0_dp+lattice_delta)
         else
            lat = at%lattice
            call randomise(lat, lattice_delta)
