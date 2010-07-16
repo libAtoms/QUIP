@@ -149,26 +149,14 @@ interface remove_value
   module procedure dictionary_remove_value
 end interface
 
-!% Write a binary representation of this dictionary to an Inouput object
-private :: dictionary_write_binary
-interface write_binary
-   module procedure dictionary_write_binary
-end interface
-
-!% Read a binary representation of this dictionary from an Inouput object
-private :: dictionary_read_binary
-interface read_binary
-   module procedure dictionary_read_binary
+!% Read into this dictionary from a string
+interface read_string
+   module procedure dictionary_read_string
 end interface
 
 !% Write a string representation of this dictionary
 interface write_string
    module procedure dictionary_write_string
-end interface
-
-!% Read into this dictionary from a string
-interface read_string
-   module procedure dictionary_read_string
 end interface
 
 interface subset
@@ -919,147 +907,6 @@ subroutine dictionary_remove_value(this, key)
     call remove_entry(this, entry_i)
   endif
 end subroutine dictionary_remove_value
-
-
-subroutine dictionary_write_binary(this, out)
-  type(Dictionary), intent(in) :: this
-  type(Inoutput), intent(inout) :: out
-
-  integer :: i
-
-  call write_binary('Dictionary', out)
-  call write_binary(this%N, out)
-
-  do i=1,this%N
-     call write_binary(this%keys(i), out)
-
-     ! First the scalars
-     call write_binary(this%entries(i)%type, out)
-     call write_binary(this%entries(i)%i, out)
-     call write_binary(this%entries(i)%r, out)
-     call write_binary(this%entries(i)%c, out)
-     call write_binary(this%entries(i)%l, out)
-     call write_binary(this%entries(i)%s, out)
-
-     ! Then sizes of arrays
-     if (allocated(this%entries(i)%i_a)) then
-        call write_binary(size(this%entries(i)%i_a), out)
-     else
-        call write_binary(0, out)
-     end if
-     if (allocated(this%entries(i)%r_a)) then
-        call write_binary(size(this%entries(i)%r_a), out)
-     else
-        call write_binary(0, out)
-     end if
-     if (allocated(this%entries(i)%c_a)) then
-        call write_binary(size(this%entries(i)%c_a), out)
-     else
-        call write_binary(0, out)
-     end if
-     if (allocated(this%entries(i)%l_a)) then
-        call write_binary(size(this%entries(i)%l_a), out)
-     else
-        call write_binary(0, out)
-     end if
-     if (allocated(this%entries(i)%s_a)) then
-        call write_binary(size(this%entries(i)%s_a), out)
-     else
-        call write_binary(0, out)
-     end if
-
-
-     ! Then the arrays, if allocated
-     if (allocated(this%entries(i)%i_a)) then
-        call write_binary(this%entries(i)%i_a, out)
-     end if
-     if (allocated(this%entries(i)%r_a)) then
-        call write_binary(this%entries(i)%r_a, out)
-     end if
-     if (allocated(this%entries(i)%c_a)) then
-        call write_binary(this%entries(i)%c_a, out)
-     end if
-     if (allocated(this%entries(i)%l_a)) then
-        call write_binary(this%entries(i)%l_a, out)
-     end if
-     if (allocated(this%entries(i)%s_a)) then
-        call write_binary(this%entries(i)%s_a, out)
-     end if
-
-  end do
-
-end subroutine dictionary_write_binary
-
-
-subroutine dictionary_read_binary(this, in)
-  type(Dictionary), intent(out) :: this
-  type(Inoutput), intent(inout) :: in
-
-  integer :: N, i, size_i_a, size_r_a, size_c_a, size_l_a, size_s_a
-  character(10) :: id
-  character(len=key_len) :: key
-  type(DictEntry) :: entry
-
-  call finalise(this)
-  call initialise(this)
-
-  call read_binary(id, in)
-  if (id /= 'Dictionary') then
-     write(line,'(a,a)')'read_binary_Dictionary: Bad Dictionary structure in file ',in%filename
-     call system_abort(line)
-  end if
-
-  call read_binary(N, in)
-
-  do i=1,N
-     call read_binary(key, in)
-
-     call read_binary(entry%type, in)
-     call read_binary(entry%i, in)
-     call read_binary(entry%r, in)
-     call read_binary(entry%c, in)
-     call read_binary(entry%l, in)
-     call read_binary(entry%s, in)
-
-
-     call read_binary(size_i_a, in)
-     call read_binary(size_r_a, in)
-     call read_binary(size_c_a, in)
-     call read_binary(size_l_a, in)
-     call read_binary(size_s_a, in)
-
-
-     if (size_i_a /= 0) then
-        if (allocated(entry%i_a)) deallocate(entry%i_a)
-        allocate(entry%i_a(size_i_a))
-        call read_binary(entry%i_a,in)
-     end if
-     if (size_r_a /= 0) then
-        if (allocated(entry%r_a)) deallocate(entry%r_a)
-        allocate(entry%r_a(size_r_a))
-        call read_binary(entry%r_a,in)
-     end if
-     if (size_c_a /= 0) then
-        if (allocated(entry%c_a)) deallocate(entry%c_a)
-        allocate(entry%c_a(size_c_a))
-        call read_binary(entry%c_a,in)
-     end if
-     if (size_l_a /= 0) then
-        if (allocated(entry%l_a)) deallocate(entry%l_a)
-        allocate(entry%l_a(size_l_a))
-        call read_binary(entry%l_a,in)
-     end if
-     if (size_s_a /= 0) then
-        if (allocated(entry%s_a)) deallocate(entry%s_a)
-        allocate(entry%s_a(size_s_a))
-        call read_binary(entry%s_a,in)
-     end if
-
-
-     call add_entry(this, key, entry)
-  end do
-
-end subroutine dictionary_read_binary
 
 
 subroutine dictionary_read_string(this, str, append)
