@@ -178,14 +178,6 @@ module constraints_module
      module procedure constraint_print, constraints_print
   end interface print
 
-  interface write_binary
-     module procedure write_binary_constraint, write_binary_constraints
-  end interface write_binary
-
-  interface read_binary
-     module procedure read_binary_constraint, read_binary_constraints
-  end interface read_binary
-
   !
   ! interface blocks for the C functions
   !
@@ -553,122 +545,6 @@ contains
     end do
 
   end subroutine constraints_print
-
-  subroutine write_binary_constraint(this,file)
-
-    type(Constraint), intent(in)    :: this
-    type(Inoutput),   intent(inout) :: file
-
-    !Header
-    call write_binary('Constraint',file)
-
-    !Initialisation status
-    call write_binary(this%initialised,file)
-    
-    if(this%initialised) then
-
-       !Other members
-       call write_binary(this%N,file)          !This is size(atom), and size(dC_dr)/3
-       call write_binary(this%atom,file)
-       call write_binary(size(this%data),file)
-       call write_binary(this%data,file)
-       call write_binary(this%func,file)
-       call write_binary(this%lambdaR,file)
-       call write_binary(this%lambdaV,file)
-       call write_binary(this%C,file)
-       call write_binary(this%dC_dr,file)
-       call write_binary(this%dC_dt,file)
-       call write_binary(this%old_dC_dr,file)
-       call write_binary(this%tol,file)
-
-    end if
-
-  end subroutine write_binary_constraint
-
-  subroutine read_binary_constraint(this,file)
-
-    type(Constraint), intent(inout) :: this
-    type(Inoutput),   intent(inout) :: file
-    character(10)                   :: id
-    integer                         :: datasize
-
-    !Header
-    call read_binary(id,file)
-    if (id /= 'Constraint') call System_Abort('read_binary_Constraint: This is not a constraint')
-
-    call Finalise(this)
-
-    !Initialisation status
-    call read_binary(this%initialised,file)
-    
-    if(this%initialised) then
-
-       !Other members
-       call read_binary(this%N,file)
-       allocate(this%atom(this%N),&
-                this%dC_dr(3*this%N),&
-                this%old_dC_dr(3*this%N))
-       call read_binary(this%atom,file)
-       call read_binary(datasize,file)
-       allocate(this%data(datasize))
-       call read_binary(this%data,file)
-       call read_binary(this%func,file)
-       call read_binary(this%lambdaR,file)
-       call read_binary(this%lambdaV,file)
-       call read_binary(this%C,file)
-       call read_binary(this%dC_dr,file)
-       call read_binary(this%dC_dt,file)
-       call read_binary(this%old_dC_dr,file)
-       call read_binary(this%tol,file)
-
-    end if
-
-  end subroutine read_binary_constraint
-
-  subroutine write_binary_constraints(this,file)
-
-    type(Constraint), dimension(:), intent(in)    :: this
-    type(Inoutput),                 intent(inout) :: file
-    integer                                       :: i
-    
-    !Header
-    call write_binary('ConstArray',file)
-
-    !Number of constraints
-    call write_binary(size(this),file)
-
-    !Write the constraints
-    do i = 1, size(this)
-       call write_binary(this(i),file)
-    end do
-    
-  end subroutine write_binary_constraints
-
-  !
-  ! Allow reading into an allocatable array, as for Groups
-  !
-  subroutine read_binary_constraints(alloc,file)
-
-    type(Constraint), dimension(:), allocatable, intent(inout) :: alloc
-    type(Inoutput),                              intent(inout) :: file
-    integer                                                    :: i, consize
-    character(10)                                              :: id
-    
-    !Header
-    call read_binary(id,file)
-    if (id /= 'ConstArray') call System_Abort('read_binary_constraints: This is not an array of constraints')
-
-    !Number of constraints
-    call read_binary(consize,file)
-
-    !Allocate the array to the correct size
-    allocate(alloc(consize))
-    
-    do i = 1, consize
-       call read_binary(alloc(i),file)
-    end do
-    
-  end subroutine read_binary_constraints
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X

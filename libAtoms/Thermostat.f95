@@ -123,14 +123,6 @@ module thermostat_module
      module procedure nose_hoover_mass_int, nose_hoover_mass_real
   end interface nose_hoover_mass
 
-  interface write_binary
-     module procedure thermostat_file_write, thermostats_file_write
-  end interface write_binary
-
-  interface read_binary
-     module procedure thermostat_file_read, thermostats_file_read
-  end interface read_binary
-
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1095,92 +1087,6 @@ contains
     end select
 
   end subroutine thermostat4
-
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !X
-  !X BINARY READING/WRITING
-  !X
-  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  
-  subroutine thermostat_file_write(this,outfile)
-
-    type(thermostat), intent(in)    :: this
-    type(inoutput),   intent(inout) :: outfile
-    
-    call write_binary('thermostat',outfile)
-
-    call write_binary(this%type,outfile)
-    call write_binary(this%gamma,outfile)
-    call write_binary(this%eta,outfile)
-    call write_binary(this%p_eta,outfile)
-    call write_binary(this%f_eta,outfile)
-    call write_binary(this%Q,outfile)
-    call write_binary(this%T,outfile)
-    call write_binary(this%Ndof,outfile)
-    call write_binary(this%work,outfile)
-
-  end subroutine thermostat_file_write
-
-  subroutine thermostat_file_read(this,infile)
-
-    type(thermostat), intent(inout) :: this
-    type(inoutput),   intent(inout) :: infile
-    character(10)                   :: id
-
-    call read_binary(id,infile)
-    if (id /= 'thermostat') call system_abort('Bad thermostat found in file '//trim(infile%filename))
-
-    call read_binary(this%type,infile)
-    call read_binary(this%gamma,infile)
-    call read_binary(this%eta,infile)
-    call read_binary(this%p_eta,infile)
-    call read_binary(this%f_eta,infile)
-    call read_binary(this%Q,infile)
-    call read_binary(this%T,infile)
-    call read_binary(this%Ndof,infile)
-    call read_binary(this%work,infile)
-
-  end subroutine thermostat_file_read
-
-  subroutine thermostats_file_write(this,outfile)
-
-    type(thermostat), allocatable, intent(in)    :: this(:)
-    type(inoutput),                intent(inout) :: outfile
-    integer :: l(1), u(1), i
-
-    l = lbound(this)
-    u = ubound(this)
-
-    call write_binary('thermoarray',outfile)
-    call write_binary(l(1),outfile)
-    call write_binary(u(1),outfile)
-    do i = l(1),u(1)
-       call write_binary(this(i),outfile)
-    end do
-
-  end subroutine thermostats_file_write
-
-  subroutine thermostats_file_read(this,infile)
-
-    type(thermostat), allocatable, intent(inout) :: this(:)
-    type(inoutput),                intent(inout) :: infile
-    integer :: l(1), u(1), i
-    character(11) :: id
-
-    call read_binary(id,infile)
-    if (id /= 'thermoarray') call system_abort('Bad thermostat array in file '//trim(infile%filename))
-
-    call read_binary(l(1),infile)
-    call read_binary(u(1),infile)
-    
-    call finalise(this)
-    allocate(this(l(1):u(1)))
-
-    do i = l(1),u(1)
-       call read_binary(this(i),infile)
-    end do
-
-  end subroutine thermostats_file_read
 
   function kinetic_virial(this)
      type(atoms), intent(in) :: this

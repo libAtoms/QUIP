@@ -113,14 +113,6 @@ module group_module
      module procedure group_assign_group, groups_assign_groups
   end interface assignment(=)
 
-  interface write_binary
-     module procedure write_binary_group, write_binary_groups
-  end interface write_binary
-
-  interface read_binary
-     module procedure read_binary_group, read_binary_groups
-  end interface read_binary
-
   interface set_type
     module procedure set_type_group
   end interface set_type
@@ -639,113 +631,6 @@ contains
     end do
 
   end subroutine groups_print
-
-  subroutine write_binary_group(this,file)
-
-    type(Group),    intent(in)    :: this
-    type(Inoutput), intent(inout) :: file
-
-    !Header
-    call write_binary('Group',file)
-
-    !Type
-    call write_binary(this%type,file)
-
-    !Atoms
-    if (allocated(this%atom)) then
-       call write_binary(size(this%atom),file)
-       call write_binary(this%atom,file)
-    else
-       call write_binary(-1,file) ! Denotes 'not allocated'
-    end if
-
-    !Object
-    if (allocated(this%object)) then
-       call write_binary(size(this%object),file)
-       call write_binary(this%object,file)
-    else
-       call write_binary(-1,file) ! Denotes 'not allocated'
-    end if
-
-  end subroutine write_binary_group
-
-  subroutine read_binary_group(this,file)
-
-    type(Group),    intent(inout) :: this
-    type(Inoutput), intent(inout) :: file
-    character(5)                  :: id
-    integer                       :: atsize, obsize
-
-    !Header
-    call read_binary(id,file)
-    if (id /= 'Group') call system_abort('read_binary_Group: This is not a group')
-
-    call finalise(this)
-
-    !Type
-    call read_binary(this%type,file)
-
-    !Atoms
-    call read_binary(atsize,file)
-    if (atsize /= -1) then
-       allocate(this%atom(atsize))
-       call read_binary(this%atom,file)
-    end if
-
-    !Object
-    call read_binary(obsize,file)
-    if (obsize /= -1) then
-       allocate(this%object(atsize))
-       call read_binary(this%object,file)
-    end if
-
-  end subroutine read_binary_group
-
-  subroutine write_binary_groups(this,file)
-
-    type(Group), dimension(:), intent(in)    :: this
-    type(Inoutput),            intent(inout) :: file
-    integer                                  :: i
-    
-    !Header
-    call write_binary('GArray',file)
-
-    !Number of groups
-    call write_binary(size(this),file)
-
-    !Write the groups individually
-    do i = 1, size(this)
-       call write_binary(this(i),file)
-    end do
-    
-  end subroutine write_binary_groups
-
-  !
-  !% Allow reading into an allocatable array
-  !
-  subroutine read_binary_groups(alloc,file)
-
-    type(Group), dimension(:), allocatable, intent(inout) :: alloc
-    type(Inoutput),                         intent(inout) :: file
-    integer                                               :: i, grsize
-    character(6)                                          :: id
-    
-    !Header
-    call read_binary(id,file)
-
-    if (id /= 'GArray') call system_abort('read_binary_Groups: This is not an array of groups')
-
-    !Number of groups
-    call read_binary(grsize,file)
-
-    !Allocate the array to the correct size
-    allocate(alloc(grsize))
-    
-    do i = 1, grsize
-       call read_binary(alloc(i),file)
-    end do
-    
-  end subroutine read_binary_groups
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X

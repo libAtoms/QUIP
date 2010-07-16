@@ -125,16 +125,6 @@ module dynamicalsystem_module
       module procedure ds_remove_atom_single, ds_remove_atom_multiple
    end interface remove_atoms
 
-   !% Write this DynamicalSystem to a binary file
-   interface write_binary
-      module procedure ds_file_write
-   end interface
-
-   !% Read this DynamicalSystem from a binary file
-   interface read_binary
-      module procedure ds_file_read
-   end interface
-
    interface print
       module procedure ds_print
    end interface
@@ -2955,102 +2945,6 @@ contains
 
    end subroutine ds_print
    
-   subroutine ds_file_write(this,file)
-
-      type(Inoutput),        intent(inout) :: file
-      type(DynamicalSystem), intent(inout) :: this
-      
-      !Header: used to make sure reading occurs from the correct place
-      call write_binary('DS',file)
-
-      !Scalar logicals
-      call write_binary(this%initialised,file)
-      if (.not.this%initialised) return
-
-
-      !Scalar members
-      call write_binary(this%N,file)                 !1
-      call write_binary(this%nSteps,file)            !2
-      call write_binary(this%Nrigid,file)            !3
-      call write_binary(this%Nconstraints,file)      !4
-      call write_binary(this%Ndof,file)              !5
-
-      call write_binary(this%t,file)                 !6
-      call write_binary(this%avg_temp,file)          !7
-      call write_binary(this%avg_time,file)          !8
-      call write_binary(this%dW,file)                !9
-      call write_binary(this%work,file)              !10
-      call write_binary(this%Epot,file)              !11
-      call write_binary(this%ext_energy,file)        !12     
-      call write_binary(this%thermostat_dW,file)     !13
-      call write_binary(this%thermostat_work,file)   !14
-      !this%initialised was written at start
-
-      !Array members
-      call write_binary(this%group_lookup,file)
-
-      !Derived Type members
-      call write_binary(this%atoms,file)
-
-      !Derived Type Array members
-      call write_binary(this%constraint,file)
-      !call write_binary(this%rigidbody,file) not yet implemented... issue with pointer
-      call write_binary(this%group,file)
-      call write_binary(this%thermostat,file)
-
-   end subroutine ds_file_write
-
-   subroutine ds_file_read(this,file)
-
-      type(Inoutput),        intent(inout) :: file
-      type(DynamicalSystem), intent(inout) :: this
-      logical                              :: initialised
-      character(2)                         :: id
-
-      !Make sure we are reading a dynamical system structure
-      call read_binary(id,file)
-      if (id /= 'DS') call system_abort('DS_File_Read: Bad DynamicalSystem structure in file '//trim(file%filename))
-
-      !Make sure the dynamical system is uninitialised
-      call finalise(this)    
-
-      !Header
-      call read_binary(initialised,file)            
-      if (.not.initialised) return
-
-      !Scalar members
-      call read_binary(this%N,file)                 !1
-      call read_binary(this%nSteps,file)            !2
-      call read_binary(this%Nrigid,file)            !3
-      call read_binary(this%Nconstraints,file)      !4
-      call read_binary(this%Ndof,file)              !5
-
-      call read_binary(this%t,file)                 !6
-      call read_binary(this%avg_temp,file)          !7
-      call read_binary(this%avg_time,file)          !8
-      call read_binary(this%dW,file)                !9
-      call read_binary(this%work,file)              !10
-      call read_binary(this%Epot,file)              !11
-      call read_binary(this%ext_energy,file)        !12
-      call read_binary(this%thermostat_dW,file)     !13
-      call read_binary(this%thermostat_work,file)   !14
-      this%initialised = .true.               
-
-      !Array members
-      allocate(this%group_lookup(this%N))
-      call read_binary(this%group_lookup,file)
-    
-      !Derived Type members
-      call read_binary(this%atoms,file)
-
-      !Derived Type Array members
-      call read_binary(this%constraint,file)
-      !call read_binary(this%rigidbody,file) not yet implemented... issue with pointer
-      call read_binary(this%group,file)
-      call read_binary(this%thermostat,file)
-
-   end subroutine ds_file_read
-
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !X
    !X CONSTRAINED DYNAMICS ROUTINES

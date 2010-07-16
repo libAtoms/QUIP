@@ -1399,7 +1399,6 @@ CONTAINS
        if (present(err)) err = INFO
 
        if (INFO.NE.0) then
-          call write_binary(this, "this")
 	  if (present(err)) then
 	    mainlog%mpi_all_inoutput_flag=.true.
 	    call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
@@ -1472,7 +1471,6 @@ CONTAINS
        if (present(err)) err = INFO
 
        if (INFO.NE.0) then
-          !call write_binary(this, "this")
 	  if (present(err)) then
 	    mainlog%mpi_all_inoutput_flag=.true.
 	    call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
@@ -1535,8 +1533,6 @@ CONTAINS
     if (present(err)) err = INFO
 
     if (INFO.NE.0) then
-       call write_binary(this, "this")
-       call write_binary(other, "other")
        if (present(err)) then
 	 mainlog%mpi_all_inoutput_flag=.true.
 	 call print ('Matrix_generaldiagonalise: Error in calling DSYGV! (info = '//INFO//')', PRINT_ALWAYS)
