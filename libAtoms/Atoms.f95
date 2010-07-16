@@ -428,7 +428,6 @@ module  atoms_module
      module procedure atoms_bcast
   end interface
 
-  private :: atoms_copy_entry
   interface copy_entry
      module procedure atoms_copy_entry
   endinterface copy_entry
