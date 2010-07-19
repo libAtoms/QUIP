@@ -36,8 +36,8 @@ def makecrack(params):
 
    mpi_glob = MPI_context()
 
-   print('Initialising metapotential')
-   simple = MetaPotential('Simple', classicalpot, mpi_obj=mpi_glob)
+   print('Initialising potential')
+   simple = Potential('Simple', classicalpot, mpi_obj=mpi_glob)
    simple.print_()
 
    crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
@@ -58,6 +58,12 @@ def makecrack(params):
       crack_slab.lattice[1,1] = crack_slab.lattice[1,1] + params.crack_vacuum_size
 
    crack_slab.lattice[2,2] = crack_slab.lattice[2,2] + params.crack_vacuum_size
+   crack_slab.set_lattice(crack_slab.lattice, False)
+
+   # 3D crack with free surfaces at z = +/- depth/2
+   if params.crack_free_surfaces:
+      crack_slab.lattice[3,3] = crack_slab.lattice[3,3] + params.crack_vacuum_size
+   
    crack_slab.set_lattice(crack_slab.lattice, False)
 
    # Add various properties to crack_slab
@@ -82,8 +88,26 @@ def makecrack(params):
 
    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
-   crack_make_seed(crack_slab, params)
+   print_title('Setting edge mask')
    crack_setup_marks(crack_slab, params)
+
+   crack_slab.edge_mask[:] = 0
+
+   minx, maxx = crack_slab.pos[1,:].min(), crack_slab.pos[1,:].max()
+   crack_slab.edge_mask[logical_or(abs(crack_slab.pos[1,:]-minx) < params.selection_edge_tol,
+                                   abs(crack_slab.pos[1,:]-maxx) < params.selection_edge_tol)] = 1
+
+   miny, maxy = crack_slab.pos[2,:].min(), crack_slab.pos[2,:].max()
+   crack_slab.edge_mask[logical_or(abs(crack_slab.pos[2:1]-miny) < params.selection_edge_tol,
+                                   abs(crack_slab.pos[2,:]-maxy) < params.selection_edge_tol)] = 1
+
+   if params.crack_free_surfaces:
+      # Open surfaces at +/- z
+      minz, maxz = crack_slab.pos[3,:].min(), crack_slab.pos[3,:].max()
+      crack_slab.edge_mask[logical_or(abs(crack_slab.pos[3,:]-minz) < params.selection_edge_tol,
+                                      abs(crack_slab.pos[3,:]-maxz) < params.selection_edge_tol)] = 1
+
+   #crack_make_seed(crack_slab, params)
 
    if (params.crack_apply_initial_load):
       crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
@@ -94,7 +118,8 @@ def makecrack(params):
    return crack_slab
 
 
-if __name__ == '__main__':
+         
+if False: #__name__ == '__main__':
 
    params = CrackParams()
 
