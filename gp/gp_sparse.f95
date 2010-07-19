@@ -675,7 +675,6 @@ module gp_sparse_module
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
                   & dot_product(xixjtheta,x_prime_star_div_theta)
 #endif
-#endif
                else
                   k(i) = 0.0_dp
                end if
