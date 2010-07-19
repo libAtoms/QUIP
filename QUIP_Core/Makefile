@@ -40,13 +40,13 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-BASE_F95_FILES = ScaLAPACK Matrix RS_SparseMatrix QUIP_Common
+BASE_F95_FILES = ScaLAPACK Matrix RS_SparseMatrix QUIP_Common Functions Ewald 
 BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
 BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
 
 TB_F77_FILES = ginted
 TB_F95_FILES = TB_Common  TB_Kpoints TBModel_NRL_TB_defs TBModel_NRL_TB TBModel_Bowler TBModel_DFTB TBModel_GSP \
-  TBModel TBMatrix TB_Mixing Functions Ewald TBSystem  ApproxFermi TB_GreensFunctions TB FilePot CallbackPot
+  TBModel TBMatrix TB_Mixing  TBSystem  ApproxFermi TB_GreensFunctions TB 
 TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
 TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
 TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
@@ -55,12 +55,16 @@ IP_F95_FILES = IPEwald IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_S
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper
+POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
-ALL_F95_FILES = ${BASE_F95_SOURCES} ${TB_F95_SOURCES} ${IP_F95_SOURCES}
-QUIP_OBJS = ${BASE_F95_OBJS} ${TB_F95_OBJS} ${IP_F95_OBJS} 
+ALL_F95_FILES = ${BASE_F95_SOURCES}  ${IP_F95_SOURCES}
+QUIP_OBJS = ${BASE_F95_OBJS}  ${IP_F95_OBJS} 
+ifeq (${HAVE_TB},1)
+  ALL_F95_FILES += ${TB_F95_SOURCES}
+  QUIP_OBJS += ${TB_F95_OBJS}	
+endif
 ifeq (${HAVE_CP2K},1)
   QUIP_OBJS += cp2k_driver.o
   ALL_F95_FILES += cp2k_driver.f95
