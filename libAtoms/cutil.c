@@ -135,7 +135,7 @@ int pointer_to_(void *p) {
   return ((int) p);
 }
 
-void mem_info_(double *total_mem)
+void mem_info_(double *total_mem, double *free_mem)
 {
 #ifndef DARWIN
    struct sysinfo s_info;
@@ -148,9 +148,11 @@ void mem_info_(double *total_mem)
 #ifndef DARWIN
    error = sysinfo(&s_info);
    *total_mem = s_info.totalram*s_info.mem_unit;
+   *free_mem = s_info.freeram*s_info.mem_unit;
 #else
    error = sysctlbyname("hw.memsize", &totalram, &size, NULL, 0);
    *total_mem = totalram;
+   *free_mem = *total_mem; // What is the MacOS equivalent??
 #endif
 }
 
