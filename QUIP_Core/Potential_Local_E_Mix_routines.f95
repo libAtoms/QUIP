@@ -30,15 +30,15 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Local Energy Mixing routines to be included in MetaPotential.f95
+!X Local Energy Mixing routines to be included in Potential.f95
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine metapotential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj)
-    type(MetaPotential_Local_E_Mix), intent(inout) :: this
+  subroutine potential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj)
+    type(Potential_Local_E_Mix), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(MetaPotential), intent(in), target :: region1_pot, region2_pot
+    type(Potential), intent(in), target :: region1_pot, region2_pot
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi_obj
 
@@ -68,8 +68,8 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Local_E_Mix_initialise args_str') ) &
-      call system_abort("MetaPotential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix_initialise args_str') ) &
+      call system_abort("Potential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     call initialise(this%create_hybrid_weights_params)
@@ -94,12 +94,12 @@
     call remove_value(this%create_hybrid_weights_params, 'minim_mm_args_str')
 
     if (this%minimise_mm) then
-      call initialise(this%relax_metapot, "Simple", region2_pot)
+      call initialise(this%relax_pot, "Simple", region2_pot)
     endif
 
     if (do_rescale_r .or. do_rescale_E .or. do_tb_defaults) then
       if (.not. present(reference_bulk)) &
-	call system_abort("metapotential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E// &
+	call system_abort("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E// &
 	  " do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present")
 
       call do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
@@ -118,29 +118,29 @@
 
   end subroutine
 
-  subroutine metapotential_local_e_mix_finalise(this)
-    type(MetaPotential_Local_E_Mix), intent(inout) :: this
+  subroutine potential_local_e_mix_finalise(this)
+    type(Potential_Local_E_Mix), intent(inout) :: this
 
     call finalise(this%pot_region1)
     call finalise(this%pot_region2)
 
     deallocate(this%pot_region1)
     deallocate(this%pot_region2)
-  end subroutine metapotential_local_e_mix_finalise
+  end subroutine potential_local_e_mix_finalise
 
 
-  function metapotential_local_e_mix_cutoff(this)
-    type(MetaPotential_Local_E_Mix), intent(in) :: this
-    real(dp) :: metapotential_local_e_mix_cutoff
+  function potential_local_e_mix_cutoff(this)
+    type(Potential_Local_E_Mix), intent(in) :: this
+    real(dp) :: potential_local_e_mix_cutoff
 
-    metapotential_local_e_mix_cutoff = max(cutoff(this%pot_region1), cutoff(this%pot_region2))
-  end function metapotential_local_e_mix_cutoff
+    potential_local_e_mix_cutoff = max(cutoff(this%pot_region1), cutoff(this%pot_region2))
+  end function potential_local_e_mix_cutoff
 
-  subroutine metapotential_local_e_mix_print(this, file)
-    type(MetaPotential_Local_E_Mix),          intent(inout) :: this
+  subroutine potential_local_e_mix_print(this, file)
+    type(Potential_Local_E_Mix),          intent(inout) :: this
     type(Inoutput),intent(inout),optional:: file
     
-    call print('Local_E_Mix metapotential:', file=file)
+    call print('Local_E_Mix potential:', file=file)
     call print('Potential in region 1 (embedded):', file=file)
     call print('=======================', file=file)
     call print(this%pot_region1, file=file)
@@ -151,10 +151,10 @@
     call print('do_terminate ' // this%terminate, file=file)
     call print('r_scale_pot1=' // this%r_scale_pot1 // ' E_scale_pot1=' // this%E_scale_pot1, file=file)
     call print('')
-  end subroutine metapotential_local_e_mix_print
+  end subroutine potential_local_e_mix_print
 
-  subroutine metapotential_local_e_mix_calc(this, at, energy, local_e, force, virial, args_str, err)
-    type(MetaPotential_Local_E_Mix), intent(inout) :: this
+  subroutine potential_local_e_mix_calc(this, at, energy, local_e, force, virial, args_str, err)
+    type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: energy
     real(dp), intent(out), optional :: local_e(:)
@@ -171,17 +171,17 @@
     integer, pointer :: hybrid(:), hybrid_mark(:)
 
     if (.not. associated(this%pot_region1) .or. .not. associated(this%pot_region2)) &
-      call system_abort("MetaPotential_Local_E_Mix_calc: this%pot_region1 or this%pot_region2 not initialised")
+      call system_abort("Potential_Local_E_Mix_calc: this%pot_region1 or this%pot_region2 not initialised")
 
     call initialise(params)
     call param_register(params, "calc_weights", "F", calc_weights)
     call param_register(params, "core_hops", "0", core_hops)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_Local_E_Mix_Calc args_str') ) &
-      call system_abort("MetaPotential_Local_E_Mix_calc_energy failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix_Calc args_str') ) &
+      call system_abort("Potential_Local_E_Mix_calc_energy failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     if (calc_weights) then
-      call print("MetaPotential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
+      call print("Potential_Local_E_Mix_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
       call add_property(at, "hybrid_mark", HYBRID_NO_MARK)
       if (.not. assign_pointer(at, "hybrid", hybrid)) &
@@ -208,10 +208,10 @@
 
     if (present(err)) err = 0
 
-  end subroutine metapotential_local_e_mix_calc
+  end subroutine potential_local_e_mix_calc
 
   subroutine calc_local_energy_mix(this, at, energy, local_e, force, virial, args_str)
-    type(MetaPotential_Local_E_Mix), intent(inout) :: this
+    type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: energy
     real(dp), intent(out), optional :: local_e(:)
@@ -282,7 +282,7 @@
 
       if (this%minimise_mm) then
 	dummy = assign_pointer(cluster, 'index', index)
-	call do_minimise_mm(this%relax_metapot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
+	call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
 	  this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
 	  this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_mm_use_n_minim, this%minim_inoutput_movie, &
           this%minim_cinoutput_movie, index)

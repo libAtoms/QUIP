@@ -28,7 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-program metapot_test
+program pot_test
 
   use libAtoms_module
   use QUIP_Module
@@ -37,14 +37,14 @@ program metapot_test
 
   type(Atoms) :: dia, at
   type(Table) :: embedlist
-  type(MetaPotential) :: metapot
+  type(Potential) :: pot
   type(InOutput) :: xml
-  type(MetaPotential) :: pot1, pot2
+  type(Potential) :: pot1, pot2
   real(dp), allocatable :: f1(:,:), f2(:,:)
   integer, pointer :: hybrid(:), hybrid_mark(:)
 
   call system_initialise(PRINT_VERBOSE,seed=2)
-  call initialise(xml, 'metapot_test_params.xml')
+  call initialise(xml, 'pot_test_params.xml')
   call initialise(pot1, 'IP SW label="PRB_31_plus_H"', xml)
   call rewind(xml)
   call initialise(pot2, 'IP SW label="eps_2.6"', xml)
@@ -91,38 +91,38 @@ program metapot_test
 
   call set_value(at%params, 'mode', 'force_mixing')
   call print('force_mixing')
-  call initialise(metapot, 'ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
-  call print(metapot)
-  call calc(metapot, at, f=f1)
+  call initialise(pot, 'ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
+  call print(pot)
+  call calc(pot, at, f=f1)
   call print(f1)
-  call finalise(metapot)
+  call finalise(pot)
 
   call set_value(at%params, 'mode', 'force_mixing_smooth')
   call print('force_mixing_smooth')
-  call initialise(metapot, 'ForceMixing method=force_mixing_smooth buffer_hops=1 qm_args_str={single_cluster=T  cluster_calc_connect=T}', pot1, pot2)
-  call print(metapot)
-  call calc(metapot, at, f=f2)
+  call initialise(pot, 'ForceMixing method=force_mixing_smooth buffer_hops=1 qm_args_str={single_cluster=T  cluster_calc_connect=T}', pot1, pot2)
+  call print(pot)
+  call calc(pot, at, f=f2)
   call print(f2)
   call print('force_mixing_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
-  call finalise(metapot)
+  call finalise(pot)
 
   call set_value(at%params, 'mode', 'force_mixing_super_smooth')
   call print('force_mixing_super_smooth')
-  call initialise(metapot, 'ForceMixing method=force_mixing_super_smooth buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
-  call print(metapot)
-  call calc(metapot, at, f=f2)
+  call initialise(pot, 'ForceMixing method=force_mixing_super_smooth buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
+  call print(pot)
+  call calc(pot, at, f=f2)
   call print(f2)
   call print('force_mixing_super_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
-  call finalise(metapot)
+  call finalise(pot)
 
   call set_value(at%params, 'mode', 'conserve_momentum')
   call print('conserve_momentum')
-  call initialise(metapot, 'ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
-  call print(metapot)
-  call calc(metapot, at, f=f2)
+  call initialise(pot, 'ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
+  call print(pot)
+  call calc(pot, at, f=f2)
   call print(f2)
   call print('conserve_momentum force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
-  call finalise(metapot)
+  call finalise(pot)
 
 
   deallocate(f1, f2)
@@ -133,4 +133,4 @@ program metapot_test
   call finalise(dia)
   call system_finalise
 
-end program metapot_test
+end program pot_test

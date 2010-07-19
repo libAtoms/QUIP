@@ -36,8 +36,8 @@ use vacancy_map_module
 
 implicit none
   type(Atoms) at, at2, bulk, bulk1, bulk2
-  type(MetaPotential), target :: metapot1, metapot2
-  type(MetaPotential) :: hybridpot
+  type(Potential), target :: pot1, pot2
+  type(Potential) :: hybridpot
   type(inoutput) params, out, in
   type(Table)    :: qmlist, core_list
   integer:: it, i, pass
@@ -95,13 +95,13 @@ implicit none
   endif
 
   call Initialise(params, "quip_params_hybrid_generate.xml")
-  call Initialise(metapot1, 'TB NRL-TB label=Aluminum SCF=GLOBAL_U GLOBAL_U=20', params, mpi)
+  call Initialise(pot1, 'TB NRL-TB label=Aluminum SCF=GLOBAL_U GLOBAL_U=20', params, mpi)
   call rewind(params)
-  call Initialise(metapot2, 'IP EAM_Ercolessi_Adams', params)
+  call Initialise(pot2, 'IP EAM_Ercolessi_Adams', params)
   call finalise(params)
 
   call print("Doing init_hybrid")
-  call init_hybrid(metapot1, metapot2, hybridpot)
+  call init_hybrid(pot1, pot2, hybridpot)
 
   ! read initial config
   call initialise(out, 'out.xyz', action=OUTPUT)
@@ -113,12 +113,12 @@ implicit none
   call add_property(at, 'weight_region1', 0.0_dp)
 
   !call print("minimizing initial config using mm")
-  !call set_cutoff(at, cutoff(metapot2)+0.5_dp)
+  !call set_cutoff(at, cutoff(pot2)+0.5_dp)
   !call calc_connect(at)
   !it = minim(hybridpot, at, 'cg', 0.01_dp, 100, 'NR_LINMIN', do_print = .false., do_lat = .true., do_pos = .true.)
 
   allocate(f(3,at%N))
-  call set_cutoff(at, cutoff(metapot2))
+  call set_cutoff(at, cutoff(pot2))
   call calc_connect(at)
   call calc(hybridpot, at, e=e,f=f,virial=virial)
   call print ("Start relaxed E " // e // " max f component " // maxval(abs(f)) // " max virial component " // maxval(abs(virial)))

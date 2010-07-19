@@ -39,7 +39,7 @@ use phonons_module
 
 implicit none
 
-  type(MetaPotential) metapot
+  type(Potential) pot
   type(MPI_context) mpi_glob
   type(Atoms) at
 
@@ -83,7 +83,7 @@ implicit none
   call Initialise(mpi_glob)
 
   call read_xyz(at, at_file, mpi_comm=mpi_glob%communicator)
-  call MetaPotential_filename_Initialise(metapot, init_args, param_file, mpi_obj=mpi_glob)
+  call Potential_Filename_Initialise(pot, init_args, param_file, mpi_obj=mpi_glob)
 
   select case(verbosity)
     case ("NORMAL")
@@ -98,11 +98,11 @@ implicit none
       call system_abort("confused by verbosity " // trim(verbosity))
   end select
 
-  call set_cutoff(at, cutoff(metapot)+0.5_dp)
+  call set_cutoff(at, cutoff(pot)+0.5_dp)
   call calc_connect(at)
 
 
-  call calc(metapot, at, e = E0, args_str = calc_args)
+  call calc(pot, at, e = E0, args_str = calc_args)
 
   allocate(local_E_p(at%N))
   allocate(local_E_m(at%N))
@@ -117,14 +117,14 @@ implicit none
 
   at%pos(:,fd_index) = p0 + fd_vec
   call calc_connect(at)
-  call calc(metapot, at, local_e = local_E_p, args_str = trim(calc_args) // " do_at_local_N")
+  call calc(pot, at, local_e = local_E_p, args_str = trim(calc_args) // " do_at_local_N")
   if (.not. assign_pointer(at, "local_N", local_N)) &
     call system_abort("Impossible: Failed to assign pointer for local_N")
   local_N_p = local_N
 
   at%pos(:,fd_index) = p0 - fd_vec
   call calc_connect(at)
-  call calc(metapot, at, local_e = local_E_m, args_str = trim(calc_args) // " do_at_local_N")
+  call calc(pot, at, local_e = local_E_m, args_str = trim(calc_args) // " do_at_local_N")
   if (.not. assign_pointer(at, "local_N", local_N)) &
     call system_abort("Impossible: Failed to assign pointer for local_N")
   local_N_m = local_N

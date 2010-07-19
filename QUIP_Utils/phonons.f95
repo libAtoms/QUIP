@@ -41,8 +41,8 @@ public phonons, phonons_fine, eval_frozen_phonon
 
 contains
 
-function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
-  type(MetaPotential), intent(inout) :: metapot
+function eval_frozen_phonon(pot, at, dx, evec, calc_args)
+  type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: dx
   real(dp), intent(in) :: evec(:)
@@ -64,7 +64,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   dpos = dpos / sqrt(sum(dpos**2))
 
   call calc_dists(at)
-  call calc(metapot, at, E=E0, args_str=calc_args)
+  call calc(pot, at, E=E0, args_str=calc_args)
   mainlog%prefix="FROZ_E0"
   call set_value(at%params, "frozen_phonon_E0", E0)
   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
@@ -74,7 +74,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   at%pos = pos0 + dx*dpos
 
   call calc_dists(at)
-  call calc(metapot, at, E=Ep, args_str=calc_args)
+  call calc(pot, at, E=Ep, args_str=calc_args)
   mainlog%prefix="FROZ_EP"
   call set_value(at%params, "frozen_phonon_Ep", Ep)
   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
@@ -84,7 +84,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
   at%pos = pos0 - dx*dpos
 
   call calc_dists(at)
-  call calc(metapot, at, E=Em, args_str=calc_args)
+  call calc(pot, at, E=Em, args_str=calc_args)
   mainlog%prefix="FROZ_EM"
   call set_value(at%params, "frozen_phonon_Em", Em)
   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
@@ -100,7 +100,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
 !   at%pos = pos0 + 2.0_dp*dx*dpos
 ! 
 !   call calc_dists(at)
-!   call calc(metapot, at, E=Ep2, args_str=calc_args)
+!   call calc(pot, at, E=Ep2, args_str=calc_args)
 !   mainlog%prefix="FROZ_EP2"
 !   call set_value(at%params, "frozen_phonon_Ep2", Ep2)
 !   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
@@ -110,7 +110,7 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
 !   at%pos = pos0 - 2.0_dp*dx*dpos
 ! 
 !   call calc_dists(at)
-!   call calc(metapot, at, E=Em2, args_str=calc_args)
+!   call calc(pot, at, E=Em2, args_str=calc_args)
 !   mainlog%prefix="FROZ_EM2"
 !   call set_value(at%params, "frozen_phonon_Em2", Em2)
 !   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
@@ -130,9 +130,9 @@ function eval_frozen_phonon(metapot, at, dx, evec, calc_args)
 
 end function eval_frozen_phonon
 
-subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, IR_intensities, do_parallel, &
+subroutine phonons(pot, at, dx, evals, evecs, effective_masses, calc_args, IR_intensities, do_parallel, &
 		   zero_translation, zero_rotation, force_const_mat)
-  type(MetaPotential), intent(inout) :: metapot
+  type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: dx
   real(dp), intent(out) :: evals(at%N*3)
@@ -202,10 +202,10 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
     dmu_dr = 0.0_dp
   endif
 
-  call set_cutoff(at, cutoff(metapot))
+  call set_cutoff(at, cutoff(pot))
   call calc_connect(at)
 
-  call calc(metapot, at, E=E0, f=f0, args_str=calc_args)
+  call calc(pot, at, E=E0, f=f0, args_str=calc_args)
   pos0 = at%pos
 
   ! calculate dynamical matrix with finite differences
@@ -220,7 +220,7 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
       at%pos = pos0
       at%pos(alpha,i) = at%pos(alpha,i) + dx
       call calc_dists(at)
-      call calc(metapot, at, E=Ep, f=fp, args_str=calc_args)
+      call calc(pot, at, E=Ep, f=fp, args_str=calc_args)
       if (present(IR_intensities)) then
 	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
 	  call system_abort("phonons impossible failure to assign pointer for local_dn")
@@ -230,7 +230,7 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
       at%pos = pos0
       at%pos(alpha,i) = at%pos(alpha,i) - dx
       call calc_dists(at)
-      call calc(metapot, at, E=Em, f=fm, args_str=calc_args)
+      call calc(pot, at, E=Em, f=fm, args_str=calc_args)
       if (present(IR_intensities)) then
 	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
 	  call system_abort("phonons impossible failure to assign pointer for local_dn")
@@ -424,9 +424,9 @@ subroutine phonons(metapot, at, dx, evals, evecs, effective_masses, calc_args, I
 
 end subroutine phonons
 
-subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_parallel)
+subroutine phonons_fine(pot, at_in, dx, phonon_supercell, calc_args, do_parallel)
 
-  type(MetaPotential), intent(inout) :: metapot
+  type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at_in
   real(dp), intent(in) :: dx
   character(len=*), intent(in), optional :: calc_args
@@ -469,7 +469,7 @@ subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_para
   if (dx == 0.0_dp) &
     call system_abort("phonons called with dx == 0.0")
 
-  call set_cutoff(at, cutoff(metapot)+0.5_dp)
+  call set_cutoff(at, cutoff(pot)+0.5_dp)
   call calc_connect(at)
   pos0 = at%pos
 
@@ -480,12 +480,12 @@ subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_para
 !      at%pos = pos0
 !      at%pos(alpha,i) = at%pos(alpha,i) + dx
 !      call calc_dists(at)
-!      call calc(metapot, at, f=fp, args_str=calc_args)
+!      call calc(pot, at, f=fp, args_str=calc_args)
 !
 !      at%pos = pos0
 !      at%pos(alpha,i) = at%pos(alpha,i) - dx
 !      call calc_dists(at)
-!      call calc(metapot, at, f=fm, args_str=calc_args)
+!      call calc(pot, at, f=fm, args_str=calc_args)
 !
 !      do j=1, at%N
 !	do beta=1,3
@@ -505,12 +505,12 @@ subroutine phonons_fine(metapot, at_in, dx, phonon_supercell, calc_args, do_para
         at%pos = pos0
         at%pos(alpha,i) = at%pos(alpha,i) + dx
         call calc_dists(at)
-        call calc(metapot, at, f=fp0(:,:,alpha,i), args_str=calc_args)
+        call calc(pot, at, f=fp0(:,:,alpha,i), args_str=calc_args)
 
         at%pos = pos0
         at%pos(alpha,i) = at%pos(alpha,i) - dx
         call calc_dists(at)
-        call calc(metapot, at, f=fm0(:,:,alpha,i), args_str=calc_args)
+        call calc(pot, at, f=fm0(:,:,alpha,i), args_str=calc_args)
      enddo
   enddo
 

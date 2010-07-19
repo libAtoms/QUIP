@@ -38,7 +38,7 @@ implicit none
   real(dp) :: g_width_O, g_width_H, vacuum, charge_scale
   integer :: qm_center_i, qm_center_i_cluster
   real(dp) :: r_qm, r
-  type(MetaPotential) :: pot
+  type(Potential) :: pot
   type(Dictionary) :: cli
   real(dp), allocatable :: f(:,:)
   integer :: i, ii, j

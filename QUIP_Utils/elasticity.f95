@@ -33,14 +33,14 @@ module elasticity_module
   use libatoms_module
 
   use QUIP_module
-  use MetaPotential_module
+  use Potential_module
   implicit none
 
   private
 
   public :: calc_elastic_constants
   interface calc_elastic_constants
-     module procedure metapot_calc_elastic_constants
+     module procedure pot_calc_elastic_constants
   end interface
 
   public :: youngs_modulus, poisson_ratio, graphene_elastic, einstein_frequencies, elastic_fields
@@ -48,8 +48,8 @@ module elasticity_module
 
 contains
 
-  subroutine metapot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed, relax_tol)
-    type(MetaPotential), intent(inout) :: this
+  subroutine pot_calc_elastic_constants(this, at, fd, args_str, c, c0, relax_initial, return_relaxed, relax_tol)
+    type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at !% Atoms object for which to compute $C_{ij}$
     real(dp), intent(in), optional :: fd !% Finite strain to apply. Default $10^{-3}$.
     character(len=*), intent(in), optional :: args_str !% Optional args_str to pass to 'minim'
@@ -215,7 +215,7 @@ contains
     if (present(c0)) c0 = c0 / (2.0_dp*my_fd*volume)
     if (present(c)) c = c / (2.0_dp*my_fd*volume)
 
-  end subroutine metapot_calc_elastic_constants
+  end subroutine pot_calc_elastic_constants
 
   function strain_index(i, j)
     integer, intent(in) :: i, j
@@ -283,13 +283,13 @@ contains
   end function poisson_ratio
 
   !% Calculate in-plane elastic constants of a graphene sheet with lattice
-  !% parameter 'a' using the MetaPotential 'metapot'. On exit, 'poisson'
+  !% parameter 'a' using the Potential 'pot'. On exit, 'poisson'
   !% will contain the in plane poisson ratio (dimensionless) and 'young' the
   !% in plane Young's modulus (GPa).
-  subroutine Graphene_Elastic(metapot, a, poisson, young, args_str, cb)
-    type(MetaPotential), intent(inout) :: metapot
+  subroutine Graphene_Elastic(pot, a, poisson, young, args_str, cb)
+    type(Potential), intent(inout) :: pot
     real(dp), intent(out) :: a, poisson, young
-    character(len=*), intent(in), optional :: args_str !% arg_str for metapotential_calc
+    character(len=*), intent(in), optional :: args_str !% arg_str for potential_calc
     real(dp), intent(out), optional :: cb
 
     type(Atoms) :: cube, at, at2, tube
@@ -303,7 +303,7 @@ contains
     cube = Graphene_Cubic(a0)
 
     call Supercell(at, cube, nx, ny, 1)
-    call Atoms_Set_Cutoff(at, cutoff(metapot))
+    call Atoms_Set_Cutoff(at, cutoff(pot))
     call randomise(at%pos, 0.01_dp)
     call calc_connect(at)
 
@@ -312,18 +312,18 @@ contains
     fix(2,2) = .false.
 
     ! Geometry optimise with variable lattice
-    steps = minim(metapot, at, 'cg', 1e-6_dp, 100, &
+    steps = minim(pot, at, 'cg', 1e-6_dp, 100, &
          'FAST_LINMIN', do_pos=.true.,do_lat=.true.,lattice_fix=fix, do_print=.false.)
 
     ! Set a to average of x and y lattice constants
     a = 0.5_dp*(at%lattice(1,1)/(3.0_dp*nx) + at%lattice(2,2)/(sqrt(3.0_dp)*ny))
 
-    call calc(metapot, at, e=graphene_e_per_atom, args_str=args_str)
+    call calc(pot, at, e=graphene_e_per_atom, args_str=args_str)
     graphene_e_per_atom = graphene_e_per_atom/at%N
 
     cube = Graphene_Cubic(a)
     call Supercell(at2, cube, nx, ny, 1)
-    call Atoms_Set_Cutoff(at2, cutoff(metapot))
+    call Atoms_Set_Cutoff(at2, cutoff(pot))
     call calc_connect(at2)
 
     ! Apply small strain in x direction
@@ -336,14 +336,14 @@ contains
     ! Fix lattice in x direction
 
     ! Geometry optimse, allowing to contract in y direction
-    steps = minim(metapot, at2, 'cg', 1e-6_dp, 100, &
+    steps = minim(pot, at2, 'cg', 1e-6_dp, 100, &
          'FAST_LINMIN', do_print=.false., do_pos=.true.,do_lat=.true.,lattice_fix=fix)
 
     poisson = -((at2%lattice(2,2) - at%lattice(2,2))/at%lattice(2,2))/ &
          ((at2%lattice(1,1) - at%lattice(1,1))/at%lattice(1,1))
 
     ! Calculate stress to find Young's modulus
-    call Calc(metapot, at2, virial=v)
+    call Calc(pot, at2, virial=v)
 
     young = -v(1,1)/(eps(1,1)-1.0_dp)*GPA/cell_volume(at2)
 
@@ -358,14 +358,14 @@ contains
        do n=10,20,2
           do m=0,n,n
              radius = graphene_tube(tube, a, n, m, 3)
-             call set_cutoff(tube, cutoff(metapot))
+             call set_cutoff(tube, cutoff(pot))
              call calc_connect(tube)
 
              
-             i = minim(metapot, tube, 'cg', 1e-5_dp, 1000, 'FAST_LINMIN', do_print=.false., &
+             i = minim(pot, tube, 'cg', 1e-5_dp, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false.)
              
-             call calc(metapot, tube, e=energy, args_str=args_str)
+             call calc(pot, tube, e=energy, args_str=args_str)
 
              tube_r(tube_i) = tube_radius(tube)
              tube_energy(tube_i) = energy/tube%N - graphene_e_per_atom
@@ -395,10 +395,10 @@ contains
   end subroutine inverse_square
 
 
-  function einstein_frequencies(metapot, at, args_str, ii, delta) result(w_e)
-    type(MetaPotential), intent(inout) :: metapot  !% MetaPotential to use
+  function einstein_frequencies(pot, at, args_str, ii, delta) result(w_e)
+    type(Potential), intent(inout) :: pot  !% Potential to use
     type(Atoms), intent(in) :: at            !% Atoms structure - should be equilibrium bulk configuation
-    character(len=*), intent(in), optional :: args_str !% arg_str for metapotential_calc
+    character(len=*), intent(in), optional :: args_str !% arg_str for potential_calc
     integer, optional, intent(in) :: ii       !% The atom to displace (default 1)
     real(dp), optional, intent(in) :: delta  !% How much to displace it (default 1e-4_dp)
     real(dp), dimension(3) :: w_e
@@ -420,14 +420,14 @@ contains
 
     allocate(f(3,at%N))
  
-    call set_cutoff(myatoms, cutoff(metapot)+0.5_dp)
+    call set_cutoff(myatoms, cutoff(pot)+0.5_dp)
     call calc_connect(myatoms)
 
     do j=1,3
        myatoms%pos = at%pos
        myatoms%pos(j,myi) = myatoms%pos(j,myi) + mydelta
        call calc_connect(myatoms)
-       call calc(metapot, myatoms, f=f, args_str=args_str)
+       call calc(pot, myatoms, f=f, args_str=args_str)
        w_e(j) = sqrt(-f(j,myi)/(mass*mydelta))*ONESECOND
     end do
 

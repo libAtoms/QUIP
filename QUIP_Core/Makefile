@@ -55,7 +55,7 @@ IP_F95_FILES = IPEwald IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_S
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = Potential AdjustablePotential MetaPotential QUIP_module gap_wrapper
+POT_F95_FILES = Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
@@ -87,11 +87,11 @@ TARGETS = ${TEST_TARGETS}
 libquip.a: ${QUIP_OBJS}
 	${AR} ${AR_ADD} libquip.a ${QUIP_OBJS}
 
-MetaPotential.o: \
-	MetaPotential_Hybrid_utils.f95 \
-	MetaPotential_Local_E_Mix_header.f95 MetaPotential_Local_E_Mix_routines.f95 \
-	MetaPotential_ONIOM_header.f95 MetaPotential_ONIOM_routines.f95 \
-	MetaPotential_ForceMixing_header.f95 MetaPotential_ForceMixing_routines.f95
+Potential.o: \
+	Potential_Hybrid_utils.f95 \
+	Potential_Local_E_Mix_header.f95 Potential_Local_E_Mix_routines.f95 \
+	Potential_ONIOM_header.f95 Potential_ONIOM_routines.f95 \
+	Potential_ForceMixing_header.f95 Potential_ForceMixing_routines.f95
 
 distribution: libquip.a
 	mkdir -p distribution/lib distribution/include

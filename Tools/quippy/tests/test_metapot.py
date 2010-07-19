@@ -20,7 +20,7 @@ from quippy import *
 import unittest, quippy
 from quippytest import *
 
-if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
+if hasattr(quippy, 'Potential'):
 
    class TestMetaPotentialSimple(QuippyTestCase):
 
@@ -57,8 +57,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 
          system_reseed_rng(1)
          # self.pot = Potential('IP SW', xml)
-         # self.metapot = MetaPotential('Simple', self.pot)
-         self.metapot = MetaPotential('IP SW', param_str=xml)
+         # self.metapot = Potential'Simple', self.pot)
+         self.metapot = Potential('IP SW', param_str=xml)
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
          self.at.calc_connect()
@@ -121,7 +121,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 	 self.at.map_into_cell() # self.pos_ref is already mapped
          self.assertArrayAlmostEqual(self.at.pos, self.pos_ref)
 
-      if hasattr(MetaPotential, 'calc_elastic_constants'):
+      if hasattr(Potential, 'calc_elastic_constants'):
          def testelastic_constants(self):
             self.metapot.calc_elastic_constants(self.at, c=self.c, c0=self.c0, relax_initial=True)
             self.assertArrayAlmostEqual(self.c, self.c_ref)
@@ -190,8 +190,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 </quip_params>"""
 
          system_reseed_rng(2)
-         self.pot1 = MetaPotential('IP SW label="PRB_31_plus_H"', param_str=xml)
-         self.pot2 = MetaPotential('IP SW label="eps_2.6"', param_str=xml)
+         self.pot1 = Potential('IP SW label="PRB_31_plus_H"', param_str=xml)
+         self.pot2 = Potential('IP SW label="eps_2.6"', param_str=xml)
 
          dia = diamond(5.44, 14)
          self.at = supercell(dia, 4, 4, 4)
@@ -1275,7 +1275,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 
 
       def test_force_mixing_default(self):
-         metapot = MetaPotential('ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}',
+         metapot = Potential('ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
          metapot.calc(self.at, f=f)
@@ -1795,7 +1795,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
          
 
       def test_force_mixing_hop_ramp(self):
-         metapot = MetaPotential('ForceMixing method=force_mixing_smooth transition_hops=0 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
+         metapot = Potential('ForceMixing method=force_mixing_smooth transition_hops=0 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
          metapot.calc(self.at, f=f)
@@ -2314,7 +2314,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
       -0.9099268121      -0.4814231815       0.4761962741"""))
 
       def test_force_mixing_distance_ramp(self):
-         metapot = MetaPotential('ForceMixing method=force_mixing_super_smooth transition_hops=2 cluster_nneighb_only=T buffer_hops=0 qm_args_str={single_cluster=T cluster_calc_connect=T}',
+         metapot = Potential('ForceMixing method=force_mixing_super_smooth transition_hops=2 cluster_nneighb_only=T buffer_hops=0 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
          metapot.calc(self.at, f=f)
@@ -2835,7 +2835,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential'):
 """))
 
       def test_force_mixing_conserve_momentum(self):
-         metapot = MetaPotential('ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
+         metapot = Potential('ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
          metapot.calc(self.at, f=f)

@@ -37,13 +37,13 @@ program ts_main
   implicit none
 
   type(Dynamicalsystem) :: ds_in, ds_fin 
-  type(MetaPotential)     :: classicalpot, qmpot
-  type(MetaPotential) :: hybrid_metapot
+  type(Potential)     :: classicalpot, qmpot
+  type(Potential) :: hybrid_pot
   type(Atoms)         :: at_in, at_fin, at_image
   type(inoutput)      :: xmlfile, in_image, in_in, in_fin, file_res
   type(Cinoutput)     :: outimage 
   type(TS)            :: tts 
-  type(Dictionary)    :: metapot_params
+  type(Dictionary)    :: pot_params
   type(MPI_Context)   :: mpi
   type(tsParams)      :: params
 
@@ -86,16 +86,16 @@ program ts_main
      call finalise(xmlfile)
      call Print(qmpot)
 
-     call initialise(metapot_params)
-     call set_value(metapot_params,'qm_args_str',params%qm_args_str)
-     call set_value(metapot_params,'method','force_mixing')
-     call initialise(hybrid_metapot, 'ForceMixing '//write_string(metapot_params), &
+     call initialise(pot_params)
+     call set_value(pot_params,'qm_args_str',params%qm_args_str)
+     call set_value(pot_params,'method','force_mixing')
+     call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
              classicalpot, qmpot, mpi_obj=mpi)
 
-     call print_title('Hybrid Metapotential')
-     call print(hybrid_metapot)
+     call print_title('Hybrid Potential')
+     call print(hybrid_pot)
 
-     call finalise(metapot_params)
+     call finalise(pot_params)
   end if
 
   call print_title('Initialising First and Last Image')
@@ -128,7 +128,7 @@ program ts_main
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
         else
-          steps = minim(hybrid_metapot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
+          steps = minim(hybrid_pot, ds_in%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              eps_guess=params%minim_end_eps_guess)
@@ -142,7 +142,7 @@ program ts_main
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              args_str=params%classical_args_str, eps_guess=params%minim_end_eps_guess)
         else
-          steps = minim(hybrid_metapot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
+          steps = minim(hybrid_pot, ds_fin%atoms, method=params%minim_end_method, convergence_tol=params%minim_end_tol, &
              max_steps=params%minim_end_max_steps, linminroutine=params%minim_end_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.false., use_fire=trim(params%minim_end_method)=='fire', &
              eps_guess=params%minim_end_eps_guess)
@@ -181,7 +181,7 @@ program ts_main
   if (.not. params%simulation_hybrid) then
      call calc(tts,classicalpot,niter, params, file_res, mpi)
   else
-     call calc(tts,hybrid_metapot, niter, params, file_res, mpi)
+     call calc(tts,hybrid_pot, niter, params, file_res, mpi)
   endif
   call print('Number or Iterations :  ' // niter )
 

@@ -30,17 +30,17 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Force Mixing routines to be included in MetaPotential.f95
+!X Force Mixing routines to be included in Potential.f95
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine MetaPotential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi)
-    type(MetaPotential_FM), intent(inout) :: this
+  subroutine Potential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi)
+    type(Potential_FM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(MetaPotential), intent(inout), target :: qmpot
-    type(MetaPotential), optional, intent(inout), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
+    type(Potential), intent(inout), target :: qmpot
+    type(Potential), optional, intent(inout), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi
 
@@ -88,8 +88,8 @@
     call param_register(params, "do_tb_defaults", "F", do_tb_defaults)
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_initialise args_str')) then
-       call system_abort('MetaPotential_FM_initialise failed to parse args_str="'//trim(args_str)//'"')
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_initialise args_str')) then
+       call system_abort('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"')
     end if
 
     call finalise(params)
@@ -130,11 +130,11 @@
     this%r_scale_pot1 = 1.0_dp
     if (do_rescale_r) then
        if (.not. present(reference_bulk)) &
-            call system_abort("metapotential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//&
+            call system_abort("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//&
             do_tb_defaults//" but reference_bulk is not present")
 
        if (.not. present(mmpot)) &
-            call system_abort("metapotential_forcemixing_initialise got do_rescale_r=T but no mmpot was given")
+            call system_abort("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given")
 
        call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, .true., .false., &
             this%r_scale_pot1, dummy_E, do_tb_defaults)
@@ -151,33 +151,33 @@
     end if
 
     if (this%minimise_mm .and. present(mmpot)) then
-      ! call initialise(this%relax_metapot, "Simple", mmpot)
-      this%relax_metapot => mmpot
+      ! call initialise(this%relax_pot, "Simple", mmpot)
+      this%relax_pot => mmpot
     endif
 
     if (present(mpi)) this%mpi = mpi
 
-  end subroutine MetaPotential_FM_initialise
+  end subroutine Potential_FM_initialise
 
 
-  subroutine MetaPotential_FM_finalise(this)
-    type(MetaPotential_FM), intent(inout) :: this
+  subroutine Potential_FM_finalise(this)
+    type(Potential_FM), intent(inout) :: this
     
     nullify(this%mmpot)
     nullify(this%qmpot)
     call finalise(this%embedlist)
     call finalise(this%fitlist)
 
-  end subroutine MetaPotential_FM_finalise
+  end subroutine Potential_FM_finalise
 
 
-  subroutine MetaPotential_FM_print(this, file)
-    type(MetaPotential_FM), intent(inout) :: this
+  subroutine Potential_FM_print(this, file)
+    type(Potential_FM), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
 
     if (current_verbosity() < PRINT_NORMAL) return
 
-    call Print('MetaPotential_FM:',file=file)
+    call Print('Potential_FM:',file=file)
     call Print(' minimise_mm='//this%minimise_mm,file=file)
     call Print(' calc_weights='//this%calc_weights,file=file)
     call Print(' method='//trim(this%method),file=file)
@@ -225,11 +225,11 @@
     end if
     call Print('',file=file)
 
-  end subroutine MetaPotential_FM_print
+  end subroutine Potential_FM_print
 
 
-  subroutine MetaPotential_FM_calc(this, at, e, local_e, f, virial, args_str, err)
-    type(MetaPotential_FM), intent(inout) :: this
+  subroutine Potential_FM_calc(this, at, e, local_e, f, virial, args_str, err)
+    type(Potential_FM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: e
     real(dp), intent(out), optional :: local_e(:)
@@ -304,8 +304,8 @@
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='MetaPotential_FM_Calc args_str') ) &
-      call system_abort("MetaPotential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_Calc args_str') ) &
+      call system_abort("Potential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     if (current_verbosity().ge.PRINT_NERD) call print(this)
@@ -360,7 +360,7 @@
     end if
 
     if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) &
-         call system_abort('MetaPotential_FM_calc: supports only forces, not energy, virial or local_e')
+         call system_abort('Potential_FM_calc: supports only forces, not energy, virial or local_e')
 
     allocate(f_mm(3,at%N),f_qm(3,at%N))
     f_mm = 0.0_dp
@@ -372,12 +372,12 @@
             call add_property(at, 'hybrid_mark', HYBRID_NO_MARK)
 
        if (.not. assign_pointer(at, "hybrid", hybrid)) &
-            call system_abort("MetaPotential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
+            call system_abort("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
 
        if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
+            call system_abort('Potential_FM_Calc: hybrid_mark property missing')
 
-       if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) call system_abort('MetaPotential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).')
+       if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) call system_abort('Potential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).')
           !update only the active region, the buffer region will be updated in create_hybrid_weights
 
        ! if we have a hysteretic buffer, set marks to allow previously active atoms to become buffer atoms
@@ -386,29 +386,29 @@
        where (hybrid_mark == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_BUFFER_MARK
        where (hybrid == HYBRID_ACTIVE_MARK) hybrid_mark = HYBRID_ACTIVE_MARK
 
-       call Print('MetaPotential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', PRINT_VERBOSE)
+       call Print('Potential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', PRINT_VERBOSE)
 
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) &
-            call system_abort('MetaPotential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
+            call system_abort('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
 
        call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
 
        ! reassign pointers
        
        if (.not. assign_pointer(at, "hybrid", hybrid)) &
-            call system_abort("MetaPotential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
+            call system_abort("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
 
        if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
+            call system_abort('Potential_FM_Calc: hybrid_mark property missing')
 
     end if
 
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
+         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
 
     ! Do the MM minimisation, freezing the atoms marked as active
     if (minimise_mm) then
-       call do_minimise_mm(this%relax_metapot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
+       call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
             this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
             this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_mm_use_n_minim, this%minim_inoutput_movie, &
             this%minim_cinoutput_movie, find(hybrid_mark == HYBRID_ACTIVE_MARK))
@@ -423,13 +423,13 @@
 
     !Potential calc could have added properties e.g. old_cluster_mark
     if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
+         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
        f = f_mm
        return
     end if
 
-    call print('MetaPotential_FM_Calc: reweighting classical forces by '//mm_reweight//' in active region', PRINT_VERBOSE)
+    call print('Potential_FM_Calc: reweighting classical forces by '//mm_reweight//' in active region', PRINT_VERBOSE)
     do i=1,at%N
        if (hybrid_mark(i) /= HYBRID_ACTIVE_MARK) cycle
        f_mm(:,i) = mm_reweight*f_mm(:,i)
@@ -586,19 +586,19 @@
           weight_method = CM_WEIGHT_REGION1
           call print('conserve_momentum: using user defined weighting', PRINT_VERBOSE)
        case default
-          call system_abort('MetaPotential_FM_Calc: unknown conserve_momentum_weight method: '//&
+          call system_abort('Potential_FM_Calc: unknown conserve_momentum_weight method: '//&
                trim(conserve_momentum_weight_method))
        end select
 
        if (weight_method == USER_WEIGHT) then
           if (.not. assign_pointer(at, 'conserve_momentum_weight', conserve_momentum_weight)) &
-               call system_abort('MetaPotential_FM_Calc: missing property conserve_momentum_weight')
+               call system_abort('Potential_FM_Calc: missing property conserve_momentum_weight')
        end if
 
        allocate(df(3,at%N),df_fit(3,this%fitlist%N))
 
        if (.not. assign_pointer(at, 'weight_region1', weight_region1)) &
-            call system_abort('MetaPotential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
+            call system_abort('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
@@ -642,7 +642,7 @@
     else if (method(1:12) == 'force_mixing') then
 
        if (.not. assign_pointer(at, 'weight_region1', weight_region1)) &
-            call system_abort('MetaPotential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
+            call system_abort('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
@@ -650,7 +650,7 @@
        end do
 
     else
-       call system_abort('MetaPotential_FM_calc: unknown method '//trim(method))
+       call system_abort('Potential_FM_calc: unknown method '//trim(method))
     end if
        
     ! Save QM and MM forces and total force as properties of Atoms object
@@ -676,24 +676,24 @@
     if (allocated(embed)) deallocate(embed)
     if (allocated(fit))   deallocate(fit)
     
-  end subroutine MetaPotential_FM_calc
+  end subroutine Potential_FM_calc
 
 
-  function MetaPotential_FM_cutoff(this)
-    type(MetaPotential_FM), intent(in) :: this
-    real(dp) :: metapotential_fm_cutoff
+  function Potential_FM_cutoff(this)
+    type(Potential_FM), intent(in) :: this
+    real(dp) :: potential_fm_cutoff
 
     ! Return larger of QM and MM cutoffs
     if(associated(this%mmpot) .and. associated(this%qmpot)) then
-       metapotential_fm_cutoff = max(cutoff(this%mmpot), cutoff(this%qmpot))
+       potential_fm_cutoff = max(cutoff(this%mmpot), cutoff(this%qmpot))
     else if(associated(this%qmpot)) then
-       metapotential_fm_cutoff = cutoff(this%qmpot)
+       potential_fm_cutoff = cutoff(this%qmpot)
     else if(associated(this%mmpot)) then
-       metapotential_fm_cutoff = cutoff(this%mmpot)
+       potential_fm_cutoff = cutoff(this%mmpot)
     else
-       metapotential_fm_cutoff = 0.0_dp
+       potential_fm_cutoff = 0.0_dp
     endif
 
-  end function MetaPotential_FM_cutoff
+  end function Potential_FM_cutoff
 
 

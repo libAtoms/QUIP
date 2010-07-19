@@ -586,7 +586,7 @@ contains
   subroutine crack_calc_load_field(crack_slab, params, classicalpot, load_method, overwrite_pos, mpi) 
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
-    type(MetaPotential), intent(inout) :: classicalpot
+    type(Potential), intent(inout) :: classicalpot
     character(*), intent(in) :: load_method
     logical, intent(in) :: overwrite_pos
     type(MPI_Context), intent(in) :: mpi
@@ -2154,7 +2154,7 @@ contains
 
   subroutine crack_make_slab(params, classicalpot, crack_slab,width, height, E, v, v2, bulk)
     type(CrackParams), intent(in) :: params
-    type(MetaPotential), intent(inout) :: classicalpot
+    type(Potential), intent(inout) :: classicalpot
     type(Atoms), intent(out) :: crack_slab
     real(dp), intent(out) :: width, height, E, v, v2
     type(Atoms), intent(out) :: bulk

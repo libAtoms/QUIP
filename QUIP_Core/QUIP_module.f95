@@ -63,9 +63,8 @@ module QUIP_module
   use ip_module
   use tb_greensfunctions_module
   use mpi_context_module
-  use potential_module
   use rs_sparsematrix_module
   use scalapack_module
   use tbmatrix_module
-  use metapotential_module
+  use potential_module
 end module QUIP_module

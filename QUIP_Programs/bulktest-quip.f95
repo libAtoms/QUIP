@@ -58,7 +58,7 @@ program bulktest
   real(dp) :: time_step, init_temp, sim_temp
   integer :: seed, fit_hops, embed_hops
   character(string_length) :: classicalpot_args, qmpot_args
-  character(string_length) :: xml, metapot_args
+  character(string_length) :: xml, pot_args
 
   type(DynamicalSystem) :: ds
   type(Atoms) :: at, dia
@@ -67,8 +67,8 @@ program bulktest
   real(dp), allocatable :: f(:,:)
   integer :: i, step
 
-  type(MetaPotential) :: classicalpot, qmpot
-  type(MetaPotential) :: metapot
+  type(Potential) :: classicalpot, qmpot
+  type(Potential) :: pot
   
 
   ! initialise program
@@ -83,7 +83,7 @@ program bulktest
   call param_register(params, 'classicalpot', 'IP SW', classicalpot_args)
   call param_register(params, 'qmpot', 'TB Bowler',  qmpot_args)
   call param_register(params, 'xml', 'lotf.xml', xml)
-  call param_register(params, 'metapot', 'LOTF buffer_hops=3 small_clusters=F', metapot_args)
+  call param_register(params, 'pot', 'LOTF buffer_hops=3 small_clusters=F', pot_args)
   call param_register(params, 'embed_hops', '2', embed_hops)
   call param_register(params, 'fit_hops', '3', fit_hops)
 
@@ -96,8 +96,8 @@ program bulktest
   call initialise(qmpot, qmpot_args, xmlfile)
   call finalise(xmlfile)
 
-  call initialise(metapot, metapot_args, classicalpot, qmpot)
-  call print(metapot)
+  call initialise(pot, pot_args, classicalpot, qmpot)
+  call print(pot)
 
   ! create some atoms
   call diamond(dia, 5.44_dp)
@@ -129,13 +129,13 @@ program bulktest
   call list_to_property(ds%atoms, embedlist, 'embed')
   call list_to_property(ds%atoms, fitlist, 'fit')
 
-  call set_embed(metapot, embedlist)
-  call set_fit(metapot, fitlist)
+  call set_embed(pot, embedlist)
+  call set_fit(pot, fitlist)
 
   ! Do the dynamics
   step = 0
   do while (.true.)
-     call calc(metapot, ds%atoms, f=f)
+     call calc(pot, ds%atoms, f=f)
      call advance_verlet(ds, time_step, f)
      call ds_print_status(ds, 'D')
      if (mod(step,100) == 0) then
@@ -150,7 +150,7 @@ program bulktest
   call finalise(movie)
   call finalise(embedlist)
   call finalise(fitlist)
-  call finalise(metapot)
+  call finalise(pot)
   call finalise(classicalpot)
   call finalise(qmpot)
 

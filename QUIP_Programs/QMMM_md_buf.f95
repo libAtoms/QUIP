@@ -30,10 +30,10 @@
 
 !adaptive hybrid QMMM MD program.
 !reads atoms & QM list & runs CP2K & writes movie xyz with QM flags
-!uses the metapotential with momentum conservation, adding the corrective force only to the QM core and buffer atoms
+!uses the potential with momentum conservation, adding the corrective force only to the QM core and buffer atoms
 !filepot_program can be e.g. /Users/csilla/QUIP/build.darwin_x86_64_g95/cp2k_filepot
 !TODO:
-!use the buffer carving of the metapotential force mixing routines.
+!use the buffer carving of the potential force mixing routines.
 
 program qmmm_md
 
@@ -50,8 +50,8 @@ program qmmm_md
   character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
-  type(MetaPotential)                     :: cp2k_fast_pot, cp2k_slow_pot 
-  type(MetaPotential)                 :: metapot, empty_qm_metapot
+  type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
+  type(Potential)                 :: pot, empty_qm_pot
   character(len=STRING_LENGTH)        :: args_str
   real(dp)                            :: energy,check,TI_force, TI_corr
   real(dp), dimension(:,:), allocatable :: f,f0,f1, add_force
@@ -535,18 +535,18 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
     call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      !----------------------------------------------------
 
-  !INIT. METAPOTENTIAL
+  !INIT. potENTIAL
 
     !only QMMM_EXTENDED for the moment **************
     !if (trim(Run_Type1).ne.'QMMM_EXTENDED') call system_abort('ONLY QMMM_EXTENDED')
 
-    ! set up metapot
+    ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
        call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
-       call initialise(metapot,args_str='Simple=T',pot=CP2K_slow_pot)
-       ! set up mm only metapot, in case we need it for empty QM core
+       call initialise(pot,args_str='Simple=T',pot=CP2K_slow_pot)
+       ! set up mm only pot, in case we need it for empty QM core
        call setup_pot(cp2k_fast_pot, 'MM', filepot_program)
-       call initialise(empty_qm_metapot,args_str='Simple=T',pot=CP2K_fast_pot)
+       call initialise(empty_qm_pot,args_str='Simple=T',pot=CP2K_fast_pot)
     else ! doing force mixing
        call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
        call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
@@ -556,7 +556,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
        else
 	 weight_interpolation='hop_ramp'
        endif
-       call initialise(metapot,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
+       call initialise(pot,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
 	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
 	  ' min_images_only=F nneighb_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
 	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
@@ -571,7 +571,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
-	 call initialise(empty_qm_metapot,args_str='Simple=T',pot=CP2K_fast_pot)
+	 call initialise(empty_qm_pot,args_str='Simple=T',pot=CP2K_fast_pot)
        endif
     endif
 
@@ -587,7 +587,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
   !FORCE
 
      if (topology_print_rate >= 0) driver_PSF_Print='DRIVER_PRINT_AND_SAVE'
-     call do_calc_call(metapot, empty_qm_metapot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
        distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
      if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
@@ -707,7 +707,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
            driver_PSF_Print = 'USE_EXISTING_PSF'
         endif
      endif
-     call do_calc_call(metapot, empty_qm_metapot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
        distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
 
     !SPLINE force calculation, if needed
@@ -798,8 +798,8 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
   call finalise(ds)
   call finalise(traj_xyz)
 
-  call finalise(metapot)
-  call finalise(empty_qm_metapot)
+  call finalise(pot)
+  call finalise(empty_qm_pot)
   call finalise(CP2K_slow_pot)
   call finalise(CP2K_fast_pot)
 
@@ -975,8 +975,8 @@ contains
 
 !    if (.not. assign_pointer(at, 'hybrid_mark', qm_flag_p)) &
     if (.not. assign_pointer(at, 'cluster_mark', qm_flag_p)) &
-!         call system_abort('MetaPotential_FM_Calc: hybrid_mark property missing')
-         call system_abort('MetaPotential_FM_Calc: cluster_mark property missing')
+!         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+         call system_abort('Potential_FM_Calc: cluster_mark property missing')
     if ( .not. any(qm_flag_p(:).eq.(/1,2/)) ) then !no buffer or core: maybe empty_qm_core?
         force0 = sum0(force,at)
         return
@@ -1164,9 +1164,9 @@ contains
     end if
   end subroutine print_qm_region
 
-  subroutine do_calc_call(metapot, empty_qm_metapot, at, Run_Type1, Run_Type2, qm_region_pt_ctr, &
+  subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, qm_region_pt_ctr, &
 			  distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
-     type(MetaPotential), intent(inout) :: metapot, empty_qm_metapot
+     type(Potential), intent(inout) :: pot, empty_qm_pot
      type(Atoms), intent(inout) :: at
      logical, intent(in) :: qm_region_pt_ctr, distance_ramp, do_carve_cluster
      real(dp), intent(in) :: qm_region_ctr(3)
@@ -1191,7 +1191,7 @@ contains
      endif
 
      if (trim(Run_Type2) == 'NONE' .or. (qm_region_pt_ctr .and. empty_QM_core)) then ! no force mixing
-        call print(trim(Run_Type1)//' run will be performed with simple metapotential.')
+        call print(trim(Run_Type1)//' run will be performed with simple potential.')
         args_str=trim(cp2k_calc_args) // &
           ' Run_Type='//trim(Run_Type1)// &
           ' PSF_Print='//trim(driver_PSF_Print) !// &
@@ -1200,7 +1200,7 @@ contains
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_core) then
 	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
-	    call calc(empty_qm_metapot,at,e=energy,f=f1,args_str=trim(args_str))
+	    call calc(empty_qm_pot,at,e=energy,f=f1,args_str=trim(args_str))
 	  else
 	    args_str = trim(args_str) // &
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
@@ -1213,7 +1213,7 @@ contains
             args_str = trim(args_str) // ' cluster_mark_postfix=_core'
           endif
 	endif
-	call calc(metapot,at,e=energy,f=f1,args_str=trim(args_str))
+	call calc(pot,at,e=energy,f=f1,args_str=trim(args_str))
      else ! do force mixing
 
        slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
@@ -1250,9 +1250,9 @@ contains
        if (qm_region_pt_ctr .and. empty_QM_core) then
 	 if (trim(Run_Type2) /= 'MM') &
 	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
-	 call calc(empty_qm_metapot,at,f=f1,args_str=trim(fast_args_str))
+	 call calc(empty_qm_pot,at,f=f1,args_str=trim(fast_args_str))
        else
-	 call calc(metapot,at,f=f1,args_str=trim(args_str))
+	 call calc(pot,at,f=f1,args_str=trim(args_str))
        endif
        energy=0._dp !no energy
      endif
@@ -1260,7 +1260,7 @@ contains
   end subroutine do_calc_call
 
   subroutine setup_pot(pot, Run_Type, filepot_program)
-    type(MetaPotential), intent(inout) :: pot
+    type(Potential), intent(inout) :: pot
     character(len=*), intent(in) :: Run_Type, filepot_program
     if (trim(Run_Type) == 'QS') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')

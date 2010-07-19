@@ -145,7 +145,7 @@ program makecrack
   ! Objects
   type(Atoms), target :: bulk, crack_slab, crack_layer
   type(CrackParams) :: params
-  type(MetaPotential) :: classicalpot
+  type(Potential) :: classicalpot
   type(MPI_context) :: mpi_glob
   type(Inoutput) :: xmlfile
   type(CInoutput) :: netcdf

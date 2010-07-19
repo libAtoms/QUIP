@@ -32,11 +32,11 @@ program randomise_calc
 
 use libAtoms_module
 use Potential_module
-use MetaPotential_module
+use Potential_module
 
 implicit none
 
-  type(MetaPotential) pot
+  type(Potential) pot
   type(Atoms):: at, at2
   real(dp)::e
   real(dp):: lat(3,3), v(3,3)

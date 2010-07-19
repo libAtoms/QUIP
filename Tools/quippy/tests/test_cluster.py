@@ -1033,7 +1033,7 @@ if hasattr(quippy, 'Potential'):
          """
 
          system_reseed_rng(1)
-         self.pot = Potential('IP SW', self.xml)
+         self.pot = Potential('IP SW', param_str=self.xml)
 
          self.at = supercell(diamond(5.44, 14), 4, 4, 4)
          matrix_randomise(self.at.pos, 0.1)

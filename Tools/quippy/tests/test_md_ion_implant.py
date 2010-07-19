@@ -27,7 +27,7 @@ if hasattr(quippy, 'Potential'):
 
           verbosity_push(PRINT_SILENT)
 
-          self.pot = Potential('IP Brenner', """<Brenner_params n_types="1" label="graphene">
+          self.pot = Potential('IP Brenner', param_str="""<Brenner_params n_types="1" label="graphene">
  <!-- 2nd set of parameters from Brenner (1990), with Re scaled to
   give graphene lattice constant of 1.42 A and delta and shift modified
   to match ab initio graphene elastic constants, as described in Arroyo

@@ -91,7 +91,7 @@ program callback_test
   implicit none
 
   type(Atoms) :: at
-  type(MetaPotential) :: pot
+  type(Potential) :: pot
   real(dp) :: energy, virial(3,3)
   real(dp), allocatable, dimension(:,:) :: force
   real(dp), pointer, dimension(:,:) :: force_ptr  

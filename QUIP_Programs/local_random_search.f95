@@ -103,12 +103,12 @@ end module mylj
 program local_random_search
 
 use libAtoms_module
-use MetaPotential_module
+use Potential_module
 use mylj
 
 implicit none
 
-  type(MetaPotential) mpot
+  type(Potential) mpot
   type(inoutput) params, movie
   type(Atoms), target:: at
 
