@@ -100,7 +100,7 @@ if got_ase:
          """
 
          system_reseed_rng(1)
-         self.pot = PotentialCalculator('IP SW', xml)
+         self.pot = PotentialCalculator('IP SW', param_str=xml)
 
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
