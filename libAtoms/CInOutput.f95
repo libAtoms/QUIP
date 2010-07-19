@@ -315,6 +315,8 @@ contains
 
     integer :: cioquery_status, cioskip_status
 
+    if (present(error)) error = ERROR_NONE
+
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (present(frame) .and. this%got_index == 0) then
       if (frame /= this%current_frame) then
@@ -532,6 +534,8 @@ contains
     character(len=KEY_LEN) :: do_int_format, do_real_format
     integer :: do_shuffle, do_deflate
     integer :: do_deflate_level, do_swap
+
+    if (present(error)) error = ERROR_NONE
 
     if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
     if (this%action /= OUTPUT .and. this%action /= INOUT) call system_abort("Cannot write to action=INPUT CInOutput object")
