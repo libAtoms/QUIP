@@ -111,8 +111,6 @@ pot = Potential('IP ASAP2', xml_lda_500k)
 gamma = {}
 gamma_relaxed = {}
 
-mp = MetaPotential('Simple', pot)
-
 add_asap_props(aq)
 aq.set_cutoff(pot.cutoff()+2.0)
 
@@ -152,8 +150,8 @@ for index in sorted(quartz_surface.keys()):
    surface = quartz_surface[index].copy()
    add_asap_props(surface)
 
-   surface.set_cutoff(mp.cutoff()+2.0)   
-   gamma[index] = surface_energy(mp, aq, surface)*J_PER_M2
+   surface.set_cutoff(pot.cutoff()+2.0)   
+   gamma[index] = surface_energy(pot, aq, surface)*J_PER_M2
    print 'gamma[%s] = %f' % (index, gamma[index])
 
    if do_relax:
@@ -163,8 +161,8 @@ for index in sorted(quartz_surface.keys()):
          traj.loadall()
          surface = traj[-1].copy()
 
-      mp.minim(surface, 'cg', 1e-2, 1000, do_lat=False, do_pos=True, do_print=True, print_cinoutput=movie)
-      gamma_relaxed[index] = surface_energy(mp, aq, surface)*J_PER_M2
+      pot.minim(surface, 'cg', 1e-2, 1000, do_lat=False, do_pos=True, do_print=True, print_cinoutput=movie)
+      gamma_relaxed[index] = surface_energy(pot, aq, surface)*J_PER_M2
       print 'gamma_relaxed[%s] = %f' % (index, gamma_relaxed[index])
 
 
