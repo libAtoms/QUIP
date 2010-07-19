@@ -246,8 +246,8 @@ module system_module
 #endif
 
   interface mem_info
-     subroutine mem_info(total_mem)
-       real(8), intent(out) :: total_mem
+     subroutine mem_info(total_mem,free_mem)
+       real(8), intent(out) :: total_mem, free_mem
      endsubroutine mem_info
   endinterface mem_info
 
