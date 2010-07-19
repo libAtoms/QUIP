@@ -285,8 +285,7 @@ def add_asap_props(at):
 
 if True:
    pot = Potential('IP ASAP2', xml_lda_500k)
-   metapot = MetaPotential('Simple', pot)
-   aq.set_cutoff(metapot.cutoff())
+   aq.set_cutoff(pot.cutoff())
    aq.calc_connect()
 
    aq.add_property('efield', 0.0, n_cols=3)
@@ -296,14 +295,14 @@ if True:
    aq.add_property('efield_old3', 0.0, n_cols=3)
 
    # Ensure we're at the equilibrium geometry
-   metapot.minim(aq, 'cg', 1e-10, 100, do_pos=True, do_lat=True)
+   pot.minim(aq, 'cg', 1e-10, 100, do_pos=True, do_lat=True)
 
    # Calculate stress, should be very close to zero
    pot.calc(aq, calc_virial=True)
    aq.params['stress'] = -aq.virial*GPA/aq.cell_volume()
 
    strained_configs = generate_strained_configs(aq, 'trigonal_low')
-   stressed_configs = calc_stress(strained_configs, metapot, relax=True)
+   stressed_configs = calc_stress(strained_configs, pot, relax=True)
    C, C_err = fit_elastic_constants(stressed_configs, 'trigonal_low', verbose=True, graphics=True)
 
    bond_length = (1.6067 + 1.6027)/2

@@ -79,15 +79,14 @@ def sample_input():
    """
 
    pot = Potential('IP SW', xml)
-   metapot = MetaPotential('Simple', pot)
-   
+  
    for i in frange(-5,5):
       at = at0.copy()
       at.lattice *= 1.0 + eps*i
       at.pos *= 1.0 + eps*i
       at.calc_connect()
-      metapot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-      metapot.calc(at, calc_energy=True, calc_virial=True)
+      pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
+      pot.calc(at, calc_energy=True, calc_virial=True)
       at.pressure = at.virial.trace()*at.cell_volume()/(3.0*GPA)
       print at.virial
       yield at
