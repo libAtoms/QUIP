@@ -86,6 +86,7 @@ module gp_sparse_module
       !% Therefore adding new data points is easy and fast.
       real(dp), dimension(:,:), allocatable :: x, c
       real(dp), dimension(:), allocatable   :: alpha
+      real(qp), dimension(:,:,:), allocatable :: x_div_theta
 
       !% Hyperparameters.
       !% Error parameter, range parameter, sensitivity parameters.
@@ -175,7 +176,7 @@ module gp_sparse_module
 #else
          real(qp), dimension(:,:), allocatable :: k_mn_inverse_lambda, k_mn_l_k_nm, inverse_q_mm, inverse_k_mm
          real(qp), dimension(:), allocatable :: alpha
-         integer :: n, m, info
+         integer :: i, j, n, m, info
 #endif         
 
 
@@ -197,6 +198,8 @@ module gp_sparse_module
          this%x = real(sparse%x_sparse,kind=dp)
          this%xz = sparse%xz_sparse
          this%sp = sparse%sp
+
+	 call setup_x_div_theta(this)
 
 #ifdef HAVE_QR
          allocate( k_mn_sq_inverse_lambda(m,n), factor_k_mm(m,m), a(n+m,m), y(n+m), alpha(m) )
@@ -518,7 +521,7 @@ module gp_sparse_module
             & present(sigma_in) .or. present(delta_in) .or. present(theta_in) .or. present(f0_in) ) &
             & call covariance_matrix_sparse(this)
          end if
-         
+
       end subroutine gp_update
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -554,7 +557,7 @@ module gp_sparse_module
 
          if( .not. this%initialised ) return
 
-         deallocate( this%theta, this%delta, this%x, this%c, this%alpha, this%xz, this%sp, this%f0 )
+         deallocate( this%theta, this%delta, this%x, this%x_div_theta, this%c, this%alpha, this%xz, this%sp, this%f0 )
          this%d = 0
          this%n = 0
          this%sigma = 0.0_dp
@@ -644,6 +647,7 @@ module gp_sparse_module
          real(dp), dimension(gp_data%d) :: xixjtheta !, tmp
 #endif
          real(dp) :: kappa
+	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 
          integer :: i, do_Z, Z_type
 
@@ -653,10 +657,12 @@ module gp_sparse_module
          !if( size(x_star) /= gp_data%d ) call system_abort('gp_predict: array sizes do not conform')
 
          do_Z = optional_default(gp_data%xz(1),Z)
-         
+
          do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; end do
+	 x_star_div_theta = x_star / gp_data%theta(:,Z_type)
          
          if(present(x_prime_star)) then
+	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
             do i = 1, gp_data%n
                !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
                if( do_Z == gp_data%xz(i) ) then
@@ -665,9 +671,10 @@ module gp_sparse_module
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
                   & dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
 #else
-                  xixjtheta = (gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type)
+                  xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
-                  & dot_product(xixjtheta,x_prime_star/gp_data%theta(:,Z_type))
+                  & dot_product(xixjtheta,x_prime_star_div_theta)
+#endif
 #endif
                else
                   k(i) = 0.0_dp
@@ -688,7 +695,7 @@ module gp_sparse_module
                   xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
 #else
-                  xixjtheta = (gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type)
+                  xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
 #endif
                else
@@ -2321,6 +2328,8 @@ deallocate(diff_xijt)
             enddo
          enddo
 
+	 call setup_x_div_theta(this)
+
          do i = 1, this%n
             do j = 1, this%n
                read(666) this%c(j,i)
@@ -2389,5 +2398,19 @@ deallocate(diff_xijt)
          enddo
 
       end subroutine fill_random_integer
+
+      subroutine setup_x_div_theta(this)
+	 type(gp), intent(inout) :: this
+
+	 integer :: i, j
+
+	 if (allocated(this%x_div_theta)) deallocate(this%x_div_theta)
+	 allocate(this%x_div_theta(this%d,this%n,this%nsp))
+	 do i=1, this%n
+	 do j=1, this%nsp
+	    this%x_div_theta(:,i,j) = this%x(:,i)/this%theta(:,j)
+	 end do
+	 end do
+      end subroutine
 
 end module gp_sparse_module
