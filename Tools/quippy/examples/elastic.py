@@ -47,15 +47,12 @@ p = Potential("IP SW", """
    </SW_params>
    """)
 
-mp = MetaPotential("Simple", p)
-
-
 a = diamond(5.44, 14)
 
 c = fzeros((6,6))
 c0 = fzeros((6,6))
 
-mp.calc_elastic_constants(a, c=c, c0=c0, relax_initial=True, return_relaxed=True)
+p.calc_elastic_constants(a, c=c, c0=c0, relax_initial=True, return_relaxed=True)
 
 print 'Relaxed lattice constant'
 print a.lattice[1,1]
