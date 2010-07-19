@@ -122,8 +122,6 @@
 
     call finalise(bulk_region1)
     call finalise(bulk_region2)
-    call finalise(region1_pot)
-    call finalise(region2_pot)
   end subroutine do_reference_bulk
 
   subroutine do_minimise_mm(relax_pot, at, minim_mm_method, minim_mm_tol, minim_mm_max_steps, &
