@@ -111,13 +111,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testcubic_unrelaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'cubic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=False)
+         stressed_configs = calc_stress(strained_configs, pot, relax=False)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'cubic', verbose=False, graphics=False)
 
@@ -126,13 +126,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testcubic_relaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'cubic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=True)
+         stressed_configs = calc_stress(strained_configs, pot, relax=True)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'cubic', verbose=False, graphics=False)
 
@@ -142,13 +142,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testorthorhombic_unrelaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'orthorhombic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=False)
+         stressed_configs = calc_stress(strained_configs, pot, relax=False)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'orthorhombic', verbose=False, graphics=False)
 
@@ -156,13 +156,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testorthorhombic_relaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'orthorhombic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=True)
+         stressed_configs = calc_stress(strained_configs, pot, relax=True)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'orthorhombic', verbose=False, graphics=False)
 
@@ -170,13 +170,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testmonoclinic_unrelaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'monoclinic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=False)
+         stressed_configs = calc_stress(strained_configs, pot, relax=False)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'monoclinic', verbose=False, graphics=False)
 
@@ -184,13 +184,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testmonoclinic_relaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'monoclinic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=True)
+         stressed_configs = calc_stress(strained_configs, pot, relax=True)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'monoclinic', verbose=False, graphics=False)
 
@@ -199,13 +199,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testtriclinic_unrelaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'triclinic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=False)
+         stressed_configs = calc_stress(strained_configs, pot, relax=False)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'triclinic', verbose=False, graphics=False)
 
@@ -213,13 +213,13 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
       def testtriclinic_relaxed(self):
 
-         metapot = Potential('IP SW', param_str=self.xml)
+         pot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
-         metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+         pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
 
          strained_configs = generate_strained_configs(at0, 'triclinic')
-         stressed_configs = calc_stress(strained_configs, metapot, relax=True)
+         stressed_configs = calc_stress(strained_configs, pot, relax=True)
 
          C, C_err = fit_elastic_constants(stressed_configs, 'triclinic', verbose=False, graphics=False)
 
@@ -280,7 +280,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
          </SW_params>
          """
 
-         self.metapot = Potential('IP SW', param_str=self.xml)
+         self.pot = Potential('IP SW', param_str=self.xml)
          verbosity_push(PRINT_SILENT)
 
       def tearDown(self):
@@ -299,7 +299,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
 
          if relax:
             # Minimise internal degrees of freedom
-            self.metapot.minim(at, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
+            self.pot.minim(at, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
          
          self.pot.calc(at, calc_virial=True)
          virial_stress = stress_vector(-at.virial*GPA/at.cell_volume())
