@@ -41,7 +41,7 @@ GP_F95_OBJS = ${addsuffix .o, ${GP_F95_FILES}}
 .PHONY : clean allclean depend doc
 
 libgp.a: ${GP_F95_OBJS}
-	ar ${AR_ADD} libgp.a $?
+	${AR} ${AR_ADD} libgp.a $?
 
 clean:
 	rm -f *.o *.mod *.mod.save libgp.a
