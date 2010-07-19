@@ -86,6 +86,9 @@ ifeq (${HAVE_GP},1)
   GP_LIB=-lgp
   GP_LIBFILE=libgp.a
 endif
+ifeq (${HAVE_TB},1)
+  DEFINES += -DHAVE_TB
+endif
 ifeq (${HAVE_QP},1)
   DEFINES += -DHAVE_QP
 endif
