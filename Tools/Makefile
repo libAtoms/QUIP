@@ -46,8 +46,8 @@ PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_ne
 
 all: ${PROGRAMS}
 
-LIBS =  -L. -lquiputils -lquip -latoms 
-LIBFILES = libatoms.a libquip.a libquiputils.a
+LIBS =  -L. -lquiputils -lquip ${GP_LIB} -latoms 
+LIBFILES = libatoms.a libquip.a ${GP_LIBFILE} libquiputils.a
 
 .PHONY: clean allclean test
 
