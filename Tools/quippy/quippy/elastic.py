@@ -240,15 +240,15 @@ def generate_strained_configs(at0, symmetry='triclinic', N_steps=5, delta=1e-2):
          yield at
 
 
-def calc_stress(configs, metapot, relax=False, relax_tol=1e-3, relax_steps=100):
+def calc_stress(configs, pot, relax=False, relax_tol=1e-3, relax_steps=100):
    """Given a sequence of configs, calculate stress on each one"""
    from quippy import GPA
    for at in configs:
       at2 = at.copy()
       at2.calc_connect()
       if relax:
-         metapot.minim(at2, 'cg', relax_tol, relax_steps, do_pos=True, do_lat=False)
-      metapot.calc(at2, calc_virial=True)
+         pot.minim(at2, 'cg', relax_tol, relax_steps, do_pos=True, do_lat=False)
+      pot.calc(at2, calc_virial=True)
       at2.params['stress'] = -at2.params['virial']*GPA/at2.cell_volume()
       yield at2
 
@@ -415,12 +415,12 @@ def fit_elastic_constants(configs, symmetry=None, N_steps=5, verbose=True, graph
    return C, C_err
 
 
-def elastic_constants(metapot, at, sym='cubic', relax=True, verbose=True, graphics=True):
+def elastic_constants(pot, at, sym='cubic', relax=True, verbose=True, graphics=True):
    """Convenience function which returns the 6x6 matrix :math:`C_{ij}` of configuration `at`
-   with MetaPotential `metapot` assumsing symmetry `sym` (default "cubic")."""
+   with Potential `pot` assumsing symmetry `sym` (default "cubic")."""
    
    strained_configs = generate_strained_configs(at, sym)
-   stressed_configs = calc_stress(strained_configs, metapot, relax=relax)
+   stressed_configs = calc_stress(strained_configs, pot, relax=relax)
    C, C_err = fit_elastic_constants(stressed_configs, sym, verbose=verbose, graphics=graphics)
 
    return C
