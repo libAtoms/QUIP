@@ -56,7 +56,9 @@ module Potential_simple_module
   use QUIP_Common_module
   use MPI_context_module
   use IP_module
+#ifdef HAVE_TB
   use TB_module
+#endif
   use FilePot_module
   use CallbackPot_module
 
@@ -72,7 +74,9 @@ module Potential_simple_module
      character(len=124) :: type_args_str
 
      ! only one of these can be allocated at any given time
+#ifdef HAVE_TB
      type(TB_type), pointer     :: tb => null()
+#endif
      type(IP_type), pointer     :: ip => null()
      type(FilePot_type), pointer     :: filepot => null()
      type(CallbackPot_type), pointer     :: callbackpot => null()
@@ -191,20 +195,22 @@ contains
       call system_abort("Potential_Simple_Initialise_str found too few or too many Potential_Simple types args_str='"//trim(args_str)//"'")
     endif
 
-    if (is_TB) then
-       allocate(this%tb)
-       if(present(param_str)) then
-          call Initialise(this%tb, args_str, param_str, mpi_obj = mpi_obj)
-       else
-          call system_abort('Potential_Simple_initialise: no param_str present during TB init')
-       endif
-    else if (is_IP) then
+    if (is_IP) then
        allocate(this%ip)
        if(present(param_str)) then
           call Initialise(this%ip, args_str, param_str, mpi_obj)
        else
           call system_abort('Potential_Simple_initialise: no param_str present during IP init')
        endif
+#ifdef HAVE_TB
+    else if (is_TB) then
+       allocate(this%tb)
+       if(present(param_str)) then
+          call Initialise(this%tb, args_str, param_str, mpi_obj = mpi_obj)
+       else
+          call system_abort('Potential_Simple_initialise: no param_str present during TB init')
+       endif
+#endif
     else if (is_FilePot) then
        allocate(this%filepot)
        call Initialise(this%filepot, args_str, mpi_obj)
@@ -219,12 +225,14 @@ contains
   subroutine Potential_Simple_Finalise(this)
     type(Potential_Simple), intent(inout) :: this
 
-    if(associated(this%tb)) then
-       call Finalise(this%tb)
-       deallocate(this%tb)
-    elseif(associated(this%ip)) then
+    if(associated(this%ip)) then
        call Finalise(this%ip)
        deallocate(this%ip)
+#ifdef HAVE_TB
+    else if(associated(this%tb)) then
+       call Finalise(this%tb)
+       deallocate(this%tb)
+#endif
     elseif(associated(this%filepot)) then
        call Finalise(this%filepot)
        deallocate(this%filepot)
@@ -239,10 +247,12 @@ contains
     type(Potential_Simple), intent(in) :: this
     real(dp) :: Potential_Simple_cutoff               
 
-    if(associated(this%tb)) then
-       Potential_Simple_cutoff = cutoff(this%tb)
-    elseif(associated(this%ip)) then
+    if(associated(this%ip)) then
        Potential_Simple_cutoff = cutoff(this%ip)
+#ifdef HAVE_TB
+    else if(associated(this%tb)) then
+       Potential_Simple_cutoff = cutoff(this%tb)
+#endif
     elseif(associated(this%filepot)) then
        Potential_Simple_cutoff = cutoff(this%filepot)
     elseif(associated(this%callbackpot)) then
@@ -612,7 +622,47 @@ call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
              if (.not. assign_pointer(at, 'local_e', local_e_ptr)) call system_abort('Potential_Simple_calc: cannot assign local_e_ptr')
           end if
           
-          if(associated(this%tb)) then
+          if(associated(this%ip)) then
+
+             if (do_calc_virial) then
+                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, virial=virial_ptr, args_str=args_str)
+                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, virial=virial_ptr, args_str=args_str)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
+                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                end if
+             else
+                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, args_str=args_str)
+                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, f=force_ptr, args_str=args_str)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, local_e=local_e_ptr, args_str=args_str)
+                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, args_str=args_str)
+                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, args_str=args_str)
+                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str)
+                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
+                end if
+             end if
+#ifdef HAVE_TB
+          else if(associated(this%tb)) then
 
              if (do_calc_virial) then
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
@@ -652,46 +702,7 @@ call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
                 end if                
              end if
 
-          elseif(associated(this%ip)) then
-
-             if (do_calc_virial) then
-                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, virial=virial_ptr, args_str=args_str)
-                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, f=force_ptr, virial=virial_ptr, args_str=args_str)
-                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
-                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
-                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, virial=virial_ptr, args_str=args_str)
-                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
-                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
-                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
-                end if
-             else
-                if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, args_str=args_str)
-                else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, f=force_ptr, args_str=args_str)
-                else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, args_str=args_str)
-                else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
-                else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, args_str=args_str)
-                else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, args_str=args_str)
-                else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str)
-                else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
-                end if
-             end if
-
+#endif
           elseif(associated(this%filepot)) then
 
              if (do_calc_virial) then
@@ -874,10 +885,12 @@ call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
     type(Potential_Simple), intent(inout) :: this
     type(Inoutput), intent(inout),optional:: file
 
-    if(associated(this%tb)) then
-       call Print(this%tb, file=file)
-    elseif(associated(this%ip)) then
+    if(associated(this%ip)) then
        call Print(this%ip, file=file)
+#ifdef HAVE_TB
+    else if(associated(this%tb)) then
+       call Print(this%tb, file=file)
+#endif
     elseif(associated(this%filepot)) then
        call Print(this%filepot, file=file)
     elseif(associated(this%callbackpot)) then
@@ -899,10 +912,12 @@ call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
     real(dp), intent(out), optional :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
 
-    if(associated(this%tb)) then
-       return
-    elseif(associated(this%ip)) then
+    if(associated(this%ip)) then
        call setup_parallel(this%ip, at, e, local_e, f, virial)
+#ifdef HAVE_TB
+    else if(associated(this%tb)) then
+       return
+#endif
     elseif(associated(this%filepot)) then
        return
     elseif(associated(this%callbackpot)) then
