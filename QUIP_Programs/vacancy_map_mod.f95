@@ -47,9 +47,9 @@ contains
 #endif
 
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-subroutine init_hybrid(metapot1, metapot2, hybridpot, hybrid_args_str)
-  type(MetaPotential), intent(inout), target :: metapot1, metapot2
-  type(MetaPotential), intent(out) :: hybridpot
+subroutine init_hybrid(pot1, pot2, hybridpot, hybrid_args_str)
+  type(Potential), intent(inout), target :: pot1, pot2
+  type(Potential), intent(out) :: hybridpot
   character(len=*), optional, intent(in) :: hybrid_args_str
 
   type(Atoms) :: bulk, bulk1
@@ -58,11 +58,11 @@ subroutine init_hybrid(metapot1, metapot2, hybridpot, hybrid_args_str)
   call fcc(bulk, 4.02406_dp)
   call supercell(bulk1, bulk, 4, 4, 4)
   bulk1%Z(:) = 13
-  call set_cutoff(bulk1, cutoff(metapot1)+0.5_dp)
+  call set_cutoff(bulk1, cutoff(pot1)+0.5_dp)
   call calc_connect(bulk1)
 
-  ! should do minimise_bulk instead, but no mechanism for doing it just for metapot1
-  call initialise(hybridpot, "Hybrid terminate=F r_scale=1.0005154009139747 " // trim(hybrid_args_str), metapot2, metapot1, bulk1)
+  ! should do minimise_bulk instead, but no mechanism for doing it just for pot1
+  call initialise(hybridpot, "Hybrid terminate=F r_scale=1.0005154009139747 " // trim(hybrid_args_str), pot2, pot1, bulk1)
 
   call print(hybridpot)
 
@@ -70,9 +70,9 @@ end subroutine
 #endif
 
 #ifdef HAVE_LOTF
-subroutine init_lotf_forcemix(metapot1, metapot2, lotfpot, buffer_hops, lotf_args_str)
-  type(MetaPotential), intent(inout), target :: metapot1, metapot2
-  type(MetaPotential), intent(out) :: lotfpot
+subroutine init_lotf_forcemix(pot1, pot2, lotfpot, buffer_hops, lotf_args_str)
+  type(Potential), intent(inout), target :: pot1, pot2
+  type(Potential), intent(out) :: lotfpot
   integer, intent(in) :: buffer_hops
   character(len=*), optional, intent(in) :: lotf_args_str
 
@@ -82,13 +82,13 @@ subroutine init_lotf_forcemix(metapot1, metapot2, lotfpot, buffer_hops, lotf_arg
   call fcc(bulk, 4.02406_dp)
   call supercell(bulk1, bulk, 4, 4, 4)
   bulk1%Z(:) = 13
-  call set_cutoff(bulk1, cutoff(metapot1)+0.5_dp)
+  call set_cutoff(bulk1, cutoff(pot1)+0.5_dp)
   call calc_connect(bulk1)
 
   call print("WARNING: No way to r_scale in init_lotf_forcemix", PRINT_ALWAYS)
 
-  ! should do minimise_bulk instead, but no mechanism for doing it just for metapot1
-  call initialise(lotfpot, args_str="LOTF fit_method=force_mixing_abrupt small_clusters=F periodic_y terminate=F buffer_hops="//buffer_hops//" "// trim(lotf_args_str), pot1=metapot2, pot2=metapot1, bulk_scale=bulk1)
+  ! should do minimise_bulk instead, but no mechanism for doing it just for pot1
+  call initialise(lotfpot, args_str="LOTF fit_method=force_mixing_abrupt small_clusters=F periodic_y terminate=F buffer_hops="//buffer_hops//" "// trim(lotf_args_str), pot1=pot2, pot2=pot1, bulk_scale=bulk1)
 
   call print(lotfpot)
 

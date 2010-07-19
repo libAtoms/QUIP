@@ -192,7 +192,7 @@ contains
     type(bispectrum_so4) :: bis
     type(grad_bispectrum_so4) :: dbis
 
-    type(MetaPotential) :: core_pot
+    type(Potential) :: core_pot
     
     logical :: do_qw_so3
     integer :: d
@@ -427,7 +427,7 @@ contains
     type(ip_core), intent(in) :: core
     real(dp), intent(out) :: e0
 
-    type(MetaPotential) :: core_pot
+    type(Potential) :: core_pot
     type(cinoutput) :: xyzfile
     type(atoms) :: at
     integer :: n_max, n_con

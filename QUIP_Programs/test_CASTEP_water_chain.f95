@@ -37,7 +37,7 @@ implicit none
   character(len=FIELD_LENGTH) :: init_args, calc_args
   real(dp) :: g_width, vacuum, lx, spacing, px, charge_scale
   integer :: n_qm
-  type(MetaPotential) :: pot
+  type(Potential) :: pot
   type(Dictionary) :: cli
   real(dp), allocatable :: f(:,:)
   integer :: i, nctr

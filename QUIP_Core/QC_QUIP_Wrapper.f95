@@ -39,17 +39,17 @@ module QC_QUIP_Wrapper_module
 use libatoms_module, only : system_initialise, dp, inoutput, INPUT, system_abort, extendable_str, string, read, &
     atoms, initialise, calc_connect, assign_pointer, add_property, set_lattice, verbosity_push, verbosity_pop, PRINT_SILENT, operator(//)
 use potential_module, only : potential, initialise, finalise
-use metapotential_module, only : metapotential, initialise, calc
+use potential_module, only : potential, initialise, calc
 use mpi_context_module, only : mpi_context
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
 use libatoms_module, only : table, append, PRINT_ALWAYS, bfs_grow, int_part, wipe, print, initialise, finalise
-use metapotential_module, only : print
+use potential_module, only : print
 use libatoms_module, only : print_xyz, mainlog, optional_default
 #endif
 implicit none
 private
 
-  type (MetaPotential) metapot
+  type (Potential) pot
   type (Atoms) at
   type (MPI_context) mpi_glob
 
@@ -57,9 +57,9 @@ private
 
   public :: verbosity_push, verbosity_pop, PRINT_SILENT
   public :: QC_QUIP_initialise, QC_QUIP_calc,MakeLine
-  type (MetaPotential) pot_ip
+  type (Potential) pot_ip
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
-  type (MetaPotential) pot_qm
+  type (Potential) pot_qm
   public :: QC_QUIP_initialise_hybrid, QC_QUIP_calc_hybrid
 #endif
 
@@ -85,7 +85,7 @@ contains
     call Initialise(params_str)
     call read(params_str, params%unit)
 
-    call Initialise(metapot, str, string(params_str))
+    call Initialise(pot, str, string(params_str))
     if (present(err)) err = 0
   end subroutine
 
@@ -112,7 +112,7 @@ contains
       weight = w
     endif
 
-    call calc(metapot, at, local_e = local_e, f = f, err=err)
+    call calc(pot, at, local_e = local_e, f = f, err=err)
 
   end subroutine
 
@@ -151,17 +151,17 @@ call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it"
 !      call initialise(bulk, size(Z), lat)
 !      bulk%Z = Z
 !      bulk%pos = pos
-!      call initialise(metapot, str_hybrid, pot_qm, pot_ip, bulk) 
+!      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk) 
 !      call finalise(bulk)
-call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
+call initialise(pot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
     else if (n_present == 0) then
-      call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
+      call initialise(pot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
     else
       call system_abort("QC_QUIP_initialise_hybrid called with some but not all of lat, Z, pos present")
     endif
 
-    call print("QC_QUIP using hybrid metapotential:")
-    call print(metapot)
+    call print("QC_QUIP using hybrid potential:")
+    call print(pot)
 
     if (present(err)) err = 0
   end subroutine QC_QUIP_initialise_hybrid
@@ -185,7 +185,7 @@ call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
 	call system_abort("Mismatched array sizes in QC_QUIP_calc_hybrid")
     endif
 
-    if (buffer_region_width > 0 .and. metapot%is_oniom) &
+    if (buffer_region_width > 0 .and. pot%is_oniom) &
       call system_abort("Don't do buffer_region_width = " // buffer_region_width // &
 			 " > 0 with ONIOM")
 
@@ -213,11 +213,11 @@ call initialise(metapot, str_hybrid, pot1=pot_qm, pot2=pot_ip)
 
     weight = w
 
-    if (metapot%is_oniom) then
-      call calc(metapot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
+    if (pot%is_oniom) then
+      call calc(pot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
 	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width)
     else
-      call calc(metapot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
+      call calc(pot, at, local_e = local_e, f = f, err=err, args_str="calc_weights" // &
 	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width // &
 	" solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0")
     endif

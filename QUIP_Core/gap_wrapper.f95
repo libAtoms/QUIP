@@ -52,7 +52,7 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
   real(dp), dimension(3,3), intent(out) :: stress
   
   type(atoms), save     :: at
-  type(MetaPotential), save :: pot
+  type(Potential), save :: pot
 
   integer :: i
 

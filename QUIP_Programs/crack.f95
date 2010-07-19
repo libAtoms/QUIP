@@ -297,9 +297,9 @@ program crack
   type(DynamicalSystem), target :: ds, ds_save
   type(Atoms) :: crack_slab, fd_start, fd_end, bulk
   type(CrackParams) :: params
-  type(MetaPotential) :: classicalpot, qmpot
-  type(MetaPotential) :: hybrid_metapot, forcemix_metapot
-  type(Dictionary) :: metapot_params
+  type(Potential) :: classicalpot, qmpot
+  type(Potential) :: hybrid_pot, forcemix_pot
+  type(Dictionary) :: pot_params
   type(mpi_context) :: mpi_glob
   type(Table) :: crack_tips, old_crack_tips
 
@@ -408,38 +408,38 @@ program crack
 
   if (.not. params%simulation_classical) then
 
-     call initialise(metapot_params)
-     call set_value(metapot_params, 'method', trim(params%fit_method))
-     call set_value(metapot_params, 'buffer_hops', params%qm_buffer_hops)
-     call set_value(metapot_params, 'transition_hops', params%qm_transition_hops)
-     call set_value(metapot_params, 'fit_hops', params%fit_hops)
-     call set_value(metapot_params, 'minimise_mm', params%minim_minimise_mm)
-     call set_value(metapot_params, 'randomise_buffer', params%qm_randomise_buffer)
-     call set_value(metapot_params, 'mm_reweight', params%classical_force_reweight)
-     call set_value(metapot_params, 'minim_mm_method', trim(params%minim_mm_method))
-     call set_value(metapot_params, 'minim_mm_tol', params%minim_mm_tol)
-     call set_value(metapot_params, 'minim_mm_eps_guess', params%minim_mm_eps_guess)
-     call set_value(metapot_params, 'minim_mm_max_steps', params%minim_mm_max_steps)
-     call set_value(metapot_params, 'minim_mm_linminroutine', trim(params%minim_mm_linminroutine))
-     call set_value(metapot_params, 'minim_mm_args_str', trim(params%minim_mm_args_str) )
-     call set_value(metapot_params, 'minim_mm_use_n_minim', params%minim_mm_use_n_minim)
-     call set_value(metapot_params, 'lotf_spring_hops', params%fit_spring_hops)
-     call set_value(metapot_params, 'do_rescale_r', params%qm_rescale_r)
-     call set_value(metapot_params, 'minimise_bulk', params%qm_rescale_r)
-     call set_value(metapot_params, 'hysteretic_buffer', params%qm_hysteretic_buffer)
-     call set_value(metapot_params, 'hysteretic_buffer_inner_radius', params%qm_hysteretic_buffer_inner_radius)
-     call set_value(metapot_params, 'hysteretic_buffer_outer_radius', params%qm_hysteretic_buffer_outer_radius)
+     call initialise(pot_params)
+     call set_value(pot_params, 'method', trim(params%fit_method))
+     call set_value(pot_params, 'buffer_hops', params%qm_buffer_hops)
+     call set_value(pot_params, 'transition_hops', params%qm_transition_hops)
+     call set_value(pot_params, 'fit_hops', params%fit_hops)
+     call set_value(pot_params, 'minimise_mm', params%minim_minimise_mm)
+     call set_value(pot_params, 'randomise_buffer', params%qm_randomise_buffer)
+     call set_value(pot_params, 'mm_reweight', params%classical_force_reweight)
+     call set_value(pot_params, 'minim_mm_method', trim(params%minim_mm_method))
+     call set_value(pot_params, 'minim_mm_tol', params%minim_mm_tol)
+     call set_value(pot_params, 'minim_mm_eps_guess', params%minim_mm_eps_guess)
+     call set_value(pot_params, 'minim_mm_max_steps', params%minim_mm_max_steps)
+     call set_value(pot_params, 'minim_mm_linminroutine', trim(params%minim_mm_linminroutine))
+     call set_value(pot_params, 'minim_mm_args_str', trim(params%minim_mm_args_str) )
+     call set_value(pot_params, 'minim_mm_use_n_minim', params%minim_mm_use_n_minim)
+     call set_value(pot_params, 'lotf_spring_hops', params%fit_spring_hops)
+     call set_value(pot_params, 'do_rescale_r', params%qm_rescale_r)
+     call set_value(pot_params, 'minimise_bulk', params%qm_rescale_r)
+     call set_value(pot_params, 'hysteretic_buffer', params%qm_hysteretic_buffer)
+     call set_value(pot_params, 'hysteretic_buffer_inner_radius', params%qm_hysteretic_buffer_inner_radius)
+     call set_value(pot_params, 'hysteretic_buffer_outer_radius', params%qm_hysteretic_buffer_outer_radius)
 
-     call set_value(metapot_params, 'hysteretic_connect', params%qm_hysteretic_connect)
-     call set_value(metapot_params, 'nneighb_only', (.not. params%qm_hysteretic_connect))
-     call set_value(metapot_params, 'hysteretic_connect_cluster_radius', params%qm_hysteretic_connect_cluster_radius)
-     call set_value(metapot_params, 'hysteretic_connect_inner_factor', params%qm_hysteretic_connect_inner_factor)
-     call set_value(metapot_params, 'hysteretic_connect_outer_factor', params%qm_hysteretic_connect_outer_factor)
+     call set_value(pot_params, 'hysteretic_connect', params%qm_hysteretic_connect)
+     call set_value(pot_params, 'nneighb_only', (.not. params%qm_hysteretic_connect))
+     call set_value(pot_params, 'hysteretic_connect_cluster_radius', params%qm_hysteretic_connect_cluster_radius)
+     call set_value(pot_params, 'hysteretic_connect_inner_factor', params%qm_hysteretic_connect_inner_factor)
+     call set_value(pot_params, 'hysteretic_connect_outer_factor', params%qm_hysteretic_connect_outer_factor)
 
 
-     call set_value(metapot_params, 'mm_args_str', params%classical_args_str)
+     call set_value(pot_params, 'mm_args_str', params%classical_args_str)
 
-     call set_value(metapot_params, 'qm_args_str', &
+     call set_value(pot_params, 'qm_args_str', &
           ' little_clusters='//params%qm_small_clusters// &
           '  single_cluster='//(.not. params%qm_small_clusters)// &
           '  terminate='//params%qm_terminate// &
@@ -459,26 +459,26 @@ program crack
         call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
         call read_xyz(bulk, trim(stem)//'_bulk.xyz')
 
-        call initialise(hybrid_metapot, 'ForceMixing '//write_string(metapot_params), &
+        call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
      else
-        call initialise(hybrid_metapot, 'ForceMixing '//write_string(metapot_params), &
+        call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
      end if
 
-     call print_title('Hybrid Metapotential')
-     call print(hybrid_metapot)
+     call print_title('Hybrid Potential')
+     call print(hybrid_pot)
 
-     call set_value(metapot_params, 'method', 'force_mixing')
+     call set_value(pot_params, 'method', 'force_mixing')
      if (params%qm_rescale_r) then
-        call initialise(forcemix_metapot, 'ForceMixing '//write_string(metapot_params), &
+        call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
         call finalise(bulk)
      else
-        call initialise(forcemix_metapot, 'ForceMixing '//write_string(metapot_params), &
+        call initialise(forcemix_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, mpi_obj=mpi_glob)
      end if
-     call finalise(metapot_params)
+     call finalise(pot_params)
 
   end if
 
@@ -763,7 +763,7 @@ program crack
 
      ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
      if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
-        call calc(hybrid_metapot, ds%atoms, f=f)
+        call calc(hybrid_pot, ds%atoms, f=f)
      end if
 
      !****************************************************************
@@ -911,11 +911,11 @@ program crack
                  call calc(classicalpot, ds%atoms, f=f, args_str=params%classical_args_str)
               else
                  if (i== 1) then
-                    call calc(hybrid_metapot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
+                    call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
                  else
-                    call calc(hybrid_metapot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F")
+                    call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F")
                  end if
-                 if (params%qm_calc_force_error) call calc(forcemix_metapot, ds%atoms, f=f_fm)
+                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, f=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
@@ -970,7 +970,7 @@ program crack
 
               call print_title('Computation of forces')
               call system_timer('force computation')
-              call calc(hybrid_metapot, ds%atoms, f=f, args_str="lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
+              call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
               call system_timer('force computation')
 
 
@@ -986,10 +986,10 @@ program crack
 
               do i = 1, params%md_extrapolate_steps
 
-                 call calc(hybrid_metapot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                 call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
                       //(real(i-1,dp)/real(params%md_extrapolate_steps,dp)))
 
-                 if (params%qm_calc_force_error) call calc(forcemix_metapot, ds%atoms, f=f_fm)
+                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, f=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
@@ -1039,7 +1039,7 @@ program crack
            if (params%simulation_classical) then
               call calc(classicalpot, ds%atoms, e=energy, f=f, args_str=params%classical_args_str)
            else
-              call calc(hybrid_metapot, ds%atoms, f=f)
+              call calc(hybrid_pot, ds%atoms, f=f)
            end if
            call system_timer('force computation/optimisation')
 
@@ -1173,7 +1173,7 @@ program crack
            call calc(classicalpot, ds%atoms, f=f, e=energy, args_str=params%classical_args_str)
            if (i == 0) fd_e0 = energy
         else
-           call calc(hybrid_metapot, ds%atoms, f=f)
+           call calc(hybrid_pot, ds%atoms, f=f)
         end if
 
 	f_prop = f
@@ -1225,7 +1225,7 @@ program crack
              do_pos=.true., do_lat=.false., do_print=.true., use_fire=trim(params%minim_method)=='fire', &
              print_cinoutput=movie, args_str=params%classical_args_str, eps_guess=params%minim_eps_guess, hook_print_interval=params%minim_print_output)
      else
-        steps = minim(hybrid_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
+        steps = minim(hybrid_pot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
              max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
              do_pos=.true., do_lat=.false., do_print=.true., use_fire=trim(params%minim_method)=='fire', &
              print_cinoutput=movie, &
@@ -1268,7 +1268,7 @@ program crack
                 print_cinoutput=movie, &
                 args_str=params%classical_args_str, eps_guess=params%minim_eps_guess,use_fire=trim(params%minim_method)=='fire', hook_print_interval=params%minim_print_output)
         else
-           steps = minim(hybrid_metapot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
+           steps = minim(hybrid_pot, ds%atoms, method=params%minim_method, convergence_tol=params%minim_tol, &
                 max_steps=params%minim_max_steps, linminroutine=params%minim_linminroutine, &
                 do_pos=.true., do_lat=.false., do_print=.true., &
                 print_cinoutput=movie, eps_guess=params%minim_eps_guess, &
@@ -1302,8 +1302,8 @@ program crack
   call finalise(movie)
   call finalise(ds)
 
-  call finalise(hybrid_metapot)
-  call finalise(forcemix_metapot)
+  call finalise(hybrid_pot)
+  call finalise(forcemix_pot)
   call finalise(classicalpot)
   call finalise(qmpot)
 

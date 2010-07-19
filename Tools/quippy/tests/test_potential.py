@@ -55,7 +55,7 @@ if hasattr(quippy, 'Potential'):
          """
 
          system_reseed_rng(1)
-         self.pot = Potential('IP SW', xml)
+         self.pot = Potential('IP SW', param_str=xml)
 
          self.at = diamond(5.44, 14)
          matrix_randomise(self.at.pos, 0.1)
@@ -314,7 +314,7 @@ Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Propert
 14 3.97244199589577 1.36902339889138 4.0668447417454
 14 4.09570476049115 4.02286216155155 1.27329051246382"""
 
-         self.pot = Potential('TB NRL-TB', xml)
+         self.pot = Potential('TB NRL-TB', param_str=xml)
          self.at = Atoms(xyz, format='string')
 
          verbosity_push(PRINT_SILENT)

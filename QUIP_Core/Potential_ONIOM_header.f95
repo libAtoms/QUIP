@@ -30,20 +30,20 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Local Energy Mixing header stuff to be included in MetaPotential.f95
+!X ONIOM header stuff to be included in Potential.f95
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  public :: MetaPotential_Local_E_Mix
-  type MetaPotential_Local_E_Mix
-     type(MetaPotential), pointer :: pot_region1
-     type(MetaPotential), pointer :: pot_region2
+  public :: Potential_ONIOM
+  type Potential_ONIOM
+     type(Potential), pointer :: pot_region1
+     type(Potential), pointer :: pot_region2
      logical :: terminate = .true.
      real(dp):: r_scale_pot1 = 1.0_dp, E_scale_pot1 = 1.0_dp
 
-     type(MetaPotential) :: relax_metapot
+     type(Potential) :: relax_pot
 
      logical       :: minimise_mm 
      character(FIELD_LENGTH) :: minim_mm_method 
@@ -54,29 +54,27 @@
      logical       :: minim_mm_do_print, minim_mm_use_n_minim
      character(FIELD_LENGTH) :: minim_mm_args_str
 
-     type(Dictionary) :: create_hybrid_weights_params
+      type(Inoutput), pointer :: minim_inoutput_movie
+      type(CInoutput), pointer :: minim_cinoutput_movie
 
-     type(Inoutput), pointer :: minim_inoutput_movie
-     type(CInoutput), pointer :: minim_cinoutput_movie
-
-  end type MetaPotential_Local_E_Mix
+  end type Potential_ONIOM
 
   interface Print
-     module procedure metapotential_local_e_mix_print
+     module procedure potential_oniom_print
   end interface Print
 
   interface Cutoff
-     module procedure metapotential_local_e_mix_cutoff
+     module procedure potential_oniom_cutoff
   end interface Cutoff
 
   interface Calc
-     module procedure metapotential_local_e_mix_calc
+     module procedure potential_oniom_calc
   end interface Calc
 
   interface Initialise
-     module procedure metapotential_local_e_mix_initialise
+     module procedure potential_oniom_initialise
   end interface Initialise
 
   interface Finalise
-     module procedure metapotential_local_e_mix_finalise
+     module procedure potential_oniom_finalise
   end interface Finalise

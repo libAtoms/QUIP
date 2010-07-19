@@ -26,7 +26,7 @@ try:
 except ImportError:
    got_scipy = False
 
-if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_scipy:
+if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
    
    class TestElastic(QuippyTestCase):
 
@@ -111,8 +111,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testcubic_unrelaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -127,8 +126,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testcubic_relaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -144,8 +142,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testorthorhombic_unrelaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -159,8 +156,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testorthorhombic_relaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -174,8 +170,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testmonoclinic_unrelaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -189,8 +184,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testmonoclinic_relaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -205,8 +199,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testtriclinic_unrelaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -220,8 +213,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
 
       def testtriclinic_relaxed(self):
 
-         pot = Potential('IP SW', self.xml)
-         metapot = MetaPotential('Simple', pot)
+         metapot = Potential('IP SW', param_str=self.xml)
 
          at0 = diamond(5.43, 14)
          metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
@@ -288,8 +280,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'MetaPotential') and got_sci
          </SW_params>
          """
 
-         self.pot = Potential('IP SW', self.xml)
-         self.metapot = MetaPotential('Simple', self.pot)
+         self.metapot = Potential('IP SW', param_str=self.xml)
          verbosity_push(PRINT_SILENT)
 
       def tearDown(self):

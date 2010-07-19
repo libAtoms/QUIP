@@ -345,8 +345,8 @@ def find_sources(makefile, quip_root):
                           expand_addsuffix(makefile_quip_core['ALL_F95_FILES']).split()  + 
                           expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']).split())]
     all_sources += quip_core_sources
-    wrap_sources += ['Potential.f95', 'MetaPotential.f95']
-    wrap_types += ['potential', 'metapotential']
+    wrap_sources += ['Potential.f95']
+    wrap_types += ['potential']
     source_dirs.append(quip_core_dir)
 
     if (not 'QUIPPY_NO_TOOLS' in makefile or

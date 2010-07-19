@@ -22,13 +22,13 @@ from quippytest import *
 
 if hasattr(quippy, 'Potential'):
    try:
-      p1 = Potential('IP ASAP', '')
+      p1 = Potential('IP ASAP', param_str='')
       got_asap1 = True
    except RuntimeError:
       got_asap1 = False
 
    try:
-      p2 = Potential('IP ASAP2', '')
+      p2 = Potential('IP ASAP2', param_str='')
       got_asap2 = True
    except RuntimeError:
       got_asap2 = False
@@ -3073,8 +3073,8 @@ if hasattr(quippy, 'Potential'):
       </ASAP_params>
       """
             if do_compare_p1_p2:
-               self.p1 = Potential('IP ASAP', self.xml)
-            self.p2 = Potential('IP ASAP2', self.xml)
+               self.p1 = Potential('IP ASAP', param_str=self.xml)
+            self.p2 = Potential('IP ASAP2', param_str=self.xml)
             self.cutoff = 18.0*BOHR
             self.debug = False
 
@@ -5133,8 +5133,8 @@ if hasattr(quippy, 'Potential'):
       </ASAP_params>
       """
             if do_compare_p1_p2:
-               self.p1 = Potential('IP ASAP', self.xml)
-            self.p2 = Potential('IP ASAP2', self.xml)
+               self.p1 = Potential('IP ASAP', param_str=self.xml)
+            self.p2 = Potential('IP ASAP2', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -7193,8 +7193,8 @@ if hasattr(quippy, 'Potential'):
       </ASAP_params>
       """
             if do_compare_p1_p2:
-               self.p1 = Potential('IP ASAP', self.xml)
-            self.p2 = Potential('IP ASAP2', self.xml)
+               self.p1 = Potential('IP ASAP', param_str=self.xml)
+            self.p2 = Potential('IP ASAP2', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -9252,8 +9252,8 @@ if hasattr(quippy, 'Potential'):
       </ASAP_params>
       """
             if do_compare_p1_p2:
-               self.p1 = Potential('IP ASAP', self.xml)
-            self.p2 = Potential('IP ASAP2', self.xml)
+               self.p1 = Potential('IP ASAP', param_str=self.xml)
+            self.p2 = Potential('IP ASAP2', param_str=self.xml)
             self.cutoff = 20.0*BOHR
             self.debug = False
 
@@ -9289,8 +9289,8 @@ if hasattr(quippy, 'Potential'):
          </ASAP_params>
          """
                if do_compare_p1_p2:
-                  self.p1 = Potential('IP ASAP', self.xml)
-               self.p2 = Potential('IP ASAP2', self.xml)
+                  self.p1 = Potential('IP ASAP', param_str=self.xml)
+               self.p2 = Potential('IP ASAP2', param_str=self.xml)
 
                self.p1.print_()
                self.p2.print_()

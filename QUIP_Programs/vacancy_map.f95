@@ -36,7 +36,7 @@ use atoms_minimisation_module
 
 implicit none
   type(Atoms) at, at2, at3, bulk
-  type(MetaPotential) pot
+  type(Potential) pot
   type(inoutput) params, out, in
   integer:: it, i
   logical:: status

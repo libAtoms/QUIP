@@ -30,16 +30,16 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Force Mixing header stuff to be included in MetaPotential.f95
+!X Force Mixing header stuff to be included in Potential.f95
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  public :: MetaPotential_FM
-  type MetaPotential_FM
+  public :: Potential_FM
+  type Potential_FM
 
-     type(MetaPotential), pointer :: mmpot => null() 
-     type(MetaPotential), pointer :: qmpot => null() 
+     type(Potential), pointer :: mmpot => null() 
+     type(Potential), pointer :: qmpot => null() 
      type(MPI_context) :: mpi
 
      character(1024) :: init_args_str
@@ -93,31 +93,31 @@
 
      type(Dictionary) :: create_hybrid_weights_params !% extra arguments to pass create_hybrid_weights
 
-     type(MetaPotential), pointer :: relax_metapot
+     type(Potential), pointer :: relax_pot
      type(Inoutput), pointer :: minim_inoutput_movie
      type(CInoutput), pointer :: minim_cinoutput_movie
 
      type(Table) :: embedlist, fitlist
 
-  end type MetaPotential_FM
+  end type Potential_FM
 
   interface Initialise
-     module procedure MetaPotential_FM_initialise
+     module procedure Potential_FM_initialise
   end interface
 
   interface Finalise
-     module procedure MetaPotential_FM_Finalise
+     module procedure Potential_FM_Finalise
   end interface
 
   interface Print
-     module procedure MetaPotential_FM_Print
+     module procedure Potential_FM_Print
   end interface
 
   interface Cutoff
-     module procedure MetaPotential_FM_Cutoff
+     module procedure Potential_FM_Cutoff
   end interface
 
   interface Calc
-     module procedure MetaPotential_FM_Calc
+     module procedure Potential_FM_Calc
   end interface
 

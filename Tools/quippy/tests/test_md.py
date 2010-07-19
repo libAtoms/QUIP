@@ -60,7 +60,7 @@ if hasattr(quippy, 'Potential'):
          </SW_params>
          """
 
-         pot = Potential('IP SW', xml)
+         pot = Potential('IP SW', param_str=xml)
 
          ds = DynamicalSystem(s)
          ds.rescale_velo(300.0)

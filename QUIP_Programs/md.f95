@@ -45,7 +45,7 @@ private
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P
-    character(len=FIELD_LENGTH) :: metapot_init_args, metapot_calc_args
+    character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
@@ -93,7 +93,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'langevin_tau', '100.0', params%langevin_tau)
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial)
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy)
-  call param_register(md_params_dict, 'metapot_init_args', PARAM_MANDATORY, params%metapot_init_args)
+  call param_register(md_params_dict, 'pot_init_args', PARAM_MANDATORY, params%pot_init_args)
   call param_register(md_params_dict, 'cutoff_buffer', '0.5', params%cutoff_buffer)
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval)
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval)
@@ -102,7 +102,7 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'pot_print_interval', '-1', params%pot_print_interval)
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum)
   call param_register(md_params_dict, 'zero_angular_momentum', 'F', params%zero_angular_momentum)
-  call param_register(md_params_dict, 'metapot_calc_args', '', params%metapot_calc_args)
+  call param_register(md_params_dict, 'pot_calc_args', '', params%pot_calc_args)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
@@ -125,9 +125,9 @@ subroutine get_params(params, mpi_glob)
   endif
   call finalise(md_params_dict)
 
-  if (len(trim(params%metapot_init_args)) == 0) then
+  if (len(trim(params%pot_init_args)) == 0) then
      call print_usage()
-     call system_abort("get_params got empty metapot_init_args")
+     call system_abort("get_params got empty pot_init_args")
   end if
 
   if (params%N_steps < 1) call system_abort("get_params got N_steps " // params%N_steps // " < 1")
@@ -155,8 +155,8 @@ subroutine print_params(params)
 
   integer :: i
 
-  call print("md_params%metapot_init_args='" // trim(params%metapot_init_args) // "'")
-  call print("md_params%metapot_calc_args='" // trim(params%metapot_calc_args) // "'")
+  call print("md_params%pot_init_args='" // trim(params%pot_init_args) // "'")
+  call print("md_params%pot_calc_args='" // trim(params%pot_calc_args) // "'")
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
   call print("md_params%trajectory_out_file='" // trim(params%trajectory_out_file) // "'")
@@ -211,7 +211,7 @@ end subroutine print_params
 subroutine print_usage()
   call Print('Usage: md <command line arguments>', PRINT_ALWAYS)
   call Print('available parameters (in md_params file or on command line):', PRINT_ALWAYS)
-  call Print('  metapot_init_args="args" [metapot_calc_args="args"]', PRINT_ALWAYS)
+  call Print('  pot_init_args="args" [pot_calc_args="args"]', PRINT_ALWAYS)
   call Print('  [atoms_in_file=file(stdin)] [params_in_file=file(quip_params.xml)]', PRINT_ALWAYS)
   call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
   call Print('  [N_steps=n(1)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
@@ -222,11 +222,11 @@ subroutine print_usage()
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
-subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_intervals)
+subroutine do_prints(params, ds, e, pot, traj_out, i_step, override_intervals)
   type(md_params), intent(in) :: params
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
-  type(metapotential), intent(in) :: metapot
+  type(potential), intent(in) :: pot
   type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
@@ -242,11 +242,11 @@ subroutine do_prints(params, ds, e, metapot, traj_out, i_step, override_interval
     if (my_override_intervals .or. mod(i_step,params%params_print_interval) == 0) call print_atoms_params(params, ds%atoms)
   endif
   if (params%pot_print_interval > 0) then
-    if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, metapot)
+    if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, pot)
   endif
   if (params%at_print_interval > 0) then
       if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
-	call print_at(params, ds, e, metapot, traj_out)
+	call print_at(params, ds, e, pot, traj_out)
   endif
 end subroutine
 
@@ -269,24 +269,24 @@ subroutine print_atoms_params(params, at)
   call print("PA " // write_string(at%params, real_format='f18.10'))
 end subroutine print_atoms_params
 
-subroutine print_pot(params, metapot)
+subroutine print_pot(params, pot)
   type(md_params), intent(in) :: params
-  type(metapotential), intent(in) :: metapot
+  type(potential), intent(in) :: pot
 
   mainlog%prefix="MD_POT"
-  if (metapot%is_simple) then
-    if (associated(metapot%pot%tb)) then
-      call print(metapot%pot%tb)
+  if (pot%is_simple) then
+    if (associated(pot%pot%tb)) then
+      call print(pot%pot%tb)
     endif
   endif
   mainlog%prefix=""
 end subroutine print_pot
 
-subroutine print_at(params, ds, e, metapot, out)
+subroutine print_at(params, ds, e, pot, out)
   type(md_params), intent(in) :: params
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
-  type(MetaPotential), intent(in) :: metapot
+  type(Potential), intent(in) :: pot
   type(CInOutput), intent(inout) :: out
 
   if (allocated(params%print_property_list)) then
@@ -377,7 +377,7 @@ use md_module
 use libatoms_misc_utils_module
 
 implicit none
-  type (MetaPotential) :: metapot
+  type (Potential) :: pot
   type(MPI_context) :: mpi_glob
   type(extendable_str) :: es
   type(Cinoutput) :: traj_out, atoms_in_cio
@@ -412,9 +412,9 @@ implicit none
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
-  call metapotential_filename_initialise(metapot, params%metapot_init_args, param_filename=params%params_in_file, mpi_obj=mpi_glob)
+  call potential_Filename_Initialise(pot, params%pot_init_args, param_filename=params%params_in_file, mpi_obj=mpi_glob)
 
-  call print(metapot)
+  call print(pot)
 
   call initialise(ds, at_in)
   call finalise(at_in)
@@ -431,7 +431,7 @@ implicit none
   allocate(forces(3,ds%atoms%N))
 
   cutoff_buffer=params%cutoff_buffer
-  call set_cutoff(ds%atoms, cutoff(metapot)+cutoff_buffer)
+  call set_cutoff(ds%atoms, cutoff(pot)+cutoff_buffer)
 
   ! start with p(t), v(t)
   ! calculate f(t)
@@ -439,15 +439,15 @@ implicit none
   if (params%quiet_calc) call verbosity_push_decrement()
   if (params%calc_energy) then
     if (params%calc_virial) then
-      call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
     else
-      call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+      call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
     endif
   else
     if (params%calc_virial) then
-      call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+      call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
     else
-      call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+      call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
     endif
   endif
   if (params%quiet_calc) call verbosity_pop()
@@ -459,7 +459,7 @@ implicit none
   if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
     call system_abort('Impossible failure to assign_ptr for forces')
   forces_p = forces
-  call do_prints(params, ds, e, metapot, traj_out, 0, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, traj_out, 0, override_intervals = .true.)
 
   call calc_connect(ds%atoms)
   max_moved = 0.0_dp
@@ -480,7 +480,7 @@ implicit none
         call update_thermostat(ds, params, do_rescale=(ds%cur_temp.gt.params%T))
     endif
 
-    call advance_md(ds, params, metapot, forces, virial, E)
+    call advance_md(ds, params, pot, forces, virial, E)
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
@@ -489,23 +489,23 @@ implicit none
     if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
       call system_abort('Impossible failure to assign_ptr for forces')
     forces_p = forces
-    call do_prints(params, ds, e, metapot, traj_out, i_step)
+    call do_prints(params, ds, e, pot, traj_out, i_step)
 
     call system_timer("md/print")
 
   end do
   call system_timer("md_loop")
 
-  call do_prints(params, ds, e, metapot, traj_out, params%N_steps, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, traj_out, params%N_steps, override_intervals = .true.)
 
   call system_finalise()
 
 contains
 
-  subroutine advance_md(ds, params, metapot, forces, virial, E)
+  subroutine advance_md(ds, params, pot, forces, virial, E)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
-    type(MetaPotential), intent(inout) :: metapot
+    type(Potential), intent(inout) :: pot
     real(dp), intent(inout) :: forces(:,:), virial(3,3)
     real(dp), intent(inout) :: E
 
@@ -519,18 +519,18 @@ contains
       if (params%quiet_calc) call verbosity_push_decrement()
       if (params%calc_energy) then
 	if (params%calc_virial) then
-	  call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args // &
+	  call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args // &
 	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
 	else
-	  call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args // &
+	  call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args // &
 	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
 	endif
       else
 	if (params%calc_virial) then
-	  call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args // &
+	  call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args // &
 	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
 	else
-	  call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args // &
+	  call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args // &
 	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
 	endif
       endif
@@ -554,18 +554,18 @@ contains
 	max_moved = 0.0_dp
       else ! failed to find new_pos
 	do i_substep=1, params%advance_md_substeps
-	  call advance_md_one(ds, params, metapot, forces, virial, E)
+	  call advance_md_one(ds, params, pot, forces, virial, E)
 	end do
       endif
     else
-      call advance_md_one(ds, params, metapot, forces, virial, E)
+      call advance_md_one(ds, params, pot, forces, virial, E)
     endif
   end subroutine advance_md
 
-  subroutine advance_md_one(ds, params, metapot, forces, virial, E)
+  subroutine advance_md_one(ds, params, pot, forces, virial, E)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
-    type(MetaPotential), intent(inout) :: metapot
+    type(Potential), intent(inout) :: pot
     real(dp), intent(inout) :: forces(:,:), virial(3,3)
     real(dp), intent(inout) :: E
 
@@ -596,15 +596,15 @@ contains
     if (params%quiet_calc) call verbosity_push_decrement()
     if (params%calc_energy) then
       if (params%calc_virial) then
-	call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
       else
-	call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+	call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
       endif
     else
       if (params%calc_virial) then
-	call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
       else
-	call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+	call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
       endif
     endif
     if (params%quiet_calc) call verbosity_pop()
@@ -627,15 +627,15 @@ contains
       if (params%quiet_calc) call verbosity_push_decrement()
       if (params%calc_energy) then
 	if (params%calc_virial) then
-	  call calc(metapot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	  call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
 	else
-	  call calc(metapot, ds%atoms, e=E, f=forces, args_str=params%metapot_calc_args)
+	  call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
 	endif
       else
 	if (params%calc_virial) then
-	  call calc(metapot, ds%atoms, f=forces, virial=virial, args_str=params%metapot_calc_args)
+	  call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
 	else
-	  call calc(metapot, ds%atoms, f=forces, args_str=params%metapot_calc_args)
+	  call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
 	endif
       endif
       if (params%quiet_calc) call verbosity_pop()
