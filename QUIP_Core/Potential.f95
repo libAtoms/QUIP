@@ -161,6 +161,11 @@ module Potential_module
      module procedure pot_n_test_gradient
   end interface
 
+  public :: set_callback
+  interface set_callback
+     module procedure potential_set_callback
+  end interface
+
   public :: potential_minimise
   type Potential_minimise
      real(dp) :: minim_pos_lat_preconditioner = 1.0_dp
@@ -1530,6 +1535,27 @@ max_atom_rij_change = 1.038_dp
 
   end function Potential_Sum_Cutoff
 
+  subroutine potential_set_callback(this, callback)
+    type(Potential), intent(inout) :: this
+    interface
+       subroutine callback(at)
+#ifdef HAVE_QUIPPY
+         integer, intent(in) :: at(12)
+#else
+         use Atoms_module, only: Atoms
+         type(Atoms), intent(inout) :: at
+#endif
+       end subroutine callback
+    end interface
+    
+    if (this%is_simple) then
+       call set_callback(this%pot, callback)
+    else
+       call system_abort('potential_set_callback() only implemented for simple Potentials.')
+    end if
+
+  end subroutine potential_set_callback
+
 
 #include "Potential_ForceMixing_routines.f95"
 
@@ -1541,5 +1567,68 @@ max_atom_rij_change = 1.038_dp
 #endif
 
 #include "Potential_Hybrid_utils.f95"
+
+  subroutine DynamicalSystem_run(this, pot, dt, n_steps, hook, hook_interval, write_interval, connect_interval, trajectory, args_str)
+    type atoms_ptr_type
+       type(atoms), pointer :: p
+    end type atoms_ptr_type
+    type(DynamicalSystem), intent(inout), target :: this
+    type(Potential), intent(inout) :: pot
+    real(dp), intent(in) :: dt
+    integer, intent(in) :: n_steps
+    integer, intent(in), optional :: hook_interval, write_interval, connect_interval
+    type(CInOutput), intent(inout), optional :: trajectory
+    character(len=*), intent(in), optional :: args_str
+    interface
+       subroutine hook()
+       end subroutine hook
+    end interface    
+    
+    integer :: n, my_hook_interval, my_write_interval, my_connect_interval
+    real(dp) :: e
+    real(dp), pointer, dimension(:,:) :: f
+    character(len=1024) :: my_args_str
+    type(Dictionary) :: params
+
+    my_hook_interval = optional_default(1, hook_interval)
+    my_write_interval = optional_default(1, write_interval)
+    my_connect_interval = optional_default(1, connect_interval)
+    my_args_str = optional_default("", args_str)
+    call initialise(params)
+    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='dynamicalsystem_run') ) &
+         call system_abort("dynamicalsystem_run failed to parse args_str='"//trim(my_args_str)//"'")
+    call set_value(params, 'calc_energy', .true.)
+    call set_value(params, 'calc_force', .true.)
+    my_args_str = write_string(params)
+    call finalise(params)
+
+    call calc_connect(this%atoms)
+    call calc(pot, this%atoms, args_str=my_args_str)
+    call set_value(this%atoms%params, 'time', this%t)
+    if (.not. get_value(this%atoms%params, 'energy', e)) &
+         call system_abort("dynamicalsystem_run failed to get energy")
+    if (.not. assign_pointer(this%atoms, 'force', f)) &
+         call system_abort("dynamicalsystem_run failed to get forces")
+    call ds_print_status(this, epot=e)
+    call hook()
+    if (present(trajectory)) call write(trajectory, this%atoms)
+
+    do n=1,n_steps
+       call advance_verlet1(this, dt, f)
+       call calc(pot, this%atoms, args_str=my_args_str)
+       call advance_verlet2(this, dt, f)
+       if (.not. get_value(this%atoms%params, 'energy', e)) &
+            call system_abort("dynamicalsystem_run failed to get energy")
+       if (.not. assign_pointer(this%atoms, 'force', f)) &
+            call system_abort("dynamicalsystem_run failed to get forces")
+       call ds_print_status(this, epot=e)
+       call set_value(this%atoms%params, 'time', this%t)
+
+       if (mod(n,my_hook_interval) == 0) call hook()
+       if (present(trajectory) .and. mod(n,my_write_interval) == 0) call write(trajectory, this%atoms)
+       if (mod(n,my_connect_interval) == 0) call calc_connect(this%atoms)
+    end do
+
+  end subroutine DynamicalSystem_run
 
 end module Potential_module
