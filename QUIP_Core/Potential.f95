@@ -202,7 +202,7 @@ module Potential_module
   !*
   !*************************************************************************
 
-subroutine potential_Filename_Initialise(this, args_str, param_filename, bulk_scale, mpi_obj)
+recursive subroutine potential_Filename_Initialise(this, args_str, param_filename, bulk_scale, mpi_obj)
   type(Potential), intent(inout) :: this
   character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   character(len=*), intent(in) :: param_filename !% name of xml parameter file for potential initializers
@@ -234,7 +234,7 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
   call initialise(this, args_str, param_str=string(es), bulk_scale=bulk_scale, mpi_obj=mpi_obj)
 end subroutine potential_initialise_inoutput
 
-subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj)
+recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj)
   type(Potential), intent(inout) :: this
   character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(Potential), optional, intent(in), target :: pot1 !% Optional first Potential upon which this Potential is based
@@ -354,7 +354,7 @@ subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scal
 
   end subroutine potential_initialise
 
-  subroutine potential_finalise(this)
+  recursive subroutine potential_finalise(this)
     type(Potential), intent(inout) :: this
 
     if (this%is_simple) then
