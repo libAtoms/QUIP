@@ -218,7 +218,7 @@ contains
        d = qw2d(qw)
     endif
 
-    if( core%do_core ) call Initialise(core_pot, core%ip_args, args_str=core%quip_string)
+    if( core%do_core ) call Initialise(core_pot, args_str=core%ip_args, param_str=core%quip_string)
 
     call initialise(xyzfile,at_file)
     call query(xyzfile)
