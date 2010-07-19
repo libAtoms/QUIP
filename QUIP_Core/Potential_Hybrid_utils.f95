@@ -69,6 +69,7 @@
     call print("region1 Potential lattice")
     call print(bulk_region1%lattice)
 
+#ifdef HAVE_TB
     if (do_tb_defaults .and. associated(region1_pot%pot%tb)) then
       region1_pot%pot%tb%tbsys%tbmodel%default_fermi_E = region1_pot%pot%tb%fermi_E
       region1_pot%pot%tb%tbsys%tbmodel%has_default_fermi_E = .true.
@@ -79,6 +80,7 @@
 
       region1_pot%pot%tb%tbsys%scf%conv_tol = 1e-8_dp
     endif
+#endif
 
     ! set up region2 stuff
     bulk_region2 = reference_bulk
@@ -97,6 +99,7 @@
     call print("region2 Potential lattice")
     call print(bulk_region2%lattice)
 
+#ifdef HAVE_TB
     if (do_tb_defaults .and. associated(region2_pot%pot%tb)) then
       region2_pot%pot%tb%tbsys%tbmodel%default_fermi_E = region2_pot%pot%tb%fermi_E
       region2_pot%pot%tb%tbsys%tbmodel%has_default_fermi_E = .true.
@@ -107,7 +110,7 @@
 
       region2_pot%pot%tb%tbsys%scf%conv_tol = 1e-8_dp
     endif
-
+#endif
     if (do_rescale_r) then
       ! compute scale, assuming that lattices are only off by a uniform scale
       r_scale_pot1 = maxval(abs(bulk_region2%lattice(:,1)))/maxval(abs(bulk_region1%lattice(:,1)))
