@@ -296,7 +296,7 @@ module CrackParams_module
      !%  \item 'force_mixing_super_smooth' --- as above, but weight forces on each atom by distance from 
      !%    centre of mass of core region (shorthand for 'method=force_mixing weight_interpolation=distance_ramp')
      !% \end{itemize}
-     !% Default method is 'conserve_momentum'.
+     !% 
 
      ! Force intergration parameters
      character(STRING_LENGTH) :: force_integration_end_file  !% XYZ file containing ending configuration for force integration.
@@ -494,7 +494,7 @@ contains
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
-    this%io_backup               = .true. 
+    this%io_backup               = .false. 
 
      ! Selection parameters
     this%selection_max_qm_atoms   = 200
