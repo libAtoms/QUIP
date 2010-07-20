@@ -58,7 +58,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           # FIXME: this skips scalar pointer args too
 
           if ('allocatable' in arg.attributes or 'pointer' in arg.attributes):
-             return False
+             if not 'optional' in arg.attributes:
+                return False
 
           # arrays of derived type are out as well
           dims = filter(lambda x: x.startswith('dimension'), arg.attributes)
@@ -166,8 +167,13 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           ret_val.name = 'ret_'+ret_val.name
           ret_val.attributes.append('intent(out)')
           ret_val.is_ret_val = True
-          sub.arguments = ([ arg for arg in sub.arguments if not 'optional' in arg.attributes ] + [ret_val] + 
-                           [ arg for arg in sub.arguments if 'optional' in arg.attributes ])
+          sub.arguments = ([ arg for arg in sub.arguments if not hasattr(arg, 'attributes') or (hasattr(arg, 'attributes') and not 'optional' in arg.attributes) ] + [ret_val] + 
+                           [ arg for arg in sub.arguments if hasattr(arg, 'attributes') and 'optional' in arg.attributes
+                             and not 'pointer' in arg.attributes
+                             and not 'allocatable' in arg.attributes ])
+      else:
+         sub.arguments = [arg for arg in sub.arguments if not hasattr(arg, 'attributes') or not 'optional' in arg.attributes or
+                          (not 'pointer' in arg.attributes and not 'allocatable' in arg.attributes)]
              
 
       args = sub.arguments
