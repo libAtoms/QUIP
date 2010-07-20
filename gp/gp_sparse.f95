@@ -115,8 +115,7 @@ module gp_sparse_module
       type(gp_sparse), pointer :: minim_gp => null()
       real(qp), dimension(:,:), pointer :: theta_0 => null()
       logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_sparx = .false., do_f0 = .false., do_theta_fac = .false.
-      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1, &
-      & li_theta_fac = 1, ui_theta_fac = 1
+      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1,  li_theta_fac = 1, ui_theta_fac = 1
    end type gp_minimise
 
 
