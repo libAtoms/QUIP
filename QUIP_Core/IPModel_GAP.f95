@@ -426,8 +426,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   call sum_in_place(this%mpi, vec)
   if(present(f).or.present(virial)) call sum_in_place(this%mpi,jack)
 
+#ifdef HAVE_GP
   allocate(covariance(this%my_gp%n,at%N))
   call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,this%mpi)
+#endif
     
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
   do i = 1, at%N
