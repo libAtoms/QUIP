@@ -318,7 +318,7 @@ program crack
   real(dp) :: fd_e0, f_dr, integral, energy, last_state_change_time, last_print_time, &
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
-       G
+       G, last_update_selection_time
   character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix
   character(value_len) :: state_string
 
@@ -702,6 +702,8 @@ program crack
      if (.not. get_value(ds%atoms%params, 'LastCalcConnectTime', last_calc_connect_time)) &
           last_calc_connect_time = ds%t
 
+     last_update_selection_time = ds%t
+
      ! Special cases for first time
      if (all(md_old_changed_nn == 0)) md_old_changed_nn = changed_nn
      if (all(old_nn == 0)) old_nn = nn
@@ -1031,10 +1033,13 @@ program crack
            !*                                                              *
            !****************************************************************    
 
-           call print_title('Quantum Selection')
-           call system_timer('selection')
-           if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
-           call system_timer('selection')
+           if (ds%t - last_update_selection_time >= params%selection_update_interval) then
+              last_update_selection_time = ds%t
+              call print_title('Quantum Selection')
+              call system_timer('selection')
+              if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
+              call system_timer('selection')
+           end if
 
            call print_title('Force Computation')
            call system_timer('force computation/optimisation')
