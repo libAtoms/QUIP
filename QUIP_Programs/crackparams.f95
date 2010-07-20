@@ -250,6 +250,7 @@ module CrackParams_module
      real(dp) :: selection_cutoff_plane   !% Only atoms within this distance from crack tip are candidates for QM selection. Unit: \AA{}.
      logical  :: selection_directionality !% Require good directionality of spring space spanning for atoms in embed region.
      real(dp) :: selection_edge_tol       !% Size of region at edges of crack slab which is ignored for selection purposes.
+     real(dp) :: selection_update_interval!% intervals between QM selection updates, defaults to 0.0_dp meaning 'every step'
 
      ! Classical parameters
      character(STRING_LENGTH) :: classical_args !% Arguments used to initialise classical potential
@@ -505,7 +506,7 @@ contains
     this%selection_cutoff_plane   = 10.0_dp  ! Angstrom
     this%selection_directionality = .true.
     this%selection_edge_tol       = 10.0_dp  ! A
-
+    this%selection_update_interval= 0.0_dp
 
      ! Classical parameters
     this%classical_args           = 'IP SW' 
@@ -1167,6 +1168,13 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%selection_edge_tol
        end if
+
+       call QUIP_FoX_get_value(attributes, "update_interval", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%selection_update_interval
+       end if
+
+
 
     elseif (parse_in_crack .and. name == 'classical') then
 
