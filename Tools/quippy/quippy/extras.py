@@ -554,7 +554,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          v = farray(v)
       elif t == T_CHAR_A:
          a,p = self._get_value_s_a(k,s)
-         v = [''.join(line).strip() for line in a]
+         v = a2s(a)
       elif t == T_LOGICAL_A:
          v,p = self._get_value_l_a(k,s)
          v = farray(v, dtype=bool)
@@ -600,6 +600,17 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
    def copy(self):
       return Dictionary(self)
+
+   def get_array(self, key):
+      import _quippy, arraydata
+      from quippy import T_CHAR_A
+      
+      res = arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key)
+      if self.get_type_and_size(key)[0] == T_CHAR_A:
+         return res.T   # tranpose character arrays so they match shape
+      else:
+         return res
+      
 
 class Table(FortranTable):
 
