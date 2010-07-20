@@ -16,7 +16,8 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy import args_str, farray
+from quippy import args_str, FortranArray, farray, fzeros, s2a, a2s
+from numpy import dtype
 import unittest
 from quippytest import *
 
@@ -100,6 +101,57 @@ c=44""")
    def testargs_str(self):
       arg = args_str({'a':1, 'b':True, 'c':False})
       self.assertEqual(' '.join(sorted(arg.split())), 'a=1 b=T c=F')
+
+   def test_int_array(self):
+      d = Dictionary()
+      d['int'] = [i for i in range(10)]
+      self.assertArrayAlmostEqual(FortranArray(d.get_array('int')), d['int'])
+
+   def test_real_array(self):
+      d = Dictionary()
+      d['real'] = [float(i) for i in range(10)]
+      self.assertArrayAlmostEqual(FortranArray(d.get_array('real')), d['real'])
+
+   def test_complex_array(self):
+      d = Dictionary()
+      d['complex'] = fzeros(10,dtype='D')
+      a = FortranArray(d.get_array('complex'))
+      a[:] = 1+2j
+      self.assertEqual(a.dtype.kind, 'c')
+      self.assertArrayAlmostEqual(a, d['complex'])
+
+   def test_logical_array(self):
+      d = Dictionary()
+      d['logical'] = fzeros(5,dtype='bool')
+      a = FortranArray(d.get_array('logical'))
+      a[:] = [True,False,False,True,True]
+      self.assertEqual(a.dtype, dtype('int32'))    # Fortran logical represented as int32 internally
+      self.assertArrayAlmostEqual(a, d['logical'])
+
+   def test_string_array(self):
+      d = Dictionary()
+      d['string'] = s2a(['one', 'two', 'three'])
+      a = FortranArray(d.get_array('string'))
+      a[1,1:5] = list('hello')
+      self.assertEqual(list(d['string']), list(a2s(a)))
+
+   def test_int_array2(self):
+      d = Dictionary()
+      d.add_array('int', 0, (3, 3))
+      d_int = FortranArray(d.get_array('int'))
+      d_int[1,1] = 3
+      d_int[2,2] = 1
+      d_int[:,3] = (4,1,5)
+      self.assert_(all(d_int == d['int']))
+
+   def test_real_array2(self):
+      d = Dictionary()
+      d.add_array('real', 0.0, (3, 3))
+      d_real = FortranArray(d.get_array('real'))
+      d_real[1,1] = 3.
+      d_real[2,2] = 1.
+      d_real[:,3] = (4.,1.,5.)
+      self.assertArrayAlmostEqual(d_real, d['real'])
       
 
 if __name__ == '__main__':
