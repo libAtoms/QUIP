@@ -68,6 +68,13 @@ module Potential_module
 
   private
 
+  public :: QUIP_HAVE_TB
+#ifdef HAVE_TB
+  integer, parameter :: QUIP_HAVE_TB = 1
+#else
+  integer, parameter :: QUIP_HAVE_TB = 0
+#endif
+
 
   !*************************************************************************
   !*
