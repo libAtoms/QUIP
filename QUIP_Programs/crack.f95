@@ -743,6 +743,8 @@ program crack
         state = STATE_MD_CRACKING
         call disable_damping(ds)
         call ds_add_thermostat(ds, LANGEVIN, params%md_sim_temp, tau=params%md_tau)
+        call crack_find_tip(ds%atoms, params, old_crack_tips)
+        crack_tips = old_crack_tips
 
      else if (state_string(1:9) == 'DAMPED_MD') then
         state = STATE_DAMPED_MD
