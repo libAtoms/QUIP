@@ -54,7 +54,6 @@ LIBATOMS_F95_FILES = \
   PeriodicTable \
   minimization \
   Atoms \
-  DomainDecomposition \
   Quaternions \
   RigidBody \
   Group \
