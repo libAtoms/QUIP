@@ -284,6 +284,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   real(dp) :: e_ewald, e_core, e_ewald_corr
   real(dp), dimension(3,3) :: virial_ewald, virial_core, virial_ewald_corr
+  real(dp), dimension(:,:), allocatable :: covariance
 
   integer, dimension(3) :: shift
 
@@ -408,9 +409,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   enddo
 !$omp end do 
 
-  call sum_in_place(this%mpi, vec)
-  if(present(f).or.present(virial)) call sum_in_place(this%mpi,jack)
-
 #ifdef HAVE_GP
   if (trim(this%datafile_coordinates) == 'bispectrum') then
      call finalise(f_hat)
@@ -425,6 +423,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   endif
 #endif
 !$omp end parallel
+  call sum_in_place(this%mpi, vec)
+  if(present(f).or.present(virial)) call sum_in_place(this%mpi,jack)
+
+  allocate(covariance(this%my_gp%n,at%N))
+  call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,this%mpi)
     
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
   do i = 1, at%N
@@ -433,7 +436,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
      if(present(e) .or. present(local_e)) then
 #ifdef HAVE_GP
-        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i))
+        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
         local_e_in(i) = local_e_in(i) + this%e0
      endif
@@ -443,9 +446,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
            f_gp = 0.0_dp
        
 #ifdef HAVE_GP
-           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i))
+           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
-           f_gp = f_gp - f_gp_k
+           !f_gp = f_gp - f_gp_k
+           if(present(f)) f(k,i) = f(k,i) - f_gp_k
        
            if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
 
@@ -453,13 +457,16 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
               j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
 #ifdef HAVE_GP
-              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j),Z=at%Z(j))
+              !call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,j),x_prime_star=jack(:,jn*3+k,j),Z=at%Z(j))
+              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,n*3+k,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
-              f_gp = f_gp - f_gp_k
-              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
+              !f_gp = f_gp - f_gp_k
+              if(present(f)) f(k,j) = f(k,j) - f_gp_k
+              !if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*( at%pos(:,i) - matmul(at%lattice,shift) )
+              if( present(virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
            enddo
        
-           if(present(f)) f(k,i) = f_gp
+           !if(present(f)) f(k,i) = f_gp
         enddo
      endif
   enddo
@@ -507,6 +514,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
   if(allocated(w)) deallocate(w)
+  if(allocated(covariance)) deallocate(covariance)
 
 end subroutine IPModel_GAP_Calc
 

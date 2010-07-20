@@ -140,7 +140,7 @@ module gp_sparse_module
    end interface covSEard
 
    private
-   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer
+   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer, gp_precompute_covariance
 
    contains
 
@@ -631,20 +631,63 @@ module gp_sparse_module
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z)
+      subroutine gp_precompute_covariance(gp_data,x_star,Z,c,mpi)
+         type(gp), intent(in)                        :: gp_data
+         real(dp), dimension(:,:), intent(in)        :: x_star                 !% test point, dimension(d)
+         integer, dimension(:), intent(in), optional :: Z
+         real(dp), dimension(:,:), intent(out)       :: c
+         type(mpi_context), intent(in), optional     :: mpi
+
+         integer :: i, j, Z_type, sp, m
+         real(dp), dimension(gp_data%d,gp_data%nsp) :: inv_theta
+         real(dp), dimension(gp_data%d) :: x_star_div_theta, xixjtheta
+
+         if( size(x_star,1) /= gp_data%d ) call system_abort('gp_precompute_covariance: first dimension of x_star is not '//gp_data%d)
+         m = size(x_star,2)
+         call check_size('Z',Z,(/m/), 'gp_precompute_covariance')
+         call check_size('c',c,(/gp_data%n,m/), 'gp_precompute_covariance')
+
+         inv_theta = 1.0_dp / gp_data%theta
+         c = 0.0_dp
+
+!$omp do private(sp, Z_type,x_star_div_theta,j,xixjtheta)
+         do i = 1, m
+            if(present(mpi)) then
+               if (mpi%active) then
+                  if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+               endif
+            endif
+            ! Determine what type of atom we have
+            do sp = 1, gp_data%nsp; if( gp_data%sp(sp) == Z(i) ) Z_type = sp; enddo
+
+            x_star_div_theta = x_star(:,i) * inv_theta(:,Z_type)
+            do j = 1, gp_data%n
+               if( Z(i) == gp_data%xz(j) ) then
+                  xixjtheta = gp_data%x_div_theta(:,j,Z_type)-x_star_div_theta
+                  c(j,i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) )
+               endif
+            enddo
+         enddo
+!$omp end do 
+         if(present(mpi)) call sum_in_place(mpi,c)
+
+      endsubroutine gp_precompute_covariance
+
+      subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in)
 
          type(gp), intent(in)               :: gp_data                !% GP
          real(dp), intent(out), optional    :: mean, variance         !% output, predicted value and variance at test point
          real(dp), dimension(:), intent(in) :: x_star                 !% test point, dimension(d)
          real(dp), dimension(:), intent(in), optional :: x_prime_star !% test point, dimension(d)
          integer, intent(in), optional :: Z
+         real(dp), dimension(:), intent(in), optional :: c_in 
 
 #ifdef GP_PREDICT_QP
          real(qp), dimension(gp_data%n) :: k
          real(qp), dimension(gp_data%d) :: xixjtheta !, tmp
 #else
-         real(dp), dimension(gp_data%n) :: k
-         real(dp), dimension(gp_data%d) :: xixjtheta !, tmp
+         real(dp), dimension(gp_data%n) :: k, c
+         real(dp), dimension(gp_data%d,gp_data%n) :: xixjtheta !, tmp
 #endif
          real(dp) :: kappa
 	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
@@ -661,6 +704,16 @@ module gp_sparse_module
          do i = 1, gp_data%nsp; if( gp_data%sp(i) == do_Z ) Z_type = i; end do
 	 x_star_div_theta = x_star / gp_data%theta(:,Z_type)
          
+         xixjtheta = 0.0_dp
+         c = 0.0_dp
+         do i = 1, gp_data%n
+            if( do_Z == gp_data%xz(i) ) then
+               xixjtheta(:,i) = gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta
+               if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
+            endif
+         enddo
+         if(present(c_in)) c = c_in
+
          if(present(x_prime_star)) then
 	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
             do i = 1, gp_data%n
@@ -671,9 +724,10 @@ module gp_sparse_module
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
                   & dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
 #else
-                  xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
-                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
-                  & dot_product(xixjtheta,x_prime_star_div_theta)
+                  !xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
+                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
+                  !& dot_product(xixjtheta,x_prime_star_div_theta)
+                  k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
 #endif
                else
                   k(i) = 0.0_dp
@@ -694,8 +748,9 @@ module gp_sparse_module
                   xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
 #else
-                  xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
-                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+                  !xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
+                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+                  k(i) = c(i) + gp_data%f0(Z_type)**2
 #endif
                else
                   k(i) = 0.0_dp
