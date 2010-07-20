@@ -419,12 +419,13 @@ contains
 
   end subroutine xyzfile_teach_data_from_xyz
 
-  subroutine e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, e0)
+  subroutine e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core,r_cut,e0)
 
     character(len=FIELD_LENGTH), intent(in) :: at_file
     real(dp), intent(in) :: z_eff(116)
     logical, intent(in) :: do_ewald, do_ewald_corr
     type(ip_core), intent(in) :: core
+    real(dp), intent(in) :: r_cut
     real(dp), intent(out) :: e0
 
     type(Potential) :: core_pot
@@ -470,7 +471,11 @@ contains
                 charge(i) = z_eff(at%Z(i))
              enddo
              call Ewald_calc(at,e=ener_ewald)
-             if( do_ewald_corr ) call Ewald_corr_calc(at,e=ener_ewald_corr)
+             if( do_ewald_corr ) then
+                call set_cutoff(at, r_cut)
+                call calc_connect(at)
+                call Ewald_corr_calc(at,e=ener_ewald_corr)
+             endif
           endif
 
           e0 = e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
@@ -683,7 +688,7 @@ program teach_sparse
   species_Z = species_present(1:n_species)
 
   if (.not. has_f0) then
-     call e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, f0)
+     call e0_avg_from_xyz(at_file, do_ewald, do_ewald_corr, z_eff, core, r_cut, f0)
   end if
 
   allocate(w_Z(maxval(species_Z)))
