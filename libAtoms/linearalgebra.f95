@@ -5090,7 +5090,6 @@ CONTAINS
            do mm=1,M
               means(kk,mm) = ran_uniform()*(maxval(data(:,mm))-minval(data(:,mm))) + minval(data(:,mm))
            end do
-           call print('random_means('//kk//'): '//means(kk,:), PRINT_VERBOSE)
         end do
      end if
      
@@ -5101,7 +5100,6 @@ CONTAINS
         do nn=1,N
            assign(nn) = mod(ran(), K)+1
         end do
-        call print('random_partition: '//assign, PRINT_VERBOSE)
 
         ! Compute the initial means from the random partition
         means(:,:) = 0.0_dp
