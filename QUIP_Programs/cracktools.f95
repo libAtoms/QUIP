@@ -1082,11 +1082,16 @@ contains
     real(dp), dimension(3), intent(in) :: d, ellipse
     logical :: In_Ellipse
 
+    in_ellipse = .false.
+
+    if (abs(d(1)) > ellipse(1) .or. &
+         abs(d(2)) > ellipse(2) .or. &
+         abs(d(3)) > ellipse(3)) return
+
     In_Ellipse = (d(1)/ellipse(1))*(d(1)/ellipse(1))+ &
          (d(2)/ellipse(2))*(d(2)/ellipse(2))+ &
          (d(3)/ellipse(3))*(d(3)/ellipse(3)) < 1.0_dp
   end function in_ellipse
-
 
   !% Select atoms in ellipse around atom 'c'.
   !% Principal radii of ellipse in $x$,$y$ and $z$ directions
@@ -1098,35 +1103,12 @@ contains
     real(dp), intent(in) :: ellipse(3), ellipse_bias(3)
     type(Table), intent(inout) :: list
     integer, intent(in) :: c
+    integer i
+    
+    call allocate(list, 1, 0, 0, 0)
 
-    integer :: i
-    real(dp) :: p(3), cutoff
-
-    call table_allocate(list, 4, 0, 0, 0)
-    call append(list, (/c,0,0,0/))
-
-    if (at%use_uniform_cutoff) then
-       cutoff = at%cutoff
-    else
-       cutoff = at%cutoff*bond_length(at%Z(c),at%Z(c))
-    endif
-
-    ! Grow in all directions by enough steps to select sphere of 2*principal radius.
-    ! With nneigh_only set to false, each hop will increase radius by about the
-    ! neighbour cutoff distance
-    call bfs_grow(at, list, max(nint(2.5_dp*maxval(ellipse)/cutoff),1), &
-         nneighb_only=.false., min_images_only = .true.)
-
-    ! Remove things we've added that are outside ellipse
-    i = 1
-    do while (i <= list%N)
-       p = diff(at,c,list%int(1,i),list%int(2:4,i))
-       p = p - ellipse_bias ! bias ellipse (arbitrary direction)
-       if (.not. In_Ellipse(p, ellipse)) then
-          call delete(list, i)
-       else
-          i = i + 1
-       end if
+    do i=1,at%N
+       if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(list, i)
     end do
 
   end subroutine select_ellipse
