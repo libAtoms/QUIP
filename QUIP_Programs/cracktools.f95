@@ -1376,7 +1376,6 @@ contains
        i = 1
        do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N) 
           age = sorted(i)
-	  write (*,*) 'age', age
           call print('  Selecting changed_nn age '//age)
           
           do while(i <= selectlist(surface)%N)
