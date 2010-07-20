@@ -617,3 +617,16 @@ def unravel_index(x, dims):
     """1-based version of numpy.unravel_index"""
 
     return tuple([n+1 for n in numpy.unravel_index(x-1, dims)])
+
+
+def s2a(d, pad=1024):
+    """Convert from list of strings to array of shape (len(d), pad)"""
+    res = fzeros((len(d), pad), 'S')
+    res[...] = ' '
+    for i, line in fenumerate(d):
+        res[i,1:len(line)] = list(line)
+    return res
+
+def a2s(a):
+    """Convert from array of shape (pad, len(d)) to list of strings d"""
+    return [ ''.join(a[i,:]).strip() for i in frange(a.shape[0]) ]
