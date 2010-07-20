@@ -273,7 +273,7 @@ contains
           deallocate(f_ewald)
           if( do_ewald_corr ) then
              allocate(f_ewald_corr(3,at%N))
-             call Ewald_corr_calc(at,e=ener_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr)
+             call Ewald_corr_calc(at,e=ener_ewald_corr,f=f_ewald_corr,virial=virial_ewald_corr,cutoff=r_cut)
              if(has_ener) ener = ener + ener_ewald_corr
              if(has_force) f = f + f_ewald_corr
              if(has_virial) virial = virial + virial_ewald_corr
@@ -474,7 +474,7 @@ contains
              if( do_ewald_corr ) then
                 call set_cutoff(at, r_cut)
                 call calc_connect(at)
-                call Ewald_corr_calc(at,e=ener_ewald_corr)
+                call Ewald_corr_calc(at,e=ener_ewald_corr,cutoff=r_cut)
              endif
           endif
 
