@@ -1105,7 +1105,7 @@ contains
     integer, intent(in) :: c
     integer i
     
-    call allocate(list, 1, 0, 0, 0)
+    call allocate(list, 4, 0, 0, 0)
 
     do i=1,at%N
        if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(list, (/i, 0, 0, 0/))
