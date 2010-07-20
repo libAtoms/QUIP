@@ -46,7 +46,7 @@ numpy_to_fortran = {
     'd': 'real(dp)',
     'i': 'integer',
     'b': 'logical',
-    'complex': 'complex',
+    'c': 'complex(dp)',
     'S': 'character',
     'f': 'real(dp)'
     }
@@ -68,23 +68,24 @@ def fortran_equivalent_type(t):
            'float': 'real(dp)',
            'bool': 'logical',
            'str': 'character',
+           'complex' : 'complex(dp)'
            }
 
    if type(t).__name__ in tmap:
-      return (tmap[type(t).__name__], 'scalar')
+      return (tmap[type(t).__name__], 'scalar', 1)
    elif isinstance(t, FortranDerivedType):
-      return ('type(%s)' % t.__class__.__name__.lower(), 'scalar')
+      return ('type(%s)' % t.__class__.__name__.lower(), 'scalar', 1)
    elif hasattr(t,'__iter__') or hasattr(t,'dtype'):
       a = numpy.array(t)
       if a.dtype.kind in numpy_to_fortran:
-         return (numpy_to_fortran[a.dtype.kind], a.shape)
+         return (numpy_to_fortran[a.dtype.kind], a.shape, a.dtype.itemsize)
       else:
          raise TypeError('Unknown array type %s' % a.dtype.kind)      
    else:
       raise TypeError('Unknown type %s' % type(t))
           
 def type_is_compatible(spec, arg):
-    arg_type, dims = fortran_equivalent_type(arg)
+    arg_type, dims, itemsize = fortran_equivalent_type(arg)
     if dims == (): dims = 'scalar'
 
     spec_type = spec['type'].lower()
@@ -96,6 +97,7 @@ def type_is_compatible(spec, arg):
 
     # Now check dimensions
     dimattrs = [s for s in spec['attributes'] if s.startswith('dimension')]
+
     if dims == 'scalar':
        return len(dimattrs) == 0
     else:
@@ -111,7 +113,11 @@ def type_is_compatible(spec, arg):
            adims = [int(a) for a in adims]
         except ValueError:
             # Just check number of dimensions
-            return len(adims) == len(dims)
+            if spec_type != 'character':
+                return len(adims) == len(dims)
+            else:
+                return ((itemsize != 1 and len(dims) == len(adims)) or   # arrays of strings, dtype='S'
+                        (itemsize == 1 and len(dims) == len(adims)+1))   # arrays of characters, dtype='S1'
         else:
             # Check each dimension matches
             return all([x == y for (x,y) in zip(adims,dims)])
@@ -682,7 +688,7 @@ def wrap_array_get(name, reshape=True):
         except KeyError:
             arrayfunc, doc = self._arrays['_'+name]
         try:
-            a = arraydata.arraydata(self._fpointer, arrayfunc)
+            a = arraydata.get_array(self._fpointer, arrayfunc)
             nshape = self._get_array_shape(name)
             if reshape and nshape is not None:
                 return FortranArray(a,doc)[nshape]

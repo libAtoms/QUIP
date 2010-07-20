@@ -20,9 +20,10 @@
 #include <fortranobject.h>
 
 static PyObject*
-arraydata(PyObject *self, PyObject *args)
+get_array(PyObject *self, PyObject *args)
 {
   typedef void (*arrayfunc_t)(int*,int*,int*,int*,void*);
+  typedef void (*arrayfunc_key_t)(int*,char*,int*,int*,int*,void*,int*);
 
   int nd, i, typenum;
   int dim_temp[10];
@@ -38,8 +39,9 @@ arraydata(PyObject *self, PyObject *args)
   int capi_this_intent = 0;
   PyObject *this_capi = NULL;
   PyFortranObject *arrayfunc_capi = NULL;
+  char *key = NULL;
 
-  if (!PyArg_ParseTuple(args, "OO", &this_capi,&arrayfunc_capi))
+  if (!PyArg_ParseTuple(args, "OO|s", &this_capi,&arrayfunc_capi,&key))
     return NULL;
 
   /* Processing variable this */
@@ -48,7 +50,7 @@ arraydata(PyObject *self, PyObject *args)
   capi_this_tmp = array_from_pyobj(PyArray_INT,this_Dims,this_Rank,capi_this_intent,this_capi);
   if (capi_this_tmp == NULL) {
     if (!PyErr_Occurred())
-      PyErr_SetString(PyExc_TypeError,"failed in converting 1st argument `this' of arraydata to C/Fortran array" );
+      PyErr_SetString(PyExc_TypeError,"failed in converting 1st argument `this' of get_array to C/Fortran array" );
     goto fail;
   } else {
     this = (int *)(capi_this_tmp->data);
@@ -75,7 +77,10 @@ arraydata(PyObject *self, PyObject *args)
   }
 
   /* Call arrayfunc_capi routine */
-  ((arrayfunc_t)(arrayfunc_capi->defs[0].data))(this, &nd, &typenum, dim_temp, &data);
+  if (key == NULL) 
+    ((arrayfunc_t)(arrayfunc_capi->defs[0].data))(this, &nd, &typenum, dim_temp, &data);
+  else
+    ((arrayfunc_key_t)(arrayfunc_capi->defs[0].data))(this, key, &nd, &typenum, dim_temp, &data, strlen(key));
 
   if (data == NULL) {
     PyErr_SetString(PyExc_ValueError, "array is NULL");
@@ -105,9 +110,10 @@ arraydata(PyObject *self, PyObject *args)
   return NULL;
 }
 
+
 static PyMethodDef arraydata_methods[] = {
-  {"arraydata", arraydata, METH_VARARGS, 
-   "Make an array from integer(12) array containing reference to derived type object,\n and fortran array function.\n\narraydata(fpointer,array_fobj) -> array"},
+  {"get_array", get_array, METH_VARARGS, 
+   "Make an array from integer(12) array containing reference to derived type object,\n and fortran array function.\n\get_array(fpointer,array_fobj[,key]) -> array"},
   {NULL, NULL}
 };
 
