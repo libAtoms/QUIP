@@ -36,11 +36,7 @@ def makecrack(params):
 
    mpi_glob = MPI_context()
 
-   print('Initialising potential')
-   simple = Potential('Simple', classicalpot, mpi_obj=mpi_glob)
-   simple.print_()
-
-   crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, simple)
+   crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, classicalpot)
 
    # Save bulk cube (used for qm_rescale_r parameter in crack code)
    bulk.write(stem+'_bulk.xyz')
@@ -98,7 +94,7 @@ def makecrack(params):
                                    abs(crack_slab.pos[1,:]-maxx) < params.selection_edge_tol)] = 1
 
    miny, maxy = crack_slab.pos[2,:].min(), crack_slab.pos[2,:].max()
-   crack_slab.edge_mask[logical_or(abs(crack_slab.pos[2:1]-miny) < params.selection_edge_tol,
+   crack_slab.edge_mask[logical_or(abs(crack_slab.pos[2,:]-miny) < params.selection_edge_tol,
                                    abs(crack_slab.pos[2,:]-maxy) < params.selection_edge_tol)] = 1
 
    if params.crack_free_surfaces:
@@ -110,7 +106,7 @@ def makecrack(params):
    #crack_make_seed(crack_slab, params)
 
    if (params.crack_apply_initial_load):
-      crack_calc_load_field(crack_slab, params, classicalpot, simple, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
+      crack_calc_load_field(crack_slab, params, classicalpot, classicalpot, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
 
    if (not params.simulation_classical):
       crack_update_selection(crack_slab, params)
@@ -119,13 +115,13 @@ def makecrack(params):
 
 
          
-if False: #__name__ == '__main__':
+if __name__ == '__main__':
 
    params = CrackParams()
 
    if len(sys.argv[1:]) != 1:
       print('Usage: makecrack <stem>')
-      print('Reads parameter file <stem>.xml  and writes NetCDF output file <stem>.nc')
+      print('Reads parameter file <stem>.xml and writes NetCDF output file <stem>.nc')
       print('')
       print('Available parameters and their default values are:')
       params.print_()
