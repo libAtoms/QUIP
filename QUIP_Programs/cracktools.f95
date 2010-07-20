@@ -1376,8 +1376,8 @@ contains
        i = 1
        do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N) 
           age = sorted(i)
-          write (line, '(a,i0)') '  Selecting changed_nn age ', age
-          call print(line)
+	  write (*,*) 'age', age
+          call print('  Selecting changed_nn age '//age)
           
           do while(i <= selectlist(surface)%N)
              if (sorted(i) /= age) exit
@@ -1385,8 +1385,7 @@ contains
              i = i + 1
           end do
           
-          write (line,'(a,i0,a,i0,a)') 'Surface ',surface,' Now embedding ', new_embed(surface)%N, ' atoms'
-          call print(line)
+          call print('Surface '//surface//' Now embedding '//new_embed(surface)%N//' atoms')
        end do
        
        deallocate(sorted)
