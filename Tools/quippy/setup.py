@@ -17,7 +17,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import f90doc, f2py_wrapper_gen, patch_f2py
+import f90doc, f2py_wrapper_gen, patch_f2py, numpy
 import sys, os, cPickle, glob, stat, subprocess, re, string, StringIO
 
 from numpy.distutils.core import setup, Extension
@@ -412,6 +412,15 @@ for defn in makefile['DEFINES'].split():
             macros.append((defn[2:], None))
     elif defn[:2] == '-U':
         macros.append(defn[2:])
+
+macros.extend([
+    ('NUMPY_PTR_SIZE', numpy.dtype('O').itemsize),
+    ('NUMPY_INTEGER',  numpy.dtype('int32').num),
+    ('NUMPY_REAL_DP',  numpy.dtype('d').num),
+    ('NUMPY_LOGICAL',  numpy.dtype('int32').num),
+    ('NUMPY_COMPLEX',  numpy.dtype('complex').num),
+    ('NUMPY_CHAR',     numpy.dtype('S').num)
+    ])
 
 print 'include_dirs', include_dirs
 print 'libraries', libraries
