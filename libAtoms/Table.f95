@@ -480,12 +480,13 @@ contains
 
   ! append single records
   ! unless all sizes are 1 we  do multiple appends
-  subroutine table_append_row(this,intpart,realpart,strpart,logicalpart)
+  subroutine table_append_row(this,intpart,realpart,strpart,logicalpart, error)
     type(table), intent(inout) :: this
     integer,     intent(in), optional  :: intpart(:)
     real(dp),    intent(in), optional  :: realpart(:)
     character(TABLE_STRING_LENGTH), intent(in), optional :: strpart(:)
     logical, intent(in), optional :: logicalpart(:)
+    integer, intent(inout), optional::error
 
     integer :: intsize, realsize, strsize, logicalsize
 
@@ -549,8 +550,9 @@ contains
 
     if (this%intsize > 0) then
        if(present(intpart)) then
-          if(size(this%int,1).ne.size(intpart)) &
-               call system_abort('table_append_row: appendix int part has the wrong size')
+          if(size(this%int,1).ne.size(intpart)) then
+               RAISE_ERROR(('table_append_row: appendix int part has the wrong size, '//size(intpart)//', should be '//size(this%int,1)//'. intpart: '), error)
+            end if
           this%int(:,this%N+1) = intpart
        else
           ! use default value of zero
@@ -713,12 +715,13 @@ contains
   end subroutine table_append_arrays
 
 
-  subroutine table_append_int_element(this,intpart)
+  subroutine table_append_int_element(this,intpart, error)
     type(Table), intent(inout) :: this
     integer,     intent(in)    :: intpart
+    integer, intent(inout), optional :: error
 
-    call table_append_row(this,(/intpart/))
-
+    call table_append_row(this,(/intpart/), error=error)
+    PASS_ERROR(error)
   end subroutine table_append_int_element
 
   subroutine table_append_real_element(this,realpart)
