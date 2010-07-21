@@ -340,10 +340,19 @@ def find_sources(makefile, quip_root):
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     makefile_quip_core = parse_makefile(os.path.join(quip_core_dir, 'Makefile'))
-    quip_core_sources = [os.path.join(quip_core_dir,f) for f in
-                         (expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']).split() +
-                          expand_addsuffix(makefile_quip_core['ALL_F95_FILES']).split()  + 
-                          expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']).split())]
+
+    # Low-level routines and Interatomic Potentials
+    quip_core_sources = [os.path.join(quip_core_dir,f) for f in expand_addsuffix(makefile_quip_core['ALL_F95_FILES']).split()]
+
+    # Optionally include tight binding sources
+    if 'HAVE_TB' in makefile and int(makefile['HAVE_TB']) == 1:
+        quip_core_sources +=  [os.path.join(quip_core_dir,f) for f in
+                               expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']).split() +
+                               expand_addsuffix(makefile_quip_core['TB_F95_SOURCES']).split()]
+
+    # Potential sources must come at end
+    quip_core_sources += [ os.path.join(quip_core_dir, f) for f in expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']).split()]
+
     all_sources += quip_core_sources
     wrap_sources += ['Potential.f95']
     wrap_types += ['potential']
