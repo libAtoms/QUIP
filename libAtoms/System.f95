@@ -1756,6 +1756,7 @@ contains
     call get_mpi_size_rank(MPI_COMM_WORLD, mpi_n, mpi_myid)
     if (mpi_n < 1 .or. mpi_myid < 0) &
       call system_abort("system_initialise Got bad size="//mpi_n// " or rank="//mpi_myid//" from get_mpi_size_rank")
+    error_mpi_myid = mpi_myid
 #else
     mpi_n  = 1 ! default
     mpi_myid = 0 ! default

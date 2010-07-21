@@ -82,6 +82,7 @@ module error_module
 
   save
   integer                :: error_stack_position  = 0       !% If this is zero, no error has occured
+  integer, save          :: error_mpi_myid = 0              !% MPI rank of process. Initialised by system_initialise()
   type(ErrorDescriptor)  :: error_stack(ERROR_STACK_SIZE)   !% Error stack
 
   ! ---
@@ -279,9 +280,9 @@ contains
     include "mpif.h"
 #endif
 
-!#ifdef _MPI
-!    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',mpi_id(),t!rim(message)
-!#else
+#ifdef _MPI
+    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,trim(message)
+#else
     write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
 !#endif
 
