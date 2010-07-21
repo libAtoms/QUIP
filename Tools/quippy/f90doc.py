@@ -138,7 +138,8 @@ string_lengths = {
     'field_length':1023,
     'string_length':1023,
     'table_string_length':10,
-    'default': 1024
+    'default': 1024,
+    'dict_char_a_len': 10
     }
 
 valid_dim_re = re.compile(r'^(([-0-9.e]+)|(size\([_a-zA-Z0-9\+\-\*\/]*\))|(len\(.*\)))$')
