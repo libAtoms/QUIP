@@ -481,7 +481,7 @@ contains
           call append(this%data, default_int, default_real, default_str)
        end do
 
-       deallocate(default_int, default_real)
+       deallocate(default_int, default_real, default_str)
     end if
 
     if (present(params)) then
