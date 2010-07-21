@@ -54,13 +54,13 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-#define RAISE_ERROR(info, error)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif
+#define RAISE_ERROR(info, error)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call error_abort ; endif
 
 #define PASS_ERROR(error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
 
 #define PASS_ERROR_WITH_INFO(info, error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; return ; endif ; endif
 
-#define HANDLE_ERROR(error)  if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; call abort_on_error ; endif
+#define HANDLE_ERROR(error)  if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; call error_abort ; endif
 
 
 
@@ -73,7 +73,7 @@
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-#define PASS_MPI_ERROR(mperror, error)  if (mperror /= MPI_SUCCESS) then ; call push_MPI_error(mperror, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call abort_on_error ; endif ; endif
+#define PASS_MPI_ERROR(mperror, error)  if (mperror /= MPI_SUCCESS) then ; call push_MPI_error(mperror, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_OCCURED ; return ; else ; call error_abort ; endif ; endif
 
 
 
@@ -95,5 +95,5 @@
 
 #define TRACE_DELAYED_ERROR_WITH_INFO(info, error_loc)  if (error_loc /= ERROR_NONE) then ; call push_error_with_info(info, __FILE__, __LINE__) ; endif
 
-#define INVOKE_DELAYED_ERROR(error_loc, error)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; if (present(error)) then ; error = error_loc ; else ; call abort_on_error ; endif ; endif
+#define INVOKE_DELAYED_ERROR(error_loc, error)  if (error_loc /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; if (present(error)) then ; error = error_loc ; else ; call error_abort ; endif ; endif
 
