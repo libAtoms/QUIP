@@ -410,7 +410,7 @@ implicit none
 
   if (params%rng_seed >= 0) call system_reseed_rng(params%rng_seed)
 
-  call initialise(atoms_in_cio, mpi=mpi_glob)
+  call initialise(atoms_in_cio, params%atoms_in_file, INPUT, mpi=mpi_glob)
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
