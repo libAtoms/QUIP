@@ -674,7 +674,7 @@ program crack
 
      call print_title('Molecular Dynamics')
 
-     if (.not. get_value(ds%atoms%params, 'Temp', temp)) temp = 0.0_dp
+     if (.not. get_value(ds%atoms%params, 'Temp', temp)) temp = 1.5_dp*params%md_sim_temp
 
      ! If velocities are zero, randomise them at correct temperature
      if (maxval(abs(ds%atoms%velo)) < 1e-5_dp) then
