@@ -44,6 +44,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module system_module
+  use error_module
 !$ use omp_lib
   implicit none
 
@@ -227,14 +228,6 @@ module system_module
        integer, optional,intent(out) :: status
      end subroutine system_command
   end interface
-
-#ifdef HAVE_QUIPPY
-  interface system_abort
-     subroutine system_abort(message)
-       character(*), intent(in) :: message
-     end subroutine system_abort
-  end interface system_abort
-#endif
 
 #ifdef NO_FORTRAN_ISNAN
   INTERFACE 	
@@ -1776,6 +1769,7 @@ contains
     call print_mpi_id(mainlog)
     call initialise(errorlog,'stderr')
     call print_mpi_id(errorlog)
+    error_unit = errorlog%unit
 
     call hello_world(seed, common_seed)
 
@@ -1880,51 +1874,6 @@ contains
     call abort_on_mpi_error(PRINT_ALWAYS, "system_finalise, mpi_finalise()")
 #endif
   end subroutine system_finalise
-
-#ifndef HAVE_QUIPPY
-  !% Quit with an error message. Calls 'MPI_Abort' for MPI programs.
-  subroutine system_abort(message)
-    character(*),      intent(in) :: message
-#ifdef IFORT_TRACEBACK_ON_ABORT
-    integer :: j
-#endif IFORT_TRACEBACK_ON_ABORT
-#ifdef SIGNAL_ON_ABORT
-    integer :: status
-    integer, parameter :: SIGUSR1 = 30
-#endif
-#ifdef _MPI
-    integer::PRINT_ALWAYS
-    include "mpif.h"
-#endif
-
-#ifdef _MPI
-    write(unit=errorlog%unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',mpi_id(),trim(message)
-#else
-    write(unit=errorlog%unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
-#endif
-
-#ifdef _MPI
-    call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
-#endif
-
-#ifdef IFORT_TRACEBACK_ON_ABORT
-    ! Cause an integer divide by zero error to persuade
-    ! ifort to issue a traceback
-    j = 1/0
-#endif
-
-#ifdef DUMP_CORE_ON_ABORT
-    call fabort()
-#else
-#ifdef SIGNAL_ON_ABORT
-    ! send ourselves a USR1 signal rather than aborting
-    call kill(getpid(), SIGUSR1, status)
-#else
-    stop
-#endif
-#endif
-  end subroutine system_abort
-#endif
 
   !% Print a warning message to default mainlog, but don't quit
   subroutine print_warning(message)
