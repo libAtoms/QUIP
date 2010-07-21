@@ -210,6 +210,9 @@ contains
        else
           call system_abort('Potential_Simple_initialise: no param_str present during TB init')
        endif
+#else
+    else if (is_TB) then
+       call system_abort('Potential_Simple_initialise: TB support not compiled in')
 #endif
     else if (is_FilePot) then
        allocate(this%filepot)

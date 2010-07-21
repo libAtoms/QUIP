@@ -68,14 +68,6 @@ module Potential_module
 
   private
 
-  public :: QUIP_HAVE_TB
-#ifdef HAVE_TB
-  integer, parameter :: QUIP_HAVE_TB = 1
-#else
-  integer, parameter :: QUIP_HAVE_TB = 0
-#endif
-
-
   !*************************************************************************
   !*
   !*  Potential header
@@ -433,7 +425,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
       call system_abort('Potential_Calc: meta potential is not initialised')
     endif
 
-  end subroutine
+  end subroutine potential_calc
 
   subroutine Potential_setup_parallel(this, at, e, local_e, f, virial, args_str)
     type(Potential), intent(inout) :: this
