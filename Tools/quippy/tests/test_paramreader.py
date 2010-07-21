@@ -24,6 +24,10 @@ from quippy import *
 
 class TestParamReader(QuippyTestCase):
 
+    # here we test only the array parameters (param_register_multiple_integer
+    # and param_register_multiple_real) since then the Python arrays are valid
+    # targets which can be set from Fortran.
+
     def setUp(self):
         self.params = Dictionary()
         self.a = fzeros(3, int32)
