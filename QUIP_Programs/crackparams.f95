@@ -95,7 +95,7 @@
 !%>
 !%>  <classical args="IP SW label=PRB_31_plus_H" reweight="1.0" />
 !%>
-!%>  <qm args="TB Bowler" small_clusters="F" terminate="T"
+!%>  <qm args="TB Bowler" little_clusters="F" terminate="T"
 !%>    buffer_hops="3" vacuum_size="3.0" even_electrons="T"
 !%>    randomise_buffer="T" force_periodic="F" />
 !%> 
@@ -260,7 +260,7 @@ module CrackParams_module
      ! QM parameters
      character(STRING_LENGTH) :: qm_args  !% Arguments used to initialise QM potential
      character(STRING_LENGTH) :: qm_args_str  !% Arguments used by QM potential
-     logical :: qm_small_clusters         !% One big cluster or lots of little ones?
+     logical :: qm_little_clusters         !% One big cluster or lots of little ones?
      integer :: qm_buffer_hops            !% Number of bond hops used for buffer region
      integer :: qm_transition_hops        !% Number of transition hops used for buffer region
      logical :: qm_terminate              !% Terminate clusters with hydrogen atoms
@@ -333,6 +333,7 @@ module CrackParams_module
 
   public :: read_xml
   interface read_xml
+     module procedure CrackParams_read_xml_filename
      module procedure CrackParams_read_xml
   end interface
   
@@ -516,7 +517,7 @@ contains
      ! QM parameters
     this%qm_args                  = 'FilePot command=./castep_driver.py property_list=pos:embed'
     this%qm_args_str              = ' '
-    this%qm_small_clusters        = .false.
+    this%qm_little_clusters        = .false.
     this%qm_buffer_hops           = 3        ! Number
     this%qm_transition_hops       = 0        ! Number
     this%qm_terminate             = .true.
@@ -565,6 +566,19 @@ contains
 
   !% Read crack parameters from 'xmlfile' into this CrackParams object.
   !% First we reset to default values by calling 'initialise(this)'.
+
+  subroutine CrackParams_read_xml_filename(this, filename)
+    type(CrackParams), intent(inout), target :: this
+    character(len=*) :: filename
+
+    type(InOutput) xml
+
+    call initialise(xml, filename, INPUT)
+    call crackparams_read_xml(this, xml)
+    call finalise(xml)
+    
+  end subroutine CrackParams_read_xml_filename
+
   subroutine CrackParams_read_xml(this, xmlfile)
     type(CrackParams), intent(inout), target :: this
     type(Inoutput) :: xmlfile
@@ -1205,9 +1219,15 @@ contains
           parse_cp%qm_args_str = value
        end if
 
+       call QUIP_FoX_get_value(attributes, "little_clusters", value, status)
+       if (status == 0) then
+          read (value, *) parse_cp%qm_little_clusters
+       end if
+
+       ! backwards compatibility
        call QUIP_FoX_get_value(attributes, "small_clusters", value, status)
        if (status == 0) then
-          read (value, *) parse_cp%qm_small_clusters
+          read (value, *) parse_cp%qm_little_clusters
        end if
 
        call QUIP_FoX_get_value(attributes, "buffer_hops", value, status)
@@ -1516,7 +1536,7 @@ contains
     call Print('  QM parameters:',file=file)
     call Print('     args                  = '//trim(this%qm_args),file=file)
     call Print('     args_str              = '//trim(this%qm_args_str),file=file)
-    call Print('     small_clusters        = '//this%qm_small_clusters,file=file)
+    call Print('     little_clusters        = '//this%qm_little_clusters,file=file)
     call Print('     buffer_hops           = '//this%qm_buffer_hops,file=file)
     call Print('     transition_hops       = '//this%qm_transition_hops,file=file)
     call Print('     terminate             = '//this%qm_terminate,file=file)

@@ -320,7 +320,7 @@ program crack
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, last_update_selection_time
   character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix
-  character(value_len) :: state_string
+  character(STRING_LENGTH) :: state_string
 
 
   !** Initialisation Code **
@@ -389,7 +389,7 @@ program crack
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     if (params%qm_small_clusters) then
+     if (params%qm_little_clusters) then
         ! Don't parallelise qmpot if we're doing little clusters
         call initialise(qmpot, params%qm_args, xmlfile)
      else
@@ -403,7 +403,7 @@ program crack
   if (params%qm_force_periodic) then
      periodic_clusters = (/ .false., .false., .true. /)
   else
-     periodic_clusters = (/ .false., .false., .not. params%qm_small_clusters/)
+     periodic_clusters = (/ .false., .false., .not. params%qm_little_clusters/)
   endif
 
   if (.not. params%simulation_classical) then
@@ -440,8 +440,8 @@ program crack
      call set_value(pot_params, 'mm_args_str', params%classical_args_str)
 
      call set_value(pot_params, 'qm_args_str', &
-          ' little_clusters='//params%qm_small_clusters// &
-          '  single_cluster='//(.not. params%qm_small_clusters)// &
+          ' little_clusters='//params%qm_little_clusters// &
+          '  single_cluster='//(.not. params%qm_little_clusters)// &
           '  terminate='//params%qm_terminate// &
           '  even_electrons='//params%qm_even_electrons// &
           '  cluster_vacuum='//params%qm_vacuum_size// &
