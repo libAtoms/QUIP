@@ -58,8 +58,13 @@ module error_module
   integer, parameter  :: ERROR_MPI          = -3
 
   !% Strings
-  character(*), parameter :: ERROR_STRINGS(3) = &
-       (/ "unspecified", "IO", "MPI" /)
+  integer, parameter                      :: ERROR_STR_LENGTH = 20
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_UNSPECIFIED = &
+       "unspecified"
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_IO = "IO"
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_MPI = "MPI"
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STRINGS(3) = &
+       (/ ERROR_STR_UNSPECIFIED, ERROR_STR_IO, ERROR_STR_MPI /)
 
   public :: ERROR_NONE, ERROR_UNSPECIFIED, ERROR_IO, ERROR_MPI
 
