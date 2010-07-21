@@ -284,7 +284,7 @@ contains
     write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,trim(message)
 #else
     write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
-!#endif
+#endif
 
 #ifdef _MPI
     call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
