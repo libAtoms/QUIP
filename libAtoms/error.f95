@@ -134,7 +134,7 @@ contains
     error_stack_position  = error_stack_position + 1
 
     if (error_stack_position > ERROR_STACK_SIZE) then
-       stop "Fatal error: Error stack size too small."
+       call error_abort("Fatal error: Error stack size too small.")
     endif
 
     if (present(kind)) then
@@ -216,8 +216,17 @@ contains
 
     ! ---
 
-    str = "Traceback (most recent call last - error kind " &
-         // trim(ERROR_STRINGS(-error)) // "):"
+    if (present(error)) then
+       if (-error < lbound(ERROR_STRINGS, 1) .or. &
+           -error > ubound(ERROR_STRINGS, 1)) then
+          call error_abort("Fatal: error descriptor out of bounds. Did you initialise the error variable?")
+       endif
+
+       str = "Traceback (most recent call last - error kind " &
+            // trim(ERROR_STRINGS(-error)) // "):"
+    else
+       str = "Traceback (most recent call last)"
+    endif
     do i = error_stack_position, 1, -1
 
        write (linestr, '(I10)')  error_stack(i)%line
@@ -270,11 +279,11 @@ contains
     include "mpif.h"
 #endif
 
-#ifdef _MPI
-    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',mpi_id(),trim(message)
-#else
+!#ifdef _MPI
+!    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',mpi_id(),t!rim(message)
+!#else
     write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
-#endif
+!#endif
 
 #ifdef _MPI
     call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
