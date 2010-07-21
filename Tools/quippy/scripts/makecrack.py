@@ -103,10 +103,12 @@ def makecrack(params):
       crack_slab.edge_mask[logical_or(abs(crack_slab.pos[3,:]-minz) < params.selection_edge_tol,
                                       abs(crack_slab.pos[3,:]-maxz) < params.selection_edge_tol)] = 1
 
-   #crack_make_seed(crack_slab, params)
+   crack_make_seed(crack_slab, params)
 
    if (params.crack_apply_initial_load):
-      crack_calc_load_field(crack_slab, params, classicalpot, classicalpot, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
+      crack_calc_load_field(crack_slab, params, classicalpot, params.crack_loading, overwrite_pos=True, mpi=mpi_glob)
+
+   crack_update_connect(crack_slab, params)
 
    if (not params.simulation_classical):
       crack_update_selection(crack_slab, params)
