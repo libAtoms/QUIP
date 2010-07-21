@@ -47,7 +47,11 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from scipy import stats
-import pylab
+try:
+   import pylab
+except  ImportError:
+   pass
+
 from farray import *
 
 def strain_matrix(strain_vector):
