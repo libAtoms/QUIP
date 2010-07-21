@@ -1127,7 +1127,7 @@ include 'mpif.h'
   call mpi_error_string(info, err_str, err_len, err_status)
   call push_error_with_info( &
        "Call to MPI library failed. Error: " // trim(err_str), &
-       fn, line)
+       fn, line, ERROR_MPI)
 
 #endif
     

@@ -53,10 +53,13 @@
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#define INIT_ERROR(error)  if (present(error)) then ; error = ERROR_NONE ; endif
 
 #define RAISE_ERROR(info, error)   call push_error_with_info(info, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif
 
-#define RAISE_ERROR_WITH_KIND(kind, info, error)   call push_error_with_info(info, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = ERROR_UNSPECIFIED ; return ; else ; call error_abort(error) ; endif
+#define RAISE_ERROR_WITH_KIND(kind, info, error)   call push_error_with_info(info, __FILE__, __LINE__, kind) ; if (present(error)) then ; error = kind ; return ; else ; call error_abort(error) ; endif
+
+#define RAISE_IO_ERROR(info, error)  RAISE_ERROR_WITH_KIND(ERROR_IO, info, error)
 
 #define PASS_ERROR(error)  if (present(error)) then ; if (error /= ERROR_NONE) then ; call push_error(__FILE__, __LINE__) ; return ; endif ; endif
 
