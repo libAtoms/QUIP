@@ -399,7 +399,7 @@ libraries = [s.startswith('-l') and s[2:] or s  for s in fields
 library_dirs  = [s[2:] for s in fields if s[:2] == '-L']
 
 # everything else in SYSLIBS is an extra link argument
-extra_link_args = [s for s in fields if not s[2:] in libraries and not s[2:] in library_dirs and not s[2:] in include_dirs]
+extra_link_args = [s for s in fields if not s[2:] in libraries and not s in libraries and not s[2:] in library_dirs and not s[2:] in include_dirs]
 
 # Preprocessor macros
 macros = [('HAVE_QUIPPY',None), ('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
