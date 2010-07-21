@@ -243,11 +243,8 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
 
-   if QUIP_HAVE_TB:
-      class TestPotential_NRL_TB(QuippyTestCase):
-
-         def setUp(self):
-            xml = """<eval_test_params>
+   got_tight_binding = True
+   tight_binding_xml = """<eval_test_params>
 
    <self_consistency tolerance="1e-8">
    <U Z="14" U="2.0"/>
@@ -303,6 +300,15 @@ if hasattr(quippy, 'Potential'):
    </NRL_TB_params>
    </eval_test_params>"""
 
+   try:
+      p = Potential('TB NRL-TB', param_str=tight_binding_xml)
+   except RuntimeError:
+      got_tight_binding = False
+
+   if got_tight_binding:
+      class TestPotential_NRL_TB(QuippyTestCase):
+
+         def setUp(self):
             xyz = """8
    Lattice="5.42883523318981 0 0 0 5.42883523318981 0 0 0 5.42883523318981" Properties=Z:I:1:pos:R:3
    14 0.0210809907025043 -0.082432438809103 -0.0525403165481939
@@ -314,7 +320,7 @@ if hasattr(quippy, 'Potential'):
    14 3.97244199589577 1.36902339889138 4.0668447417454
    14 4.09570476049115 4.02286216155155 1.27329051246382"""
 
-            self.pot = Potential('TB NRL-TB', param_str=xml)
+            self.pot = Potential('TB NRL-TB', param_str=tight_binding_xml)
             self.at = Atoms(xyz, format='string')
 
             verbosity_push(PRINT_SILENT)
