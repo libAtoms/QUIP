@@ -39,8 +39,9 @@ module topology_module
                                      distance_min_image, &
                                      DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect, &
 				     assign_pointer, is_nearest_neighbour_abs_index
+  use extendable_str_module,   only: extendable_str, string
   use clusters_module,         only: bfs_step, add_cut_hydrogens
-  use dictionary_module,       only: get_value, value_len
+  use dictionary_module,       only: get_value
   use linearalgebra_module,    only: find_in_array, find, &
                                      print
   use periodictable_module,    only: ElementName, ElementMass, ElementCovRad
@@ -216,7 +217,7 @@ contains
                                             atom_res_number_index, &
                                             atom_charge_index
     logical                              :: ex
-    character(len=value_len)             :: residue_library
+    type(extendable_str)                 :: residue_library
     integer                              :: i_impr, n_impr
     integer, allocatable                 :: imp_atoms(:,:)
     real(dp)                             :: mol_charge_sum
@@ -252,16 +253,16 @@ logical :: silica_potential
 
     my_do_charmm = optional_default(.true.,do_CHARMM)
 
-    residue_library = ''
+    call initialise(residue_library)
     call print_title('Creating CHARMM format')
     ex = .false.
     ex = get_value(at%params,'Library',residue_library)
-    if (ex) call print('Library: '//trim(residue_library))
+    if (ex) call print('Library: '//string(residue_library))
     if (.not.ex) call system_abort('create_residue_labels_pos: no residue library specified, but topology generation requested')
 
     !Open the residue library
     !call print('Opening library...')
-    call initialise(lib,trim(residue_library),action=INPUT)
+    call initialise(lib,string(residue_library),action=INPUT)
 
     !Set all atoms as initially unidentified
     unidentified = .true.

@@ -220,8 +220,6 @@ module paramreader_module
       type(ParamEntry) :: entry
       type(DictData) :: data
 
-      if (len_trim(key) > key_len) & 
-           call system_abort("Param_Register: Key "//trim(key)//" too long")
       if (len_trim(value) > VALUE_LENGTH) &
            call system_abort("Param_Register: Value "//trim(value)//" too long")
 
@@ -421,7 +419,7 @@ module paramreader_module
         do i=1, dict%N
           entry = transfer(dict%entries(i)%d%d,entry)
           if (.not. my_has_value(i)) then
-            call print ("parser defaulted: "//trim(paramentry_write_string(dict%keys(i),entry)), PRINT_VERBOSE)
+            call print ("parser defaulted: "//trim(paramentry_write_string(string(dict%keys(i)),entry)), PRINT_VERBOSE)
           endif
         end do
       endif
@@ -661,16 +659,16 @@ module paramreader_module
       allocate(data%d(size(transfer(entry,data%d))))
 
       do i=1,dict%N
-         if (.not. get_value(dict, dict%keys(i), data)) &
-              call system_abort('param_print: Key '//dict%keys(i)//' missing')
+         if (.not. get_value(dict, string(dict%keys(i)), data)) &
+              call system_abort('param_print: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
          ! Print value in quotes if it contains any spaces
          if (index(trim(entry%value), ' ') /= 0) then
             write (line, '(a,a,a,a)')  &
-                 trim(dict%keys(i)), ' = "', trim(entry%value),'" '
+                 string(dict%keys(i)), ' = "', trim(entry%value),'" '
          else
             write (line, '(a,a,a,a)')  &
-                 trim(dict%keys(i)), ' = ', trim(entry%value), ' '
+                 string(dict%keys(i)), ' = ', trim(entry%value), ' '
          end if
          call print(line,verbosity,out)
       end do
@@ -713,10 +711,10 @@ module paramreader_module
 
       s=""
       do i=1,dict%N
-         if (.not. get_value(dict, dict%keys(i), data)) &
-              call system_abort('param_print: Key '//dict%keys(i)//' missing')
+         if (.not. get_value(dict, string(dict%keys(i)), data)) &
+              call system_abort('param_print: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
-         s = trim(s)//trim(paramentry_write_string(dict%keys(i),entry))
+         s = trim(s)//trim(paramentry_write_string(string(dict%keys(i)),entry))
       end do
 
       deallocate(data%d)
@@ -822,13 +820,13 @@ module paramreader_module
 
       status = .true.
       do i=1,dict%N
-         if (.not. get_value(dict, dict%keys(i), data)) &
-              call system_abort('Param_Check: Key '//dict%keys(i)//' missing')
+         if (.not. get_value(dict, string(dict%keys(i)), data)) &
+              call system_abort('Param_Check: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
          if (trim(entry%value) == PARAM_MANDATORY) then
             status = .false.
             if (present(missing_keys)) then
-               missing_keys = trim(missing_keys)//' '//trim(dict%keys(i))
+               missing_keys = trim(missing_keys)//' '//string(dict%keys(i))
             endif
          end if
       end do

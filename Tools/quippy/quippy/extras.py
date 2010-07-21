@@ -515,7 +515,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          self.read(D) # copy from D
 
    def keys(self):
-      return [''.join(self._keys[:,i]).strip() for i in frange(self.n)]
+      return [self.get_key(i).strip() for i in frange(self.n)]
 
    def __getitem__(self, k):
       i = self.lookup_entry_i(k)
