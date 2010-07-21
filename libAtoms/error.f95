@@ -51,19 +51,22 @@ module error_module
 
   ! ---
 
-  integer, parameter  :: ERROR_NONE        = 0
-  integer, parameter  :: ERROR_OCCURED     = -1
-  integer, parameter  :: ERROR_HAS_INFO    = -2
+  !% Error kinds
+  integer, parameter  :: ERROR_NONE         = 0
+  integer, parameter  :: ERROR_UNSPECIFIED  = -1
+  integer, parameter  :: ERROR_IO           = -2
+  integer, parameter  :: ERROR_MPI          = -3
 
-  public :: ERROR_NONE, ERROR_OCCURED, ERROR_HAS_INFO
+  public :: ERROR_NONE, ERROR_UNSPECIFIED, ERROR_IO, ERROR_MPI
 
   ! ---
 
   type ErrorDescriptor
-     integer                      :: kind  !% kind of error
-     character(ERROR_DOC_LENGTH)  :: doc   !% documentation string
-     character(ERROR_FN_LENGTH)   :: fn    !% file name where the error occured
-     integer                      :: line  !% code line where the error occured
+     integer                      :: kind     !% kind of error
+     logical                      :: has_doc  !% does the documentation string exist?
+     character(ERROR_DOC_LENGTH)  :: doc      !% documentation string
+     character(ERROR_FN_LENGTH)   :: fn       !% file name where the error occured
+     integer                      :: line     !% code line where the error occured
   endtype ErrorDescriptor
 
   ! ---
@@ -108,11 +111,12 @@ module error_module
 contains
 
   !% Push a new error callback to the stack
-  subroutine push_error(fn, line)
+  subroutine push_error(fn, line, kind)
     implicit none
 
-    character(*), intent(in)  :: fn
-    integer, intent(in)       :: line
+    character(*), intent(in)       :: fn
+    integer, intent(in)            :: line
+    integer, intent(in), optional  :: kind
 
     ! ---
 
@@ -124,10 +128,13 @@ contains
        stop "Fatal error: Error stack size too small."
     endif
 
-    error_stack(error_stack_position)%kind = ERROR_OCCURED
-    call initialise(error_stack(error_stack_position)%fn)
-    call concat(error_stack(error_stack_position)%fn, fn)
-    error_stack(error_stack_position)%line = line
+    if (present(kind)) then
+       error_stack(error_stack_position)%kind = kind
+    else
+       error_stack(error_stack_position)%kind = ERROR_UNSPECIFIED
+    endif
+    error_stack(error_stack_position)%fn    = fn
+    error_stack(error_stack_position)%line  = line
 
     !$omp end critical
 
@@ -135,12 +142,13 @@ contains
 
 
   !% Push a new information string onto the error stack
-  subroutine push_error_with_info(doc, fn, line)
+  subroutine push_error_with_info(doc, fn, line, kind)
     implicit none
 
-    character(*), intent(in)  :: doc
-    character(*), intent(in)  :: fn
-    integer, intent(in)       :: line
+    character(*), intent(in)       :: doc
+    character(*), intent(in)       :: fn
+    integer, intent(in)            :: line
+    integer, intent(in), optional  :: kind
 
     ! ---
 
@@ -152,12 +160,15 @@ contains
        call system_abort("Fatal error: Error stack size too small.")
     endif
 
-    error_stack(error_stack_position)%kind = ERROR_HAS_INFO
-    call initialise(error_stack(error_stack_position)%fn)
-    call concat(error_stack(error_stack_position)%fn, fn)
+    if (present(kind)) then
+       error_stack(error_stack_position)%kind = kind
+    else
+       error_stack(error_stack_position)%kind = ERROR_UNSPECIFIED
+    endif
+    error_stack(error_stack_position)%fn = fn
     error_stack(error_stack_position)%line = line
-    call initialise(error_stack(error_stack_position)%doc)
-    call concat(error_stack(error_stack_position)%doc, doc)
+    error_stack(error_stack_position)%has_doc = .true.
+    error_stack(error_stack_position)%doc = doc
 
     !$omp end critical
 
@@ -196,30 +207,29 @@ contains
 
     ! ---
 
-    call initialise(str)
-    call concat(str, "Traceback (most recent call last):")
+    str = "Traceback (most recent call last):"
     do i = error_stack_position, 1, -1
 
        write (linestr, *)  error_stack(i)%line
 
-       if (error_stack(i)%kind == ERROR_HAS_INFO) then
+       if (error_stack(i)%has_doc) then
        
-          call concat(str, C_NEW_LINE // &
+          str = str // C_NEW_LINE // &
                '  File "' // &
                trim(error_stack(i)%fn) // &
                '", line ' // &
                trim(linestr) // &
                C_NEW_LINE // &
                "    " // &
-               trim(error_stack(i)%doc))
+               trim(error_stack(i)%doc)
 
        else
 
-          call concat(str, C_NEW_LINE // &
+          str = str // C_NEW_LINE // &
                '  File "' // &
                trim(error_stack(i)%fn) // &
                '", line ' // &
-               trim(linestr))
+               trim(linestr)
 
        endif
 
