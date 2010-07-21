@@ -1844,6 +1844,7 @@ contains
        ! we only free entry if new type/size/shape is incompatible with existing entry
        ! or if new entry will not be allocated by us (i.e. entry%own_data == .false.)
        if (.not. entry%own_data .or. &
+            this%entries(entry_i)%type == T_DATA .or. &
             this%entries(entry_i)%type /= entry%type .or. &
             this%entries(entry_i)%len /= entry%len .or. &
             any(this%entries(entry_i)%len2 /= entry%len2)) then
