@@ -134,6 +134,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   type(Dictionary) :: my_dictionary
   integer :: i, n_species, quip_string_start, bracket_start, bracket_end
   real(dp), dimension(:), allocatable :: w, z_eff
+  character(len=10000) :: short_comment
 
   call Finalise(this)
 
@@ -149,7 +150,16 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
 
 #ifdef HAVE_GP
   call gp_read_binary(this%my_gp, this%datafile)
-  call read_string(my_dictionary, this%my_gp%comment)
+
+  quip_string_start = index(this%my_gp%comment,'quip_string')
+  if( quip_string_start > 0 ) then
+     bracket_start = index(this%my_gp%comment(quip_string_start:),'{')
+     bracket_end = index(this%my_gp%comment(quip_string_start:),'}')
+     this%quip_string = this%my_gp%comment(quip_string_start+bracket_start:quip_string_start+bracket_end-2)
+     short_comment = this%my_gp%comment(:quip_string_start-1) // ' ' // this%my_gp%comment(bracket_end+1:)
+  endif
+
+  call read_string(my_dictionary, short_comment)
 
   this%datafile_coordinates = ''
   if (.not. get_value(my_dictionary, 'coordinates', this%datafile_coordinates)) &
@@ -212,13 +222,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   if( .not. get_value(my_dictionary,'f0',this%f0) ) this%f0 = 0.0_dp
 
   call finalise(my_dictionary)
-
-  if( this%do_core ) then
-     quip_string_start = index(this%my_gp%comment,'quip_string')
-     bracket_start = index(this%my_gp%comment(quip_string_start:),'{')
-     bracket_end = index(this%my_gp%comment(quip_string_start:),'}')
-     this%quip_string = this%my_gp%comment(quip_string_start+bracket_start:quip_string_start+bracket_end-2)
-  endif
 #endif  
 
   this%initialised = .true.
