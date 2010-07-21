@@ -40,15 +40,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module error_module
-  use extendable_str_module
-  use system_module
-
   implicit none
-  private
 
   ! ---
 
   integer, parameter  :: ERROR_STACK_SIZE  = 100
+
+  integer, parameter  :: ERROR_DOC_LENGTH = 1000
+  integer, parameter  :: ERROR_FN_LENGTH  = 100
 
   ! ---
 
@@ -61,10 +60,10 @@ module error_module
   ! ---
 
   type ErrorDescriptor
-     integer               :: kind  !% kind of error
-     type(extendable_str)  :: doc   !% documentation string
-     type(extendable_str)  :: fn    !% file name where the error occured
-     integer               :: line  !% code line where the error occured
+     integer                      :: kind  !% kind of error
+     character(ERROR_DOC_LENGTH)  :: doc   !% documentation string
+     character(ERROR_FN_LENGTH)   :: fn    !% file name where the error occured
+     integer                      :: line  !% code line where the error occured
   endtype ErrorDescriptor
 
   ! ---
@@ -75,8 +74,36 @@ module error_module
 
   ! ---
 
-  public :: push_error, push_error_with_info, get_error_string_and_clear
-  public :: abort_on_error, clear_error
+  public :: system_abort
+#ifdef HAVE_QUIPPY
+  interface system_abort
+     subroutine system_abort(message)
+       character(*), intent(in) :: message
+     end subroutine system_abort
+  end interface system_abort
+
+  public :: error_abort
+  interface error_abort
+     module procedure error_abort_from_stack
+  endinterface
+#else
+  interface system_abort
+     module procedure error_abort_with_message
+  endinterface
+
+  public :: error_abort
+  interface error_abort
+     module procedure error_abort_with_message, error_abort_from_stack
+  endinterface
+#endif
+
+  public :: push_error, push_error_with_info
+  public :: get_error_string_and_clear, clear_error
+
+  ! ---
+
+  public  :: error_unit
+  integer :: error_unit = -1
 
 contains
 
@@ -160,11 +187,12 @@ contains
 
     integer, intent(inout), optional  :: error
 
-    type(extendable_str)              :: str
+    character(ERROR_DOC_LENGTH)       :: str
 
     ! ---
 
-    integer               :: i
+    integer        :: i
+    character(10)  :: linestr
 
     ! ---
 
@@ -172,24 +200,26 @@ contains
     call concat(str, "Traceback (most recent call last):")
     do i = error_stack_position, 1, -1
 
+       write (linestr, *)  error_stack(i)%line
+
        if (error_stack(i)%kind == ERROR_HAS_INFO) then
        
           call concat(str, C_NEW_LINE // &
                '  File "' // &
-               string(error_stack(i)%fn) // &
+               trim(error_stack(i)%fn) // &
                '", line ' // &
-               error_stack(i)%line // &
+               trim(linestr) // &
                C_NEW_LINE // &
                "    " // &
-               string(error_stack(i)%doc))
+               trim(error_stack(i)%doc))
 
        else
 
           call concat(str, C_NEW_LINE // &
                '  File "' // &
-               string(error_stack(i)%fn) // &
+               trim(error_stack(i)%fn) // &
                '", line ' // &
-               error_stack(i)%line)
+               trim(linestr))
 
        endif
 
@@ -204,16 +234,62 @@ contains
   endfunction get_error_string_and_clear
 
 
+#ifndef HAVE_QUIPPY
+  !% Quit with an error message. Calls 'MPI_Abort' for MPI programs.
+  subroutine error_abort_with_message(message)
+    character(*),      intent(in) :: message
+#ifdef IFORT_TRACEBACK_ON_ABORT
+    integer :: j
+#endif IFORT_TRACEBACK_ON_ABORT
+#ifdef SIGNAL_ON_ABORT
+    integer :: status
+    integer, parameter :: SIGUSR1 = 30
+#endif
+#ifdef _MPI
+    integer::PRINT_ALWAYS
+    include "mpif.h"
+#endif
+
+#ifdef _MPI
+    write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',mpi_id(),trim(message)
+#else
+    write(unit=error_unit, fmt='(a," ",a)') 'SYSTEM ABORT:', trim(message)
+#endif
+
+#ifdef _MPI
+    call MPI_Abort(MPI_COMM_WORLD, 1, PRINT_ALWAYS)
+#endif
+
+#ifdef IFORT_TRACEBACK_ON_ABORT
+    ! Cause an integer divide by zero error to persuade
+    ! ifort to issue a traceback
+    j = 1/0
+#endif
+
+#ifdef DUMP_CORE_ON_ABORT
+    call fabort()
+#else
+#ifdef SIGNAL_ON_ABORT
+    ! send ourselves a USR1 signal rather than aborting
+    call kill(getpid(), SIGUSR1, status)
+#else
+    stop
+#endif
+#endif
+  end subroutine error_abort_with_message
+#endif
+
   !% Stop program execution since this error is not handled properly
-  subroutine abort_on_error(error)
+  subroutine error_abort_from_stack(error)
     implicit none
 
     integer, intent(inout), optional :: error
 
     ! ---
 
-    call system_abort(string(get_error_string_and_clear(error)))
+    ! This is for compatibility with quippy, change to error_abort
+    call system_abort(get_error_string_and_clear(error))
 
-  endsubroutine abort_on_error
+  endsubroutine error_abort_from_stack
 
 endmodule error_module
