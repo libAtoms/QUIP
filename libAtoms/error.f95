@@ -57,6 +57,10 @@ module error_module
   integer, parameter  :: ERROR_IO           = -2
   integer, parameter  :: ERROR_MPI          = -3
 
+  !% Strings
+  character(*), parameter :: ERROR_STRINGS(3) = &
+       (/ "unspecified", "IO", "MPI" /)
+
   public :: ERROR_NONE, ERROR_UNSPECIFIED, ERROR_IO, ERROR_MPI
 
   ! ---
@@ -207,29 +211,30 @@ contains
 
     ! ---
 
-    str = "Traceback (most recent call last):"
+    str = "Traceback (most recent call last - error kind " &
+         // trim(ERROR_STRINGS(-error)) // "):"
     do i = error_stack_position, 1, -1
 
-       write (linestr, *)  error_stack(i)%line
+       write (linestr, '(I10)')  error_stack(i)%line
 
        if (error_stack(i)%has_doc) then
-       
-          str = str // C_NEW_LINE // &
+          
+          str = trim(str) // C_NEW_LINE // &
                '  File "' // &
                trim(error_stack(i)%fn) // &
                '", line ' // &
-               trim(linestr) // &
+               trim(adjustl(linestr)) // &
                C_NEW_LINE // &
                "    " // &
                trim(error_stack(i)%doc)
 
        else
 
-          str = str // C_NEW_LINE // &
+          str = trim(str) // C_NEW_LINE // &
                '  File "' // &
                trim(error_stack(i)%fn) // &
                '", line ' // &
-               trim(linestr)
+               trim(adjustl(linestr))
 
        endif
 

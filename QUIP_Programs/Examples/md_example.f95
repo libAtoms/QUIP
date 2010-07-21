@@ -53,7 +53,7 @@ implicit none
    '<per_pair_data type1="1" type2="1" sigma="2.0" eps6="2.0" eps12="2.0" cutoff="4.0" energy_shift="T" linear_force_shift="T" />' // &
    '</LJ_params>'
 
-  call Initialise(pot, "IP LJ", lj_str)
+  call Initialise(pot, "IP LJ", param_str=lj_str)
 
   call print(pot)
 
