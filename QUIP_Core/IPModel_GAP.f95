@@ -157,6 +157,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
      bracket_end = index(this%my_gp%comment(quip_string_start:),'}')
      this%quip_string = this%my_gp%comment(quip_string_start+bracket_start:quip_string_start+bracket_end-2)
      short_comment = this%my_gp%comment(:quip_string_start-1) // ' ' // this%my_gp%comment(bracket_end+1:)
+  else
+     short_comment = this%my_gp%comment
   endif
 
   call read_string(my_dictionary, short_comment)
