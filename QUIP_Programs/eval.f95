@@ -478,6 +478,7 @@ implicit none
         if (do_local) deallocate(local_E0)
      endif
      
+#ifdef HAVE_TB
      if (do_absorption) then
         if (.not. associated (pot%pot%tb)) &
              call system_abort("Can only do absorption of TB model")
@@ -502,7 +503,8 @@ implicit none
         deallocate(absorption_freqs)
         deallocate(absorption_v)
      endif
-     
+#endif
+    
      if (.not. did_something) call system_abort("Nothing to be calculated")
           
      mainlog%prefix = "AT"
