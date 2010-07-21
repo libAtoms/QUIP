@@ -564,8 +564,8 @@ contains
 	   mainlog%prefix="UNCARVED_CLUSTER"
 	   call print_xyz(at, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
-	 endif
-call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
+         endif
+         call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
 	 call calc(this, at, f=f, args_str=new_args_str)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
