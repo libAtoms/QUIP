@@ -274,11 +274,13 @@ subroutine print_pot(params, pot)
   type(potential), intent(in) :: pot
 
   mainlog%prefix="MD_POT"
+#ifdef HAVE_TB
   if (pot%is_simple) then
     if (associated(pot%pot%tb)) then
       call print(pot%pot%tb)
     endif
   endif
+#endif
   mainlog%prefix=""
 end subroutine print_pot
 
