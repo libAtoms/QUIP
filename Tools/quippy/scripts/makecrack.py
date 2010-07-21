@@ -36,7 +36,7 @@ def makecrack(params):
 
    mpi_glob = MPI_context()
 
-   crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot, classicalpot)
+   crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot)
 
    # Save bulk cube (used for qm_rescale_r parameter in crack code)
    bulk.write(stem+'_bulk.xyz')
@@ -85,7 +85,6 @@ def makecrack(params):
    print('%d atoms. %d fixed atoms' % (crack_slab.n, crack_slab.n - crack_slab.move_mask.count()))
 
    print_title('Setting edge mask')
-   crack_setup_marks(crack_slab, params)
 
    crack_slab.edge_mask[:] = 0
 
