@@ -89,7 +89,7 @@ type IPModel_GAP
   real(dp), allocatable :: qw_cutoff_r1(:)
 
   character(len=256) :: datafile                               !% File name containing the GAP database
-  character(len=value_len) :: datafile_coordinates             !% Coordinate system used in GAP database
+  character(len=256) :: datafile_coordinates             !% Coordinate system used in GAP database
 
   character(len=FIELD_LENGTH) :: label
   type(mpi_context) :: mpi
@@ -98,7 +98,7 @@ type IPModel_GAP
   type(gp) :: my_gp
 #endif
   character(len=10000) :: quip_string = ''
-  character(len=value_len) :: ip_args = ''
+  character(len=10000) :: ip_args = ''
 
   logical :: initialised = .false.
 

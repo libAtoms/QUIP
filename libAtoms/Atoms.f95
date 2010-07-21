@@ -519,7 +519,7 @@ contains
     use Dictionary_module, only: lower_case
     type(Atoms), target, intent(inout) :: this
     integer :: i, lookup(3)
-    character(len=key_len) :: key
+    type(Extendable_str) :: key
 
     if(this%N == 0) return
 
@@ -532,13 +532,13 @@ contains
     do i = 1,this%properties%N
 
        key = this%properties%keys(i)
-       if (.not. get_value(this%properties, key, lookup)) &
-            call system_abort('Atoms_repoint: key '//trim(key)//' not found.')
+       if (.not. get_value(this%properties, string(key), lookup)) &
+            call system_abort('Atoms_repoint: key '//string(key)//' not found.')
 
        ! If this%N is zero then point at zero length arrays
        if (this%N == 0) then
 
-          select case(trim(lower_case(key)))
+          select case(trim(lower_case(string(key))))
 
           ! Integer properties
           case('z')
@@ -577,7 +577,7 @@ contains
 
        else
 
-          select case(trim(lower_case(key)))
+          select case(trim(lower_case(string(key))))
 
           ! Integer properties
           case('z')
@@ -850,12 +850,12 @@ contains
     
     ! correct columns in subsequent properties
     do i=1,this%properties%N
-       dummy = get_value(this%properties, this%properties%keys(i), lookup)
+       dummy = get_value(this%properties, string(this%properties%keys(i)), lookup)
        if (lookup(1) /= rem_type) cycle
        if (lookup(2) > rem_start) then
           lookup(2) = lookup(2) - n_removed
           lookup(3) = lookup(3) - n_removed
-          call set_value(this%properties, this%properties%keys(i), lookup)
+          call set_value(this%properties, string(this%properties%keys(i)), lookup)
        end if
     end do
 
@@ -4298,6 +4298,7 @@ contains
       character(len=1024) :: tmp_properties(this%properties%N)
       type(Dictionary)    :: use_properties
       character(len=1024) :: my_real_format, my_values_real_format
+      type(extendable_str) :: str
 
       my_real_format = optional_default('f14.7',real_format)
       my_values_real_format = optional_default('f18.6',real_format)
@@ -4326,10 +4327,10 @@ contains
             use_properties = this%properties
 
             ! Move 'species' to start of list
-            call swap(use_properties, 'species', use_properties%keys(1))
+            call swap(use_properties, 'species', string(use_properties%keys(1)))
 
             ! Move 'pos' to second in list
-            call swap(use_properties, 'pos', use_properties%keys(2))
+            call swap(use_properties, 'pos', string(use_properties%keys(2)))
          else
             ! just print the species and positions
             use_properties = subset(this%properties,(/'species','pos    '/))
@@ -4371,11 +4372,11 @@ contains
       ! Check 1st property looks like species and 
       ! 2nd property has three real columns (i.e. looks like a position)
       if (.not. do_human_readable) then
-         dummy = get_value(use_properties, use_properties%keys(1), lookup)
+         dummy = get_value(use_properties, string(use_properties%keys(1)), lookup)
          if (lookup(1) /= PROPERTY_STR .or. (lookup(3)-lookup(2)+1) /= 1) &
            call system_abort('Atoms_print_xyz: first property must be a species string')
 
-         dummy = get_value(use_properties, use_properties%keys(2), lookup)
+         dummy = get_value(use_properties, string(use_properties%keys(2)), lookup)
          if (lookup(1) /= PROPERTY_REAL .or. (lookup(3)-lookup(2)+1) /= 3) &
            call system_abort('Atoms_print_xyz: seccond property must be a real 3-vector, e.g. pos or avgpos')
       end if
@@ -4394,19 +4395,16 @@ contains
          ! Then the lattice, property names and other parameters
          call set_value(this%params, 'Lattice', reshape(this%lattice, (/9/)))
          call set_value(this%params, 'Properties', prop_names)
-	 line = write_string(this%params, real_format=my_values_real_format)
-
-         ! Finally any optional comment
-         if (present(comment)) then 
-            line = trim(line)//' '//trim(comment)
-         end if
-
-         call print(line,file=xyzfile)
+         call initialise(str)
+         call concat(str, write_string(this%params, real_format=my_values_real_format))
+         if (present(comment))  call concat(str, comment)
+         call print(string(str),file=xyzfile)
+         call finalise(str)
       else
          call print('Properties printed are:')
          do i=1,use_properties%N
-            dummy = get_value(use_properties, use_properties%keys(i), lookup)
-            call print(i//' '//trim(use_properties%keys(i))//' '//(lookup(3)-lookup(2)+1)//' columns')
+            dummy = get_value(use_properties, string(use_properties%keys(i)), lookup)
+            call print(i//' '//string(use_properties%keys(i))//' '//(lookup(3)-lookup(2)+1)//' columns')
          end do
       end if
 
@@ -4441,13 +4439,13 @@ contains
 
      dict_prop_names_string = ""
      do i=1,this%N
-	dummy = get_value(this, this%keys(i), lookup)
+	dummy = get_value(this, string(this%keys(i)), lookup)
 	if (my_with_types) then
 	  write(tmp,'(i0)') lookup(3)-lookup(2)+1 ! Number of columns for this property
-	  dict_prop_names_string=trim(dict_prop_names_string)//trim(this%keys(i))//':'// &
+	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'// &
 				 prop_types(lookup(1))//':'//trim(tmp)//':'
 	else
-	  dict_prop_names_string=trim(dict_prop_names_string)//trim(this%keys(i))//':'
+	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'
 	endif
      end do
      ! Remove trailing ':'
@@ -4577,7 +4575,7 @@ contains
            req_num_fields, my_status, n_cols, field_count
       character(len=2048), dimension(200) :: fields
       character(len=1024)                 :: use_comment
-      character(len=value_len)            :: prop_names
+      character(len=1024)                  :: prop_names
       character(len=1024)                 :: tmp
       character(3)                        :: delimiters
       real(dp), dimension(9)              :: tmplattice
@@ -4863,9 +4861,9 @@ contains
             
             n_properties = 1
             do i=1,this%properties%N
-               dummy = get_value(this%properties, this%properties%keys(i), lookup)
+               dummy = get_value(this%properties, string(this%properties%keys(i)), lookup)
                if (lookup(1) == PROPERTY_INT .or. lookup(1) == PROPERTY_REAL) then
-                  use_properties(n_properties) = this%properties%keys(i)
+                  use_properties(n_properties) = string(this%properties%keys(i))
                   n_properties = n_properties + 1
                end if
             end do

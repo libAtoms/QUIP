@@ -1012,7 +1012,7 @@ contains
     integer :: lookup(3)
     logical :: do_periodic(3)
     integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:)
-    type(Inoutput)                    :: clusterfile
+    type(CInoutput)                    :: clusterfile
     character(len=255)                :: clusterfilename
     type(Table) :: outer_layer
     logical :: in_outer_layer
@@ -1213,8 +1213,7 @@ contains
        clusterfilename = 'clusters.xyz'
 #endif _MPI
        call initialise(clusterfile, clusterfilename, append=.true., action=OUTPUT)
-       call inoutput_mpi_all_inoutput(clusterfile, .true.)
-       call print_xyz(cluster, clusterfile, all_properties=.true.)
+       call write(clusterfile, cluster)
        call finalise(clusterfile)
     end if
 

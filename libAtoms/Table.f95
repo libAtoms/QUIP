@@ -1591,8 +1591,8 @@ contains
           line = ''
           fmt = ''
           do j=1,properties%N
-             if (.not. get_value(properties,properties%keys(j),lookup)) &
-                  call system_abort('table_print: error getting value of property '//trim(properties%keys(j)))
+             if (.not. get_value(properties,string(properties%keys(j)),lookup)) &
+                  call system_abort('table_print: error getting value of property '//string(properties%keys(j)))
              do k=lookup(2),lookup(3)
                 select case(lookup(1))
                 case(PROPERTY_INT)

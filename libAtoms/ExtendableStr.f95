@@ -105,6 +105,11 @@ interface index
   module procedure extendable_str_index
 end interface index
 
+public :: bcast
+interface bcast
+   module procedure extendable_str_bcast
+end interface bcast
+
 public :: operator(//)
 interface operator(//)
    module procedure extendable_str_cat_string, string_cat_extendable_str
@@ -141,14 +146,14 @@ subroutine extendable_str_zero(this)
   this%len = 0
 end subroutine extendable_str_zero
 
-subroutine extendable_str_print(this,verbosity,out)
+subroutine extendable_str_print(this,verbosity,file)
   use iso_c_binding
   implicit none
   type(extendable_str),    intent(in)           :: this
   integer,        intent(in), optional :: verbosity
-  type(Inoutput), intent(inout),optional:: out
+  type(Inoutput), intent(inout),optional:: file
 
-  call print ("extendable_str, len " // this%len // " size " // size(this%s), verbosity, out)
+  call print ("extendable_str, len " // this%len // " size " // size(this%s), verbosity, file)
   if (allocated(this%s)) then
      call print(this%s(1:this%len))
 ! OLD IMPLEMENTATION
@@ -458,7 +463,7 @@ function string_cat_extendable_str(str, this)
   ! ---
 
   string_cat_extendable_str = str
-  string_cat_extendable_str(len(str):) = string(this)
+  string_cat_extendable_str(max(1,len(str)):) = string(this)
 end function
 
 function extendable_str_cat_extendable_str(this, str)

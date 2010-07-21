@@ -196,6 +196,10 @@ module CInOutput_module
 
   public :: CInOutput, initialise, finalise, close, read, write, query
 
+  ! temporary hack...
+  integer, parameter :: KEY_LEN = 256
+  integer, parameter :: VALUE_LEN = 1024
+
 contains
 
   subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi, error)
@@ -563,7 +567,7 @@ contains
     call initialise(selected_properties)
     if (.not. present(properties)) then
        do i=1,at%properties%N
-          call set_value(selected_properties, at%properties%keys(i), 1)
+          call set_value(selected_properties, string(at%properties%keys(i)), 1)
        end do
     else
        do i=1,size(properties)
@@ -598,54 +602,54 @@ contains
     call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
     n = 1
     do i=1, at%params%N
-       if (lower_case(trim(at%params%keys(i))) == lower_case('Lattice') .or. &
-           lower_case(trim(at%params%keys(i))) == lower_case('Properties')) cycle
-       call f_string_to_c_array(at%params%keys(i), this%param_name(:,n))
+       if (lower_case(string(at%params%keys(i))) == lower_case('Lattice') .or. &
+           lower_case(string(at%params%keys(i))) == lower_case('Properties')) cycle
+       call f_string_to_c_array(string(at%params%keys(i)), this%param_name(:,n))
        this%param_filter(n) = 1
        select case(at%params%entries(i)%type)
        case(T_INTEGER)
-          dum = get_value(at%params, at%params%keys(i), this%pint(n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%pint(n))
           this%param_size(n) = 1
           this%param_type(n) = T_INTEGER
        case(T_REAL)
-          dum = get_value(at%params, at%params%keys(i), this%preal(n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%preal(n))
           this%param_size(n) = 1
           this%param_type(n) = T_REAL
        case(T_LOGICAL)
-          dum = get_value(at%params, at%params%keys(i), this%plogical(n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%plogical(n))
           this%param_size(n) = 1
           this%param_type(n) = T_LOGICAL
        case(T_INTEGER_A)
-          dum = get_value(at%params, at%params%keys(i), this%pint_a(:,n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%pint_a(:,n))
           this%param_size(n) = 3
           this%param_type(n) = T_INTEGER_A
        case (T_REAL_A)
-          dum = get_value(at%params, at%params%keys(i), this%preal_a(:,n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%preal_a(:,n))
           this%param_size(n) = 3
           this%param_type(n) = T_REAL_A
        case(T_LOGICAL_A)
-          dum = get_value(at%params, at%params%keys(i), this%plogical_a(:,n))
+          dum = get_value(at%params, string(at%params%keys(i)), this%plogical_a(:,n))
           this%param_size(n) = 3
           this%param_type(n) = T_LOGICAL_A
        case(T_CHAR)
-          dum = get_value(at%params, at%params%keys(i), valuestr)
+          dum = get_value(at%params, string(at%params%keys(i)), valuestr)
           call f_string_to_c_array(valuestr, this%param_value(:,n))
           this%param_size(n) = 1
           this%param_type(n) = T_CHAR
        case(T_INTEGER_A2)
-          if (.not. get_value(at%params, at%params%keys(i), tmp_int_a2)) &
-               call system_abort('Bad atoms parameter '//trim(at%params%keys(i))//' should be 3x3 int array')
+          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_int_a2)) &
+               call system_abort('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 int array')
           this%pint_a2(:,n) = reshape(tmp_int_a2, (/9/))
           this%param_size(n) = 9
           this%param_type(n) = T_INTEGER_A2
        case (T_REAL_A2)
-          if (.not. get_value(at%params, at%params%keys(i), tmp_real_a2)) &
-               call system_abort('Bad atoms parameter '//trim(at%params%keys(i))//' should be 3x3 real array')
+          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_real_a2)) &
+               call system_abort('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 real array')
           this%preal_a2(:,n) = reshape(tmp_real_a2, (/9/))
           this%param_size(n) = 9
           this%param_type(n) = T_REAL_A2
        case default
-          call system_abort('cinoutput_write: unsupported parameter i='//i//' '//trim(at%params%keys(i))//' type='//at%params%entries(i)%type)
+          call system_abort('cinoutput_write: unsupported parameter i='//i//' '//string(at%params%keys(i))//' type='//at%params%entries(i)%type)
        end select
        n = n + 1
     end do
@@ -659,9 +663,9 @@ contains
 
     ! First add the selected properties in the order they were specified...
     do i=1,selected_properties%n
-       j = lookup_entry_i(at%properties, selected_properties%keys(i))
-       call f_string_to_c_array(at%properties%keys(j), this%property_name(:,i))
-       dum = get_value(at%properties, at%properties%keys(j), lookup)
+       j = lookup_entry_i(at%properties, string(selected_properties%keys(i)))
+       call f_string_to_c_array(string(at%properties%keys(j)), this%property_name(:,i))
+       dum = get_value(at%properties, string(at%properties%keys(j)), lookup)
        this%property_type(i) = lookup(1)
        this%property_start(i) = lookup(2)-1
        this%property_ncols(i) = lookup(3)-lookup(2)+1
@@ -670,9 +674,9 @@ contains
     ! ... then the non-selected ones
     j = selected_properties%n+1
     do i=1,at%properties%n
-       if (has_key(selected_properties, at%properties%keys(i))) cycle
-       call f_string_to_c_array(at%properties%keys(i), this%property_name(:,j))
-       dum = get_value(at%properties, at%properties%keys(i), lookup)
+       if (has_key(selected_properties, string(at%properties%keys(i)))) cycle
+       call f_string_to_c_array(string(at%properties%keys(i)), this%property_name(:,j))
+       dum = get_value(at%properties, string(at%properties%keys(i)), lookup)
        this%property_type(j) = lookup(1)
        this%property_start(j) = lookup(2)-1
        this%property_ncols(j) = lookup(3)-lookup(2)+1
