@@ -82,7 +82,7 @@ module error_module
 
   save
   integer                :: error_stack_position  = 0       !% If this is zero, no error has occured
-  integer, save          :: error_mpi_myid = 0              !% MPI rank of process. Initialised by system_initialise()
+  integer                :: error_mpi_myid = 0              !% MPI rank of process. Initialised by system_initialise()
   type(ErrorDescriptor)  :: error_stack(ERROR_STACK_SIZE)   !% Error stack
 
   ! ---
@@ -94,21 +94,16 @@ module error_module
        character(*), intent(in) :: message
      end subroutine system_abort
   end interface system_abort
+#else
+  interface system_abort
+     module procedure error_abort_with_message
+  endinterface
+#endif
 
   public :: error_abort
   interface error_abort
      module procedure error_abort_from_stack
   endinterface
-#else
-  interface system_abort
-     module procedure error_abort_with_message
-  endinterface
-
-  public :: error_abort
-  interface error_abort
-     module procedure error_abort_with_message, error_abort_from_stack
-  endinterface
-#endif
 
   public :: push_error, push_error_with_info
   public :: get_error_string_and_clear, clear_error
@@ -135,7 +130,7 @@ contains
     error_stack_position  = error_stack_position + 1
 
     if (error_stack_position > ERROR_STACK_SIZE) then
-       call error_abort("Fatal error: Error stack size too small.")
+       call system_abort("Fatal error: Error stack size too small.")
     endif
 
     if (present(kind)) then
@@ -220,7 +215,7 @@ contains
     if (present(error)) then
        if (-error < lbound(ERROR_STRINGS, 1) .or. &
            -error > ubound(ERROR_STRINGS, 1)) then
-          call error_abort("Fatal: error descriptor out of bounds. Did you initialise the error variable?")
+          call system_abort("Fatal: error descriptor out of bounds. Did you initialise the error variable?")
        endif
 
        str = "Traceback (most recent call last - error kind " &
