@@ -294,7 +294,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
 
               except ValueError:
-                  pass
+                  mytype = 'character*(1)'
 
           dims = filter(lambda x: x.startswith('dimension('), attributes)
           if dims != []:
