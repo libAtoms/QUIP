@@ -741,7 +741,7 @@ contains
   function dictionary_get_value_s(this, key, v, case_sensitive, i)
     type(Dictionary), intent(in) :: this
     character(len=*) key
-    character(len=maxval(this%entries%s%len)), intent(out) :: v
+    character(len=*), intent(out) :: v
     logical :: dictionary_get_value_s
     logical, optional :: case_sensitive
     integer, optional :: i
@@ -756,6 +756,7 @@ contains
        return
     endif
 
+    v="" ! fill with blanks first
     if (this%entries(entry_i)%type == T_CHAR) then
        v(1:this%entries(entry_i)%s%len) = string(this%entries(entry_i)%s)
        dictionary_get_value_s = .true.
