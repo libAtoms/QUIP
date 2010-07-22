@@ -1235,15 +1235,15 @@ contains
     type(Atoms), intent(inout), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), optional, intent(out)   :: cut_bonds !% Return a list of the bonds cut when making
-                                                      !% the cluster.  See create_cluster() documentation.
+    !% the cluster.  See create_cluster() documentation.
     type(Table) :: cluster_info
 
     type(Dictionary) :: params
     logical :: terminate, periodic_x, periodic_y, periodic_z, &
-       even_electrons, do_periodic(3), cluster_nneighb_only, &
-       cluster_allow_modification, hysteretic_connect, same_lattice, &
-       fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
-       protect_X_H_bonds, protect_double_bonds, has_termination_rescale
+         even_electrons, do_periodic(3), cluster_nneighb_only, &
+         cluster_allow_modification, hysteretic_connect, same_lattice, &
+         fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
+         protect_X_H_bonds, protect_double_bonds, has_termination_rescale
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
@@ -1256,7 +1256,7 @@ contains
     integer                                  :: m, n, p
 
     real(dp)                                 :: H1(3)
-    real(dp)                                 :: dhat_ij(3)
+    real(dp)                                 :: dhat_ij(3), d(3)
     real(dp)                                 :: r_ij, rescale
     integer                                  :: ishift(3), jshift(3), oldN, most_hydrogens
     logical                                  :: atom_mask(6)
@@ -1264,7 +1264,7 @@ contains
 
     type(Connection), pointer :: use_connect
     logical :: connectivity_just_from_connect
-    logical :: cluster_changed
+    logical :: cluster_changed, cluster_hopping
 
     call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
@@ -1285,9 +1285,10 @@ contains
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, protect_double_bonds_has_value)
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_termination_rescale)
+    call param_register(params, 'cluster_hopping', 'T', cluster_hopping)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) &
-      call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
+         call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
     call finalise(params)
 
     do_periodic = (/periodic_x,periodic_y,periodic_z/)
@@ -1296,9 +1297,9 @@ contains
          call system_abort('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property')
 
     if (cluster_allow_modification) then
-      call add_property(at, 'modified_hybrid_mark', 0)
-      if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) &
-	   call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
+       call add_property(at, 'modified_hybrid_mark', 0)
+       if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) &
+            call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
     endif
 
     ! only after adding modified_hybrid_mark_property
@@ -1311,7 +1312,7 @@ contains
     ! unreliable when cluster extends across periodic boundaries
     ! centre = 0.0_dp
     ! do i=1,cluster_list%N
-       ! centre = centre + at%pos(:,cluster_list%int(1,i)) + (at%lattice .mult. cluster_list%int(2:4,i))
+    ! centre = centre + at%pos(:,cluster_list%int(1,i)) + (at%lattice .mult. cluster_list%int(2:4,i))
     ! end do
     ! centre = centre / cluster_list%N
     centre = at%pos(:,cluster_list%int(1,1))
@@ -1328,57 +1329,77 @@ contains
        end if
     end do
 
-    n_cluster = cluster_list%N
-    call wipe(cluster_list)
-    call allocate(cluster_list, 4,0,0,0)
+    if (cluster_hopping) then
+       call system_timer('cluster_hopping')
 
-    ! Add first marked atom to cluster_list. shifts will be relative to this atom
-    call print('Growing cluster starting from atom '//first_active//', n_cluster='//n_cluster, PRINT_VERBOSE)
-    call append(cluster_list, (/first_active,0,0,0/))
-    call append(currentlist, cluster_list)
+       n_cluster = cluster_list%N
+       call wipe(cluster_list)
+       call allocate(cluster_list, 4,0,0,0)
 
-    ! Add other active atoms using bond hopping from the central cluster atom
-    ! to find the other cluster atoms and hence to determine the correct 
-    ! periodic shifts. 
-    !
-    ! This will fail if marked atoms do not form a single connected cluster
-    old_n = cluster_list%N
-    do 
-       if (hysteretic_connect) then
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
-       else
-	 call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice)
-       endif
-       do j=1,nextlist%N
-          jj = nextlist%int(1,j)
-!          shift = nextlist%int(2:4,j)
-          if (hybrid_mark(jj) /= HYBRID_NO_MARK) &
-               call append(cluster_list, nextlist%int(:,j))
-       end do
-       call append(currentlist, nextlist)
+       ! Add first marked atom to cluster_list. shifts will be relative to this atom
+       call print('Growing cluster starting from atom '//first_active//', n_cluster='//n_cluster, PRINT_VERBOSE)
+       call append(cluster_list, (/first_active,0,0,0/))
+       call append(currentlist, cluster_list)
 
-       ! check exit condition
-       allocate(tmp_index(cluster_list%N))
-       tmp_index = int_part(cluster_list,1)
-       call sort_array(tmp_index)
-       call uniq(tmp_index, uniqed)
-       call print('cluster hopping: got '//cluster_list%N//' atoms, of which '//size(uniqed)//' are unique.', PRINT_VERBOSE)
-       if (size(uniqed) == n_cluster) exit !got them all
-       deallocate(uniqed, tmp_index)
-
-       ! check that cluster is still growing
-       if (cluster_list%N == old_n) then
-          call write(at, 'create_cluster_abort.xyz')
-          call print(cluster_list)
-          call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
-       end if
+       ! Add other active atoms using bond hopping from the central cluster atom
+       ! to find the other cluster atoms and hence to determine the correct 
+       ! periodic shifts. 
+       !
+       ! This will fail if marked atoms do not form a single connected cluster
        old_n = cluster_list%N
-    end do
-    deallocate(tmp_index, uniqed)
-    call finalise(nextlist)
-    call finalise(currentlist)
+       do 
+          call wipe(nextlist)
+          if (hysteretic_connect) then
+             call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice , alt_connect=at%hysteretic_connect)
+          else
+             call BFS_step(at, currentlist, nextlist, nneighb_only = .false., min_images_only = any(do_periodic) .or. same_lattice)
+          endif
+          do j=1,nextlist%N
+             jj = nextlist%int(1,j)
+             !          shift = nextlist%int(2:4,j)
+             if (hybrid_mark(jj) /= HYBRID_NO_MARK .and. find(cluster_list, nextlist%int(:,j)) == 0) &
+                  call append(cluster_list, nextlist%int(:,j))
+          end do
+          call append(currentlist, nextlist)
+
+          ! check exit condition
+          allocate(tmp_index(cluster_list%N))
+          tmp_index = int_part(cluster_list,1)
+          call sort_array(tmp_index)
+          call uniq(tmp_index, uniqed)
+          call print('cluster hopping: got '//cluster_list%N//' atoms, of which '//size(uniqed)//' are unique.', PRINT_VERBOSE)
+          if (size(uniqed) == n_cluster) exit !got them all
+          deallocate(uniqed, tmp_index)
+
+          ! check that cluster is still growing
+          if (cluster_list%N == old_n) then
+             call write(at, 'create_cluster_abort.xyz')
+             call print(cluster_list)
+             call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
+          end if
+          old_n = cluster_list%N
+       end do
+       deallocate(tmp_index, uniqed)
+       call finalise(nextlist)
+       call finalise(currentlist)
+       call system_timer('cluster_hopping')
+    else
+       call system_timer('cluster_diff_min_image')
+       call allocate(cluster_list, 4,0,0,0)
+
+       call append(cluster_list, (/first_active,0,0,0/))
+       do i=1, at%n
+          if (hybrid_mark(i) == HYBRID_NO_MARK .or. i == first_active) cycle
+          ! shifts relative to first_active
+          d = distance_min_image(at, first_active, i, shift=ishift)
+          call append(cluster_list, (/i,ishift/))
+       end do
+       call system_timer('cluster_diff_min_image')
+    end if
 
     ! partition cluster_list so that active atoms come first
+    call wipe(activelist)
+    call wipe(bufferlist)
     do i=1,cluster_list%N
        if (hybrid_mark(cluster_list%int(1,i)) == HYBRID_ACTIVE_MARK) then
           call append(activelist, cluster_list%int(:,i))
@@ -1392,6 +1413,7 @@ contains
     call append(cluster_list, bufferlist)
     call finalise(activelist)
     call finalise(bufferlist)
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! 
@@ -1448,6 +1470,7 @@ contains
     call print("create_cluster: cluster list:", PRINT_NERD)
     call print(cluster_info, PRINT_NERD)
 
+    call system_timer('cluster_consistency')
     ! Next, check for various gotchas
 
     ! at mask is used to match with atoms already in the cluster_info table
@@ -1456,75 +1479,79 @@ contains
 
     connectivity_just_from_connect = .not. cluster_nneighb_only
     if (hysteretic_connect) then
-      use_connect => at%hysteretic_connect
-      ! will also pass true for connectivity_just_from_connect to cluster_...() routines, so that
-      ! is_nearest_neighbour() won't be used
-      connectivity_just_from_connect = .true.
+       use_connect => at%hysteretic_connect
+       ! will also pass true for connectivity_just_from_connect to cluster_...() routines, so that
+       ! is_nearest_neighbour() won't be used
+       connectivity_just_from_connect = .true.
     else
-      use_connect => at%connect
+       use_connect => at%connect
     endif
 
     if (cluster_allow_modification) then
-      cluster_changed = .true.
-      modified_hybrid_mark = hybrid_mark
-      do while (cluster_changed) 
-	cluster_changed = .false.
-	call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
-          ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
-	  ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
-	  ' protect_X_H_bonds ' // protect_X_H_bonds // &
-	  ' protect_double_bonds ' // protect_double_bonds // &
-	  ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=PRINT_NERD)
-	if (keep_whole_residues) then
-	  prev_cluster_info_n = cluster_info%N
-	  if (cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)) then
-	    cluster_changed = .true.
-	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-	  endif
-	endif
-        if (keep_whole_silica_tetrahedra) then
-           prev_cluster_info_n = cluster_info%N
-           if (cluster_keep_whole_silica_tetrahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-              cluster_changed = .true.
-              modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-           endif
-        end if
-	if (reduce_n_cut_bonds) then
-	  prev_cluster_info_n = cluster_info%N
-	  if (cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-	    cluster_changed = .true.
-	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-	  endif
-	endif
-	if (protect_X_H_bonds) then
-	  prev_cluster_info_n = cluster_info%N
-	  if (cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-	    cluster_changed = .true.
-	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-	  endif
-	endif
-	if (protect_double_bonds) then
-	  prev_cluster_info_n = cluster_info%N
-	  if (cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)) then
-	    cluster_changed = .true.
-	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-	  endif
-	endif
-	if (terminate .or. fix_termination_clash) then
-	  prev_cluster_info_n = cluster_info%N
-	  if (cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-	    cluster_changed = .true.
-	    modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-	  endif
-	endif
-!OUTDATED if (ss_in_out_in) cluster_changed = cluster_changed .or. cluster_ss_in_out_in(at, cluster_info, use_connect)
-!OUTDATED if (biochem_in_out_in) cluster_changed = cluster_changed .or. cluster_biochem_in_out_in(at, cluster_info, use_connect)
-      end do ! while cluster_changed
+       cluster_changed = .true.
+       modified_hybrid_mark = hybrid_mark
+       do while (cluster_changed) 
+          cluster_changed = .false.
+          call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
+               ' keep_whole_silica_tetrahedra ' // keep_whole_silica_tetrahedra // &
+               ' reduce_n_cut_bonds ' // reduce_n_cut_bonds // &
+               ' protect_X_H_bonds ' // protect_X_H_bonds // &
+               ' protect_double_bonds ' // protect_double_bonds // &
+               ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=PRINT_NERD)
+          if (keep_whole_residues) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          endif
+          if (keep_whole_silica_tetrahedra) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_keep_whole_silica_tetrahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          end if
+          if (reduce_n_cut_bonds) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          endif
+          if (protect_X_H_bonds) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          endif
+          if (protect_double_bonds) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          endif
+          if (terminate .or. fix_termination_clash) then
+             prev_cluster_info_n = cluster_info%N
+             if (cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
+                cluster_changed = .true.
+                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
+             endif
+          endif
+          !OUTDATED if (ss_in_out_in) cluster_changed = cluster_changed .or. cluster_ss_in_out_in(at, cluster_info, use_connect)
+          !OUTDATED if (biochem_in_out_in) cluster_changed = cluster_changed .or. cluster_biochem_in_out_in(at, cluster_info, use_connect)
+       end do ! while cluster_changed
 
-      call print('create_cluster: Finished fixing cluster for various heuristic pathologies',PRINT_NERD)
-      call print("create_cluster: cluster list:", PRINT_NERD)
-      call print(cluster_info, PRINT_NERD)
+       call print('create_cluster: Finished fixing cluster for various heuristic pathologies',PRINT_NERD)
+       call print("create_cluster: cluster list:", PRINT_NERD)
+       call print(cluster_info, PRINT_NERD)
     end if ! allow_cluster_mod
+
+    call system_timer('cluster_consistency')
+
+    call system_timer('cluster_termination')
 
     !So now cluster_info contains all the atoms that are going to be in the cluster.
     !If terminate is set, we need to add terminating hydrogens along nearest neighbour bonds
@@ -1618,6 +1645,7 @@ contains
 
        call print('create_cluster: Finished terminating cluster',PRINT_NERD)
     end if
+    call system_timer('cluster_termination')
 
     call print ('Exiting create_cluster_info', PRINT_NERD)
 
@@ -1799,7 +1827,7 @@ contains
           endif
           hybrid_number = 0 
           do j=1,nextlist%N
-             jj = nextlist%int(1,j)
+             jj = nextlist%int(1,j) 
              shift = nextlist%int(2:4,j)
              if (hybrid_mark(jj) == HYBRID_ACTIVE_MARK .and. find_in_array(activelist%int(1,1:activelist%N), jj) == 0) then
                 hybrid_number = hybrid_number+1 
