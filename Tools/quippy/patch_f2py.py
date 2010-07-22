@@ -135,7 +135,7 @@ numpy.f2py.rules.arg_rules[33]['frompyobj'].insert(7, {isoptional:"""\
 """})
 
 def library_option(self, lib):
-   if lib[0] == '-':
+   if lib[0] == '-' or lib.endswith('.a'):
       return lib
    else:
       return '-l' + lib

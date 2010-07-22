@@ -404,8 +404,8 @@ include_dirs  = [s[2:] for s in fields if s[:2] == '-I']
 
 # extract libraries and library_dirs from SYSLIBS Makefile variable
 fields = makefile['SYSLIBS'].split()
-libraries = [s.startswith('-l') and s[2:] or s  for s in fields
-             if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl') ]
+libraries = [s.startswith('-l')  and s[2:] or s  for s in fields
+             if s.startswith('-l') or s == '-Bstatic' or s == '-Bdynamic' or s.startswith('-Wl') or s.endswith('.a') ]
 library_dirs  = [s[2:] for s in fields if s[:2] == '-L']
 
 # everything else in SYSLIBS is an extra link argument
