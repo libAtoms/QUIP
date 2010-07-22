@@ -457,7 +457,7 @@ program crack
 
      if (params%qm_rescale_r) then
         call Print('Reading bulk cell from file '//trim(stem)//'_bulk.xyz')
-        call read_xyz(bulk, trim(stem)//'_bulk.xyz')
+        call read(bulk, trim(stem)//'_bulk.xyz')
 
         call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
              pot1=classicalpot, pot2=qmpot, bulk_scale=bulk, mpi_obj=mpi_glob)
@@ -1151,7 +1151,7 @@ program crack
      call print_title('Force Integration')
 
      fd_start = ds%atoms
-     call read_xyz(fd_end, params%force_integration_end_file)
+     call read(fd_end, params%force_integration_end_file)
 
      allocate (dr(3,ds%atoms%N))
      dr = (fd_end%pos - fd_start%pos)/real(params%force_integration_n_steps,dp)
