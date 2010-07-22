@@ -186,20 +186,22 @@ contains
     character(len=*), optional, intent(in) :: real_format   !% format of real numbers in output
     logical, optional, intent(in) :: mask(:)                !% mask of which atoms to print
 
-    character(len(comment)) :: my_comment
+    type(extendable_str) :: my_comment
     type(atoms_ll_entry), pointer :: entry
     integer :: i
 
-    my_comment = ""
-    if (present(comment)) my_comment = comment
+    call initialise(my_comment)
+    if (present(comment)) call concat(my_comment, comment)
 
     entry => this%first
     i = 1
     do while (associated(entry)) 
-      call print_xyz(entry%at, xyzfile, trim(my_comment) // " atoms_ll_i="//i, properties, all_properties, human_readable, real_format, mask)
+      call print_xyz(entry%at, xyzfile, string(my_comment) // " atoms_ll_i="//i, properties, all_properties, human_readable, real_format, mask)
       entry => entry%next
       i = i + 1
     end do
+    call finalise(my_comment)
+
   end subroutine atoms_ll_print_xyz
 
   !% reads a sequence of configurations with cinoutput, optionally skipping every decimation frames,
