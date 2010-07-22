@@ -292,7 +292,10 @@ def old_prep_compile(self, sources, output_dir, depends=None):
 
   return objects, skip_source
 
+def find_library_file(self, dirs, lib, debug=0):
+   return os.path.join(dirs[0], lib)
+
 from distutils.ccompiler import CCompiler
 CCompiler._setup_compile = old_setup_compile
 CCompiler._prep_comile = old_prep_compile
-   
+CCompiler.find_library_file = find_library_file   
