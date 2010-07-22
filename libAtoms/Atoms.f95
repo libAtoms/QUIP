@@ -4633,6 +4633,7 @@ contains
 
       ! If there's no 'Properties=' tag in parameters then just look for species and positions
       properties_found = get_value(params, 'Properties', prop_names)
+      call print("Property string found: '"//prop_names//"'", PRINT_VERBOSE)
       if (.not. properties_found) then
          prop_names = 'species:S:1:pos:R:3'
       end if
@@ -4668,6 +4669,7 @@ contains
       if (present(properties)) properties = ''
 
       call parse_string(prop_names,':',fields,num_fields)
+      call print("Parsed property string '"//prop_names//"', found "//num_fields//" items", PRINT_VERBOSE)
       Z_found = .false.
       species_found = .false.
       do i=1,num_fields,3
@@ -4691,7 +4693,7 @@ contains
                call add_property(this, fields(i), .false., n_cols=n_cols)
                
             case default
-               call system_abort('Atoms_read_xyz: unknown property type '//fields(i+1))   
+               call system_abort('Atoms_read_xyz: unknown property type "'//fields(i+1)//'" for property "'//fields(i)//'"')   
 
          end select
          if (present(properties)) then 
