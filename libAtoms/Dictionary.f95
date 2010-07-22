@@ -1851,7 +1851,7 @@ contains
        end select
     end do
 
-    if (len(str) > len(dictionary_write_string)) &
+    if (str%len > len(dictionary_write_string)) &
          call system_abort('dictionary_write_string: string too long')
 
     dictionary_write_string = ''//str
