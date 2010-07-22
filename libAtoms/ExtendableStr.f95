@@ -50,10 +50,6 @@ type extendable_str
   integer :: cur = 0
 end type extendable_str
 
-public :: len
-interface len
-  module procedure extendable_str_len
-end interface len
 
 public :: concat
 interface concat
