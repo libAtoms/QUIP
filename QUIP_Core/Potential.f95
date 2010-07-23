@@ -948,7 +948,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   function dummy_energy_func(xx, am_data)
     real(dp) :: xx(:)
-    character(len=*), optional :: am_data(:)
+    character(len=1), optional :: am_data(:)
     real(dp) :: dummy_energy_func
 
     dummy_energy_func = 0.0_dp
@@ -959,7 +959,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   ! compute energy
   function energy_func(x, am_data)
     real(dp) :: x(:)
-    character(len=*), optional :: am_data(:)
+    character(len=1), optional :: am_data(:)
     real(dp) :: energy_func
 
     real(dp) :: max_atom_rij_change
@@ -1022,7 +1022,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   ! result is vectorized version of forces
   function gradient_func(x, am_data)
     real(dp) :: x(:)
-    character(len=*), optional :: am_data(:)
+    character(len=1), optional :: am_data(:)
     real(dp) :: gradient_func(size(x))
 
     real(dp) :: deform_grad(3,3), virial(3,3), deform_grad_inv(3,3)
