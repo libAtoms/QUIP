@@ -77,8 +77,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.assertAlmostEqual(abs(self.at.pos - 0.0).max(), 0.0)
 
    def test_species(self):
-      self.assertEqual([str(self.at.species[i]) for i in frange(len(self.at))],
-                       ['Si']*self.at.n)
+      self.assertEqual(a2s(self.at.species), ['Si']*self.at.n)
 
    def test_zero_1(self):
       self.at.pos[...] = 0.0
@@ -188,8 +187,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
 
    def test_set_atoms_2(self):
       self.at.set_atoms(6)
-      self.assertEqual([str(self.at.species[i]) for i in frange(len(self.at))],
-                       ['C']*self.at.n)
+      self.assertEqual(a2s(self.at.species), ['C']*self.at.n)
 
    def test_set_atoms_3(self):
       new_z = [6]*5 + [14]*5
@@ -200,8 +198,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       new_z = [6]*5 + [14]*5
       new_species = [ElementName[z] for z in new_z]
       self.at.set_atoms(new_z)
-      self.assertEqual([str(self.at.species[i]) for i in frange(len(self.at))],
-                       new_species)
+      self.assertEqual(a2s(self.at.species), new_species)
 
    def test_add_atom_1(self):
       self.at.add_atoms([1.0, 1.0, 1.0], 6)
@@ -631,12 +628,12 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_add_property_str_from_scalar(self):
       self.at.add_property('str', '')
       self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
-      self.assertEqual(list([str(x) for x in self.at.str]), ['']*8)
+      self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_str_from_list(self):
       self.at.add_property('str', ['']*8)
       self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
-      self.assertEqual(list([str(x) for x in self.at.str]), ['']*8)
+      self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_str_from_list_bad_length(self):
       p0 = self.at.properties.copy()
@@ -646,7 +643,7 @@ class TestAtoms_Extras(QuippyTestCase):
    def test_add_property_str_from_array(self):
       self.at.add_property('str', fzeros(8,dtype=str))
       self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
-      self.assertEqual(list([str(x) for x in self.at.str]), ['']*8)
+      self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_property_type(self):
       self.at.add_property('logical', [1]*self.at.n, property_type=PROPERTY_LOGICAL)
