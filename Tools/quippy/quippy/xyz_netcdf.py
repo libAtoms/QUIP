@@ -217,7 +217,7 @@ def PuPyXYZReader(xyz):
       if not 'Lattice' in params:
          raise ValueError('No lattice found in xyz file')
 
-      lattice = numpy.reshape(params['Lattice'], (3,3), order='F')
+      lattice = params.get_value('Lattice') # make a copy
       del params['Lattice']
 
       props_dtype = _props_dtype(properties)
