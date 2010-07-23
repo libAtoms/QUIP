@@ -1030,8 +1030,6 @@ contains
     type(Table) :: outer_layer
     logical :: in_outer_layer
 
-    INIT_ERROR(error)
-
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
     include "mpif.h"
@@ -1040,6 +1038,8 @@ contains
 
     call get_mpi_size_rank(MPI_COMM_WORLD, mpi_size, mpi_rank)
 #endif _MPI
+
+    INIT_ERROR(error)
 
     call print('carve_cluster got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
