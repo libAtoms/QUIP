@@ -329,7 +329,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     call initialise(this%pot, args_str, param_str, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing pot", error)
-
   else if (this%is_sum) then
     if (present(bulk_scale)) call print("Potential_initialise Sum ignoring bulk_scale passed in", PRINT_ALWAYS)
 
