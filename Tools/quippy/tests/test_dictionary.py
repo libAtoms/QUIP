@@ -130,10 +130,10 @@ c=44""")
 
    def test_string_array(self):
       d = Dictionary()
-      d['string'] = s2a(['one', 'two', 'three'])
+      d['string'] = ['one', 'two', 'three']
       a = FortranArray(d.get_array('string'))
-      a[1,1:5] = list('hello')
-      self.assertEqual(list(d['string']), list(a2s(a)))
+      a[1:5,1] = list('hello')
+      self.assertEqual(list(a2s(d['string'])), list(a2s(a)))
 
    def test_int_array2(self):
       d = Dictionary()
@@ -152,6 +152,23 @@ c=44""")
       d_real[2,2] = 1.
       d_real[:,3] = (4.,1.,5.)
       self.assertArrayAlmostEqual(d_real, d['real'])
+
+   def test_get_value(self):
+      d = Dictionary()
+      d['i'] = 1
+      d['s'] = 'string'
+      d['ia'] = [1,2,3]
+      d['sa'] = ['string', 'longer string']
+      d['la'] = [True, False]
+      d['ia2'] = [[1,2,3],
+                  [4,5,6]]
+      for k in d:
+         v1 = d[k]
+         v2 = d.get_value(k)
+         if hasattr(v1, '__iter__'):
+            self.assert_(all(v1 == v2))
+         else:
+            self.assertEqual(v1, v2)
       
 
 if __name__ == '__main__':
