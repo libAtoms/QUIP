@@ -161,9 +161,11 @@ subroutine TB_Initialise_filename(this, args_str, filename, kpoints_obj, mpi_obj
   character(len=*), intent(in) :: filename
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(inoutput) io
+
+  INIT_ERROR(error)
 
   call Initialise(io, filename, INPUT)
 
@@ -180,9 +182,11 @@ subroutine TB_Initialise_inoutput(this, args_str, io_obj, kpoints_obj, mpi_obj, 
   type(Inoutput), intent(inout), optional :: io_obj
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(extendable_str) :: ss
+
+  INIT_ERROR(error)
 
   call Initialise(ss)
   if (present(io_obj)) then
@@ -205,7 +209,9 @@ subroutine TB_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj, er
   character(len=*), intent(in) :: args_str, param_str
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
   call Finalise(this)
 
@@ -350,6 +356,8 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   integer :: max_iter = 1
   integer iter
   logical scf_converged
+
+  INIT_ERROR(error)
 
   my_use_prev_charge = optional_default(.false., use_prev_charge)
 
@@ -529,6 +537,8 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
 
   type(Dictionary) :: params
 
+  INIT_ERROR(error)
+
   call system_timer("TB_calc")
   call system_timer("TB_calc/prep")
 
@@ -688,6 +698,8 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
 
   real(dp), pointer :: w_e(:)
   real(dp), pointer :: w_n(:)
+
+  INIT_ERROR(error)
 
   call system_timer("TB_calc_diag")
   call system_timer("TB_calc_diag/prep")

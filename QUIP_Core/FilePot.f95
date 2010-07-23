@@ -132,11 +132,13 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   type(FilePot_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(MPI_Context), intent(in), optional :: mpi
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(Dictionary) ::  params
   character(len=STRING_LENGTH) :: command, property_list, filename
   real(dp) :: min_cutoff
+
+  INIT_ERROR(error)
 
   this%init_args_str = args_str
 
@@ -216,6 +218,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
   type(Dictionary) :: cli
   logical :: FilePot_log
+
+  INIT_ERROR(error)
 
   if (present(energy)) energy = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -320,6 +324,8 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp), pointer :: local_e_p(:), forces_p(:,:)
   real(dp),dimension(3)          :: QM_cell
   logical :: my_filepot_log
+
+  INIT_ERROR(error)
 
   my_filepot_log = optional_default(.false., filepot_log)
 

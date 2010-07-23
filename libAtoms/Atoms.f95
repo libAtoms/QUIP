@@ -2147,7 +2147,7 @@ contains
 
     type(Atoms), intent(inout) :: this
     logical, optional, intent(in) :: parallel
-    integer, optional, intent(inout) :: error
+    integer, optional, intent(out) :: error
     integer                    :: i, j, n, index
     integer, dimension(3)      :: shift
     real(dp), dimension(3)     :: j_pos
@@ -2157,6 +2157,8 @@ contains
     include "mpif.h"
     real(dp), allocatable :: mpi_send(:), mpi_recv(:)
 #endif
+    INIT_ERROR(error)
+
     ! Flag to specify whether or not to parallelise calculation.
     ! Only actually run in parallel if parallel==.true. AND
     ! _MPI is #defined. Default to serial mode.

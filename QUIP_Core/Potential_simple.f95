@@ -134,9 +134,11 @@ contains
     character(len=*), intent(in) :: filename
     type(MPI_context), intent(in), optional :: mpi_obj
     logical, intent(in), optional :: no_parallel
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     type(inoutput) :: io
+
+    INIT_ERROR(error)
 
     ! WARNING: setting master_only=.true. may lead to failure if not all processes are calling the initialise
     call Initialise(io, filename, INPUT, master_only = .true.)
@@ -152,10 +154,12 @@ contains
     type(Inoutput), intent(inout) :: io_obj
     type(MPI_context), intent(in), optional :: mpi_obj
     logical, intent(in), optional :: no_parallel
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     type(extendable_str) :: es
     logical my_no_parallel
+
+    INIT_ERROR(error)
 
     my_no_parallel = optional_default(.false., no_parallel)
     call Initialise(es)
@@ -180,10 +184,12 @@ contains
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in), optional :: param_str
     type(MPI_context), intent(in), optional :: mpi_obj
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot
     type(Dictionary) :: params
+
+    INIT_ERROR(error)
 
     call Finalise(this)
 
@@ -238,7 +244,9 @@ contains
 
   subroutine Potential_Simple_Finalise(this, error)
     type(Potential_Simple), intent(inout) :: this
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
 
     if(associated(this%ip)) then
        call Finalise(this%ip)
@@ -288,7 +296,7 @@ contains
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: err
     type(MPI_context), intent(in), optional :: mpi_obj
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     integer:: i,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale
@@ -315,6 +323,8 @@ contains
     integer, pointer :: cluster_mark_p_postfix(:)
     integer, pointer :: old_cluster_mark_p(:)
     character(len=FIELD_LENGTH) :: cluster_mark_postfix 
+
+    INIT_ERROR(error)
 
     if (at%N <= 0) then
       RAISE_ERROR("Potential_Simple_Calc called with at%N <= 0", error)
@@ -927,7 +937,9 @@ contains
   subroutine Potential_Simple_Print(this, file, error)
     type(Potential_Simple), intent(inout) :: this
     type(Inoutput), intent(inout),optional:: file
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
 
     if(associated(this%ip)) then
        call Print(this%ip, file=file)
@@ -955,7 +967,9 @@ contains
     real(dp), intent(out), optional :: f(:,:)              !% Forces, dimensioned \texttt{(3,at%N)}
     real(dp), intent(out), optional :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
 
     if(associated(this%ip)) then
        call setup_parallel(this%ip, at, e, local_e, f, virial)
@@ -987,7 +1001,9 @@ contains
 #endif
        end subroutine callback
     end interface
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
     
     if (.not. associated(this%callbackpot)) then
       RAISE_ERROR('Potential_Simple_set_callback: this Potential_Simple is not a CallbackPot', error)

@@ -2284,7 +2284,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
        end subroutine hook
     end interface
     character(len=1),optional::data(:)
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     real(dp) search_dir_mag
     real(dp) p0_dot, p1_dot, new_p_dot
@@ -2299,6 +2299,8 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     integer l_error
     real(dp) est_step_size
+
+    INIT_ERROR(error)
 
     allocate(p0(size(x)))
     allocate(p1(size(x)))
@@ -2579,7 +2581,11 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     real(dp) :: g_i_dot_g_i, g_ip1_dot_g_i, g_ip1_dot_g_ip1
     real(dp) :: gamma_i
 
+    integer :: l_error
+
     integer :: my_hook_print_interval
+
+    INIT_ERROR(error)
 
     if (current_verbosity() >= PRINT_VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
@@ -2638,12 +2644,19 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 
 	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
 		  norm2(g_i) // " " // N_evals // " n_minim pre linmin")
+	l_error = ERROR_NONE
 	call n_linmin(x_i, bothfunc, g_i, E_i, h_i, &
 		      x_ip1, g_ip1, E_ip1, &
-		      max_step_size, accuracy, N_evals, max_N_evals, hook,data)
-	if (N_evals > max_N_evals) then
-	  final_E = E_i
-	  RAISE_ERROR("n_minim error: Ran out of iterations in linmin", error)
+		      max_step_size, accuracy, N_evals, max_N_evals, hook,data, l_error)
+	if (l_error == ERROR_MINIM_NOT_CONVERGED) then
+	   if (N_evals > max_N_evals) then
+	     final_E = E_i
+	     RAISE_ERROR_WITH_KIND(l_error, "linmin: n_minim didn't converge", error)
+	   endif
+	   ! we're just going to continue after an unconverged linmin,
+	   CLEAR_ERROR()
+	else
+	   PASS_ERROR_WITH_INFO("linmin: n_minim error", error)
 	endif
 
 	call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &

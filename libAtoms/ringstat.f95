@@ -57,7 +57,7 @@ contains
     integer, intent(in)               :: root
     integer, intent(out)              :: dist(at%N)
     logical, intent(in), optional     :: mask(at%N)
-    integer, intent(inout), optional  :: error
+    integer, intent(out), optional  :: error
 
     ! ---
 
@@ -74,6 +74,8 @@ contains
     integer   :: new_walker(MAX_WALKER)
 
     ! ---
+
+    INIT_ERROR(error)
 
     n_walker     = 1
     walker(1)    = root
@@ -125,13 +127,15 @@ contains
     integer, intent(out)              :: dist(at%N, at%N)
     logical, intent(in), optional     :: mask(at%N)
     integer, intent(out), optional    :: diameter
-    integer, intent(inout), optional  :: error
+    integer, intent(out), optional  :: error
 
     ! ---
 
     integer   :: i
     
     ! ---
+
+    INIT_ERROR(error)
 
     if (present(diameter)) then
        diameter  = 0
@@ -171,7 +175,7 @@ contains
     integer, intent(in)                         :: max_ring_len
     integer, intent(inout)                      :: stat(max_ring_len)
     logical, intent(in), optional               :: mask(at%N)
-    integer, intent(inout), optional            :: error
+    integer, intent(out), optional            :: error
 
     ! ---
 
@@ -209,6 +213,8 @@ contains
     ! ---
 
 !    allocate(done(at%connect%neighbour1%t%N+at%connect%neighbour2%t%N))
+
+    INIT_ERROR(error)
 
     cutoff_sq  = cutoff**2
 

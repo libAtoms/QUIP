@@ -210,7 +210,7 @@ contains
     logical, optional, intent(in) :: netcdf4
     logical, optional, intent(in) :: no_compute_index
     type(MPI_context), optional, intent(in) :: mpi
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     integer :: do_append, do_netcdf4, do_no_compute_index
 
@@ -316,7 +316,7 @@ contains
   subroutine cinoutput_query(this, frame, error)
     type(CInOutput), intent(inout) :: this
     integer, optional, intent(in) :: frame
-    integer, optional, intent(out) :: error
+    integer, intent(out), optional :: error
     integer(C_INT) :: do_frame
 
     integer :: cioquery_status, cioskip_status
@@ -373,7 +373,7 @@ contains
     type(Atoms), target, intent(out) :: at
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: properties
     type(Table) :: data
@@ -538,7 +538,7 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     logical :: dum
@@ -775,7 +775,7 @@ contains
     character(len=*), intent(in) :: filename
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
 
@@ -794,7 +794,7 @@ contains
     type(CInOutput), intent(inout) :: cio
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     INIT_ERROR(error)
     call cinoutput_read(cio, this, frame, zero, error=error)
@@ -808,7 +808,7 @@ contains
     character(len=*), intent(in) :: filename
     logical, optional, intent(in) :: append
     character(*), intent(in), optional :: properties(:)    
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
 
@@ -829,7 +829,7 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
-    integer, optional, intent(inout) :: error
+    integer, intent(out), optional :: error
 
     INIT_ERROR(error)
     call cinoutput_write(cio, this, properties, int_format, real_format, frame, shuffle, deflate, deflate_level, error=error)

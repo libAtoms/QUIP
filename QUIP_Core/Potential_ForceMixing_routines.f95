@@ -43,11 +43,13 @@
     type(Potential), optional, intent(inout), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: params
     logical :: minimise_bulk, do_tb_defaults, do_rescale_r
     real(dp) :: dummy_E
+
+    INIT_ERROR(error)
 
     call finalise(this)
 
@@ -262,6 +264,8 @@
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end of workaround for pgf90 bug (as of 9.0-1)
+
+    INIT_ERROR(error)
 
     ! Override parameters with those given in args_str
     call initialise(params)

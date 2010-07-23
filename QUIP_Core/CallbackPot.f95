@@ -162,9 +162,11 @@ subroutine Callbackpot_Initialise(this, args_str, mpi, error)
   type(Callbackpot_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(MPI_Context), intent(in), optional :: mpi
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(Dictionary) :: params
+
+  INIT_ERROR(error)
 
   call finalise(this)
 
@@ -192,7 +194,9 @@ subroutine callbackpot_set_callback(this, callback, error)
 #endif
      end subroutine callback
   end interface
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
   if (n_callbacks >= MAX_CALLBACKS) then
        RAISE_ERROR('CallbackPot_Initialise: Too many registered callback routines', error)
@@ -254,7 +258,9 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
 #endif
   real(dp), pointer :: local_e_ptr(:), force_ptr(:,:)
   logical :: calc_energy, calc_local_e, calc_force, calc_virial
-  
+
+  INIT_ERROR(error)
+
   calc_energy = .false.
   calc_local_e = .false.
   calc_force = .false.
