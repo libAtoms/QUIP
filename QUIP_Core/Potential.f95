@@ -208,9 +208,11 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
   character(len=*), intent(in) :: param_filename !% name of xml parameter file for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(inoutput) :: io
+
+  INIT_ERROR(error)
 
   call initialise(io, param_filename, INPUT, master_only=.true.)
   call initialise(this, args_str, io, bulk_scale, mpi_obj, error=error)
@@ -223,9 +225,11 @@ subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi
   type(InOutput), intent(in) :: io_obj !% name of xml parameter inoutput for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(extendable_str) :: es
+
+  INIT_ERROR(error)
 
   call initialise(es)
   if (present(mpi_obj)) then
@@ -246,10 +250,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   character(len=*), optional, intent(in) :: param_str !% contents of xml parameter file for potential initializers, if needed
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), optional, intent(in) :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(Potential), pointer :: u_pot1, u_pot2
   type(Dictionary) :: params
+
+  INIT_ERROR(error)
 
   call finalise(this)
   call initialise(params)
@@ -372,7 +378,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   recursive subroutine potential_finalise(this, error)
     type(Potential), intent(inout) :: this
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
     if (this%is_simple) then
        call finalise(this%pot)
@@ -421,7 +429,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), intent(out), optional :: df(:,:)
     real(dp), intent(out), optional :: virial(3,3)
     character(len=*), intent(in), optional :: args_str
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
     if (this%is_simple) then
        call Calc(this%pot, at, e, local_e, f, df, virial, args_str, error=error)
@@ -456,7 +466,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), intent(out), optional :: f(:,:)              !% Forces, dimensioned \texttt{(3,at%N)}
     real(dp), intent(out), optional :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
 
     if(this%is_simple) then
        call setup_parallel(this%pot, at, e, local_e, f, virial)
@@ -466,7 +478,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   subroutine potential_print(this, file, error)
     type(Potential), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
     if (this%is_simple) then
        call Print('Potential containing potential')
@@ -491,8 +505,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   function potential_cutoff(this, error)
     type(Potential), intent(in) :: this
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
     real(dp) :: potential_cutoff
+
+  INIT_ERROR(error)
 
     if (this%is_simple) then
        potential_cutoff = cutoff(this%pot)
@@ -543,7 +559,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), dimension(3,3), optional :: external_pressure
     logical, intent(in), optional :: use_precond
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
-    integer, intent(inout), optional :: error !% set to 1 if an error occurred during minimisation
+    integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
     integer::potential_minim
 
     logical :: my_use_precond
@@ -561,6 +577,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     character, allocatable :: am_data(:)
     character, dimension(1) :: am_mold
     integer :: status
+
+    INIT_ERROR(error)
 
     my_use_precond = optional_default(.false., use_precond)
 
@@ -1132,6 +1150,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp) :: max_atom_rij_change
     integer :: n_nearest
 
+    INIT_ERROR(error)
+
     am = transfer(am_data, am)
     call atoms_repoint(am%minim_at)
 
@@ -1204,6 +1224,8 @@ max_atom_rij_change = 1.038_dp
     integer, pointer, dimension(:) :: move_mask, fixed_pot
 
     type(potential_minimise) :: am
+
+    INIT_ERROR(error)
 
     call system_timer("both_func")
 
@@ -1406,9 +1428,11 @@ max_atom_rij_change = 1.038_dp
     character(len=*), intent(in) :: args_str
     type(Potential), intent(in), target :: pot1, pot2
     type(MPI_Context), intent(in), optional :: mpi
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: params
+
+    INIT_ERROR(error)
 
     call finalise(this)
 
@@ -1483,6 +1507,8 @@ max_atom_rij_change = 1.038_dp
     real(dp), allocatable :: my_f_1(:,:), my_f_2(:,:)
     real(dp), allocatable :: my_df_1(:,:), my_df_2(:,:)
     real(dp) :: my_virial_1(3,3), my_virial_2(3,3)
+
+    INIT_ERROR(error)
 
     if (present(local_e)) allocate(my_local_e_1(size(local_e)), my_local_e_2(size(local_e)))
     if (present(f)) allocate(my_f_1(size(f, 1),size(f, 2)), my_f_2(size(f, 1),size(f, 2)))
@@ -1590,7 +1616,7 @@ max_atom_rij_change = 1.038_dp
     integer, intent(in), optional :: hook_interval, write_interval, connect_interval
     type(CInOutput), intent(inout), optional :: trajectory
     character(len=*), intent(in), optional :: args_str
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
     interface
        subroutine hook()
        end subroutine hook
@@ -1601,6 +1627,8 @@ max_atom_rij_change = 1.038_dp
     real(dp), pointer, dimension(:,:) :: f
     character(len=1024) :: my_args_str
     type(Dictionary) :: params
+
+    INIT_ERROR(error)
 
     my_hook_interval = optional_default(1, hook_interval)
     my_write_interval = optional_default(1, write_interval)

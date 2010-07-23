@@ -29,6 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ! find largest spherical hole in a configuation starting from some initial guess
+#include "error.inc"
 module find_space_minim_mod
 use libatoms_module
 implicit none
@@ -101,24 +102,25 @@ function dfunc(x,data)
 
 end function dfunc
 
-subroutine apply_precond_dummy(x,g,P_g,my_error,data)
+subroutine apply_precond_dummy(x,g,P_g,data,error)
   real(dp) :: x(:), g(:), P_g(:)
-  integer :: my_error
   character, optional :: data(:)
+  integer, optional :: error
 
+  INIT_ERROR(error)
   P_g = g
 end subroutine apply_precond_dummy
 
-subroutine bothfunc(x,E,f,my_error,data)
+subroutine bothfunc(x,E,f,data,error)
   real(dp) :: x(:), E, f(:)
-  integer :: my_error
   character, optional :: data(:)
+  integer,optional :: error
 
   integer :: i
   type(Atoms) :: at
   real(dp) :: r(3), r_mag
 
-  my_error = 0
+  INIT_ERROR(error)
 
   if (.not. present(data)) call system_abort("find_space_minim_mod func needs data")
   if (size(x) /= 3) call system_abort("find_space_minim_mod bothfunc needs x(1:3)")
@@ -138,8 +140,6 @@ subroutine bothfunc(x,E,f,my_error,data)
       f = f + ( (1.0_dp/r_mag) * exp(-0.1_dp/(rad-r_mag)) * (-0.1_dp/(rad-r_mag)**2) - (1.0_dp/r_mag**2) * exp(-0.1_dp/(rad-r_mag)) ) * r/r_mag
     endif
   end do
-
-  my_error = 0
 
 end subroutine bothfunc
 

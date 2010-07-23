@@ -255,7 +255,9 @@ contains
     integer, optional, intent(in)    :: Nlogical !% Number of logical columns
     integer, optional, intent(in)    :: max_length !%  Number of rows to initially allocate
     type(table)                      :: temp
-    integer, optional, intent(inout) :: error
+    integer, optional, intent(out) :: error
+
+    INIT_ERROR(error)
 
     if (present(Nint) .or. present(Nreal) .or. present(Nstr) .or. present(Nlogical)) then
 
@@ -486,7 +488,7 @@ contains
     real(dp),    intent(in), optional  :: realpart(:)
     character(TABLE_STRING_LENGTH), intent(in), optional :: strpart(:)
     logical, intent(in), optional :: logicalpart(:)
-    integer, intent(inout), optional::error
+    integer, intent(out), optional::error
 
     integer :: intsize, realsize, strsize, logicalsize
 
@@ -494,6 +496,8 @@ contains
     real(dp),  allocatable  :: use_realpart(:)
     character(TABLE_STRING_LENGTH), allocatable :: use_strpart(:)
     logical, allocatable :: use_logicalpart(:)
+
+    INIT_ERROR(error)
 
     intsize = 0
     realsize = 0
@@ -718,7 +722,9 @@ contains
   subroutine table_append_int_element(this,intpart, error)
     type(Table), intent(inout) :: this
     integer,     intent(in)    :: intpart
-    integer, intent(inout), optional :: error
+    integer, intent(out), optional :: error
+
+    INIT_ERROR(error)
 
     call table_append_row(this,(/intpart/), error=error)
     PASS_ERROR(error)

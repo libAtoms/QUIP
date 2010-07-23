@@ -172,7 +172,7 @@ contains
     type(MPI_context), intent(in)             :: mpi
     integer, intent(in), optional             :: decomposition(3)
     real(DP), intent(in), optional            :: verlet_shell
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
@@ -181,6 +181,8 @@ contains
     logical   :: periods_for_mpi(3)
 
     ! ---
+
+    INIT_ERROR(error)
 
     call print("- domain_decomposition_initialise -", PRINT_VERBOSE)
 
@@ -299,7 +301,7 @@ contains
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
@@ -307,6 +309,8 @@ contains
     integer, pointer :: ptr(:)
 
     ! ---
+
+    INIT_ERROR(error)
 
     call print("- domain_decomposition_allocate -", PRINT_VERBOSE)
 
@@ -387,13 +391,15 @@ contains
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer :: i, j
 
     ! ---
+
+    INIT_ERROR(error)
 
     j = 0
     do i = 1, at%N
@@ -459,13 +465,15 @@ contains
     type(Atoms), intent(inout)                :: at
     real(DP), intent(in)                      :: border
     real(DP), intent(in), optional            :: verlet_shell
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer  :: d
 
     ! ---
+
+    INIT_ERROR(error)
 
     call print("- domain_decomposition_set_border -", PRINT_VERBOSE)
 
@@ -604,7 +612,7 @@ contains
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
@@ -624,6 +632,8 @@ contains
     real(DP)  :: off_l(3), off_r(3)
 
     ! ---
+
+    INIT_ERROR(error)
 
     call system_timer("domain_decomposition_communicate_particles")
 
@@ -818,7 +828,7 @@ contains
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
     logical, intent(in)                       :: new_list
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
@@ -829,6 +839,8 @@ contains
     real(DP)  :: off_l(3), off_r(3)
 
     ! ---
+
+    INIT_ERROR(error)
 
     call system_timer("domain_decomposition_communicate_ghosts")
 
@@ -1028,13 +1040,15 @@ contains
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(inout), optional          :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer   :: i, d, list_off_r, list_off_l, n_recv_r, n_recv_l, cur
 
     ! ---
+
+    INIT_ERROR(error)
 
     call system_timer("domain_decomposition_communicate_forces")
 
@@ -1117,13 +1131,15 @@ contains
     type(Table), intent(in)           :: keys          !% List of keys
     logical, intent(out)              :: mask(this%N)  !% True if in keys
     integer, intent(out), optional    :: s             !% Size of the buffer
-    integer, intent(inout), optional  :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer :: i, entry_i
 
     ! ---
+
+    INIT_ERROR(error)
 
     mask = .false.
     s = 0
@@ -1168,13 +1184,15 @@ contains
     integer, intent(in)               :: data_i
     integer, intent(inout)            :: buffer_i
     character(1), intent(inout)       :: buffer(:)
-    integer, intent(inout), optional  :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer  :: i
 
     ! ---
+
+    INIT_ERROR(error)
 
     do i = 1, this%N
        if (mask(i)) then
@@ -1222,13 +1240,15 @@ contains
     integer, intent(inout)            :: buffer_i
     character(1), intent(in)          :: buffer(:)
     integer, intent(in)               :: data_i
-    integer, intent(inout), optional  :: error
+    integer, intent(out), optional :: error
 
     ! ---
 
     integer  :: i, ndims
 
     ! ---
+
+    INIT_ERROR(error)
 
     do i = 1, this%N
        if (mask(i)) then

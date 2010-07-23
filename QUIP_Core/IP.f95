@@ -196,9 +196,11 @@ subroutine IP_Initialise_filename(this, args_str, filename, mpi_obj, error)
   character(len=*), intent(in) :: args_str
   character(len=*), intent(in) :: filename  !% File name containing the IP parameters
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(inoutput) io
+
+  INIT_ERROR(error)
 
   call Initialise(io, filename, INPUT)
 
@@ -214,9 +216,11 @@ subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj, error)
   character(len=*), intent(in) :: args_str
   type(inoutput), intent(inout), optional :: io_obj
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(extendable_str) :: ss
+
+  INIT_ERROR(error)
 
   call Initialise(ss)
   if (present(io_obj)) then
@@ -235,11 +239,13 @@ recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error
   type(IP_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(MPI_context), intent(in), optional :: mpi_obj
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue, is_template
+
+  INIT_ERROR(error)
 
   call Finalise(this)
 
@@ -477,7 +483,7 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, err
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional      :: args_str 
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   logical mpi_active
 
@@ -485,6 +491,8 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, err
   real(dp), dimension(:), allocatable :: local_e_core
   real(dp), dimension(:,:), allocatable :: f_core
   real(dp), dimension(3,3) :: virial_core
+
+  INIT_ERROR(error)
 
   call system_timer("IP_Calc")
 
@@ -615,7 +623,9 @@ end subroutine IP_Calc
 recursive subroutine IP_Print(this, file, error)
   type(IP_type), intent(inout) :: this
   type(Inoutput), intent(inout),optional :: file
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
   call Print ("IP : " // this%functional_form, file=file)
 
@@ -710,10 +720,12 @@ recursive subroutine setup_parallel_groups(this, mpi, pgroup_size, error)
   type(IP_type), intent(inout) :: this
   type(mpi_context), intent(in) :: mpi
   integer, intent(in) :: pgroup_size
-  integer, intent(inout), optional :: error
+  integer, intent(out), optional :: error
 
   type(mpi_context) :: mpi_local
   integer :: split_index
+
+  INIT_ERROR(error)
 
   if (mpi%active) then
     split_index = mpi%my_proc/pgroup_size

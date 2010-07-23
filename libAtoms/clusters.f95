@@ -149,7 +149,7 @@ contains
 
     type(inoutput), optional :: debugfile
 
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
 
     !local
     logical                             :: do_nneighb_only, do_min_images_only
@@ -159,6 +159,8 @@ contains
     integer, allocatable, dimension(:) :: repeats
     real(dp), allocatable, dimension(:) :: norm2shift
     type(Connection), pointer :: use_connect
+
+    INIT_ERROR(error)
 
     if (present(debugfile)) call print("bfs_step", file=debugfile)
     if (present(alt_connect)) then
@@ -373,11 +375,13 @@ contains
     type(Atoms), intent(in) :: this
     type(Table), intent(in) :: input
     type(Table), intent(out) :: output
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
     integer::newatoms
 
     integer :: n, i, j, k, p, m, n_in, nn, ishift(3), jshift(3), kshift(3)
     real(dp) :: r_ij, r_kj
+
+    INIT_ERROR(error)
 
     ! Check table size
     if(input%intsize /= 4 .or. input%realsize /= 0) then
@@ -1008,7 +1012,7 @@ contains
     type(Atoms), intent(in), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), intent(in) :: cluster_info
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
     type(Atoms) :: cluster
 
     type(Dictionary) :: params
@@ -1025,6 +1029,8 @@ contains
     character(len=255)                :: clusterfilename
     type(Table) :: outer_layer
     logical :: in_outer_layer
+
+    INIT_ERROR(error)
 
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
@@ -1251,7 +1257,7 @@ contains
     character(len=*), intent(in) :: args_str
     type(Table), optional, intent(out)   :: cut_bonds !% Return a list of the bonds cut when making
     !% the cluster.  See create_cluster() documentation.
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
     type(Table) :: cluster_info
 
     type(Dictionary) :: params
@@ -1281,6 +1287,8 @@ contains
     type(Connection), pointer :: use_connect
     logical :: connectivity_just_from_connect
     logical :: cluster_changed, cluster_hopping
+
+    INIT_ERROR(error)
 
     call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
@@ -1696,7 +1704,7 @@ contains
   subroutine create_hybrid_weights(at, args_str, error)
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: args_str
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
 
     type(Dictionary) :: params
     logical :: has_distance_ramp_inner_radius, has_distance_ramp_outer_radius, has_distance_ramp_center
@@ -1728,6 +1736,8 @@ contains
     logical :: add_this_atom, more_hops
     integer :: cur_trans_hop
     real(dp) :: bond_len, d
+
+    INIT_ERROR(error)
 
 ! only one set of defaults now, not one in args_str and one in arg list 
     call initialise(params)
@@ -2175,7 +2185,7 @@ contains
     integer :: fit_hops
     type(Table), intent(out) :: embedlist, fitlist
     logical, intent(in), optional :: nneighb_only, min_images_only
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
 
     integer, pointer :: hybrid_mark(:)
     integer :: n_region1, n_region2 !, n_term
@@ -2187,6 +2197,8 @@ contains
     integer :: list_1
 
     integer :: old_n
+
+    INIT_ERROR(error)
 
     call print('Entered create_embed_and_fit_lists.',PRINT_VERBOSE)
     do_nneighb_only = optional_default(.false., nneighb_only)
@@ -2320,9 +2332,11 @@ contains
 
     type(Atoms), intent(in)  :: at
     type(Table), intent(out) :: embedlist, fitlist
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
 
     type(Table)              :: tmpfitlist
+
+    INIT_ERROR(error)
 
     call print('Entered create_embed_and_fit_lists_from_cluster_mark.',PRINT_VERBOSE)
     call wipe(embedlist)
@@ -2379,9 +2393,11 @@ contains
     type(Table),       intent(inout) :: inner, outer
     type(Table),       intent(inout) :: list
     integer, optional, intent(in)    :: verbosity
-    integer, optional, intent(inout)    :: error
+    integer, optional, intent(out) :: error
 
     integer                          :: n, my_verbosity, atom(list%intsize)
+
+    INIT_ERROR(error)
 
     my_verbosity = optional_default(PRINT_NORMAL,verbosity)
 
@@ -2448,11 +2464,13 @@ contains
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
     type(inoutput), optional :: debugfile
-    integer, intent(inout), optional :: error
+    integer, optional, intent(out) :: error
 
     type(Table)                          :: inner_region
     type(Table)                          :: outer_region
     logical                              :: no_hysteresis
+
+    INIT_ERROR(error)
 
     if (present(debugfile)) call print("construct_hysteretic_region radii " // inner_radius // " " // outer_radius, file=debugfile)
     !check the input arguments only in construct_region.
@@ -2541,7 +2559,7 @@ contains
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
 type(inoutput), optional :: debugfile
-    integer, optional,intent(inout) :: error
+    integer, optional, intent(out) :: error
 
     logical                             :: do_use_avgpos
     logical                             :: do_loop_atoms_no_connectivity
@@ -2554,6 +2572,8 @@ type(inoutput), optional :: debugfile
     integer                             :: cur_hop
     real(dp), pointer                   :: use_pos(:,:)
     integer                             ::  shift_i(3)
+
+    INIT_ERROR(error)
 
     do_loop_atoms_no_connectivity = optional_default(.false.,loop_atoms_no_connectivity)
 
@@ -2696,13 +2716,15 @@ type(inoutput), optional :: debugfile
     type(Atoms) :: this
     real(dp), optional :: nneightol
     logical, optional :: avgpos, reset
-    integer, optional,intent(inout) :: error
+    integer, optional, intent(out) :: error
 
     type(Atoms), save :: nn_atoms
     integer, pointer, dimension(:) :: nn, old_nn, active
     integer  :: i
     real(dp) :: use_nn_tol
     logical  :: use_avgpos, do_reset
+
+    INIT_ERROR(error)
 
     use_nn_tol = optional_default(this%nneightol, nneightol)
     use_avgpos = optional_default(.true., avgpos)
@@ -3239,12 +3261,14 @@ type(inoutput), optional :: debugfile
     type(Table), optional, intent(in)    :: atomlist !the seed of the QM region
     logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
     logical,  optional, intent(out)   :: list_changed
-    integer, optional,intent(inout) :: error
+    integer, optional, intent(out) :: error
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, ext_qmlist
 !    real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
+
+    INIT_ERROR(error)
 
     if (count((/present(origin),present(atomlist)/))/=1) then
       RAISE_ERROR('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.', error)
@@ -3423,12 +3447,14 @@ type(inoutput), optional :: debugfile
     logical, intent(in), optional :: active_trans_only !% if present and true, select all atoms marked ACTIVE or TRANS
     !% exactly one of all_but_term and active_trans_only must be present and true
     character(len=*), optional, intent(in) :: int_property !% if present, property to check, default cluster_mark
-    integer, optional,intent(inout) :: error
+    integer, optional, intent(out) :: error
 
     integer :: i
     integer, pointer :: hybrid_mark(:)
     logical              :: my_all_but_term, my_active_trans_only
     character(STRING_LENGTH) :: my_int_property
+
+    INIT_ERROR(error)
 
     if (.not. present(all_but_term) .and. .not. present(active_trans_only)) then
       RAISE_ERROR("get_hybrid_list called with neither all_but_term nor active_trans_only present", error)

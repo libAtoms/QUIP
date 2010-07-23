@@ -30,26 +30,28 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Error handling, see error.f90 for the functions called in these macros.
+!X Error handling, see error.f95 for the functions called in these macros.
 !X
 !% Error passing works as follows:
-!% - *error* needs to be intent(inout) and optional
+!% - *error* needs to be intent(out) and optional
+!% - all functions that receive *error* as an argument must call INIT_ERROR(error)
 !% - RAISE_ERROR is used whenever an error occurs. If *error* is not present,
 !%   the program execution will be terminated immediately. If *error* is
 !%   present it will be set to some value not equal ERROR_NONE and the execution
 !%   of the subroutine will be stopped.
-!% - PASS_ERROR is used after a function that returns error, i.e.
-!%     call func(..., error=error)
-!%     PASS_ERROR
+!% - PASS_ERROR is used after a function or subroutine that returns error, i.e.
+!%     call sub(..., error=error)
+!%     PASS_ERROR(error)
 !%   If no error occurs (i.e. error==ERROR_NONE), execution will proceed as
 !%   usual. If an error occured, the current function will be terminated after
 !%   the location of the error is passed to the error module.
+!%   If the calling routine handles the error itself, rather than passing
+!%   it up with PASS_ERROR(), CLEAR_ERROR() should be used to clear the error
+!%   info stack
 !% - PASS_ERROR_WITH_INFO is like PASS_ERROR, just an additional string can be
 !%   provided describing the error, or parameters.
 !% - HANDLE_ERROR will print the error history and stop execution of the program
 !%   after an error occured.
-!%
-!% On the top level, the error variable has to be initialized with ERROR_NONE.
 !%
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

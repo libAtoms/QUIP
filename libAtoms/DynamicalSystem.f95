@@ -1336,7 +1336,7 @@ contains
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force, do_calc_dists
-     integer, optional,     intent(inout)  :: error
+     integer, optional,     intent(out)  :: error
 
      logical                               :: do_parallel, do_store, my_do_calc_dists
      integer                               :: i, j, g, n, ntherm
@@ -1348,6 +1348,8 @@ contains
      integer                               :: error_code, pos_indices(3), cf_indices(2)
 #endif
      
+     INIT_ERROR(error)
+
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
      my_do_calc_dists = optional_default(.true., do_calc_dists)
