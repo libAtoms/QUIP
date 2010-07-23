@@ -54,8 +54,6 @@ module dictionary_module
   integer, parameter :: PROPERTY_STR     = 3
   integer, parameter :: PROPERTY_LOGICAL = 4
 
-  integer, parameter :: dict_char_a_len = 10
-
   integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
   integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
 
@@ -81,7 +79,7 @@ module dictionary_module
      real(dp), pointer :: r_a(:) => null()
      complex(dp), pointer :: c_a(:) => null()
      logical, pointer :: l_a(:) => null()
-     character(len=dict_char_a_len), pointer :: s_a(:) => null()
+     character(len=1), pointer :: s_a(:,:) => null()
 
      integer, pointer :: i_a2(:,:) => null()
      real(dp), pointer :: r_a2(:,:) => null()
@@ -119,12 +117,12 @@ module dictionary_module
   !% Set a value in a Dictionary
   private :: dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
   private :: dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
-  private :: dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a
+  private :: dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a, dictionary_set_value_s_a2
   private :: dictionary_set_value_d
   interface set_value
      module procedure dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
      module procedure dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
-     module procedure dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a
+     module procedure dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a, dictionary_set_value_s_a2
      module procedure dictionary_set_value_d
      module procedure dictionary_set_value_i_a2
      module procedure dictionary_set_value_r_a2
@@ -133,12 +131,12 @@ module dictionary_module
   !% Get a value from a Dictionary
   private :: dictionary_get_value_i, dictionary_get_value_r, dictionary_get_value_c, dictionary_get_value_l
   private :: dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
-  private :: dictionary_get_value_s, dictionary_get_value_s_es, dictionary_get_value_s_a
+  private :: dictionary_get_value_s, dictionary_get_value_s_es, dictionary_get_value_s_a, dictionary_get_value_s_a2
   private :: dictionary_get_value_d
   interface get_value
      module procedure dictionary_get_value_i, dictionary_get_value_r, dictionary_get_value_c, dictionary_get_value_l
      module procedure dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
-     module procedure dictionary_get_value_s, dictionary_get_value_s_es, dictionary_get_value_s_a
+     module procedure dictionary_get_value_s, dictionary_get_value_s_es, dictionary_get_value_s_a, dictionary_get_value_s_a2
      module procedure dictionary_get_value_d
      module procedure dictionary_get_value_i_a2
      module procedure dictionary_get_value_r_a2
@@ -234,7 +232,7 @@ contains
     character(len=*), intent(in) :: key
     integer, intent(in), optional :: verbosity
     type(Inoutput), intent(inout), optional :: file
-    integer :: i
+    integer :: i, j
 
     if (this%type == T_NONE) then
        call print("Dict entry NONE", verbosity, file)
@@ -274,8 +272,10 @@ contains
     else if (this%type == T_CHAR_A) then
        write (line,'("Dict entry string array ",A,1x,I0)') trim(key), size(this%s_a)
        call print(line, verbosity,file)
-       do i=1,size(this%s_a)
-          call print(this%s_a(i),verbosity,file)
+       do i=1,size(this%s_a,1)
+          do j=1,size(this%s_a,2)
+             call print(this%s_a(i,j),verbosity,file)
+          end do
        end do
     else if (this%type == T_INTEGER_A2) then
        call print("Dict entry integer array "//shape(this%i_a2), verbosity,file)
@@ -600,16 +600,37 @@ contains
     character(len=*), intent(in) :: value(:)
 
     type(DictEntry) entry
+    integer entry_i, i, j
+    logical do_alloc
+
+    entry%type = T_CHAR_A
+    entry%len2 = (/len(value(1)), size(value) /)
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
+    do i=1,entry%len2(1)
+       do j=1,entry%len2(2)
+          this%entries(entry_i)%s_a(i,j) = value(j)(i:i)
+       end do
+    end do
+    call finalise(entry)
+  end subroutine dictionary_set_value_s_a
+
+  subroutine dictionary_set_value_s_a2(this, key, value)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    character, intent(in) :: value(:,:)
+
+    type(DictEntry) entry
     integer entry_i
     logical do_alloc
 
     entry%type = T_CHAR_A
-    entry%len = size(value)
+    entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(size(value)))
+    if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
     this%entries(entry_i)%s_a = value
     call finalise(entry)
-  end subroutine dictionary_set_value_s_a
+  end subroutine dictionary_set_value_s_a2
 
   subroutine dictionary_set_value_d(this, key, value)
     type(Dictionary), intent(inout) :: this
@@ -980,12 +1001,12 @@ contains
   function dictionary_get_value_s_a(this, key, v, case_sensitive, i)
     type(Dictionary), intent(in) :: this
     character(len=*) key
-    character(len=dict_char_a_len), intent(out) :: v(:)
+    character(len=*), intent(out) :: v(:)
     logical :: dictionary_get_value_s_a
     logical, optional :: case_sensitive
     integer, optional :: i
 
-    integer entry_i
+    integer entry_i, j, k
 
     entry_i = lookup_entry_i(this, key, case_sensitive)
     if (present(i)) i = entry_i
@@ -996,8 +1017,12 @@ contains
     endif
 
     if (this%entries(entry_i)%type == T_CHAR_A) then
-       if (size(v) >= size(this%entries(entry_i)%s_a)) then
-          v(1:size(this%entries(entry_i)%s_a)) = this%entries(entry_i)%s_a
+       if (len(v(1)) >= size(this%entries(entry_i)%s_a,1) .and. size(v) >= size(this%entries(entry_i)%s_a,2)) then
+          do k=1,this%entries(entry_i)%len2(1)
+             do j=1,this%entries(entry_i)%len2(2)
+                v(j)(k:k) = this%entries(entry_i)%s_a(k,j)
+             end do
+          end do
           dictionary_get_value_s_a = .true.
        else
           dictionary_get_value_s_a = .false.
@@ -1007,6 +1032,36 @@ contains
     endif
   end function dictionary_get_value_s_a
 
+  function dictionary_get_value_s_a2(this, key, v, case_sensitive, i)
+    type(Dictionary), intent(in) :: this
+    character(len=*) key
+    character, intent(out) :: v(:,:)
+    logical :: dictionary_get_value_s_a2
+    logical, optional :: case_sensitive
+    integer, optional :: i
+
+    integer entry_i
+
+    entry_i = lookup_entry_i(this, key, case_sensitive)
+    if (present(i)) i = entry_i
+
+    if (entry_i <= 0) then
+       dictionary_get_value_s_a2 = .false.
+       return
+    endif
+
+    if (this%entries(entry_i)%type == T_CHAR_A) then
+       if (size(v,1) >= size(this%entries(entry_i)%s_a,1) .and. size(v,2) >= size(this%entries(entry_i)%s_a,2)) then
+          v(1:size(this%entries(entry_i)%s_a,1),1:size(this%entries(entry_i)%s_a,2)) = this%entries(entry_i)%s_a
+          dictionary_get_value_s_a2 = .true.
+       else
+          dictionary_get_value_s_a2 = .false.
+       endif
+    else
+       dictionary_get_value_s_a2 = .false.
+    endif
+
+  end function dictionary_get_value_s_a2
 
 
   function dictionary_get_value_d(this, key, v, case_sensitive, i)
@@ -1141,7 +1196,7 @@ contains
   function dictionary_assign_pointer_s(this, key, v, case_sensitive)
     type(Dictionary), intent(in) :: this
     character(len=*) key
-    character(len=*), intent(out), pointer, dimension(:) :: v
+    character(1), intent(out), pointer, dimension(:,:) :: v
     logical :: dictionary_assign_pointer_s
     logical, optional :: case_sensitive
 
@@ -1288,7 +1343,7 @@ contains
   subroutine dictionary_set_value_pointer_s(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    character(len=*), intent(in), pointer :: ptr(:)
+    character(1), intent(in), pointer :: ptr(:,:)
 
     type(DictEntry) entry
     integer entry_i
@@ -1296,7 +1351,7 @@ contains
     entry%type = T_CHAR_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry_i = add_entry(this, key, entry)
-    entry%len = size(ptr)
+    entry%len2 = size(ptr)
     this%entries(entry_i)%s_a => ptr
     call finalise(entry)
 
@@ -1428,22 +1483,22 @@ contains
 
   end subroutine dictionary_add_array_l
 
-  subroutine dictionary_add_array_s(this, key, value, len, ptr)
+  subroutine dictionary_add_array_s(this, key, value, len2, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    character(len=*), intent(in) :: value
-    integer, intent(in) :: len
-    character(len=*), pointer, optional, intent(out) :: ptr(:)
+    character(1), intent(in) :: value
+    integer, intent(in) :: len2(2)
+    character(1), pointer, optional, intent(out) :: ptr(:,:)
 
     type(DictEntry) entry
     integer entry_i
     logical do_alloc
 
     entry%type = T_CHAR_A
-    entry%len = len
+    entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(len))
-    this%entries(entry_i)%s_a(:) = value
+    if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+    this%entries(entry_i)%s_a(:,:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%s_a
 
@@ -1780,9 +1835,9 @@ contains
     type(extendable_str) :: str
     character(len=2048) :: dictionary_write_string
 
-    integer :: i,j
+    integer :: i, j, k
     character(1) :: my_char_a_sep, my_entry_sep
-    character(255) :: my_real_format
+    character(255) :: my_real_format, tmp_string
 
     call initialise(str)
 
@@ -1834,8 +1889,12 @@ contains
 
        case(T_CHAR_A)
           call concat(str,'"')
-          do j=1,size(this%entries(i)%s_a)
-             call concat(str, trim(this%entries(i)%s_a(j))//my_char_a_sep)
+          do j=1,size(this%entries(i)%s_a,2)
+             tmp_string = ''
+             do k=1,size(this%entries(i)%s_a,1)
+                tmp_string(k:k) = this%entries(i)%s_a(k,j)
+             end do
+             call concat(str, trim(tmp_string)//my_char_a_sep)
           end do
           call concat(str,'"')
 
@@ -2113,8 +2172,8 @@ contains
              call bcast(mpi, size_tmp)
              call bcast(mpi, dict%entries(i)%l_a)
           else if (dict%entries(i)%type == T_CHAR_A) then
-             size_tmp = size(dict%entries(i)%s_a)
-             call bcast(mpi, size_tmp)
+             shape_tmp = shape(dict%entries(i)%s_a)
+             call bcast(mpi, shape_tmp)
              call bcast(mpi, dict%entries(i)%s_a)
           else if (dict%entries(i)%type == T_INTEGER_A2) then
              shape_tmp = shape(dict%entries(i)%i_a2)
@@ -2172,9 +2231,9 @@ contains
              allocate(dict%entries(i)%l_a(size_tmp))
              call bcast(mpi, dict%entries(i)%l_a)
           else if (dict%entries(i)%type == T_CHAR_A) then
-             size_tmp = size(dict%entries(i)%s_a)
-             call bcast(mpi, size_tmp)
-             allocate(dict%entries(i)%s_a(size_tmp))
+             shape_tmp = shape(dict%entries(i)%s_a)
+             call bcast(mpi, shape_tmp)
+             allocate(dict%entries(i)%s_a(shape_tmp(1),shape_tmp(2)))
              call bcast(mpi, dict%entries(i)%s_a)
           else if (dict%entries(i)%type == T_INTEGER_A2) then
              shape_tmp = shape(dict%entries(i)%i_a2)
@@ -2298,8 +2357,8 @@ contains
        case(T_CHAR_A)
           nd = 2
           dtype = NUMPY_CHAR
-          dshape(1) = len(this%entries(entry_i)%s_a(1))
-          dshape(2) = size(this%entries(entry_i)%s_a)
+          dshape(1) = size(this%entries(entry_i)%s_a,1)
+          dshape(2) = size(this%entries(entry_i)%s_a,2)
           dloc = loc(this%entries(entry_i)%s_a)
 
        case(T_INTEGER_A2)
