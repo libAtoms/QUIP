@@ -126,6 +126,48 @@
       :exc:`RuntimeError` will be raised if you ask for something that
       is not supported.
 
+
+   .. method:: minim(at,method,convergence_tol,max_steps,[linminroutine,do_print,print_inoutput,print_cinoutput,do_pos,do_lat,args_str,eps_guess,use_n_Potential.minim,use_fire,lattice_fix,hook_print_interval,status])
+
+      :param at: Atoms object
+      :param method: Minimisation method - one of ``"cg"`` or ``"sd"``
+      :param convergence_tol: Value of :math:`|\mathbf{f}|^2` for convergence
+      :param max_steps: Maximum number of minimisation steps
+      :param linminroutine: Line minimisation routine. Should be one of ``"NR_LINMIN"``, ``"FAST_LINMIN"`` or ``"LINMIN_DERIV"``
+      :param do_print: if true, print configurations using minim's hook()
+      :param print_inoutput: InOutput object to print configs to, needed if `do_print` is true
+      :param print_cinoutput: CInOutput object to print configs to, needed if `do_print` is true
+      :param do_pos: do relaxation w.r.t. positions and/or lattice (is neither is included, do both)
+      :param do_lat: do relaxation w.r.t. positions and/or lattice (is neither is included, do both)
+      :param args_str: extra arguments to pass to :meth:`calc`
+      :param eps_guess: `eps_guess` argument to pass to minim
+      :param use_n_minim: if true, use :func:`n_minim` instead of :func:`minim`
+      :param use_fire: if true, use :func:`fire_minim` instead of minim
+      :param lattice_fix: 3x3 array mask to fix some components of lattice. Defaults to all false.
+      :param hook_print_interval: how often to print from hook function
+      :param status: set to 1 if an error occurred during minimisation
+
+      Minimise the configuration `at` under the action of this
+      Potential.  Returns number of minimisation steps taken. If
+      an error occurs or convergence is not reached within `max_steps`
+      steps, `status` will be set to 1 on exit.
+
+      Example usage (see :ref:`geomopt` section of tutorial for full explanation)::
+      
+         at0 = diamond(5.44, 14)
+	 at0.calc_connect()
+	 pot = Potential('IP SW', """<SW_params n_types="1">
+	         <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
+		 <per_type_data type="1" atomic_num="14" />
+
+		 <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
+		   p="4" q="0" a="1.80" sigma="2.0951" eps="2.1675" />
+
+		 <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
+		   lambda="21.0" gamma="1.20" eps="2.1675" />
+		</SW_params>""")
+	 pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+
    .. method:: set_callback(at, callback)
 
       For a :class:`Potential` of type `CallbackPot`, this method is
