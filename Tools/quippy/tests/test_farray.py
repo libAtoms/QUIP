@@ -388,14 +388,14 @@ class TestFortranArray(QuippyTestCase):
       self.assertEqual(repr(self.f2),"FortranArray([[1, 2, 3],\n              [4, 5, 6]])")
       self.assertEqual(str(self.f2),"[[1 2 3]\n [4 5 6]]")
 
-      self.assertEqual(str(self.s), "s1s2s3")
+      self.assertEqual(str(self.s), "['s1' 's2' 's3']")
       self.s.transpose_on_print = True
-      self.assertEqual(str(self.s), "s1s2s3")
+      self.assertEqual(str(self.s), "['s1' 's2' 's3']")
 
       self.assertEqual(str(farray('s')), 's')
 
       s2 = farray((('s','1'), ('s','2')))
-      self.assertEqual([str(x) for x in s2], ['s1', 's2'])
+      self.assertEqual([str(x) for x in s2], ["['s' '1']", "['s' '2']"])
       
    def testnorm(self):
       self.assertAlmostEqual(farray(1.0).norm(), 1.0)
