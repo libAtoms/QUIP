@@ -505,9 +505,23 @@ class Atoms(FortranAtoms):
       getattr(self, name.lower())[:] = value            
 
 from dictmixin import DictMixin, ParamReaderMixin
+
+from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
+                    T_CHAR, T_LOGICAL, T_INTEGER_A,
+                    T_REAL_A, T_COMPLEX_A, T_CHAR_A,
+                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
+
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
    __doc__ = FortranDictionary.__doc__
+
+   _interfaces = FortranDictionary._interfaces
+   _interfaces['set_value'] = [ k for k in FortranDictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
+
+   _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR)
+
+   _array_types  = (T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_CHAR_A,
+                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 
    def __init__(self, D=None, *args, **kwargs):
       FortranDictionary.__init__(self, *args, **kwargs)
@@ -517,17 +531,12 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
    def keys(self):
       return [self.get_key(i).strip() for i in frange(self.n)]
 
-   def __getitem__(self, k):
-      i = self.lookup_entry_i(k)
-      if i == -1: 
+   def get_value(self, k):
+      "Return a _copy_ of a value stored in Dictionary"
+      if not k in self:
          raise KeyError('Key "%s" not found ' % k)
 
       t, s, s2 = self.get_type_and_size(k)
-
-      from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                          T_CHAR, T_LOGICAL, T_INTEGER_A,
-                          T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                          T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 
       if t == T_NONE:
          raise ValueError('Key %s has no associated value' % k)
@@ -545,32 +554,59 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          v = bool(v)
       elif t == T_INTEGER_A:
          v,p = self._get_value_i_a(k,s)
-         v = farray(v)
       elif t == T_REAL_A:
          v,p = self._get_value_r_a(k,s)
-         v = farray(v)
       elif t == T_COMPLEX_A:
          v,p = self._get_value_c_a(k,s)
-         v = farray(v)
       elif t == T_CHAR_A:
-         a,p = self._get_value_s_a(k,s)
-         v = a2s(a)
+         v,p = self._get_value_s_a2(k,s2[1], s2[2])
+         v = v[...,1]  # Last index is length of string, here fixed to 1
+         v.strides = (1, v.shape[0])  # Column-major storage
       elif t == T_LOGICAL_A:
          v,p = self._get_value_l_a(k,s)
          v = farray(v, dtype=bool)
       elif t == T_INTEGER_A2:
          v,p = self._get_value_i_a2(k, s2[1], s2[2])
-         v = farray(v)
       elif t == T_REAL_A2:
          v,p = self._get_value_r_a2(k, s2[1], s2[2])
-         v = farray(v)
+      else:
+         raise ValueError('Unsupported dictionary entry type %d' % t)
+      return v
+
+   def get_array(self, key):
+      "Return a _reference_ to an array stored in this Dictionary"""
+      
+      import _quippy, arraydata
+      if key in self and self.get_type_and_size(key)[0] in Dictionary._array_types:
+         return arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key).view(FortranArray)
+      else:
+         raise KeyError('Key "%s" does not correspond to an array entry' % key)
+
+
+   def __getitem__(self, k):
+      if not k in self:
+         raise KeyError('Key "%s" not found ' % k)
+
+      t = self.get_type_and_size(k)[0]
+
+      if t == T_NONE:
+         raise ValueError('Key %s has no associated value' % k)
+
+      elif t in Dictionary._scalar_types:
+         return self.get_value(k)
+      
+      elif t in Dictionary._array_types:
+         return self.get_array(k)
+
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
 
-      return v
 
    def __setitem__(self, k, v):
-      self.set_value(k, v)
+      try:
+         self.set_value(k, v)
+      except TypeError:
+         self.set_value(k,s2a(v))
 
    def __delitem__(self, k):
       i = self.lookup_entry_i(k)
@@ -601,16 +637,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
    def copy(self):
       return Dictionary(self)
 
-   def get_array(self, key):
-      import _quippy, arraydata
-      from quippy import T_CHAR_A
-      
-      res = arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key)
-      if self.get_type_and_size(key)[0] == T_CHAR_A:
-         return res.T   # tranpose character arrays so they match shape
-      else:
-         return res
-      
+     
 
 class Table(FortranTable):
 
