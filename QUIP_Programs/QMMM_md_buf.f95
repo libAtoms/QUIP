@@ -1201,7 +1201,7 @@ contains
 	  else
 	    args_str = trim(args_str) // &
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
-	      ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+	      ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
 	  endif
           !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
@@ -1217,7 +1217,7 @@ contains
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
-	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
            slow_args_str = trim(slow_args_str) // ' cluster_mark_postfix=_extended'
@@ -1230,7 +1230,7 @@ contains
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
-	   ' termination_clash_check=T terminate=T even_electrons=F centre_cp2k'
+	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !cluster_mark_postfix to save cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
            fast_args_str = trim(fast_args_str) // ' cluster_mark_postfix=_extended'
