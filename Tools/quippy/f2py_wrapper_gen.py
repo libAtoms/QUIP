@@ -119,8 +119,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    subts = filter(no_allocatables_or_pointers, subts)
    functs = filter(no_allocatables_or_pointers, functs)
 
-   subts = filter(no_complex_scalars, subts)
-   functs = filter(no_complex_scalars, functs)
+   #subts = filter(no_complex_scalars, subts)
+   #functs = filter(no_complex_scalars, functs)
 
    subts = filter(no_c_ptr, subts)
    functs = filter(no_c_ptr, functs)
@@ -376,6 +376,10 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               else:
                   thisdoc.append({'name':charflag,'doc': 'slen(%s)' % arg.name, 'type': 'integer', 'attributes':[]})
 
+
+          # Do not mess around with character*(1) multidimensional arrays
+          if mytype == 'character*(1)' and dims != [] and 'intent(in)' in attributes:
+             arglines.append('!f2py intent(cache) :: %s' % arg.name)
 
       def join_and_split_lines(args, max_length=80):
           args_str = ''
