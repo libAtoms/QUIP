@@ -720,31 +720,18 @@ etc.
 
 .. _geomopt:
 
-MetaPotentials and structural optimisation
-------------------------------------------
+Structural optimisation
+-----------------------
 
 If you want to optimise the positions and/or the lattice of an atomic
-configuration, you'll need to use the :class:`MetaPotential` class.  A
-MetaPotential is a generalised :class:`Potential`, where the
-requirement for the forces to be the derivative of a single
-Hamiltonian is relaxed - this is needed for QM/MM force-mixing,
-amongst other things. Think of it as a way to calculate forces,
-energies and stresses, but where not all of these may be available.
-MetaPotentials can be initialised either from a single Potential (a
-`Simple` MetaPotential) or by combining results from two Potentials in
-some way (.e.g `ForceMixing`).
-
-In this tutorial we'll consider only a `Simple` MetaPotential created from
-the Stillinger-Weber potential we defined above::
-
-   >>> metapot = MetaPotential('Simple', pot)
-
+configuration, you'll need to use the :meth:`Potential.minim` method.
+In this tutorial we'll consider the Stillinger-Weber potential we defined above.
 Let's use this to relax the positions and lattice of a cubic Si cell using
 conjugate-gradients (``cg``), to a tolerance of :math:`|\mathbf{f}|^2 < 10^{-7}`,
 using a maximum of 100 steps.
 
    >>> at0 = diamond(5.44, 14)
-   >>> metapot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
+   >>> pot.minim(at0, 'cg', 1e-7, 100, do_pos=True, do_lat=True)
    Welcome to minim()
    space is 33 dimensional
    Method: Conjugate Gradients
@@ -759,7 +746,7 @@ using a maximum of 100 steps.
    Converged after step 4
    Goodbye from minim()
 
-:meth:`~MetaPotential.minim` overwrites the original atoms object with
+:meth:`~Potential.minim` overwrites the original atoms object with
 the new positions and lattice coordinates, so we can check the 
 lattice properties of the minimised configuration::
 
@@ -775,8 +762,10 @@ Bulk Modulus Calculations
 -------------------------
 
 In this example, we will calculate the bulk modulus of silicon using
-the Stillinger-Weber potential. We'll do this by fitting the `Birch-Murnaghan
-equation of state <http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_state>`_, which assumes the bulk modulus is of the form
+the Stillinger-Weber potential. We'll do this by fitting the
+`Birch-Murnaghan equation of state
+<http://en.wikipedia.org/wiki/Birch-Murnaghan_equation_of_state>`_,
+which assumes the bulk modulus is of the form
 
 .. math::
 
@@ -812,8 +801,8 @@ true we then minimise with respect to the internal degrees of freedom
          at.pos *= 1.0 + eps*i
          at.calc_connect()
          if relax:
-            metapot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-         metapot.calc(at, calc_energy=True)
+            pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
+         pot.calc(at, calc_energy=True)
          at.volume   = at.cell_volume()
          yield at
 
@@ -822,12 +811,12 @@ result is uses the :keyword:`yield` statement to return a series of
 configurations. We can use this as a source for an AtomsList::
 
    >>> at0 = diamond(5.43, 14)
-   >>> configs = AtomsList(compress_expand(at0, metapot))
+   >>> configs = AtomsList(compress_expand(at0, pot))
    >>> plot(configs.volume, configs.energy, 'o')
    
 We can repeat with internal relaxation turned on::
 
-   >>> relaxed_configs = AtomsList(compress_expand(at0, metapot, relax=True))
+   >>> relaxed_configs = AtomsList(compress_expand(at0, pot, relax=True))
    >>> plot(relaxed_configs.volume, relaxed_configs.energy, 'o')
 
 .. image:: energyvolume1.png

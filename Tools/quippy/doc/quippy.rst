@@ -36,5 +36,4 @@ classes and modules.
    atomslist.rst
    potential.rst
    dynamicalsystem.rst
-   metapotential.rst
    atomeye.rst
