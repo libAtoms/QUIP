@@ -117,7 +117,7 @@ def type_is_compatible(spec, arg):
                 return len(adims) == len(dims)
             else:
                 return ((itemsize != 1 and len(dims) == len(adims)) or   # arrays of strings, dtype='S'
-                        (itemsize == 1 and len(dims) == len(adims)+1))   # arrays of characters, dtype='S1'
+                        (itemsize == 1 and (len(dims) == len(adims)+1 or len(dims) == len(adims))))   # arrays of characters, dtype='S1'
         else:
             # Check each dimension matches
             return all([x == y for (x,y) in zip(adims,dims)])
@@ -175,7 +175,7 @@ def process_results(res, args, kwargs, inargs, outargs, prefix):
               newres.append(FortranDerivedTypes[spec['type'].lower()](fpointer=r,finalise=True))
           elif isinstance(r, numpy.ndarray):
               # Convert to one-based FortranArray
-              newres.append(farray(r))
+              newres.append(r.view(FortranArray))
           else:
               newres.append(r)
 
