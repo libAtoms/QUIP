@@ -368,25 +368,9 @@ class FortranArray(numpy.ndarray):
 
     def __str__(self):
         if self.transpose_on_print:
-            if self.dtype.kind == 'S':
-                if len(self.shape) == 0:
-                    return str(self.item())
-                elif len(self.shape) == 1:
-                    return self.T.stripstrings()
-                else:
-                    return str(list(self.T.stripstrings()))
-            else:
-                return str(numpy.asarray(self.T).view(numpy.ndarray))
+            return str(numpy.asarray(self.T).view(numpy.ndarray))
         else:
-            if self.dtype.kind == 'S':
-                if len(self.shape) == 0:
-                    return str(self.item())
-                elif len(self.shape) == 1:
-                    return self.stripstrings()
-                else:
-                    return str(list(self.stripstrings()))
-            else:
-                return str(numpy.asarray(self).view(numpy.ndarray))
+            return str(numpy.asarray(self).view(numpy.ndarray))
 
     def __iter__(self):
         """Iterate over this :class:`FortranArray` treating first dimension as fastest varying.
@@ -619,14 +603,17 @@ def unravel_index(x, dims):
     return tuple([n+1 for n in numpy.unravel_index(x-1, dims)])
 
 
-def s2a(d, pad=1024):
-    """Convert from list of strings to array of shape (len(d), pad)"""
-    res = fzeros((len(d), pad), 'S')
+def s2a(d, pad=None):
+    """Convert from list of strings to array of shape (pad, len(d)).
+    If pad is not specified, we use the length of longest string in d"""
+    if pad is None:
+        pad = max([len(s) for s in d])
+    res = fzeros((pad, len(d)), 'S')
     res[...] = ' '
     for i, line in fenumerate(d):
-        res[i,1:len(line)] = list(line)
+        res[1:len(line),i] = list(line)
     return res
 
 def a2s(a):
     """Convert from array of shape (pad, len(d)) to list of strings d"""
-    return [ ''.join(a[i,:]).strip() for i in frange(a.shape[0]) ]
+    return [ ''.join(a[:,i]).strip() for i in frange(a.shape[1]) ]
