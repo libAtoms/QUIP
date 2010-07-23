@@ -77,8 +77,8 @@ program qmmm_md
   end type spline_pot
 
   type(spline_pot)                    :: my_spline
-  real(dp)                            :: pot
-  real(dp), pointer                   :: pot_p(:)
+  real(dp)                            :: spline_pot_val
+  real(dp), pointer                   :: spline_pot_val_p(:)
 
   !Output XYZ
   type(Inoutput)                      :: traj_xyz, latest_xyz
@@ -542,11 +542,9 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
     ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
-       call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
-       call initialise(pot,args_str='Simple=T',pot=CP2K_slow_pot)
+       call setup_pot(pot, Run_Type1, filepot_program)
        ! set up mm only pot, in case we need it for empty QM core
-       call setup_pot(cp2k_fast_pot, 'MM', filepot_program)
-       call initialise(empty_qm_pot,args_str='Simple=T',pot=CP2K_fast_pot)
+       call setup_pot(empty_qm_pot, 'MM', filepot_program)
     else ! doing force mixing
        call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
        call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
@@ -567,11 +565,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
 	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
-	  pot=CP2K_fast_pot, pot2=CP2K_slow_pot)
+	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
 
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
-	 call initialise(empty_qm_pot,args_str='Simple=T',pot=CP2K_fast_pot)
+	 call setup_pot(empty_qm_pot, Run_Type2, filepot_program)
        endif
     endif
 
@@ -597,11 +595,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 	call verbosity_push_decrement()
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
-          if (.not.(assign_pointer(ds%atoms, "pot", pot_p))) &
+          if (.not.(assign_pointer(ds%atoms, "pot", spline_pot_val_p))) &
              call system_abort("couldn't find pot property")
 	  do i = 1, ds%atoms%N
-	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=pot)
-	     pot_p(i) = pot
+	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
+	     spline_pot_val_p(i) = spline_pot_val
 	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
 	  enddo
 	call verbosity_pop()
@@ -716,11 +714,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 	  call print('Force due to added spline potential (eV/A):')
 	  call print('atom     F(x)     F(y)     F(z)')
 	  allocate(add_force(1:3,1:ds%atoms%N))
-          if (.not.(assign_pointer(ds%atoms, "pot", pot_p))) &
+          if (.not.(assign_pointer(ds%atoms, "pot", spline_pot_val_p))) &
              call system_abort("couldn't find pot property")
 	  do i = 1, ds%atoms%N
-	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=pot)
-	     pot_p(i) = pot
+	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
+	     spline_pot_val_p(i) = spline_pot_val
 	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
 	  enddo
 	call verbosity_pop()
@@ -1052,7 +1050,7 @@ contains
   !% Reads the QM list from a file and saves it in $QM_flag$ integer property,
   !% marking the QM atoms with 1, otherwise 0.
   !
-  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,PRINT_verbose)
+  subroutine read_qmlist(my_atoms,qmlistfilename,qmlist,verbose)
 
     type(Atoms),       intent(inout) :: my_atoms
     character(*),      intent(in)    :: qmlistfilename
@@ -1070,8 +1068,7 @@ contains
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
 
 
-    my_verbose = .false.
-    if (present(verbose)) my_verbose = PRINT_verbose
+    my_verbose = optional_default(.false., verbose)
 
     if (my_verbose) call print('In Read_QM_list:')
     call print('Reading the QM list from file '//trim(qmlistfilename)//'...')

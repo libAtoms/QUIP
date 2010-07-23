@@ -185,9 +185,7 @@ implicit none
 
   call Initialise(mpi_glob)
 
-print *, "BOB 00"
   call Potential_Filename_Initialise(pot, args_str=init_args, param_filename=param_file, mpi_obj=mpi_glob)
-print *, "BOB 10"
 
   call print(pot)
 
