@@ -428,7 +428,7 @@ class TestCluster_HollowSection(QuippyTestCase):
 
    def test_mark_last(self):
       # Should be marked as having been added by n_cut_bond section detector
-      self.assertEqual(str(self.t.str[1,-1]), 'n_cut_bond')
+      self.assertEqual(''.join(self.t.str[1,-1]).strip(), 'n_cut_bond')
 
    def test_z(self):
       self.assertArrayAlmostEqual(self.t.int[5,1:self.embed.n], self.at.z[self.t.int[1,1:self.embed.n]])
