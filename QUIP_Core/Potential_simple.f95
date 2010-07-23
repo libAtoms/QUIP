@@ -50,6 +50,7 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 module Potential_simple_module
 
   use libAtoms_module
@@ -127,27 +128,31 @@ module Potential_simple_module
 
 contains
 
-  subroutine Potential_Simple_Filename_Initialise(this, args_str, filename, mpi_obj, no_parallel)
+  subroutine Potential_Simple_Filename_Initialise(this, args_str, filename, mpi_obj, no_parallel, error)
     type(Potential_simple), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in) :: filename
     type(MPI_context), intent(in), optional :: mpi_obj
     logical, intent(in), optional :: no_parallel
+    integer, intent(inout), optional :: error
+
     type(inoutput) :: io
 
     ! WARNING: setting master_only=.true. may lead to failure if not all processes are calling the initialise
     call Initialise(io, filename, INPUT, master_only = .true.)
-    call Initialise(this, args_str, io, mpi_obj, no_parallel)
+    call Initialise(this, args_str, io, mpi_obj, no_parallel, error=error)
+    PASS_ERROR(error)
     call Finalise(io)
 
   end subroutine Potential_Simple_Filename_Initialise
 
-  subroutine Potential_simple_Initialise_inoutput(this, args_str, io_obj, mpi_obj, no_parallel)
+  subroutine Potential_simple_Initialise_inoutput(this, args_str, io_obj, mpi_obj, no_parallel, error)
     type(Potential_simple), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Inoutput), intent(inout) :: io_obj
     type(MPI_context), intent(in), optional :: mpi_obj
     logical, intent(in), optional :: no_parallel
+    integer, intent(inout), optional :: error
 
     type(extendable_str) :: es
     logical my_no_parallel
@@ -160,20 +165,22 @@ contains
       call read(es, io_obj%unit, convert_to_string=.true.)
     endif
     if (my_no_parallel) then
-      call Initialise(this, args_str, string(es))
+      call Initialise(this, args_str, string(es), error=error)
     else
-      call Initialise(this, args_str, string(es), mpi_obj)
+      call Initialise(this, args_str, string(es), mpi_obj, error=error)
     endif
+    PASS_ERROR(error)
 
     call Finalise(es)
 
   end subroutine Potential_Simple_Initialise_inoutput
 
-  subroutine Potential_Simple_Initialise_str(this, args_str, param_str, mpi_obj)
+  subroutine Potential_Simple_Initialise_str(this, args_str, param_str, mpi_obj, error)
     type(Potential_Simple), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     character(len=*), intent(in), optional :: param_str
     type(MPI_context), intent(in), optional :: mpi_obj
+    integer, intent(inout), optional :: error
 
     logical is_TB, is_IP, is_FilePot, is_wrapper, is_callbackpot
     type(Dictionary) :: params
@@ -198,35 +205,40 @@ contains
     if (is_IP) then
        allocate(this%ip)
        if(present(param_str)) then
-          call Initialise(this%ip, args_str, param_str, mpi_obj)
+          call Initialise(this%ip, args_str, param_str, mpi_obj, error=error)
+	  PASS_ERROR(error)
        else
-          call system_abort('Potential_Simple_initialise: no param_str present during IP init')
+          RAISE_ERROR('Potential_Simple_initialise: no param_str present during IP init', error)
        endif
 #ifdef HAVE_TB
     else if (is_TB) then
        allocate(this%tb)
        if(present(param_str)) then
-          call Initialise(this%tb, args_str, param_str, mpi_obj = mpi_obj)
+          call Initialise(this%tb, args_str, param_str, mpi_obj = mpi_obj, error=error)
+	  PASS_ERROR(error)
        else
-          call system_abort('Potential_Simple_initialise: no param_str present during TB init')
+          RAISE_ERROR('Potential_Simple_initialise: no param_str present during TB init', error)
        endif
 #else
     else if (is_TB) then
-       call system_abort('Potential_Simple_initialise: TB support not compiled in')
+       RAISE_ERROR('Potential_Simple_initialise: TB support not compiled in', error)
 #endif
     else if (is_FilePot) then
        allocate(this%filepot)
-       call Initialise(this%filepot, args_str, mpi_obj)
+       call Initialise(this%filepot, args_str, mpi_obj, error=error)
+       PASS_ERROR(error)
     else if (is_CallbackPot) then
        allocate(this%CallbackPot)
-       call Initialise(this%callbackpot, args_str, mpi=mpi_obj)
+       call Initialise(this%callbackpot, args_str, mpi=mpi_obj, error=error)
+       PASS_ERROR(error)
     else if(is_wrapper) then
        this%is_wrapper = .true.
     endif
   end subroutine Potential_Simple_Initialise_str
 
-  subroutine Potential_Simple_Finalise(this)
+  subroutine Potential_Simple_Finalise(this, error)
     type(Potential_Simple), intent(inout) :: this
+    integer, intent(inout), optional :: error
 
     if(associated(this%ip)) then
        call Finalise(this%ip)
@@ -265,7 +277,7 @@ contains
     end if
   end function Potential_Simple_cutoff
 
-  recursive subroutine Potential_Simple_Calc(this, at, e, local_e, f, df, virial, args_str, err, mpi_obj)
+  recursive subroutine Potential_Simple_Calc(this, at, e, local_e, f, df, virial, args_str, err, mpi_obj, error)
     type(Potential_Simple), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
     real(dp), intent(out), optional, target :: e                   !% Total energy
@@ -276,6 +288,7 @@ contains
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: err
     type(MPI_context), intent(in), optional :: mpi_obj
+    integer, intent(inout), optional :: error
 
     integer:: i,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale
@@ -303,8 +316,9 @@ contains
     integer, pointer :: old_cluster_mark_p(:)
     character(len=FIELD_LENGTH) :: cluster_mark_postfix 
 
-    if (at%N <= 0) &
-      call system_abort("Potential_Simple_Calc called with at%N <= 0")
+    if (at%N <= 0) then
+      RAISE_ERROR("Potential_Simple_Calc called with at%N <= 0", error)
+    endif
 
     if (present(err)) err = 0
 
@@ -331,17 +345,20 @@ contains
     call param_register(params, 'calc_df', 'F', calc_df)
     call param_register(params, 'calc_virial', 'F', calc_virial)
 
-    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) &
-      call system_abort("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'")
+    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Simple_Calc_str args_str') ) then
+      RAISE_ERROR("Potential_Simple_calc failed to parse args_str='"//trim(my_args_str)//"'", error)
+    endif
     call finalise(params)
 
-    if (single_cluster .and. little_clusters) &
-         call system_abort('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive')
+    if (single_cluster .and. little_clusters) then
+         RAISE_ERROR('Potential_Simple_calc: single_cluster and little_clusters options are mutually exclusive', error)
+    endif
 
     if (little_clusters) then
 
-       if (present(e) .or. present(local_e) .or. present(df) .or. present(virial) .or. .not. present(f)) &
-            call system_abort('Potential_Simple_calc: little_clusters option only supports calcualtion of forces, not energies, local energies or virials')
+       if (present(e) .or. present(local_e) .or. present(df) .or. present(virial) .or. .not. present(f)) then
+            RAISE_ERROR('Potential_Simple_calc: little_clusters option only supports calcualtion of forces, not energies, local energies or virials', error)
+       endif
 
        ! must remove "little_clusters" from args_str so that recursion terminates
        call initialise(params)
@@ -349,9 +366,10 @@ contains
        call remove_value(params, 'little_clusters')
        new_args_str = write_string(params)
        call finalise(params)
-       
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ')
+ 
+       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+            RAISE_ERROR('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ', error)
+       endif
 
        if (.not. any(hybrid_mark == HYBRID_ACTIVE_MARK)) then
           f = 0.0_dp
@@ -424,11 +442,13 @@ contains
 
     else if (single_cluster) then
 
-       if (present(e) .or. present(local_e) .or. present(df) .or. present(virial) .or. .not. present(f)) &
-            call system_abort('Potential_Simple_calc: single_cluster option only supports calcualtion of forces, not energies, local energies or virials')
+       if (present(e) .or. present(local_e) .or. present(df) .or. present(virial) .or. .not. present(f)) then
+            RAISE_ERROR('Potential_Simple_calc: single_cluster option only supports calcualtion of forces, not energies, local energies or virials', error)
+       endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ')
+       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+            RAISE_ERROR('Potential_Simple_calc: cannot assign pointer to hybrid_mark property ', error)
+       endif
 
        if (.not. any(hybrid_mark == HYBRID_ACTIVE_MARK)) then
           f = 0.0_dp
@@ -447,14 +467,17 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
+	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str, error=error)
+	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
          n_non_term = count(cluster_info%int(6,1:cluster_info%n) == 0)
-         if (multiple_images(int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/)))) &
-              call system_abort('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images')
+         if (multiple_images(int_subtable(cluster_info,(/ (i,i=1,n_non_term) /),(/1/)))) then
+              RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
+	 endif
 
-	 cluster = carve_cluster(at, new_args_str, cluster_info)
+	 cluster = carve_cluster(at, new_args_str, cluster_info, error)
+	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
 	   prefix_save = mainlog%prefix
@@ -462,14 +485,17 @@ contains
 	   call print_xyz(cluster, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
 	 endif
-	 if (.not. assign_pointer(cluster, 'index', cluster_index)) &
-	      call system_abort('Potential_Simple_calc: cluster is missing index property')
-	 if (.not. assign_pointer(cluster, 'termindex', termindex)) &
-	      call system_abort('Potential_Simple_calc: cluster is missing termindex property')
+	 if (.not. assign_pointer(cluster, 'index', cluster_index)) then
+	      RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
+	 endif
+	 if (.not. assign_pointer(cluster, 'termindex', termindex)) then
+	      RAISE_ERROR('Potential_Simple_calc: cluster is missing termindex property', error)
+	 endif
 	 allocate(f_cluster(3,cluster%N))
          call print('ARGS1 | '//new_args_str,PRINT_VERBOSE)
 
-	 call calc(this, cluster, f=f_cluster, args_str=new_args_str)
+	 call calc(this, cluster, f=f_cluster, args_str=new_args_str, error=error)
+	 PASS_ERROR_WITH_INFO('potential_calc after calc in carve_cluster', error)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
 
          ! Reassign pointers - create_cluster_info_from_hybrid_mark() might have broken them
@@ -488,7 +514,8 @@ contains
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds)
+	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, error)
+	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
          !save cluster in cluster_mark property and optionally cluster_mark_postfix property
          call add_property(at,'cluster_mark',HYBRID_NO_MARK)
@@ -501,17 +528,20 @@ contains
          !save the previous cluster_mark[_postfix] into old_cluster_mark[_postfix]
          call add_property(at,'old_cluster_mark'//trim(cluster_mark_postfix),HYBRID_NO_MARK)
 	 call print('Add old_cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
-	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
-	   call system_abort("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer")
+	 if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(cluster_mark_postfix)//" pointer", error)
+	 endif
          if (trim(cluster_mark_postfix)/="") then
-	   if (.not. assign_pointer(at, 'cluster_mark'//trim(cluster_mark_postfix), cluster_mark_p_postfix)) &
-	     call system_abort("Potential_Simple_calc failed to assing pointer for cluster_mark pointer")
+	   if (.not. assign_pointer(at, 'cluster_mark'//trim(cluster_mark_postfix), cluster_mark_p_postfix)) then
+	     RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark pointer", error)
+	   endif
            call print('Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
          else
            call print('NOT Assign cluster_mark'//trim(cluster_mark_postfix),PRINT_ANAL)
          endif
-	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(cluster_mark_postfix), old_cluster_mark_p)) &
-	   call system_abort("Potential_Simple_calc failed to assing pointer for old_cluster_mark pointer")
+	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(cluster_mark_postfix), old_cluster_mark_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark pointer", error)
+	 endif
 
          !save old from cluster_mark_postfix
          if (trim(cluster_mark_postfix)/="") then
@@ -539,8 +569,9 @@ contains
 
          !save cut bonds in cut_bonds property
 	 call add_property(at, 'cut_bonds', 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
-	   call system_abort("Potential_Simple_calc failed to assing pointer for cut_bonds pointer")
+	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) then
+	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
+	 endif
          !zero it
          cut_bonds_p = 0
 	 do i=1, cut_bonds%N
@@ -555,7 +586,7 @@ contains
 	     call print("ERROR: Potential_Simple_calc ran out of space to store cut_bonds information", PRINT_ALWAYS)
 	     call print("ERROR: inner atom " // i_inner // " already has cut_bonds to " // cut_bonds_p(:,i_inner) // &
 	      " no space to add cut bond to " // i_outer, PRINT_ALWAYS)
-	     call system_abort("Potential_Simple_calc out of space to store cut_bonds information")
+	     RAISE_ERROR("Potential_Simple_calc out of space to store cut_bonds information", error)
 	   endif
 	 end do
 	 call finalise(cut_bonds)
@@ -564,9 +595,9 @@ contains
 	   mainlog%prefix="UNCARVED_CLUSTER"
 	   call print_xyz(at, mainlog, all_properties=.true.)
 	   mainlog%prefix=prefix_save
-         endif
-         call print('ARGS2 | '//new_args_str,PRINT_VERBOSE)
-	 call calc(this, at, f=f, args_str=new_args_str)
+	 endif
+	 call calc(this, at, f=f, args_str=new_args_str, error=error)
+	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
 	 if (do_rescale_r)  f = f*r_scale
        endif ! do_carve_cluster
     else ! little_clusters and single_cluster are false..
@@ -629,39 +660,39 @@ contains
 
              if (do_calc_virial) then
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, f=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 end if
              else
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, args_str=args_str)
+                   call Calc(this%ip, at, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, f=force_ptr, args_str=args_str)
+                   call Calc(this%ip, at, f=force_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, args_str=args_str)
+                   call Calc(this%ip, at, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
+                   call Calc(this%ip, at, local_e=local_e_ptr, f=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, f=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, args_str=args_str)
+                   call Calc(this%ip, at, energy=e_ptr, local_e=local_e_ptr, f=force_ptr, args_str=args_str, error=error)
                 end if
              end if
 #ifdef HAVE_TB
@@ -669,39 +700,39 @@ contains
 
              if (do_calc_virial) then
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 end if
              else
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, args_str=args_str, err=err)
+                   call Calc(this%tb, at, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, forces=force_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%tb, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 end if                
              end if
 
@@ -710,39 +741,39 @@ contains
 
              if (do_calc_virial) then
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 end if
              else
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, forces=force_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%filepot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 end if
              end if
 
@@ -750,39 +781,39 @@ contains
 
              if (do_calc_virial) then
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, virial=virial_ptr, args_str=args_str, error=error)
                 end if
              else
                 if (.not. do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, forces=force_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (.not. do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. .not. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. .not. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, args_str=args_str, error=error)
                 else if (do_calc_energy .and. do_calc_local_e .and. do_calc_force) then
-                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, err=err)
+                   call Calc(this%callbackpot, at, energy=e_ptr, local_e=local_e_ptr, forces=force_ptr, args_str=args_str, error=error)
                 end if
              end if
 
@@ -792,10 +823,11 @@ contains
              !
              !if(present(e)) e = wrapper_energy(at)
              !if(present(f)) call wrapper_force(at, f)
-             call system_abort("Potential_Simple_Calc: hardcoded wrapper functions are not defined")
+             RAISE_ERROR("Potential_Simple_Calc: hardcoded wrapper functions are not defined", error)
           else
-             call system_abort ("Potential_Simple_Calc: Potential_Simple is not initialised")
+             RAISE_ERROR ("Potential_Simple_Calc: Potential_Simple is not initialised", error)
           end if
+	 PASS_ERROR_WITH_INFO('potential_calc after actual calc', error)
 
           if (calc_energy) then
              call set_value(at%params, 'energy', e_ptr)
@@ -808,13 +840,17 @@ contains
           ! Copy force and local_e to properties as well if necessary
           if (calc_force .and. present(f)) then
              if (.not. has_property(at, 'force')) call add_property(at, 'force', 0.0_dp, n_cols=3)
-             if (.not. assign_pointer(at, 'force', force_ptr)) call system_abort('Potential_Simple_calc: cannot assign force_ptr')
+             if (.not. assign_pointer(at, 'force', force_ptr)) then
+	       RAISE_ERROR('Potential_Simple_calc: cannot assign force_ptr', error)
+	     endif
              force_ptr(:,:) = f(:,:)
           end if
 
           if (calc_local_e .and. present(local_e)) then
              if (.not. has_property(at, 'local_e')) call add_property(at, 'local_e', 0.0_dp)
-             if (.not. assign_pointer(at, 'local_e', local_e_ptr)) call system_abort('Potential_Simple_calc: cannot assign local_e_ptr')
+             if (.not. assign_pointer(at, 'local_e', local_e_ptr)) then
+	        RAISE_ERROR('Potential_Simple_calc: cannot assign local_e_ptr', error)
+	     endif
              local_e_ptr(:) = local_e(:)
           end if
 
@@ -835,7 +871,9 @@ contains
 
           if (.not. present(df)) then
              if (.not. has_property(at, 'df')) call add_property(at, 'df', 0.0_dp, n_cols=3)
-             if (.not. assign_pointer(at, 'df', df_ptr)) call system_abort('Potential_Simple_calc: cannot assign df_ptr')
+             if (.not. assign_pointer(at, 'df', df_ptr)) then
+	       RAISE_ERROR('Potential_Simple_calc: cannot assign df_ptr', error)
+	     endif
           else
              df_ptr => df
           end if
@@ -858,7 +896,9 @@ contains
           ! Copy to property as well if necessary
           if (calc_df .and. present(df)) then
              if (.not. has_property(at, 'df')) call add_property(at, 'df', 0.0_dp, n_cols=3)
-             if (.not. assign_pointer(at, 'df', df_ptr)) call system_abort('Potential_Simple_calc: cannot assign df_ptr')
+             if (.not. assign_pointer(at, 'df', df_ptr)) then
+	       RAISE_ERROR('Potential_Simple_calc: cannot assign df_ptr', error)
+	     endif
              df_ptr(:,:) = df(:,:)
           end if
        end if
@@ -884,9 +924,10 @@ contains
 !  end function Potential_Simple_Brief_Description
 
 
-  subroutine Potential_Simple_Print(this, file)
+  subroutine Potential_Simple_Print(this, file, error)
     type(Potential_Simple), intent(inout) :: this
     type(Inoutput), intent(inout),optional:: file
+    integer, intent(inout), optional :: error
 
     if(associated(this%ip)) then
        call Print(this%ip, file=file)
@@ -901,12 +942,12 @@ contains
     elseif(this%is_wrapper) then
        call print("Potential_Simple: wrapper Potential_Simple")
     else
-       call system_abort ("Potential_Simple_Print: Potential_Simple is not initialised")
+       RAISE_ERROR ("Potential_Simple_Print: no potential type is set", error)
     end if
 
   end subroutine Potential_Simple_Print
 
-  subroutine Potential_Simple_setup_parallel(this, at, e, local_e, f, virial, args_str)
+  subroutine Potential_Simple_setup_parallel(this, at, e, local_e, f, virial, args_str, error)
     type(Potential_Simple), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
     real(dp), intent(out), optional :: e                   !% Total energy
@@ -914,6 +955,7 @@ contains
     real(dp), intent(out), optional :: f(:,:)              !% Forces, dimensioned \texttt{(3,at%N)}
     real(dp), intent(out), optional :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
+    integer, intent(inout), optional :: error
 
     if(associated(this%ip)) then
        call setup_parallel(this%ip, at, e, local_e, f, virial)
@@ -928,12 +970,12 @@ contains
     elseif(this%is_wrapper) then
        return
     else
-       call system_abort ("Potential_Simple_Print: Potential_Simple is not initialised")
+       RAISE_ERROR ("Potential_Simple_Print: Potential_Simple is not initialised", error)
     end if
 
   end subroutine Potential_Simple_setup_parallel
 
-  subroutine Potential_Simple_set_callback(this, callback)
+  subroutine Potential_Simple_set_callback(this, callback, error)
     type(Potential_Simple), intent(inout) :: this
     interface
        subroutine callback(at)
@@ -945,8 +987,11 @@ contains
 #endif
        end subroutine callback
     end interface
+    integer, intent(inout), optional :: error
     
-    if (.not. associated(this%callbackpot)) call system_abort('Potential_Simple_set_callback: this Potential_Simple is not a CallbackPot')
+    if (.not. associated(this%callbackpot)) then
+      RAISE_ERROR('Potential_Simple_set_callback: this Potential_Simple is not a CallbackPot', error)
+    endif
     call set_callback(this%callbackpot, callback)
 
   end subroutine Potential_Simple_set_callback

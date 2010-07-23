@@ -241,7 +241,7 @@ contains
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
             this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
-          RAISE_IO_ERROR("Error opening file "//filename, error)
+          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error opening file "//filename, error)
        endif
     else
        if (cioinit(this%c_at, ""//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
@@ -250,7 +250,7 @@ contains
             this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
             this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
             this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
-          RAISE_IO_ERROR("Error allocating C structure", error)
+          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error allocating C structure", error)
        endif
     end if
 
@@ -323,14 +323,17 @@ contains
 
     INIT_ERROR(error)
 
-    if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
+    if (.not. this%initialised) then
+       RAISE_ERROR("This CInOutput object is not initialised", error)
+    endif
     if (present(frame) .and. this%got_index == 0) then
       if (frame /= this%current_frame) then
-	if (frame < this%current_frame) &
-	  call system_abort("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame)
+	if (frame < this%current_frame) then
+	  RAISE_ERROR("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error)
+	endif
 	cioskip_status = cioskip(this%c_at, frame-this%current_frame);
 	if (cioskip_status == 0) then
-          RAISE_IO_ERROR("Error querying CInOutput file while skipping to desired frame", error)
+          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error)
 	endif
       endif
     endif
@@ -339,7 +342,7 @@ contains
 
     cioquery_status = cioquery(this%c_at, do_frame)
     if (cioquery_status == 0) then
-       RAISE_IO_ERROR("Error querying CInOutput file", error)
+       RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file", error)
     endif
 
     call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
@@ -386,10 +389,10 @@ contains
     INIT_ERROR(error)
 
     if (.not. this%initialised) then
-       RAISE_IO_ERROR("This CInOutput object is not initialised", error)
+       RAISE_ERROR_WITH_KIND(ERROR_IO,"This CInOutput object is not initialised", error)
     endif
     if (this%action /= INPUT .and. this%action /= INOUT) then
-       RAISE_IO_ERROR("Cannot read from action=OUTPUT CInOutput object", error)
+       RAISE_ERROR_WITH_KIND(ERROR_IO,"Cannot read from action=OUTPUT CInOutput object", error)
     endif
 
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
@@ -398,12 +401,13 @@ contains
 
        if (present(frame) .and. this%got_index == 0) then
           if (frame /= this%current_frame) then
-             if (frame < this%current_frame) &
-                  RAISE_IO_ERROR("cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error)
+             if (frame < this%current_frame) then
+                  RAISE_ERROR_WITH_KIND(ERROR_IO,"cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error)
+	     endif
              n_skip = frame-this%current_frame
              cioskip_status = cioskip(this%c_at, n_skip)
              if (cioskip_status == 0) then
-                RAISE_IO_ERROR("Error querying CInOutput file while skipp!ing to desired frame", error)
+                RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error)
              endif
              this%current_frame = this%current_frame + n_skip
           endif
@@ -417,7 +421,7 @@ contains
              call finalise(properties)
              call finalise(data)
              call finalise(at)
-             RAISE_IO_ERROR("cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error)
+             RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error)
           end if
        end if
 
@@ -466,7 +470,7 @@ contains
           call finalise(properties)
           call finalise(data)
           call finalise(at)
-          RAISE_IO_ERROR("Error reading from file", error)
+          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error reading from file", error)
        end if
 
        do i=1,this%n_param
@@ -492,7 +496,7 @@ contains
           case(T_REAL_A2)
              call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
           case default
-             call system_abort('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i))
+             RAISE_ERROR('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i), error)
           end select
        end do
 
@@ -502,7 +506,7 @@ contains
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
           call print ("at%properties", PRINT_ALWAYS)
           call print(at%properties, PRINT_ALWAYS)
-          call system_abort('cinoutput_read: atoms object read from file has neither Z nor species')
+          RAISE_ERROR('cinoutput_read: atoms object read from file has neither Z nor species', error)
        else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
           call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
           call atoms_repoint(at)
@@ -549,8 +553,12 @@ contains
 
     INIT_ERROR(error)
 
-    if (.not. this%initialised) call system_abort("This CInOutput object is not initialised")
-    if (this%action /= OUTPUT .and. this%action /= INOUT) call system_abort("Cannot write to action=INPUT CInOutput object")
+    if (.not. this%initialised) then
+      RAISE_ERROR("This CInOutput object is not initialised", error)
+    endif
+    if (this%action /= OUTPUT .and. this%action /= INOUT) then
+      RAISE_ERROR("Cannot write to action=INPUT CInOutput object", error)
+    endif
 
     if (this%mpi%active .and. this%mpi%my_proc /= 0) return
 
@@ -637,19 +645,21 @@ contains
           this%param_size(n) = 1
           this%param_type(n) = T_CHAR
        case(T_INTEGER_A2)
-          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_int_a2)) &
-               call system_abort('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 int array')
+          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_int_a2)) then
+               RAISE_ERROR('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 int array',error)
+	  endif
           this%pint_a2(:,n) = reshape(tmp_int_a2, (/9/))
           this%param_size(n) = 9
           this%param_type(n) = T_INTEGER_A2
        case (T_REAL_A2)
-          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_real_a2)) &
-               call system_abort('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 real array')
+          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_real_a2)) then
+               RAISE_ERROR('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 real array',error)
+	  endif
           this%preal_a2(:,n) = reshape(tmp_real_a2, (/9/))
           this%param_size(n) = 9
           this%param_type(n) = T_REAL_A2
        case default
-          call system_abort('cinoutput_write: unsupported parameter i='//i//' '//string(at%params%keys(i))//' type='//at%params%entries(i)%type)
+          RAISE_ERROR('cinoutput_write: unsupported parameter i='//i//' '//string(at%params%keys(i))//' type='//at%params%entries(i)%type, error)
        end select
        n = n + 1
     end do
@@ -703,7 +713,7 @@ contains
     if (ciowrite(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
          trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
          do_shuffle, do_deflate, do_deflate_level, do_swap) == 0) then
-       RAISE_IO_ERROR("Error writing file.", error)
+       RAISE_ERROR_WITH_KIND(ERROR_IO,"Error writing file.", error)
     end if
 
     call finalise(selected_properties)

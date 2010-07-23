@@ -36,6 +36,7 @@
 !% 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 module TB_module
 
 use libatoms_module
@@ -154,29 +155,32 @@ end interface realloc_match_tbsys
 contains
 
 
-subroutine TB_Initialise_filename(this, args_str, filename, kpoints_obj, mpi_obj)
+subroutine TB_Initialise_filename(this, args_str, filename, kpoints_obj, mpi_obj, error)
   type(TB_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   character(len=*), intent(in) :: filename
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   type(inoutput) io
 
   call Initialise(io, filename, INPUT)
 
-  call Initialise(this, args_str, io, kpoints_obj, mpi_obj)
+  call Initialise(this, args_str, io, kpoints_obj, mpi_obj, error)
+  PASS_ERROR(error)
 
   call Finalise(io)
 
 end subroutine TB_Initialise_filename
 
-subroutine TB_Initialise_inoutput(this, args_str, io_obj, kpoints_obj, mpi_obj)
+subroutine TB_Initialise_inoutput(this, args_str, io_obj, kpoints_obj, mpi_obj, error)
   type(TB_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(Inoutput), intent(inout), optional :: io_obj
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   type(extendable_str) :: ss
 
@@ -188,18 +192,20 @@ subroutine TB_Initialise_inoutput(this, args_str, io_obj, kpoints_obj, mpi_obj)
       call read(ss, io_obj%unit, convert_to_string=.true.)
     endif
   endif
-  call Initialise(this, args_str, string(ss), kpoints_obj, mpi_obj)
+  call Initialise(this, args_str, string(ss), kpoints_obj, mpi_obj, error)
+  PASS_ERROR(error)
 
   call Finalise(ss)
 
 end subroutine TB_Initialise_inoutput
 
 
-subroutine TB_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj)
+subroutine TB_Initialise_str(this, args_str, param_str, kpoints_obj, mpi_obj, error)
   type(TB_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(KPoints), intent(in), optional :: kpoints_obj
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   call Finalise(this)
 
@@ -322,7 +328,7 @@ subroutine realloc_match_tbsys_mat(tbsys, mat)
   endif
 end subroutine realloc_match_tbsys_mat
 
-subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_charge, AF, err)
+subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_charge, AF, error)
   type(TB_type), intent(inout) :: this
   logical, intent(in), optional :: need_evecs
   logical, optional, intent(in) :: use_Fermi_E
@@ -330,7 +336,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   real(dp), pointer, intent(in) :: w_n(:)
   logical, optional, intent(in) :: use_prev_charge
   type(ApproxFermi), intent(inout), optional :: AF
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   logical my_use_prev_charge
   type(Inoutput) :: atom_dump
@@ -344,8 +350,6 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   integer :: max_iter = 1
   integer iter
   logical scf_converged
-
-  if (present(err)) err= 0
 
   my_use_prev_charge = optional_default(.false., use_prev_charge)
 
@@ -449,12 +453,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 	call print_xyz(this%at, atom_dump, all_properties = .true.)
 	call finalise(atom_dump)
       endif
-      if (present(err)) then
-	err = diag_err
-	return
-      else
-	call system_abort("TB_solv_diag got err " // diag_err // " from diagonalise")
-      endif
+      RAISE_ERROR("TB_solve_diag got error " // diag_err // " from diagonalise", error)
     endif
 
     if (this%tbsys%scf%active) then
@@ -484,11 +483,6 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
   end do
 
-  if (.not. scf_converged) then
-    call print("WARNING: TB_solve_diag failed to converge SCF in TB_solve_diag", PRINT_ALWAYS)
-    if (present(err)) err = -1
-  endif
-
   if (this%tbsys%scf%active) then
     if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom)) &
        call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom)
@@ -501,11 +495,15 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   if (associated(scf_orbital_n)) deallocate(scf_orbital_n)
   if (associated(scf_orbital_m)) deallocate(scf_orbital_m)
 
+  if (.not. scf_converged) then
+    call print("WARNING: TB_solve_diag failed to converge SCF in TB_solve_diag", PRINT_ALWAYS)
+  endif
+
   if (this%tbsys%scf%active .and. scf_converged ) call print("TB SCF iterations converged")
 end subroutine TB_solve_diag
 
-subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
-  use_fermi_E, fermi_E, fermi_T, band_width, AF)
+subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
+  use_fermi_E, fermi_E, fermi_T, band_width, AF, error)
 
   type(TB_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
@@ -514,10 +512,10 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
-  integer, intent(out), optional :: err
   logical, optional :: use_fermi_E
   real(dp), intent(inout), optional :: fermi_E, fermi_T, band_width
   type(ApproxFermi), intent(inout), optional :: AF
+  integer, intent(out), optional :: error
 
   real(dp) :: my_energy
   logical :: my_use_Fermi_E
@@ -579,7 +577,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, err, &
     case ('DIAG')
       call system_timer("TB_calc/DIAG_calc_diag")
       my_energy = calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N_p, forces, virial, &
-	use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, err=err)
+	use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, error=error)
       call system_timer("TB_calc/DIAG_calc_diag")
     case ('GF')
       call system_timer("TB_calc/GF_calc_GF")
@@ -663,7 +661,7 @@ subroutine copy_atoms_fields(from_at, to_at)
 
 end subroutine copy_atoms_fields
 
-function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, forces, virial, use_prev_charge, AF, do_evecs, err)
+function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, forces, virial, use_prev_charge, AF, do_evecs, error)
   type(TB_type), intent(inout) :: this
   logical, optional :: use_fermi_E
   real(dp), intent(inout), optional :: fermi_E, fermi_T
@@ -674,7 +672,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   logical, optional, intent(in) :: use_prev_charge
   type(ApproxFermi), intent(inout), optional :: AF
   logical, optional :: do_evecs
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
   real(dp) :: TB_calc_diag
 
   real(dp), allocatable :: forces_scf(:,:)
@@ -757,16 +755,9 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
 
   call system_timer("TB_calc_diag/solve_diag")
   call print("TB_calc_diag solve_diag", PRINT_VERBOSE)
-  call solve_diag(this, u_do_evecs, use_fermi_e, Fermi_E, w_n, use_prev_charge=use_prev_charge, AF=AF, err=err)
+  call solve_diag(this, u_do_evecs, use_fermi_e, Fermi_E, w_n, use_prev_charge=use_prev_charge, AF=AF, error=error)
   call system_timer("TB_calc_diag/solve_diag")
-
-  if (present(err)) then
-    if (err /= 0) then
-      call print("TB_calc got err " // err // " from solve_diag", PRINT_ALWAYS)
-      call system_timer("TB_calc_diag")
-      return
-    endif
-  endif
+  PASS_ERROR_WITH_INFO("TB_calc got error from solve_diag", error)
 
   call system_timer("TB_calc_diag/calc_EFV")
   allocate(local_e_rep(this%at%N))

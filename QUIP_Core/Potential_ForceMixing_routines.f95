@@ -36,13 +36,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine Potential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi)
+  subroutine Potential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi, error)
     type(Potential_FM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Potential), intent(inout), target :: qmpot
     type(Potential), optional, intent(inout), target :: mmpot !% if mmpot is not given, a zero potential is assumed, this is most useful in LOTF mode
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi
+    integer, intent(inout), optional :: error
 
     type(Dictionary) :: params
     logical :: minimise_bulk, do_tb_defaults, do_rescale_r
@@ -89,8 +90,8 @@
     call param_register(params, 'do_rescale_r', 'F', do_rescale_r)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_initialise args_str')) then
-       call system_abort('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"')
-    end if
+       RAISE_ERROR('Potential_FM_initialise failed to parse args_str="'//trim(args_str)//'"', error)
+    endif
 
     call finalise(params)
 
@@ -129,12 +130,13 @@
 
     this%r_scale_pot1 = 1.0_dp
     if (do_rescale_r) then
-       if (.not. present(reference_bulk)) &
-            call system_abort("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//&
-            do_tb_defaults//" but reference_bulk is not present")
+       if (.not. present(reference_bulk)) then
+            RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
+       endif
 
-       if (.not. present(mmpot)) &
-            call system_abort("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given")
+       if (.not. present(mmpot)) then
+            RAISE_ERROR("potential_forcemixing_initialise got do_rescale_r=T but no mmpot was given", error)
+       endif
 
        call do_reference_bulk(reference_bulk, mmpot, qmpot, minimise_bulk, .true., .false., &
             this%r_scale_pot1, dummy_E, do_tb_defaults)
@@ -228,14 +230,14 @@
   end subroutine Potential_FM_print
 
 
-  subroutine Potential_FM_calc(this, at, e, local_e, f, virial, args_str, err)
+  subroutine Potential_FM_calc(this, at, e, local_e, f, virial, args_str, error)
     type(Potential_FM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: e
     real(dp), intent(out), optional :: local_e(:)
     real(dp), intent(out), optional :: f(:,:)
     real(dp), intent(out), optional :: virial(3,3)
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
     character(*), intent(in), optional :: args_str
 
     real(dp), allocatable, dimension(:,:) :: df, df_fit
@@ -260,8 +262,6 @@
     !NB workaround for pgf90 bug (as of 9.0-1)
     real(dp) :: t_norm
     !NB end of workaround for pgf90 bug (as of 9.0-1)
-
-    if (present(err)) err = 0
 
     ! Override parameters with those given in args_str
     call initialise(params)
@@ -304,8 +304,9 @@
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_Calc args_str') ) &
-      call system_abort("Potential_FM_calc failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_Calc args_str') ) then
+      RAISE_ERROR("Potential_FM_calc failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
     if (current_verbosity().ge.PRINT_NERD) call print(this)
@@ -359,8 +360,9 @@
        call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'distance_ramp')
     end if
 
-    if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) &
-         call system_abort('Potential_FM_calc: supports only forces, not energy, virial or local_e')
+    if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) then
+         RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial or local_e', error)
+   endif
 
     allocate(f_mm(3,at%N),f_qm(3,at%N))
     f_mm = 0.0_dp
@@ -371,13 +373,17 @@
        if (.not. has_property(at, 'hybrid_mark')) &
             call add_property(at, 'hybrid_mark', HYBRID_NO_MARK)
 
-       if (.not. assign_pointer(at, "hybrid", hybrid)) &
-            call system_abort("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
+       if (.not. assign_pointer(at, "hybrid", hybrid)) then
+            RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified", error)
+       endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+            RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+       endif
 
-       if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) call system_abort('Potential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).')
+       if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) then
+	 RAISE_ERROR('Potential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).', error)
+       endif
           !update only the active region, the buffer region will be updated in create_hybrid_weights
 
        ! if we have a hysteretic buffer, set marks to allow previously active atoms to become buffer atoms
@@ -388,23 +394,27 @@
 
        call Print('Potential_FM_calc: got '//count(hybrid /= 0)//' active atoms.', PRINT_VERBOSE)
 
-       if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) &
-            call system_abort('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified')
+       if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) then
+            RAISE_ERROR('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified', error)
+       endif
 
        call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
 
        ! reassign pointers
        
-       if (.not. assign_pointer(at, "hybrid", hybrid)) &
-            call system_abort("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified")
+       if (.not. assign_pointer(at, "hybrid", hybrid)) then
+            RAISE_ERROR("Potential_FM_calc: at doesn't have hybrid property and calc_weights was specified", error)
+       endif
 
-       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-            call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+       if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+            RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+       endif
 
     end if
 
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+         RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+    endif
 
     ! Do the MM minimisation, freezing the atoms marked as active
     if (minimise_mm) then
@@ -416,14 +426,15 @@
 
     ! Do the classical calculation
     if(associated(this%mmpot)) then
-       call calc(this%mmpot, at, f=f_mm, err=err, args_str=mm_args_str)
+       call calc(this%mmpot, at, f=f_mm, args_str=mm_args_str, error=error)
     else
        f_mm = 0
     end if
 
     !Potential calc could have added properties e.g. old_cluster_mark
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('Potential_FM_Calc: hybrid_mark property missing')
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+         RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
+    endif
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
        f = f_mm
        return
@@ -460,7 +471,7 @@
        ! then potential calc() will do cluster carving. 
        ! We pass along our mpi context object to allow little clusters to be split over
        ! nodes.
-       call calc(this%qmpot, at, f=f_qm, args_str=qm_args_str, err=err)
+       call calc(this%qmpot, at, f=f_qm, args_str=qm_args_str, error=error)
     end if
 
     !Fitlist construction has been moved here.
@@ -470,8 +481,9 @@
 
        if ((method(1:4) == 'lotf' .and. lotf_do_init) .or. trim(method) == 'conserve_momentum') then
           if (this%use_buffer_for_fitting) then
-             if (trim(method).ne.'conserve_momentum') &
-                call system_abort('use_buffer_for_fitting=T only works for method=conserve_momentum')
+             if (trim(method).ne.'conserve_momentum') then
+                RAISE_ERROR('use_buffer_for_fitting=T only works for method=conserve_momentum', error)
+	     endif
              !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
              call create_embed_and_fit_lists_from_cluster_mark(at,this%embedlist,this%fitlist)
 !             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
@@ -533,7 +545,7 @@
 
        else if (trim(this%method) == 'lotf_adj_pot_sw') then
 
-          call system_abort('lotf_adj_pot_sw no longer supported.')
+          RAISE_ERROR('lotf_adj_pot_sw no longer supported.', error)
 
           ! old style adj pot: SW with variable parameters
 
@@ -586,19 +598,20 @@
           weight_method = CM_WEIGHT_REGION1
           call print('conserve_momentum: using user defined weighting', PRINT_VERBOSE)
        case default
-          call system_abort('Potential_FM_Calc: unknown conserve_momentum_weight method: '//&
-               trim(conserve_momentum_weight_method))
+          RAISE_ERROR('Potential_FM_Calc: unknown conserve_momentum_weight method: '//trim(conserve_momentum_weight_method), error)
        end select
 
        if (weight_method == USER_WEIGHT) then
-          if (.not. assign_pointer(at, 'conserve_momentum_weight', conserve_momentum_weight)) &
-               call system_abort('Potential_FM_Calc: missing property conserve_momentum_weight')
+          if (.not. assign_pointer(at, 'conserve_momentum_weight', conserve_momentum_weight)) then
+               RAISE_ERROR('Potential_FM_Calc: missing property conserve_momentum_weight', error)
+	  endif
        end if
 
        allocate(df(3,at%N),df_fit(3,this%fitlist%N))
 
-       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) &
-            call system_abort('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
+       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) then
+            RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
+       endif
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
@@ -641,8 +654,9 @@
        
     else if (method(1:12) == 'force_mixing') then
 
-       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) &
-            call system_abort('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str')
+       if (.not. assign_pointer(at, 'weight_region1', weight_region1)) then
+            RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
+       endif
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
@@ -650,7 +664,7 @@
        end do
 
     else
-       call system_abort('Potential_FM_calc: unknown method '//trim(method))
+       RAISE_ERROR('Potential_FM_calc: unknown method '//trim(method), error)
     end if
        
     ! Save QM and MM forces and total force as properties of Atoms object
