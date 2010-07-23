@@ -28,6 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
 module clusters_module
   use Atoms_module
   use Table_module
@@ -122,7 +123,7 @@ contains
 
 
   !% Execute one Breadth-First-Search move on the atomic connectivity graph.
-  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, max_r, alt_connect, property, debugfile)
+  subroutine bfs_step(this,input,output,nneighb_only, min_images_only, max_r, alt_connect, property, debugfile, error)
     type(Atoms),        intent(in), target      :: this  !% The atoms structure to perform the step on.
     type(Table),        intent(in)      :: input !% Table with intsize 4. First integer column is indices of atoms
                                                  !% already in the region, next 3 are shifts.
@@ -148,6 +149,8 @@ contains
 
     type(inoutput), optional :: debugfile
 
+    integer, intent(inout), optional :: error
+
     !local
     logical                             :: do_nneighb_only, do_min_images_only
     integer                             :: i, j, n, m, jshift(3), ishift(3)
@@ -166,8 +169,9 @@ contains
 
     if (present(debugfile)) call print("bfs_step cutoff " // this%cutoff // " " // this%use_uniform_cutoff, file=debugfile)
 
-    if (.not.use_connect%initialised) &
-         call system_abort('BFS_Step: Atomic structure has no connectivity data')
+    if (.not.use_connect%initialised) then
+         RAISE_ERROR('BFS_Step: Atomic structure has no connectivity data', error)
+    endif
 
     do_nneighb_only = optional_default(.true., nneighb_only)
 
@@ -176,8 +180,9 @@ contains
     if (present(debugfile)) call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, file=debugfile)
     call print('bfs_step: do_nneighb_only = ' // do_nneighb_only // ' do_min_images_only = '//do_min_images_only, PRINT_NERD)
 
-    if(input%intsize /= 4 .or. input%realsize /= 0) &
-         call system_abort("bfs_step: input table must have intsize=4.")
+    if(input%intsize /= 4 .or. input%realsize /= 0) then
+         RAISE_ERROR("bfs_step: input table must have intsize=4.", error)
+    endif
 
     call table_allocate(output, 4, 0, 0, 0)
 
@@ -364,21 +369,24 @@ contains
 
   !% OMIT
   ! Given an input list, what needs to be added to make the selection region convex?
-  function make_convex_step(this, input, output) result(newatoms)
+  function make_convex_step(this, input, output, error) result(newatoms)
     type(Atoms), intent(in) :: this
     type(Table), intent(in) :: input
     type(Table), intent(out) :: output
+    integer, intent(inout), optional :: error
     integer::newatoms
 
     integer :: n, i, j, k, p, m, n_in, nn, ishift(3), jshift(3), kshift(3)
     real(dp) :: r_ij, r_kj
 
     ! Check table size
-    if(input%intsize /= 4 .or. input%realsize /= 0) &
-         call system_abort("make_convex_step: input table must have intsize=4")
+    if(input%intsize /= 4 .or. input%realsize /= 0) then
+         RAISE_ERROR("make_convex_step: input table must have intsize=4", error)
+    endif
 
-    if(input%intsize /= 4 .or. input%realsize /= 0) &
-         call system_abort("bfs_step: input table must have intsize=4.")
+    if(input%intsize /= 4 .or. input%realsize /= 0) then
+         RAISE_ERROR("bfs_step: input table must have intsize=4.", error)
+    endif
 
     call table_allocate(output, 4, 0, 0, 0)
 
@@ -996,10 +1004,11 @@ contains
   !% 
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  function carve_cluster(at, args_str, cluster_info) result(cluster)
+  function carve_cluster(at, args_str, cluster_info, error) result(cluster)
     type(Atoms), intent(in), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), intent(in) :: cluster_info
+    integer, intent(inout), optional :: error
     type(Atoms) :: cluster
 
     type(Dictionary) :: params
@@ -1041,8 +1050,9 @@ contains
     call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3))
     call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) &
-      call system_abort("carve_cluster failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) then
+      RAISE_ERROR("carve_cluster failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
     ! first pick up an atoms structure with the right number of atoms and copy the properties
@@ -1132,8 +1142,9 @@ contains
     call print(line, PRINT_VERBOSE)
 
     ! reassign pointers
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('cannot reassign hybrid_mark property')
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+         RAISE_ERROR('cannot reassign hybrid_mark property', error)
+    endif
 
     ! rescale cluster positions and lattice 
     if (do_rescale_r) then
@@ -1162,14 +1173,18 @@ contains
        ! In this case we consider any atoms connected to terminating
        ! hydrogens to be in the outer layer - obviously this breaks down 
        ! if we're not terminating so we abort if that's the case.
-       if (.not. assign_pointer(cluster, 'index', cluster_index)) &
-            call system_abort('carve_cluster: cluster is missing index property')
+       if (.not. assign_pointer(cluster, 'index', cluster_index)) then
+            RAISE_ERROR('carve_cluster: cluster is missing index property', error)
+       endif
 
        if (.not. any(hybrid_mark == HYBRID_BUFFER_OUTER_LAYER_MARK)) then
-          if (.not. terminate) call system_abort('cannot determine which buffer atoms to randomise if terminate=F and hysteretic_buffer=T')
+          if (.not. terminate) then
+	    RAISE_ERROR('cannot determine which buffer atoms to randomise if terminate=F and hysteretic_buffer=T', error)
+	  endif
 
-          if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) &
-               call system_abort('hybrid_mark property not found in cluster')
+          if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) then
+               RAISE_ERROR('hybrid_mark property not found in cluster', error)
+	  endif
 
           do i=1,cluster%N
              if (hybrid_mark(cluster_info%int(1,i)) /= HYBRID_BUFFER_MARK) cycle
@@ -1231,11 +1246,12 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function create_cluster_info_from_hybrid_mark(at, args_str, cut_bonds) result(cluster_info)
+  function create_cluster_info_from_hybrid_mark(at, args_str, cut_bonds, error) result(cluster_info)
     type(Atoms), intent(inout), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), optional, intent(out)   :: cut_bonds !% Return a list of the bonds cut when making
     !% the cluster.  See create_cluster() documentation.
+    integer, intent(inout), optional :: error
     type(Table) :: cluster_info
 
     type(Dictionary) :: params
@@ -1287,24 +1303,28 @@ contains
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_termination_rescale)
     call param_register(params, 'cluster_hopping', 'T', cluster_hopping)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) &
-         call system_abort("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) then
+         RAISE_ERROR("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
     do_periodic = (/periodic_x,periodic_y,periodic_z/)
 
-    if (.not. has_property(at, 'hybrid_mark')) &
-         call system_abort('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property')
+    if (.not. has_property(at, 'hybrid_mark')) then
+         RAISE_ERROR('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property', error)
+    endif
 
     if (cluster_allow_modification) then
        call add_property(at, 'modified_hybrid_mark', 0)
-       if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) &
-            call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
+       if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) then
+            RAISE_ERROR('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property', error)
+       endif
     endif
 
     ! only after adding modified_hybrid_mark_property
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-         call system_abort('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property')
+    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+         RAISE_ERROR('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property', error)
+    endif
 
     ! Calculate centre of cluster
     call allocate(cluster_list, 1,0,0,0)
@@ -1375,7 +1395,7 @@ contains
           if (cluster_list%N == old_n) then
              call write(at, 'create_cluster_abort.xyz')
              call print(cluster_list)
-             call system_abort('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region')
+             RAISE_ERROR('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region', error)
           end if
           old_n = cluster_list%N
        end do
@@ -1396,7 +1416,6 @@ contains
        end do
        call system_timer('cluster_diff_min_image')
     end if
-
     ! partition cluster_list so that active atoms come first
     call wipe(activelist)
     call wipe(bufferlist)
@@ -1422,13 +1441,15 @@ contains
 
     ! check for consistency in optional arguments
 
-    if (.not. (count(do_periodic) == 0 .or. count(do_periodic) == 1 .or. count(do_periodic) == 3)) &
-         call system_abort('count(periodic) must be zero, one or three.')
+    if (.not. (count(do_periodic) == 0 .or. count(do_periodic) == 1 .or. count(do_periodic) == 3)) then
+         RAISE_ERROR('count(periodic) must be zero, one or three.', error)
+    endif
 
     if (same_lattice) do_periodic = .true.
 
-    if (any(do_periodic) .and. multiple_images(cluster_list)) &
-         call system_abort("create_cluster: can't make a periodic cluster since cluster_list contains repeats")
+    if (any(do_periodic) .and. multiple_images(cluster_list)) then
+         RAISE_ERROR("create_cluster: can't make a periodic cluster since cluster_list contains repeats", error)
+    endif
 
     ! check for empty list
 
@@ -1439,8 +1460,9 @@ contains
 
     call print('create_cluster: Entering create_cluster', PRINT_NERD)
 
-    if(.not.(cluster_list%intsize == 1 .or. cluster_list%intsize == 4) .or. cluster_list%realsize /= 0) &
-         call system_abort("create_cluster: cluster_list table must have intsize=1 or 4 and realsize=0.")
+    if(.not.(cluster_list%intsize == 1 .or. cluster_list%intsize == 4) .or. cluster_list%realsize /= 0) then
+         RAISE_ERROR("create_cluster: cluster_list table must have intsize=1 or 4 and realsize=0.", error)
+    endif
 
 
     ! Cluster_info is extensible storage for the cluster
@@ -1671,9 +1693,10 @@ contains
   !% and given weight
   !% zero.
 
-  subroutine create_hybrid_weights(at, args_str)
+  subroutine create_hybrid_weights(at, args_str, error)
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in) :: args_str
+    integer, intent(inout), optional :: error
 
     type(Dictionary) :: params
     logical :: has_distance_ramp_inner_radius, has_distance_ramp_outer_radius, has_distance_ramp_center
@@ -1725,8 +1748,9 @@ contains
     call param_register(params, 'hysteretic_connect_inner_factor', '1.2', hysteretic_connect_inner_factor)
     call param_register(params, 'hysteretic_connect_outer_factor', '1.5', hysteretic_connect_outer_factor)
     call param_register(params, 'construct_buffer_use_only_heavy_atoms', 'F', construct_buffer_use_only_heavy_atoms)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights_args_str args_str') ) &
-      call system_abort("create_hybrid_weights_args_str failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_hybrid_weights_args_str args_str') ) then
+      RAISE_ERROR("create_hybrid_weights_args_str failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
     ! do_nneighb_only = optional_default(.false., nneighb_only)
@@ -1749,7 +1773,7 @@ contains
     else if (trim(weight_interpolation) == 'distance_ramp') then
        distance_ramp = .true.
     else
-       call system_abort('create_hybrid_weights_args: unknown weight_interpolation value: '//trim(weight_interpolation))
+       RAISE_ERROR('create_hybrid_weights_args: unknown weight_interpolation value: '//trim(weight_interpolation), error)
     end if
 
     call print('create_hybrid_weights: transition_hops='//transition_hops//' buffer_hops='//buffer_hops//' weight_interpolation='//weight_interpolation, PRINT_VERBOSE)
@@ -1768,8 +1792,9 @@ contains
     end if
 
     ! check for a compatible hybrid_mark property. it must be present
-    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-       call system_abort('create_hybrid_weights: atoms structure has no "hybrid_mark" property')
+    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       RAISE_ERROR('create_hybrid_weights: atoms structure has no "hybrid_mark" property', error)
+    endif
 
     ! Add first marked atom to activelist. shifts will be relative to this atom
     first_active = find_in_array(hybrid_mark, HYBRID_ACTIVE_MARK)
@@ -2006,8 +2031,9 @@ contains
           call append(currentlist, nextlist)
 
           ! check that cluster is still growing
-          if (bufferlist%N == old_n) &
-               call system_abort('create_hybrid_weights_args: buffer cluster stopped growing before all marked atoms found - check for split buffer region')
+          if (bufferlist%N == old_n) then
+               RAISE_ERROR('create_hybrid_weights_args: buffer cluster stopped growing before all marked atoms found - check for split buffer region', error)
+	  endif
           old_n = bufferlist%N
        end do
 
@@ -2024,19 +2050,17 @@ contains
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
 	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, &
-	   alt_connect=at%hysteretic_connect) !NB, debugfile=mainlog)
+	   alt_connect=at%hysteretic_connect, error=error) !NB, debugfile=mainlog)
        else
 	 call print("create_hybrid_weights calling construct_hysteretic_region", verbosity=PRINT_NERD)
 	 call construct_hysteretic_region(region=bufferlist,at=at,core=total_embedlist,loop_atoms_no_connectivity=.false., &
 	   inner_radius=hysteretic_buffer_inner_radius,outer_radius=hysteretic_buffer_outer_radius,use_avgpos=.false., &
-	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only) !NB, &
+	   add_only_heavy_atoms=construct_buffer_use_only_heavy_atoms, nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB, &
 	   !NB debugfile=mainlog)
        endif
 
-
        call print('bufferlist=',PRINT_VERBOSE)
        call print(bufferlist,PRINT_VERBOSE)
-
 
        ! Mark new buffer region, leaving core QM region alone
        ! at the moment only ACTIVE and NO marks are present, because hybrid_mark was set to =hybrid
@@ -2145,12 +2169,13 @@ contains
   !% property using 'HYBRID_ACTIVE_MARK', grow the embed region by 'fit_hops'
   !% bond hops to form a fit region. Returns the embedlist and fitlist with correct
   !% periodic shifts.
-  subroutine create_embed_and_fit_lists(at, fit_hops, embedlist, fitlist, nneighb_only, min_images_only)
+  subroutine create_embed_and_fit_lists(at, fit_hops, embedlist, fitlist, nneighb_only, min_images_only, error)
 
     type(Atoms), intent(inout) :: at
     integer :: fit_hops
     type(Table), intent(out) :: embedlist, fitlist
     logical, intent(in), optional :: nneighb_only, min_images_only
+    integer, intent(inout), optional :: error
 
     integer, pointer :: hybrid_mark(:)
     integer :: n_region1, n_region2 !, n_term
@@ -2168,8 +2193,9 @@ contains
     do_min_images_only = optional_default(.true., min_images_only)
 
     ! check for a compatible hybrid_mark property. it must be present
-    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-       call system_abort('create_fit_region: atoms structure has no "hybrid_mark" property')
+    if(.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       RAISE_ERROR('create_fit_region: atoms structure has no "hybrid_mark" property', error)
+    endif
 
     call wipe(embedlist)
     call wipe(fitlist)
@@ -2231,8 +2257,9 @@ contains
       endif
 
        ! check that cluster is still growing
-       !if (embedlist%N == old_n) &
-       !     call system_abort('create_embed_and_fit_lists: (embedlist) cluster stopped growing before all marked atoms found - check for split QM region')
+       !if (embedlist%N == old_n) then
+       !     RAISE_ERROR('create_embed_and_fit_lists: (embedlist) cluster stopped growing before all marked atoms found - check for split QM region', error)
+       !endif
        !old_n = embedlist%N
     end do
 
@@ -2289,10 +2316,11 @@ contains
   !% property using 'HYBRID_ACTIVE_MARK', and buffer region marked using 'HYBRID_BUFFER_MARK',
   !% 'HYBRID_TRANS_MARK' or 'HYBRID_BUFFER_OUTER_LAYER_MARK', simply returns the embedlist and fitlist
   !% according to 'hybrid_mark'. It does not take into account periodic shifts.
-  subroutine create_embed_and_fit_lists_from_cluster_mark(at,embedlist,fitlist)
+  subroutine create_embed_and_fit_lists_from_cluster_mark(at,embedlist,fitlist, error)
 
     type(Atoms), intent(in)  :: at
     type(Table), intent(out) :: embedlist, fitlist
+    integer, intent(inout), optional :: error
 
     type(Table)              :: tmpfitlist
 
@@ -2345,12 +2373,13 @@ contains
   !% must drift further than 'outer'.
   !% Optionally use time averaged positions
   !
-  subroutine update_hysteretic_region(at,inner,outer,list,verbosity)
+  subroutine update_hysteretic_region(at,inner,outer,list,verbosity, error)
 
     type(Atoms),       intent(in)    :: at
     type(Table),       intent(inout) :: inner, outer
     type(Table),       intent(inout) :: list
     integer, optional, intent(in)    :: verbosity
+    integer, optional, intent(inout)    :: error
 
     integer                          :: n, my_verbosity, atom(list%intsize)
 
@@ -2361,8 +2390,9 @@ contains
        call print('List currently contains '//list%N//' atoms')
     end if
 
-    if ((list%intsize /= inner%intsize) .or. (list%intsize /= outer%intsize)) &
-       call system_abort('update_hysteretic_region: inner, outer and list must have the same intsize')
+    if ((list%intsize /= inner%intsize) .or. (list%intsize /= outer%intsize)) then
+       RAISE_ERROR('update_hysteretic_region: inner, outer and list must have the same intsize', error)
+    endif
 
     ! Speed up searching
     call sort(outer)
@@ -2403,7 +2433,7 @@ contains
   !% Optionally use the time averaged positions.
   !% Optionally use only heavy atom selection.
   !
-  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile)
+  subroutine construct_hysteretic_region(region,at,core,centre,loop_atoms_no_connectivity,inner_radius,outer_radius,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, error)
 
     type(Table),           intent(inout) :: region
     type(Atoms),           intent(in)    :: at
@@ -2418,6 +2448,7 @@ contains
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
     type(inoutput), optional :: debugfile
+    integer, intent(inout), optional :: error
 
     type(Table)                          :: inner_region
     type(Table)                          :: outer_region
@@ -2425,8 +2456,12 @@ contains
 
     if (present(debugfile)) call print("construct_hysteretic_region radii " // inner_radius // " " // outer_radius, file=debugfile)
     !check the input arguments only in construct_region.
-    if (inner_radius.lt.0._dp) call system_abort('inner_radius must be > 0 and it is '//inner_radius)
-    if (outer_radius.lt.inner_radius) call system_abort('outer radius ('//outer_radius//') must not be smaller than inner radius ('//inner_radius//').')
+    if (inner_radius.lt.0._dp) then
+      RAISE_ERROR('inner_radius must be > 0 and it is '//inner_radius, error)
+    endif
+    if (outer_radius.lt.inner_radius) then
+      RAISE_ERROR('outer radius ('//outer_radius//') must not be smaller than inner radius ('//inner_radius//').', error)
+    endif
 
     no_hysteresis = .false.
     if ((outer_radius-inner_radius).lt.epsilon(0._dp)) no_hysteresis = .true.
@@ -2491,7 +2526,7 @@ contains
   !% Optionally use a heavy atom based selection (applying to both the core and the region atoms).
   !% Alternatively use the hysteretic connection, only nearest neighbours and/or min_images (only for the n_connectivity_hops).
   !
-  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile)
+  subroutine construct_region(region,at,core,centre,loop_atoms_no_connectivity,radius,n_connectivity_hops,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,alt_connect,debugfile, error)
 
     type(Table),           intent(out) :: region
     type(Atoms),           intent(in)  :: at
@@ -2506,6 +2541,7 @@ contains
     logical,     optional, intent(in)  :: min_images_only
     type(Connection), optional,intent(in) :: alt_connect
 type(inoutput), optional :: debugfile
+    integer, optional,intent(inout) :: error
 
     logical                             :: do_use_avgpos
     logical                             :: do_loop_atoms_no_connectivity
@@ -2522,22 +2558,26 @@ type(inoutput), optional :: debugfile
     do_loop_atoms_no_connectivity = optional_default(.false.,loop_atoms_no_connectivity)
 
     do_add_only_heavy_atoms = optional_default(.false.,add_only_heavy_atoms)
-    if (do_add_only_heavy_atoms .and. .not. has_property(at,'Z')) &
-      call system_abort("construct_region: atoms has no Z property")
+    if (do_add_only_heavy_atoms .and. .not. has_property(at,'Z')) then
+      RAISE_ERROR("construct_region: atoms has no Z property", error)
+    endif
 
     do_use_avgpos = optional_default(.false.,  use_avgpos)
 
-    if (count((/ present(centre), present(core) /)) /= 1) &
-      call system_abort("Need either centre or core, but not both present(centre) " // present(centre) // " present(core) "// present(core))
+    if (count((/ present(centre), present(core) /)) /= 1) then
+      RAISE_ERROR("Need either centre or core, but not both present(centre) " // present(centre) // " present(core) "// present(core), error)
+    endif
 
     ! if we have radius, we'll have to decide what positions to use
     if (present(radius)) then
       if (do_use_avgpos) then
-        if (.not. assign_pointer(at, "avgpos", use_pos)) &
-	  call system_abort("do_use_avgpos is true, but no avgpos property")
+        if (.not. assign_pointer(at, "avgpos", use_pos)) then
+	  RAISE_ERROR("do_use_avgpos is true, but no avgpos property", error)
+	endif
       else
-        if (.not. assign_pointer(at, "pos", use_pos)) &
-	  call system_abort("do_use_avgpos is false, but no pos property")
+        if (.not. assign_pointer(at, "pos", use_pos)) then
+	  RAISE_ERROR("do_use_avgpos is false, but no pos property", error)
+	endif
       endif
     endif
 
@@ -2545,13 +2585,16 @@ type(inoutput), optional :: debugfile
 
     if (do_loop_atoms_no_connectivity) then
       if (present(debugfile)) call print("   loop over atoms", file=debugfile)
-      if (.not. present(radius)) &
-	call system_abort("do_loop_atoms_no_connectivity=T requires radius")
+      if (.not. present(radius)) then
+	RAISE_ERROR("do_loop_atoms_no_connectivity=T requires radius", error)
+      endif
       if (present(n_connectivity_hops) .or. present(min_images_only) .or. present(nneighb_only)) &
 	call print("WARNING: do_loop_atoms_no_connectivity, but specified unused arg n_connectivity_hops " // present(n_connectivity_hops) // &
 	  " min_images_only " // present(min_images_only) // " nneighb_only " // present(nneighb_only), PRINT_ALWAYS)
        call print('WARNING: check if your cell is greater than the radius, looping only works in that case.',PRINT_ALWAYS)
-       if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) call system_abort('too small cell')
+       if (any((/at%lattice(1,1),at%lattice(2,2),at%lattice(3,3)/) < radius)) then
+	 RAISE_ERROR('too small cell', error)
+       endif
        do i = 1,at%N
 	 if (present(debugfile)) call print("check atom i " // i // " Z " // at%Z(i) // " pos " // at%pos(:,i), file=debugfile)
 	 if (do_add_only_heavy_atoms .and. at%Z(i) == 1) cycle
@@ -2576,8 +2619,9 @@ type(inoutput), optional :: debugfile
 
     else ! do_loop_atoms_no_connectivity
 
-      if (.not. present(core)) &
-	call system_abort("do_loop_atoms_no_connectivity is false, trying connectivity hops, but no core list is specified")
+      if (.not. present(core)) then
+	RAISE_ERROR("do_loop_atoms_no_connectivity is false, trying connectivity hops, but no core list is specified", error)
+      endif
 
 	if (present(debugfile)) call print("   connectivity hopping", file=debugfile)
 	if (present(debugfile) .and. present(radius)) call print("    have radius " // radius, file=debugfile)
@@ -2585,8 +2629,9 @@ type(inoutput), optional :: debugfile
 	if (present(debugfile) .and. present(nneighb_only)) call print("   nneighb_only " // nneighb_only, file=debugfile)
       do_nneighb_only = optional_default(.true., nneighb_only)
       do_min_images_only = optional_default(.true., min_images_only)
-      if (do_use_avgpos) &
-	call system_abort("can't use avgpos with connectivity hops - make sure your connectivity is based on avgpos instead")
+      if (do_use_avgpos) then
+	RAISE_ERROR("can't use avgpos with connectivity hops - make sure your connectivity is based on avgpos instead", error)
+      endif
 
       ! start with core
       call append(region,core)
@@ -2647,10 +2692,11 @@ type(inoutput), optional :: debugfile
   end subroutine construct_region
 
 
-  subroutine update_active(this, nneightol, avgpos, reset)
+  subroutine update_active(this, nneightol, avgpos, reset, error)
     type(Atoms) :: this
     real(dp), optional :: nneightol
     logical, optional :: avgpos, reset
+    integer, optional,intent(inout) :: error
 
     type(Atoms), save :: nn_atoms
     integer, pointer, dimension(:) :: nn, old_nn, active
@@ -2673,18 +2719,21 @@ type(inoutput), optional :: debugfile
        call set_cutoff_factor(nn_atoms, use_nn_tol)
     end if
 
-    if (this%N /= nn_atoms%N) &
-         call system_abort('update_actives: Number mismatch between this%N ('//this%N// &
-         ') and nn_atoms%N ('//nn_atoms%N//')')
+    if (this%N /= nn_atoms%N) then
+         RAISE_ERROR('update_actives: Number mismatch between this%N ('//this%N//') and nn_atoms%N ('//nn_atoms%N//')', error)
+    endif
 
-    if (.not. assign_pointer(this, 'nn', nn)) &
-         call system_abort('update_actives: Atoms is missing "nn" property')
+    if (.not. assign_pointer(this, 'nn', nn)) then
+         RAISE_ERROR('update_actives: Atoms is missing "nn" property', error)
+    endif
 
-    if (.not. assign_pointer(this, 'old_nn', old_nn)) &
-         call system_abort('update_actives: Atoms is missing "old_nn" property')
+    if (.not. assign_pointer(this, 'old_nn', old_nn)) then
+         RAISE_ERROR('update_actives: Atoms is missing "old_nn" property', error)
+    endif
 
-    if (.not. assign_pointer(this, 'active', active)) &
-         call system_abort('update_actives: Atoms is missing "active" property')
+    if (.not. assign_pointer(this, 'active', active)) then
+         RAISE_ERROR('update_actives: Atoms is missing "active" property', error)
+    endif
 
     call print('update_actives: recalculating nearest neighbour table', PRINT_VERBOSE)
     if (use_avgpos .and. associated(this%avgpos)) then
@@ -3181,7 +3230,7 @@ type(inoutput), optional :: debugfile
   !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
   !% the centre of the QM region (a position in space or a list of atoms).
   !
-  subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed)
+  subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed, error)
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
@@ -3190,13 +3239,16 @@ type(inoutput), optional :: debugfile
     type(Table), optional, intent(in)    :: atomlist !the seed of the QM region
     logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
     logical,  optional, intent(out)   :: list_changed
+    integer, optional,intent(inout) :: error
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, ext_qmlist
 !    real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
 
-    if (count((/present(origin),present(atomlist)/))/=1) call system_abort('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.')
+    if (count((/present(origin),present(atomlist)/))/=1) then
+      RAISE_ERROR('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.', error)
+    endif
 !    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
 
     call map_into_cell(my_atoms)
@@ -3207,22 +3259,26 @@ type(inoutput), optional :: debugfile
     ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,old_core,int_property='hybrid_mark')
     ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core,int_property='hybrid_mark')
     ! call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
-    call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark')
-    call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark')
-    call get_hybrid_list(my_atoms,ext_qmlist, all_but_term=.true., int_property='hybrid_mark')
+    call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark', error=error)
+    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting old core", error)
+    call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark', error=error)
+    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting core", error)
+    call get_hybrid_list(my_atoms,ext_qmlist, all_but_term=.true., int_property='hybrid_mark', error=error)
+    PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting all but term", error)
 
 !Build the hysteretic QM core:
   if (present(atomlist)) then
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 
+       nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
   else !present origin
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,centre=origin,loop_atoms_no_connectivity=.true., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
-       nneighb_only=nneighb_only, min_images_only=min_images_only) !NB , debugfile=mainlog) 
+       nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
   endif
+  PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
 
 !    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
 !    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
@@ -3257,8 +3313,9 @@ type(inoutput), optional :: debugfile
     endif
 
    ! update QM_flag of my_atoms
-    if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) &
-      call system_abort("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark property")
+    if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) then
+      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark property", error)
+    endif
     hybrid_mark_p(1:my_atoms%N) = 0
     hybrid_mark_p(int_part(ext_qmlist,1)) = HYBRID_BUFFER_MARK
     hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
@@ -3268,8 +3325,9 @@ type(inoutput), optional :: debugfile
     ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
 
    ! update hybrid property of my_atoms
-    if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) &
-      call system_abort("create_pos_or_list_centred_hybrid_region couldn't get hybrid property")
+    if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) then
+      RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid property", error)
+    endif
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(core,1)) = 1
     ! qm_flag_index = get_property(my_atoms,'hybrid')
@@ -3300,11 +3358,13 @@ type(inoutput), optional :: debugfile
 !    do_get_up_to_mark_value = optional_default(.false., get_up_to_mark_value)
 !
 !    if (present(int_property)) then
-!       if (.not. assign_pointer(my_atoms, trim(int_property), mark_p)) &
-!	 call system_abort("get_hybrid_list_int couldn't get int_property='"//trim(int_property)//"'")
+!       if (.not. assign_pointer(my_atoms, trim(int_property), mark_p)) then
+!	 RAISE_ERROR("get_hybrid_list_int couldn't get int_property='"//trim(int_property)//"'", error)
+!       endif
 !    else
-!       if (.not. assign_pointer(my_atoms, 'cluster_mark', mark_p)) &
-!	 call system_abort("get_hybrid_list_int couldn't get default int_property='cluster_mark'")
+!       if (.not. assign_pointer(my_atoms, 'cluster_mark', mark_p)) then
+!	 RAISE_ERROR("get_hybrid_list_int couldn't get default int_property='cluster_mark'", error)
+!       endif
 !    endif
 !
 !    call initialise(hybridlist,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_hybrid_atoms entries
@@ -3356,27 +3416,30 @@ type(inoutput), optional :: debugfile
   end function check_list_change
 
   !% return list of atoms that have various subsets of hybrid marks set
-  subroutine get_hybrid_list(at,hybrid_list,all_but_term,active_trans_only,int_property)
+  subroutine get_hybrid_list(at,hybrid_list,all_but_term,active_trans_only,int_property, error)
     type(Atoms), intent(in)  :: at !% object to scan for marked atoms
     type(Table), intent(out) :: hybrid_list !% on return, list of marked atoms
     logical, intent(in), optional :: all_but_term !% if present and true, select all marked atoms that aren't TERM
     logical, intent(in), optional :: active_trans_only !% if present and true, select all atoms marked ACTIVE or TRANS
     !% exactly one of all_but_term and active_trans_only must be present and true
     character(len=*), optional, intent(in) :: int_property !% if present, property to check, default cluster_mark
+    integer, optional,intent(inout) :: error
 
     integer :: i
     integer, pointer :: hybrid_mark(:)
     logical              :: my_all_but_term, my_active_trans_only
     character(STRING_LENGTH) :: my_int_property
 
-    if (.not. present(all_but_term) .and. .not. present(active_trans_only)) &
-      call system_abort("get_hybrid_list called with neither all_but_term nor active_trans_only present")
+    if (.not. present(all_but_term) .and. .not. present(active_trans_only)) then
+      RAISE_ERROR("get_hybrid_list called with neither all_but_term nor active_trans_only present", error)
+    endif
 
     my_all_but_term = optional_default(.false., all_but_term)
     my_active_trans_only = optional_default(.false., active_trans_only)
 
-    if ((my_all_but_term .and. my_active_trans_only) .or. (.not. my_all_but_term .and. .not. my_active_trans_only)) &
-      call system_abort("get_hybrid_list needs exactly one of all_but_term=" // all_but_term // " and active_trans_only="//my_active_trans_only)
+    if ((my_all_but_term .and. my_active_trans_only) .or. (.not. my_all_but_term .and. .not. my_active_trans_only)) then
+      RAISE_ERROR("get_hybrid_list needs exactly one of all_but_term=" // all_but_term // " and active_trans_only="//my_active_trans_only, error)
+    endif
 
     my_int_property = ''
     if (present(int_property)) then
@@ -3384,8 +3447,9 @@ type(inoutput), optional :: debugfile
     else
        my_int_property = "cluster_mark"
     endif
-    if (.not.(assign_pointer(at, trim(my_int_property), hybrid_mark))) &
-      call system_abort("get_hybrid_list couldn't find "//trim(my_int_property)//" field")
+    if (.not.(assign_pointer(at, trim(my_int_property), hybrid_mark))) then
+      RAISE_ERROR("get_hybrid_list couldn't find "//trim(my_int_property)//" field", error)
+    endif
 
     call initialise(hybrid_list,4,0,0,0,0)      !1 int, 0 reals, 0 str, 0 log, num_qm_atoms entries
     do i=1, at%N
@@ -3394,7 +3458,7 @@ type(inoutput), optional :: debugfile
       else if (my_active_trans_only) then
 	if (hybrid_mark(i) == HYBRID_ACTIVE_MARK .or. hybrid_mark(i) == HYBRID_TRANS_MARK) call append(hybrid_list,(/i,0,0,0/))
       else
-	call system_abort("impossible! get_hybrid_list has no selection mode set")
+	RAISE_ERROR("impossible! get_hybrid_list has no selection mode set", error)
       endif
     end do
 

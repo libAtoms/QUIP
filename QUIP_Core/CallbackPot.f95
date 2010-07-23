@@ -71,6 +71,7 @@
 !    of forces on atom i (or a list, or a range?)
 ! or
 !   process_queue, which would process the queue and fill in all the forces
+#include "error.inc"
 module Callbackpot_module
 
 use libatoms_module
@@ -157,18 +158,21 @@ end interface
 contains
 
 
-subroutine Callbackpot_Initialise(this, args_str, mpi)
+subroutine Callbackpot_Initialise(this, args_str, mpi, error)
   type(Callbackpot_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(inout), optional :: error
+
   type(Dictionary) :: params
 
   call finalise(this)
 
   call initialise(params)
   call param_register(params, 'label', '', this%label)
-  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='CallbackPot_initialise')) &
-       call system_abort('CallbackPot_Initialise failed to parse args_str="'//trim(args_str)//"'")
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='CallbackPot_initialise')) then
+       RAISE_ERROR('CallbackPot_Initialise failed to parse args_str="'//trim(args_str)//"'", error)
+  endif
   call finalise(params)
 
   this%init_args_str = args_str
@@ -176,7 +180,7 @@ subroutine Callbackpot_Initialise(this, args_str, mpi)
 
 end subroutine Callbackpot_Initialise
 
-subroutine callbackpot_set_callback(this, callback)
+subroutine callbackpot_set_callback(this, callback, error)
   type(Callbackpot_type), intent(inout) :: this
   interface
      subroutine callback(at)
@@ -188,9 +192,11 @@ subroutine callbackpot_set_callback(this, callback)
 #endif
      end subroutine callback
   end interface
+  integer, intent(inout), optional :: error
 
-  if (n_callbacks >= MAX_CALLBACKS) &
-       call system_abort('CallbackPot_Initialise: Too many registered callback routines')
+  if (n_callbacks >= MAX_CALLBACKS) then
+       RAISE_ERROR('CallbackPot_Initialise: Too many registered callback routines', error)
+  endif
   this%callback_id = n_callbacks
   n_callbacks = n_callbacks + 1
   call register_callbackpot_sub(callback)
@@ -228,7 +234,7 @@ subroutine Callbackpot_Print(this, file)
 
 end subroutine Callbackpot_Print
 
-subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str, err)
+subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str, error)
   type atoms_ptr_type
      type(atoms), pointer :: p
   end type atoms_ptr_type
@@ -239,7 +245,8 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
+
   type(Atoms), target :: at_copy
 #ifdef HAVE_QUIPPY
   type(atoms_ptr_type) :: at_ptr
@@ -268,9 +275,10 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
      virial = 0.0_dp
      calc_virial = .true.
   end if
-  if (present(err)) err = 0
 
-  if (this%callback_id < 0) call system_abort('callbackpot_calc: callback_id < 0')
+  if (this%callback_id < 0) then
+     RAISE_ERROR('callbackpot_calc: callback_id < 0', error)
+  endif
 
   at_copy = at
   call set_value(at_copy%params, 'calc_energy', calc_energy)
@@ -289,8 +297,9 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
 #endif
 
   if (present(energy)) then
-     if (.not. get_value(at_copy%params, 'energy', energy)) &
+     if (.not. get_value(at_copy%params, 'energy', energy)) then
           call print('WARNING Callbackpot_calc: "energy" requested but not returned by callback')
+     endif
   end if
 
   if (present(local_e)) then
@@ -310,8 +319,9 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   end if
 
   if (present(virial)) then
-     if (.not. get_value(at_copy%params, 'virial', virial)) &
+     if (.not. get_value(at_copy%params, 'virial', virial)) then
           call print('WARNING Callbackpot_calc: "virial" requested but not returned by callback')
+     end if
   end if
 
   if (this%mpi%active) then

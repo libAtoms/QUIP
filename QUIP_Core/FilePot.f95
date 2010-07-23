@@ -73,6 +73,7 @@
 !    of forces on atom i (or a list, or a range?)
 ! or
 !   process_queue, which would process the queue and fill in all the forces
+#include "error.inc"
 module FilePot_module
 
 use libatoms_module
@@ -127,10 +128,11 @@ end interface
 contains
 
 
-subroutine FilePot_Initialise(this, args_str, mpi)
+subroutine FilePot_Initialise(this, args_str, mpi, error)
   type(FilePot_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(inout), optional :: error
 
   type(Dictionary) ::  params
   character(len=STRING_LENGTH) :: command, property_list, filename
@@ -147,7 +149,7 @@ subroutine FilePot_Initialise(this, args_str, mpi)
   call param_register(params, 'filename', 'filepot', filename)
   call param_register(params, 'min_cutoff', '0.0', min_cutoff)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
-    call system_abort("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'")
+    RAISE_ERROR("FilePot_initialise failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)
 
@@ -195,7 +197,7 @@ subroutine FilePot_Print(this, file)
 
 end subroutine FilePot_Print
 
-subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err)
+subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, error)
   type(FilePot_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy
@@ -203,7 +205,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional :: args_str
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   character(len=1024) :: xyzfile, outfile, my_args_str
   type(inoutput) :: xyzio
@@ -219,21 +221,20 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   if (present(local_e)) local_e = 0.0_dp
   if (present(forces)) forces = 0.0_dp
   if (present(virial)) virial = 0.0_dp
-  if (present(err)) err = 0
   my_args_str = ''
   if (present(args_str)) my_args_str = args_str
 
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log)
-  if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) &
-    call system_abort("FilePot_calc failed to parse args_str='"//trim(args_str)//"'")
+  if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
+    RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
+  endif
   call finalise(cli)
 
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
 
-  if (.not. this%mpi%active .or. &
-       (this%mpi%active .and. this%mpi%my_proc == 0)) then
+  if (.not. this%mpi%active .or.  (this%mpi%active .and. this%mpi%my_proc == 0)) then
      
      xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
      outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
@@ -283,7 +284,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command
-     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log=FilePot_log, err=my_err)
+     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log=FilePot_log, error=error)
+     PASS_ERROR_WITH_INFO("Filepot_Calc reading output", error)
   end if
 
   if (this%mpi%active) then
@@ -297,15 +299,9 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call bcast(this%mpi, my_err)
   end if
 
-  if (present(err)) then
-    err = my_err
-  else if (my_err /= 0) then
-    call system_abort("FilePot got err status " // my_err // " from filepot_read_output")
-  end if
-
 end subroutine FilePot_calc
 
-subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log, err)
+subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log, error)
   character(len=*), intent(in) :: outfile
   type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
@@ -314,7 +310,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   logical, intent(in), optional :: filepot_log
-  integer, intent(out), optional :: err
+  integer, intent(out), optional :: error
 
   integer :: i
   type(inoutput) :: outio
@@ -331,8 +327,6 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   call read_xyz(at_out, outio)
   call finalise(outio)
 
-  if (present(err)) err = 0
-
   if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
      ! Discard atoms outside the primitive cell
      call select(primitive, at_out, list=(/ (i, i=1,at_out%N/(nx*ny*nz) ) /))
@@ -341,47 +335,21 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   end if
 
   if (at_out%N /= at%N) then
-    if (present(err)) then
-      call print("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N, PRINT_ALWAYS)
-      err = 1
-      return
-    else
-      call system_abort("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N)
-    endif
+     RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' got N="//at_out%N//" /= at%N="//at%N, error)
   endif
 
   if (.not. assign_pointer(at_out,'Z',Z_p)) then
-    if (present(err)) then
-      call print("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z", PRINT_ALWAYS)
-      err = 1
-      return
-    else
-      call system_abort("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z")
-    endif
+     RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' couldn't associated pointer for field Z", error)
   endif
   do i=1, at%N
     if (at%Z(i) /= Z_p(i)) then
-      if (present(err)) then
-	call print("filepot_read_output in '"//trim(outfile)//"' got Z("//i//")="// &
-	  at_out%Z(i)//" /= at%Z("//i//")="// at%Z(i), PRINT_ALWAYS)
-	err = 1
-	return
-      else
-	call system_abort("filepot_read_output in '"//trim(outfile)//"' got Z("//i//")="// &
-	  at_out%Z(i)//" /= at%Z("//i//")="//at%Z(i))
-      endif
+      RAISE_ERROR("filepot_read_output in '"//trim(outfile)//"' got Z("//i//")="//at_out%Z(i)//" /= at%Z("//i//")="//at%Z(i), error)
     endif
   end do
 
   if (present(energy)) then
     if (.not. get_value(at_out%params,'energy',energy)) then
-      if (present(err)) then
-	call print("filepot_read_output needed energy, but couldn't find energy in '"//trim(outfile)//"'", PRINT_ALWAYS)
-	err = 1
-	return
-      else
-	call system_abort("filepot_read_output needed energy, but couldn't find energy in '"//trim(outfile)//"'")
-      endif
+      RAISE_ERROR("filepot_read_output needed energy, but couldn't find energy in '"//trim(outfile)//"'", error)
     endif
     ! If cell was repeated, reduce energy by appropriate factor
     ! to give energy of primitive cell.
@@ -390,17 +358,12 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   endif
 
   if (present(virial)) then
-     if (nx /= 1 .or. ny /= 1 .or. nz /= 1) &
-          call system_abort("filepot_read_output: don't know how to rescale virial for repicated system")
+     if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
+          RAISE_ERROR("filepot_read_output: don't know how to rescale virial for repicated system", error)
+     endif
 
     if (.not. get_value(at_out%params,'virial',virial_1d)) then
-      if (present(err)) then
-	call print("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'", PRINT_ALWAYS)
-	err = 1
-	return
-      else
-	call system_abort("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'")
-      endif
+      RAISE_ERROR("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'", error)
     endif
     virial(:,1) = virial_1d(1:3)
     virial(:,2) = virial_1d(4:6)
@@ -409,26 +372,14 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   if (present(local_e)) then
     if (.not. assign_pointer(at_out, 'local_e', local_e_p)) then
-      if (present(err)) then
-	call print("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", PRINT_ALWAYS)
-	err = 1
-	return
-      else
-	call system_abort("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'")
-      endif
+	RAISE_ERROR("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", error)
     endif
     local_e = local_e_p
   endif
 
   if (present(forces)) then
     if (.not. assign_pointer(at_out, 'force', forces_p)) then
-      if (present(err)) then
-	call print("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", PRINT_ALWAYS)
-	err = 1
-	return
-      else
-	call system_abort("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'")
-      endif
+	RAISE_ERROR("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", error)
     endif
     forces = forces_p
   endif

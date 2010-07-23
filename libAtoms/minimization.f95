@@ -37,10 +37,12 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
 module minimization_module
 
   use system_module
   use linearalgebra_module
+  use error_module
   implicit none
   SAVE
 
@@ -95,11 +97,11 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     END INTERFACE
-    character,optional::data(:)
+    character(len=1),optional::data(:)
     integer:: linmin
 
     integer::i,it,sizeflag,N, bracket_it
@@ -548,11 +550,11 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     END INTERFACE
-    character,optional::data(:)
+    character(len=1),optional::data(:)
     integer::linmin  
 
     ! Dynamically allocate to avoid stack overflow madness with ifort
@@ -680,11 +682,11 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
-    character,optional::data(:)
+    character(len=1),optional::data(:)
     integer::linmin  
 
     ! local vars
@@ -757,11 +759,11 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
-    character,optional :: data(:)
+    character(len=1),optional :: data(:)
     integer::linmin  
 
     ! local vars
@@ -961,11 +963,11 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
-    character,optional :: data(:)
+    character(len=1),optional :: data(:)
     integer::linmin  
 
     ! local vars
@@ -1141,7 +1143,7 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -1149,7 +1151,7 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
@@ -1157,7 +1159,7 @@ CONTAINS
     real(dp)::tol  !% Minimisation is taken to be converged when 'norm2(force) < tol'
     real(dp)::max_change !% Maximum position change per time step
     integer:: max_steps  !% Maximum number of MD steps
-    character,optional::data(:)
+    character(len=1),optional::data(:)
 
     integer :: N,i
     integer :: damped_md_minim
@@ -1240,7 +1242,7 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -1248,7 +1250,7 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
@@ -1274,13 +1276,13 @@ CONTAINS
          real(dp)::E
          logical :: done
 	 logical, optional:: do_print
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
        end subroutine hook
     end INTERFACE
     integer, intent(in), optional :: hook_print_interval
     real(dp), intent(in), optional :: eps_guess
     logical, intent(in), optional :: always_do_test_gradient
-    character, optional, intent(inout) :: data(:)
+    character(len=1), optional, intent(inout) :: data(:)
     integer, optional, intent(out) :: status
 
     !%RV Returns number of gradient descent steps taken during minimisation
@@ -1874,7 +1876,7 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -1882,12 +1884,12 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     real(dp), intent(in), optional, target :: dir(:) !% direction along which to test
-    character,optional::data(:)
+    character(len=1),optional::data(:)
     !%RV Returns true if the gradient test passes, or false if it fails
     logical :: test_gradient
 
@@ -2050,7 +2052,7 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -2058,12 +2060,12 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     real(dp), intent(in), optional, target :: dir(:) !% direction along which to test
-    character,optional::data(:)
+    character(len=1),optional::data(:)
 
     integer N, i
     real(dp) :: eps, tmp, fp, fm
@@ -2115,13 +2117,13 @@ CONTAINS
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::func
        end function func
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     end interface
@@ -2137,11 +2139,11 @@ CONTAINS
          real(dp)::E
          logical  :: done
 	 logical, optional :: do_print
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
-    character,optional::data(:)
+    character(len=1),optional::data(:)
     integer, optional, intent(out) :: status
     integer :: fire_minim
 
@@ -2248,17 +2250,17 @@ CONTAINS
 
 subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 		  new_x, new_neg_gradient, new_E, &
-		  max_step_size, accuracy, N_evals, max_N_evals, hook,data)
+		  max_step_size, accuracy, N_evals, max_N_evals, hook,data, error)
     real(dp), intent(inout) :: x(:)
     real(dp), intent(in) :: neg_gradient(:)
     interface 
-       subroutine bothfunc(x,E,f,my_error,data)
+       subroutine bothfunc(x,E,f,data,error)
          use system_module
          real(dp)::x(:)
          real(dp)::E
          real(dp)::f(:)
-	 integer :: my_error
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
+	 integer,optional :: error
        end subroutine bothfunc
     end interface
     real(dp), intent(inout) :: E
@@ -2278,10 +2280,11 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
          real(dp)::E
          logical :: done
          logical, optional :: do_print
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
        end subroutine hook
     end interface
-    character,optional::data(:)
+    character(len=1),optional::data(:)
+    integer, intent(inout), optional :: error
 
     real(dp) search_dir_mag
     real(dp) p0_dot, p1_dot, new_p_dot
@@ -2294,7 +2297,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     logical done, use_cubic, got_valid_cubic
 
-    integer error
+    integer l_error
     real(dp) est_step_size
 
     allocate(p0(size(x)))
@@ -2317,13 +2320,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     t_projected = search_dir*p0_dot
     if (norm2(t_projected) .lt. accuracy) then
-!	call print ("n_linmin initial config is converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
-call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
-!	new_x = x
-!	new_neg_gradient = neg_gradient
-!	new_E = E
-!	search_dir = search_dir * search_dir_mag
-!	return
+	call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
     endif
 
     p0_pos = 0.0_dp
@@ -2350,12 +2347,13 @@ call print ("n_linmin initial config is apparently converged " // norm(t_project
     p1_pos = est_step_size
     p1 = x + p1_pos*search_dir
     p1_ng = p0_ng
-    error = 1
-    do while (error .ne. 0)
+    l_error = 1
+    do while (l_error .ne. 0)
 	N_evals = N_evals + 1
-	call bothfunc(p1, p1_e, p1_ng, error, data); p1_ng = -p1_ng
+	l_error=0
+	call bothfunc(p1, p1_e, p1_ng, data, error=l_error); p1_ng = -p1_ng
 	if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
-	if (error .ne. 0) then
+	if (l_error .ne. 0) then
 	    call print("cg_n " // p1_pos // " " // p1_e // " " // 0.0_dp // " " // &
 		       0.0_dp // " " // N_evals // " bracket first step ERROR", PRINT_ALWAYS)
 	    est_step_size = est_step_size*0.5_dp
@@ -2363,8 +2361,7 @@ call print ("n_linmin initial config is apparently converged " // norm(t_project
 	    p1 = x + p1_pos*search_dir
 	endif
 	if (N_evals .gt. max_N_evals) then
-	    call print ("n_linmin ran out of iterations", PRINT_ALWAYS)
-	    return
+	    RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
 	endif
     end do
 
@@ -2400,20 +2397,21 @@ call print ("n_linmin initial config is apparently converged " // norm(t_project
 	call print ("checking bracketing for " // p1_pos, PRINT_NERD)
 
 	p1 = x + p1_pos*search_dir
-	error = 1
-	do while (error .ne. 0)
+	l_error = 1
+	do while (l_error .ne. 0)
 	    N_evals = N_evals + 1
-	    call bothfunc (p1, p1_E, p1_ng, error, data); p1_ng = -p1_ng
+	    l_error = 0
+	    call bothfunc (p1, p1_E, p1_ng, data, error=l_error); p1_ng = -p1_ng
 	    if (present(hook)) call hook(p1,p1_ng,p1_E,done,.false.,data)
 	    if (done) then
 	      call print("hook reported done", PRINT_NERD)
 	      search_dir = search_dir * search_dir_mag
 	      return
 	    endif
-	    if (error .ne. 0) then
+	    if (l_error .ne. 0) then
 	      call print("cg_n " // p0_pos // " " // p0_e // " " // 0.0_dp // " " // &
 			 0.0_dp // " " // N_evals // " bracket loop ERROR", PRINT_ALWAYS)
-	      call print ("Error in bracket loop " // error // " stepping back", PRINT_ALWAYS)
+	      call print ("Error in bracket loop " // l_error // " stepping back", PRINT_ALWAYS)
 	      p1_pos = p1_pos - est_step_size
 	      est_step_size = est_step_size*0.5_dp
 	      p1_pos = p1_pos + est_step_size
@@ -2421,8 +2419,7 @@ call print ("n_linmin initial config is apparently converged " // norm(t_project
 	    endif
 	    if (N_evals .gt. max_N_evals) then
 	      search_dir = search_dir * search_dir_mag
-	      call print ("n_linmin ran out of iterations", PRINT_ALWAYS)
-	      return
+	      RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
 	    endif
 	end do
 
@@ -2482,7 +2479,7 @@ call print ("n_linmin initial config is apparently converged " // norm(t_project
 
 	new_p = x + new_p_pos*search_dir
 	N_evals = N_evals + 1
-	call bothfunc (new_p, new_p_E, new_p_ng, error, data); new_p_ng = -new_p_ng
+	call bothfunc (new_p, new_p_E, new_p_ng, data, error); new_p_ng = -new_p_ng
 	if (error .ne. 0) then
 	    call system_abort("n_linmin: Error in line search " // error)
 	endif
@@ -2526,25 +2523,25 @@ end subroutine n_linmin
 
 ! with preconditioning from Cristoph Ortner
 function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, final_E, &
-    expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, status) result(N_evals)
+    expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, error) result(N_evals)
     real(dp), intent(inout) :: x_i(:)
     interface 
-       subroutine bothfunc(x,E,f,my_error,data)
+       subroutine bothfunc(x,E,f,data,error)
          use system_module
          real(dp)::x(:)
          real(dp)::E
          real(dp)::f(:)
-	 integer :: my_error
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
+	 integer, optional :: error
        end subroutine bothfunc
     end interface 
     logical :: use_precond
     interface 
-       subroutine apply_precond_func(x,g,P_g,my_error,data)
+       subroutine apply_precond_func(x,g,P_g,data,error)
          use system_module
          real(dp)::x(:),g(:),P_g(:)
-	 integer :: my_error
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
+	 integer, optional :: error
        end subroutine apply_precond_func
     end interface 
     real(dp), intent(out) :: initial_E, final_E
@@ -2561,12 +2558,12 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
          real(dp)::E
          logical :: done
          logical, optional :: do_print
-	 character,optional::data(:)
+	 character(len=1),optional::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
-    character,optional::data(:)
-    integer, optional, intent(out) :: status
+    character(len=1),optional::data(:)
+    integer, optional, intent(out) :: error
 
     real(dp) :: E_i, E_ip1
 
@@ -2582,10 +2579,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     real(dp) :: g_i_dot_g_i, g_ip1_dot_g_i, g_ip1_dot_g_ip1
     real(dp) :: gamma_i
 
-    integer :: error
     integer :: my_hook_print_interval
-
-    if (present(status)) status = 0
 
     if (current_verbosity() >= PRINT_VERBOSE) then
       my_hook_print_interval = optional_default(1, hook_print_interval)
@@ -2600,17 +2594,16 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     allocate(g_ip1(size(x_i)))
     allocate(h_i(size(x_i)))
     N_evals = 1
-    call bothfunc(x_i, E_i, g_i, error, data); g_i = -g_i
+    call bothfunc(x_i, E_i, g_i, data, error=error); g_i = -g_i
     if (present(hook)) call hook(x_i, g_i, E_i, done, .true., data)
-    if (error .ne. 0) then
-      call system_abort("Error in first evaluation" // error)
-    endif
+    PASS_ERROR_WITH_INFO("n_minim first evaluation", error)
     initial_E = E_i
 
     allocate(P_g(size(x_i)))
     ! need to get P into the routine somehow
     if (use_precond) then
-      call apply_precond_func(x_i, g_i, P_g, error, data)
+      call apply_precond_func(x_i, g_i, P_g, data, error=error)
+      PASS_ERROR_WITH_INFO("n_minim initial preconditioning call", error)
     else
       P_g = g_i
     Endif
@@ -2649,10 +2642,8 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 		      x_ip1, g_ip1, E_ip1, &
 		      max_step_size, accuracy, N_evals, max_N_evals, hook,data)
 	if (N_evals > max_N_evals) then
-	  call print ("n_minim error: Ran out of iterations in linmin", PRINT_ALWAYS)
 	  final_E = E_i
-          if (present(status)) status = 1
-	  return
+	  RAISE_ERROR("n_minim error: Ran out of iterations in linmin", error)
 	endif
 
 	call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &
@@ -2672,7 +2663,8 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
 	g_ip1_dot_g_i = g_ip1 .dot. P_g
 	!! perhaps have some way of telling apply_precond_func to update/not update preconitioner?
 	if (use_precond) then
-	  call apply_precond_func(x_ip1, g_ip1, P_g, error, data)
+	  call apply_precond_func(x_ip1, g_ip1, P_g, data, error=error)
+	  PASS_ERROR_WITH_INFO("n_minim in-loop preconditioning call", error)
 	else
 	  P_g = g_ip1
 	endif
@@ -2724,7 +2716,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
      function func(x,data)
        use system_module
        real(dp)::x(:)
-       character,optional::data(:)
+       character(len=1),optional::data(:)
        real(dp)::func
      end function func
   END INTERFACE
@@ -2733,11 +2725,11 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
      function dfunc(x,data)
        use system_module
        real(dp)::x(:)
-       character,optional::data(:)
+       character(len=1),optional::data(:)
        real(dp)::dfunc(size(x))
      end function dfunc
   END INTERFACE
-  character, optional::data(:)
+  character(len=1), optional::data(:)
 
   integer :: i
   real(dp) :: new_eps

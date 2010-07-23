@@ -52,10 +52,12 @@ module error_module
   ! ---
 
   !% Error kinds
-  integer, parameter  :: ERROR_NONE         = 0
-  integer, parameter  :: ERROR_UNSPECIFIED  = -1
-  integer, parameter  :: ERROR_IO           = -2
-  integer, parameter  :: ERROR_MPI          = -3
+  integer, parameter  :: ERROR_NONE                 = 0
+  integer, parameter  :: ERROR_UNSPECIFIED          = -1
+  integer, parameter  :: ERROR_IO                   = -2
+  integer, parameter  :: ERROR_IO_EOF               = -3
+  integer, parameter  :: ERROR_MPI                  = -4
+  integer, parameter  :: ERROR_MINIM_NOT_CONVERGED  = -5
 
   !% Strings
   integer, parameter                      :: ERROR_STR_LENGTH = 20
@@ -105,6 +107,8 @@ module error_module
      module procedure error_abort_from_stack
   endinterface
 
+  public :: error_clear_stack
+
   public :: push_error, push_error_with_info
   public :: get_error_string_and_clear, clear_error
 
@@ -144,6 +148,10 @@ contains
     !$omp end critical
 
   endsubroutine push_error
+
+  subroutine error_clear_stack()
+    error_stack_position = 0
+  end subroutine error_clear_stack
 
 
   !% Push a new information string onto the error stack

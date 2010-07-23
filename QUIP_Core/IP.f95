@@ -77,6 +77,7 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 module IP_module
 
 use libatoms_module
@@ -190,11 +191,12 @@ end interface setup_parallel
 contains
 
 !% OMIT
-subroutine IP_Initialise_filename(this, args_str, filename, mpi_obj)
+subroutine IP_Initialise_filename(this, args_str, filename, mpi_obj, error)
   type(IP_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   character(len=*), intent(in) :: filename  !% File name containing the IP parameters
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   type(inoutput) io
 
@@ -207,11 +209,12 @@ subroutine IP_Initialise_filename(this, args_str, filename, mpi_obj)
 end subroutine
 
 
-subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj)
+subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj, error)
   type(IP_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str
   type(inoutput), intent(inout), optional :: io_obj
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   type(extendable_str) :: ss
 
@@ -228,10 +231,11 @@ subroutine IP_Initialise_inoutput(this, args_str, io_obj, mpi_obj)
 
 end subroutine IP_Initialise_inoutput
 
-recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
+recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   type(IP_type), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(inout), optional :: error
 
   type(Dictionary) :: params
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
@@ -261,14 +265,14 @@ recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj)
   call param_register(params, 'Template', 'false', is_template)
 
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IP_Initialise_str args_str')) then
-    call system_abort("IP_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
+    RAISE_ERROR("IP_Initialise_str failed to parse args_str='"//trim(args_str)//"'", error)
   endif
   call finalise(params)
 
   if (count((/is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_ASAP2, is_Glue,  &        ! add new IPs here
        is_Template /)) /= 1) then
-    call system_abort("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'")
+    RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
 
   if (is_GAP) then
@@ -466,13 +470,14 @@ subroutine IP_setup_atoms(this, at)
 
 end subroutine IP_setup_atoms
 
-recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
+recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, error)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at                
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), intent(in), optional      :: args_str 
+  integer, intent(inout), optional :: error
 
   logical mpi_active
 
@@ -522,7 +527,7 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
     case(FF_Template)
       mpi_active = this%ip_template%mpi%active
     case default
-      call system_abort("IP_Calc confused by functional_form " // this%functional_form)
+      RAISE_ERROR("IP_Calc confused by functional_form " // this%functional_form, error)
   end select
 
   if (this%mpi_glob%active .and. .not. mpi_active) then
@@ -568,7 +573,7 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
     case (FF_Template)
       call calc(this%ip_template, at, energy, local_e, f, virial, args_str)
     case default
-      call system_abort("IP_Calc confused by functional_form " // this%functional_form)
+      RAISE_ERROR("IP_Calc confused by functional_form " // this%functional_form, error)
   end select
 
   if(associated(this%core)) then
@@ -607,9 +612,10 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str)
 end subroutine IP_Calc
 
 
-recursive subroutine IP_Print(this, file)
+recursive subroutine IP_Print(this, file, error)
   type(IP_type), intent(inout) :: this
   type(Inoutput), intent(inout),optional :: file
+  integer, intent(inout), optional :: error
 
   call Print ("IP : " // this%functional_form, file=file)
 
@@ -652,7 +658,7 @@ recursive subroutine IP_Print(this, file)
     case (FF_Template)
       call Print(this%ip_template, file=file)
     case default
-      call system_abort("IP_Print confused by functional_form " // this%functional_form)
+      RAISE_ERROR("IP_Print confused by functional_form " // this%functional_form, error)
   end select
 
   if(associated(this%core)) call IP_Print(this%core)
@@ -700,10 +706,11 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, args_str)
   call print("Parallelizing IP using group_size " // prev_pgroup_size, PRINT_ALWAYS)
 end subroutine IP_setup_parallel
 
-recursive subroutine setup_parallel_groups(this, mpi, pgroup_size)
+recursive subroutine setup_parallel_groups(this, mpi, pgroup_size, error)
   type(IP_type), intent(inout) :: this
   type(mpi_context), intent(in) :: mpi
   integer, intent(in) :: pgroup_size
+  integer, intent(inout), optional :: error
 
   type(mpi_context) :: mpi_local
   integer :: split_index
@@ -770,7 +777,7 @@ recursive subroutine setup_parallel_groups(this, mpi, pgroup_size)
       if (this%ip_template%mpi%active) call free_context(this%ip_template%mpi)
       this%ip_template%mpi = mpi_local
     case default
-      call system_abort("setup_parallel_groups confused by functional_form " // this%functional_form)
+      RAISE_ERROR("setup_parallel_groups confused by functional_form " // this%functional_form, error)
   end select
 
   if(associated(this%core)) call setup_parallel_groups(this%core,mpi,pgroup_size)
