@@ -476,17 +476,18 @@ module paramreader_module
     !% arguments that we should look at, in order, if it's not given we look
     !% at all arguments.  Returns false if fails, or if optional check that
     !% all mandatory values have been specified fails.
-    function param_read_args(dict, args, do_check,ignore_unknown,task) result(status)
+    function param_read_args(dict, args, do_check,ignore_unknown,task,command_line) result(status)
       type(Dictionary), intent(inout) :: dict !% Dictionary of registered key/value pairs
       integer, dimension(:), intent(in), optional :: args !% Argument indices to use
       logical, intent(in), optional :: do_check !% Should we check if all mandatory parameters have been given
       logical, intent(in), optional :: ignore_unknown !% If true, ignore unknown keys in line
       character(len=*), intent(in), optional :: task
+      character(len=*), intent(out), optional :: command_line
       logical :: status
 
       integer :: i, nargs
       character(len=1024) :: this_arg
-      character(len=10240) :: command_line
+      character(len=10240) :: my_command_line
       integer, dimension(:), allocatable :: xargs
       logical :: my_ignore_unknown
       integer :: eq_loc, this_len
@@ -507,7 +508,7 @@ module paramreader_module
       end if
       
       ! Concatentate command line options into one string
-      command_line = ''
+      my_command_line = ''
       do i=1, size(xargs)
          call get_cmd_arg(xargs(i), this_arg)
          if (index(trim(this_arg),' ') /= 0) then
@@ -515,28 +516,28 @@ module paramreader_module
              eq_loc = index(trim(this_arg),'=')
              this_len = len_trim(this_arg)
 	     if (scan(this_arg(eq_loc+1:eq_loc+1),"'{"//'"') <= 0) then
-	       command_line = trim(command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
+	       my_command_line = trim(my_command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
 	     else
-	       command_line = trim(command_line)//' '//trim(this_arg)
+	       my_command_line = trim(my_command_line)//' '//trim(this_arg)
 	     endif
            else
 	     if (scan(this_arg(1:1),"{'"//'"') <= 0) then
-	       command_line = trim(command_line)//' "'//trim(this_arg)//'"'
+	       my_command_line = trim(my_command_line)//' "'//trim(this_arg)//'"'
 	     else
-	       command_line = trim(command_line)//' '//trim(this_arg)
+	       my_command_line = trim(my_command_line)//' '//trim(this_arg)
 	     endif
            endif
          else
-           command_line = trim(command_line)//' '//trim(this_arg)
+           my_command_line = trim(my_command_line)//' '//trim(this_arg)
          endif
       end do
 
-      call print("param_read_args got command_line '"//trim(command_line)//"'", PRINT_VERBOSE)
+      call print("param_read_args got command_line '"//trim(my_command_line)//"'", PRINT_VERBOSE)
       ! Free local copy before there's a chance we return
       deallocate(xargs)
 
       ! Then parse this string, and return success or failure
-      status = param_read_line(dict, command_line,ignore_unknown=my_ignore_unknown, task=task)
+      status = param_read_line(dict, my_command_line,ignore_unknown=my_ignore_unknown, task=task)
       if (.not. status) return
 
       status = .true.
@@ -544,6 +545,8 @@ module paramreader_module
       if (present(do_check)) then
          if (do_check) status = param_check(dict)
       end if
+
+      if(present(command_line)) command_line = trim(my_command_line)
 
     end function param_read_args
 
