@@ -36,6 +36,9 @@
 module gp_sparse_module
 
    use libatoms_module
+   use fox_wxml
+   use FoX_sax, only: xml_t, dictionary_t, haskey, getvalue, parse, &
+   open_xml_string, close_xml_t
 
    implicit none
 
@@ -105,7 +108,7 @@ module gp_sparse_module
 
       logical :: initialised = .false.
 
-      character(len=1024) :: label
+      character(len=1024) :: label = ""
       character(len=10000) :: comment
 
    end type gp
@@ -138,8 +141,20 @@ module gp_sparse_module
 #endif      
    end interface covSEard
 
+   interface gp_read_xml
+      module procedure gp_read_xml_t_xml, gp_read_params_xml
+   endinterface gp_read_xml
+
+   integer :: parse_cur_type, parse_cur_sparse_point
+   type(extendable_str), save :: parse_cur_data
+   logical :: parse_in_gp, parse_matched_label
+   type (gp), pointer :: parse_gp
+
    private
-   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer, gp_precompute_covariance
+   public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, &
+   likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, &
+   gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer, gp_precompute_covariance, &
+   gp_print_xml, gp_read_xml
 
    contains
 
@@ -556,7 +571,16 @@ module gp_sparse_module
 
          if( .not. this%initialised ) return
 
-         deallocate( this%theta, this%delta, this%x, this%x_div_theta, this%c, this%alpha, this%xz, this%sp, this%f0 )
+         if(allocated(this%theta)) deallocate(this%theta)
+         if(allocated(this%delta)) deallocate(this%delta)
+         if(allocated(this%x)) deallocate(this%x)
+         if(allocated(this%x_div_theta)) deallocate(this%x_div_theta)
+         if(allocated(this%c)) deallocate(this%c)
+         if(allocated(this%alpha)) deallocate(this%alpha)
+         if(allocated(this%xz)) deallocate(this%xz)
+         if(allocated(this%sp)) deallocate(this%sp)
+         if(allocated(this%f0)) deallocate(this%f0)
+            
          this%d = 0
          this%n = 0
          this%sigma = 0.0_dp
@@ -2423,6 +2447,235 @@ deallocate(diff_xijt)
          this%initialised = .true.
       end subroutine gp_read_binary
 
+      subroutine gp_print_xml(this,xf)
+
+         type(gp), intent(in) :: this
+         type(xmlf_t), intent(inout) :: xf
+
+         integer :: i
+
+         if( .not. this%initialised ) call system_abort('gp_print_xml: gp not initialised')
+
+         call xml_NewElement(xf,"GP_data")
+         call xml_AddAttribute(xf,"dimensions", ""//this%d)
+         call xml_AddAttribute(xf,"n_species", ""//this%nsp)
+         call xml_AddAttribute(xf,"n_sparse_x", ""//this%n)
+
+         do i = 1, this%nsp
+            call xml_NewElement(xf,"per_species_data")
+            call xml_AddAttribute(xf,"type", ""//i)
+            call xml_AddAttribute(xf,"signal_variance", ""//this%delta(i))
+            call xml_AddAttribute(xf,"atomic_num",""//this%sp(i))
+            call xml_AddAttribute(xf,"function_offset",""//this%f0(i))
+            call xml_NewElement(xf,"theta")
+            call xml_AddCharacters(xf, ""//this%theta(:,i)//" ")
+            call xml_EndElement(xf,"theta")
+            call xml_EndElement(xf,"per_species_data")
+         enddo
+
+         do i = 1, this%n
+            call xml_NewElement(xf,"sparse_x")
+            call xml_AddAttribute(xf,"i", ""//i)
+            call xml_AddAttribute(xf,"coefficient", ""//this%alpha(i))
+            call xml_AddAttribute(xf,"sparse_x_atomic_number", ""//this%xz(i))
+            call xml_AddCharacters(xf, ""//this%x(:,i)//" ")
+            call xml_EndElement(xf,"sparse_x")
+         enddo
+
+         call xml_EndElement(xf,"GP_data")
+         
+      end subroutine gp_print_xml
+
+      subroutine gp_read_xml_t_xml(this,xp)
+         type(gp), intent(inout), target :: this
+         type(xml_t), intent(inout) :: xp
+
+         if( this%initialised ) call finalise(this)
+
+         parse_in_gp = .false.
+         parse_matched_label = .false.
+         parse_gp => this
+         call initialise(parse_cur_data)
+
+         parse_gp%label = ""
+
+         call parse(xp, &
+         characters_handler = GP_characters_handler, &
+         startElement_handler = GP_startElement_handler, &
+         endElement_handler = GP_endElement_handler)
+
+         call finalise(parse_cur_data)
+
+	 call setup_x_div_theta(this)
+         this%initialised = .true.
+
+      endsubroutine gp_read_xml_t_xml
+
+      subroutine gp_read_params_xml(this,params_str)
+
+         type(gp), intent(inout), target :: this
+         character(len=*), intent(in) :: params_str
+
+         type(xml_t) :: xp
+
+         call open_xml_string(xp, params_str)
+         call gp_read_xml(this,xp)
+         call close_xml_t(xp)
+
+      end subroutine gp_read_params_xml
+
+      subroutine GP_startElement_handler(URI, localname, name, attributes)
+         character(len=*), intent(in)   :: URI
+         character(len=*), intent(in)   :: localname
+         character(len=*), intent(in)   :: name
+         type(dictionary_t), intent(in) :: attributes
+
+         integer             :: status, ti, xi
+         character(len=1024) :: value
+
+         if(name == 'GP_data') then ! new GP_data
+            if(parse_in_gp) &
+            call system_abort("GP_startElement_handler entered GP_data with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
+
+            if(parse_matched_label) return ! we already found an exact match for this label
+
+            call GP_FoX_get_value(attributes, 'label', value, status)
+            if (status /= 0) value = ''
+
+            if(len(trim(parse_gp%label)) > 0) then ! we were passed in a label
+               if(trim(value) == trim(parse_gp%label)) then
+                  parse_matched_label = .true.
+                  parse_in_gp = .true.
+               else ! no match
+                  parse_in_gp = .false.
+               endif
+            else ! no label passed in
+               parse_in_gp = .true.
+            endif
+
+            if(parse_in_gp) then
+               if(parse_gp%initialised) call finalise(parse_gp)
+            endif
+
+            call GP_FoX_get_value(attributes, 'dimensions', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%d
+            else
+               call system_abort("GP_startElement_handler did not find the dimensions attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'n_species', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%nsp
+            else
+               call system_abort("GP_startElement_handler did not find the n_species attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'n_sparse_x', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%n
+            else
+               call system_abort("GP_startElement_handler did not find the n_sparse_x attribute.")
+            endif
+
+            allocate(parse_gp%theta(parse_gp%d,parse_gp%nsp), parse_gp%delta(parse_gp%nsp), parse_gp%x(parse_gp%d,parse_gp%n), &
+            & parse_gp%alpha(parse_gp%n), parse_gp%xz(parse_gp%n), parse_gp%sp(parse_gp%nsp), parse_gp%f0(parse_gp%nsp))
+
+         elseif(parse_in_gp .and. name == 'per_species_data') then
+            call GP_FoX_get_value(attributes, 'type', value, status)
+            if (status == 0) then
+               read (value,*) ti
+               if(ti > parse_gp%nsp) call system_abort("GP_startElement_handler got invalid type "//ti)
+            else
+               call system_abort("GP_startElement_handler did not find the type attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'signal_variance', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%delta(ti)
+            else
+               call system_abort("GP_startElement_handler did not find the signal_variance attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'atomic_num', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%sp(ti)
+            else
+               call system_abort("GP_startElement_handler did not find the atomic_num attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'function_offset', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%f0(ti)
+            else
+               call system_abort("GP_startElement_handler did not find the function_offset attribute.")
+            endif
+
+            parse_cur_type = ti
+
+         elseif(parse_in_gp .and. name == 'sparse_x') then
+
+            call GP_FoX_get_value(attributes, 'i', value, status)
+            if (status == 0) then
+               read (value,*) xi
+               if(ti > parse_gp%nsp) call system_abort("GP_startElement_handler got sparse point out of range ("//xi//")")
+            else
+               call system_abort("GP_startElement_handler did not find the i attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'coefficient', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%alpha(xi)
+            else
+               call system_abort("GP_startElement_handler did not find the coefficient attribute.")
+            endif
+
+            call GP_FoX_get_value(attributes, 'sparse_x_atomic_number', value, status)
+            if (status == 0) then
+               read (value,*) parse_gp%xz(xi)
+            else
+               call system_abort("GP_startElement_handler did not find the sparse_x_atomic_number attribute.")
+            endif
+
+            parse_cur_sparse_point = xi
+
+            call zero(parse_cur_data)
+
+         elseif(parse_in_gp .and. name == 'theta') then
+            call zero(parse_cur_data)
+         endif
+
+      endsubroutine GP_startElement_handler
+
+      subroutine GP_endElement_handler(URI, localname, name)
+         character(len=*), intent(in)   :: URI
+         character(len=*), intent(in)   :: localname
+         character(len=*), intent(in)   :: name
+      
+         character(len=100*parse_gp%d) :: val
+      
+         if(parse_in_gp) then
+            if(name == 'GP_data') then
+               parse_in_gp = .false.
+            elseif(name == 'sparse_x') then
+               val = string(parse_cur_data)
+               read(val,*) parse_gp%x(:,parse_cur_sparse_point)
+            elseif(name == 'theta') then
+               val = string(parse_cur_data)
+               read(val,*) parse_gp%theta(:,parse_cur_type)
+            endif
+         endif
+            
+      endsubroutine GP_endElement_handler
+
+      subroutine GP_characters_handler(in)
+         character(len=*), intent(in) :: in
+      
+         if(parse_in_gp) then
+           call concat(parse_cur_data, in, keep_lf=.false.)
+         endif
+      end subroutine GP_characters_handler
+
       subroutine fill_random_integer(r,n,b)
          integer, dimension(:), intent(out) :: r
          integer, intent(in) :: n
@@ -2465,5 +2718,21 @@ deallocate(diff_xijt)
 	 end do
 	 end do
       end subroutine
+
+      subroutine GP_FoX_get_value(attributes, key, val, status)
+        type(dictionary_t), intent(in) :: attributes
+        character(len=*), intent(in) :: key
+        character(len=*), intent(inout) :: val
+        integer, intent(out), optional :: status
+      
+        if (HasKey(attributes,key)) then
+          val = GetValue(attributes, trim(key))
+          if (present(status)) status = 0
+        else
+          val = ""
+          if (present(status)) status = 1
+        endif
+      end subroutine GP_FoX_get_value
+
 
 end module gp_sparse_module
