@@ -406,7 +406,7 @@ contains
 
     this%prefix = ''
     this%postfix = ''
-    this%default_real_precision = 16
+    this%default_real_precision = 17
 
     call initialise(this%verbosity_stack)
     if (present(verbosity)) then
