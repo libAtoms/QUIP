@@ -88,8 +88,7 @@ type IPModel_GAP
   integer, allocatable :: qw_cutoff_f(:)
   real(dp), allocatable :: qw_cutoff_r1(:)
 
-  character(len=256) :: datafile                               !% File name containing the GAP database
-  character(len=256) :: datafile_coordinates             !% Coordinate system used in GAP database
+  character(len=256) :: coordinates             !% Coordinate system used in GAP database
 
   character(len=FIELD_LENGTH) :: label
   type(mpi_context) :: mpi
@@ -97,8 +96,8 @@ type IPModel_GAP
 #ifdef HAVE_GP
   type(gp) :: my_gp
 #endif
-  character(len=10000) :: quip_string = ''
-  character(len=10000) :: ip_args = ''
+  type(extendable_str) :: quip_string
+  character(len=FIELD_LENGTH) :: ip_args = ''
 
   logical :: initialised = .false.
 
@@ -107,6 +106,7 @@ end type IPModel_GAP
 logical :: parse_in_ip, parse_matched_label
 
 type(IPModel_GAP), pointer :: parse_ip
+type(extendable_str), save :: parse_cur_data
 
 interface Initialise
   module procedure IPModel_GAP_Initialise_str
@@ -131,11 +131,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   character(len=*), intent(in) :: args_str, param_str
   type(mpi_context), intent(in), optional :: mpi
 
-  type(Dictionary) :: my_dictionary
-  integer :: i, n_species, quip_string_start, bracket_start, bracket_end
-  real(dp), dimension(:), allocatable :: w, z_eff
-  character(len=10000) :: short_comment
-
   call Finalise(this)
 
   if (present(mpi)) this%mpi = mpi
@@ -149,84 +144,14 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   call IPModel_GAP_read_params_xml(this, param_str)
 
 #ifdef HAVE_GP
-  call gp_read_binary(this%my_gp, this%datafile)
+  !call gp_read_binary(this%my_gp, this%datafile)
+  call gp_read_xml(this%my_gp, param_str)
 
-  quip_string_start = index(this%my_gp%comment,'quip_string')
-  if( quip_string_start > 0 ) then
-     bracket_start = index(this%my_gp%comment(quip_string_start:),'{')
-     bracket_end = index(this%my_gp%comment(quip_string_start:),'}')
-     this%quip_string = this%my_gp%comment(quip_string_start+bracket_start:quip_string_start+bracket_end-2)
-     short_comment = this%my_gp%comment(:quip_string_start-1) // ' ' // this%my_gp%comment(bracket_end+1:)
-  else
-     short_comment = this%my_gp%comment
-  endif
 
-  call read_string(my_dictionary, short_comment)
-
-  this%datafile_coordinates = ''
-  if (.not. get_value(my_dictionary, 'coordinates', this%datafile_coordinates)) &
-     & call system_abort('IPModel_GAP_Initialise_str: datafile_coordinates not found')
-
-  if (trim(this%datafile_coordinates) == 'bispectrum') then
-     if( .not. ( get_value(my_dictionary,'cutoff',this%cutoff) .and. &
-               & get_value(my_dictionary,'j_max',this%j_max) .and. &
-               & get_value(my_dictionary,'z0',this%z0) ) ) &
-     & call system_abort('IPModel_GAP_Initialise_str: did not find bispectrum parameters in gp data file, &
-     & might be old version or format not correct')
-  elseif (trim(this%datafile_coordinates) == 'qw') then
-     if (.not. get_value(my_dictionary, 'l_max', this%qw_l_max) .and. &
-               get_value(my_dictionary, 'f_n', this%qw_f_n)) &
-        call system_abort('IPModel_GAP_Initialise_str: did not find qw parameters in gp data file')
-
-     allocate(this%qw_cutoff(this%qw_f_n), this%qw_cutoff_f(this%qw_f_n), this%qw_cutoff_r1(this%qw_f_n))
-
-     do i = 1, this%qw_f_n
-        if (.not. (get_value(my_dictionary, 'cutoff_' // i, this%qw_cutoff(i)) .and. &
-                   get_value(my_dictionary, 'cutoff_f_' // i, this%qw_cutoff_f(i)) .and. &
-                   get_value(my_dictionary, 'cutoff_r1_' // i, this%qw_cutoff_r1(i)))) &
-        call system_abort('IPModel_GAP_Initialise_str: did not find qw parameters in gp data file')
-     enddo
-
-     if (.not. get_value(my_dictionary, 'do_q', this%qw_do_q)) this%qw_do_q = .true.
-     if (.not. get_value(my_dictionary, 'do_w', this%qw_do_w)) this%qw_do_w = .true.
-
+  if (trim(this%coordinates) == 'qw') then
      this%cutoff = maxval(this%qw_cutoff)
-  else
-     call system_abort('IPModel_GAP_Initialise_str: datafile_coordinates '//trim(this%datafile_coordinates)//' unknown')
   endif
-
-  if( get_value(my_dictionary,'n_species',n_species) ) then
-     this%n_species = n_species
-     allocate( this%Z(n_species), w(n_species), z_eff(n_species) )
-     if( n_species == 1 ) then
-        if( .not. ( get_value(my_dictionary,'Z',this%Z(1)) .and. get_value(my_dictionary,'w',w(1)) .and. &
-        & get_value(my_dictionary,'z_eff',z_eff(1)) ) ) &
-        & call system_abort('IPModel_GAP_Initialise_str: no species information found')
-     else
-        if( .not. ( get_value(my_dictionary,'Z',this%Z) .and. get_value(my_dictionary,'w',w) .and. &
-        & get_value(my_dictionary,'z_eff',z_eff) ) ) &
-        & call system_abort('IPModel_GAP_Initialise_str: no species information found')
-     endif
-     
-     this%w_Z = 0.0_dp
-     this%z_eff = 0.0_dp
-     do i = 1, n_species
-        this%w_Z(this%Z(i)) = w(i)
-        this%z_eff(this%Z(i)) = z_eff(i)
-     enddo
-     deallocate(w, z_eff)
-  endif
-  if( .not. get_value(my_dictionary,'do_ewald',this%do_ewald) ) this%do_ewald = .false.
-  if( .not. get_value(my_dictionary,'do_ewald_corr',this%do_ewald_corr) ) this%do_ewald_corr = .false.
-  if( .not. get_value(my_dictionary,'do_core',this%do_core) ) this%do_core = .false.
-  if( .not. get_value(my_dictionary,'ip_args',this%ip_args) ) this%ip_args = ''
-  if( .not. get_value(my_dictionary,'e0',this%e0) ) this%e0 = 0.0_dp
-  if( .not. get_value(my_dictionary,'f0',this%f0) ) this%f0 = 0.0_dp
-
-  call finalise(my_dictionary)
 #endif  
-
-  this%initialised = .true.
 
 end subroutine IPModel_GAP_Initialise_str
 
@@ -256,11 +181,10 @@ subroutine IPModel_GAP_Finalise(this)
   this%qw_do_q = .false.
   this%qw_do_w = .false.
 
-  this%datafile = ''
-  this%datafile_coordinates = ''
+  this%coordinates = ''
 
   this%label = ''
-  this%quip_string = ''
+  call finalise(this%quip_string)
   this%ip_args = ''
   this%initialised = .false.
 
@@ -272,12 +196,13 @@ end subroutine IPModel_GAP_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
   type(IPModel_GAP), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), intent(in), optional :: args_str 
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
@@ -292,6 +217,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(:,:), allocatable :: covariance
 
   integer, dimension(3) :: shift
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
 
 #ifdef HAVE_GP
   type(fourier_so4), save :: f_hat
@@ -341,16 +270,32 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
+     call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
+     call finalise(params)
+
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" propery in the atoms object.")
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
+
   allocate(w(at%N))
   do i = 1, at%N
      w(i) = this%w_Z(at%Z(i))
   enddo
 
 #ifdef HAVE_GP
-  if (trim(this%datafile_coordinates) == 'bispectrum') then
+  if (trim(this%coordinates) == 'bispectrum') then
      d = j_max2d(this%j_max)
      call cg_initialise(this%j_max,2)
-  elseif (trim(this%datafile_coordinates) == 'qw') then
+  elseif (trim(this%coordinates) == 'qw') then
      d = (this%qw_l_max / 2) * this%qw_f_n
      if (this%qw_do_q .and. this%qw_do_w) d = d * 2
   endif
@@ -367,10 +312,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 
 !$omp parallel 
 #ifdef HAVE_GP
-  if (trim(this%datafile_coordinates) == 'bispectrum') then
+  if (trim(this%coordinates) == 'bispectrum') then
      call initialise(f_hat,this%j_max,this%z0,this%cutoff)
      if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
-  elseif (trim(this%datafile_coordinates) == 'qw') then
+  elseif (trim(this%coordinates) == 'qw') then
      call initialise(f3_hat, this%qw_l_max, this%qw_cutoff, this%qw_cutoff_f, this%qw_cutoff_r1)
      call initialise(qw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
      if (present(f) .or. present(virial)) then
@@ -387,7 +332,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
      endif
 
 #ifdef HAVE_GP
-     if (trim(this%datafile_coordinates) == 'bispectrum') then
+     if (trim(this%coordinates) == 'bispectrum') then
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
         call bispectrum2vec(bis,vec(:,i))
@@ -398,7 +343,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
               call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
            enddo
         endif
-     elseif (trim(this%datafile_coordinates) == 'qw') then
+     elseif (trim(this%coordinates) == 'qw') then
         call fourier_transform(f3_hat, at, i)
         call calc_qw(qw, f3_hat)
         call qw2vec(qw, vec(:,i))
@@ -415,12 +360,12 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial)
 !$omp end do 
 
 #ifdef HAVE_GP
-  if (trim(this%datafile_coordinates) == 'bispectrum') then
+  if (trim(this%coordinates) == 'bispectrum') then
      call finalise(f_hat)
      call finalise(df_hat)
      call finalise(bis)
      call finalise(dbis)
-  elseif (trim(this%datafile_coordinates) == 'qw') then
+  elseif (trim(this%coordinates) == 'qw') then
      call finalise(f3_hat)
      call finalise(df3_hat)
      call finalise(qw)
@@ -541,46 +486,211 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: status
   character(len=1024) :: value
 
-  logical shifted
-  integer ti, tj
+  integer :: ti, ri
 
-  parse_ip%datafile = 'gp.dat'
-
-  if (name == 'GAP_params') then ! new GAP stanza
+  if(name == 'GAP_params') then ! new GAP stanza
      
-    if (parse_in_ip) &
-          call system_abort("IPModel_startElement_handler entered GAP_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
+     if(parse_in_ip) &
+        call system_abort("IPModel_startElement_handler entered GAP_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
      
-     if (parse_matched_label) return ! we already found an exact match for this label
+     if(parse_matched_label) return ! we already found an exact match for this label
      
      call QUIP_FoX_get_value(attributes, 'label', value, status)
-     if (status /= 0) value = ''
+     if(status /= 0) value = ''
      
-     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-       if (value == parse_ip%label) then ! exact match
- 	parse_matched_label = .true.
- 	parse_in_ip = .true.
-       else ! no match
- 	parse_in_ip = .false.
-       endif
+     if(len(trim(parse_ip%label)) > 0) then ! we were passed in a label
+        if(value == parse_ip%label) then ! exact match
+ 	   parse_matched_label = .true.
+ 	   parse_in_ip = .true.
+        else ! no match
+ 	   parse_in_ip = .false.
+        endif
      else ! no label passed in
-       parse_in_ip = .true.
+        parse_in_ip = .true.
      endif
 
-    if (parse_in_ip) then
-      if (parse_ip%initialised) then
-	call finalise(parse_ip)
-      endif
-
-      parse_ip%datafile = ''
-      call QUIP_FoX_get_value(attributes, 'datafile', value, status)
-      if (status == 0) then
-         parse_ip%datafile = trim(value)
-      else
-        call print_warning('Reading GAP parameters: no datafile found in the xml string. Using gp.dat as default.')
-      endif
-
+    if(parse_in_ip) then
+       if(parse_ip%initialised) call finalise(parse_ip)
     endif
+
+  elseif(parse_in_ip .and. name == 'GAP_data') then
+
+     call QUIP_FoX_get_value(attributes, 'n_species', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%n_species
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find n_species')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'do_ewald', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%do_ewald
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find do_ewald')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'do_ewald_corr', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%do_ewald_corr
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find do_ewald_corr')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'do_core', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%do_core
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find do_core')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'e0', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%e0
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find e0')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'f0', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%f0
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find f0')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'coordinates', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%coordinates
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find coordinates')
+     endif
+
+     allocate( parse_ip%Z(parse_ip%n_species) )
+
+  elseif(parse_in_ip .and. name == 'bispectrum_so4_params') then
+
+     call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cutoff
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'j_max', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%j_max
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find j_max')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'z0', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%z0
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find z0')
+     endif
+
+  elseif(parse_in_ip .and. name == 'qw_so3_params') then
+
+     call QUIP_FoX_get_value(attributes, 'l_max', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_l_max
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find l_max')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'n_radial', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_f_n
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find n_radial')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'do_q', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_do_q
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find do_q')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'do_w', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_do_w
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find do_w')
+     endif
+
+     allocate(parse_ip%qw_cutoff(parse_ip%qw_f_n), parse_ip%qw_cutoff_f(parse_ip%qw_f_n), parse_ip%qw_cutoff_r1(parse_ip%qw_f_n))
+
+  elseif(parse_in_ip .and. name == 'radial_function') then
+
+     call QUIP_FoX_get_value(attributes, 'i', value, status)
+     if(status == 0) then
+        read (value, *) ri
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find i')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_cutoff(ri)
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'cutoff_type', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_cutoff_f(ri)
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff_type')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'cutoff_r1', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%qw_cutoff_r1(ri)
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff_r1')
+     endif
+
+  elseif(parse_in_ip .and. name == 'per_type_data') then
+
+     call QUIP_FoX_get_value(attributes, 'i', value, status)
+     if(status == 0) then
+        read (value, *) ti
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find i')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'atomic_num', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%Z(ti)
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find atomic_num')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'weight', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%w_Z(parse_ip%Z(ti))
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find weight')
+     endif
+
+     call QUIP_FoX_get_value(attributes, 'charge', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%z_eff(parse_ip%Z(ti))
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find charge')
+     endif
+
+  elseif(parse_in_ip .and. name == 'core_params') then
+
+     call QUIP_FoX_get_value(attributes, 'ip_args', value, status)
+     if(status == 0) then
+        read (value, '(a)') parse_ip%ip_args
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find ip_args')
+     endif
+
+     call zero(parse_cur_data)
 
   endif
 
@@ -592,12 +702,32 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: name 
 
   if (parse_in_ip) then
-    if (name == 'GAP_params') then
-      parse_in_ip = .false.
+    if(name == 'GAP_params') then
+       parse_in_ip = .false.
+    elseif(name == 'GAP_data') then
+
+    elseif(name == 'bispectrum_so4_params') then
+
+    elseif(name == 'qw_so3_params') then
+
+    elseif(name == 'radial_function') then
+
+    elseif(name == 'per_type_data') then
+
+    elseif(name == 'core_params') then
+       parse_ip%quip_string = parse_cur_data
     end if
   endif
 
 end subroutine IPModel_endElement_handler
+
+subroutine IPModel_characters_handler(in)
+   character(len=*), intent(in) :: in
+
+   if(parse_in_ip) then
+      call concat(parse_cur_data, in, keep_lf=.false.)
+   endif
+end subroutine IPModel_characters_handler
 
 subroutine IPModel_GAP_read_params_xml(this, param_str)
   type(IPModel_GAP), intent(inout), target :: this
@@ -606,17 +736,24 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
   type(xml_t) :: fxml
 
   if (len(trim(param_str)) <= 0) then
-     this%datafile = 'gp.dat'
+     call system_abort('IPModel_GAP_read_params_xml: invalid param_str length '//len(trim(param_str)) )
   else
      parse_in_ip = .false.
      parse_matched_label = .false.
      parse_ip => this
+     call initialise(parse_cur_data)
+     parse_ip%label = ""
 
      call open_xml_string(fxml, param_str)
      call parse(fxml,  &
+       characters_handler = IPModel_characters_handler, &
        startElement_handler = IPModel_startElement_handler, &
        endElement_handler = IPModel_endElement_handler)
      call close_xml_t(fxml)
+
+     call finalise(parse_cur_data)
+
+     this%initialised = .true.
   endif
 
 end subroutine IPModel_GAP_read_params_xml
@@ -633,7 +770,6 @@ subroutine IPModel_GAP_Print (this, file)
   integer :: i
 
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
-  call Print("IPModel_GAP : datafile = "//trim(this%datafile), file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
   call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
   call Print("IPModel_GAP : z0 = "//this%z0, file=file)
