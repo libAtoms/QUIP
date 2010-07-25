@@ -287,7 +287,7 @@ recursive subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error
 
     if(this%ip_gap%do_core) then
        allocate(this%core)
-       call IP_Initialise_str(this%core,trim(this%ip_gap%ip_args),trim(this%ip_gap%quip_string),mpi_obj)
+       call IP_Initialise_str(this%core,trim(this%ip_gap%ip_args),string(this%ip_gap%quip_string),mpi_obj)
     endif
   else if (is_LJ) then
     this%functional_form = FF_LJ
@@ -544,7 +544,7 @@ recursive subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, err
 
   select case (this%functional_form)
     case (FF_GAP)
-      call calc(this%ip_gap, at, energy, local_e, f, virial)
+      call calc(this%ip_gap, at, energy, local_e, f, virial,args_str)
     case (FF_LJ)
       call calc(this%ip_lj, at, energy, local_e, f, virial, args_str)
     case (FF_Morse)
