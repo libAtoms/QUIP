@@ -103,7 +103,7 @@ type IPModel_GAP
 
 end type IPModel_GAP
 
-logical :: parse_in_ip, parse_matched_label
+logical :: parse_in_ip, parse_matched_label, parse_in_ip_done
 
 type(IPModel_GAP), pointer :: parse_ip
 type(extendable_str), save :: parse_cur_data
@@ -704,6 +704,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   if (parse_in_ip) then
     if(name == 'GAP_params') then
        parse_in_ip = .false.
+       parse_in_ip_done = .true.
     elseif(name == 'GAP_data') then
 
     elseif(name == 'bispectrum_so4_params') then
@@ -739,6 +740,7 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
      call system_abort('IPModel_GAP_read_params_xml: invalid param_str length '//len(trim(param_str)) )
   else
      parse_in_ip = .false.
+     parse_in_ip_done = .false.
      parse_matched_label = .false.
      parse_ip => this
      call initialise(parse_cur_data)
@@ -753,6 +755,8 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
 
      call finalise(parse_cur_data)
 
+     if(.not. parse_in_ip_done) &
+     & call  system_abort('IPModel_GAP_read_params_xml: could not initialise GAP potential. No GAP_params present?')
      this%initialised = .true.
   endif
 
