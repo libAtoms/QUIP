@@ -713,7 +713,7 @@ program teach_sparse_program
   endif
 
   if(main_teach_sparse%do_core) &
-     call read(main_teach_sparse%quip_string, "core_params.xml")
+     call read(main_teach_sparse%quip_string, "quip_params.xml")
 
   call teach_n_from_xyz(main_teach_sparse)
 
@@ -896,8 +896,6 @@ program teach_sparse_program
      call xml_EndElement(xml_file,"GAP_params")
      call xml_Close(xml_file)
 
-
-     call gp_print_binary(my_gp,trim(gp_file))
      call system_command('ln -fs '//trim(gp_file)//' gp.xml')
 
      call finalise(my_gp)
