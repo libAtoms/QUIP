@@ -130,6 +130,12 @@ def process_in_args(args, kwargs, inargs, prefix):
             newargs.append(arg._fpointer)
          else:
              raise TypeError('Argument %s should be of type %s' % (arg, spec['type']))
+      elif arg is not None and spec['type'].startswith('character'):
+          # if arg is a list of strings of unequal length, pad with spaces
+          if isinstance(arg, list) and any([len(x) != len(arg[0]) for x in arg]):
+              newargs.append(s2a(arg).T)
+          else:
+              newargs.append(arg)
       else:
          newargs.append(arg)
 
