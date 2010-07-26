@@ -33,6 +33,8 @@
 !% 'integer', 'real(dp)', 'complex(dp)', 'logical', extendable_str
 !% or a 1-D array of any of those. 2-D arrays of integers and reals are also supported.
 
+#include "error.inc"
+
 module dictionary_module
 
   use system_module
@@ -199,6 +201,7 @@ module dictionary_module
 
   interface subset
      module procedure dictionary_subset
+     module procedure dictionary_subset_es
   end interface subset
 
   interface swap
@@ -376,12 +379,17 @@ contains
 
   end subroutine dictentry_finalise
 
-  function dictionary_get_key(this, i)
+  function dictionary_get_key(this, i, error)
     type(Dictionary), intent(in) :: this
     integer :: i
     character(this%keys(i)%len) :: dictionary_get_key
+    integer, intent(out), optional :: error
 
-    if (i < 1 .or. 1 > this%n) call system_abort('dictionary_get_key: index '//i//' out of range/')
+    INIT_ERROR(error)
+
+    if (i < 1 .or. 1 > this%n) then
+       RAISE_ERROR('dictionary_get_key: index '//i//' out of range/', error)
+    end if
     dictionary_get_key = string(this%keys(i))
 
   end function dictionary_get_key
@@ -1554,22 +1562,28 @@ contains
   ! * 
   ! ****************************************************************************
 
-  subroutine dictionary_remove_value(this, key)
+  subroutine dictionary_remove_value(this, key, error)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
+    integer, intent(out), optional :: error
 
     integer entry_i
+
+    INIT_ERROR(error)
 
     entry_i = lookup_entry_i(this, key)
     if (entry_i > 0) then
        call remove_entry(this, entry_i)
+    else
+       RAISE_ERROR("dictionary_remove_value: Cannot remove non-existant key "//trim(key), error)
     endif
   end subroutine dictionary_remove_value
 
-  subroutine dictionary_read_string(this, str, append)
+  subroutine dictionary_read_string(this, str, append, error)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: str
     logical, optional, intent(in) :: append !% If true, append to dictionary (default false)
+    integer, intent(out), optional :: error
 
     logical :: do_append
     character(len=dict_field_length) :: field
@@ -1578,6 +1592,7 @@ contains
     character(len=dict_field_length) :: key, value
     integer :: i, num_pairs
 
+    INIT_ERROR(error);
     do_append = optional_default(.false., append)
 
     if (.not. do_append) then
@@ -1594,15 +1609,16 @@ contains
           key=field
           value=''
        else if (equal_pos == 1) then
-          call system_abort("Malformed field '"//trim(field)//"'")
+          RAISE_ERROR("dictionary_read_string: Malformed field '"//trim(field)//"'", error)
        else
           key = field(1:equal_pos-1)
           value = field(equal_pos+1:len(trim(field)))
        endif
-       call print("dictionary_read_string key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
+       call print("dictionary_read_string: key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
 
-       if (.not. dictionary_parse_value(this,key,value)) &
-            call system_abort('dictionary_read_string: error parsing '//trim(key)//'='//trim(value))
+       if (.not. dictionary_parse_value(this,key,value)) then
+          RAISE_ERROR('dictionary_read_string: error parsing '//trim(key)//'='//trim(value), error)
+       end if
 
     end do
 
@@ -1827,18 +1843,20 @@ contains
 
   end function dictionary_parse_value
 
-  function dictionary_write_string(this, real_format, entry_sep, char_a_sep)
+  function dictionary_write_string(this, real_format, entry_sep, char_a_sep, error)
     type(Dictionary), intent(in) :: this
     character(len=*), optional, intent(in) :: real_format !% Output format for reals, default is 'f9.3'
     character(1), optional, intent(in) :: entry_sep !% Entry seperator, default is single space
     character(1), optional, intent(in) :: char_a_sep !% Output separator for character arrays, default is ','
     type(extendable_str) :: str
     character(len=2048) :: dictionary_write_string
+    integer, intent(out), optional :: error
 
     integer :: i, j, k
     character(1) :: my_char_a_sep, my_entry_sep
     character(255) :: my_real_format, tmp_string
 
+    INIT_ERROR(error)
     call initialise(str)
 
     my_real_format = optional_default('f9.3',real_format)
@@ -1911,8 +1929,9 @@ contains
        end select
     end do
 
-    if (str%len > len(dictionary_write_string)) &
-         call system_abort('dictionary_write_string: string too long')
+    if (str%len > len(dictionary_write_string)) then
+       RAISE_ERROR('dictionary_write_string: string too long', error)
+    end if
 
     dictionary_write_string = ''//str
     call finalise(str)
@@ -1923,12 +1942,16 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   !% OMIT
-  subroutine remove_entry(this, entry_i)
+  subroutine remove_entry(this, entry_i, error)
     type(Dictionary), intent(inout) :: this
     integer, intent(in) :: entry_i
+    integer, intent(out), optional :: error
 
-    if (entry_i <= 0 .or. entry_i > this%N) &
-         call system_abort ("Called remove_entry with invalid entry number")
+    INIT_ERROR(error)
+
+    if (entry_i <= 0 .or. entry_i > this%N) then
+       RAISE_ERROR("remove_entry: Called remove_entry with invalid entry number", error)
+    end if
 
     call finalise(this%entries(entry_i))
 
@@ -2080,45 +2103,124 @@ contains
 
   end function dictionary_has_key
 
-  !% Return a dictionary that is a subset of this,
-  !% with only the keys in the arrays 'keys' present.
-  function dictionary_subset(this, keys, case_sensitive)
+
+  subroutine dictionary_subset(this, keys, out, case_sensitive, error)
     type(Dictionary), intent(in) :: this
     character(len=*), dimension(:) :: keys
-    type(Dictionary) :: dictionary_subset
+    type(Dictionary), intent(out) :: out
     logical, optional :: case_sensitive
+    integer, intent(out), optional :: error
 
-    integer :: i, entry_i
-
-    call initialise(dictionary_subset)
-
+    type(extendable_str), dimension(:), allocatable :: tmp_keys
+    integer i
+    
+    INIT_ERROR(error)
+    
+    allocate(tmp_keys(size(keys)))
     do i=1,size(keys)
-       entry_i = lookup_entry_i(this, keys(i), case_sensitive)
-       if (entry_i <= 0) &
-            call system_abort('dictionary_subset: key '//trim(keys(i))//' not in dictionary')
-       entry_i = add_entry(dictionary_subset, keys(i), this%entries(entry_i))
+       call initialise(tmp_keys(i))
+       call concat(tmp_keys(i), keys(i))
     end do
 
-  end function dictionary_subset
+    call dictionary_subset_es(this, tmp_keys, out, case_sensitive, error)
+    PASS_ERROR(error)
+
+    do i=1,size(tmp_keys)
+       call finalise(tmp_keys(i))
+    end do
+    deallocate(tmp_keys)
+
+  end subroutine dictionary_subset
+
+
+  !% Return a dictionary that is a subset of this in 'out'
+  !% with only the keys in the arrays 'keys' present.
+  subroutine dictionary_subset_es(this, keys, out, case_sensitive, error)
+    type(Dictionary), intent(in) :: this
+    type(extendable_str), dimension(:) :: keys
+    type(Dictionary), intent(out) :: out
+    logical, optional :: case_sensitive
+    integer, intent(out), optional :: error
+
+    integer :: i, j
+    
+    INIT_ERROR(error)
+    call initialise(out)
+
+    do j=1,size(keys)
+
+       i = lookup_entry_i(this, string(keys(j)), case_sensitive)
+       if (i == -1) then
+          RAISE_ERROR('out: key '//string(keys(j))//' not in dictionary', error)
+       end if
+
+       select case(this%entries(i)%type)
+       case(T_INTEGER)
+          call set_value(out, string(this%keys(i)), this%entries(i)%i)
+
+       case(T_REAL)
+          call set_value(out, string(this%keys(i)), this%entries(i)%r)
+
+       case(T_COMPLEX)
+          call set_value(out, string(this%keys(i)), this%entries(i)%c)
+
+       case(T_LOGICAL)
+          call set_value(out, string(this%keys(i)), this%entries(i)%l)
+
+       case(T_CHAR)
+          call set_value(out, string(this%keys(i)), this%entries(i)%s)
+
+       case(T_INTEGER_A)
+          call set_value(out, string(this%keys(i)), this%entries(i)%i_a)
+
+       case(T_REAL_A)
+          call set_value(out, string(this%keys(i)), this%entries(i)%r_a)
+
+       case(T_COMPLEX_A)
+          call set_value(out, string(this%keys(i)), this%entries(i)%c_a)
+
+       case(T_LOGICAL_A)
+          call set_value(out, string(this%keys(i)), this%entries(i)%l_a)
+
+       case(T_CHAR_A)
+          call set_value(out, string(this%keys(i)), this%entries(i)%s_a)
+
+       case(T_INTEGER_A2)
+          call set_value(out, string(this%keys(i)), this%entries(i)%i_a2)
+
+       case(T_REAL_A2)
+          call set_value(out, string(this%keys(i)), this%entries(i)%r_a2)
+
+       case(T_DATA)
+          call set_value(out, string(this%keys(i)), this%entries(i)%d)
+       end select
+    end do
+
+  end subroutine dictionary_subset_es
 
 
   !% Swap the positions of two entries in the dictionary. Arrays are not moved in memory.
-  subroutine dictionary_swap(this, key1, key2, case_sensitive)
+  subroutine dictionary_swap(this, key1, key2, case_sensitive, error)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key1, key2
     logical, optional :: case_sensitive
+    integer, intent(out), optional :: error
 
     integer :: i1,i2
     type(DictEntry) :: tmp_entry
     type(Extendable_str) :: tmp_key
 
+    INIT_ERROR(error);
+
     i1 = lookup_entry_i(this,key1,case_sensitive)
     i2 = lookup_entry_i(this,key2,case_sensitive)
 
-    if (i1 <= 0) &
-         call system_abort('dictionary_swap: key '//key1//' not in dictionary')
-    if (i2 <= 0) &
-         call system_abort('dictionary_swap: key '//key2//' not in dictionary')
+    if (i1 <= 0) then
+       RAISE_ERROR('dictionary_swap: key '//key1//' not in dictionary', error)
+    end if
+    if (i2 <= 0) then
+       RAISE_ERROR('dictionary_swap: key '//key2//' not in dictionary', error)
+    end if
 
     tmp_entry = this%entries(i2)
     tmp_key   = this%keys(i2)
@@ -2261,52 +2363,7 @@ contains
     type(Dictionary), intent(inout) :: this
     type(Dictionary), intent(in) :: from
     
-    integer :: i
-
-    call initialise(this)
-    do i=1,from%n
-
-       select case(from%entries(i)%type)
-       case(T_INTEGER)
-          call set_value(this, string(from%keys(i)), from%entries(i)%i)
-
-       case(T_REAL)
-          call set_value(this, string(from%keys(i)), from%entries(i)%r)
-
-       case(T_COMPLEX)
-          call set_value(this, string(from%keys(i)), from%entries(i)%c)
-
-       case(T_LOGICAL)
-          call set_value(this, string(from%keys(i)), from%entries(i)%l)
-
-       case(T_CHAR)
-          call set_value(this, string(from%keys(i)), from%entries(i)%s)
-
-       case(T_INTEGER_A)
-          call set_value(this, string(from%keys(i)), from%entries(i)%i_a)
-
-       case(T_REAL_A)
-          call set_value(this, string(from%keys(i)), from%entries(i)%r_a)
-
-       case(T_COMPLEX_A)
-          call set_value(this, string(from%keys(i)), from%entries(i)%c_a)
-
-       case(T_LOGICAL_A)
-          call set_value(this, string(from%keys(i)), from%entries(i)%l_a)
-
-       case(T_CHAR_A)
-          call set_value(this, string(from%keys(i)), from%entries(i)%s_a)
-
-       case(T_INTEGER_A2)
-          call set_value(this, string(from%keys(i)), from%entries(i)%i_a2)
-
-       case(T_REAL_A2)
-          call set_value(this, string(from%keys(i)), from%entries(i)%r_a2)
-
-       case(T_DATA)
-          call set_value(this, string(from%keys(i)), from%entries(i)%d)
-       end select
-    end do
+    call subset(from, from%keys(1:from%n), this)
     
   end subroutine dictionary_deepcopy
 
