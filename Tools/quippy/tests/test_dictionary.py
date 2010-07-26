@@ -169,7 +169,33 @@ c=44""")
             self.assert_(all(v1 == v2))
          else:
             self.assertEqual(v1, v2)
-      
+
+   def test_deepcopy(self):
+      d1 = Dictionary()
+      d1['ia2'] = [[1,2,3],
+                   [4,5,6]]
+      d2 = Dictionary()
+      d2.deepcopy(d1) # copy from d1 into d2
+      self.assert_(all(d1['ia2'] == d2['ia2']))
+      d1['ia2'][1,1] = 0
+      self.assert_(not all(d1['ia2'] == d2['ia2']))
+      self.assert_(not all(d1._fpointer == d2._fpointer))
+
+   def test_subset(self):
+      d = Dictionary()
+      d['i'] = 1
+      d['s'] = 'string'
+      d['ia'] = [1,2,3]
+      d['sa'] = ['string', 'longer string']
+      d['la'] = [True, False]
+      d['ia2'] = [[1,2,3],
+                  [4,5,6]]
+      d2 = d.subset(['i', 'ia', 'la'])
+      self.assert_(d2 == {'i': 1, 'ia':[1,2,3], 'la': [True,False]})
+
+   def test_subset_bad_key(self):
+      d = Dictionary()
+      self.assertRaises(RuntimeError, d.subset, ['bad_key'])
 
 if __name__ == '__main__':
    unittest.main()
