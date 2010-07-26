@@ -4335,7 +4335,7 @@ contains
             call swap(use_properties, 'pos', string(use_properties%keys(2)))
          else
             ! just print the species and positions
-            use_properties = subset(this%properties,(/'species','pos    '/))
+            call subset(this%properties,(/'species','pos    '/), use_properties)
          end if
 
       else
@@ -4367,7 +4367,7 @@ contains
 
          call parse_string(my_properties, ':', tmp_properties, n_properties)
 
-         use_properties = subset(this%properties, tmp_properties(1:n_properties))
+         call subset(this%properties, tmp_properties(1:n_properties), use_properties)
 
       end if
 
