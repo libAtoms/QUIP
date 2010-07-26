@@ -80,7 +80,7 @@ module Potential_module
   public :: Potential
   type Potential
      type(MPI_context) :: mpi
-     character(len=FIELD_LENGTH) init_args_pot1, init_args_pot2
+     character(len=FIELD_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
 
      logical :: is_simple = .false.
      type(Potential_simple) :: pot
@@ -105,25 +105,14 @@ module Potential_module
 #endif
   end type Potential
 
-  public :: Potential_Sum
-  type Potential_Sum
-     type(MPI_context) :: mpi
-
-     type(Potential), pointer :: pot1 => null() 
-     type(Potential), pointer :: pot2 => null() 
-
-     logical  :: subtract_pot1
-     logical  :: subtract_pot2
-  end type Potential_Sum
-
   public :: Initialise, Potential_Filename_Initialise
   interface Initialise
-     module procedure Potential_Initialise, Potential_Initialise_inoutput, Potential_Sum_Initialise
+     module procedure Potential_Initialise, Potential_Initialise_inoutput
   end interface
 
   public :: Finalise
   interface Finalise
-     module procedure Potential_Finalise, Potential_Sum_Finalise
+     module procedure Potential_Finalise
   end interface
 
   public :: Setup_Parallel
@@ -133,17 +122,17 @@ module Potential_module
 
   public :: Print
   interface Print
-     module procedure Potential_Print, Potential_Sum_Print
+     module procedure Potential_Print
   end interface
 
   public :: Cutoff
   interface Cutoff
-     module procedure Potential_Cutoff, Potential_Sum_Cutoff
+     module procedure Potential_Cutoff
   end interface
 
   public :: Calc
   interface Calc
-     module procedure Potential_Calc, Potential_Sum_Calc
+     module procedure Potential_Calc
   end interface
 
   public :: Minim
@@ -184,7 +173,11 @@ module Potential_module
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
   end type Potential_minimise
 
+  type(Potential), pointer :: parse_pot
+  logical, save :: parse_in_pot, parse_in_pot_done, parse_matched_label
 
+
+#include "Potential_Sum_header.f95"
 #include "Potential_ForceMixing_header.f95"
 
 #ifdef HAVE_LOCAL_E_MIX
@@ -255,9 +248,27 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   type(Potential), pointer :: u_pot1, u_pot2
   type(Dictionary) :: params
 
+  logical :: has_xml_label
+  character(len=FIELD_LENGTH) :: my_args_str
+
   INIT_ERROR(error)
 
   call finalise(this)
+
+  call initialise(params)
+  call param_register(params, 'xml_label', '', this%xml_label, has_xml_label)
+  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
+    RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+  endif
+  call finalise(params)
+
+  if(has_xml_label) then
+     call Potential_read_params_xml(this, param_str)
+     my_args_str = trim(this%xml_init_args)
+  else
+     my_args_str = trim(args_str)
+  endif
+
   call initialise(params)
   call param_register(params, 'init_args_pot1', '', this%init_args_pot1)
   call param_register(params, 'init_args_pot2', '', this%init_args_pot2)
@@ -270,8 +281,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call param_register(params, 'ONIOM', 'false', this%is_oniom)
 #endif HAVE_ONIOM
 
-  if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
-    RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+  if(.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
+    RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(my_args_str)//"'", error)
   endif
   call finalise(params)
 
@@ -281,6 +292,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   if (present(pot2) .and. len_trim(this%init_args_pot2) > 0) then
     RAISE_ERROR("Potential_initialise got both pot2 and args_str with init_args_pot2 passed in, conflict", error)
   endif
+
   if (len_trim(this%init_args_pot1) > 0) then
     allocate(this%l_mpot1)
     call initialise(this%l_mpot1, args_str=this%init_args_pot1, param_str=param_str, bulk_scale=bulk_scale, mpi_obj=mpi_obj, error=error)
@@ -321,13 +333,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
           , this%is_oniom &
 #endif HAVE_ONIOM
           /) ) /= 1) then
-     RAISE_ERROR("Potential_initialise found too few or two many Potential types args_str='"//trim(args_str)//"'", error)
+     RAISE_ERROR("Potential_initialise found too few or two many Potential types args_str='"//trim(my_args_str)//"'", error)
   end if
 
   if (this%is_simple) then
     if (present(bulk_scale)) call print("Potential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
 
-    call initialise(this%pot, args_str, param_str, mpi_obj, error=error)
+    call initialise(this%pot, my_args_str, param_str, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing pot", error)
   else if (this%is_sum) then
     if (present(bulk_scale)) call print("Potential_initialise Sum ignoring bulk_scale passed in", PRINT_ALWAYS)
@@ -337,17 +349,17 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
 
     allocate(this%sum)
-    call initialise(this%sum, args_str, u_pot1, u_pot2, mpi_obj, error=error)
+    call initialise(this%sum, my_args_str, u_pot1, u_pot2, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing sum", error)
 
   else if (this%is_forcemixing) then
 
     allocate(this%forcemixing)
     if(associated(u_pot2)) then
-       call initialise(this%forcemixing, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
+       call initialise(this%forcemixing, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     else
        ! if only one pot is given, assign it to QM. this is useful for time-embedding LOTF
-       call initialise(this%forcemixing, args_str, qmpot=u_pot1, reference_bulk=bulk_scale, mpi=mpi_obj, error=error)
+       call initialise(this%forcemixing, my_args_str, qmpot=u_pot1, reference_bulk=bulk_scale, mpi=mpi_obj, error=error)
     endif
     PASS_ERROR_WITH_INFO("Initializing forcemixing", error)
 
@@ -358,7 +370,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
    endif
 
     allocate(this%local_e_mix)
-    call initialise(this%local_e_mix, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
+    call initialise(this%local_e_mix, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing local_e_mix", error)
 #endif HAVE_LOCAL_E_MIX
 #ifdef HAVE_ONIOM
@@ -368,7 +380,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
 
     allocate(this%oniom)
-    call initialise(this%oniom, args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
+    call initialise(this%oniom, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing oniom", error)
 #endif HAVE_ONIOM
   end if
@@ -1416,160 +1428,85 @@ max_atom_rij_change = 1.038_dp
 
   end subroutine
 
-  !*************************************************************************
-  !*
-  !*  Potential_Sum routines
-  !*
-  !*************************************************************************
+  subroutine Potential_read_params_xml(this, param_str)
+     type(Potential), intent(inout), target :: this
+     character(len=*), intent(in) :: param_str
 
-  subroutine Potential_Sum_Initialise(this, args_str, pot1, pot2, mpi, error)
-    type(Potential_Sum), intent(inout) :: this
-    character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: pot1, pot2
-    type(MPI_Context), intent(in), optional :: mpi
-    integer, intent(out), optional :: error
+     type(xml_t) :: fxml
 
-    type(Dictionary) :: params
+     if (len(trim(param_str)) <= 0) &
+     call system_abort('Potential_read_params_xml: invalid param_str length '//len(trim(param_str)) )
 
-    INIT_ERROR(error)
+     parse_in_pot = .false.
+     parse_in_pot_done = .false.
+     parse_matched_label = .false.
+     parse_pot => this
 
-    call finalise(this)
+     call open_xml_string(fxml, param_str)
 
-    call initialise(params)
-    call param_register(params, 'subtract_pot1', 'F', this%subtract_pot1)
-    call param_register(params, 'subtract_pot2', 'F', this%subtract_pot2)
+     call parse(fxml,  &
+       startElement_handler = Potential_startElement_handler, &
+       endElement_handler = Potential_endElement_handler)
+     call close_xml_t(fxml)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Sum_Initialise args_str')) then
-       call system_abort('Potential_Sum_Initialise failed to parse args_str="'//trim(args_str)//'"')
-    end if
+     if(.not. parse_in_pot_done) &
+     call system_abort('Potential_read_params_xml: could not initialise potential from xml_label.')
 
-    call finalise(params)
+  endsubroutine Potential_read_params_xml
 
-    this%pot1 => pot1
-    this%pot2 => pot2
+  subroutine Potential_startElement_handler(URI, localname, name, attributes)
+     character(len=*), intent(in)   :: URI
+     character(len=*), intent(in)   :: localname
+     character(len=*), intent(in)   :: name
+     type(dictionary_t), intent(in) :: attributes
+   
+     integer :: status
+     character(len=FIELD_LENGTH) :: value
 
-    if (present(mpi)) this%mpi = mpi
+     if(name == 'Potential') then ! new Potential stanza
 
-  end subroutine Potential_Sum_Initialise
+        if(parse_in_pot) &
+           call system_abort("Potential_startElement_handler entered GAP_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
 
-  subroutine Potential_Sum_Finalise(this)
-    type(Potential_Sum), intent(inout) :: this
-    
-    nullify(this%pot1)
-    nullify(this%pot2)
+        if(parse_matched_label) return ! we already found an exact match for this label
 
-    this%subtract_pot1 = .false.
-    this%subtract_pot2 = .false.
+        call QUIP_FoX_get_value(attributes, 'label', value, status)
+        if(status /= 0) value = ''
 
-  end subroutine Potential_Sum_Finalise
+        if(len(trim(parse_pot%xml_label)) > 0) then ! we were passed in a label
+           if(trim(value) == trim(parse_pot%xml_label)) then ! exact match
+              parse_matched_label = .true.
+              parse_in_pot = .true.
+           else ! no match
+              parse_in_pot = .false.
+           endif
+        else ! no label passed in
+           call system_abort("Potential_startElement_handler: no label passed in")
+        endif
 
-  subroutine Potential_Sum_Print(this, file)
-    type(Potential_Sum), intent(inout) :: this
-    type(Inoutput), intent(inout), optional :: file
+        call QUIP_FoX_get_value(attributes, 'init_args', value, status)
+        if(status == 0) then
+           read (value, '(a)') parse_pot%xml_init_args
+        else
+           call system_abort("Potential_startElement_handler: no init_args attribute found")
+        endif
+     endif
 
-    call print('Potential_Sum:', file=file)
-    call print(' subtract_pot1=' // this%subtract_pot1, file=file)
-    call print(' subtract_pot2=' // this%subtract_pot2, file=file)
-    call print('', file=file)
-    if (associated(this%pot1)) then
-       call print('Potential 1:', file=file)
-       call print(this%pot1, file=file)
-       call print('', file=file)
-    else
-       call print('Potential 1 not initialised', file=file)
-       call print('', file=file)
-    end if
-    if (associated(this%pot2)) then
-       call print('Potential 2:', file=file)
-       call Print(this%pot2, file=file)
-       call print('', file=file)
-    else
-       call print('Potential 2 not initialised', file=file)
-       call print('', file=file)
-    end if
+  endsubroutine Potential_startElement_handler
 
-  end subroutine Potential_Sum_Print
+  subroutine Potential_endElement_handler(URI, localname, name)
+     character(len=*), intent(in)   :: URI
+     character(len=*), intent(in)   :: localname
+     character(len=*), intent(in)   :: name
 
-  subroutine Potential_Sum_Calc(this, at, e, local_e, f, df, virial, args_str, error)
-    type(Potential_Sum), intent(inout) :: this
-    type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: e
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: f(:,:)
-    real(dp), intent(out), optional :: df(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
-    character(*), intent(in), optional :: args_str
-    integer, intent(out), optional :: error
+     if(parse_in_pot) then
+        if(name == 'Potential') then
+           parse_in_pot = .false.
+           parse_in_pot_done = .true.
+        endif
+     endif
 
-    real(dp) :: my_e_1, my_e_2
-    real(dp), allocatable :: my_local_e_1(:), my_local_e_2(:)
-    real(dp), allocatable :: my_f_1(:,:), my_f_2(:,:)
-    real(dp), allocatable :: my_df_1(:,:), my_df_2(:,:)
-    real(dp) :: my_virial_1(3,3), my_virial_2(3,3)
-
-    INIT_ERROR(error)
-
-    if (present(local_e)) allocate(my_local_e_1(size(local_e)), my_local_e_2(size(local_e)))
-    if (present(f)) allocate(my_f_1(size(f, 1),size(f, 2)), my_f_2(size(f, 1),size(f, 2)))
-    if (present(df)) allocate(my_df_1(size(df, 1),size(df, 2)), my_df_2(size(df, 1),size(df, 2)))
-
-    call calc(this%pot1, at, e, local_e, f, df, virial, args_str, error)
-    PASS_ERROR(error)
-
-    if (present(e)) my_e_1 = e
-    if (present(local_e)) my_local_e_1 = local_e
-    if (present(f)) my_f_1 = f
-    if (present(df)) my_df_1 = df
-    if (present(virial)) my_virial_1 = virial
-
-    if (this%subtract_pot1) then
-      if (present(e)) my_e_1 = - my_e_1
-      if (present(local_e)) my_local_e_1 = - my_local_e_1
-      if (present(f)) my_f_1 = - my_f_1
-      if (present(df)) my_df_1 = - my_df_1
-      if (present(virial)) my_virial_1 = - my_virial_1
-    end if
-
-    call calc(this%pot2, at, e, local_e, f, df, virial, args_str, error)
-    PASS_ERROR(error)
-
-    if (present(e)) my_e_2 = e
-    if (present(local_e)) my_local_e_2 = local_e
-    if (present(f)) my_f_2 = f
-    if (present(df)) my_df_2 = df
-    if (present(virial)) my_virial_2 = virial
-
-    if (this%subtract_pot2) then
-      if (present(e)) my_e_2 = - my_e_2
-      if (present(local_e)) my_local_e_2 = - my_local_e_2
-      if (present(f)) my_f_2 = - my_f_2
-      if (present(df)) my_df_2 = - my_df_2
-      if (present(virial)) my_virial_2 = - my_virial_2
-    end if
-
-    if (present(e)) e = my_e_1 + my_e_2
-    if (present(local_e)) local_e = my_local_e_1 + my_local_e_2
-    if (present(f)) f = my_f_1 + my_f_2
-    if (present(df)) df = my_df_1 + my_df_2
-    if (present(virial)) virial = my_virial_1 + my_virial_2
-
-    if (present(local_e)) deallocate(my_local_e_1, my_local_e_2)
-    if (present(f)) deallocate(my_f_1, my_f_2)
-    if (present(df)) deallocate(my_df_1, my_df_2)
-  
-  end subroutine Potential_Sum_Calc
-
-  function Potential_Sum_Cutoff(this)
-    type(Potential_Sum), intent(in) :: this
-    real(dp) :: potential_sum_cutoff
-
-    if(associated(this%pot1) .and. associated(this%pot2)) then
-       potential_sum_cutoff = max(cutoff(this%pot1), cutoff(this%pot2))
-    else
-       potential_sum_cutoff = 0.0_dp
-    endif
-
-  end function Potential_Sum_Cutoff
+  endsubroutine Potential_endElement_handler
 
   subroutine potential_set_callback(this, callback)
     type(Potential), intent(inout) :: this
@@ -1593,6 +1530,7 @@ max_atom_rij_change = 1.038_dp
   end subroutine potential_set_callback
 
 
+#include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"
 
 #ifdef HAVE_LOCAL_E_MIX
