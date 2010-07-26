@@ -73,7 +73,6 @@ type IPModel_GAP
   integer, dimension(:), allocatable :: Z
   logical :: do_ewald = .false.
   logical :: do_ewald_corr = .false.
-  logical :: do_core = .false.
   real(dp), dimension(116) :: z_eff = 0.0_dp
   real(dp), dimension(116) :: w_Z = 1.0_dp
   real(dp) :: e0 = 0.0_dp
@@ -96,9 +95,6 @@ type IPModel_GAP
 #ifdef HAVE_GP
   type(gp) :: my_gp
 #endif
-  type(extendable_str) :: quip_string
-  character(len=FIELD_LENGTH) :: ip_args = ''
-
   logical :: initialised = .false.
 
 end type IPModel_GAP
@@ -173,7 +169,6 @@ subroutine IPModel_GAP_Finalise(this)
   this%n_species = 0
   this%do_ewald = .false.
   this%do_ewald_corr = .false.
-  this%do_core = .false.
   this%z_eff = 0.0_dp
   this%w_Z = 1.0_dp
   this%qw_l_max = 0
@@ -184,8 +179,6 @@ subroutine IPModel_GAP_Finalise(this)
   this%coordinates = ''
 
   this%label = ''
-  call finalise(this%quip_string)
-  this%ip_args = ''
   this%initialised = .false.
 
 end subroutine IPModel_GAP_Finalise
@@ -206,14 +199,14 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
-  real(dp), dimension(:), allocatable   :: local_e_in, w, charge, local_e_core
+  real(dp), dimension(:), allocatable   :: local_e_in, w, charge
   real(dp), dimension(:,:,:), allocatable   :: virial_in
-  real(dp), dimension(:,:), allocatable   :: vec, f_ewald, f_core, f_ewald_corr
+  real(dp), dimension(:,:), allocatable   :: vec, f_ewald, f_ewald_corr
   real(dp), dimension(:,:,:), allocatable   :: jack
   integer :: d, i, j, k, n, nei_max, jn
 
-  real(dp) :: e_ewald, e_core, e_ewald_corr
-  real(dp), dimension(3,3) :: virial_ewald, virial_core, virial_ewald_corr
+  real(dp) :: e_ewald, e_ewald_corr
+  real(dp), dimension(3,3) :: virial_ewald, virial_ewald_corr
   real(dp), dimension(:,:), allocatable :: covariance
 
   integer, dimension(3) :: shift
@@ -458,7 +451,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
 
-  if(allocated(local_e_core)) deallocate(local_e_core)
   if(allocated(local_e_in)) deallocate(local_e_in)
   if(allocated(virial_in)) deallocate(virial_in)
   if(allocated(w)) deallocate(w)
@@ -534,13 +526,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         read (value, *) parse_ip%do_ewald_corr
      else
         call system_abort('IPModel_GAP_read_params_xml cannot find do_ewald_corr')
-     endif
-
-     call QUIP_FoX_get_value(attributes, 'do_core', value, status)
-     if(status == 0) then
-        read (value, *) parse_ip%do_core
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find do_core')
      endif
 
      call QUIP_FoX_get_value(attributes, 'e0', value, status)
@@ -681,17 +666,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find charge')
      endif
 
-  elseif(parse_in_ip .and. name == 'core_params') then
-
-     call QUIP_FoX_get_value(attributes, 'ip_args', value, status)
-     if(status == 0) then
-        read (value, '(a)') parse_ip%ip_args
-     else
-        call system_abort('IPModel_GAP_read_params_xml cannot find ip_args')
-     endif
-
-     call zero(parse_cur_data)
-
   endif
 
 end subroutine IPModel_startElement_handler
@@ -715,20 +689,10 @@ subroutine IPModel_endElement_handler(URI, localname, name)
 
     elseif(name == 'per_type_data') then
 
-    elseif(name == 'core_params') then
-       parse_ip%quip_string = parse_cur_data
     end if
   endif
 
 end subroutine IPModel_endElement_handler
-
-subroutine IPModel_characters_handler(in)
-   character(len=*), intent(in) :: in
-
-   if(parse_in_ip) then
-      call concat(parse_cur_data, in, keep_lf=.false.)
-   endif
-end subroutine IPModel_characters_handler
 
 subroutine IPModel_GAP_read_params_xml(this, param_str)
   type(IPModel_GAP), intent(inout), target :: this
@@ -743,20 +707,16 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
      parse_in_ip_done = .false.
      parse_matched_label = .false.
      parse_ip => this
-     call initialise(parse_cur_data)
      parse_ip%label = ""
 
      call open_xml_string(fxml, param_str)
      call parse(fxml,  &
-       characters_handler = IPModel_characters_handler, &
        startElement_handler = IPModel_startElement_handler, &
        endElement_handler = IPModel_endElement_handler)
      call close_xml_t(fxml)
 
-     call finalise(parse_cur_data)
-
      if(.not. parse_in_ip_done) &
-     & call  system_abort('IPModel_GAP_read_params_xml: could not initialise GAP potential. No GAP_params present?')
+     call  system_abort('IPModel_GAP_read_params_xml: could not initialise GAP potential. No GAP_params present?')
      this%initialised = .true.
   endif
 
@@ -780,7 +740,6 @@ subroutine IPModel_GAP_Print (this, file)
   call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
   call Print("IPModel_GAP : do_ewald = "//this%do_ewald, file=file)
   call Print("IPModel_GAP : do_ewald_corr = "//this%do_ewald_corr, file=file)
-  call Print("IPModel_GAP : ip_args = "//trim(this%ip_args), file=file)
 #ifdef HAVE_GP
   do i = 1, this%n_species
      call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
@@ -788,7 +747,6 @@ subroutine IPModel_GAP_Print (this, file)
      call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
      call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
   enddo
-  call Print("IPModel_GAP : comment = "//trim(this%my_gp%comment),file=file)
 #endif
 
 end subroutine IPModel_GAP_Print
