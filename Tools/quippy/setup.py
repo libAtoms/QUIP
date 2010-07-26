@@ -149,6 +149,7 @@ def SourceImporter(infile, defines, include_dirs, cpp):
                 print 'filtering %s to create %s' % (infile, outfile)
                 # Munge source a little... this could be converted to pure python at some point
 
+                tmp_file = os.path.basename(infile)
                 os.system("""perl -e 'while(<>) {
     if (/^(double precision\s+)?\s*(recursive\s+)?(subroutine|function)\s+(\w*)/) {
 	$last_subrt = $4;
@@ -159,7 +160,9 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 	print $_." ".$last_subrt."\n";
     }
     else { s/^\s*private\s*$/!private/; s/^\s*private([ :])/!private$1/; print; }
-}' %s > tmp.out; %s %s tmp.out | grep -v '^#' >  %s""" % (infile, ' '.join(cpp), cpp_opt, outfile))    
+}' %s > %s; %s %s %s | grep -v '^#' >  %s""" % (infile, tmp_file, ' '.join(cpp), cpp_opt, tmp_file, outfile))
+                os.remove(tmp_file)
+                os.remove(tmp_file[:-4] + '.s')
         else:
             copy_file(infile, outfile, update=True)
 
