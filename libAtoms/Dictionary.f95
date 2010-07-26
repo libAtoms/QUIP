@@ -1562,21 +1562,14 @@ contains
   ! * 
   ! ****************************************************************************
 
-  subroutine dictionary_remove_value(this, key, error)
+  subroutine dictionary_remove_value(this, key)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    integer, intent(out), optional :: error
-
     integer entry_i
 
-    INIT_ERROR(error)
-
     entry_i = lookup_entry_i(this, key)
-    if (entry_i > 0) then
-       call remove_entry(this, entry_i)
-    else
-       RAISE_ERROR("dictionary_remove_value: Cannot remove non-existant key "//trim(key), error)
-    endif
+    if (entry_i > 0) call remove_entry(this, entry_i)
+
   end subroutine dictionary_remove_value
 
   subroutine dictionary_read_string(this, str, append, error)
