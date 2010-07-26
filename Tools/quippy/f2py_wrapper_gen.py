@@ -119,8 +119,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    subts = filter(no_allocatables_or_pointers, subts)
    functs = filter(no_allocatables_or_pointers, functs)
 
-   #subts = filter(no_complex_scalars, subts)
-   #functs = filter(no_complex_scalars, functs)
+   subts = filter(no_complex_scalars, subts)
+   functs = filter(no_complex_scalars, functs)
 
    subts = filter(no_c_ptr, subts)
    functs = filter(no_c_ptr, functs)
