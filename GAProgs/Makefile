@@ -35,7 +35,7 @@ endif
 
 OBJS = teach_sparse_module.o
 
-PROGRAMS = teach_sparse test_qw_gradient
+PROGRAMS = teach_sparse test_qw_gradient convert_binary2xml
 
 LIBS = -L. -lquiputils -lquip -lgp -latoms 
 LIBFILES = libatoms.a libgp.a libquip.a libquiputils.a
