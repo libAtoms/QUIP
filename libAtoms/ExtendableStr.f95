@@ -213,7 +213,7 @@ subroutine extendable_str_concat(this, str, keep_lf)
        this%len = this%len + str_len
     else
        do i=1, str_len
-          if (str(i:i) == char(13) .or. str(i:i) == char(10)) cycle
+          if (str(i:i) == achar(13) .or. str(i:i) == achar(LF_CHAR_CODE)) cycle
           this%s(this%len+1) = str(i:i)
           this%len = this%len + 1
        end do
@@ -316,7 +316,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
 	  call concat(this, trim(line))
 	endif
 	if (is_iostat_eor(stat) .and. my_keep_lf) then
-	  call concat(this, char(13))
+	  call concat(this, achar(LF_CHAR_CODE))
 	endif
 	last_was_incomplete = (stat == 0)
       else
@@ -397,12 +397,12 @@ end function extendable_str_index
 function extendable_str_read_line(this, status)
   type(extendable_str), intent(inout) :: this
   integer, intent(out), optional :: status
-  character(len=max(1,index(this,char(13))-this%cur)) :: extendable_str_read_line
+  character(len=max(1,index(this,achar(LF_CHAR_CODE))-this%cur)) :: extendable_str_read_line
 
   integer line_len
   integer i
 
-  line_len = index(this,char(13))-this%cur
+  line_len = index(this,achar(LF_CHAR_CODE))-this%cur
 
   if (this%cur <= this%len) then
     do i=1, line_len
