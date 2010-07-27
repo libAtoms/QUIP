@@ -150,7 +150,7 @@ program teach_sparse_program
 
   call teach_n_from_xyz(main_teach_sparse)
 
-  if (.not. has_f0) then
+  if (.not. has_f0 .and. .not. has_e0) then
      call e0_avg_from_xyz(main_teach_sparse)
   end if
 
