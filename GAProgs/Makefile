@@ -33,7 +33,7 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-OBJS = 
+OBJS = teach_sparse_module.o
 
 PROGRAMS = teach_sparse test_qw_gradient
 
