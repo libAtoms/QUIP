@@ -16,7 +16,7 @@ program convert
   integer :: quip_string_start, bracket_start, bracket_end, other_bracket_start
   character(len=10000) :: short_comment
   character(len=256) :: coordinates
-  real(dp), dimension(:), allocatable :: z_eff
+  real(dp), dimension(:), allocatable :: z_eff, w_Z
   
   call system_initialise(verbosity=PRINT_SILENT)
 
@@ -93,26 +93,33 @@ program convert
   endif
 
   if( get_value(my_dictionary,'n_species',GAP%n_species) ) then
-     allocate( GAP%species_Z(GAP%n_species), GAP%w_Z(GAP%n_species), z_eff(GAP%n_species) )
+     allocate( GAP%species_Z(GAP%n_species), w_Z(GAP%n_species), z_eff(GAP%n_species) )
 
      if( GAP%n_species == 1 ) then
-        if( .not. ( get_value(my_dictionary,'Z',GAP%species_Z(1)) .and. get_value(my_dictionary,'w',GAP%w_Z(1))) ) &
+        if( .not. ( get_value(my_dictionary,'Z',GAP%species_Z(1)) .and. get_value(my_dictionary,'w',w_Z(1))) ) &
         call system_abort('convert: no species information found')
        
         if( .not. get_value(my_dictionary,'z_eff',GAP%z_eff(GAP%species_Z(1))) ) &
         call system_abort('convert: no z_eff information found')
      else
-        if( .not. ( get_value(my_dictionary,'Z',GAP%species_Z) .and. get_value(my_dictionary,'w',GAP%w_Z) ) ) &
+        if( .not. ( get_value(my_dictionary,'Z',GAP%species_Z) .and. get_value(my_dictionary,'w',w_Z) ) ) &
         call system_abort('IPModel_GAP_Initialise_str: no species information found')
 
 
         if( .not. get_value(my_dictionary,'z_eff',z_eff) ) &
         call system_abort('IPModel_GAP_Initialise_str: no species information found')
-        GAP%z_eff = 0.0_dp
-        GAP%z_eff(GAP%species_Z) = z_eff
+
      endif
 
+     allocate( GAP%w_Z(maxval(GAP%species_Z)) )
+
+     GAP%z_eff = 0.0_dp
+     GAP%w_Z = 0.0_dp
+     GAP%z_eff(GAP%species_Z) = z_eff
+     GAP%w_Z(GAP%species_Z) = w_Z
+
   endif
+
   if( .not. get_value(my_dictionary,'do_ewald',GAP%do_ewald) ) GAP%do_ewald = .false.
   if( .not. get_value(my_dictionary,'do_ewald_corr',GAP%do_ewald_corr) ) GAP%do_ewald_corr = .false.
   if( .not. get_value(my_dictionary,'do_core',GAP%do_core) ) GAP%do_core = .false.
