@@ -42,6 +42,8 @@
 module error_module
   implicit none
 
+  private
+
   ! ---
 
   integer, parameter  :: ERROR_STACK_SIZE  = 100
@@ -64,11 +66,16 @@ module error_module
   character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_UNSPECIFIED = &
        "unspecified"
   character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_IO = "IO"
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_IO_EOF = "IO EOF"
   character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_MPI = "MPI"
-  character(ERROR_STR_LENGTH), parameter  :: ERROR_STRINGS(3) = &
-       (/ ERROR_STR_UNSPECIFIED, ERROR_STR_IO, ERROR_STR_MPI /)
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STR_MINIM_NOT_CONVERGED = &
+       "MINIM_NOT_CONVERGED"
+  character(ERROR_STR_LENGTH), parameter  :: ERROR_STRINGS(5) = &
+       (/ ERROR_STR_UNSPECIFIED, ERROR_STR_IO, ERROR_STR_IO_EOF, &
+          ERROR_STR_MPI, ERROR_STR_MINIM_NOT_CONVERGED /)
 
-  public :: ERROR_NONE, ERROR_UNSPECIFIED, ERROR_IO, ERROR_MPI
+  public :: ERROR_NONE, ERROR_UNSPECIFIED, ERROR_IO, ERROR_IO_EOF, ERROR_MPI
+  public :: ERROR_MINIM_NOT_CONVERGED
 
   ! ---
 
@@ -114,7 +121,7 @@ module error_module
 
   ! ---
 
-  public  :: error_unit
+  public  :: error_unit, error_mpi_myid
   integer :: error_unit = -1
 
 contains
