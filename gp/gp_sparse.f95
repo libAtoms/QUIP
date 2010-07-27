@@ -2618,7 +2618,7 @@ deallocate(diff_xijt)
             call GP_FoX_get_value(attributes, 'i', value, status)
             if (status == 0) then
                read (value,*) xi
-               if(ti > parse_gp%nsp) call system_abort("GP_startElement_handler got sparse point out of range ("//xi//")")
+               if(xi > parse_gp%n) call system_abort("GP_startElement_handler got sparse point out of range ("//xi//")")
             else
                call system_abort("GP_startElement_handler did not find the i attribute.")
             endif
