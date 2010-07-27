@@ -35,9 +35,9 @@ module teach_sparse_module
   implicit none
 
   type teach_sparse
-     character(len=FIELD_LENGTH) :: at_file, ip_args = '', &
+     character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
      energy_property_name, force_property_name, virial_property_name
-     character(len=10240) :: command_line
+     character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., do_ewald = .false. , do_ewald_corr = .false., &
@@ -572,12 +572,15 @@ contains
      call gp_print_xml(this%my_gp,xf)
 
      ! Print the command line used for the teaching
-     call xml_NewElement(xf,"commmmand_line")
-     call xml_AddCharacters(xf,trim(this%command_line),parsed=.false.)
-     call xml_EndElement(xf,"commmmand_line")
+     if(len(trim(this%command_line))> 0 ) then
+        call xml_NewElement(xf,"commmmand_line")
+        call xml_AddCharacters(xf,trim(this%command_line),parsed=.false.)
+        call xml_EndElement(xf,"commmmand_line")
+     endif
 
      ! Print the teaching configurations used for this potential.
-     call file_print_xml(this%at_file,xf)
+     if(len(trim(this%at_file)) > 0 ) call file_print_xml(this%at_file,xf)
+
      call xml_EndElement(xf,"GAP_params")
      call xml_Close(xf)
 
