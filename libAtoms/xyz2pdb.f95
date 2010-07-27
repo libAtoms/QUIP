@@ -53,7 +53,7 @@ program xyz2pdb
                                      print, verbosity_push, &
                                      operator(//), &
                                      INPUT, OUTPUT, &
-                                     SILENT, PRINT_NORMAL, PRINT_ANAL, PRINT_NERD
+                                     PRINT_SILENT, PRINT_NORMAL, PRINT_ANAL, PRINT_NERD
   use table_module,            only: table, finalise, int_part, delete
   use topology_module,         only: create_residue_labels_arb_pos, delete_metal_connects, &
                                      write_brookhaven_pdb_file, &
