@@ -94,6 +94,9 @@ module Potential_module
      logical :: is_forcemixing = .false.
      type(Potential_FM), pointer :: forcemixing => null()
 
+     logical :: is_evb = .false.
+     type(Potential_EVB), pointer :: evb => null()
+
 #ifdef HAVE_LOCAL_E_MIX
      logical :: is_local_e_mix = .false.
      type(Potential_Local_E_Mix), pointer :: local_e_mix => null()
@@ -179,6 +182,7 @@ module Potential_module
 
 #include "Potential_Sum_header.f95"
 #include "Potential_ForceMixing_header.f95"
+#include "Potential_EVB_header.f95"
 
 #ifdef HAVE_LOCAL_E_MIX
 #include "Potential_Local_E_Mix_header.f95"
@@ -197,7 +201,7 @@ module Potential_module
 
 recursive subroutine potential_Filename_Initialise(this, args_str, param_filename, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   character(len=*), intent(in) :: param_filename !% name of xml parameter file for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
@@ -214,7 +218,7 @@ end subroutine potential_Filename_Initialise
 
 subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(InOutput), intent(in) :: io_obj !% name of xml parameter inoutput for potential initializers
   type(Atoms), optional, intent(inout) :: bulk_scale !% optional bulk structure for calculating space and E rescaling
   type(MPI_Context), intent(in), optional :: mpi_obj
@@ -237,7 +241,7 @@ end subroutine potential_initialise_inoutput
 
 recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str, bulk_scale, mpi_obj, error)
   type(Potential), intent(inout) :: this
-  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
+  character(len=*), intent(in) :: args_str !% Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
   type(Potential), optional, intent(in), target :: pot1 !% Optional first Potential upon which this Potential is based
   type(Potential), optional, intent(in), target :: pot2 !% Optional second potential
   character(len=*), optional, intent(in) :: param_str !% contents of xml parameter file for potential initializers, if needed
@@ -274,6 +278,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call param_register(params, 'init_args_pot2', '', this%init_args_pot2)
   call param_register(params, 'Sum', 'false', this%is_sum)
   call param_register(params, 'ForceMixing', 'false', this%is_forcemixing)
+  call param_register(params, 'EVB', 'false', this%is_evb)
 #ifdef HAVE_LOCAL_E_MIX
   call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix)
 #endif HAVE_LOCAL_E_MIX
@@ -316,7 +321,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
   if (present(mpi_obj)) this%mpi = mpi_obj
 
-  this%is_simple = .not. any( (/ this%is_sum, this%is_forcemixing &
+  this%is_simple = .not. any( (/ this%is_sum, this%is_forcemixing, this%is_evb &
 #ifdef HAVE_LOCAL_E_MIX
   , this%is_local_e_mix &
 #endif
@@ -325,7 +330,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #endif
   /) )
 
-  if (count( (/this%is_simple, this%is_sum, this%is_forcemixing &
+  if (count( (/this%is_simple, this%is_sum, this%is_forcemixing, this%is_evb &
 #ifdef HAVE_LOCAL_E_MIX
           , this%is_local_e_mix &
 #endif HAVE_LOCAL_E_MIX
@@ -362,6 +367,18 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        call initialise(this%forcemixing, my_args_str, qmpot=u_pot1, reference_bulk=bulk_scale, mpi=mpi_obj, error=error)
     endif
     PASS_ERROR_WITH_INFO("Initializing forcemixing", error)
+
+  else if (this%is_evb) then
+    if (present(bulk_scale)) call print("Potential_initialise EVB ignoring bulk_scale passed in", PRINT_ALWAYS)
+
+    !1 is enough, everything is the same apart from the passed topology
+    if (associated(u_pot2)) then
+      call print('WARNING! Potential_initialise EVB ignoring u_pot2 (it will use u_pot1 twice)', PRINT_ALWAYS)
+    endif
+
+    allocate(this%evb)
+    call initialise(this%evb, my_args_str, u_pot1, mpi_obj, error=error)
+    PASS_ERROR_WITH_INFO("Initializing evb", error)
 
 #ifdef HAVE_LOCAL_E_MIX
   else if (this%is_local_e_mix) then
@@ -401,6 +418,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (this%is_forcemixing) then
        call finalise(this%forcemixing)
        deallocate(this%forcemixing)
+    else if (this%is_evb) then
+       call finalise(this%evb)
+       deallocate(this%evb)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
        call finalise(this%local_e_mix)
@@ -421,6 +441,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     this%is_simple = .false.
     this%is_sum = .false.
     this%is_forcemixing = .false.
+    this%is_evb = .false.
 #ifdef HAVE_LOCAL_E_MIX
     this%is_local_e_mix = .false.
 #endif
@@ -452,6 +473,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        PASS_ERROR(error)
     else if (this%is_forcemixing) then
        call Calc(this%forcemixing, at, e, local_e, f, virial, args_str, error=error)
+       PASS_ERROR(error)
+    else if (this%is_evb) then
+       call Calc(this%evb, at, e, local_e, f, df, virial, args_str, error=error)
        PASS_ERROR(error)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
@@ -500,6 +524,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        call Print(this%sum, file=file)
     else if (this%is_forcemixing) then
        call Print(this%forcemixing, file=file)
+    else if (this%is_evb) then
+       call Print(this%evb, file=file)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
        call Print(this%local_e_mix, file=file)
@@ -527,6 +553,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        potential_cutoff = cutoff(this%sum)
     else if (this%is_forcemixing) then
        potential_cutoff = cutoff(this%forcemixing)
+    else if (this%is_evb) then
+       potential_cutoff = cutoff(this%evb)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
        potential_cutoff = cutoff(this%local_e_mix)
@@ -1532,6 +1560,7 @@ max_atom_rij_change = 1.038_dp
 
 #include "Potential_Sum_routines.f95"
 #include "Potential_ForceMixing_routines.f95"
+#include "Potential_EVB_routines.f95"
 
 #ifdef HAVE_LOCAL_E_MIX
 #include "Potential_Local_E_Mix_routines.f95"
