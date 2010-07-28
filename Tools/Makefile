@@ -42,7 +42,7 @@ PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_ne
   clean_traj file_rewrite find_space_minim \
   structure_analysis_traj mean_var_correl angle_distr \
   make_bulk_supercell make_k_mesh \
-  extract_cv
+  extract_cv extract_EVB
 
 all: ${PROGRAMS}
 
