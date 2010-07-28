@@ -4399,7 +4399,7 @@ contains
          call set_value(this%params, 'Properties', prop_names)
          call initialise(str)
          call concat(str, write_string(this%params, real_format=my_values_real_format))
-         if (present(comment))  call concat(str, comment)
+         if (present(comment)) call concat(str, ' '//comment)
          call print(string(str),file=xyzfile)
          call finalise(str)
       else
