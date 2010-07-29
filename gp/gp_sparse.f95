@@ -2486,9 +2486,10 @@ deallocate(diff_xijt)
          
       end subroutine gp_print_xml
 
-      subroutine gp_read_xml_t_xml(this,xp)
+      subroutine gp_read_xml_t_xml(this,xp,label)
          type(gp), intent(inout), target :: this
          type(xml_t), intent(inout) :: xp
+         character(len=*), intent(in), optional :: label
 
          if( this%initialised ) call finalise(this)
 
@@ -2497,7 +2498,7 @@ deallocate(diff_xijt)
          parse_gp => this
          call initialise(parse_cur_data)
 
-         parse_gp%label = ""
+         parse_gp%label = optional_default("",label)
 
          call parse(xp, &
          characters_handler = GP_characters_handler, &
@@ -2511,15 +2512,16 @@ deallocate(diff_xijt)
 
       endsubroutine gp_read_xml_t_xml
 
-      subroutine gp_read_params_xml(this,params_str)
+      subroutine gp_read_params_xml(this,params_str,label)
 
          type(gp), intent(inout), target :: this
          character(len=*), intent(in) :: params_str
+         character(len=*), intent(in), optional :: label
 
          type(xml_t) :: xp
 
          call open_xml_string(xp, params_str)
-         call gp_read_xml(this,xp)
+         call gp_read_xml(this,xp,label)
          call close_xml_t(xp)
 
       end subroutine gp_read_params_xml
@@ -2555,31 +2557,31 @@ deallocate(diff_xijt)
 
             if(parse_in_gp) then
                if(parse_gp%initialised) call finalise(parse_gp)
-            endif
 
-            call GP_FoX_get_value(attributes, 'dimensions', value, status)
-            if (status == 0) then
-               read (value,*) parse_gp%d
-            else
-               call system_abort("GP_startElement_handler did not find the dimensions attribute.")
-            endif
+               call GP_FoX_get_value(attributes, 'dimensions', value, status)
+               if (status == 0) then
+                  read (value,*) parse_gp%d
+               else
+                  call system_abort("GP_startElement_handler did not find the dimensions attribute.")
+               endif
 
-            call GP_FoX_get_value(attributes, 'n_species', value, status)
-            if (status == 0) then
-               read (value,*) parse_gp%nsp
-            else
-               call system_abort("GP_startElement_handler did not find the n_species attribute.")
-            endif
+               call GP_FoX_get_value(attributes, 'n_species', value, status)
+               if (status == 0) then
+                  read (value,*) parse_gp%nsp
+               else
+                  call system_abort("GP_startElement_handler did not find the n_species attribute.")
+               endif
 
-            call GP_FoX_get_value(attributes, 'n_sparse_x', value, status)
-            if (status == 0) then
-               read (value,*) parse_gp%n
-            else
-               call system_abort("GP_startElement_handler did not find the n_sparse_x attribute.")
-            endif
+               call GP_FoX_get_value(attributes, 'n_sparse_x', value, status)
+               if (status == 0) then
+                  read (value,*) parse_gp%n
+               else
+                  call system_abort("GP_startElement_handler did not find the n_sparse_x attribute.")
+               endif
 
-            allocate(parse_gp%theta(parse_gp%d,parse_gp%nsp), parse_gp%delta(parse_gp%nsp), parse_gp%x(parse_gp%d,parse_gp%n), &
-            & parse_gp%alpha(parse_gp%n), parse_gp%xz(parse_gp%n), parse_gp%sp(parse_gp%nsp), parse_gp%f0(parse_gp%nsp))
+               allocate(parse_gp%theta(parse_gp%d,parse_gp%nsp), parse_gp%delta(parse_gp%nsp), parse_gp%x(parse_gp%d,parse_gp%n), &
+               & parse_gp%alpha(parse_gp%n), parse_gp%xz(parse_gp%n), parse_gp%sp(parse_gp%nsp), parse_gp%f0(parse_gp%nsp))
+            endif
 
          elseif(parse_in_gp .and. name == 'per_species_data') then
             call GP_FoX_get_value(attributes, 'type', value, status)
