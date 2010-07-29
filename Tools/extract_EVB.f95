@@ -131,7 +131,7 @@ program extract_EVB
        call initialise(out_file, out_filename, action=OUTPUT,append=.true.)
     else
        call initialise(out_file, out_filename, action=OUTPUT,append=.false.)
-       call print("# Step Nr.   Time[fs]  Energy_PSF1[eV]  Energy_PSF2[eV]     EVB(E1-E2)", file=out_file)
+       call print("#  Step Nr.    Time[fs]   Energy_PSF1[eV]   Energy_PSF2[eV]      EVB(E1-E2)", file=out_file)
     endif
 
     !initialise EVB potential
@@ -188,7 +188,7 @@ program extract_EVB
 
        !if not append_output, we want to print time=0, too
        if (.not.append_output .and. iframe==0) then
-          write (UNIT=output_lines(1),FMT="(I8,F13.3,3F13.8)") &
+          write (UNIT=output_lines(1),FMT="(I8,F13.3,3F18.8)") &
                  step_nr, time_passed, energy1, energy2, (energy1-energy2)
           call print(output_lines(1),file=out_file)
           output_lines(1) = ""
@@ -197,7 +197,7 @@ program extract_EVB
        endif
 
        !printing into buffer
-       write (UNIT=output_lines(lines_used+1),FMT="(I8,F13.3,3F13.8)") &
+       write (UNIT=output_lines(lines_used+1),FMT="(I8,F13.3,3F18.8)") &
               step_nr, time_passed, energy1, energy2, (energy1-energy2)
        lines_used = lines_used + 1
 
