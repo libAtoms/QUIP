@@ -270,7 +270,7 @@
           endif
           !force
           f = 0.5_dp * (my_f_1(1:size(f, 1),1:size(f, 2)) + my_f_2(1:size(f, 1),1:size(f, 2))) - &
-              0.5_dp * (my_f_1(1:size(f, 1),1:size(f, 2)) - my_f_2(1:size(f, 1),1:size(f, 2)) + 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+              0.5_dp * (my_e_1 - my_e_2)*(my_f_1(1:size(f, 1),1:size(f, 2)) - my_f_2(1:size(f, 1),1:size(f, 2)) - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
        endif
     endif
 
