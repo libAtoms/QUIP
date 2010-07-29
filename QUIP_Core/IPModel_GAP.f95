@@ -126,6 +126,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   type(IPModel_GAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(mpi_context), intent(in), optional :: mpi
+  type(Dictionary) :: params
 
   call Finalise(this)
 
@@ -137,11 +138,19 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
   call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP')
 #endif
   
+  call initialise(params)
+  this%label=''
+
+  call param_register(params, 'label', '', this%label)
+  if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Initialise_str args_str')) &
+  call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
+  call finalise(params)
+
   call IPModel_GAP_read_params_xml(this, param_str)
 
 #ifdef HAVE_GP
   !call gp_read_binary(this%my_gp, this%datafile)
-  call gp_read_xml(this%my_gp, param_str)
+  call gp_read_xml(this%my_gp, param_str,label=this%label)
 
 
   if (trim(this%coordinates) == 'qw') then
@@ -707,7 +716,6 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
      parse_in_ip_done = .false.
      parse_matched_label = .false.
      parse_ip => this
-     parse_ip%label = ""
 
      call open_xml_string(fxml, param_str)
      call parse(fxml,  &
