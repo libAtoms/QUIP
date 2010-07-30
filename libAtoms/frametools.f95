@@ -66,7 +66,7 @@ subroutine atoms_mark(this, mark_f, f_i_data, f_r_data)
   nullify(mark)
   if (.not. assign_pointer(this, "mark", mark)) then
     call add_property(this, "mark", 0)
-    dummy = atoms_assign_pointer(this, "mark", mark)
+    dummy = assign_pointer(this, "mark", mark)
   endif
   call print("associated(mark) " // associated(mark))
   call print("size(mark) " // size(mark))

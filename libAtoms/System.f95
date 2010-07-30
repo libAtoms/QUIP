@@ -2656,4 +2656,45 @@ contains
   end function reference_false
 #endif
 
+
+!% String to character array
+function s2a(s) result(a)
+  character(len=*), intent(in) :: s
+  character(len=1), dimension(len(s)) :: a
+
+  integer i
+  
+  do i=1,len(s)
+     a(i) = s(i:i)
+  end do
+
+end function s2a
+
+!% Character array to string
+function a2s(a) result(s)
+  character(len=1), dimension(:), intent(in) :: a
+  character(len=size(a)) :: s
+
+  integer i
+
+  do i=1,size(a)
+     s(i:i) = a(i)
+  end do
+  
+end function a2s
+
+!% String to padded character array of length l
+function pad(s,l) result(a)
+  character(len=*), intent(in) :: s
+  integer, intent(in) :: l
+  character(len=1), dimension(l) :: a
+
+  integer i
+
+  a = ' '
+  do i=1,min(len(s),size(a))
+     a(i) = s(i:i)
+  end do
+end function pad
+
 end module system_module

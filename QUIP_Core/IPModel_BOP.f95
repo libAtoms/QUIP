@@ -131,7 +131,6 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), allocatable, dimension(:,:) :: f_bop
 !   real(dp), allocatable, dimension(:)   :: local_e_bop 
    integer, allocatable, dimension(:)    :: map_tobop
-   type(InOutput)                  :: out_bop
    type(Atoms)                     :: at_bop   !Active + buffer atoms
    type(Atoms)                     :: at_tmp   
    real(dp)                        :: e_bop
@@ -201,9 +200,12 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    if(lreplicate_cell) then
       nsafe = 1
       call print("Replicate cell : "//nreplicate_x//" "// nreplicate_y //" "// nreplicate_z, PRINT_NERD)
-      call supercell_minus_plus(at_bop, at_tmp, nreplicate_x, nsafe, nsafe)
-      call supercell_minus_plus(at_tmp, at_bop, nsafe, nreplicate_y, nsafe)
-      call supercell_minus_plus(at_bop, at_tmp, nsafe, nsafe,nreplicate_z)
+!      call supercell_minus_plus(at_bop, at_tmp, nreplicate_x, nsafe, nsafe)
+!      call supercell_minus_plus(at_tmp, at_bop, nsafe, nreplicate_y, nsafe)
+!      call supercell_minus_plus(at_bop, at_tmp, nsafe, nsafe,nreplicate_z)
+      call supercell(at_bop, at_tmp, nreplicate_x, nsafe, nsafe)
+      call supercell(at_tmp, at_bop, nsafe, nreplicate_y, nsafe)
+      call supercell(at_bop, at_tmp, nsafe, nsafe,nreplicate_z)
    elseif(lpbc) then
       call print ("Periodic boundary condition applied", PRINT_NERD)
       call IPModel_BOP_compute_buffer(this,at,at_bop)
@@ -289,9 +291,11 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
 !     if (.not. assign_pointer(at_bop, 'local_energy', local_energy)) &
 !         call system_abort('local_energy: failed to assign pointer to local_bop')
 !     local_energy(1:this%n) = local_e_bop(1:this%n)
-     call initialise(out_bop, "bop_cell.xyz", OUTPUT)
-     call print_xyz(at_bop, out_bop, properties='pos:active:original_cell:map:forces_bop')
-     call finalise(out_bop)
+     call write(at_bop, "bop_cell.xyz", properties=(/'pos          ', &
+                                                     'active       ', &
+                                                     'original_cell', &
+                                                     'map          ', &
+                                                     'forces_bop   '/))
    endif
 
    if(present(f)) then
@@ -673,70 +677,70 @@ function pos_j(at, j, shift)
   
 end function pos_j
 
-  subroutine supercell_minus_plus(aa, a, n1, n2, n3)
-    type(Atoms), intent(out)::aa  !% Output (big) cell
-    type(Atoms), intent(in)::a    !% Input cell
-    integer, intent(inout)::n1, n2, n3
-    real(dp)::lattice(3,3), p(3)
-    integer::i,j,k,n
-    type(Table) :: big_data
-    integer     :: nn1, n1save, n2save, n3save
-    integer, pointer, dimension(:)  :: map_new, map
-
-    n1save = n1
-    n2save = n2
-    n3save = n3
-    n1 = 2 * n1 - 1
-    n2 = 2 * n2 - 1
-    n3 = 2 * n3 - 1
-    
-    call allocate(big_data,a%data%intsize,a%data%realsize,&
-         a%data%strsize, a%data%logicalsize, a%N*n1*n2*n3)
-
-    ! Replicate atomic data n1*n2*n3 times
-    do i=1,n1*n2*n3
-       call append(big_data,a%data)
-    end do
-
-    lattice(:,1) = a%lattice(:,1)*n1save
-    lattice(:,2) = a%lattice(:,2)*n2save
-    lattice(:,3) = a%lattice(:,3)*n3save
-    call atoms_initialise(aa, a%N*n1*n2*n3, lattice, data=big_data, properties=a%properties)
-    if (a%use_uniform_cutoff) then
-       call set_cutoff(aa, a%cutoff)
-    else
-       call set_cutoff_factor(aa, a%cutoff)
-    end if
-
-   if (.not. assign_pointer(a, 'map', map)) &
-       call system_abort('active pointer assignment failed')
-   if (.not. assign_pointer(aa, 'map', map_new)) &
-       call system_abort('active pointer assignment failed')
-
-    nn1 = 0
-    do i = 0,n1save-1
-       do j = 0,n2save-1
-          do k = 0,n3save-1
-             p = a%lattice .mult. (/i,j,k/)
-             do n = 1,a%N
-                ! overwrite position with shifted pos
-                nn1 = nn1 +  1
-                aa%pos(:,nn1) = a%pos(:,n)+p
-                map_new(nn1) = map(n) 
-             end do
-             if(i.eq.0.and.j.eq.0.and.k.eq.0) cycle
-             do n = 1,a%N
-                ! overwrite position with shifted pos
-                nn1 = nn1 +  1
-                aa%pos(:,nn1) = a%pos(:,n)-p
-                map_new(nn1) = map(n) 
-             end do
-          end do
-       end do
-    end do
-
-    call finalise(big_data)
-
-  end subroutine supercell_minus_plus
+!!$  subroutine supercell_minus_plus(aa, a, n1, n2, n3)
+!!$    type(Atoms), intent(out)::aa  !% Output (big) cell
+!!$    type(Atoms), intent(in)::a    !% Input cell
+!!$    integer, intent(inout)::n1, n2, n3
+!!$    real(dp)::lattice(3,3), p(3)
+!!$    integer::i,j,k,n
+!!$    type(Table) :: big_data
+!!$    integer     :: nn1, n1save, n2save, n3save
+!!$    integer, pointer, dimension(:)  :: map_new, map
+!!$
+!!$    n1save = n1
+!!$    n2save = n2
+!!$    n3save = n3
+!!$    n1 = 2 * n1 - 1
+!!$    n2 = 2 * n2 - 1
+!!$    n3 = 2 * n3 - 1
+!!$    
+!!$    call allocate(big_data,a%data%intsize,a%data%realsize,&
+!!$         a%data%strsize, a%data%logicalsize, a%N*n1*n2*n3)
+!!$
+!!$    ! Replicate atomic data n1*n2*n3 times
+!!$    do i=1,n1*n2*n3
+!!$       call append(big_data,a%data)
+!!$    end do
+!!$
+!!$    lattice(:,1) = a%lattice(:,1)*n1save
+!!$    lattice(:,2) = a%lattice(:,2)*n2save
+!!$    lattice(:,3) = a%lattice(:,3)*n3save
+!!$    call atoms_initialise(aa, a%N*n1*n2*n3, lattice, data=big_data, properties=a%properties)
+!!$    if (a%use_uniform_cutoff) then
+!!$       call set_cutoff(aa, a%cutoff)
+!!$    else
+!!$       call set_cutoff_factor(aa, a%cutoff)
+!!$    end if
+!!$
+!!$   if (.not. assign_pointer(a, 'map', map)) &
+!!$       call system_abort('active pointer assignment failed')
+!!$   if (.not. assign_pointer(aa, 'map', map_new)) &
+!!$       call system_abort('active pointer assignment failed')
+!!$
+!!$    nn1 = 0
+!!$    do i = 0,n1save-1
+!!$       do j = 0,n2save-1
+!!$          do k = 0,n3save-1
+!!$             p = a%lattice .mult. (/i,j,k/)
+!!$             do n = 1,a%N
+!!$                ! overwrite position with shifted pos
+!!$                nn1 = nn1 +  1
+!!$                aa%pos(:,nn1) = a%pos(:,n)+p
+!!$                map_new(nn1) = map(n) 
+!!$             end do
+!!$             if(i.eq.0.and.j.eq.0.and.k.eq.0) cycle
+!!$             do n = 1,a%N
+!!$                ! overwrite position with shifted pos
+!!$                nn1 = nn1 +  1
+!!$                aa%pos(:,nn1) = a%pos(:,n)-p
+!!$                map_new(nn1) = map(n) 
+!!$             end do
+!!$          end do
+!!$       end do
+!!$    end do
+!!$
+!!$    call finalise(big_data)
+!!$
+!!$  end subroutine supercell_minus_plus
 
 end module IPModel_BOP_module

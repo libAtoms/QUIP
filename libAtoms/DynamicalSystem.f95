@@ -163,7 +163,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,rigidbodies)
+   subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,rigidbodies,error)
    
       type(DynamicalSystem),              intent(inout) :: this
       type(Atoms),                        intent(in)    :: atoms_in
@@ -172,9 +172,12 @@ contains
       integer,                  optional, intent(in)    :: constraints
       integer,                  optional, intent(in)    :: rigidbodies
       integer                                           :: i,N
+      integer, intent(out), optional :: error
       
-      ! Check to see if the object has already been initialised
 
+      INIT_ERROR(error)
+
+      ! Check to see if the object has already been initialised
       if (this%initialised) call ds_finalise(this)  
 
       N = atoms_in%N
@@ -183,8 +186,7 @@ contains
       ! Check the atomic numbers
       do i = 1, atoms_in%N
          if (atoms_in%Z(i) < 1) then
-            write(line,'(a,i0,a)')'DS_Initialise: Atom ',i,' has not had its atomic number set'
-            call system_abort(line)
+            RAISE_ERROR('DS_Initialise: Atom '//i//' has not had its atomic number set', error)
          end if
       end do
 
@@ -196,9 +198,7 @@ contains
       this%atoms = atoms_in
 
       ! Add properties for the dynamical variables to this%atoms if they don't
-      ! already exist. This will update pointers in this%atoms so we can use 
-      ! this%atoms%velo etc. afterwards.
-
+      ! already exist
       call add_property(this%atoms, 'mass', ElementMass(this%atoms%Z))
       call add_property(this%atoms, 'travel', 0, n_cols=3)
 
@@ -212,16 +212,21 @@ contains
       call add_property(this%atoms, 'avgpos', 0.0_dp, n_cols=3)
       call add_property(this%atoms, 'oldpos', 0.0_dp, n_cols=3)
 
+      ! Update pointers in this%atoms so we can use this%atoms%velo etc.
+      call atoms_repoint(this%atoms)
+
       ! The input arrays must have 3N components if they are present
       ! if not, local arrays are set to zero
       
       if(present(velocity)) then 
-         call check_size('Velocity',velocity,(/3,N/),'DS_Initialise')
+         call check_size('Velocity',velocity,(/3,N/),'DS_Initialise',error)
+         PASS_ERROR(error)
          this%atoms%velo = velocity
       end if
 
       if(present(acceleration)) then
-         call check_size('Acceleration',acceleration,(/3,N/),'DS_Initialise')
+         call check_size('Acceleration',acceleration,(/3,N/),'DS_Initialise',error)
+         PASS_ERROR(error)
          this%atoms%acc = acceleration
       end if
 
@@ -471,16 +476,19 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_add_atom_single(this,z,mass,p,v,a,t)
+   subroutine ds_add_atom_single(this,z,mass,p,v,a,t, error)
      
      type(DynamicalSystem),            intent(inout) :: this
      integer,                          intent(in)    :: z
      real(dp), optional,               intent(in)    :: mass
      real(dp), optional, dimension(3), intent(in)    :: p,v,a
      integer,  optional, dimension(3), intent(in)    :: t
+     integer, optional, intent(out) :: error
 
      real(dp) :: my_mass, my_p(3), my_v(3), my_a(3)
      integer :: my_t(3)
+
+     INIT_ERROR(error)
           
      my_mass = optional_default(ElementMass(Z),mass) 
      my_p = optional_default((/0.0_dp,0.0_dp,0.0_dp/),p)
@@ -492,48 +500,43 @@ contains
                                reshape(my_p, (/3,1/)), &
                                reshape(my_v, (/3,1/)), &
                                reshape(my_a, (/3,1/)), &
-                               reshape(my_t, (/3,1/)))
+                               reshape(my_t, (/3,1/)), error)
+     PASS_ERROR(error)
 
    end subroutine ds_add_atom_single
  
    !
    ! Updated to work with groups. NEEDS TESTING
    !
-   subroutine ds_add_atom_multiple(this,z,mass,p,v,a,t,data)
+   subroutine ds_add_atom_multiple(this,z,mass,p,v,a,t,error)
      
      type(DynamicalSystem),              intent(inout) :: this
      integer,  dimension(:),             intent(in)    :: z
      real(dp), dimension(:),   optional, intent(in)    :: mass
      real(dp), dimension(:,:), optional, intent(in)    :: p,v,a
      integer, dimension(:,:),  optional, intent(in)    :: t
-     type(table),              optional, intent(in)    :: data
+     integer, optional, intent(out) :: error
      
      integer                                 :: oldN, newN, n, f, i
      integer,     dimension(this%N)          :: tmp_group_lookup
      type(Group), dimension(:), allocatable  :: tmp_group
      
+     INIT_ERROR(ERROR)
+
      oldN = this%N
 
      ! Check the sizes are ok
-     if (present(data)) then
+     n = size(z)
+     call check_size('Position',p,(/3,n/),'DS_Add_Atoms',error) 
+     PASS_ERROR(error)
 
-        n = data%N
-        newN = oldN + n
+     call check_size('Velocity',v,(/3,n/),'DS_Add_Atoms', error) 
+     PASS_ERROR(error)
 
-        if (this%atoms%data%intsize /= data%intsize) &
-             call system_abort('Add_Atoms: this%data%intsize /= data%intsize')
-        if (this%atoms%data%realsize /= data%realsize) &
-             call system_abort('Add_Atoms: this%data%realsize /= data%realsize')
-     else        
+     call check_size('Acceleration',a,(/3,n/),'DS_Add_Atoms', error) 
+     PASS_ERROR(error)
 
-        n = size(z)
-        call check_size('Position',p,(/3,n/),'DS_Add_Atoms') 
-        call check_size('Velocity',v,(/3,n/),'DS_Add_Atoms') 
-        call check_size('Acceleration',a,(/3,n/),'DS_Add_Atoms') 
-        
-        newN = oldN + n
-
-     end if       
+     newN = oldN + n
      
      !Copy all non-scalar data into the temps
      tmp_group_lookup = this%group_lookup
@@ -543,7 +546,7 @@ contains
      allocate(this%group_lookup(newN))
      
      ! Implement the changes in Atoms
-     call add_atoms(this%atoms,pos=p,Z=z,mass=mass,velo=v,acc=a,travel=t,data=data)
+     call add_atoms(this%atoms,pos=p,Z=z,mass=mass,velo=v,acc=a,travel=t)
      
      !update the scalars (if needed)
      this%N = newN
@@ -577,24 +580,30 @@ contains
    end subroutine ds_add_atom_multiple
 
 
-   subroutine ds_remove_atom_single(this,i)
+   subroutine ds_remove_atom_single(this,i,error)
 
       type(DynamicalSystem), intent(inout) :: this
       integer,               intent(in)    :: i
+      integer, intent(out), optional       :: error
 
-      call ds_remove_atom_multiple(this,(/i/))
+      INIT_ERROR(error)
+      call ds_remove_atom_multiple(this,(/i/),error)
+      PASS_ERROR(error)
 
    end subroutine ds_remove_atom_single
 
 
 
-   subroutine ds_remove_atom_multiple(this,atomlist_in)
+   subroutine ds_remove_atom_multiple(this,atomlist_in,error)
 
       type(DynamicalSystem),  intent(inout)    :: this
       integer,  dimension(:), intent(in)       :: atomlist_in
+      integer, intent(out), optional           :: error
 
       integer,  dimension(size(atomlist_in))   :: atomlist
       integer                                  :: oldN, newN, g, i, copysrc
+
+      INIT_ERROR(error)
 
       !Make our own copy of the indices so that we can sort them
       atomlist = atomlist_in
@@ -603,13 +612,11 @@ contains
       !Check for repeated indices, and non-TYPE_ATOM atoms
       do i = 1, size(atomlist)
          if (Atom_Type(this,atomlist(i)) /= TYPE_ATOM) then
-            write(line,'(a,i0,a)')'Remove_Atoms: Atom ',atomlist(i),' is not a normal atom'
-            call system_abort(line)
+            RAISE_ERROR('Remove_Atoms: Atom '//atomlist(i)//' is not a normal atom', error)
          end if
          if (i > 1) then
             if (atomlist(i) == atomlist(i-1)) then
-               write(line,'(a,i0,a)')'Remove_Atoms: Tried to remove the same atom twice (',atomlist(i),')'
-               call system_abort(line)
+               RAISE_ERROR('Remove_Atoms: Tried to remove the same atom twice ('//atomlist(i)//')', error)
             end if
          end if
       end do
@@ -975,7 +982,15 @@ contains
      real(dp), intent(in) :: velo(:,:)
      real(dp) :: ke
 
-     ke = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
+     integer i, N
+
+     N = size(mass)
+
+     ke = 0.0_dp
+     do i = 1,N
+        ke = ke + kinetic_energy(mass(i), velo(1:3,i))
+     end do
+     ke = 0.5_dp * ke      
    end function arrays_kinetic_energy
 
    pure function torque(pos, force, origin) result(tau)

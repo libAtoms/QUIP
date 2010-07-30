@@ -2140,7 +2140,6 @@ contains
     type(Atoms), intent(out) :: bulk
 
     real(dp) :: a, shift, uij(3), ydiff, mindiff, minabsy
-    type(inoutput) :: infile
     type(Atoms) :: crack_layer
     real (dp), dimension(3,3) :: axes, lattice
     integer :: i, atom1, atom2, n, j, nx, ny
@@ -2218,9 +2217,8 @@ contains
           bulk = graphene_cubic(a)
 
           if (trim(params%crack_slab_filename).ne.'') then
-             call Initialise(infile, trim(params%crack_slab_filename))
              call print('Reading atoms from input file')
-             call read_xyz(crack_slab, infile)
+             call read(crack_slab, trim(params%crack_slab_filename))
           else
              call graphene_slab(crack_layer, a, params%crack_graphene_theta, &
                   params%crack_width, params%crack_height)
@@ -2358,9 +2356,8 @@ contains
           call Print('')
 
           if (trim(params%crack_slab_filename).ne.'') then
-             call Initialise(infile, trim(params%crack_slab_filename))
              call print('Reading atoms from input file')
-             call read_xyz(crack_slab, infile)
+             call read(crack_slab, trim(params%crack_slab_filename))
           else
              call slab(crack_layer, axes, width=params%crack_width, height=params%crack_height, nz=1, atnum=params%crack_z, &
                   lat_type=trim(params%crack_structure), a=a, c=params%crack_lattice_c, u=params%crack_lattice_u, &

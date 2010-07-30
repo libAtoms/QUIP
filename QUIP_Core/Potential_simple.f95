@@ -314,7 +314,6 @@ contains
     integer, pointer :: cut_bonds_p(:,:)
     integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
-    character(len=256) :: prefix_save
     real(dp), pointer :: force_ptr(:,:), df_ptr(:,:), local_e_ptr(:)
     real(dp), pointer :: e_ptr, virial_ptr(:,:)
     real(dp), target :: my_e, my_virial(3,3)
@@ -425,10 +424,8 @@ contains
                dummy = assign_pointer(at, 'weight_region1', weight_region1)
 
 	  if (current_verbosity() >= PRINT_NERD) then
-	    prefix_save = mainlog%prefix
-	    mainlog%prefix="LITTLE_CLUSTER_"//i
-	    call print_xyz(cluster, mainlog, all_properties=.true.)
-	    mainlog%prefix=prefix_save
+            ! prefix should be LITTLE_CLUSTER
+	    call write(cluster, 'stdout')
 	  endif
           call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
 
@@ -490,10 +487,8 @@ contains
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
-	   prefix_save = mainlog%prefix
-	   mainlog%prefix="CLUSTER"
-	   call print_xyz(cluster, mainlog, all_properties=.true.)
-	   mainlog%prefix=prefix_save
+           ! prefix should be CLUSTER
+	   call write(cluster, 'stdout')
 	 endif
 	 if (.not. assign_pointer(cluster, 'index', cluster_index)) then
 	      RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
@@ -601,10 +596,8 @@ contains
 	 end do
 	 call finalise(cut_bonds)
 	 if (current_verbosity() >= PRINT_ANAL) then
-	   prefix_save = mainlog%prefix
-	   mainlog%prefix="UNCARVED_CLUSTER"
-	   call print_xyz(at, mainlog, all_properties=.true.)
-	   mainlog%prefix=prefix_save
+	   ! prefix should be "UNCARVED_CLUSTER"
+	   call write(at, 'stdout')
 	 endif
 	 call calc(this, at, f=f, args_str=new_args_str, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)

@@ -23,17 +23,17 @@ from quippytest import *
 
 class TestAtoms_LowLevel(QuippyTestCase):
    def setUp(self):
-      self.properties = {'pos'    : (PROPERTY_REAL, 1, 3),
-                         'Z'      : (PROPERTY_INT,  1, 1),
-                         'species': (PROPERTY_STR,  1, 1)}
+      self.properties = Dictionary()
 
-      self.data = Table(1,3,1,0)
-      self.data.append(blank_rows=10)
-      self.data.int[1,:] = 14
-      self.data.str[:,1,:] = padded_str_array(['Si']*10, 10)
-      self.data.real[1:3,:] = 0.0
+      {'pos'    : (PROPERTY_REAL, 1, 3),
+       'Z'      : (PROPERTY_INT,  1, 1),
+       'species': (PROPERTY_STR,  1, 1)}
 
-      self.at = Atoms(n=10, lattice=10.0*fidentity(3), properties=self.properties, data=self.data)
+      self.properties['pos'] = fzeros((3,10))
+      self.properties['Z'] = [14]*10
+      self.properties['species'] = s2a(['Si']*10, 10)
+      
+      self.at = Atoms(n=10, lattice=10.0*fidentity(3), properties=self.properties)
       self.at_def = Atoms(n=10, lattice=10.0*fidentity(3))
 
       self.dia = diamond(5.44, 14)
@@ -66,9 +66,6 @@ class TestAtoms_LowLevel(QuippyTestCase):
             self.assertArrayAlmostEqual(params[k], self.at.params[k])
          else:
             self.assertEqual(params[k], self.at.params[k])
-
-   def test_data(self):
-      self.assertEqual(self.at.data, self.data)
 
    def test_z(self):
       self.assert_((self.at.z == 14).all())
@@ -234,9 +231,9 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.assertArrayAlmostEqual([self.at.mass[-2], self.at.mass[-1]], [10.0, 10.0])
 
    def test_remove_atoms_1(self):
-      cp = self.at.copy()
+      cp = self.dia.copy()
       cp.remove_atoms(1)
-      self.assertEqual(cp[1], self.at[10])
+      self.assertEqual(cp[1], self.dia[8])
 
    def test_remove_atoms_2(self):
       cp1 = self.dia.copy()

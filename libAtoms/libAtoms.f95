@@ -60,7 +60,7 @@ module libAtoms_module
   use frametools_module
   use nye_tensor_module
   use clusters_module
-  use Topology_module
+!  use Topology_module
   use cinoutput_module
   use atoms_ll_module
   use ringstat_module

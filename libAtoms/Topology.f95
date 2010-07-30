@@ -55,7 +55,7 @@ module topology_module
                                      parse_string, read_line, &
                                      PRINT_ALWAYS, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANAL, &
                                      operator(//), allocatable_array_pointers, &
-				     verbosity_push, verbosity_pop
+				     verbosity_push, verbosity_pop, a2s, pad, s2a
 #ifndef HAVE_QUIPPY
   use system_module,           only: system_abort
 #endif
@@ -69,7 +69,7 @@ module topology_module
 
   private :: next_motif, write_psf_section, create_bond_list, write_pdb_file
   private :: create_angle_list, create_dihedral_list
-  private :: create_improper_list, get_property
+  private :: create_improper_list
   private :: create_pos_dep_charges, calc_fc
 
   public  :: delete_metal_connects, &
@@ -210,12 +210,9 @@ contains
     character(4), allocatable, dimension(:) :: at_names, at_names_PDB
     real(dp),     allocatable, dimension(:) :: at_charges
     logical                              :: my_do_charmm
-    integer                              :: atom_type_index, &
-                                            atom_type_PDB_index, &
-                                            atom_res_name_index, &
-                                            atom_mol_name_index, &
-                                            atom_res_number_index, &
-                                            atom_charge_index
+    character, dimension(:,:), pointer   :: atom_type, atom_type_PDB, atom_res_name, atom_mol_name
+    integer, dimension(:), pointer       :: atom_res_number
+    real(dp), dimension(:), pointer      :: atom_charge_ptr
     logical                              :: ex
     type(extendable_str)                 :: residue_library
     integer                              :: i_impr, n_impr
@@ -516,36 +513,26 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     end if
 
    ! add data to store CHARMM topology
-    call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_type_PDB',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH))
-    call add_property(at,'atom_res_number',0)
-    call add_property(at,'atom_charge',0._dp)
+    call add_property(at,'atom_type',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_type)
+    call add_property(at,'atom_type_PDB',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_type_PDB)
+    call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_res_name)
+    call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_mol_name)
+    call add_property(at,'atom_res_number',0, ptr=atom_res_number)
+    call add_property(at,'atom_charge',0._dp, ptr=atom_charge_ptr)
 
-    atom_type_index = get_property(at,'atom_type')
-    atom_type_PDB_index = get_property(at,'atom_type_PDB')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
+    atom_type(1,1:at%N) = 'X'
+    atom_type_PDB(1,1:at%N) = 'X'
+    atom_res_name(1,1:at%N) = 'X'
+    atom_mol_name(1,1:at%N) = 'X'
+    atom_res_number(1:at%N) = 0
+    atom_charge_ptr(1:at%N) = 0._dp
 
-    at%data%str(atom_type_index,1:at%N) = 'X'
-    at%data%str(atom_type_PDB_index,1:at%N) = 'X'
-    at%data%str(atom_res_name_index,1:at%N) = 'X'
-    at%data%str(atom_mol_name_index,1:at%N) = 'X'
-    at%data%int(atom_res_number_index,1:at%N) = 0
-    at%data%real(atom_charge_index,1:at%N) = 0._dp
-
-    at%data%str(atom_res_name_index,1:at%N) = cha_res_name(residue_type%int(1,residue_number(1:at%N)))
-    at%data%int(atom_res_number_index,1:at%N) = residue_number(1:at%N)
-    !NB workaround for pgf90 bug (as of 9.0-1)
-    ! at%data%str(atom_type_index,1:at%N) = adjustl(atom_name(1:at%N))
     do i=1, at%N
-      at%data%str(atom_type_index,i) = adjustl(atom_name(i))
-      at%data%str(atom_type_PDB_index,i) = adjustl(atom_name_PDB(i))
+       atom_res_name(:,i) = pad(cha_res_name(residue_type%int(1,residue_number(i))), TABLE_STRING_LENGTH)
+       atom_res_number(i) = residue_number(i)
+       atom_type(:,i) = pad(adjustl(atom_name(i)), TABLE_STRING_LENGTH)
+       atom_type_PDB(:,i) = pad(adjustl(atom_name_PDB(i)), TABLE_STRING_LENGTH)
     end do
-    !NB end of workaround for pgf90 bug (as of 9.0-1)
 
     if (my_do_charmm) then
        allocate(molecules(at%N))
@@ -554,34 +541,38 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 	 if (allocated(molecules(i)%i_a)) then
            ! special case for silica molecule
            if (silica_potential .and. count(at%Z(molecules(i)%i_a) == 14) /=0) then
-	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
+	     atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
 	   ! special case for single atoms
 	   elseif (size(molecules(i)%i_a) == 1) then
-	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
+             atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
 	   ! special case for H2O
 	   else if (size(molecules(i)%i_a) == 3) then
 	     if (count(at%Z(molecules(i)%i_a) == 8) == 1 .and. &
 	         count(at%Z(molecules(i)%i_a) == 1) == 2) then
-	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = at%data%str(atom_res_name_index,molecules(i)%i_a)
+	       atom_mol_name(:,molecules(i)%i_a) = atom_res_name(:,molecules(i)%i_a)
 	     else ! default
 call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
-	       at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
+               do j=1,size(molecules(i)%i_a)
+                  atom_mol_name(:,j) = pad("M"//i, TABLE_STRING_LENGTH)
+               end do
 	     endif
 	   else ! default
 call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
-	     at%data%str(atom_mol_name_index,molecules(i)%i_a) = "M"//i
+             do j=1,size(molecules(i)%i_a)
+                atom_mol_name(:,j) = pad("M"//i, TABLE_STRING_LENGTH)
+             end do
 	   endif
 	 end if ! allocated(molecules)
        end do ! i=1,size(molecules)
        deallocate(molecules)
-       at%data%real(atom_charge_index,1:at%N) = atom_charge(1:at%N)
+       atom_charge_ptr(1:at%N) = atom_charge(1:at%N)
     endif
 
-    if (any(at%data%int(atom_res_number_index,1:at%N).le.0)) &
+    if (any(atom_res_number(1:at%N).le.0)) &
        call system_abort('create_residue_labels_pos: atom_res_number is not >0 for every atom')
-    if (any(at%data%str(atom_type_index,1:at%N).eq.'X')) &
+    if (any(atom_type(1,1:at%N).eq.'X')) &
        call system_abort('create_residue_labels_pos: atom_type is not saved for at least one atom')
-    if (any(at%data%str(atom_res_name_index,1:at%N).eq.'X')) &
+    if (any(atom_res_name(1,1:at%N).eq. 'X')) &
        call system_abort('create_residue_labels_pos: atom_res_name is not saved for at least one atom')
 
     !Free up allocations
@@ -791,11 +782,9 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(103)           :: sor !Brookhaven only uses 88
     integer                  :: mm
     character(4)             :: QM_prefix_atom_mol_name
-    integer                  :: atom_type_index, &
-                                atom_res_name_index, &
-                                atom_mol_name_index, &
-                                atom_res_number_index, &
-                                atom_charge_index
+    character, dimension(:,:), pointer   :: atom_type, atom_res_name, atom_mol_name
+    integer, dimension(:), pointer       :: atom_res_number
+    real(dp), dimension(:), pointer      :: atom_charge
     character(len=1024)      :: my_run_type_string
     real(dp)                 :: cell_lengths(3), cell_angles(3)
 
@@ -818,18 +807,23 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
 !       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
 !    endif
-    atom_type_index = get_property(at,'atom_type_PDB')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
 
+    if (.not. assign_pointer(at, 'atom_type_PDB', atom_type)) &
+         call system_abort('Cannot assign pointer to "atom_type_PDB" property.')
+    if (.not. assign_pointer(at, 'atom_res_name', atom_res_name)) &
+         call system_abort('Cannot assign pointer to "atom_res_name" property.')
+    if (.not. assign_pointer(at, 'atom_mol_name', atom_mol_name)) &
+         call system_abort('Cannot assign pointer to "atom_mol_name" property.')
+    if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) &
+         call system_abort('Cannot assign pointer to "atom_res_numer" property.')
+    if (.not. assign_pointer(at, 'atom_charge', atom_charge)) &
+         call system_abort('Cannot assign pointer to "atom_charge" property.')
 
     do mm=1,at%N
       ! e.g. CP2K needs different name for QM molecules, if use isolated atoms
        sor = ''
        QM_prefix_atom_mol_name = ''
-       QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
+       QM_prefix_atom_mol_name = trim(a2s(atom_mol_name(:,mm)))
 !does not work for contiguous molecules, e.g. silica
 !!!       if ((trim(run_type_string).eq.'QMMM_CORE') .or. &
 !!!           (trim(run_type_string).eq.'QMMM_EXTENDED')) then
@@ -840,8 +834,8 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !!!       endif
 !             call print('molecule '//QM_prefix_atom_mol_name)
 !       call print('writing PDB file: atom type '//at%data%str(atom_type_index,mm))
-       write(sor,trim(pdb_format)) 'ATOM  ',mm,at%data%str(atom_type_index,mm),at%data%str(atom_res_name_index,mm),at%data%int(atom_res_number_index,mm), &
-                             at%pos(1:3,mm),0._dp,0._dp,QM_prefix_atom_mol_name,ElementName(at%Z(mm)),at%data%real(atom_charge_index,mm)
+       write(sor,trim(pdb_format)) 'ATOM  ',mm,trim(a2s(atom_type(:,mm))),trim(a2s(atom_res_name(:,mm))),atom_res_number(mm), &
+                             at%pos(1:3,mm),0._dp,0._dp,QM_prefix_atom_mol_name,ElementName(at%Z(mm)),atom_charge(mm)
 !                             at%pos(1:3,mm),0._dp,0._dp,this%atom_res_name(mm),ElementName(at%Z(mm)),this%atom_charge(mm)
        call print(sor,file=pdb)
     enddo
@@ -1004,12 +998,9 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(*), parameter :: int_format = 'I8'
     integer                 :: mm, i
     character(4)            :: QM_prefix_atom_mol_name
-    integer                 :: atom_type_index, &
-                               atom_type_PDB_index, &
-                               atom_res_name_index, &
-                               atom_mol_name_index, &
-                               atom_res_number_index, &
-                               atom_charge_index
+    character, dimension(:,:), pointer   :: atom_type, atom_type_PDB, atom_res_name, atom_mol_name
+    integer, dimension(:), pointer       :: atom_res_number
+    real(dp), dimension(:), pointer      :: atom_charge
     type(Table)             :: bonds
     type(Table)             :: angles
     type(Table)             :: dihedrals, impropers
@@ -1037,12 +1028,19 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !       if (trim(my_run_type_string).eq.'QMMM_EXTENDED') run_type=QMMM_RUN_EXTENDED
 !       if (trim(my_run_type_string).eq.'QMMM_CORE') run_type=QMMM_RUN_CORE
 !    endif
-    atom_type_index = get_property(at,'atom_type')
-    atom_type_PDB_index = get_property(at,'atom_type_PDB')
-    atom_res_name_index = get_property(at,'atom_res_name')
-    atom_mol_name_index = get_property(at,'atom_mol_name')
-    atom_res_number_index = get_property(at,'atom_res_number')
-    atom_charge_index = get_property(at,'atom_charge')
+    if (.not. assign_pointer(at, 'atom_type', atom_type)) &
+         call system_abort('Cannot assign pointer to "atom_type" property.')
+    if (.not. assign_pointer(at, 'atom_type_PDB', atom_type_PDB)) &
+         call system_abort('Cannot assign pointer to "atom_type_PDB" property.')
+    if (.not. assign_pointer(at, 'atom_res_name', atom_res_name)) &
+         call system_abort('Cannot assign pointer to "atom_res_name" property.')
+    if (.not. assign_pointer(at, 'atom_mol_name', atom_mol_name)) &
+         call system_abort('Cannot assign pointer to "atom_mol_name" property.')
+    if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) &
+         call system_abort('Cannot assign pointer to "atom_res_numer" property.')
+    if (.not. assign_pointer(at, 'atom_charge', atom_charge)) &
+         call system_abort('Cannot assign pointer to "atom_charge" property.')
+
     call initialise(psf,trim(psf_file),action=OUTPUT)
     call print('   PSF file: '//trim(psf%filename))
 
@@ -1060,7 +1058,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     call print(sor,file=psf)
     do mm=1,at%N
        QM_prefix_atom_mol_name = ''
-       QM_prefix_atom_mol_name = trim(at%data%str(atom_mol_name_index,mm))
+       QM_prefix_atom_mol_name = trim(a2s(atom_mol_name(:,mm)))
 !does not work for contiguous molecules, e.g. silica
 !!!       if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
 !!!           (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
@@ -1071,9 +1069,9 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !!!       endif
 !       call print('molecule '//QM_prefix_atom_mol_name)
 !       call print('writing PSF file: atom type '//at%data%str(atom_type_index,mm))
-       write(sor,psf_format) mm, QM_prefix_atom_mol_name, at%data%int(atom_res_number_index,mm), &
-                     at%data%str(atom_res_name_index,mm),at%data%str(atom_type_PDB_index,mm),at%data%str(atom_type_index,mm), &
-                     at%data%real(atom_charge_index,mm),ElementMass(at%Z(mm))/MASSCONVERT,0
+       write(sor,psf_format) mm, QM_prefix_atom_mol_name, atom_res_number(mm), &
+                     trim(a2s(atom_res_name(:,mm))),trim(a2s(atom_type_PDB(:,mm))),trim(a2s(atom_type(:,mm))), &
+                     atom_charge(mm),ElementMass(at%Z(mm))/MASSCONVERT,0
        call print(sor,file=psf)
     enddo
     call print('',file=psf)
@@ -1230,7 +1228,7 @@ call print('PSF| '//impropers%n//' impropers')
 !  logical              :: do_qmmm
 !  integer,dimension(3) :: pos_indices
 !  integer              :: qm_flag_index
-  integer              :: atom_mol_name_index
+  character, pointer, dimension(:,:) :: atom_mol_name
   logical :: add_bond
 
     call system_timer('create_bond_list')
@@ -1238,7 +1236,8 @@ call print('PSF| '//impropers%n//' impropers')
 
     if (add_silica_23body) then
        if (at%cutoff.lt.SILICA_2body_CUTOFF) call system_abort('The connect cutoff '//at%cutoff//' is smaller than the required cutoff for silica. Cannot build connectivity to silica.')
-       atom_mol_name_index = get_property(at,'atom_mol_name')
+       if (.not. assign_pointer(at, 'atom_mol_name', atom_mol_name)) &
+            call system_abort('Cannot assign pointer to "atom_mol_name" property.')
     endif
     call initialise(bonds,2,0,0,0,0)
 
@@ -1276,12 +1275,12 @@ call print('PSF| '//impropers%n//' impropers')
              add_bond = .true.
 
              if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
-                if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).ne.'SIO2')) .or. &
-                     ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) ) then !silica -- something
+                if ( ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,i))).ne.'SIO2')) .or. &
+                     ((trim(a2s(atom_mol_name(:,atom_j))) .ne.'SIO2' .and. trim(a2s(atom_mol_name(:,i))).eq.'SIO2')) ) then !silica -- something
 !call system_abort('should have not got here')
                    !add only nearest neighbours
                    if (.not.(is_nearest_neighbour_abs_index(at,i,atom_j,alt_connect=alt_connect))) add_bond = .false.
-                elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,i)).eq.'SIO2')) then !silica -- silica
+                elseif  ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,i))).eq.'SIO2')) then !silica -- silica
                    !add atom pairs within SILICON_2BODY_CUTOFF
 !call system_abort('what not?')
                    if (.not.are_silica_2body_neighbours(at,i,atom_j,alt_connect=alt_connect)) add_bond = .false. !SILICON_2BODY_CUTOFF for Si-Si and Si-O, nearest neighbours otherwise(Si-H,O-O,O-H,H-H)
@@ -1414,15 +1413,16 @@ call print('PSF| '//impropers%n//' impropers')
   type(Table) :: atom_a, atom_b
   integer     :: atom_j, atom_1, atom_2
   logical     :: add_angle
-  integer     :: atom_type_index
-  integer     :: atom_mol_name_index
+  character, pointer, dimension(:,:) :: atom_mol_name, atom_type
 
     call system_timer('create_angle_list')
 
 
     if (add_silica_23body) then
-       atom_type_index = get_property(at,'atom_type') !different cutoff to define angles for different atom types
-       atom_mol_name_index = get_property(at,'atom_mol_name')
+       if (.not. assign_pointer(at, 'atom_type', atom_type)) &
+            call system_abort('Cannot assign pointer to "atom_type" property.')
+       if (.not. assign_pointer(at, 'atom_mol_name', atom_mol_name)) &
+            call system_abort('Cannot assign pointer to "atom_mol_name" property.')
     endif
 
     call initialise(angles,3,0,0,0,0)
@@ -1451,11 +1451,11 @@ call print('PSF| '//impropers%n//' impropers')
           add_angle = .true.
 
           if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
-             if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).ne.'SIO2')) .or. &
-                  ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) ) then !silica -- something
+             if ( ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_1))).ne.'SIO2')) .or. &
+                  ((trim(a2s(atom_mol_name(:,atom_j))) .ne.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_1))).eq.'SIO2')) ) then !silica -- something
                 !add only nearest neighbours
                 if (.not.(is_nearest_neighbour_abs_index(at,atom_1,atom_j,alt_connect=alt_connect))) add_angle = .false.
-             elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_1)).eq.'SIO2')) then !silica -- silica
+             elseif  ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_1))).eq.'SIO2')) then !silica -- silica
                 !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_1,atom_j,alt_connect=alt_connect)) add_angle = .false.
 
@@ -1502,11 +1502,11 @@ call print('PSF| '//impropers%n//' impropers')
           add_angle = .true.
 
           if (add_silica_23body) then ! do not include H2O -- SiO2 bonds
-             if ( ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).ne.'SIO2')) .or. &
-                  ((trim(at%data%str(atom_mol_name_index,atom_j)) .ne.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) ) then !silica -- something
+             if ( ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_2))).ne.'SIO2')) .or. &
+                  ((trim(a2s(atom_mol_name(:,atom_j))) .ne.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_2))).eq.'SIO2')) ) then !silica -- something
                 !add only nearest neighbours
                 if (.not.(is_nearest_neighbour_abs_index(at,atom_2,atom_j,alt_connect=alt_connect))) add_angle = .false.
-             elseif  ((trim(at%data%str(atom_mol_name_index,atom_j)) .eq.'SIO2' .and. trim(at%data%str(atom_mol_name_index,atom_2)).eq.'SIO2')) then !silica -- silica
+             elseif  ((trim(a2s(atom_mol_name(:,atom_j))) .eq.'SIO2' .and. trim(a2s(atom_mol_name(:,atom_2))).eq.'SIO2')) then !silica -- silica
                 !add atom pairs within SILICON_2BODY_CUTOFF
                 if (.not.are_silica_nearest_neighbours(at,atom_2,atom_j,alt_connect=alt_connect)) add_angle = .false.
 
@@ -1642,10 +1642,9 @@ call print('PSF| '//impropers%n//' impropers')
   integer, allocatable, dimension(:) :: count_array ! to count number of bonds
   integer               :: i,j, i_impr
   integer               :: last, tmp
-  integer               :: atom_res_name_index
-  integer               :: atom_type_index
   integer               :: i_pro, tmp_atoms(3)
   logical               :: reordered
+  character, dimension(:,:), pointer   :: atom_res_name, atom_type
 
     call system_timer('create_improper_list')
 
@@ -1657,12 +1656,12 @@ call print('PSF| '//impropers%n//' impropers')
     allocate (count_array(angles%N))
 
     do i = 1,at%N
-      if (.not.any(trim(at%species(i)).eq.(/'C','N'/))) cycle
+      if (.not.any(trim(a2s(at%species(:,i))).eq.(/'C','N'/))) cycle
       count_array = 0
       where (angles%int(2,1:angles%N).eq.i) count_array = 1
       if (sum(count_array(1:size(count_array))).ne.3) cycle
      ! only N with a neighbour that has 3 neighbors can stay
-      if (trim(at%species(i)).eq.'N') then
+      if (trim(a2s(at%species(:,i))).eq.'N') then
          cont = .false.
          !for the first X1-N-X2
          nn = find_in_array(angles%int(2,1:angles%N),i)
@@ -1707,9 +1706,13 @@ call print('PSF| '//impropers%n//' impropers')
 
 !VVV ORDER is done according to the topology file! - and is read in when finding motifs
 !if you don't do this, you won't have only the backbone impropers!
-      atom_res_name_index = get_property(at,'atom_res_name')
-      if (all(at%data%str(atom_res_name_index,imp_atoms(2:4)).eq.at%data%str(atom_res_name_index,imp_atoms(1)))) &
-         cycle ! these should be added when identifying the residues
+      if (.not. assign_pointer(at, 'atom_res_name', atom_res_name)) &
+           call system_abort('Cannot assign point to "atom_res_name" property.')
+      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
+          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
+          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
+          cycle  ! these should be added when identifying the residues
+
 !ORDER: check charmm.pot file - start with $i, end with  H or O or N, in this order -- for intraresidual residues this can be needed later on...
       reordered = .true.
       tmp = 0
@@ -1761,36 +1764,38 @@ call print('PSF| '//impropers%n//' impropers')
       endif
 
       !checking and adding only backbone (i.e. not intraresidual impropers) where the order of the 2nd and 3rd atoms doesn't matter
-      atom_res_name_index = get_property(at,'atom_res_name')
-      if (all(at%data%str(atom_res_name_index,imp_atoms(2:4)).eq.at%data%str(atom_res_name_index,imp_atoms(1)))) &
-         cycle ! these should be added when identifying the residues
+      if (trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(2)))) .and. &
+          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(3)))) .and. &
+          trim(a2s(atom_res_name(:,imp_atoms(1)))) .eq. trim(a2s(atom_res_name(:,imp_atoms(4))))) &
+          cycle  ! these should be added when identifying the residues
 
       if (.not.reordered) then
         ! Found N-C-CP1-CP3 Pro backbone, reordering according to atomic types (could be also according to the H neighbours)
 !         call print('|PRO Found Pro backbone')
-         atom_type_index = get_property(at,'atom_type')
-         if (trim(at%data%str(atom_type_index,imp_atoms(1))).ne.'N') call system_abort('something has gone wrong. what is this if not proline? '// &
-                     trim(at%data%str(atom_type_index,imp_atoms(1)))//imp_atoms(1)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(2)))//imp_atoms(2)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(3)))//imp_atoms(3)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(4)))//imp_atoms(4))
+         if (.not. assign_pointer(at, 'atom_type', atom_type)) &
+              call system_abort('Cannot assign pointer to "atom_type" property.')
+         if (trim(a2s(atom_type(:,imp_atoms(1)))).ne.'N') call system_abort('something has gone wrong. what is this if not proline? '// &
+                     trim(a2s(atom_type(:,imp_atoms(1))))//imp_atoms(1)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(2))))//imp_atoms(2)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(3))))//imp_atoms(3)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(4))))//imp_atoms(4))
          tmp_atoms = 0
          do i_pro = 2,4
-            if (trim(at%data%str(atom_type_index,imp_atoms(i_pro))).eq.'C')   tmp_atoms(1) = imp_atoms(i_pro)
-            if (trim(at%data%str(atom_type_index,imp_atoms(i_pro))).eq.'CP1') tmp_atoms(2) = imp_atoms(i_pro)
-            if (trim(at%data%str(atom_type_index,imp_atoms(i_pro))).eq.'CP3') tmp_atoms(3) = imp_atoms(i_pro)
+            if (trim(a2s(atom_type(:,imp_atoms(i_pro)))).eq.'C')   tmp_atoms(1) = imp_atoms(i_pro)
+            if (trim(a2s(atom_type(:,imp_atoms(i_pro)))).eq.'CP1') tmp_atoms(2) = imp_atoms(i_pro)
+            if (trim(a2s(atom_type(:,imp_atoms(i_pro)))).eq.'CP3') tmp_atoms(3) = imp_atoms(i_pro)
          enddo
          if (any(tmp_atoms(1:3).eq.0)) call system_abort('something has gone wrong. what is this if not proline?'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(1)))//imp_atoms(1)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(2)))//imp_atoms(2)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(3)))//imp_atoms(3)//'--'// &
-                     trim(at%data%str(atom_type_index,imp_atoms(4)))//imp_atoms(4))
+                     trim(a2s(atom_type(:,imp_atoms(1))))//imp_atoms(1)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(2))))//imp_atoms(2)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(3))))//imp_atoms(3)//'--'// &
+                     trim(a2s(atom_type(:,imp_atoms(4))))//imp_atoms(4))
          imp_atoms(2:4) = tmp_atoms(1:3)
 !         call print('Reordered Pro improper '// &
-!                     trim(at%data%str(atom_type_index,imp_atoms(1)))//imp_atoms(1)//'--'// &
-!                     trim(at%data%str(atom_type_index,imp_atoms(2)))//imp_atoms(2)//'--'// &
-!                     trim(at%data%str(atom_type_index,imp_atoms(3)))//imp_atoms(3)//'--'// &
-!                     trim(at%data%str(atom_type_index,imp_atoms(4)))//imp_atoms(4))
+!                     trim(a2s(atom_type(:,imp_atoms(1))))//imp_atoms(1)//'--'// &
+!                     trim(a2s(atom_type(:,imp_atoms(2))))//imp_atoms(2)//'--'// &
+!                     trim(a2s(atom_type(:,imp_atoms(3))))//imp_atoms(3)//'--'// &
+!                     trim(a2s(atom_type(:,imp_atoms(4))))/imp_atoms(4))
       endif
       call append(impropers,imp_atoms(1:4))
 !      call print('Added backbone improper '// &
@@ -1821,25 +1826,6 @@ call print('PSF| '//impropers%n//' impropers')
     call system_timer('create_improper_list')
 
   end subroutine create_improper_list
-
-  !% Returns the index of the first column of a property $prop$.
-  !% Aborts if the property cannot be found in the atoms object.
-  !
-  function get_property(at,prop) result(prop_index)
-
-    type(Atoms),      intent(in) :: at
-    character(len=*), intent(in) :: prop
-  
-    integer,dimension(3) :: pos_indices
-    integer              :: prop_index
-
-    if (get_value(at%properties,trim(prop),pos_indices)) then
-       prop_index = pos_indices(2)
-    else
-       call system_abort('get_property: No '//trim(prop)//' property assigned to the Atoms object!')
-    end if
-
-  end function get_property
 
   !% Calculates the position dependent charges for a silica molecule.
   !% See: Cole et al., J. Chem. Phys. 127 204704--204712 (2007)

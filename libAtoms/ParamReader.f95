@@ -89,14 +89,13 @@ module paramreader_module
   !% be copied to after parsing by 'param_read_line', 'param_read_file'
   !% or 'param_read_args'. For a parameter which shouldn't be parsed, do not specify a target.
   interface param_register
-     module procedure param_register_single_integer, &
-          param_register_multiple_integer, &
-          param_register_single_real, &
-          param_register_multiple_real, &
-          param_register_single_string, &
-          param_register_dontread, &
-	  param_register_single_logical
-
+     module procedure param_register_single_integer
+     module procedure param_register_multiple_integer
+     module procedure param_register_single_real
+     module procedure param_register_multiple_real
+     module procedure param_register_single_string
+     module procedure param_register_dontread
+     module procedure param_register_single_logical
   end interface
 
 #ifdef POINTER_COMPONENT_MANUAL_COPY

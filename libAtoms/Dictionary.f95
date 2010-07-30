@@ -51,11 +51,6 @@ module dictionary_module
        T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13 !% OMIT
 
 
-  integer, parameter :: PROPERTY_INT     = 1 !% Property types, used by Atoms and Table
-  integer, parameter :: PROPERTY_REAL    = 2
-  integer, parameter :: PROPERTY_STR     = 3
-  integer, parameter :: PROPERTY_LOGICAL = 4
-
   integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
   integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
 
@@ -181,6 +176,13 @@ module dictionary_module
      module procedure dictionary_add_array_s
      module procedure dictionary_add_array_i2
      module procedure dictionary_add_array_r2
+     module procedure dictionary_add_array_i_a
+     module procedure dictionary_add_array_r_a
+     module procedure dictionary_add_array_c_a
+     module procedure dictionary_add_array_l_a
+     module procedure dictionary_add_array_s_a
+     module procedure dictionary_add_array_i2_a
+     module procedure dictionary_add_array_r2_a
   end interface add_array
 
   !% Remove an entry from a Dictionary
@@ -220,7 +222,7 @@ module dictionary_module
      module procedure dictionary_deepcopy
   end interface assignment(=)
 
-  private add_entry, extend_entries, remove_entry
+  private :: add_entry, extend_entries, remove_entry
 
 contains
 
@@ -1406,155 +1408,344 @@ contains
   ! * 
   ! ****************************************************************************
 
-  subroutine dictionary_add_array_i(this, key, value, len, ptr)
+  subroutine dictionary_add_array_i(this, key, value, len, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     integer, intent(in) :: value
     integer, intent(in) :: len
     integer, pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%i_a(len))
-    this%entries(entry_i)%i_a(:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a
 
   end subroutine dictionary_add_array_i
 
-  subroutine dictionary_add_array_r(this, key, value, len, ptr)
+  subroutine dictionary_add_array_r(this, key, value, len, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     real(dp), intent(in) :: value
     integer, intent(in) :: len
     real(dp), intent(out), pointer, optional :: ptr(:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%r_a(len))
-    this%entries(entry_i)%r_a(:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value
     call finalise(entry)
-
     if (present(ptr)) ptr => this%entries(entry_i)%r_a
 
   end subroutine dictionary_add_array_r
 
-  subroutine dictionary_add_array_c(this, key, value, len, ptr)
+  subroutine dictionary_add_array_c(this, key, value, len, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     complex(dp), intent(in) :: value
     integer, intent(in) :: len
     complex(dp), pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_COMPLEX_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%c_a(len))
-    this%entries(entry_i)%c_a(:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%c_a
 
   end subroutine dictionary_add_array_c
 
-  subroutine dictionary_add_array_l(this, key, value, len, ptr)
+  subroutine dictionary_add_array_l(this, key, value, len, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     logical, intent(in) :: value
     integer, intent(in) :: len
     logical, pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_LOGICAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%l_a(len))
-    this%entries(entry_i)%l_a(:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%l_a
 
   end subroutine dictionary_add_array_l
 
-  subroutine dictionary_add_array_s(this, key, value, len2, ptr)
+  subroutine dictionary_add_array_s(this, key, value, len2, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     character(1), intent(in) :: value
     integer, intent(in) :: len2(2)
     character(1), pointer, optional, intent(out) :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_CHAR_A
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
-    this%entries(entry_i)%s_a(:,:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%s_a
 
   end subroutine dictionary_add_array_s
 
-  subroutine dictionary_add_array_i2(this, key, value, len2, ptr)
+  subroutine dictionary_add_array_i2(this, key, value, len2, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     integer, intent(in) :: value
     integer, intent(in) :: len2(2)
     integer, pointer, optional, intent(out) :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A2
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
-    this%entries(entry_i)%i_a2(:,:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a2
 
   end subroutine dictionary_add_array_i2
 
-  subroutine dictionary_add_array_r2(this, key, value, len2, ptr)
+  subroutine dictionary_add_array_r2(this, key, value, len2, ptr, overwrite)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
     real(dp), intent(in) :: value
     integer, intent(in) :: len2(2)
     real(dp), intent(out), pointer, optional :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
 
     type(DictEntry) entry
     integer entry_i
-    logical do_alloc
+    logical do_alloc, do_overwrite
 
+    do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A2
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
-    this%entries(entry_i)%r_a2(:,:) = value
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value
     call finalise(entry)
 
     if (present(ptr)) ptr => this%entries(entry_i)%r_a2
 
   end subroutine dictionary_add_array_r2
 
+
+  subroutine dictionary_add_array_i_a(this, key, value, len, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    integer, intent(in) :: value(:)
+    integer, intent(in) :: len
+    integer, pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_INTEGER_A
+    entry%len = len
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%i_a(len))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%i_a
+
+  end subroutine dictionary_add_array_i_a
+
+  subroutine dictionary_add_array_r_a(this, key, value, len, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    real(dp), intent(in) :: value(:)
+    integer, intent(in) :: len
+    real(dp), intent(out), pointer, optional :: ptr(:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_REAL_A
+    entry%len = len
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%r_a(len))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value(:)
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%r_a
+
+  end subroutine dictionary_add_array_r_a
+
+  subroutine dictionary_add_array_c_a(this, key, value, len, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    complex(dp), intent(in) :: value(:)
+    integer, intent(in) :: len
+    complex(dp), pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_COMPLEX_A
+    entry%len = len
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%c_a(len))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value(:)
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%c_a
+
+  end subroutine dictionary_add_array_c_a
+
+  subroutine dictionary_add_array_l_a(this, key, value, len, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    logical, intent(in) :: value(:)
+    integer, intent(in) :: len
+    logical, pointer, optional, intent(out) :: ptr(:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_LOGICAL_A
+    entry%len = len
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%l_a(len))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value(:)
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%l_a
+
+  end subroutine dictionary_add_array_l_a
+
+  subroutine dictionary_add_array_s_a(this, key, value, len2, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    character(1), intent(in) :: value(:,:)
+    integer, intent(in) :: len2(2)
+    character(1), pointer, optional, intent(out) :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_CHAR_A
+    entry%len2 = len2
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value(:,:)
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%s_a
+
+  end subroutine dictionary_add_array_s_a
+
+  subroutine dictionary_add_array_i2_a(this, key, value, len2, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    integer, intent(in) :: value(:,:)
+    integer, intent(in) :: len2(2)
+    integer, pointer, optional, intent(out) :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_INTEGER_A2
+    entry%len2 = len2
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value(:,:)
+    call finalise(entry)
+    if (present(ptr)) ptr => this%entries(entry_i)%i_a2
+
+  end subroutine dictionary_add_array_i2_a
+
+  subroutine dictionary_add_array_r2_a(this, key, value, len2, ptr, overwrite)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    real(dp), intent(in) :: value(:,:)
+    integer, intent(in) :: len2(2)
+    real(dp), intent(out), pointer, optional :: ptr(:,:)
+    logical, optional, intent(in) :: overwrite
+
+    type(DictEntry) entry
+    integer entry_i
+    logical do_alloc, do_overwrite
+
+    do_overwrite = optional_default(.false., overwrite)
+    entry%type = T_REAL_A2
+    entry%len2 = len2
+    entry_i = add_entry(this, key, entry, do_alloc)
+    if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
+    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
+    if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value(:,:)
+    call finalise(entry)
+
+    if (present(ptr)) ptr => this%entries(entry_i)%r_a2
+
+  end subroutine dictionary_add_array_r2_a
 
   ! ****************************************************************************
   ! *

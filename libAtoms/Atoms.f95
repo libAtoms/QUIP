@@ -207,20 +207,12 @@ module  atoms_module
 
      real(dp),              dimension(3,3) :: g          !% Inverse lattice (stored for speed)
 
-     type(Table) :: data !% This table contains all atomic data. 
-                         !% Rows correspond to atoms, columns to the various properties.
-
-     type(Dictionary) :: properties !% Mapping of names to column indices for the 'data' table, e.g.
-                                    !%>result = get_value(properties,"pos",pos_indices)
-                                    !% gives 'pos_indices = (/PROPERTY_REAL,1,3/)', indicating that the 
-                                    !% position data consists of real number, beginning at column 1 
-                                    !% and ending at column 3.
-
+     type(Dictionary) :: properties !% Per-atom data, stored as Dictionary arrays of shape (this%N) or (n_cols,this%N)
      type(Dictionary) :: params     !% List of key/value pairs read from comment line of XYZ file
 
 
      integer,  pointer, dimension(:)   :: Z      => null()  !% Atomic numbers, dimension is actually $(N)$
-     character(TABLE_STRING_LENGTH), pointer, dimension(:) :: species => null() !% Names of elements
+     character(1), pointer, dimension(:,:) :: species => null() !% Names of elements
 
      integer, pointer, dimension(:)    :: move_mask => null()  !% Atoms with 'move_mask' set to false are fixed
      integer, pointer, dimension(:)    :: damp_mask => null()  !% Damping is only applied to those atoms with
@@ -307,6 +299,7 @@ module  atoms_module
      module procedure atoms_add_property_real, atoms_add_property_real_a
      module procedure atoms_add_property_str, atoms_add_property_str_a
      module procedure atoms_add_property_logical, atoms_add_property_logical_a 
+     module procedure atoms_add_property_int_2Da
      module procedure atoms_add_property_real_2Da
   end interface
 
@@ -322,17 +315,15 @@ module  atoms_module
   end interface
 
   !% This is a convenience interface to assign pointers to custom properties of this
-  !% Atoms object. The pointer is simply directed to the relevant columns of the
-  !% 'this%data' table. Adding new properties will invalidate these pointers
-  !% because the data table gets moved in memory whenever a new column is added, so
-  !% this interface should be recalled whenever properties are added.
-  !% Returns true if successful, false if property doesn't exist, and aborts
+  !% Atoms object. The pointer is simply directed to the relevant array in the
+  !% 'this%properties' Dictionary. Adding or removing atoms will invalidate these pointers.
+  !% Returns true if successful, false if property doesn't exist or
   !% if property type and type of pointer don't match.
   interface assign_pointer
      module procedure atoms_assign_pointer_int1D, atoms_assign_pointer_int2D
      module procedure atoms_assign_pointer_real1D, atoms_assign_pointer_real2D
-     module procedure atoms_assign_pointer_str1D, atoms_assign_pointer_str2D
-     module procedure atoms_assign_pointer_logical1D, atoms_assign_pointer_logical2D
+     module procedure atoms_assign_pointer_str
+     module procedure atoms_assign_pointer_logical
   end interface
 
   !% This interface calculates the distance between the nearest periodic images of two points (or atoms).
@@ -350,47 +341,6 @@ module  atoms_module
   interface print
      module procedure atoms_print, connection_print
   end interface print
-
-  !% Print this Atoms object to an Inouput object or to a file in XYZ format. By default, only
-  !% the atomic species and positions are written, but the 'properties' argument
-  !% allows you to specify additional properties to be printed,
-  !% e.g. 'properties=(/"pos","velo","acc"/)' would print the positions, velocities
-  !% and accelerations (9 columns of real numbers). The 'all_properties' option
-  !% prints all properties associated with this Atoms object. 
-  !% The comment line (line 2) of the XYZ file contains the contents
-  !% of the 'params' dictionary which at a minimum includes the lattice
-  !% and list of properties printed, but can be used to print other simulation
-  !% parameters.
-  !%
-  !% The lattice is printed in the form:
-  !%>    Lattice="R11 R21 R31 R12 R22 R32 R13 R23 R33"
-  !% and the list of properties in the file is added in the form:
-  !%>    Properties="species:S:1:pos:R:3:velo:R:3:acc:R:3"
-  !% with a triplet of colon-separated fields for each property, giving
-  !% its name, type ('R' for real,'I' for integer, 'S' for string and 'L' for logical) 
-  !% and number of columns.
-  !% Other parameters are output in 'key=value' format ---
-  !% all types of dictionary entries with the exception, for now, of
-  !% complex numbers are supported.
-  interface print_xyz
-     module procedure atoms_print_xyz, atoms_print_xyz_filename
-  end interface print_xyz
-
-  !% Print in AtomEye extended CFG format. Arguments are as for 'print_xyz' above.
-  interface print_cfg
-     module procedure atoms_print_cfg, atoms_print_cfg_filename
-  end interface
-
-  !% Read atoms from a standard XYZ file into this Atoms object. Properties for
-  !% all the fields found in the file are created, and parameters in 'key=value'
-  !% form are read from the comment line (line 2) into the 'params'
-  !% dictionary within the Atoms object. 
-  !%
-  !% An overloaded routine skips over a single frame in the input stream.
-  interface read_xyz
-     module procedure atoms_read_xyz_inoutput, atoms_read_xyz_extendable_str
-     module procedure atoms_read_xyz_filename, atoms_read_xyz_skip
-  end interface read_xyz
 
   interface set_lattice
      module procedure atoms_set_lattice
@@ -435,63 +385,54 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   !% Initialise an Atoms object to store 'N' atoms and specify the initial lattice.
-  subroutine atoms_initialise(this,N,lattice,data,properties,params)
+  subroutine atoms_initialise(this,N,lattice,properties,params,error)
 
     type(Atoms),                intent(inout) :: this
     integer,                    intent(in)    :: N
     real(dp), dimension(3,3),   intent(in)    :: lattice
-    type(Table), optional,      intent(in)    :: data
     type(Dictionary), optional, intent(in)    :: properties, params
+    integer, intent(out), optional :: error
 
-    integer :: i, stack_size, stack_size_err
-    integer, dimension(:), allocatable :: default_int
-    real(dp), dimension(:), allocatable :: default_real
-    character(TABLE_STRING_LENGTH), dimension(:), allocatable :: default_str
+    integer :: stack_size, stack_size_err, i, type
 
-
+    INIT_ERROR(error)
     call atoms_finalise(this)
 
-    if ((present(data) .and. .not. present(properties)) .or. &
-         (present(properties) .and. .not. present(data))) &
-         call system_abort('Atoms_Initialise: both data and properties must be present')
-
-    if (present(data)) then
-       if (data%N /= N) call system_abort('Atoms_Initialise: data%N ('//data%N//') /= N('//N//')')
-       if (data%N == 0) call system_abort('Atoms_Initialise: cannot initialise from data with zero length')
-       this%data = data
-       this%properties = properties
-    else
-       ! By default, we just add properties for Z, species name and position
-       call initialise(this%properties)
-
-       call add_property(this, 'Z', 0)
-       call add_property(this, 'pos', 0.0_dp, n_cols=3)
-       call add_property(this, 'species', repeat(' ', TABLE_STRING_LENGTH))
-
-       allocate(default_int(this%data%intsize))
-       allocate(default_real(this%data%realsize))
-       allocate(default_str(this%data%strsize))
-
-       default_int = 0
-       default_real = 0.0_dp
-       default_str = repeat(' ',TABLE_STRING_LENGTH)
-
-       ! Add N rows to data table
-       do i=1,N
-          call append(this%data, default_int, default_real, default_str)
-       end do
-
-       deallocate(default_int, default_real, default_str)
-    end if
-
     if (present(params)) then
-       this%params = params
+       this%params = params ! deep copy
     else
        call initialise(this%params)
     end if
 
     this%N = N
     this%Ndomain = N
+
+    if (present(properties)) then
+       ! check types and sizes of properties passed in
+       do i=1,properties%N
+          type = properties%entries(i)%type
+          if (type == T_INTEGER_A .or. type == T_REAL_A .or. type == T_LOGICAL_A) then
+             if (properties%entries(i)%len /= this%N) then
+                RAISE_ERROR('atoms_initialise: bad array size for array key='//string(properties%keys(i))//' size('//properties%entries(i)%len//') != this%N('//this%N//')', error)
+             end if
+          else if (type == T_INTEGER_A2 .or. type == T_REAL_A2 .or. type == T_CHAR_A) then
+             if (properties%entries(i)%len2(2) /= this%N) then
+                RAISE_ERROR('atoms_initialise: bad array size for array key='//properties%keys(i)//' shape='//properties%entries(i)%len2, error)
+             end if
+          else
+             RAISE_ERROR('atoms_initialise: bad property type='//type//' in properties argument', error)
+          end if
+       end do
+
+       this%properties = properties  ! deep copy of data from properties argument
+    else
+       ! By default, we just add properties for Z, species name and position
+       call initialise(this%properties)
+       
+       call add_property(this, 'Z', 0)
+       call add_property(this, 'pos', 0.0_dp, n_cols=3)
+       call add_property(this, 'species', repeat(' ', TABLE_STRING_LENGTH))
+    end if
 
     call atoms_repoint(this)
 
@@ -514,12 +455,11 @@ contains
   end subroutine atoms_initialise
 
   !% OMIT
-  ! Initialise pointers for convenient access to special columns of this%data
+  ! Initialise pointers for convenient access to special columns of this%properties
   subroutine atoms_repoint(this)
     use Dictionary_module, only: lower_case
     type(Atoms), target, intent(inout) :: this
-    integer :: i, lookup(3)
-    type(Extendable_str) :: key
+    integer :: i
 
     if(this%N == 0) return
 
@@ -531,86 +471,81 @@ contains
     ! which we have pointers for
     do i = 1,this%properties%N
 
-       key = this%properties%keys(i)
-       if (.not. get_value(this%properties, string(key), lookup)) &
-            call system_abort('Atoms_repoint: key '//string(key)//' not found.')
-
        ! If this%N is zero then point at zero length arrays
        if (this%N == 0) then
 
-          select case(trim(lower_case(string(key))))
+          select case(trim(lower_case(string(this%properties%keys(i)))))
 
           ! Integer properties
           case('z')
-             this%Z               => this%data%int(lookup(2),:)
+             this%Z               => this%properties%entries(i)%i_a(:)
           case('travel')
-             this%travel          => this%data%int(lookup(2):lookup(3),:)
+             this%travel          => this%properties%entries(i)%i_a2(:,:)
           case('move_mask')
-             this%move_mask       => this%data%int(lookup(2),:)
+             this%move_mask       => this%properties%entries(i)%i_a(:)
           case('damp_mask')
-             this%damp_mask       => this%data%int(lookup(2),:)
+             this%damp_mask       => this%properties%entries(i)%i_a(:)
           case('thermostat_region')
-             this%thermostat_region => this%data%int(lookup(2),:)
+             this%thermostat_region => this%properties%entries(i)%i_a(:)
 
           ! Real properties
           case('mass')
-             this%mass            => this%data%real(lookup(2),:)
+             this%mass            => this%properties%entries(i)%r_a(:)
           case('pos')
-             this%pos             => this%data%real(lookup(2):lookup(3),:)
+             this%pos             => this%properties%entries(i)%r_a2(:,:)
           case('velo')
-             this%velo            => this%data%real(lookup(2):lookup(3),:)
+             this%velo            => this%properties%entries(i)%r_a2(:,:)
           case('acc')
-             this%acc             => this%data%real(lookup(2):lookup(3),:)
+             this%acc             => this%properties%entries(i)%r_a2(:,:)
           case('avgpos')
-             this%avgpos          => this%data%real(lookup(2):lookup(3),:)
+             this%avgpos          => this%properties%entries(i)%r_a2(:,:)
           case('oldpos')
-             this%oldpos          => this%data%real(lookup(2):lookup(3),:)
+             this%oldpos          => this%properties%entries(i)%r_a2(:,:)
           case('avg_ke')
-             this%avg_ke          => this%data%real(lookup(2),:)
+             this%avg_ke          => this%properties%entries(i)%r_a(:)
 
           ! String properties
           case('species')
-             this%species         => this%data%str(lookup(2),:)
+             this%species         => this%properties%entries(i)%s_a(:,:)
 
           end select
 
 
        else
 
-          select case(trim(lower_case(string(key))))
+          select case(trim(lower_case(string(this%properties%keys(i)))))
 
           ! Integer properties
           case('z')
-             this%Z               => this%data%int(lookup(2),1:this%N)
+             this%Z               => this%properties%entries(i)%i_a(1:this%n)
           case('travel')
-             this%travel          => this%data%int(lookup(2):lookup(3),1:this%N)
+             this%travel          => this%properties%entries(i)%i_a2(:,1:this%n)
           case('move_mask')
-             this%move_mask       => this%data%int(lookup(2),1:this%N)
+             this%move_mask       => this%properties%entries(i)%i_a(1:this%n)
           case('damp_mask')
-             this%damp_mask       => this%data%int(lookup(2),1:this%N)
+             this%damp_mask       => this%properties%entries(i)%i_a(1:this%n)
           case('thermostat_region')
-             this%thermostat_region => this%data%int(lookup(2),1:this%N)
+             this%thermostat_region => this%properties%entries(i)%i_a(1:this%n)
 
           ! Real properties
           case('mass')
-             this%mass            => this%data%real(lookup(2),1:this%N)   
+             this%mass            => this%properties%entries(i)%r_a(1:this%n)
           case('pos')
-             this%pos             => this%data%real(lookup(2):lookup(3),1:this%N)
+             this%pos             => this%properties%entries(i)%r_a2(:,1:this%N)
           case('velo')
-             this%velo            => this%data%real(lookup(2):lookup(3),1:this%N)
+             this%velo            => this%properties%entries(i)%r_a2(:,1:this%N)
           case('acc')
-             this%acc             => this%data%real(lookup(2):lookup(3),1:this%N)
+             this%acc             => this%properties%entries(i)%r_a2(:,1:this%N)
           case('avgpos')
-             this%avgpos          => this%data%real(lookup(2):lookup(3),1:this%N)
+             this%avgpos          => this%properties%entries(i)%r_a2(:,1:this%N)
           case('oldpos')
-             this%oldpos          => this%data%real(lookup(2):lookup(3),1:this%N)
+             this%oldpos          => this%properties%entries(i)%r_a2(:,1:this%N)
           case('avg_ke')
-             this%avg_ke          => this%data%real(lookup(2),1:this%N)
+             this%avg_ke          => this%properties%entries(i)%r_a(1:this%n)
 
           ! String properties
           case('species')
-             this%species         => this%data%str(lookup(2),1:this%N)
-
+             this%species         => this%properties%entries(i)%s_a(:,1:this%N)
 
           end select
 
@@ -624,7 +559,6 @@ contains
   subroutine atoms_finalise(this)
     type(Atoms), intent(inout) :: this
 
-    call finalise(this%data)
     call finalise(this%properties)
     call finalise(this%params)
 
@@ -671,10 +605,14 @@ contains
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
 
-    if(.not. from%initialised) &
-         call system_abort("Atoms_assignment: 'from' object is not initialised")
+    ! We do not fail if from is unitialised, since overloaded operator routines
+    ! are outside scope of error handling mechanism.
+    if(.not. from%initialised) then
+       to%initialised = .false.
+       return
+    end if
 
-    call atoms_initialise(to,from%N,from%lattice, from%data, from%properties, from%params)
+    call atoms_initialise(to,from%N,from%lattice, from%properties, from%params)
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
@@ -691,72 +629,26 @@ contains
   !% connectivity information. Useful for saving the state of a
   !% dynamical simulation without incurring too great a memory
   !% cost. 
-  subroutine atoms_copy_without_connect(to, from, properties)
+  subroutine atoms_copy_without_connect(to, from, properties, error)
 
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
-    character(len=*), optional, intent(in) :: properties
-
-    integer :: i, n_properties, n_cols, col, lookup(3)
-    character(len=1024) :: tmp_properties(from%properties%N)
-    integer :: intcols(from%data%intsize), realcols(from%data%realsize), strcols(from%data%strsize), logicalcols(from%data%logicalsize)
-    integer :: last_int_col, last_real_col, last_str_col, last_logical_col
-
-    if(.not. from%initialised) &
-         call system_abort("atoms_copy_without_connect: 'from' object is not initialised")
+    character(len=*), optional, intent(in) :: properties(:)
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
+    if(.not. from%initialised) then
+       RAISE_ERROR("atoms_copy_without_connect: 'from' object is not initialised", error)
+    end if
 
     to%N = from%N
     call set_lattice(to, from%lattice, .false.)
 
     if (present(properties)) then
-      call finalise(to%data)
-      call initialise(to%properties)
-      call initialise(to%data, max_length=from%data%N)
-      last_int_col=0
-      last_real_col=0
-      last_str_col=0
-      last_logical_col=0
-      intcols = -1
-      realcols = -1
-      strcols = -1
-      logicalcols = -1
-      call parse_string(properties, ':', tmp_properties, n_properties)
-      do i=1, n_properties
-	if (.not. get_value(from%properties, tmp_properties(i), lookup)) &
-	  call system_abort('ERROR: atoms_copy_without_connect: copying key '//trim(tmp_properties(i))//' not found.')
-	n_cols = lookup(3)-lookup(2)+1
-	if (lookup(1) == PROPERTY_INT) then
-	  do col=1, n_cols
-	    intcols(last_int_col+col) = lookup(2)+col-1
-	  end do
-	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_int_col+1, last_int_col+n_cols/) )
-	  last_int_col = last_int_col + n_cols
-	else if (lookup(1) == PROPERTY_REAL) then
-	  do col=1, n_cols
-	    realcols(last_real_col+col) = lookup(2)+col-1
-	  end do
-	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_real_col+1, last_real_col+n_cols/) )
-	  last_real_col = last_real_col + n_cols
-	else if (lookup(1) == PROPERTY_STR) then
-	  do col=1, n_cols
-	    strcols(last_str_col+col) = lookup(2)+col-1
-	  end do
-	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_str_col+1, last_str_col+n_cols/) )
-	  last_str_col = last_str_col + n_cols
-	else if (lookup(1) == PROPERTY_LOGICAL) then
-	  do col=1, n_cols
-	    logicalcols(last_logical_col+col) = lookup(2)+col-1
-	  end do
-	  call set_value(to%properties, tmp_properties(i), (/ lookup(1), last_logical_col+1, last_logical_col+n_cols/) )
-	  last_logical_col = last_logical_col + n_cols
-	else
-	  call system_abort("ERROR: atoms_copy_without_connect got unknown property type " // lookup(1) // " for property " // trim(tmp_properties(i)))
-	end if
-      end do
-      to%data = subtable(from%data, (/ (i, i=1,from%data%N) /), intcols, realcols, strcols, logicalcols)
+       call subset(from%properties, properties, to%properties, error=error)
+       PASS_ERROR(error)
     else
-      to%data = from%data
-      to%properties = from%properties
+       to%properties = from%properties
     endif
     to%params = from%params
 
@@ -770,30 +662,32 @@ contains
 
   end subroutine atoms_copy_without_connect
 
-  subroutine atoms_select(to, from, mask, list)
+  subroutine atoms_select(to, from, mask, list, error)
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in) :: from
     logical, intent(in), optional :: mask(:)
-    integer, intent(in), optional :: list(:)
+    integer, intent(in), optional, target :: list(:)
+    integer, intent(out), optional :: error
 
-    integer :: i
-    integer, pointer, dimension(:) :: orig_index
+    integer :: i, n_list
+    integer, allocatable, dimension(:), target :: my_list
+    integer, pointer, dimension(:) :: orig_index, use_list
 
-    if ((.not. present(list) .and. .not. present(mask)) .or. (present(list) .and. present(mask))) &
-         call system_abort('atoms_select: either list or mask must be present (but not both)')
+    INIT_ERROR(error)
 
+    if ((.not. present(list) .and. .not. present(mask)) .or. (present(list) .and. present(mask))) then
+       RAISE_ERROR('atoms_select: either list or mask must be present (but not both)', error)
+    end if
 
     if (present(mask)) then
-       if (size(mask) /= from%N) &
-            call system_abort("atoms_select: mismatched sizes of from " // from%N // " and mask " // size(mask))
+       if (size(mask) /= from%N) then
+          RAISE_ERROR("atoms_select: mismatched sizes of from " // from%N // " and mask " // size(mask), error)
+       end if
        call atoms_initialise(to, count(mask), from%lattice)
     else
-
        call atoms_initialise(to, size(list), from%lattice)
     end if
 
-    call finalise(to%properties)
-    to%properties = from%properties
     call finalise(to%params)
     to%params = from%params
     to%use_uniform_cutoff = from%use_uniform_cutoff
@@ -802,403 +696,411 @@ contains
     to%nneightol = from%nneightol
 
     if(present(mask)) then
-       call select(to%data, from%data, row_mask=mask)
+       allocate(my_list(count(mask)))
+       ! build up a list
+       N_list = 1
+       do i=1, from%N
+          if (mask(i)) then
+             my_list(n_list) = i
+             n_list = n_list + 1
+          endif
+       end do
+       use_list => my_list
     else
-       call select(to%data, from%data, row_list=list)
+       use_list => list
     end if
 
-    call add_property(to, 'orig_index', 0)
-    if (.not. assign_pointer(to, 'orig_index', orig_index)) &
-         call system_abort('atoms_select: cannot assign pointer to orig_index')
-       
-    if (present(mask)) then
-       orig_index(:) = pack((/ (i, i=1,from%n) /), mask)
-    else
-       orig_index(:) = list(:)
-    end if
+    do i=1,from%properties%N
+       select case (from%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%i_a(use_list))
+
+       case(T_REAL_A)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%r_a(use_list))
+
+       case(T_LOGICAL_A)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%l_a(use_list))
+
+       case(T_INTEGER_A2)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%i_a2(:,use_list))
+
+       case(T_REAL_A2)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%r_a2(:,use_list))
+
+       case(T_CHAR_A)
+          call set_value(to%properties, string(from%properties%keys(i)), from%properties%entries(i)%s_a(:,use_list))
+
+       case default
+          RAISE_ERROR('atoms_select: bad property type '//from%properties%entries(i)%type//' key='//from%properties%keys(i), error)
+
+       end select
+    end do
+    call atoms_repoint(to)
+
+    call add_property(to, 'orig_index', 0, ptr=orig_index)
+    orig_index(:) = use_list(:)
+    if (allocated(my_list)) deallocate(my_list)
 
     call atoms_repoint(to)
   end subroutine atoms_select
 
-  subroutine atoms_remove_property(this, name)
+  subroutine atoms_remove_property(this, name, error)
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: name
+    integer, intent(out), optional :: error
 
-    integer :: i, lookup(3), rem_type, rem_start, n_removed
-    logical :: dummy
+    INIT_ERROR(error)
 
-    if (get_value(this%properties, name, lookup)) then
-       if (lookup(1) == PROPERTY_INT) then
-          call remove_columns(this%data, int_col_min = lookup(2), int_col_max = lookup(3))
-       else if (lookup(1) == PROPERTY_REAL) then
-          call remove_columns(this%data, real_col_min = lookup(2), real_col_max = lookup(3))
-       else if (lookup(1) == PROPERTY_STR) then
-          call remove_columns(this%data, str_col_min = lookup(2), str_col_max = lookup(3))
-       else if (lookup(1) == PROPERTY_LOGICAL) then
-          call remove_columns(this%data, logical_col_min = lookup(2), logical_col_max = lookup(3))
-       else
-          call system_abort("atoms_remove_property confused by property type " // lookup(1))
-      endif
-    else
-      call system_abort("atoms_remove_property tried to remove non-existent property " // trim(name))
-    endif
-
+    if (.not. has_property(this, name)) then
+       RAISE_ERROR('atoms_remove_property: no such property "'//trim(name)//'" exists', error)
+    end if
     call remove_value(this%properties, name)
-    rem_type = lookup(1)
-    rem_start = lookup(2)
-    n_removed = lookup(3)-lookup(2)+1
-    
-    ! correct columns in subsequent properties
-    do i=1,this%properties%N
-       dummy = get_value(this%properties, string(this%properties%keys(i)), lookup)
-       if (lookup(1) /= rem_type) cycle
-       if (lookup(2) > rem_start) then
-          lookup(2) = lookup(2) - n_removed
-          lookup(3) = lookup(3) - n_removed
-          call set_value(this%properties, string(this%properties%keys(i)), lookup)
-       end if
-    end do
-
-    ! remove_columns will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
 
   end subroutine atoms_remove_property
 
-  function atoms_has_property(this, name, lookup)
+  function atoms_has_property(this, name)
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: name
-    integer, optional :: lookup(3)
     logical :: atoms_has_property
 
-    integer :: my_lookup(3)
-
-    if (present(lookup)) then
-      atoms_has_property = get_value(this%properties, name, lookup)
-    else
-      atoms_has_property = get_value(this%properties, name, my_lookup)
-    endif
+    atoms_has_property = has_key(this%properties, name)
     
   end function atoms_has_property
 
-  subroutine atoms_add_property_int(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_int(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout), target :: this
     character(len=*), intent(in) :: name
     integer, intent(in) :: value
     integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    integer, intent(out), optional, dimension(:), pointer :: ptr
+    integer, intent(out), optional, dimension(:,:), pointer :: ptr2
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer :: use_n_cols, i
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
+    use_n_cols = optional_default(1, n_cols)
 
-    ! Check if there's already a property with this name
-    if (get_value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_INT .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_INTEGER_A) then
+          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
        end if
+
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
+          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
+       end if       
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_INT, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    
+    if (use_n_cols == 1) then
+       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    else
+       call add_array(this%properties, name, value, (/n_cols, this%N/), ptr2, overwrite)
+    end if
 
   end subroutine atoms_add_property_int
 
-
-  subroutine atoms_add_property_int_a(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_int_a(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
     integer, intent(in), dimension(this%N) :: value
     integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    integer, optional, intent(out), dimension(:), pointer :: ptr
+    integer, optional, intent(out), dimension(:,:), pointer :: ptr2
+    logical, optional, intent(in) :: overwrite
+    integer, optional, intent(out) :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer :: use_n_cols, i
+    integer, allocatable, dimension(:,:) :: tmp_value
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
+    use_n_cols = optional_default(1, n_cols)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_INT .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_INTEGER_A) then
+          RAISE_ERROR("atoms_add_property_int_a: incompatible property "//trim(name)//" already present", error)
        end if
+
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
+          RAISE_ERROR("atoms_add_property_int_a: incompatible property "//trim(name)//" already present", error)
+       end if       
     end if
 
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_INT, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
-
+    if (use_n_cols == 1) then
+       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    else
+       allocate(tmp_value(n_cols, size(value)))
+       do i=1,n_cols
+          tmp_value(i,:) = value
+       end do
+       call add_array(this%properties, name, tmp_value, (/n_cols, this%N/), ptr2, overwrite)
+       deallocate(tmp_value)
+    end if
+   
   end subroutine atoms_add_property_int_a
 
 
-  subroutine atoms_add_property_real(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_real(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
     real(dp), intent(in) :: value
     integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    real(dp), optional, dimension(:), pointer, intent(out) :: ptr
+    real(dp), optional, dimension(:,:), pointer, intent(out) :: ptr2
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer use_n_cols, i
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
+    use_n_cols = optional_default(1, n_cols)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_REAL_A) then
+          RAISE_ERROR("atoms_add_property_real: incompatible property "//trim(name)//" already present", error)
        end if
+
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
+          RAISE_ERROR("atoms_add_property_real: incompatible property "//trim(name)//" already present", error)
+       end if       
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_REAL, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    
+    if (use_n_cols == 1) then
+       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    else
+       call add_array(this%properties, name, value, (/n_cols, this%N/), ptr2, overwrite)
+    end if
 
   end subroutine atoms_add_property_real
 
 
-  subroutine atoms_add_property_real_a(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_real_a(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
     real(dp), intent(in), dimension(this%N) :: value
     integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    real(dp), optional, dimension(:), pointer, intent(out) :: ptr
+    real(dp), optional, dimension(:,:), pointer, intent(out) :: ptr2
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer :: use_n_cols, i
+    real(dp), allocatable, dimension(:,:) :: tmp_value    
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
+    use_n_cols = optional_default(1, n_cols)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_REAL_A) then
+          RAISE_ERROR("atoms_add_property_real_a: incompatible property "//trim(name)//" already present", error)
        end if
+
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
+          RAISE_ERROR("atoms_add_property_real_a: incompatible property "//trim(name)//" already present", error)
+       end if       
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_REAL, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    
+    if (use_n_cols == 1) then
+       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    else
+       allocate(tmp_value(n_cols, size(value)))
+       do i=1,n_cols
+          tmp_value(i,:) = value
+       end do
+       call add_array(this%properties, name, tmp_value, (/n_cols, this%N/), ptr2, overwrite)
+       deallocate(tmp_value)
+    end if
 
   end subroutine atoms_add_property_real_a
 
-  subroutine atoms_add_property_real_2Da(this, name, value, lookup)
+  subroutine atoms_add_property_int_2Da(this, name, value, ptr, overwrite, error)
+    type(Atoms), intent(inout),target :: this
+    character(len=*), intent(in) :: name
+    integer, intent(in) :: value(:,:)
+    integer, optional, dimension(:,:), pointer, intent(out) :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
+
+    integer i
+
+    INIT_ERROR(error)
+
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (size(value,1) == 1 .and. this%properties%entries(i)%type /= T_INTEGER_A) then
+          RAISE_ERROR("atoms_add_property_int_2Da: incompatible property "//trim(name)//" already present", error)
+       end if
+
+       if (size(value,1) /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
+          RAISE_ERROR("atoms_add_property_int_2Da: incompatible property "//trim(name)//" already present", error)
+       end if       
+    end if
+    
+    if (size(value,2) /= this%N) then
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%N='//this%N, error)
+    end if
+
+    call add_array(this%properties, name, value, (/size(value,1), this%N/), ptr, overwrite)
+
+  end subroutine atoms_add_property_int_2Da
+
+
+  subroutine atoms_add_property_real_2Da(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
     real(dp), intent(in) :: value(:,:)
-    integer, dimension(3), optional, intent(out) :: lookup
+    real(dp), optional, dimension(:,:), pointer, intent(out) :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer i
 
-    use_n_cols = size(value,1)
+    INIT_ERROR(error)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_REAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present')
-          if (present(lookup)) lookup = use_lookup
-          this%data%real(use_lookup(2):use_lookup(3), 1:this%data%N) = value
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (size(value,1) == 1 .and. this%properties%entries(i)%type /= T_REAL_A) then
+          RAISE_ERROR("atoms_add_property_real_2Da: incompatible property "//trim(name)//" already present", error)
        end if
+
+       if (size(value,1) /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
+          RAISE_ERROR("atoms_add_property_real_2Da: incompatible property "//trim(name)//" already present", error)
+       end if       
+    end if
+    
+    if (size(value,2) /= this%N) then
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%N='//this%N, error)
     end if
 
-    call append_column(this%data, 0.0_dp, n_cols=use_n_cols, cols=new_cols)
-    this%data%real(new_cols(1):new_cols(2),1:this%data%N) = value
-    use_lookup = (/PROPERTY_REAL, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    call add_array(this%properties, name, value, (/size(value,1), this%N/), ptr, overwrite)
 
   end subroutine atoms_add_property_real_2Da
 
 
-  subroutine atoms_add_property_str(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_str(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout), target :: this
     character(len=*), intent(in) :: name
-    character(TABLE_STRING_LENGTH), intent(in) :: value
-    integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    character(len=*), intent(in) :: value
+    character(1), intent(out), optional, dimension(:,:), pointer :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer i
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
 
-    ! Check if there's already a property with this name
-    if (get_value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_STR .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
-       end if
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (this%properties%entries(i)%type /= T_CHAR_A) then
+          RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
+       end if       
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_STR, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    
+    ! temporary hack - string length fixed to TABLE_STRING_LENGTH
+    if (len(value) /= TABLE_STRING_LENGTH) then
+       RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
+    end if
+    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
 
   end subroutine atoms_add_property_str
 
 
-  subroutine atoms_add_property_str_a(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_str_a(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
-    character(TABLE_STRING_LENGTH), dimension(this%N) :: value
-    integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    character(len=*), dimension(this%N) :: value
+    character(1), intent(out), optional, dimension(:,:), pointer :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    character(1), allocatable, dimension(:,:) :: tmp_value
+    integer :: i, j
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_STR .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
-       end if
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (this%properties%entries(i)%type /= T_CHAR_A) then
+          RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
+       end if       
+    end if
+    
+    ! temporary hack - string length fixed to TABLE_STRING_LENGTH
+    if (len(value(1)) /= TABLE_STRING_LENGTH) then
+       RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
     end if
 
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_STR, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    allocate(tmp_value(len(value),this%n))
+    do i=1,this%N
+       do j=1,len(value)
+          tmp_value(j,i) = value(i)(j:j)
+       end do
+    end do
+    call add_array(this%properties, name, tmp_value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
+    deallocate(tmp_value)
 
   end subroutine atoms_add_property_str_a
 
 
-  subroutine atoms_add_property_logical(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_logical(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout), target :: this
     character(len=*), intent(in) :: name
     logical, intent(in) :: value
-    integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    logical, intent(out), optional, dimension(:), pointer :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer i
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
 
-    ! Check if there's already a property with this name
-    if (get_value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_LOGICAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (this%properties%entries(i)%type /= T_LOGICAL_A) then
+          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
        end if
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_LOGICAL, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
-
+    
+    call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    
   end subroutine atoms_add_property_logical
 
 
-  subroutine atoms_add_property_logical_a(this, name, value, n_cols, lookup)
+  subroutine atoms_add_property_logical_a(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
     logical, dimension(this%N) :: value
-    integer, intent(in), optional :: n_cols
-    integer, dimension(3), optional, intent(out) :: lookup
+    logical, intent(out), optional, dimension(:), pointer :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
 
-    integer :: use_n_cols, new_cols(2), use_lookup(3)
+    integer i
 
-    use_n_cols = 1
-    if (present(n_cols)) use_n_cols = n_cols
+    INIT_ERROR(error)
 
-    ! Check if there's already a property with this name
-    if (Get_Value(this%properties, name, use_lookup)) then
-       ! Does it match this type and number of columns?
-       if (use_lookup(1) == PROPERTY_LOGICAL .and. use_lookup(3)-use_lookup(2)+1 == use_n_cols) then
-          call print('Add_Property: property '//trim(name)//' already present', PRINT_VERBOSE)
-          if (present(lookup)) lookup = use_lookup
-          return
-       else
-          call system_abort('Add_Property: incompatible property '//trim(name)//' already present')
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (this%properties%entries(i)%type /= T_LOGICAL_A) then
+          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
        end if
     end if
-
-    call append_column(this%data, value, n_cols=use_n_cols, cols=new_cols)
-    use_lookup = (/PROPERTY_LOGICAL, new_cols(1), new_cols(2)/)
-    call set_value(this%properties, name, use_lookup)
-    if (present(lookup)) lookup = use_lookup
-
-    ! Append column will have moved this%data in memory and invalidated pointers
-    call atoms_repoint(this)
-    call print('WARNING: atoms_add_property ('//trim(name)//') - pointers invalidated', PRINT_VERBOSE)
+    
+    call add_array(this%properties, name, value, this%N, ptr, overwrite)
 
   end subroutine atoms_add_property_logical_a
 
@@ -1209,7 +1111,7 @@ contains
     integer, pointer :: ptr(:)
     logical :: atoms_assign_pointer_int1D
 
-    atoms_assign_pointer_int1D = atoms_assign_pointer(this, name, int1D_ptr=ptr)
+    atoms_assign_pointer_int1D = assign_pointer(this%properties, name, ptr)
   end function atoms_assign_pointer_int1D
 
   function atoms_assign_pointer_int2D(this, name, ptr)
@@ -1218,7 +1120,7 @@ contains
     integer, pointer :: ptr(:,:)
     logical :: atoms_assign_pointer_int2D
 
-    atoms_assign_pointer_int2D = atoms_assign_pointer(this, name, int2D_ptr=ptr)
+    atoms_assign_pointer_int2D = assign_pointer(this%properties, name, ptr)
   end function atoms_assign_pointer_int2D
 
   function atoms_assign_pointer_real1D(this, name, ptr)
@@ -1227,7 +1129,7 @@ contains
     real(dp), pointer :: ptr(:)
     logical :: atoms_assign_pointer_real1D
 
-    atoms_assign_pointer_real1D = atoms_assign_pointer(this, name, real1D_ptr=ptr)
+    atoms_assign_pointer_real1D = assign_pointer(this%properties, name, ptr)
   end function atoms_assign_pointer_real1D
 
   function atoms_assign_pointer_real2D(this, name, ptr)
@@ -1236,144 +1138,26 @@ contains
     real(dp), pointer :: ptr(:,:)
     logical :: atoms_assign_pointer_real2D
 
-    atoms_assign_pointer_real2D = atoms_assign_pointer(this, name, real2D_ptr=ptr)
+    atoms_assign_pointer_real2D = assign_pointer(this%properties, name, ptr)
   end function atoms_assign_pointer_real2D
 
-  function atoms_assign_pointer_str1D(this, name, ptr)
+  function atoms_assign_pointer_str(this, name, ptr)
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: name
-    character(TABLE_STRING_LENGTH), pointer :: ptr(:)
-    logical :: atoms_assign_pointer_str1D
+    character(1), pointer :: ptr(:,:)
+    logical :: atoms_assign_pointer_str
 
-    atoms_assign_pointer_str1D = atoms_assign_pointer(this, name, str1D_ptr=ptr)
-  end function atoms_assign_pointer_str1D
+    atoms_assign_pointer_str = assign_pointer(this%properties, name, ptr)
+  end function atoms_assign_pointer_str
 
-  function atoms_assign_pointer_str2D(this, name, ptr)
-    type(Atoms), intent(in) :: this
-    character(len=*), intent(in) :: name
-    character(TABLE_STRING_LENGTH), pointer :: ptr(:,:)
-    logical :: atoms_assign_pointer_str2D
-
-    atoms_assign_pointer_str2D = atoms_assign_pointer(this, name, str2D_ptr=ptr)
-  end function atoms_assign_pointer_str2D
-
-  function atoms_assign_pointer_logical1D(this, name, ptr)
+  function atoms_assign_pointer_logical(this, name, ptr)
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: name
     logical, pointer :: ptr(:)
-    logical :: atoms_assign_pointer_logical1D
+    logical :: atoms_assign_pointer_logical
 
-    atoms_assign_pointer_logical1D = atoms_assign_pointer(this, name, logical1D_ptr=ptr)
-  end function atoms_assign_pointer_logical1D
-
-  function atoms_assign_pointer_logical2D(this, name, ptr)
-    type(Atoms), intent(in) :: this
-    character(len=*), intent(in) :: name
-    logical, pointer :: ptr(:,:)
-    logical :: atoms_assign_pointer_logical2D
-
-    atoms_assign_pointer_logical2D = atoms_assign_pointer(this, name, logical2D_ptr=ptr)
-  end function atoms_assign_pointer_logical2D
-
-
-
-  !% OMIT
-  function atoms_assign_pointer(this, name, int1D_ptr, int2D_ptr, real1D_ptr, real2D_ptr, &
-       str1D_ptr, str2D_ptr, logical1D_ptr, logical2D_ptr)
-    type(Atoms), intent(in), target :: this
-    character(len=*), intent(in) :: name
-    integer, optional, pointer :: int1D_ptr(:), int2D_ptr(:,:)
-    real(dp), optional, pointer :: real1D_ptr(:), real2D_ptr(:,:)
-    character(TABLE_STRING_LENGTH), optional, pointer :: str1D_ptr(:), str2D_ptr(:,:)
-    logical, optional, pointer :: logical1D_ptr(:), logical2D_ptr(:,:)
-    logical :: atoms_assign_pointer
-
-    integer :: lookup(3)
-
-    if (.not. get_value(this%properties, name, lookup)) then
-      atoms_assign_pointer = .false.
-      return
-    endif
-
-    select case (lookup(1))
-
-       case(PROPERTY_INT)
-          if (lookup(2) == lookup(3)) then
-             ! it's a rank 1 integer property, have we got a pointer for that
-             if (present(int1D_ptr)) then
-                int1D_ptr => this%data%int(lookup(2),1:this%N)
-             else
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 1 integer pointer')
-             end if
-          else
-             ! it's a rank 2 int property
-             if (present(int2D_ptr)) then
-                int2D_ptr => this%data%int(lookup(2):lookup(3),1:this%N)
-             else
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 2 integer pointer')
-             end if
-          end if
-
-       case(PROPERTY_REAL)
-          if (lookup(2) == lookup(3)) then
-             ! it's a rank 1 real property, have we got a pointer for that
-             if (present(real1D_ptr)) then
-                real1D_ptr => this%data%real(lookup(2),1:this%N)
-             else
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 1 real(dp) pointer')
-             end if
-          else
-             ! it's a rank 2 real property
-             if (present(real2D_ptr)) then
-                real2D_ptr => this%data%real(lookup(2):lookup(3),1:this%N)
-             else
-		atoms_assign_pointer = .false.
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 2 real(dp) pointer')
-             end if
-          end if
-
-       case(PROPERTY_STR)
-          if (lookup(2) == lookup(3)) then
-             ! it's a rank 1 str property, have we got a pointer for that
-             if (present(str1D_ptr)) then
-                str1D_ptr => this%data%str(lookup(2),1:this%N)
-             else
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 1 str pointer')
-             end if
-          else
-             ! it's a rank 2 str property
-             if (present(str2D_ptr)) then
-                str2D_ptr => this%data%str(lookup(2):lookup(3),1:this%N)
-             else
-		atoms_assign_pointer = .false.
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 2 str) pointer')
-             end if
-          end if
-
-       case(PROPERTY_LOGICAL)
-          if (lookup(2) == lookup(3)) then
-             ! it's a rank 1 logical property, have we got a pointer for that
-             if (present(logical1D_ptr)) then
-                logical1D_ptr => this%data%logical(lookup(2),1:this%N)
-             else
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 1 logical pointer')
-             end if
-          else
-             ! it's a rank 2 logical property
-             if (present(logical2D_ptr)) then
-                logical2D_ptr => this%data%logical(lookup(2):lookup(3),1:this%N)
-             else
-		atoms_assign_pointer = .false.
-                call system_abort('atoms_assign_pointer: property '//name//' needs a rank 2 logical pointer')
-             end if
-          end if
-
-    end select
-
-    atoms_assign_pointer = .true.
-
-  end function atoms_assign_pointer
-
+    atoms_assign_pointer_logical = assign_pointer(this%properties, name, ptr)
+  end function atoms_assign_pointer_logical
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -1535,11 +1319,11 @@ contains
     if(present(indices)) then
        this%pos(:,indices) = 0.0_dp
        this%Z(indices) = 0
-       this%species(indices) = repeat(' ', TABLE_STRING_LENGTH)
+       this%species(:,indices) = ' '
     else
        this%pos = 0.0_dp
        this%Z = 0
-       this%species = repeat(' ', TABLE_STRING_LENGTH)
+       this%species = ' '
     end if
 
   end subroutine atoms_zero
@@ -1614,6 +1398,8 @@ contains
     integer, dimension(:), intent(in) :: Z
     real(dp), optional, dimension(:), intent(in) :: mass
     
+    integer i
+
     this%Z = Z
     if (has_property(this, 'mass')) then
        this%mass = ElementMass(Z)
@@ -1621,7 +1407,10 @@ contains
        if (present(mass)) this%mass = mass
     end if
     if (has_property(this, 'species')) then
-       this%species = ElementName(Z)
+       do i=1,this%N
+          this%species(:,i) = ' '
+          this%species(1:3,i) = s2a(ElementName(Z(i)))
+       end do
     end if
     
   end subroutine atoms_set_atoms
@@ -1635,25 +1424,29 @@ contains
   !% Return the number of neighbour that atom $i$ has.
   !% If the optional arguments max_dist or max_factor are present 
   !% then only neighbours closer than this cutoff are included.
-  function atoms_n_neighbours(this, i, max_dist, max_factor, alt_connect) result(n)
+  function atoms_n_neighbours(this, i, max_dist, max_factor, alt_connect, error) result(n)
     type(Atoms), intent(in), target :: this
     integer, intent(in) :: i
     real(dp), optional, intent(in) :: max_dist, max_factor
     type(Connection), optional, intent(in), target :: alt_connect
+    integer, intent(out), optional :: error     
+    
     integer :: n
 
     integer :: j, m
     real(dp) :: r_ij
     type(Connection), pointer :: use_connect
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
       use_connect => this%connect
     endif
 
-    if (.not. use_connect%initialised) &
-       call system_abort('Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.')
+    if (.not. use_connect%initialised) then
+       RAISE_ERROR('Atoms_N_Neighbours: Atoms structure has no connectivity data. Call calc_connect first.', error)
+    end if
 
     if (.not. associated(use_connect%neighbour1(i)%t)) then
       n = 0
@@ -1678,22 +1471,24 @@ contains
           if (r_ij < bond_length(this%Z(i),this%Z(j))*max_factor) n = n + 1
        end do
     else
-       call system_abort('Atoms_N_Neighbours: optional arguments max_dist and max_factor must not both be present')
+       RAISE_ERROR('Atoms_N_Neighbours: optional arguments max_dist and max_factor must not both be present', error)
     end if
 
   end function atoms_n_neighbours
 
-  function atoms_neighbour_index(this, i, n, index, t, is_j, alt_connect) result(j)
+  function atoms_neighbour_index(this, i, n, index, t, is_j, alt_connect, error) result(j)
     type(Atoms), intent(in), target :: this
     integer :: i, j, n
     integer,  intent(out) :: index
     type(Table), pointer, intent(out) :: t
     logical, intent(out) :: is_j
     type(Connection), optional, intent(in), target :: alt_connect
+    integer, intent(out), optional :: error     
 
     integer :: i_n1n, j_n1n
     type(Connection), pointer :: use_connect
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
@@ -1714,11 +1509,10 @@ contains
 	  t => use_connect%neighbour1(i)%t
 	  is_j = .false.
        else
-          call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
-               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
+          RAISE_ERROR('atoms_neighbour: '//n//' out of range for atom '//i//' Should be in range 1 < n <= '//atoms_n_neighbours(this, i), error)
        end if
     else
-       call system_abort('atoms_neighbour_index: Connect structure not initialized. Call calc_connect first.')
+       RAISE_ERROR('atoms_neighbour_index: Connect structure not initialized. Call calc_connect first.', error)
     end if
 
   end function atoms_neighbour_index
@@ -1756,7 +1550,7 @@ contains
   !%>   end do
   !%
   !% if distance > max_dist, return 0, and do not waste time calculating other quantities
-  function atoms_neighbour(this, i, n, distance, diff, cosines, shift, index, max_dist, jn, alt_connect) result(j)
+  function atoms_neighbour(this, i, n, distance, diff, cosines, shift, index, max_dist, jn, alt_connect, error) result(j)
     type(Atoms), intent(in), target :: this
     integer ::i, j, n
     real(dp), optional, intent(out) :: distance
@@ -1767,12 +1561,14 @@ contains
     real(dp), optional, intent(in)  :: max_dist
     integer,  optional, intent(out) :: jn
     type(Connection), optional, intent(in), target :: alt_connect
+    integer, intent(out), optional :: error     
 
     real(dp)::mydiff(3), norm_mydiff
     integer ::myshift(3)
     integer ::i_n1n, j_n1n, i_njn, m
     type(Connection), pointer :: use_connect
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
@@ -1780,8 +1576,7 @@ contains
     endif
 
     if (.not. associated(use_connect%neighbour1(i)%t)) then
-      call system_abort("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table")
-      return
+      RAISE_ERROR("called atoms_neighbour on atom " // i // " which has no allocated neighbour1 table", error)
     endif
 
     ! First we give the neighbour2 entries (i > j) then the neighbour1 (i <= j)
@@ -1796,11 +1591,10 @@ contains
           j = use_connect%neighbour1(i)%t%int(1,i_n1n)
           if(present(index)) index = i_n1n
        else
-          call system_abort('atoms_neighbour: '//n//' out of range for atom '//i//&
-               ' Should be in range 1 < n <= '//atoms_n_neighbours(this, i))
+          RAISE_ERROR('atoms_neighbour: '//n//' out of range for atom '//i//' Should be in range 1 < n <= '//atoms_n_neighbours(this, i), error)
        end if
     else
-       call system_abort('atoms_neighbour: Atoms structure has no connectivity data. Call calc_connect first.')
+       RAISE_ERROR('atoms_neighbour: Atoms structure has no connectivity data. Call calc_connect first.', error)
     end if
 
     if(present(jn)) then
@@ -1887,130 +1681,192 @@ contains
   ! 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine add_atom_single(this, pos, Z, mass, travel)
+  subroutine add_atom_single(this, pos, Z, mass, travel, error)
 
     type(Atoms),       intent(inout)            :: this
     real(dp),          intent(in), dimension(3) :: pos
     integer,           intent(in)               :: Z
     real(dp), optional,  intent(in)             :: mass
     integer, optional, intent(in), dimension(3) :: travel
+    integer, optional, intent(out) :: error
+
+    INIT_ERROR(error)
 
     if(present(travel)) then
        if(present(mass)) then
-          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), mass=(/mass/), travel=reshape(travel, (/3,1/)))
+          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), mass=(/mass/), travel=reshape(travel, (/3,1/)), error=error)
        else
-          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), travel=reshape(travel, (/3,1/)))
+          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), travel=reshape(travel, (/3,1/)), error=error)
        end if
     else
        if(present(mass)) then
-          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), mass=(/mass/))
+          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), mass=(/mass/), error=error)
        else
-          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/))
+          call add_atom_multiple(this, pos=reshape(pos, (/3,1/)), Z=(/Z/), error=error)
        end if
     end if
+    PASS_ERROR(error)
+
   end subroutine add_atom_single
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine add_atom_multiple(this, pos, Z, mass,  velo, acc, travel, data)
+  subroutine add_atom_multiple(this, pos, Z, mass,  velo, acc, travel, error)
 
     type(Atoms),       intent(inout)              :: this
-    real(dp), optional, intent(in), dimension(:,:) :: pos
-    integer,  optional, intent(in), dimension(:)   :: Z
+    real(dp), intent(in), dimension(:,:) :: pos
+    integer,  intent(in), dimension(:)   :: Z
     real(dp), optional, intent(in), dimension(:)  :: mass
     integer, optional, intent(in), dimension(:,:) :: travel
     real(dp),optional, intent(in), dimension(:,:) :: velo, acc
+    integer, intent(out), optional :: error
 
-    type(Table), optional, intent(in)             :: data
+    integer                                       :: oldN,i
+    integer, allocatable, dimension(:) :: tmp_int
+    integer, allocatable, dimension(:,:) :: tmp_int2
+    real(dp), allocatable, dimension(:) :: tmp_real
+    real(dp), allocatable, dimension(:,:) :: tmp_real2
+    logical, allocatable, dimension(:) :: tmp_logical
+    character, allocatable, dimension(:,:) :: tmp_char
 
-    integer                                       :: oldN,i, lookup(3)
-    logical :: dummy
+    INIT_ERROR(error)    
 
-    if (present(data)) then
-
-       this%N = this%N + data%N
-       this%Ndomain = this%N
-
-       if (this%data%intsize /= data%intsize) &
-            call system_abort('Add_Atoms: this%data%intsize /= data%intsize')
-       if (this%data%realsize /= data%realsize) &
-            call system_abort('Add_Atoms: this%data%realsize /= data%realsize')
-
-       call append(this%data, data)
-       call atoms_repoint(this)
+    oldN = this%N
+    this%N = this%N + size(Z)
+    this%Ndomain = this%N
     
-    else
-       if (.not. present(Z)) call system_abort('Atoms_Add: Z must be present if data is not')
-       oldN = this%N
-       this%N = this%N + size(Z)
-       this%Ndomain = this%N
+    !Check the sizes of the input arrays for consistency
+    call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom',error)
+    PASS_ERROR(error)
 
-       !Check the sizes of the input arrays for consistency
-       call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom')
-       if (present(travel)) call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom')
-       if (present(velo)) call check_size('Velo', velo, (/3,size(Z)/), 'Add_Atom')
-       if (present(acc)) call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom')
-
-       call append(this%data, blank_rows=size(Z))
-       call atoms_repoint(this)
-
-       ! First check the integer properties...
-       if (.not. get_value(this%properties, 'Z', lookup)) &
-            call system_abort('Atoms_Add: this atoms has no Z property')
-       this%data%int(lookup(2),oldN+1:this%N) = Z
-
-       ! set species from Z
-       if (.not. get_value(this%properties, 'species', lookup)) &
-            call system_abort('Atoms_Add: this atoms has no species property')
-       do i=1,size(Z)
-          this%data%str(lookup(2),oldN+i) = ElementName(Z(i))
-       end do
-
-       if (present(travel)) then
-          if (.not. get_value(this%properties, 'travel', lookup)) &
-               call system_abort('Atoms_Add: this atoms has no travel property')
-          this%data%int(lookup(2):lookup(3),oldN+1:this%N) = travel
-       else
-          if (get_value(this%properties, 'travel', lookup)) &
-          & this%data%int(lookup(2):lookup(3),oldN+1:this%N) = 0
-       end if
-
-       ! Set masks to 1 if properties for them exist
-       if (get_value(this%properties, 'move_mask', lookup)) &
-            this%data%int(lookup(2):lookup(3),oldN+1:this%N) = 1
-       if (get_value(this%properties, 'damp_mask', lookup)) &
-            this%data%int(lookup(2):lookup(3),oldN+1:this%N) = 1
-       if (get_value(this%properties, 'thermostat_region', lookup)) &
-            this%data%int(lookup(2):lookup(3),oldN+1:this%N) = 1
-
-       ! ... and now the real properties
-       if (get_value(this%properties, 'mass', lookup)) then
-          if (present(mass)) then
-             this%data%real(lookup(2),oldN+1:this%N) = mass
-          else
-             this%data%real(lookup(2),oldN+1:this%N) = ElementMass(Z)
-          end if
-       else if (present(mass)) then
-          ! mass specified but property doesn't yet exist, so create it...
-          call add_property(this, 'mass', ElementMass(this%Z))
-          dummy = get_value(this%properties, 'mass', lookup)
-          ! ... and then override for new atoms
-          this%data%real(lookup(2),oldN+1:this%N) = mass
-       end if
-
-       if (.not. present(pos)) &
-            call system_abort('Atoms_Add: pos must be present if data is not')
-       if (.not. get_value(this%properties, 'pos', lookup)) &
-            call system_abort('Atoms_Add: this atoms has no pos property')
-       this%data%real(lookup(2):lookup(3),oldN+1:this%N) = pos
-
-       if (present(velo) .and. get_value(this%properties, 'velo', lookup)) &
-            this%data%real(lookup(2):lookup(3),oldN+1:this%N) = velo
-
-       if (present(acc) .and. get_value(this%properties, 'acc', lookup)) &
-            this%data%real(lookup(2):lookup(3),oldN+1:this%N) = acc
-
+    if (present(travel)) then
+       call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom', error)
+       PASS_ERROR(error)
     end if
+
+    if (present(velo)) then
+       call check_size('Velo', velo, (/3,size(Z)/), 'Add_Atom', error)
+       PASS_ERROR(error)
+    end if
+
+    if (present(acc)) then
+       call check_size('Acc', acc, (/3,size(Z)/), 'Add_Atom', error)
+       PASS_ERROR(error)
+    end if
+
+    ! Resize property data arrays, copying old data.
+    ! this will break any existing pointers so we call atoms_repoint() immediately after
+    ! (note that user-held pointers will stay broken, there is no way to fix this
+    ! since Fortran does not allow pointer-to-pointer types)
+    do i=1,this%properties%N
+       select case (this%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+          allocate(tmp_int(this%n))
+          tmp_int(1:oldN) = this%properties%entries(i)%i_a
+          tmp_int(oldn+1:this%n) = 0
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
+          deallocate(tmp_int)
+
+       case(T_REAL_A)
+          allocate(tmp_real(this%n))
+          tmp_real(1:oldN) = this%properties%entries(i)%r_a
+          tmp_real(oldn+1:this%n) = 0.0_dp
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
+          deallocate(tmp_real)
+
+       case(T_LOGICAL_A)
+          allocate(tmp_logical(this%n))
+          tmp_logical(1:oldN) = this%properties%entries(i)%l_a
+          tmp_logical(oldn+1:this%n) = .false.
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
+          deallocate(tmp_logical)
+
+       case(T_INTEGER_A2)
+          allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
+          tmp_int2(:,1:oldN) = this%properties%entries(i)%i_a2
+          tmp_int2(:,oldn+1:this%n) = 0
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
+          deallocate(tmp_int2)
+
+       case(T_REAL_A2)
+          allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
+          tmp_real2(:,1:oldN) = this%properties%entries(i)%r_a2
+          tmp_real2(:,oldn+1:this%n) = 0.0_dp
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
+          deallocate(tmp_real2)
+
+       case(T_CHAR_A)
+          allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
+          tmp_char(:,1:oldN) = this%properties%entries(i)%s_a
+          tmp_char(:,oldn+1:this%n) = ' '
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
+          deallocate(tmp_char)
+
+       case default
+          RAISE_ERROR('atoms_add: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+
+       end select
+    end do
+    call atoms_repoint(this)
+
+    ! First check the integer properties...
+    if (.not. has_key(this%properties, 'Z')) then
+       RAISE_ERROR('Atoms_Add: this atoms has no Z property', error)
+    end if
+    this%z(oldN+1:this%N) = Z
+    
+    ! set species from Z
+    if (.not. has_key(this%properties, 'species')) then
+       RAISE_ERROR('Atoms_Add: this atoms has no species property', error)
+    end if
+    do i=1,size(Z)
+       this%species(:,oldN+i) = s2a(ElementName(Z(i)))
+    end do
+
+    if (present(travel)) then
+       if (.not. has_key(this%properties, 'travel')) then
+          RAISE_ERROR('Atoms_Add: this atoms has no travel property', error)
+       end if
+       this%travel(:,oldN+1:this%N) = travel
+    else
+       if (has_key(this%properties, 'travel')) then
+          this%travel(:,oldN+1:this%N) = 0
+       end if
+    end if
+    
+    ! Set masks to 1 if properties for them exist
+    if (has_key(this%properties, 'move_mask')) &
+         this%move_mask(oldN+1:this%N) = 1
+    if (has_key(this%properties, 'damp_mask')) &
+         this%damp_mask(oldN+1:this%N) = 1
+    if (has_key(this%properties, 'thermostat_region')) &
+         this%thermostat_region(oldN+1:this%N) = 1
+    
+    ! ... and now the real properties
+    if (has_key(this%properties, 'mass')) then
+       if (present(mass)) then
+          this%mass(oldN+1:this%N) = mass
+       else
+          this%mass(oldN+1:this%N) = ElementMass(Z)
+       end if
+    else if (present(mass)) then
+       ! mass specified but property doesn't yet exist, so create it...
+       call add_property(this, 'mass', ElementMass(this%Z), ptr=this%mass)
+       ! ... and then override for new atoms
+       this%mass(oldN+1:this%N) = mass
+    end if
+
+    if (.not. has_key(this%properties, 'pos')) then
+       RAISE_ERROR('Atoms_Add: this atoms has no pos property', error)
+    end if
+    this%pos(:,oldN+1:this%N) = pos
+    
+    if (present(velo) .and. has_key(this%properties, 'velo')) &
+         this%velo(:,oldN+1:this%N) = velo
+
+    if (present(acc) .and. has_key(this%properties, 'acc')) &
+         this%acc(:,oldN+1:this%N) = acc
 
     call finalise(this%connect)
 
@@ -2019,34 +1875,128 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine remove_atom_single(this, i)
+  subroutine remove_atom_single(this, i, error)
 
     type(Atoms), intent(inout) :: this
     integer,     intent(in)    :: i
+    integer, intent(out), optional :: error
 
-    call remove_atom_multiple(this,(/i/))
+    INIT_ERROR(error)
+    call remove_atom_multiple(this,(/i/),error)
+    PASS_ERROR(error)
 
   end subroutine remove_atom_single
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine remove_atom_multiple(this, atom_indices)
+  subroutine remove_atom_multiple(this, atom_indices, error)
 
     type(Atoms), intent(inout)                 :: this
     integer,     intent(in), dimension(:)      :: atom_indices
+    integer, intent(out), optional :: error
+
+    integer i, j, copysrc
+    integer, allocatable, dimension(:), target :: new_indices
+    integer, pointer, dimension(:) :: include_list
+    integer, allocatable, dimension(:) :: tmp_int
+    integer, allocatable, dimension(:,:) :: tmp_int2
+    real(dp), allocatable, dimension(:) :: tmp_real
+    real(dp), allocatable, dimension(:,:) :: tmp_real2
+    logical, allocatable, dimension(:) :: tmp_logical
+    character, allocatable, dimension(:,:) :: tmp_char
+    integer, dimension(size(atom_indices)) :: sorted
+    integer, dimension(:), allocatable :: uniqed
+
+    INIT_ERROR(error)
 
     !Delete the connection data because the atomic indices become mangled
     call connection_finalise(this%connect)
 
-    ! Remove rows from data table
-    call delete_multiple(this%data, atom_indices)
+    ! Permute new_indices, following algorithm in table_record_delete_multiple,
+    ! so that atom ordering is same as it was under old scheme when properties were
+    ! stored as columns in Table this%data.
+    ! (we find first atomc to be removed and last atom to not be removed
+    !  and swap them. Repeat until all atoms to be removed are at the end.)
+
+    sorted = atom_indices     ! Get our own copy of the  indices so we can sort them
+    call sort_array(sorted)
+    call uniq(sorted, uniqed) ! remove duplicates from sorted indices
+
+    allocate(new_indices(this%N))
+    do i=1,this%N
+       new_indices(i) = i
+    end do
+
+    copysrc = this%N
+    do i=1,size(uniqed)
+       do while(is_in_array(uniqed,copysrc))
+          copysrc = copysrc - 1
+       end do
+
+       if (uniqed(i) > copysrc) exit
+       new_indices(uniqed(i)) = new_indices(copysrc)
+       copysrc = copysrc - 1
+    end do
 
     ! update N
     this%N = this%N - size(atom_indices)
     this%Ndomain = this%N
 
+    include_list => new_indices(1:this%N)
+    
+    ! Resize property data arrays, copying old data.
+    ! this will break any existing pointers so we call atoms_repoint() immediately after
+    ! (note that user-held pointers will stay broken, there is no way to fix this
+    ! since Fortran does not allow pointer-to-pointer types)
+    do i=1,this%properties%N
+       select case (this%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+          allocate(tmp_int(this%n))
+          tmp_int(:) = this%properties%entries(i)%i_a(include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
+          deallocate(tmp_int)
+
+       case(T_REAL_A)
+          allocate(tmp_real(this%n))
+          tmp_real(:) = this%properties%entries(i)%r_a(include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
+          deallocate(tmp_real)
+
+       case(T_LOGICAL_A)
+          allocate(tmp_logical(this%n))
+          tmp_logical(:) = this%properties%entries(i)%l_a(include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
+          deallocate(tmp_logical)
+
+       case(T_INTEGER_A2)
+          allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
+          tmp_int2(:,:) = this%properties%entries(i)%i_a2(:,include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
+          deallocate(tmp_int2)
+
+       case(T_REAL_A2)
+          allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
+          tmp_real2(:,:) = this%properties%entries(i)%r_a2(:,include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
+          deallocate(tmp_real2)
+
+       case(T_CHAR_A)
+          allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
+          tmp_char(:,:) = this%properties%entries(i)%s_a(:,include_list)
+          call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
+          deallocate(tmp_char)
+
+       case default
+          deallocate(include_list)
+          RAISE_ERROR('remove_atom_multiple: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+
+       end select
+    end do
     call atoms_repoint(this)
+
+    deallocate(uniqed, new_indices)
 
   end subroutine remove_atom_multiple
 
@@ -2075,8 +2025,9 @@ contains
     !    update travel
     !    update shifts
 
-    if (.not. has_property(this, 'travel')) &
-         call add_property(this, 'travel', 0, n_cols=3)
+    if (.not. has_property(this, 'travel')) then
+       call add_property(this, 'travel', 0, n_cols=3, ptr2=this%travel)
+    end if
 
     do i=1,this%N
       call map_into_cell(this%pos(:,i), this%lattice, this%g, shift, mapped)
@@ -2473,14 +2424,18 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function cosine(this,i,j,k)
+  function cosine(this,i,j,k,error)
 
     type(Atoms), intent(in) :: this
     integer,     intent(in)    :: i,j,k
     real(dp)                   :: cosine
     real(dp), dimension(3)     :: ij, ik
-
-    if ((i == j) .or. (i == k)) call system_abort('Cosine: i == j or i == k')
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
+    if ((i == j) .or. (i == k)) then
+       RAISE_ERROR('Cosine: i == j or i == k', error)
+    end if
 
     ij = diff_min_image(this,i,j)
     ik = diff_min_image(this,i,k)
@@ -2532,13 +2487,17 @@ contains
   end function direction_cosines
 
   !% Direction cosines of the difference vector from $i$ to $j$
-  function direction_cosines_min_image(this,i,j)
+  function direction_cosines_min_image(this,i,j,error)
 
     type(Atoms), intent(in) :: this
     integer,     intent(in)    :: i,j
     real(dp), dimension(3)     :: direction_cosines_min_image, diffv
-
-    if (i == j) call system_abort('Cosines: i == j')
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
+    if (i == j) then
+       RAISE_ERROR('Cosines: i == j', error)
+    end if
 
     diffv = diff_min_image(this,i,j)
     direction_cosines_min_image = diffv / norm(diffv)
@@ -2574,52 +2533,56 @@ contains
     if (do_fill) call connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess)
   end subroutine connection_initialise
 
-  subroutine connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess)
+  subroutine connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess, error)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
     real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
-
+    integer, intent(out), optional :: error     
+    
     integer                           :: i, do_nn_guess
     real(dp)                          :: extent_inv(3,3), subregion_center(3)
     logical :: do_subregion
 
+    INIT_ERROR(error)
     do_nn_guess = optional_default(5, nn_guess)
 
     if (present(origin) .and. present(extent)) then
-      if (.not.present(lattice) .or. .not.present(g)) &
-	call system_abort ("connection_fill got origin and extent, so trying to do subregion, but lattice or g are missing")
+      if (.not.present(lattice) .or. .not.present(g)) then
+         RAISE_ERROR("connection_fill got origin and extent, so trying to do subregion, but lattice or g are missing", error)
+      end if
       do_subregion = .true.
       call matrix3x3_inverse(extent,extent_inv)
       subregion_center = origin + 0.5_dp*sum(extent,2)
     else
-      do_subregion = .false.
+       do_subregion = .false.
     endif
 
     if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(N))
     if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(N))
     do i=1,N
        if (do_subregion) then
-	 if (.not. is_in_subregion(pos(:,i), subregion_center, lattice, g, extent_inv)) then
-	   if (associated(this%neighbour1(i)%t)) then
-	      call connection_remove_atom(this, i)
-	      call finalise(this%neighbour1(i)%t)
-	      call finalise(this%neighbour2(i)%t)
-	      deallocate(this%neighbour1(i)%t)
-	      deallocate(this%neighbour2(i)%t)
-	   endif
-	   cycle
-	 endif 
+          if (.not. is_in_subregion(pos(:,i), subregion_center, lattice, g, extent_inv)) then
+             if (associated(this%neighbour1(i)%t)) then
+                call connection_remove_atom(this, i, error)
+                PASS_ERROR(error)
+                call finalise(this%neighbour1(i)%t)
+                call finalise(this%neighbour2(i)%t)
+                deallocate(this%neighbour1(i)%t)
+                deallocate(this%neighbour2(i)%t)
+             endif
+             cycle
+          endif
        endif
        if (.not. associated(this%neighbour1(i)%t)) then
-	 allocate(this%neighbour1(i)%t)
-	 call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
-	 this%neighbour1(i)%t%increment = max(do_nn_guess/2, 1)
+          allocate(this%neighbour1(i)%t)
+          call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
+          this%neighbour1(i)%t%increment = max(do_nn_guess/2, 1)
 
-	 allocate(this%neighbour2(i)%t)
-	 call allocate(this%neighbour2(i)%t,2,0, 0, 0, max(do_nn_guess, 1))
-	 this%neighbour2(i)%t%increment = max(do_nn_guess/2, 1)
+          allocate(this%neighbour2(i)%t)
+          call allocate(this%neighbour2(i)%t,2,0, 0, 0, max(do_nn_guess, 1))
+          this%neighbour2(i)%t%increment = max(do_nn_guess/2, 1)
        endif
     end do
 
@@ -2878,7 +2841,7 @@ contains
   !% Test if atom $i$ is a neighbour of atom $j$ and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup)
+  subroutine test_form_bond(this,cutoff, use_uniform_cutoff, Z, pos, lattice, i,j, shift, check_for_dup, error)
 
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff
@@ -2888,11 +2851,13 @@ contains
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     logical, intent(in) :: check_for_dup
+    integer, intent(out), optional :: error
 
     integer                    :: index, m, k
     real(dp)                   :: d, dd(3)
     real(dp)                   :: use_cutoff
 
+    INIT_ERROR(error)
     if (i > j) return
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
@@ -2942,7 +2907,8 @@ contains
 #endif
 
     if (d < use_cutoff) then
-       call add_bond(this, pos, lattice, i, j, shift, d)
+       call add_bond(this, pos, lattice, i, j, shift, d, error)
+       PASS_ERROR(error)
     end if
 
 #ifdef DEBUG
@@ -2954,7 +2920,7 @@ contains
   !% Test if atom $i$ is no longer neighbour of atom $j$ with shift $s$, and update 'this%connect' as necessary.
   !% Called by 'calc_connect'. The 'shift' vector is added to the position of the $j$ atom
   !% to get the correct image position.
-  function test_break_bond(this,cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift)
+  function test_break_bond(this,cutoff_break, use_uniform_cutoff, Z, pos, lattice, i,j, shift, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: cutoff_break
     logical, intent(in) :: use_uniform_cutoff
@@ -2963,10 +2929,12 @@ contains
     integer,     intent(in)    :: i,j
     integer, intent(in)        :: shift(3)
     logical test_break_bond
+    integer, intent(out), optional :: error
 
     real(dp)                   :: d
     real(dp)                   :: cutoff
 
+    INIT_ERROR(error)
     test_break_bond = .false.
     if (i > j) return
 
@@ -2994,7 +2962,8 @@ contains
 #ifdef DEBUG
        if(current_verbosity() >= PRINT_ANAL) call print('removing bond from tables', PRINT_ANAL)
 #endif
-       call remove_bond(this, i, j, shift)
+       call remove_bond(this, i, j, shift, error)
+       PASS_ERROR(error)
        test_break_bond = .true.
     end if
 
@@ -3004,13 +2973,15 @@ contains
 
   end function test_break_bond
 
-  subroutine set_bonds(this, pairs, shifts)
+  subroutine set_bonds(this, pairs, shifts, error)
     type(Atoms), intent(inout) :: this
     integer, intent(in) :: pairs(:,:)
     integer, intent(in) :: shifts(:,:)
+    integer, intent(out), optional :: error
 
     integer i
 
+    INIT_ERROR(error)
     if (.not.this%connect%initialised) then
        call connection_initialise(this%connect, this%N)
     else
@@ -3018,32 +2989,40 @@ contains
        call wipe(this%connect)
     end if
 
-    if (size(pairs,1) /= 2) call system_abort("set_bond pairs not a 2xN array")
-    if (size(shifts,1) /= 3) call system_abort("set_bond shifts not a 3xN array")
-    if (size(pairs,2) /= size(shifts,2)) call system_abort("set_bonds called with mismatching pairs and shifts sizes")
+    if (size(pairs,1) /= 2) then
+       RAISE_ERROR("set_bond pairs not a 2xN array", error)
+    end if
+    if (size(shifts,1) /= 3) then
+       RAISE_ERROR("set_bond shifts not a 3xN array", error)
+    end if
+    if (size(pairs,2) /= size(shifts,2)) then
+       RAISE_ERROR("set_bonds called with mismatching pairs and shifts sizes", error)
+    end if
 
     do i=1, size(pairs,2)
-      call add_bond(this%connect, this%pos, this%lattice, pairs(1,i), pairs(2,i), shifts(:,i))
+      call add_bond(this%connect, this%pos, this%lattice, pairs(1,i), pairs(2,i), shifts(:,i), error=error)
+      PASS_ERROR(error)
     end do
   end subroutine set_bonds
 
-  subroutine add_bond(this, pos, lattice, i, j, shift, d)
+  subroutine add_bond(this, pos, lattice, i, j, shift, d, error)
     type(Connection), intent(inout) :: this
     real(dp), intent(in) :: pos(:,:), lattice(3,3)
     integer,     intent(in)    :: i,j
     integer,     intent(in)    :: shift(3)
     real(dp), intent(in), optional :: d
+    integer, intent(out), optional :: error
 
     real(dp) :: dd
     integer :: ii, jj, index
 
+    INIT_ERROR(error)
     if (.not.this%initialised) then
-       call system_abort("add_bond called on uninitialized connection")
+       RAISE_ERROR("add_bond called on uninitialized connection", error)
     endif
 
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
-      call system_abort("tried to add_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
-	associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false")
+      RAISE_ERROR("tried to add_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t "//associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false", error)
     endif
 
     if (i > j) then
@@ -3071,16 +3050,18 @@ contains
   end subroutine add_bond
 
 
-  subroutine remove_bond(this, i, j, shift)
+  subroutine remove_bond(this, i, j, shift, error)
     type(Connection), intent(inout) :: this
     integer,     intent(in)    :: i,j
     integer,     intent(in), optional    :: shift(3)
+    integer, intent(out), optional :: error     
+    
 
     integer :: ii, jj, iii, jjj, jjjj, r_index, n_removed, my_shift(3)
 
+    INIT_ERROR(error)
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) then
-      call system_abort("tried to remove_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " // &
-	associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false")
+       RAISE_ERROR("tried to remove_bond for atoms i " // i // " j " // j // " which have associated(neighbour1()%t " //associated(this%neighbour1(i)%t) // " " // associated(this%neighbour1(j)%t) // " one of which is false", error)
     endif
 
     if (i > j) then
@@ -3132,7 +3113,7 @@ contains
 	      ! decrement reference in jjj's neighbour2 table
 	      this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
 	    else
-	      call system_abort("Couldn't find neighbor to fix neighbour2 of")
+	      RAISE_ERROR("remove_bond: Couldn't find neighbor to fix neighbour2 of", error)
 	    endif
 	  endif
 	end do
@@ -3152,11 +3133,12 @@ contains
   !%  vectors can be used to restrict the hysteretic region to only
   !%  part of the entire system -- the 'estimate_origin_extent()'
   !%  routine in clusters.f95 can be used to guess suitable values.
-  subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour, store_is_min_image)
+  subroutine calc_connect_hysteretic(this, alt_connect, origin, extent, own_neighbour, store_is_min_image, error)
     type(Atoms), intent(inout), target           :: this
     type(Connection), intent(inout), target, optional :: alt_connect
     real(dp), optional :: origin(3), extent(3,3)
     logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    integer, intent(out), optional :: error
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc
@@ -3166,9 +3148,10 @@ contains
     integer :: ji, s_ij(3), nn_guess
     logical my_own_neighbour, my_store_is_min_image
     type(Connection), pointer :: use_connect
-    logical :: change_i, change_j, change_k
+    logical :: change_i, change_j, change_k, broken
     integer, pointer :: map_shift(:,:)
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
@@ -3179,11 +3162,11 @@ contains
     my_store_is_min_image = optional_default(.true., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
-       call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
+       RAISE_ERROR('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break, error)
     end if
 
     if (this%cutoff > this%cutoff_break) then
-       call system_abort('calc_connect: Negative hysteresis cutoff radius formation ' // this%cutoff // ' > breaking ' // this%cutoff_break )
+       RAISE_ERROR('calc_connect: Negative hysteresis cutoff radius formation ' // this%cutoff // ' > breaking ' // this%cutoff_break, error)
     end if
 
     if ((this%cutoff .feq. 0.0_dp) .or. (this%cutoff_break .feq. 0.0_dp)) then
@@ -3258,9 +3241,11 @@ contains
     endif
 
     ! Partition the atoms into cells
-    call partition_atoms(use_connect, this)
-    if (.not. assign_pointer(this, 'map_shift', map_shift)) &
-       call system_abort("calc_connect impossibly failed to assign map_shift pointer")
+    call partition_atoms(use_connect, this, error=error)
+    PASS_ERROR(error)
+    if (.not. assign_pointer(this, 'map_shift', map_shift)) then
+       RAISE_ERROR("calc_connect impossibly failed to assign map_shift pointer", error)
+    end if
 
     ! look for bonds that have been broken, and remove them
     do i=1, this%N
@@ -3268,8 +3253,10 @@ contains
       do
 	if (ji > atoms_n_neighbours(this, i, alt_connect=use_connect)) exit
 	j = atoms_neighbour(this, i, ji, shift = s_ij, alt_connect=use_connect)
-	if (.not. test_break_bond(use_connect, this%cutoff_break, this%use_uniform_cutoff, &
-	  this%Z, this%pos, this%lattice, i, j, s_ij)) then
+        broken = test_break_bond(use_connect, this%cutoff_break, this%use_uniform_cutoff, &
+             this%Z, this%pos, this%lattice, i, j, s_ij, error)
+        PASS_ERROR(error)
+	if (.not. broken) then
 	  ji = ji + 1 ! we didn't break this bond, so go to next one
 	              ! if we did break a bond, ji now points to a different bond, so don't increment it
 	endif
@@ -3346,7 +3333,8 @@ contains
                             call test_form_bond(use_connect, this%cutoff, this%use_uniform_cutoff, &
                                  this%Z, this%pos, this%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
-				 .true.)
+				 .true., error)
+                            PASS_ERROR(error)
 
                          end do ! n2
 
@@ -3374,17 +3362,20 @@ contains
 
   end subroutine calc_connect_hysteretic
 
-  subroutine connection_remove_atom(this, i)
+  subroutine connection_remove_atom(this, i, error)
     type(Connection), intent(inout) :: this
     integer, intent(in) :: i
-
+    integer, intent(out), optional :: error     
+    
     integer :: ji, j, jj, s_ij(3), n_entries
 
+    INIT_ERROR(error)
     n_entries=this%neighbour1(i)%t%N
     do ji=n_entries, 1, -1
       j = this%neighbour1(i)%t%int(1,ji)
       s_ij = this%neighbour1(i)%t%int(2:4,ji)
-      call remove_bond(this, i, j, s_ij)
+      call remove_bond(this, i, j, s_ij, error)
+      PASS_ERROR(error)
     end do
 
     n_entries=this%neighbour2(i)%t%N
@@ -3392,7 +3383,8 @@ contains
       j = this%neighbour2(i)%t%int(1,ji)
       jj = this%neighbour2(i)%t%int(2,ji)
       s_ij = this%neighbour1(j)%t%int(2:4,jj)
-      call remove_bond(this, j, i, s_ij)
+      call remove_bond(this, j, i, s_ij, error)
+      PASS_ERROR(error)
     end do
 
   end subroutine connection_remove_atom
@@ -3401,10 +3393,11 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image)
+  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image, error)
     type(Atoms), intent(inout), target    :: this
     type(Connection), intent(inout), target, optional :: alt_connect
     logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    integer, intent(out), optional :: error
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
     integer                              :: cell_image_Na, cell_image_Nb, cell_image_Nc, nn_guess, n_occ
@@ -3416,6 +3409,7 @@ contains
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:)
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
@@ -3426,7 +3420,7 @@ contains
     my_store_is_min_image = optional_default(.true., store_is_min_image)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
-       call system_abort('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break )
+       RAISE_ERROR('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break, error)
     end if
 
     if ((this%cutoff .feq. 0.0_dp) .or. (this%cutoff_break .feq. 0.0_dp)) then
@@ -3484,9 +3478,11 @@ contains
          call connection_cells_initialise(use_connect, cellsNa, cellsNb, cellsNc,this%N)
 
     ! Partition the atoms into cells
-    call partition_atoms(use_connect, this)
-    if (.not. assign_pointer(this, 'map_shift', map_shift)) &
-       call system_abort("calc_connect impossibly failed to assign map_shift pointer")
+    call partition_atoms(use_connect, this, error=error)
+    PASS_ERROR(error)
+    if (.not. assign_pointer(this, 'map_shift', map_shift)) then
+       RAISE_ERROR("calc_connect impossibly failed to assign map_shift pointer", error)
+    end if
 
     if (do_fill) then
        volume_per_cell = cell_volume(this%lattice)/real(cellsNa*cellsNb*cellsNc,dp)
@@ -3575,7 +3571,8 @@ contains
 			    call test_form_bond(use_connect,this%cutoff, this%use_uniform_cutoff, &
 			      this%Z, this%pos, this%lattice, atom1,atom2, &
 				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
-				 .false.)
+				 .false., error)
+                            PASS_ERROR(error)
 
 			 end do ! n2
 
@@ -3662,19 +3659,23 @@ contains
   !% Spatially partition the atoms into cells. The number of cells in each dimension must already be
   !% set (cellsNa,b,c). Pre-wiping of the cells can be skipped (e.g. if they are already empty).
   !
-  subroutine partition_atoms(this, at, dont_wipe)
+  subroutine partition_atoms(this, at, dont_wipe, error)
 
     type(Connection), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     logical, optional, intent(in)    :: dont_wipe
+    integer, intent(out), optional :: error
 
     logical                          :: my_dont_wipe, neighbour1_allocated
     integer                          :: i,j,k,n
     real(dp) :: lat_pos(3)
     integer, pointer :: map_shift(:,:)
 
+    INIT_ERROR(error)
     ! Check inputs
-    if (.not.this%cells_initialised) call system_abort('Partition_Atoms: Cells have not been initialised')
+    if (.not.this%cells_initialised) then 
+       RAISE_ERROR('Partition_Atoms: Cells have not been initialised', error)
+    end if
     my_dont_wipe = .false.
     if (present(dont_wipe)) my_dont_wipe = dont_wipe
 
@@ -3685,8 +3686,9 @@ contains
 !!    call map_into_cell(at)
     if (.not. assign_pointer(at, 'map_shift', map_shift)) then
        call add_property(at, 'map_shift', 0, 3)
-       if (.not. assign_pointer(at, 'map_shift', map_shift)) &
-	  call system_abort("partition_atoms impossibly failed to assign map_shift pointer")
+       if (.not. assign_pointer(at, 'map_shift', map_shift)) then
+	  RAISE_ERROR("partition_atoms impossibly failed to assign map_shift pointer", error)
+       end if
     endif
 
     neighbour1_allocated = allocated(this%neighbour1)
@@ -3709,17 +3711,20 @@ contains
 
   end subroutine partition_atoms
 
-   subroutine set_map_shift(this)
+   subroutine set_map_shift(this, error)
       type(Atoms), intent(inout) :: this
+      integer, intent(out), optional :: error
 
       integer, pointer :: map_shift(:,:)
       integer n
       real(dp) :: lat_pos(3)
 
+      INIT_ERROR(error)
       if (.not. assign_pointer(this, 'map_shift', map_shift)) then
 	 call add_property(this, 'map_shift', 0, 3)
-	 if (.not. assign_pointer(this, 'map_shift', map_shift)) &
-	    call system_abort("partition_atoms impossibly failed to assign map_shift pointer")
+	 if (.not. assign_pointer(this, 'map_shift', map_shift)) then
+            RAISE_ERROR("partition_atoms impossibly failed to assign map_shift pointer", error)
+         end if
       endif
 
       do n = 1, this%N
@@ -3764,23 +3769,31 @@ contains
     end subroutine cell_of_pos
 
 
-    function cell_n(this, i, j, k)
+    function cell_n(this, i, j, k, error)
       type(Connection), intent(in) :: this
       integer, intent(in) :: i, j, k
       integer :: cell_n
+      integer, intent(out), optional :: error
       
-      if (.not. this%cells_initialised) call system_abort('cell_n: cells are not initialised')
+      INIT_ERROR(error)
+      if (.not. this%cells_initialised) then
+         RAISE_ERROR('cell_n: cells are not initialised', error)
+      end if
 
       cell_n = this%cell(i,j,k)%n
 
     end function cell_n
 
-    function cell_contents(this, i, j, k, n)
+    function cell_contents(this, i, j, k, n, error)
       type(Connection), intent(in) :: this
       integer, intent(in) :: i, j, k, n
       integer :: cell_contents
+      integer, intent(out), optional :: error
 
-      if (.not. this%cells_initialised) call system_abort('cell_n: cells are not initialised')
+      INIT_ERROR(error)
+      if (.not. this%cells_initialised) then
+         RAISE_ERROR('cell_n: cells are not initialised', error)
+      end if
 
       cell_contents = this%cell(i,j,k)%int(1,n)
 
@@ -3820,17 +3833,21 @@ contains
    !
    !% Returns the maximum cutoff radius for 'calc_connect', given the lattice if we want to avoid image neghbours
    !
-   function max_cutoff(lattice)
+   function max_cutoff(lattice, error)
 
      real(dp), dimension(3,3), intent(in) :: lattice
      real(dp)                             :: Max_Cutoff
      real(dp), dimension(3)               :: a,b,c
      real(dp)                             :: cellVol, ra, rb, rc
+     integer, intent(out), optional :: error
 
+     INIT_ERROR(error)
      a = lattice(:,1); b = lattice(:,2); c = lattice(:,3)
      cellVol = abs( scalar_triple_product(a,b,c) )
 
-     if(cellVol == 0.0_dp) call system_abort("Max_cutoff(): cell volume is exactly 0.0!")
+     if(cellVol == 0.0_dp) then
+        RAISE_ERROR("Max_cutoff(): cell volume is exactly 0.0!", error)
+     end if
 
      ra = cellVol / norm(b .cross. c)
      rb = cellVol / norm(c .cross. a)
@@ -3923,11 +3940,12 @@ contains
    !% and any missing length is assumed to be 'a'.
    !% The vectors are created in a right-handed order.
    !
-   function make_lattice(a,b,c,alpha,beta,gamma) result(lattice)
+   function make_lattice(a,b,c,alpha,beta,gamma,error) result(lattice)
 
      real(dp),           intent(in) :: a
      real(dp), optional, intent(in) :: b,c
      real(dp), optional, intent(in) :: alpha,beta,gamma
+     integer, intent(out), optional :: error
      real(dp), dimension(3,3)       :: lattice
      real(dp)                       :: my_b, my_c,            &
                                        cos_alpha, cos2_alpha, &
@@ -3935,6 +3953,7 @@ contains
                                        cos_gamma, cos2_gamma, &
                                        sin_gamma, sin2_gamma, &
                                        my_alpha, my_beta,my_gamma
+     INIT_ERROR(error)
      my_b = a
      my_c = a
 
@@ -3949,12 +3968,19 @@ contains
      if (present(beta))  my_beta  = beta
      if (present(gamma)) my_gamma = gamma
 
-     if ( (my_alpha <= 0.0_dp) .or. (my_alpha <= 0.0_dp) .or. (my_gamma <= 0.0_dp) ) &
-          call system_abort('Make_Lattice: Negative angles are not permitted')
+     if ( (my_alpha <= 0.0_dp) .or. (my_alpha <= 0.0_dp) .or. (my_gamma <= 0.0_dp) ) then
+        RAISE_ERROR('Make_Lattice: Negative angles are not permitted', error)
+     end if
 
-     if ( (my_alpha + my_beta) < my_gamma ) call system_abort('Make_Lattice: alpha + beta < gamma')
-     if ( (my_beta + my_gamma) < my_alpha ) call system_abort('Make_Lattice: beta + gamma < alpha')
-     if ( (my_gamma + my_alpha) < my_beta ) call system_abort('Make_Lattice: gamma + alpha < beta')
+     if ( (my_alpha + my_beta) < my_gamma ) then
+        RAISE_ERROR('Make_Lattice: alpha + beta < gamma', error)
+     end if
+     if ( (my_beta + my_gamma) < my_alpha ) then
+        RAISE_ERROR('Make_Lattice: beta + gamma < alpha', error)
+     end if
+     if ( (my_gamma + my_alpha) < my_beta ) then
+        RAISE_ERROR('Make_Lattice: gamma + alpha < beta', error)
+     end if
 
      cos_alpha = cos(my_alpha); cos2_alpha = cos_alpha*cos_alpha
      cos_beta  = cos(my_beta);  cos2_beta  = cos_beta *cos_beta
@@ -4011,21 +4037,27 @@ contains
    !%
    !% Note: Because the origin can be specified separately it need not be one of the atoms in the 
    !% calculation.
-   function centre_of_mass(at,index_list,origin) result(CoM)
+   function centre_of_mass(at,index_list,origin,error) result(CoM)
 
      type(atoms),                      intent(in) :: at
      integer,                optional, intent(in) :: origin
      integer,  dimension(:), optional, intent(in) :: index_list
      real(dp), dimension(3)                       :: CoM
+     integer, intent(out), optional :: error
+
      !local variables
      integer                                      :: i, my_origin
      real(dp)                                     :: M_Tot
 
-     if (.not. has_property(at, 'mass')) &
-          call system_abort('center_of_mass: Atoms has no mass property')
+     INIT_ERROR(error)
+     if (.not. has_property(at, 'mass')) then
+        RAISE_ERROR('center_of_mass: Atoms has no mass property', error)
+     end if
 
      if (present(origin)) then
-        if (origin > at%N .or. origin < 1) call system_abort('Centre_Of_Mass: Invalid origin atom')
+        if (origin > at%N .or. origin < 1) then
+           RAISE_ERROR('Centre_Of_Mass: Invalid origin atom', error)
+        end if
         my_origin = origin
      else
         if (present(index_list)) then
@@ -4041,8 +4073,9 @@ contains
      if (present(index_list)) then
 
         do i = 1, size(index_list)
-           if (index_list(i) > at%N .or. index_list(i) < 1) &
-                call system_abort('Centre_Of_Mass: Invalid atom in index_list')
+           if (index_list(i) > at%N .or. index_list(i) < 1) then
+              RAISE_ERROR('Centre_Of_Mass: Invalid atom in index_list', error)
+           end if
            CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
            M_Tot = M_Tot + at%mass(index_list(i))
         end do
@@ -4086,7 +4119,7 @@ contains
    !%
    !% The eigenvalues of the averaged matrix sum to 1.
    !% 
-   subroutine directionality(this,origin,list,evalues,evectors,method)
+   subroutine directionality(this,origin,list,evalues,evectors,method,error)
 
      type(Atoms),                      intent(in)  :: this     !% The input atoms structure
      integer,                          intent(in)  :: origin   !% The origin atom
@@ -4095,6 +4128,7 @@ contains
      real(dp), dimension(3,3),         intent(out) :: evectors !% Eigenvectors of the directionality matrix
      integer, optional,                intent(in)  :: method   !% 'METHOD = 1' Directionality ellipsoid method \\
                                                                !% 'METHOD = 2' Singular Value Decomposition method (default)
+     integer, intent(out), optional :: error
 
      !local variables
      integer                                       :: i, j, k, l, n, my_method, lwork, info, jshift(3)
@@ -4103,6 +4137,7 @@ contains
      real(dp), allocatable, dimension(:,:)         :: vectors, u
      real(dp), allocatable, dimension(:)           :: work
 
+     INIT_ERROR(error)
      my_method = 2
 
      if (present(method)) then
@@ -4113,9 +4148,12 @@ contains
         my_method = method
      end if
 
-     if (list%intsize /= 4) &
-          call system_abort('Directionality: list must have 4 int columns for indices and shifts')
-     if (list%N == 0) call system_abort('Directionality: list table has no entries')
+     if (list%intsize /= 4) then
+        RAISE_ERROR('Directionality: list must have 4 int columns for indices and shifts', error)
+     end if
+     if (list%N == 0) then
+        RAISE_ERROR('Directionality: list table has no entries', error)
+     end if
 
      i = origin
 
@@ -4130,8 +4168,7 @@ contains
            j = list%int(1,n)
            jshift = list%int(2:4,n)
            if (j > this%N) then
-              write(line,'(a,i0,a,i0,a)')'Directionality: Atom ',j,' is out of range (',this%N,')'
-              call system_abort(line)
+              RAISE_ERROR('Directionality: Atom '//j//' is out of range ('//this%N//')', error)
            end if
            r_ij = diff(this,i,j,jshift)
            rhat_ij = r_ij / norm(r_ij)
@@ -4155,8 +4192,7 @@ contains
            j = list%int(1,n)
            jshift = list%int(2:4,n)
            if (j > this%N) then
-              write(line,'(a,i0,a,i0,a)')'Directionality: Atom ',j,' is out of range (',this%N,')'
-              call system_abort(line)
+              RAISE_ERROR('Directionality: Atom '//j//' is out of range ('//this%N//')', error)
            end if
            r_ij = diff(this,i,j,jshift)
            vectors(n,:) = r_ij / norm(r_ij)
@@ -4167,10 +4203,9 @@ contains
 
         if (info/=0) then
            if (info < 0) then
-              write(line,'(a,i0,a)')'Directionality: Problem with argument ',-info,' passed to DGESVD'
-              call system_abort(line)
+              RAISE_ERROR('Directionality: Problem with argument '//-info//' passed to DGESVD', error)
            else
-              call system_abort('Directionality: DBDSQR (called from DGESVD) did not converge')
+              RAISE_ERROR('Directionality: DBDSQR (called from DGESVD) did not converge', error)
            end if
         end if
 
@@ -4196,28 +4231,30 @@ contains
    !% 
    !% If the result is close to 1 then accept the 'test_atom', and reject if close to zero
 
-   function cosangle_to_line(this,atom,dir,test_atom)
+   function cosangle_to_line(this,atom,dir,test_atom,error)
 
      type(atoms),            intent(in) :: this
      integer,                intent(in) :: atom
      real(dp), dimension(3), intent(in) :: dir
      integer,                intent(in) :: test_atom
      real(dp)                           :: CosAngle_To_Line
+     integer, intent(out), optional :: error
      !local variables
      real(dp), dimension(3)             :: r_ab
 
+     INIT_ERROR(error)
      !Sanity checks
      if (atom > this%N) then
-        write(line,'(a,i0,a,i0,a)')'CosAngle_To_Line: Atom ',atom,' out of range (',this%N,')'
-        call system_abort(line)
+        RAISE_ERROR('CosAngle_To_Line: Atom '//atom//' out of range ('//this%N//')', error)
      end if
 
      if (test_atom > this%N) then
-        write(line,'(a,i0,a,i0,a)')'CosAngle_To_Line: Test atom ',test_atom,' out of range (',this%N,')'
-        call system_abort(line)
+        RAISE_ERROR('CosAngle_To_Line: Test atom '//test_atom//' out of range ('//this%N//')', error)
      end if
 
-     if (norm2(dir) .feq. 0.0_dp) call system_abort('CosAngle_To_Line: A non-zero direction is required')
+     if (norm2(dir) .feq. 0.0_dp) then
+        RAISE_ERROR('CosAngle_To_Line: A non-zero direction is required', error)
+     end if
 
      r_ab = diff_min_image(this,atom,test_atom)
 
@@ -4231,13 +4268,17 @@ contains
    !
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine atoms_print(this,file,properties)
+   subroutine atoms_print(this,file,error)
       type(Atoms),    intent(inout)             :: this
       type(Inoutput), intent(inout),optional, target :: file
-      character(*), optional, intent(in)     :: properties 
+      integer, intent(out), optional :: error
+
       type(Inoutput), pointer :: my_out
 
-      if(.not.this%initialised) call system_abort('Atoms_Print: Atoms structure not initialised')
+      INIT_ERROR(error)
+      if(.not.this%initialised) then
+         RAISE_ERROR('Atoms_Print: Atoms structure not initialised', error)
+      end if
 
       if(current_verbosity() <= PRINT_SILENT) return ! for efficiency
 
@@ -4263,11 +4304,11 @@ contains
       call print('b = ('//this%lattice(:,2)//')', PRINT_NORMAL, my_out)
       call print('c = ('//this%lattice(:,3)//')', PRINT_NORMAL, my_out)
 
-      if (present(properties)) then
-	 call print_xyz(this, my_out, properties=properties,human_readable=.true., real_format='f10.5')
-      else
-	 call print_xyz(this, my_out, all_properties=.true.,human_readable=.true., real_format='f10.5')
-      end if
+      call print('Params')
+      call print(this%params)
+
+      call print('Properties')
+      call print(this%properties)
 
       if (this%connect%initialised) then
 	call verbosity_push_decrement()
@@ -4278,174 +4319,64 @@ contains
       call print('',PRINT_NORMAL, my_out)
    end subroutine atoms_print
 
-
-   subroutine atoms_print_xyz(this, xyzfile, comment, properties, all_properties, human_readable, real_format, mask)
-
-      type(Atoms),            intent(inout)    :: this     !% Atoms object to print
-      type(Inoutput),         intent(inout) :: xyzfile  !% Inoutput object to write to
-      character(*), optional, intent(in)    :: comment  !% Comment line (line #2 of xyz file)
-      character(*), optional, intent(in) :: properties  !% Colon separated list of properties from 'this%data' 
-                                                        !% to be printed. If not specified, we print only the 
-                                                        !% atomic positions, unless 'all_properties' is true.
-      logical,      optional, intent(in)    :: all_properties !% Should we print all properties (default is false)
-      logical,      optional, intent(in)    :: human_readable !% If set to true, pretty-print table of 
-                                                              !% atomic properties.
-      character(len=*), optional, intent(in) :: real_format
-      logical, optional, intent(in) :: mask(:)
-
-      logical             :: got_species
-      integer             :: i,lookup(3), n_properties
-      logical             :: do_all_properties, do_human_readable, dummy
-      character(len=2048) :: my_properties, prop_names
-      character(len=1024) :: tmp_properties(this%properties%N)
-      type(Dictionary)    :: use_properties
-      character(len=1024) :: my_real_format, my_values_real_format
-      type(extendable_str) :: str
-
-      my_real_format = optional_default('f14.7',real_format)
-      my_values_real_format = optional_default('f18.6',real_format)
-
-      do_all_properties = .false.
-      if (present(all_properties)) do_all_properties = all_properties
-
-      do_human_readable = .false.
-      if (present(human_readable)) do_human_readable = human_readable
-
-      if (.not.this%initialised) &
-           call system_abort('Atoms_Print_xyz: Atoms structure not initialised')
-
-      ! Try to fill in species from Z
-      if (all(this%species == repeat(' ',TABLE_STRING_LENGTH))) then
-         call print('atoms_print_xyz: filling in species from Z',PRINT_VERBOSE)
-         do i=1,this%N
-            this%species(i) = ElementName(this%Z(i))
-         end do
-      end if
-
-      if (.not. present(properties)) then
-
-         ! Print all properties, starting with species and position
-         if (do_all_properties) then
-            use_properties = this%properties
-
-            ! Move 'species' to start of list
-            call swap(use_properties, 'species', string(use_properties%keys(1)))
-
-            ! Move 'pos' to second in list
-            call swap(use_properties, 'pos', string(use_properties%keys(2)))
-         else
-            ! just print the species and positions
-            call subset(this%properties,(/'species','pos    '/), use_properties)
-         end if
-
-      else
-         ! properties is colon separated list of properties
-
-         my_properties = properties
-
-         ! Backwards compatibility: prepend species tag if it's missing
-         call parse_string(my_properties, ':', tmp_properties, n_properties)
-	 got_species = .false.
-	 do i=1, n_properties
-	  if (tmp_properties(i) == 'species') then
-	    if (i /= 1) then
-	      tmp_properties(i) = tmp_properties(1)
-	      tmp_properties(1) = 'species'
-	    endif
-	    got_species = .true.
-	  endif
-	 end do
-         
-	 if (got_species) then
-	   my_properties = trim(tmp_properties(1))
-	   do i=2, n_properties
-	     my_properties = trim(my_properties) // ':' // tmp_properties(i)
-	   end do
-	 else
-	   my_properties = 'species:'//trim(my_properties)
-	 endif
-
-         call parse_string(my_properties, ':', tmp_properties, n_properties)
-
-         call subset(this%properties, tmp_properties(1:n_properties), use_properties)
-
-      end if
-
-      ! Check 1st property looks like species and 
-      ! 2nd property has three real columns (i.e. looks like a position)
-      if (.not. do_human_readable) then
-         dummy = get_value(use_properties, string(use_properties%keys(1)), lookup)
-         if (lookup(1) /= PROPERTY_STR .or. (lookup(3)-lookup(2)+1) /= 1) &
-           call system_abort('Atoms_print_xyz: first property must be a species string')
-
-         dummy = get_value(use_properties, string(use_properties%keys(2)), lookup)
-         if (lookup(1) /= PROPERTY_REAL .or. (lookup(3)-lookup(2)+1) /= 3) &
-           call system_abort('Atoms_print_xyz: seccond property must be a real 3-vector, e.g. pos or avgpos')
-      end if
-
-      ! Get list of properties to print
-      prop_names = dict_prop_names_string(use_properties,.true.)
-
-      if (.not. do_human_readable) then
-         ! First write the number of atoms
-	 if (present(mask)) then
-	    call print(""//count(mask), file=xyzfile)
-	 else
-	    call print(""//this%N, file=xyzfile)
-	 endif
-
-         ! Then the lattice, property names and other parameters
-         call set_value(this%params, 'Lattice', reshape(this%lattice, (/9/)))
-         call set_value(this%params, 'Properties', prop_names)
-         call initialise(str)
-         call concat(str, write_string(this%params, real_format=my_values_real_format))
-         if (present(comment)) call concat(str, ' '//comment)
-         call print(string(str),file=xyzfile)
-         call finalise(str)
-      else
-         call print('Properties printed are:')
-         do i=1,use_properties%N
-            dummy = get_value(use_properties, string(use_properties%keys(i)), lookup)
-            call print(i//' '//string(use_properties%keys(i))//' '//(lookup(3)-lookup(2)+1)//' columns')
-         end do
-      end if
-
-      call print(this%data,file=xyzfile,real_format=my_real_format,&
-           properties=use_properties, mask=mask)
-
-      call finalise(use_properties)
-
-    end subroutine atoms_print_xyz
-
-
-   function prop_names_string(this)
+<<<<<<< HEAD
+   function prop_names_string(this, with_types, error)
      type(Atoms), intent(in) :: this
+     logical, optional, intent(in) :: with_types
+     integer, intent(out), optional :: error
      character(len=2048) :: prop_names_string
 
-     prop_names_string=dict_prop_names_string(this%properties, .false.)
+     INIT_ERROR(error)
+     prop_names_string=dict_prop_names_string(this%properties, with_types)
+     PASS_ERROR(error)
+
    end function prop_names_string
 
-   function dict_prop_names_string(this,with_types)
+   function dict_prop_names_string(this,with_types,error)
      type(Dictionary), intent(in) :: this
      logical, intent(in), optional :: with_types
+     integer, intent(out), optional :: error
      character(len=2048) :: dict_prop_names_string
 
-     character(len=1) :: prop_types(4) = (/'I', 'R', 'S', 'L'/)
+     character(len=1) :: prop_type
      character(len=1024) :: tmp
-     integer :: i
-     integer :: lookup(3)
+     integer :: i, n_cols, type
      logical :: dummy
      logical :: my_with_types
 
-     my_with_types = optional_default(.true., with_types)
+     INIT_ERROR(error)
+     my_with_types = optional_default(.false., with_types)
 
      dict_prop_names_string = ""
      do i=1,this%N
-	dummy = get_value(this, string(this%keys(i)), lookup)
 	if (my_with_types) then
-	  write(tmp,'(i0)') lookup(3)-lookup(2)+1 ! Number of columns for this property
+
+           select case(this%entries(i)%type)
+           case(T_INTEGER_A)
+              prop_type = 'I'
+              n_cols = 1
+           case(T_REAL_A)
+              prop_type = 'R'
+              n_cols = 1
+           case(T_LOGICAL_A)
+              prop_type = 'L'
+              n_cols = 1
+           case(T_CHAR_A)
+              prop_type = 'S'
+              n_cols = 1
+           case(T_INTEGER_A2)
+              prop_type = 'I'
+              n_cols = this%entries(i)%len2(1)
+           case(T_REAL_A2)
+              prop_type = 'R'
+              n_cols = this%entries(i)%len2(1)
+           case default
+              RAISE_ERROR('dict_prop_names_string: bad property type='//type//' in properties argument', error)
+           end select
+
+	  write(tmp,'(i0)') n_cols ! Number of columns for this property
 	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'// &
-				 prop_types(lookup(1))//':'//trim(tmp)//':'
+				 prop_type//':'//trim(tmp)//':'
 	else
 	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'
 	endif
@@ -4454,585 +4385,17 @@ contains
      dict_prop_names_string = dict_prop_names_string(1:len_trim(dict_prop_names_string)-1)
    end function dict_prop_names_string
 
-   subroutine atoms_print_xyz_filename(this, xyzfilename, comment, properties, all_properties, human_readable, real_format, append)
-
-      type(Atoms),            intent(inout)    :: this     
-      character(*),           intent(in)    :: xyzfilename
-      character(*), optional, intent(in)    :: comment
-      character(*), optional, intent(in)    :: properties 
-      logical,      optional, intent(in)    :: all_properties
-      logical,      optional, intent(in)    :: human_readable
-      logical,      optional, intent(in)    :: append
-      character(*), optional, intent(in)    :: real_format
-
-      type(Inoutput)  :: file
-
-      call initialise(file, xyzfilename, action=OUTPUT, append=optional_default(.false.,append))
-      call atoms_print_xyz(this, file, comment, properties, all_properties, human_readable, real_format)
-      call finalise(file)
-
-    end subroutine atoms_print_xyz_filename
-
-    subroutine atoms_read_xyz_filename(this, xyzfilename, comment, status, properties, mpi_comm)
-      type(Atoms), intent(inout) :: this
-      character(*), intent(in) :: xyzfilename
-      character(len=*), optional, intent(out) :: comment
-      integer, optional, intent(out) :: status
-      character(len=*), optional, intent(out) :: properties 
-      integer, optional, intent(in) :: mpi_comm
-
-      type(Inoutput)  :: file
-      logical :: master_only
-
-      if (present(mpi_comm)) then
-	master_only = .true.
-      else
-	master_only = .false.
-      end if
-      call initialise(file, xyzfilename, master_only=master_only)
-      call read_xyz(this, file, comment, status, properties, mpi_comm)
-      call finalise(file)
-    end subroutine atoms_read_xyz_filename
-
-    subroutine atoms_read_xyz_inoutput(this, xyzfile, comment, status, properties, mpi_comm)
-      type(Atoms),    intent(inout)           :: this
-      type(Inoutput), intent(inout)           :: xyzfile
-      character(len=*), optional, intent(out) :: comment
-      integer, optional, intent(out)          :: status
-      character(len=*), optional, intent(out) :: properties 
-      integer, optional, intent(in)           :: mpi_comm
-
-      type(extendable_str) :: es
-
-      if (present(mpi_comm)) then
-	call initialise(es)
-	call read(es, xyzfile%unit, mpi_comm=mpi_comm, keep_lf=.true.)
-	call atoms_read_xyz_extendable_str(this, es, comment, status, properties)
-	call finalise(es)
-      else
-	call atoms_read_xyz(this, xyz_inoutput=xyzfile, comment=comment, status=status, properties=properties)
-      endif
-    end subroutine atoms_read_xyz_inoutput
-
-    subroutine atoms_read_xyz_extendable_str(this, xyzfile_es, comment, status, properties)
-      type(Atoms),    intent(inout)           :: this
-      type(extendable_str), intent(inout)     :: xyzfile_es
-      character(len=*), optional, intent(out) :: comment
-      character(len=*), optional, intent(out) :: properties 
-      integer, optional, intent(out)          :: status
-
-      call atoms_read_xyz(this, xyz_extendable_str=xyzfile_es, comment=comment, status=status, properties=properties)
-    end subroutine atoms_read_xyz_extendable_str
-
-    subroutine parse_line_io_es(io, es, delimiters, fields, num_fields, status)
-      type(Inoutput), intent(inout), optional :: io
-      type(extendable_str), intent(inout), optional :: es
-      character(*),               intent(in)    :: delimiters
-      character(*), dimension(:), intent(inout) :: fields
-      integer,                    intent(out)   :: num_fields
-      integer, optional,          intent(out)   :: status
-
-      if (present(io) .and. present(es)) &
-	call system_abort("parse_line_io_es called with both io and es")
-      if (.not. present(io) .and. .not. present(es)) &
-	call system_abort("parse_line_io_es called with neither io nor es")
-
-      if (present(io)) then
-	call parse_line(io, delimiters, fields, num_fields, status)
-      end if
-      if (present(es)) then
-	call parse_line(es, delimiters, fields, num_fields, status)
-      end if
-    end subroutine parse_line_io_es
-
-    function read_line_io_es(io, es, status)
-      type(Inoutput), intent(inout), optional       :: io
-      type(extendable_str), intent(inout), optional :: es
-      integer, optional,          intent(out)       :: status
-      character(len=1024) :: read_line_io_es
-
-      if (present(io) .and. present(es)) &
-	call system_abort("read_line_io_es called with both io and es")
-      if (.not. present(io) .and. .not. present(es)) &
-	call system_abort("read_line_io_es called with neither io nor es")
-
-      if (present(io)) then
-	read_line_io_es = read_line(io, status)
-      end if
-      if (present(es)) then
-	read_line_io_es = read_line(es, status)
-      end if
-    end function read_line_io_es
-
-    subroutine atoms_read_xyz(this, xyz_inoutput, xyz_extendable_str, comment, status, properties)
-      type(Atoms),    intent(inout)                 :: this
-      type(Inoutput), intent(inout), optional       :: xyz_inoutput
-      type(extendable_str), intent(inout), optional :: xyz_extendable_str
-      character(len=*), optional, intent(out)       :: comment
-      character(len=*), optional, intent(out)       :: properties 
-      integer, optional, intent(out)                :: status
-
-      type(Table) :: props
-      integer                             :: i, j, k, N, lookup(3), num_fields, &
-           req_num_fields, my_status, n_cols, field_count
-      character(len=2048), dimension(200) :: fields
-      character(len=1024)                 :: use_comment
-      character(len=1024)                  :: prop_names
-      character(len=1024)                 :: tmp
-      character(3)                        :: delimiters
-      real(dp), dimension(9)              :: tmplattice
-      integer, dimension(9)               :: tmp_int_lattice
-      real(dp), dimension(3,3)            :: lattice
-      logical                             :: lattice_found, properties_found, Z_found, species_found
-      real(dp)                            :: max_dist
-      character(len=1024) :: filename
-
-      type(Dictionary) :: params
-
-      delimiters = ' ="'
-      max_dist = 0.0_dp
-
-      if (present(xyz_inoutput) .and. present(xyz_extendable_str)) &
-	call system_abort("atoms_read_xyz called with both inoutput and extendable_str")
-
-      if (present(xyz_inoutput)) then
-	filename = "from " // trim(xyz_inoutput%filename)
-      else
-	filename = "from extendable_str"
-      endif
-
-      !Read the number of atoms
-      call parse_line_io_es(xyz_inoutput,xyz_extendable_str,delimiters,fields,num_fields,my_status)
-
-      if(present(status)) then
-         status = my_status
-         if(status /= 0) return
-      else
-	 if (my_status > 0) then
-	    call system_abort('Atoms_read_xyz: Error reading from '//filename)
-	 else if (my_status < 0) then
-	    call system_abort('Atoms_read_xyz: End of file when reading from '//filename)
-	 end if
-      end if
-
-      N = string_to_int(fields(1))
-
-      ! Next, read the comment line into this%params dictionary
-      !  and try to find the lattice and properties keys.
-      use_comment = read_line_io_es(xyz_inoutput, xyz_extendable_str)
-      call read_string(params, use_comment)
-
-      ! Is there a real valued lattice?
-      lattice_found = get_value(params, 'Lattice', tmplattice)
-      lattice = reshape(tmplattice, (/3,3/))
-      if (.not. lattice_found) then
-         ! Try looking for an integer lattice instead
-         lattice_found = get_value(params, 'Lattice', tmp_int_lattice)
-         if (lattice_found) then
-            lattice = reshape(real(tmp_int_lattice,dp),(/3,3/))
-         end if
-      end if
-
-      ! If there's no 'Properties=' tag in parameters then just look for species and positions
-      properties_found = get_value(params, 'Properties', prop_names)
-      call print("Property string found: '"//prop_names//"'", PRINT_VERBOSE)
-      if (.not. properties_found) then
-         prop_names = 'species:S:1:pos:R:3'
-      end if
-
-      ! Backward compatibility - prepend species tag if it's missing
-      if (prop_names(1:7) == 'pos:R:3' .and. index(trim(prop_names),"species:S:1") <= 0) prop_names = 'species:S:1:'//trim(prop_names)
-
-      if (present(comment)) then
-         ! Remove Lattice="..." and Properties=... from comment line
-         if (lattice_found) then
-            i = index(use_comment,'Lattice')
-            tmp = use_comment(i:)
-            tmp(index(tmp,'"'):index(tmp,'"')) = ' ' ! kill first " after lattice
-            use_comment = adjustl(use_comment(:i-1)//use_comment(i+index(tmp, '"'):))
-         end if
-
-         if (properties_found) then
-            i = index(use_comment, 'Properties')
-            tmp = use_comment(i:)
-            use_comment = adjustl(use_comment(:i-1)//use_comment(i+index(tmp, ' '):))
-         end if
-
-         comment = use_comment
-      end if
-
-      call atoms_initialise(this, N, lattice)
-      this%params = params
-      call finalise(params)
-
-      req_num_fields = 0
-      call allocate(props, 3, 0, 0, 0)
-
-      if (present(properties)) properties = ''
-
-      call parse_string(prop_names,':',fields,num_fields)
-      call print("Parsed property string '"//prop_names//"', found "//num_fields//" items", PRINT_VERBOSE)
-      Z_found = .false.
-      species_found = .false.
-      do i=1,num_fields,3
-         n_cols = string_to_int(fields(i+2))
-         req_num_fields = req_num_fields + n_cols
-
-         if (trim(fields(i)) == 'Z') Z_found = .true.
-         if (trim(fields(i)) == 'species') species_found = .true.
-
-         select case(trim(fields(i+1)))
-            case('I')
-               call add_property(this, fields(i), 0, n_cols=n_cols)
-
-            case('R')
-               call add_property(this, fields(i), 0.0_dp, n_cols=n_cols)
-
-            case('S')
-               call add_property(this, fields(i), repeat(' ',TABLE_STRING_LENGTH), n_cols=n_cols)
-
-            case('L')
-               call add_property(this, fields(i), .false., n_cols=n_cols)
-               
-            case default
-               call system_abort('Atoms_read_xyz: unknown property type "'//fields(i+1)//'" for property "'//fields(i)//'"')   
-
-         end select
-         if (present(properties)) then 
-            properties = trim(properties)//trim(fields(i))//':'
-         end if
-
-         if (.not. get_value(this%properties, fields(i), lookup)) &
-              call system_abort('Atoms_read_xyz: key '//fields(i)//' not found')
-         call append(props, lookup)
-      end do
-
-      ! Remove trailing ':'
-      if (present(properties)) properties = trim(properties(1:len(properties)-1))
-
-      ! Now read in the atomic data
-      do i = 1, N
-
-         call parse_line_io_es(xyz_inoutput,xyz_extendable_str,delimiters,fields,num_fields)
-         if (num_fields < req_num_fields) then
-            call print_title('ERROR')
-            call print('Fields:')
-            do j = 1, num_fields
-               call print(j//': '//trim(fields(j)))
-            end do
-            call print('Required number of fields = '//req_num_fields)
-            call system_abort('Atoms_read_xyz: not enough fields in xyz '//filename)
-         end if
-           
-         field_count = 1
-         do j=1,props%N
-            do k=props%int(2,j),props%int(3,j)
-               select case(props%int(1,j))
-                  case(PROPERTY_INT)
-                     read (fields(field_count),*) this%data%int(k,i)
-
-                  case(PROPERTY_REAL)
-                     read (fields(field_count),*) this%data%real(k,i)
-                     
-                  case(PROPERTY_STR)
-                     this%data%str(k,i) = fields(field_count)
-
-                  case(PROPERTY_LOGICAL)
-                     read (fields(field_count),*) this%data%logical(k,i)
-
-               end select
-               field_count = field_count + 1
-            end do
-         end do
-      end do
-
-      ! Set species from Z if we didn't read a species property from file
-      if (.not. species_found) then
-         call print('Atoms_read_xyz: Setting species from Z', PRINT_VERBOSE)
-         if (.not. Z_found) then
-           call system_abort("Neither Z nor species found")
-         endif
-         do i=1,this%N
-	    if (this%Z(i) >= 1 .and. this%Z(i) <= size(ElementName)) then
-	      this%species(i) = ElementName(this%Z(i))
-	    else
-	      this%species(i) = "" // this%Z(i)
-	    endif
-         end do
-      endif
-      ! Set Z from species if we didn't read a Z property from file
-      if (.not. Z_found) then
-         call print('Atoms_read_xyz: Setting Z from species', PRINT_VERBOSE)
-         if (.not. species_found) then
-           call system_abort("Neither Z nor species found")
-         endif
-         do i=1,this%N
-            this%species(i) = ElementFormat(this%species(i))
-            this%Z(i) = Atomic_Number(this%species(i))
-            if (this%Z(i) == 0) call system_abort('Atoms_read_xyz: Could not parse atom name: '//this%species(i))
-         end do
-      end if
-
-      call finalise(props)
-
-      ! If we didn't get a lattice from the file then make a safe one
-      if (.not.lattice_found) then
-         lattice = 0.0_dp
-
-         max_dist = maxval(norm(this%pos,1))
-         lattice(1,1) = 5.0_dp*max_dist
-         lattice(2,2) = 5.0_dp*max_dist
-         lattice(3,3) = 5.0_dp*max_dist
-
-         call set_lattice(this, lattice, scale_positions=.false.)
-      end if
-
-    end subroutine atoms_read_xyz
-
-
-
-   subroutine atoms_read_xyz_skip(xyzfile, status)
-
-     type(Inoutput),    intent(inout) :: xyzfile
-     integer, optional, intent(out)   :: status
-     integer                          :: i,n,my_status
-     character(80)                    :: text
-
-     if (present(status)) status = 0
-
-     !Read number of atoms
-     text = Read_Line(xyzfile,my_status)
-     if (my_status /= 0) then
-        if (present(status)) then
-           status = my_status
-           return
-        else
-           call system_abort('Atoms_Read_xyz_skip: Problem skipping frame in file '//trim(xyzfile%filename))
-        end if
-     end if
-     n = String_To_Int(text)
-
-     !Now read past the comment and that number of atoms
-     do i = 1, n+1
-        text = Read_Line(xyzfile,my_status)
-        if (my_status /= 0) then
-           if (present(status)) then
-              status = my_status
-              return
-           else
-              call system_abort('Atoms_Read_xyz_skip: Problem skipping frame in file '//trim(xyzfile%filename))
-           end if
-        end if
-     end do
-
-   end subroutine atoms_read_xyz_skip
-
-
-   subroutine atoms_print_cfg(this, cfgfile, comment, properties, all_properties)
-
-      type(Atoms), target,    intent(in)    :: this     !% Atoms object to print
-      type(Inoutput),         intent(inout) :: cfgfile  !% Inoutput object to write to
-      character(*), optional, intent(in)    :: comment  !% Comment line (line #2 of xyz file)
-      character(*), optional, intent(in)    :: properties !% Colon separated list of columns from 'this%data' to printed.
-                                                          !% If not specified, we print only the atom
-                                                          !% positions, unless 'all_properties' is true.      
-      logical,      optional, intent(in)    :: all_properties !% Should we print all properties (default is false)
-
-
-      integer                                 :: i,j,k,lookup(3), n_properties, n_cols, n_aux
-      character(len=1)                        :: prop_types(2)
-      logical                                 :: do_all_properties, dummy
-      character(len=1024) :: use_properties(this%properties%N), tmp
-      type(Table) :: props
-      real(dp), dimension(:,:), pointer :: pos
-      real(dp), dimension(:), allocatable :: mass
-
-      do_all_properties = .false.
-      if (present(all_properties)) do_all_properties = all_properties
-
-      if (.not.this%initialised) &
-           call system_abort('Atoms_Print_cfg: Atoms structure not initialised')
-
-      if (any(this%Z == 0)) call system_abort('Atoms_Print_cfg: Atomic number is zero')
-
-      prop_types = (/'I', 'R'/)
-      call table_allocate(props, 3, 0, 0, 0)
-
-      if (.not. present(properties)) then
-
-         ! Print all real and int properties, starting with position
-         if (do_all_properties) then
-            
-            n_properties = 1
-            do i=1,this%properties%N
-               dummy = get_value(this%properties, string(this%properties%keys(i)), lookup)
-               if (lookup(1) == PROPERTY_INT .or. lookup(1) == PROPERTY_REAL) then
-                  use_properties(n_properties) = string(this%properties%keys(i))
-                  n_properties = n_properties + 1
-               end if
-            end do
-            n_properties = n_properties - 1
-
-            ! Move 'pos' to beginning of list
-            i = lookup_entry_i(this%properties, 'pos')
-
-            tmp = use_properties(1)
-            use_properties(1) = use_properties(i)
-            use_properties(i) = tmp
-         else
-            ! Only print the atomic positions
-            use_properties(1) = 'pos'
-            n_properties = 1
-         end if
-
-      else
-         call parse_string(properties, ':', use_properties, n_properties)
-      end if
-
-      ! Get list of properties to print
-      n_cols = 0
-      do i=1,n_properties
-
-         if (.not. get_value(this%properties, trim(use_properties(i)),lookup)) &
-              call system_abort('Atoms_print_cfg: Property '// &
-              trim(use_properties(i))//' not found in this%properties')
-
-         call append(props, lookup)
-
-         if (lookup(1) /= PROPERTY_INT .and. lookup(1) /= PROPERTY_REAL) &
-              call system_abort('Atoms_print_cfg: Bad property type for '// &
-              trim(use_properties(i)))
-
-         n_cols = n_cols + (lookup(3)-lookup(2)+1)
-      end do
-
-      ! Check first property has three real columns (i.e. looks like a position)
-      if (props%int(1,1) /= PROPERTY_REAL .or. (props%int(3,1)-props%int(2,1)+1) /= 3) &
-           call system_abort('Atoms_print_cfg: first property must be a real 3-vector, e.g. pos or avgpos')
-
-      ! Iniitalise data to 'pos'-like property
-      pos => this%data%real(props%int(2,1):props%int(3,1),1:this%N)
-
-      ! Header line
-      write (line, '(a,i0)') 'Number of particles = ', this%N
-      call print(line,file= cfgfile)
-
-      if (present(comment)) then 
-         write (line, '(a, a)') '# ', trim(comment)
-         call print(line,file= cfgfile)
-      end if
-
-      ! Write lattice vectors - note H0(i,:) = at%lattice(:,i) since
-      ! AtomEye uses C array ordering and we use Fortran.
-      do i=1,3
-         do j=1,3
-            write(line, '(a,i0,a,i0,a,f16.8)') 'H0(',i,',',j,') = ',this%lattice(j,i)
-            call print(line,file= cfgfile)
-         end do
-      end do
-
-      ! Number of entries
-      call print('.NO_VELOCITY.', file=cfgfile)
-      write (line, '(a,i0)') 'entry_count = ', n_cols
-      call print(line,file= cfgfile)
-
-      ! Names for auxiliary properties
-      n_aux = 0
-      do i = 2,n_properties
-
-         do j=props%int(2,i),props%int(3,i)
-            if (props%int(2,i) == props%int(3,i)) then
-               write (line, '(a,i0,a,a)') 'auxiliary[',n_aux,'] = ',trim(use_properties(i))
-            else
-               write (line, '(a,i0,a,a,a,i0)') 'auxiliary[',n_aux,'] = ',trim(use_properties(i)),'_',j-props%int(2,i)
-            end if
-            n_aux = n_aux + 1
-            call print(line,file= cfgfile)
-         end do
-      end do
-
-      ! 3 lines for first atom
-      allocate(mass(this%N))
-      if (has_property(this, 'mass')) then
-         mass = this%mass
-      else
-         mass = ElementMass(this%Z)
-      end if
-      write (line, '(f12.4)') mass(1)/MASSCONVERT
-      call print(line,file= cfgfile)
-      write (line, '(a)') ElementName(this%Z(1))
-      call print(line,file= cfgfile)
-
-     ! First the pos-like property...
-     write (line, '(3f16.8)') (this%g .mult. pos(:,1))
-     do j=2,n_properties ! ...then all the other properties
-        do k=props%int(2,j),props%int(3,j)
-           select case(props%int(1,j))
-              case(PROPERTY_INT)
-                 write(tmp,'(a,i8)')' ',this%data%int(k,1)
-
-              case(PROPERTY_REAL)
-                 write(tmp,'(a,f16.8)') ' ',this%data%real(k,1)
-           end select
-           line = trim(line)//trim(tmp)
-        end do
-     end do
-     call print(line,file= cfgfile)
-
-     do i=2,this%N
-        ! Only need to write mass and element name if it's different
-        ! from that of the previous element
-        if (this%Z(i) /= this%Z(i-1)) then
-           write (line, '(f12.4)') mass(i)/MASSCONVERT
-           call print(line,file= cfgfile)
-           write (line, '(a)') ElementName(this%Z(i))
-           call print(line,file= cfgfile)
-        end if
-
-        write (line, '(3f16.8)') (this%g .mult. pos(:,i))
-        do j=2,n_properties
-           do k=props%int(2,j),props%int(3,j)
-              select case(props%int(1,j))
-                 case(PROPERTY_INT)
-                    write(tmp,'(a,i8)')' ',this%data%int(k,i)
-
-                 case(PROPERTY_REAL)
-                    write(tmp,'(a,f16.8)') ' ',this%data%real(k,i)
-              end select
-              line = trim(line)//trim(tmp)
-           end do
-        end do
-        call print(line,file= cfgfile)
-     end do
-
-     call finalise(props)
-     deallocate(mass)
-   end subroutine atoms_print_cfg
-
-
-   subroutine atoms_print_cfg_filename(this, cfgfilename, comment, properties, all_properties)
-
-      type(Atoms),            intent(in)    :: this     
-      character(*),           intent(in)    :: cfgfilename
-      character(*), optional, intent(in)    :: comment
-      character(*), optional, intent(in)    :: properties 
-      logical,      optional, intent(in)    :: all_properties
-
-      type(Inoutput)  :: file
-
-      call initialise(file, cfgfilename, action=OUTPUT)
-      call atoms_print_cfg(this, file, comment, properties, all_properties)
-      call finalise(file)
-
-    end subroutine atoms_print_cfg_filename
-
-  subroutine connection_print(this,file)
+  subroutine connection_print(this,file,error)
 
     type(Connection), intent(in)    :: this
     type(Inoutput),   optional, intent(inout) :: file
+    integer, intent(out), optional :: error
     integer                         :: i,j,k,n,m
 
-    if (.not.this%initialised) call system_abort('Connection_Print: Connection object not initialised')
+    INIT_ERROR(error)
+    if (.not.this%initialised) then
+       RAISE_ERROR('Connection_Print: Connection object not initialised', error)
+    end if
 
     call print('Connectivity data:',file=file)
     call print('-------------------------------------------------',file=file)
@@ -5152,14 +4515,17 @@ contains
   !% list of indices or ranges into a table containing all the indices it represents.
   !% E.g. '@1,37-39,54,99-102' is expanded to a table with 1, 37, 38, 39, 54, 99, 100,
   !% 101, 102 as its first integer column. There must be no spaces in the mask.
-  subroutine parse_atom_mask(mask_in,atom_indices)
+  subroutine parse_atom_mask(mask_in,atom_indices,error)
 
     character(*),  intent(in)    :: mask_in
     type(Table),   intent(out)   :: atom_indices
+    integer, intent(out), optional :: error
+
     character(len(mask_in))      :: mask
     character(20), dimension(50) :: fields
     integer                      :: Nfields, i, j, n, a, b, c
 
+    INIT_ERROR(error)
     call allocate(atom_indices,1,0,0,0,100)
 
     mask = adjustl(mask_in)
@@ -5169,7 +4535,9 @@ contains
        mask = mask(2:)
        !Parse into comma separated numbers or ranges
        call parse_string(mask,',',fields,Nfields)
-       if (Nfields==0) call system_abort('parse_atom_mask: Atom mask contained no indices')
+       if (Nfields==0) then
+          RAISE_ERROR('parse_atom_mask: Atom mask contained no indices', error)
+       end if
        do i = 1, Nfields
           !Is this field a single atom or a contiguous range?
           n = scan(fields(i),'-')
@@ -5194,23 +4562,26 @@ contains
           end if
        end do
     else
-       call system_abort('parse_atom_mask: Invalid atom mask: '//mask_in)
+       RAISE_ERROR('parse_atom_mask: Invalid atom mask: '//mask_in, error)
     end if
 
   end subroutine parse_atom_mask
 
   !% Find atoms which have integer property 'prop' set to
   !% true (i.e. set to 1) and return them in the Table 'list'.
-  subroutine property_to_list(at, prop, list)
+  subroutine property_to_list(at, prop, list, error)
     type(Atoms), intent(in) :: at
     character(*), intent(in) :: prop
     type(Table), intent(inout) :: list
+    integer, intent(out), optional :: error
     
     integer :: i
     integer, dimension(:), pointer :: p
 
-    if (.not. assign_pointer(at, prop, p)) &
-         call system_abort('property_to_list: at does not have property "'//trim(prop)//'".')
+    INIT_ERROR(error)
+    if (.not. assign_pointer(at, prop, p)) then
+       RAISE_ERROR('property_to_list: at does not have property "'//trim(prop)//'".', error)
+    end if
 
     call allocate(list, 1, 0, 0, 0)
     call append(list, pack((/ (i, i=1,size(p)) /), p == 1))
@@ -5219,18 +4590,21 @@ contains
 
   !% Convert the Table 'list' to a single column integer property in 'at',
   !% with atoms in list marked with a 1 and absent 
-  subroutine list_to_property(at, list, prop)
+  subroutine list_to_property(at, list, prop, error)
     type(Atoms), intent(inout) :: at
     type(Table), intent(in) :: list
     character(*), intent(in) :: prop
+    integer, intent(out), optional :: error
 
     integer, dimension(:), pointer :: p
 
+    INIT_ERROR(error)
     ! Add property if necessary
     call add_property(at, prop, 0)
 
-    if (.not. assign_pointer(at, prop, p)) &
-         call system_abort('list_to_property: at does not have property "'//trim(prop)//'".')
+    if (.not. assign_pointer(at, prop, p)) then
+       RAISE_ERROR('list_to_property: at does not have property "'//trim(prop)//'".', error)
+    end if
 
     p = 0 ! Set all entries to zero
     p(int_part(list,1)) = 1 ! Set entries in 'list' to 1
@@ -5239,28 +4613,27 @@ contains
 
   !% Find atoms which have integer property 'prop' with value 'value'
   !% and return them in a table 'list'.
-  subroutine list_matching_prop(at,list,name,value)
+  subroutine list_matching_prop(at,list,name,value,error)
 
     type(atoms), intent(in)    :: at
     type(table), intent(inout) :: list
     character(*), intent(in)   :: name
     integer,     intent(in)    :: value
+    integer, intent(out), optional :: error
 
-    integer                    :: i, pos_indices(3), index
+    integer                    :: i
+    integer, pointer, dimension(:) :: ptr
 
+    INIT_ERROR(error)
     !find property
-    if (get_value(at%properties,name,pos_indices)) then
-       index = pos_indices(2)
-    else
-       call system_abort('Property "'//name//'" not found')
+    if (.not. assign_pointer(at%properties,name,ptr)) then
+       RAISE_ERROR('Property "'//name//'" not found', error)
     end if
 
     call wipe(list)
 
     do i = 1, at%N
-
-       if (at%data%int(index,i)==value) call append(list,(/i/))
-
+       if (ptr(i)==value) call append(list,(/i/))
     end do
 
   end subroutine list_matching_prop
@@ -5292,15 +4665,18 @@ contains
 
   !% Return the difference between list1 and list2 in outlist.
   !% That is, those elements in list1 but not in list2
-  subroutine difference(list1, list2, outlist)
+  subroutine difference(list1, list2, outlist, error)
     type(Table), intent(in) :: list1, list2
     type(Table), intent(out) :: outlist
+    integer, intent(out), optional :: error
 
     integer :: i
     integer, dimension(:), allocatable :: array1, array2
 
-    if (list1%N <= list2%N) &
-         call system_abort('difference: list1%N ('//(list1%N)//') <= list2%N ('//(list2%N)//').')
+    INIT_ERROR(error)
+    if (list1%N <= list2%N) then
+       RAISE_ERROR('difference: list1%N ('//(list1%N)//') <= list2%N ('//(list2%N)//').', error)
+    end if
 
     call table_allocate(outlist, 1, 0, 0, 0)
 
@@ -5321,10 +4697,10 @@ contains
   !%    (that of 'seed', if present)
   !% poorly tested, especially for situations where not all atoms are in one connected clump
   !% probably needs a better subroutine name
-  subroutine coalesce_in_one_periodic_image(this, seed, stat)
+  subroutine coalesce_in_one_periodic_image(this, seed, error)
     type(Atoms), intent(inout) :: this
     integer, intent(in), optional :: seed
-    integer, intent(out), optional :: stat
+    integer, intent(out), optional :: error
 
     integer :: i, ji, jji, j, shift(3), delta_shift(3), jj, k, ki
     integer :: n_neighbours, max_n_neighbours
@@ -5332,6 +4708,7 @@ contains
     logical, allocatable :: touched(:), is_in_cluster(:)
     integer :: seed_val, last_n_in_cluster
 
+    INIT_ERROR(error)
     seed_val=optional_default(1, seed)
 
     max_n_neighbours = 0
@@ -5392,12 +4769,7 @@ contains
 	      ! atom j does need to move
 	      ! atoms with non-zero shift should not have been touched before
 	      if (touched(j)) then
-		if (present(stat)) then
-		  call print("ERROR: undo_pbcs tried to move atom " // j // " twice", PRINT_ALWAYS)
-		  stat = 1
-		else
-		  call system_abort("undo_pbcs tried to move atom " // j // " twice")
-		endif
+                 RAISE_ERROR("undo_pbcs tried to move atom " // j // " twice", error)
 	      endif
 
 	      ! shift atom to zero out shift
@@ -5436,12 +4808,13 @@ contains
 
   end subroutine coalesce_in_one_periodic_image
 
-  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist)
+  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist, error)
     type(Atoms), intent(in) :: this
     real(dp), intent(in) :: r(3)
     integer, intent(in) :: cell_image_Na, cell_image_Nb, cell_image_Nc
     real(dp), intent(out), optional :: dist
     integer :: closest_atom
+    integer, intent(out), optional :: error
 
     integer :: i, j, k
     integer i2, j2, k2, i3, j3, k3, i4, j4, k4, n2, atom_i
@@ -5449,7 +4822,10 @@ contains
     real(dp) :: pos(3), cur_dist, min_dist
     integer :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
 
-    if (.not. this%connect%initialised) call system_abort("closest_atom must have initialised connection object")
+    INIT_ERROR(error)
+    if (.not. this%connect%initialised) then
+       RAISE_ERROR("closest_atom must have initialised connection object", error)
+    end if
 
     call cell_of_pos(this%connect, this%g .mult. r, i, j, k)
 
@@ -5511,15 +4887,17 @@ contains
 
   end function closest_atom
 
-  function is_min_image(this, i, alt_connect) 
+  function is_min_image(this, i, alt_connect, error) 
     type(Atoms), target, intent(in) :: this
     integer, intent(in) ::i
     type(Connection), intent(inout), target, optional :: alt_connect
+    integer, intent(out), optional :: error
 
     logical :: is_min_image
     integer :: n, m, NN
     type(Connection), pointer :: use_connect
 
+    INIT_ERROR(error)
     if (present(alt_connect)) then
       use_connect => alt_connect
     else
@@ -5531,7 +4909,7 @@ contains
     if (use_connect%initialised) then
 
        if (.not. associated(use_connect%neighbour1(i)%t)) then
-          call system_abort('is_min_image: atoms structure has no connectivity data for atom '//i)
+          RAISE_ERROR('is_min_image: atoms structure has no connectivity data for atom '//i, error)
        end if
 
        nn = use_connect%neighbour1(i)%t%N
@@ -5563,7 +4941,7 @@ contains
        end do
 
     else
-       call system_abort('is_min_image: Atoms structure has no connectivity data. Call calc_connect first.')
+       RAISE_ERROR('is_min_image: Atoms structure has no connectivity data. Call calc_connect first.', error)
     end if
 
   endfunction is_min_image 
@@ -5579,7 +4957,6 @@ contains
        call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_VERBOSE)
        call bcast(mpi, at%n)
        call bcast(mpi, at%lattice)
-       call bcast(mpi, at%data)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
     else
@@ -5587,7 +4964,6 @@ contains
        call finalise(at)
        call bcast(mpi, at%n)
        call bcast(mpi, at%lattice)
-       call bcast(mpi, at%data)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
 
@@ -5626,16 +5002,53 @@ contains
 
   !% Move a single atom from one location to another one.
   !% The destination will be overriden.
-  subroutine atoms_copy_entry(this, src, dst)
+  subroutine atoms_copy_entry(this, src, dst, error)
     implicit none
 
     type(Atoms), intent(inout)  :: this
     integer, intent(in)         :: src
     integer, intent(in)         :: dst
+    integer, optional, intent(out) :: error
+
+    integer i
 
     ! ---
 
-    call copy_entry(this%data, src, dst)
+    INIT_ERROR(error)
+
+    if (src < 1 .or. src > this%N) then
+       RAISE_ERROR('atoms_copy_entry: src='//src//' out of range 1 <= src <= '//this%n, error)
+    end if
+    if (dst < 1 .or. dst > this%N) then
+       RAISE_ERROR('atoms_copy_entry: dst='//dst//' out of range 1 <= dst <= '//this%n, error)
+    end if
+
+    do i=1,this%properties%N
+       select case (this%properties%entries(i)%type)
+
+       case(T_INTEGER_A)
+          this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+
+       case(T_REAL_A)
+          this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+
+       case(T_LOGICAL_A)
+          this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+
+       case(T_INTEGER_A2)
+          this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+
+       case(T_REAL_A2)
+          this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+
+       case(T_CHAR_A)
+          this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+
+       case default
+          RAISE_ERROR('atoms_copy_entry: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+
+       end select
+    end do
 
   endsubroutine atoms_copy_entry
 

@@ -564,8 +564,9 @@ contains
     real(dp),          intent(in)    :: t, dt !% the current time, and the time step
     logical, optional, intent(in)    :: store_constraint_force
 
-    integer                             :: i,j,n, nn, Nobj, Nat, iterations, pos_indices(3), cf_index
+    integer                             :: i,j,n, nn, Nobj, Nat, iterations
     real(dp)                            :: da(3), m, df(3)
+    real(dp), dimension(:,:), pointer   :: constraint_force
     logical                             :: converged, do_store
 
     Nobj = group_n_objects(g)
@@ -574,12 +575,11 @@ contains
 
     !Check for "constraint_force" property
     if (do_store) then
-       if (get_value(at%properties,'constraint_force',pos_indices)) then
-          cf_index = pos_indices(2)
+       if (assign_pointer(at,'constraint_force',constraint_force)) then
           !zero the constraint forces
           do n = 1, Nat
              i = group_nth_atom(g,n)
-             at%data%real(cf_index:cf_index+2,i) = 0.0_dp
+             constraint_force(:,i) = 0.0_dp
           end do
        else
           call system_abort('shake: cannot find "constraint_force" property')
@@ -650,7 +650,7 @@ contains
           do nn = 1, constraints(i)%N
              j = constraints(i)%atom(nn)
              df = -constraints(i)%lambdaR*constraints(i)%old_dC_dr(3*nn-2:3*nn)
-             at%data%real(cf_index:cf_index+2,j) = at%data%real(cf_index:cf_index+2,j) + df
+             constraint_force(:,j) = constraint_force(:,j) + df
           end do
        end do
     end if
@@ -678,7 +678,8 @@ contains
     real(dp),          intent(in)    :: dt
     logical, optional, intent(in)    :: store_constraint_force 
 
-    integer                          :: i,j,n, nn, Nobj, Nat, iterations, cf_index, pos_indices(3)
+    real(dp), dimension(:,:), pointer  :: constraint_force
+    integer                          :: i,j,n, nn, Nobj, Nat, iterations
     real(dp)                         :: da(3), m, df(3)
     logical                          :: converged, do_store
 
@@ -688,9 +689,7 @@ contains
 
     !Check for "constraint_force" property
     if (do_store) then
-       if (get_value(at%properties,'constraint_force',pos_indices)) then
-          cf_index = pos_indices(2)
-       else
+       if (.not. assign_pointer(at%properties,'constraint_force',constraint_force)) then
           call system_abort('rattle: cannot find "constraint_force" property')
        end if
     end if
@@ -758,7 +757,7 @@ contains
           do nn = 1, constraints(i)%N
              j = constraints(i)%atom(nn)
              df = -constraints(i)%lambdaV*constraints(i)%old_dC_dr(3*nn-2:3*nn)
-             at%data%real(cf_index:cf_index+2,j) = at%data%real(cf_index:cf_index+2,j) + df
+             constraint_force(:,j) = constraint_force(:,j) + df
           end do
        end do
     end if

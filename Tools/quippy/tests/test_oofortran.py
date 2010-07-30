@@ -40,7 +40,6 @@ class TestOOFortran(QuippyTestCase):
       self.assert_((self.dia.lattice == cp.lattice).all())
       self.assertEqual(self.dia.properties.keys(), cp.properties.keys())
       self.assertEqual(self.dia.params.keys(), cp.params.keys())
-      self.assertEqual(self.dia.data, cp.data)
 
    def testgetset(self):
       self.dia.cutoff = 1.3
@@ -77,7 +76,7 @@ class TestOOFortran(QuippyTestCase):
       self.assertRaises(ValueError, setattr, self.dia, 'n', 0)
 
    def testabort(self):
-      self.assertRaises(RuntimeError, self.dia.read_xyz, '')
+      self.assertRaises(RuntimeError, FortranAtoms.select, self.dia, self.dia)
 
    def testoptional(self):
       self.dia.calc_connect() # without optional argument

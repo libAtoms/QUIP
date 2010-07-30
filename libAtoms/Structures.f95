@@ -35,12 +35,15 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module  structures_module
   use system_module
   use linearalgebra_module
   use atoms_module
   use clusters_module
   use paramreader_module
+  use cinoutput_module
   implicit none
   public
 
@@ -557,7 +560,7 @@ contains
 
     call Atoms_Initialise(slab, keep_list%N, tmp_slab%lattice)
     slab%Z = tmp_slab%Z(keep_list%int(1,1:keep_list%N))
-    slab%species = tmp_slab%species(keep_list%int(1,1:keep_list%N))
+    slab%species = tmp_slab%species(:,keep_list%int(1,1:keep_list%N))
 
     if (has_property(slab, 'mass')) &
          forall (i=1:slab%N) slab%mass(i) = ElementMass(slab%Z(i))
@@ -764,31 +767,124 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine supercell(aa, a, n1, n2, n3)
+  subroutine supercell(aa, a, n1, n2, n3, error)
     type(Atoms), intent(out)::aa  !% Output (big) cell
     type(Atoms), intent(in)::a    !% Input cell
     integer, intent(in)::n1, n2, n3
+    integer, intent(out), optional :: error
+
     real(dp)::lattice(3,3), p(3)
     integer::i,j,k,n,nn
-    type(Table) :: big_data
 
-    call allocate(big_data,a%data%intsize,a%data%realsize,&
-         a%data%strsize, a%data%logicalsize, a%N*n1*n2*n3)
+    integer, pointer :: a_int_ptr(:), a_int2_ptr(:,:), aa_int_ptr(:), aa_int2_ptr(:,:)
+    real(dp), pointer :: a_real_ptr(:), a_real2_ptr(:,:), aa_real_ptr(:), aa_real2_ptr(:,:)
+    logical, pointer :: a_logical_ptr(:), aa_logical_ptr(:)
+    character, pointer :: a_char_ptr(:,:), aa_char_ptr(:,:)
 
-    ! Replicate atomic data n1*n2*n3 times
-    do i=1,n1*n2*n3
-       call append(big_data,a%data)
-    end do
-
+    INIT_ERROR(error)
     lattice(:,1) = a%lattice(:,1)*n1
     lattice(:,2) = a%lattice(:,2)*n2
     lattice(:,3) = a%lattice(:,3)*n3
-    call atoms_initialise(aa, a%N*n1*n2*n3, lattice, data=big_data, properties=a%properties)
+    call atoms_initialise(aa, a%N*n1*n2*n3, lattice)
     if (a%use_uniform_cutoff) then
        call set_cutoff(aa, a%cutoff)
     else
        call set_cutoff_factor(aa, a%cutoff)
     end if
+
+    do n=1,a%properties%n
+       select case(a%properties%entries(n)%type)
+
+       case(T_INTEGER_A)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_int_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), 0, ptr=aa_int_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_int_ptr(((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_int_ptr(:)
+                end do
+             end do
+          end do
+
+       case(T_REAL_A)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_real_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), 0.0_dp, ptr=aa_real_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_real_ptr(((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_real_ptr(:)
+                end do
+             end do
+          end do
+
+       case(T_LOGICAL_A)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_logical_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), .false., ptr=aa_logical_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_logical_ptr(((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_logical_ptr(:)
+                end do
+             end do
+          end do
+
+       case(T_INTEGER_A2)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_int2_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), 0, n_cols=size(a_int2_ptr,1), &
+               ptr2=aa_int2_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_int2_ptr(:,((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_int2_ptr(:,:)
+                end do
+             end do
+          end do
+
+       case(T_REAL_A2)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_real2_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), 0.0_dp, n_cols=size(a_real2_ptr,1), &
+               ptr2=aa_real2_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_real2_ptr(:,((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_real2_ptr(:,:)
+                end do
+             end do
+          end do
+
+       case(T_CHAR_A)
+          if (.not. assign_pointer(a, string(a%properties%keys(n)), a_char_ptr)) then
+             RAISE_ERROR('supercell: cannot assign pointer to property '//a%properties%keys(n), error)
+          end if
+          call add_property(aa, string(a%properties%keys(n)), repeat(' ', TABLE_STRING_LENGTH), ptr=aa_char_ptr, error=error, overwrite=.true.)
+          PASS_ERROR(error)
+          do i=0,n1-1
+             do j=0,n2-1
+                do k=0,n3-1
+                   aa_char_ptr(:,((i*n2+j)*n3+k)*a%n+1:((i*n2+j)*n3+k)*a%n+a%n) = a_char_ptr(:,:)
+                end do
+             end do
+          end do
+
+       case default
+          RAISE_ERROR('supercell: bad property type '//a%properties%entries(i)%type, error)
+       end select
+    end do
 
     do i = 0,n1-1
        do j = 0,n2-1
@@ -802,8 +898,6 @@ contains
           end do
        end do
     end do
-
-    call finalise(big_data)
 
   end subroutine supercell
 
@@ -853,7 +947,7 @@ contains
       endif
 
       do i=1,myatoms%N
-         myatoms%species(i) = ElementName(myatoms%Z(i))
+         myatoms%species(:,i) = s2a(ElementName(myatoms%Z(i)))
       end do
 
     endif
@@ -1505,8 +1599,8 @@ contains
     character(len=*), intent(in), optional :: Z_values_str
     type(Atoms) :: dup_cell
 
+    character(len=FIELD_LENGTH) :: struct_file
     character(len=FIELD_LENGTH) :: quip_structs_dir
-    type(inoutput) :: struct_io
     type(Atoms) :: cell
     real(dp) :: vol, scale
     integer :: stat
@@ -1529,7 +1623,7 @@ contains
       call system_abort("One of u_vol_per_atom ="//u_vol_per_atom//"and u_vol_per_unit ="//u_vol_per_unit_cell//"cell must be specified")
 
     if (struct(1:1) == '.' .or. struct(1:1) == '/') then
-      call initialise(struct_io, trim(struct))
+      struct_file = trim(struct)
     else
       call get_env_var("QUIP_STRUCTS_DIR", quip_structs_dir, stat)
       if (stat /= 0) then
@@ -1543,9 +1637,9 @@ contains
 	  quip_structs_dir = trim(quip_structs_dir) // "/structures"
 	endif
       endif
-      call initialise(struct_io, trim(quip_structs_dir)//"/"//trim(struct)//".xyz")
+      struct_file = trim(quip_structs_dir)//"/"//trim(struct)//".xyz"
     endif
-    call read_xyz(cell, struct_io)
+    call read(cell, struct_file)
 
     n_types=maxval(cell%Z)-minval(cell%Z) + 1
     allocate(Z_values(n_types))

@@ -1022,9 +1022,8 @@ contains
     logical :: hysteretic_connect
     integer :: i, j, k, m
     real(dp) :: maxlen(3), sep(3), lat_maxlen(3), lat_sep(3)
-    integer :: lookup(3)
     logical :: do_periodic(3)
-    integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:)
+    integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:), cluster_shift(:,:)
     type(CInoutput)                    :: clusterfile
     character(len=255)                :: clusterfilename
     type(Table) :: outer_layer
@@ -1074,12 +1073,12 @@ contains
     do i=1,cluster_info%N
        cluster%pos(:,i) = cluster_info%real(1:3, i)+(at%lattice .mult. cluster_info%int(2:4, i))
        cluster%Z(i) = cluster_info%int(5,i)
-       cluster%species(i) = ElementName(cluster_info%int(5,i))
+       cluster%species(:,i) = s2a(ElementName(cluster_info%int(5,i)))
     end do
     ! add properties to cluster
     call add_property(cluster, 'index', int_part(cluster_info,1))
-    call add_property(cluster, 'shift', 0, n_cols=3, lookup=lookup)
-    cluster%data%int(lookup(2):lookup(3),1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
+    call add_property(cluster, 'shift', 0, n_cols=3, ptr2=cluster_shift)
+    cluster_shift(:,1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
     call add_property(cluster, 'termindex', int_part(cluster_info,6))
     call add_property(cluster, 'rescale', real_part(cluster_info,4))
     call add_property(cluster, 'cluster_ident', cluster_info%str(1,:))

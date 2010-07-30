@@ -2383,7 +2383,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 } 
 
 
-int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char *str_format, char *logical_format, int swap) {
+int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *prefix, char *real_format, char *str_format, char *logical_format, int swap) {
   char linebuffer[LINESIZE], tmpbuf[LINESIZE];
   int i, j, n, lattice_idx, properties_idx;
   char *trimmed;
@@ -2496,12 +2496,15 @@ int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char
     strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
 
+  if (prefix[0] != '\0') fputs(prefix, out);
   fprintf(out, "%d\n", (int)atoms->n_atom);
   linebuffer[strlen(linebuffer)-1] = '\n';
+  if (prefix[0] != '\0') fputs(prefix, out);
   fputs(linebuffer, out);
 
   for (n=0; n<atoms->n_atom; n++) {
     linebuffer[0] = '\0';
+    if (prefix[0] != '\0') strncat(linebuffer, prefix, LINESIZE-strlen(linebuffer)-1);
 
     for (i=0; i<atoms->n_property; i++) {
       if (!atoms->property_filter[i]) continue;
@@ -2595,7 +2598,7 @@ void print_property(Atoms *at, char *name, char *intformat, char *realformat, ch
       break;
     }
     strncat(linebuffer,"\n", LINESIZE-strlen(linebuffer)-1);
-    printf(linebuffer);
+    puts(linebuffer);
   }
 }
 
@@ -3795,7 +3798,7 @@ int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_d
 }
 
 int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
-	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
+	     char *prefix, char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
 	     int *deflate_level, int *swap)
 {
   at->int_data = int_data;
@@ -3807,7 +3810,7 @@ int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *l
     if (at->xyz_out == NULL) return 0;
     if (at->xyz_out != stdout && fseek(at->xyz_out, 0, SEEK_END) != 0) return 0;
 
-    if (!write_xyz(at->xyz_out, at, intformat, realformat, "%.10s", "%5c", *swap))
+    if (!write_xyz(at->xyz_out, at, prefix, intformat, realformat, "%.10s", "%5c", *swap))
       return 0;
     if (at->xyz_out == stdout) fflush(at->xyz_out);
     return 1;
@@ -3816,16 +3819,6 @@ int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *l
     return write_netcdf(at->nc_out, at, *frame, 1, *shuffle, *deflate, *deflate_level);
   } else return 0;
 }
-
-/* int cioupdate(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data) */
-/* { */
-/*   at->int_data = int_data; */
-/*   at->real_data = real_data; */
-/*   at->str_data = str_data; */
-/*   at->logical_data = logical_data;  */
-
-/*   return 1; */
-/* } */
 
 int cioskip (Atoms *atoms, int *n_skip) {
   int i_skip, i, natoms;

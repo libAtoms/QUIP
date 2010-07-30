@@ -129,10 +129,10 @@ def find_quip_root_and_arch():
     return (quip_root, quip_arch)
 
 
-def SourceImporter(infile, defines, include_dirs, cpp):
+def SourceImporter(infile, defines, include_dirs, cpp, is_wrap_source):
     """Import source code from infile and copy to build_dir/package,
        passing through filter if it's an F95 source file. The filter
-       converts all private variables to public and runs the cpp
+       converts private interface members to public and runs the cpp
        preprocessor."""
 
     def func(extension, build_dir):
@@ -146,22 +146,12 @@ def SourceImporter(infile, defines, include_dirs, cpp):
 
         if infile.endswith('.f95'):
             if newer(infile, outfile):
-                print 'filtering %s to create %s' % (infile, outfile)
-                # Munge source a little... this could be converted to pure python at some point
+                print 'filtering %s to create %s, is_wrap_source=%s' % (infile, outfile, is_wrap_source)
+                tmp_file = os.path.basename(infile)[:-4] + '.F90'
+                f2py_wrapper_gen.filter_source_file(open(infile), open(tmp_file, 'w'), is_wrap_source)
+                os.system("%s %s %s | grep -v '^#' >  %s" % (' '.join(cpp), cpp_opt, tmp_file, outfile))
 
-                tmp_file = os.path.basename(infile)
-                os.system("""perl -e 'while(<>) {
-    if (/^(double precision\s+)?\s*(recursive\s+)?(subroutine|function)\s+(\w*)/) {
-	$last_subrt = $4;
-	print;
-    }
-    elsif (/^\s*end\s+(subroutine|function)\s*$/) { 
-	chomp();
-	print $_." ".$last_subrt."\n";
-    }
-    else { s/^\s*private\s*$/!private/; s/^\s*private([ :])/!private$1/; print; }
-}' %s > %s; %s %s %s | grep -v '^#' >  %s""" % (infile, tmp_file, ' '.join(cpp), cpp_opt, tmp_file, outfile))
-                os.remove(tmp_file)
+                #os.remove(tmp_file)
                 os.remove(tmp_file[:-4] + '.s')
         else:
             copy_file(infile, outfile, update=True)
@@ -220,9 +210,12 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
                 res.append(wrapper)
                 continue
 
+            public_symbols = f2py_wrapper_gen.find_public_symbols('%s/../%s' % (build_dir, file))
+
             tmpf = StringIO.StringIO()
             new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines, initlines=initlines,
-                                                 filtertypes=filtertypes, prefix=prefix, callback_routines=callback_routines)
+                                                 filtertypes=filtertypes, prefix=prefix, callback_routines=callback_routines,
+                                                 public_symbols=public_symbols)
 
             if not os.path.exists(wrapper) or (new_spec[wrap_mod_name] != fortran_spec.get(wrap_mod_name, None)):
                 print 'Interface for module %s has changed. Rewriting wrapper file' % mod.name
@@ -327,7 +320,7 @@ def find_sources(makefile, quip_root):
     all_sources += libatoms_sources
     wrap_sources += ['System.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
-                     'clusters.f95','Structures.f95', 'CInOutput.f95', 'Topology.f95', 'ParamReader.f95']
+                     'clusters.f95','Structures.f95', 'CInOutput.f95', 'ParamReader.f95']
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection',
                    'dynamicalsystem', 'cinoutput']
     source_dirs.append(libatoms_dir)
@@ -505,7 +498,7 @@ arraydata_ext = Extension(name='quippy.arraydata',
 
 # underlying quippy library, libquippy.a
 quippy_lib = ('quippy', {
-    'sources': [ SourceImporter(f, macros, source_dirs, cpp) for f in all_sources ],
+    'sources': [ SourceImporter(f, macros, source_dirs, cpp, os.path.basename(f) in wrap_sources) for f in all_sources ],
     'include_dirs':  include_dirs,
     'macros': macros,
     })
@@ -546,7 +539,7 @@ setup(name='quippy',
       data_files = [('quippy',['quippy.spec'])],
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext},
-      version=os.popen('svnversion -n .').read(),
+#      version=os.popen('svnversion -n .').read(),
       description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',

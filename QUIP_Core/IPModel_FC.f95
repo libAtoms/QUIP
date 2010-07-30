@@ -123,7 +123,7 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str, mpi)
 
   call IPModel_FC_read_params_xml(this, param_str)
 
-  call atoms_read_xyz_filename(this%ideal_struct, trim(this%ideal_struct_file))
+  call read(this%ideal_struct, trim(this%ideal_struct_file))
 
   do ti=1, this%n_types
   do tj=1, this%n_types
@@ -613,7 +613,7 @@ subroutine IPModel_FC_Print (this, file)
   call verbosity_push_decrement(PRINT_NERD)
   call print("IPModel_FC : ideal_struct_file='"//trim(this%ideal_struct_file)//"'", file=file)
   call print("IPModel_FC : ideal_struct", file=file)
-  call print_xyz(this%ideal_struct,xyzfile=file)
+  call write(this%ideal_struct,'stdout')
   call verbosity_pop()
 
 end subroutine IPModel_FC_Print
