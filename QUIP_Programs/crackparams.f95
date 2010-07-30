@@ -326,6 +326,11 @@ module CrackParams_module
      module procedure CrackParams_initialise 
   end interface
 
+  public :: finalise
+  interface finalise
+     module procedure CrackParams_finalise
+  end interface finalise
+
   public :: print
   interface print
      module procedure CrackParams_print
