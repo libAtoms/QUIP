@@ -104,6 +104,7 @@ class TestAtoms_LowLevel(QuippyTestCase):
       self.assertRaises(KeyError, self.at.properties.__getitem__, 'pos')
 
    def test_remove_property_2(self):
+      self.at.pos # access pos before removing to put it in cache
       self.at.remove_property('pos')
       self.assertRaises(AttributeError, getattr, self.at, 'pos')
 
@@ -248,6 +249,12 @@ class TestAtoms_LowLevel(QuippyTestCase):
       cp2 = self.dia.select(list=[8,2,3,4,7,6])
       cp2.remove_property('orig_index')
       self.assertEqual(cp1, cp2)
+
+   def test_remove_atoms_cache_error(self):
+      cp = self.dia.copy()
+      self.assertEqual(cp.pos.shape, (3, 8))
+      cp.remove_atoms(1)
+      self.assertEqual(cp.pos.shape, (3, 7))
 
    def test_map_into_cell_range(self):
       self.dia.map_into_cell()

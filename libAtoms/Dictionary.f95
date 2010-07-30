@@ -91,6 +91,7 @@ module dictionary_module
      integer :: N !% number of entries in use
      type(extendable_str), allocatable :: keys(:) !% array of keys
      type(DictEntry), allocatable :: entries(:)    !% array of entries
+     integer :: cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed
   end type Dictionary
 
   !% Initialise a new empty dictionary
@@ -325,6 +326,7 @@ contains
     call finalise(this)
 
     call extend_entries(this, n_entry_block)
+    this%cache_invalid = 1
   end subroutine dictionary_initialise
 
   subroutine dictionary_finalise(this)
@@ -349,6 +351,7 @@ contains
        deallocate(this%keys)
     end if
     this%N = 0
+    this%cache_invalid = 1
 
   end subroutine dictionary_finalise
 
@@ -436,6 +439,7 @@ contains
     entry%i = value
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_i
 
   subroutine dictionary_set_value_r(this, key, value)
@@ -450,6 +454,7 @@ contains
     entry%r = value
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_r
 
   subroutine dictionary_set_value_c(this, key, value)
@@ -464,6 +469,7 @@ contains
     entry%c = value
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_c
 
   subroutine dictionary_set_value_l(this, key, value)
@@ -478,6 +484,7 @@ contains
     entry%l = value
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_l
 
   subroutine dictionary_set_value_s(this, key, value)
@@ -493,6 +500,7 @@ contains
     call concat(entry%s, value)
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_s
 
   subroutine dictionary_set_value_s_es(this, key, value)
@@ -507,6 +515,7 @@ contains
     call initialise(entry%s, value)
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+
   end subroutine dictionary_set_value_s_es
 
   subroutine dictionary_set_value_i_a(this, key, value)
@@ -521,9 +530,13 @@ contains
     entry%type = T_INTEGER_A
     entry%len = size(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a(size(value)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a(size(value)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%i_a = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_i_a
 
   subroutine dictionary_set_value_r_a(this, key, value)
@@ -538,9 +551,13 @@ contains
     entry%type = T_REAL_A
     entry%len = size(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a(size(value)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%r_a(size(value)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%r_a = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_r_a
 
   subroutine dictionary_set_value_i_a2(this, key, value)
@@ -556,9 +573,13 @@ contains
     entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a2(size(value,1),size(value,2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a2(size(value,1),size(value,2)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%i_a2 = value
     call finalise(entry)
+
   end subroutine dictionary_set_value_i_a2
 
   subroutine dictionary_set_value_r_a2(this, key, value)
@@ -574,7 +595,10 @@ contains
     entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a2(size(value,1),size(value,2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%r_a2(size(value,1),size(value,2)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%r_a2 = value
     call finalise(entry)
   end subroutine dictionary_set_value_r_a2
@@ -591,7 +615,10 @@ contains
     entry%type = T_COMPLEX_A
     entry%len = size(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%c_a(size(value)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%c_a(size(value)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%c_a = value
     call finalise(entry)
   end subroutine dictionary_set_value_c_a
@@ -608,7 +635,10 @@ contains
     entry%type = T_LOGICAL_A
     entry%len = size(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%l_a(size(value)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%l_a(size(value)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%l_a = value
     call finalise(entry)
   end subroutine dictionary_set_value_l_a
@@ -626,7 +656,10 @@ contains
     entry%len = 0
     entry%len2 = (/len(value(1)), size(value) /)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
+       this%cache_invalid = 1
+    end if
     do i=1,entry%len2(1)
        do j=1,entry%len2(2)
           this%entries(entry_i)%s_a(i,j) = value(j)(i:i)
@@ -648,7 +681,10 @@ contains
     entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
+       this%cache_invalid = 1
+    end if
     this%entries(entry_i)%s_a = value
     call finalise(entry)
   end subroutine dictionary_set_value_s_a2
@@ -665,6 +701,8 @@ contains
     entry%d = value
     entry_i = add_entry(this, key, entry)
     call finalise(entry)
+    this%cache_invalid = 1
+
   end subroutine dictionary_set_value_d
 
 
@@ -1307,6 +1345,7 @@ contains
     entry%len = size(ptr)
     this%entries(entry_i)%i_a => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_i
 
@@ -1324,6 +1363,7 @@ contains
     entry%len = size(ptr)
     this%entries(entry_i)%r_a => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_r
 
@@ -1341,6 +1381,7 @@ contains
     entry%len = size(ptr)
     this%entries(entry_i)%c_a => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_c
 
@@ -1358,6 +1399,7 @@ contains
     entry%len = size(ptr)
     this%entries(entry_i)%l_a => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_l
 
@@ -1376,6 +1418,7 @@ contains
     entry%len2 = size(ptr)
     this%entries(entry_i)%s_a => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_s
 
@@ -1394,6 +1437,7 @@ contains
     entry%len2 = shape(ptr)
     this%entries(entry_i)%i_a2 => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_i2
 
@@ -1412,6 +1456,7 @@ contains
     entry%len2 = shape(ptr)
     this%entries(entry_i)%r_a2 => ptr
     call finalise(entry)
+    this%cache_invalid = 1
 
   end subroutine dictionary_set_value_pointer_r2
 
@@ -1438,7 +1483,10 @@ contains
     entry%type = T_INTEGER_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
     call finalise(entry)
@@ -1462,7 +1510,10 @@ contains
     entry%type = T_REAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%r_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value
     call finalise(entry)
@@ -1486,7 +1537,10 @@ contains
     entry%type = T_COMPLEX_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%c_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%c_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value
     call finalise(entry)
@@ -1510,7 +1564,10 @@ contains
     entry%type = T_LOGICAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%l_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%l_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value
     call finalise(entry)
@@ -1535,7 +1592,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value
     call finalise(entry)
@@ -1560,7 +1620,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value
     call finalise(entry)
@@ -1585,7 +1648,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value
     call finalise(entry)
@@ -1611,7 +1677,10 @@ contains
     entry%type = T_INTEGER_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
     call finalise(entry)
@@ -1635,7 +1704,10 @@ contains
     entry%type = T_REAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%r_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value(:)
     call finalise(entry)
@@ -1659,7 +1731,10 @@ contains
     entry%type = T_COMPLEX_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%c_a(len))
+    if (do_alloc) then 
+       allocate(this%entries(entry_i)%c_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value(:)
     call finalise(entry)
@@ -1683,7 +1758,10 @@ contains
     entry%type = T_LOGICAL_A
     entry%len = len
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%l_a(len))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%l_a(len))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value(:)
     call finalise(entry)
@@ -1708,7 +1786,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value(:,:)
     call finalise(entry)
@@ -1733,7 +1814,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
+    if (do_alloc) then
+       allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value(:,:)
     call finalise(entry)
@@ -1758,7 +1842,10 @@ contains
     entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
-    if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
+    if (do_alloc) then 
+       allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
+       this%cache_invalid = 1
+    end if
     if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value(:,:)
     call finalise(entry)
@@ -2165,6 +2252,8 @@ contains
     endif
 
     this%N = this%N - 1
+    this%cache_invalid = 1
+
   end subroutine remove_entry
 
   !% OMIT

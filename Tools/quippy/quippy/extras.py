@@ -277,57 +277,6 @@ class Atoms(FortranAtoms):
          raise ValueError('Either mask or list must be present.')
       return out
 
-   ## def _update_hook(self):
-   ##    if self.n == 0: return
-   ##    if hasattr(self, 'property_prefix'):
-   ##       property_prefix = self.property_prefix
-   ##    else:
-   ##       property_prefix = ''
-      
-   ##    # Remove existing pointers
-   ##    if hasattr(self, '_props'):
-   ##       for prop in self._props:
-   ##          try:
-   ##             delattr(self, property_prefix+prop)
-   ##          except AttributeError:
-   ##             pass
-
-   ##    from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
-
-   ##    type_names = {PROPERTY_INT: "integer",
-   ##                  PROPERTY_REAL: "real",
-   ##                  PROPERTY_STR: "string",
-   ##                  PROPERTY_LOGICAL: "logical"}
-   ##    self._props = {}
-   ##    for prop,(ptype,col_start,col_end) in self.properties.iteritems():
-   ##       prop = property_prefix+prop.lower()
-   ##       self._props[prop] = (ptype,col_start,col_end)
-   ##       doc = "%s : %s property with %d %s" % (prop, type_names[ptype], col_end-col_start+1, 
-   ##                                              {True:"column",False:"columns"}[col_start==col_end])
-   ##       if ptype == PROPERTY_REAL:
-   ##          if col_end == col_start:
-   ##             setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
-   ##          else:
-   ##             setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-   ##       elif ptype == PROPERTY_INT:
-   ##          if col_end == col_start:
-   ##             setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
-   ##          else:
-   ##             setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-   ##       elif ptype == PROPERTY_STR:
-   ##          if col_end == col_start:
-   ##             setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
-   ##          else:
-   ##             setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc,transpose_on_print=True))
-   ##       elif ptype == PROPERTY_LOGICAL:
-   ##          if col_end == col_start:
-   ##             setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
-   ##          else:
-   ##             setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-   ##       else:
-   ##          raise ValueError('Bad property type :'+str(self.properties[prop]))
-         
-
    def copy(self):
       other = Atoms(n=self.n, lattice=self.lattice, 
                     properties=self.properties, params=self.params)
@@ -375,11 +324,13 @@ class Atoms(FortranAtoms):
       return self.n
 
    def __getattr__(self, name):
-      if isinstance(self.params, FortranDictionary) and name in self.params:
-         return self.params[name]
-      elif isinstance(self.properties, FortranDictionary) and name in self.properties:
+      try:
          return self.properties[name]
-      raise AttributeError('Unknown Atoms parameter %s' % name)
+      except KeyError:
+         try:
+            return self.params[name]
+         except KeyError:
+            raise AttributeError('Unknown Atoms attribute %s' % name)
 
    def __getitem__(self, i):
       if i < 1 or i > self.n:
@@ -508,6 +459,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
    def __init__(self, D=None, *args, **kwargs):
       FortranDictionary.__init__(self, *args, **kwargs)
+      self._cache = {}
       if D is not None:
          self.read(D) # copy from D
 
@@ -570,22 +522,37 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
 
    def __getitem__(self, k):
-      if not k in self:
-         raise KeyError('Key "%s" not found ' % k)
+      k = k.lower()
 
-      t = self.get_type_and_size(k)[0]
-
-      if t == T_NONE:
-         raise ValueError('Key %s has no associated value' % k)
-
-      elif t in Dictionary._scalar_types:
-         return self.get_value(k)
+      if self.cache_invalid:
+         self._cache = {}
+         self.cache_invalid = 0
+         
+      try:
+         v = self._cache[k]
+         if v is None: raise KeyError
+         return v
       
-      elif t in Dictionary._array_types:
-         return self.get_array(k)
+      except KeyError:
+         if not k in self:
+            raise KeyError('Key "%s" not found ' % k)
 
-      else:
-         raise ValueError('Unsupported dictionary entry type %d' % t)
+         t = self.get_type_and_size(k)[0]
+
+         if t == T_NONE:
+            raise ValueError('Key %s has no associated value' % k)
+
+         elif t in Dictionary._scalar_types:
+            self._cache[k] = None
+            return self.get_value(k)
+
+         elif t in Dictionary._array_types:
+            v = self.get_array(k)
+            self._cache[k] = v
+            return v
+
+         else:
+            raise ValueError('Unsupported dictionary entry type %d' % t)
 
 
    def __setitem__(self, k, v):
