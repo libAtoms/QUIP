@@ -297,7 +297,8 @@ module  atoms_module
   interface add_property
      module procedure atoms_add_property_int, atoms_add_property_int_a
      module procedure atoms_add_property_real, atoms_add_property_real_a
-     module procedure atoms_add_property_str, atoms_add_property_str_a
+     module procedure atoms_add_property_str, atoms_add_property_str_2da
+     module procedure atoms_add_property_str_a
      module procedure atoms_add_property_logical, atoms_add_property_logical_a 
      module procedure atoms_add_property_int_2Da
      module procedure atoms_add_property_real_2Da
@@ -806,7 +807,7 @@ contains
   subroutine atoms_add_property_int_a(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
-    integer, intent(in), dimension(this%N) :: value
+    integer, intent(in), dimension(:) :: value
     integer, intent(in), optional :: n_cols
     integer, optional, intent(out), dimension(:), pointer :: ptr
     integer, optional, intent(out), dimension(:,:), pointer :: ptr2
@@ -818,6 +819,10 @@ contains
 
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
+
+    if (size(value) /= this%N) then
+       RAISE_ERROR('atoms_add_property_int_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    end if
 
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
@@ -884,7 +889,7 @@ contains
   subroutine atoms_add_property_real_a(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
-    real(dp), intent(in), dimension(this%N) :: value
+    real(dp), intent(in), dimension(:) :: value
     integer, intent(in), optional :: n_cols
     real(dp), optional, dimension(:), pointer, intent(out) :: ptr
     real(dp), optional, dimension(:,:), pointer, intent(out) :: ptr2
@@ -896,6 +901,10 @@ contains
 
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
+
+    if (size(value) /= this%N) then
+       RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    end if
 
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
@@ -934,6 +943,10 @@ contains
 
     INIT_ERROR(error)
 
+    if (size(value,2) /= this%N) then
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    end if
+
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
     if (i /= -1) then
@@ -966,6 +979,10 @@ contains
     integer i
 
     INIT_ERROR(error)
+
+    if (size(value,2) /= this%N) then
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    end if
 
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
@@ -1017,10 +1034,43 @@ contains
   end subroutine atoms_add_property_str
 
 
+  subroutine atoms_add_property_str_2da(this, name, value, ptr, overwrite, error)
+    type(Atoms), intent(inout),target :: this
+    character(len=*), intent(in) :: name
+    character(1), dimension(:,:) :: value
+    character(1), intent(out), optional, dimension(:,:), pointer :: ptr
+    logical, optional, intent(in) :: overwrite
+    integer, intent(out), optional :: error
+
+    integer :: i, j
+
+    INIT_ERROR(error)
+
+    if (size(value,2) /= this%N) then
+       RAISE_ERROR('atoms_add_property_str_2da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    end if
+
+    ! Check for incompatible property
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (this%properties%entries(i)%type /= T_CHAR_A) then
+          RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
+       end if       
+    end if
+    
+    ! temporary hack - string length fixed to TABLE_STRING_LENGTH
+    if (size(value,1) /= TABLE_STRING_LENGTH) then
+       RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
+    end if
+
+    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
+
+  end subroutine atoms_add_property_str_2da
+
   subroutine atoms_add_property_str_a(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
-    character(len=*), dimension(this%N) :: value
+    character(len=*), dimension(:) :: value
     character(1), intent(out), optional, dimension(:,:), pointer :: ptr
     logical, optional, intent(in) :: overwrite
     integer, intent(out), optional :: error
@@ -1029,6 +1079,10 @@ contains
     integer :: i, j
 
     INIT_ERROR(error)
+
+    if (size(value) /= this%N) then
+       RAISE_ERROR('atoms_add_property_str_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    end if
 
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
@@ -1053,7 +1107,6 @@ contains
     deallocate(tmp_value)
 
   end subroutine atoms_add_property_str_a
-
 
   subroutine atoms_add_property_logical(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout), target :: this
@@ -1083,7 +1136,7 @@ contains
   subroutine atoms_add_property_logical_a(this, name, value, ptr, overwrite, error)
     type(Atoms), intent(inout),target :: this
     character(len=*), intent(in) :: name
-    logical, dimension(this%N) :: value
+    logical, dimension(:) :: value
     logical, intent(out), optional, dimension(:), pointer :: ptr
     logical, optional, intent(in) :: overwrite
     integer, intent(out), optional :: error
@@ -1091,6 +1144,10 @@ contains
     integer i
 
     INIT_ERROR(error)
+
+    if (size(value) /= this%N) then
+       RAISE_ERROR('atoms_add_property_logical_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    end if
 
     ! Check for incompatible property
     i = lookup_entry_i(this%properties, name)
