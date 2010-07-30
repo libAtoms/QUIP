@@ -35,7 +35,7 @@ use Potential_module
 implicit none
 
   type(Potential) pot
-  type(inoutput) params, in
+  type(inoutput) params
   type(Atoms) at
 
   real(dp) :: E0
@@ -48,8 +48,7 @@ implicit none
 
   call Initialise(params, "quip_params.xml")
 
-  call Initialise(in, "stdin")
-  call read_xyz(at, in)
+  call read(at, 'stdin')
 
   call Initialise(pot, 'IP LJ', params)
 
