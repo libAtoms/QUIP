@@ -254,7 +254,7 @@ Si  -4.45906255   0.           0.
       a = transform(diamond(5.44, 14), shear)
       c = castep.CastepCell(atoms=a)
       a2 = c.to_atoms()
-      self.assertEqual(a, a2)
+      self.assertAtomsEqual(a, a2)
 
       c.write('test.cell')
 
@@ -565,11 +565,11 @@ class TestReadGeom(QuippyTestCase):
 
    def testatomsread(self):
       a = Atoms(self.geom_lines, format='geom')
-      self.assertEqual(self.at.data, a.data)
+      self.assertEqual(self.at, a)
 
    def testatomsreader(self):
       a, = AtomsList(self.geom_lines, format='geom')
-      self.assertEqual(self.at.data, a.data)
+      self.assertEqual(self.at, a)
 
 class TestReadMD(QuippyTestCase):
    def setUp(self):
