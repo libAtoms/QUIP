@@ -223,6 +223,7 @@ class FortranDerivedType(object):
        call_init = True
        self._fpointer = None
        self._finalise = True
+       self._subobjs_cache = {}
        
        if 'fpointer' in kwargs:
            if kwargs['fpointer'] is not None:
@@ -676,7 +677,12 @@ def wrap_obj_get(name):
        cls, getfunc, setfunc = self._subobjs[name]
        p = getfunc(self._fpointer)
        if not (p == 0).all():
-           return FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False)
+          try:
+             obj = self._subobjs_cache[tuple(p)]
+          except KeyError:
+             obj = self._subobjs_cache[tuple(p)] = FortranDerivedTypes[cls.lower()](fpointer=p,finalise=False)
+          return obj
+             
     return func
 
 def wrap_obj_set(name):
