@@ -428,76 +428,64 @@ class Atoms(FortranAtoms):
       return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
 
-   ## def add_property(self, name, value, n_cols=1, property_type=None):
-   ##    """
-   ##    Add a new property to this Atoms object.
+   def add_property(self, name, value, n_cols=None, overwrite=None, property_type=None):
+      """
+      Add a new property to this Atoms object.
 
-   ##    `name` is the name of the new property and `value` should be
-   ##    either a scalar or an array representing the value, which should
-   ##    be either integer, real, logical or string.
+      `name` is the name of the new property and `value` should be
+      either a scalar or an array representing the value, which should
+      be either integer, real, logical or string.
 
-   ##    If a scalar is given for `value` it is copied to every element
-   ##    in the new property.  `n_cols` can be specified to create a 2D
-   ##    property from a scalar initial value - the default is 1 which
-   ##    creates a 1D property.
+      If a scalar is given for `value` it is copied to every element
+      in the new property.  `n_cols` can be specified to create a 2D
+      property from a scalar initial value - the default is 1 which
+      creates a 1D property.
 
-   ##    If an array is given for `value` it should either have shape
-   ##    (self.n,) for a 1D property or (n_cols,self.n) for a 2D
-   ##    property.  In this case `n_cols` is inferred from the shape of
-   ##    the `value` and shouldn't be passed as an argument.
+      If an array is given for `value` it should either have shape
+      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
+      property.  In this case `n_cols` is inferred from the shape of
+      the `value` and shouldn't be passed as an argument.
 
-   ##    If `property_type` is present, then no attempt is made to
-   ##    infer the type from `value`. This is necessary to resolve
-   ##    ambiguity between integer and logical types.
+      If `property_type` is present, then no attempt is made to
+      infer the type from `value`. This is necessary to resolve
+      ambiguity between integer and logical types.
 
-   ##    If property with the same type is already present then no error
-   ##    occurs. A warning is printed if the verbosity level is VERBOSE
-   ##    or higher. The value will be overwritten with that given in
-   ##    `value`.
-   ##    """
+      If property with the same type is already present then no error
+      occurs.If `overwrite` is true, the value will be overwritten with
+      that given in `value`, otherwise the old value is retained.
+      """
 
-   ##    if hasattr(value, '__iter__'):
-   ##       value = farray(value)
-   ##       # some kind of array:
-   ##       if len(value.shape) == 1:
-   ##          if value.shape[0] != self.n:
-   ##             raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
-   ##                              % (value.shape[0], self.n))
-   ##          n_cols = 1
-   ##          value_ref = value[1]
-   ##       elif len(value.shape) == 2:
-   ##          if value.shape[1] != self.n:
-   ##             raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
-   ##                              % (value.shape[1], self.n))
-   ##          value_ref = value[1,1]
-   ##          if value.dtype.kind == 'S':
-   ##             n_cols = 1
-   ##          else:
-   ##             n_cols = value.shape[0]
-   ##       else:
-   ##          raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
-   ##    else:
-   ##       # some kind of scalar
-   ##       value_ref = value
+      kwargs = {}
+      if n_cols is not None: kwargs['n_cols'] = n_cols
+      if overwrite is not None: kwargs['overwrite'] = overwrite
 
-   ##    if property_type is not None:
-   ##       # override value_ref if property_type is specified
+      if property_type is None:
+         FortranAtoms.add_property(self, name, value, **kwargs)
+
+      else:
+         # override value_ref if property_type is specified
          
-   ##       from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
-         
-   ##       type_to_value_ref = {
-   ##          PROPERTY_INT  : 0,
-   ##          PROPERTY_REAL : 0.0,
-   ##          PROPERTY_STR  : "",
-   ##          PROPERTY_LOGICAL : False
-   ##          }
-   ##       try:
-   ##          value_ref = type_to_value_ref[property_type]
-   ##       except KeyError:
-   ##          raise ValueError('Unknown property_type %d' % property_type)
+         from quippy import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
+                             T_INTEGER_A2, T_REAL_A2)
 
-   ##    FortranAtoms.add_property(self, name, value_ref, n_cols)
-   ##    getattr(self, name.lower())[:] = value            
+         new_property = not self.has_property(name)
+         
+         type_to_value_ref = {
+            T_INTEGER_A  : 0,
+            T_REAL_A : 0.0,
+            T_CHAR_A  : " ",
+            T_LOGICAL_A : False,
+            T_INTEGER_A2 : 0,
+            T_REAL_A2: 0.0
+            }
+         try:
+            value_ref = type_to_value_ref[property_type]
+         except KeyError:
+            raise ValueError('Unknown property_type %d' % property_type)
+
+         FortranAtoms.add_property(self, name, value_ref, **kwargs)
+         if new_property or overwrite:
+            getattr(self, name.lower())[:] = value            
 
 from dictmixin import DictMixin, ParamReaderMixin
 
