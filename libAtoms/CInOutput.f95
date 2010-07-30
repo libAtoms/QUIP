@@ -364,6 +364,7 @@ contains
     integer, intent(out), optional :: error
 
     type(Table), target :: tmp_data
+    type(Dictionary) :: empty_dictionary
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
     integer :: i
     character(len=KEY_LEN) :: namestr
@@ -452,7 +453,9 @@ contains
           RAISE_ERROR_WITH_KIND(ERROR_IO,"Error reading from file", error)
        end if
 
-       call initialise(at, int(this%n_atom), transpose(this%lattice))
+       call initialise(empty_dictionary) ! pass an empty dictionary to prevent pos, species, z properties being created
+       call initialise(at, int(this%n_atom), transpose(this%lattice), properties=empty_dictionary)
+       call finalise(empty_dictionary)
 
        ! temporary hack - we copy from data Table into new properties Dictionary
        do i=1,this%n_property
