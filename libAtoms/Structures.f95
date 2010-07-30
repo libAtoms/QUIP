@@ -1587,8 +1587,8 @@ contains
   !% repeats, and specified Z values.
   !% file may contain default Z values as a property Z_values='Z1 Z2 ...'
   !% structures that begin with . or / are searched for as paths,
-  !% and everything else is searched for in $QUIP_ARCH/structures/struct.xyz
-  !% or in $HOME/share/quip_structures/struct.xyz
+  !% and everything else is searched for in 'QUIP_ARCH/structures/struct.xyz'
+  !% or in 'HOME/share/quip_structures/struct.xyz'
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

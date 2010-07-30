@@ -31,7 +31,7 @@
 !X
 !X IPModel_FB module  
 !%
-!% Module for Flikkema & Bromley interatomic potential
+!% Module for Flikkema \& Bromley interatomic potential
 !%
 !X
 !X

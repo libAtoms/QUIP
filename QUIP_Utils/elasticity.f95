@@ -57,7 +57,7 @@ contains
     real(dp), intent(out), optional :: c0(6,6) !% Elastic constants (without relaxation)
     logical, optional :: relax_initial !% Should the initial cell be relaxed?
     logical, optional :: return_relaxed !% If true, overwrite 'at' with relaxed positions and lattice (default false)
-    real(dp), optional :: relax_tol !% Relaxation df^2 tolerance. Default 1e-8
+    real(dp), optional :: relax_tol !% Relaxation df$^2$ tolerance. Default 1e-8
 
     logical my_relax_initial, my_return_relaxed
     integer ii, jj
