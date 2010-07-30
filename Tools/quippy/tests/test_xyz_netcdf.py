@@ -125,6 +125,11 @@ if got_cinoutput:
          self.assertEqual(self.at, at)
          self.assertEqual(self.xyz_ref, open('test.xyz', 'r').readlines())
 
+      def testsinglexyzprefix(self):
+         self.at.write('test.xyz', prefix='PREFIX')
+         lines = open('test.xyz').readlines()
+         self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
+
       def testsinglenc(self):
          self.at.write('test.nc')
          at = Atoms('test.nc')
@@ -136,6 +141,11 @@ if got_cinoutput:
          self.assertEqual(len(al), 5)
          self.assertEqual(len(self.al), len(al))
          self.assertEqual(list(self.al), list(al))
+
+      def testmultixyzprefix(self):
+         self.al.write('test.xyz', prefix='PREFIX')
+         lines = open('test.xyz').readlines()
+         self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
 
       def testmultinc(self):
          self.al.write('test.nc')
@@ -216,7 +226,7 @@ if got_cinoutput:
       def testwrite_single_xyz_properties(self):
          self.at.write('test.xyz', properties=['species','pos'])
          at = Atoms('test.xyz')
-         self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+         self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
          self.assertArrayAlmostEqual(self.at.pos, at.pos)
          self.assertEqual(list(self.at.z), list(at.z))
 
@@ -224,7 +234,7 @@ if got_cinoutput:
          self.al.write('test.xyz', properties=['species','pos'])
          al = AtomsList('test.xyz')
          for at,at_ref in zip(al, self.al):
-            self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+            self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
             self.assertArrayAlmostEqual(at.pos, at_ref.pos)
             self.assertEqual(list(at.z), list(at_ref.z))
 
@@ -258,7 +268,8 @@ class TestPythonNetCDF(QuippyTestCase):
          from netCDF4 import Dataset
          nc = Dataset('test3.nc','r')
          al = AtomsList(nc)
-         self.assertEqual(list(self.al), list(al))
+         for a, b in zip(self.al, al):
+            self.assertAtomsEqual(a, b)
          nc.close()
 
       def testnetcdf4_write(self):
@@ -291,13 +302,12 @@ class TestPuPyXYZ(QuippyTestCase):
 
 
    def tearDown(self):
-      pass
-      #if os.path.exists('test.xyz'): os.remove('test.xyz')
+      if os.path.exists('test.xyz'): os.remove('test.xyz')
 
    def testsinglexyz(self):
       self.at.write(PuPyXYZWriter('test.xyz'))
       at = Atoms(PuPyXYZReader('test.xyz'))
-      self.assertEqual(at, self.at)
+      self.assertAtomsEqual(at, self.at)
 
    def testmultixyz(self):
       self.al.write(PuPyXYZWriter('test.xyz'))
@@ -319,7 +329,7 @@ class TestPuPyXYZ(QuippyTestCase):
    def testwrite_single_xyz_properties(self):
       self.at.write('test.xyz', properties=['species','pos'], format='pupyxyz')
       at = Atoms('test.xyz', format='pupyxyz')
-      self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+      self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
       self.assertArrayAlmostEqual(self.at.pos, at.pos)
       self.assertEqual(list(self.at.z), list(at.z))
 
@@ -327,7 +337,7 @@ class TestPuPyXYZ(QuippyTestCase):
       self.al.write('test.xyz', properties=['species','pos'], format='pupyxyz')
       al = AtomsList('test.xyz', format='pupyxyz')
       for at,at_ref in zip(al, self.al):
-         self.assertEqual(at.properties.keys(), ['species', 'pos', 'Z'])
+         self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
          self.assertArrayAlmostEqual(at.pos, at_ref.pos)
          self.assertEqual(list(at.z), list(at_ref.z))
 
