@@ -465,192 +465,196 @@ class TestAtoms_Extras(QuippyTestCase):
 
    def test_select_mask_one(self):
       sub_at = self.at.select(mask=[1,0,0,0,0,0,0,0])
+      sub_at.remove_property('orig_index')
       self.assertEqual(sub_at[1], self.at[1])
 
    def test_select_list(self):
       sub_at = self.at.select(list=[2])
+      sub_at.remove_property('orig_index')      
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_array(self):
       sub_at = self.at.select(list=array([2]))
+      sub_at.remove_property('orig_index')      
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_farray(self):
       sub_at = self.at.select(list=farray([2]))
+      sub_at.remove_property('orig_index')      
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_2(self):
       sub_at = self.at.select(list=[2,3])
+      sub_at.remove_property('orig_index')            
       self.assertEqual((sub_at[1],  sub_at[2]),
                        (self.at[2], self.at[3]))
+
+   def check_property(self, name, type, n_cols=None):
+      t, l, (l1,l2) = self.at.properties.get_type_and_size(name)
+      if type in (T_INTEGER_A, T_REAL_A, T_LOGICAL_A):
+         s = self.at.n
+         s1 = 0
+         s2 = 0
+      elif type in (T_INTEGER_A2, T_REAL_A2):
+         s = 0
+         s1 = n_cols
+         s2 = self.at.n
+      elif type == T_CHAR_A:
+         s = 0
+         s1 = TABLE_STRING_LENGTH
+         s2 = self.at.n
+      else:
+         raise TypeError('bad property type %d' % type)
+      self.assertEqual((t, l, l1, l2), (type, s, s1, s2))
       
    def test_add_property_int_from_scalar(self):
       self.at.add_property('int', 0)
-      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [0]*8)
 
    def test_add_property_int_from_list(self):
       self.at.add_property('int', [0]*8)
-      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [0]*8)
 
    def test_add_property_int_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'int', [0]*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'int', [0]*9)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_int_from_array(self):
       self.at.add_property('int', fzeros(8,dtype=int))
-      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [0]*8)      
       
    def test_add_property_int2d_from_scalar(self):
       self.at.add_property('int2d', 0, n_cols=2)
-      self.assertEqual(list(self.at.properties['int2d']), [PROPERTY_INT, 2, 3])
+      self.check_property('int2d', T_INTEGER_A2, 2)
       self.assertArrayAlmostEqual(self.at.int2d, [[0,0]]*8)
 
    def test_add_property_int2d_from_list(self):
-      self.at.add_property('int2d', [[0,0]]*8)
-      self.assertEqual(list(self.at.properties['int2d']), [PROPERTY_INT, 2, 3])
+      self.at.add_property('int2d', [[0]*8]*2)
+      self.check_property('int2d', T_INTEGER_A2, 2)
       self.assertArrayAlmostEqual(list(self.at.int2d), [[0,0]]*8)
    
    def test_add_property_int2d_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'int2d', [[0,0]]*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'int2d', [[0]*9]*2)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_int2d_from_array(self):
       self.at.add_property('int2d', fzeros((2,8),dtype=int))
-      self.assertEqual(list(self.at.properties['int2d']), [PROPERTY_INT, 2, 3])
+      self.check_property('int2d', T_INTEGER_A2, 2)
       self.assertArrayAlmostEqual(list(self.at.int2d), [[0,0]]*8)
 
    def test_add_property_int_from_random_array(self):
       r = numpy.random.randint(1, 100, 8)
       self.at.add_property('int', r)
-      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.check_property('int', T_INTEGER_A)
       self.assertArrayAlmostEqual(list(self.at.int), r)
 
    def test_add_property_real_from_scalar(self):
       self.at.add_property('real', 0.0)
-      self.assertEqual(list(self.at.properties['real']), [PROPERTY_REAL, 4, 4])
+      self.check_property('real', T_REAL_A)
       self.assertEqual(list(self.at.real), [0.0]*8)
 
    def test_add_property_real_from_list(self):
       self.at.add_property('real', [0.0]*8)
-      self.assertEqual(list(self.at.properties['real']), [PROPERTY_REAL, 4, 4])
+      self.check_property('real', T_REAL_A)
       self.assertEqual(list(self.at.real), [0.0]*8)
 
    def test_add_property_real_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'real', [0]*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'real', [0]*9)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_real_from_array(self):
       self.at.add_property('real', fzeros(8))
-      self.assertEqual(list(self.at.properties['real']), [PROPERTY_REAL, 4, 4])
+      self.check_property('real', T_REAL_A)
       self.assertEqual(list(self.at.real), [0.]*8)      
       
    def test_add_property_real2d_from_scalar(self):
       self.at.add_property('real2d', 0.0, n_cols=2)
-      self.assertEqual(list(self.at.properties['real2d']), [PROPERTY_REAL, 4, 5])
+      self.check_property('real2d', T_REAL_A2, 2)
       self.assertArrayAlmostEqual(self.at.real2d, [[0.,0.]]*8)
 
    def test_add_property_real2d_from_list(self):
-      self.at.add_property('real2d', [[0.,0.]]*8)
-      self.assertEqual(list(self.at.properties['real2d']), [PROPERTY_REAL, 4, 5])
+      self.at.add_property('real2d', [[0.]*8]*2)
+      self.check_property('real2d', T_REAL_A2, 2)
       self.assertArrayAlmostEqual(list(self.at.real2d), [[0.,0.]]*8)
    
    def test_add_property_real2d_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'real2d', [[0,0]]*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'real2d', [[0,0]]*9)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_real2d_from_array(self):
       self.at.add_property('real2d', fzeros((2,8)))
-      self.assertEqual(list(self.at.properties['real2d']), [PROPERTY_REAL, 4, 5])
+      self.check_property('real2d', T_REAL_A2, 2)
       self.assertArrayAlmostEqual(list(self.at.real2d), [[0.,0.]]*8)
 
    def test_add_property_real_from_random_array(self):
       r = numpy.random.uniform(1.0, 100.0, 8)
       self.at.add_property('real', r)
-      self.assertEqual(list(self.at.properties['real']), [PROPERTY_REAL, 4, 4])
+      self.check_property('real', T_REAL_A)      
       self.assertArrayAlmostEqual(list(self.at.real), r)
    
    def test_add_property_logical_from_scalar(self):
       self.at.add_property('logical', True)
-      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.check_property('logical', T_LOGICAL_A)      
       self.assertEqual(list(self.at.logical), [True]*8)
 
    def test_add_property_logical_from_list(self):
       self.at.add_property('logical', [True]*8)
-      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.check_property('logical', T_LOGICAL_A)      
       self.assertEqual(list(self.at.logical), [True]*8)
 
    def test_add_property_logical_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'logical', [True]*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'logical', [True]*9)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_logical_from_array(self):
       self.at.add_property('logical', fzeros(8,dtype=bool))
-      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.check_property('logical', T_LOGICAL_A)            
       self.assertEqual(list(self.at.logical), [False]*8)      
       
-   def test_add_property_logical_2d_from_scalar(self):
-      self.at.add_property('logical2d', True, n_cols=2)
-      self.assertEqual(list(self.at.properties['logical2d']), [PROPERTY_LOGICAL, 1, 2])
-      self.assertArrayAlmostEqual(self.at.logical2d, [[True,True]]*8)
-
-   def test_add_property_logical2d_from_list(self):
-      self.at.add_property('logical2d', [[True,True]]*8)
-      self.assertEqual(list(self.at.properties['logical2d']), [PROPERTY_LOGICAL, 1, 2])
-      self.assertArrayAlmostEqual(list(self.at.logical2d), [[True,True]]*8)
-   
-   def test_add_property_logical2d_from_list_bad_length(self):
-      p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'logical2d', [[True,True]]*9)
-      self.assertEqual(self.at.properties, p0)
-
-   def test_add_property_logical2d_from_array(self):
-      self.at.add_property('logical2d', fzeros((2,8),dtype=bool))
-      self.assertEqual(list(self.at.properties['logical2d']), [PROPERTY_LOGICAL, 1, 2])
-      self.assertArrayAlmostEqual(list(self.at.logical2d), [[False,False]]*8)
-
    def test_add_property_logical_from_random_array(self):
       r = farray(numpy.random.randint(0, 2, 8), dtype=bool)
       self.at.add_property('logical', r)
-      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.check_property('logical', T_LOGICAL_A)            
       self.assertArrayAlmostEqual(list(self.at.logical), r)
 
    def test_add_property_str_from_scalar(self):
-      self.at.add_property('str', '')
-      self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
+      self.at.add_property('str', ' '*TABLE_STRING_LENGTH)
+      self.check_property('str', T_CHAR_A)            
       self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_str_from_list(self):
-      self.at.add_property('str', ['']*8)
-      self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
+      self.at.add_property('str', [' '*TABLE_STRING_LENGTH]*8)
+      self.check_property('str', T_CHAR_A)      
       self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_str_from_list_bad_length(self):
       p0 = self.at.properties.copy()
-      self.assertRaises(ValueError, self.at.add_property, 'str', ['']*9)
+      self.assertRaises(RuntimeError, self.at.add_property, 'str', ['']*9)
       self.assertEqual(self.at.properties, p0)
 
    def test_add_property_str_from_array(self):
-      self.at.add_property('str', fzeros(8,dtype=str))
-      self.assertEqual(list(self.at.properties['str']), [PROPERTY_STR, 2, 2])
+       # array tranpose required because f2py tranposes character(len != 1) arrays
+      self.at.add_property('str', fzeros((TABLE_STRING_LENGTH,8),dtype=str).T) 
+      self.check_property('str', T_CHAR_A)      
       self.assertEqual(self.at.str.shape, (TABLE_STRING_LENGTH, 8))
 
    def test_add_property_property_type(self):
-      self.at.add_property('logical', [1]*self.at.n, property_type=PROPERTY_LOGICAL)
-      self.assertEqual(list(self.at.properties['logical']), [PROPERTY_LOGICAL, 1, 1])
+      self.at.add_property('logical', [1]*self.at.n, property_type=T_LOGICAL_A)
+      self.check_property('logical', T_LOGICAL_A)
       self.assertEqual(list(self.at.logical), [True]*8)
 
    def test_add_property_no_property_type(self):
       # without propety_type, ambiguity between types PROPERTY_INT and PROPETY_LOGICAL
       self.at.add_property('int', [1]*self.at.n)
-      self.assertEqual(list(self.at.properties['int']), [PROPERTY_INT, 2, 2])
+      self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
 
