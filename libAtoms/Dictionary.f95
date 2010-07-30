@@ -119,7 +119,8 @@ module dictionary_module
   interface set_value
      module procedure dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
      module procedure dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
-     module procedure dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a, dictionary_set_value_s_a2
+     module procedure dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a2
+     module procedure dictionary_set_value_s_a
      module procedure dictionary_set_value_d
      module procedure dictionary_set_value_i_a2
      module procedure dictionary_set_value_r_a2
@@ -396,15 +397,21 @@ contains
 
   end function dictionary_get_key
 
-  subroutine dictionary_get_type_and_size(this, key, type, thesize, thesize2)
+  subroutine dictionary_get_type_and_size(this, key, type, thesize, thesize2, error)
     type(Dictionary), intent(in) :: this
     character(len=*), intent(in) :: key
     integer, intent(out) :: type, thesize, thesize2(2)
     integer :: entry_i
+    integer, intent(out), optional :: error
 
+    INIT_ERROR(error)
+   
     entry_i = lookup_entry_i(this, key)
 
-    if (entry_i <= 0) type = -1
+    if (entry_i <= 0) then
+       RAISE_ERROR('dictionary_get_type_and_size: key "'//key//'" not found', error)
+    end if
+
     type = this%entries(entry_i)%type
     thesize = this%entries(entry_i)%len
     thesize2 = this%entries(entry_i)%len2
@@ -546,6 +553,7 @@ contains
     logical do_alloc
 
     entry%type = T_INTEGER_A2
+    entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%i_a2(size(value,1),size(value,2)))
@@ -563,6 +571,7 @@ contains
     logical do_alloc
 
     entry%type = T_REAL_A2
+    entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%r_a2(size(value,1),size(value,2)))
@@ -614,6 +623,7 @@ contains
     logical do_alloc
 
     entry%type = T_CHAR_A
+    entry%len = 0
     entry%len2 = (/len(value(1)), size(value) /)
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
@@ -635,6 +645,7 @@ contains
     logical do_alloc
 
     entry%type = T_CHAR_A
+    entry%len = 0
     entry%len2 = shape(value)
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%s_a(entry%len2(1), entry%len2(2)))
@@ -1361,6 +1372,7 @@ contains
     entry%type = T_CHAR_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry_i = add_entry(this, key, entry)
+    entry%len = 0
     entry%len2 = size(ptr)
     this%entries(entry_i)%s_a => ptr
     call finalise(entry)
@@ -1378,6 +1390,7 @@ contains
     entry%type = T_INTEGER_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry_i = add_entry(this, key, entry)
+    entry%len = 0
     entry%len2 = shape(ptr)
     this%entries(entry_i)%i_a2 => ptr
     call finalise(entry)
@@ -1395,6 +1408,7 @@ contains
     entry%type = T_REAL_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
     entry_i = add_entry(this, key, entry)
+    entry%len = 0
     entry%len2 = shape(ptr)
     this%entries(entry_i)%r_a2 => ptr
     call finalise(entry)
@@ -1518,6 +1532,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_CHAR_A
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
@@ -1542,6 +1557,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A2
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
@@ -1566,6 +1582,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A2
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
@@ -1688,6 +1705,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_CHAR_A
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
@@ -1712,6 +1730,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_INTEGER_A2
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
@@ -1736,6 +1755,7 @@ contains
 
     do_overwrite = optional_default(.false., overwrite)
     entry%type = T_REAL_A2
+    entry%len = 0
     entry%len2 = len2
     entry_i = add_entry(this, key, entry, do_alloc)
     if (do_alloc) allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
