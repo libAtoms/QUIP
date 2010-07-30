@@ -178,6 +178,10 @@ module Potential_module
   type(Potential), pointer :: parse_pot
   logical, save :: parse_in_pot, parse_in_pot_done, parse_matched_label
 
+  public :: run
+  interface run
+     module procedure dynamicalsystem_run
+  end interface run
 
 #include "Potential_Sum_header.f95"
 #include "Potential_ForceMixing_header.f95"
