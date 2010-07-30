@@ -60,8 +60,8 @@ type IPModel_Glue
 
 end type IPModel_Glue
 
-logical :: parse_in_ip, parse_matched_label, parse_in_density_potential, parse_in_neighbours_potential
-type(IPModel_Glue), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label, parse_in_density_potential, parse_in_neighbours_potential
+type(IPModel_Glue), private, pointer :: parse_ip
 integer :: parse_curr_type = 0, parse_curr_point, parse_n_neighbours
 
 interface Initialise

@@ -67,9 +67,9 @@ type IPModel_FB
 
 end type IPModel_FB
 
-logical :: parse_in_ip, parse_matched_label
+logical, private :: parse_in_ip, parse_matched_label
 integer :: parse_cur_type_i, parse_cur_type_j
-type(IPModel_FB), pointer :: parse_ip
+type(IPModel_FB), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_FB_Initialise_str

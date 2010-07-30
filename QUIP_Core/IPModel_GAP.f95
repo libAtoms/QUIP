@@ -99,9 +99,9 @@ type IPModel_GAP
 
 end type IPModel_GAP
 
-logical :: parse_in_ip, parse_matched_label, parse_in_ip_done
+logical, private :: parse_in_ip, parse_matched_label, parse_in_ip_done
 
-type(IPModel_GAP), pointer :: parse_ip
+type(IPModel_GAP), private, pointer :: parse_ip
 type(extendable_str), save :: parse_cur_data
 
 interface Initialise

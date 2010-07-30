@@ -76,8 +76,8 @@ type IPModel_FC
 
 end type IPModel_FC
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_FC), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_FC), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_FC_Initialise_str

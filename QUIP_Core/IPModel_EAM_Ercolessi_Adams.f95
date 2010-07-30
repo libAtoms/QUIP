@@ -75,8 +75,8 @@ type IPModel_EAM_ErcolAd
 
 end type IPModel_EAM_ErcolAd
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_EAM_ErcolAd), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_EAM_ErcolAd), private, pointer :: parse_ip
 integer :: parse_cur_type_i, parse_cur_type_j, parse_cur_point
 logical :: parse_in_spline_V, parse_in_spline_rho, parse_in_spline_F
 

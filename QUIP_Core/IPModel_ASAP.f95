@@ -73,8 +73,8 @@ type IPModel_ASAP
 
 end type IPModel_ASAP
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_ASAP), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_ASAP), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_ASAP_Initialise_str

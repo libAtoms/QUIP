@@ -69,8 +69,8 @@ type IPModel_Morse
 
 end type IPModel_Morse
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Morse), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Morse), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_Morse_Initialise_str

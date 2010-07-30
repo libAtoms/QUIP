@@ -88,8 +88,8 @@ type TBModel_GSP
 
 end type
 
-integer :: parse_cur_type
-logical :: parse_in_tbm, parse_matched_label
+integer, private :: parse_cur_type
+logical, private :: parse_in_tbm, parse_matched_label
 type(TBModel_GSP), pointer :: parse_tbm
 
 interface Initialise

@@ -72,8 +72,8 @@ type TBModel_DFTB
 
 end type TBModel_DFTB
 
-type(extendable_str), save :: parse_cur_data
-logical :: parse_in_tbm, parse_matched_label
+type(extendable_str), private, save :: parse_cur_data
+logical, private :: parse_in_tbm, parse_matched_label
 logical :: parse_in_H_spline, parse_in_S_spline, parse_in_Vrep_spline
 integer  :: parse_cur_type_i, parse_cur_type_j, parse_cur_point_i
 type (TBModel_DFTB), pointer :: parse_tbm

@@ -66,8 +66,8 @@ type IPModel_Tersoff
 
 end type IPModel_Tersoff
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Tersoff), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Tersoff), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_Tersoff_Initialise_str

@@ -77,8 +77,8 @@ type IPModel_Brenner_Screened
 
 end type IPModel_Brenner_Screened
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Brenner_Screened), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Brenner_Screened), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_Brenner_Screened_Initialise_str
