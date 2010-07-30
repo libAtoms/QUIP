@@ -345,7 +345,6 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   integer, intent(out), optional :: error
 
   logical my_use_prev_charge
-  type(Inoutput) :: atom_dump
 
   real(dp), pointer :: scf_orbital_n(:), scf_orbital_m(:,:)
   real(dp) :: global_N
@@ -456,10 +455,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (diag_err /= 0) then
       if (this%mpi%my_proc == 0) then
-	call initialise(atom_dump, "atom_dump_bad_diagonalise."//mpi_id()//".xyz", action=OUTPUT)
-	atom_dump%mpi_all_inoutput_flag = .true.
-	call print_xyz(this%at, atom_dump, all_properties = .true.)
-	call finalise(atom_dump)
+	call write(this%at, "atom_dump_bad_diagonalise."//mpi_id()//".xyz")
       endif
       RAISE_ERROR("TB_solve_diag got error " // diag_err // " from diagonalise", error)
     endif
@@ -484,9 +480,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 	  call set_value(this%at%params, 'global_N', global_N)
 	endif
       endif
-      mainlog%prefix = "SCF_ITER_"//iter
-      call print_xyz(this%at, mainlog, all_properties=.true.)
-      mainlog%prefix = ""
+      call write(this%at, 'std_out', prefix="SCF_ITER_"//iter)
     endif ! VERBOSE
 
   end do
@@ -531,7 +525,6 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
   character(len=STRING_LENGTH) :: solver_arg
   logical :: noncollinear, use_prev_charge, do_evecs
   type(ApproxFermi) :: my_AF
-  type(inoutput) :: atomslog
   logical :: do_at_local_N
   real(dp), pointer :: local_N_p(:)
 
@@ -567,11 +560,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, args_str, &
   call setup_atoms(this, at, noncollinear, args_str)
 
   if(current_verbosity() > PRINT_NERD) then
-     call initialise(atomslog, "tb_calc_atomslog.xyz", action=OUTPUT, append=.true.)
-     call verbosity_set_minimum(PRINT_VERBOSE)
-     call print_xyz(this%at, atomslog)
-     call verbosity_unset_minimum()
-     call finalise(atomslog)
+     call write(this%at, "tb_calc_atomslog.xyz", append=.true.)
   end if
 
   call system_timer("TB_calc/prep")
