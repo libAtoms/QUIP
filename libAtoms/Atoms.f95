@@ -4319,7 +4319,6 @@ contains
       call print('',PRINT_NORMAL, my_out)
    end subroutine atoms_print
 
-<<<<<<< HEAD
    function prop_names_string(this, with_types, error)
      type(Atoms), intent(in) :: this
      logical, optional, intent(in) :: with_types
