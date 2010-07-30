@@ -46,6 +46,7 @@ use QUIP_Common_module
 
 
 implicit none
+private
 
 type IPModel_Si_MEAM
   integer :: n_types = 0
@@ -83,15 +84,14 @@ interface Calc
   module procedure IPModel_Si_MEAM_Calc
 end interface Calc
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Si_MEAM), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Si_MEAM), private, pointer :: parse_ip
 integer :: parse_cur_type_i, parse_cur_type_j, parse_cur_type_k, parse_cur_point, n_spline
 
 real(dp) :: yp1, ypn
 real(dp), dimension(:), allocatable :: spline_x, spline_y
 character(len=100) :: spline_function
 
-private
 public :: IPModel_Si_MEAM, Initialise, Finalise, Print, Calc
 
 contains

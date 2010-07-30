@@ -41,6 +41,7 @@ module gp_sparse_module
    open_xml_string, close_xml_t
 
    implicit none
+   private
 
    integer, parameter :: gp_n_max_length = 1000
    integer, parameter :: gp_m_max_length = 1000
@@ -146,11 +147,10 @@ module gp_sparse_module
    endinterface gp_read_xml
 
    integer :: parse_cur_type, parse_cur_sparse_point
-   type(extendable_str), save :: parse_cur_data
-   logical :: parse_in_gp, parse_matched_label
+   type(extendable_str), private, save :: parse_cur_data
+   logical, private :: parse_in_gp, parse_matched_label
    type (gp), pointer :: parse_gp
 
-   private
    public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, &
    likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, &
    gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer, gp_precompute_covariance, &

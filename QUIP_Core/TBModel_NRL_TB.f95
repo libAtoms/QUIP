@@ -79,8 +79,8 @@ type TBModel_NRL_TB
 end type TBModel_NRL_TB
 
 integer :: parse_cur_type_i, parse_cur_type_j
-type(extendable_str), save :: parse_cur_data
-logical :: parse_in_tbm, parse_matched_label
+type(extendable_str), private, save :: parse_cur_data
+logical, private :: parse_in_tbm, parse_matched_label
 type (TBModel_NRL_TB), pointer :: parse_tbm
 
 interface Initialise

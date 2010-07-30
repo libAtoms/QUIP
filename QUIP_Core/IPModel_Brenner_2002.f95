@@ -73,8 +73,8 @@ type IPModel_Brenner_2002
 
 end type IPModel_Brenner_2002
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Brenner_2002), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Brenner_2002), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_Brenner_2002_Initialise_str

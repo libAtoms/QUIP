@@ -66,8 +66,8 @@ type IPModel_BOP
 
 end type IPModel_BOP
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_BOP), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_BOP), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_BOP_Initialise_str

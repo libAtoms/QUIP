@@ -60,8 +60,8 @@ type IPModel_Template
 
 end type IPModel_Template
 
-logical :: parse_in_ip, parse_matched_label
-type(IPModel_Template), pointer :: parse_ip
+logical, private :: parse_in_ip, parse_matched_label
+type(IPModel_Template), private, pointer :: parse_ip
 
 interface Initialise
   module procedure IPModel_Template_Initialise_str

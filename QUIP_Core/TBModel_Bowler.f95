@@ -78,9 +78,9 @@ type TBModel_Bowler
 
 end type
 
-integer :: parse_cur_type
-logical :: parse_in_tbm, parse_matched_label
-type(TBModel_Bowler), pointer :: parse_tbm
+integer, private :: parse_cur_type
+logical, private :: parse_in_tbm, parse_matched_label
+type(TBModel_Bowler), private, pointer :: parse_tbm
 
 interface Initialise
   module procedure TBModel_Bowler_Initialise_str
