@@ -220,9 +220,12 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.f, self.f_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
-      def testcalc_force_non_contigous(self):
-         self.at.add_property('force', 0.0, n_cols=3)
-         self.assertRaises(ValueError, self.pot.calc, self.at, f=self.at.force)
+      # The test below is no longer relevant -- after Atoms data structure change from
+      # Table to dictionary, all properties *are* contigous in memory.
+      
+      #def testcalc_force_non_contigous(self):
+      #   self.at.add_property('force', 0.0, n_cols=3)
+      #   self.assertRaises(ValueError, self.pot.calc, self.at, f=self.at.force)
 
       def testcalc_all(self):
          self.pot.calc(self.at, f=self.f, df=self.df, e=self.e, local_e=self.le, virial=self.v,
