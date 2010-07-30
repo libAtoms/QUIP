@@ -50,7 +50,7 @@
 
     call verbosity_push_decrement(PRINT_NERD)
     call print("potential_local_e_mix_initialise called with reference_bulk")
-    call print_xyz(reference_bulk, "stdout")
+    call write(reference_bulk, "stdout")
     call verbosity_pop()
 
     ! set up region1 stuff

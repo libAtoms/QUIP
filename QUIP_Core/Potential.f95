@@ -170,7 +170,6 @@ module Potential_module
      type(Atoms), pointer :: minim_at => null()
      real(dp), pointer :: last_connect_x(:) => null()
      type(Potential), pointer :: minim_pot => null()
-     type(Inoutput), pointer :: minim_inoutput_movie => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
      logical, dimension(3,3) :: lattice_fix
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
@@ -688,22 +687,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
           if (this%is_oniom) &
                this%oniom%minim_cinoutput_movie => print_cinoutput
 #endif HAVE_ONIOM
-
-       else
-          am%minim_inoutput_movie => print_inoutput
-          if (this%is_forcemixing) &
-               this%forcemixing%minim_inoutput_movie => print_inoutput
-#ifdef HAVE_LOCAL_E_MIX
-          if (this%is_local_e_mix) &
-               this%local_e_mix%minim_inoutput_movie => print_inoutput
-#endif HAVE_LOCAL_E_MIX
-#ifdef HAVE_ONIOM
-          if (this%is_oniom) &
-               this%oniom%minim_inoutput_movie => print_inoutput
-#endif HAVE_ONIOM
        end if
     else
-      nullify(am%minim_inoutput_movie)
+      nullify(am%minim_cinoutput_movie)
     endif
 
     am%minim_n_eval_e = 0
@@ -923,7 +909,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     ! beware of transfer and pointers !!!
     call atoms_repoint(am%minim_at)
 
-    if (associated(am%minim_inoutput_movie) .or. associated(am%minim_cinoutput_movie)) then
+    if (associated(am%minim_cinoutput_movie)) then
       if (size(x) /= am%minim_at%N*3+9) call system_abort("Called gradient_func() with size mismatch " // &
         size(x) // " /= " // am%minim_at%N // "*3+9")
 
@@ -968,10 +954,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
       if (assign_pointer(am%minim_at, "force", f_p)) f_p = -f ! compatibility with crack program
 
       if (my_do_print) then
-         if (associated(am%minim_inoutput_movie)) then
-            call print_xyz(am%minim_at, am%minim_inoutput_movie, all_properties=.true., real_format='f12.5')
-         end if
-
          if (associated(am%minim_cinoutput_movie)) then
             if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
                  call write(am%minim_cinoutput_movie, am%minim_at)
@@ -1039,7 +1021,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     end if
 
     call print("energy_func using am%minim_at", PRINT_NERD)
-    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
+    if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
 
     call calc(am%minim_pot, am%minim_at, e = energy_func, args_str = am%minim_args_str)
     call print ("energy_func got energy " // energy_func, PRINT_NERD)
@@ -1122,7 +1104,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
 
     call print("gradient_func used am%minim_at, got forces", PRINT_NERD)
-    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f14.10")
+    if (current_verbosity() >= PRINT_NERD) call write(am%minim_at,'stdout')
 
     ! zero forces if fixed by potential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_pot", fixed_pot)) then
@@ -1304,7 +1286,7 @@ max_atom_rij_change = 1.038_dp
     end if
 
     call print("both_func using am%minim_at", PRINT_NERD)
-    if (current_verbosity() >= PRINT_NERD) call print_xyz(am%minim_at,mainlog,real_format="f10.6")
+    if (current_verbosity() >= PRINT_NERD) call write(am%minim_at,'stdout')
 
     allocate(f(3,am%minim_at%N))
     f = 0.0_dp

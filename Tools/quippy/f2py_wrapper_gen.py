@@ -17,9 +17,9 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from f90doc import *
-import numpy
+import numpy, re
 
-def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix='', callback_routines={}):
+def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=None, prefix='', callback_routines={},public_symbols=None):
    """Given an f90doc.C_module class 'mod', write a F90 wrapper file suitable for f2py to 'out'."""
    spec = {}
    def strip_type(t):
@@ -96,6 +96,9 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
             print 'omitting routine %s as argument %s of unwrapped type %s' % (sub.name, arg.name, arg.type)
             return False
       return True
+
+   def no_private_symbols(sub):
+      return sub.name.lower() in [s.lower() for s in public_symbols]
       
 
    debug(mod.name)
@@ -129,6 +132,11 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       print 'Filtering routines to exclude derived types not in list %s' % filtertypes
       subts  = filter(no_bad_types, subts)
       functs = filter(no_bad_types, functs)
+
+   if public_symbols is not None:
+      print 'Filterting routines to exclude routines not in list of public symbols %s' % public_symbols
+      subts = filter(no_private_symbols, subts)
+      functs = filter(no_private_symbols, functs)
 
    debug('%s: %d subs' % (mod.name, len(subts+functs)))
 
@@ -180,7 +188,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       old_arg_names = [x.name for x in args]
       for a in args:
          a.name = prefix + a.name
-      argnames = [x.name for x in args]
+      argnames = [x.name for x in args][:]
       newargnames = argnames[:]
 
       optionals = []
@@ -208,7 +216,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       transfer_in = []
       transfer_out = []
 
-      for arg in args:
+      for argindex, arg in enumerate(args):
 
           append_argline = True
 
@@ -265,7 +273,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
               arglines.append('integer, %s%s :: %s(12)' % (intent, ('optional' in attributes and ', optional' or ''), arg.name))
               arglines.append('%s :: %s_ptr' % (ptr_type, arg.name))
-              argnames[argnames.index(arg.name)] = '%s_ptr%%p' % arg.name
+              argnames[argindex] = '%s_ptr%%p' % arg.name
               append_argline = False
 
               
@@ -295,7 +303,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
               except ValueError:
                   mytype = 'character*(1)'
-
+      
           dims = filter(lambda x: x.startswith('dimension('), attributes)
           if dims != []:
               # replace dimensions with n1,n2
@@ -380,6 +388,11 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
           # Do not mess around with character*(1) multidimensional arrays
           if mytype == 'character*(1)' and dims != [] and 'intent(in)' in attributes:
              arglines.append('!f2py intent(cache) :: %s' % arg.name)
+
+
+      # prepend each argument with its name so that we can leave out optionals in the middle of argument list
+      for argindex, arg in enumerate(args):
+          argnames[argindex] = '%s=%s' % (arg.name[len(prefix):], argnames[argindex])
 
       def join_and_split_lines(args, max_length=80):
           args_str = ''
@@ -682,6 +695,73 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
    return spec
 
-        
 
+def filter_source_file(infile, outfile, is_wrapper=False):
+   start_sub = re.compile(r'^(double precision\s+)?\s*(recursive\s+)?(subroutine|function)\s+(\w*)')
+   end_sub   = re.compile(r'^\s*end\s+(subroutine|function)\s*$')
+
+   in_interface = False
+   seen_interfaces = {}
+   interface_lines = []
+
+   for line in infile.readlines():
+      sline = line.strip()
+      start_match = start_sub.match(sline)
+      end_match = end_sub.match(sline)
+      if start_match:
+         last_subroutine = start_match.group(4)
+         outfile.write(line)
+      elif end_match:
+         outfile.write('%s %s\n' % (sline, last_subroutine))
+      elif is_wrapper and sline.startswith('interface'):
+         in_interface = True
+         interface_lines = []
+         outfile.write(line)
+      elif is_wrapper and sline.startswith('end interface') or sline.startswith('endinterface'):
+         in_interface = False
+         outfile.write(line)
+         for interface_line in interface_lines:
+            if interface_line.startswith('#'):
+               outfile.write(interface_line)
+            else:
+               intfs = [x.strip() for x in interface_line.split(',')]
+               for intf in intfs:
+                  if intf not in seen_interfaces.keys():
+                     outfile.write('public :: %s\n' % intf)
+                  seen_interfaces[intf] = 1
+      elif is_wrapper and in_interface:
+         outfile.write(line)
+         if sline.startswith('#'):
+            interface_lines.append(line)
+         elif sline.startswith('module procedure'):
+            sline = sline[len('module procedure'):]
+            if '!' in sline: sline = sline[:sline.index('!')]
+            interface_lines.append(sline)
+      elif is_wrapper and sline.startswith('private::') or sline.startswith('private ::'):
+         outfile.write('!%s' % line)
+      else:
+         outfile.write(line)
+
+        
+def find_public_symbols(file):
+   """Return a list of publically exported symbols in the Fortran module with filename 'file'.
+      If the module defaults to public access, we return None."""
+   data = open(file).read()
+   data = data.replace('&\n', '')
+   lines = [line.strip() for line in data.split('\n') ]
+
+   if not 'private' in lines:
+      print 'module %s defaults to public access' % file
+      return None
+
+   public_lines  = [line for line in lines if line.startswith('public')]
+
+   res = []
+   for line in public_lines:
+      line = line.replace('public', '')
+      line = line.replace('::', '')
+      line = line.strip()
+      res.extend([field.strip() for field in line.split(',')])
+   return res
+                
 

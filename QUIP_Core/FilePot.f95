@@ -210,7 +210,6 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   integer, intent(out), optional :: error
 
   character(len=1024) :: xyzfile, outfile, my_args_str
-  type(inoutput) :: xyzio
   integer :: nx, ny, nz
   type(Atoms) :: sup
   integer :: my_err
@@ -218,6 +217,9 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
   type(Dictionary) :: cli
   logical :: FilePot_log
+  
+  character(len=100) :: fields(50)
+  integer :: n_fields
 
   INIT_ERROR(error)
 
@@ -235,6 +237,8 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   endif
   call finalise(cli)
 
+  call parse_string(this%property_list, ':', fields, n_fields)
+
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
 
@@ -249,8 +253,6 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call system_command("rm -f "//trim(outfile), status=status)
      if (status /= 0) call print("WARNING: FilePot_calc failed to delete outfile="//trim(outfile)//" before running filepot command", PRINT_ALWAYS)
 
-     call initialise(xyzio, xyzfile, action=OUTPUT)
-
      ! Do we need to replicate cell to exceed min_cutoff ?
      if (this%min_cutoff .fne. 0.0_dp) then
         call fit_box_in_cell(this%min_cutoff, this%min_cutoff, this%min_cutoff, at%lattice, nx, ny, nz)
@@ -261,20 +263,17 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
         call Print('FilePot: replicating cell '//nx//'x'//ny//'x'//nz//' times.')
         call supercell(sup, at, nx, ny, nz)
-        call print_xyz(sup, xyzio, properties=trim(this%property_list),real_format='f17.10')
+        call write(sup, xyzfile, properties=fields(1:n_fields))
      else
-        call print_xyz(at, xyzio, properties=trim(this%property_list),real_format='f17.10')
+        call write(at, xyzfile, properties=fields(1:n_fields))
      end if
-     call finalise(xyzio)
 
      if (FilePot_log) then
-       call initialise(xyzio, "FilePot_pos_log.xyz", action=OUTPUT, append=.true.)
        if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
-          call print_xyz(sup, xyzio, properties=trim(this%property_list),real_format='f17.10')
+          call write(sup, "FilePot_pos_log.xyz", properties=fields(1:n_fields),append=.true.)
         else
-          call print_xyz(at, xyzio, properties=trim(this%property_list),real_format='f17.10')
+          call write(at, "FilePot_pos_log.xyz", properties=fields(1:n_fields),append=.true.)
         endif
-       call finalise(xyzio)
      endif
 
 !     call print("FilePot: invoking external command "//trim(this%command)//" "//' '//trim(xyzfile)//" "// &
@@ -317,7 +316,6 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   integer, intent(out), optional :: error
 
   integer :: i
-  type(inoutput) :: outio
   type(atoms) :: at_out, primitive
   integer, pointer :: Z_p(:)
   real(dp) :: virial_1d(9)
@@ -329,9 +327,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   my_filepot_log = optional_default(.false., filepot_log)
 
-  call initialise(outio, outfile)
-  call read_xyz(at_out, outio)
-  call finalise(outio)
+  call read(at_out, outfile)
 
   if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
      ! Discard atoms outside the primitive cell
@@ -405,9 +401,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   endif
 
    if (my_filepot_log) then
-     call initialise(outio, "FilePot_force_log.xyz", action=OUTPUT, append=.true.)
-     call print_xyz(at_out, outio, all_properties=.true.)
-     call finalise(outio)
+     call write(at_out, "FilePot_force_log.xyz", append=.true.)
    endif
 
   call finalise(at_out)

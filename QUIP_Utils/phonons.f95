@@ -67,7 +67,7 @@ function eval_frozen_phonon(pot, at, dx, evec, calc_args)
   call calc(pot, at, E=E0, args_str=calc_args)
   mainlog%prefix="FROZ_E0"
   call set_value(at%params, "frozen_phonon_E0", E0)
-  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call write(at, 'stdout')
   call remove_value(at%params, "frozen_phonon_E0")
   mainlog%prefix=""
 
@@ -75,21 +75,17 @@ function eval_frozen_phonon(pot, at, dx, evec, calc_args)
 
   call calc_dists(at)
   call calc(pot, at, E=Ep, args_str=calc_args)
-  mainlog%prefix="FROZ_EP"
   call set_value(at%params, "frozen_phonon_Ep", Ep)
-  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call write(at, 'stdout', prefix='FROZ_EP')
   call remove_value(at%params, "frozen_phonon_Ep")
-  mainlog%prefix=""
 
   at%pos = pos0 - dx*dpos
 
   call calc_dists(at)
   call calc(pot, at, E=Em, args_str=calc_args)
-  mainlog%prefix="FROZ_EM"
   call set_value(at%params, "frozen_phonon_Em", Em)
-  call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
+  call write(at, 'stdout', prefix='FROZ_EM')
   call remove_value(at%params, "frozen_phonon_Em")
-  mainlog%prefix=""
 
   call print("frozen phonon Em " // Em // " E0 " // E0 // " Ep " // Ep, PRINT_VERBOSE)
 

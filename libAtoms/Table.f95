@@ -1542,83 +1542,47 @@ contains
   end subroutine table_print_mainlog
   
 
-  subroutine table_print(this,verbosity,file,real_format,int_format,str_format,logical_format,properties,mask)
+  subroutine table_print(this,verbosity,file,real_format,int_format,str_format,logical_format,mask)
     type(table),    intent(in)        :: this
     type(inoutput), intent(inout)        :: file
     integer,        intent(in), optional :: verbosity
     character(*), optional, intent(in) :: real_format, int_format, str_format, logical_format
-    type(Dictionary), intent(in), optional :: properties
     logical, optional, intent(in) :: mask(:)
 
     !locals
     character(10) :: my_real_format, my_int_format, my_str_format, my_logical_format
     character(100) :: fmt
-    integer                              :: i, j, k, lookup(3)
+    integer                              :: i, j, k
 
     my_real_format = optional_default('f16.8',real_format)
     my_int_format  = optional_default('i8',int_format)
     my_str_format  = optional_default('a'//(TABLE_STRING_LENGTH+1),str_format)
     my_logical_format = optional_default('l3',logical_format)
 
-
-    if (.not. present(properties)) then
-       ! Print all columns in order, first ints then reals, strs and logicals
-       do i=1,this%N
-	  if (present(mask)) then
-	    if (.not.mask(i)) cycle
-	  endif
-          line = ''
-          do j=1,this%intsize
-             write (fmt,'('//trim(my_int_format)//')') this%int(j,i)
-             line=trim(line)//' '//trim(fmt)
-          end do
-          do j=1,this%realsize
-             write (fmt,'('//trim(my_real_format)//')') this%real(j,i)
-             line=trim(line)//' '//trim(fmt)
-          end do
-          do j=1,this%strsize
-             write (fmt,'('//trim(my_str_format)//')') this%str(j,i)
-             line=trim(line)//' '//trim(fmt)
-          end do
-          do j=1,this%logicalsize
-             write (fmt,'('//trim(my_logical_format)//')') this%logical(j,i)
-             line=trim(line)//' '//trim(fmt)
-          end do
-          call print(line,verbosity,file)
+    ! Print all columns in order, first ints then reals, strs and logicals
+    do i=1,this%N
+       if (present(mask)) then
+          if (.not.mask(i)) cycle
+       endif
+       line = ''
+       do j=1,this%intsize
+          write (fmt,'('//trim(my_int_format)//')') this%int(j,i)
+          line=trim(line)//' '//trim(fmt)
        end do
-    else
-       ! We've been given a properties dictionary telling us which columns 
-       ! to print, and in what order
-
-       do i=1,this%N
-	  if (present(mask)) then
-	    if (.not.mask(i)) cycle
-	  endif
-          line = ''
-          fmt = ''
-          do j=1,properties%N
-             if (.not. get_value(properties,string(properties%keys(j)),lookup)) &
-                  call system_abort('table_print: error getting value of property '//string(properties%keys(j)))
-             do k=lookup(2),lookup(3)
-                select case(lookup(1))
-                case(PROPERTY_INT)
-                   write (fmt,'('//trim(my_int_format)//')') this%int(k,i)
-                   
-                case(PROPERTY_REAL)
-                   write (fmt,'('//trim(my_real_format)//')') this%real(k,i)
-                   
-                case(PROPERTY_STR)
-                   write (fmt,'('//trim(my_str_format)//')') this%str(k,i)
-                   
-                case(PROPERTY_LOGICAL)
-                   write (fmt,'('//trim(my_logical_format)//')') this%logical(k,i)
-                end select
-                line = trim(line)//' '//trim(fmt)
-             end do
-          end do
-         call print(line,verbosity,file)
+       do j=1,this%realsize
+          write (fmt,'('//trim(my_real_format)//')') this%real(j,i)
+          line=trim(line)//' '//trim(fmt)
        end do
-    end if
+       do j=1,this%strsize
+          write (fmt,'('//trim(my_str_format)//')') this%str(j,i)
+          line=trim(line)//' '//trim(fmt)
+       end do
+       do j=1,this%logicalsize
+          write (fmt,'('//trim(my_logical_format)//')') this%logical(j,i)
+          line=trim(line)//' '//trim(fmt)
+       end do
+       call print(line,verbosity,file)
+    end do
 
   end subroutine table_print
 

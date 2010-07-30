@@ -70,6 +70,7 @@ typedef struct {
   int *logical_data;
   char *str_data;
   int *filter;
+
   int n_property;
   int entry_count;
   int property_type[MAX_ENTRY_COUNT];
@@ -78,6 +79,7 @@ typedef struct {
   int property_var_id[MAX_ENTRY_COUNT][2];
   int property_filter[MAX_ENTRY_COUNT];
   char property_name[MAX_ENTRY_COUNT][MAX_PROP_LENGTH];
+
   int n_param; 
   char param_key[MAX_PARAM_COUNT][MAX_PROP_LENGTH];
   char param_value[MAX_PARAM_COUNT][PARAM_STRING_LENGTH];
@@ -93,6 +95,7 @@ typedef struct {
   int param_int_a2[MAX_PARAM_COUNT][9];
   double param_real_a2[MAX_PARAM_COUNT][9];
   int param_filter[MAX_ENTRY_COUNT];
+
   int n_int, n_real, n_str, n_logical;
   int frame_dim_id[2], spatial_dim_id[2], atom_dim_id[2], cell_spatial_dim_id[2],
     cell_angular_dim_id[2], label_dim_id[2], string_dim_id[2];
@@ -142,7 +145,7 @@ int read_netcdf (int ncid, Atoms *atoms, int frame, int *atomlist, int natomlist
 		 int redefine, int realloc, int replacefill, int irep, double rrep);
 int write_netcdf(int ncid, Atoms *atoms, int frame, int redefine,
                  int shuffle, int deflate, int deflate_level);
-int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *real_format, char *str_format, char *logical_format, int swap);
+int write_xyz(FILE *out, Atoms *atoms, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, int swap);
 int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame, 
 	      int query, int redefine, int realloc, int supress, int override_lattice, double lattice[3][3]);
 int cioinit(Atoms **at, char *filename, int *action, int *append, int *netcdf4, int *no_compute_index,
@@ -156,6 +159,6 @@ void ciofree(Atoms *at);
 int cioread(Atoms *at, int *frame, int *int_data, double *real_data, char *str_data, 
 	     int *logical_data, int *zero);
 int ciowrite(Atoms *at, int *int_data, double *real_data, char *str_data, int *logical_data,
-	      char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
+	     char *prefix, char *intformat, char *realformat, int *frame, int *shuffle, int *deflate,
 	     int *deflate_level, int *swap);
 int cioskip (Atoms *atoms, int *n_skip);

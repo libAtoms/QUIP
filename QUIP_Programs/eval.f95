@@ -256,9 +256,7 @@ implicit none
                 do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, use_n_minim = use_n_minim, &
 		external_pressure=external_pressure/GPA, use_precond=precond_n_minim)
         endif
-        mainlog%prefix='RELAXED_POS'
-        call print_xyz(at,mainlog,real_format='f12.5')
-        mainlog%prefix=''
+        call write(at,'stdout', prefix='RELAXED_POS')
         call print('Cell Volume: '//cell_volume(at)//' A^3')
         call calc_connect(at)
      end if
@@ -363,13 +361,15 @@ implicit none
 	      call verbosity_pop()
            endif
 
-           mainlog%prefix = "PHONON"
+           ! set prefix to PHONON
            if (do_dipole_moment) then
-              call print_xyz(at,mainlog,properties="pos:phonon:local_dn",real_format='f14.6')
+              call write(at,'stdout',properties=(/"pos     ", &
+                                                  "phonon  ", &
+                                                  "local_dn"/))
            else
-              call print_xyz(at,mainlog,properties="pos:phonon",real_format='f14.6')
+              call write(at,'stdout',properties=(/"pos     ", &
+                                                  "phonon  "/))
            endif
-           mainlog%prefix = ""
 
 	   if (do_frozen_phonons) call remove_value(at%params, "frozen_phonon_freq")
 
@@ -511,9 +511,7 @@ implicit none
     
      if (.not. did_something) call system_abort("Nothing to be calculated")
           
-     mainlog%prefix = "AT"
-     call print_xyz(at, mainlog, all_properties=.true., real_format='e16.8')
-     mainlog%prefix = ""
+     call write(at, 'stdout', prefix='AT')
 
      call finalise(at)
      

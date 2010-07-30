@@ -124,7 +124,7 @@ class Atom(dict):
       tol = 1e-10
 
       self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
-      other_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
+      other_ = dict([(k.lower(),v) for (k,v) in other.iteritems() if k != 'i'])
 
       if sorted(self_.keys()) != sorted(other_.keys()): return False
       
@@ -159,7 +159,7 @@ class Atoms(FortranAtoms):
    """
 
    def __new__(cls, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                data=None, properties=None, params=None, *readargs, **readkwargs):
+                properties=None, params=None, *readargs, **readkwargs):
       """
       Initialise an Atoms object.
 
@@ -179,14 +179,14 @@ class Atoms(FortranAtoms):
       return self
 
    def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                data=None, properties=None, params=None, *readargs, **readkwargs):
+                properties=None, params=None, *readargs, **readkwargs):
       if source is None:
          if params is not None and not isinstance(params, Dictionary):
             params = Dictionary(params)
          if properties is not None and not isinstance(properties, Dictionary):
             properties = Dictionary(properties)
          FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
-                               data=data, properties=properties, params=params)
+                               properties=properties, params=params)
          self.neighbours = Neighbours(self)
          self.hysteretic_neighbours = Neighbours(self,hysteretic=True)
 
@@ -277,59 +277,59 @@ class Atoms(FortranAtoms):
          raise ValueError('Either mask or list must be present.')
       return out
 
-   def _update_hook(self):
-      if self.n == 0: return
-      if hasattr(self, 'property_prefix'):
-         property_prefix = self.property_prefix
-      else:
-         property_prefix = ''
+   ## def _update_hook(self):
+   ##    if self.n == 0: return
+   ##    if hasattr(self, 'property_prefix'):
+   ##       property_prefix = self.property_prefix
+   ##    else:
+   ##       property_prefix = ''
       
-      # Remove existing pointers
-      if hasattr(self, '_props'):
-         for prop in self._props:
-            try:
-               delattr(self, property_prefix+prop)
-            except AttributeError:
-               pass
+   ##    # Remove existing pointers
+   ##    if hasattr(self, '_props'):
+   ##       for prop in self._props:
+   ##          try:
+   ##             delattr(self, property_prefix+prop)
+   ##          except AttributeError:
+   ##             pass
 
-      from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
+   ##    from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
 
-      type_names = {PROPERTY_INT: "integer",
-                    PROPERTY_REAL: "real",
-                    PROPERTY_STR: "string",
-                    PROPERTY_LOGICAL: "logical"}
-      self._props = {}
-      for prop,(ptype,col_start,col_end) in self.properties.iteritems():
-         prop = property_prefix+prop.lower()
-         self._props[prop] = (ptype,col_start,col_end)
-         doc = "%s : %s property with %d %s" % (prop, type_names[ptype], col_end-col_start+1, 
-                                                {True:"column",False:"columns"}[col_start==col_end])
-         if ptype == PROPERTY_REAL:
-            if col_end == col_start:
-               setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
-            else:
-               setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-         elif ptype == PROPERTY_INT:
-            if col_end == col_start:
-               setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
-            else:
-               setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-         elif ptype == PROPERTY_STR:
-            if col_end == col_start:
-               setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
-            else:
-               setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc,transpose_on_print=True))
-         elif ptype == PROPERTY_LOGICAL:
-            if col_end == col_start:
-               setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
-            else:
-               setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
-         else:
-            raise ValueError('Bad property type :'+str(self.properties[prop]))
+   ##    type_names = {PROPERTY_INT: "integer",
+   ##                  PROPERTY_REAL: "real",
+   ##                  PROPERTY_STR: "string",
+   ##                  PROPERTY_LOGICAL: "logical"}
+   ##    self._props = {}
+   ##    for prop,(ptype,col_start,col_end) in self.properties.iteritems():
+   ##       prop = property_prefix+prop.lower()
+   ##       self._props[prop] = (ptype,col_start,col_end)
+   ##       doc = "%s : %s property with %d %s" % (prop, type_names[ptype], col_end-col_start+1, 
+   ##                                              {True:"column",False:"columns"}[col_start==col_end])
+   ##       if ptype == PROPERTY_REAL:
+   ##          if col_end == col_start:
+   ##             setattr(self, prop, FortranArray(self.data.real[col_start,1:self.n],doc))
+   ##          else:
+   ##             setattr(self, prop, FortranArray(self.data.real[col_start:col_end,1:self.n],doc,transpose_on_print=True))
+   ##       elif ptype == PROPERTY_INT:
+   ##          if col_end == col_start:
+   ##             setattr(self, prop, FortranArray(self.data.int[col_start,1:self.n],doc))
+   ##          else:
+   ##             setattr(self, prop, FortranArray(self.data.int[col_start:col_end,1:self.n],doc,transpose_on_print=True))
+   ##       elif ptype == PROPERTY_STR:
+   ##          if col_end == col_start:
+   ##             setattr(self, prop, FortranArray(self.data.str[:,col_start,1:self.n],doc))
+   ##          else:
+   ##             setattr(self, prop, FortranArray(self.data.str[:,col_start:col_end,1:self.n],doc,transpose_on_print=True))
+   ##       elif ptype == PROPERTY_LOGICAL:
+   ##          if col_end == col_start:
+   ##             setattr(self, prop, FortranArray(self.data.logical[col_start,1:self.n],doc))
+   ##          else:
+   ##             setattr(self, prop, FortranArray(self.data.logical[col_start:col_end,1:self.n],doc,transpose_on_print=True))
+   ##       else:
+   ##          raise ValueError('Bad property type :'+str(self.properties[prop]))
          
 
    def copy(self):
-      other = Atoms(n=self.n, lattice=self.lattice, data=self.data, 
+      other = Atoms(n=self.n, lattice=self.lattice, 
                     properties=self.properties, params=self.params)
       other.use_uniform_cutoff = self.use_uniform_cutoff
       other.cutoff = self.cutoff
@@ -377,6 +377,8 @@ class Atoms(FortranAtoms):
    def __getattr__(self, name):
       if isinstance(self.params, FortranDictionary) and name in self.params:
          return self.params[name]
+      elif isinstance(self.properties, FortranDictionary) and name in self.properties:
+         return self.properties[name]
       raise AttributeError('Unknown Atoms parameter %s' % name)
 
    def __getitem__(self, i):
@@ -404,17 +406,10 @@ class Atoms(FortranAtoms):
 
    def __eq__(self, other):
       tol = 1e-10
-      
       if self.n != other.n: return False
-      if sorted(self.properties.keys()) != sorted(other.properties.keys()): return False
-      for key in self.properties:
-         v1, v2 = self.properties[key], other.properties[key]
-         if v1[1] != v2[1]: return False # type
-         if v1[3]-v1[2] != v2[3]-v2[2]: return False # ncols
-         
-      if self.params != other.params: return False
       if abs(self.lattice - other.lattice).max() > tol: return False
-      if self.data != other.data: return False
+      if self.params != other.params: return False
+      if self.properties != other.properties: return False
       return True
 
    def __ne__(self, other):
@@ -433,76 +428,76 @@ class Atoms(FortranAtoms):
       return mass/(N_A*self.cell_volume()*1.0e-30)/1.0e3
 
 
-   def add_property(self, name, value, n_cols=1, property_type=None):
-      """
-      Add a new property to this Atoms object.
+   ## def add_property(self, name, value, n_cols=1, property_type=None):
+   ##    """
+   ##    Add a new property to this Atoms object.
 
-      `name` is the name of the new property and `value` should be
-      either a scalar or an array representing the value, which should
-      be either integer, real, logical or string.
+   ##    `name` is the name of the new property and `value` should be
+   ##    either a scalar or an array representing the value, which should
+   ##    be either integer, real, logical or string.
 
-      If a scalar is given for `value` it is copied to every element
-      in the new property.  `n_cols` can be specified to create a 2D
-      property from a scalar initial value - the default is 1 which
-      creates a 1D property.
+   ##    If a scalar is given for `value` it is copied to every element
+   ##    in the new property.  `n_cols` can be specified to create a 2D
+   ##    property from a scalar initial value - the default is 1 which
+   ##    creates a 1D property.
 
-      If an array is given for `value` it should either have shape
-      (self.n,) for a 1D property or (n_cols,self.n) for a 2D
-      property.  In this case `n_cols` is inferred from the shape of
-      the `value` and shouldn't be passed as an argument.
+   ##    If an array is given for `value` it should either have shape
+   ##    (self.n,) for a 1D property or (n_cols,self.n) for a 2D
+   ##    property.  In this case `n_cols` is inferred from the shape of
+   ##    the `value` and shouldn't be passed as an argument.
 
-      If `property_type` is present, then no attempt is made to
-      infer the type from `value`. This is necessary to resolve
-      ambiguity between integer and logical types.
+   ##    If `property_type` is present, then no attempt is made to
+   ##    infer the type from `value`. This is necessary to resolve
+   ##    ambiguity between integer and logical types.
 
-      If property with the same type is already present then no error
-      occurs. A warning is printed if the verbosity level is VERBOSE
-      or higher. The value will be overwritten with that given in
-      `value`.
-      """
+   ##    If property with the same type is already present then no error
+   ##    occurs. A warning is printed if the verbosity level is VERBOSE
+   ##    or higher. The value will be overwritten with that given in
+   ##    `value`.
+   ##    """
 
-      if hasattr(value, '__iter__'):
-         value = farray(value)
-         # some kind of array:
-         if len(value.shape) == 1:
-            if value.shape[0] != self.n:
-               raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
-                                % (value.shape[0], self.n))
-            n_cols = 1
-            value_ref = value[1]
-         elif len(value.shape) == 2:
-            if value.shape[1] != self.n:
-               raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
-                                % (value.shape[1], self.n))
-            value_ref = value[1,1]
-            if value.dtype.kind == 'S':
-               n_cols = 1
-            else:
-               n_cols = value.shape[0]
-         else:
-            raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
-      else:
-         # some kind of scalar
-         value_ref = value
+   ##    if hasattr(value, '__iter__'):
+   ##       value = farray(value)
+   ##       # some kind of array:
+   ##       if len(value.shape) == 1:
+   ##          if value.shape[0] != self.n:
+   ##             raise ValueError('Bad array length for "value" - len(value.shape[0])=%d != self.n=%d'
+   ##                              % (value.shape[0], self.n))
+   ##          n_cols = 1
+   ##          value_ref = value[1]
+   ##       elif len(value.shape) == 2:
+   ##          if value.shape[1] != self.n:
+   ##             raise ValueError('Bad array length for "value" - len(value.shape[1])=%d != self.n=%d'
+   ##                              % (value.shape[1], self.n))
+   ##          value_ref = value[1,1]
+   ##          if value.dtype.kind == 'S':
+   ##             n_cols = 1
+   ##          else:
+   ##             n_cols = value.shape[0]
+   ##       else:
+   ##          raise ValueError('Bad array shape for "value" - should be either 1D or 2D')
+   ##    else:
+   ##       # some kind of scalar
+   ##       value_ref = value
 
-      if property_type is not None:
-         # override value_ref if property_type is specified
+   ##    if property_type is not None:
+   ##       # override value_ref if property_type is specified
          
-         from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
+   ##       from quippy import PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
          
-         type_to_value_ref = {
-            PROPERTY_INT  : 0,
-            PROPERTY_REAL : 0.0,
-            PROPERTY_STR  : "",
-            PROPERTY_LOGICAL : False
-            }
-         try:
-            value_ref = type_to_value_ref[property_type]
-         except KeyError:
-            raise ValueError('Unknown property_type %d' % property_type)
+   ##       type_to_value_ref = {
+   ##          PROPERTY_INT  : 0,
+   ##          PROPERTY_REAL : 0.0,
+   ##          PROPERTY_STR  : "",
+   ##          PROPERTY_LOGICAL : False
+   ##          }
+   ##       try:
+   ##          value_ref = type_to_value_ref[property_type]
+   ##       except KeyError:
+   ##          raise ValueError('Unknown property_type %d' % property_type)
 
-      FortranAtoms.add_property(self, name, value_ref, n_cols)
-      getattr(self, name.lower())[:] = value            
+   ##    FortranAtoms.add_property(self, name, value_ref, n_cols)
+   ##    getattr(self, name.lower())[:] = value            
 
 from dictmixin import DictMixin, ParamReaderMixin
 
@@ -530,6 +525,9 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
 
    def keys(self):
       return [self.get_key(i).strip() for i in frange(self.n)]
+
+   def has_key(self, key):
+      return key.lower() in [k.lower() for k in self.keys()]
 
    def get_value(self, k):
       "Return a _copy_ of a value stored in Dictionary"

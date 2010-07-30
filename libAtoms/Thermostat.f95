@@ -525,11 +525,10 @@ contains
     real(dp) :: decay, K, volume_p
     real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
     real(dp), dimension(3) :: decay_matrix_eigenvalues
-    integer  :: i, prop_index, pos_indices(3)
+    integer  :: i
+    integer, dimension(:), pointer :: prop_ptr
 
-    if (get_value(at%properties,property,pos_indices)) then
-       prop_index = pos_indices(2)
-    else
+    if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat1: cannot find property '//property)
     end if
  
@@ -548,7 +547,7 @@ contains
 
        decay = exp(-0.5_dp*this%gamma*dt)
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
        end do
 
@@ -572,7 +571,7 @@ contains
        decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
 
        do i=1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           K = K + at%mass(i)*norm2(at%velo(:,i))
           at%velo(:,i) = at%velo(:,i)*decay
        end do
@@ -602,7 +601,7 @@ contains
        K = 0.0_dp
 
        do i = 1, at%N
-          if(at%data%int(prop_index,i) /= value) cycle
+          if(prop_ptr(i) /= value) cycle
           K = K + at%mass(i)*norm2(at%velo(:,i))
           at%velo(:,i) = at%velo(:,i)*decay
        end do
@@ -639,7 +638,7 @@ contains
 
        decay = exp(-0.5_dp*dt*(this%gamma+(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
           at%pos(:,i) = at%pos(:,i)*( 1.0_dp + this%epsilon_v * dt )
        end do
@@ -674,7 +673,7 @@ contains
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
           !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
           at%pos(:,i) = at%pos(:,i) + matmul(this%lattice_v,at%pos(:,i))*dt
@@ -707,7 +706,7 @@ contains
 
        decay = exp(-0.5_dp*dt*(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v)
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
           at%pos(:,i) = at%pos(:,i)*( 1.0_dp + this%epsilon_v * dt )
        end do
@@ -740,7 +739,7 @@ contains
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
           !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
           at%pos(:,i) = at%pos(:,i) + matmul(this%lattice_v,at%pos(:,i))*dt
@@ -759,11 +758,9 @@ contains
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
 
-    integer  :: prop_index, pos_indices(3)
+    integer, pointer, dimension(:) :: prop_ptr
     
-    if (get_value(at%properties,property,pos_indices)) then
-       prop_index = pos_indices(2)
-    else
+    if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat2: cannot find property '//property)
     end if
     
@@ -816,11 +813,10 @@ contains
     integer,          intent(in)    :: value
 
     real(dp) :: R, a(3)
-    integer  :: i, prop_index, pos_indices(3)
+    integer  :: i
+    integer, pointer, dimension(:) :: prop_ptr
 
-    if (get_value(at%properties,property,pos_indices)) then
-       prop_index = pos_indices(2)
-    else
+    if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat3: cannot find property '//property)
     end if
     
@@ -842,7 +838,7 @@ contains
        call system_resync_rng()
 
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           a = sqrt(R/at%mass(i))*ran_normal3()
           at%acc(:,i) = at%acc(:,i) + a
        end do
@@ -888,11 +884,10 @@ contains
     real(dp) :: decay, K, volume_p, f_cell
     real(dp), dimension(3,3) :: lattice_p, ke_virial, decay_matrix, decay_matrix_eigenvectors, exp_decay_matrix
     real(dp), dimension(3) :: decay_matrix_eigenvalues
-    integer  :: i, prop_index, pos_indices(3)
+    integer  :: i
+    integer, pointer, dimension(:) :: prop_ptr
 
-    if (get_value(at%properties,property,pos_indices)) then
-       prop_index = pos_indices(2)
-    else
+    if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat4: cannot find property '//property)
     end if
     
@@ -909,7 +904,7 @@ contains
        !Decay the velocities for dt/2 again
        decay = exp(-0.5_dp*this%gamma*dt)
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
        end do
        
@@ -931,7 +926,7 @@ contains
        decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        K = 0.0_dp
        do i=1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
           K = K + at%mass(i)*norm2(at%velo(:,i))
        end do
@@ -939,7 +934,7 @@ contains
        !Calculate new f_eta...
        this%f_eta = 0.0_dp
        do i = 1, at%N
-          if (at%data%int(prop_index,i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
+          if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
        end do
        this%f_eta = this%f_eta - this%Ndof*BOLTZMANN_K*this%T
 
@@ -961,7 +956,7 @@ contains
        decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        K = 0.0_dp
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
           K = K + at%mass(i)*norm2(at%velo(:,i))
        end do
@@ -973,7 +968,7 @@ contains
        this%f_eta = 0.0_dp
        !Deterministic part:
         do i = 1, at%N
-           if (at%data%int(prop_index,i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
+           if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*norm2(at%velo(:,i))
         end do
        this%f_eta = this%f_eta - this%Ndof*BOLTZMANN_K*this%T
        !Stochastic part: 
@@ -995,7 +990,7 @@ contains
        !Decay the velocities for dt/2 again
        decay = exp(-0.5_dp*dt*(this%gamma+(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
        end do
        
@@ -1024,7 +1019,7 @@ contains
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
           !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
        end do
@@ -1045,7 +1040,7 @@ contains
        !Decay the velocities for dt/2 again
        decay = exp(-0.5_dp*dt*(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v)
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
        end do
        
@@ -1071,7 +1066,7 @@ contains
        call diagonalise(decay_matrix,decay_matrix_eigenvalues,decay_matrix_eigenvectors)
        exp_decay_matrix = matmul( decay_matrix_eigenvectors, matmul( diag(exp(decay_matrix_eigenvalues)), transpose(decay_matrix_eigenvectors) ) )
        do i = 1, at%N
-          if (at%data%int(prop_index,i) /= value) cycle
+          if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = matmul(exp_decay_matrix,at%velo(:,i))
           !at%velo(:,i) = at%velo(:,i) + matmul(decay_matrix,at%velo(:,i))
        end do

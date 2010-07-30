@@ -196,7 +196,8 @@ contains
     entry => this%first
     i = 1
     do while (associated(entry)) 
-      call print_xyz(entry%at, xyzfile, string(my_comment) // " atoms_ll_i="//i, properties, all_properties, human_readable, real_format, mask)
+       call system_abort('FIXME: print_xyz removed')
+!      call print_xyz(entry%at, xyzfile, string(my_comment) // " atoms_ll_i="//i, properties, all_properties, human_readable, real_format, mask)
       entry => entry%next
       i = i + 1
     end do
@@ -238,6 +239,8 @@ contains
     type(Atoms_ll_entry), pointer :: entry
     logical :: is_a_dup, do_all_properties
     character(len=1024) :: my_properties
+    character(len=100) :: fields(50)
+    integer :: n_fields
     integer :: initial_frame_count
     integer :: l_error
 
@@ -256,6 +259,9 @@ contains
       call print("WARNING: len_trim(my_properties) == 0, doing all_properties")
       do_all_properties=.true.
     endif
+
+    ! split my_properties string into list of fields
+    call parse_string(my_properties, ':', fields, n_fields)
 
     if (do_no_Time_dups .and. .not. do_sort_Time) then
       RAISE_ERROR("ERROR: atoms_ll_read_xyz no_Times_dups requires sort_Time", error)
@@ -349,7 +355,7 @@ contains
               if (do_all_properties) then
                 call atoms_copy_without_connect(structure, structure_in)
               else
-                call atoms_copy_without_connect(structure, structure_in, properties=my_properties)
+                call atoms_copy_without_connect(structure, structure_in, properties=fields(1:n_fields))
               endif
 	    endif
 	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "

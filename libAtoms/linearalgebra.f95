@@ -40,8 +40,11 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module linearalgebra_module
   use system_module
+  use error_module
   use units_module
   implicit none
   SAVE
@@ -3930,17 +3933,20 @@ CONTAINS
   ! easily generalised to higher dimensions (an extra : in intarray declaration
   ! for example)
 
-  subroutine check_size_int_dim1(arrayname,intarray,n,caller)
+  subroutine check_size_int_dim1(arrayname,intarray,n,caller,error)
 
     character(*),           intent(in) :: arrayname ! The name of the array to be checked
     integer, dimension(:),  intent(in) :: intarray  ! The array to be tested
     integer, dimension(:),  intent(in) :: n         ! The size that intarray should be
     character(*),           intent(in) :: caller    ! The name of the calling routine
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size ! container for the actual size of intarray
     logical                            :: failed      ! Keeps track of any failures 
     integer                            :: i           ! dimension iterator
 
+    INIT_ERROR(error)
+
     failed = .false.
     allocate( actual_size( size(shape(intarray)) ) )
     actual_size = shape(intarray)
@@ -3962,32 +3968,38 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_int_dim1
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
-  subroutine check_size_int_dim1_s(arrayname,intarray,n,caller)
+  subroutine check_size_int_dim1_s(arrayname,intarray,n,caller,error)
     character(*),           intent(in) :: arrayname 
     integer, dimension(:),  intent(in) :: intarray  
     integer,                intent(in) :: n         
     character(*),           intent(in) :: caller
-    call check_size(arrayname,intarray,(/n/),caller)
+    integer, intent(out), optional :: error
+    
+    INIT_ERROR(error)
+    call check_size(arrayname,intarray,(/n/),caller,error)
+    PASS_ERROR(error)
+
   end subroutine check_size_int_dim1_s
 
-  subroutine check_size_int_dim2(arrayname,intarray,n,caller)
+  subroutine check_size_int_dim2(arrayname,intarray,n,caller,error)
 
     character(*),             intent(in) :: arrayname 
     integer, dimension(:,:),  intent(in) :: intarray  
     integer, dimension(:),    intent(in) :: n         
-    character(*),             intent(in) :: caller    
+    character(*),             intent(in) :: caller
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size 
     logical                            :: failed       
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(intarray)) ) )
     actual_size = shape(intarray)
@@ -4009,23 +4021,24 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_int_dim2
 
-  subroutine check_size_real_dim1(arrayname,realarray,n,caller)
+  subroutine check_size_real_dim1(arrayname,realarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
     real(dp), dimension(:),  intent(in) :: realarray 
     integer,  dimension(:),  intent(in) :: n         
-    character(*),            intent(in) :: caller     
+    character(*),            intent(in) :: caller
+    integer, intent(out), optional :: error     
 
     integer, dimension(:), allocatable :: actual_size 
     logical                            :: failed      
     integer                            :: i           
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(realarray)) ) )
     actual_size = shape(realarray)
@@ -4047,32 +4060,38 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_real_dim1
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
-  subroutine check_size_real_dim1_s(arrayname,realarray,n,caller)
+  subroutine check_size_real_dim1_s(arrayname,realarray,n,caller,error)
     character(*),           intent(in) :: arrayname 
     real(dp), dimension(:), intent(in) :: realarray  
     integer,                intent(in) :: n         
     character(*),           intent(in) :: caller
-    call check_size(arrayname,realarray,(/n/),caller)
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
+    call check_size(arrayname,realarray,(/n/),caller,error)
+    PASS_ERROR(error)
+
   end subroutine check_size_real_dim1_s
 
-  subroutine check_size_real_dim2(arrayname,realarray,n,caller)
+  subroutine check_size_real_dim2(arrayname,realarray,n,caller, error)
 
     character(*),              intent(in) :: arrayname 
     real(dp), dimension(:,:),  intent(in) :: realarray 
     integer,  dimension(:),    intent(in) :: n        
-    character(*),              intent(in) :: caller   
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error  
 
     integer, dimension(:), allocatable :: actual_size
     logical                            :: failed      
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(realarray)) ) )
     actual_size = shape(realarray)
@@ -4094,24 +4113,25 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_real_dim2
 
 #ifdef HAVE_QP
-  subroutine check_size_quad_dim1(arrayname,quadarray,n,caller)
+  subroutine check_size_quad_dim1(arrayname,quadarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
     real(qp), dimension(:),  intent(in) :: quadarray 
     integer,  dimension(:),  intent(in) :: n         
-    character(*),            intent(in) :: caller     
+    character(*),            intent(in) :: caller
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size 
     logical                            :: failed      
     integer                            :: i           
-
+    
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(quadarray)) ) )
     actual_size = shape(quadarray)
@@ -4133,32 +4153,38 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed',error)
     end if
 
   end subroutine check_size_quad_dim1
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
-  subroutine check_size_quad_dim1_s(arrayname,quadarray,n,caller)
+  subroutine check_size_quad_dim1_s(arrayname,quadarray,n,caller,error)
     character(*),           intent(in) :: arrayname 
     real(qp), dimension(:), intent(in) :: quadarray  
     integer,                intent(in) :: n         
     character(*),           intent(in) :: caller
-    call check_size(arrayname,quadarray,(/n/),caller)
+    integer, intent(out), optional :: error     
+
+    INIT_ERROR(error)
+    call check_size(arrayname,quadarray,(/n/),caller,error)
+    PASS_ERROR(error)
+
   end subroutine check_size_quad_dim1_s
 
-  subroutine check_size_quad_dim2(arrayname,quadarray,n,caller)
+  subroutine check_size_quad_dim2(arrayname,quadarray,n,caller,error)
 
     character(*),              intent(in) :: arrayname 
     real(qp), dimension(:,:),  intent(in) :: quadarray 
     integer,  dimension(:),    intent(in) :: n        
     character(*),              intent(in) :: caller   
+    integer, intent(out), optional :: error     
 
     integer, dimension(:), allocatable :: actual_size
     logical                            :: failed      
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(quadarray)) ) )
     actual_size = shape(quadarray)
@@ -4180,24 +4206,25 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_quad_dim2
 #endif
 
-  subroutine check_size_complex_dim1(arrayname,realarray,n,caller)
+  subroutine check_size_complex_dim1(arrayname,realarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
     complex(dp), dimension(:),  intent(in) :: realarray 
     integer,  dimension(:),  intent(in) :: n         
-    character(*),            intent(in) :: caller     
-
+    character(*),            intent(in) :: caller
+    integer, intent(out), optional :: error     
+   
     integer, dimension(:), allocatable :: actual_size 
     logical                            :: failed      
     integer                            :: i           
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(realarray)) ) )
     actual_size = shape(realarray)
@@ -4219,32 +4246,38 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_complex_dim1
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
-  subroutine check_size_complex_dim1_s(arrayname,realarray,n,caller)
+  subroutine check_size_complex_dim1_s(arrayname,realarray,n,caller,error)
     character(*),           intent(in) :: arrayname 
     complex(dp), dimension(:), intent(in) :: realarray  
     integer,                intent(in) :: n         
     character(*),           intent(in) :: caller
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
     call check_size(arrayname,realarray,(/n/),caller)
+    PASS_ERROR(error)
+
   end subroutine check_size_complex_dim1_s
 
-  subroutine check_size_complex_dim2(arrayname,realarray,n,caller)
+  subroutine check_size_complex_dim2(arrayname,realarray,n,caller, error)
 
     character(*),              intent(in) :: arrayname 
     complex(dp), dimension(:,:),  intent(in) :: realarray 
     integer,  dimension(:),    intent(in) :: n        
-    character(*),              intent(in) :: caller   
+    character(*),              intent(in) :: caller 
+    integer, intent(out), optional :: error     
 
     integer, dimension(:), allocatable :: actual_size
     logical                            :: failed      
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(realarray)) ) )
     actual_size = shape(realarray)
@@ -4266,23 +4299,24 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_complex_dim2
 
-  subroutine check_size_log_dim1(arrayname,logarray,n,caller)
+  subroutine check_size_log_dim1(arrayname,logarray,n,caller,error)
 
     character(*),           intent(in) :: arrayname 
     logical, dimension(:),  intent(in) :: logarray  
     integer, dimension(:),  intent(in) :: n         
-    character(*),           intent(in) :: caller    
-
+    character(*),           intent(in) :: caller
+    integer, intent(out), optional :: error     
+    
     integer, dimension(:), allocatable :: actual_size
     logical                            :: failed     
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(logarray)) ) )
     actual_size = shape(logarray)
@@ -4304,32 +4338,38 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_log_dim1
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
-  subroutine check_size_log_dim1_s(arrayname,logarray,n,caller)
+  subroutine check_size_log_dim1_s(arrayname,logarray,n,caller,error)
     character(*),           intent(in) :: arrayname 
     logical, dimension(:),  intent(in) :: logarray  
     integer,                intent(in) :: n         
     character(*),           intent(in) :: caller
+    integer, intent(out), optional :: error     
+    
+    INIT_ERROR(error)
     call check_size(arrayname,logarray,(/n/),caller)
+    PASS_ERROR(error)
+
   end subroutine check_size_log_dim1_s
 
-  subroutine check_size_log_dim2(arrayname,logarray,n,caller)
+  subroutine check_size_log_dim2(arrayname,logarray,n,caller,error)
 
     character(*),             intent(in) :: arrayname 
     logical, dimension(:,:),  intent(in) :: logarray  
     integer, dimension(:),    intent(in) :: n         
     character(*),             intent(in) :: caller    
-
+    integer, intent(out), optional :: error     
+    
     integer, dimension(:), allocatable :: actual_size
     logical                            :: failed     
     integer                            :: i          
 
+    INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(logarray)) ) )
     actual_size = shape(logarray)
@@ -4351,8 +4391,7 @@ CONTAINS
     end if
 
     if (failed) then
-       write(line,'(a)') caller//': Size checking failed'
-       call system_abort(line)
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
   end subroutine check_size_log_dim2  
