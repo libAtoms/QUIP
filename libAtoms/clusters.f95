@@ -1082,7 +1082,7 @@ contains
     cluster_shift(:,1:cluster%N) = cluster_info%int(2:4,1:cluster_info%N)
     call add_property(cluster, 'termindex', int_part(cluster_info,6))
     call add_property(cluster, 'rescale', real_part(cluster_info,4))
-    call add_property(cluster, 'cluster_ident', cluster_info%str(1,:))
+    call add_property(cluster, 'cluster_ident', cluster_info%str(1,1:cluster_info%N))
 
     ! Find smallest bounding box for cluster
     ! Find boxes aligned with xyz (maxlen) and with a1 a2 a3 (lat_maxlen)
