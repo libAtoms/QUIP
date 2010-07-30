@@ -2383,7 +2383,7 @@ int read_xyz (FILE *in, Atoms *atoms, int *atomlist, int natomlist, int frame,
 } 
 
 
-int write_xyz(FILE *out, Atoms *atoms, char *int_format, char *prefix, char *real_format, char *str_format, char *logical_format, int swap) {
+int write_xyz(FILE *out, Atoms *atoms, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, int swap) {
   char linebuffer[LINESIZE], tmpbuf[LINESIZE];
   int i, j, n, lattice_idx, properties_idx;
   char *trimmed;
