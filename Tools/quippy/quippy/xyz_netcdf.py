@@ -20,7 +20,8 @@ from quippy import (ElementName, atoms_reader, AtomsReaders, AtomsWriters, TABLE
                     PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL,
                     T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                     T_CHAR, T_LOGICAL, T_INTEGER_A,
-                    T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A)
+                    T_REAL_A, T_COMPLEX_A, T_CHAR_A, T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
+
 
 from atomslist import *
 from ordereddict import *
@@ -86,25 +87,25 @@ def _props_dtype(props):
 
    return numpy.dtype(result)
 
+def parse_properties(prop_str):
+   properties = OrderedDict()
+   if prop_str.startswith('pos:R:3'):
+      prop_str = 'species:S:1:'+prop_str
+
+   fields = prop_str.split(':')
+
+   for name, ptype, cols in zip(fields[::3], fields[1::3], map(int,fields[2::3])):
+      if ptype not in ('R', 'I', 'S', 'L'):
+         raise ValueError('Unknown property type: '+ptype)
+      properties[name] = (ptype, cols)
+
+   return properties
+
 
 @atoms_reader('pupyxyz', False)
 def PuPyXYZReader(xyz):
    "Read from extended XYZ filename, string or open file."
    from quippy import Table
-
-   def parse_properties(prop_str):
-      properties = OrderedDict()
-      if prop_str.startswith('pos:R:3'):
-         prop_str = 'species:S:1:'+prop_str
-
-      fields = prop_str.split(':')
-
-      for name, ptype, cols in zip(fields[::3], fields[1::3], map(int,fields[2::3])):
-         if ptype not in ('R', 'I', 'S', 'L'):
-            raise ValueError('Unknown property type: '+ptype)
-         properties[name] = (ptype, cols)
-
-      return properties
 
    def _getconv(dtype):
        typ = dtype.type
@@ -170,7 +171,8 @@ def PuPyXYZReader(xyz):
       except TypeError:
          raise IOError('Badly formatted data, or end of file reached before end of frame')
 
-      at = Atoms(n=n,lattice=lattice)
+      # Empty dictionary passed for properties to avoid creating pos, species, z.
+      at = Atoms(n=n,lattice=lattice,params=params,properties={})
 
       for p in properties:
          ptype, cols = properties[p]
@@ -229,62 +231,37 @@ class PuPyXYZWriter(object):
          else:
             return '%s '
 
-      def comment(self, properties=None):
+      def ncols(props, name):
+         t, l, (l1,l2) = props.get_type_and_size(name)
+         if t in (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A):
+            return 1 
+         elif t in (T_INTEGER_A2, T_REAL_A2):
+            return l1
+         else:
+            raise TypeError('bad property type %d' % t)
+
+      def properties_comment(self, properties=None):
          if properties is None:
             props = self.properties.keys()
          else:
             props = properties
 
-         pmap = { PROPERTY_INT: 'I',
-                  PROPERTY_REAL: 'R',
-                  PROPERTY_STR: 'S',
-                  PROPERTY_LOGICAL: 'L'}
+         pmap = { T_INTEGER_A: 'I',
+                  T_REAL_A: 'R',
+                  T_CHAR_A: 'S',
+                  T_LOGICAL_A: 'L',
+                  T_INTEGER_A2: 'I',
+                  T_REAL_A2: 'R'}
 
          lattice_str = 'Lattice="' + ' '.join(map(str, numpy.reshape(self.lattice,9,order='F'))) + '"'
 
-         props_str = 'Properties=' + ':'.join(map(':'.join,
-                                                  zip(props,
-                                                      [pmap[self.properties[k][1]] for k in props],
-                                                      [str(self.properties[k][3]-self.properties[k][2]+1) for k in props])))
+         props_str =  ':'.join(map(':'.join,
+                                   zip(props,
+                                       [pmap[self.properties.get_type_and_size(k)[0]] for k in props],
+                                       [str(ncols(self.properties, k)) for k in props])))
 
-         return lattice_str+' '+props_str+' '+str(self.params)
+         return props_str, lattice_str+' Properties='+props_str+' '+str(self.params)
 
-
-      def table_to_recarray(self, props):
-         # Create empty record array with correct dtype
-         data = numpy.zeros(self.n, _props_dtype(props))
-
-         # Copy cols from self.real and self.int into data recarray
-         for prop in props:
-            ptype, col_start, col_stop = props[prop]
-            if ptype == PROPERTY_REAL:
-               if col_start == col_stop:
-                  data[prop] = self.real[col_start,:]
-               else:
-                  for c in range(col_stop-col_start+1):
-                     data[prop+str(c)] = self.real[col_start+c,:]
-            elif ptype == PROPERTY_INT:
-               if col_start == col_stop:
-                  data[prop] = self.int[col_start,:]
-               else:
-                  for c in range(col_stop-col_start+1):
-                     data[prop+str(c)] = self.int[col_start+c,:]
-            elif ptype == PROPERTY_STR:
-               if col_start == col_stop:
-                  data[prop] = self.str[col_start,:].stripstrings()
-               else:
-                  for c in range(col_stop-col_start+1):
-                     data[prop+str(c)] = self.str[col_start+c,:].stripstrings()
-            elif ptype == PROPERTY_LOGICAL:
-               if col_start == col_stop:
-                  data[prop] = self.logical[col_start,:]
-               else:
-                  for c in range(col_stop-col_start+1):
-                     data[prop+str(c)] = self.logical[col_start+c,:]
-            else:
-               raise ValueError('Bad property type : '+str(ptype))
-
-         return data
 
       if properties is None:
          props = at.properties.keys()
@@ -307,13 +284,25 @@ class PuPyXYZWriter(object):
       if pos.shape != (3, at.n) or pos.dtype.kind != 'f':
          raise ValueError('Second property must be position like')
 
+      props_str, comment = properties_comment(at, props)
+
       subprops = OrderedDict.frompairs([(k, at.properties[k]) for k in props])
-      data = table_to_recarray(at.data, subprops)
+      data = numpy.zeros(at.n, _props_dtype(parse_properties(props_str)))
+
+      for prop in props:
+         value = getattr(at, prop)
+         if at.properties.get_type_and_size(prop)[0] in (T_INTEGER_A2, T_REAL_A2):
+            for c in range(value.shape[0]):
+               data[prop+str(c)] = value[c+1,:]
+         else:
+            if value.dtype.kind == 'S':
+               value = a2s(value)
+            data[prop] = value
+      
       format = ''.join([_getfmt(data.dtype.fields[name][0]) for name in data.dtype.names])+'\n'
 
-
       self.xyz.write('%d\n' % at.n)
-      self.xyz.write('%s\n' % comment(at, props))
+      self.xyz.write('%s\n' % comment)
       for i in range(at.n):
          self.xyz.write(format % tuple(data[i]))
 
@@ -418,8 +407,8 @@ try:
          else:
             self.dest = dest
 
-      def write(self, at, frame=None, properties=None):
-         self.dest.write(at, frame=frame, properties=properties)
+      def write(self, at, frame=None, properties=None, prefix=None):
+         self.dest.write(at, frame=frame, properties=properties, prefix=prefix)
 
       def close(self):
          self.dest.close()
@@ -475,7 +464,7 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
       ca = source.variables['cell_angles'][frame]
       lattice = make_lattice(cl[0],cl[1],cl[2],ca[0]*DEG_TO_RAD,ca[1]*DEG_TO_RAD,ca[2]*DEG_TO_RAD)
 
-      at = Atoms(n=netcdf_dimlen(source, 'atom'), lattice=lattice)
+      at = Atoms(n=netcdf_dimlen(source, 'atom'), lattice=lattice, properties={})
 
       for name, var in source.variables.iteritems():
          name = remap_names.get(name, name)
@@ -486,9 +475,9 @@ def NetCDFReader(source, frame=None, start=0, stop=None, step=1):
          if 'frame' in var.dimensions:
             if 'atom' in var.dimensions:
                # It's a property
-               at.add_property(name, prop_type_to_value[var.type],
-                              n_cols=prop_dim_to_ncols[var.dimensions])
-               getattr(at, name.lower())[...] = var[frame].T
+               value = var[frame]
+               if value.dtype.kind != 'S': value = value.T
+               at.add_property(name, value)
             else:
                # It's a param
                if var.dimensions == ('frame','string'):
@@ -526,13 +515,13 @@ class NetCDFWriter(object):
                          'velocities': 'velo'}
 
 
-      prop_type_ncols_to_dtype_dim = {(PROPERTY_INT,3):       ('i', ('frame','atom','spatial')),
-                                      (PROPERTY_REAL,3):     ('d', ('frame','atom','spatial')),
-                                      (PROPERTY_LOGICAL,3):  ('d', ('frame','atom','spatial')),
-                                      (PROPERTY_INT,1):      ('i', ('frame', 'atom')),
-                                      (PROPERTY_REAL, 1):    ('d', ('frame', 'atom')),
-                                      (PROPERTY_LOGICAL, 1): ('i', ('frame', 'atom')),
-                                      (PROPERTY_STR,1):      ('S1', ('frame','atom','label'))}
+      prop_type_ncols_to_dtype_dim = {(T_INTEGER_A2,3):       ('i', ('frame','atom','spatial')),
+                                      (T_REAL_A2,3):     ('d', ('frame','atom','spatial')),
+                                      (T_LOGICAL_A,3):  ('d', ('frame','atom','spatial')),
+                                      (T_INTEGER_A,1):      ('i', ('frame', 'atom')),
+                                      (T_REAL_A, 1):    ('d', ('frame', 'atom')),
+                                      (T_LOGICAL_A, 1): ('i', ('frame', 'atom')),
+                                      (T_CHAR_A,1):      ('S1', ('frame','atom','label'))}
 
 
       param_type_to_dtype_dim = {T_INTEGER:   ('i', ('frame',)),
@@ -543,6 +532,16 @@ class NetCDFWriter(object):
                                  T_REAL_A:    ('d', ('frame', 'spatial')),
                                  T_LOGICAL_A: ('i', ('frame', 'spatial'))}
 
+      # Temporary hack to retain compatibility with old NetCDF property codes
+      convert_ptype = {
+         T_INTEGER_A2: PROPERTY_INT,
+         T_REAL_A2: PROPERTY_REAL,
+         T_LOGICAL_A: PROPERTY_LOGICAL,
+         T_INTEGER_A: PROPERTY_INT,
+         T_REAL_A:   PROPERTY_REAL,
+         T_LOGICAL_A: PROPERTY_LOGICAL,
+         T_CHAR_A : PROPERTY_STR
+         }
 
       if self.dest.dimensions == {}:
          self.dest.createDimension('frame', None)
@@ -581,14 +580,20 @@ class NetCDFWriter(object):
       self.dest.variables['cell_lengths'][self.frame] = (a, b, c)
       self.dest.variables['cell_angles'][self.frame] = (alpha*RAD_TO_DEG, beta*RAD_TO_DEG, gamma*RAD_TO_DEG)
 
-      for origname, (ptype, start, stop) in at.properties.iteritems():
+      for origname in at.properties:
          name = remap_names_rev.get(origname, origname)
-         ncols = stop-start+1
+         ptype, s1, (s2, s3) = at.properties.get_type_and_size(origname)
+         if ptype in (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A):
+            ncols = 1
+         elif ptype in (T_INTEGER_A2, T_REAL_A2):
+            ncols = s2
+         else:
+            raise TypeError('bad property type %d' % ptype)
          dtype, dims = prop_type_ncols_to_dtype_dim[(ptype, ncols)]
 
          if not name in self.dest.variables:
             self.dest.createVariable(name, dtype, dims)
-            self.dest.variables[name].type = ptype
+            self.dest.variables[name].type = convert_ptype[ptype]
 
          assert self.dest.variables[name].dimensions == dims
          self.dest.variables[name][self.frame] = getattr(at, origname.lower()).T

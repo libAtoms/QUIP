@@ -217,7 +217,7 @@ class Atoms(FortranAtoms):
       return at
          
 
-   def write(self, dest, format=None, properties=None, *args, **kwargs):
+   def write(self, dest, format=None, properties=None, prefix=None, *args, **kwargs):
       opened = False
       if format is None:
          if isinstance(dest, str):
@@ -236,13 +236,13 @@ class Atoms(FortranAtoms):
       if not hasattr(dest, 'write'):
          raise ValueError("Don't know how to write to destination \"%s\" in format \"%s\"" % (dest, format))
 
-      if properties is not None:
-         try:
-            res = dest.write(self, properties=properties)
-         except TypeError:
-            raise ValueError('Atoms.write destination %r does not specifying properties' % dest)
-      else:
-         res = dest.write(self)
+      write_kwargs = {}
+      if properties is not None: write_kwargs['properties'] = properties
+      if prefix is not None: write_kwargs['prefix'] = prefix
+      try:
+         res = dest.write(self, **write_kwargs)
+      except TypeError:
+         raise ValueError('Atoms.write destination %r does not specifying arguments %r' % (dest, kwargs))
 
       if opened and hasattr(dest, 'close'):
          dest.close()
@@ -723,13 +723,13 @@ class CInOutput(FortranCInOutput):
    def __setitem__(self, index, value):
       self.write(value, frame=index)
 
-   def write(self, at, properties=None, int_format=None, real_format=None, frame=None,
+   def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
              shuffle=None, deflate=None, deflate_level=None, status=None):
 
       if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
          properties = padded_str_array(properties, max([len(x) for x in properties])).T
       
-      FortranCInOutput.write(self, at, properties, int_format, real_format, frame,
+      FortranCInOutput.write(self, at, properties, prefix, int_format, real_format, frame,
                              shuffle, deflate, deflate_level, status)
                              
 class Potential(FortranPotential):
