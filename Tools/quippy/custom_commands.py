@@ -529,9 +529,14 @@ class test(Command):
             tests = TestLoader().loadTestsFromNames([self.test_prefix+case for case in self.test_suffixes])
 
         print 'Running tests with verbosity %d' % self.verbosity
-        TextTestRunner(verbosity=self.verbosity).run(tests)
+        result = TextTestRunner(verbosity=self.verbosity).run(tests)
 
         # restore sys.path
         sys.path = old_path[:]
+
+        # Exit script with exitcode 1 if any tests failed
+        if result.failures != [] or result.errors != []:
+            sys.exit(1)
+        
 
 
