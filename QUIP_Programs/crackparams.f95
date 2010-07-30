@@ -574,7 +574,7 @@ contains
 
   subroutine CrackParams_read_xml_filename(this, filename)
     type(CrackParams), intent(inout), target :: this
-    character(len=*) :: filename
+    character(len=*), intent(in) :: filename
 
     type(InOutput) xml
 
@@ -586,7 +586,7 @@ contains
 
   subroutine CrackParams_read_xml(this, xmlfile)
     type(CrackParams), intent(inout), target :: this
-    type(Inoutput) :: xmlfile
+    type(Inoutput),intent(in) :: xmlfile
 
     type (xml_t) :: fxml
     type(extendable_str) :: ss
