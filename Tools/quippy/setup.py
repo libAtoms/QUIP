@@ -147,7 +147,8 @@ def SourceImporter(infile, defines, include_dirs, cpp, is_wrap_source):
         if infile.endswith('.f95'):
             if newer(infile, outfile):
                 print 'filtering %s to create %s, is_wrap_source=%s' % (infile, outfile, is_wrap_source)
-                tmp_file = os.path.basename(infile)[:-4] + '.F90'
+                tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(infile)[:-4] + '.f90')
+                if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
                 f2py_wrapper_gen.filter_source_file(open(infile), open(tmp_file, 'w'), is_wrap_source)
                 os.system("%s %s %s | grep -v '^#' >  %s" % (' '.join(cpp), cpp_opt, tmp_file, outfile))
 
