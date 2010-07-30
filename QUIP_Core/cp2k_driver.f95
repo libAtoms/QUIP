@@ -705,8 +705,8 @@ contains
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
 
-    call read_xyz(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
-    call read_xyz(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
+    call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
+    call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
 
     if (.not. get_value(f_xyz%params, "E", e)) &
       call system_abort('read_energy_forces failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file')
