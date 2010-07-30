@@ -70,7 +70,8 @@ public :: create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_wei
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
     add_cut_hydrogens, construct_hysteretic_region, &
-    create_pos_or_list_centred_hybrid_region, get_hybrid_list
+    create_pos_or_list_centred_hybrid_region, get_hybrid_list, &
+    estimate_origin_extent
     !, construct_region, select_hysteretic_quantum_region
 
 !% Grow a selection list by bond hopping.
