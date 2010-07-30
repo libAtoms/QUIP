@@ -209,9 +209,11 @@ implicit none
   do 
      call read(at, infile, error=error)
      if (error /= 0) then
-        if (error == ERROR_IO_EOF) exit
-     else
-        HANDLE_ERROR(error)
+        if (error == ERROR_IO_EOF) then
+	   exit
+	else
+	   HANDLE_ERROR(error)
+	endif
      endif
 
      call set_cutoff(at, cutoff(pot)+0.5_dp)
