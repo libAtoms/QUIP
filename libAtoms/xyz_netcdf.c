@@ -2441,6 +2441,7 @@ int write_xyz(FILE *out, Atoms *atoms, char *prefix, char *int_format, char *rea
 
   // Build parameter values
   linebuffer[0] = '\0';
+  if (prefix[0] != '\0') sprintf(linebuffer, "%s ", prefix);
   for (i=0; i<atoms->n_param; i++) {
     if (!atoms->param_filter[i]) continue;
     if (atoms->param_type[i] == T_INTEGER)
@@ -2496,10 +2497,11 @@ int write_xyz(FILE *out, Atoms *atoms, char *prefix, char *int_format, char *rea
     strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
 
-  if (prefix[0] != '\0') fputs(prefix, out);
-  fprintf(out, "%d\n", (int)atoms->n_atom);
+  if (prefix[0] != '\0') 
+    fprintf(out, "%s %d\n", prefix, (int)atoms->n_atom); 
+  else
+    fprintf(out, "%d\n", (int)atoms->n_atom);
   linebuffer[strlen(linebuffer)-1] = '\n';
-  if (prefix[0] != '\0') fputs(prefix, out);
   fputs(linebuffer, out);
 
   for (n=0; n<atoms->n_atom; n++) {

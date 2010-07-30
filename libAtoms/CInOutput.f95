@@ -962,7 +962,7 @@ contains
 
   end subroutine atoms_read_cinoutput
 
-  subroutine atoms_write(this, filename, append, properties, prefix, error)
+  subroutine atoms_write(this, filename, append, properties, prefix, int_format, real_format, error)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
     use iso_fortran_env
     type(Atoms), intent(in) :: this
@@ -970,21 +970,20 @@ contains
     logical, optional, intent(in) :: append
     character(*), intent(in), optional :: properties(:)    
     character(*), intent(in), optional :: prefix
+    character(*), intent(in), optional :: int_format, real_format
     integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
 
-    if (trim('filename') == 'stdout') flush(output_unit)
+    if (trim(filename) == 'stdout') flush(output_unit)
 
     INIT_ERROR(error)
     call initialise(cio, filename, OUTPUT, append, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
-    call write(cio, this, properties, prefix, error=error)
+    call write(cio, this, properties, prefix, int_format, real_format, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
     call finalise(cio)
 
-    if (trim('filename') == 'stdout') flush(output_unit)
-    
   end subroutine atoms_write
 
   subroutine atoms_write_cinoutput(this, cio, properties, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error)
