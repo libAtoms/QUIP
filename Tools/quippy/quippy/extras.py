@@ -604,12 +604,16 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
       return ParamReaderMixin.__repr__(self)
 
    def __eq__(self, other):
+      tol = 1e-10
       if sorted(self.keys()) != sorted(other.keys()): return False
 
       for key in self:
          v1, v2 = self[key], other[key]
          if isinstance(v1, FortranArray):
-            if (v1 != v2).any(): return False
+            if v1.dtype.kind != 'f':
+               if (v1 != v2).any(): return False
+            else:
+               if abs(v1 - v2).max() > tol: return False
          else:
             if v1 != v2: return False
       return True
