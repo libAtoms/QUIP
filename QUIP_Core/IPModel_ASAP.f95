@@ -41,8 +41,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 module IPModel_ASAP_module
 
-use libatoms_module
-
+use libatoms_module, only: dp, FIELD_LENGTH
 use mpi_context_module
 use QUIP_Common_module
 
@@ -179,6 +178,7 @@ contains
 
 
 subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
+  use libatoms_module
   type(IPModel_ASAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
   type(mpi_context), intent(in), optional :: mpi
@@ -206,6 +206,7 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
 end subroutine IPModel_ASAP_Initialise_str
 
 subroutine IPModel_ASAP_Finalise(this)
+  use libatoms_module
   type(IPModel_ASAP), intent(inout) :: this
 
 #ifdef HAVE_ASAP
@@ -275,10 +276,14 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
   use minimiser
 
 #endif
-   use libAtoms_module, only : Atoms
+   use libAtoms_module, only : myAtoms => Atoms, Dictionary, BOHR, HARTREE, &
+        ElementMass, massconvert, initialise, param_read_line, finalise, &
+        ElementName, print, operator(//), cell_volume, has_property, &
+        assign_pointer, add_property, system_abort, fit_box_in_cell, &
+        param_register
 	
    type(IPModel_ASAP), intent(inout):: this
-   type(Atoms), intent(inout)      :: at
+   type(myAtoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
@@ -710,6 +715,7 @@ end subroutine IPModel_ASAP_Calc
 
 
 subroutine IPModel_ASAP_Print(this, file)
+  use libatoms_module
   type(IPModel_ASAP), intent(in) :: this
   type(Inoutput), intent(inout),optional :: file
 
@@ -737,6 +743,7 @@ subroutine IPModel_ASAP_Print(this, file)
 end subroutine IPModel_ASAP_Print
 
 subroutine IPModel_ASAP_read_params_xml(this, param_str)
+  use libatoms_module
   type(IPModel_ASAP), intent(inout), target :: this
   character(len=*), intent(in) :: param_str
 
@@ -766,13 +773,14 @@ end subroutine IPModel_ASAP_read_params_xml
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
+  use libatoms_module
   character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
-  character(len=FIELD_LENGTH) :: value
+  character(len=FIELD_LENGTH) :: val
 
   integer ti, tj, Zi, Zj
 
@@ -780,11 +788,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_matched_label) return ! we already found an exact match for this label
 
-    call QUIP_FoX_get_value(attributes, 'label', value, status)
-    if (status /= 0) value = ''
+    call Quip_fox_get_value(attributes, 'label', val, status)
+    if (status /= 0) val = ''
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-      if (value == parse_ip%label) then ! exact match
+      if (val == parse_ip%label) then ! exact match
         parse_matched_label = .true.
         parse_in_ip = .true.
       else ! no match
@@ -799,9 +807,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call finalise(parse_ip)
       endif
 
-      call QUIP_FoX_get_value(attributes, 'n_types', value, status)
+      call Quip_fox_get_value(attributes, 'n_types', val, status)
       if (status == 0) then
-        read (value, *), parse_ip%n_types
+        read (val, *), parse_ip%n_types
       else
         call system_abort("Can't find n_types in ASAP_params")
       endif
@@ -824,71 +832,71 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%C_pol(parse_ip%n_types,parse_ip%n_types))
       parse_ip%C_pol = 0.0_dp
 
-      call QUIP_FoX_get_value(attributes, "cutoff", value, status)
+      call Quip_fox_get_value(attributes, "cutoff", val, status)
       if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find cutoff")
-      read (value, *) parse_ip%cutoff
+      read (val, *) parse_ip%cutoff
 
-      call QUIP_FoX_get_value(attributes, "betapol", value, status)
-      if (status == 0) read (value, *) parse_ip%betapol
+      call Quip_fox_get_value(attributes, "betapol", val, status)
+      if (status == 0) read (val, *) parse_ip%betapol
 
-      call QUIP_FoX_get_value(attributes, "maxipol", value, status)
-      if (status == 0) read (value, *) parse_ip%maxipol
+      call Quip_fox_get_value(attributes, "maxipol", val, status)
+      if (status == 0) read (val, *) parse_ip%maxipol
 
-      call QUIP_FoX_get_value(attributes, "tolpol", value, status)
-      if (status == 0) read (value, *) parse_ip%tolpol
+      call Quip_fox_get_value(attributes, "tolpol", val, status)
+      if (status == 0) read (val, *) parse_ip%tolpol
 
-      call QUIP_FoX_get_value(attributes, "pred_order", value, status)
-      if (status == 0) read (value, *) parse_ip%pred_order
+      call Quip_fox_get_value(attributes, "pred_order", val, status)
+      if (status == 0) read (val, *) parse_ip%pred_order
 
-      call QUIP_FoX_get_value(attributes, "yukalpha", value, status)
-      if (status == 0) read (value, *) parse_ip%yukalpha
+      call Quip_fox_get_value(attributes, "yukalpha", val, status)
+      if (status == 0) read (val, *) parse_ip%yukalpha
 
-      call QUIP_FoX_get_value(attributes, "yuksmoothlength", value, status)
-      if (status == 0) read (value, *) parse_ip%yuksmoothlength
+      call Quip_fox_get_value(attributes, "yuksmoothlength", val, status)
+      if (status == 0) read (val, *) parse_ip%yuksmoothlength
 
       parse_ip%tewald = .false.
-      call QUIP_FoX_get_value(attributes, "tewald", value, status)
-      if (status == 0) read (value, *), parse_ip%tewald
+      call Quip_fox_get_value(attributes, "tewald", val, status)
+      if (status == 0) read (val, *), parse_ip%tewald
 
       parse_ip%tdip_sr = .true.
-      call QUIP_FoX_get_value(attributes, "tdip_sr", value, status)
-      if (status == 0) read (value, *), parse_ip%tdip_sr
+      call Quip_fox_get_value(attributes, "tdip_sr", val, status)
+      if (status == 0) read (val, *), parse_ip%tdip_sr
 
       parse_ip%raggio = 0.0_dp
-      call QUIP_FoX_get_value(attributes, "raggio", value, status)
-      if (status == 0) read (value, *), parse_ip%raggio
+      call Quip_fox_get_value(attributes, "raggio", val, status)
+      if (status == 0) read (val, *), parse_ip%raggio
 
       parse_ip%a_ew = 0.0_dp
-      call QUIP_FoX_get_value(attributes, "a_ew", value, status)
-      if (status == 0) read (value, *), parse_ip%a_ew
+      call Quip_fox_get_value(attributes, "a_ew", val, status)
+      if (status == 0) read (val, *), parse_ip%a_ew
 
       parse_ip%gcut = 0.0_dp
-      call QUIP_FoX_get_value(attributes, "gcut", value, status)
-      if (status == 0) read (value, *), parse_ip%gcut
+      call Quip_fox_get_value(attributes, "gcut", val, status)
+      if (status == 0) read (val, *), parse_ip%gcut
 
       parse_ip%iesr = 0
-      call QUIP_FoX_get_value(attributes, "iesr", value, status)
-      if (status == 0) read (value, *), parse_ip%iesr
+      call Quip_fox_get_value(attributes, "iesr", val, status)
+      if (status == 0) read (val, *), parse_ip%iesr
 
     endif
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
 
-    call QUIP_FoX_get_value(attributes, "type", value, status)
+    call Quip_fox_get_value(attributes, "type", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find type")
-    read (value, *) ti
+    read (val, *) ti
 
-    call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
+    call Quip_fox_get_value(attributes, "atomic_num", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find atomic_num")
-    read (value, *) parse_ip%atomic_num(ti)
+    read (val, *) parse_ip%atomic_num(ti)
 
-    call QUIP_FoX_get_value(attributes, "pol", value, status)
+    call Quip_fox_get_value(attributes, "pol", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find pol")
-    read (value, *) parse_ip%pol(ti)
+    read (val, *) parse_ip%pol(ti)
 
-    call QUIP_FoX_get_value(attributes, "z", value, status)
+    call Quip_fox_get_value(attributes, "z", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find z")
-    read (value, *) parse_ip%z(ti)
+    read (val, *) parse_ip%z(ti)
 
     if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
     allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
@@ -900,31 +908,31 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
 
-    call QUIP_FoX_get_value(attributes, "atnum_i", value, status)
+    call Quip_fox_get_value(attributes, "atnum_i", val, status)
     if (status /= 0) call system_abort ("IPModel_SW_read_params_xml cannot find atnum_i")
-    read (value, *) Zi
-    call QUIP_FoX_get_value(attributes, "atnum_j", value, status)
+    read (val, *) Zi
+    call Quip_fox_get_value(attributes, "atnum_j", val, status)
     if (status /= 0) call system_abort ("IPModel_SW_read_params_xml cannot find atnum_j")
-    read (value, *) Zj
+    read (val, *) Zj
 
     ti = get_type(parse_ip%type_of_atomic_num,Zi)
     tj = get_type(parse_ip%type_of_atomic_num,Zj)
 
-    call QUIP_FoX_get_value(attributes, "D_ms", value, status)
+    call Quip_fox_get_value(attributes, "D_ms", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find D_ms")
-    read (value, *) parse_ip%D_ms(ti,tj)
-    call QUIP_FoX_get_value(attributes, "gamma_ms", value, status)
+    read (val, *) parse_ip%D_ms(ti,tj)
+    call Quip_fox_get_value(attributes, "gamma_ms", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find gamma_ms")
-    read (value, *) parse_ip%gamma_ms(ti,tj)
-    call QUIP_FoX_get_value(attributes, "R_ms", value, status)
+    read (val, *) parse_ip%gamma_ms(ti,tj)
+    call Quip_fox_get_value(attributes, "R_ms", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find R_ms")
-    read (value, *) parse_ip%R_ms(ti,tj)
-    call QUIP_FoX_get_value(attributes, "B_pol", value, status)
+    read (val, *) parse_ip%R_ms(ti,tj)
+    call Quip_fox_get_value(attributes, "B_pol", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find B_pol")
-    read (value, *) parse_ip%B_pol(ti,tj)
-    call QUIP_FoX_get_value(attributes, "C_pol", value, status)
+    read (val, *) parse_ip%B_pol(ti,tj)
+    call Quip_fox_get_value(attributes, "C_pol", val, status)
     if (status /= 0) call system_abort ("IPModel_ASAP_read_params_xml cannot find C_pol")
-    read (value, *) parse_ip%C_pol(ti,tj)
+    read (val, *) parse_ip%C_pol(ti,tj)
 
     if (ti /= tj) then
       parse_ip%D_ms(tj,ti) = parse_ip%D_ms(ti,tj)
@@ -939,6 +947,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
+  use libatoms_module
   character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
   character(len=*), intent(in)   :: name
