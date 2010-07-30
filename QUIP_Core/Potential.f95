@@ -1259,8 +1259,6 @@ max_atom_rij_change = 1.038_dp
     ! beware of transfer and pointers !!!
     call atoms_repoint(am%minim_at)
 
-    error = 0
-
     am%minim_n_eval_ef = am%minim_n_eval_ef + 1
 
     if (size(x) /= am%minim_at%N*3+9) call system_abort("Called both_func() with size mismatch " // &
