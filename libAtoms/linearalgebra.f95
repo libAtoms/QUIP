@@ -4988,6 +4988,103 @@ CONTAINS
 
   end function int_array_lt
 
+  !% compare contents of 2 cells in up to N=2 arrays (int or real), return true if 
+  !% contents in first cell is less than 2nd, with 1st array taking precendence.  
+  function arrays_lt(i, j, i_p1, r_p1, i_p2, r_p2, error)
+     integer, intent(in) :: i, j
+     integer, intent(in), pointer, optional :: i_p1(:)
+     real(dp), intent(in), pointer, optional :: r_p1(:)
+     integer, intent(in), pointer, optional :: i_p2(:)
+     real(dp), intent(in), pointer, optional :: r_p2(:)
+     integer, intent(out), optional :: error
+     logical :: arrays_lt
+
+     integer :: n_p1, n_p2
+     logical :: p1_is_i = .false., p1_is_r = .false.
+     logical :: p2_is_i = .false., p2_is_r = .false.
+     logical :: have_p2
+
+     INIT_ERROR(error)
+
+     n_p1 = 0
+     if (present(i_p1)) then
+       if (associated(i_p1)) then
+	  n_p1 = n_p1 + 1
+	  p1_is_i = .true.
+       endif
+     end if
+     if (present(r_p1)) then
+       if (associated(r_p1)) then
+	  n_p1 = n_p1 + 1
+	  p1_is_r = .true.
+       endif
+     end if
+     if (n_p1 /= 1) then
+        RAISE_ERROR("arrays_lt got too many or too few present and associated p1 pointers",error)
+     endif
+
+     n_p2 = 0
+     if (present(i_p2)) then
+       if (associated(i_p2)) then
+	  n_p2 = n_p2 + 1
+	  p2_is_i = .true.
+       endif
+     end if
+     if (present(r_p2)) then
+       if (associated(r_p2)) then
+	  n_p2 = n_p2 + 1
+	  p2_is_r = .true.
+       endif
+     endif
+     if (n_p2 > 1) then
+        RAISE_ERROR("arrays_lt got too many present and associated p2 pointers",error)
+     endif
+     have_p2 = (n_p2 == 1)
+
+     ! always have some *_p1, test *_p1
+     if (p1_is_i) then
+	if (i_p1(i) < i_p1(j)) then
+	   arrays_lt = .true.
+	   return
+	else if (i_p1(i) > i_p1(j)) then
+	   arrays_lt = .false.
+	   return
+	endif
+     else ! p1_is_r
+	if (r_p1(i) < r_p1(j)) then
+	   arrays_lt = .true.
+	   return
+	else if (r_p1(i) > r_p1(j)) then
+	   arrays_lt = .false.
+	   return
+	endif
+     endif
+
+     ! *_p1 must be equal, test *_p2
+     if (have_p2) then ! must have some present and associated *_p2 pointer, test it
+	if (p2_is_i) then
+	   if (i_p2(i) < i_p2(j)) then
+	      arrays_lt = .true.
+	      return
+	   else if (i_p2(i) > i_p2(j)) then
+	      arrays_lt = .false.
+	      return
+	   endif
+	else ! p2_is_r
+	   if (r_p2(i) < r_p2(j)) then
+	      arrays_lt = .true.
+	      return
+	   else if (r_p2(i) > r_p2(j)) then
+	      arrays_lt = .false.
+	      return
+	   endif
+	endif
+     endif
+
+     ! *_p2 must be equal
+     arrays_lt = .false.
+  end function arrays_lt
+
   subroutine polar_decomposition(m, S, R)
     real(dp), intent(in) :: m(3,3)
     real(dp), intent(out) :: S(3,3), R(3,3)

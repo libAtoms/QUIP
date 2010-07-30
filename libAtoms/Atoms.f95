@@ -1042,7 +1042,7 @@ contains
     logical, optional, intent(in) :: overwrite
     integer, intent(out), optional :: error
 
-    integer :: i, j
+    integer :: i
 
     INIT_ERROR(error)
 
@@ -1953,7 +1953,7 @@ contains
     integer,     intent(in), dimension(:)      :: atom_indices
     integer, intent(out), optional :: error
 
-    integer i, j, copysrc
+    integer i, copysrc
     integer, allocatable, dimension(:), target :: new_indices
     integer, pointer, dimension(:) :: include_list
     integer, allocatable, dimension(:) :: tmp_int
@@ -4397,7 +4397,6 @@ contains
      character(len=1) :: prop_type
      character(len=1024) :: tmp
      integer :: i, n_cols, type
-     logical :: dummy
      logical :: my_with_types
 
      INIT_ERROR(error)
@@ -5058,19 +5057,29 @@ contains
 
   !% Move a single atom from one location to another one.
   !% The destination will be overriden.
-  subroutine atoms_copy_entry(this, src, dst, error)
+  subroutine atoms_copy_entry(this, src, dst, swap, error)
     implicit none
 
     type(Atoms), intent(inout)  :: this
     integer, intent(in)         :: src
     integer, intent(in)         :: dst
+    logical, intent(in), optional :: swap
     integer, optional, intent(out) :: error
 
     integer i
 
+    logical :: my_swap
+    integer :: t_i
+    integer, allocatable :: t_i_a(:)
+    real(dp) :: t_r
+    real(dp), allocatable :: t_r_a(:)
+    logical :: t_l
+    character(len=1), allocatable :: t_c(:)
+
     ! ---
 
     INIT_ERROR(error)
+    my_swap = optional_default(.false., swap)
 
     if (src < 1 .or. src > this%N) then
        RAISE_ERROR('atoms_copy_entry: src='//src//' out of range 1 <= src <= '//this%n, error)
@@ -5083,22 +5092,64 @@ contains
        select case (this%properties%entries(i)%type)
 
        case(T_INTEGER_A)
-          this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+	  if (my_swap) then
+	     t_i = this%properties%entries(i)%i_a(dst)
+	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+	     this%properties%entries(i)%i_a(src) = t_i
+	  else
+	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+	  endif
 
        case(T_REAL_A)
-          this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+	  if (my_swap) then
+	     t_r = this%properties%entries(i)%r_a(dst)
+	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+	     this%properties%entries(i)%r_a(src) = t_r
+	  else
+	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+	  endif
 
        case(T_LOGICAL_A)
-          this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+	  if (my_swap) then
+	     t_l = this%properties%entries(i)%l_a(dst)
+	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+	     this%properties%entries(i)%l_a(src) = t_l
+	  else
+	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+	  endif
 
        case(T_INTEGER_A2)
-          this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+	  if (my_swap) then
+	     allocate(t_i_a(size(this%properties%entries(i)%i_a2,1)))
+	     t_i_a = this%properties%entries(i)%i_a2(:,dst)
+	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+	     this%properties%entries(i)%i_a2(:,src) = t_i_a
+	     deallocate(t_i_a)
+	  else
+	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+	  endif
 
        case(T_REAL_A2)
-          this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+	  if (my_swap) then
+	     allocate(t_r_a(size(this%properties%entries(i)%r_a2,1)))
+	     t_r_a = this%properties%entries(i)%r_a2(:,dst)
+	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+	     this%properties%entries(i)%r_a2(:,src) = t_r_a
+	     deallocate(t_r_a)
+	  else
+	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+	  endif
 
        case(T_CHAR_A)
-          this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+	  if (my_swap) then
+	     allocate(t_c(size(this%properties%entries(i)%s_a,1)))
+	     t_c = this%properties%entries(i)%s_a(:,dst)
+	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+	     this%properties%entries(i)%s_a(:,src) = t_c
+	     deallocate(t_c)
+	  else
+	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+	  endif
 
        case default
           RAISE_ERROR('atoms_copy_entry: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
@@ -5107,5 +5158,48 @@ contains
     end do
 
   endsubroutine atoms_copy_entry
+
+  !% sort atoms by one or more (max 2 now) integer or real properties
+  subroutine atoms_sort(this, prop1, prop2, error)
+    type(Atoms), intent(inout) :: this
+    character(len=*), intent(in) :: prop1
+    character(len=*), intent(in), optional :: prop2
+    integer, intent(out), optional :: error
+
+    integer, pointer :: i_p1(:) => null(), i_p2(:) => null()
+    real(dp), pointer :: r_p1(:) => null(), r_p2(:) => null()
+    integer :: cur_place, i_a, smallest_i_a
+    logical :: is_lt
+
+    INIT_ERROR(error)
+
+    if (.not. assign_pointer(this, prop1, i_p1)) then
+       if (.not. assign_pointer(this, prop1, r_p1)) then
+	  RAISE_ERROR("atoms_sort can't find 1st integer or real property '" // prop1 //"'", error)
+       endif
+    endif
+    if (present(prop2)) then
+       if (.not. assign_pointer(this, prop2, i_p2)) then
+	  if (.not. assign_pointer(this, prop2, r_p2)) then
+	     RAISE_ERROR("atoms_sort can't find 2nd integer or real property '" // prop2 //"'", error)
+	  endif
+       endif
+    endif
+
+    do cur_place=1, this%N-1
+       smallest_i_a = cur_place
+       do i_a = cur_place+1, this%N
+	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, error=error)
+	  PASS_ERROR(error)
+	  if (is_lt) then
+	     smallest_i_a = i_a
+	  endif
+       end do
+       if (smallest_i_a /= cur_place) then
+	  call atoms_copy_entry(this, cur_place, smallest_i_a, swap=.true., error=error)
+	  PASS_ERROR(error)
+       endif
+    end do
+  end subroutine atoms_sort
 
 end module atoms_module

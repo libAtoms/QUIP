@@ -36,8 +36,10 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 module cp2k_driver_template_module
 use libatoms_module
+use topology_module
 implicit none
 
 private
@@ -98,10 +100,11 @@ contains
   end subroutine do_cp2k_calc_fake
 
 
-  subroutine do_cp2k_calc(at, f, e, args_str)
+  subroutine do_cp2k_calc(at, f, e, args_str, error)
     type(Atoms), intent(inout) :: at
     real(dp), intent(out) :: f(:,:), e
     character(len=*), intent(in) :: args_str
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
@@ -166,6 +169,8 @@ contains
     integer :: at_i
 
     logical :: at_periodic
+
+    INIT_ERROR(error)
 
     call system_timer('do_cp2k_calc')
 
@@ -298,10 +303,11 @@ contains
 	sort_index_p(at_i) = at_i
       end do
     endif
-    if (.not.(has_property(at,'mol_id',mol_id_lookup)) .or. .not. has_property(at,'atom_res_number',atom_res_number_lookup)) then
-      call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain")
+    if (.not.(has_property(at,'mol_id')) .or. .not. has_property(at,'atom_res_number')) then
+      call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain", PRINT_ALWAYS)
     else
-      call sort(at%data, int_cols= (/ mol_id_lookup(2), atom_res_number_lookup(2) /) )
+      call atoms_sort(at, 'mol_id', 'atoms_res_number', error=error)
+      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atoms_res_number", error)
       if (associated(sort_index_p)) then
 	do at_i=1, at%N
 	  if (sort_index_p(at_i) /= at_i) then
@@ -600,9 +606,8 @@ contains
 
     ! unsort
     if (associated(sort_index_p)) then
-      if (.not.(has_property(at,'sort_index',sort_index_lookup))) &
-	call system_abort("do_cp2k_calc failed to get sort_index_loopup for undoing sorting by sort_index")
-      call sort(at%data, int_cols= (/ sort_index_lookup(2) /) )
+      call atoms_sort(at, 'sort_index', error=error)
+      PASS_ERROR_WITH_INFO("do_cp2k_calc sorting atoms by sort_index",error)
     endif
 
     if (maxval(abs(f)) > max_force_warning) &
