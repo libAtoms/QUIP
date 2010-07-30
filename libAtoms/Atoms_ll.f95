@@ -173,18 +173,14 @@ contains
   end subroutine atoms_ll_remove_last_entry
 
 
-  subroutine atoms_ll_print_xyz(this, xyzfile, comment, properties, all_properties, human_readable, real_format, mask)
+  subroutine atoms_ll_print_xyz(this, xyzfile, comment, properties, real_format, mask)
     type(Atoms_ll),            intent(inout)    :: this     !% Atoms_ll object to print
-    type(Inoutput),         intent(inout) :: xyzfile  !% Inoutput object to write to
+    type(CInoutput),         intent(inout) :: xyzfile  !% CInOutput object to write to
+    character(*), optional, intent(in) :: properties(:) !% List of properties to print 
     character(*), optional, intent(in)    :: comment  !% Comment line (line #2 of xyz file)
-    character(*), optional, intent(in) :: properties  !% Colon separated list of properties from 'this%data' 
-						      !% to be printed. If not specified, we print only the 
-						      !% atomic positions, unless 'all_properties' is true.
-    logical,      optional, intent(in)    :: all_properties !% Should we print all properties (default is false)
-    logical,      optional, intent(in)    :: human_readable !% If set to true, pretty-print table of 
-							    !% atomic properties.
     character(len=*), optional, intent(in) :: real_format   !% format of real numbers in output
     logical, optional, intent(in) :: mask(:)                !% mask of which atoms to print
+
 
     type(extendable_str) :: my_comment
     type(atoms_ll_entry), pointer :: entry
@@ -193,13 +189,16 @@ contains
     call initialise(my_comment)
     if (present(comment)) call concat(my_comment, comment)
 
+    if (present(mask)) call system_abort('atoms_ll_print_xyz: mask argument not currently supported. if you need it, please reimplement!')
+
     entry => this%first
     i = 1
     do while (associated(entry)) 
-       call system_abort('FIXME: print_xyz removed')
-!      call print_xyz(entry%at, xyzfile, string(my_comment) // " atoms_ll_i="//i, properties, all_properties, human_readable, real_format, mask)
-      entry => entry%next
-      i = i + 1
+       call set_value(entry%at%params, 'comment', my_comment)
+       call set_value(entry%at%params, 'atoms_ll_i', i)
+       call write(xyzfile, entry%at, properties, real_format=real_format)
+       entry => entry%next
+       i = i + 1
     end do
     call finalise(my_comment)
 
