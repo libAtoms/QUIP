@@ -53,18 +53,17 @@ implicit none
   type(atoms) :: config
   integer n_phonons
   real(dp), allocatable :: phonons(:,:,:)
-  type(inoutput) :: phonons_io, md_io
+  type(CInOutput) :: phonons_io, md_io
   real(dp), pointer :: phonon_displ(:,:)
   integer i, config_i, j
   logical done
-  integer stat
+  integer error
   real(dp), allocatable :: ke_proj(:)
   real(dp) :: vel_mag, ke_tot, p(3), L(3), mode_vel
   real(dp) :: MoI(3,3), MoI_evecs(3,3), MoI_evals(3), MoI_evecs_orig(3,3), R(3,3)
   character(len=FIELD_LENGTH) phonons_file
   logical :: fix_rotation, regular_eigenproblem
   type(dictionary) :: cli_params
-  character(len=1024) :: comment
 
 
   call system_initialise()
@@ -84,7 +83,7 @@ implicit none
   call print("fix_rotation " // fix_rotation)
   call initialise(phonons_io, phonons_file)
 
-  call read_xyz(config, phonons_io, comment=comment)
+  call read(config, phonons_io)
   n_phonons = 3*config%N
   allocate(phonons(3, config%N, n_phonons))
   if (.not. assign_pointer(config, "phonon", phonon_displ)) &
@@ -94,7 +93,7 @@ implicit none
   call print("phonon norm 1 " // sum(ElementMass(config%Z)*sum(phonons(:,:,1)**2,1)))
 
   do i=2, n_phonons
-    call read_xyz(config, phonons_io, comment=comment)
+    call read(config, phonons_io)
     if (.not. assign_pointer(config, "phonon", phonon_displ)) &
       call system_abort("Couldn't find field phonon in phonon config " // i)
     if (regular_eigenproblem) call phonon_evec_to_displacements(phonon_displ, config%Z)
@@ -120,11 +119,15 @@ call print(MoI_evecs_orig, PRINT_VERBOSE)
   done = .false.
   config_i = 0
   do while (.not. done)
-    config_i = config_i + 1
-    call read_xyz(config, md_io, status=stat)
-    if (stat .ne. 0) then
-      done = .true.
-    else
+     config_i = config_i + 1
+     call read(config, md_io, error=error)
+     if (error /= 0) then
+        if (error == ERROR_IO_EOF) then
+	   done = .true.
+	else
+	   HANDLE_ERROR(error)
+	endif
+     else
       call add_property(config, "mass", 0.0_dp, 1)
       call atoms_repoint(config)
       config%mass = ElementMass(config%Z)
