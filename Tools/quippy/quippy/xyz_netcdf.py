@@ -71,17 +71,17 @@ def _props_dtype(props):
    "Return a record array dtype for the specified properties (default all)"
 
    result = []
-   fmt_map = {PROPERTY_REAL:'d',
-              PROPERTY_INT: 'i',
-              PROPERTY_STR: 'S' + str(TABLE_STRING_LENGTH),
-              PROPERTY_LOGICAL: 'bool'}
+   fmt_map = {'R':'d',
+              'I': 'i',
+              'S': 'S' + str(TABLE_STRING_LENGTH),
+              'L': 'bool'}
 
    for prop in props:
-      ptype, col_start, col_stop = props[prop]
-      if col_start == col_stop:
+      ptype, cols = props[prop]
+      if cols == 1:
          result.append((prop,fmt_map[ptype]))
       else:
-         for c in range(col_stop-col_start+1):
+         for c in range(cols):
             result.append((prop+str(c),fmt_map[ptype]))
 
    return numpy.dtype(result)
@@ -93,85 +93,18 @@ def PuPyXYZReader(xyz):
    from quippy import Table
 
    def parse_properties(prop_str):
-      """Parse a property description string in the format
-      name:ptype:cols:...  and return a 5-tuple of an OrderedDict
-      mapping property names to (ptype,col_start,col_end) tuples and the number of
-      int, real, string and logical properties"""
-
-      from quippy import (PROPERTY_INT,
-                          PROPERTY_REAL,
-                          PROPERTY_STR,
-                          PROPERTY_LOGICAL)
-
-      pmap = {'I': PROPERTY_INT,
-              'R': PROPERTY_REAL,
-              'S': PROPERTY_STR,
-              'L': PROPERTY_LOGICAL}
-
       properties = OrderedDict()
       if prop_str.startswith('pos:R:3'):
          prop_str = 'species:S:1:'+prop_str
 
       fields = prop_str.split(':')
 
-      n_real = 0
-      n_int  = 0
-      n_str = 0
-      n_logical = 0
       for name, ptype, cols in zip(fields[::3], fields[1::3], map(int,fields[2::3])):
-         if ptype == 'R':
-            start_col = n_real
-            n_real = n_real + cols
-            end_col = n_real
-         elif ptype == 'I':
-            start_col = n_int
-            n_int = n_int + cols
-            end_col = n_int
-         elif ptype == 'S':
-            start_col = n_str
-            n_str = n_str + cols
-            end_col = n_str
-         elif ptype == 'L':
-            start_col = n_logical
-            n_logical = n_logical + cols
-            end_col = n_logical
-         else:
+         if ptype not in ('R', 'I', 'S', 'L'):
             raise ValueError('Unknown property type: '+ptype)
+         properties[name] = (ptype, cols)
 
-         properties[name] = (pmap[ptype],start_col+1,end_col)
-
-      return properties, n_int, n_real, n_str, n_logical
-
-
-   def table_update_from_recarray(self, props, data):
-      for prop in props:
-         ptype, col_start, col_stop = props[prop]
-         if ptype == PROPERTY_REAL:
-            if col_start == col_stop:
-               self.real[col_start,:] = data[prop]
-            else:
-               for c in range(col_stop-col_start+1):
-                  self.real[col_start+c,:] = data[prop+str(c)]
-         elif ptype == PROPERTY_INT:
-            if col_start == col_stop:
-               self.int[col_start,:] = data[prop]
-            else:
-               for c in range(col_stop-col_start+1):
-                  self.int[col_start+c,:] = data[prop+str(c)]
-         elif ptype == PROPERTY_STR:
-            if col_start == col_stop:
-               self.str[:,col_start,:] = padded_str_array(data[prop], TABLE_STRING_LENGTH)
-            else:
-               for c in range(col_stop-col_start+1):
-                  self.str[:,col_start+c,:] = padded_str_array(data[prop+str(c)], TABLE_STRING_LENGTH)
-         elif ptype == PROPERTY_LOGICAL:
-            if col_start == col_stop:
-               self.logical[col_start,:] = data[prop]
-            else:
-               for c in range(col_stop-col_start+1):
-                  self.logical[col_start+c,:] = data[prop+str(c)]
-         else: 
-            raise ValueError('Bad property type : '+str(ptype))
+      return properties
 
    def _getconv(dtype):
        typ = dtype.type
@@ -210,7 +143,7 @@ def PuPyXYZReader(xyz):
       if not 'Properties' in params:
          raise ValueError('Properties missing from comment line')
 
-      properties, n_int, n_real, n_str, n_logical = parse_properties(params['Properties'])
+      properties = parse_properties(params['Properties'])
       del params['Properties']
 
       # Get lattice
@@ -237,11 +170,17 @@ def PuPyXYZReader(xyz):
       except TypeError:
          raise IOError('Badly formatted data, or end of file reached before end of frame')
 
-      tab = Table(n_int,n_real,n_str,n_logical)
-      tab.append(blank_rows=n)
-      table_update_from_recarray(tab, properties, data)
+      at = Atoms(n=n,lattice=lattice)
 
-      at = Atoms(n=n,lattice=lattice, properties=properties, params=params, data=tab)
+      for p in properties:
+         ptype, cols = properties[p]
+         if cols == 1:
+            value = data[p]
+            if value.dtype.kind == 'S':
+               value = s2a(value, TABLE_STRING_LENGTH).T
+         else:
+            value = numpy.vstack([data[p+str(c)] for c in range(cols) ])
+         at.add_property(p, value, overwrite=True)
 
       if not at.has_property('Z')  and not at.has_property('species'):
          raise ValueError('Atoms read from XYZ has neither Z nor species')
