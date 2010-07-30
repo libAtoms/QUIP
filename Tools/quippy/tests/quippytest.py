@@ -34,7 +34,11 @@ class QuippyTestCase(unittest.TestCase):
          for key in d1:
             v1, v2 = d1[key], d2[key]
             if isinstance(v1, FortranArray):
-               self.assertArrayAlmostEqual(v1, v2)
+               try:
+                  self.assertArrayAlmostEqual(v1, v2)
+               except AssertionError:
+                  print key, v1, v2
+                  raise
             else:
                if v1 != v2:
                   self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
