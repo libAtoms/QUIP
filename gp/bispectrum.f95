@@ -200,7 +200,7 @@ module bispectrum_module
       logical                                    :: initialised = .false.
    endtype per
 
-   real(dp), dimension(:,:,:,:,:,:), allocatable :: cg_array
+   real(dp), dimension(:,:,:,:,:,:), allocatable, save :: cg_array
    integer :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0 
    logical :: cg_initialised = .false.
 
