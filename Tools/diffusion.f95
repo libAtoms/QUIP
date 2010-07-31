@@ -39,11 +39,12 @@ use libatoms_module
 
  
     type(Atoms)                           :: structure, reference
-    type(Inoutput)                        :: xyzfile, datafile
+    type(CInoutput)                       :: xyzfile
+    type(Inoutput)                        :: datafile
     real(dp)                              :: ave_r2, one_r2
     integer                               :: frame_count, frames_processed
     integer                               :: i
-    integer                               :: status
+    integer                               :: error
 
     !Input
     type(Dictionary)                      :: params_in
@@ -82,7 +83,7 @@ use libatoms_module
 
     call print('Reading data...')
 
-    call read_xyz(structure, xyzfile, status=status)
+    call read(structure, xyzfile, error=error)
     !reference = structure
 
     frame_count = 0
@@ -90,7 +91,7 @@ use libatoms_module
 
     do
      
-       if (status/=0) exit
+       if (error/=0) exit
   
        frame_count = frame_count + 1
   
@@ -126,7 +127,7 @@ use libatoms_module
              endif
           endif
        endif
-       call read_xyz(structure,xyzfile,status=status)
+       call read(structure,xyzfile,error=error)
      
     end do
   
