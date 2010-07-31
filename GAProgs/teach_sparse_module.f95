@@ -569,7 +569,7 @@ contains
      call xml_EndElement(xf,"GAP_data")
 
      ! Print GP bit of the potential
-     call gp_print_xml(this%my_gp,xf)
+     call gp_print_xml(this%my_gp,xf,label=gp_label)
 
      ! Print the command line used for the teaching
      if(len(trim(this%command_line))> 0 ) then
