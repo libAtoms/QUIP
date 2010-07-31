@@ -2447,10 +2447,11 @@ deallocate(diff_xijt)
          this%initialised = .true.
       end subroutine gp_read_binary
 
-      subroutine gp_print_xml(this,xf)
+      subroutine gp_print_xml(this,xf,label)
 
          type(gp), intent(in) :: this
          type(xmlf_t), intent(inout) :: xf
+         character(len=*), intent(in), optional :: label
 
          integer :: i
 
@@ -2460,6 +2461,7 @@ deallocate(diff_xijt)
          call xml_AddAttribute(xf,"dimensions", ""//this%d)
          call xml_AddAttribute(xf,"n_species", ""//this%nsp)
          call xml_AddAttribute(xf,"n_sparse_x", ""//this%n)
+         if(present(label)) call xml_AddAttribute(xf,"label", trim(label))
 
          do i = 1, this%nsp
             call xml_NewElement(xf,"per_species_data")
