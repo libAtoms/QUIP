@@ -74,6 +74,8 @@ def makecrack(params):
    crack_slab.add_property('old_nn', 0)
    crack_slab.add_property('md_old_changed_nn', 0)
    crack_slab.add_property('edge_mask', 0)
+   crack_slab.add_property('crack_surface', False)
+   crack_slab.add_property('crack_front', False)
 
    print_title('Fixing Atoms')
 
@@ -113,6 +115,10 @@ def makecrack(params):
    crack_update_connect(crack_slab, params)
 
    if (not params.simulation_classical):
+      if (params.selection_method.strip() == 'crack_front' or
+          params.crack_tip_method.strip() == 'local_e'):
+         classicalpot.calc(crack_slab, calc_local_e=True)
+      
       crack_update_selection(crack_slab, params)
    
    return crack_slab
