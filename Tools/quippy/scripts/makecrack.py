@@ -39,6 +39,9 @@ def makecrack(params):
    crack_slab, width, height, E, v, v2, bulk = crack_make_slab(params, classicalpot)
 
    # Save bulk cube (used for qm_rescale_r parameter in crack code)
+   if params.qm_args.startswith('TB'):
+      bigger_bulk = supercell(bulk, 2, 2, 2)
+      bulk = bigger_bulk
    bulk.write(stem+'_bulk.xyz')
 
    crack_slab.params['OrigWidth'] = width
