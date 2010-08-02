@@ -1352,7 +1352,8 @@ contains
 #ifdef _MPI
      include 'mpif.h'
      real(dp), dimension(:,:), allocatable :: mpi_pos, mpi_velo, mpi_acc, mpi_constraint_force
-     integer                               :: error_code, pos_indices(3), cf_indices(2)
+     real(dp), dimension(:,:), pointer :: constraint_force
+     integer                               :: error_code
 #endif
      
      INIT_ERROR(error)
@@ -1375,10 +1376,8 @@ contains
         if (do_store) then
            allocate(mpi_constraint_force(3,this%N))
            mpi_constraint_force = 0.0_dp
-           if (get_value(this%atoms%properties,'constraint_force',pos_indices)) then
-              cf_indices = pos_indices(2:3)
-           else
-              call system_abort('advance_verlet1: no constraint_force property found')
+           if (.not. assign_pointer(this%atoms,'constraint_force', constraint_force)) then
+              RAISE_ERROR('advance_verlet1: no constraint_force property found', error)
            end if
         end if
      end if
@@ -1561,7 +1560,7 @@ contains
                  mpi_pos(:,i) =  this%atoms%pos(:,i)
                  mpi_velo(:,i) = this%atoms%velo(:,i)
                  mpi_acc(:,i) = this%atoms%acc(:,i)
-                 if (do_store) mpi_constraint_force(:,i) = this%atoms%data%real(cf_indices,i)
+                 if (do_store) mpi_constraint_force(:,i) = constraint_force(:,i)
               end do
            end if
 #endif                 
@@ -1580,7 +1579,7 @@ contains
         call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
         call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')       
         if (do_store) then
-           call MPI_ALLREDUCE(mpi_constraint_force,this%atoms%data%real(cf_indices,1:this%N),size(mpi_constraint_force),&
+           call MPI_ALLREDUCE(mpi_constraint_force, constraint_force, size(mpi_constraint_force),&
                 MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
            call abort_on_mpi_error(error_code,'advance_verlet1 - constraint force update')
         end if
@@ -1632,7 +1631,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine advance_verlet2(this,dt,f,virial,parallel,store_constraint_force)
+   subroutine advance_verlet2(this,dt,f,virial,parallel,store_constraint_force,error)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
@@ -1640,6 +1639,7 @@ contains
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force
+     integer, optional, intent(out) :: error
 
      logical                               :: do_parallel, do_store
      integer                               :: i, g, n, ntherm
@@ -1648,8 +1648,11 @@ contains
 #ifdef _MPI
      include 'mpif.h'
      real(dp), dimension(:,:), allocatable :: mpi_velo, mpi_acc, mpi_constraint_force
-     integer                               :: error_code, pos_indices(3), cf_indices(2)
+     real(dp), dimension(:,:), pointer     :: constraint_force
+     integer                               :: error_code
 #endif
+
+     INIT_ERROR(error)
 
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
@@ -1664,10 +1667,8 @@ contains
         if (do_store) then
            allocate(mpi_constraint_force(3,this%N))
            mpi_constraint_force = 0.0_dp
-           if (get_value(this%atoms%properties,'constraint_force',pos_indices)) then
-              cf_indices = pos_indices(2:3)
-           else
-              call system_abort('advance_verlet1: no constraint_force property found')
+           if (.not. assign_pointer(this%atoms,'constraint_force', constraint_force)) then
+              RAISE_ERROR('advance_verlet2: no constraint_force property found', error)
            end if
         end if
      end if
@@ -1761,7 +1762,7 @@ contains
                  i = group_nth_atom(this%group(g),n)
                  mpi_velo(:,i) = this%atoms%velo(:,i)
                  mpi_acc(:,i) = this%atoms%acc(:,i)
-                 if (do_store) mpi_constraint_force(:,i) = this%atoms%data%real(cf_indices,i)
+                 if (do_store) mpi_constraint_force(:,i) = constraint_force(:,i)
               end do
            end if
 #endif
@@ -1778,7 +1779,7 @@ contains
         call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
         call abort_on_mpi_error(error_code,'advance_verlet1 - acceleration update')       
         if (do_store) then
-           call MPI_ALLREDUCE(mpi_constraint_force,this%atoms%data%real(cf_indices,1:this%N),size(mpi_constraint_force),&
+           call MPI_ALLREDUCE(mpi_constraint_force,constraint_force,size(mpi_constraint_force),&
                 MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,error_code)
            call abort_on_mpi_error(error_code,'advance_verlet1 - constraint force update')
         end if
@@ -1837,7 +1838,7 @@ contains
 
    !% Calls advance_verlet2 followed by advance_verlet1. Outside this routine the
    !% velocities will be half-stepped.
-   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
+   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
 
      type(dynamicalsystem), intent(inout) :: ds
      real(dp),              intent(in)    :: dt
@@ -1846,15 +1847,19 @@ contains
      logical, optional,     intent(in)    :: parallel
      logical, optional,     intent(in)    :: store_constraint_force, do_calc_dists
      logical, save                        :: first_call = .true.
+     integer, optional, intent(out) :: error
 
+     INIT_ERROR(error)
      if (first_call) then
         call print_title('SINGLE STEP VERLET IN USE')
         call print('Consider changing to the two-step integrator')
         call print_title('=')
         first_call = .false.
      end if
-     call advance_verlet2(ds,dt,f,virial,parallel,store_constraint_force)
-     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists)
+     call advance_verlet2(ds,dt,f,virial,parallel,store_constraint_force,error)
+     PASS_ERROR(error)
+     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
+     PASS_ERROR(error)
 
    end subroutine advance_verlet
 
