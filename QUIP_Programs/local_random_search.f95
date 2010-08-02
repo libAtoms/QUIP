@@ -109,7 +109,8 @@ use mylj
 implicit none
 
   type(Potential) mpot
-  type(inoutput) params, movie
+  type(inoutput) params
+  type(cinoutput) movie
   type(Atoms), target:: at
 
 
@@ -182,13 +183,15 @@ implicit none
         !at%pos = reshape(x0, (/3,at%N/))
 
         call Calc(mpot, at, e=eold)
-        call read_xyz(at, 'filepot.0.out')
+        call read(at, 'filepot.0.out')
         call zero_sum(at%pos)
         call add_property(at, "local_e", 0.0_dp);
         status = assign_pointer(at, 'local_e', atlocale)
         x = reshape(at%pos, (/at%N*3/))
         atlocale = elj(x)
-        call print_xyz(at, movie, ('comment="castepbfgs" ljenergy='//sum(atlocale)), all_properties=.true.)
+	call set_value(at%properties, "comment", "castepbfgs")
+	call set_value(at%properties, "ljenergy", sum(atlocale))
+        call write(at, movie)
         
         !r = 0
         !call randomise(r, 0.7_dp)

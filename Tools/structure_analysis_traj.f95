@@ -1242,7 +1242,6 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
   character(len=100) :: use_property
   real(dp), pointer :: prop_a(:), prop_3a(:,:)
   logical :: prop_is_scalar
-  integer :: lookup(3)
 
   allocate(mask_a(at%N))
   call is_in_mask(mask_a, at, mask_str)
@@ -1257,16 +1256,15 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
     if (.not. has_property(at, 'velo')) &
       call system_abort("propdf_radial_calc has no 'velo' property in Atoms structure")
   else ! assign pointers for property
-    if (.not. has_property(at, property, lookup)) &
-      call system_abort("propdf_radial_calc has no '"//trim(property)//"' property in Atoms structure")
+    if (.not. has_property(at, property)) &
+       call system_abort("propdf_radial_calc has no '"//trim(property)//"' property in Atoms structure")
 
-    prop_is_scalar = .false.
-    if (lookup(3)-lookup(2)+1 == 1) then
-      if (.not. assign_pointer(at, trim(property), prop_a)) &
-	call system_abort("propdf_radial_calc failed to assign scalar pointer for property '"//trim(property)//"'")
-      prop_is_scalar = .true.
-    else if (.not. assign_pointer(at, trim(property), prop_3a)) then
-      call system_abort("propdf_radial_calc failed to assign 3-array pointer for property '"//trim(property)//"' which has " // (lookup(3)-lookup(2)+1) // "-vectors")
+    prop_is_scalar = .true.
+    if (.not. assign_pointer(at, trim(property), prop_a)) then
+       prop_is_scalar = .false.
+       if (.not. assign_pointer(at, trim(property), prop_3a)) then
+	  call system_abort("propdf_radial_calc failed to assign 1- or 3-array real(dp) pointer for property '"//trim(property))
+       endif
     endif
   endif
 

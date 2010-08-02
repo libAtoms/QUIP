@@ -36,7 +36,7 @@ implicit none
   real(dp) :: dipole_mom(3)
 
   call system_initialise()
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
 
 
   mainlog%prefix = "SPECSYM"

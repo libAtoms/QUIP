@@ -70,7 +70,6 @@ program density_1d
     real(dp)                              :: min_time, max_time
     logical                               :: Gaussian_smoothing
     real(dp)                              :: Gaussian_sigma
-    logical                               :: fortran_io
 
     !AtomMask processing
     character(30)                         :: prop_name
@@ -117,7 +116,6 @@ program density_1d
     call param_register(params_in, 'Density_Time_Evolution_Rate', '0', Density_Time_Evolution_Rate)
     call param_register(params_in, 'Gaussian', 'F', Gaussian_smoothing)
     call param_register(params_in, 'sigma', '0.0', Gaussian_sigma)
-    call param_register(params_in, 'fortran_io', 'F', fortran_io)
     call param_register(params_in, 'do_statistics', 'F', do_statistics)
     if (.not. param_read_args(params_in, do_check = .true.)) then
        if (EXEC_NAME == '<UNKNOWN>') then
@@ -225,109 +223,60 @@ program density_1d
     frames_processed_intermed = 0
 
 
-    if (fortran_io) then
-      if (xyzfile_is_list) call system_abort("ERROR: xyzfile_is_list is not supported with fortran I/O")
-      call initialise(xyzfile,xyzfilename,action=INPUT)
-      status = 0
-      frame_count = 0
-      do while (frame_count < from-1)
-        frame_count = frame_count + 1
-        call read_xyz(xyzfile,status)
-        if (status/=0) exit
-      end do
-  
-      ! read rest of configs, skipping decimation related ones, put in structure_ll
-      do while (status == 0 .and. (to <= 0 .or. frame_count < to))
-        frame_count = frame_count + 1
-        write(mainlog%unit,'(a,a,i0,$)') achar(13),'Read Frame ',frame_count
-        call read_xyz(structure_in, xyzfile, status=status)
-        skip_frame = .false.
-        if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
-          if (get_value(structure_in%params,"Time",cur_time)) then
-            if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
-	        (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
-          else
-            call system_abort("ERROR: min_time="//min_time//" > 0.0 or max_time="//max_time//" > 0.0, but Time field wasn't found in config " // frame_count)
-          endif
-        endif
-        if (.not. skip_frame) then
-         call new_entry(structure_ll, structure)
-          call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
-        endif
-        if (to > 0 .and. frame_count >= to) then
-          exit
-        endif
-  
-        do i=1, (decimation-1)
-          frame_count = frame_count + 1
-          call read_xyz(xyzfile, status)
-          if (status /= 0) exit
-        end do
-      end do
-  
-      if (status /= 0) then
-        call remove_last_entry(structure_ll)
-      endif
 
-      call finalise(xyzfile)
+   status = 0
+   if (from > 0) then
+     frame_count = from
+   else
+     frame_count = 1
+   endif
+   last_file_frame_n = 0
 
-    else ! not fortran I/O, i.e. C
+   if (xyzfile_is_list) then
+     call initialise(xyzfile_list, trim(xyzfilename), INPUT)
+     xyzfilename = read_line(xyzfile_list, status)
+     if (status /= 0) call finalise(xyzfile_list)
+   endif
 
-      status = 0
-      if (from > 0) then
-        frame_count = from
-      else
-        frame_count = 1
-      endif
-      last_file_frame_n = 0
+   do while (status == 0) ! loop over files
+     call initialise(cxyzfile,trim(xyzfilename),action=INPUT)
+     status = 0
+     do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
+       write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(xyzfilename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+       call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, error=error)
+       if (error == ERROR_NONE) then
+	 skip_frame = .false.
+	 if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
+	   if (get_value(structure_in%params,"Time",cur_time)) then
+	     if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
+		 (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
+	   else
+	     call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
+	   endif
+	 endif
+	 if (.not. skip_frame) then
+	   call new_entry(structure_ll, structure)
+	   call atoms_copy_without_connect(structure, structure_in, properties=(/"pos","Z  "/))
+	 else
+	   write (mainlog%unit,'(a,$)') " skip"
+	 endif
+	 frame_count = frame_count + decimation
+       else
+	 call clear_error(error)
+	 status = 1
+       endif
+     end do
+     last_file_frame_n = frame_count - 1
+     call finalise(cxyzfile)
 
-      if (xyzfile_is_list) then
-        call initialise(xyzfile_list, trim(xyzfilename), INPUT)
-        xyzfilename = read_line(xyzfile_list, status)
-        if (status /= 0) call finalise(xyzfile_list)
-      endif
+     if (xyzfile_is_list) then
+       xyzfilename = read_line(xyzfile_list, status)
+       if (status /= 0) call finalise(xyzfile_list)
+     else
+       status = 1
+     endif
 
-      do while (status == 0) ! loop over files
-        call initialise(cxyzfile,trim(xyzfilename),action=INPUT)
-        status = 0
-        do while ((to <= 0 .or. frame_count <= to) .and. status == 0)
-          write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(xyzfilename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-          call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, error=error)
-          if (error == ERROR_NONE) then
-            skip_frame = .false.
-            if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
-              if (get_value(structure_in%params,"Time",cur_time)) then
-                if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
-		    (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
-              else
-                call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
-              endif
-            endif
-            if (.not. skip_frame) then
-	      call new_entry(structure_ll, structure)
-              call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
-            else
-              write (mainlog%unit,'(a,$)') " skip"
-            endif
-            frame_count = frame_count + decimation
-          else
-            call clear_error(error)
-            status = 1
-          endif
-        end do
-        last_file_frame_n = frame_count - 1
-        call finalise(cxyzfile)
-
-        if (xyzfile_is_list) then
-          xyzfilename = read_line(xyzfile_list, status)
-          if (status /= 0) call finalise(xyzfile_list)
-        else
-          status = 1
-        endif
-
-      end do
-
-    endif ! fortran I/O
+   end do
 
     call allocate(distances,0,1,0,0,DISTANCES_INIT)
     call set_increment(distances,DISTANCES_INCR)

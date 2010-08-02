@@ -38,7 +38,7 @@ implicit none
   real(dp), allocatable :: new_pos(:,:)
   type(Atoms) :: config, ref_config
   character(len=FIELD_LENGTH) :: config_filename, ref_config_filename
-  type(Inoutput) :: config_io, ref_config_io
+  type(CInoutput) :: config_io, ref_config_io
   type(Dictionary) :: cli_params
   real(dp) :: cur_displacement(3)
   real(dp) :: dist
@@ -68,11 +68,11 @@ implicit none
   call print("")
 
   call initialise(config_io, config_filename, action=INPUT)
-  call read_xyz(config, config_io)
+  call read(config, config_io)
   call finalise(config_io)
 
   call initialise(ref_config_io, ref_config_filename, action=INPUT)
-  call read_xyz(ref_config, ref_config_io)
+  call read(ref_config, ref_config_io)
   call finalise(ref_config_io)
 
   if (config%N /= ref_config%N) call system_abort("number of atoms mismatch " // config%N // " " // ref_config%N)
@@ -116,9 +116,7 @@ implicit none
 
   config%pos(1:3,1:config%N) = new_pos(1:3,1:config%N)
 
-  mainlog%prefix="SHIFTED_CONFIG"
-  call print_xyz(config, mainlog, all_properties=.true.)
-  mainlog%prefix=""
+  call write(config, "stdout", prefix="SHIFTED_CONFIG")
 
   call system_finalise()
 end program
