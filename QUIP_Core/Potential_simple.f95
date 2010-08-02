@@ -424,8 +424,7 @@ contains
                dummy = assign_pointer(at, 'weight_region1', weight_region1)
 
 	  if (current_verbosity() >= PRINT_NERD) then
-            ! prefix should be LITTLE_CLUSTER
-	    call write(cluster, 'stdout')
+	    call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
 	  endif
           call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
 
