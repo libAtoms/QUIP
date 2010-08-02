@@ -25,11 +25,11 @@
 
 program teach_sparse_program
 
-  use teach_sparse_module
   use libatoms_module
   use bispectrum_module
   use gp_sparse_module
   use clustering_module
+  use teach_sparse_mod
 
   implicit none
 

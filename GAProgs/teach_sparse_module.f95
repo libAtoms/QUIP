@@ -23,7 +23,7 @@
 ! HND X
 ! HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-module teach_sparse_module
+module teach_sparse_mod
 
   use libatoms_module
   use bispectrum_module
@@ -638,4 +638,4 @@ contains
 
   endsubroutine file_print_xml
 
-end module teach_sparse_module
+end module teach_sparse_mod
