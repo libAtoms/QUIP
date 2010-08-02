@@ -195,10 +195,8 @@ contains
 
        this%d = qw2d(qw)
     else 
-       call initialise(f_hat,this%j_max, &
-       this%z0,this%r_cut)
-       call initialise(df_hat,this%j_max, &
-       this%z0,this%r_cut)
+       call initialise(f_hat,this%j_max, this%z0,this%r_cut)
+       call initialise(df_hat,this%j_max, this%z0,this%r_cut)
 
        this%d = j_max2d(f_hat%j_max)
     endif
@@ -274,10 +272,8 @@ contains
 
        if(has_ener) ener = ener - at%N*this%e0     
 
-       if( at%cutoff /= this%r_cut ) then
-          call atoms_set_cutoff(at,this%r_cut)
-          call calc_connect(at)
-       endif
+       call atoms_set_cutoff(at,this%r_cut)
+       call calc_connect(at)
 
        nei_max = 0
        do i = 1, at%N
@@ -593,11 +589,13 @@ contains
      ! Open a unique root element for the xml
      call print('<'//trim(gp_label)//'>',file=gp_inout)
 
-     ! Create the sum potential xml entry (by hand)
-     call print('<Potential label="'//trim(gp_label)//'" init_args="Sum init_args_pot1={'//trim(this%ip_args)//'} init_args_pot2={IP GAP label='//trim(gp_label)//'}"/>',file=gp_inout)
+     if(this%do_core) then
+        ! Create the sum potential xml entry (by hand)
+        call print('<Potential label="'//trim(gp_label)//'" init_args="Sum init_args_pot1={'//trim(this%ip_args)//'} init_args_pot2={IP GAP label='//trim(gp_label)//'}"/>',file=gp_inout)
 
-     ! Now add the core potential that was used.
-     call print(string(this%quip_string),file=gp_inout)
+        ! Now add the core potential that was used.
+        call print(string(this%quip_string),file=gp_inout)
+     endif
 
      ! Add the GAP potential
      call print(string(gap_string),file=gp_inout)
