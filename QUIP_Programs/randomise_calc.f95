@@ -72,7 +72,7 @@ implicit none
 
   call Initialise(pot, trim(pot_init_args))
 
-  call read_xyz(at2, trim(infile))
+  call read(at2, trim(infile))
   allocate(f(3,at2%N))
 
   lattice_pull = .false.
@@ -102,7 +102,9 @@ implicit none
         call system_timer("calc")
      end if
      call add_property(at, 'f', f)
-     call print_xyz(at, outfile, properties='pos:f', comment='Energy='//e//' virial={'//reshape(v, (/9/))//'}', append=.true.)
+     call set_value(at%properties,'Energy', e)
+     call set_value(at%properties,'virial', reshape(v, (/9 /)))
+     call write(at, outfile, properties=(/'pos','f  '/), append=.true.)
   end do
   deallocate(f)
 

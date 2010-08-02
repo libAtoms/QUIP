@@ -929,19 +929,20 @@ contains
   end subroutine f_string_to_c_array
 
 
-  subroutine atoms_read(this, filename, frame, zero, error)
+  subroutine atoms_read(this, filename, frame, zero, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: filename
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    type(MPI_context), optional, intent(inout) :: mpi
     integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
 
     INIT_ERROR(error)
 
-    call initialise(cio, filename, INPUT, error=error)
+    call initialise(cio, filename, INPUT, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call read(cio, this, frame, zero, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)

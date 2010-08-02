@@ -54,7 +54,7 @@ implicit none
   endif
   call finalise(cli_params)
 
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
   props = prop_names_string(at)
 
   if (.not.(assign_pointer(at,'mass', mass))) then
@@ -102,9 +102,7 @@ implicit none
   at%lattice(3,3) = (maxval(at%pos(3,:)) - minval(at%pos(3,:)))*2.0_dp+5.0_dp
 
   call print("props" // trim(props))
-  mainlog%prefix="ALIGNED"
-  call print_xyz(at, mainlog, properties=trim(props))
-  mainlog%prefix=""
+!!  call print_xyz(at, "stdout", properties=trim(props), prefix="ALIGNED")
 
   call system_finalise()
 end program

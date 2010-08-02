@@ -82,7 +82,7 @@ implicit none
 
   call Initialise(mpi_glob)
 
-  call read_xyz(at, at_file, mpi_comm=mpi_glob%communicator)
+  call read(at, at_file, mpi=mpi_glob)
   call Potential_Filename_Initialise(pot, init_args, param_file, mpi_obj=mpi_glob)
 
   select case(verbosity)
@@ -137,9 +137,7 @@ implicit none
   local_E_fd = (local_E_p-local_E_m)/(2.0_dp*norm(fd_vec))
   local_N_fd = (local_N_p-local_N_m)/(2.0_dp*norm(fd_vec))
 
-  mainlog%prefix="LOCAL_E_FD"
-  call print_xyz(at, mainlog, all_properties=.true.)
-  mainlog%prefix=""
+  call write(at, "stdout", prefix="LOCAL_E_FD")
 
   call system_finalise()
   stop

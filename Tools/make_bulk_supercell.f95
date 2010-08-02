@@ -29,7 +29,7 @@ implicit none
   call finalise(cli_params)
 
   dup_cell = structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str)
-  call print_xyz(dup_cell, outfile)
+  call write(dup_cell, outfile)
 
   call system_finalise()
 

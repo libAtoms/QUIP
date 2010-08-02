@@ -215,7 +215,7 @@ real(dp) :: vi, vf
   real(dp) :: expected_red
 
   call system_initialise()
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
   call get_cmd_arg(1, arg)
   read (unit=arg, fmt=*) r(1)
   call get_cmd_arg(2, arg)

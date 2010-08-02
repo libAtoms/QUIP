@@ -49,16 +49,14 @@ implicit none
   endif
   call finalise(cli_params)
 
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
 
   call set_cutoff_factor(at, cutoff_factor)
   call calc_connect(at)
 
   call coalesce_in_one_periodic_image(at, seed)
 
-  mainlog%prefix="WRAPPED"
-  call print_xyz(at, mainlog, properties="pos")
-  mainlog%prefix=""
+  call write(at, filename="stdout", properties=(/"pos"/), prefix="WRAPPED")
 
   call system_finalise()
 end program

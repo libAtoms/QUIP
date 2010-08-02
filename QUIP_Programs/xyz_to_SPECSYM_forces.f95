@@ -47,7 +47,7 @@ implicit none
   endif
   call finalise(cli_params)
 
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
   
   if (.not. assign_pointer(at, 'forces', forces)) &
     call system_abort("Failed to assign pointer for forces property")

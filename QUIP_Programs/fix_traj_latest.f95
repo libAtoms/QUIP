@@ -32,12 +32,12 @@ program fix_traj
 use libatoms_module
   type(atoms) :: at
   integer, pointer :: cluster_mark(:), t_i(:)
-  character(len=TABLE_STRING_LENGTH), pointer :: t_s(:)
+  character(len=1), pointer :: t_s(:,:)
   real(dp), pointer :: t_d(:)
 
   call system_initialise()
 
-  call read_xyz(at, "stdin")
+  call read(at, "stdin")
 
   call add_property(at, 'Z', 0)
   call add_property(at, 'mass', 0.0_dp)
@@ -71,7 +71,7 @@ use libatoms_module
   if (.not. assign_pointer(at, 'Z', t_i)) call system_abort("no Z")
   if (.not. assign_pointer(at, 'species', t_s)) call system_abort("no species")
   do i=1, at%N
-    t_i(i) = atomic_number_from_symbol(trim(t_s(i)))
+    t_i(i) = atomic_number_from_symbol(trim(a2s(t_s(:,i))))
   end do
 
   if (.not. assign_pointer(at, 'mass', t_d)) call system_abort("no mass")
@@ -92,9 +92,7 @@ use libatoms_module
   if (.not. assign_pointer(at, 'old_cluster_mark', t_i)) call system_abort("no cluster_mark")
   t_i = cluster_mark
 
-  mainlog%prefix="OUT"
-  call print_xyz(at, mainlog, all_properties=.true.)
-  mainlog%prefix=""
+  call write(at, "stdout", prefix="OUT")
 
   call system_finalise()
 end program

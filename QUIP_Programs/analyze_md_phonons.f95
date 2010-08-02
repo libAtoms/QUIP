@@ -28,6 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
 module analyze_md_phonons_mod
 use libatoms_module
 implicit none

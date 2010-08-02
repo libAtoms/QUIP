@@ -40,8 +40,8 @@ program ts_main
   type(Potential)     :: classicalpot, qmpot
   type(Potential) :: hybrid_pot
   type(Atoms)         :: at_in, at_fin, at_image
-  type(inoutput)      :: xmlfile, in_image, in_in, in_fin, file_res
-  type(Cinoutput)     :: outimage 
+  type(inoutput)      :: xmlfile, file_res
+  type(Cinoutput)     :: in_in, in_fin, in_image, outimage 
   type(TS)            :: tts 
   type(Dictionary)    :: pot_params
   type(MPI_Context)   :: mpi
@@ -100,9 +100,9 @@ program ts_main
 
   call print_title('Initialising First and Last Image')
   call Initialise(in_in, trim(params%chain_first_conf), action=INPUT)
-  call read_xyz(at_in, in_in)
+  call read(at_in, in_in)
   call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT)
-  call read_xyz(at_fin, in_fin)
+  call read(at_fin, in_fin)
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot))//' A.')
   call atoms_set_cutoff(at_in, cutoff(classicalpot))
   call atoms_set_cutoff(at_fin, cutoff(classicalpot))
@@ -157,7 +157,7 @@ program ts_main
      allocate(conf(tts%cos%N, 3 * at_in%N) )
      do im=1,tts%cos%N
        call Initialise(in_image, 'conf.'//im//'.xyz')
-       call read_xyz(at_image, in_image)
+       call read(at_image, in_image)
        conf(im,:) = reshape(at_image%pos, (/3*at_image%N/) ) 
        call finalise(at_image)   
        call finalise(in_image)

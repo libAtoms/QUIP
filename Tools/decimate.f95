@@ -29,14 +29,15 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ! print 1 out of every n frames
+#include "error.inc"
 program decimate
 use libatoms_module
 implicit none
   type(Atoms) :: at
-  integer :: i, n, stat
+  integer :: i, n, error
   type(dictionary) :: cli_params
   character(len=FIELD_LENGTH) :: filename
-  type(inoutput) :: xyzfile
+  type(cinoutput) :: xyzfile
 
   call system_initialise(verbosity=PRINT_SILENT)
   call verbosity_push(PRINT_NORMAL)
@@ -51,17 +52,18 @@ implicit none
 
   call initialise(xyzfile, filename, INPUT)
 
-  call read_xyz(at, xyzfile, status=stat)
-  call print_xyz(at, mainlog, all_properties=.true.)
-  do while (stat == 0)
-    do i=1, n-1
-      call read_xyz(xyzfile, status=stat)
-      if (stat /= 0) exit
-    end do
-    if (stat == 0) then
-      call read_xyz(at, xyzfile, status=stat)
-      if (stat == 0) call print_xyz(at, mainlog, all_properties=.true.)
+  call read(at, xyzfile, error=error)
+  HANDLE_ERROR(error)
+  call write(at, "stdout")
+  i = 1
+  do while (error == 0)
+    i = i + n
+    call read(at, xyzfile, frame=i, error=error)
+    if (error /= 0) then
+       if (error == ERROR_IO_EOF) exit
+       HANDLE_ERROR(error)
     endif
+    call write(at, "stdout")
   end do
 
   call verbosity_pop()
