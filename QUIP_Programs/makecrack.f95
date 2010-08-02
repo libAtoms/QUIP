@@ -216,7 +216,7 @@ program makecrack
   call crack_make_slab(params, classicalpot, crack_slab, width, height, E, v, v2, bulk)
 
   ! Save bulk cube (used for qm_rescale_r parameter in crack code)
-  call print_xyz(bulk, trim(stem)//'_bulk.xyz')
+  call write(bulk, trim(stem)//'_bulk.xyz')
 
   call set_value(crack_slab%params, 'OrigWidth', width)
   call set_value(crack_slab%params, 'OrigHeight', height)
