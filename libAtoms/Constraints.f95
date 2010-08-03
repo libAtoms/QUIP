@@ -160,6 +160,8 @@ module constraints_module
      real(dp)                            :: tol       !% Convergence tolerance of the constraint
      logical                             :: initialised  = .false.
 
+     real(dp)                            :: k         !% spring constant for restraint
+
   end type Constraint
 
   interface initialise
@@ -222,12 +224,13 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine constraint_initialise(this,indices,func,data)
+  subroutine constraint_initialise(this,indices,func,data,k)
 
     type(Constraint),       intent(inout) :: this
     integer,  dimension(:), intent(in)    :: indices
     integer,                intent(in)    :: func
     real(dp), dimension(:), intent(in)    :: data
+    real(dp), optional, intent(in)        :: k
 
     if (this%initialised) call constraint_finalise(this)
     
@@ -258,6 +261,12 @@ contains
     allocate(this%old_dC_dr(3*size(indices)))
     this%old_dC_dr = 0.0_dp
 
+    if (present(k)) then
+        this%k = k
+    else
+        this%k = -1.0_dp
+    endif
+
     !initialised
     this%initialised = .true.
 
@@ -286,6 +295,7 @@ contains
     if (allocated(this%data))  deallocate(this%data)
     if (allocated(this%dC_dr)) deallocate(this%dC_dr)
     if (allocated(this%old_dC_dr)) deallocate(this%old_dC_dr)
+    this%k = -1.0_dp
     this%initialised = .false.
 
   end subroutine constraint_finalise
@@ -311,11 +321,12 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine constraint_amend(this,func,data)
+  subroutine constraint_amend(this,func,data,k)
     
     type(Constraint),                 intent(inout) :: this
     integer,                optional, intent(in)    :: func
     real(dp), dimension(:), optional, intent(in)    :: data
+    real(dp), optional, intent(in)    :: k
 
     if (present(data)) then
        call reallocate(this%data,size(data))
@@ -330,6 +341,8 @@ contains
        
        this%func = func
     end if
+
+    if (present(k)) this%k = k
 
   end subroutine constraint_amend
 
@@ -367,6 +380,7 @@ contains
        to%dC_dt       = from%dC_dt
        to%old_dC_dr   = from%old_dC_dr
        to%tol         = from%tol
+       to%k           = from%k
        to%initialised = from%initialised
 
     end if
@@ -517,6 +531,8 @@ contains
        call print(line, verbosity, file)
        write(line,'(a,f0.8)')'Lagrange multiplier(V) = ', this%lambdaV
        call print(line, verbosity, file)
+       write(line,'(a,f0.8)')'spring constant(k) = ', this%k
+       call print(line, verbosity, file)
     else
        call print('(uninitialised)', verbosity, file)
     end if
@@ -568,6 +584,11 @@ contains
     real(dp)                            :: da(3), m, df(3)
     real(dp), dimension(:,:), pointer   :: constraint_force
     logical                             :: converged, do_store
+
+    do i=1, size(constraints)
+       if (constraints(i)%k >= 0.0_dp) &
+	 call system_abort("Called shake on constraint " // i // " which is actually a restraint")
+    end do
 
     Nobj = group_n_objects(g)
     Nat = group_n_atoms(g)
@@ -683,6 +704,11 @@ contains
     real(dp)                         :: da(3), m, df(3)
     logical                          :: converged, do_store
 
+    do i=1, size(constraints)
+       if (constraints(i)%k >= 0.0_dp) &
+	 call system_abort("Called rattle on constraint " // i // " which is actually a restraint")
+    end do
+
     Nobj = group_n_objects(g)
     Nat = group_n_atoms(g)
     do_store = optional_default(.false.,store_constraint_force)
@@ -776,7 +802,54 @@ contains
   !X START OF CONSTRAINT SUBROUTINES
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
+  !X BONDANGLECOS:
+  !X
+  !% Constrain a cosine of a bond angle
+  !% 'data' should contain the required cosine value
+  !% The minimum image convention is used.
+  !%
+  !% The function used is $C = |\hat{\mathbf{r}}_{21} \cdot \hat{\mathbf{r}}_{23}| - c$
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine BONDANGLECOS(pos, velo, t, data, C, dC_dr, dC_dt)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr
+    real(dp),                       intent(out) :: dC_dt
+    !local variables                             
+    real(dp), dimension(3)                       :: d21_hat, d23_hat
+    real(dp)                        :: d21_norm, d23_norm, dot_123
+
+    if(size(pos) /= 9) call system_abort('BONDANGLECOS: Exactly 3 atom positions must be specified')
+    if(size(velo) /= 9) call system_abort('BONDANGLECOS: Exactly 3 atom velocities must be specified')
+    if(size(data) /= 1) call system_abort('BONDANGLECOS: "data" must contain exactly one value')
+
+    d21_hat = pos(1:3)-pos(4:6)
+    d21_norm = norm(d21_hat)
+    d21_hat = d21_hat/d21_norm
+
+    d23_hat = pos(7:9)-pos(4:6)
+    d23_norm = norm(d23_hat)
+    d23_hat = d23_hat/d23_norm
+
+    dot_123 = (d21_hat .dot. d23_hat)
+
+    C = dot_123 - data(1)
+
+    dC_dr(1:3) = +(d23_hat - d21_hat*dot_123)/d21_norm
+    dC_dr(4:6) = - (d23_hat - d21_hat*dot_123)/d21_norm - (d21_hat - d23_hat*dot_123)/d23_norm
+    dC_dr(7:9) = +(d21_hat - d23_hat*dot_123)/d23_norm
+
+    dC_dt = dC_dr .dot. velo
+
+  end subroutine BONDANGLECOS
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
   !X BONDLENGTH:
@@ -785,7 +858,7 @@ contains
   !% 'data' should contain the required bond length
   !% The minimum image convention is used.
   !%
-  !% The function used is $C = |\mathbf{r}_1 - \mathbf{r}_2|^2 - d^2$
+  !% The function used is $C = |\mathbf{r}_1 - \mathbf{r}_2| - d$
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -799,8 +872,46 @@ contains
     !local variables                             
     real(dp), dimension(3)                       :: d
 
-    if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom positions must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
     if(size(data) /= 1) call system_abort('BONDLENGTH: "data" must contain exactly one value')
+
+    d = pos(1:3)-pos(4:6)
+
+    C = norm(d) - data(1)
+
+    dC_dr(1:3) = d/norm(d)
+    dC_dr(4:6) = -d/norm(d)
+
+    dC_dt = dC_dr .dot. velo
+
+  end subroutine BONDLENGTH
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
+  !X BONDLENGTH_SQ:
+  !X
+  !% Constrain a square of a bond length.
+  !% 'data' should contain the required bond length
+  !% The minimum image convention is used.
+  !%
+  !% The function used is $C = |\mathbf{r}_1 - \mathbf{r}_2|^2 - d^2$
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine BONDLENGTH_SQ(pos, velo, t, data, C, dC_dr, dC_dt)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr
+    real(dp),                       intent(out) :: dC_dt
+    !local variables                             
+    real(dp), dimension(3)                       :: d
+
+    if(size(pos) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom positions must be specified')
+    if(size(velo) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom velocities must be specified')
+    if(size(data) /= 1) call system_abort('BONDLENGTH_SQ: "data" must contain exactly one value')
 
     d = pos(1:3)-pos(4:6)
 
@@ -811,7 +922,7 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
-  end subroutine BONDLENGTH
+  end subroutine BONDLENGTH_SQ
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
@@ -954,7 +1065,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
-  !X BONDLENGTH_DIFF:
+  !X BONDLENGTH_SQ_DIFF:
   !X
   !% Constrain the difference of 2 bond length of 3 atoms.
   !% The second atom is common in the 2 bonds.
@@ -965,7 +1076,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDLENGTH_DIFF(pos, velo, t, data, C, dC_dr, dC_dt)
+  subroutine BONDLENGTH_SQ_DIFF(pos, velo, t, data, C, dC_dr, dC_dt)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, data
     real(dp),                       intent(in)  :: t
@@ -976,8 +1087,8 @@ contains
     real(dp), dimension(3)                      :: d1, d2
     real(dp)                                    :: norm_d1,norm_d2
 
-    if(size(pos) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
-    if(size(data) /= 1) call system_abort('BONDLENGTH_DIFF: "data" must contain exactly one value')
+    if(size(pos) /= 9) call system_abort('BONDLENGTH_SQ_DIFF: Exactly 3 atoms must be specified')
+    if(size(data) /= 1) call system_abort('BONDLENGTH_SQ_DIFF: "data" must contain exactly one value')
 
     d1 = pos(1:3)-pos(4:6)
     d2 = pos(7:9)-pos(4:6)
@@ -993,6 +1104,53 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
-  end subroutine BONDLENGTH_DIFF
+  end subroutine BONDLENGTH_SQ_DIFF
+
+   subroutine add_restraint_forces(at, Nrestraints, restraints, t, f, E, store_restraint_force)
+      type(Atoms), intent(inout) :: at
+      integer, intent(in) :: Nrestraints
+      type(Constraint), intent(inout) :: restraints(:)
+      real(dp), intent(in) :: t
+      real(dp), intent(inout) :: f(:,:)
+      real(dp), optional, intent(inout) :: E
+      logical, optional :: store_restraint_force
+
+      integer :: i_r, ii_a, i_a
+      logical :: do_store
+      real(dp), pointer :: constraint_force(:,:)
+      real(dp) :: restraint_E
+      real(dp) :: df(3)
+
+      do_store = optional_default(.false., store_restraint_force)
+
+      !Check for "constraint_force" property
+      if (do_store) then
+         if (assign_pointer(at,'constraint_force',constraint_force)) then
+	    constraint_force = 0.0_dp
+         else
+            call system_abort('add_restraint_force: cannot find "constraint_force" property')
+         end if
+      end if
+
+      restraint_E = 0.0_dp
+      do i_r=1, Nrestraints
+	 if (restraints(i_r)%k < 0.0_dp) then
+	    call system_abort("add_restraint_force for restraint " // i_r // " got invalid spring_constant " // restraints(i_r)%k)
+	 endif
+	 if (restraints(i_r)%k > 0.0_dp) then
+	    call constraint_calculate_values_at(restraints(i_r),at,t)
+	    restraint_E = restraint_E + 0.5_dp * restraints(i_r)%k * restraints(i_r)%C**2
+	    do ii_a=1, restraints(i_r)%N
+	       i_a = restraints(i_r)%atom(ii_a)
+	       df = - restraints(i_r)%k * restraints(i_r)%C * restraints(i_r)%dC_dr((ii_a-1)*3+1:(ii_a-1)*3+3)
+	       if (do_store) constraint_force(:,i_a) = constraint_force(:,i_a) + df
+	       f(:,i_a) = f(:,i_a) + df
+	    end do
+	 endif
+      end do
+
+      if (present(E)) E = E + restraint_E
+      if (do_store) call set_value(at%params, "restraint_energy", restraint_E)
+   end subroutine add_restraint_forces
 
 end module constraints_module

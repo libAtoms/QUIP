@@ -377,6 +377,7 @@ use libatoms_module
 use quip_module
 use md_module
 use libatoms_misc_utils_module
+use restraints_xml_module
 
 implicit none
   type (Potential) :: pot
@@ -396,6 +397,9 @@ implicit none
   integer i, i_step
   type(md_params) :: params
   integer :: error = ERROR_NONE
+  type(extendable_str) :: params_es
+
+  logical :: store_constraint_force
 
   call system_initialise()
 
@@ -414,12 +418,19 @@ implicit none
   call read(at_in, atoms_in_cio, error=error)
   HANDLE_ERROR(error)
 
-  call potential_Filename_Initialise(pot, params%pot_init_args, param_filename=params%params_in_file, mpi_obj=mpi_glob)
+  call read(params_es, params%params_in_file, convert_to_string=.true., mpi_comm=mpi_glob%communicator)
+
+  call initialise(pot, args_str=params%pot_init_args, param_str=string(params_es), mpi_obj=mpi_glob)
 
   call print(pot)
 
   call initialise(ds, at_in)
   call finalise(at_in)
+
+  call init_restraints(ds, string(params_es))
+  store_constraint_force = has_property(ds%atoms, "constraint_force")
+
+  call finalise(params_es)
 
   call initialise(traj_out, params%trajectory_out_file, OUTPUT)
 
@@ -482,7 +493,7 @@ implicit none
         call update_thermostat(ds, params, do_rescale=(ds%cur_temp.gt.params%T))
     endif
 
-    call advance_md(ds, params, pot, forces, virial, E)
+    call advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
@@ -504,12 +515,13 @@ implicit none
 
 contains
 
-  subroutine advance_md(ds, params, pot, forces, virial, E)
+  subroutine advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
     type(Potential), intent(inout) :: pot
     real(dp), intent(inout) :: forces(:,:), virial(3,3)
     real(dp), intent(inout) :: E
+    logical, intent(in) :: store_constraint_force
 
     integer :: i_substep
     real(dp), pointer :: new_pos(:,:), new_velo(:,:), new_forces(:,:)
@@ -556,29 +568,30 @@ contains
 	max_moved = 0.0_dp
       else ! failed to find new_pos
 	do i_substep=1, params%advance_md_substeps
-	  call advance_md_one(ds, params, pot, forces, virial, E)
+	  call advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
 	end do
       endif
     else
-      call advance_md_one(ds, params, pot, forces, virial, E)
+      call advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
     endif
   end subroutine advance_md
 
-  subroutine advance_md_one(ds, params, pot, forces, virial, E)
+  subroutine advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
     type(Potential), intent(inout) :: pot
     real(dp), intent(inout) :: forces(:,:), virial(3,3)
     real(dp), intent(inout) :: E
+    logical, intent(in) :: store_constraint_force
 
     ! start with have p(t), v(t), a(t)
 
     ! first Verlet half-step
     call system_timer("md/advance_verlet1")
     if(params%const_P) then
-       call advance_verlet1(ds, params%dt, forces, virial=virial)
+       call advance_verlet1(ds, params%dt, virial=virial, store_constraint_force=store_constraint_force)
     else
-       call advance_verlet1(ds, params%dt, forces)
+       call advance_verlet1(ds, params%dt, store_constraint_force=store_constraint_force)
     endif
     call system_timer("md/advance_verlet1")
     ! now we have p(t+dt), v(t+dt/2), a(t)
@@ -616,9 +629,9 @@ contains
     ! second Verlet half-step
     call system_timer("md/advance_verlet2")
     if(params%const_P) then
-       call advance_verlet2(ds, params%dt, forces, virial=virial)
+       call advance_verlet2(ds, params%dt, forces, virial=virial, E=E, store_constraint_force=store_constraint_force)
     else
-       call advance_verlet2(ds, params%dt, forces)
+       call advance_verlet2(ds, params%dt, forces, E=E, store_constraint_force=store_constraint_force)
     endif
     call system_timer("md/advance_verlet2")
 
