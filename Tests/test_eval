@@ -2,15 +2,20 @@
 
 if [ -z $QUIP_HOME ]; then
    echo "$0: Need QUIP_HOME defined"
-   exit 0
+   exit 1
 fi
 if [ -z $QUIP_HOME ]; then
    echo "$0: Need QUIP_HOME defined"
-   exit 0
+   exit 1
 fi
 
 mydir=`dirname $0`
 bindir=$mydir/../build.$QUIP_ARCH
+
+if [ ! -x $bindir/eval ]; then
+   echo "$0 needs $bindir/eval executable"
+   exit 2
+fi
 
 cat<<EOF > test_eval.in.xyz
 8
@@ -25,4 +30,7 @@ Lattice="5.428835          0.000000          0.000000          0.000000         
   Si      1.3572088      4.0716264      4.0716264
 EOF
 
+echo -n "$0: "
 $bindir/eval at_file=test_eval.in.xyz E F V init_args='{IP SW}' test param_file=$QUIP_HOME/QUIP_Core/parameters/ip.parms.SW.xml | grep 'test is OK'
+
+rm -f test_eval.*
