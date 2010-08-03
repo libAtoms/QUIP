@@ -1065,7 +1065,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
-  !X BONDLENGTH_SQ_DIFF:
+  !X BONDLENGTH_DIFF:
   !X
   !% Constrain the difference of 2 bond length of 3 atoms.
   !% The second atom is common in the 2 bonds.
@@ -1076,7 +1076,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDLENGTH_SQ_DIFF(pos, velo, t, data, C, dC_dr, dC_dt)
+  subroutine BONDLENGTH_DIFF(pos, velo, t, data, C, dC_dr, dC_dt)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, data
     real(dp),                       intent(in)  :: t
@@ -1087,8 +1087,8 @@ contains
     real(dp), dimension(3)                      :: d1, d2
     real(dp)                                    :: norm_d1,norm_d2
 
-    if(size(pos) /= 9) call system_abort('BONDLENGTH_SQ_DIFF: Exactly 3 atoms must be specified')
-    if(size(data) /= 1) call system_abort('BONDLENGTH_SQ_DIFF: "data" must contain exactly one value')
+    if(size(pos) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
+    if(size(data) /= 1) call system_abort('BONDLENGTH_DIFF: "data" must contain exactly one value')
 
     d1 = pos(1:3)-pos(4:6)
     d2 = pos(7:9)-pos(4:6)
@@ -1104,7 +1104,7 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
-  end subroutine BONDLENGTH_SQ_DIFF
+  end subroutine BONDLENGTH_DIFF
 
    subroutine add_restraint_forces(at, Nrestraints, restraints, t, f, E, store_restraint_force)
       type(Atoms), intent(inout) :: at

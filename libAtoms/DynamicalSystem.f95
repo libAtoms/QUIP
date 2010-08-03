@@ -2114,7 +2114,7 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the difference of bond length between atoms i--j and j--k
-   subroutine constrain_bondlength_sq_diff(this,i,j,k,restraint_k)
+   subroutine constrain_bondlength_diff(this,i,j,k,restraint_k)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
@@ -2139,7 +2139,7 @@ contains
      
      !Register the constraint function if this is the first call
      if (first_call) then
-        BOND_DIFF_FUNC = register_constraint(BONDLENGTH_SQ_DIFF)
+        BOND_DIFF_FUNC = register_constraint(BONDLENGTH_DIFF)
         first_call = .false.
      end if
      
@@ -2147,7 +2147,7 @@ contains
      d = abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k))
      call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d/), restraint_k=restraint_k)
 
-   end subroutine constrain_bondlength_sq_diff
+   end subroutine constrain_bondlength_diff
 
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
