@@ -2470,6 +2470,17 @@ contains
     system_do_timing = .false.
   end subroutine disable_timing
 
+  function get_timing()
+    logical :: get_timing
+    get_timing = system_do_timing
+  end function get_timing
+
+  subroutine set_timing(do_timing)
+    logical :: do_timing
+
+    system_do_timing = do_timing
+  end subroutine set_timing
+
   function increase_stack(stack_size)
     integer, intent(in) :: stack_size
     integer :: increase_stack
