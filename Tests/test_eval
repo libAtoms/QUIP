@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -z $QUIP_HOME ]; then
+   echo "$0: Need QUIP_HOME defined"
+   exit 0
+fi
+if [ -z $QUIP_HOME ]; then
+   echo "$0: Need QUIP_HOME defined"
+   exit 0
+fi
+
+mydir=`dirname $0`
+bindir=$mydir/../build.$QUIP_ARCH
+
+cat<<EOF > test_eval.in.xyz
+8
+Lattice="5.428835          0.000000          0.000000          0.000000          5.428835          0.000000          0.000000          0.000000          5.428835" Properties=species:S:1:pos:R:3
+  Si      0.1000000      0.0000000      0.0000000
+  Si      2.7144176      2.6144176      0.0000000
+  Si      2.7144176      0.0000000      2.7144176
+  Si      0.0000000      2.7144176      2.7144176
+  Si      1.3572088      1.3572088      1.3572088
+  Si      4.0716264      4.0716264      1.3572088
+  Si      4.0716264      1.3572088      4.0716264
+  Si      1.3572088      4.0716264      4.0716264
+EOF
+
+$bindir/eval at_file=test_eval.in.xyz E F V init_args='{IP SW}' test param_file=$QUIP_HOME/QUIP_Core/parameters/ip.parms.SW.xml | grep 'test is OK'
