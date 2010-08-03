@@ -40,6 +40,7 @@ program qmmm_md
   use libatoms_module
   use cp2k_driver_template_module
   use quip_module
+  use restraints_xml_module
 
   implicit none
 
@@ -81,7 +82,7 @@ program qmmm_md
   real(dp), pointer                   :: spline_pot_val_p(:)
 
   !Output XYZ
-  type(Inoutput)                      :: traj_xyz, latest_xyz
+  type(CInoutput)                      :: traj_xyz, latest_xyz
 !  type(CInoutput)                      :: xyz
   character(len=FIELD_LENGTH)         :: backup_coord_file          !output XYZ file
   integer                             :: backup_i
@@ -116,7 +117,8 @@ program qmmm_md
   type(Table)                 :: qm_seed
   character(len=FIELD_LENGTH) :: Residue_Library
   logical                     :: Use_Constraints         !_0_ no, 1 yes
-  character(len=FIELD_LENGTH) :: constraint_file
+  character(len=FIELD_LENGTH) :: constraint_file, restraint_xml_file
+  type(Extendable_Str)         :: restraint_xml_es
   integer                     :: Charge
   real(dp)                    :: Tau, Nose_Hoover_Tau
   logical                     :: Buffer_general, do_general
@@ -186,6 +188,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library) 
       call param_register(params_in, 'Use_Constraints', 'F', Use_Constraints)
       call param_register(params_in, 'constraint_file', 'constraints.dat',constraint_file) 
+      call param_register(params_in, 'restraint_xml_file', '', restraint_xml_file) 
       call param_register(params_in, 'Charge', '0', Charge)
       call param_register(params_in, 'Tau', '500.0', Tau)
       call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau)
@@ -335,6 +338,7 @@ logical :: have_silica_potential
       call print('  Residue_Library '//Residue_Library) 
       call print('  Use_Constraints '//Use_Constraints)
       call print('  constraint_file '//constraint_file) 
+      call print('  restraint_xml_file '//restraint_xml_file) 
       call print('  Charge '//Charge)
       call print('  Buffer_general '//Buffer_general)
       call print('  Continue '//Continue_it)
@@ -368,7 +372,7 @@ logical :: have_silica_potential
   !READ COORDINATES AND CONSTRAINTS
 
     call print('Reading in the coordinates from file '//trim(coord_file)//'...')
-    call read_xyz(my_atoms,coord_file)
+    call read(my_atoms,coord_file)
 !    call read(my_atoms,coord_file)
 
     N_constraints = 0
@@ -385,6 +389,13 @@ logical :: have_silica_potential
       endif
     endif
 
+    if (len_trim(restraint_xml_file) > 0) then
+       call initialise(restraint_xml_es)
+       call read(restraint_xml_es, restraint_xml_file, convert_to_string=.true.)
+       call init_restraints(ds, string(restraint_xml_es))
+       call finalise(restraint_xml_es)
+    endif
+
     ds%avg_time = avg_time
 
   !THERMOSTAT
@@ -399,7 +410,7 @@ logical :: have_silica_potential
 
     if (Use_Constraints) then
        do i=1,constraints%N
-          call Constrain_Bond_Diff(ds,constraints%int(1,i),constraints%int(2,i),constraints%int(3,i))
+          call Constrain_Bondlength_Diff(ds,constraints%int(1,i),constraints%int(2,i),constraints%int(3,i))
           call print('Set constraint: '//constraints%int(1,i)//' -- '//constraints%int(2,i)//' -- '//constraints%int(3,i))
 !          call Constrain_Bond(ds,constraints%int(1,i),constraints%int(2,i))
 !          call print('Set constraint: '//constraints%int(1,i)//' -- '//constraints%int(2,i))
@@ -624,12 +635,12 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      !----------------------------------------------------
     call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
-        call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
+        call write(ds%atoms,traj_xyz,real_format='f17.10')
     else
-        call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
+        call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
     endif
     call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-    call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+    call write(ds%atoms,latest_xyz,real_format='%17.10f')
     call finalise(latest_xyz)
     call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      !----------------------------------------------------
@@ -648,15 +659,15 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
      call set_value(ds%atoms%params,'Time',ds%t)
      if (trim(print_prop).eq.'all') then
-         call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
+         call write(ds%atoms,traj_xyz,real_format='%17.10f')
 !         call write(ds%atoms,xyz,real_format='%17.10f')
      else
-         call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
+         call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
 !         call write(ds%atoms,xyz,real_format='%17.10f')
          !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
      endif
      call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-     call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+     call write(ds%atoms,latest_xyz,real_format='%17.10f')
      call finalise(latest_xyz)
      call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
 
@@ -775,15 +786,15 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (mod(n,IO_Rate)==0) then
         call set_value(ds%atoms%params,'Time',ds%t)
         if (trim(print_prop).eq.'all') then
-            call print_xyz(ds%atoms,traj_xyz,all_properties=.true.,real_format='f17.10')
+            call write(ds%atoms,traj_xyz,real_format='%17.10f')
 !            call write(ds%atoms,xyz,real_format='%17.10f')
         else
-            call print_xyz(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='f17.10')
+            call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
 !            call write(ds%atoms,xyz,real_format='%17.10f')
             !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
         endif
         call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-        call print_xyz(ds%atoms,latest_xyz,all_properties=.true.,real_format='f17.10')
+        call write(ds%atoms,latest_xyz,real_format='%17.10f')
         call finalise(latest_xyz)
         call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
@@ -903,7 +914,7 @@ contains
     integer                                 :: i, N
     logical                                 :: do_mm
     integer,                        pointer :: qm_flag_p(:)
-    character(TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
+    character(len=1), pointer :: atom_res_name_p(:,:)
 
     do_mm = .false.
 
@@ -916,9 +927,9 @@ contains
 
     if (do_mm) then
        do i=1, my_atoms%N
-          if ( ('H3O'.eq.trim(atom_res_name_p(i))) .or. &
-               ('HYD'.eq.trim(atom_res_name_p(i))) .or. &
-               ('HWP'.eq.trim(atom_res_name_p(i))) ) then
+          if ( ('H3O'.eq.trim(a2s(atom_res_name_p(:,i)))) .or. &
+               ('HYD'.eq.trim(a2s(atom_res_name_p(:,i)))) .or. &
+               ('HWP'.eq.trim(a2s(atom_res_name_p(:,i)))) ) then
              call system_abort('wrong topology calculated')
           endif
        enddo
@@ -927,9 +938,9 @@ contains
        do i=1,my_atoms%N
           if ( .not.(qm_flag_p(i).eq.1) .and. &
 !          if ( .not.any((qm_flag_p(i).eq.(/1,2/))) .and. &
-               any((/'H3O','HYD','HWP'/).eq.trim(atom_res_name_p(i)))) then
+               any((/'H3O','HYD','HWP'/).eq.trim(a2s(atom_res_name_p(:,i))))) then
             N = N + 1
-            call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(atom_res_name_p(i)))
+            call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
           endif
        enddo
        if (N.gt.0) call system_abort('wrong topology calculated')
@@ -1149,21 +1160,19 @@ contains
   !
   subroutine print_qm_region(at, file)
     type(Atoms), intent(inout) :: at
-    type(Inoutput), optional :: file
+    type(CInoutput), optional :: file
 
     integer, pointer :: cluster_mark_p(:)
+    type(Atoms) :: cluster
 
     if (.not.(assign_pointer(at, "cluster_mark", cluster_mark_p))) &
       call system_abort("print_qm_region couldn't find cluster_mark property")
 
+    call select(cluster, at, mask=(cluster_mark_p /= 0))
     if (present(file)) then
-      file%prefix="QM_REGION"
-      call print_xyz(at, file, mask=(cluster_mark_p /= 0))
-      file%prefix=""
+      call write(cluster, file, prefix="QM_REGION")
     else
-      mainlog%prefix="QM_REGION"
-      call print_xyz(at, mainlog, mask=(cluster_mark_p /= 0))
-      mainlog%prefix=""
+      call write(cluster, "stdout", prefix="QM_REGION")
     end if
   end subroutine print_qm_region
 
@@ -1448,7 +1457,7 @@ contains
 	  at%thermostat_region = 6
 	end where
       case (7)
-	call print("Thermostat=7, center at " // thermostat_7_centre, ERROR)
+	call print("Thermostat=7, center at " // thermostat_7_centre, PRINT_ALWAYS)
 	do i=1, at%N
 	  r = distance_min_image(at, i, thermostat_7_centre)
 	  if (r < Thermostat_7_rs(1)) then
