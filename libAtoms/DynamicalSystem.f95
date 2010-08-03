@@ -82,6 +82,7 @@ module dynamicalsystem_module
       integer                               :: nSteps = 0               !% Number of integration steps
       integer                               :: Nrigid = 0               !% Number of rigid bodies
       integer                               :: Nconstraints = 0         !% Number of constraints
+      integer                               :: Nrestraints = 0         !% Number of restraints
       integer                               :: Ndof = 0                 !% Number of degrees of freedom
       real(dp)                              :: t = 0.0_dp               !% Time
       real(dp)                              :: avg_temp = 0.0_dp        !% Time-averaged temperature
@@ -104,7 +105,7 @@ module dynamicalsystem_module
       type(Atoms)                           :: atoms
 
       ! Derived Type array members
-      type(Constraint), allocatable, dimension(:) :: constraint
+      type(Constraint), allocatable, dimension(:) :: constraint, restraint
       type(RigidBody),  allocatable, dimension(:) :: rigidbody
       type(Group),      allocatable, dimension(:) :: group
       type(thermostat), allocatable, dimension(:) :: thermostat
@@ -163,13 +164,13 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,rigidbodies,error)
+   subroutine ds_initialise(this,atoms_in,velocity,acceleration,constraints,restraints,rigidbodies,error)
    
       type(DynamicalSystem),              intent(inout) :: this
       type(Atoms),                        intent(in)    :: atoms_in
       real(dp), dimension(:,:), optional, intent(in)    :: velocity
       real(dp), dimension(:,:), optional, intent(in)    :: acceleration
-      integer,                  optional, intent(in)    :: constraints
+      integer,                  optional, intent(in)    :: constraints, restraints
       integer,                  optional, intent(in)    :: rigidbodies
       integer                                           :: i,N
       integer, intent(out), optional :: error
@@ -251,6 +252,14 @@ contains
          end if
       end if
 
+      ! Check for restraints
+      if (present(restraints)) then
+         if (restraints > 0) then
+            allocate(this%restraint(restraints))
+            this%Nrestraints = 0
+         end if
+      end if
+
       ! Check for rigid bodies
       if (present(rigidbodies)) then
          if (rigidbodies > 0) then
@@ -294,6 +303,9 @@ contains
          !Finalise constraints
          if (allocated(this%constraint)) call finalise(this%constraint)
 
+         !Finalise restraints
+         if (allocated(this%restraint)) call finalise(this%restraint)
+
          !Finalise rigid bodies
          if (allocated(this%rigidbody)) call finalise(this%rigidbody)
 
@@ -303,6 +315,7 @@ contains
          this%nSteps = 0
          this%Nrigid = 0
          this%Nconstraints = 0
+         this%Nrestraints = 0
          this%Ndof = 0
          this%t = 0.0_dp
          this%avg_temp = 0.0_dp
@@ -347,7 +360,7 @@ contains
       type(DynamicalSystem), intent(inout) :: to
       type(DynamicalSystem), intent(in)    :: from
 
-      integer :: from_constraint_size, from_rigidbody_size
+      integer :: from_constraint_size, from_restraint_size, from_rigidbody_size
 
       ! Re-initialise the destination object to be the correct size.
       ! Note: size(from%constraint) in general is not equal to from%Nconstraints etc.
@@ -357,16 +370,19 @@ contains
 
       from_constraint_size = 0
       if (allocated(from%constraint)) from_constraint_size = size(from%constraint)
+      from_restraint_size = 0
+      if (allocated(from%restraint)) from_restraint_size = size(from%restraint)
       from_rigidbody_size = 0
       if (allocated(from%rigidbody)) from_rigidbody_size = size(from%rigidbody)
 
-      call initialise(to, from%atoms, constraints=from_constraint_size, rigidbodies=from_rigidbody_size)
+      call initialise(to, from%atoms, constraints=from_constraint_size, restraints=from_restraint_size, rigidbodies=from_rigidbody_size)
 
       ! Copy over scalar members
       ! to%N is set in the initialisation         1
       to%nSteps          = from%nSteps           !2
       to%Nrigid          = from%Nrigid           !4
       to%Nconstraints    = from%Nconstraints     !5
+      to%Nrestraints     = from%Nrestraints     !5
       to%Ndof            = from%Ndof             !6
 
       to%t               = from%t                !8
@@ -386,6 +402,7 @@ contains
       ! Derived type members
       ! to%atoms already set
       if (from%Nconstraints /= 0) to%constraint      = from%constraint
+      if (from%Nrestraints /= 0)  to%restraint       = from%restraint
       if (from%Nrigid /= 0)       to%rigidbody       = from%rigidbody
       if (size(to%group)/=size(from%group)) then
          deallocate(to%group)
@@ -416,7 +433,8 @@ contains
       to%nSteps          = from%nSteps           !2
       to%Nrigid          = from%Nrigid           !4
       to%Nconstraints    = from%Nconstraints     !5
-      to%Ndof            = from%Ndof             !6
+      to%Nrestraints     = from%Nrestraints      !6
+      to%Ndof            = from%Ndof             !7
 
       to%t               = from%t                !8
       to%avg_temp        = from%avg_temp         !11
@@ -450,7 +468,8 @@ contains
       to%nSteps          = from%nSteps           !2
       to%Nrigid          = from%Nrigid           !4
       to%Nconstraints    = from%Nconstraints     !5
-      to%Ndof            = from%Ndof             !6
+      to%Nrestraints     = from%Nrestraints      !6
+      to%Ndof            = from%Ndof             !7
 
       to%t               = from%t                !8
       to%avg_temp        = from%avg_temp          !11
@@ -1111,7 +1130,7 @@ contains
       my_mass_weighted = optional_default(.true., mass_weighted)
       my_zero_L = optional_default(.false., zero_L)
       currTemp = temperature(this, instantaneous=.true.)
-      write(line, '(a,f8.1,a,f8.1,a)')"Rescaling velocities from ",currTemp," K to ",temp," K"; call print(line)
+      call print("Rescaling velocities from "//currTemp//" K to "//temp//" K")
 
       if ( currTemp .feq. 0.0_dp ) then
          call print('Randomizing velocities')
@@ -1147,7 +1166,6 @@ contains
       my_mass_weighted = optional_default(.true., mass_weighted)
       my_zero_L = optional_default(.false., zero_L)
       currTemp = temperature(this, instantaneous=.true.)
-      ! write(line, '(a,f8.1,a,f8.1,a)')"Reinitialising velocities from ",currTemp," K to ",temp," K"; call print(line)
 
       !call print('Randomizing velocities')
       if (my_mass_weighted) then
@@ -1335,11 +1353,11 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     
-   subroutine advance_verlet1(this,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
+   subroutine advance_verlet1(this,dt,virial,parallel,store_constraint_force,do_calc_dists,error)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
-     real(dp),              intent(in)     :: f(:,:)
+!NB     real(dp),              intent(in)     :: f(:,:)
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force, do_calc_dists
@@ -1361,7 +1379,7 @@ contains
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
      my_do_calc_dists = optional_default(.true., do_calc_dists)
-     call check_size('Force',f,(/3,this%N/),'advance_verlet1')
+!NB     call check_size('Force',f,(/3,this%N/),'advance_verlet1')
 
      this%dW = 0.0_dp
      ntherm = size(this%thermostat)-1
@@ -1406,7 +1424,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat1(this%thermostat(0),this%atoms,f,dt,'damp_mask',1)
+        call thermostat1(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1415,7 +1433,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      do i = 1, ntherm
-        call thermostat1(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i,virial)
+        call thermostat1(this%thermostat(i),this%atoms,dt,'thermostat_region',i,virial)
      end do
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1484,7 +1502,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      if (this%thermostat(0)%type==LANGEVIN) then
-        call thermostat2(this%thermostat(0),this%atoms,f,dt,'damp_mask',1)
+        call thermostat2(this%thermostat(0),this%atoms,dt,'damp_mask',1)
      end if
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1494,7 +1512,7 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      do i=1, ntherm
-        call thermostat2(this%thermostat(i),this%atoms,f,dt,'thermostat_region',i)
+        call thermostat2(this%thermostat(i),this%atoms,dt,'thermostat_region',i)
      end do
  
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1631,12 +1649,13 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine advance_verlet2(this,dt,f,virial,parallel,store_constraint_force,error)
+   subroutine advance_verlet2(this,dt,f,virial,E,parallel,store_constraint_force,error)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
-     real(dp),              intent(in)     :: f(:,:)
+     real(dp),              intent(inout)     :: f(:,:)
      real(dp),dimension(3,3), intent(in), optional :: virial
+     real(dp), optional, intent(inout)     :: E
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force
      integer, optional, intent(out) :: error
@@ -1673,7 +1692,9 @@ contains
         end if
      end if
 #endif
-    
+
+     call add_restraint_forces(this%atoms, this%Nrestraints, this%restraint, this%t, f, E, store_restraint_force=store_constraint_force)
+
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
      !X CONVERT FORCES TO ACCELERATIONS
@@ -1838,12 +1859,13 @@ contains
 
    !% Calls advance_verlet2 followed by advance_verlet1. Outside this routine the
    !% velocities will be half-stepped.
-   subroutine advance_verlet(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
+   subroutine advance_verlet(ds,dt,f,virial,E,parallel,store_constraint_force,do_calc_dists,error)
 
      type(dynamicalsystem), intent(inout) :: ds
      real(dp),              intent(in)    :: dt
-     real(dp),              intent(in)    :: f(:,:)
+     real(dp),              intent(inout)    :: f(:,:)
      real(dp),dimension(3,3), intent(in), optional :: virial
+     real(dp),              intent(inout), optional    :: E
      logical, optional,     intent(in)    :: parallel
      logical, optional,     intent(in)    :: store_constraint_force, do_calc_dists
      logical, save                        :: first_call = .true.
@@ -1856,1004 +1878,13 @@ contains
         call print_title('=')
         first_call = .false.
      end if
-     call advance_verlet2(ds,dt,f,virial,parallel,store_constraint_force,error)
+     call advance_verlet2(ds,dt,f,virial,E,parallel,store_constraint_force,error=error)
      PASS_ERROR(error)
-     call advance_verlet1(ds,dt,f,virial,parallel,store_constraint_force,do_calc_dists,error)
+     call advance_verlet1(ds,dt,virial,parallel,store_constraint_force,do_calc_dists,error=error)
      PASS_ERROR(error)
 
    end subroutine advance_verlet
 
-
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   !XXX
-!   !XXX  ADVANCE VERLET
-!   !XXX
-!   !XXX  On entry we have r(t), v(t-dt) and a(t-dt)
-!   !XXX  'force' contains f(t) = f[r(t)] = m a(t)
-!   !XXX
-!   !XXX  The algorithm is:
-!   !XXX
-!   !XXX  v(t-dt/2) = v(t-dt) + 1/2 a(t-dt) dt
-!   !XXX
-!   !XXX  v(t)      = v(t-dt/2) + 1/2 a(t) dt
-!   !XXX
-!   !XXX  r(t+dt)   = r(t) + v(t) dt + 1/2 a(t) dt^2
-!   !XXX
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!   
-!   
-!   ! Advance the positions, accelerations and velocites by one timestep 'dt'.
-!   ! On entry we have $\mathbf{r}(t)$, $\mathbf{v}(t-\mathrm{d}t)$ and $\mathbf{a}(t-\mathrm{d}t)$
-!   ! 'force' contains $\mathbf{f}(t) = \mathbf{f}(\mathbf{r}(t)) = m \mathbf{a}(t)$. The
-!   ! algorithm used is:
-!   ! \begin{displaymath}
-!   ! \begin{array}{l}
-!   ! \mathbf{v}\left(t-\frac{\mathrm{d}t}{2}\right) = 
-!   !    \mathbf{v}\left(t-\mathrm{d}t\right) + \frac{1}{2} \mathbf{a}\left(t-\mathrm{d}t\right) \mathrm{d}t \\
-!   ! \mathbf{v}\left(t\right)      = 
-!   !   \mathbf{v}\left(t-\frac{\mathrm{d}t}{2}\right) + \frac{1}{2} \mathbf{a}\left(t\right) \mathrm{d}t \\
-!   ! \mathbf{r}\left(t+\mathrm{d}t\right)   = 
-!   !    \mathbf{r}\left(t\right) + \mathbf{v}\left(t\right) \mathrm{d}t + 
-!   !    \frac{1}{2} \mathbf{a}\left(t\right) \mathrm{d}t^2
-!   ! \end{array}
-!   ! \end{displaymath}
-!
-!   subroutine advance_verlet(this,dt,force,dV_dt,parallel,constraint_force)
-!
-!     !ARGUMENTS  
-!     type(DynamicalSystem), target, intent(inout)         :: this
-!     real(dp),                      intent(in)            :: dt
-!     real(dp), dimension(:,:),      intent(in)            :: force
-!     real(dp), optional, intent(in)                       :: dV_dt
-!     logical,  optional, intent(in)                       :: parallel
-!     real(dp), dimension(:,:), optional, intent(out)      :: constraint_force
-!     !GENERAL
-!     integer                                              :: i, j, g, n, nn, o, type, pos_indices(3)
-!     logical                                              :: do_parallel
-!     !THERMOSTATTING, AVERAGING
-!     real(dp)                                             :: currTemp, av_fact1, av_fact2
-!     real(dp), dimension(3)                               :: tmp_realpos
-!     real(dp), dimension(:,:), allocatable                :: thermostat_force
-!     !CONSTRAINTS
-!     real(dp), dimension(:), allocatable                  :: pos, velo, oldacc, oldpos, oldvelo
-!     real(dp)                                             :: dlambda, m
-!     logical                                              :: converged, store_constraint_forces
-!     integer                                              :: iterations
-!     !RIGID BODIES
-!!     real(dp), dimension(3)                               :: ACoM, tau      
-!!     real(dp), dimension(4)                               :: tau4, F4
-!
-!     ! Extended energy
-!     real(dp) :: my_dV_dt
-!     real(dp), save :: dV_dt_old = 0.0_dp
-!
-!#ifdef _MPI
-!     include 'mpif.h'
-!
-!     real(dp), dimension(:,:), allocatable :: mpi_pos, mpi_velo, mpi_acc, mpi_constraint_force
-!     integer                               :: error_code
-!#endif
-!
-!     do_parallel = optional_default(.false.,parallel)
-!     store_constraint_forces = present(constraint_force)
-!     
-!     if (store_constraint_forces) constraint_force = 0.0_dp
-!
-!#ifdef _MPI
-!
-!     if (do_parallel) then
-!        allocate(mpi_pos(3,this%N), mpi_velo(3,this%N), mpi_acc(3,this%N))
-!        mpi_pos = 0.0_dp
-!        mpi_velo = 0.0_dp
-!        mpi_acc = 0.0_dp
-!        if (store_constraint_forces) then
-!           allocate(mpi_constraint_force(3,this%N))
-!           mpi_constraint_force = 0.0_dp
-!        end if
-!     end if
-!
-!#endif
-!
-!     !Complain if the size of force is wrong
-!     call check_size('Force',force,(/3,this%N/),'AdvanceVerlet')
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Check the temperature
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     currTemp = temperature(this, instantaneous=.true.)
-!     if ((this%old_thermostat /= NO_THERM) .and. (abs(currTemp - this%sim_temp) > 0.5*this%sim_temp)) then
-!        write(line,'(3(a,f0.3))') 'advance_verlet: Temperature of tempered zone (',currTemp,  &
-!             ') is very different from target (',this%sim_temp,') at time t = ',this%t
-!        call print_warning(line)
-!     end if
-!     
-!     !store the sum of the forces
-!     this%forcesum = sum(force,dim = 2)
-!     
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X
-!     !X Advance the velocities by 0.5*dt: v(t-dt/2) = v(t-dt) + 1/2 a(t-dt) dt
-!     !X
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     do g = 1, size(this%group)
-!
-!#ifdef _MPI
-!        if (do_parallel .and. mod(g,mpi_n_procs()) /= mpi_id()) cycle
-!#endif
-!        
-!        type = this%group(g)%type
-!        
-!        select case(type)
-!           
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X NORMAL ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX            
-!        case(TYPE_ATOM)
-!           do n = 1, Group_N_Atoms(this%group(g))  !Loop over all atoms in this group
-!              i = Group_Nth_Atom(this%group(g),n)
-!#ifdef _MPI
-!              if (do_parallel) then
-!                 mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              else
-!                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              end if
-!#else
-!              this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!#endif
-!           end do
-!
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X CONSTRAINED ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!        case(TYPE_CONSTRAINED)
-!           !Integrate each atom as usual.
-!           do n =1, Group_N_Atoms(this%group(g))
-!              i = Group_Nth_Atom(this%group(g),n)
-!#ifdef _MPI
-!              if (do_parallel) then
-!                 mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              else
-!                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              end if
-!#else
-!              this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!#endif
-!           end do
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X RIGID ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_RIGID)
-!
-!           cycle
-!
-!!           j = Group_Nth_Object(this%group(g),1)    !This is the rigid body index
-!!           call RigidBody_CalculateVariables(this,j)
-!!
-!!           !Integrate the centre of mass variables
-!!           ACoM = Centre_Of_Mass_Acceleration(this,this%rigidbody(j)%indices)
-!!           this%rigidbody(j)%VCoM = this%rigidbody(j)%VCoM + 0.5_dp * ACoM * dt
-!!           
-!!           !Step the quaternion momentum by 0.5dt:
-!!           tau = Rigidbody_Torque(this,j)
-!!           tau4 = (/0.0_dp,tau/)
-!!           F4 = 2.0_dp * (no_squish_S(this%rigidbody(j)%q) .mult. tau4)
-!!           this%rigidbody(j)%p = this%rigidbody(j)%p + 0.5_dp * F4 * dt
-!!           !Do a free rotation
-!!           call no_squish_Free_Rotor(this%rigidbody(j)%q, &
-!!                this%rigidbody(j)%p, &
-!!                this%rigidbody(j)%model%I, &
-!!                0.5_dp * dt)
-!!           !Write back the positions and velocities
-!!           call RigidBody_WritePositionsVelocities(this,j)
-!!
-!        end select
-!
-!     end do
-!
-!#ifdef _MPI
-!
-!     ! Update the velocities on all processes
-!     if (do_parallel) then
-!
-!        call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - pre thermostat1')
-!        
-!     end if
-!
-!#endif
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Get new accelerations 
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     forall(i = 1:this%N) this%atoms%acc(:,i) = force(:,i) / this%atoms%mass(i)
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Do first part of thermostatting
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!        
-!     allocate(thermostat_force(3,this%N))
-!     thermostat_force = 0.0_dp
-!
-!#ifdef _MPI
-!     ! Update the velocities on all processes
-!     if (do_parallel) then
-!
-!        call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - pre thermostat1')
-!        
-!     end if
-!#endif
-!
-!     call old_thermostat1(this, dt, thermostat_force)
-!
-!     !Store thermostat force
-!     if (get_value(this%atoms%properties,'thermo_force',pos_indices)) then
-!        this%atoms%data%real(pos_indices(2):pos_indices(3),:) = thermostat_force
-!     end if
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X
-!     !X Advance the velocities again by 0.5*dt: v(t) = v(t-dt/2) + 1/2 a(t) dt
-!     !X
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     do g = 1, size(this%group)
-!
-!#ifdef _MPI
-!        if (do_parallel .and. mod(g,mpi_n_procs()) /= mpi_id()) cycle
-!#endif
-!
-!        type = this%group(g)%type
-!
-!        select case(type)
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X NORMAL ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_ATOM)
-!           do n = 1, Group_N_Atoms(this%group(g))
-!              i = Group_Nth_Atom(this%group(g),n)
-!#ifdef _MPI
-!              if (do_parallel) then
-!                 mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!                 mpi_acc(:,i) = this%atoms%acc(:,i)
-!              else
-!                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              end if
-!#else
-!              this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!#endif
-!           end do
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X CONSTRAINED ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_CONSTRAINED)
-!           !RATTLE
-!           !Store the current accelerations and velocities
-!           allocate(oldacc(3*size(this%group(g)%atom)),&
-!                    oldvelo(3*size(this%group(g)%atom)))
-!           do n = 1, Group_N_Atoms(this%group(g))
-!              i = Group_Nth_Atom(this%group(g),n)
-!              oldacc(3*n-2:3*n) = this%atoms%acc(:,i)
-!              oldvelo(3*n-2:3*n) = this%atoms%velo(:,i)
-!           end do
-!
-!           !Calculate and store the gradients of the constraints at the current positions and
-!           !initialise lambdas to zero
-!           do n = 1, Group_N_Objects(this%group(g)) !Loop over all constraints in this group
-!
-!              i = Group_Nth_Object(this%group(g),n)
-!              call reallocate(pos,3*this%constraint(i)%N)
-!              call reallocate(velo,3*this%constraint(i)%N)
-!
-!              !Use minimum image convention for constraints with more than one atom
-!              o = this%constraint(i)%atom(1) !'origin' atom for this constraint
-!              if (this%constraint(i)%N /= 1) then
-!                 do nn = 1, this%constraint(i)%N
-!                    j = this%constraint(i)%atom(nn)
-!                    pos(3*nn-2:3*nn) = diff_min_image(this%atoms,o,j)
-!                    velo(3*nn-2:3*nn) = this%atoms%velo(:,j)
-!                 end do
-!              else
-!                 !Otherwise, use the absolute position of that single atom
-!                 pos = this%atoms%pos(:,o)
-!                 velo = this%atoms%velo(:,o)
-!              end if
-!
-!              call constraint_calculate_values(this%constraint(i),pos,velo,this%t)
-!
-!              call constraint_store_gradient(this%constraint(i))
-!
-!!              this%constraint(i)%lambdaV = 0.0_dp
-!
-!           end do           
-!
-!           iterations = 0
-!           do
-!              !Return the velocities and accelerations to their initial values
-!              do n = 1, Group_N_Atoms(this%group(g))
-!                 i = Group_Nth_Atom(this%group(g),n)
-!                 this%atoms%velo(:,i) = oldvelo(3*n-2:3*n)
-!                 this%atoms%acc(:,i) = oldacc(3*n-2:3*n)
-!              end do
-!
-!              !Update accelerations via a -> a - lambda * grad(C)_initial / mass
-!              do n = 1, Group_N_Objects(this%group(g))
-!                 i = Group_Nth_Object(this%group(g),n)
-!                 do nn = 1, this%constraint(i)%N
-!                    j = this%constraint(i)%atom(nn)
-!                    this%atoms%acc(:,j) = this%atoms%acc(:,j) - this%constraint(i)%lambdaV &
-!                         * this%constraint(i)%old_dC_dr(3*nn-2:3*nn) &
-!                         / this%atoms%mass(j)                   
-!                 end do
-!              end do
-!              
-!              !Calculate the new velocities with these accelerations
-!              do n = 1, Group_N_Atoms(this%group(g))
-!                 i = Group_Nth_Atom(this%group(g),n)
-!                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp * dt * this%atoms%acc(:,i)
-!              end do
-!
-!              !Calculate constraints and test for convergence
-!              converged = .true.
-!              do n = 1, Group_N_Objects(this%group(g))
-!
-!                 i = Group_Nth_Object(this%group(g),n)
-!                 call reallocate(pos,3*this%constraint(i)%N)
-!                 call reallocate(velo,3*this%constraint(i)%N)
-!                 o = this%constraint(i)%atom(1)
-!                 if (this%constraint(i)%N /= 1) then
-!
-!                    do nn = 1, this%constraint(i)%N
-!                       j = this%constraint(i)%atom(nn)
-!                       pos(3*nn-2:3*nn) = diff_min_image(this%atoms,o,j)
-!                       velo(3*nn-2:3*nn) = this%atoms%velo(:,j)
-!                    end do
-!                 else
-!                    pos = this%atoms%pos(:,o)
-!                    velo = this%atoms%velo(:,o)
-!                 end if
-!
-!                 call constraint_calculate_values(this%constraint(i),pos,velo,this%t) !this%t is the end point
-!                                                                                      !of this integration step
-!                                                                                      !for the velocities
-!
-!                 if (abs(this%constraint(i)%dC_dt) > this%constraint(i)%tol) converged = .false.
-!
-!              end do
-!
-!              iterations = iterations + 1
-!
-!              if (converged) exit
-!              if (iterations > RATTLE_MAX_ITERATIONS) then
-!                 call print_warning('advance_verlet: RATTLE did not converge for this group')
-!                 call print(this%group(g),g)
-!                 call print('')
-!                 call print('Constraints:')
-!                 call print('')
-!                 do n = 1, Group_N_Objects(this%group(g))
-!                    i = Group_Nth_Object(this%group(g),n)
-!                    call print(this%constraint(i),i)
-!                 end do
-!                 call system_abort('AdvanceVerlet: RATTLE reached maximum iterations')
-!              end if
-!             
-!              !Update lambdas
-!              do n = 1, group_n_objects(this%group(g)) !Loop over constraints in the group
-!                 i = group_nth_object(this%group(g),n)
-!                 m = 0.0_dp
-!                 do nn = 1, this%constraint(i)%N       !Loop over each particle in the constraint
-!                    j = this%constraint(i)%atom(nn)
-!                    m = m + norm2(this%constraint(i)%dC_dr(3*nn-2:3*nn)) / this%atoms%mass(j)
-!                 end do
-!                 dlambda = 2.0_dp * this%constraint(i)%dC_dt / (m * dt)
-!                 this%constraint(i)%lambdaV = this%constraint(i)%lambdaV + dlambda
-!              end do
-!
-!           end do
-!
-!           !Update stored constraint forces
-!           if (store_constraint_forces) then
-!              do n = 1, Group_N_Objects(this%group(g))
-!                 i = Group_Nth_Object(this%group(g),n)
-!                 do nn = 1, this%constraint(i)%N
-!                    j = this%constraint(i)%atom(nn)
-!                    constraint_force(:,j) = constraint_force(:,j) - this%constraint(i)%lambdaV &
-!                         * this%constraint(i)%old_dC_dr(3*nn-2:3*nn)
-!                 end do
-!              end do
-!           end if
-!
-!           deallocate(pos,velo,oldacc,oldvelo)
-!
-!#ifdef _MPI
-!           if (do_parallel) then
-!              
-!              ! Gather the updated velocities and accelerations into the send buffers
-!              do n = 1, Group_N_Atoms(this%group(g))
-!                 i = Group_Nth_Atom(this%group(g),n)
-!                 mpi_velo(:,i) = this%atoms%velo(:,i)
-!                 mpi_acc(:,i) = this%atoms%acc(:,i)
-!                 if (store_constraint_forces) mpi_constraint_force(:,i) = constraint_force(:,i)
-!              end do
-!
-!           end if
-!#endif           
-!           
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X RIGID ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_RIGID)
-!
-!!           j = group_nth_object(this%group(g),1)
-!!
-!!           !VCoM(t) = VCoM(t-dt/2) + 0.5 ACoM(t) dt
-!!           ACoM = centre_of_mass_acc(this,this%rigidbody(j)%indices)
-!!           this%rigidbody(j)%VCoM = this%rigidbody(j)%VCoM + 0.5_dp * ACoM * dt
-!!
-!!           !Step the quaternion momentum by 0.5dt:
-!!           !P(t) = P(t-dt/2) + 0.5 F(t) dt
-!!           tau = rigidbody_torque(this,j)
-!!           tau4 = (/0.0_dp,tau/)
-!!           F4 = 2.0_dp * (no_squish_S(this%rigidbody(j)%q) .mult. tau4)
-!!           this%rigidbody(j)%p = this%rigidbody(j)%p + 0.5_dp * F4 * dt
-!!
-!!           !NOTE: calling WriteVelocities at this point HERE would give v(t)
-!!
-!!           !VCoM(t+dt/2) = VCoM(t) + 0.5 ACoM(t) dt
-!!           this%rigidbody(j)%VCoM = this%rigidbody(j)%VCoM + 0.5_dp * ACoM * dt
-!!           !P'(t+dt/2) = P(t) + 0.5 F(t) dt
-!!           this%rigidbody(j)%p = this%rigidbody(j)%p + 0.5_dp * F4 * dt
-!           
-!        end select
-!
-!     end do
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Do second part of thermostatting
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!#ifdef _MPI
-!     if (do_parallel) then
-!
-!        call MPI_ALLREDUCE(mpi_velo,this%atoms%velo,size(mpi_velo),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - pre thermostat2 velocities')
-!
-!        call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - pre thermostat2 accelerations')
-!               
-!     end if
-!#endif
-!
-!     call old_thermostat2(this, dt)
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Zero the velocities and accelerations of the fixed atoms
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     forall( i = 1:this%N, this%atoms%move_mask(i) == 0)
-!        this%atoms%velo(:,i) = 0.0_dp
-!        this%atoms%acc(:,i) = 0.0_dp
-!     end forall
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X
-!     !X Advance the positions by dt: r(t+dt) = r(t) + v(t) dt + 1/2 a(t) dt^2
-!     !X
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     do g = 1, size(this%group)
-!
-!#ifdef _MPI
-!        if (do_parallel .and. mod(g,mpi_n_procs()) /= mpi_id()) cycle
-!#endif
-!
-!        type = this%group(g)%type
-!
-!        select case(type)
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X NORMAL ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_ATOM)
-!           do n = 1, group_n_atoms(this%group(g))
-!              i = group_nth_atom(this%group(g),n)
-!#ifdef _MPI
-!              if (do_parallel) then
-!                 mpi_pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i) * dt + 0.5_dp * dt * dt * this%atoms%acc(:,i)
-!                 mpi_acc(:,i) = this%atoms%acc(:,i)
-!              else
-!                 this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i) * dt + 0.5_dp * dt * dt * this%atoms%acc(:,i)
-!              end if
-!#else
-!              this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i) * dt + 0.5_dp * dt * dt * this%atoms%acc(:,i)
-!#endif
-!
-!           end do
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X CONSTRAINED ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_CONSTRAINED)
-!           ! This is the SHAKE-like part of the RATTLE routine
-!           ! It modifies the accelerations, so that in the next AdvanceVerlet call
-!           ! this step: v(t-dt/2) = v(t-dt) + 1/2 a(t-dt) dt
-!           ! automatically applies some constraint forces to the velocities.
-!           ! however, a small fix is needed to make the velocities obey the constraints
-!           ! exactly in the v(t) = ... step
-!
-!           !Store the current accelerations and positions
-!           allocate(oldacc(3*size(this%group(g)%atom)),&
-!                    oldpos(3*size(this%group(g)%atom)))
-!           do n = 1, group_n_atoms(this%group(g))
-!              i = group_nth_atom(this%group(g),n)
-!              oldacc(3*n-2:3*n) = this%atoms%acc(:,i)
-!              oldpos(3*n-2:3*n) = this%atoms%pos(:,i)
-!           end do
-!
-!           !Constraints cannot currently be velocity dependent, so the gradients stored
-!           !before the last velocity update step should still be valid. If velocity dependent
-!           !constraints are added in future the constraint gradients will require re-calculating
-!           !here.
-!
-!           !Zero the Lagrange multipliers
-!!           do n = 1, group_n_objects(this%group(g))
-!!              i = group_nth_object(this%group(g),n)
-!!              this%constraint(i)%lambdaR = 0.0_dp
-!!           end do
-!
-!           !ITERATE TO CONVERGENCE
-!           iterations = 0
-!           do !loop is escaped by convergence or max iterations below
-!              !Reset the positions and accelerations to their initial values
-!              do n = 1, group_n_atoms(this%group(g))
-!                 i = group_nth_atom(this%group(g),n)
-!                 this%atoms%acc(:,i) = oldacc(3*n-2:3*n)
-!                 this%atoms%pos(:,i) = oldpos(3*n-2:3*n)
-!              end do
-!              !Update accelerations via a -> a - lambda * grad(C)_initial / mass
-!              do n = 1, group_n_objects(this%group(g))
-!                 i = group_nth_object(this%group(g),n)
-!                 do nn = 1, this%constraint(i)%N
-!                    j = this%constraint(i)%atom(nn)
-!                    this%atoms%acc(:,j) = this%atoms%acc(:,j) - this%constraint(i)%lambdaR &
-!                         * this%constraint(i)%old_dC_dr(3*nn-2:3*nn) &
-!                         / this%atoms%mass(j)
-!                 end do
-!              end do
-!
-!              !Update positions according to new accelerations
-!              do n = 1, group_n_atoms(this%group(g))
-!                 i = group_nth_atom(this%group(g),n)
-!                 this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt + 0.5_dp*dt*dt*this%atoms%acc(:,i)
-!              end do
-!
-!              !Calculate new values of constraints and gradients, and test for convergence
-!              converged = .true.
-!              do n = 1, group_n_objects(this%group(g))
-!
-!                 i = group_nth_object(this%group(g),n)
-!                 call reallocate(pos,3*this%constraint(i)%N)
-!                 call reallocate(velo,3*this%constraint(i)%N)
-!
-!                 o = this%constraint(i)%atom(1)
-!                 if (this%constraint(i)%N /= 1) then
-!                    do nn = 1, this%constraint(i)%N
-!                       j = this%constraint(i)%atom(nn)
-!                       pos(3*nn-2:3*nn) = diff_min_image(this%atoms,o,j)
-!                       velo(3*nn-2:3*nn) = this%atoms%velo(:,j)
-!                    end do
-!                 else
-!                    pos = this%atoms%pos(:,o)
-!                    velo = this%atoms%velo(:,o)
-!                 end if
-!
-!                 call constraint_calculate_values(this%constraint(i),pos,velo,this%t+dt)
-!
-!                 if (abs(this%constraint(i)%C) > this%constraint(i)%tol) converged = .false.
-!
-!              end do
-!
-!              iterations = iterations + 1
-!
-!              if (converged) exit
-!              if (iterations > RATTLE_MAX_ITERATIONS) then
-!                 call print_warning('AdvanceVerlet: RATTLE (SHAKE) did not converge for this group')
-!                 call print(this%group(g),g)
-!                 call print('')
-!                 call print('Forces on atoms in this group before constraints:')
-!                 do n = 1, group_n_atoms(this%group(g))
-!                    i = group_nth_atom(this%group(g),n)
-!                    write(line,'(i7,a,3(f0.5,1x))') i,' : ',this%atoms%mass(i)*oldacc(3*n-2:3*n)
-!                    call print(line)                                        
-!                 end do
-!                 call print('')
-!                 call print('Constraints:')
-!                 call print('')
-!                 do n = 1, group_n_objects(this%group(g))
-!                    i = group_nth_object(this%group(g),n)
-!                    call print(this%constraint(i),i)
-!                 end do
-!                 call system_abort('AdvanceVerlet: RATTLE (SHAKE) reached maximum iterations')
-!              end if
-!
-!              !Update lambdas
-!              do n = 1, group_n_objects(this%group(g)) !Loop over constraints in the group
-!                 i = group_nth_object(this%group(g),n)
-!                 m = 0.0_dp
-!                 do nn = 1, this%constraint(i)%N       !Loop over each particle in the constraint
-!                    j = this%constraint(i)%atom(nn)
-!                    m = m+(this%constraint(i)%dC_dr(3*nn-2:3*nn).dot.this%constraint(i)%old_dC_dr(3*nn-2:3*nn)) &
-!                         / this%atoms%mass(j)
-!                 end do
-!                 dlambda =  2.0_dp * this%constraint(i)%C / (m * dt * dt)
-!                 this%constraint(i)%lambdaR = this%constraint(i)%lambdaR + dlambda
-!              end do
-!
-!           end do
-!
-!           !Update stored constraint_forces
-!           if (store_constraint_forces) then
-!              do n = 1, group_n_objects(this%group(g))
-!                 i = group_nth_object(this%group(g),n)
-!                 do nn = 1, this%constraint(i)%N
-!                    j = this%constraint(i)%atom(nn)
-!                    constraint_force(:,j) = constraint_force(:,j) - this%constraint(i)%lambdaR &
-!                         * this%constraint(i)%old_dC_dr(3*nn-2:3*nn)
-!                 end do
-!              end do
-!           end if
-!
-!           deallocate(pos,velo,oldacc,oldpos)
-!
-!#ifdef _MPI
-!           do n = 1, group_n_atoms(this%group(g))
-!              i = group_nth_atom(this%group(g),n)
-!              mpi_pos(:,i) = this%atoms%pos(:,i)
-!              mpi_acc(:,i) = this%atoms%acc(:,i)
-!              mpi_constraint_force(:,i) = constraint_force(:,i)
-!           end do
-!#endif          
-!
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!           !X RIGID ATOMS
-!           !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           
-!        case(TYPE_RIGID)
-!
-!!           j = group_nth_object(this%group(g),1)
-!!
-!!           !RCoM(t+dt) = RCoM(t) + VCoM(t+dt/2) dt
-!!           this%rigidbody(j)%RCoM = this%rigidbody(j)%RCoM + this%rigidbody(j)%VCoM * dt 
-!!
-!!           !Do a free rotation: P'(t+dt/2), Q(t) -> P(t+dt/2), Q(t+dt)
-!!           call no_squish_Free_Rotor(this%rigidbody(j)%q, this%rigidbody(j)%p, this%rigidbody(j)%model%I, dt)
-!!
-!!           !Write back all the positions (t+dt) and velocities (t+dt/2)
-!!           call rigidbody_write_positions(this,j)
-!!           call rigidbody_write_velocities(this,j)
-!
-!        end select
-!
-!     end do
-!
-!#ifdef _MPI
-!     if (do_parallel) then
-!
-!        call MPI_ALLREDUCE(mpi_pos,this%atoms%pos,size(mpi_pos),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - post pos update positions')
-!
-!        call MPI_ALLREDUCE(mpi_acc,this%atoms%acc,size(mpi_acc),MPI_DOUBLE_PRECISION,&
-!                           MPI_SUM,MPI_COMM_WORLD,error_code)
-!        call abort_on_mpi_error(error_code,'Advance_verlet - post pos update accelerations')
-!        
-!        if (store_constraint_forces) then
-!           call MPI_ALLREDUCE(mpi_constraint_force,constraint_force,size(mpi_constraint_force),MPI_DOUBLE_PRECISION,&
-!                MPI_SUM,MPI_COMM_WORLD,error_code)
-!           call abort_on_mpi_error(error_code,'Advance_verlet - post pos update constraint forces')
-!        end if
-!        
-!     end if
-!#endif
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Calculate work done and update the old positions
-!     !X Also calculate work done by the thermostat
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     ! Accumulate work done using trapezium rule
-!
-!     if (this%nSteps > 0) then
-!        ! top up old finishing term to full term
-!        this%work = this%work + 1.0_dp/2.0_dp*this%dW*dt
-!        this%thermostat_work = this%thermostat_work + 1.0_dp/2.0_dp*this%thermostat_dW*dt
-!     end if
-!        
-!     ! Calculate increment of work done this step using
-!     ! dW = F(t) .dot. v(t) * dt
-!     ! Note JRK 20/8/06: using dW = F(t) .dot. [r(t+dt)-r(t)] gives a dW
-!     ! that is consistently too large resulting in a drift in total work
-!     ! I don't really understand why this should be...
-!     this%dW = 0.0_dp
-!     this%thermostat_dW = 0.0_dp
-!     do i = 1, this%N
-!        tmp_realpos = realpos(this%atoms,i)
-!        this%dW = this%dW + &
-!             (this%atoms%acc(:,i) .dot. this%atoms%velo(:,i)) * dt * this%atoms%mass(i)
-!        this%thermostat_dW = this%thermostat_dW + &
-!             (thermostat_force(:,i) .dot. this%atoms%velo(:,i)) * dt
-!
-!        this%atoms%oldpos(:,i) = tmp_realpos
-!     end do
-!
-!     call print('dW = '//this%dW, PRINT_NERD)
-!
-!     ! Add new finishing terms to this%work and this%thermostat_work
-!     this%work = this%work + 1.0_dp/2.0_dp*this%dW*dt
-!     this%thermostat_work = this%thermostat_work + 1.0_dp/2.0_dp*this%thermostat_dW*dt
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Update extended energy 
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     my_dV_dt = 0.0_dp ! If not specified then assume potential is not time-dependant
-!     if (present(dV_dt)) my_dV_dt = dV_dt
-!     this%ext_energy = this%ext_energy - dt/2.0_dp*(dV_dt_old - my_dV_dt)
-!     dV_dt_old = my_dV_dt
-!     
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Update the averages
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     if (this%avg_time /= 0.0_dp) then
-!        av_fact1 = exp(-dt/this%avg_time)
-!        av_fact2 = 1.0_dp / ( this%avg_time/dt + 0.5_dp)
-!        do i = 1, this%N
-!           this%atoms%avgpos(:,i) = this%atoms%avgpos(:,i) * av_fact1
-!           this%atoms%avgpos(:,i) = this%atoms%avgpos(:,i) + av_fact2 * realpos(this%atoms,i)
-!
-!           this%atoms%avg_ke(i) = this%atoms%avg_ke(i) * av_fact1
-!           this%atoms%avg_ke(i) = this%atoms%avg_ke(i) + av_fact2 * &
-!                0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i))
-!        end do
-!        this%avg_temp = this%avg_temp * av_fact1
-!        this%avg_temp = this%avg_temp + av_fact2 * temperature(this, instantaneous=.true.)
-!     end if
-!
-!
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Recalculate the distance tables
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!     ! Do this calc_dists in parallel if we're using MPI
-!     call calc_dists(this%atoms, parallel=.true.)
-!
-!     
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     !X Advance the timer
-!     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!     
-!     this%t = this%t + dt
-!     this%nSteps = this%nSteps + 1
-!     
-!     deallocate(thermostat_force)
-!
-!#ifdef _MPI
-!     if (do_parallel) then
-!        deallocate(mpi_pos, mpi_velo, mpi_acc)
-!        if (store_constraint_forces) deallocat(mpi_constraint_force)
-!     end if
-!#endif
-!
-!     if (this%adaptive_thermostat) call update_thermostat(this,dt)
-!
-!   end subroutine advance_verlet
-     
-    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    
-    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    !X
-    !X Thermostat routines and other things called by AdvanceVerlet
-    !X
-    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    
-    !
-    ! This goes after we have the new accelerations in acc, but before the velocities
-    ! are updated
-    !
-    !%OMIT
-!    subroutine thermostat1(this, dt, thermostat_force)
-!      
-!      type(DynamicalSystem), intent(inout)  :: this
-!      real(dp),              intent(in)     :: dt
-!      real(dp), dimension(:,:), intent(out) :: thermostat_force
-!
-!      !local variables
-!      integer                               :: i, j, n_move_therm
-!      real(dp)                              :: langevin_factor, langevin_fluct_factor, langevin_correct_factor
-!      real(dp), allocatable, dimension(:,:) :: deltaF
-!
-!      integer :: pos_indices(3), thermo_region_index, region
-!      real(dp) :: scale
-!
-!#ifdef _MPI
-!      ! Make sure random numbers are the same in all processes
-!      call system_resync_rng()
-!#endif
-!
-!      ! Possibly do some thermostat stuff
-!
-!      if (.not.this%adaptive_thermostat) then
-!
-!         select case(this%thermostat)
-!            
-!         case(NOSE_THERM)
-!            forall(i=1:this%N,this%atoms%move_mask(i) == 1 .and.this%atoms%thermostat_mask(i) == 1)  
-!               this%atoms%acc(:,i) = this%atoms%acc(:,i) - this%nose*this%atoms%velo(:,i)
-!               thermostat_force(:,i) = -this%nose*this%atoms%velo(:,i)*this%atoms%mass(i)
-!            end forall
-!            
-!         case(LANGEVIN_THERM)
-!            !Formula from D Quigley & MIJ Probert JChemPhys 120 p11432
-!            langevin_factor         = 1.0_dp / this%thermal_tau
-!            langevin_fluct_factor   = sqrt(2.0_dp * BOLTZMANN_K * this%sim_temp * langevin_factor / dt)
-!            langevin_correct_factor = 1.0_dp / (1.0_dp + dt / (2.0_dp * this%thermal_tau))        
-!            j = 0
-!            ! Count the moving and thermostatted atoms
-!            n_move_therm = count(this%atoms%move_mask == 1 .and. this%atoms%thermostat_mask == 1)      
-!            ! allocate space for the fluctuating part (random forces)
-!            allocate( deltaF(3,n_move_therm) )
-!            
-!            do i=1,this%N           
-!               if (this%atoms%move_mask(i) == 1 .and. this%atoms%thermostat_mask(i) == 1) then
-!                  j = j + 1
-!                  deltaF(:,j) = - langevin_factor * this%atoms%mass(i) * this%atoms%velo(:,i) & !Dissipative term
-!                       + sqrt(this%atoms%mass(i)) * langevin_fluct_factor * ran_normal3() !Fluctuating term
-!               end if
-!            end do
-!            
-!            ! Now zero the sum of the added forces
-!            call zero_sum(deltaF)
-!            
-!            ! Add these forces (divided by mass) to the accelerations
-!            j = 0
-!            do i = 1, this%N           
-!               if(this%atoms%move_mask(i) == 1.and.this%atoms%thermostat_mask(i) == 1) then
-!                  j = j + 1
-!                  
-!                  thermostat_force(:,i) = this%atoms%mass(i)*this%atoms%acc(:,i)*&
-!                       (langevin_correct_factor-1.0_dp) + langevin_correct_factor*deltaF(:,j)
-!                  
-!                  this%atoms%acc(:,i) = this%atoms%acc(:,i) + deltaF(:,j) / this%atoms%mass(i)
-!                  ! Correction factor, from Castep
-!                  this%atoms%acc(:,i) = this%atoms%acc(:,i) * langevin_correct_factor
-!                  
-!               end if
-!            end do
-!            deallocate(deltaF)
-!            
-!         end select
-!
-!      else
-!         
-!         if (get_value(this%atoms%properties,'thermo_region',pos_indices)) then
-!            thermo_region_index = pos_indices(2)
-!         end if
-!
-!         !Formula from D Quigley & MIJ Probert JChemPhys 120 p11432
-!         j = 0
-!         ! Count the moving and thermostatted atoms
-!         n_move_therm = count(this%atoms%move_mask == 1 .and. this%atoms%thermostat_mask == 1)      
-!         ! allocate space for the fluctuating part (random forces)
-!         allocate( deltaF(3,n_move_therm) )
-!         
-!         do i=1,this%N           
-!
-!            region = this%atoms%data%int(thermo_region_index,i)
-!            if (region == 0) then
-!               scale = 1.0_dp
-!               langevin_factor         = 1.0_dp / this%thermal_tau
-!               langevin_fluct_factor   = sqrt(2.0_dp * BOLTZMANN_K * this%sim_temp * langevin_factor / dt)         
-!               langevin_correct_factor = 1.0_dp / (1.0_dp + dt / (2.0_dp * this%thermal_tau))        
-!            else
-!               scale = this%adaptive_scale_factor(region)
-!               langevin_factor         = 1.0_dp / this%adaptive_region_tau(region)
-!               langevin_fluct_factor   = sqrt(2.0_dp * BOLTZMANN_K * this%sim_temp * langevin_factor / dt)         
-!               langevin_correct_factor = 1.0_dp / (1.0_dp + dt / (2.0_dp * this%adaptive_region_tau(region)))   
-!            end if
-!
-!            if(this%atoms%move_mask(i) == 1 .and. this%atoms%thermostat_mask(i) == 1) then
-!               j = j + 1
-!               deltaF(:,j) = - langevin_factor * this%atoms%mass(i) * this%atoms%velo(:,i) & !Dissipative term
-!                    + sqrt(this%atoms%mass(i)) * langevin_fluct_factor * ran_normal3() * scale !Fluctuating term
-!            end if            
-!         end do
-!         
-!         ! Now zero the sum of the added forces
-!         call zero_sum(deltaF)
-!         
-!         ! Add these forces (divided by mass) to the accelerations
-!         j = 0
-!         do i = 1, this%N           
-!            if(this%atoms%move_mask(i) == 1.and.this%atoms%thermostat_mask(i) == 1) then
-!               j = j + 1
-!               
-!               thermostat_force(:,i) = this%atoms%mass(i)*this%atoms%acc(:,i)*&
-!                    (langevin_correct_factor-1.0_dp) + langevin_correct_factor*deltaF(:,j)
-!
-!               this%atoms%acc(:,i) = this%atoms%acc(:,i) + deltaF(:,j) / this%atoms%mass(i)
-!
-!               ! Correction factor, from Castep
-!               this%atoms%acc(:,i) = this%atoms%acc(:,i) * langevin_correct_factor
-!               
-!            end if
-!         end do
-!         deallocate(deltaF)
-!         
-!      end if
-!      
-!    end subroutine thermostat1
-!
-!    !
-!    ! This goes after we have updated the velocities but before we update the positions
-!    !
-!    !%OMIT
-!    subroutine thermostat2(this, dt)
-!      
-!      type(DynamicalSystem), intent(inout) :: this
-!      real(dp),              intent(in)    :: dt
-!      !local variables
-!      integer                              :: i
-!      real(dp)                             :: damp_factor, currTemp
-!      
-!      ! Damping
-!      if (this%damping) then
-!         damp_factor = (1.0_dp - this%damp) / (1.0_dp + this%damp)
-!         forall (i=1:this%N, this%atoms%move_mask(i) == 1.and. this%atoms%damp_mask(i) == 1) 
-!            this%atoms%velo(:,i) = this%atoms%velo(:,i) * damp_factor
-!         end forall
-!      end if
-!
-!      select case(this%thermostat)
-!
-!      case(NOSE_THERM)
-!         this%v_nose = (temperature(this, instantaneous=.true.) - this%sim_temp) / this%Q_nose
-!         this%nose = this%nose + dt * this%v_nose
-!         
-!      case(BERENDSEN_THERM)
-!         currTemp = temperature(this, instantaneous=.true.)
-!         if (currTemp < NUMERICAL_ZERO) &
-!          call system_abort('Cannot rescale velocities. Temperature of thermostatted atoms is zero')
-!         if (this%thermal_tau /= 0.0_dp) then
-!            this%rescalefactor = sqrt(1.0_dp + (dt/this%thermal_tau)*(this%sim_temp/currTemp - 1.0_dp))
-!         else
-!            this%rescalefactor = sqrt(this%sim_temp/currTemp)
-!         end if
-!         forall(i=1:this%N,this%atoms%move_mask(i) == 1.and.this%atoms%thermostat_mask(i) == 1)
-!            this%atoms%velo(:,i) = this%atoms%velo(:,i) * this%rescalefactor
-!         end forall
-!
-!      end select
-!
-!    end subroutine thermostat2
-
-      
     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     !X
     !X I/O
@@ -2928,18 +1959,17 @@ contains
       type(Inoutput),optional,intent(inout) :: file
       integer                               :: i
 
-      write(line,'(a)') 'DynamicalSystem:'
-      call Print(line,file=file)
+      call Print('DynamicalSystem:',file=file)
 
       if (.not.this%initialised) then
-         write(line,'(a)')' (not initialised)'
-         call Print(line,file=file)
+         
+         call Print(' (not initialised)',file=file)
          return
       end if
 
-      write(line,'(a,i0)')        'Number of atoms = ',this%N ; call Print(line,file=file)
-      write(line,'(a,f12.4)')     'Simulation Time = ',this%t ; call Print(line,file=file)
-      write(line,'(a,f8.4)')      'Averaging Time  = ',this%avg_time ; call print(line,file=file)
+      call print('Number of atoms = '//this%N)
+      call print('Simulation Time = '//this%t)
+      call print('Averaging Time  = '//this%avg_time)
       call print("")
 
       call print('Thermostat')
@@ -2968,88 +1998,168 @@ contains
    !
    ! Routines to make adding constraints easier
    !
+   !% Constrain the bond angle cosine between atoms i, j, and k
+   subroutine constrain_bondanglecos(this,i,j,k,c,restraint_k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: i,j,k
+     real(dp), intent(in), optional       :: c, restraint_k
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: BONDANGLECOS_FUNC
+     real(dp)                             :: use_c
+     real(dp) :: r_ji(3), r_jk(3)
+
+     !Do nothing for i==j
+     if (i==j .or. i == k .or. j == k) then
+	call print_warning('Constrain_bondanglecos: Tried to constrain bond angle cosine '//i//'--'//j//'--'//k)
+        return
+     end if
+
+     !Report bad atom indices
+     if ( i>this%N .or. i<1 .or. j>this%N .or. j<1  .or. k > this%N .or. k<1) then
+        call system_abort('Constrain_bondanglecos: Cannot constrain bond angle cosine '//i//'--'//j//'--'//k// &
+                                 ' : Atom out of range (N='//this%N//')')
+     end if
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        BONDANGLECOS_FUNC = register_constraint(BONDANGLECOS)
+        first_call = .false.
+     end if
+
+     !Add the constraint
+     if (present(c)) then
+	use_c = c
+     else
+        r_ji = diff_min_image(this%atoms,j,i)
+        r_jk = diff_min_image(this%atoms,j,k)
+	use_c = (r_ji .dot. r_jk)/(norm(r_ji)*norm(r_jk))
+     endif
+     call ds_add_constraint(this,(/i,j,k/),BONDANGLECOS_FUNC,(/use_c/), restraint_k=restraint_k)
+
+   end subroutine constrain_bondanglecos
+
    !% Constrain the bond between atoms i and j
-   subroutine constrain_bond(this,i,j)
+   subroutine constrain_bondlength(this,i,j,d,restraint_k)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j
+     real(dp), intent(in), optional       :: d, restraint_k
+
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_FUNC
-     real(dp)                             :: d
+     real(dp)                             :: use_d
 
      !Do nothing for i==j
      if (i==j) then
-        write(line,'(2(a,i0))')'Constrain_Bond: Tried to constrain bond ',i,'--',j
-        call print_warning(line)
+        call print_warning('Constrain_Bond: Tried to constrain bond '//i//'--'//j)
         return
      end if
-     
+
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
-        write(line,'(a,3(i0,a))')'Constrain_Bond: Cannot constrain bond ',i,'--',j,&
-                                 ': Atom out of range (N=',this%N,')'
-        call system_abort(line)
+        call system_abort('Constrain_Bond: Cannot constrain bond '//i//'--'//j//&
+                                 ': Atom out of range (N='//this%N//')')
      end if
-     
+
      !Register the constraint function if this is the first call
      if (first_call) then
         BOND_FUNC = register_constraint(BONDLENGTH)
         first_call = .false.
      end if
-     
-     !Add the constraint
-     d = distance_min_image(this%atoms,i,j)
-     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/d/))
 
-   end subroutine constrain_bond
+     !Add the constraint
+     use_d = optional_default(distance_min_image(this%atoms,i,j), d)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k)
+
+   end subroutine constrain_bondlength
+
+   !% Constrain the bond between atoms i and j
+   subroutine constrain_bondlength_sq(this,i,j,d,restraint_k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: i,j
+     real(dp), intent(in), optional       :: d, restraint_k
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: BOND_FUNC
+     real(dp)                             :: use_d
+
+     !Do nothing for i==j
+     if (i==j) then
+        call print_warning('Constrain_Bond: Tried to constrain bond '//i//'--'//j)
+        return
+     end if
+
+     !Report bad atom indices
+     if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
+        call system_abort('Constrain_Bond: Cannot constrain bond '//i//'--'//j//&
+                                 ': Atom out of range (N='//this%N//')')
+     end if
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        BOND_FUNC = register_constraint(BONDLENGTH_SQ)
+        first_call = .false.
+     end if
+
+     !Add the constraint
+     use_d = optional_default(distance_min_image(this%atoms,i,j), d)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_d/), restraint_k=restraint_k)
+
+   end subroutine constrain_bondlength_sq
 
    !
    ! Routines to make adding constraints easier
    !
    !% Constrain the difference of bond length between atoms i--j and j--k
-   subroutine constrain_bond_diff(this,i,j,k)
+   subroutine constrain_bondlength_sq_diff(this,i,j,k,restraint_k)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
+     real(dp), intent(in), optional       :: restraint_k
+
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_DIFF_FUNC
      real(dp)                             :: d
 
      !Do nothing for i==j or i==k or j==k
      if (i==j.or.i==k.or.j==k) then
-        write(line,'(3(a,i0))')'Constrain_Bond_Diff: Tried to constrain bond ',i,'--',j,'--',k
-        call print_warning(line)
+        
+        call print_warning('Constrain_Bond_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
         return
      end if
      
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) .or. (k>this%N) .or. (k<0) ) then
-        write(line,'(a,4(i0,a))')'Constrain_Bond_Diff: Cannot constrain bond ',i,'--',j,'--',k,&
-                                 ': Atom out of range (N=',this%N,')'
-        call system_abort(line)
+        call system_abort('Constrain_Bond_Diff: Cannot constrain bond '//i//'--'//j//'--'//k//&
+                                 ': Atom out of range (N='//this%N//')')
      end if
      
      !Register the constraint function if this is the first call
      if (first_call) then
-        BOND_DIFF_FUNC = register_constraint(BONDLENGTH_DIFF)
+        BOND_DIFF_FUNC = register_constraint(BONDLENGTH_SQ_DIFF)
         first_call = .false.
      end if
      
      !Add the constraint
      d = abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k))
-     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d/))
+     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d/), restraint_k=restraint_k)
 
-   end subroutine constrain_bond_diff
+   end subroutine constrain_bondlength_sq_diff
 
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
-   subroutine ds_add_constraint(this,atoms,func,data,update_Ndof)
+   subroutine ds_add_constraint(this,atoms,func,data,update_Ndof, restraint_k)
 
      type(DynamicalSystem),  intent(inout) :: this
      integer,  dimension(:), intent(in)    :: atoms
      integer,                intent(in)    :: func
      real(dp), dimension(:), intent(in)    :: data
      logical,  optional,     intent(in)    :: update_Ndof
+     real(dp), optional,      intent(in)    :: restraint_k
+
      integer                               :: i, type, g1, g2, n, new_constraint
      logical                               :: do_update_Ndof
     
@@ -3057,63 +2167,77 @@ contains
      if (present(update_Ndof)) do_update_Ndof = update_Ndof
 
      !Have constraints been declared when the dynamicalsystem was initialised?
-     if (.not.allocated(this%constraint)) &
-          call system_abort('ds_add_constraint: Constraints have not been initialised')
-     
-     !First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of 
-     !TYPE_ATOM they must be in a group on their own, otherwise all the other atoms will
-     !be added to the CONSTRAINED group, but never be integrated.
-     do i = 1, size(atoms)
-        type = Atom_Type(this,atoms(i))
-        if ((type /= TYPE_ATOM) .and. (type /= TYPE_CONSTRAINED)) then
-           write(line,'(2(a,i0),a)')'ds_add_constraint: Atom ',i, &
-                                    ' is not a normal or constrained atom (type = ',type,')'
-           call system_abort(line)
-        end if
-        if (type == TYPE_ATOM) then
-           g1 = this%group_lookup(atoms(i))
-           if (Group_N_Atoms(this%group(g1)) > 1) call system_abort(&
-                'ds_add_constraint: A normal atom must be in its own group when added to a constraint')
-        end if
-     end do
 
-     !Merge all the groups containing the atoms in this constraint
-     g1 = this%group_lookup(atoms(1))
-     call set_type(this%group(g1),TYPE_CONSTRAINED)
-     do i = 2, size(atoms)
-        g2 = this%group_lookup(atoms(i))
-        
-        call set_type(this%group(g2),TYPE_CONSTRAINED)
-        call merge_groups(this%group(g1),this%group(g2))
-     end do
+     if (present(restraint_k)) then ! restraint
 
-     !Increase the constraint counter and initialise the new constraint
-     this%Nconstraints = this%Nconstraints + 1
-     new_constraint = this%Nconstraints
-     if (this%Nconstraints > size(this%constraint)) call system_abort('ds_add_constraint: Constraint array full')
-     call initialise(this%constraint(new_constraint),atoms,func,data)
+	if (.not.allocated(this%restraint)) &
+	     call system_abort('ds_add_constraint: Restraints array has not been allocated')
 
-     !Update the group_lookups
-     do n = 1, Group_N_atoms(this%group(g1))
-        i = Group_Nth_Atom(this%group(g1),n)
-        this%group_lookup(i) = g1
-     end do
+	this%Nrestraints = this%Nrestraints + 1
+	new_constraint = this%Nrestraints
+	if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Constraint array full')
+	call initialise(this%restraint(new_constraint),atoms,func,data,restraint_k)
+	call constraint_calculate_values_at(this%restraint(new_constraint),this%atoms,this%t)
 
-     !Add the constraint as an object for this group
-     call group_add_object(this%group(g1),new_constraint)
+     else ! constraint
 
-     !Reduce the number of degrees of freedom
-     if (do_update_Ndof) this%Ndof = this%Ndof - 1
+	if (.not.allocated(this%constraint)) &
+	     call system_abort('ds_add_constraint: Constraints array has not been allocated')
+	
+	!First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of 
+	!TYPE_ATOM they must be in a group on their own, otherwise all the other atoms will
+	!be added to the CONSTRAINED group, but never be integrated.
+	do i = 1, size(atoms)
+	   type = Atom_Type(this,atoms(i))
+	   if ((type /= TYPE_ATOM) .and. (type /= TYPE_CONSTRAINED)) then
+	      call system_abort('ds_add_constraint: Atom '//i// &
+				       ' is not a normal or constrained atom (type = '//type//')')
+	   end if
+	   if (type == TYPE_ATOM) then
+	      g1 = this%group_lookup(atoms(i))
+	      if (Group_N_Atoms(this%group(g1)) > 1) call system_abort(&
+		   'ds_add_constraint: A normal atom must be in its own group when added to a constraint')
+	   end if
+	end do
 
-     !Call the constraint subroutine to fill in variables:
-     call constraint_calculate_values_at(this%constraint(new_constraint),this%atoms,this%t)
+	!Merge all the groups containing the atoms in this constraint
+	g1 = this%group_lookup(atoms(1))
+	call set_type(this%group(g1),TYPE_CONSTRAINED)
+	do i = 2, size(atoms)
+	   g2 = this%group_lookup(atoms(i))
+	   
+	   call set_type(this%group(g2),TYPE_CONSTRAINED)
+	   call merge_groups(this%group(g1),this%group(g2))
+	end do
 
-     !Give warning if they constraint is not being satisfied
-     if (abs(this%constraint(new_constraint)%C) > CONSTRAINT_WARNING_TOLERANCE) &
-          call print_warning('ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
-          round(this%constraint(new_constraint)%C,5))
+	!Increase the constraint counter and initialise the new constraint
+	this%Nconstraints = this%Nconstraints + 1
+	new_constraint = this%Nconstraints
+	if (this%Nconstraints > size(this%constraint)) call system_abort('ds_add_constraint: Constraint array full')
+	call initialise(this%constraint(new_constraint),atoms,func,data)
 
-     call constraint_store_gradient(this%constraint(new_constraint))
+	!Update the group_lookups
+	do n = 1, Group_N_atoms(this%group(g1))
+	   i = Group_Nth_Atom(this%group(g1),n)
+	   this%group_lookup(i) = g1
+	end do
+
+	!Add the constraint as an object for this group
+	call group_add_object(this%group(g1),new_constraint)
+
+	!Reduce the number of degrees of freedom
+	if (do_update_Ndof) this%Ndof = this%Ndof - 1
+
+	!Call the constraint subroutine to fill in variables:
+	call constraint_calculate_values_at(this%constraint(new_constraint),this%atoms,this%t)
+
+	!Give warning if they constraint is not being satisfied
+	if (abs(this%constraint(new_constraint)%C) > CONSTRAINT_WARNING_TOLERANCE) &
+	     call print_warning('ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
+	     round(this%constraint(new_constraint)%C,5))
+
+	call constraint_store_gradient(this%constraint(new_constraint))
+     endif
 
    end subroutine ds_add_constraint
 
@@ -3121,13 +2245,14 @@ contains
    !% Replace a constraint involving some atoms with a different constraint involving
    !% the same atoms
    !
-   subroutine ds_amend_constraint(this,constraint,func,data)
+   subroutine ds_amend_constraint(this,constraint,func,data,k)
 
      type(DynamicalSystem),  intent(inout) :: this
      integer,                intent(in)    :: constraint, func
      real(dp), dimension(:), intent(in)    :: data
+     real(dp), optional, intent(in) :: k
 
-     call constraint_amend(this%constraint(constraint),func,data)
+     call constraint_amend(this%constraint(constraint),func,data,k)
 
    end subroutine ds_amend_constraint
 
@@ -3223,10 +2348,11 @@ contains
    !% required so that the shake and rattle algorithms work correctly with any further
    !% constraints of which the atom is a part. Move_mask is also zeroed in this case.
 
-   subroutine fix_atoms(this,index)
+   subroutine fix_atoms(this,index,restraint_k)
 
      type(dynamicalsystem), intent(inout) :: this
      integer, dimension(:), intent(in)    :: index
+     real(dp), optional, intent(in)       :: restraint_k
 
      integer  :: i, g, n
      logical, save :: plane_registered = .false.
@@ -3255,9 +2381,9 @@ contains
            end if
 
            !Add the constraints for three intersecting planes
-           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/1.0_dp,0.0_dp,0.0_dp,this%atoms%pos(1,i)/))
-           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/0.0_dp,1.0_dp,0.0_dp,this%atoms%pos(2,i)/))
-           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/0.0_dp,0.0_dp,1.0_dp,this%atoms%pos(3,i)/))
+           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/1.0_dp,0.0_dp,0.0_dp,this%atoms%pos(1,i)/),restraint_k=restraint_k)
+           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/0.0_dp,1.0_dp,0.0_dp,this%atoms%pos(2,i)/),restraint_k=restraint_k)
+           call ds_add_constraint(this,(/i/),PLANE_FUNC,(/0.0_dp,0.0_dp,1.0_dp,this%atoms%pos(3,i)/),restraint_k=restraint_k)
 
         end if
 

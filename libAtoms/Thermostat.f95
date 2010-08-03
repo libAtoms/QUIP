@@ -512,11 +512,11 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine thermostat1(this,at,f,dt,property,value,virial)
+  subroutine thermostat1(this,at,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
-    real(dp),         intent(in)    :: f(:,:)
+!NB    real(dp),         intent(in)    :: f(:,:)
     real(dp),         intent(in)    :: dt
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
@@ -749,12 +749,12 @@ contains
 
   end subroutine thermostat1
   
-  subroutine thermostat2(this,at,f,dt,property,value)
+  subroutine thermostat2(this,at,dt,property,value)
 
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
     real(dp),         intent(in)    :: dt
-    real(dp),         intent(in)    :: f(:,:)
+!NB    real(dp),         intent(in)    :: f(:,:)
     character(*),     intent(in)    :: property
     integer,          intent(in)    :: value
 
