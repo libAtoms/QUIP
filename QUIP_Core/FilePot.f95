@@ -218,9 +218,6 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   type(Dictionary) :: cli
   logical :: FilePot_log
   
-  character(len=100) :: fields(50)
-  integer :: n_fields
-
   INIT_ERROR(error)
 
   if (present(energy)) energy = 0.0_dp
@@ -236,8 +233,6 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif
   call finalise(cli)
-
-  call parse_string(this%property_list, ':', fields, n_fields)
 
   ! Run external command either if MPI object is not active, or if it is active and we're the
   ! master process. Function does not return on any node until external command is finished.
@@ -263,16 +258,16 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
         call Print('FilePot: replicating cell '//nx//'x'//ny//'x'//nz//' times.')
         call supercell(sup, at, nx, ny, nz)
-        call write(sup, xyzfile, properties=fields(1:n_fields))
+        call write(sup, xyzfile, properties=this%property_list)
      else
-        call write(at, xyzfile, properties=fields(1:n_fields))
+        call write(at, xyzfile, properties=this%property_list)
      end if
 
      if (FilePot_log) then
        if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
-          call write(sup, "FilePot_pos_log.xyz", properties=fields(1:n_fields),append=.true.)
+          call write(sup, "FilePot_pos_log.xyz", properties=this%property_list,append=.true.)
         else
-          call write(at, "FilePot_pos_log.xyz", properties=fields(1:n_fields),append=.true.)
+          call write(at, "FilePot_pos_log.xyz", properties=this%property_list,append=.true.)
         endif
      endif
 

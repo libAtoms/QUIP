@@ -104,7 +104,7 @@ implicit none
      call add_property(at, 'f', f)
      call set_value(at%properties,'Energy', e)
      call set_value(at%properties,'virial', reshape(v, (/9 /)))
-     call write(at, outfile, properties=(/'pos','f  '/), append=.true.)
+     call write(at, outfile, properties='pos:f', append=.true.)
   end do
   deallocate(f)
 

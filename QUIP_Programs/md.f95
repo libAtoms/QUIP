@@ -292,7 +292,7 @@ subroutine print_at(params, ds, e, pot, out)
   type(CInOutput), intent(inout) :: out
 
   if (allocated(params%print_property_list)) then
-    call write(out, ds%atoms, properties=params%print_property_list, real_format='%18.10f')
+    call write(out, ds%atoms, properties_array=params%print_property_list, real_format='%18.10f')
   else
     call write(out, ds%atoms, real_format='%18.10f')
   endif

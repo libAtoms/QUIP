@@ -2111,7 +2111,7 @@ contains
     if (params%io_print_all_properties) then
        call write(cio, at)
     else
-       call write(cio, at, properties=params%io_print_properties)
+       call write(cio, at, properties_array=params%io_print_properties)
     end if
   end subroutine crack_print_cio
   
@@ -2126,7 +2126,7 @@ contains
     if (params%io_print_all_properties) then
        call write(cio, at)
     else
-       call write(cio, at, properties=params%io_print_properties)
+       call write(cio, at, properties_array=params%io_print_properties)
     end if
     call finalise(cio)
 

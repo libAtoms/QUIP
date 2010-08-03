@@ -81,7 +81,6 @@ implicit none
   real(dp), dimension(3,3) :: external_pressure
   logical :: has_iso_pressure, has_diag_pressure, has_pressure
 
-  real(dp), pointer :: forces_p(:,:), local_E_p(:)
   real(dp), pointer :: phonon(:,:)
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
   real(dp), allocatable :: force_const_mat(:,:)
@@ -365,12 +364,9 @@ implicit none
 
            ! set prefix to PHONON
            if (do_dipole_moment) then
-              call write(at,'stdout',properties=(/"pos     ", &
-                                                  "phonon  ", &
-                                                  "local_dn"/))
+              call write(at,'stdout',properties='pos:phonon:local_dn')
            else
-              call write(at,'stdout',properties=(/"pos     ", &
-                                                  "phonon  "/))
+              call write(at,'stdout',properties='pos:phonon')
            endif
 
 	   if (do_frozen_phonons) call remove_value(at%params, "frozen_phonon_freq")
