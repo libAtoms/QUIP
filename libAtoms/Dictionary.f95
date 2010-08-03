@@ -1976,7 +1976,7 @@ contains
     end if
 
     ! Otherwise, start by splitting value into fields
-    call parse_string(myvalue, ' ', fields, num_fields, status=parse_status)
+    call parse_string(myvalue, ' ', fields, num_fields, error=parse_status)
 
     if (parse_status /= 0) then
        ! parsing failed, treat as string

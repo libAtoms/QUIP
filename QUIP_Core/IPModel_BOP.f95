@@ -291,11 +291,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
 !     if (.not. assign_pointer(at_bop, 'local_energy', local_energy)) &
 !         call system_abort('local_energy: failed to assign pointer to local_bop')
 !     local_energy(1:this%n) = local_e_bop(1:this%n)
-     call write(at_bop, "bop_cell.xyz", properties=(/'pos          ', &
-                                                     'active       ', &
-                                                     'original_cell', &
-                                                     'map          ', &
-                                                     'forces_bop   '/))
+     call write(at_bop, "bop_cell.xyz", properties='active:original_cell:map:forces_bop')
    endif
 
    if(present(f)) then

@@ -590,9 +590,7 @@ contains
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
     ! prepare xyz file for input to cp2k
-    call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties=(/"species", &
-                                                                 "pos    "/))
-
+    call write(at, trim(run_dir)//'/quip_cp2k.xyz', properties='species:pos')
     ! actually run cp2k
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 

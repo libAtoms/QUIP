@@ -36,11 +36,11 @@ module CInOutput_module
 
   use iso_c_binding
   use error_module
-  use System_module, only: dp, optional_default, s2a, a2s, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
+  use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Extendable_str_module, only: Extendable_str, operator(//), string
-  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, lookup_entry_i, lower_case, &
+  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, lookup_entry_i, lower_case, subset, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use MPI_Context_module, only: MPI_context
@@ -564,11 +564,12 @@ contains
   end subroutine cinoutput_read
 
 
-  subroutine cinoutput_write(this, at, properties, prefix, int_format, real_format, frame, &
+  subroutine cinoutput_write(this, at, properties, properties_array, prefix, int_format, real_format, frame, &
        shuffle, deflate, deflate_level, error)
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(in) :: at
-    character(*), intent(in), optional :: properties(:)
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)
     character(*), intent(in), optional :: prefix
     character(*), intent(in), optional :: int_format, real_format
     integer, intent(in), optional :: frame
@@ -577,7 +578,7 @@ contains
     integer, intent(out), optional :: error
 
     type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
-    logical :: dum
+    logical :: dum, got_properties
     character(len=VALUE_LEN) :: valuestr
     integer :: i, j, k, extras, n, tmp_int_a2(3,3)
     real(dp) :: tmp_real_a2(3,3)
@@ -587,6 +588,8 @@ contains
     integer :: do_shuffle, do_deflate
     integer :: do_deflate_level, do_swap
     type(Table), target :: tmp_data
+    character(len=KEY_LEN) :: tmp_properties_array(at%properties%n)
+    integer n_properties
 
     INIT_ERROR(error)
 
@@ -608,21 +611,28 @@ contains
     do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
     do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
-    do_swap = transfer(.not. present(properties), do_swap)
+    got_properties = present(properties) .or. present(properties_array)
+    do_swap = transfer(.not. got_properties, do_swap)
+
+    if (present(properties) .and. present(properties_array)) then
+       RAISE_ERROR('CInOutput_write: "properties" and "properties_array" cannot both be present.', error)
+    end if
     
     call initialise(selected_properties)
-    if (.not. present(properties)) then
+    if (.not. got_properties) then
        do i=1,at%properties%N
           call set_value(selected_properties, string(at%properties%keys(i)), 1)
        end do
     else
-       do i=1,size(properties)
-          if (.not. has_key(at%properties, properties(i))) then
-             call print('cinoutput_write: skipping unknown property '//trim(properties(i)))
-             cycle
-          end if
-          call set_value(selected_properties, properties(i), 1)
-       end do
+       if (present(properties_array)) then
+          call subset(at%properties, properties_array, selected_properties, error=error)
+          PASS_ERROR(error)
+       else ! we've got a colon-separated string
+          call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
+          PASS_ERROR(error)
+          call subset(at%properties, tmp_properties_array(1:n_properties), selected_properties, error=error)
+          PASS_ERROR(error)
+       end if
     end if
 
     this%n_atom = at%n
@@ -963,13 +973,14 @@ contains
 
   end subroutine atoms_read_cinoutput
 
-  subroutine atoms_write(this, filename, append, properties, prefix, int_format, real_format, error)
+  subroutine atoms_write(this, filename, append, properties, properties_array, prefix, int_format, real_format, error)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
     use iso_fortran_env
     type(Atoms), intent(in) :: this
     character(len=*), intent(in) :: filename
     logical, optional, intent(in) :: append
-    character(*), intent(in), optional :: properties(:)    
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)
     character(*), intent(in), optional :: prefix
     character(*), intent(in), optional :: int_format, real_format
     integer, intent(out), optional :: error
@@ -981,16 +992,17 @@ contains
     INIT_ERROR(error)
     call initialise(cio, filename, OUTPUT, append, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
-    call write(cio, this, properties, prefix, int_format, real_format, error=error)
+    call write(cio, this, properties, properties_array, prefix, int_format, real_format, error=error)
     PASS_ERROR_WITH_INFO('While writing "' // filename // '".', error)
     call finalise(cio)
 
   end subroutine atoms_write
 
-  subroutine atoms_write_cinoutput(this, cio, properties, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error)
+  subroutine atoms_write_cinoutput(this, cio, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
-    character(*), intent(in), optional :: properties(:)    
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)    
     character(*), intent(in), optional :: prefix, int_format, real_format
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
@@ -998,7 +1010,7 @@ contains
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_write(cio, this, properties, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error=error)
+    call cinoutput_write(cio, this, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_write_cinoutput

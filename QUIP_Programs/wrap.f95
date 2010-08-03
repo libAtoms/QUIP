@@ -56,7 +56,7 @@ implicit none
 
   call coalesce_in_one_periodic_image(at, seed)
 
-  call write(at, filename="stdout", properties=(/"pos"/), prefix="WRAPPED")
+  call write(at, filename="stdout", properties="pos", prefix="WRAPPED")
 
   call system_finalise()
 end program

@@ -630,13 +630,16 @@ contains
   !% connectivity information. Useful for saving the state of a
   !% dynamical simulation without incurring too great a memory
   !% cost. 
-  subroutine atoms_copy_without_connect(to, from, properties, error)
+  subroutine atoms_copy_without_connect(to, from, properties, properties_array, error)
 
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
-    character(len=*), optional, intent(in) :: properties(:)
+    character(len=*), optional, intent(in) :: properties
+    character(len=*), optional, intent(in) :: properties_array(:)
     integer, intent(out), optional :: error     
-    
+    character(len=maxval(from%properties%keys%len)) :: tmp_properties_array(from%properties%n)
+    integer n_properties    
+
     INIT_ERROR(error)
     if(.not. from%initialised) then
        RAISE_ERROR("atoms_copy_without_connect: 'from' object is not initialised", error)
@@ -645,9 +648,16 @@ contains
     to%N = from%N
     call set_lattice(to, from%lattice, .false.)
 
-    if (present(properties)) then
-       call subset(from%properties, properties, to%properties, error=error)
-       PASS_ERROR(error)
+    if (present(properties) .or. present(properties_array)) then
+       if (present(properties_array)) then
+          call subset(from%properties, properties_array, to%properties, error=error)
+          PASS_ERROR(error)
+       else
+          call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
+          PASS_ERROR(error)
+          call subset(from%properties, tmp_properties_array(1:n_properties), to%properties, error=error)
+          PASS_ERROR(error)          
+       end if
     else
        to%properties = from%properties
     endif

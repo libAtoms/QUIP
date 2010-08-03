@@ -256,7 +256,7 @@ program density_1d
 	 endif
 	 if (.not. skip_frame) then
 	   call new_entry(structure_ll, structure)
-	   call atoms_copy_without_connect(structure, structure_in, properties=(/"pos","Z  "/))
+	   call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
 	 else
 	   write (mainlog%unit,'(a,$)') " skip"
 	 endif

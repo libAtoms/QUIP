@@ -691,13 +691,14 @@ class CInOutput(FortranCInOutput):
       self.write(value, frame=index)
 
    def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
-             shuffle=None, deflate=None, deflate_level=None, status=None):
+             shuffle=None, deflate=None, deflate_level=None):
 
       if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
          properties = padded_str_array(properties, max([len(x) for x in properties])).T
       
-      FortranCInOutput.write(self, at, properties, prefix, int_format, real_format, frame,
-                             shuffle, deflate, deflate_level, status)
+      FortranCInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
+                             real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
+                             deflate_level=deflate_level)
                              
 class Potential(FortranPotential):
 
