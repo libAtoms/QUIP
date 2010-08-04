@@ -4113,7 +4113,7 @@ CONTAINS
     end if
 
     if (failed) then
-       RAISE_ERROR(trim(caller)//': Size checking failed', error)
+       RAISE_ERROR(trim(caller) //': Size checking failed. Expected: ' // n // ', got: ' // actual_size, error)
     end if
 
   end subroutine check_size_real_dim2

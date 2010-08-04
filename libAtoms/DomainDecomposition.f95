@@ -49,6 +49,7 @@ module DomainDecomposition_module
        "local_to_global"
   character(TABLE_STRING_LENGTH), parameter :: GHOSTS_R_STR = "ghosts_r"
   character(TABLE_STRING_LENGTH), parameter :: GHOSTS_L_STR = "ghosts_l"
+  character(TABLE_STRING_LENGTH), parameter :: LAST_POS_STR = "last_pos"
 
   type DomainDecomposition
 
@@ -73,6 +74,8 @@ module DomainDecomposition_module
      logical                    :: periodic(3)          !% Periodicity for domain decomposition
      integer                    :: l(3), r(3)           !% Ranks of neighboring domains in x-, y- and z-direction
      real(DP)                   :: off_l(3), off_r(3)   !% Distance vector to neighboring domaind
+
+     real(DP), pointer          :: last_pos(:, :)     !% Last particle positions
 
      type(Table)                :: state_properties   !% Fields to communicate if for particles
      type(Table)                :: ghost_properties   !% Fields to communicate for ghosts
@@ -117,6 +120,10 @@ module DomainDecomposition_module
      module procedure domain_decomposition_allocate
   endinterface
 
+  interface update_sendrecv_masks
+     module procedure domain_decomposition_update_sendrecv_masks
+  endinterface
+
   interface enable
      module procedure domain_decomposition_enable
   endinterface enable
@@ -129,8 +136,8 @@ module DomainDecomposition_module
      module procedure domain_decomposition_set_border
   endinterface
 
-  interface communicate_particles
-     module procedure domain_decomposition_communicate_particles
+  interface communicate_domain
+     module procedure domain_decomposition_communicate_domain
   endinterface
 
   interface communicate_ghosts
@@ -176,15 +183,14 @@ contains
 
     ! ---
 
-    integer   :: i, d
+    integer   :: d
     real(DP)  :: l(3)
-    logical   :: periods_for_mpi(3)
 
     ! ---
 
     INIT_ERROR(error)
 
-    call print("- domain_decomposition_initialise -", PRINT_VERBOSE)
+    call print("DomainDecomposition : initialise", PRINT_VERBOSE)
 
     if (present(decomposition)) then
        this%decomposition  = decomposition
@@ -194,7 +200,7 @@ contains
        this%verlet_shell   = verlet_shell
     endif
 
-    call print("Parallelization using domain decomposition (via MPI) over " // &
+    call print("DomainDecomposition : Parallelization using domain decomposition (via MPI) over " // &
          this%decomposition // "domains.")
 
     call initialise(this%mpi, &
@@ -213,7 +219,7 @@ contains
     this%periodic          = .true.
     this%requested_border  = 0.0_DP
 
-    call print("coords             = ( " // this%mpi%my_coords // ")", PRINT_VERBOSE)
+    call print("DomainDecomposition : coords             = ( " // this%mpi%my_coords // ")", PRINT_VERBOSE)
 
     do d = 1, 3
        call cart_shift( &
@@ -232,8 +238,8 @@ contains
     this%lower  = (1.0_DP*this%mpi%my_coords)     / this%decomposition
     this%upper  = (1.0_DP*(this%mpi%my_coords+1)) / this%decomposition
 
-    call print("lower              = ( " // this%lower // " )", PRINT_VERBOSE)
-    call print("upper              = ( " // this%upper // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : lower              = ( " // this%lower // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : upper              = ( " // this%upper // " )", PRINT_VERBOSE)
 
     this%off_r  = 0.0_DP
     this%off_l  = 0.0_DP
@@ -256,11 +262,11 @@ contains
     enddo
 
 !    call print("periodic (global)  = ( " // at%periodic // " )", PRINT_VERBOSE)
-    call print("periodic (par.)    = ( " // this%periodic // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : periodic (par.)    = ( " // this%periodic // " )", PRINT_VERBOSE)
 !    call print("periodic (local)   = ( " // this%locally_periodic // " )", PRINT_VERBOSE)
 
-    call print("off_l              = ( " // this%off_l // " )", PRINT_VERBOSE)
-    call print("off_r              = ( " // this%off_r // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : off_l              = ( " // this%off_l // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : off_r              = ( " // this%off_r // " )", PRINT_VERBOSE)
 
     this%n_send_p_tot  = 0
     this%n_recv_p_tot  = 0
@@ -272,12 +278,13 @@ contains
 
     ! Additional properties
 
-    call add_property(at, LOCAL_TO_GLOBAL_STR, 0)
-    call add_property(at, GHOSTS_R_STR, 0)
-    call add_property(at, GHOSTS_L_STR, 0)
+    call add_property(at, LAST_POS_STR, (/ 0.0_DP, 0.0_DP, 0.0_DP /), ptr2=this%last_pos)
+    call add_property(at, LOCAL_TO_GLOBAL_STR, 0, ptr=this%local_to_global)
+    call add_property(at, GHOSTS_R_STR, 0, ptr=this%ghosts_r)
+    call add_property(at, GHOSTS_L_STR, 0, ptr=this%ghosts_l)
 
     call append(this%state_properties, Z_STR)
-    call append(this%state_properties, SPECIES_STR)
+!    call append(this%state_properties, SPECIES_STR)
     call append(this%state_properties, MASS_STR)
     call append(this%state_properties, TRAVEL_STR)
     call append(this%state_properties, POS_STR)
@@ -285,7 +292,7 @@ contains
     call append(this%state_properties, LOCAL_TO_GLOBAL_STR)
 
     call append(this%ghost_properties, Z_STR)
-    call append(this%ghost_properties, SPECIES_STR)
+!    call append(this%ghost_properties, SPECIES_STR)
     call append(this%ghost_properties, MASS_STR)
     call append(this%ghost_properties, TRAVEL_STR)
     call append(this%ghost_properties, POS_STR)
@@ -301,75 +308,17 @@ contains
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(out), optional :: error
-
-    ! ---
-
-    integer  :: i, s
-    integer, pointer :: ptr(:)
+    integer, intent(out), optional            :: error
 
     ! ---
 
     INIT_ERROR(error)
 
-    call print("- domain_decomposition_allocate -", PRINT_VERBOSE)
+    call print("DomainDecomposition : allocate", PRINT_VERBOSE)
 
-    allocate(this%global_to_local(at%N))
+    allocate(this%global_to_local(at%Nbuffer))
 
 !    call log_memory_start("domain_decomposition_allocate")
-
-    this%state_buffer_size = 0
-    this%ghost_buffer_size = 0
-    this%backc_buffer_size = 0
-
-    if (this%state_properties%N > 0) then
-       allocate(this%state_mask(at%properties%N))
-       call keys_to_mask( &
-            at%properties, this%state_properties, this%state_mask, &
-            s = this%state_buffer_size, error = error)
-       PASS_ERROR(error)
-    endif
-    if (this%ghost_properties%N > 0) then
-       allocate(this%ghost_mask(at%properties%N))
-       call keys_to_mask( &
-            at%properties, this%ghost_properties, this%ghost_mask, &
-            s = this%ghost_buffer_size, error = error)
-       PASS_ERROR(error)
-    endif
-    if (this%backc_properties%N > 0) then
-       allocate(this%backc_mask(at%properties%N))
-       call keys_to_mask( &
-            at%properties, this%backc_properties, this%backc_mask, &
-            s = this%backc_buffer_size, error = error)
-       PASS_ERROR(error)
-    endif
-
-    call print("size(state_mask) = " // size(this%state_mask))
-    call print("state_mask = " // this%state_mask)
-
-    ! Additional rank information
-    !this%ghost_buffer_size  = this%ghost_buffer_size + 1
-
-    call print("     state_buffer_size  = " // this%state_buffer_size, PRINT_VERBOSE)
-    call print("     ghost_buffer_size  = " // this%ghost_buffer_size, PRINT_VERBOSE)
-    call print("     backc_buffer_size  = " // this%backc_buffer_size, PRINT_VERBOSE)
-
-    s = max(this%state_buffer_size, this%ghost_buffer_size) * at%N
-
-    allocate(this%send_l(s))
-    allocate(this%send_r(s))
-    allocate(this%recv_l(s))
-    allocate(this%recv_r(s))
-
-    if (.not. assign_pointer(at, LOCAL_TO_GLOBAL_STR, this%local_to_global)) then
-       RAISE_ERROR("Could not assign pointer for property '" // LOCAL_TO_GLOBAL_STR // "'.", error)
-    endif
-    if (.not. assign_pointer(at, GHOSTS_R_STR, this%ghosts_r)) then
-       RAISE_ERROR("Could not assign pointer for property '" // GHOSTS_R_STR // "'.", error)
-    endif
-    if (.not. assign_pointer(at, GHOSTS_L_STR, this%ghosts_l)) then
-       RAISE_ERROR("Could not assign pointer for property '" // GHOSTS_L_STR // "'.", error)
-    endif
 
 !    call log_memory_estimate(this%send_l)
 !    call log_memory_estimate(this%send_r)
@@ -382,6 +331,96 @@ contains
 !    call log_memory_stop("domain_decomposition_allocate")
 
   endsubroutine domain_decomposition_allocate
+
+
+  !% Update send and receive masks, only necessary after properties have
+  !% been added to or removed from the Atoms object
+  subroutine domain_decomposition_update_sendrecv_masks(this, at, error)
+    implicit none
+
+    type(DomainDecomposition), intent(inout)  :: this
+    type(Atoms), intent(in)                   :: at
+    integer, intent(out), optional            :: error
+
+    ! ---
+
+    integer  :: s
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    if (allocated(this%state_mask)) then
+       if (size(this%state_mask) < at%properties%N) then
+          deallocate(this%state_mask)
+          this%state_buffer_size = 0
+       endif
+    endif
+
+    if (allocated(this%ghost_mask)) then
+       if (size(this%ghost_mask) < at%properties%N) then
+          deallocate(this%ghost_mask)
+          this%ghost_buffer_size = 0
+       endif
+    endif
+
+    if (allocated(this%backc_mask)) then
+       if (size(this%backc_mask) < at%properties%N) then
+          deallocate(this%backc_mask)
+          this%backc_buffer_size = 0
+       endif
+    endif
+
+    if (.not. allocated(this%state_mask) .and. this%state_properties%N > 0) then
+       allocate(this%state_mask(at%properties%N))
+       call keys_to_mask( &
+            at%properties, this%state_properties, this%state_mask, &
+            s = this%state_buffer_size, error = error)
+       PASS_ERROR(error)
+
+       call print("DomainDecomposition : state_buffer_size  = " // &
+            this%state_buffer_size, PRINT_VERBOSE)
+    endif
+    if (.not. allocated(this%ghost_mask) .and. this%ghost_properties%N > 0) then
+       allocate(this%ghost_mask(at%properties%N))
+       call keys_to_mask( &
+            at%properties, this%ghost_properties, this%ghost_mask, &
+            s = this%ghost_buffer_size, error = error)
+       PASS_ERROR(error)
+
+       call print("DomainDecomposition : ghost_buffer_size  = " // &
+            this%ghost_buffer_size, PRINT_VERBOSE)
+    endif
+    if (.not. allocated(this%backc_mask) .and. this%backc_properties%N > 0) then
+       allocate(this%backc_mask(at%properties%N))
+       call keys_to_mask( &
+            at%properties, this%backc_properties, this%backc_mask, &
+            s = this%backc_buffer_size, error = error)
+       PASS_ERROR(error)
+
+       call print("DomainDecomposition : backc_buffer_size  = " // &
+            this%backc_buffer_size, PRINT_VERBOSE)
+    endif
+
+    s = max(this%state_buffer_size, this%ghost_buffer_size) * at%Nbuffer
+
+    if (allocated(this%send_l)) then
+       if (s > size(this%send_l, 1)) then
+          deallocate(this%send_l)
+          deallocate(this%send_r)
+          deallocate(this%recv_l)
+          deallocate(this%recv_r)
+       endif
+    endif
+       
+    if (.not. allocated(this%send_l)) then
+       allocate(this%send_l(s))
+       allocate(this%send_r(s))
+       allocate(this%recv_l(s))
+       allocate(this%recv_r(s))
+    endif
+
+  endsubroutine domain_decomposition_update_sendrecv_masks
 
 
   !% Enable domain decomposition, after this call every process
@@ -400,6 +439,8 @@ contains
     ! ---
 
     INIT_ERROR(error)
+
+    call print("DomainDecomposition : enable", PRINT_VERBOSE)
 
     j = 0
     do i = 1, at%N
@@ -421,6 +462,8 @@ contains
 
     this%Ntotal = sum(this%mpi, at%N, error)
     PASS_ERROR(error)
+
+    call print("DomainDecomposition : Ntotal = " // this%Ntotal, PRINT_VERBOSE)
 
     !
     ! Copy ghost particles (for first integration step)
@@ -475,7 +518,7 @@ contains
 
     INIT_ERROR(error)
 
-    call print("- domain_decomposition_set_border -", PRINT_VERBOSE)
+    call print("DomainDecomposition : set_border", PRINT_VERBOSE)
 
     if (present(verlet_shell)) then
        this%verlet_shell  = verlet_shell
@@ -484,9 +527,9 @@ contains
     this%requested_border  = max(this%requested_border, border)
     this%border            = this%requested_border + this%verlet_shell
 
-    call print("requested_border  = " // this%requested_border, PRINT_VERBOSE)
-    call print("verlet_shell      = " // this%verlet_shell, PRINT_VERBOSE)
-    call print("border            = " // this%border, PRINT_VERBOSE)
+    call print("DomainDecomposition : requested_border  = " // this%requested_border, PRINT_VERBOSE)
+    call print("DomainDecomposition : verlet_shell      = " // this%verlet_shell, PRINT_VERBOSE)
+    call print("DomainDecomposition : border            = " // this%border, PRINT_VERBOSE)
 
     if (any((at%lattice .mult. (this%upper - this%lower)) < 2*this%border)) then
        RAISE_ERROR("Domain smaller than twice the border. This does not work (yet).", error)
@@ -505,8 +548,8 @@ contains
        endif
     enddo
 
-    call print("lower_with_border  = ( " // this%lower_with_border // " )", PRINT_VERBOSE)
-    call print("upper_with_border  = ( " // this%upper_with_border // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : lower_with_border  = ( " // this%lower_with_border // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : upper_with_border  = ( " // this%upper_with_border // " )", PRINT_VERBOSE)
 
   endsubroutine domain_decomposition_set_border
 
@@ -519,7 +562,7 @@ contains
 
     ! ---
 
-    call print("- domain_decomposition_finalise -", PRINT_VERBOSE)
+    call print("DomainDecomposition : finalise -", PRINT_VERBOSE)
 
     deallocate(this%global_to_local)
 
@@ -531,11 +574,11 @@ contains
     deallocate(this%ghosts_l)
     deallocate(this%ghosts_r)
 
-    call print("Average number of particles sent/received per iteration:", PRINT_VERBOSE)
-    call print("Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_VERBOSE)
-    call print("Particles recv  = " // (1.0_DP*this%n_recv_p_tot)/this%nit_p, PRINT_VERBOSE)
-    call print("Ghosts send     = " // (1.0_DP*this%n_send_g_tot)/this%nit_g, PRINT_VERBOSE)
-    call print("Ghosts recv     = " // (1.0_DP*this%n_recv_g_tot)/this%nit_g, PRINT_VERBOSE)
+    call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_VERBOSE)
+    call print("DomainDecomposition : Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_VERBOSE)
+    call print("DomainDecomposition : Particles recv  = " // (1.0_DP*this%n_recv_p_tot)/this%nit_p, PRINT_VERBOSE)
+    call print("DomainDecomposition : Ghosts send     = " // (1.0_DP*this%n_send_g_tot)/this%nit_g, PRINT_VERBOSE)
+    call print("DomainDecomposition : Ghosts recv     = " // (1.0_DP*this%n_recv_g_tot)/this%nit_g, PRINT_VERBOSE)
 
     call finalise(this%state_properties)
     call finalise(this%ghost_properties)
@@ -547,7 +590,7 @@ contains
 
 
   !% Add particle data to the send buffer
-  subroutine copy_to_send_buffer(this, at, i, n, buffer)
+  subroutine pack_state_buffer(this, at, i, n, buffer)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
@@ -558,18 +601,16 @@ contains
 
     ! ---
 
-! WAIT FOR DICTIONARY IN ATOMS
-!    call pack_buffer(at%data, mask, i, n, buffer)
+!    call print("i = " // i // ", n = " // n)
 
+    call pack_buffer(at%properties, this%state_mask, i, n, buffer)
     this%global_to_local(this%local_to_global(i)) = 0 ! This one is gone
 
-!    write (ilog, '(5X,A,3I5,6F20.10)')  "send: ", at%index(i), i, at%Z(i), POS3(p, i), PNC3(p, i)
-
-  endsubroutine copy_to_send_buffer
+  endsubroutine pack_state_buffer
 
 
   !% Copy particle data from the receive buffer
-  subroutine copy_from_recv_buffer(this, at, n, buffer, off)
+  subroutine unpack_state_buffer(this, at, n, buffer, off)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
@@ -589,30 +630,23 @@ contains
     do while (i < n)
        at%Ndomain = at%Ndomain+1
 
-! WAIT FOR DICTIONARY IN ATOMS
-!       call unpack_buffer(at%data, mask, i, buffer, at%Ndomain)
-
+       call unpack_buffer(at%properties, this%state_mask, i, buffer, at%Ndomain)
        this%global_to_local(this%local_to_global(at%Ndomain))  = at%Ndomain
 
-!       write (ilog, '(5X,A,3I5,9F20.10)')  "recv1: ", at%index(at%Ndomain), this%global_to_local(at%index(at%Ndomain)), at%Z(at%Ndomain), POS3(p, at%Ndomain), PNC3(p, at%Ndomain), off(:)
-
-!       POS3(p, at%Ndomain)  = POS3(p, at%Ndomain) + off(:)
-!       PNC3(at, at%Ndomain)  = PNC3(at, at%Ndomain) + off
-
-!       write (ilog, '(5X,A,3I5,9F20.10)')  "recv2: ", at%index(at%Ndomain), this%global_to_local(at%index(at%Ndomain)), at%Z(at%Ndomain), POS3(p, at%Ndomain), PNC3(p, at%Ndomain), off(:)
+!       call print("n = " // at%Ndomain // ", pos = " // at%pos(:, at%Ndomain))
     enddo
 
-  endsubroutine copy_from_recv_buffer
+  endsubroutine unpack_state_buffer
 
 
   !% Communicate particles which left the domains
   !% to the neighboring domains (former order routine)
-  subroutine domain_decomposition_communicate_particles(this, at, error)
+  subroutine domain_decomposition_communicate_domain(this, at, error)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
-    integer, intent(out), optional :: error
+    integer, intent(out), optional            :: error
 
     ! ---
 
@@ -635,7 +669,12 @@ contains
 
     INIT_ERROR(error)
 
-    call system_timer("domain_decomposition_communicate_particles")
+    call print("DomainDecomposition : communicate_domain", PRINT_VERBOSE)
+
+    call system_timer("domain_decomposition_communicate_domain")
+
+    ! Update internal buffers
+    call update_sendrecv_masks(this, at)
 
     this%nit_p = this%nit_p + 1
 
@@ -663,13 +702,13 @@ contains
              if ((at%g(d, :) .dot. at%pos(:, i)) >= this%upper(d)) then
                 ! Send to the right
 
-                call copy_to_send_buffer(this, at, i, n_send_r, this%send_r)
+                call pack_state_buffer(this, at, i, n_send_r, this%send_r)
 !                n_send_r = n_send_r + 1
 
              else if ((at%g(d, :) .dot. at%pos(:, i)) < this%lower(d)) then
                 ! Send to the left
 
-                call copy_to_send_buffer(this, at, i, n_send_l, this%send_l)
+                call pack_state_buffer(this, at, i, n_send_l, this%send_l)
 !                n_send_l = n_send_l + 1
 
              else
@@ -720,6 +759,8 @@ contains
                n_recv_r, error)
           PASS_ERROR(error)
 
+          call print("DomainDecomposition : Received state buffers. Sizes: l = " // n_recv_l/this%state_buffer_size // ", r = " // n_recv_r/this%state_buffer_size)
+
           this%n_recv_p_tot = this%n_recv_p_tot + n_recv_r/this%state_buffer_size + n_recv_l/this%state_buffer_size
 
           off_l    = 0.0_DP
@@ -730,8 +771,8 @@ contains
           ! This will be done by inbox
           off_r(d) = this%off_r(d)
 
-          call copy_from_recv_buffer(this, at, n_recv_l, this%recv_l, off_l)
-          call copy_from_recv_buffer(this, at, n_recv_r, this%recv_r, off_r)
+          call unpack_state_buffer(this, at, n_recv_l, this%recv_l, off_l)
+          call unpack_state_buffer(this, at, n_recv_r, this%recv_r, off_r)
 
        endif
 
@@ -739,42 +780,15 @@ contains
 
     at%N = at%Ndomain
 
-    call system_timer("domain_decomposition_communicate_particles")
+    call print("Total number of atoms = " // sum(this%mpi, at%N))
 
-  endsubroutine domain_decomposition_communicate_particles
+    call system_timer("domain_decomposition_communicate_domain")
 
-
-  !% Copy particle data to the (ghost) send buffer
-  subroutine copy_to_send_ghosts(this, at, i, n, buffer)
-    implicit none
-
-    type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    integer, intent(in)                       :: i
-    integer, intent(inout)                    :: n
-    character(1), intent(inout)               :: buffer(:)
-
-    ! ---
-
-! WAIT FOR DICTIONARY IN ATOMS
-!    call pack_buffer(at%data, mask, i, n, buffer)
-
-    buffer(n+1) = 'h'
-    n = n+1
-
-!    if (i > at%Ndomain) then
-!       buffer(n)  = at%from_rank(i)
-!    else
-!       buffer(n)  = this%mpi%my_proc
-!    endif
-
-!    call print("g-send: " // this%local_to_global(i) // ", " // at%Z(i) // ", " // at%pos(:, i))
-
-  endsubroutine copy_to_send_ghosts
+  endsubroutine domain_decomposition_communicate_domain
 
 
   !% Copy particle data from the (ghost) receive buffer
-  subroutine copy_from_recv_ghosts(this, at, n, buffer, off)
+  subroutine unpack_ghost_buffer(this, at, n, buffer, off)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
@@ -792,31 +806,11 @@ contains
     i = 0
     do while (i < n)
        at%N = at%N+1
-
-! WAIT FOR DICTIONARY IN ATOMS
-!       call unpack_buffer(at%data, mask, i, buffer, at%N)
-
-       i  = i + 1
-!       at%from_rank(at%N)  = buffer(i)
-
+       call unpack_buffer(at%properties, this%ghost_mask, i, buffer, at%N)
        this%global_to_local(this%local_to_global(at%N)) = at%N
-
-!       PNC3(at, at%N)  = PNC3(at, at%N) + off
-!       POS3(at, at%N)  = cyclic_in_cell(at, PNC3(at, at%N))
-
-#ifdef DEBUG
-       if (.not. ( all(POS3(at, at%N) >= 0.0_DP) .and. all(POS3(at, at%N) < (/ at%lattice(1, 1), at%lattice(2, 2), at%lattice(3, 3) /)) )) then
-          call particles_dump_info(at, at%N)
-          EXIT_ON_ERROR("Particle outside of the simulation domain.", i)
-       endif
-#endif
-
-!       if (at%index(at%N) == 914635) then
-!          write (ilog, '(5X,A,2I5,9F20.10)')  "g-recv: ", at%index(at%N), at%el(at%N), POS3(p, at%N), PNC3(p, at%N), off(:)
-!       endif
     enddo
 
-  endsubroutine copy_from_recv_ghosts
+  endsubroutine unpack_ghost_buffer
 
 
   !% Communicate ghost particles to neighboring domains
@@ -828,7 +822,7 @@ contains
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
     logical, intent(in)                       :: new_list
-    integer, intent(out), optional :: error
+    integer, intent(out), optional            :: error
 
     ! ---
 
@@ -841,6 +835,10 @@ contains
     ! ---
 
     INIT_ERROR(error)
+
+    call print("DomainDecomposition : communicate_ghosts", PRINT_VERBOSE)
+
+    call update_sendrecv_masks(this, at)
 
     call system_timer("domain_decomposition_communicate_ghosts")
 
@@ -861,6 +859,9 @@ contains
        endif
 
     enddo
+
+    call print("DomainDecomposition : upper = " // upper, PRINT_VERBOSE)
+    call print("DomainDecomposition : lower = " // lower, PRINT_VERBOSE)
 
     do i = at%Ndomain+1, at%N
        this%global_to_local(this%local_to_global(i)) = 0
@@ -890,14 +891,17 @@ contains
              do i = 1, at%N
 !                if (PNC(at, i, d) >= upper(d)) then
                 if ((at%g(d, :) .dot. at%pos(:, i)) >= upper(d)) then
-                   call copy_to_send_ghosts(this, at, i, n_send_r, this%send_r)
-
+                   call pack_buffer(at%properties, this%ghost_mask, &
+                        i, &
+                        n_send_r, this%send_r)
                    this%n_ghosts_r(d) = this%n_ghosts_r(d)+1
                    this%ghosts_r(list_off_r+this%n_ghosts_r(d)) = this%local_to_global(i)
 
 !                else if (PNC(at, i, d) < lower(d)) then
                 else if ((at%g(d, :) .dot. at%pos(:, i)) < lower(d)) then
-                   call copy_to_send_ghosts(this, at, i, n_send_l, this%send_l)
+                   call pack_buffer(at%properties, this%ghost_mask, &
+                        i, &
+                        n_send_l, this%send_l)
 
                    this%n_ghosts_l(d) = this%n_ghosts_l(d)+1
                    this%ghosts_l(list_off_l+this%n_ghosts_l(d)) = this%local_to_global(i)
@@ -908,15 +912,13 @@ contains
           else
 
              do i = 1, this%n_ghosts_r(d)
-                call copy_to_send_ghosts( &
-                     this, at, &
+                call pack_buffer(at%properties, this%ghost_mask, &
                      this%global_to_local(this%ghosts_r(list_off_r+i)), &
                      n_send_r, this%send_r)
              enddo
 
              do i = 1, this%n_ghosts_l(d)
-                call copy_to_send_ghosts( &
-                     this, at, &
+                call pack_buffer(at%properties, this%ghost_mask, &
                      this%global_to_local(this%ghosts_l(list_off_l+i)), &
                      n_send_l, this%send_l)
              enddo
@@ -955,9 +957,11 @@ contains
                n_recv_r, error)
           PASS_ERROR(error)
 
-          call print("Received ghost buffers. Sizes: l = " // n_recv_l // ", r = " // n_recv_r)
+          call print("DomainDecomposition : Received ghost buffers. Sizes: l = " // n_recv_l/this%ghost_buffer_size // ", r = " // n_recv_r/this%ghost_buffer_size)
 
-          this%n_recv_g_tot = this%n_recv_g_tot + n_recv_r/this%ghost_buffer_size + n_recv_l/this%ghost_buffer_size
+          this%n_recv_g_tot = this%n_recv_g_tot + &
+               n_recv_r/this%ghost_buffer_size + &
+               n_recv_l/this%ghost_buffer_size
 
           off_l    = 0.0_DP
           off_l(d) = this%off_l(d)
@@ -965,8 +969,8 @@ contains
           off_r    = 0.0_DP
           off_r(d) = this%off_r(d)
 
-          call copy_from_recv_ghosts(this, at, n_recv_l, this%recv_l, off_l)
-          call copy_from_recv_ghosts(this, at, n_recv_r, this%recv_r, off_r)
+          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l, off_l)
+          call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r, off_r)
 
           list_off_r = list_off_r + this%n_ghosts_r(d)
           list_off_l = list_off_l + this%n_ghosts_l(d)
@@ -997,10 +1001,7 @@ contains
     ! ---
 
     m = n
-! WAIT FOR DICTIONARY IN ATOMS
-!    call pack_buffer(at%data, mask, i, m, buffer)
-
-    !write (ilog, '(A,I5,3F20.10)')  "Fsend: ", at%index(i), FOR3(p, i)
+    call pack_buffer(at%properties, this%backc_mask, i, m, buffer)
 
   endsubroutine copy_forces_to_send_ghosts
   
@@ -1025,8 +1026,7 @@ contains
     do while (i < n)
        cur = cur+1
 
-! WAIT FOR DICTIONARY IN ATOMS
-!       call unpack_buffer(at%data, mask, i, buffer, cur)
+       call unpack_buffer(at%properties, this%backc_mask, i, buffer, cur)
     enddo
 
   endsubroutine copy_forces_from_recv_ghosts
@@ -1049,6 +1049,10 @@ contains
     ! ---
 
     INIT_ERROR(error)
+
+    call print("DomainDecomposition : communicate_ghosts", PRINT_VERBOSE)
+
+    call update_sendrecv_masks(this, at)
 
     call system_timer("domain_decomposition_communicate_forces")
 
@@ -1149,22 +1153,25 @@ contains
           RAISE_ERROR("Could not find key '" // trim(keys%str(1, i)) // "'.", error)
        endif
 
-       select case(this%entries(i)%type)
+       select case(this%entries(entry_i)%type)
 
        case (T_REAL_A)
-          s = s + sizeof(this%entries(i)%r_a(1))
+          s = s + sizeof(this%entries(entry_i)%r_a(1))
 
        case (T_INTEGER_A)
-          s = s + sizeof(this%entries(i)%i_a(1))
+          s = s + sizeof(this%entries(entry_i)%i_a(1))
 
        case (T_LOGICAL_A)
-          s = s + sizeof(this%entries(i)%l_a(1))
+          s = s + sizeof(this%entries(entry_i)%l_a(1))
 
        case (T_REAL_A2)
-          s = s + sizeof(this%entries(i)%r_a2(:, 1))
+          s = s + sizeof(this%entries(entry_i)%r_a2(:, 1))
+
+       case (T_INTEGER_A2)
+          s = s + sizeof(this%entries(entry_i)%i_a2(:, 1))
 
        case default
-          RAISE_ERROR("Don't know how to handle entry type " // this%entries(i)%type, error)
+          RAISE_ERROR("Don't know how to handle entry type " // this%entries(entry_i)%type // " (key '" // this%keys(entry_i) // "').", error)
 
        endselect
 
@@ -1188,7 +1195,7 @@ contains
 
     ! ---
 
-    integer  :: i
+    integer  :: i, s
 
     ! ---
 
@@ -1200,27 +1207,37 @@ contains
           select case(this%entries(i)%type)
 
           case (T_REAL_A)
-             buffer(buffer_i+1:)  = &
+             s = sizeof(this%entries(i)%r_a(1))
+             buffer(buffer_i+1:buffer_i+s) = &
                   transfer(this%entries(i)%r_a(data_i), buffer)
-             buffer_i          = buffer_i + sizeof(this%entries(i)%r_a(1))
+             buffer_i = buffer_i + s
 
           case (T_INTEGER_A)
-             buffer(buffer_i+1:)  = &
+             s = sizeof(this%entries(i)%i_a(1))
+             buffer(buffer_i+1:buffer_i+s) = &
                   transfer(this%entries(i)%i_a(data_i), buffer)
-             buffer_i          = buffer_i + sizeof(this%entries(i)%i_a(1))
+             buffer_i = buffer_i + s
 
           case (T_LOGICAL_A)
-             buffer(buffer_i+1:)  = &
+             s = sizeof(this%entries(i)%l_a(1))
+             buffer(buffer_i+1:buffer_i+s) = &
                   transfer(this%entries(i)%l_a(data_i), buffer)
-             buffer_i          = buffer_i + sizeof(this%entries(i)%l_a(1))
+             buffer_i = buffer_i + s
 
           case (T_REAL_A2)
-             buffer(buffer_i+1:) = &
+             s = sizeof(this%entries(i)%r_a2(:, 1))
+             buffer(buffer_i+1:buffer_i+s) = &
                   transfer(this%entries(i)%r_a2(:, data_i), buffer)
-             buffer_i = buffer_i + sizeof(this%entries(i)%r_a2(:, 1))
+             buffer_i = buffer_i + s
+
+          case (T_INTEGER_A2)
+             s = sizeof(this%entries(i)%i_a2(:, 1))
+             buffer(buffer_i+1:buffer_i+s) = &
+                  transfer(this%entries(i)%i_a2(:, data_i), buffer)
+             buffer_i = buffer_i + s
 
           case default
-             RAISE_ERROR("Don't know how to handle entry type " // this%entries(i)%type, error)
+             RAISE_ERROR("Don't know how to handle entry type " // this%entries(i)%type // " (key '" // this%keys(i) // "').", error)
 
           endselect
 
@@ -1244,7 +1261,7 @@ contains
 
     ! ---
 
-    integer  :: i, ndims
+    integer  :: i, ndims, s
 
     ! ---
 
@@ -1256,14 +1273,16 @@ contains
           select case(this%entries(i)%type)
 
           case (T_REAL_A)
+             s = sizeof(this%entries(i)%r_a(1))
              this%entries(i)%r_a(data_i) = &
-                  transfer(buffer(buffer_i+1:), 1.0_DP)
-             buffer_i = buffer_i + sizeof(this%entries(i)%r_a(1))
+                  transfer(buffer(buffer_i+1:buffer_i+s), 1.0_DP)
+             buffer_i = buffer_i + s
 
           case (T_INTEGER_A)
+             s = sizeof(this%entries(i)%i_a(1))
              this%entries(i)%i_a(data_i) = &
-                  transfer(buffer(buffer_i+1:), 1)
-             buffer_i = buffer_i + sizeof(this%entries(i)%i_a(1))
+                  transfer(buffer(buffer_i+1:buffer_i+s), 1)
+             buffer_i = buffer_i + s
 
           case (T_LOGICAL_A)
              this%entries(i)%l_a(data_i) = &
@@ -1271,13 +1290,21 @@ contains
              buffer_i = buffer_i + sizeof(this%entries(i)%l_a(1))
 
           case (T_REAL_A2)
+             s = sizeof(this%entries(i)%r_a2(:, 1))
              ndims = size(this%entries(i)%r_a2, 1)
              this%entries(i)%r_a2(:, data_i) = &
-                  transfer(buffer(buffer_i+1:), 1.0_DP, ndims)
-             buffer_i = buffer_i + sizeof(this%entries(i)%r_a2(:, 1))
+                  transfer(buffer(buffer_i+1:buffer_i+s), 1.0_DP, ndims)
+             buffer_i = buffer_i + s
+
+          case (T_INTEGER_A2)
+             s = sizeof(this%entries(i)%i_a2(:, 1))
+             ndims = size(this%entries(i)%i_a2, 1)
+             this%entries(i)%i_a2(:, data_i) = &
+                  transfer(buffer(buffer_i+1:buffer_i+s), 1.0_DP, ndims)
+             buffer_i = buffer_i + s
 
           case default
-             RAISE_ERROR("Don't know how to handle entry type " // this%entries(i)%type, error)
+             RAISE_ERROR("Don't know how to handle entry type " // this%entries(i)%type // " (key '" // this%keys(i) // "').", error)
              
           endselect
 

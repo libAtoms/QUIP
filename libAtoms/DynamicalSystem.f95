@@ -1676,7 +1676,8 @@ contains
      do_parallel = optional_default(.false.,parallel)
      do_store = optional_default(.false.,store_constraint_force)
      ntherm = size(this%thermostat)-1
-     call check_size('Force',f,(/3,this%N/),'advance_verlet2')
+     call check_size('Force',f,(/3,this%N/),'advance_verlet2', error=error)
+     PASS_ERROR(error)
 
 #ifdef _MPI
      if (do_parallel) then
