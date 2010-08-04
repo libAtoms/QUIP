@@ -165,6 +165,7 @@ module  atoms_module
      logical                               :: initialised = .false.
      integer                               :: N = 0 !% The number of atoms held (including ghost particles)
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
+     integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
 
      logical                               :: use_uniform_cutoff = .false. !% Rather than covalent radii --- 
                                                                            !% default is variable cutoff.
@@ -407,6 +408,7 @@ contains
 
     this%N = N
     this%Ndomain = N
+    this%Nbuffer = N
 
     if (present(properties)) then
        ! check types and sizes of properties passed in
@@ -573,6 +575,7 @@ contains
 
     this%N = 0
     this%Ndomain = 0
+    this%Nbuffer = 0
 
     this%initialised = .false.
 
@@ -2582,9 +2585,10 @@ contains
   !% If the optional Atoms argument is present then we calculate
   !% the atomic density to initialise the default lengths of the neighbour
   !% list for efficient memory usage.
-   subroutine connection_initialise(this,N, pos, lattice, g,  origin, extent, nn_guess, fill)
+   subroutine connection_initialise(this, N, Nbuffer, pos, lattice, g,  origin, extent, nn_guess, fill)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
+    integer,            intent(in)    :: Nbuffer    ! Buffer size
     real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
@@ -2597,12 +2601,13 @@ contains
     ! If already initialised, destroy the existing data and start again
     if (this%initialised) call connection_finalise(this)
 
-    if (do_fill) call connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess)
+    if (do_fill) call connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess)
   end subroutine connection_initialise
 
-  subroutine connection_fill(this, N, pos, lattice, g, origin, extent, nn_guess, error)
+  subroutine connection_fill(this, N, Nbuffer, pos, lattice, g, origin, extent, nn_guess, error)
     type(Connection),   intent(inout) :: this
     integer,            intent(in)    :: N    ! No. of atoms
+    integer,            intent(in)    :: Nbuffer    ! Buffer size
     real(dp), optional, intent(in) :: pos(:,:), lattice(3,3), g(3,3)
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
@@ -2626,8 +2631,15 @@ contains
        do_subregion = .false.
     endif
 
-    if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(N))
-    if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(N))
+    if (allocated(this%neighbour1)) then
+       if (size(this%neighbour1, 1) < Nbuffer) deallocate(this%neighbour1)
+    endif
+    if (allocated(this%neighbour2)) then
+       if (size(this%neighbour2, 1) < Nbuffer) deallocate(this%neighbour2)
+    endif
+    
+    if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(Nbuffer))
+    if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(Nbuffer))
     do i=1,N
        if (do_subregion) then
           if (.not. is_in_subregion(pos(:,i), subregion_center, lattice, g, extent_inv)) then
@@ -2811,7 +2823,7 @@ contains
     if (.not.from%initialised) return
 
 
-    call connection_initialise(to,size(from%neighbour1))
+    call connection_initialise(to,size(from%neighbour1),size(from%neighbour1))
 
 
     ! Use Append to append the source tables to our (empty) destination tables
@@ -3050,7 +3062,7 @@ contains
 
     INIT_ERROR(error)
     if (.not.this%connect%initialised) then
-       call connection_initialise(this%connect, this%N)
+       call connection_initialise(this%connect, this%N, this%Nbuffer)
     else
        ! otherwise just wipe the connection table
        call wipe(this%connect)
@@ -3291,15 +3303,15 @@ contains
     ! Allocate space for the connection object if needed
     if (present(origin) .and. present(extent)) then
       if (.not.use_connect%initialised) then
-	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, origin, extent, nn_guess)
+	 call connection_initialise(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, origin, extent, nn_guess)
       else
-	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, origin, extent, nn_guess)
+	 call connection_fill(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, origin, extent, nn_guess)
       end if
     else
       if (.not.use_connect%initialised) then
-	 call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, nn_guess=nn_guess)
+	 call connection_initialise(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, nn_guess=nn_guess)
       else
-	 call connection_fill(use_connect, this%N, this%pos, this%lattice, this%g, nn_guess=nn_guess)
+	 call connection_fill(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, nn_guess=nn_guess)
       end if
     endif
 
@@ -3533,7 +3545,7 @@ contains
 
     ! Allocate space for the connection object if needed
     if (.not.use_connect%initialised) then
-       call connection_initialise(use_connect, this%N, this%pos, this%lattice, this%g, fill=.false.)
+       call connection_initialise(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, fill=.false.)
        do_fill = .true.
     else
        ! otherwise just wipe the connection table
@@ -3571,7 +3583,7 @@ contains
        call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), PRINT_VERBOSE)
        call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, PRINT_VERBOSE)
 
-       call connection_fill(use_connect, this%n, this%pos, this%lattice, this%g, nn_guess=nn_guess)
+       call connection_fill(use_connect, this%N, this%Nbuffer, this%pos, this%lattice, this%g, nn_guess=nn_guess)
     end if
 
     ! Here is the main loop:
