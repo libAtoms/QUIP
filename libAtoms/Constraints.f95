@@ -161,6 +161,9 @@ module constraints_module
      logical                             :: initialised  = .false.
 
      real(dp)                            :: k         !% spring constant for restraint
+     real(dp)                            :: E         !% restraint energy
+     real(dp), allocatable, dimension(:) :: dE_dr     !% restraint force (on atoms)
+     real(dp)                            :: dE_dcoll  !% derivative of restraint energy w.r.t. collective coordinate, for Umbrella Integration
 
   end type Constraint
 
@@ -262,7 +265,11 @@ contains
     this%old_dC_dr = 0.0_dp
 
     if (present(k)) then
-        this%k = k
+       this%k = k
+       this%E = 0.0_dp
+       this%dE_dcoll = 0.0_dp
+       allocate(this%dE_dr(3*size(indices)))
+       this%dE_dr = 0.0_dp
     else
         this%k = -1.0_dp
     endif
@@ -296,6 +303,9 @@ contains
     if (allocated(this%dC_dr)) deallocate(this%dC_dr)
     if (allocated(this%old_dC_dr)) deallocate(this%old_dC_dr)
     this%k = -1.0_dp
+    this%E = 0.0_dp
+    this%dE_dcoll = 0.0_dp
+    if (allocated(this%dE_dr)) deallocate(this%dE_dr)
     this%initialised = .false.
 
   end subroutine constraint_finalise
@@ -381,8 +391,10 @@ contains
        to%old_dC_dr   = from%old_dC_dr
        to%tol         = from%tol
        to%k           = from%k
+       to%E           = from%E
+       to%dE_dcoll    = from%dE_dcoll
+       if (allocated(from%dE_dr)) allocate(to%dE_dr(size(from%dE_dr)))
        to%initialised = from%initialised
-
     end if
 
   end subroutine constraint_assignment
@@ -412,6 +424,11 @@ contains
     real(dp),               intent(in)    :: t
 
     call call_constraint_sub(this%func,pos,velo,t,this%data,this%C,this%dC_dr,this%dC_dt)
+    if (this%k >= 0.0_dp) then ! restraint
+       this%E = 0.5_dp * this%k * this%C**2
+       this%dE_dr = this%k * this%C * this%dC_dr
+       this%dE_dcoll = this%k * this%C ! assuming that dC_dcoll = 1.0 here, i.e. C = (coll - v0)
+    endif
 
   end subroutine constraint_calculate_values
 
@@ -1137,12 +1154,12 @@ contains
 	 if (restraints(i_r)%k < 0.0_dp) then
 	    call system_abort("add_restraint_force for restraint " // i_r // " got invalid spring_constant " // restraints(i_r)%k)
 	 endif
-	 if (restraints(i_r)%k > 0.0_dp) then
+	 if (restraints(i_r)%k >= 0.0_dp) then
 	    call constraint_calculate_values_at(restraints(i_r),at,t)
-	    restraint_E = restraint_E + 0.5_dp * restraints(i_r)%k * restraints(i_r)%C**2
+	    restraint_E = restraint_E + restraints(i_r)%E
 	    do ii_a=1, restraints(i_r)%N
 	       i_a = restraints(i_r)%atom(ii_a)
-	       df = - restraints(i_r)%k * restraints(i_r)%C * restraints(i_r)%dC_dr((ii_a-1)*3+1:(ii_a-1)*3+3)
+	       df = -restraints(i_r)%dE_dr((ii_a-1)*3+1:(ii_a-1)*3+3)
 	       if (do_store) constraint_force(:,i_a) = constraint_force(:,i_a) + df
 	       f(:,i_a) = f(:,i_a) + df
 	    end do
