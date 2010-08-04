@@ -31,6 +31,7 @@ contains
       if (name == 'restraints' .or. name == 'constraints') then ! new restraints stanze
 	 if (name == 'restraints') then
 	    parse_in_restraints = .true.
+	    parse_in_constraints = .false.
 	    call QUIP_FoX_get_value(attributes, "N", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read N in restraints stanza")
 	    read (value, *) n
@@ -38,6 +39,7 @@ contains
 	    allocate(parse_ds%restraint(n))
 	 else ! constraints
 	    parse_in_constraints = .true.
+	    parse_in_restraints = .false.
 	    call QUIP_FoX_get_value(attributes, "N", value, status)
 	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read N in constraints stanza")
 	    read (value, *) n
@@ -63,9 +65,9 @@ contains
 	    if (status == 0) then
 	       read (value, *) d
 	       if (parse_in_restraints) then
-		  call constrain_bondlength(parse_ds, atom_1, atom_2, d)
-	       else
 		  call constrain_bondlength(parse_ds, atom_1, atom_2, d, restraint_k=k)
+	       else
+		  call constrain_bondlength(parse_ds, atom_1, atom_2, d)
 	       endif
 	    else
 	       if (parse_in_restraints) then
