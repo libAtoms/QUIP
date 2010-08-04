@@ -377,7 +377,7 @@ use libatoms_module
 use quip_module
 use md_module
 use libatoms_misc_utils_module
-use restraints_xml_module
+use restraints_constraints_xml_module
 
 implicit none
   type (Potential) :: pot
@@ -427,7 +427,7 @@ implicit none
   call initialise(ds, at_in)
   call finalise(at_in)
 
-  call init_restraints(ds, string(params_es))
+  call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
 
   call finalise(params_es)
