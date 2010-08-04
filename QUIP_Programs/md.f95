@@ -222,11 +222,12 @@ subroutine print_usage()
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
-subroutine do_prints(params, ds, e, pot, traj_out, i_step, override_intervals)
+subroutine do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step, override_intervals)
   type(md_params), intent(in) :: params
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
   type(potential), intent(in) :: pot
+  real(dp), allocatable, intent(in) :: restraint_stuff(:,:)
   type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
@@ -238,16 +239,32 @@ subroutine do_prints(params, ds, e, pot, traj_out, i_step, override_intervals)
   if (params%summary_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%summary_interval) == 0) call print_summary(params, ds, e)
   endif
+  if (allocated(restraint_stuff)) then
+     if (params%summary_interval > 0) then
+	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) call print_restraint_f(params, restraint_stuff)
+     endif
+  endif
+
   if (params%params_print_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%params_print_interval) == 0) call print_atoms_params(params, ds%atoms)
   endif
+
   if (params%pot_print_interval > 0) then
     if (my_override_intervals .or. mod(i_step,params%pot_print_interval) == 0) call print_pot(params, pot)
   endif
+
   if (params%at_print_interval > 0) then
       if (my_override_intervals .or. mod(i_step,params%at_print_interval) == 0) &
 	call print_at(params, ds, e, pot, traj_out)
   endif
+
+end subroutine
+
+subroutine print_restraint_f(params, restraint_stuff)
+  type(md_params), intent(in) :: params
+  real(dp), intent(in) :: restraint_stuff(:,:)
+
+  call print("R " // reshape( restraint_stuff, (/ 3*size(restraint_stuff,2) /) ))
 end subroutine
 
 subroutine print_summary(params, ds, e)
@@ -305,7 +322,7 @@ subroutine initialise_md_thermostat(ds, params, do_rescale)
   logical, optional :: do_rescale
   integer           :: N_iter
 
-  if(params%T_final.gt.0.0_dp) then
+  if (params%T_final.gt.0.0_dp) then
     params%annealing = .true.
     N_iter = abs(params%T_initial - params%T_final)/params%freq_DT 
     params%N_steps = N_iter*nint(params%thermalise_wait_time/params%dt)  
@@ -382,7 +399,6 @@ use restraints_constraints_xml_module
 implicit none
   type (Potential) :: pot
   type(MPI_context) :: mpi_glob
-  type(extendable_str) :: es
   type(Cinoutput) :: traj_out, atoms_in_cio
   type(Atoms) :: at_in
   type(DynamicalSystem) :: ds
@@ -391,8 +407,6 @@ implicit none
   real(dp), allocatable :: forces(:,:)
   real(dp), pointer :: forces_p(:,:)
   real(dp) :: cutoff_buffer, max_moved, last_state_change_time
-  real(dp) :: mu(3)
-  real(dp) :: toll_time = 0.001_dp
 
   integer i, i_step
   type(md_params) :: params
@@ -400,6 +414,7 @@ implicit none
   type(extendable_str) :: params_es
 
   logical :: store_constraint_force
+  real(dp), allocatable :: restraint_stuff(:,:)
 
   call system_initialise()
 
@@ -429,6 +444,7 @@ implicit none
 
   call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
+  if (ds%Nrestraints > 0) allocate(restraint_stuff(3,ds%Nrestraints))
 
   call finalise(params_es)
 
@@ -469,10 +485,11 @@ implicit none
   ! calculate a(t) from f(t)
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = forces(:,i) / ElementMass(ds%atoms%Z(i))
 
+  call calc_restraint_stuff(ds, restraint_stuff)
   if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
     call system_abort('Impossible failure to assign_ptr for forces')
   forces_p = forces
-  call do_prints(params, ds, e, pot, traj_out, 0, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, restraint_stuff, traj_out, 0, override_intervals = .true.)
 
   call calc_connect(ds%atoms)
   max_moved = 0.0_dp
@@ -494,6 +511,7 @@ implicit none
     endif
 
     call advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
+    call calc_restraint_stuff(ds, restraint_stuff)
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
@@ -502,18 +520,31 @@ implicit none
     if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
       call system_abort('Impossible failure to assign_ptr for forces')
     forces_p = forces
-    call do_prints(params, ds, e, pot, traj_out, i_step)
+    call do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step)
 
     call system_timer("md/print")
 
   end do
   call system_timer("md_loop")
 
-  call do_prints(params, ds, e, pot, traj_out, params%N_steps, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, restraint_stuff, traj_out, params%N_steps, override_intervals = .true.)
 
   call system_finalise()
 
 contains
+
+  subroutine calc_restraint_stuff(ds, restraint_stuff)
+    type(DynamicalSystem), intent(in) :: ds
+    real(dp), intent(out) :: restraint_stuff(:,:)
+
+    integer i_r
+
+    do i_r = 1, ds%Nrestraints
+       restraint_stuff(1,i_r) = ds%restraint(i_r)%C
+       restraint_stuff(2,i_r) = ds%restraint(i_r)%E
+       restraint_stuff(3,i_r) = -ds%restraint(i_r)%dE_dcoll
+    end do
+  end subroutine
 
   subroutine advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
