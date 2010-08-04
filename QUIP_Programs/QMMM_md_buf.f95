@@ -40,29 +40,23 @@ program qmmm_md
   use libatoms_module
   use cp2k_driver_template_module
   use quip_module
-  use restraints_xml_module
+  use restraints_constraints_xml_module
 
   implicit none
 
   type(DynamicalSystem)               :: ds
   type(Atoms)                         :: my_atoms
-  type(Table)                         :: constraints
-  integer                             :: i, n, N_constraints
+  integer                             :: i, n
   character(len=FIELD_LENGTH)         :: Run_Type_array(5)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
   type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
   type(Potential)                 :: pot, empty_qm_pot
-  character(len=STRING_LENGTH)        :: args_str
   real(dp)                            :: energy,check,TI_force, TI_corr
   real(dp), dimension(:,:), allocatable :: f,f0,f1, add_force
 
   !QM list generation
-  type(Table)                         :: embedlist
-  logical                             :: list_changed
   logical                             :: list_changed1
-  integer, pointer                    :: qm_flag_p(:)
-  integer, pointer                    :: hybrid(:)
   integer, pointer                    :: hybrid_mark_p(:)
   integer, pointer                    :: cluster_mark_p(:)
 
@@ -116,9 +110,8 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: qm_list_filename        !QM list file with a strange format
   type(Table)                 :: qm_seed
   character(len=FIELD_LENGTH) :: Residue_Library
-  logical                     :: Use_Constraints         !_0_ no, 1 yes
-  character(len=FIELD_LENGTH) :: constraint_file, restraint_xml_file
-  type(Extendable_Str)         :: restraint_xml_es
+  character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
+  type(Extendable_Str)         :: restraint_constraint_xml_es
   integer                     :: Charge
   real(dp)                    :: Tau, Nose_Hoover_Tau
   logical                     :: Buffer_general, do_general
@@ -141,9 +134,6 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
-  character(len=FIELD_LENGTH) :: cluster_mark_postfix     !the cluster_mark & old_cluster_mark have to be saved under different names
-                                  !for QMMM_extended & QMMM_core no to be updated twice in 1 step.
-                                  !this is done by Potential: added cluster_mark_postfix to Potential args_str.
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
 
@@ -153,7 +143,6 @@ program qmmm_md
 
   real(dp) :: max_move_since_calc_connect
   real(dp) :: calc_connect_buffer
-type(inoutput) :: csilla_out
 logical :: have_silica_potential
   integer :: stat
 
@@ -186,9 +175,7 @@ logical :: have_silica_potential
       qm_list_filename=''
       call param_register(params_in, 'qm_list_filename', '', qm_list_filename)
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library) 
-      call param_register(params_in, 'Use_Constraints', 'F', Use_Constraints)
-      call param_register(params_in, 'constraint_file', 'constraints.dat',constraint_file) 
-      call param_register(params_in, 'restraint_xml_file', '', restraint_xml_file) 
+      call param_register(params_in, 'restraint_constraint_xml_file', '', restraint_constraint_xml_file) 
       call param_register(params_in, 'Charge', '0', Charge)
       call param_register(params_in, 'Tau', '500.0', Tau)
       call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau)
@@ -336,9 +323,7 @@ logical :: have_silica_potential
          endif
       endif
       call print('  Residue_Library '//Residue_Library) 
-      call print('  Use_Constraints '//Use_Constraints)
-      call print('  constraint_file '//constraint_file) 
-      call print('  restraint_xml_file '//restraint_xml_file) 
+      call print('  restraint_constraint_xml_file '//restraint_constraint_xml_file) 
       call print('  Charge '//Charge)
       call print('  Buffer_general '//Buffer_general)
       call print('  Continue '//Continue_it)
@@ -369,31 +354,24 @@ logical :: have_silica_potential
 
     call initialise(traj_xyz,traj_file,action=OUTPUT)
   
-  !READ COORDINATES AND CONSTRAINTS
+  !READ COORDINATES
 
     call print('Reading in the coordinates from file '//trim(coord_file)//'...')
     call read(my_atoms,coord_file)
 !    call read(my_atoms,coord_file)
 
-    N_constraints = 0
-    if (Use_Constraints) then
-       call print('Reading in the constraints from file '//trim(constraint_file)//'...')
-       call read_constraints_bond_diff(my_atoms,constraints,trim(constraint_file))
-       N_constraints = constraints%N
-    endif
-
-    call initialise(ds,my_atoms,constraints=N_constraints)
+    call initialise(ds,my_atoms)
     if (Continue_it) then
       if (get_value(my_atoms%params,'Time',ds%t)) then
 	  call print('Found Time in atoms%params'//ds%t)
       endif
     endif
 
-    if (len_trim(restraint_xml_file) > 0) then
-       call initialise(restraint_xml_es)
-       call read(restraint_xml_es, restraint_xml_file, convert_to_string=.true.)
-       call init_restraints(ds, string(restraint_xml_es))
-       call finalise(restraint_xml_es)
+    if (len_trim(restraint_constraint_xml_file) > 0) then
+       call initialise(restraint_constraint_xml_es)
+       call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
+       call init_restraints_constraints(ds, string(restraint_constraint_xml_es))
+       call finalise(restraint_constraint_xml_es)
     endif
 
     ds%avg_time = avg_time
@@ -406,19 +384,16 @@ logical :: have_silica_potential
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
 
-  !SET CONSTRAINTS
+  !PRINT CONSTRAINTS AND RESTRAINTS
 
-    if (Use_Constraints) then
-       do i=1,constraints%N
-          call Constrain_Bondlength_Diff(ds,constraints%int(1,i),constraints%int(2,i),constraints%int(3,i))
-          call print('Set constraint: '//constraints%int(1,i)//' -- '//constraints%int(2,i)//' -- '//constraints%int(3,i))
-!          call Constrain_Bond(ds,constraints%int(1,i),constraints%int(2,i))
-!          call print('Set constraint: '//constraints%int(1,i)//' -- '//constraints%int(2,i))
-          check = distance_min_image(ds%atoms,constraints%int(1,i),constraints%int(2,i)) - &
-                  distance_min_image(ds%atoms,constraints%int(2,i),constraints%int(3,i))
-          call print('constrained bond length diff: '//round(check,10))
-       enddo
-    endif
+   if (ds%Nconstraints > 0) then
+      call print("Constraints:")
+      call print(ds%constraint)
+   end if
+   if (ds%Nrestraints > 0) then
+      call print("Restraints:")
+      call print(ds%restraint)
+   end if
 
   !SET VELOCITIES
 
@@ -607,7 +582,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 	  enddo
 	call verbosity_pop()
         call print('Sum of the forces: '//sum(add_force(1,1:ds%atoms%N))//' '//sum(add_force(2,1:ds%atoms%N))//' '//sum(add_force(3,1:ds%atoms%N)))
-        f = sumBUFFER(f1+add_force,ds%atoms,my_spline)
+        f = sumBUFFER(f1+add_force,ds%atoms)
         deallocate(add_force)
      else
         f = sum0(f1,ds%atoms)
@@ -622,12 +597,18 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
      call print(ds%thermostat)
-     if (Use_Constraints) then
+     if (ds%Nconstraints > 0) then
         call print(ds%constraint)
-        do i=1,constraints%N
-           TI_force = force_on_collective_variable(ds%atoms,(/f(1:3,constraints%int(1,i)),f(1:3,constraints%int(2,i)),f(1:3,constraints%int(3,i))/),constraints%int(1:3,i), TI_corr, check)
-           call print('constrained bond length diff: '//round(check,10))
-	   call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+        do i=1,ds%Nconstraints
+	   if (ds%constraint(i)%N /= 3) then
+	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
+	   else
+	      TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
+								   f(1:3,ds%constraint(i)%atom(2)), &
+								   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
+	      call print('constrained bond length diff: '//round(check,10))
+	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+	   endif
         enddo
      endif
 
@@ -740,7 +721,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 	  enddo
 	call verbosity_pop()
         call print('Sum of the forces: '//sum(add_force(1,1:ds%atoms%N))//' '//sum(add_force(2,1:ds%atoms%N))//' '//sum(add_force(3,1:ds%atoms%N)))
-        f = sumBUFFER(f1+add_force,ds%atoms,my_spline)
+        f = sumBUFFER(f1+add_force,ds%atoms)
         deallocate(add_force)
      else
         f = sum0(f1,ds%atoms)
@@ -773,12 +754,18 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      call print(ds%thermostat)
 
      !Constraint
-     if (Use_Constraints) then
+     if (ds%Nconstraints > 0) then
         call print(ds%constraint)
-        do i=1,constraints%N
-           TI_force = force_on_collective_variable(ds%atoms,(/f(1:3,constraints%int(1,i)),f(1:3,constraints%int(2,i)),f(1:3,constraints%int(3,i))/),constraints%int(1:3,i), TI_corr, check)
-           call print('constrained bond length diff: '//round(check,10))
-           call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+        do i=1,ds%Nconstraints
+	   if (ds%constraint(i)%N /= 3) then
+	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
+	   else
+	      TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
+								   f(1:3,ds%constraint(i)%atom(2)), &
+								   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
+	      call print('constrained bond length diff: '//round(check,10))
+	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+	   endif
         enddo
      endif
 
@@ -977,11 +964,10 @@ contains
   end function sum0
 
 ! momentum conservation over atoms with QM flag 1 or 2, mass weighted
-  function sumBUFFER(force,at,my_spline) result(force0)
+  function sumBUFFER(force,at) result(force0)
 
     real(dp), dimension(:,:), intent(in) :: force
     type(Atoms),              intent(in) :: at
-    type(spline_pot),         intent(in) :: my_spline
     real(dp) :: force0(size(force,1),size(force,2))
     real(dp) :: F_corr(size(force,1),size(force,2))
     integer :: i
@@ -1079,7 +1065,6 @@ contains
     integer                          :: n,num_qm_atoms,qmatom,status
     character(80)                    :: title,testline
     logical                          :: my_verbose
-    integer                          :: qm_flag_index
     character(20), dimension(10)     :: fields
     integer                          :: num_fields
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)

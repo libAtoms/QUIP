@@ -2114,15 +2114,16 @@ contains
    ! Routines to make adding constraints easier
    !
    !% Constrain the difference of bond length between atoms i--j and j--k
-   subroutine constrain_bondlength_diff(this,i,j,k,restraint_k)
+   subroutine constrain_bondlength_diff(this,i,j,k,d,restraint_k)
 
      type(DynamicalSystem), intent(inout) :: this
      integer,               intent(in)    :: i,j,k
+     real(dp), intent(in), optional       :: d
      real(dp), intent(in), optional       :: restraint_k
 
      logical, save                        :: first_call = .true.
      integer, save                        :: BOND_DIFF_FUNC
-     real(dp)                             :: d
+     real(dp)                             :: use_d
 
      !Do nothing for i==j or i==k or j==k
      if (i==j.or.i==k.or.j==k) then
@@ -2144,8 +2145,8 @@ contains
      end if
      
      !Add the constraint
-     d = abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k))
-     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d/), restraint_k=restraint_k)
+     use_d = optional_default(abs(distance_min_image(this%atoms,i,j) - distance_min_image(this%atoms,j,k)),d)
+     call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/use_d/), restraint_k=restraint_k)
 
    end subroutine constrain_bondlength_diff
 
