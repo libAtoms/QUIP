@@ -652,6 +652,9 @@ class TestCluster_SplitQM(QuippyTestCase):
                    'cluster_allow_modification': False,
                    'randomise_buffer' : False}
 
+   def tearDown(self):
+      os.remove('create_cluster_abort.xyz')
+
    def test_split_qm_raises_runtime_error(self):
       # Split QM region by marking another atom
       self.at.hybrid_mark[107] = HYBRID_ACTIVE_MARK
