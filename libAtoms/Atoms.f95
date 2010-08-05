@@ -810,9 +810,9 @@ contains
     end if
     
     if (use_n_cols == 1) then
-       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+       call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
-       call add_array(this%properties, name, value, (/n_cols, this%N/), ptr2, overwrite)
+       call add_array(this%properties, name, value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
     end if
 
   end subroutine atoms_add_property_int
@@ -833,8 +833,8 @@ contains
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
 
-    if (size(value) /= this%N) then
-       RAISE_ERROR('atoms_add_property_int_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    if (size(value) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_int_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -850,13 +850,13 @@ contains
     end if
 
     if (use_n_cols == 1) then
-       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+       call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
        allocate(tmp_value(n_cols, size(value)))
        do i=1,n_cols
           tmp_value(i,:) = value
        end do
-       call add_array(this%properties, name, tmp_value, (/n_cols, this%N/), ptr2, overwrite)
+       call add_array(this%properties, name, tmp_value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
        deallocate(tmp_value)
     end if
    
@@ -891,9 +891,9 @@ contains
     end if
     
     if (use_n_cols == 1) then
-       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+       call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
-       call add_array(this%properties, name, value, (/n_cols, this%N/), ptr2, overwrite)
+       call add_array(this%properties, name, value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
     end if
 
   end subroutine atoms_add_property_real
@@ -915,8 +915,8 @@ contains
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
 
-    if (size(value) /= this%N) then
-       RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    if (size(value) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -932,13 +932,13 @@ contains
     end if
     
     if (use_n_cols == 1) then
-       call add_array(this%properties, name, value, this%N, ptr, overwrite)
+       call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
        allocate(tmp_value(n_cols, size(value)))
        do i=1,n_cols
           tmp_value(i,:) = value
        end do
-       call add_array(this%properties, name, tmp_value, (/n_cols, this%N/), ptr2, overwrite)
+       call add_array(this%properties, name, tmp_value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
        deallocate(tmp_value)
     end if
 
@@ -956,8 +956,8 @@ contains
 
     INIT_ERROR(error)
 
-    if (size(value,2) /= this%N) then
-       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    if (size(value,2) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -972,11 +972,11 @@ contains
        end if       
     end if
     
-    if (size(value,2) /= this%N) then
-       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%N='//this%N, error)
+    if (size(value,2) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%N='//this%Nbuffer, error)
     end if
 
-    call add_array(this%properties, name, value, (/size(value,1), this%N/), ptr, overwrite)
+    call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
 
   end subroutine atoms_add_property_int_2Da
 
@@ -993,8 +993,8 @@ contains
 
     INIT_ERROR(error)
 
-    if (size(value,2) /= this%N) then
-       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    if (size(value,2) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1009,11 +1009,11 @@ contains
        end if       
     end if
     
-    if (size(value,2) /= this%N) then
-       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%N='//this%N, error)
+    if (size(value,2) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%N='//this%Nbuffer, error)
     end if
 
-    call add_array(this%properties, name, value, (/size(value,1), this%N/), ptr, overwrite)
+    call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
 
   end subroutine atoms_add_property_real_2Da
 
@@ -1042,7 +1042,7 @@ contains
     if (len(value) /= TABLE_STRING_LENGTH) then
        RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
     end if
-    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
+    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
 
   end subroutine atoms_add_property_str
 
@@ -1059,8 +1059,8 @@ contains
 
     INIT_ERROR(error)
 
-    if (size(value,2) /= this%N) then
-       RAISE_ERROR('atoms_add_property_str_2da: size(value,2) ('//size(value,2)//') /= this%N ('//this%N//')', error)
+    if (size(value,2) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_str_2da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1076,7 +1076,7 @@ contains
        RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
     end if
 
-    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
+    call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
 
   end subroutine atoms_add_property_str_2da
 
@@ -1093,8 +1093,8 @@ contains
 
     INIT_ERROR(error)
 
-    if (size(value) /= this%N) then
-       RAISE_ERROR('atoms_add_property_str_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    if (size(value) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_str_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1111,12 +1111,12 @@ contains
     end if
 
     allocate(tmp_value(len(value),this%n))
-    do i=1,this%N
+    do i=1,this%Nbuffer
        do j=1,len(value)
           tmp_value(j,i) = value(i)(j:j)
        end do
     end do
-    call add_array(this%properties, name, tmp_value, (/TABLE_STRING_LENGTH, this%N/), ptr, overwrite)
+    call add_array(this%properties, name, tmp_value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
     deallocate(tmp_value)
 
   end subroutine atoms_add_property_str_a
@@ -1141,7 +1141,7 @@ contains
        end if
     end if
     
-    call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     
   end subroutine atoms_add_property_logical
 
@@ -1158,8 +1158,8 @@ contains
 
     INIT_ERROR(error)
 
-    if (size(value) /= this%N) then
-       RAISE_ERROR('atoms_add_property_logical_a: size(value) ('//size(value)//') /= this%N ('//this%N//')', error)
+    if (size(value) /= this%Nbuffer) then
+       RAISE_ERROR('atoms_add_property_logical_a: size(value) ('//size(value)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1170,7 +1170,7 @@ contains
        end if
     end if
     
-    call add_array(this%properties, name, value, this%N, ptr, overwrite)
+    call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
 
   end subroutine atoms_add_property_logical_a
 
@@ -2640,8 +2640,8 @@ contains
     
     if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(Nbuffer))
     if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(Nbuffer))
-    do i=1,N
-       if (do_subregion) then
+    do i=1,Nbuffer
+       if (do_subregion .and. i <= N) then
           if (.not. is_in_subregion(pos(:,i), subregion_center, lattice, g, extent_inv)) then
              if (associated(this%neighbour1(i)%t)) then
                 call connection_remove_atom(this, i, error)
@@ -3668,7 +3668,8 @@ contains
        if (allocated(use_connect%is_min_image)) deallocate(use_connect%is_min_image)
        allocate(use_connect%is_min_image(this%n))
        do i=1,this%n
-          use_connect%is_min_image(i) = is_min_image(this, i)
+          use_connect%is_min_image(i) = is_min_image(this, i, error=error)
+          PASS_ERROR(error)
        end do
     end if
 

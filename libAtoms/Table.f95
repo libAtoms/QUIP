@@ -737,11 +737,22 @@ contains
     call table_append_row(this,realpart=(/realpart/))
   end subroutine table_append_real_element
 
-  subroutine table_append_str_element(this,strpart)
+  subroutine table_append_str_element(this,strpart,error)
     type(Table), intent(inout) :: this
-    character(TABLE_STRING_LENGTH) :: strpart
+    character(*) :: strpart
+    integer, intent(out), optional :: error
 
-    call table_append_row(this,strpart=(/strpart/))
+    character(TABLE_STRING_LENGTH) :: loc_strpart
+
+    INIT_ERROR(error)
+
+    if (len(strpart) > TABLE_STRING_LENGTH) then
+       RAISE_ERROR("table_append_str_element: Length of string '" // strpart // "' (" // len(strpart) // ") exceeds maximum length for strings in a table (" // TABLE_STRING_LENGTH // ").", error)
+    endif
+
+    loc_strpart = strpart
+
+    call table_append_row(this,strpart=(/loc_strpart/))
   end subroutine table_append_str_element
 
   subroutine table_append_logical_element(this,logicalpart)
