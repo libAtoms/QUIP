@@ -55,7 +55,7 @@ IP_F95_FILES = IPEwald IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_S
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper
+POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper quip_lammps_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
