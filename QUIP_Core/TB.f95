@@ -480,7 +480,7 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 	  call set_value(this%at%params, 'global_N', global_N)
 	endif
       endif
-      call write(this%at, 'std_out', prefix="SCF_ITER_"//iter)
+      call write(this%at, 'stdout', prefix="SCF_ITER_"//iter)
     endif ! VERBOSE
 
   end do
