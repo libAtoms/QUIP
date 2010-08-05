@@ -986,8 +986,13 @@ contains
     integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
+    type(MPI_context) :: mpi
 
-    if (trim(filename) == 'stdout') flush(output_unit)
+    if (trim(filename) == 'stdout') then
+       call initialise(mpi)
+       if (mpi%active .and. mpi%my_proc /= 0) return
+       flush(output_unit)
+    end if
 
     INIT_ERROR(error)
     call initialise(cio, filename, OUTPUT, append, error=error)
