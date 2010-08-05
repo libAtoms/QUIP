@@ -82,6 +82,8 @@ module Potential_simple_module
      type(FilePot_type), pointer     :: filepot => null()
      type(CallbackPot_type), pointer     :: callbackpot => null()
      logical :: is_wrapper
+     logical :: little_clusters
+
   end type Potential_Simple
 
 !% Initialise a Potential object (selecting the force field) and, if necessary, the  input file for potential parameters.
@@ -199,6 +201,7 @@ contains
     call param_register(params, 'FilePot', 'false', is_FilePot)
     call param_register(params, 'wrapper', 'false', is_wrapper)
     call param_register(params, 'CallbackPot', 'false', is_CallbackPot)
+    call param_register(params, 'little_clusters', 'false', this%little_clusters)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_Initialise_str args_str')) then
       call system_abort("Potential_Simple_Initialise_str failed to parse args_str='"//trim(args_str)//"'")
     endif
@@ -211,7 +214,11 @@ contains
     if (is_IP) then
        allocate(this%ip)
        if(present(param_str)) then
-          call Initialise(this%ip, args_str, param_str, mpi_obj, error=error)
+          if (this%little_clusters) then
+             call Initialise(this%ip, args_str, param_str, error=error)
+          else
+             call Initialise(this%ip, args_str, param_str, mpi_obj, error=error)
+          end if
 	  PASS_ERROR(error)
        else
           RAISE_ERROR('Potential_Simple_initialise: no param_str present during IP init', error)
@@ -220,7 +227,11 @@ contains
     else if (is_TB) then
        allocate(this%tb)
        if(present(param_str)) then
-          call Initialise(this%tb, args_str, param_str, mpi_obj = mpi_obj, error=error)
+          if (this%little_clusters) then
+             call Initialise(this%tb, args_str, param_str, error=error)
+          else
+             call Initialise(this%tb, args_str, param_str, mpi_obj=mpi_obj, error=error)
+          end if
 	  PASS_ERROR(error)
        else
           RAISE_ERROR('Potential_Simple_initialise: no param_str present during TB init', error)
@@ -231,11 +242,20 @@ contains
 #endif
     else if (is_FilePot) then
        allocate(this%filepot)
-       call Initialise(this%filepot, args_str, mpi_obj, error=error)
+       if (this%little_clusters) then
+          call Initialise(this%filepot, args_str, error=error)
+       else
+          call Initialise(this%filepot, args_str, mpi_obj, error=error)
+       end if
+
        PASS_ERROR(error)
     else if (is_CallbackPot) then
        allocate(this%CallbackPot)
-       call Initialise(this%callbackpot, args_str, mpi=mpi_obj, error=error)
+       if (this%little_clusters) then
+          call Initialise(this%callbackpot, args_str, error=error)
+       else
+          call Initialise(this%callbackpot, args_str, mpi=mpi_obj, error=error)
+       end if
        PASS_ERROR(error)
     else if(is_wrapper) then
        this%is_wrapper = .true.
@@ -324,7 +344,6 @@ contains
     integer, pointer :: cluster_mark_p_postfix(:)
     integer, pointer :: old_cluster_mark_p(:)
     character(len=FIELD_LENGTH) :: cluster_mark_postfix 
-    logical save_mpi
 
     INIT_ERROR(error)
 
@@ -368,8 +387,12 @@ contains
 
     if (little_clusters) then
 
+       if (.not. this%little_clusters) then
+          RAISE_ERROR('Potential_Simple_calc: little_clusters=T in calc() args_str but not in initialise() args_str.', error)
+       end if
+
        if (present(e) .or. present(local_e) .or. present(df) .or. present(virial) .or. .not. present(f)) then
-            RAISE_ERROR('Potential_Simple_calc: little_clusters option only supports calcualtion of forces, not energies, local energies or virials', error)
+          RAISE_ERROR('Potential_Simple_calc: little_clusters option only supports calcualtion of forces, not energies, local energies or virials', error)
        endif
 
        ! must remove "little_clusters" from args_str so that recursion terminates
@@ -429,11 +452,8 @@ contains
 	  endif
           call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
 
-          ! Disable MPI for duration of calc() call, since we're doing parallelisatin at level of clusters
-          save_mpi = this%mpi%active
-          this%mpi%active = .false.
+          ! Disable MPI for duration of calc() call, since we're doing parallelisation at level of clusters
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
-          this%mpi%active = save_mpi
 
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)

@@ -389,7 +389,7 @@ program crack
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     call initialise(qmpot, params%qm_args, xmlfile, mpi_obj=mpi_glob)
+     call initialise(qmpot, trim(params%qm_args)//' little_clusters='//params%qm_little_clusters, xmlfile, mpi_obj=mpi_glob)
      call finalise(xmlfile)
      call Print(qmpot)
   end if
