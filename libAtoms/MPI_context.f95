@@ -34,10 +34,6 @@ module MPI_context_module
 use error_module
 use system_module
 
-#ifdef _MPI
-use mpi
-#endif
-
 implicit none
 
 private
@@ -153,7 +149,7 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -227,7 +223,7 @@ subroutine MPI_context_Finalise(this, end_of_program, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -257,7 +253,7 @@ subroutine MPI_context_free_context(this, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -283,7 +279,7 @@ subroutine MPI_context_Split_context(this, split_index, new_context, error)
   integer new_comm
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -315,7 +311,7 @@ function MPI_context_min_real(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -344,7 +340,7 @@ function MPI_context_max_real(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -373,7 +369,7 @@ function MPI_context_sum_int(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -402,7 +398,7 @@ function MPI_context_sum_real(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -431,7 +427,7 @@ function MPI_context_sum_complex(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -462,7 +458,7 @@ subroutine MPI_context_sum_in_place_real2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -495,7 +491,7 @@ subroutine MPI_context_sum_in_place_real3(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -528,7 +524,7 @@ subroutine MPI_context_sum_in_place_complex2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -561,7 +557,7 @@ subroutine MPI_context_sum_in_place_int0(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -592,7 +588,7 @@ subroutine MPI_context_sum_in_place_int1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -625,7 +621,7 @@ subroutine MPI_context_sum_in_place_real0(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -656,7 +652,7 @@ subroutine MPI_context_sum_in_place_real1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -689,7 +685,7 @@ subroutine MPI_context_sum_in_place_complex1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -719,7 +715,7 @@ subroutine MPI_context_bcast_int(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -742,7 +738,7 @@ subroutine MPI_context_bcast_int1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -765,7 +761,7 @@ subroutine MPI_context_bcast_int2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -789,7 +785,7 @@ subroutine MPI_context_bcast_logical(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -812,7 +808,7 @@ subroutine MPI_context_bcast_logical1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -835,7 +831,7 @@ subroutine MPI_context_bcast_logical2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -859,7 +855,7 @@ subroutine MPI_context_bcast_c(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -882,7 +878,7 @@ subroutine MPI_context_bcast_c1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -905,7 +901,7 @@ subroutine MPI_context_bcast_c2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -928,7 +924,7 @@ subroutine MPI_context_bcast_real(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -951,7 +947,7 @@ subroutine MPI_context_bcast_real1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -974,7 +970,7 @@ subroutine MPI_context_bcast_real2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -997,7 +993,7 @@ subroutine MPI_context_bcast_char(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -1020,7 +1016,7 @@ subroutine MPI_context_bcast_char1(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -1043,7 +1039,7 @@ subroutine MPI_context_bcast_char2(this, v, error)
 #endif
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -1096,7 +1092,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   integer, allocatable :: displs(:), counts(:)
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 #endif
 
   INIT_ERROR(error)
@@ -1144,7 +1140,7 @@ subroutine MPI_context_barrier(this, error)
   integer, intent(out), optional :: error
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 
   integer err
 #endif
@@ -1166,7 +1162,7 @@ subroutine MPI_context_cart_shift(this, direction, displ, source, dest, error)
   ! ---
 
 #ifdef _MPI
-!  include 'mpif.h'
+  include 'mpif.h'
 
   integer :: err
 #endif
@@ -1199,7 +1195,7 @@ subroutine MPI_context_sendrecv_c1a(this, &
   ! ---
 
 #ifdef _MPI
-!  include 'mpif.h'
+  include 'mpif.h'
 
   integer :: err
   integer :: status(MPI_STATUS_SIZE)
@@ -1237,7 +1233,7 @@ subroutine MPI_context_sendrecv_ra(this, &
   ! ---
 
 #ifdef _MPI
-!  include 'mpif.h'
+  include 'mpif.h'
 
   integer :: err
   integer :: status(MPI_STATUS_SIZE)
@@ -1267,7 +1263,7 @@ subroutine push_MPI_error(info, fn, line)
   ! ---
 
 #ifdef _MPI
-!include 'mpif.h'
+include 'mpif.h'
 
   character(MPI_MAX_ERROR_STRING) :: err_str
   integer :: err_len, err_status
