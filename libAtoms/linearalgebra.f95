@@ -414,9 +414,9 @@ module linearalgebra_module
   end interface check_size
 
   !% Update a measure of a recent average by decaying its current value and adding on a new sample
-  private :: update_exponential_average_s, update_exponential_average_v
+  private :: update_exponential_average_s, update_exponential_average_v, update_exponential_average_d2
   interface update_exponential_average
-     module procedure update_exponential_average_s, update_exponential_average_v
+     module procedure update_exponential_average_s, update_exponential_average_v, update_exponential_average_d2
   end interface update_exponential_average
 
 CONTAINS
@@ -4905,6 +4905,20 @@ CONTAINS
     average = f1*average + f2*x
 
   end subroutine update_exponential_average_v
+
+  subroutine update_exponential_average_d2(average,decay,x)
+
+    real(dp), intent(inout) :: average(:,:)
+    real(dp), intent(in)    :: decay, x(size(average,1),size(average,2))
+
+    real(dp) :: f1, f2
+
+    f1 = exp(-decay)
+    f2 = 1.0_dp - f1
+
+    average = f1*average + f2*x
+
+  end subroutine update_exponential_average_d2
 
   !
   ! If we need to bin some data in the range [a,b) with bin-width d, which bin (starting at 1) should
