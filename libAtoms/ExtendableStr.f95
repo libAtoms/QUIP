@@ -459,7 +459,7 @@ function string_cat_extendable_str(str, this)
   ! ---
 
   string_cat_extendable_str = str
-  string_cat_extendable_str(max(1,len(str))+1:) = string(this)
+  string_cat_extendable_str(max(1,len(str)+1):) = string(this)
 end function
 
 function extendable_str_cat_extendable_str(this, str)
