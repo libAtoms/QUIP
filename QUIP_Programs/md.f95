@@ -222,12 +222,12 @@ subroutine print_usage()
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
-subroutine do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step, override_intervals)
+subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step, override_intervals)
   type(md_params), intent(in) :: params
   type(DynamicalSystem), intent(inout) :: ds
   real(dp), intent(in) :: e
   type(potential), intent(in) :: pot
-  real(dp), allocatable, intent(in) :: restraint_stuff(:,:)
+  real(dp), allocatable, intent(in) :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
   type(Cinoutput), optional, intent(inout) :: traj_out
   integer, intent(in) :: i_step
   logical, optional :: override_intervals
@@ -241,7 +241,7 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step, over
   endif
   if (allocated(restraint_stuff)) then
      if (params%summary_interval > 0) then
-	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) call print_restraint_f(params, restraint_stuff)
+	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) call print_restraint_f(params, restraint_stuff, restraint_stuff_timeavg)
      endif
   endif
 
@@ -260,11 +260,12 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step, over
 
 end subroutine
 
-subroutine print_restraint_f(params, restraint_stuff)
+subroutine print_restraint_f(params, restraint_stuff, restraint_stuff_timeavg)
   type(md_params), intent(in) :: params
-  real(dp), intent(in) :: restraint_stuff(:,:)
+  real(dp), intent(in) :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
 
-  call print("R " // reshape( restraint_stuff, (/ 3*size(restraint_stuff,2) /) ))
+  call print("RI " // reshape( restraint_stuff, (/ 3*size(restraint_stuff,2) /) ))
+  call print("R " // reshape( restraint_stuff_timeavg, (/ 3*size(restraint_stuff_timeavg,2) /) ))
 end subroutine
 
 subroutine print_summary(params, ds, e)
@@ -414,7 +415,7 @@ implicit none
   type(extendable_str) :: params_es
 
   logical :: store_constraint_force
-  real(dp), allocatable :: restraint_stuff(:,:)
+  real(dp), allocatable :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
 
   call system_initialise()
 
@@ -444,7 +445,10 @@ implicit none
 
   call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
-  if (ds%Nrestraints > 0) allocate(restraint_stuff(3,ds%Nrestraints))
+  if (ds%Nrestraints > 0) then
+     allocate(restraint_stuff(3,ds%Nrestraints))
+     allocate(restraint_stuff_timeavg(3,ds%Nrestraints))
+  endif
 
   call finalise(params_es)
 
@@ -486,10 +490,11 @@ implicit none
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = forces(:,i) / ElementMass(ds%atoms%Z(i))
 
   call calc_restraint_stuff(ds, restraint_stuff)
+  restraint_stuff_timeavg = restraint_stuff
   if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
     call system_abort('Impossible failure to assign_ptr for forces')
   forces_p = forces
-  call do_prints(params, ds, e, pot, restraint_stuff, traj_out, 0, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, 0, override_intervals = .true.)
 
   call calc_connect(ds%atoms)
   max_moved = 0.0_dp
@@ -512,6 +517,7 @@ implicit none
 
     call advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
     call calc_restraint_stuff(ds, restraint_stuff)
+    call update_exponential_average(restraint_stuff_timeavg, params%dt/ds%avg_time, restraint_stuff)
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
@@ -520,14 +526,14 @@ implicit none
     if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
       call system_abort('Impossible failure to assign_ptr for forces')
     forces_p = forces
-    call do_prints(params, ds, e, pot, restraint_stuff, traj_out, i_step)
+    call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step)
 
     call system_timer("md/print")
 
   end do
   call system_timer("md_loop")
 
-  call do_prints(params, ds, e, pot, restraint_stuff, traj_out, params%N_steps, override_intervals = .true.)
+  call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, params%N_steps, override_intervals = .true.)
 
   call system_finalise()
 

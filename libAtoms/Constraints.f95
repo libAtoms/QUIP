@@ -454,7 +454,7 @@ contains
        pos = at%pos(:,o)
     end if
 
-    call call_constraint_sub(this%func,pos,velo,t,this%data,this%C,this%dC_dr,this%dC_dt)
+    call constraint_calculate_values(this,pos,velo,t)
 
   end subroutine constraint_calculate_values_at
   
