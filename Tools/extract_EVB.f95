@@ -180,7 +180,7 @@ program extract_EVB
        if (.not. get_value(at%params,'EVB1_energy',energy1)) then
           call system_abort('Could not find EVB1_energy')
        endif
-       if (.not. get_value(at%params,'EVB1_energy',energy2)) then
+       if (.not. get_value(at%params,'EVB2_energy',energy2)) then
           call system_abort('Could not find EVB2_energy')
        endif
 
