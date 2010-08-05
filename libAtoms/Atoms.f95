@@ -1809,6 +1809,11 @@ contains
     call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom',error)
     PASS_ERROR(error)
 
+    if (present(mass)) then
+       call check_size('Mass',mass,size(Z), 'Add_Atom', error)
+       PASS_ERROR(error)
+    end if
+
     if (present(travel)) then
        call check_size('Travel',travel,(/3,size(Z)/),'Add_Atom', error)
        PASS_ERROR(error)
@@ -1922,7 +1927,8 @@ contains
        end if
     else if (present(mass)) then
        ! mass specified but property doesn't yet exist, so create it...
-       call add_property(this, 'mass', ElementMass(this%Z), ptr=this%mass)
+       call add_property(this, 'mass', ElementMass(this%Z), ptr=this%mass, error=error)
+       PASS_ERROR(error)
        ! ... and then override for new atoms
        this%mass(oldN+1:this%N) = mass
     end if
