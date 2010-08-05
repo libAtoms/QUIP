@@ -324,6 +324,7 @@ contains
     integer, pointer :: cluster_mark_p_postfix(:)
     integer, pointer :: old_cluster_mark_p(:)
     character(len=FIELD_LENGTH) :: cluster_mark_postfix 
+    logical save_mpi
 
     INIT_ERROR(error)
 
@@ -428,7 +429,12 @@ contains
 	  endif
           call print('ARGS0 | '//new_args_str,PRINT_VERBOSE)
 
+          ! Disable MPI for duration of calc() call, since we're doing parallelisatin at level of clusters
+          save_mpi = this%mpi%active
+          this%mpi%active = .false.
           call calc(this, cluster, f=f_cluster, args_str=new_args_str)
+          this%mpi%active = save_mpi
+
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           f(:,i) = f_cluster(:,1)
           deallocate(f_cluster)
