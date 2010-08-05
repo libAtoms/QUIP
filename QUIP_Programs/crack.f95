@@ -389,13 +389,7 @@ program crack
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     if (params%qm_little_clusters) then
-        ! Don't parallelise qmpot if we're doing little clusters
-        call initialise(qmpot, params%qm_args, xmlfile)
-     else
-        ! Pass mpi_glob, so parallelise over k-points if they are defined in .xml
-        call initialise(qmpot, params%qm_args, xmlfile, mpi_obj=mpi_glob)
-     end if
+     call initialise(qmpot, params%qm_args, xmlfile, mpi_obj=mpi_glob)
      call finalise(xmlfile)
      call Print(qmpot)
   end if
@@ -639,10 +633,6 @@ program crack
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
   end if
 
-  call system_timer('initialisation')
-
-  !** End of initialisation **
-
   call setup_parallel(classicalpot, ds%atoms, e=energy, f=f,args_str=params%classical_args_str)
 
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
@@ -663,6 +653,10 @@ program crack
     call print_title('Force_load_step is true,  applying load')
     call crack_apply_load_increment(ds%atoms, params%crack_G_increment)
   end if
+
+  call system_timer('initialisation')
+
+  !** End of initialisation **
 
   !****************************************************************
   !*                                                              *
