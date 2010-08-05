@@ -1732,7 +1732,7 @@ contains
           cellsNb = cellsNb*2
           cellsNc = cellsNc*2
        end if
-       call connection_initialise(connect, at%N, at%pos, at%lattice, at%g)
+       call connection_initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g)
        call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
        call partition_atoms(connect, at)
        
