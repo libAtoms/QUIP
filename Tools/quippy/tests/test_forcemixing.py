@@ -86,6 +86,7 @@ if hasattr(quippy, 'Potential'):
          system_reseed_rng(2)
          self.pot1 = Potential('IP SW label="PRB_31_plus_H"', param_str=xml)
          self.pot2 = Potential('IP SW label="eps_2.6"', param_str=xml)
+         self.pot3 = Potential('IP SW label="eps_2.6" little_clusters=T', param_str=xml)
 
          dia = diamond(5.44, 14)
          self.at = supercell(dia, 4, 4, 4)
@@ -651,7 +652,7 @@ if hasattr(quippy, 'Potential'):
          create_hybrid_weights(self.at, buffer_hops=3)
          self.at.add_property('force', 0.0, n_cols=3)
          f = fzeros((3,self.at.n))
-         self.pot2.calc(self.at, f=f, args_str="little_clusters=T cluster_calc_connect=T buffer_hops=3")
+         self.pot3.calc(self.at, f=f, args_str="little_clusters=T cluster_calc_connect=T buffer_hops=3")
 
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4264523725      -1.4614174250      -0.5027997001
