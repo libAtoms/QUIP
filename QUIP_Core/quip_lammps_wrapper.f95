@@ -57,7 +57,7 @@ module QUIP_LAMMPS_wrapper_module
          call finalise(at)
          call initialise(at,(nlocal+nghost),lattice)
          call atoms_set_cutoff(at,cutoff(pot))
-         call connection_fill(at%connect,at%N,nn_guess=2*maxval(quip_num_neigh)) 
+         call connection_fill(at%connect,at%N,at%N,nn_guess=2*maxval(quip_num_neigh)) 
       endif
 
       ! Transport atomic numbers and positions.
