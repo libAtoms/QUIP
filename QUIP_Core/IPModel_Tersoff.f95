@@ -139,12 +139,13 @@ end subroutine IPModel_Tersoff_Finalise
 !% Derivatives are taken from M. Tang, Ph.D. Thesis, MIT 1995.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str)
   type(IPModel_Tersoff), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), intent(in), optional :: args_str 
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ki, k
@@ -175,6 +176,11 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial)
   real(dp) :: db_ij_dr_ij_mag, db_ij_dr_ik_mag, db_ij_dr_jk_mag
   real(dp) :: dV_ij_A_dr_ij_mag, dV_ij_A_dr_ik_mag, dV_ij_A_dr_jk_mag
 
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
@@ -182,10 +188,31 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  atom_mask_pointer => null()
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Tersoff_Calc args_str')) &
+     call system_abort("IPModel_Tersoff_Calc failed to parse args_str='"//trim(args_str)//"'")
+     call finalise(params)
+
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        call system_abort("IPModel_Tersoff_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
+
   do i=1, at%N
     if (this%mpi%active) then
       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
     endif
+
+     if(associated(atom_mask_pointer)) then
+        if(.not. atom_mask_pointer(i)) cycle
+     endif
 
     allocate(z_ij(atoms_n_neighbours(at,i)))
     ti = get_type(this%type_of_atomic_num, at%Z(i))
@@ -372,6 +399,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial)
   if (present(local_e)) call sum_in_place(this%mpi, local_e)
   if (present(f)) call sum_in_place(this%mpi, f)
   if (present(virial)) call sum_in_place(this%mpi, virial)
+  atom_mask_pointer => null()
 
 end subroutine IPModel_Tersoff_Calc
 
