@@ -103,10 +103,14 @@ interface sum
 end interface
 public :: sum_in_place
 interface sum_in_place
+  module procedure MPI_context_sum_in_place_int0
   module procedure MPI_context_sum_in_place_int1
-  module procedure MPI_context_sum_in_place_real1, MPI_context_sum_in_place_real2
+  module procedure MPI_context_sum_in_place_real0
+  module procedure MPI_context_sum_in_place_real1
+  module procedure MPI_context_sum_in_place_real2
   module procedure MPI_context_sum_in_place_real3
-  module procedure MPI_context_sum_in_place_complex1, MPI_context_sum_in_place_complex2
+  module procedure MPI_context_sum_in_place_complex1
+  module procedure MPI_context_sum_in_place_complex2
 end interface
 
 public :: collect
@@ -544,6 +548,37 @@ subroutine MPI_context_sum_in_place_complex2(this, v, error)
 #endif
 end subroutine  MPI_context_sum_in_place_complex2
 
+subroutine MPI_context_sum_in_place_int0(this, v, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(inout) :: v
+  integer, intent(out), optional :: error
+
+#ifdef MPI_1
+  integer :: v_sum
+#endif
+#ifdef _MPI
+  integer :: err
+#endif
+
+#ifdef _MPI
+!include 'mpif.h'
+#endif
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  call MPI_allreduce(v, v_sum, 1, MPI_INTEGER, MPI_SUM, this%communicator, err)
+  v = v_sum
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, 1, MPI_INTEGER, MPI_SUM, this%communicator, err)
+#endif
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_sum_in_place_int0
+
 subroutine MPI_context_sum_in_place_int1(this, v, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:)
@@ -576,6 +611,37 @@ subroutine MPI_context_sum_in_place_int1(this, v, error)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_sum_in_place_int1
+
+subroutine MPI_context_sum_in_place_real0(this, v, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(inout) :: v
+  integer, intent(out), optional :: error
+
+#ifdef MPI_1
+  real(dp) :: v_sum
+#endif
+#ifdef _MPI
+  integer err
+#endif
+
+#ifdef _MPI
+!include 'mpif.h'
+#endif
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+#ifdef MPI_1
+  call MPI_allreduce(v, v_sum, 1, MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+  v = v_sum
+#else
+  call MPI_allreduce(MPI_IN_PLACE, v, 1, MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
+#endif
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_sum_in_place_real0
 
 subroutine MPI_context_sum_in_place_real1(this, v, error)
   type(MPI_context), intent(in) :: this
@@ -1110,6 +1176,9 @@ subroutine MPI_context_cart_shift(this, direction, displ, source, dest, error)
 #ifdef _MPI
   call mpi_cart_shift(this%communicator, direction, displ, source, dest, err)
   PASS_MPI_ERROR(err, error)
+#else
+  source = 0
+  dest = 0
 #endif
 end subroutine MPI_context_cart_shift
 

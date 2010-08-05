@@ -39,18 +39,9 @@ module DomainDecomposition_module
 
   implicit none
 
-  character(TABLE_STRING_LENGTH), parameter :: Z_STR = "z"
-  character(TABLE_STRING_LENGTH), parameter :: MASS_STR = "mass"
-  character(TABLE_STRING_LENGTH), parameter :: SPECIES_STR = "species"
-  character(TABLE_STRING_LENGTH), parameter :: TRAVEL_STR = "travel"
-  character(TABLE_STRING_LENGTH), parameter :: POS_STR = "pos"
-  character(TABLE_STRING_LENGTH), parameter :: VELO_STR = "velo"
-  character(TABLE_STRING_LENGTH), parameter :: LOCAL_TO_GLOBAL_STR = &
-       "local_to_global"
-  character(TABLE_STRING_LENGTH), parameter :: GHOSTS_R_STR = "ghosts_r"
-  character(TABLE_STRING_LENGTH), parameter :: GHOSTS_L_STR = "ghosts_l"
-  character(TABLE_STRING_LENGTH), parameter :: LAST_POS_STR = "last_pos"
+  private
 
+  public :: DomainDecomposition
   type DomainDecomposition
 
      integer                    :: Ntotal               !% Number of total particles in this simulation
@@ -67,19 +58,18 @@ module DomainDecomposition_module
 
      real(DP)                   :: lower(3)               !% Lower domain boundary, in fraction of the total cell
      real(DP)                   :: upper(3)               !% Upper domain boundary, in fraction of the total cell
+     real(DP)                   :: center(3)              !% Center of the domain
      real(DP)                   :: lower_with_border(3)   !% Lower domain boundary, including border
      real(DP)                   :: upper_with_border(3)   !% Upper domain boundary, including border
 
      type(MPI_context)          :: mpi                  !% MPI communicator
      logical                    :: periodic(3)          !% Periodicity for domain decomposition
      integer                    :: l(3), r(3)           !% Ranks of neighboring domains in x-, y- and z-direction
-     real(DP)                   :: off_l(3), off_r(3)   !% Distance vector to neighboring domaind
+     real(DP)                   :: off_l(3), off_r(3)   !% Distance vector to neighboring domain
 
-     real(DP), pointer          :: last_pos(:, :)     !% Last particle positions
-
-     type(Table)                :: state_properties   !% Fields to communicate if for particles
-     type(Table)                :: ghost_properties   !% Fields to communicate for ghosts
-     type(Table)                :: backc_properties   !% Fields for back-communication after force computations     
+     type(Dictionary)           :: state_properties   !% Fields to communicate if for particles
+     type(Dictionary)           :: ghost_properties   !% Fields to communicate for ghosts
+     type(Dictionary)           :: backc_properties   !% Fields for back-communication after force computations     
 
      logical, allocatable       :: state_mask(:)
      logical, allocatable       :: ghost_mask(:)
@@ -108,14 +98,17 @@ module DomainDecomposition_module
      
   endtype DomainDecomposition
 
+  public :: initialise
   interface initialise
      module procedure domain_decomposition_initialise
   endinterface
 
+  public :: finalise
   interface finalise
      module procedure domain_decomposition_finalise
   endinterface
 
+  public :: allocate
   interface allocate
      module procedure domain_decomposition_allocate
   endinterface
@@ -124,6 +117,7 @@ module DomainDecomposition_module
      module procedure domain_decomposition_update_sendrecv_masks
   endinterface
 
+  public :: enable
   interface enable
      module procedure domain_decomposition_enable
   endinterface enable
@@ -132,18 +126,26 @@ module DomainDecomposition_module
      module procedure domain_decomposition_is_in_domain
   endinterface is_in_domain
 
+  interface sdompos
+     module procedure sdompos1, sdompos3
+  endinterface
+
+  public :: set_border
   interface set_border
      module procedure domain_decomposition_set_border
   endinterface
 
+  public :: communicate_domain
   interface communicate_domain
      module procedure domain_decomposition_communicate_domain
   endinterface
 
+  public :: communicate_ghosts
   interface communicate_ghosts
      module procedure domain_decomposition_communicate_ghosts
   endinterface
 
+  public :: communicate_forces
   interface communicate_forces
      module procedure domain_decomposition_communicate_forces
   endinterface
@@ -200,7 +202,7 @@ contains
        this%verlet_shell   = verlet_shell
     endif
 
-    call print("DomainDecomposition : Parallelization using domain decomposition (via MPI) over " // &
+    call print("DomainDecomposition : Parallelisation using domain decomposition (via MPI) over " // &
          this%decomposition // "domains.")
 
     call initialise(this%mpi, &
@@ -237,9 +239,11 @@ contains
 
     this%lower  = (1.0_DP*this%mpi%my_coords)     / this%decomposition
     this%upper  = (1.0_DP*(this%mpi%my_coords+1)) / this%decomposition
+    this%center = (this%lower + this%upper)/2
 
     call print("DomainDecomposition : lower              = ( " // this%lower // " )", PRINT_VERBOSE)
     call print("DomainDecomposition : upper              = ( " // this%upper // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : center             = ( " // this%center // " )", PRINT_VERBOSE)
 
     this%off_r  = 0.0_DP
     this%off_l  = 0.0_DP
@@ -276,28 +280,27 @@ contains
     this%nit_g         = 0
 
 
-    ! Additional properties
+    ! Additional properties (integers)
+    call add_property(at, "local_to_global", 0, ptr=this%local_to_global)
+    call add_property(at, "ghosts_r", 0, ptr=this%ghosts_r)
+    call add_property(at, "ghosts_l", 0, ptr=this%ghosts_l)
 
-    call add_property(at, LAST_POS_STR, (/ 0.0_DP, 0.0_DP, 0.0_DP /), ptr2=this%last_pos)
-    call add_property(at, LOCAL_TO_GLOBAL_STR, 0, ptr=this%local_to_global)
-    call add_property(at, GHOSTS_R_STR, 0, ptr=this%ghosts_r)
-    call add_property(at, GHOSTS_L_STR, 0, ptr=this%ghosts_l)
+    call set_value(this%state_properties, "z", .true.)
+    call set_value(this%state_properties, "mass", .true.)
+    call set_value(this%state_properties, "travel", .true.)
+    call set_value(this%state_properties, "pos", .true.)
+    call set_value(this%state_properties, "velo", .true.)
+    call set_value(this%ghost_properties, "move_mask", .true.)
+    call set_value(this%ghost_properties, "damp_mask", .true.)
+    call set_value(this%ghost_properties, "thermostat_region", .true.)
+    call set_value(this%state_properties, "local_to_global", .true.)
 
-    call append(this%state_properties, Z_STR)
-!    call append(this%state_properties, SPECIES_STR)
-    call append(this%state_properties, MASS_STR)
-    call append(this%state_properties, TRAVEL_STR)
-    call append(this%state_properties, POS_STR)
-    call append(this%state_properties, VELO_STR)
-    call append(this%state_properties, LOCAL_TO_GLOBAL_STR)
-
-    call append(this%ghost_properties, Z_STR)
-!    call append(this%ghost_properties, SPECIES_STR)
-    call append(this%ghost_properties, MASS_STR)
-    call append(this%ghost_properties, TRAVEL_STR)
-    call append(this%ghost_properties, POS_STR)
-    call append(this%ghost_properties, VELO_STR)
-    call append(this%ghost_properties, LOCAL_TO_GLOBAL_STR)
+    call set_value(this%ghost_properties, "z", .true.)
+    call set_value(this%ghost_properties, "mass", .true.)
+    call set_value(this%ghost_properties, "travel", .true.)
+    call set_value(this%ghost_properties, "pos", .true.)
+    call set_value(this%ghost_properties, "velo", .true.)
+    call set_value(this%ghost_properties, "local_to_global", .true.)
 
   endsubroutine domain_decomposition_initialise
 
@@ -589,6 +592,54 @@ contains
   endsubroutine domain_decomposition_finalise
 
 
+  !% Compute the scaled position as the minimum image from the domain center
+  !% for a single coordinate only
+  function sdompos1(this, at, r, d)
+    implicit none
+
+    type(DomainDecomposition), intent(in)  :: this
+    type(Atoms), intent(in)                :: at
+    real(DP), intent(in)                   :: r(3)
+    integer, intent(in)                    :: d
+
+    real(DP)                               :: sdompos1
+
+    ! ---
+
+    real(DP)  :: s
+
+    ! ---
+
+    ! center is in scaled coordinates
+    s         = (at%g(d, :) .dot. r) - this%center(d)
+    sdompos1  = s - nint(s) + this%center(d)
+
+  endfunction sdompos1
+
+
+  !% Compute the scaled position as the minimum image from the domain center
+  function sdompos3(this, at, r)
+    implicit none
+
+    type(DomainDecomposition), intent(in)  :: this
+    type(Atoms), intent(in)                :: at
+    real(DP), intent(in)                   :: r(3)
+
+    real(DP)                               :: sdompos3(3)
+
+    ! ---
+
+    real(DP)  :: s(3)
+
+    ! ---
+
+    ! center is in scaled coordinates
+    s         = (at%g .mult. r) - this%center
+    sdompos3  = s - nint(s) + this%center
+
+  endfunction sdompos3
+
+
   !% Add particle data to the send buffer
   subroutine pack_state_buffer(this, at, i, n, buffer)
     implicit none
@@ -610,14 +661,13 @@ contains
 
 
   !% Copy particle data from the receive buffer
-  subroutine unpack_state_buffer(this, at, n, buffer, off)
+  subroutine unpack_state_buffer(this, at, n, buffer)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
     integer, intent(in)                       :: n
     character(1), intent(in)                  :: buffer(:)
-    real(DP), intent(in)                      :: off(3)
 
     ! ---
 
@@ -663,7 +713,7 @@ contains
 
     integer   :: n_send_l, n_send_r, n_recv_l, n_recv_r
 
-    real(DP)  :: off_l(3), off_r(3)
+    real(DP)  :: off_l(3), off_r(3), s
 
     ! ---
 
@@ -699,13 +749,15 @@ contains
 
           do i = 1, oldnatloc
 
-             if ((at%g(d, :) .dot. at%pos(:, i)) >= this%upper(d)) then
+             s = sdompos(this, at, at%pos(:, i), d)
+!             call print("d = " // d // ", i = " // i // ", s = " // s // ", lower = " // this%lower(d) // ", upper = " // this%upper(d))
+             if (s >= this%upper(d)) then
                 ! Send to the right
 
                 call pack_state_buffer(this, at, i, n_send_r, this%send_r)
 !                n_send_r = n_send_r + 1
 
-             else if ((at%g(d, :) .dot. at%pos(:, i)) < this%lower(d)) then
+             else if (s < this%lower(d)) then
                 ! Send to the left
 
                 call pack_state_buffer(this, at, i, n_send_l, this%send_l)
@@ -724,19 +776,7 @@ contains
 
           enddo
 
-          !write (ilog, *)  d, "r: ", n_send_r
-          !write (ilog, *)  d, "l: ", n_send_l
-
           this%n_send_p_tot = this%n_send_p_tot + n_send_r + n_send_l
-
-!         call mpi_sendrecv( &
-!               this%send_r, n_send_r, MPI_DOUBLE_PRECISION, this%r(d), 0, &
-!               this%recv_l, this%state_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%l(d), 0, &
-!               this%comm, status, i)
-!          PASS_MPI_ERROR(i, error)
-!
-!          call mpi_get_count(status, MPI_DOUBLE_PRECISION, n_recv_l, i)
-!          PASS_MPI_ERROR(i, error)
 
           call sendrecv(this%mpi, &
                this%send_r(1:n_send_r), this%r(d), 0, &
@@ -744,22 +784,15 @@ contains
                n_recv_l, error)
           PASS_ERROR(error)
 
-!          call mpi_sendrecv( &
-!               this%send_l, n_send_l, MPI_DOUBLE_PRECISION, this%l(d), 1, &
-!               this%recv_r, this%state_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%r(d), 1, &
-!               this%comm, status, i)
-!          PASS_MPI_ERROR(i, error)
-!
-!          call mpi_get_count(status, MPI_DOUBLE_PRECISION, n_recv_r, i)
-!          PASS_MPI_ERROR(i, error)
-
           call sendrecv(this%mpi, &
                this%send_l(1:n_send_l), this%l(d), 1, &
                this%recv_r, this%r(d), 1, &
                n_recv_r, error)
           PASS_ERROR(error)
 
-          call print("DomainDecomposition : Received state buffers. Sizes: l = " // n_recv_l/this%state_buffer_size // ", r = " // n_recv_r/this%state_buffer_size)
+          call print("DomainDecomposition : Send state buffers. Sizes: l = " // n_send_l/this%state_buffer_size // ", r = " // n_send_r/this%state_buffer_size, PRINT_VERBOSE)
+
+          call print("DomainDecomposition : Received state buffers. Sizes: l = " // n_recv_l/this%state_buffer_size // ", r = " // n_recv_r/this%state_buffer_size, PRINT_VERBOSE)
 
           this%n_recv_p_tot = this%n_recv_p_tot + n_recv_r/this%state_buffer_size + n_recv_l/this%state_buffer_size
 
@@ -771,8 +804,8 @@ contains
           ! This will be done by inbox
           off_r(d) = this%off_r(d)
 
-          call unpack_state_buffer(this, at, n_recv_l, this%recv_l, off_l)
-          call unpack_state_buffer(this, at, n_recv_r, this%recv_r, off_r)
+          call unpack_state_buffer(this, at, n_recv_l, this%recv_l)
+          call unpack_state_buffer(this, at, n_recv_r, this%recv_r)
 
        endif
 
@@ -780,7 +813,7 @@ contains
 
     at%N = at%Ndomain
 
-    call print("Total number of atoms = " // sum(this%mpi, at%N))
+    call print("DomainDecomposition : Total number of atoms = " // sum(this%mpi, at%N), PRINT_VERBOSE)
 
     call system_timer("domain_decomposition_communicate_domain")
 
@@ -788,14 +821,13 @@ contains
 
 
   !% Copy particle data from the (ghost) receive buffer
-  subroutine unpack_ghost_buffer(this, at, n, buffer, off)
+  subroutine unpack_ghost_buffer(this, at, n, buffer)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
     type(Atoms), intent(inout)                :: at
     integer, intent(in)                       :: n
     character(1), intent(in)                  :: buffer(:)
-    real(DP), intent(in)                      :: off(3)
 
     ! ---
 
@@ -830,7 +862,7 @@ contains
     integer   :: i, d, list_off_r, list_off_l
     integer   :: n_send_r, n_send_l, n_recv_r, n_recv_l
 
-    real(DP)  :: off_l(3), off_r(3)
+    real(DP)  :: off_l(3), off_r(3), s
 
     ! ---
 
@@ -890,7 +922,9 @@ contains
 
              do i = 1, at%N
 !                if (PNC(at, i, d) >= upper(d)) then
-                if ((at%g(d, :) .dot. at%pos(:, i)) >= upper(d)) then
+                s = sdompos(this, at, at%pos(:, i), d)
+!                call print("d = " // d // ", i = " // i // ", s = " // s // ", lower = " // lower(d) // ", upper = " // upper(d))
+                if (s >= upper(d)) then
                    call pack_buffer(at%properties, this%ghost_mask, &
                         i, &
                         n_send_r, this%send_r)
@@ -898,7 +932,7 @@ contains
                    this%ghosts_r(list_off_r+this%n_ghosts_r(d)) = this%local_to_global(i)
 
 !                else if (PNC(at, i, d) < lower(d)) then
-                else if ((at%g(d, :) .dot. at%pos(:, i)) < lower(d)) then
+                else if (s < lower(d)) then
                    call pack_buffer(at%properties, this%ghost_mask, &
                         i, &
                         n_send_l, this%send_l)
@@ -927,29 +961,11 @@ contains
 
           this%n_send_g_tot = this%n_send_g_tot + this%n_ghosts_r(d) + this%n_ghosts_l(d)
 
-!          call mpi_sendrecv( &
-!               this%send_r, n_send_r, MPI_DOUBLE_PRECISION, this%r(d), 0, &
-!               this%recv_l, this%ghost_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%l(d), 0, &
-!               this%comm, status, i)
-!          PASS_MPI_ERROR(i, error)
-!
-!          call mpi_get_count(status, MPI_DOUBLE_PRECISION, n_recv_l, i)
-!          PASS_MPI_ERROR(i, error)
-
           call sendrecv(this%mpi, &
                this%send_r(1:n_send_r), this%r(d), 0, &
                this%recv_l, this%l(d), 0, &
                n_recv_l, error)
           PASS_ERROR(error)
-
-!          call mpi_sendrecv( &
-!               this%send_l, n_send_l, MPI_DOUBLE_PRECISION, this%l(d), 1, &
-!               this%recv_r, this%ghost_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%r(d), 1, &
-!               this%comm, status, i)
-!          PASS_MPI_ERROR(i, error)
-!
-!          call mpi_get_count(status, MPI_DOUBLE_PRECISION, n_recv_r, i)
-!          PASS_MPI_ERROR(i, error)
 
           call sendrecv(this%mpi, &
                this%send_l(1:n_send_l), this%l(d), 1, &
@@ -957,7 +973,8 @@ contains
                n_recv_r, error)
           PASS_ERROR(error)
 
-          call print("DomainDecomposition : Received ghost buffers. Sizes: l = " // n_recv_l/this%ghost_buffer_size // ", r = " // n_recv_r/this%ghost_buffer_size)
+          call print("DomainDecomposition : Send ghost buffers. Sizes: l = " // n_send_l/this%ghost_buffer_size // ", r = " // n_send_r/this%ghost_buffer_size, PRINT_VERBOSE)
+          call print("DomainDecomposition : Received ghost buffers. Sizes: l = " // n_recv_l/this%ghost_buffer_size // ", r = " // n_recv_r/this%ghost_buffer_size, PRINT_VERBOSE)
 
           this%n_recv_g_tot = this%n_recv_g_tot + &
                n_recv_r/this%ghost_buffer_size + &
@@ -969,8 +986,8 @@ contains
           off_r    = 0.0_DP
           off_r(d) = this%off_r(d)
 
-          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l, off_l)
-          call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r, off_r)
+          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l)
+          call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r)
 
           list_off_r = list_off_r + this%n_ghosts_r(d)
           list_off_l = list_off_l + this%n_ghosts_l(d)
@@ -1132,7 +1149,7 @@ contains
     implicit none
 
     type(Dictionary), intent(in)      :: this          !% Dictionary object
-    type(Table), intent(in)           :: keys          !% List of keys
+    type(Dictionary), intent(in)      :: keys          !% List of keys
     logical, intent(out)              :: mask(this%N)  !% True if in keys
     integer, intent(out), optional    :: s             !% Size of the buffer
     integer, intent(out), optional :: error
@@ -1148,34 +1165,37 @@ contains
     mask = .false.
     s = 0
     do i = 1, keys%N
-       entry_i = lookup_entry_i(this, keys%str(1, i))
+       entry_i = lookup_entry_i(this, string(keys%keys(i)))
        if (entry_i == -1) then
-          RAISE_ERROR("Could not find key '" // trim(keys%str(1, i)) // "'.", error)
+!          RAISE_ERROR("Could not find key '" // keys%keys(i) // "'.", error)
+          call print("DomainDecomposition : WARNING - Could not find key '" // keys%keys(i) // "', this property will not be communicated.", PRINT_VERBOSE)
+       else
+
+          select case(this%entries(entry_i)%type)
+
+          case (T_REAL_A)
+             s = s + sizeof(this%entries(entry_i)%r_a(1))
+
+          case (T_INTEGER_A)
+             s = s + sizeof(this%entries(entry_i)%i_a(1))
+
+          case (T_LOGICAL_A)
+             s = s + sizeof(this%entries(entry_i)%l_a(1))
+
+          case (T_REAL_A2)
+             s = s + sizeof(this%entries(entry_i)%r_a2(:, 1))
+
+          case (T_INTEGER_A2)
+             s = s + sizeof(this%entries(entry_i)%i_a2(:, 1))
+
+          case default
+             RAISE_ERROR("Don't know how to handle entry type " // this%entries(entry_i)%type // " (key '" // this%keys(entry_i) // "').", error)
+
+          endselect
+
+          mask(entry_i) = .true.
+
        endif
-
-       select case(this%entries(entry_i)%type)
-
-       case (T_REAL_A)
-          s = s + sizeof(this%entries(entry_i)%r_a(1))
-
-       case (T_INTEGER_A)
-          s = s + sizeof(this%entries(entry_i)%i_a(1))
-
-       case (T_LOGICAL_A)
-          s = s + sizeof(this%entries(entry_i)%l_a(1))
-
-       case (T_REAL_A2)
-          s = s + sizeof(this%entries(entry_i)%r_a2(:, 1))
-
-       case (T_INTEGER_A2)
-          s = s + sizeof(this%entries(entry_i)%i_a2(:, 1))
-
-       case default
-          RAISE_ERROR("Don't know how to handle entry type " // this%entries(entry_i)%type // " (key '" // this%keys(entry_i) // "').", error)
-
-       endselect
-
-       mask(entry_i) = .true.
     enddo
 
   endsubroutine dictionary_keys_to_mask

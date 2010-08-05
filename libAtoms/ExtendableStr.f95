@@ -112,6 +112,12 @@ interface operator(//)
    module procedure extendable_str_cat_extendable_str
 end interface operator(//)
 
+public :: assignment(=)
+interface assignment(=)
+   module procedure extendable_str_assign_string
+   module procedure string_assign_extendable_str
+endinterface
+
 contains
 
 subroutine extendable_str_initialise(this, copy_from)
@@ -473,5 +479,20 @@ function extendable_str_cat_extendable_str(this, str)
   call initialise(extendable_str_cat_extendable_str, this)
   call concat(extendable_str_cat_extendable_str, string(str))
 end function
+
+subroutine extendable_str_assign_string(to, from)
+  type(extendable_str), intent(out)  :: to
+  character(*), intent(in)           :: from
+
+  call initialise(to)
+  call concat(to, from)
+endsubroutine extendable_str_assign_string
+
+subroutine string_assign_extendable_str(to, from)
+  type(extendable_str), intent(in)  :: from
+  character(from%len), intent(out)  :: to
+
+  to = string(from)
+endsubroutine string_assign_extendable_str
 
 end module extendable_str_module

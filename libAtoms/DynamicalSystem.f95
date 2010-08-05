@@ -64,6 +64,7 @@ module dynamicalsystem_module
    use group_module
    use constraints_module
    use thermostat_module
+   use mpi_context_module
    
    implicit none
 
@@ -1051,13 +1052,15 @@ contains
    !% Return the temperature, assuming each degree of freedom contributes
    !% $\frac{1}{2}kT$. By default only moving and thermostatted atoms are
    !% included --- this can be overriden by setting 'include_all' to true.
-   function temperature(this, property, value, include_all, instantaneous)
-
+   function temperature(this, property, value, include_all, instantaneous, &
+        mpi_obj, error)
       type(DynamicalSystem), intent(in) :: this
       character(len=*), intent(in), optional  :: property
       integer, intent(in), optional  :: value
       logical, intent(in), optional  :: include_all
       logical, intent(in), optional  :: instantaneous
+      type(MPI_context), intent(in), optional  :: mpi_obj
+      integer, intent(out), optional  :: error
       real(dp)                          :: temperature
 
       logical ::  my_include_all, my_instantaneous
@@ -1069,17 +1072,20 @@ contains
       my_include_all = optional_default(.false., include_all)
 
       if (my_instantaneous) then
-	nullify(property_p)
-	if (present(property)) then
-	  if (.not. present(value)) call system_abort("temperature called with property but no value to match")
-	  if (.not. assign_pointer(this%atoms, trim(property), property_p)) &
-	    call system_abort("temperature failed to assign integer pointer for property '"//trim(property)//"'")
-	endif
+         nullify(property_p)
+         if (present(property)) then
+            if (.not. present(value)) then
+               RAISE_ERROR("temperature called with property but no value to match", error)
+            endif
+            if (.not. assign_pointer(this%atoms, trim(property), property_p)) then
+               RAISE_ERROR("temperature failed to assign integer pointer for property '"//trim(property)//"'", error)
+            endif
+         endif
 
 	temperature = 0.0_dp
 	N = 0
 	Ndof = 0.0_dp
-	do i = 1,this%N
+	do i = 1,this%atoms%Ndomain
 	   if (associated(property_p)) then
 	      if (property_p(i) == value .and. this%atoms%move_mask(i) == 1) then
 		 temperature = temperature + this%atoms%mass(i) * norm2(this%atoms%velo(:,i))
@@ -1094,6 +1100,15 @@ contains
 	      end if
 	   end if
 	end do
+
+        if (present(mpi_obj)) then
+           call sum_in_place(mpi_obj, temperature, error=error)
+           PASS_ERROR(error)
+           call sum_in_place(mpi_obj, N, error=error)
+           PASS_ERROR(error)
+           call sum_in_place(mpi_obj, Ndof, error=error)
+           PASS_ERROR(error)
+        endif
 
 	if (N /= 0) temperature = temperature / ( Ndof * BOLTZMANN_K )         
       else
@@ -1897,16 +1912,21 @@ contains
     !% DynamicalSystem. If present, the optional
     !% 'label' parameter should be a one character label for the log lines and is printed
     !% in the first column of the output.
-   subroutine ds_print_status(this, label, epot, instantaneous)
-     type(DynamicalSystem),  intent(in):: this
-     character(*), optional, intent(in)::label
-     character(2)                      ::string
-     real(dp),     optional, intent(in)::epot
-     logical, optional :: instantaneous
+   subroutine ds_print_status(this, label, epot, instantaneous, mpi_obj, error)
+     type(DynamicalSystem),       intent(in)   :: this
+     character(*),      optional, intent(in)   :: label
+     real(dp),          optional, intent(in)   :: epot
+     logical,           optional, intent(in)   :: instantaneous
+     type(MPI_context), optional, intent(in)   :: mpi_obj
+     integer,           optional, intent(out)  :: error
+
+     character(2)                              :: string
      logical, save :: firstcall = .true.
-     real(dp) :: temp
+     real(dp) :: temp, my_epot, my_ekin
      real(dp) :: region_temps(size(this%thermostat))
      integer :: i
+
+     INIT_ERROR(error)
 
      string = " "
      if(present(label)) string = label
@@ -1923,17 +1943,34 @@ contains
         firstcall = .false.
      end if
 
-     temp = temperature(this, instantaneous=instantaneous)
+     if (present(epot)) then
+        if (present(mpi_obj)) then
+           my_epot = sum(mpi_obj, epot, error=error)
+           PASS_ERROR(error)
+        else
+           my_epot = epot
+        endif
+     endif
+
+     temp = temperature(this, instantaneous=instantaneous, &
+          mpi_obj=mpi_obj, error=error)
+     PASS_ERROR(error)
      call thermostat_temperatures(this, region_temps)
+
+     my_ekin = kinetic_energy(this)
+     if (present(mpi_obj)) then
+        call sum_in_place(mpi_obj, my_ekin, error=error)
+        PASS_ERROR(error)
+     endif
 
      if(present(epot)) then
         write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') string, this%t, &
              temp, this%avg_temp, norm(momentum(this)),&
              this%work, this%thermostat_work, kinetic_energy(this), &
-             epot+kinetic_energy(this),epot+kinetic_energy(this)+this%ext_energy
+             my_epot+my_ekin,my_epot+my_ekin+this%ext_energy
      else
         write(line, '(a,f12.2,2f12.4,e12.2,2e20.8)') string, this%t, &
-             temp, this%avg_temp,norm(momentum(this)), &
+             temp, this%avg_temp, norm(momentum(this)), &
              this%work, this%thermostat_work
 
      end if
