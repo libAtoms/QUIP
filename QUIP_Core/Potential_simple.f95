@@ -240,6 +240,9 @@ contains
     else if(is_wrapper) then
        this%is_wrapper = .true.
     endif
+
+    if (present(mpi_obj)) this%mpi = mpi_obj
+
   end subroutine Potential_Simple_Initialise_str
 
   subroutine Potential_Simple_Finalise(this, error)
@@ -285,7 +288,7 @@ contains
     end if
   end function Potential_Simple_cutoff
 
-  recursive subroutine Potential_Simple_Calc(this, at, e, local_e, f, df, virial, args_str, err, mpi_obj, error)
+  recursive subroutine Potential_Simple_Calc(this, at, e, local_e, f, df, virial, args_str, err, error)
     type(Potential_Simple), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
     real(dp), intent(out), optional, target :: e                   !% Total energy
@@ -295,7 +298,6 @@ contains
     real(dp), intent(out), optional, target :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: err
-    type(MPI_context), intent(in), optional :: mpi_obj
     integer, intent(out), optional :: error
 
     integer:: i,k,n, zero_loc(1)
@@ -401,12 +403,10 @@ contains
        do i=1,at%N
           if (hybrid_mark_saved(i) /= HYBRID_ACTIVE_MARK .and. hybrid_mark_saved(i) /= HYBRID_TRANS_MARK) cycle
 
-          if (present(mpi_obj)) then
-             if (mpi_obj%active) then
-                n = n + 1
-                call print('Potential_Simple_calc: cluster '//n//' around atom '//i//'  assigned to proc '//mod(n-1,mpi_obj%n_procs)//' of '//(mpi_obj%n_procs), PRINT_VERBOSE)
-                if (mod(n-1, mpi_obj%n_procs) .ne. mpi_obj%my_proc) cycle
-             end if
+          if (this%mpi%active) then
+             n = n + 1
+             call print('Potential_Simple_calc: cluster '//n//' around atom '//i//'  assigned to proc '//mod(n-1,this%mpi%n_procs)//' of '//(this%mpi%n_procs), PRINT_VERBOSE)
+             if (mod(n-1, this%mpi%n_procs) .ne. this%mpi%my_proc) cycle
           end if
           call print('Potential_Simple_calc: constructing little_cluster around atom '//i, PRINT_VERBOSE)
           hybrid_mark = HYBRID_NO_MARK
@@ -435,8 +435,8 @@ contains
 	   call finalise(cluster)
        end do
 
-       if (present(mpi_obj)) then
-          call sum_in_place(mpi_obj, f)
+       if (this%mpi%active) then
+          call sum_in_place(this%mpi, f)
        end if
        hybrid_mark = hybrid_mark_saved
        deallocate(hybrid_mark_saved)
