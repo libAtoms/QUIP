@@ -834,7 +834,7 @@ contains
     use_n_cols = optional_default(1, n_cols)
 
     if (size(value) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_int_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_int_a: size(value) ('//size(value)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -916,7 +916,7 @@ contains
     use_n_cols = optional_default(1, n_cols)
 
     if (size(value) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_real_a: size(value) ('//size(value)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -957,7 +957,7 @@ contains
     INIT_ERROR(error)
 
     if (size(value,2) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2) ('//size(value,2)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -973,7 +973,7 @@ contains
     end if
     
     if (size(value,2) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%N='//this%Nbuffer, error)
+       RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%Nbuffer ='//this%Nbuffer, error)
     end if
 
     call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
@@ -994,7 +994,7 @@ contains
     INIT_ERROR(error)
 
     if (size(value,2) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2) ('//size(value,2)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1010,7 +1010,7 @@ contains
     end if
     
     if (size(value,2) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%N='//this%Nbuffer, error)
+       RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%Nbuffer ='//this%Nbuffer, error)
     end if
 
     call add_array(this%properties, name, value, (/size(value,1), this%Nbuffer/), ptr, overwrite)
@@ -1060,7 +1060,7 @@ contains
     INIT_ERROR(error)
 
     if (size(value,2) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_str_2da: size(value,2) ('//size(value,2)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_str_2da: size(value,2) ('//size(value,2)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1094,7 +1094,7 @@ contains
     INIT_ERROR(error)
 
     if (size(value) /= this%Nbuffer) then
-       RAISE_ERROR('atoms_add_property_str_a: size(value) ('//size(value)//') /= this%N ('//this%Nbuffer//')', error)
+       RAISE_ERROR('atoms_add_property_str_a: size(value) ('//size(value)//') /= this%Nbuffer ('//this%Nbuffer//')', error)
     end if
 
     ! Check for incompatible property
@@ -1829,61 +1829,68 @@ contains
        PASS_ERROR(error)
     end if
 
-    ! Resize property data arrays, copying old data.
-    ! this will break any existing pointers so we call atoms_repoint() immediately after
-    ! (note that user-held pointers will stay broken, there is no way to fix this
-    ! since Fortran does not allow pointer-to-pointer types)
-    do i=1,this%properties%N
-       select case (this%properties%entries(i)%type)
+    ! Only resize if the actual number of particles is now larger than the
+    ! buffer size.
+    if (this%N > this%Nbuffer) then
 
-       case(T_INTEGER_A)
-          allocate(tmp_int(this%n))
-          tmp_int(1:oldN) = this%properties%entries(i)%i_a
-          tmp_int(oldn+1:this%n) = 0
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
-          deallocate(tmp_int)
+       ! Resize property data arrays, copying old data.
+       ! this will break any existing pointers so we call atoms_repoint() immediately after
+       ! (note that user-held pointers will stay broken, there is no way to fix this
+       ! since Fortran does not allow pointer-to-pointer types)
+       do i=1,this%properties%N
+          select case (this%properties%entries(i)%type)
 
-       case(T_REAL_A)
-          allocate(tmp_real(this%n))
-          tmp_real(1:oldN) = this%properties%entries(i)%r_a
-          tmp_real(oldn+1:this%n) = 0.0_dp
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
-          deallocate(tmp_real)
+          case(T_INTEGER_A)
+             allocate(tmp_int(this%n))
+             tmp_int(1:oldN) = this%properties%entries(i)%i_a
+             tmp_int(oldn+1:this%n) = 0
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_int)
+             deallocate(tmp_int)
 
-       case(T_LOGICAL_A)
-          allocate(tmp_logical(this%n))
-          tmp_logical(1:oldN) = this%properties%entries(i)%l_a
-          tmp_logical(oldn+1:this%n) = .false.
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
-          deallocate(tmp_logical)
+          case(T_REAL_A)
+             allocate(tmp_real(this%n))
+             tmp_real(1:oldN) = this%properties%entries(i)%r_a
+             tmp_real(oldn+1:this%n) = 0.0_dp
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_real)
+             deallocate(tmp_real)
 
-       case(T_INTEGER_A2)
-          allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
-          tmp_int2(:,1:oldN) = this%properties%entries(i)%i_a2
-          tmp_int2(:,oldn+1:this%n) = 0
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
-          deallocate(tmp_int2)
+          case(T_LOGICAL_A)
+             allocate(tmp_logical(this%n))
+             tmp_logical(1:oldN) = this%properties%entries(i)%l_a
+             tmp_logical(oldn+1:this%n) = .false.
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_logical)
+             deallocate(tmp_logical)
 
-       case(T_REAL_A2)
-          allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
-          tmp_real2(:,1:oldN) = this%properties%entries(i)%r_a2
-          tmp_real2(:,oldn+1:this%n) = 0.0_dp
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
-          deallocate(tmp_real2)
+          case(T_INTEGER_A2)
+             allocate(tmp_int2(this%properties%entries(i)%len2(1),this%n))
+             tmp_int2(:,1:oldN) = this%properties%entries(i)%i_a2
+             tmp_int2(:,oldn+1:this%n) = 0
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_int2)
+             deallocate(tmp_int2)
 
-       case(T_CHAR_A)
-          allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
-          tmp_char(:,1:oldN) = this%properties%entries(i)%s_a
-          tmp_char(:,oldn+1:this%n) = ' '
-          call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
-          deallocate(tmp_char)
+          case(T_REAL_A2)
+             allocate(tmp_real2(this%properties%entries(i)%len2(1),this%n))
+             tmp_real2(:,1:oldN) = this%properties%entries(i)%r_a2
+             tmp_real2(:,oldn+1:this%n) = 0.0_dp
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_real2)
+             deallocate(tmp_real2)
 
-       case default
-          RAISE_ERROR('atoms_add: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+          case(T_CHAR_A)
+             allocate(tmp_char(this%properties%entries(i)%len2(1),this%n))
+             tmp_char(:,1:oldN) = this%properties%entries(i)%s_a
+             tmp_char(:,oldn+1:this%n) = ' '
+             call set_value(this%properties, string(this%properties%keys(i)), tmp_char)
+             deallocate(tmp_char)
 
-       end select
-    end do
-    call atoms_repoint(this)
+          case default
+             RAISE_ERROR('atoms_add: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
+
+          end select
+       end do
+       call atoms_repoint(this)
+    endif
+
+    this%Nbuffer = max(this%N, this%Nbuffer)
 
     ! First check the integer properties...
     if (.not. has_key(this%properties, 'Z')) then
@@ -2018,6 +2025,7 @@ contains
     ! update N
     this%N = this%N - size(atom_indices)
     this%Ndomain = this%N
+    this%Nbuffer = this%N
 
     include_list => new_indices(1:this%N)
     
