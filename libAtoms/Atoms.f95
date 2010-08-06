@@ -163,6 +163,7 @@ module  atoms_module
   type Atoms
 
      logical                               :: initialised = .false.
+     logical                               :: fixed_size = .false. !% Can the number of atoms be changed after initialisation?
      integer                               :: N = 0 !% The number of atoms held (including ghost particles)
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
      integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
@@ -387,12 +388,13 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   !% Initialise an Atoms object to store 'N' atoms and specify the initial lattice.
-  subroutine atoms_initialise(this,N,lattice,properties,params,error)
+  subroutine atoms_initialise(this,N,lattice,properties,params,fixed_size,error)
 
     type(Atoms),                intent(inout) :: this
     integer,                    intent(in)    :: N
     real(dp), dimension(3,3),   intent(in)    :: lattice
     type(Dictionary), optional, intent(in)    :: properties, params
+    logical, optional, intent(in) :: fixed_size
     integer, intent(out), optional :: error
 
     integer :: stack_size, stack_size_err, i, type
@@ -409,6 +411,8 @@ contains
     this%N = N
     this%Ndomain = N
     this%Nbuffer = N
+
+    this%fixed_size = optional_default(.false., fixed_size)
 
     if (present(properties)) then
        ! check types and sizes of properties passed in
@@ -616,7 +620,7 @@ contains
        return
     end if
 
-    call atoms_initialise(to,from%N,from%lattice, from%properties, from%params)
+    call atoms_initialise(to,from%N,from%lattice, from%properties, from%params, from%fixed_size)
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
@@ -665,7 +669,7 @@ contains
        to%properties = from%properties
     endif
     to%params = from%params
-
+    to%fixed_size = from%fixed_size
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
     to%cutoff_break      = from%cutoff_break
@@ -704,6 +708,7 @@ contains
 
     call finalise(to%params)
     to%params = from%params
+    to%fixed_size = from%fixed_size
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff = from%cutoff
     to%cutoff_break = from%cutoff_break
@@ -1801,6 +1806,10 @@ contains
 
     INIT_ERROR(error)    
 
+    if (this%fixed_size) then
+       RAISE_ERROR("add_atom_multiple: Atoms object cannot be resized (this%fixed_size = .true.)", error)
+    end if
+
     oldN = this%N
     this%N = this%N + size(Z)
     this%Ndomain = this%N
@@ -1992,6 +2001,10 @@ contains
     integer, dimension(:), allocatable :: uniqed
 
     INIT_ERROR(error)
+
+    if (this%fixed_size) then
+       RAISE_ERROR("remove_atom_multiple: Atoms object cannot be resized (this%fixed_size = .true.)", error)
+    end if
 
     !Delete the connection data because the atomic indices become mangled
     call connection_finalise(this%connect)

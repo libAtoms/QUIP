@@ -250,6 +250,14 @@ class TestAtoms_LowLevel(QuippyTestCase):
       cp2.remove_property('orig_index')
       self.assertEqual(cp1, cp2)
 
+   def test_add_atoms_fixed_size(self):
+      a = Atoms(n=10,fixed_size=True)
+      self.assertRaises(RuntimeError, a.add_atoms, [1.0, 2.0, 3.0], 6)
+
+   def test_remove_atoms_fixed_size(self):
+      a = Atoms(n=10,fixed_size=True)
+      self.assertRaises(RuntimeError, a.remove_atoms, 10)
+
    def test_remove_atoms_cache_error(self):
       cp = self.dia.copy()
       self.assertEqual(cp.pos.shape, (3, 8))
