@@ -5061,6 +5061,8 @@ contains
 
        call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_VERBOSE)
        call bcast(mpi, at%n)
+       call bcast(mpi, at%Ndomain)
+       call bcast(mpi, at%Nbuffer)
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
@@ -5068,6 +5070,8 @@ contains
        call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, PRINT_VERBOSE)
        call finalise(at)
        call bcast(mpi, at%n)
+       call bcast(mpi, at%Ndomain)
+       call bcast(mpi, at%Nbuffer)
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
