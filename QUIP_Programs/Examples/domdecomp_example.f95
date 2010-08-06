@@ -115,7 +115,7 @@
     HANDLE_ERROR(error)
 
     do it=1, 3
-       call advance_verlet1(ds, 1.0_dp, f, error=error)
+       call advance_verlet1(ds, 1.0_dp, error=error)
        HANDLE_ERROR(error)
 
        call calc_connect(ds%atoms, error=error)

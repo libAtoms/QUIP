@@ -634,7 +634,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
   !ADVANCE VERLET 1
 
-     call advance_verlet1(ds, Time_Step, f)
+     call advance_verlet1(ds, Time_Step)
 
   !PRINT XYZ
 
@@ -788,7 +788,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      
   !ADVANCE VERLET 1
 
-     call advance_verlet1(ds, Time_Step, f)
+     call advance_verlet1(ds, Time_Step)
 
      call system_timer('step')
 

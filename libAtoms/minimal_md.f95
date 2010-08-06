@@ -82,7 +82,7 @@ program md
         call calc_connect(ds%atoms)
      end if
 
-     call advance_verlet1(ds, dt, f)
+     call advance_verlet1(ds, dt)
 
      !Calculate new forces
      f = 0.0_dp
