@@ -1,4 +1,4 @@
-<EAM_Ercolessi_Adams_params n_types="1" n_spline_V="18" n_spline_rho="15" n_spline_F="13" label="MSMSE_12">
+<EAM_ErcolAd_params n_types="1" n_spline_V="18" n_spline_rho="15" n_spline_F="13" label="MSMSE_12">
 <!-- From Liu, Ercolessi, and Adams, Modelling Simul. Mater. Sci. Eng. 12 (2004) 665-670 -->
   <per_type_data atomic_num="13" type="1">
     <spline_rho>
