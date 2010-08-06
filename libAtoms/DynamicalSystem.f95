@@ -2188,6 +2188,38 @@ contains
 
    end subroutine constrain_bondlength_diff
 
+   !% Constrain an atom to lie in a particluar plane
+   subroutine constrain_atom_plane(this,i,plane_n,d,restraint_k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: i
+     real(dp), intent(in)                 :: plane_n(3)
+     real(dp), intent(in), optional       :: d, restraint_k
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: PLANE_FUNC
+     real(dp)                             :: use_d, plane_n_hat(3)
+
+     !Report bad atom indices
+     if ( (i>this%N) .or. (i<1)) then
+        call system_abort('Constrain_Bond: Cannot constrain atom '//i// &
+                                 ': Atom out of range (N='//this%N//')')
+     end if
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        PLANE_FUNC = register_constraint(PLANE)
+        first_call = .false.
+     end if
+
+     plane_n_hat = plane_n/norm(plane_n)
+     use_d = optional_default((this%atoms%pos(:,i) .dot. plane_n_hat),d)
+
+     !Add the constraint
+     call ds_add_constraint(this,(/i/),PLANE_FUNC,(/plane_n,use_d/), restraint_k=restraint_k)
+
+   end subroutine constrain_atom_plane
+
    !% Add a constraint to the DynamicalSystem and reduce the number of degrees of freedom,
    !% unless 'update_Ndof' is present and false.
    subroutine ds_add_constraint(this,atoms,func,data,update_Ndof, restraint_k)

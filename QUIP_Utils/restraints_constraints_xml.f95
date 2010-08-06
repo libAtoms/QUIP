@@ -22,7 +22,7 @@ contains
       integer :: n
       integer :: atom_1, atom_2, atom_3
       real(dp) :: k
-      real(dp) :: c, d
+      real(dp) :: c, d, plane_n(3)
       character(len=20) :: type_str
 
       if (parse_in_restraints) type_str = "restraint"
@@ -167,6 +167,35 @@ contains
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, restraint_k=k)
 	       else
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3)
+	       endif
+	    endif
+
+	 else if (name == 'atom_plane') then
+
+	    call QUIP_FoX_get_value(attributes, "atom", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom in atom_plane "//trim(type_str))
+	    read (value, *) atom_1
+	    call QUIP_FoX_get_value(attributes, "normal", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read normal in atom_plane "//trim(type_str))
+	    read (value, *) plane_n
+	    if (parse_in_restraints) then
+	       call QUIP_FoX_get_value(attributes, "k", value, status)
+	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in atom_plane "//trim(type_str))
+	       read (value, *) k
+	    endif
+	    call QUIP_FoX_get_value(attributes, "d", value, status)
+	    if (status == 0) then
+	       read (value, *) d
+	       if (parse_in_restraints) then
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d, restraint_k=k)
+	       else
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, d)
+	       endif
+	    else
+	       if (parse_in_restraints) then
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n, restraint_k=k)
+	       else
+		  call constrain_atom_plane(parse_ds, atom_1, plane_n)
 	       endif
 	    endif
 	 else

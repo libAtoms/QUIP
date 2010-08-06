@@ -1053,7 +1053,7 @@ contains
   !% are not applied (the plane only cuts the 
   !% cell once, if at all).
   !%
-  !% The function used is $C = \frac{\mathbf{r} \cdot \mathbf{n} - d}{|\mathbf{n}|}$
+  !% The function used is $C = \mathbf{r} \cdot \hat{\mathbf{n}} - d$
   !% where $\mathbf{n} = (a,b,c)$
   !% 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
