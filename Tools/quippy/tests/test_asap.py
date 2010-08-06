@@ -9316,8 +9316,8 @@ if hasattr(quippy, 'Potential'):
 
                self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
-               self.ds1.advance_verlet1(1.0, self.ds1.atoms.force)
-               self.ds2.advance_verlet1(1.0, self.ds2.atoms.force)
+               self.ds1.advance_verlet1(1.0)
+               self.ds2.advance_verlet1(1.0)
 
                self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
 
@@ -9343,8 +9343,8 @@ if hasattr(quippy, 'Potential'):
                self.assertArrayAlmostEqual(self.ds1.atoms.force, self.ds2.atoms.force)
 
                for i in range(2):
-                  self.ds1.advance_verlet1(1.0, self.ds1.atoms.force)
-                  self.ds2.advance_verlet1(1.0, self.ds2.atoms.force)
+                  self.ds1.advance_verlet1(1.0)
+                  self.ds2.advance_verlet1(1.0)
 
                   self.assertArrayAlmostEqual(self.ds1.atoms.pos, self.ds2.atoms.pos)
 

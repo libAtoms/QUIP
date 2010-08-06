@@ -654,10 +654,8 @@ The molecular dynamics loop would then look something like this::
     connect_interval = 10            # How frequently to update connectivity    
 
     ds.atoms.calc_connect() 
-    pot.calc(ds.atoms, calc_force=True, calc_energy=True)
-
     for n in range(n_steps):
-       ds.advance_verlet1(dt, ds.atoms.force)
+       ds.advance_verlet1(dt)
        pot.calc(ds.atoms, calc_force=True, calc_energy=True)
        ds.advance_verlet2(dt, ds.atoms.force)
        ds.print_status(epot=ds.atoms.energy)

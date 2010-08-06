@@ -1605,7 +1605,7 @@ max_atom_rij_change = 1.038_dp
     if (present(trajectory)) call write(trajectory, this%atoms)
 
     do n=1,n_steps
-       call advance_verlet1(this, dt, f)
+       call advance_verlet1(this, dt)
        call calc(pot, this%atoms, args_str=my_args_str, error=error)
        PASS_ERROR(error)
        call advance_verlet2(this, dt, f)

@@ -110,7 +110,7 @@
       pressure for the case of Langevin NPT.
 
 
-   .. method:: advance_verlet1(dt, f[, virial])
+   .. method:: advance_verlet1(dt[, virial])
 
       Advance the velocities by half the time-step `dt` and the
       positions by a full time-step. A typical MD loop should
@@ -118,10 +118,8 @@
       section of the quippy tutorial for more details. ::
 
          ds.atoms.calc_connect() 
-	 pot.calc(ds.atoms, calc_force=True, calc_energy=True)
-
 	 for n in range(n_steps):
-	    ds.advance_verlet1(dt, ds.atoms.force)
+	    ds.advance_verlet1(dt)
 	    pot.calc(ds.atoms, calc_force=True, calc_energy=True)
 	    ds.advance_verlet2(dt, ds.atoms.force)
 	    ds.print_status(epot=ds.atoms.energy)
@@ -136,8 +134,7 @@
    .. method:: advance_verlet(dt, f[, virial])
 
       Equivalent to :meth:`advance_verlet2` followed by
-      :meth:`advance_verlet1`. This allows an MD loop where
-      the forces are computed only once::
+      :meth:`advance_verlet1`. This allows a simple MD loop::
 
 	  for n in range(n_steps):
 	      pot.calc(ds.atoms, calc_force=True, calc_energy=True)
