@@ -257,9 +257,9 @@ class FortranDerivedType(object):
 
    def __repr__(self):
        if self._fpointer is None:
-           return '%s(fpointer=None, finalise=%d)' % (self.__class__.__name__, self._finalise)
+           return '<%s object at 0x%x fpointer=None>' % (self.__class__.__name__, id(self))
        else:
-           return '%s(fpointer=%r, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
+           return '<%s object at 0x%x fpointer=%r>' % (self.__class__.__name__, id(self), tuple(self._fpointer[self._fpointer != 0]))
 
    def __str__(self):
       items = []
@@ -306,12 +306,14 @@ class FortranDerivedType(object):
        
        try:
            res = fobj(*newargs, **newkwargs)
+       except RuntimeError:
+           try:
+               exctype, value, tb = sys.exc_info()
+               raise exctype, RuntimeError('Error occurred inside Fortran routine. args=%r kwargs=%r.\n' % (args, kwargs)
+                                           +str(value).strip()), tb
+           finally:
+               del tb
        except:
-           if logging.root.getEffectiveLevel() <= logging.DEBUG:
-               logging.debug('args', args)
-               logging.debug('newargs', newargs)
-               logging.debug('kwargs', kwargs)
-               logging.debug('newkwargs', newkwargs)
            raise
 
        if not name.startswith('__init__'):
@@ -768,21 +770,23 @@ def wraproutine(modobj, moddoc, name, shortname, prefix):
    outargs = filter(lambda x: 'intent(out)' in x['attributes'], doc['args'])
                                
    def func(*args, **kwargs):
-      newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
+       newargs, newkwargs = process_in_args(args, kwargs, inargs, prefix)
 
-      try:
-          res = fobj(*newargs, **newkwargs)
-      except:
-          if logging.root.getEffectiveLevel() <= logging.DEBUG:
-              logging.debug('args', args)
-              logging.debug('newargs', newargs)
-              logging.debug('kwargs', kwargs)
-              logging.debug('newkwargs', newkwargs)
-          raise
+       try:
+           res = fobj(*newargs, **newkwargs)
+       except RuntimeError:
+           try:
+               exctype, value, tb = sys.exc_info()
+               raise exctype, RuntimeError('Error occurred inside Fortran routine. args=%r kwargs=%r.\n' % (args, kwargs)
+                                           +str(value).strip()), tb
+           finally:
+               del tb
+       except:
+           raise
 
-      newres = process_results(res, args, kwargs, inargs, outargs, prefix)
+       newres = process_results(res, args, kwargs, inargs, outargs, prefix)
       
-      return newres
+       return newres
 
    return add_doc(func, fobj, doc, name, shortname, prefix)
 

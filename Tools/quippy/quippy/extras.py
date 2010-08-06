@@ -159,7 +159,7 @@ class Atoms(FortranAtoms):
    """
 
    def __new__(cls, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                properties=None, params=None, *readargs, **readkwargs):
+                properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
       """
       Initialise an Atoms object.
 
@@ -179,14 +179,14 @@ class Atoms(FortranAtoms):
       return self
 
    def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
-                properties=None, params=None, *readargs, **readkwargs):
+                properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
       if source is None:
          if params is not None and not isinstance(params, Dictionary):
             params = Dictionary(params)
          if properties is not None and not isinstance(properties, Dictionary):
             properties = Dictionary(properties)
          FortranAtoms.__init__(self, n=n, lattice=lattice, fpointer=fpointer, finalise=finalise,
-                               properties=properties, params=params)
+                               properties=properties, params=params, fixed_size=fixed_size)
          self.neighbours = Neighbours(self)
          self.hysteretic_neighbours = Neighbours(self,hysteretic=True)
 
