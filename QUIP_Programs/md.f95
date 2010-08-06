@@ -241,7 +241,8 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
   endif
   if (allocated(restraint_stuff)) then
      if (params%summary_interval > 0) then
-	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) call print_restraint_f(params, restraint_stuff, restraint_stuff_timeavg)
+	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
+	   call print_restraint_stuff(params, restraint_stuff, restraint_stuff_timeavg)
      endif
   endif
 
@@ -260,7 +261,7 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
 
 end subroutine
 
-subroutine print_restraint_f(params, restraint_stuff, restraint_stuff_timeavg)
+subroutine print_restraint_stuff(params, restraint_stuff, restraint_stuff_timeavg)
   type(md_params), intent(in) :: params
   real(dp), intent(in) :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
 

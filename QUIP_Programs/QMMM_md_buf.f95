@@ -111,7 +111,7 @@ program qmmm_md
   type(Table)                 :: qm_seed
   character(len=FIELD_LENGTH) :: Residue_Library
   character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
-  type(Extendable_Str)         :: restraint_constraint_xml_es
+  type(Extendable_Str)        :: restraint_constraint_xml_es
   integer                     :: Charge
   real(dp)                    :: Tau, Nose_Hoover_Tau
   logical                     :: Buffer_general, do_general
@@ -145,6 +145,8 @@ program qmmm_md
   real(dp) :: calc_connect_buffer
 logical :: have_silica_potential
   integer :: stat
+
+  real(dp), allocatable :: restraint_stuff(:,:)
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
@@ -372,6 +374,9 @@ logical :: have_silica_potential
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
        call init_restraints_constraints(ds, string(restraint_constraint_xml_es))
        call finalise(restraint_constraint_xml_es)
+       if (ds%Nrestraints > 0) then
+	 allocate(restraint_stuff(3,ds%Nrestraints))
+       end if
     endif
 
     ds%avg_time = avg_time
@@ -588,6 +593,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         f = sum0(f1,ds%atoms)
      endif
 
+     call calc_restraint_stuff(ds, restraint_stuff)
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
      call set_thermostat_regions(ds%atoms, Thermostat_Type, Thermostat_7_rs, qm_region_ctr)
@@ -596,6 +602,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
+     call print_restraint_stuff(restraint_stuff, 'RE')
      call print(ds%thermostat)
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
@@ -742,12 +749,17 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
      call advance_verlet2(ds, Time_Step, f)
 
+  !RESTRAINTS
+     call calc_restraint_stuff(ds, restraint_stuff)
+
   !PRINT DS,THERMOSTAT,CONSTRAINT,XYZ
 
      if (ds%t < Equilib_Time) then
         call ds_print_status(ds, 'E',energy)
+	call print_restraint_stuff(restraint_stuff, 'RE')
      else
         call ds_print_status(ds, 'I',energy)
+	call print_restraint_stuff(restraint_stuff, 'RI')
      end if
 
      !Thermostat
@@ -1469,5 +1481,25 @@ contains
 	call system_abort("set_thermostat_regions: Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
     end select
   end subroutine set_thermostat_regions
+
+   subroutine print_restraint_stuff(restraint_stuff, suffix)
+     real(dp), intent(in) :: restraint_stuff(:,:)
+     character(len=*), intent(in) :: suffix
+
+     call print('R'//trim(suffix) // " " // reshape( restraint_stuff, (/ size(restraint_stuff,1)*size(restraint_stuff,2) /) ))
+   end subroutine print_restraint_stuff
+
+   subroutine calc_restraint_stuff(ds, restraint_stuff)
+     type(DynamicalSystem), intent(in) :: ds
+     real(dp), intent(out) :: restraint_stuff(:,:)
+ 
+     integer i_r
+ 
+     do i_r = 1, ds%Nrestraints
+        restraint_stuff(1,i_r) = ds%restraint(i_r)%C
+        restraint_stuff(2,i_r) = ds%restraint(i_r)%E
+        restraint_stuff(3,i_r) = -ds%restraint(i_r)%dE_dcoll
+     end do
+   end subroutine calc_restraint_stuff
 
 end program qmmm_md
