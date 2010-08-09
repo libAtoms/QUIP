@@ -618,10 +618,11 @@ contains
       call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_postfix))
 
     if (save_output_files) then
-      call system_command('cat '//trim(run_dir)//'/cp2k_input.inp'// &
-        ' >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
-        ' cat '//trim(run_dir)//'/quip-frc-1.xyz'// ' >> cp2k_force_file_log;' // &
-        ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log')
+      call system_command(&
+        ' cat '//trim(run_dir)//'/cp2k_input.inp >> cp2k_input_log; echo "##############" >> cp2k_input_log;' // &
+        ' cat '//trim(run_dir)//'/cp2k_output.out >> cp2k_output_log; echo "##############" >> cp2k_output_log;' // &
+        ' cat filepot.0.xyz'//' >> cp2k_filepot_in_log.xyz;' // &
+        ' cat '//trim(run_dir)//'/quip-frc-1.xyz'// ' >> cp2k_force_file_log')
     endif
 
     ! clean up
