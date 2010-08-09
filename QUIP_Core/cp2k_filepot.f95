@@ -48,7 +48,7 @@ program cp2k_filepot_template
     real(dp)                      :: energy
     real(dp), allocatable         :: f0(:,:)
     real(dp), pointer             :: forces_p(:,:)
-    type(Inoutput)                :: xyz_io
+    type(CInoutput)                :: xyz_io
 
     character(len=1024)  :: infile, outfile
     character(len=10240) :: arg, args_str
@@ -78,7 +78,7 @@ program cp2k_filepot_template
       end do
     endif
 
-    call read_xyz(my_atoms,infile)
+    call read(my_atoms,infile)
 
     call print('cp2k_filepot_template args_str '//trim(args_str), PRINT_ALWAYS)
 
@@ -97,7 +97,7 @@ program cp2k_filepot_template
     forces_p = f0
 
     call initialise(xyz_io,outfile,action=OUTPUT)
-    call print_xyz(my_atoms,xyz_io,all_properties=.true.,real_format='f20.13')
+    call write(my_atoms,xyz_io,real_format='%20.13f')
     call finalise(xyz_io)
 
     deallocate(f0)

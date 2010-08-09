@@ -36,11 +36,11 @@ module CInOutput_module
 
   use iso_c_binding
   use error_module
-  use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
+  use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, verbosity_push, PRINT_ANAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Extendable_str_module, only: Extendable_str, operator(//), string
-  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, lookup_entry_i, lower_case, subset, &
+  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, print_keys, lookup_entry_i, lower_case, subset, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use MPI_Context_module, only: MPI_context
@@ -376,6 +376,7 @@ contains
     integer :: cioskip_status
 
     INIT_ERROR(error)
+call verbosity_push(PRINT_ANAL)
 
     if (.not. this%initialised) then
        RAISE_ERROR_WITH_KIND(ERROR_IO,"This CInOutput object is not initialised", error)
@@ -539,8 +540,8 @@ contains
        call set_lattice(at, transpose(this%lattice), scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
-          call print ("at%properties", PRINT_ALWAYS)
-          call print(at%properties, PRINT_ALWAYS)
+          call print ("at%properties keys", PRINT_ALWAYS)
+          call print_keys(at%properties, PRINT_ALWAYS)
           BCAST_RAISE_ERROR('cinoutput_read: atoms object read from file has neither Z nor species', error, this%mpi)
        else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
           call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))

@@ -1274,11 +1274,11 @@ contains
     if (trim(Run_Type) == 'QS') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos min_cutoff=0.0')
     else if (trim(Run_Type) == 'MM') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif
