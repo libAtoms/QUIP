@@ -563,12 +563,20 @@ contains
     case(NOSE_HOOVER)
        
        !Propagate eta for dt (this saves doing it twice, for dt/2)
-       this%eta = this%eta + this%p_eta*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%eta = this%eta + this%p_eta*dt/this%Q
+       else
+	 this%eta = 0.0_dp
+       endif
 
        !Decay the velocities using p_eta for dt/2. Also, accumulate the (pre-decay)
        !kinetic energy (x2) and use to integrate the 'work' value
        K = 0.0_dp
-       decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       if (this%Q > 0.0_dp) then
+	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       else
+	 decay = 1.0_dp
+       endif
 
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
@@ -577,7 +585,9 @@ contains
        end do
 
        !Propagate the work for dt/2
-       this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -593,11 +603,19 @@ contains
        !Decay p_eta for dt/2 and propagate it for dt/2
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt) + 0.5_dp*this%f_eta*dt
        !Propagate eta for dt (this saves doing it twice, for dt/2)
-       this%eta = this%eta + this%p_eta*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%eta = this%eta + this%p_eta*dt/this%Q
+       else
+	 this%eta = 0.0_dp
+       endif
 
        !Decay the velocities using p_eta for dt/2 and accumulate Ek (as in NH) for
        !work integration
-       decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       if (this%Q > 0.0_dp) then
+	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       else
+	 decay = 1.0_dp
+       endif
        K = 0.0_dp
 
        do i = 1, at%N
@@ -607,7 +625,9 @@ contains
        end do
 
        !Propagate work
-       this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -923,7 +943,11 @@ contains
 
        !Decay the velocities again using p_eta for dt/2, and accumulate the (post-decay)
        !kinetic energy (x2) to integrate the 'work' value.
-       decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       if (this%Q > 0.0_dp) then
+	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       else
+	 decay = 1.0_dp
+       endif
        K = 0.0_dp
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
@@ -942,7 +966,9 @@ contains
        this%p_eta = this%p_eta + 0.5_dp*this%f_eta*dt
 
        !Propagate the work for dt/2
-       this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
@@ -953,7 +979,11 @@ contains
     case(NOSE_HOOVER_LANGEVIN)
        
        !Decay the velocities again using p_eta for dt/2, and accumulate Ek for work integration
-       decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       if (this%Q > 0.0_dp) then
+	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+       else
+	 decay = 1.0_dp
+       endif
        K = 0.0_dp
        do i = 1, at%N
           if (prop_ptr(i) /= value) cycle
@@ -962,7 +992,9 @@ contains
        end do
 
        !Propagate work
-       this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       if (this%Q > 0.0_dp) then
+	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+       endif
 
        !Calculate new f_eta...
        this%f_eta = 0.0_dp

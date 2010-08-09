@@ -112,6 +112,11 @@ module dictionary_module
      module procedure dictentry_print, dictionary_print
   end interface print
 
+  private :: dictionary_print_keys
+  interface print_keys
+     module procedure dictionary_print_keys
+  end interface print_keys
+
   !% Set a value in a Dictionary
   private :: dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
   private :: dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
@@ -295,6 +300,26 @@ contains
        call print(line, verbosity,file)
     endif
   end subroutine dictentry_print
+
+  subroutine dictionary_print_keys(this, verbosity, file)
+    type(Dictionary), intent(in) :: this
+    integer, intent(in), optional :: verbosity
+    type(Inoutput), intent(inout), optional :: file
+
+    integer :: i
+    type(extendable_str) :: es
+
+    call initialise(es)
+    do i=1,this%N
+      if (i < this%N) then
+	call concat(es, string(this%keys(i))//":")
+      else
+	call concat(es, string(this%keys(i)))
+      endif
+    end do
+    call print(es, verbosity=verbosity, file=file)
+    call finalise(es)
+  end subroutine dictionary_print_keys
 
   subroutine dictionary_print(this, verbosity, file)
     type(Dictionary), intent(in) :: this
