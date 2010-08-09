@@ -306,8 +306,8 @@ contains
     if (.not.(has_property(at,'mol_id')) .or. .not. has_property(at,'atom_res_number')) then
       call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain", PRINT_ALWAYS)
     else
-      call atoms_sort(at, 'mol_id', 'atoms_res_number', error=error)
-      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atoms_res_number", error)
+      call atoms_sort(at, 'mol_id', 'atom_res_number', error=error)
+      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_number", error)
       if (associated(sort_index_p)) then
 	do at_i=1, at%N
 	  if (sort_index_p(at_i) /= at_i) then
