@@ -672,6 +672,11 @@ class TestAtoms_Extras(QuippyTestCase):
       self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
+   def test_bcast(self):
+      from quippy import MPI_context, atoms_bcast
+      mpi = MPI_context()
+      atoms_bcast(mpi, self.at)
+
 
 class TestAtoms_Neighbour(QuippyTestCase):
 

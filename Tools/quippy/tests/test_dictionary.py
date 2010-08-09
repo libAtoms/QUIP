@@ -197,5 +197,12 @@ c=44""")
       d = Dictionary()
       self.assertRaises(RuntimeError, d.subset, ['bad_key'])
 
+   def test_bcast(self):
+      from quippy import MPI_context, dictionary_bcast
+      d = Dictionary()
+      mpi = MPI_context()
+      dictionary_bcast(mpi, d)
+      
+
 if __name__ == '__main__':
    unittest.main()
