@@ -5051,9 +5051,21 @@ contains
 
   endfunction is_min_image 
 
-  subroutine atoms_bcast(mpi, at)
+  subroutine atoms_bcast(mpi, at, error)
     type(MPI_context), intent(in) :: mpi
     type(Atoms), intent(inout) :: at
+    integer, optional, intent(out) :: error
+
+    character, allocatable, dimension(:) :: char_array
+    integer, parameter :: SIZEOF_ATOMS = 1752
+
+    INIT_ERROR(error)
+
+    ! Raise an error if sizeof(Atoms) has changed, indicating fields
+    ! have been added or removed from definition of derived type.
+    if (size(transfer(at, char_array)) /= SIZEOF_ATOMS) then
+       RAISE_ERROR('atoms_bcast: size of Atoms object /= '//SIZEOF_ATOMS//' - please update atoms_bcast()', error)
+    end if
 
     if (.not. mpi%active) return
 
@@ -5070,6 +5082,7 @@ contains
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%is_orthorhombic)
        call bcast(mpi, at%is_periodic)
+       call bcast(mpi, at%fixed_size)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
     else
@@ -5085,6 +5098,7 @@ contains
        call bcast(mpi, at%lattice)
        call bcast(mpi, at%is_orthorhombic)
        call bcast(mpi, at%is_periodic)
+       call bcast(mpi, at%fixed_size)
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
 
