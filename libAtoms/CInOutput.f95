@@ -391,12 +391,12 @@ contains
        if (present(frame) .and. this%got_index == 0) then
           if (frame /= this%current_frame) then
              if (frame < this%current_frame) then
-                  RAISE_ERROR_WITH_KIND(ERROR_IO,"cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error)
+                  BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error, this%mpi)
 	     endif
              n_skip = frame-this%current_frame
              cioskip_status = cioskip(this%c_at, n_skip)
              if (cioskip_status == 0) then
-                RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error)
+                BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error, this%mpi)
              endif
              this%current_frame = this%current_frame + n_skip
           endif
@@ -409,7 +409,7 @@ contains
           if (do_frame < 0 .or. do_frame >= this%n_frame) then
              call finalise(tmp_data)
              call finalise(at)
-             RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error)
+             BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error, this%mpi)
           end if
        end if
 
@@ -424,7 +424,7 @@ contains
        else
           call cinoutput_query(this, error=error)
        end if
-       PASS_ERROR(error)
+       BCAST_PASS_ERROR(error, this%mpi)
 
 
        ! Make a blank data table, then initialise atoms object from it. We will
@@ -451,7 +451,7 @@ contains
 
        if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
           call finalise(tmp_data)
-          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error reading from file", error)
+          BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"Error reading from file", error, this%mpi)
        end if
 
        call initialise(empty_dictionary) ! pass an empty dictionary to prevent pos, species, z properties being created
@@ -465,46 +465,46 @@ contains
              if (this%property_ncols(i) == 1) then
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%int(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              else
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%int(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n), &
                      overwrite=.true.,error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              end if
              
           case(PROPERTY_REAL)
              if (this%property_ncols(i) == 1) then
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%real(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              else
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%real(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n), &
                      overwrite=.true., error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              end if
              
           case(PROPERTY_LOGICAL)
              if (this%property_ncols(i) == 1) then
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%logical(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              else
-                RAISE_ERROR("CInOutput_read: logical properties with n_cols != 1 no longer supported", error)
+                BCAST_RAISE_ERROR("CInOutput_read: logical properties with n_cols != 1 no longer supported", error, this%mpi)
              end if
              
           case(PROPERTY_STR)
              if (this%property_ncols(i) == 1) then
                 call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
                      tmp_data%str(this%property_start(i)+1,1:at%n), overwrite=.true., error=error)
-                PASS_ERROR(error)
+                BCAST_PASS_ERROR(error, this%mpi)
              else
-                RAISE_ERROR("CInOutput_read: string properties with n_cols != 1 no longer supported", error)
+                BCAST_RAISE_ERROR("CInOutput_read: string properties with n_cols != 1 no longer supported", error, this%mpi)
              end if
              
           case default
-             RAISE_ERROR("CInOutput_read: unknown property type "//this%property_type(i), error)
+             BCAST_RAISE_ERROR("CInOutput_read: unknown property type "//this%property_type(i), error, this%mpi)
           end select
        end do
        
@@ -531,7 +531,7 @@ contains
           case(T_REAL_A2)
              call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
           case default
-             RAISE_ERROR('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i), error)
+             BCAST_RAISE_ERROR('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i), error, this%mpi)
           end select
        end do
 
@@ -541,7 +541,7 @@ contains
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
           call print ("at%properties", PRINT_ALWAYS)
           call print(at%properties, PRINT_ALWAYS)
-          RAISE_ERROR('cinoutput_read: atoms object read from file has neither Z nor species', error)
+          BCAST_RAISE_ERROR('cinoutput_read: atoms object read from file has neither Z nor species', error, this%mpi)
        else if (.not. has_property(at,"species") .and. has_property(at,"Z")) then
           call add_property(at, "species", repeat(" ",TABLE_STRING_LENGTH))
           call atoms_repoint(at)
@@ -558,9 +558,13 @@ contains
 
        call finalise(tmp_data)
        this%current_frame = this%current_frame + 1
+
     end if
 
-    if (this%mpi%active) call bcast(this%mpi, at)
+    if (this%mpi%active) then
+       BCAST_CHECK_ERROR(error,this%mpi)
+       call bcast(this%mpi, at)
+    end if
 
   end subroutine cinoutput_read
 
