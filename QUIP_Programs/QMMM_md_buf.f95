@@ -374,9 +374,7 @@ logical :: have_silica_potential
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
        call init_restraints_constraints(ds, string(restraint_constraint_xml_es))
        call finalise(restraint_constraint_xml_es)
-       if (ds%Nrestraints > 0) then
-	 allocate(restraint_stuff(3,ds%Nrestraints))
-       end if
+       if (ds%Nrestraints > 0) allocate(restraint_stuff(3,ds%Nrestraints))
     endif
 
     ds%avg_time = avg_time
@@ -506,6 +504,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
           ds%atoms%nneightol = nneightol
 	  call map_into_cell(ds%atoms)
 	  call calc_dists(ds%atoms)
+call print("pre create_residue_labels_arb_pos verbosity " // current_verbosity(), PRINT_ALWAYS)
           call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers)
           call check_topology(ds%atoms)
           ds%atoms%nneightol = temp
@@ -593,7 +592,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         f = sum0(f1,ds%atoms)
      endif
 
-     call calc_restraint_stuff(ds, restraint_stuff)
+     if (ds%Nrestraints > 0) call calc_restraint_stuff(ds, restraint_stuff)
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
      call set_thermostat_regions(ds%atoms, Thermostat_Type, Thermostat_7_rs, qm_region_ctr)
@@ -602,7 +601,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
-     call print_restraint_stuff(restraint_stuff, 'RE')
+     if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RE')
      call print(ds%thermostat)
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
@@ -750,16 +749,16 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      call advance_verlet2(ds, Time_Step, f)
 
   !RESTRAINTS
-     call calc_restraint_stuff(ds, restraint_stuff)
+     if (ds%Nrestraints > 0) call calc_restraint_stuff(ds, restraint_stuff)
 
   !PRINT DS,THERMOSTAT,CONSTRAINT,XYZ
 
      if (ds%t < Equilib_Time) then
         call ds_print_status(ds, 'E',energy)
-	call print_restraint_stuff(restraint_stuff, 'RE')
+        if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RE')
      else
         call ds_print_status(ds, 'I',energy)
-	call print_restraint_stuff(restraint_stuff, 'RI')
+	if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RI')
      end if
 
      !Thermostat
