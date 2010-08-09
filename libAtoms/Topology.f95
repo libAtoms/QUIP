@@ -30,39 +30,16 @@
 
 module topology_module
 
-  use atoms_module,            only: atoms, connection, print, finalise, &
-                                     map_into_cell, calc_dists, &
-                                     assignment(=), &
-                                     add_property, has_property, &
-                                     read_line, parse_line, &
-                                     atoms_n_neighbours, atoms_neighbour, bond_length, &
-                                     distance_min_image, &
-                                     DEFAULT_NNEIGHTOL, set_cutoff, remove_bond, calc_connect, &
-				     assign_pointer, is_nearest_neighbour_abs_index
-  use extendable_str_module,   only: extendable_str, string
-  use clusters_module,         only: bfs_step, add_cut_hydrogens
-  use dictionary_module,       only: get_value
-  use linearalgebra_module,    only: find_in_array, find, &
-                                     print
-  use periodictable_module,    only: ElementName, ElementMass, ElementCovRad
-  use structures_module,       only: find_motif
-  use system_module,           only: dp, inoutput, initialise, finalise, &
-                                     INPUT, OUTPUT, INOUT, &
-                                     system_timer, &
-                                     optional_default, &
-                                     print, print_title, &
-                                     string_to_int, string_to_real, round, &
-                                     parse_string, read_line, &
-                                     PRINT_ALWAYS, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANAL, &
-                                     operator(//), allocatable_array_pointers, &
-				     verbosity_push, verbosity_pop, a2s, pad, s2a
-#ifndef HAVE_QUIPPY
-  use system_module,           only: system_abort
-#endif
-  use table_module,            only: table, initialise, finalise, &
-                                     append, allocate, delete, &
-                                     int_part, TABLE_STRING_LENGTH
-  use units_module,            only: MASSCONVERT, PI
+  use atoms_module           
+  use extendable_str_module  
+  use clusters_module        
+  use dictionary_module      
+  use linearalgebra_module   
+  use periodictable_module   
+  use structures_module      
+  use system_module          
+  use table_module           
+  use units_module           
 
 
   implicit none
