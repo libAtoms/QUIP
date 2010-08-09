@@ -81,6 +81,27 @@
 
 #define PASS_MPI_ERROR(mperror, error)  if (mperror /= MPI_SUCCESS) then ; call push_MPI_error(mperror, __FILE__, __LINE__) ; if (present(error)) then ; error = ERROR_MPI ; return ; else ; call error_abort(error) ; endif ; endif
 
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!X
+!X MPI BCAST errors
+!X
+!% Extension of error handling macros to MPI cases where processes
+!% peform different tasks. If an error occurs on one process it will
+!% be broadcast to all others before the error is propagated
+!% upwards. Replace RAISE_ERROR with BCAST_RAISE_ERROR and PASS_ERROR
+!% with BCAST_PASS_ERROR. Additionally, BCAST_CHECK_ERROR must be
+!% called on the processes in which no error has occured.  See
+!% CInOutput read() for an example usage of these macros.
+!%
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#define BCAST_RAISE_ERROR(info, error, mpi) if (present(error)) call bcast(mpi, error); RAISE_ERROR(info, error)
+
+#define BCAST_RAISE_ERROR_WITH_KIND(kind, info, error, mpi) if (present(error)) then; error = kind; call bcast(mpi, error); end if; RAISE_ERROR_WITH_KIND(kind, info, error)
+
+#define BCAST_PASS_ERROR(error, mpi) if (present(error)) then; if (error /= ERROR_NONE) call bcast(mpi, error); endif; PASS_ERROR(error)
+
+#define BCAST_CHECK_ERROR(error, mpi) if (present(error)) then; call bcast(mpi, error); if (error /= ERROR_NONE) then; RAISE_ERROR_WITH_KIND(error, "An error occured on another MPI process", error); endif; endif
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
