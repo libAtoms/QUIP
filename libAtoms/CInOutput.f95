@@ -233,56 +233,57 @@ contains
        this%mpi = mpi
     end if
 
-    if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
-         this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
-         this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
-         this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-         this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
-         this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
-       RAISE_ERROR_WITH_KIND(ERROR_IO,"Error opening file "//filename, error)
-    endif
+    if (.not. this%mpi%active .or. (this%mpi%active .and. (this%action /= INPUT .or. (this%action == INPUT .and. this%mpi%my_proc == 0)))) then
+       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
+            this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
+            this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
+            this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
+            this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
+            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
+          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error opening file "//filename, error)
+       endif
 
-    call c_f_pointer(this%c_n_frame, this%n_frame)
-    call c_f_pointer(this%c_n_atom, this%n_atom)
-    call c_f_pointer(this%c_n_int, this%n_int)
-    call c_f_pointer(this%c_n_real, this%n_real)
-    call c_f_pointer(this%c_n_str, this%n_str)
-    call c_f_pointer(this%c_n_logical, this%n_logical)
-    call c_f_pointer(this%c_n_param, this%n_param)
-    call c_f_pointer(this%c_n_property, this%n_property)
-    call c_f_pointer(this%c_got_index, this%got_index)
-    call c_f_pointer(this%c_netcdf4, this%netcdf4)
+       call c_f_pointer(this%c_n_frame, this%n_frame)
+       call c_f_pointer(this%c_n_atom, this%n_atom)
+       call c_f_pointer(this%c_n_int, this%n_int)
+       call c_f_pointer(this%c_n_real, this%n_real)
+       call c_f_pointer(this%c_n_str, this%n_str)
+       call c_f_pointer(this%c_n_logical, this%n_logical)
+       call c_f_pointer(this%c_n_param, this%n_param)
+       call c_f_pointer(this%c_n_property, this%n_property)
+       call c_f_pointer(this%c_got_index, this%got_index)
+       call c_f_pointer(this%c_netcdf4, this%netcdf4)
 
-    call c_f_pointer(this%c_lattice, this%lattice, (/3,3/))
+       call c_f_pointer(this%c_lattice, this%lattice, (/3,3/))
 
-    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
+       call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
+       call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
+       call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
+       call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
+       call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
 
-    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-    call c_f_pointer(this%c_plogical, this%plogical, (/this%n_param/))
-    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_plogical_a, this%plogical_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-
-    this%initialised = .true.
-    
-    if (this%action /= INPUT .and. do_append /= 0) then
-       this%current_frame = this%n_frame
-    else
-       this%current_frame = 0
+       call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
+       call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
+       call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
+       call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
+       call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
+       call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
+       call c_f_pointer(this%c_plogical, this%plogical, (/this%n_param/))
+       call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
+       call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
+       call c_f_pointer(this%c_plogical_a, this%plogical_a, (/3,this%n_param/))
+       call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
+       call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
+       call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
+       call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
+       
+       if (this%action /= INPUT .and. do_append /= 0) then
+          this%current_frame = this%n_frame
+       else
+          this%current_frame = 0
+       end if
     end if
+    this%initialised = .true.
 
   end subroutine cinoutput_initialise
 
