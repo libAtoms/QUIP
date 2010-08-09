@@ -490,8 +490,10 @@ implicit none
   ! calculate a(t) from f(t)
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = forces(:,i) / ElementMass(ds%atoms%Z(i))
 
-  call calc_restraint_stuff(ds, restraint_stuff)
-  restraint_stuff_timeavg = restraint_stuff
+  if (ds%Nrestraints > 0) then
+     call calc_restraint_stuff(ds, restraint_stuff)
+     restraint_stuff_timeavg = restraint_stuff
+  end if
   if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
     call system_abort('Impossible failure to assign_ptr for forces')
   forces_p = forces
@@ -517,8 +519,10 @@ implicit none
     endif
 
     call advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
-    call calc_restraint_stuff(ds, restraint_stuff)
-    call update_exponential_average(restraint_stuff_timeavg, params%dt/ds%avg_time, restraint_stuff)
+    if (ds%Nconstraints > 0) then
+       call calc_restraint_stuff(ds, restraint_stuff)
+       call update_exponential_average(restraint_stuff_timeavg, params%dt/ds%avg_time, restraint_stuff)
+    end if
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
