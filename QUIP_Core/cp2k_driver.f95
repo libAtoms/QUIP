@@ -108,7 +108,7 @@ contains
 
     type(Dictionary) :: cli
     character(len=FIELD_LENGTH) :: run_type, cp2k_template_file, psf_print, cp2k_program, link_template_file, topology_suffix
-    logical :: clean_up_files, save_output_files
+    logical :: clean_up_files, save_output_files, save_output_wfn_files
     integer :: max_n_tries
     real(dp) :: max_force_warning
     real(dp) :: qm_vacuum
@@ -168,6 +168,8 @@ contains
     integer, pointer :: sort_index_p(:)
     integer :: at_i
 
+    integer :: run_dir_i
+
     logical :: at_periodic
 
     INIT_ERROR(error)
@@ -189,6 +191,7 @@ contains
       call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program)
       call param_register(cli, 'clean_up_files', 'T', clean_up_files)
       call param_register(cli, 'save_output_files', 'T', save_output_files)
+      call param_register(cli, 'save_output_wfn_files', 'F', save_output_wfn_files)
       call param_register(cli, 'max_n_tries', '2', max_n_tries)
       call param_register(cli, 'max_force_warning', '2.0', max_force_warning)
       call param_register(cli, 'qm_vacuum', '6.0', qm_vacuum)
@@ -215,6 +218,7 @@ contains
     call print("  PSF_print " // PSF_print)
     call print("  clean_up_files " // clean_up_files)
     call print("  save_output_files " // save_output_files)
+    call print("  save_output_wfn_files " // save_output_wfn_files)
     call print("  max_n_tries " // max_n_tries)
     call print("  max_force_warning " // max_force_warning)
     call print("  qm_vacuum " // qm_vacuum)
@@ -585,7 +589,7 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
-    run_dir = make_run_directory()
+    run_dir = make_run_directory(run_dir_i)
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
@@ -614,8 +618,12 @@ contains
 
     ! save output
 
-    if (use_QM) &
+    if (use_QM) then
       call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn wfn.restart.wfn'//trim(qm_name_postfix))
+      if (save_output_wfn_files) then
+	call system_command('cp '//trim(run_dir)//'/quip-RESTART.wfn run_'//run_dir_i//'_end.wfn.restart.wfn'//trim(qm_name_postfix))
+      endif
+    endif
 
     if (save_output_files) then
       call system_command(&
@@ -852,7 +860,8 @@ contains
 
   end subroutine run_cp2k_program
 
-  function make_run_directory() result(dir)
+  function make_run_directory(run_dir_i) result(dir)
+    integer, intent(out), optional :: run_dir_i
     integer i
     character(len=1024) :: dir
 
@@ -870,6 +879,8 @@ contains
 
     if (stat /= 0) &
       call system_abort("Failed to mkdir "//trim(dir)//" status " // stat)
+
+    if (present(run_dir_i)) run_dir_i = i
 
   end function make_run_directory
 
