@@ -68,6 +68,8 @@ module  atoms_module
 
   logical :: printed_stack_warning = .false.   !% OMIT
 
+  private :: ess_max_len
+
   type Table_pointer
     type(Table), pointer :: t => null()
   end type Table_pointer
@@ -633,6 +635,18 @@ contains
   end subroutine atoms_assignment
 
 
+   pure function ess_max_len(ess)
+      type(extendable_str), intent(in) :: ess(:)
+      integer :: ess_max_len
+
+      integer :: i
+
+      ess_max_len = 0
+      do i=1, size(ess)
+	 if (ess(i)%len > ess_max_len) ess_max_len = ess(i)%len
+      end do
+   end function ess_max_len
+
   !% Make a copy of the atoms object 'from' without including
   !% connectivity information. Useful for saving the state of a
   !% dynamical simulation without incurring too great a memory
@@ -644,7 +658,7 @@ contains
     character(len=*), optional, intent(in) :: properties
     character(len=*), optional, intent(in) :: properties_array(:)
     integer, intent(out), optional :: error     
-    character(len=maxval(from%properties%keys%len)) :: tmp_properties_array(from%properties%n)
+    character(len=ess_max_len(from%properties%keys)) :: tmp_properties_array(from%properties%n)
     integer n_properties    
 
     INIT_ERROR(error)

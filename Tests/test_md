@@ -63,20 +63,33 @@ which ndiff > /dev/null && diff=ndiff
 
 error=0
 echo -n "$0: "
-if $diff test_md.traj_ref.xyz test_md.traj_pos.xyz  > /dev/null 2>&1; then
-   echo -n "final pos OK "
+nr=`wc -l < test_md.traj_ref.xyz`
+nt=`wc -l < test_md.traj_pos.xyz`
+if [[ $nr != $nt ]]; then
+   echo -n "final pos line number mismatch $nr $nt "
 else
-   echo -n "final pos differs "
-   error=1
+   if $diff test_md.traj_ref.xyz test_md.traj_pos.xyz  > /dev/null 2>&1; then
+      echo -n "final pos OK "
+   else
+      echo -n "final pos differs "
+      error=1
+   fi
 fi
-if $diff test_md.out_ref test_md.out > /dev/null 2>&1; then
-   echo -n "E/T OK"
+
+nr=`wc -l < test_md.out`
+nt=`wc -l < test_md.out_ref`
+if [[ $nr != $nt ]]; then
+   echo -n "output line number mismatch $nr $nt"
 else
-   echo -n "E/T differs"
-   error=1
+   if $diff test_md.out_ref test_md.out > /dev/null 2>&1; then
+      echo -n "E/T OK"
+   else
+      echo -n "E/T differs"
+      error=1
+   fi
 fi
 
 echo ""
 
-rm -f test_md.*
+# rm -f test_md.*
 exit $error

@@ -227,6 +227,10 @@ module dictionary_module
 
   interface assignment(=)
      module procedure dictionary_deepcopy
+#ifdef POINTER_COMPONENT_MANUAL_COPY
+     module procedure dictentry_assign
+     module procedure dictdata_assign
+#endif
   end interface assignment(=)
 
   private :: add_entry, extend_entries, remove_entry
@@ -2337,12 +2341,24 @@ contains
     type(DictEntry), allocatable :: t_entries(:)
     type(Extendable_str), allocatable :: t_keys(:)
     integer old_size
+#ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
+    integer :: i
+#endif
+
 
     if (allocated(this%entries)) then
        allocate(t_entries(size(this%entries)))
        allocate(t_keys(size(this%entries)))
+#ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
+       allocate(t_keys(size(this%keys)))
+       do i=1,size(this%entries)
+	  t_entries(i) = this%entries(i)
+	  t_keys(i) = this%keys(i)
+       end do
+#else
        t_entries = this%entries
        t_keys = this%keys
+#endif
 
        old_size = size(this%entries)
 
@@ -2352,8 +2368,15 @@ contains
        allocate(this%entries(old_size + n))
        allocate(this%keys(old_size + n))
 
+#ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
+       do i=1, size(t_entries)
+	  this%entries(i) = t_entries(i)
+	  this%keys(i) = t_keys(i)
+       end do
+#else
        this%entries(1:this%N) = t_entries(1:this%N)
        this%keys(1:this%N) = t_keys(1:this%N)
+#endif
 
        if (allocated(t_entries)) deallocate(t_entries)
        deallocate (t_keys)
@@ -2776,6 +2799,46 @@ contains
     end select
 
   end subroutine dictionary_get_array
+#endif
+
+     
+#ifdef POINTER_COMPONENT_MANUAL_COPY
+subroutine dictentry_assign(to, from)
+   type(DictEntry), intent(inout) :: to
+   type(DictEntry), intent(in) :: from
+
+   to%type = from%type
+   to%len = from%len
+   to%len2 = from%len2
+
+   to%own_data = from%own_data
+   to%i = from%i
+   to%r = from%r
+   to%c = from%c
+   to%s = from%s
+
+   to%i_a => from%i_a
+   to%r_a => from%r_a
+   to%c_a => from%c_a
+   to%l_a => from%l_a
+   to%s_a => from%s_a
+
+   to%i_a2 => from%i_a2
+   to%r_a2 => from%r_a2
+
+   to%d = from%d
+end subroutine dictentry_assign
+
+subroutine dictdata_assign(to, from)
+   type(DictData), intent(inout) :: to
+   type(DictData), intent(in) :: from
+
+   if (allocated(to%d)) deallocate(to%d)
+   if (allocated(from%d)) then
+      allocate(to%d(size(from%d)))
+      to%d = from%d
+   endif
+end subroutine dictdata_assign
 #endif
 
 end module dictionary_module

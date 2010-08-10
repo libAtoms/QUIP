@@ -116,6 +116,9 @@ public :: assignment(=)
 interface assignment(=)
    module procedure extendable_str_assign_string
    module procedure string_assign_extendable_str
+#ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
+   module procedure extendable_str_assign_extendable_str
+#endif
 endinterface
 
 contains
@@ -155,7 +158,7 @@ subroutine extendable_str_print(this,verbosity,file)
   integer,        intent(in), optional :: verbosity
   type(Inoutput), intent(inout),optional:: file
 
-  call print ("extendable_str, len " // this%len // " size " // size(this%s), verbosity, file)
+  call print ("extendable_str, len " // this%len // " size(s) " // size(this%s), verbosity, file)
   if (allocated(this%s)) then
      call print(this%s(1:this%len))
 ! OLD IMPLEMENTATION
@@ -486,13 +489,23 @@ subroutine extendable_str_assign_string(to, from)
 
   call initialise(to)
   call concat(to, from)
-endsubroutine extendable_str_assign_string
+end subroutine extendable_str_assign_string
+
+#ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
+subroutine extendable_str_assign_extendable_str(to, from)
+  type(extendable_str), intent(out)  :: to
+  type(extendable_str), intent(in)   :: from
+
+  call initialise(to)
+  call concat(to, string(from))
+end subroutine extendable_str_assign_extendable_str
+#endif
 
 subroutine string_assign_extendable_str(to, from)
   type(extendable_str), intent(in)  :: from
   character(from%len), intent(out)  :: to
 
   to = string(from)
-endsubroutine string_assign_extendable_str
+end subroutine string_assign_extendable_str
 
 end module extendable_str_module

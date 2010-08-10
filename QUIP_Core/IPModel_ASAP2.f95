@@ -145,7 +145,7 @@ end subroutine IPModel_ASAP2_Finalise
 subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
 
   real(dp) x,R,D,fc,dfc_dx
-  real(dp), parameter :: pi = dacos(-1.0d0)
+  ! real(dp), parameter :: pi = dacos(-1.0d0)
 
   if (x .lt. (R-D)) then
      fc = 1.0d0
