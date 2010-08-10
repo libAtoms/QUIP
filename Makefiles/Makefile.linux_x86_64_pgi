@@ -69,6 +69,5 @@ QUIPPY_F77FLAGS = -noswitcherror
 
 .f95.o:
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
-	${F95} ${F95FLAGS} -I$(<D) -E $< | f90wrap_semicol > $*.f90
-	${F95} ${F95FLAGS} -I$(<D) -c $*.f90 -o $@
+	${F95} ${F95FLAGS} -I$(<D) -E $< | $(QUIP_ROOT)/Tools/f90wrap_semicol > $*.f90 && ${F95} ${F95FLAGS} -I$(<D) -c $*.f90 -o $@
 	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
