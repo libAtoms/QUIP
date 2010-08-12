@@ -362,7 +362,7 @@ contains
 	endif ! l_error == 0 for reading this structure
 
       end do ! while l_error == 0 for frames in this file
-      if (cfile%got_index == 1) then
+      if (cfile%got_index) then
 	last_file_frame_n = last_file_frame_n + cfile%n_frame
       else
 	last_file_frame_n = last_file_frame_n + cfile%current_frame

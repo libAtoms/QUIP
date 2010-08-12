@@ -121,7 +121,7 @@ class Atom(dict):
       return 'Atom(%s)' % ', '.join(['%s=%r' % (k,v) for (k, v) in self.iteritems()])
 
    def __eq__(self, other):
-      tol = 1e-10
+      tol = 1e-8
 
       self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
       other_ = dict([(k.lower(),v) for (k,v) in other.iteritems() if k != 'i'])
@@ -356,7 +356,7 @@ class Atoms(FortranAtoms):
       
 
    def __eq__(self, other):
-      tol = 1e-10
+      tol = 1e-8
       if self.n != other.n: return False
       if abs(self.lattice - other.lattice).max() > tol: return False
       if self.params != other.params: return False
@@ -571,12 +571,12 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
       return ParamReaderMixin.__repr__(self)
 
    def __eq__(self, other):
-      tol = 1e-10
+      tol = 1e-8
       if sorted(self.keys()) != sorted(other.keys()): return False
 
       for key in self:
          v1, v2 = self[key], other[key]
-         if isinstance(v1, FortranArray):
+         if isinstance(v1, FortranArray) and isinstance(v2, FortranArray):
             if v1.dtype.kind != 'f':
                if (v1 != v2).any(): return False
             else:
@@ -623,7 +623,7 @@ class Table(FortranTable):
       return not self.equal(other)
 
    def equal(self, other):
-      tol = 1e-10
+      tol = 1e-8
       
       for t1, t2 in zip((self.n,  self.intsize,  self.realsize,  self.strsize,  self.logicalsize),
                         (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
@@ -695,7 +695,7 @@ class CInOutput(FortranCInOutput):
 
       if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
          properties = padded_str_array(properties, max([len(x) for x in properties])).T
-      
+
       FortranCInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
                              real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
                              deflate_level=deflate_level)

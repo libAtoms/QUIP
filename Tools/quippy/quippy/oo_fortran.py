@@ -247,7 +247,7 @@ class FortranDerivedType(object):
        self._update()
 
    def __del__(self):
-       #print 'del %s(fpointer=0x%x, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
+       #print 'del %s(fpointer=%s, finalise=%d)' % (self.__class__.__name__, self._fpointer, self._finalise)
 
        if self._fpointer is not None and not (self._fpointer == 0).all() and self._finalise and '__del__' in self._routines:
            fobj, doc = self._routines['__del__']

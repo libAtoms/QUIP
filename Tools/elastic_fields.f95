@@ -87,7 +87,6 @@ program elastic
 
 
   ! Loop over all frames in input file
-  call query(infile)
   do n=0,infile%n_frame-1
      call read(infile, at, frame=n)
 

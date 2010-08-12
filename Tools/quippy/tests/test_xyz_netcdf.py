@@ -43,10 +43,10 @@ if got_cinoutput:
          self.at.params['dummy_log'] = True
          self.at.params['dummy_log_a'] = [True, True, False]
          self.al = AtomsList([ supercell(diamond(5.44+0.01*x,14),2,2,2) for x in range(5) ])
-         for a in self.al:
-            a.params.update(self.at.params)
+         for at in self.al:
+            at.params.update(self.at.params)
             
-         self.xyz_ref =  ['64\n', 'dummy_real=1.00000000 dummy_int=2 dummy_int_a="1       2       3" dummy_real_a="1.00000000      2.00000000      3.00000000" dummy_int_a2="1        4        7        2        5        8        3        6        9" dummy_real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" dummy_log=T dummy_log_a="T T F" Lattice="10.880000 0.000000 0.000000 0.000000 10.880000 0.000000 0.000000 0.000000 10.880000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
+         self.xyz_ref =  ['64\n', 'dummy_real=1.00000000 dummy_int=2 dummy_int_a="1       2       3" dummy_real_a="1.00000000      2.00000000      3.00000000" dummy_int_a2="1        4        7        2        5        8        3        6        9" dummy_real_a2="1.00000000       4.00000000       7.00000000       2.00000000       5.00000000       8.00000000       3.00000000       6.00000000       9.00000000" dummy_log=T dummy_log_a="T T F" Lattice="10.88000000       0.00000000       0.00000000       0.00000000      10.88000000       0.00000000       0.00000000       0.00000000      10.88000000" Properties=species:S:1:pos:R:3:Z:I:1:log:L:1\n',
                           'Si              0.00000000      0.00000000      0.00000000      14    F\n',
                           'Si              1.36000000      1.36000000      1.36000000      14    F\n',
                           'Si              2.72000000      2.72000000      0.00000000      14    F\n',
@@ -118,11 +118,14 @@ if got_cinoutput:
          if os.path.exists('test.xyz.idx'): os.remove('test.xyz.idx')
          if os.path.exists('test2.xyz'): os.remove('test2.xyz')
          if os.path.exists('test2.xyz.idx'): os.remove('test2.xyz.idx')
+         if os.path.exists('quartz.xyz'): os.remove('quartz.xyz')
+         if os.path.exists('quartz.xyz.idx'): os.remove('quartz.xyz.idx')
+         if os.path.exists('quartz.nc'): os.remove('quartz.nc')
 
       def testsinglexyz(self):
          self.at.write('test.xyz')
          at = Atoms('test.xyz')
-         self.assertEqual(self.at, at)
+         self.assertAtomsEqual(self.at, at)
          self.assertEqual(self.xyz_ref, open('test.xyz', 'r').readlines())
 
       def testsinglexyzprefix(self):
@@ -195,7 +198,6 @@ if got_cinoutput:
 #         al = AtomsList('test2.xyz')
 #         self.assertEqual(list(al), list(self.al))
 
-
       def testwritecio(self):
          cio = CInOutput("test2.xyz", OUTPUT)
          self.al.write(cio)
@@ -213,6 +215,7 @@ if got_cinoutput:
       def testframe_random_access(self):
          self.al.write("test.xyz")
          cio = CInOutput("test.xyz", INPUT)
+         error = farray(0)
          at = cio.read(frame=4)
          self.assertArrayAlmostEqual(at.lattice, 2*(5.44+0.01*4)*fidentity(3))
          cio.close()
@@ -237,6 +240,26 @@ if got_cinoutput:
             self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
             self.assertArrayAlmostEqual(at.pos, at_ref.pos)
             self.assertEqual(list(at.z), list(at_ref.z))
+
+      def test_non_orthorhombic_xyz(self):
+         from quippy.sio2 import quartz_params
+         aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
+         aq1.write('quartz.xyz')
+         aq2 = Atoms('quartz.xyz')
+         orig_params = get_lattice_params(aq1.lattice)
+         xyz_params  = get_lattice_params(aq2.lattice)
+         self.assertArrayAlmostEqual(orig_params, xyz_params)
+
+      def test_non_orthorhombic_nc(self):
+         from quippy.sio2 import quartz_params
+         aq1 = alpha_quartz(**quartz_params['ASAP_JRK'])
+         aq1.map_into_cell()
+         aq1.write('quartz.nc', netcdf4=False)
+         aq2 = Atoms('quartz.nc')
+         orig_params = get_lattice_params(aq1.lattice)
+         nc_params   = get_lattice_params(aq2.lattice)
+         self.assertArrayAlmostEqual(orig_params, nc_params)
+         
 
       
 try:

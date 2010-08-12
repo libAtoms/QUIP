@@ -124,6 +124,8 @@ module error_module
   public  :: error_unit, error_mpi_myid
   integer :: error_unit = -1
 
+  public :: c_error_initialise
+
 contains
 
   !% Push a new error callback to the stack
@@ -331,5 +333,10 @@ contains
     call system_abort(get_error_string_and_clear(error))
 
   endsubroutine error_abort_from_stack
+
+  !% Register error functions push_error_with_info and push_error so they can be called from C
+  subroutine c_error_initialise
+    call c_error_register_functions(push_error_with_info, push_error, error_abort_from_stack, error_clear_stack);
+  end subroutine c_error_initialise
 
 endmodule error_module

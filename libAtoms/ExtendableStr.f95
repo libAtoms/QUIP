@@ -158,13 +158,15 @@ subroutine extendable_str_print(this,verbosity,file)
   integer,        intent(in), optional :: verbosity
   type(Inoutput), intent(inout),optional:: file
 
-  call print ("extendable_str, len " // this%len // " size(s) " // size(this%s), verbosity, file)
   if (allocated(this%s)) then
+     call print ("extendable_str, len " // this%len // " size(s) " // size(this%s), verbosity, file)
      call print(this%s(1:this%len))
 ! OLD IMPLEMENTATION
 !    do i=1, this%len
 !      call print (this%s(i), verbosity, out)
 !    end do
+  else
+     call print("extendable_str, len " // this%len // " not allocated", verbosity, file)
   endif
 end subroutine extendable_str_print
 
