@@ -4,7 +4,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_methods.F,v
 retrieving revision 1.41
 diff -u -r1.41 cp_ddapc_methods.F
 --- cp_ddapc_methods.F	8 Apr 2010 19:18:04 -0000	1.41
-+++ cp_ddapc_methods.F	21 Apr 2010 20:17:22 -0000
++++ cp_ddapc_methods.F	12 Aug 2010 21:31:27 -0000
 @@ -506,7 +506,8 @@
            DEALLOCATE(AmE, stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
@@ -21,18 +21,27 @@ RCS file: /cvsroot/cp2k/cp2k/src/cp_ddapc_util.F,v
 retrieving revision 1.23
 diff -u -r1.23 cp_ddapc_util.F
 --- cp_ddapc_util.F	3 Jan 2010 23:41:26 -0000	1.23
-+++ cp_ddapc_util.F	21 Apr 2010 20:17:22 -0000
-@@ -238,6 +238,9 @@
++++ cp_ddapc_util.F	12 Aug 2010 21:31:27 -0000
+@@ -238,6 +238,10 @@
      TYPE(pw_type), POINTER                   :: rho_tot_g
      TYPE(qs_charges_type), POINTER           :: qs_charges
      TYPE(qs_rho_type), POINTER               :: rho
 +    !!NB speed
-+    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj
++    REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: cvT_AmI, AmI_cv, cvT_AmI_dAmj, dAm_qv, AmI_bv, AmI_dbvj
++    external dgemv
 +    !!
  
      CALL timeset(routineN,handle)
      failure         = .FALSE.
-@@ -399,13 +402,23 @@
+@@ -388,6 +392,7 @@
+        !
+        IF (need_f) THEN 
+           CALL timeset(routineN//"-forces",handle3)
++!CALL timeset(routineN//"-for-1",handlet)
+           IF (iw>0) THEN
+              WRITE(iw,'(T3,A)')" Evaluating DDAPC atomic derivatives .."
+           END IF
+@@ -399,13 +404,31 @@
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            ALLOCATE(dqv(ndim,SIZE(particle_set),3), stat=stat)
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)     
@@ -45,9 +54,17 @@ diff -u -r1.23 cp_ddapc_util.F
 +	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +	  cvT_AmI = MATMUL(cv, cp_ddapc_env%AmI)
 +	  AmI_cv = MATMUL(cp_ddapc_env%AmI,cv)
++	  ALLOCATE(dAm_qv(ndim), stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  ALLOCATE(AmI_bv(ndim), stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  ALLOCATE(AmI_dbvj(ndim), stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++!CALL timestop(handlet)
 +	  !!
            !
            DO iparticle = 1, SIZE(particle_set)
++!CALL timeset(routineN//"-for-2",handlet)
               dAm = 0.0_dp
               dbv = 0.0_dp
               CALL build_der_b_vector(dbv, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
@@ -57,7 +74,7 @@ diff -u -r1.23 cp_ddapc_util.F
               IF (debug_this_module) THEN
                  CALL debug_der_b_vector(dbv, particle_set, radii, rho_tot_g,&
                       gcut, iparticle, Vol, qs_env, error)
-@@ -413,23 +426,33 @@
+@@ -413,23 +436,50 @@
               END IF
               CALL build_der_A_matrix(dAm, cp_ddapc_env%gfunc, cp_ddapc_env%w,&
                    particle_set, radii, rho_tot_g, gcut, iparticle, error);  dAm = dAm /(Vol*Vol)
@@ -68,20 +85,35 @@ diff -u -r1.23 cp_ddapc_util.F
                       gcut, iparticle, Vol, qs_env, error)
                  cp_ddapc_env => qs_env%cp_ddapc_env 
               END IF
++!CALL timestop(handlet)
               DO j = 1, 3
-+		!!NB speed
-+		cvT_AmI_dAmj = MATMUL(cvT_AmI, dAm(:,:,j))
-                 dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
+-                dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
 -                c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
 -                       DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
-+		c3 = - DOT_PRODUCT(cvT_AmI_dAmj,MATMUL(cp_ddapc_env%AmI,bv)) + DOT_PRODUCT(cvT_AmI, dbv(:,j))
++!CALL timeset(routineN//"-for-3-1",handlet)
++		!!NB speed
++		!! cvT_AmI_dAmj = MATMUL(cvT_AmI, dAm(:,:,j))
++		call dgemv('T', size(dAm,1), size(dAm,2), 1.0_dp, dAm(:,:,j), size(dAm,1), cvT_AmI, 1, 0.0_dp, cvT_AmI_dAmj, 1)
++!CALL timestop(handlet)
++!CALL timeset(routineN//"-for-3-2",handlet)
++		!! dAm_qv = MATMUL(dAm(:,:,j), qv)
++		call dgemv('N', size(dAm,1), size(dAm,2), 1.0_dp, dAm(:,:,j), size(dAm,1), qv, 1, 0.0_dp, dAm_qv, 1)
++                !! dqv0 = MATMUL(cp_ddapc_env%AmI,dAm_qv)
++		call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI, size(cp_ddapc_env%AmI,1), dAm_qv, 1, 0.0_dp, dqv0, 1)
++		!! c3 = - DOT_PRODUCT(cvT_AmI_dAmj,MATMUL(cp_ddapc_env%AmI,bv)) + DOT_PRODUCT(cvT_AmI, dbv(:,j))
++		call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI, size(cp_ddapc_env%AmI,1), bv, 1, 0.0_dp, AmI_bv, 1)
++!CALL timestop(handlet)
++!CALL timeset(routineN//"-for-3-3",handlet)
++		c3 = - DOT_PRODUCT(cvT_AmI_dAmj,AmI_bv) + DOT_PRODUCT(cvT_AmI, dbv(:,j))
                  c3   = c3 / cp_ddapc_env%c0
 -                c4 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,cv)))) / &
 -                     cp_ddapc_env%c0
 -                dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
 -                     c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
 +		c4 = - DOT_PRODUCT(cvT_AmI_dAmj,AmI_cv) / cp_ddapc_env%c0
-+		dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - (c3 - c4*c1) * AmI_cv)
++		!! dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - (c3 - c4*c1) * AmI_cv)
++		call dgemv('N', size(cp_ddapc_env%AmI,1), size(cp_ddapc_env%AmI,2), 1.0_dp, cp_ddapc_env%AmI, size(cp_ddapc_env%AmI,1), dbv(:,j), 1, 0.0_dp, AmI_dbvj, 1)
++		dqv(:,iparticle,j) = - ( dqv0 + AmI_dbvj - (c3 - c4*c1) * AmI_cv)
 +                ! dqv0 = - MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),-qv))
 +                ! c3 = - DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,MATMUL(dAm(:,:,j),MATMUL(cp_ddapc_env%AmI,bv)))) + &
 +                       ! DOT_PRODUCT(cv,MATMUL(cp_ddapc_env%AmI,dbv(:,j))) 
@@ -90,34 +122,43 @@ diff -u -r1.23 cp_ddapc_util.F
 +                     ! cp_ddapc_env%c0
 +                ! dqv(:,iparticle,j) = - ( dqv0 + MATMUL(cp_ddapc_env%AmI,dbv(:,j)) - &
 +                     ! c3 * MATMUL(cp_ddapc_env%AmI,cv) + c4 * c1 * MATMUL(cp_ddapc_env%AmI,cv))
++!CALL timestop(handlet)
               END DO
            END DO
++!CALL timeset(routineN//"-for-4",handlet)
 +	  !! NB parallelization
 +          CALL mp_sum(dqv,rho_tot_g%pw_grid%para%group)             
 +	  !!
++!CALL timestop(handlet)
            CPPostcondition(PRESENT(dq_out),cp_failure_level,routineP,error,failure)
            IF (.NOT.ASSOCIATED(dq_out)) THEN
               ALLOCATE(dq_out(SIZE(dqv,1),SIZE(dqv,2),SIZE(dqv,3)), stat=stat)
-@@ -452,6 +475,12 @@
-           DEALLOCATE(dAm, stat=stat)
+@@ -453,6 +503,18 @@
            CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            DEALLOCATE(dbv, stat=stat)
-+          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
+           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +          DEALLOCATE(cvT_AmI, stat=stat)
 +          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +          DEALLOCATE(cvT_AmI_dAmj, stat=stat)
 +          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
 +          DEALLOCATE(AmI_cv, stat=stat)
-           CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++          CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  DEALLOCATE(dAm_qv, stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  DEALLOCATE(AmI_bv, stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
++	  DEALLOCATE(AmI_dbvj, stat=stat)
++	  CPPostcondition(stat==0,cp_failure_level,routineP,error,failure)
            CALL timestop(handle3)
         END IF
+        !
 Index: ewald_spline_util.F
 ===================================================================
 RCS file: /cvsroot/cp2k/cp2k/src/ewald_spline_util.F,v
 retrieving revision 1.26
 diff -u -r1.26 ewald_spline_util.F
 --- ewald_spline_util.F	3 Jan 2010 23:41:27 -0000	1.26
-+++ ewald_spline_util.F	21 Apr 2010 20:17:22 -0000
++++ ewald_spline_util.F	12 Aug 2010 21:31:27 -0000
 @@ -41,6 +41,9 @@
                                               pw_type
    USE timings,                         ONLY: timeset,&
@@ -186,7 +227,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/mathlib.F,v
 retrieving revision 1.45
 diff -u -r1.45 mathlib.F
 --- mathlib.F	3 Jan 2010 23:41:36 -0000	1.45
-+++ mathlib.F	21 Apr 2010 20:17:22 -0000
++++ mathlib.F	12 Aug 2010 21:31:27 -0000
 @@ -466,7 +466,7 @@
  !>       -            "T" => invert transpose(a)
  !> \version 1.0

@@ -1,100 +1,113 @@
-diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_constants.F cp2k_cvs_patched/cp2k/src/input_constants.F
-*** cp2k_cvs/cp2k/src/input_constants.F	2009-08-19 15:20:31.000000000 -0400
---- cp2k_cvs_patched/cp2k/src/input_constants.F	2009-08-27 12:40:09.000000000 -0400
-***************
-*** 304,310 ****
-                                                do_coord_g96=3,&
-                                                do_coord_crd=4,&
-                                                do_coord_cif=5,&
-!                                               do_coord_xtl=6
-                                             
-    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
-                                                do_ff_quartic=1,&
---- 304,311 ----
-                                                do_coord_g96=3,&
-                                                do_coord_crd=4,&
-                                                do_coord_cif=5,&
-!                                               do_coord_xtl=6,&
-!                                               do_coord_exyz=7
-                                             
-    INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
-                                                do_ff_quartic=1,&
-diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/input_cp2k_subsys.F cp2k_cvs_patched/cp2k/src/input_cp2k_subsys.F
-*** cp2k_cvs/cp2k/src/input_cp2k_subsys.F	2009-07-07 05:09:55.000000000 -0400
---- cp2k_cvs_patched/cp2k/src/input_cp2k_subsys.F	2009-08-28 11:33:09.000000000 -0400
-***************
-*** 377,382 ****
---- 377,387 ----
-              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-         CALL section_add_keyword(print_key,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
-+        CALL keyword_create(keyword,"exyz_info",&
-+             description="Prints information when parsing EXYZ files.",&
-+             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-+        CALL section_add_keyword(print_key,keyword,error=error)
-+        CALL keyword_release(keyword,error=error)
-         CALL keyword_create(keyword,"psf_info",&
-              description="Prints information when parsing PSF files.",&
-              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
-***************
-*** 1552,1560 ****
-              variants=s2a("COORDINATE"),&
-              description="Set up the way in which coordinates will be read.",&
-              usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
-!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL"),&
-              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
-!             do_coord_cif,do_coord_xtl/),&
-              enum_desc=s2a(&
-              "Coordinates read in the &COORD section of the input file",&
-              "Coordinates provided through a PDB file format",&
---- 1557,1565 ----
-              variants=s2a("COORDINATE"),&
-              description="Set up the way in which coordinates will be read.",&
-              usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
-!             enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL","EXYZ"),&
-              enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
-!             do_coord_cif,do_coord_xtl,do_coord_exyz/),&
-              enum_desc=s2a(&
-              "Coordinates read in the &COORD section of the input file",&
-              "Coordinates provided through a PDB file format",&
-***************
-*** 1562,1568 ****
-              "Coordinates provided through a GROMOS96 file format",&
-              "Coordinates provided through an AMBER file format",&
-              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
-!             "Coordinates provided through a XTL (MSI native) file format"),&
-              default_i_val=do_coord_off,error=error)
-         CALL section_add_keyword(section,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
---- 1567,1574 ----
-              "Coordinates provided through a GROMOS96 file format",&
-              "Coordinates provided through an AMBER file format",&
-              "Coordinates provided through a CIF (Crystallographic Information File) file format",&
-!             "Coordinates provided through a XTL (MSI native) file format",&
-!             "Coordinates provided through an EXYZ (QUIP native) file format"),&
-              default_i_val=do_coord_off,error=error)
-         CALL section_add_keyword(section,keyword,error=error)
-         CALL keyword_release(keyword,error=error)
-Common subdirectories: cp2k_cvs/cp2k/src/lib and cp2k_cvs_patched/cp2k/src/lib
-diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/OBJECTDEFS cp2k_cvs_patched/cp2k/src/OBJECTDEFS
-*** cp2k_cvs/cp2k/src/OBJECTDEFS	2009-08-12 16:56:04.000000000 -0400
---- cp2k_cvs_patched/cp2k/src/OBJECTDEFS	2009-08-27 15:47:57.000000000 -0400
-***************
-*** 672,677 ****
---- 672,678 ----
-   topology_util.o\
-   topology_xtl.o\
-   topology_xyz.o\
-+  topology_exyz.o\
-   util.o\
-   velocity_verlet_control.o\
-   vibrational_analysis.o\
-diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_patched/cp2k/src/topology_exyz.F
-*** cp2k_cvs/cp2k/src/topology_exyz.F	1969-12-31 19:00:00.000000000 -0500
---- cp2k_cvs_patched/cp2k/src/topology_exyz.F	2009-08-28 15:03:21.000000000 -0400
-***************
-*** 0 ****
---- 1,233 ----
+Index: input_constants.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/input_constants.F,v
+retrieving revision 1.282
+diff -u -r1.282 input_constants.F
+--- input_constants.F	26 May 2010 11:14:35 -0000	1.282
++++ input_constants.F	12 Aug 2010 21:31:29 -0000
+@@ -326,7 +326,8 @@
+                                               do_coord_g96=3,&
+                                               do_coord_crd=4,&
+                                               do_coord_cif=5,&
+-                                              do_coord_xtl=6
++                                              do_coord_xtl=6,&
++                                              do_coord_exyz=7
+ 
+   INTEGER, PARAMETER, PUBLIC               :: do_ff_undef=0,&
+                                               do_ff_quartic=1,&
+Index: input_cp2k_subsys.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/input_cp2k_subsys.F,v
+retrieving revision 1.130
+diff -u -r1.130 input_cp2k_subsys.F
+--- input_cp2k_subsys.F	7 May 2010 16:59:31 -0000	1.130
++++ input_cp2k_subsys.F	12 Aug 2010 21:31:29 -0000
+@@ -377,6 +377,11 @@
+             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
+        CALL section_add_keyword(print_key,keyword,error=error)
+        CALL keyword_release(keyword,error=error)
++       CALL keyword_create(keyword,"exyz_info",&
++            description="Prints information when parsing EXYZ files.",&
++            default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
++       CALL section_add_keyword(print_key,keyword,error=error)
++       CALL keyword_release(keyword,error=error)
+        CALL keyword_create(keyword,"psf_info",&
+             description="Prints information when parsing PSF files.",&
+             default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
+@@ -1568,9 +1573,9 @@
+             variants=s2a("COORDINATE"),&
+             description="Set up the way in which coordinates will be read.",&
+             usage="COORD_FILE_FORMAT (OFF|PDB|XYZ|G96|CRD|CIF|XTL)", &
+-            enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL"),&
++            enum_c_vals=s2a( "OFF","PDB","XYZ","G96","CRD","CIF","XTL","EXYZ"),&
+             enum_i_vals=(/do_coord_off, do_coord_pdb, do_coord_xyz, do_coord_g96, do_coord_crd,&
+-            do_coord_cif,do_coord_xtl/),&
++            do_coord_cif,do_coord_xtl,do_coord_exyz/),&
+             enum_desc=s2a(&
+             "Coordinates read in the &COORD section of the input file",&
+             "Coordinates provided through a PDB file format",&
+@@ -1578,7 +1583,8 @@
+             "Coordinates provided through a GROMOS96 file format",&
+             "Coordinates provided through an AMBER file format",&
+             "Coordinates provided through a CIF (Crystallographic Information File) file format",&
+-            "Coordinates provided through a XTL (MSI native) file format"),&
++            "Coordinates provided through a XTL (MSI native) file format",&
++            "Coordinates provided through an EXYZ (QUIP native) file format"),&
+             default_i_val=do_coord_off,error=error)
+        CALL section_add_keyword(section,keyword,error=error)
+        CALL keyword_release(keyword,error=error)
+Index: OBJECTDEFS
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/OBJECTDEFS,v
+retrieving revision 1.520
+diff -u -r1.520 OBJECTDEFS
+--- OBJECTDEFS	26 Apr 2010 15:54:35 -0000	1.520
++++ OBJECTDEFS	12 Aug 2010 21:31:29 -0000
+@@ -680,6 +680,7 @@
+  topology_util.o\
+  topology_xtl.o\
+  topology_xyz.o\
++ topology_exyz.o\
+  util.o\
+  velocity_verlet_control.o\
+  vibrational_analysis.o\
+Index: topology.F
+===================================================================
+RCS file: /cvsroot/cp2k/cp2k/src/topology.F,v
+retrieving revision 1.140
+diff -u -r1.140 topology.F
+--- topology.F	3 Jan 2010 23:41:38 -0000	1.140
++++ topology.F	12 Aug 2010 21:31:29 -0000
+@@ -26,7 +26,7 @@
+        do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
+        do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
+        do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
+-       do_coord_xtl, do_coord_xyz
++       do_coord_xtl, do_coord_xyz, do_coord_exyz
+   USE input_section_types,             ONLY: section_vals_get,&
+                                              section_vals_get_subs_vals,&
+                                              section_vals_type,&
+@@ -81,6 +81,7 @@
+                                              topology_set_atm_mass
+   USE topology_xtl,                    ONLY: read_coordinate_xtl
+   USE topology_xyz,                    ONLY: read_coordinate_xyz
++  USE topology_exyz,                   ONLY: read_coordinate_exyz
+ #include "cp_common_uses.h"
+ 
+   IMPLICIT NONE
+@@ -533,6 +534,8 @@
+        CALL read_coordinate_pdb (topology,para_env,subsys_section,error)
+     CASE (do_coord_xyz)
+        CALL read_coordinate_xyz (topology,para_env,subsys_section,error)
++    CASE (do_coord_exyz)
++       CALL read_coordinate_exyz (topology,para_env,subsys_section,error)
+     CASE (do_coord_cif)
+        CALL read_coordinate_cif (topology,para_env,subsys_section,error)
+     CASE (do_coord_xtl)
+diff --new-file -u -r1.41 topology_exyz.F 
+--- topology_exyz.F	1969-12-31 19:00:00.000000000 -0500
++++ topology_exyz.F	2010-08-12 17:12:19.000000000 -0400
+@@ -0,0 +1,233 @@
 + MODULE topology_exyz
 +   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
 +                                              cp_print_key_unit_nr
@@ -121,8 +134,8 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +                                              concat,&
 +                                              assign_pointer,&
 +                                              initialise,&
-+                                              read_xyz,&
-+                                              TABLE_STRING_LENGTH
++                                              read,string,a2s,&
++ 					     LF_CHAR_CODE
 + #include "cp_common_uses.h"
 + 
 +   IMPLICIT NONE
@@ -155,7 +168,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +     TYPE(cp_parser_type), POINTER            :: parser
 +     TYPE(Extendable_Str)                     :: es
 +     TYPE(atoms)                              :: at
-+     character(len=TABLE_STRING_LENGTH), pointer :: atmname(:), molname(:), resname(:), element(:)
++     character(len=1), pointer :: atmname(:,:), molname(:,:), resname(:,:), element(:,:)
 +     integer, pointer                         :: resid(:)
 +     REAL(KIND=dp), pointer                   :: atm_mass(:), atm_charge(:), occup(:), beta(:)
 + 
@@ -199,16 +212,16 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 + 
 +        ! zero Extendable_Str, and concatentate number line
 +        call zero(es)
-+        call concat(es, trim(parser%input_line) // char(13))
++        call concat(es, trim(parser%input_line) // new_line(' '))
 + 
 +        ! concatentate comment line
 +        CALL parser_get_next_line(parser,1,error=error)
-+        call concat(es, trim(parser%input_line) // char(13))
++        call concat(es, trim(parser%input_line) // new_line(' '))
 + 
 +        DO j = 1, natom
 +          ! concatentate atom line
 +          CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
-+          call concat(es, trim(parser%input_line) // char(13))
++          call concat(es, trim(parser%input_line) // new_line(' '))
 +          IF (my_end) THEN 
 +             CALL cp_assert(j==natom,cp_fatal_level,cp_assertion_failed,routineP,&
 +                  "Number of lines in EXYZ format not equal to the number of atoms."//&
@@ -217,7 +230,7 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +          END IF
 +        END DO
 + 
-+        call read_xyz(at, es)
++        call read(at, str=string(es))
 +        if (.not. assign_pointer(at, 'atom_type', atmname)) nullify(atmname)
 +        if (.not. assign_pointer(at, 'atom_mol_name', molname)) nullify(molname)
 +        if (.not. assign_pointer(at, 'atom_res_name', resname)) nullify(resname)
@@ -230,9 +243,9 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 + 
 +        DO j = 1, natom
 +          if (associated(atmname)) then
-+            atom_info%label_atmname(j) = trim(atmname(j))
++            atom_info%label_atmname(j) = trim(a2s(atmname(:,j)))
 +          else if (associated(at%species)) then
-+            atom_info%label_atmname(j) = trim(at%species(j))
++            atom_info%label_atmname(j) = trim(a2s(at%species(:,j)))
 +          else if (associated(at%Z)) then
 +            WRITE(my_default_index,'(I0)') at%Z(j)   
 +            atom_info%label_atmname(j) = trim(my_default_index)
@@ -249,12 +262,12 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +                "read_coordinate_exyz couldn't find pos property")
 +          endif
 +          if (associated(molname)) then
-+            atom_info%label_molname(j) = trim(molname(j))
++            atom_info%label_molname(j) = trim(a2s(molname(:,j)))
 +          else
 +            atom_info%label_molname(j) = trim(atom_info%label_atmname(j)) // TRIM(my_default_index)
 +          endif
 +          if (associated(resname)) then
-+            atom_info%label_resname(j) = trim(resname(j))
++            atom_info%label_resname(j) = trim(a2s(resname(:,j)))
 +          else
 +            atom_info%label_resname(j) = trim(atom_info%label_molname(j))
 +          endif
@@ -264,9 +277,9 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +            atom_info%label_resid(j) = 1
 +          endif
 +          if (associated(element)) then
-+            atom_info%element(j) = element(j)
++            atom_info%element(j) = trim(a2s(element(:,j)))
 +          else if (associated(at%species)) then
-+            atom_info%element(j) = trim(at%species(j))
++            atom_info%element(j) = trim(a2s(at%species(:,j)))
 +          else if (associated(at%Z)) then
 +            WRITE(my_default_index,'(I0)') at%Z(j)   
 +            atom_info%element(j) = trim(my_default_index)
@@ -328,44 +341,3 @@ diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology_exyz.F cp2k_cvs_
 +   END SUBROUTINE read_coordinate_exyz
 + 
 + END MODULE topology_exyz
-diff --new-file --exclude '.#*' -C 3 cp2k_cvs/cp2k/src/topology.F cp2k_cvs_patched/cp2k/src/topology.F
-*** cp2k_cvs/cp2k/src/topology.F	2009-06-18 14:46:16.000000000 -0400
---- cp2k_cvs_patched/cp2k/src/topology.F	2009-08-27 15:59:13.000000000 -0400
-***************
-*** 26,32 ****
-         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
-         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
-         do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
-!        do_coord_xtl, do_coord_xyz
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
---- 26,32 ----
-         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
-         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
-         do_coord_cif, do_coord_crd, do_coord_g96, do_coord_off, do_coord_pdb, &
-!        do_coord_xtl, do_coord_xyz, do_coord_exyz
-    USE input_section_types,             ONLY: section_vals_get,&
-                                               section_vals_get_subs_vals,&
-                                               section_vals_type,&
-***************
-*** 82,87 ****
---- 82,88 ----
-                                               topology_set_atm_mass
-    USE topology_xtl,                    ONLY: read_coordinate_xtl
-    USE topology_xyz,                    ONLY: read_coordinate_xyz
-+   USE topology_exyz,                   ONLY: read_coordinate_exyz
-  #include "cp_common_uses.h"
-  
-    IMPLICIT NONE
-***************
-*** 533,538 ****
---- 534,541 ----
-         CALL read_coordinate_pdb (topology,para_env,subsys_section,error)
-      CASE (do_coord_xyz)
-         CALL read_coordinate_xyz (topology,para_env,subsys_section,error)
-+     CASE (do_coord_exyz)
-+        CALL read_coordinate_exyz (topology,para_env,subsys_section,error)
-      CASE (do_coord_cif)
-         CALL read_coordinate_cif (topology,para_env,subsys_section,error)
-      CASE (do_coord_xtl)
