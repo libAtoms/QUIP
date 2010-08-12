@@ -1002,15 +1002,7 @@ contains
      real(dp), intent(in) :: velo(:,:)
      real(dp) :: ke
 
-     integer i, N
-
-     N = size(mass)
-
-     ke = 0.0_dp
-     do i = 1,N
-        ke = ke + kinetic_energy(mass(i), velo(1:3,i))
-     end do
-     ke = 0.5_dp * ke      
+     ke = 0.5_dp * sum(sum(velo**2,dim=1)*mass)
    end function arrays_kinetic_energy
 
    pure function torque(pos, force, origin) result(tau)
