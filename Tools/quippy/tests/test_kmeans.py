@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
-import unittest, quippy
+import unittest, quippy, numpy
 from quippytest import *
 
 class TestKMeans(QuippyTestCase):
@@ -37,7 +37,7 @@ class TestKMeans(QuippyTestCase):
         means[1,:] = 1.1
         means[2,:] = 3
         means[3,:] = 5.1
-        assign = fzeros(n,dtype=int32)
+        assign = fzeros(n,dtype=numpy.int32)
         
         kmeans(data,k,means,assign)
         self.assertEqual(list(assign), [1,1,1,2,3,3,3])
@@ -52,7 +52,7 @@ class TestKMeans(QuippyTestCase):
         data = fzeros((n,m))
         data[:,1] = [1.0,1.1,1.2,3.0,5.0,5.1,5.2]
         means = fzeros((k,m))
-        assign = fzeros(n,dtype=int32)
+        assign = fzeros(n,dtype=numpy.int32)
         err = farray(0.0)
         
         kmeans(data,k,means,assign,err)
@@ -73,12 +73,12 @@ class TestKMeans(QuippyTestCase):
         data = fzeros((n,m))
         data[:,1] = [1.0,1.1,1.2,3.0,5.0,5.1,5.2]
         means = fzeros((k,m))
-        assign = fzeros(n,dtype=int32)
+        assign = fzeros(n,dtype=numpy.int32)
 
         count = 0
         for trial in range(1000):
             kmeans(data,k,means,assign, initialisation='random_partition')
-            order = list(argsort(means[:,1]))
+            order = list(numpy.argsort(means[:,1]))
             reordered_assign =  [order.index(assign[i])+1 for i in frange(n)]
             if reordered_assign == [1,1,1,2,3,3,3]: count += 1
 
@@ -97,12 +97,12 @@ class TestKMeans(QuippyTestCase):
         data = fzeros((n,m))
         data[:,1] = [1.0,1.1,1.2,5.0,5.1,5.2]
         means = fzeros((k,m))
-        assign = fzeros(n,dtype=int32)
+        assign = fzeros(n,dtype=numpy.int32)
 
         count = 0
         for trial in range(1000):
             kmeans(data,k,means,assign, initialisation='random_means')
-            order = list(argsort(means[:,1]))
+            order = list(numpy.argsort(means[:,1]))
             reordered_assign =  [order.index(assign[i])+1 for i in frange(n)]
             if reordered_assign == [1, 1, 1, 2, 2, 2]: count += 1
 

@@ -18,6 +18,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from numpy import *
 import sys, optparse, shutil, os
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas

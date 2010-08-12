@@ -187,7 +187,7 @@ Lattice="7.120000 0.000000 0.000000 0.000000 7.120000 0.000000 0.000000 0.000000
 
        def test_final_state(self):
 	  self.ds.atoms.set_map_shift()
-          self.assertArrayAlmostEqual(self.ds.atoms.pos+dot(self.ds.atoms.lattice, self.ds.atoms.map_shift), self.ref_at.pos)
+          self.assertArrayAlmostEqual(self.ds.atoms.pos+numpy.dot(self.ds.atoms.lattice, self.ds.atoms.map_shift), self.ref_at.pos)
           self.assertArrayAlmostEqual(self.ds.atoms.velo, self.ref_at.velo)
 
            

@@ -18,6 +18,7 @@
 
 from quippy import *
 from quippy.atoms import *
+from numpy import *
 
 import unittest, quippy
 from quippytest import *

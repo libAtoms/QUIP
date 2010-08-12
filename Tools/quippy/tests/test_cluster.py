@@ -17,6 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from numpy import *
 import unittest, quippy
 from quippytest import *
 

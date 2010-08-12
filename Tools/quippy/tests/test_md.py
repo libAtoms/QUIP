@@ -202,7 +202,7 @@ if hasattr(quippy, 'Potential'):
 
       def testpos(self):
 	 self.al[-1].set_map_shift()
-         self.assertArrayAlmostEqual(self.al[-1].pos+dot(self.al[-1].lattice,self.al[-1].map_shift), self.pos_ref)
+         self.assertArrayAlmostEqual(self.al[-1].pos+numpy.dot(self.al[-1].lattice,self.al[-1].map_shift), self.pos_ref)
 
       def testforce(self):
          self.assertArrayAlmostEqual(self.al[-1].force, self.force_ref)

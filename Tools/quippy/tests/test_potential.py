@@ -394,11 +394,11 @@ if hasattr(quippy, 'Potential'):
 
       def test_force(self):
          self.p.calc(self.a, calc_force=True)
-         self.assertArrayAlmostEqual(self.a.force, 1.0*ones((3,self.a.n)))
+         self.assertArrayAlmostEqual(self.a.force, 1.0*numpy.ones((3,self.a.n)))
 
       def test_virial(self):
          self.p.calc(self.a, calc_virial=True)
-         self.assertArrayAlmostEqual(self.a.virial, 1.0*ones((3,3)))
+         self.assertArrayAlmostEqual(self.a.virial, 1.0*numpy.ones((3,3)))
 
       def test_all(self):
          e = farray(0.0)
@@ -406,8 +406,8 @@ if hasattr(quippy, 'Potential'):
          v = fzeros((3,3))
          self.p.calc(self.a, e=e, f=f, virial=v)
          self.assertAlmostEqual(e, 1.0)
-         self.assertArrayAlmostEqual(v, 1.0*ones((3,3)))
-         self.assertArrayAlmostEqual(f, 1.0*ones((3,self.a.n)))
+         self.assertArrayAlmostEqual(v, 1.0*numpy.ones((3,3)))
+         self.assertArrayAlmostEqual(f, 1.0*numpy.ones((3,self.a.n)))
 
       def test_new_pot(self):
          p2 = Potential('CallbackPot')

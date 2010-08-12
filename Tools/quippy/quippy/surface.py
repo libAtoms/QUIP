@@ -17,6 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+import numpy as np
 try:
    import atomeye
 except ImportError:
@@ -53,28 +54,28 @@ def crack_rotation_matrix(unit, y, z=None, x=None, tol=1e-5):
    if (x is None and z is None) or (x is not None and z is not None):
       raise ValueError('exactly one of x and z must be non-null')
 
-   axes[:,2] = dot(unit.g.T, y)     # plane defined by y=(lmn)
+   axes[:,2] = np.dot(unit.g.T, y)     # plane defined by y=(lmn)
 
    if z is not None:
-      axes[:,3] = dot(unit.lattice, z) # line defined by z=[pqr]
+      axes[:,3] = np.dot(unit.lattice, z) # line defined by z=[pqr]
 
       axes[:,2] = axes[:,2]/axes[:,2].norm()
       axes[:,3] = axes[:,3]/axes[:,3].norm()
 
-      if abs(dot(axes[:,2], axes[:,3])) > tol:
+      if abs(np.dot(axes[:,2], axes[:,3])) > tol:
          raise ValueError('y (%s) and z (%s) directions are not perpendicular' % (y,z))
 
-      axes[:,1] = cross(axes[:,2], axes[:,3])
+      axes[:,1] = np.cross(axes[:,2], axes[:,3])
    else:
-      axes[:,1] = dot(unit.lattice, x)
+      axes[:,1] = np.dot(unit.lattice, x)
 
       axes[:,2] = axes[:,2]/axes[:,2].norm()
       axes[:,1] = axes[:,1]/axes[:,1].norm()
 
-      if abs(dot(axes[:,2], axes[:,3])) > tol:
+      if abs(np.dot(axes[:,2], axes[:,3])) > tol:
          raise ValueError('y (%s) and x (%s) directions are not perpendicular' % (y,x))
 
-      axes[:,3] = cross(axes[:,1], axes[:,2])
+      axes[:,3] = np.cross(axes[:,1], axes[:,2])
 
    # Rotation matrix is transpose of axes matrix
    return axes.T
@@ -93,8 +94,8 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
       can be used to shift the positions in the final cell. """
 
    def atoms_near_plane(at, n, d, tol=1e-5):
-      """Return a list of atoms within a distance `tol` of the plane defined by dot(n, at.pos) == d"""
-      pd = dot(n, at.pos) - d
+      """Return a list of atoms within a distance `tol` of the plane defined by np.dot(n, at.pos) == d"""
+      pd = np.dot(n, at.pos) - d
       return (abs(pd) < tol).nonzero()[0]
 
    def sort_by_distance(at, ref_atom, dir, candidates):
@@ -117,9 +118,9 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
    def discard_outliers(at, indices, dirs, keep_fraction=0.5):
       """Return a copy of `indices` with the atoms with fractional coordinates along directions in `dirs`
          outside +/-`keep_fraction`/2 excluded. Lattice used is close fitting, `at.lattice`/2."""
-      g = linalg.inv(at.lattice/2)
-      t = dot(g, at.pos[:,indices])
-      return indices[ logical_and(t[dirs,:] >= -keep_fraction/2.0, t[dirs,:] < keep_fraction/2.0).all(axis=1) ]
+      g = np.linalg.inv(at.lattice/2)
+      t = np.dot(g, at.pos[:,indices])
+      return indices[ np.logical_and(t[dirs,:] >= -keep_fraction/2.0, t[dirs,:] < keep_fraction/2.0).all(axis=1) ]
 
    def check_candidate_plane(at, ref_plane, cand_plane, dirs, verbose=False, label=''):
       """Check whether in-plane displacements of atoms listed in `ref_plane` match those of `cand_plane` in directions given by `dirs`"""
@@ -170,7 +171,7 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
          print '\n\nSupercell %d' % nrep
       sup = supercell(at, nrep, nrep, nrep)
       box = orthorhombic_box(sup)
-      box.pos[:] = box.pos - tile(box.pos.mean(axis=2), [box.n, 1]).T
+      box.pos[:] = box.pos - np.tile(box.pos.mean(axis=2), [box.n, 1]).T
 
       for dir in set([1,2,3]) - set(periodicity.keys()):
 
@@ -288,8 +289,8 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
             continue
 
    # Finally, construct new cell by selecting atoms within first unit cell
-   lattice = farray(diag([periodicity[1], periodicity[2], periodicity[3]]))
-   g = linalg.inv(lattice)
+   lattice = farray(np.diag([periodicity[1], periodicity[2], periodicity[3]]))
+   g = np.linalg.inv(lattice)
 
    nrepx, nrepy, nrepz = fit_box_in_cell(periodicity[1], periodicity[2], periodicity[3], at.lattice)
 
@@ -297,20 +298,20 @@ def orthorhombic_slab(at, tol=1e-5, min_nrep=1, max_nrep=5, graphics=False, rot=
    sup.map_into_cell()
 
    # small shift to avoid coincidental cell alignments
-   delta = tile([0.01, 0.02, 0.03], [sup.n, 1]).T
+   delta = np.tile([0.01, 0.02, 0.03], [sup.n, 1]).T
    if shift is not None and vacuum is not None:
-      delta = delta + tile(shift, [sup.n, 1]).T
-   t = dot(g, sup.pos) + delta
+      delta = delta + np.tile(shift, [sup.n, 1]).T
+   t = np.dot(g, sup.pos) + delta
 
-   orthorhombic = sup.select(numpy.logical_and(t >= -0.5, t < 0.5).all(axis=1))
+   orthorhombic = sup.select(np.logical_and(t >= -0.5, t < 0.5).all(axis=1))
 
    if vacuum:
-      lattice = farray(diag(lattice.diagonal() + vacuum))
+      lattice = farray(np.diag(lattice.diagonal() + vacuum))
 
    if shift is not None and vacuum is None:
       if verbose:
-         print 'Shifting positions by %s' % dot(lattice, shift)
-      orthorhombic.pos += tile(dot(lattice, shift), [orthorhombic.n, 1]).T
+         print 'Shifting positions by %s' % np.dot(lattice, shift)
+      orthorhombic.pos += np.tile(np.dot(lattice, shift), [orthorhombic.n, 1]).T
 
    orthorhombic.set_lattice(lattice, scale_positions=False)
    orthorhombic.map_into_cell()

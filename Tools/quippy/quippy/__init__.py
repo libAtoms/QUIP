@@ -27,7 +27,6 @@ import sys
 assert sys.version_info >= (2,4,0)
 
 import cPickle, atexit, os, numpy, logging
-from numpy import *
 
 logging.root.setLevel(logging.WARNING)
 
