@@ -541,7 +541,7 @@ contains
      integer,     dimension(this%N)          :: tmp_group_lookup
      type(Group), dimension(:), allocatable  :: tmp_group
      
-     INIT_ERROR(ERROR)
+     INIT_ERROR(error)
 
      oldN = this%N
 
