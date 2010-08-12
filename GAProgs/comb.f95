@@ -29,8 +29,6 @@ program comb
   call initialise(infile,trim(in_file))
   call initialise(outfile,trim(out_file),action=OUTPUT)
 
-  call query(infile)
-
   do i = n, infile%n_frame, n
      call read(infile,at,frame=i-1)
      call write(at,outfile)

@@ -191,7 +191,7 @@ c=44""")
       d['ia2'] = [[1,2,3],
                   [4,5,6]]
       d2 = d.subset(['i', 'ia', 'la'])
-      self.assert_(d2 == {'i': 1, 'ia':[1,2,3], 'la': [True,False]})
+      self.assert_(d2['i'] == 1 and list(d2['ia']) == [1,2,3] and list(d2['la']) == [True, False])
 
    def test_subset_bad_key(self):
       d = Dictionary()

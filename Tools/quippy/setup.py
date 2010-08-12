@@ -474,6 +474,7 @@ default_options= {
 if makefile_test('QUIPPY_DEBUG'):
     os.environ['FOPT'] = '-O0'
     os.environ['FARCH'] = ''
+    macros.append(('DEBUG',None))
 
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
@@ -511,7 +512,8 @@ quippy_ext = Extension(name='quippy._quippy',
                                                    [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
                                                    dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                    'dictionary_t':'FoX_sax'}], 
-                                                   kindlines=['use system_module, only: dp, qp'],
+                                                   kindlines=['use system_module, only: dp, qp',
+                                                              'use iso_c_binding, only: c_intptr_t'],
                                                    short_names={'dynamicalsystem':'ds',
                                                                 'metapotential': 'metapot'},
                                                    initlines={'atoms': ('atoms_module', ('call atoms_repoint(%(PTR)s)',

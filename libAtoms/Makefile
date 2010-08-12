@@ -80,8 +80,9 @@ LIBATOMS_F77_FILES= \
 
 LIBATOMS_C_FILES = \
   cutil\
-  xyz_netcdf
-#  malloc
+  netcdf\
+  xyz
+
 
 LIBATOMS_F77_SOURCES = ${addsuffix .f, ${LIBATOMS_F77_FILES}}
 LIBATOMS_F77_OBJS = ${addsuffix .o, ${LIBATOMS_F77_FILES}}
@@ -110,17 +111,5 @@ minimal_md:  libatoms.a minimal_md.o
 
 xyz2pdb:  libatoms.a xyz2pdb.o
 	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
-
-xyz2xyz: xyz_netcdf.c
-	${CC} ${CFLAGS} $< -o $@ ${LINKOPTS} -lm -DMAIN_PROGRAM
-
-install-converters: xyz2xyz
-	@echo ; echo "Where would you like the xyz and NetCDF converters installed to?"
-	@read NCBINDIR && cp xyz2xyz $$NCBINDIR ;\
-	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/nc2nc ;\
-	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/ncstat ;\
-	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyz2nc ;\
-	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/nc2xyz ;\
-	ln -sf $$NCBINDIR/xyz2xyz $$NCBINDIR/xyzstat
 
 -include depend

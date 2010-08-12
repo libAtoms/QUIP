@@ -13,7 +13,7 @@ mydir=`dirname $0`
 bindir=$mydir/../build.$QUIP_ARCH
 
 if [ ! -x $bindir/md ]; then
-   (cd $QUIP_ROOT && make QUIP_Programs/md) || exit2
+   (cd $QUIP_ROOT && make QUIP_Programs/md) || exit 2
 fi
 
 cat<<EOF > test_md.in.xyz
@@ -55,7 +55,7 @@ ST       10.00    327.8362     32.0674    0.23E+02      0.00000000E+00      0.00
 ST       10.00    327.8362     32.0674    0.23E+02      0.00000000E+00      0.00000000E+00      0.16950543E+00     -0.34362104E+02     -0.34362104E+02
 EOF3
 
-$bindir/md atoms_in_file=test_md.in.xyz pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=test_md.traj.xyz T=300.0 dt=1.0 N_steps=10 rng_seed=1 | egrep '^ST ' > test_md.out
+$bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=test_md.traj.xyz T=300.0 dt=1.0 N_steps=10 rng_seed=1 < test_md.in.xyz | egrep '^ST ' > test_md.out
 tail -8 test_md.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > test_md.traj_pos.xyz
 
 diff=diff
@@ -91,5 +91,5 @@ fi
 
 echo ""
 
-# rm -f test_md.*
+rm -f test_md.*
 exit $error

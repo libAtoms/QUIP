@@ -84,7 +84,6 @@ contains
     integer, dimension(116) :: species_present
 
     call initialise(xyzfile,this%at_file)
-    call query(xyzfile)
 
     n_max = xyzfile%n_frame
 
@@ -212,7 +211,6 @@ contains
     if( this%do_core ) call Initialise(core_pot, args_str=this%ip_args, param_str=string(this%quip_string))
 
     call initialise(xyzfile,this%at_file)
-    call query(xyzfile)
 
     n_max = xyzfile%n_frame
 
@@ -423,7 +421,6 @@ contains
     if( this%do_core ) call Initialise(core_pot, this%ip_args, param_str=string(this%quip_string))
 
     call initialise(xyzfile,this%at_file)
-    call query(xyzfile)
 
     n_max = xyzfile%n_frame
 

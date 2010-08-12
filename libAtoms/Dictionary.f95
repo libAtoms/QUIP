@@ -50,6 +50,11 @@ module dictionary_module
        T_INTEGER_A = 5, T_REAL_A = 6, T_COMPLEX_A = 7, T_LOGICAL_A = 8, &
        T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13 !% OMIT
 
+  ! Maintained for backwards compatibility with old NetCDF files using type attribute
+  integer, parameter :: &
+       PROPERTY_INT = 1, PROPERTY_REAL = 2, PROPERTY_STR = 3, PROPERTY_LOGICAL = 4
+
+  integer, parameter :: C_KEY_LEN = 256
 
   integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
   integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
@@ -94,6 +99,10 @@ module dictionary_module
      integer :: cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed
   end type Dictionary
 
+  type c_dictionary_ptr_type
+     type(Dictionary), pointer :: p
+  end type c_dictionary_ptr_type
+  
   !% Initialise a new empty dictionary
   private :: dictionary_initialise
   interface initialise
@@ -369,6 +378,7 @@ contains
        ! entries beyond this have been used in the past if some have now been removed,
        ! but they won't point to any different data since remove_entry() does a shallow copy
        do i=1,this%n
+!          call print('finalising entry i='//i//' key='//this%keys(i)//' type='//this%entries(i)%type)
           call finalise(this%entries(i))
        end do
        deallocate(this%entries)
@@ -414,10 +424,10 @@ contains
 
   end subroutine dictentry_finalise
 
-  function dictionary_get_key(this, i, error)
+  subroutine dictionary_get_key(this, i, key, error)
     type(Dictionary), intent(in) :: this
-    integer :: i
-    character(this%keys(i)%len) :: dictionary_get_key
+    integer, intent(in) :: i
+    character(len=256), intent(out) :: key
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
@@ -425,9 +435,9 @@ contains
     if (i < 1 .or. 1 > this%n) then
        RAISE_ERROR('dictionary_get_key: index '//i//' out of range/', error)
     end if
-    dictionary_get_key = string(this%keys(i))
+    key = string(this%keys(i))
 
-  end function dictionary_get_key
+  end subroutine dictionary_get_key
 
   subroutine dictionary_get_type_and_size(this, key, type, thesize, thesize2, error)
     type(Dictionary), intent(in) :: this
@@ -2731,6 +2741,233 @@ contains
     call subset(from, from%keys(1:from%n), this)
     
   end subroutine dictionary_deepcopy
+
+
+  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !
+  ! Dictionary routines callable from C
+  ! 
+  ! Routines used by CInOutput to manipulate Fortran Dictionary objects from C. 
+  !
+  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine c_dictionary_initialise()
+    ! Pass addresses of Fortran routines to C function. Needed to get round 
+    ! compiler name-mangling.
+    call c_dictionary_register_functions(c_dictionary_get_n, c_dictionary_get_key, &
+         c_dictionary_query_key, c_dictionary_query_index, c_dictionary_add_key)
+  end subroutine c_dictionary_initialise
+
+  subroutine c_dictionary_get_n(this, n)
+    integer, intent(in) :: this(12)
+    integer, intent(out) :: n
+    type(c_dictionary_ptr_type) :: this_ptr
+   
+    this_ptr = transfer(this, this_ptr)
+    n = this_ptr%p%n
+    
+  end subroutine c_dictionary_get_n
+
+  subroutine c_dictionary_get_key(this, i, key, length, error)
+    integer, intent(in) :: this(12), i
+    character(len=*), intent(out) :: key
+    integer, intent(out), optional :: length, error
+    type(c_dictionary_ptr_type) :: this_ptr
+   
+    INIT_ERROR(error)
+    length = 0
+    this_ptr = transfer(this, this_ptr)
+    call dictionary_get_key(this_ptr%p, i, key, error)
+    PASS_ERROR(error)
+    length = len_trim(key)
+    
+  end subroutine c_dictionary_get_key
+
+  subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
+    use iso_c_binding, only: c_intptr_t
+    integer, intent(in) :: this(12)
+    character(len=*), intent(inout) :: key
+    integer, intent(out) :: type
+    integer, dimension(2), intent(out) :: dshape
+    integer(c_intptr_t), intent(out) :: dloc
+    integer, intent(out), optional :: error
+
+    integer entry_i
+    type(c_dictionary_ptr_type) :: this_ptr
+
+    INIT_ERROR(error)
+    this_ptr = transfer(this, this_ptr)
+
+    entry_i = lookup_entry_i(this_ptr%p, key)
+    if (entry_i <= 0) then
+       RAISE_ERROR('c_dictionary_query_key: key '//trim(key)//' not found', error)
+    end if
+    call c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, error)
+    PASS_ERROR(error)
+    
+  end subroutine c_dictionary_query_key
+
+  subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, error)
+    use iso_c_binding, only: c_intptr_t
+    integer, intent(in) :: this(12)
+    integer, intent(in) :: entry_i
+    character(len=*), intent(out) :: key
+    integer, intent(out) :: type
+    integer, dimension(2), intent(out) :: dshape
+    integer(c_intptr_t), intent(out) :: dloc
+    integer, intent(out), optional :: error
+
+    type(c_dictionary_ptr_type) :: this_ptr
+
+    INIT_ERROR(error)
+    this_ptr = transfer(this, this_ptr)
+
+    type = 0
+    dshape(:) = 0
+    dloc = 0
+
+    if (entry_i <= 0 .or. entry_i > this_ptr%p%N) then
+       RAISE_ERROR('c_dictionary_query_index: entry_i = '//entry_i//' outside range 1 < entry_i <= '//this_ptr%p%N, error)
+    end if
+
+    type = this_ptr%p%entries(entry_i)%type
+    key  = string(this_ptr%p%keys(entry_i))
+
+    select case(this_ptr%p%entries(entry_i)%type)
+       case(T_NONE)
+          dloc = 0
+          error = 1
+          return
+       
+       case(T_INTEGER)
+          dloc = loc(this_ptr%p%entries(entry_i)%i)
+
+       case(T_REAL)
+          dloc = loc(this_ptr%p%entries(entry_i)%r)
+          
+       case(T_COMPLEX)
+          dloc = loc(this_ptr%p%entries(entry_i)%c)
+
+       case(T_CHAR)
+          dshape(1) = this_ptr%p%entries(entry_i)%s%len
+          dloc = loc(this_ptr%p%entries(entry_i)%s%s)
+
+       case(T_LOGICAL)
+          dloc = loc(this_ptr%p%entries(entry_i)%l)
+
+       case(T_INTEGER_A)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%i_a)
+          dloc = loc(this_ptr%p%entries(entry_i)%i_a)
+
+       case(T_REAL_A)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%r_a)
+          dloc = loc(this_ptr%p%entries(entry_i)%r_a)
+
+       case(T_COMPLEX_A)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%c_a)
+          dloc = loc(this_ptr%p%entries(entry_i)%c_a)
+
+       case(T_LOGICAL_A)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%l_a)
+          dloc = loc(this_ptr%p%entries(entry_i)%l_a)
+
+       case(T_CHAR_A)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%s_a,1)
+          dshape(2) = size(this_ptr%p%entries(entry_i)%s_a,2)
+          dloc = loc(this_ptr%p%entries(entry_i)%s_a)
+
+       case(T_INTEGER_A2)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%i_a2, 1)
+          dshape(2) = size(this_ptr%p%entries(entry_i)%i_a2, 2)
+          dloc = loc(this_ptr%p%entries(entry_i)%i_a2)
+
+       case(T_REAL_A2)
+          dshape(1) = size(this_ptr%p%entries(entry_i)%r_a2, 1)
+          dshape(2) = size(this_ptr%p%entries(entry_i)%r_a2, 2)
+          dloc = loc(this_ptr%p%entries(entry_i)%r_a2)
+          
+       case(T_DATA)
+          ! not supported
+          dloc = 0
+          RAISE_ERROR('c_dictionary_query_index: data type T_DATA not supported.', error)
+
+    end select
+
+  end subroutine c_dictionary_query_index
+
+  subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
+    use iso_c_binding, only: c_intptr_t
+    integer, intent(in) :: this(12)
+    character(len=*), intent(inout) :: key
+    integer, intent(in) :: type
+    integer, intent(in) :: dshape(2)
+    integer(c_intptr_t), intent(out) :: loc
+    integer, intent(out), optional :: error
+
+    type(c_dictionary_ptr_type) this_ptr
+    integer mytype, mydshape(2), tmp_error
+
+    INIT_ERROR(error)
+    mytype = -1
+    mydshape(:) = -1
+
+    ! check if a compatiable entry already exists
+    tmp_error = 0
+    call c_dictionary_query_key(this, key, mytype, mydshape, loc, tmp_error)
+    CLEAR_ERROR(tmp_error)
+    if (tmp_error == 0 .and. type == mytype .and. all(dshape == mydshape)) then
+       return
+    end if
+
+    ! otherwise we need to add a new entry
+    this_ptr = transfer(this, this_ptr)
+    select case(type)
+    case(T_INTEGER)
+       call set_value(this_ptr%p, key, 0)
+       
+    case(T_REAL)
+       call set_value(this_ptr%p, key, 0.0_dp)
+          
+    case(T_COMPLEX)
+       call set_value(this_ptr%p, key, (0.0_dp, 0.0_dp))
+       
+    case(T_CHAR)
+       call set_value(this_ptr%p, key, repeat('X', dshape(1)))
+       
+    case(T_LOGICAL)
+       call set_value(this_ptr%p, key, .false.)
+
+    case(T_INTEGER_A)
+       call add_array(this_ptr%p, key, 0, dshape(1))
+
+    case(T_REAL_A)
+       call add_array(this_ptr%p, key, 0.0_dp, dshape(1))
+
+    case(T_COMPLEX_A)
+       call add_array(this_ptr%p, key, 0.0_dp, dshape(1))
+       
+    case(T_LOGICAL_A)
+       call add_array(this_ptr%p, key, .false., dshape(1))
+
+    case(T_CHAR_A)
+       call add_array(this_ptr%p, key, ' ', dshape)
+       
+    case(T_INTEGER_A2)
+       call add_array(this_ptr%p, key, 0, dshape)
+
+    case(T_REAL_A2)
+       call add_array(this_ptr%p, key, 0.0_dp, dshape)
+          
+    case default
+       RAISE_ERROR('c_dictionary_add_key: unknown data type '//type, error)
+
+    end select
+    
+    ! Finally, update 'loc' pointer
+    call c_dictionary_query_key(this, key, mytype, mydshape, loc, error)
+    PASS_ERROR(error)
+
+  end subroutine c_dictionary_add_key
 
 #ifdef HAVE_QUIPPY
   subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)

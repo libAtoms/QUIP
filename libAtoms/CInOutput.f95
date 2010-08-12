@@ -40,8 +40,9 @@ module CInOutput_module
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Extendable_str_module, only: Extendable_str, operator(//), string
-  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, print_keys, lookup_entry_i, lower_case, subset, &
-       T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A
+  use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
+       T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
+       print_keys, c_dictionary_ptr_type, c_dictionary_initialise, assignment(=)
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use MPI_Context_module, only: MPI_context
 
@@ -51,91 +52,82 @@ module CInOutput_module
 
   interface
 
-     subroutine ciofree(at) bind(c)
-       use iso_c_binding, only: C_PTR
-       type(C_PTR), intent(in), value :: at
-     end subroutine ciofree
-
-     function cioinit(at, filename, action, append, netcdf4, no_compute_index, &
-          n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
-          property_name, property_type, property_ncols, property_start, property_filter, &
-          param_name, param_type, param_size, param_value, param_int, param_real, param_logical, param_int_a, &
-          param_real_a, param_logical_a, param_int_a2, param_real_a2, param_filter, lattice, got_index, pnetcdf4) bind(c)
-       use iso_c_binding, only: C_INT, C_CHAR, C_PTR, C_LONG
-       type(C_PTR), intent(out) :: at
+     subroutine read_netcdf(filename, params, properties, selected_properties, lattice, n_atom, frame, zero, irep, rrep, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), intent(in) :: action, append, netcdf4, no_compute_index
-       type(C_PTR) :: n_frame, n_atom, n_int, n_real, n_str, n_logical, n_param, n_property, &
-            property_name, property_type, property_ncols, property_start, property_filter, &
-            param_name, param_type, param_size, param_value, &
-            param_int, param_real, param_logical, param_int_a, param_real_a, param_logical_a, &
-            param_int_a2, param_real_a2, &
-            param_filter, lattice, got_index, pnetcdf4
-       integer(kind=C_INT) :: cioinit
-     end function cioinit
+       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
+       integer(kind=C_INT), intent(out) :: n_atom
+       integer(kind=C_INT), intent(in), value :: frame, zero, irep
+       real(kind=C_DOUBLE), intent(in), value :: rrep
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine read_netcdf
 
-     function cioskip(at, n_skip) bind(c)
-       use iso_c_binding, only: C_PTR, C_INT, C_LONG
-       type(C_PTR), intent(in), value :: at
-       integer(C_INT), intent(in) :: n_skip
-       integer(C_INT) :: cioskip
-     end function cioskip
+     subroutine write_netcdf(filename, params, properties, selected_properties, lattice, n_atom, n_label, n_string, frame, netcdf4, append, &
+          shuffle, deflate, deflate_level, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
+       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
+       integer(kind=C_INT), intent(in), value :: n_atom, n_label, n_string, frame, netcdf4, append, shuffle, deflate, deflate_level
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine write_netcdf
 
-     function cioquery(at, frame) bind(c)
-       use iso_c_binding, only: C_PTR, C_INT, C_LONG
-       type(C_PTR), intent(in), value :: at
-       integer(C_INT), intent(in) :: frame
-       integer(C_INT) :: cioquery
-     end function cioquery
+     subroutine query_netcdf(filename, n_frame, n_atom, n_label, n_string, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
+       integer(kind=C_INT), intent(out) :: n_frame, n_atom, n_label, n_string
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine query_netcdf
 
-     function cioread(at, frame, int_data, real_data, str_data, logical_data, zero) bind(c)
-       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_INT
-       type(C_PTR), intent(in), value :: at
-       integer(C_INT), intent(in) :: frame
-       type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
-       integer(C_INT), intent(in) :: zero
-       integer(C_INT) :: cioread
-     end function cioread
+     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, frame, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
+       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
+       integer(kind=C_INT), intent(out) :: n_atom
+       integer(kind=C_INT), intent(in), value :: frame
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine read_xyz
+     
+     subroutine write_xyz(filename, params, properties, selected_properties, lattice, n_atom, append, prefix, &
+       int_format, real_format, str_format, logical_format, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
+       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
+       integer(kind=C_INT), intent(in), value :: n_atom, append
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix, int_format, real_format, str_format, logical_format
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine write_xyz
 
-     function ciowrite(at, int_data, real_data, str_data, logical_data, prefix, intformat, realformat, frame, &
-       shuffle, deflate, deflate_level, swap) bind(c)
-       use iso_c_binding, only: C_INT, C_PTR, C_DOUBLE, C_CHAR, C_LONG, C_INT
-       type(C_PTR), intent(in), value :: at
-       type(C_PTR), intent(in), value :: int_data, real_data, str_data, logical_data
-       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix, intformat, realformat
-       integer(C_INT) :: frame
-       integer(C_INT) :: shuffle, deflate, deflate_level, swap
-       integer(C_INT) :: ciowrite
-     end function ciowrite
+     subroutine query_xyz(filename, compute_index, frame, n_frame, n_atom, error) bind(c)
+       use iso_c_binding, only: C_CHAR, C_INT
+       character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
+       integer(kind=C_INT), intent(in), value :: compute_index, frame
+       integer(kind=C_INT), intent(out) :: n_frame, n_atom
+       integer(kind=C_INT), intent(out) :: error
+     end subroutine query_xyz
 
   end interface
 
+  integer, parameter :: XYZ_FORMAT = 1
+  integer, parameter :: NETCDF_FORMAT = 2
+
   type CInOutput
-     type(C_PTR) :: c_at
      logical :: initialised = .false.
+     character(len=1024) :: filename
      integer :: action
-     
-     type(C_PTR) :: c_n_frame, c_n_atom, c_n_int, c_n_real, c_n_str, c_n_logical, c_n_param, c_n_property, &
-          c_property_name, c_property_type, c_property_start, c_property_ncols, c_property_filter, &
-          c_param_name, c_param_type, c_param_size, c_param_value, c_pint, c_preal, c_plogical, c_pint_a, c_preal_a, c_plogical_a, &
-          c_pint_a2, c_preal_a2, c_param_filter, c_lattice, c_got_index, c_netcdf4
-
-     integer, pointer :: n_atom, n_frame
-     integer, pointer :: n_int, n_real, n_str, n_logical, n_param, n_property, got_index, netcdf4
+     integer :: format
+     logical :: got_index
+     logical :: netcdf4
+     logical :: append
      integer :: current_frame
-
-     integer, pointer, dimension(:) :: property_type, property_ncols, property_start, &
-          param_type, param_size, pint, property_filter, param_filter
-     logical, pointer, dimension(:) :: plogical
-     integer, pointer, dimension(:,:) :: pint_a
-     logical, pointer, dimension(:,:) :: plogical_a
-     integer, pointer, dimension(:,:) :: pint_a2
-     real(dp), pointer, dimension(:) :: preal
-     real(dp), pointer, dimension(:,:) :: preal_a, lattice
-     real(dp), pointer, dimension(:,:) :: preal_a2
-     character(1), dimension(:,:), pointer :: property_name, param_name, param_value
+     integer :: n_frame
+     integer :: n_atom
+     integer :: n_label
+     integer :: n_string
      type(MPI_Context) :: mpi
-
   end type CInOutput
 
   interface initialise
@@ -182,26 +174,12 @@ module CInOutput_module
      module procedure atoms_write_cinoutput
   end interface
 
-  interface query
-     !% Query the CInOutput stream to fill in values of n_frame, n_atom, n_property etc.
-     !% Called once automatically by read(), but if the structure of the XYZ file changes
-     !% between frames you need to call it again each time.
-     module procedure CInOutput_query
-  end interface
-
-  public :: CInOutput, initialise, finalise, close, read, write, query
-
-  ! temporary hack...
-  integer, parameter :: PROPERTY_INT     = 1 !% Property types, used by Atoms and Table
-  integer, parameter :: PROPERTY_REAL    = 2
-  integer, parameter :: PROPERTY_STR     = 3
-  integer, parameter :: PROPERTY_LOGICAL = 4
-  integer, parameter :: KEY_LEN = 256
-  integer, parameter :: VALUE_LEN = 1024
+  public :: CInOutput, initialise, finalise, close, read, write
 
 contains
 
   subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi, error)
+    use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in) :: filename
     integer, intent(in), optional :: action
@@ -211,78 +189,73 @@ contains
     type(MPI_context), optional, intent(in) :: mpi
     integer, intent(out), optional :: error
 
-    integer :: do_append, do_netcdf4, do_no_compute_index
+    logical :: file_exists
+    integer :: compute_index
 
     INIT_ERROR(error)
 
+    ! Make sure function pointers are set up to allow C to call dictionary and error routines
+    call c_dictionary_initialise()
+    call c_error_initialise()
+
     this%action = optional_default(INPUT, action)
-    do_netcdf4 = 1
-    if (present(netcdf4)) then
-       if (.not. netcdf4) do_netcdf4 = 0
-    end if
-    do_append = 0
-    if (present(append)) then
-       if (append) do_append = 1
-    end if
-    do_no_compute_index = 0
+    this%append = optional_default(.false., append)
+    this%netcdf4 = optional_default(.true., netcdf4)
+    this%filename = filename
+    compute_index = 1
     if (present(no_compute_index)) then
-       if (no_compute_index) do_no_compute_index = 1
+       if (no_compute_index) compute_index = 0
+    end if
+    if (present(mpi)) this%mpi = mpi
+
+
+    ! Guess format from file extension
+    if (trim(filename) == 'stdin' .or. trim(filename) == 'stdout' .or. filename(len_trim(filename)-3:) == '.xyz') then
+       this%format = XYZ_FORMAT
+    else if (filename(len_trim(filename)-2:) == '.nc') then
+       this%format = NETCDF_FORMAT
+    else
+       call print('Unknown file format for filename '//trim(filename)//', assuming XYZ', PRINT_VERBOSE)
+       this%format = XYZ_FORMAT
     end if
 
-    if (present(mpi)) then
-       this%mpi = mpi
-    end if
+    this%n_frame = 0
+    this%n_atom = 0 
+    this%n_label = 0
+    this%n_string = 0
+    this%current_frame = 0
+    this%got_index = .false.
 
-    if (.not. this%mpi%active .or. (this%mpi%active .and. (this%action /= INPUT .or. (this%action == INPUT .and. this%mpi%my_proc == 0)))) then
-       if (cioinit(this%c_at, trim(filename)//C_NULL_CHAR, this%action, do_append, do_netcdf4, do_no_compute_index, &
-            this%c_n_frame, this%c_n_atom, this%c_n_int, this%c_n_real, this%c_n_str, this%c_n_logical, this%c_n_param, this%c_n_property, &
-            this%c_property_name, this%c_property_type, this%c_property_ncols, this%c_property_start, this%c_property_filter, &
-            this%c_param_name, this%c_param_type, this%c_param_size, this%c_param_value, &
-            this%c_pint, this%c_preal, this%c_plogical, this%c_pint_a, this%c_preal_a, this%c_plogical_a, this%c_pint_a2, this%c_preal_a2, &
-            this%c_param_filter, this%c_lattice, this%c_got_index, this%c_netcdf4) == 0) then
-          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error opening file "//filename, error)
-       endif
-
-       call c_f_pointer(this%c_n_frame, this%n_frame)
-       call c_f_pointer(this%c_n_atom, this%n_atom)
-       call c_f_pointer(this%c_n_int, this%n_int)
-       call c_f_pointer(this%c_n_real, this%n_real)
-       call c_f_pointer(this%c_n_str, this%n_str)
-       call c_f_pointer(this%c_n_logical, this%n_logical)
-       call c_f_pointer(this%c_n_param, this%n_param)
-       call c_f_pointer(this%c_n_property, this%n_property)
-       call c_f_pointer(this%c_got_index, this%got_index)
-       call c_f_pointer(this%c_netcdf4, this%netcdf4)
-
-       call c_f_pointer(this%c_lattice, this%lattice, (/3,3/))
-
-       call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-       call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-       call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-       call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-       call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
-
-       call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-       call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-       call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-       call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-       call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-       call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-       call c_f_pointer(this%c_plogical, this%plogical, (/this%n_param/))
-       call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-       call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-       call c_f_pointer(this%c_plogical_a, this%plogical_a, (/3,this%n_param/))
-       call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-       call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
-       call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
-       call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-       
-       if (this%action /= INPUT .and. do_append /= 0) then
-          this%current_frame = this%n_frame
-       else
-          this%current_frame = 0
+    ! Should we do an initial query to count number of frames/atoms?
+    if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
+       inquire(file=this%filename, exist=file_exists)
+       if (file_exists) then
+          if (this%format == NETCDF_FORMAT) then
+             call query_netcdf(trim(this%filename)//C_NULL_CHAR, this%n_frame, this%n_atom, this%n_label, this%n_string, error)
+             BCAST_PASS_ERROR(error, this%mpi)
+             this%got_index = .true.
+          else
+             if (trim(this%filename) /= 'stdin' .and. trim(this%filename) /= 'stdout') then
+                call query_xyz(trim(this%filename)//C_NULL_CHAR, compute_index, this%current_frame, this%n_frame, this%n_atom, error)
+                BCAST_PASS_ERROR(error, this%mpi)
+                this%got_index = .true.
+             else
+                this%got_index = .false.
+             end if
+          end if
        end if
     end if
+
+    if (this%mpi%active) then
+       BCAST_CHECK_ERROR(error, this%mpi)
+       call bcast(this%mpi, this%n_frame)
+       call bcast(this%mpi, this%n_atom)
+       call bcast(this%mpi, this%n_label)
+       call bcast(this%mpi, this%n_string)
+    end if
+
+    if (this%action /= INPUT .and. this%append) this%current_frame = this%n_frame
+       
     this%initialised = .true.
 
   end subroutine cinoutput_initialise
@@ -290,91 +263,40 @@ contains
   subroutine cinoutput_close(this)
     type(CInOutput), intent(inout) :: this
 
-    if (this%initialised) then
-       call ciofree(this%c_at) ! closes files and frees C struct
-       this%initialised = .false.
-    end if
+    this%initialised = .false.
 
   end subroutine cinoutput_close
 
   subroutine cinoutput_finalise(this)
     type(CInOutput), intent(inout) :: this
+
     call cinoutput_close(this)
+
   end subroutine cinoutput_finalise
 
-  subroutine cinoutput_query(this, frame, error)
-    type(CInOutput), intent(inout) :: this
-    integer, optional, intent(in) :: frame
-    integer, intent(out), optional :: error
-    integer(C_INT) :: do_frame
 
-    integer :: cioquery_status, cioskip_status
-
-    INIT_ERROR(error)
-
-    if (.not. this%initialised) then
-       RAISE_ERROR("This CInOutput object is not initialised", error)
-    endif
-    if (present(frame) .and. this%got_index == 0) then
-      if (frame /= this%current_frame) then
-	if (frame < this%current_frame) then
-	  RAISE_ERROR("cinoutput_query: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error)
-	endif
-	cioskip_status = cioskip(this%c_at, frame-this%current_frame);
-	if (cioskip_status == 0) then
-          RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error)
-	endif
-      endif
-    endif
-
-    do_frame = optional_default(this%current_frame, frame)
-
-    cioquery_status = cioquery(this%c_at, do_frame)
-    if (cioquery_status == 0) then
-       RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file", error)
-    endif
-
-    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
-
-    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-    call c_f_pointer(this%c_plogical, this%plogical, (/this%n_param/))
-    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_plogical_a, this%plogical_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-
-  end subroutine cinoutput_query
-
-  subroutine cinoutput_read(this, at, frame, zero, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
     integer, intent(out), optional :: error
 
-    type(Table), target :: tmp_data
     type(Dictionary) :: empty_dictionary
-    type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
-    integer :: i
-    character(len=KEY_LEN) :: namestr
-    integer :: do_zero
-    integer(C_INT) :: do_frame
-    integer :: tmp_do_frame
-    integer :: n_skip
-    integer :: cioskip_status
-
+    type(Dictionary), target :: selected_properties, tmp_params
+    integer :: i, j, n_properties
+    integer(C_INT) :: do_zero, do_frame, i_rep
+    real(C_DOUBLE) :: r_rep
+    real(dp) :: lattice(3,3)
+    type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
+    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
+    integer n_atom
+    character(len=100) :: tmp_properties_array(100)
+    type(Extendable_Str), dimension(:), allocatable :: filtered_keys
+    
     INIT_ERROR(error)
 
     if (.not. this%initialised) then
@@ -384,31 +306,17 @@ contains
        RAISE_ERROR_WITH_KIND(ERROR_IO,"Cannot read from action=OUTPUT CInOutput object", error)
     endif
 
+    call finalise(at)
+
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
 
        call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, PRINT_VERBOSE)
 
-       if (present(frame) .and. this%got_index == 0) then
-          if (frame /= this%current_frame) then
-             if (frame < this%current_frame) then
-                  BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"cinoutput_read: CInOutput object not seekable and frame argument passed " // frame // " < this%current_frame " // this%current_frame, error, this%mpi)
-	     endif
-             n_skip = frame-this%current_frame
-             cioskip_status = cioskip(this%c_at, n_skip)
-             if (cioskip_status == 0) then
-                BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"Error querying CInOutput file while skipping to desired frame", error, this%mpi)
-             endif
-             this%current_frame = this%current_frame + n_skip
-          endif
-       endif
-
        do_frame = optional_default(this%current_frame, frame)
 
-       if (this%got_index == 1) then
+       if (this%got_index) then
           if (do_frame < 0) do_frame = this%n_frame + do_frame ! negative frames count backwards from end
           if (do_frame < 0 .or. do_frame >= this%n_frame) then
-             call finalise(tmp_data)
-             call finalise(at)
              BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO_EOF,"cinoutput_read: frame "//int(do_frame)//" out of range 0 <= frame < "//int(this%n_frame), error, this%mpi)
           end if
        end if
@@ -418,125 +326,71 @@ contains
           if (zero) do_zero = 1
        end if
 
-       if (this%got_index == 1) then
-          tmp_do_frame = do_frame
-          call cinoutput_query(this, tmp_do_frame, error=error)
-       else
-          call cinoutput_query(this, error=error)
-       end if
-       BCAST_PASS_ERROR(error, this%mpi)
-
-
-       ! Make a blank data table, then initialise atoms object from it. We will
-       ! get C routine to read directly into final Atoms structure to save copying.
-
-       call allocate(tmp_data, this%n_int, this%n_real, this%n_str, this%n_logical, int(this%n_atom))
-       call append(tmp_data, blank_rows=int(this%n_atom))
-       this%lattice = 0.0_dp
-       this%lattice(1,1) = 1.0_dp
-       this%lattice(2,2) = 1.0_dp
-       this%lattice(3,3) = 1.0_dp
-
-       int_ptr = C_NULL_PTR
-       if (this%n_int /= 0) int_ptr = c_loc(tmp_data%int(1,1))
-
-       real_ptr = C_NULL_PTR
-       if (this%n_real /= 0) real_ptr = c_loc(tmp_data%real(1,1))
-
-       str_ptr = C_NULL_PTR
-       if (this%n_str /= 0) str_ptr = c_loc(tmp_data%str(1,1))
-
-       log_ptr = C_NULL_PTR
-       if (this%n_logical /= 0) log_ptr = c_loc(tmp_data%logical(1,1))
-
-       if (cioread(this%c_at, do_frame, int_ptr, real_ptr, str_ptr, log_ptr, do_zero) == 0) then
-          call finalise(tmp_data)
-          BCAST_RAISE_ERROR_WITH_KIND(ERROR_IO,"Error reading from file", error, this%mpi)
+       call initialise(selected_properties)
+       if (present(properties) .or. present(properties_array)) then
+          if (present(properties_array)) then
+             do i=1,size(properties_array)
+                call set_value(selected_properties, properties_array(i), 1)
+             end do
+             PASS_ERROR(error)
+          else ! we've got a colon-separated string
+             call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
+             PASS_ERROR(error)
+             do i=1,n_properties
+                call set_value(selected_properties, tmp_properties_array(i), 1)
+             end do
+          end if
        end if
 
+       lattice = 0.0_dp
        call initialise(empty_dictionary) ! pass an empty dictionary to prevent pos, species, z properties being created
-       call initialise(at, int(this%n_atom), transpose(this%lattice), properties=empty_dictionary)
+       call initialise(at, 0, lattice, properties=empty_dictionary)
        call finalise(empty_dictionary)
 
-       ! temporary hack - we copy from data Table into new properties Dictionary
-       do i=1,this%n_property
-          select case(this%property_type(i))
-          case(PROPERTY_INT)
-             if (this%property_ncols(i) == 1) then
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%int(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             else
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%int(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n), &
-                     overwrite=.true.,error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             end if
-             
-          case(PROPERTY_REAL)
-             if (this%property_ncols(i) == 1) then
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%real(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             else
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%real(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n), &
-                     overwrite=.true., error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             end if
-             
-          case(PROPERTY_LOGICAL)
-             if (this%property_ncols(i) == 1) then
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%logical(this%property_start(i)+1,1:at%n), overwrite=.true.,error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             else
-                BCAST_RAISE_ERROR("CInOutput_read: logical properties with n_cols != 1 no longer supported", error, this%mpi)
-             end if
-             
-          case(PROPERTY_STR)
-             if (this%property_ncols(i) == 1) then
-                call add_property(at, c_array_to_f_string(this%property_name(:,i)), &
-                     tmp_data%str(this%property_start(i)+1,1:at%n), overwrite=.true., error=error)
-                BCAST_PASS_ERROR(error, this%mpi)
-             else
-                BCAST_RAISE_ERROR("CInOutput_read: string properties with n_cols != 1 no longer supported", error, this%mpi)
-             end if
-             
-          case default
-             BCAST_RAISE_ERROR("CInOutput_read: unknown property type "//this%property_type(i), error, this%mpi)
-          end select
+       call initialise(tmp_params)
+       params_ptr%p => tmp_params
+       properties_ptr%p => at%properties
+       selected_properties_ptr%p => selected_properties
+       params_ptr_i = transfer(params_ptr, params_ptr_i)
+       properties_ptr_i = transfer(properties_ptr, properties_ptr_i)
+       selected_properties_ptr_i = transfer(selected_properties_ptr, selected_properties_ptr_i)
+
+       if (this%format == NETCDF_FORMAT) then
+          i_rep = 0
+          r_rep = 0.0_dp
+          call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+               at%lattice, n_atom, do_frame, do_zero, i_rep, r_rep, error)
+       else
+          call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+               at%lattice, n_atom, do_frame, error)
+       end if
+       BCAST_PASS_ERROR(error, this%mpi)
+       call finalise(selected_properties)
+
+       ! Remove "Lattice" and "Properties" entries from tmp_params
+       allocate(filtered_keys(tmp_params%N))
+       j = 1
+       do i=1,tmp_params%N
+          if (string(tmp_params%keys(i)) == 'Lattice' .or. &
+              string(tmp_params%keys(i)) == 'Properties') cycle
+
+          call initialise(filtered_keys(j), tmp_params%keys(i))
+          j = j + 1
        end do
        
-       do i=1,this%n_param
-          namestr = c_array_to_f_string(this%param_name(:,i))
-          if (trim(namestr) == "Lattice" .or. trim(namestr) == "Properties") cycle
-          select case(this%param_type(i))
-          case(T_INTEGER)
-             call set_value(at%params, namestr, this%pint(i))
-          case(T_REAL)
-             call set_value(at%params, namestr, this%preal(i))
-          case(T_LOGICAL)
-             call set_value(at%params, namestr, this%plogical(i))
-          case(T_INTEGER_A)
-             call set_value(at%params, namestr, this%pint_a(:,i))
-          case (T_REAL_A)
-             call set_value(at%params, namestr, this%preal_a(:,i))
-          case (T_LOGICAL_A)
-             call set_value(at%params, namestr, this%plogical_a(:,i))
-          case(T_CHAR)
-             call set_value(at%params, namestr, c_array_to_f_string(this%param_value(:,i)))
-          case(T_INTEGER_A2)
-             call set_value(at%params, namestr, reshape(this%pint_a2(:,i), (/3,3/)))
-          case(T_REAL_A2)
-             call set_value(at%params, namestr, reshape(this%preal_a2(:,i), (/3,3/)))
-          case default
-             BCAST_RAISE_ERROR('cinoutput_read: unsupported parameter i='//i//' key='//trim(namestr)//' type='//this%param_type(i), error, this%mpi)
-          end select
+       call subset(tmp_params, filtered_keys(1:j-1), at%params)
+       call finalise(tmp_params)
+       do i=1,size(filtered_keys)
+          call finalise(filtered_keys(i))
        end do
+       deallocate(filtered_keys)
 
+       at%N = n_atom
+       at%Nbuffer = at%N
+       at%Ndomain = at%N
+       at%initialised = .true.
        call atoms_repoint(at)
-       call set_lattice(at, transpose(this%lattice), scale_positions=.false.)
+       call set_lattice(at, at%lattice, scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
           call print ("at%properties keys", PRINT_ALWAYS)
@@ -556,7 +410,6 @@ contains
           end do
        end if
 
-       call finalise(tmp_data)
        this%current_frame = this%current_frame + 1
 
     end if
@@ -582,19 +435,16 @@ contains
     integer, intent(in), optional :: deflate_level
     integer, intent(out), optional :: error
 
-    type(C_PTR) :: int_ptr, real_ptr, str_ptr, log_ptr
-    logical :: dum, got_properties
-    character(len=VALUE_LEN) :: valuestr
-    integer :: i, j, k, extras, n, tmp_int_a2(3,3)
-    real(dp) :: tmp_real_a2(3,3)
-    integer(C_INT) :: do_frame
-    type(Dictionary) :: selected_properties
-    character(len=KEY_LEN) :: do_prefix, do_int_format, do_real_format
-    integer :: do_shuffle, do_deflate
-    integer :: do_deflate_level, do_swap
-    type(Table), target :: tmp_data
-    character(len=KEY_LEN) :: tmp_properties_array(at%properties%n)
+    logical :: file_exists
+    integer :: i
+    integer(C_INT) :: do_frame, n_label, n_string, do_netcdf4
+    type(Dictionary), target :: selected_properties, tmp_params
+    character(len=100) :: do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format
+    integer(C_INT) :: do_shuffle, do_deflate, do_deflate_level, append
+    character(len=100) :: tmp_properties_array(at%properties%n)
     integer n_properties
+    type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
+    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
 
     INIT_ERROR(error)
 
@@ -607,347 +457,90 @@ contains
 
     if (this%mpi%active .and. this%mpi%my_proc /= 0) return
 
-    do_prefix = optional_default('', prefix)
-    do_int_format = optional_default('%8d', int_format)
-    do_real_format = optional_default('%16.8f', real_format)
+    ! These are C-strings and thus must be terminated with '\0'
+    do_prefix = optional_default(C_NULL_CHAR, prefix)
+    do_int_format = trim(optional_default('%8d', int_format))//C_NULL_CHAR
+    do_real_format = trim(optional_default('%16.8f', real_format))//C_NULL_CHAR
+    do_str_format = '%.10s'//C_NULL_CHAR
+    do_logical_format = '%5c'//C_NULL_CHAR
 
     do_frame = optional_default(this%current_frame, frame)
 
     do_shuffle = transfer(optional_default(.true., shuffle),do_shuffle)
     do_deflate = transfer(optional_default(.true., deflate),do_shuffle)
     do_deflate_level = optional_default(6, deflate_level)
-    got_properties = present(properties) .or. present(properties_array)
-    do_swap = transfer(.not. got_properties, do_swap)
+
+    append = 0
+    inquire(file=this%filename, exist=file_exists)
+    if (file_exists .and. this%append .or. this%current_frame /= 0) append = 1
+
+    do_netcdf4 = 0
+    if (this%netcdf4) do_netcdf4 = 1
 
     if (present(properties) .and. present(properties_array)) then
        RAISE_ERROR('CInOutput_write: "properties" and "properties_array" cannot both be present.', error)
     end if
     
     call initialise(selected_properties)
-    if (.not. got_properties) then
+    if (.not. present(properties) .and. .not. present(properties_array)) then
        do i=1,at%properties%N
           call set_value(selected_properties, string(at%properties%keys(i)), 1)
        end do
     else
        if (present(properties_array)) then
-          call subset(at%properties, properties_array, selected_properties, error=error)
-          PASS_ERROR(error)
+          do i=1,size(properties_array)
+             call set_value(selected_properties, properties_array(i), 1)
+          end do
        else ! we've got a colon-separated string
           call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
           PASS_ERROR(error)
-          call subset(at%properties, tmp_properties_array(1:n_properties), selected_properties, error=error)
-          PASS_ERROR(error)
+          do i=1,n_properties
+             call set_value(selected_properties, tmp_properties_array(i), 1)
+          end do
        end if
     end if
 
-    this%n_atom = at%n
-    this%lattice = transpose(at%lattice)
-
-    extras = 0
-    if (has_key(at%params, "Lattice"))    extras = extras + 1
-    if (has_key(at%params, "Properties")) extras = extras + 1
+    tmp_params = at%params
+    !call subset(at%params, at%params%keys(1:at%params%n), tmp_params)  ! Make a copy since write_xyz() adds "Lattice" and "Properties" keys
+    params_ptr%p => tmp_params
+    properties_ptr%p => at%properties
+    selected_properties_ptr%p => selected_properties
+    params_ptr_i = transfer(params_ptr, params_ptr_i)
+    properties_ptr_i = transfer(properties_ptr, properties_ptr_i)
+    selected_properties_ptr_i = transfer(selected_properties_ptr, selected_properties_ptr_i)
     
-    this%n_param = at%params%N - extras
-    call c_f_pointer(this%c_param_name, this%param_name, (/KEY_LEN,this%n_param/))
-    call c_f_pointer(this%c_param_type, this%param_type, (/this%n_param/))
-    call c_f_pointer(this%c_param_size, this%param_size, (/this%n_param/))
-    call c_f_pointer(this%c_param_value, this%param_value, (/VALUE_LEN,this%n_param/))
-    call c_f_pointer(this%c_pint, this%pint, (/this%n_param/))
-    call c_f_pointer(this%c_preal, this%preal, (/this%n_param/))
-    call c_f_pointer(this%c_plogical, this%plogical, (/this%n_param/))
-    call c_f_pointer(this%c_pint_a, this%pint_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_preal_a, this%preal_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_plogical_a, this%plogical_a, (/3,this%n_param/))
-    call c_f_pointer(this%c_pint_a2, this%pint_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_preal_a2, this%preal_a2, (/9,this%n_param/))
-    call c_f_pointer(this%c_param_filter, this%param_filter, (/this%n_param/))
-    n = 1
-    do i=1, at%params%N
-       if (lower_case(string(at%params%keys(i))) == lower_case('Lattice') .or. &
-           lower_case(string(at%params%keys(i))) == lower_case('Properties')) cycle
-       call f_string_to_c_array(string(at%params%keys(i)), this%param_name(:,n))
-       this%param_filter(n) = 1
-       select case(at%params%entries(i)%type)
-       case(T_INTEGER)
-          dum = get_value(at%params, string(at%params%keys(i)), this%pint(n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_INTEGER
-       case(T_REAL)
-          dum = get_value(at%params, string(at%params%keys(i)), this%preal(n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_REAL
-       case(T_LOGICAL)
-          dum = get_value(at%params, string(at%params%keys(i)), this%plogical(n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_LOGICAL
-       case(T_INTEGER_A)
-          dum = get_value(at%params, string(at%params%keys(i)), this%pint_a(:,n))
-          this%param_size(n) = 3
-          this%param_type(n) = T_INTEGER_A
-       case (T_REAL_A)
-          dum = get_value(at%params, string(at%params%keys(i)), this%preal_a(:,n))
-          this%param_size(n) = 3
-          this%param_type(n) = T_REAL_A
-       case(T_LOGICAL_A)
-          dum = get_value(at%params, string(at%params%keys(i)), this%plogical_a(:,n))
-          this%param_size(n) = 3
-          this%param_type(n) = T_LOGICAL_A
-       case(T_CHAR)
-          dum = get_value(at%params, string(at%params%keys(i)), valuestr)
-          call f_string_to_c_array(valuestr, this%param_value(:,n))
-          this%param_size(n) = 1
-          this%param_type(n) = T_CHAR
-       case(T_INTEGER_A2)
-          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_int_a2)) then
-               RAISE_ERROR('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 int array',error)
-	  endif
-          this%pint_a2(:,n) = reshape(tmp_int_a2, (/9/))
-          this%param_size(n) = 9
-          this%param_type(n) = T_INTEGER_A2
-       case (T_REAL_A2)
-          if (.not. get_value(at%params, string(at%params%keys(i)), tmp_real_a2)) then
-               RAISE_ERROR('Bad atoms parameter '//string(at%params%keys(i))//' should be 3x3 real array',error)
-	  endif
-          this%preal_a2(:,n) = reshape(tmp_real_a2, (/9/))
-          this%param_size(n) = 9
-          this%param_type(n) = T_REAL_A2
-       case default
-          RAISE_ERROR('cinoutput_write: unsupported parameter i='//i//' '//string(at%params%keys(i))//' type='//at%params%entries(i)%type, error)
-       end select
-       n = n + 1
-    end do
+    n_label = 10
+    n_string = 1024
 
-    this%n_property = at%properties%N
-    call c_f_pointer(this%c_property_name, this%property_name, (/KEY_LEN,this%n_property/))
-    call c_f_pointer(this%c_property_type, this%property_type, (/this%n_property/))
-    call c_f_pointer(this%c_property_ncols, this%property_ncols, (/this%n_property/))
-    call c_f_pointer(this%c_property_start, this%property_start, (/this%n_property/))
-    call c_f_pointer(this%c_property_filter, this%property_filter, (/this%n_property/))
+    if (this%format == NETCDF_FORMAT) then
+       call write_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+            at%lattice, at%n, n_label, n_string, do_frame, &
+            do_netcdf4, append, do_shuffle, do_deflate, do_deflate_level, error)
+       PASS_ERROR(error)
+    else
+       ! Put "species" in first column and "pos" in second
+       if (has_key(selected_properties, 'species')) &
+            call swap(selected_properties, 'species', string(selected_properties%keys(1)))
+       if (has_key(selected_properties, 'pos')) &
+            call swap(selected_properties, 'pos', string(selected_properties%keys(2)))
 
-    ! temporary hack
-    this%n_int = 0
-    this%n_real = 0
-    this%n_logical = 0
-    this%n_str = 0
-    do i=1,selected_properties%n
-       j = lookup_entry_i(at%properties, string(selected_properties%keys(i)))
-       call f_string_to_c_array(string(at%properties%keys(j)), this%property_name(:,i))
-
-       select case(at%properties%entries(j)%type)
-       case(T_INTEGER_A)
-          this%property_type(i) = PROPERTY_INT
-          this%property_start(i) = this%n_int
-          this%property_ncols(i) = 1
-          this%n_int = this%n_int + 1
-          this%property_filter(i) = 1
-          
-       case(T_REAL_A)
-          this%property_type(i) = PROPERTY_REAL
-          this%property_start(i) = this%n_real
-          this%property_ncols(i) = 1
-          this%n_real = this%n_real + 1
-          this%property_filter(i) = 1
-
-       case(T_LOGICAL_A)
-          this%property_type(i) = PROPERTY_LOGICAL
-          this%property_start(i) = this%n_logical
-          this%property_ncols(i) = 1
-          this%n_logical = this%n_logical + 1
-          this%property_filter(i) = 1
-          
-       case(T_INTEGER_A2)
-          this%property_type(i) = PROPERTY_INT
-          this%property_start(i) = this%n_int
-          this%property_ncols(i) = at%properties%entries(j)%len2(1)
-          this%n_int = this%n_int + this%property_ncols(i)
-          this%property_filter(i) = 1
-
-       case(T_REAL_A2)
-          this%property_type(i) = PROPERTY_REAL
-          this%property_start(i) = this%n_real
-          this%property_ncols(i) = at%properties%entries(j)%len2(1)
-          this%n_real = this%n_real + this%property_ncols(i)
-          this%property_filter(i) = 1
-
-       case(T_CHAR_A)
-          this%property_type(i) = PROPERTY_STR
-          this%property_start(i) = this%n_str
-          this%property_ncols(i) = 1
-          this%n_str = this%n_str + 1
-          this%property_filter(i) = 1          
-
-       case default
-          RAISE_ERROR("CInOutput_write: bad property type "//at%properties%entries(j)%type//" for property "//selected_properties%keys(i), error)
-
-       end select
-    end do
-    j = selected_properties%n+1
-    do i=1,at%properties%n
-       if (has_key(selected_properties, string(at%properties%keys(i)))) cycle
-       call f_string_to_c_array(string(at%properties%keys(i)), this%property_name(:,j))
-
-       select case(at%properties%entries(i)%type)
-       case(T_INTEGER_A)
-          this%property_type(j) = PROPERTY_INT
-          this%property_start(j) = this%n_int
-          this%property_ncols(j) = 1
-          this%n_int = this%n_int + 1
-          this%property_filter(j) = 0
-          
-       case(T_REAL_A)
-          this%property_type(j) = PROPERTY_REAL
-          this%property_start(j) = this%n_real
-          this%property_ncols(j) = 1
-          this%n_real = this%n_real + 1
-          this%property_filter(j) = 0
-
-       case(T_LOGICAL_A)
-          this%property_type(j) = PROPERTY_LOGICAL
-          this%property_start(j) = this%n_logical
-          this%property_ncols(j) = 1
-          this%n_logical = this%n_logical + 1
-          this%property_filter(j) = 0
-          
-       case(T_INTEGER_A2)
-          this%property_type(j) = PROPERTY_INT
-          this%property_start(j) = this%n_int
-          this%property_ncols(j) = at%properties%entries(i)%len2(1)
-          this%n_int = this%n_int + this%property_ncols(j)
-          this%property_filter(j) = 0
-
-       case(T_REAL_A2)
-          this%property_type(j) = PROPERTY_REAL
-          this%property_start(j) = this%n_real
-          this%property_ncols(j) = at%properties%entries(i)%len2(1)
-          this%n_real = this%n_real + this%property_ncols(j)
-          this%property_filter(j) = 0
-
-       case(T_CHAR_A)
-          this%property_type(j) = PROPERTY_STR
-          this%property_start(j) = this%n_str
-          this%property_ncols(j) = 1
-          this%n_str = this%n_str + 1
-          this%property_filter(j) = 0
-
-       case default
-          RAISE_ERROR("CInOutput_write: bad property type "//at%properties%entries(i)%type//" for property "//at%properties%keys(i), error)
-
-       end select
-       j = j + 1
-    end do
-
-    call allocate(tmp_data, this%n_int, this%n_real, this%n_str, this%n_logical)
-    call append(tmp_data, blank_rows=at%n)
-
-    ! now copy data from at%properties Dictionary into temporaray data Table
-    
-    do i=1,this%n_property
-       j = lookup_entry_i(at%properties, c_array_to_f_string(this%property_name(:,i)))
-
-       select case(at%properties%entries(j)%type)
-       case(T_INTEGER_A)
-          tmp_data%int(this%property_start(i)+1,1:at%n) = at%properties%entries(j)%i_a(:)
-          
-       case(T_REAL_A)
-          tmp_data%real(this%property_start(i)+1,1:at%n) = at%properties%entries(j)%r_a(:)
-
-       case(T_LOGICAL_A)
-          tmp_data%logical(this%property_start(i)+1,1:at%n) = at%properties%entries(j)%l_a(:)
-          
-       case(T_INTEGER_A2)
-          tmp_data%int(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n) = at%properties%entries(j)%i_a2(:,:)
-
-       case(T_REAL_A2)
-          tmp_data%real(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),1:at%n) = at%properties%entries(j)%r_a2(:,:)
-          
-       case(T_CHAR_A)
-          do k=1,at%n
-             tmp_data%str(this%property_start(i)+1:this%property_start(i)+this%property_ncols(i),k) = a2s(at%properties%entries(j)%s_a(:,k))
-          end do
-
-       case default
-          RAISE_ERROR("CInOutput_write: bad property type "//at%properties%entries(j)%type//" for property "//at%properties%keys(j), error)
-
-       end select
-    end do
-
-    int_ptr = C_NULL_PTR
-    if (this%n_int /= 0) int_ptr = c_loc(tmp_data%int(1,1))
-
-    real_ptr = C_NULL_PTR
-    if (this%n_real /= 0) real_ptr = c_loc(tmp_data%real(1,1))
-    
-    str_ptr = C_NULL_PTR
-    if (this%n_str /= 0) str_ptr = c_loc(tmp_data%str(1,1))
-
-    log_ptr = C_NULL_PTR
-    if (this%n_logical /= 0) log_ptr = c_loc(tmp_data%logical(1,1))
-
-    if (ciowrite(this%c_at, int_ptr, real_ptr, str_ptr, log_ptr, &
-         trim(do_prefix)//C_NULL_CHAR, &
-         trim(do_int_format)//C_NULL_CHAR, trim(do_real_format)//C_NULL_CHAR, do_frame, &
-         do_shuffle, do_deflate, do_deflate_level, do_swap) == 0) then
-       RAISE_ERROR_WITH_KIND(ERROR_IO,"Error writing file.", error)
+       call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+            at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, error)
+       PASS_ERROR(error)
     end if
 
     call finalise(selected_properties)
-    call finalise(tmp_data)
+    call finalise(tmp_params)
     this%current_frame = this%current_frame + 1
 
   end subroutine cinoutput_write
 
-  function c_array_to_f_string(carray) result(fstring)
-    !% Convert a null-terminated array of characters in a fixed length buffer
-    !% to a blank-padded fortran string
-
-    character(1), dimension(:), intent(in) :: carray
-    character(len=size(carray)) :: fstring
-
-    integer :: i
-
-    fstring = repeat(' ',len(carray))
-    do i=1,size(carray)
-       if (carray(i) == C_NULL_CHAR) exit
-       fstring(i:i) = carray(i)
-    end do
-
-  end function c_array_to_f_string
-
-  function c_string_to_f_string(cstring) result(fstring)
-    !% Convert a null-terminated string to a blank-padded fortran string
-
-    character(*) :: cstring
-    character(len=len(cstring)) :: fstring
-
-    integer :: i
-
-    fstring = repeat(' ',len(cstring))
-    do i=1,len(cstring)
-       if (cstring(i:i) == C_NULL_CHAR) exit
-       fstring(i:i) = cstring(i:i)
-    end do
-
-  end function c_string_to_f_string
-
-  subroutine f_string_to_c_array(fstring, carray)
-    !% Convert a blank-padded fortran string to a null terminated char array of the same length
-    character(*), intent(in) :: fstring
-    character(1), dimension(len(fstring)+1), intent(out) :: carray
-
-    integer :: i
-
-    do i=1,len_trim(fstring)
-       carray(i) = fstring(i:i)
-    end do
-    carray(len_trim(fstring)+1) = C_NULL_CHAR
-
-  end subroutine f_string_to_c_array
-
-
-  subroutine atoms_read(this, filename, frame, zero, mpi, error)
+  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: filename
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
     type(MPI_context), optional, intent(inout) :: mpi
@@ -959,21 +552,23 @@ contains
 
     call initialise(cio, filename, INPUT, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
-    call read(cio, this, frame, zero, error=error)
+    call read(cio, this, properties, properties_array, frame, zero, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call finalise(cio)
 
   end subroutine atoms_read
 
-  subroutine atoms_read_cinoutput(this, cio, frame, zero, error)
+  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
+    character(*), intent(in), optional :: properties
+    character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_read(cio, this, frame, zero, error=error)
+    call cinoutput_read(cio, this, properties, properties_array, frame, zero, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_read_cinoutput
