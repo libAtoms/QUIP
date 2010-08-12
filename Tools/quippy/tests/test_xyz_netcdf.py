@@ -17,6 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from quippy.xyz import *
+from quippy.netcdf import *
 import unittest, itertools, sys, quippy
 from quippytest import *
 
@@ -281,7 +283,7 @@ class TestPythonNetCDF(QuippyTestCase):
    def testpupynere_read(self):
       from quippy.pupynere import netcdf_file
       nc = netcdf_file('test3.nc', 'r')
-      al = AtomsList(nc, format=quippy.netcdf_file)
+      al = AtomsList(nc, format=quippy.netcdf.netcdf_file)
       self.assertEqual(list(self.al), list(al))
       nc.close()
 

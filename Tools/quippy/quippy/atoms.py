@@ -16,26 +16,48 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-"""Various subclasses to add functionality to automatically generated classes."""
-
-import sys
-
-major, minor = sys.version_info[0:2]
-
-assert (major, minor) >= (2, 4)
-
-if (major, minor) < (2, 5):
-   import md5
-   got_hashlib = False
-else:
-   import hashlib
-   got_hashlib = True
-
 import numpy, os, weakref
 from farray import *
-
-from quippy import FortranAtoms, FortranDictionary, FortranTable, FortranDynamicalSystem, FortranCInOutput, FortranPotential
+from quippy import FortranAtoms
 from quippy import AtomsReaders, AtomsWriters
+from math import pi
+
+def make_lattice(a, b=None, c=None, alpha=pi/2.0, beta=pi/2.0, gamma=pi/2.0):
+   "Form 3x3 lattice from cell lengths (a,b,c) and angles (alpha,beta,gamma) in radians"
+
+   if b is None: b = a
+   if c is None: c = a
+   
+   lattice = fzeros((3,3),'d')
+
+   cos_alpha = numpy.cos(alpha); cos2_alpha = cos_alpha*cos_alpha
+   cos_beta  = numpy.cos(beta);  cos2_beta  = cos_beta *cos_beta
+   cos_gamma = numpy.cos(gamma); cos2_gamma = cos_gamma*cos_gamma
+   sin_gamma = numpy.sin(gamma); sin2_gamma = sin_gamma*sin_gamma
+   
+   lattice[1,1] = a
+
+   lattice[1,2] = b * cos_gamma
+   lattice[2,2] = b * sin_gamma
+
+   lattice[1,3] = c * cos_beta
+   lattice[2,3] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma
+   lattice[3,3] = c * numpy.sqrt(1.0 - (cos2_alpha + cos2_beta - 2.0*cos_alpha*cos_beta*cos_gamma)/ sin2_gamma)
+
+   return lattice
+
+def get_lattice_params(lattice):
+   """Return 6-tuple of cell lengths and angles a,b,c,alpha,beta,gamma"""
+   from math import acos
+   from numpy import dot
+   a_1 = lattice[:,1]
+   a_2 = lattice[:,2]
+   a_3 = lattice[:,3]
+
+   return (a_1.norm(), a_2.norm(), a_3.norm(),
+           acos(dot(a_2,a_3)/(a_2.norm()*a_3.norm())),
+           acos(dot(a_3,a_1)/(a_3.norm()*a_1.norm())),
+           acos(dot(a_1,a_2)/(a_1.norm()*a_2.norm())))
 
 class NeighbourInfo(object):
    __slots__ = ('j','distance','diff','cosines','shift')
@@ -180,6 +202,7 @@ class Atoms(FortranAtoms):
 
    def __init__(self, source=None, n=0, lattice=fidentity(3), fpointer=None, finalise=True,
                 properties=None, params=None, fixed_size=False, *readargs, **readkwargs):
+      from quippy import Dictionary
       if source is None:
          if params is not None and not isinstance(params, Dictionary):
             params = Dictionary(params)
@@ -285,40 +308,6 @@ class Atoms(FortranAtoms):
       other.cutoff_break = self.cutoff_break
       other.nneightol = self.nneightol
       return other
-
-
-   def calc_bonds(self):
-      if hasattr(self, '_bonds'): return
-      
-      if not self.connect.initialised:
-         self.calc_connect()
-         
-      self._bonds = []
-      from matplotlib.lines import Line2D
-      for i in frange(self.n):
-         for n in frange(self.n_neighbours(i)):
-            if self.is_nearest_neighbour(i, n):
-               j = self.neighbour(i, n)
-               self._bonds.append(Line2D((self.pos[1,i],self.pos[1,j]), (self.pos[2,i],self.pos[2,j]),zorder=-100))
-
-   def plot(self, bonds=False, **kwargs):
-      import pylab
-
-      ax = pylab.gca()
-      ax.scatter(self.pos[1,:],self.pos[2,:], **kwargs)
-
-      if bonds:
-         self.calc_bonds()
-         for line in self._bonds:
-            ax.add_line(line)
-
-      pylab.gcf().show()
-
-   def plot_arrows(self, value):
-
-      import pylab
-      pylab.quiver(numpy.array(self.pos[1,:]),numpy.array(self.pos[2,:]),
-                   numpy.array(value[1,:]),numpy.array(value[2,:]))
 
    def __len__(self):
       return self.n
@@ -438,291 +427,5 @@ class Atoms(FortranAtoms):
          if new_property or overwrite:
             getattr(self, name.lower())[:] = value            
 
-from dictmixin import DictMixin, ParamReaderMixin
-
-from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
-                    T_CHAR, T_LOGICAL, T_INTEGER_A,
-                    T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
-
-class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
-
-   __doc__ = FortranDictionary.__doc__
-
-   _interfaces = FortranDictionary._interfaces
-   _interfaces['set_value'] = [ k for k in FortranDictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
-
-   _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR)
-
-   _array_types  = (T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
-
-   def __init__(self, D=None, *args, **kwargs):
-      FortranDictionary.__init__(self, *args, **kwargs)
-      self._cache = {}
-      if D is not None:
-         self.read(D) # copy from D
-
-   def keys(self):
-      return [self.get_key(i).strip() for i in frange(self.n)]
-
-   def has_key(self, key):
-      return key.lower() in [k.lower() for k in self.keys()]
-
-   def get_value(self, k):
-      "Return a _copy_ of a value stored in Dictionary"
-      if not k in self:
-         raise KeyError('Key "%s" not found ' % k)
-
-      t, s, s2 = self.get_type_and_size(k)
-
-      if t == T_NONE:
-         raise ValueError('Key %s has no associated value' % k)
-      elif t == T_INTEGER:
-         v,p = self._get_value_i(k)
-      elif t == T_REAL:
-         v,p = self._get_value_r(k)
-      elif t == T_COMPLEX:
-         v,p = self._get_value_c(k)
-      elif t == T_CHAR:
-         v,p = self._get_value_s(k)
-         v = v.strip()
-      elif t == T_LOGICAL:
-         v,p = self._get_value_l(k)
-         v = bool(v)
-      elif t == T_INTEGER_A:
-         v,p = self._get_value_i_a(k,s)
-      elif t == T_REAL_A:
-         v,p = self._get_value_r_a(k,s)
-      elif t == T_COMPLEX_A:
-         v,p = self._get_value_c_a(k,s)
-      elif t == T_CHAR_A:
-         v,p = self._get_value_s_a2(k,s2[1], s2[2])
-         v = v[...,1]  # Last index is length of string, here fixed to 1
-         v.strides = (1, v.shape[0])  # Column-major storage
-      elif t == T_LOGICAL_A:
-         v,p = self._get_value_l_a(k,s)
-         v = farray(v, dtype=bool)
-      elif t == T_INTEGER_A2:
-         v,p = self._get_value_i_a2(k, s2[1], s2[2])
-      elif t == T_REAL_A2:
-         v,p = self._get_value_r_a2(k, s2[1], s2[2])
-      else:
-         raise ValueError('Unsupported dictionary entry type %d' % t)
-      return v
-
-   def get_array(self, key):
-      "Return a _reference_ to an array stored in this Dictionary"""
-      
-      import _quippy, arraydata
-      if key in self and self.get_type_and_size(key)[0] in Dictionary._array_types:
-         return arraydata.get_array(self._fpointer, _quippy.qp_dictionary_get_array, key).view(FortranArray)
-      else:
-         raise KeyError('Key "%s" does not correspond to an array entry' % key)
-
-
-   def __getitem__(self, k):
-      k = k.lower()
-
-      if self.cache_invalid:
-         self._cache = {}
-         self.cache_invalid = 0
-         
-      try:
-         v = self._cache[k]
-         if v is None: raise KeyError
-         return v
-      
-      except KeyError:
-         if not k in self:
-            raise KeyError('Key "%s" not found ' % k)
-
-         t = self.get_type_and_size(k)[0]
-
-         if t == T_NONE:
-            raise ValueError('Key %s has no associated value' % k)
-
-         elif t in Dictionary._scalar_types:
-            self._cache[k] = None
-            return self.get_value(k)
-
-         elif t in Dictionary._array_types:
-            v = self.get_array(k)
-            self._cache[k] = v
-            return v
-
-         else:
-            raise ValueError('Unsupported dictionary entry type %d' % t)
-
-
-   def __setitem__(self, k, v):
-      try:
-         self.set_value(k, v)
-      except TypeError:
-         self.set_value(k,s2a(v))
-
-   def __delitem__(self, k):
-      i = self.lookup_entry_i(k)
-      if i == -1:
-         raise KeyError('Key %s not found in Dictionary' % k)
-      self.remove_entry(i)
-
-   def __repr__(self):
-      return ParamReaderMixin.__repr__(self)
-
-   def __eq__(self, other):
-      tol = 1e-8
-      if sorted(self.keys()) != sorted(other.keys()): return False
-
-      for key in self:
-         v1, v2 = self[key], other[key]
-         if isinstance(v1, FortranArray) and isinstance(v2, FortranArray):
-            if v1.dtype.kind != 'f':
-               if (v1 != v2).any(): return False
-            else:
-               if abs(v1 - v2).max() > tol: return False
-         else:
-            if v1 != v2: return False
-      return True
-         
-   def __ne__(self, other):
-      return not self.__eq__(other)
-
-   def __str__(self):
-      return ParamReaderMixin.__str__(self)
-
-   def copy(self):
-      return Dictionary(self)
-
-     
-
-class Table(FortranTable):
-
-   __doc__ = FortranTable.__doc__
-
-   def __repr__(self):
-      return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
-              (self.n, self.intsize, self.realsize, self.strsize, self.logicalsize))
-
-   def __str__(self):
-      return repr(self)
-
-   def copy(self):
-      t = Table(self.intsize, self.realsize, self.strsize, self.logicalsize, self.n)
-      t.append(blank_rows=self.n)
-      if self.intsize != 0: t.int[...] = self.int[...]
-      if self.realsize != 0: t.real[...] = self.real[...]
-      if self.strsize != 0: t.str[...] = self.str[...]
-      if self.logicalsize != 0: t.logical[...] = self.logical[...]
-      return t
-
-   def __eq__(self, other):
-      return self.equal(other)
-
-   def __ne__(self, other):
-      return not self.equal(other)
-
-   def equal(self, other):
-      tol = 1e-8
-      
-      for t1, t2 in zip((self.n,  self.intsize,  self.realsize,  self.strsize,  self.logicalsize),
-                        (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
-         if t1 != t2: return False
-
-      for n, a1, a2, in zip((self.intsize, self.realsize, self.strsize, self.logicalsize),
-                            (self.int,  self.real,  self.str,  self.logical),
-                            (other.int, other.real, other.str, other.logical)):
-
-         if n == 0: continue
-         try:
-            if abs(a1 - a2).max() > tol: return False
-         except TypeError:
-            if (a1 != a2).any(): return False
-
-      return True
-
-
-   def _get_array_shape(self, name):
-       if name in ('int','real','logical'):
-           return (slice(None),slice(1,self.n))
-       elif name == 'str':
-           return (slice(None),slice(None),slice(1,self.n))
-       else:
-          return None
-
-
-class DynamicalSystem(FortranDynamicalSystem):
-
-   __doc__ = FortranDynamicalSystem.__doc__
-
-   def run(self, pot, dt, n_steps, hook_interval=None, write_interval=None, connect_interval=None, trajectory=None, args_str=None, hook=None,
-           save_interval=None):
-      if hook is None:
-         if hook_interval is not None:
-            raise ValueError('hook_interval not permitted when hook is not present. save_interval is used instead')
-         traj = []
-         FortranDynamicalSystem.run(self, pot, dt, n_steps, hook_interval=save_interval, write_interval=write_interval, 
-                                    connect_interval=connect_interval, trajectory=trajectory, args_str=args_str, hook=lambda:traj.append(self.atoms.copy()))
-         return traj
-      else:
-         FortranDynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval, write_interval, 
-                                    connect_interval, trajectory, args_str)
-
-from quippy import INPUT, OUTPUT, INOUT
-
-
-class CInOutput(FortranCInOutput):
-
-   __doc__ = FortranCInOutput.__doc__
-
-   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, fpointer=None, finalise=True):
-      FortranCInOutput.__init__(self, filename, action, append, netcdf4, fpointer=fpointer, finalise=finalise)
-      self.zero = zero
-
-   __init__.__doc__ = FortranCInOutput.__init__.__doc__
-
-   def __len__(self):
-      return int(self.n_frame)
-
-   def __getitem__(self, index):
-      return self.read(frame=index, zero=self.zero)
-
-   def __setitem__(self, index, value):
-      self.write(value, frame=index)
-
-   def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
-             shuffle=None, deflate=None, deflate_level=None):
-
-      if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
-         properties = padded_str_array(properties, max([len(x) for x in properties])).T
-
-      FortranCInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
-                             real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
-                             deflate_level=deflate_level)
-                             
-class Potential(FortranPotential):
-
-   __doc__ = FortranPotential.__doc__
-   callback_map = {}
-   
-   def __init__(self, args_str, *args, **kwargs):
-      if args_str.lower().startswith('callbackpot') and not 'label' in args_str:
-         args_str = args_str + ' label=%d' % id(self)
-      FortranPotential.__init__(self, args_str, *args, **kwargs)
-
-      if args_str.lower().startswith('callbackpot'):
-         FortranPotential.set_callback(self, Potential.callback)
-
-   __init__.__doc__ = FortranPotential.__init__.__doc__
-
-   @staticmethod
-   def callback(at_ptr):
-      at = Atoms(fpointer=at_ptr, finalise=False)
-      if at.params['label'] not in Potential.callback_map:
-         raise ValueError('Unknown Callback potential label %s' % at.params['label'])
-      Potential.callback_map[at.params['label']](at)
-
-   def set_callback(self, callback):
-      Potential.callback_map[str(id(self))] = callback
 
 

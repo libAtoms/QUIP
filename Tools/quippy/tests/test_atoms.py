@@ -17,6 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from quippy.atoms import *
+
 import unittest, quippy
 from quippytest import *
 
@@ -24,10 +26,6 @@ from quippytest import *
 class TestAtoms_LowLevel(QuippyTestCase):
    def setUp(self):
       self.properties = Dictionary()
-
-      {'pos'    : (PROPERTY_REAL, 1, 3),
-       'Z'      : (PROPERTY_INT,  1, 1),
-       'species': (PROPERTY_STR,  1, 1)}
 
       self.properties['pos'] = fzeros((3,10))
       self.properties['Z'] = [14]*10
