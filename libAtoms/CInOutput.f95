@@ -80,13 +80,13 @@ module CInOutput_module
        integer(kind=C_INT), intent(out) :: error
      end subroutine query_netcdf
 
-     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, frame, error) bind(c)
+     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, frame, string, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(out) :: n_atom
-       integer(kind=C_INT), intent(in), value :: frame
+       integer(kind=C_INT), intent(in), value :: frame, string
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_xyz
      
@@ -181,7 +181,7 @@ contains
   subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout)  :: this
-    character(*), intent(in) :: filename
+    character(*), intent(in), optional :: filename
     integer, intent(in), optional :: action
     logical, intent(in), optional :: append
     logical, optional, intent(in) :: netcdf4
@@ -201,22 +201,23 @@ contains
     this%action = optional_default(INPUT, action)
     this%append = optional_default(.false., append)
     this%netcdf4 = optional_default(.true., netcdf4)
-    this%filename = filename
+    this%filename = optional_default('', filename)
+
     compute_index = 1
     if (present(no_compute_index)) then
        if (no_compute_index) compute_index = 0
     end if
     if (present(mpi)) this%mpi = mpi
 
-
     ! Guess format from file extension
-    if (trim(filename) == 'stdin' .or. trim(filename) == 'stdout' .or. filename(len_trim(filename)-3:) == '.xyz') then
+    if (trim(filename) == '') then
        this%format = XYZ_FORMAT
-    else if (filename(len_trim(filename)-2:) == '.nc') then
-       this%format = NETCDF_FORMAT
     else
-       call print('Unknown file format for filename '//trim(filename)//', assuming XYZ', PRINT_VERBOSE)
-       this%format = XYZ_FORMAT
+       if (filename(len_trim(filename)-2:) == '.nc') then
+          this%format = NETCDF_FORMAT
+       else
+          this%format = XYZ_FORMAT
+       end if
     end if
 
     this%n_frame = 0
@@ -275,7 +276,7 @@ contains
   end subroutine cinoutput_finalise
 
 
-  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, str, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
@@ -283,19 +284,22 @@ contains
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    character(*), intent(in), optional :: str
     integer, intent(out), optional :: error
 
     type(Dictionary) :: empty_dictionary
     type(Dictionary), target :: selected_properties, tmp_params
-    integer :: i, j, n_properties
+    integer :: i, j, k, n_properties
     integer(C_INT) :: do_zero, do_frame, i_rep
     real(C_DOUBLE) :: r_rep
-    real(dp) :: lattice(3,3)
+    real(dp) :: lattice(3,3), maxlen(3), sep(3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
     integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
     integer n_atom
     character(len=100) :: tmp_properties_array(100)
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
+
+    real, parameter :: vacuum = 10.0_dp ! amount of vacuum to add if no lattice found in file
     
     INIT_ERROR(error)
 
@@ -336,6 +340,9 @@ contains
           else ! we've got a colon-separated string
              call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
              PASS_ERROR(error)
+             if (n_properties > size(tmp_properties_array)) then
+                RAISE_ERROR('cinoutput_read: too many properties given in "properties" argument', error)
+             end if
              do i=1,n_properties
                 call set_value(selected_properties, tmp_properties_array(i), 1)
              end do
@@ -361,13 +368,18 @@ contains
           call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                at%lattice, n_atom, do_frame, do_zero, i_rep, r_rep, error)
        else
-          call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-               at%lattice, n_atom, do_frame, error)
+          if (present(str)) then
+             call read_xyz(trim(str)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+                  at%lattice, n_atom, do_frame, 1, error)
+          else
+             call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+                  at%lattice, n_atom, do_frame, 0, error)
+          end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
        call finalise(selected_properties)
 
-       ! Remove "Lattice" and "Properties" entries from tmp_params
+       ! Copy tmp_params into at%params, removing "Lattice" and "Properties" entries from tmp_params
        allocate(filtered_keys(tmp_params%N))
        j = 1
        do i=1,tmp_params%N
@@ -390,6 +402,27 @@ contains
        at%Ndomain = at%N
        at%initialised = .true.
        call atoms_repoint(at)
+
+       if (all(abs(at%lattice) < 1e-5_dp)) then
+          ! read_xyz() sets all lattice components to 0.0 if no lattice was present
+          at%lattice(:,:) = 0.0_dp
+
+          maxlen = 0.0_dp
+          do i=1,at%N
+             do j=1,at%N
+                sep = at%pos(:,i)-at%pos(:,j)
+                do k=1,3
+                   if (abs(sep(k)) > maxlen(k)) maxlen(k) = abs(sep(k))
+                end do
+             end do
+          end do
+          
+          do k=1,3
+             at%lattice(k,k) = maxlen(k) + vacuum
+          end do
+          call print('set lattice to ')
+          call print(at%lattice)
+       end if
        call set_lattice(at, at%lattice, scale_positions=.false.)
 
        if (.not. has_property(at,"Z") .and. .not. has_property(at, "species")) then
@@ -535,14 +568,15 @@ contains
 
   end subroutine cinoutput_write
 
-  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, mpi, error)
+  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, str, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
-    character(len=*), intent(in) :: filename
+    character(len=*), intent(in), optional :: filename
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    character(len=*), intent(in), optional :: str
     type(MPI_context), optional, intent(inout) :: mpi
     integer, intent(out), optional :: error
 
@@ -552,23 +586,24 @@ contains
 
     call initialise(cio, filename, INPUT, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
-    call read(cio, this, properties, properties_array, frame, zero, error=error)
+    call read(cio, this, properties, properties_array, frame, zero, str, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call finalise(cio)
 
   end subroutine atoms_read
 
-  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, error)
+  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, str, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    character(len=*), intent(in), optional :: str
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_read(cio, this, properties, properties_array, frame, zero, error=error)
+    call cinoutput_read(cio, this, properties, properties_array, frame, zero, str, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_read_cinoutput

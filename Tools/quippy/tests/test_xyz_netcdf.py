@@ -262,8 +262,12 @@ if got_cinoutput:
          nc_params   = get_lattice_params(aq2.lattice)
          self.assertArrayAlmostEqual(orig_params, nc_params)
          
+      def test_read_string(self):
+         s = ''.join(self.xyz_ref)
+         cio = CInOutput()
+         at = cio.read(str=s)
+         self.assertAtomsEqual(at, self.at)
 
-      
 try:
    import netCDF4
    got_netcdf4 = True
@@ -365,8 +369,6 @@ class TestPuPyXYZ(QuippyTestCase):
          self.assertEqual(sorted(at.properties.keys()), sorted(['species', 'pos', 'Z']))
          self.assertArrayAlmostEqual(at.pos, at_ref.pos)
          self.assertEqual(list(at.z), list(at_ref.z))
-
-
 
 if __name__ == '__main__':
    unittest.main()

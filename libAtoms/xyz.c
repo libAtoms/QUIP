@@ -281,14 +281,14 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 }
 
 
-void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom, int frame, int *error)
+void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom, int frame, int string, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
     finalfields[MAX_ENTRY_COUNT][LINESIZE];
-  char *p, *p1, tmp_logical;
+  char *p, *p1, tmp_logical, *prev_stringp, *stringp;
   int nxyz, nfields=0, offset, error_occured;
   double tmpd;
   int n_frame, n_selected;
@@ -299,17 +299,38 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
 
-  INIT_ERROR;
 
+#define GET_LINE(info, ...)  if (string) {				\
+    if (*stringp =='\0') {						\
+      RAISE_ERROR(info, ## __VA_ARGS__);				\
+    }									\
+    prev_stringp = stringp;						\
+    while (*stringp != '\n' && *stringp != '\0') stringp++;		\
+    strncpy(linebuffer, prev_stringp, stringp - prev_stringp);		\
+    linebuffer[stringp - prev_stringp] = '\0';				\
+    debug("line = <%s>\n", linebuffer);					\
+    if (*stringp == '\n') stringp++;					\
+  } else {								\
+    if (!fgets(linebuffer,LINESIZE,in)) {				\
+      RAISE_ERROR(info, ## __VA_ARGS__);				\
+    }									\
+    linebuffer[strlen(linebuffer)-1] = '\0';				\
+  }									\
+
+
+  INIT_ERROR;
+  
   if (strcmp(filename, "stdout") == 0) {
     RAISE_ERROR("read_xyz: cannot open \"stdout\" for reading.");
   }
   
   got_index = 0;
-  if (strcmp(filename, "stdin") == 0) {
+  if (string) {
+    stringp = filename;
+  } else if (strcmp(filename, "stdin") == 0) {
     in = stdin;
   } else { 
-    // Not reading from stdin, so we can get an index
+    // Not reading from stdin or from a string, so we can get an index
     frames_array_size = 0;
     n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
     if (frame < 0 || frame >= n_frame) {
@@ -329,9 +350,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     free(atoms);
   }
 
-  if (!fgets(linebuffer,LINESIZE,in)) {
-    RAISE_ERROR("premature file ending - expecting number of atoms");
-  }
+  GET_LINE("read_xyz: premature end, expecting number of atoms");
    
   if (sscanf(linebuffer, "%d", &nxyz) != 1) {
     RAISE_ERROR("first line (%s) must be number of atoms", linebuffer);
@@ -345,10 +364,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     *n_atom = nxyz;
 
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
-  if (!fgets(linebuffer,LINESIZE,in)) {
-    RAISE_ERROR("premature file ending - expecting comment line");
-  }
-  linebuffer[strlen(linebuffer)-1] = '\0';   // Remove trailing newline
+  GET_LINE("premature end - expecting comment line");
 
   if (!strstr(linebuffer, "Lattice") && !strstr(linebuffer, "lattice")) {
     // It's not an extended XYZ file. Try to guess what's going on.
@@ -373,7 +389,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       
       if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
       if (!error_occured) {
-	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"\n", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
+	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	
@@ -381,14 +397,16 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 	RAISE_ERROR("Cannot extract lattice from line %s\n", linebuffer);
       }
     } else {
-      RAISE_ERROR("Cannot extract lattice from line %s\n", linebuffer);
+      // Put in a bogus lattice
+      sprintf(tmpbuf, " Lattice=\"0 0 0 0 0 0 0 0 0\"");
+      strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);	
     }
   }
     
   if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
     // No Properties key. Add a default one.
     if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
-    strncat(linebuffer, "Properties=species:S:1:pos:R:3\n",LINESIZE-strlen(linebuffer)-1);
+    strncat(linebuffer, "Properties=species:S:1:pos:R:3",LINESIZE-strlen(linebuffer)-1);
   }
 
   // Parse parameters. First split on ", ', { or }
@@ -397,6 +415,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   while ((p1 = strsep(&p, "\"'{}")) != NULL) {
     if (*p1 == '\0') continue;
     strncpy(fields[k++], p1, LINESIZE);
+    debug("fields[%d] = %s\n", k-1, fields[k-1]);
   }
   
   // Now split things outside quotes on whitespace
@@ -578,6 +597,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   PASS_ERROR;
   strncpy(linebuffer, (char *)data, shape[0]);
   linebuffer[shape[0]+1] = '\0';
+  
+  debug("properties string %s\n", linebuffer);
 
   p = linebuffer;
   k = 0;
@@ -593,7 +614,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     debug("read_xyz: got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
     
     if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
-      RAISE_ERROR("Bad column count %s\n", fields[3*i+2]);
+      RAISE_ERROR("Bad column count %s line=%s\n", fields[3*i+2], linebuffer);
     }
 
     entry_count += ncols;
@@ -669,9 +690,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   // Now it's just one line per atom
   n = 0;
   for (atidx=0; atidx < nxyz; atidx++) {
-    if (!fgets(linebuffer,LINESIZE,in)) {
-      RAISE_ERROR("premature file ending at atom %d\n",n);
-    }
+    GET_LINE("premature file ending at atom %d",n);
     k = 0;
     p = linebuffer;
     while ((p1 = strsep(&p, " \t\n")) != NULL) {
@@ -679,7 +698,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       strncpy(fields[k++], p1, LINESIZE);
     }
     if (k != entry_count) {
-      RAISE_ERROR("incomplete row, atom %d - got %d/%d entries\n", n, k, entry_count);
+      RAISE_ERROR("incomplete row, atom %d - got %d/%d entries line=%s\n", n, k, entry_count, linebuffer);
       //for (i=0;i<k;i++) RAISE_ERROR("fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
     }
 
