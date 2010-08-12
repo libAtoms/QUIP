@@ -34,6 +34,16 @@ logging.root.setLevel(logging.WARNING)
 AtomsReaders = {}
 AtomsWriters = {}
 
+def atoms_reader(source, lazy=True):
+   """Decorator to add a new reader"""
+   def decorate(func):
+      from quippy import AtomsReaders
+      func.lazy = lazy
+      if not source in AtomsReaders:
+         AtomsReaders[source] = func
+      return func
+   return decorate
+
 import _quippy
 
 # Reference values of .true. and .false. from Fortran
@@ -78,14 +88,23 @@ for name, routine in routines:
 
 sys.modules[__name__].__dict__.update(params)
 
-import extras
+# Import custom sub classes
+import atoms;           from atoms import Atoms
+import dictionary;      from dictionary import Dictionary
+import cinoutput;       from cinoutput import CInOutput, CInOutputReader, CInOutputWriter
+import dynamicalsystem; from dynamicalsystem import DynamicalSystem
+import potential;       from potential import Potential
+import table;           from table import Table
+
 for name, cls in classes:
    try:
-      new_cls = getattr(extras, name[len(fortran_class_prefix):])
+      # For some Fortran types, we have customised subclasses written in Python
+      new_cls = getattr(sys.modules[__name__], name[len(fortran_class_prefix):])
    except AttributeError:
+      # For the rest, we make a dummy subclass which is equivalent to Fortran base class
       new_cls = type(object)(name[len(fortran_class_prefix):], (cls,), {})
+      setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
 
-   setattr(sys.modules[__name__], name[len(fortran_class_prefix):], new_cls)
    FortranDerivedTypes['type(%s)' % name[len(fortran_class_prefix):].lower()] = new_cls
 
 del classes
@@ -100,10 +119,9 @@ del trial_spec_files
 import farray;      from farray import *
 import atomslist;   from atomslist import *
 import periodic;    from periodic import *
-import xyz_netcdf;  from xyz_netcdf import *
 import util;        from util import *
 
-import sio2, povray, cube
+import sio2, povray, cube, xyz, netcdf
 
 try:
    import aseinterface

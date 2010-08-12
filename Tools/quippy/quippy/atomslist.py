@@ -345,13 +345,3 @@ class AtomsList(object):
          else:
             return seq
 
-# Decorator to add a new reader
-
-def atoms_reader(source, lazy=True):
-   def decorate(func):
-      from quippy import AtomsReaders
-      func.lazy = lazy
-      if not source in AtomsReaders:
-         AtomsReaders[source] = func
-      return func
-   return decorate

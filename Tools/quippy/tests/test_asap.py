@@ -1037,7 +1037,7 @@ if hasattr(quippy, 'Potential'):
    O              -0.48844206     -7.15499828     -5.73762948       8
    Si             -9.36610495     -5.19243639     -4.17139294      14
    O               8.67861563     -4.38862016     -3.81287652       8"""
-            am = Atoms(PuPyXYZReader(am_xyz.split('\n')))
+            am = Atoms(am_xyz, format='string')
             am.set_cutoff(self.cutoff)         
             if do_compare_p1_p2:
                set_printoptions(threshold=1e6)

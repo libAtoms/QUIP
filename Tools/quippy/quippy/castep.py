@@ -28,7 +28,7 @@ from ordereddict import OrderedDict
 from farray import *
 from quippy import Atoms, Dictionary, AU_FS, HARTREE, BOHR, GPA, atomic_number_from_symbol
 from quippy import AtomsReaders, AtomsWriters, atoms_reader
-from quippy.xyz_netcdf import make_lattice, get_lattice_params
+from quippy.atoms import make_lattice, get_lattice_params
 from math import pi
 import xml.dom.minidom
 
