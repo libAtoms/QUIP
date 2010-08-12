@@ -18,6 +18,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from numpy import *
 import sys, optparse, itertools
 
 p = optparse.OptionParser(usage='%prog [options] <input file> [<output file>]')

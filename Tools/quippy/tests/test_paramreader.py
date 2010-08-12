@@ -30,7 +30,7 @@ class TestParamReader(QuippyTestCase):
 
     def setUp(self):
         self.params = Dictionary()
-        self.a = fzeros(3, int32)
+        self.a = fzeros(3, numpy.int32)
         self.b = fzeros(3)
         param_register_multiple_integer(self.params, 'a', '0 0 0', self.a)
         param_register_multiple_real(self.params, 'b', '0.0 0.0 0.0', self.b)

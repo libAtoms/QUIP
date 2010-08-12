@@ -18,6 +18,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 from quippy import *
+from numpy import *
 import sys, optparse, itertools, os
 from math import log10, floor
 

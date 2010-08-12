@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from quippy import *
+from numpy import *
 import optparse, sys
 
 p = optparse.OptionParser(usage='%prog [option] [file1] [file2] ...')
