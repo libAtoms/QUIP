@@ -133,9 +133,6 @@ module system_module
   ! System_Timer stack size
   integer, parameter :: TIMER_STACK  = 500
 
-  ! End of line character code
-  integer, parameter :: LF_CHAR_CODE = 10
-
   ! Command argument variables
   integer,              save :: NUM_COMMAND_ARGS  = 0  !% The number of arguments on the command line
   integer, parameter         :: MAX_READABLE_ARGS = 100 !% The maximum number of arguments that will be read
