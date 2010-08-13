@@ -73,7 +73,7 @@ LIBATOMS_F95_FILES = \
   ringstat \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_util_no_module \
+  libAtoms_utils_no_module \
   ringstat
 
 LIBATOMS_F77_FILES= \
