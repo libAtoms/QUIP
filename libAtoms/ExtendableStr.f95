@@ -176,23 +176,33 @@ function extendable_str_len(this)
   extendable_str_len = this%len
 end function extendable_str_len
 
-subroutine extendable_str_concat(this, str, keep_lf)
+subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
   type(extendable_str), intent(inout) :: this
   character(len=*), intent(in) :: str
-  logical, intent(in), optional :: keep_lf
+  logical, intent(in), optional :: keep_lf, add_lf_if_missing
 
   character, allocatable :: t(:)
   integer str_len
-  integer new_len
+  integer add_len, new_len
   integer i
-  logical my_keep_lf
+  logical my_keep_lf, my_add_lf_if_missing
+  logical :: add_lf
 
   my_keep_lf = optional_default(.true., keep_lf)
+  my_add_lf_if_missing = optional_default(.false., add_lf_if_missing)
 
-  str_len = len(trim(str))
+  str_len = len_trim(str)
+  add_lf = .false.
   if (str_len > 0) then
+     if (my_add_lf_if_missing .and. str(str_len:str_len) /= new_line(' ')) add_lf = .true.
+  else
+     add_lf = my_add_lf_if_missing
+  endif
+  add_len = str_len
+  if (add_lf) add_len = add_len + 1
+  if (add_len > 0) then
     if (allocated(this%s)) then ! already allocated contents
-      new_len = this%len + str_len
+      new_len = this%len + add_len
       if (new_len > size(this%s)) then ! new length too big for current allocated array
 	 if (this%increment > 0) then
 	   new_len = size(this%s) + this%increment
@@ -212,23 +222,21 @@ subroutine extendable_str_concat(this, str, keep_lf)
 	 endif
       endif
     else ! array not already allocated
-      allocate(this%s(str_len))
+      allocate(this%s(add_len))
       this%len = 0
     endif
 
-    if (my_keep_lf) then
-       do i=1, str_len
-          this%s(this%len+i) = str(i:i)
-       end do
-       
-       this%len = this%len + str_len
-    else
-       do i=1, str_len
-          if (str(i:i) == new_line(' ')) cycle
-          this%s(this%len+1) = str(i:i)
-          this%len = this%len + 1
-       end do
-    end if
+    do i=1, str_len
+       if (.not. my_keep_lf .and. str(i:i) == new_line(' ')) cycle
+       this%s(this%len+1) = str(i:i)
+       this%len = this%len + 1
+    end do
+
+    if (add_lf) then
+       this%s(this%len+1) = new_line(' ')
+       this%len = this%len + 1
+    endif
+
  endif
 
  if (this%len > 0 .and. this%cur <= 0) this%cur = 1

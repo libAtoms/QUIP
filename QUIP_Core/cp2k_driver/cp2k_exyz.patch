@@ -4,7 +4,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/input_constants.F,v
 retrieving revision 1.282
 diff -u -r1.282 input_constants.F
 --- input_constants.F	26 May 2010 11:14:35 -0000	1.282
-+++ input_constants.F	13 Aug 2010 13:58:06 -0000
++++ input_constants.F	13 Aug 2010 15:31:14 -0000
 @@ -326,7 +326,8 @@
                                                do_coord_g96=3,&
                                                do_coord_crd=4,&
@@ -21,7 +21,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/input_cp2k_subsys.F,v
 retrieving revision 1.130
 diff -u -r1.130 input_cp2k_subsys.F
 --- input_cp2k_subsys.F	7 May 2010 16:59:31 -0000	1.130
-+++ input_cp2k_subsys.F	13 Aug 2010 13:58:07 -0000
++++ input_cp2k_subsys.F	13 Aug 2010 15:31:15 -0000
 @@ -377,6 +377,11 @@
              default_l_val=.FALSE.,lone_keyword_l_val=.TRUE.,error=error)
         CALL section_add_keyword(print_key,keyword,error=error)
@@ -62,7 +62,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/OBJECTDEFS,v
 retrieving revision 1.520
 diff -u -r1.520 OBJECTDEFS
 --- OBJECTDEFS	26 Apr 2010 15:54:35 -0000	1.520
-+++ OBJECTDEFS	13 Aug 2010 13:58:07 -0000
++++ OBJECTDEFS	13 Aug 2010 15:31:15 -0000
 @@ -680,6 +680,7 @@
   topology_util.o\
   topology_xtl.o\
@@ -77,7 +77,7 @@ RCS file: /cvsroot/cp2k/cp2k/src/topology.F,v
 retrieving revision 1.140
 diff -u -r1.140 topology.F
 --- topology.F	3 Jan 2010 23:41:38 -0000	1.140
-+++ topology.F	13 Aug 2010 13:58:07 -0000
++++ topology.F	13 Aug 2010 15:31:15 -0000
 @@ -26,7 +26,7 @@
         do_conn_amb7, do_conn_g87, do_conn_g96, do_conn_generate, &
         do_conn_mol_set, do_conn_off, do_conn_psf, do_conn_psf_u, &
@@ -107,7 +107,7 @@ diff -u -r1.140 topology.F
 diff --new-file -u -r1.41 topology_exyz.F 
 --- topology_exyz.F	1969-12-31 19:00:00.000000000 -0500
 +++ topology_exyz.F	2010-08-12 17:12:19.000000000 -0400
-@@ -0,0 +1,232 @@
+@@ -0,0 +1,233 @@
 + MODULE topology_exyz
 +   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
 +                                              cp_print_key_unit_nr
@@ -211,16 +211,17 @@ diff --new-file -u -r1.41 topology_exyz.F
 + 
 +        ! zero Extendable_Str, and concatentate number line
 +        call zero(es)
-+        call concat(es, trim(parser%input_line) // new_line(' '))
++        es%len = 0 ! work around ifort bug?
++        call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
 + 
 +        ! concatentate comment line
 +        CALL parser_get_next_line(parser,1,error=error)
-+        call concat(es, trim(parser%input_line) // new_line(' '))
++        call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
 + 
 +        DO j = 1, natom
 +          ! concatentate atom line
 +          CALL parser_get_next_line(parser,1,at_end=my_end,error=error)
-+          call concat(es, trim(parser%input_line) // new_line(' '))
++          call concat(es, trim(parser%input_line), add_lf_if_missing=.true.)
 +          IF (my_end) THEN 
 +             CALL cp_assert(j==natom,cp_fatal_level,cp_assertion_failed,routineP,&
 +                  "Number of lines in EXYZ format not equal to the number of atoms."//&

@@ -378,6 +378,7 @@ contains
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   at%lattice, n_atom, do_frame, 1, len_trim(str), error)
           else if(present(estr)) then
+	     call print('estr%len = '//estr%len)
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                   at%lattice, n_atom, do_frame, 1, estr%len, error)             
           else
