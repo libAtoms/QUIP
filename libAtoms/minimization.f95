@@ -1271,12 +1271,12 @@ CONTAINS
     INTERFACE 
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
-         real(dp)::x(:)
-         real(dp)::dx(:)
-         real(dp)::E
-         logical :: done
-	 logical, optional:: do_print
-	 character(len=1),optional::data(:)
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+	 character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end INTERFACE
     integer, intent(in), optional :: hook_print_interval
@@ -2134,12 +2134,12 @@ CONTAINS
     interface
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
-         real(dp)::x(:)
-         real(dp)::dx(:)
-         real(dp)::E
-         logical  :: done
-	 logical, optional :: do_print
-	 character(len=1),optional::data(:)
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+	 character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
@@ -2275,12 +2275,12 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     interface 
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
-         real(dp)::x(:)
-         real(dp)::dx(:)
-         real(dp)::E
-         logical :: done
-         logical, optional :: do_print
-	 character(len=1),optional::data(:)
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+	 character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     character(len=1),optional::data(:)
@@ -2555,12 +2555,12 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     interface 
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
-         real(dp)::x(:)
-         real(dp)::dx(:)
-         real(dp)::E
-         logical :: done
-         logical, optional :: do_print
-	 character(len=1),optional::data(:)
+         real(dp), intent(in) ::x(:)
+         real(dp), intent(in) ::dx(:)
+         real(dp), intent(in) ::E
+         logical, intent(out) :: done
+	 logical, optional, intent(in) :: do_print
+	 character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
