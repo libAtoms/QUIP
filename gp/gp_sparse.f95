@@ -2291,12 +2291,12 @@ deallocate(diff_xijt)
       end function likelihood_gradient
 
       subroutine save_likelihood_parameters(x,dx,e,done,do_print,data)
-         real(dp), dimension(:) :: x
-         real(dp), dimension(:) :: dx
-         real(dp) :: e
-         logical :: done
-         logical, optional :: do_print
-         character,optional :: data(:)
+         real(dp), dimension(:), intent(in) :: x
+         real(dp), dimension(:), intent(in) :: dx
+         real(dp), intent(in) :: e
+         logical, intent(out) :: done
+         logical, optional, intent(in) :: do_print
+         character,optional, intent(in) :: data(:)
 
          if( present(do_print) ) then
              if( do_print ) call print('SAVE HYPERS:'//x)
