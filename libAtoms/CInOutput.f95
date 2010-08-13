@@ -491,11 +491,14 @@ contains
     INIT_ERROR(error)
 
     if (.not. this%initialised) then
-      RAISE_ERROR("This CInOutput object is not initialised", error)
+       RAISE_ERROR("cinoutput_write: this CInOutput object is not initialised", error)
     endif
     if (this%action /= OUTPUT .and. this%action /= INOUT) then
-      RAISE_ERROR("Cannot write to action=INPUT CInOutput object", error)
+       RAISE_ERROR("cinoutput_write: cannot write to action=INPUT CInOutput object", error)
     endif
+    if (.not. at%initialised) then
+       RAISE_ERROR("cinoutput_write: atoms object not initialised", error)
+    end if
 
     if (this%mpi%active .and. this%mpi%my_proc /= 0) return
 
@@ -520,7 +523,7 @@ contains
     if (this%netcdf4) do_netcdf4 = 1
 
     if (present(properties) .and. present(properties_array)) then
-       RAISE_ERROR('CInOutput_write: "properties" and "properties_array" cannot both be present.', error)
+       RAISE_ERROR('cinoutput_write: "properties" and "properties_array" cannot both be present.', error)
     end if
     
     call initialise(selected_properties)
