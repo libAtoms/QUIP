@@ -281,17 +281,17 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 }
 
 
-void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom, int frame, int string, int *error)
+void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom, int frame, int string, int string_length, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
     finalfields[MAX_ENTRY_COUNT][LINESIZE];
-  char *p, *p1, tmp_logical, *prev_stringp, *stringp;
+  char *p, *p1, tmp_logical, *orig_stringp, *prev_stringp, *stringp;
   int nxyz, nfields=0, offset, error_occured;
   double tmpd;
-  int n_frame, n_selected;
+  int n_frame, n_selected, len;
   long *frames;
   int *atoms, type, shape[2], tmp_error, tmp_type, tmp_shape[2];
   int frames_array_size, got_index;
@@ -299,15 +299,19 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
 
+#define min(a,b) ((a) < (b) ? (a) : (b))
 
 #define GET_LINE(info, ...)  if (string) {				\
-    if (*stringp =='\0') {						\
+    debug("chars used %d length %d\n", stringp-orig_stringp, string_length); \
+    debug("chars remaining %d\n", string_length-(stringp-orig_stringp)); \
+    if (*stringp =='\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) { \
       RAISE_ERROR(info, ## __VA_ARGS__);				\
     }									\
     prev_stringp = stringp;						\
-    while (*stringp != '\n' && *stringp != '\0') stringp++;		\
-    strncpy(linebuffer, prev_stringp, stringp - prev_stringp);		\
-    linebuffer[stringp - prev_stringp] = '\0';				\
+    while (*stringp != '\n' && *stringp != '\0' && (string_length == 0 || stringp-orig_stringp < string_length)) stringp++; \
+    len =  stringp - prev_stringp;					\
+    strncpy(linebuffer, prev_stringp, stringp-prev_stringp);		\
+    linebuffer[stringp-prev_stringp] = '\0';				\
     debug("line = <%s>\n", linebuffer);					\
     if (*stringp == '\n') stringp++;					\
   } else {								\
@@ -326,7 +330,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   
   got_index = 0;
   if (string) {
-    stringp = filename;
+    orig_stringp = stringp = filename;
   } else if (strcmp(filename, "stdin") == 0) {
     in = stdin;
   } else { 
