@@ -1,7 +1,9 @@
 #!/bin/bash
 
-/usr/bin/cvs diff -u {cp,ewa,mathl}*.F > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/cp2k_speed.patch 
-/usr/bin/cvs diff -u {input*F,OBJECTDEFS,topology.F} > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/cp2k_exyz.patch
+/usr/bin/cvs diff -u {cp_,ewald_,math,pw_}*.F > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/cp2k_speed.patch 
+/usr/bin/cvs diff -u motion_utils.F > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/motion_utils.F.patch 
+/usr/bin/cvs diff -u {md_energies,input_cp2k_motion}.F > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/cp2k_print_selected_atoms.patch 
+/usr/bin/cvs diff -u {input_constants.F,input_cp2k_subsys.F,topology.F,OBJECTDEFS} > ${QUIP_ROOT}/QUIP_Core/cp2k_driver/cp2k_exyz.patch
 nl=`wc -l < topology_exyz.F`
 cat<<EOF >> $QUIP_ROOT/QUIP_Core/cp2k_driver/cp2k_exyz.patch
 diff --new-file -u -r1.41 topology_exyz.F 
