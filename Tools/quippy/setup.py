@@ -153,7 +153,7 @@ def SourceImporter(infile, defines, include_dirs, cpp, is_wrap_source):
                 os.system("%s %s %s | grep -v '^#' >  %s" % (' '.join(cpp), cpp_opt, tmp_file, outfile))
 
                 #os.remove(tmp_file)
-                os.remove(tmp_file[:-4] + '.s')
+                if os.path.exists(tmp_file[:-4] + '.s'): os.remove(tmp_file[:-4] + '.s')
         else:
             copy_file(infile, outfile, update=True)
 
