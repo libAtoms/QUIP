@@ -11,4 +11,4 @@ diff --new-file -u -r1.41 topology_exyz.F
 +++ topology_exyz.F	2010-08-12 17:12:19.000000000 -0400
 @@ -0,0 +1,$nl @@
 EOF
-sed 's/^/+ /' topology_exyz.F >> $QUIP_ROOT/QUIP_Core/cp2k_driver/cp2k_exyz.patch
+sed 's/^/+/' topology_exyz.F >> $QUIP_ROOT/QUIP_Core/cp2k_driver/cp2k_exyz.patch
