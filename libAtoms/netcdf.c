@@ -66,58 +66,6 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
 
 // Utility functions
 
-void lattice_abc_to_xyz(double cell_lengths[3], double cell_angles[3],
-			double lattice[3][3])
-{
-  double a, b, c, alpha, beta, gamma, cos_alpha, cos2_alpha, cos_beta, cos2_beta, cos_gamma, cos2_gamma,
-    sin_gamma, sin2_gamma;
-
-  a = cell_lengths[0];  b = cell_lengths[1]; c = cell_lengths[2];
-  alpha = cell_angles[0]*M_PI/180.0; beta = cell_angles[1]*M_PI/180.0; gamma = cell_angles[2]*M_PI/180.0;    
-  cos_alpha = cos(alpha); cos2_alpha = cos_alpha*cos_alpha;
-  cos_beta  = cos(beta);  cos2_beta  = cos_beta *cos_beta;
-  cos_gamma = cos(gamma); cos2_gamma = cos_gamma*cos_gamma;
-  sin_gamma = sin(gamma); sin2_gamma = sin_gamma*sin_gamma;
-
-  lattice[0][0] = a;
-  lattice[0][1] = 0.0;
-  lattice[0][2] = 0.0;
-
-  lattice[1][0] = b * cos_gamma;
-  lattice[1][1] = b * sin_gamma;
-  lattice[1][2] = 0.0;
-
-  lattice[2][0] = c * cos_beta;
-  lattice[2][1] = c * (cos_alpha - cos_beta*cos_gamma) / sin_gamma;
-  lattice[2][2] = c * sqrt(1.0 - (cos2_alpha + cos2_beta - 2.0*cos_alpha*cos_beta*cos_gamma)/ sin2_gamma);
-}
-
-void lattice_xyz_to_abc(double lattice[3][3], double cell_lengths[3], double cell_angles[3])
-{
-  int i;
-
-  for (i=0; i<3; i++)
-    cell_lengths[i] = sqrt(lattice[i][0]*lattice[i][0] + 
-			   lattice[i][1]*lattice[i][1] + 
-			   lattice[i][2]*lattice[i][2]);
-
-  cell_angles[0] = 180.0/M_PI*acos((lattice[1][0]*lattice[2][0] + 
-				    lattice[1][1]*lattice[2][1] +
-				    lattice[1][2]*lattice[2][2])/
-				   (cell_lengths[1]*cell_lengths[2]));
-		       
-  cell_angles[1] = 180.0/M_PI*acos((lattice[2][0]*lattice[0][0] + 
-				    lattice[2][1]*lattice[0][1] +
-				    lattice[2][2]*lattice[0][2])/
-				   (cell_lengths[2]*cell_lengths[0]));
-
-  cell_angles[2] = 180.0/M_PI*acos((lattice[0][0]*lattice[1][0] + 
-				    lattice[0][1]*lattice[1][1] +
-				    lattice[0][2]*lattice[1][2])/
-				   (cell_lengths[0]*cell_lengths[1]));
-}
-
-
 #ifdef HAVE_NETCDF
  
 void replace_fill_values(int *params, int *properties, int irep, double rrep, int *error) {
@@ -575,7 +523,7 @@ void read_netcdf (char *filename, int *params, int *properties, int *selected_pr
   
   debug("read_netcdf: cell_lengths = [%f %f %f]\n", cell_lengths[0], cell_lengths[1], cell_lengths[2]);
   debug("read_netcdf: cell_angles = [%f %f %f]\n", cell_angles[0], cell_angles[1], cell_angles[2]);
-  lattice_abc_to_xyz(cell_lengths, cell_angles, lattice);
+  lattice_abc_to_xyz_(cell_lengths, cell_angles, lattice);
 
   if (zero) {
     replace_fill_values(params, properties, irep, rrep, error);
@@ -874,7 +822,7 @@ void write_netcdf (char *filename, int *params, int *properties, int *selected_p
   }
 
   // Put lattice
-  lattice_xyz_to_abc(lattice, cell_lengths, cell_angles);
+  lattice_xyz_to_abc_(lattice, cell_lengths, cell_angles);
   start[0] = frame;
   start[1] = 0;
   count[0] = 1;
