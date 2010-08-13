@@ -775,7 +775,8 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 !    call print('REMARK'//at%N,file=pdb)
 !lattice information could be added in a line like this:
 !CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1          
-    call lattice_xyz_to_abc(at%lattice, cell_lengths, cell_angles)
+    call get_lattice_params(at%lattice, cell_lengths(1), cell_lengths(2), cell_lengths(3), &
+					cell_angles(1), cell_angles(2), cell_angles(3))
     sor=''
     write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), cell_angles(:), ' P 1           1'
     call print(sor, file=pdb)
