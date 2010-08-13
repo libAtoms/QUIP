@@ -765,6 +765,8 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(len=1024)      :: my_run_type_string
     real(dp)                 :: cell_lengths(3), cell_angles(3)
 
+    external :: lattice_xyz_to_abc
+
     call system_timer('write_pdb_file')
     my_run_type_string = optional_default('',run_type_string)
 
