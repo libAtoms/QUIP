@@ -36,12 +36,12 @@ module teach_sparse_mod
 
   type teach_sparse
      character(len=FIELD_LENGTH) :: at_file='', ip_args = '', &
-     energy_property_name, force_property_name, virial_property_name
+     energy_property_name, force_property_name, virial_property_name, coordinates
      character(len=10240) :: command_line = ''
      real(dp) :: r_cut, e0, z0, f0, dlt, theta_fac
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., do_ewald = .false. , do_ewald_corr = .false., &
-     do_qw_so3, qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
+     qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
      do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
@@ -164,7 +164,6 @@ contains
 
     type(Potential) :: core_pot
     
-    logical :: do_qw_so3
     integer :: d
     integer :: n_max, n_con
     logical :: has_ener, has_force, has_virial
@@ -179,7 +178,8 @@ contains
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
 
-    if(this%do_qw_so3) then
+    select case(trim(this%coordinates))
+    case('qw')
 
        call initialise(f3_hat, this%qw_l_max, &
        this%qw_cutoff(1:this%qw_f_n), this%qw_cutoff_f(1:this%qw_f_n), &
@@ -193,12 +193,14 @@ contains
        this%qw_f_n, do_q = (.not. this%qw_no_q), do_w = (.not. this%qw_no_w))
 
        this%d = qw2d(qw)
-    else 
+    case('bispectrum')
        call initialise(f_hat,this%j_max, this%z0,this%r_cut)
        call initialise(df_hat,this%j_max, this%z0,this%r_cut)
 
        this%d = j_max2d(f_hat%j_max)
-    endif
+    case default
+       call system_abort('Unknown coordinates '//trim(this%coordinates))
+    endselect
     d = this%d
 
     allocate(this%x(d,this%nn),this%xd(d,this%n), &
@@ -291,7 +293,8 @@ contains
 
        if(has_ener .or. has_force .or. has_virial ) then
           do i = 1, at%N
-             if (do_qw_so3) then
+             select case(trim(this%coordinates))
+             case('qw')
                 call fourier_transform(f3_hat,at,i)
                 call calc_qw(qw,f3_hat)
                 call qw2vec(qw,vec(:,i))
@@ -302,7 +305,7 @@ contains
                       call qw2vec(dqw,jack(:,3*n+1:3*(n+1),i))
                    enddo
                 endif
-             else
+             case('bispectrum')
                 call fourier_transform(f_hat,at,i,w)
                 call calc_bispectrum(bis,f_hat)
                 call bispectrum2vec(bis,vec(:,i))
@@ -313,7 +316,9 @@ contains
                       call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
                    enddo
                 endif
-             endif
+             case default
+                call system_abort('Unknown coordinates '//trim(this%coordinates))
+             endselect
           enddo
 
           do i = 1, at%N
@@ -522,7 +527,8 @@ contains
      call xml_AddAttribute(xf,"e0",""//this%e0)
      call xml_AddAttribute(xf,"f0",""//this%f0)
 
-     if(this%do_qw_so3) then
+     select case(trim(this%coordinates))
+     case('qw')
         call xml_AddAttribute(xf,"coordinates","qw")
 
         call xml_NewElement(xf,"qw_so3_params")
@@ -541,7 +547,7 @@ contains
         enddo
 
         call xml_EndElement(xf,"qw_so3_params")
-     else
+     case('bispectrum')
         call xml_AddAttribute(xf,"coordinates","bispectrum")
         
         call xml_NewElement(xf,"bispectrum_so4_params")
@@ -549,7 +555,9 @@ contains
         call xml_AddAttribute(xf,"j_max",""//this%j_max)
         call xml_AddAttribute(xf,"z0",""//this%z0)
         call xml_EndElement(xf,"bispectrum_so4_params")
-     endif
+     case default
+        call system_abort('Unknown coordinates '//trim(this%coordinates))
+     endselect
 
      do i = 1, this%n_species
         call xml_NewElement(xf,"per_type_data")

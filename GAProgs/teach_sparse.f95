@@ -65,7 +65,7 @@ program teach_sparse_program
   call param_register(params, 'r_cut', '2.75', main_teach_sparse%r_cut)
   call param_register(params, 'j_max', '4', main_teach_sparse%j_max)
   call param_register(params, 'z0', '0.0', main_teach_sparse%z0)
-  call param_register(params, 'qw_so3', 'F', main_teach_sparse%do_qw_so3)
+  call param_register(params, 'coordinates', 'bispectrum', main_teach_sparse%coordinates)
   call param_register(params, 'l_max', '6', main_teach_sparse%qw_l_max)
   call param_register(params, 'cutoff', '', qw_cutoff_string)
   call param_register(params, 'cutoff_f', '', qw_cutoff_f_string)
@@ -100,7 +100,7 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, do_check = .true., command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     & [r_cut=2.75] [j_max=4] [z0=0.0] [qw_so3] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
@@ -127,7 +127,9 @@ program teach_sparse_program
   endif
   main_teach_sparse%do_ewald_corr = main_teach_sparse%do_ewald .and. main_teach_sparse%do_ewald_corr
 
-  if (main_teach_sparse%do_qw_so3) then
+  main_teach_sparse%coordinates = lower_case(trim(main_teach_sparse%coordinates))
+  select case(trim(main_teach_sparse%coordinates))
+  case('qw')
      main_teach_sparse%qw_cutoff = 0.0_dp
      main_teach_sparse%qw_cutoff_f = 0
      main_teach_sparse%qw_cutoff_r1 = 0.0_dp
@@ -140,10 +142,12 @@ program teach_sparse_program
         main_teach_sparse%qw_cutoff_r1(i) = string_to_real(qw_cutoff_r1_fields(i))
      enddo
      main_teach_sparse%r_cut = maxval(main_teach_sparse%qw_cutoff(1:main_teach_sparse%qw_f_n))
-  else
+  case('bispectrum')
      main_teach_sparse%z0 = max(1.0_dp,main_teach_sparse%z0) * main_teach_sparse%r_cut/(PI-0.02_dp)
      main_teach_sparse%d = j_max2d(main_teach_sparse%j_max)
-  endif
+  case default
+     call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
+  endselect
 
   if(main_teach_sparse%do_core) &
      call read(main_teach_sparse%quip_string, "quip_params.xml",keep_lf=.true.)
@@ -327,17 +331,21 @@ program teach_sparse_program
 
   call print("model parameters:")
   call print("r_cut     = "//main_teach_sparse%r_cut)
-  if (main_teach_sparse%do_qw_so3) then
+  select case(trim(main_teach_sparse%coordinates))
+  case('qw')
      call print("l_max     = "//main_teach_sparse%qw_l_max)
      call print("cutoff    = "//qw_cutoff_string)
      call print("cutoff_f  = "//qw_cutoff_f_string)
      call print("cutoff_r1 = "//qw_cutoff_r1_string)
      call print("q         = "//(.not. main_teach_sparse%qw_no_q))
      call print("w         = "//(.not. main_teach_sparse%qw_no_w))
-  else
+  case('bispectrum')
      call print("j_max     = "//main_teach_sparse%j_max)
      call print("z0        = "//main_teach_sparse%z0)
-  endif
+  case default
+     call system_abort('Unknown coordinates '//trim(main_teach_sparse%coordinates))
+  endselect
+
   call print("n_species = "//main_teach_sparse%n_species)
   call print("species_Z = "//main_teach_sparse%species_Z)
   call print("w         = "//main_teach_sparse%w_Z(main_teach_sparse%species_Z))
