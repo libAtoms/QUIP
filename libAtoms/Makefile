@@ -71,6 +71,7 @@ LIBATOMS_F95_FILES = \
   Topology \
   Atoms_ll \
   ringstat \
+  DomainDecomposition \
   libAtoms \
   libAtoms_misc_utils \
   libAtoms_utils_no_module \
