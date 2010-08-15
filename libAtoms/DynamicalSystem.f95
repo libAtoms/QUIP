@@ -182,7 +182,7 @@ contains
       ! Check to see if the object has already been initialised
       if (this%initialised) call ds_finalise(this)  
 
-      N = atoms_in%N
+      N = atoms_in%Nbuffer
       this%N = N
 
       ! Check the atomic numbers
@@ -971,21 +971,33 @@ contains
    end function moment_of_inertia_tensor
 
    !% Return the total kinetic energy $E_k = \sum_{i} \frac{1}{2} m v^2$
-   function DS_kinetic_energy(this) result(ke)       ! sum(0.5mv^2)
-      type(DynamicalSystem), intent(in) :: this
-      real(dp)                          :: ke
+   function DS_kinetic_energy(this, mpi_obj, error) result(ke)    ! sum(0.5mv^2)
+      type(DynamicalSystem),       intent(in)   :: this
+      type(MPI_context), optional, intent(in)   :: mpi_obj
+      integer,           optional, intent(out)  :: error
+      real(dp)                                  :: ke
 
-      ke = kinetic_energy(this%atoms)
+      INIT_ERROR(error)
+      ke = kinetic_energy(this%atoms, mpi_obj, error=error)
+      PASS_ERROR(error)
     end function DS_kinetic_energy
 
    !% Return the total kinetic energy $E_k = \sum_{i} \frac{1}{2} m v^2$
-   function atoms_kinetic_energy(this) result(ke)       ! sum(0.5mv^2)
-      type(atoms), intent(in) :: this
-      real(dp)                :: ke
+   function atoms_kinetic_energy(this, mpi_obj, error) result(ke) ! sum(0.5mv^2)
+      type(atoms),                 intent(in)   :: this
+      type(MPI_context), optional, intent(in)   :: mpi_obj
+      integer,           optional, intent(out)  :: error
+      real(dp)                                  :: ke
 
+      INIT_ERROR(error)
       if (.not. associated(this%mass)) call system_abort("atoms_kinetic_energy called on atoms without mass property")
       if (.not. associated(this%velo)) call system_abort("atoms_kinetic_energy called on atoms without velo property")
-      ke = kinetic_energy(this%mass, this%velo)
+      ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
+
+      if (present(mpi_obj)) then
+         call sum_in_place(mpi_obj, ke, error=error)
+         PASS_ERROR(error)
+      endif
     end function atoms_kinetic_energy
 
    !% Return the kinetic energy given a mass and a velocity
@@ -1360,7 +1372,7 @@ contains
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     
-   subroutine advance_verlet1(this,dt,virial,parallel,store_constraint_force,do_calc_dists,error)
+   subroutine advance_verlet1(this,dt,virial,parallel,store_constraint_force,do_calc_dists,mpi_obj,error)
 
      type(dynamicalsystem), intent(inout)  :: this
      real(dp),              intent(in)     :: dt
@@ -1368,7 +1380,8 @@ contains
      real(dp),dimension(3,3), intent(in), optional :: virial
      logical, optional,     intent(in)     :: parallel
      logical, optional,     intent(in)     :: store_constraint_force, do_calc_dists
-     integer, optional,     intent(out)  :: error
+     type(MPI_context), optional, intent(in)   :: mpi_obj
+     integer,           optional, intent(out)  :: error
 
      logical                               :: do_parallel, do_store, my_do_calc_dists
      integer                               :: i, j, g, n, ntherm
@@ -1415,10 +1428,14 @@ contains
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
      therm_ndof = 0.0_dp
-     do i = 1, this%N
+     do i = 1, this%atoms%Ndomain
         j = this%atoms%thermostat_region(i)
         if (j>0 .and. j<=ntherm) therm_ndof(j) = therm_ndof(j) + degrees_of_freedom(this,i)
      end do
+     if (present(mpi_obj)) then
+        call sum_in_place(mpi_obj, therm_ndof, error=error)
+        PASS_ERROR(error)
+     endif
      do i = 1, ntherm
         call set_degrees_of_freedom(this%thermostat(i),therm_ndof(i))
      end do
@@ -1466,27 +1483,30 @@ contains
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            do n = 1, group_n_atoms(this%group(g))
               i = group_nth_atom(this%group(g),n)
+
+              if (i <= this%atoms%Ndomain) then
 #ifdef _MPI
-              if (do_parallel) then
-                 if (this%atoms%move_mask(i)==0) then
-                    mpi_velo(:,i) = 0.0_dp
+                 if (do_parallel) then
+                    if (this%atoms%move_mask(i)==0) then
+                       mpi_velo(:,i) = 0.0_dp
+                    else
+                       mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
+                    end if
                  else
-                    mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
+                    if (this%atoms%move_mask(i)==0) then
+                       this%atoms%velo(:,i) = 0.0_dp
+                    else
+                       this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
+                    end if
                  end if
-              else
+#else
                  if (this%atoms%move_mask(i)==0) then
                     this%atoms%velo(:,i) = 0.0_dp
                  else
                     this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
                  end if
-              end if
-#else
-              if (this%atoms%move_mask(i)==0) then
-                 this%atoms%velo(:,i) = 0.0_dp
-              else
-                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
-              end if
 #endif              
+              endif
            end do
            
         end select
@@ -1545,33 +1565,36 @@ contains
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            do n = 1, group_n_atoms(this%group(g))
               i = group_nth_atom(this%group(g),n)
+
+              if (i <= this%atoms%Ndomain) then
 #ifdef _MPI
-              if (do_parallel) then
-                 if (this%atoms%move_mask(i)==0) then
-                    mpi_pos(:,i) =  this%atoms%pos(:,i)
-                    mpi_velo(:,i) = 0.0_dp
-                    mpi_acc(:,i) = 0.0_dp
+                 if (do_parallel) then
+                    if (this%atoms%move_mask(i)==0) then
+                       mpi_pos(:,i) =  this%atoms%pos(:,i)
+                       mpi_velo(:,i) = 0.0_dp
+                       mpi_acc(:,i) = 0.0_dp
+                    else
+                       mpi_pos(:,i) =  this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
+                       mpi_velo(:,i) = this%atoms%velo(:,i)
+                       mpi_acc(:,i) = this%atoms%acc(:,i)
+                    end if
                  else
-                    mpi_pos(:,i) =  this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
-                    mpi_velo(:,i) = this%atoms%velo(:,i)
-                    mpi_acc(:,i) = this%atoms%acc(:,i)
+                    if (this%atoms%move_mask(i)==0) then
+                       this%atoms%velo(:,i) = 0.0_dp
+                       this%atoms%acc(:,i) = 0.0_dp
+                    else
+                       this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
+                    end if
                  end if
-              else
+#else
                  if (this%atoms%move_mask(i)==0) then
                     this%atoms%velo(:,i) = 0.0_dp
                     this%atoms%acc(:,i) = 0.0_dp
                  else
                     this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
                  end if
-              end if
-#else
-              if (this%atoms%move_mask(i)==0) then
-                 this%atoms%velo(:,i) = 0.0_dp
-                 this%atoms%acc(:,i) = 0.0_dp
-              else
-                 this%atoms%pos(:,i) = this%atoms%pos(:,i) + this%atoms%velo(:,i)*dt
-              end if
 #endif                 
+              endif
            end do
            
         case(TYPE_CONSTRAINED)
@@ -1709,7 +1732,7 @@ contains
      !X
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-     forall (i=1:this%N) this%atoms%acc(:,i) = f(:,i) / this%atoms%mass(i)
+     forall (i=1:this%atoms%Ndomain) this%atoms%acc(:,i) = f(:,i) / this%atoms%mass(i)
 
      !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
      !X
@@ -1754,31 +1777,34 @@ contains
            !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
            do n = 1, group_n_atoms(this%group(g))
               i = group_nth_atom(this%group(g),n)
+
+              if (i <= this%atoms%Ndomain) then
 #ifdef _MPI
-              if (do_parallel) then
-                 if (this%atoms%move_mask(i)==0) then
-                    mpi_velo(:,i) = 0.0_dp
-                    mpi_acc(:,i) = 0.0_dp
+                 if (do_parallel) then
+                    if (this%atoms%move_mask(i)==0) then
+                       mpi_velo(:,i) = 0.0_dp
+                       mpi_acc(:,i) = 0.0_dp
+                    else
+                       mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
+                       mpi_acc(:,i) = this%atoms%acc(:,i)
+                    end if
                  else
-                    mpi_velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
-                    mpi_acc(:,i) = this%atoms%acc(:,i)
+                    if (this%atoms%move_mask(i)==0) then
+                       this%atoms%velo(:,i) = 0.0_dp
+                       this%atoms%acc(:,i) = 0.0_dp
+                    else
+                       this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
+                    end if
                  end if
-              else
+#else
                  if (this%atoms%move_mask(i)==0) then
                     this%atoms%velo(:,i) = 0.0_dp
                     this%atoms%acc(:,i) = 0.0_dp
                  else
                     this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
                  end if
-              end if
-#else
-              if (this%atoms%move_mask(i)==0) then
-                 this%atoms%velo(:,i) = 0.0_dp
-                 this%atoms%acc(:,i) = 0.0_dp
-              else
-                 this%atoms%velo(:,i) = this%atoms%velo(:,i) + 0.5_dp*this%atoms%acc(:,i)*dt
-              end if
 #endif              
+              endif
            end do
            
         case(TYPE_CONSTRAINED)
@@ -1850,7 +1876,7 @@ contains
      if (this%avg_time > 0.0_dp) then
         decay = dt/this%avg_time
         call update_exponential_average(this%avg_temp,decay,this%cur_temp)
-        do i = 1, this%N
+        do i = 1, this%atoms%Ndomain
            call update_exponential_average(this%atoms%avgpos(:,i),decay,realpos(this%atoms,i))
            call update_exponential_average(this%atoms%avg_ke(i),decay,0.5_dp*this%atoms%mass(i)*norm2(this%atoms%velo(:,i)))
         end do
@@ -1949,16 +1975,13 @@ contains
      PASS_ERROR(error)
      call thermostat_temperatures(this, region_temps)
 
-     my_ekin = kinetic_energy(this)
-     if (present(mpi_obj)) then
-        call sum_in_place(mpi_obj, my_ekin, error=error)
-        PASS_ERROR(error)
-     endif
+     my_ekin = kinetic_energy(this, mpi_obj, error=error)
+     PASS_ERROR(error)
 
      if(present(epot)) then
         write(line, '(a,f12.2,2f12.4,e12.2,5e20.8)') string, this%t, &
              temp, this%avg_temp, norm(momentum(this)),&
-             this%work, this%thermostat_work, kinetic_energy(this), &
+             this%work, this%thermostat_work, my_ekin, &
              my_epot+my_ekin,my_epot+my_ekin+this%ext_energy
      else
         write(line, '(a,f12.2,2f12.4,e12.2,2e20.8)') string, this%t, &
