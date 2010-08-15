@@ -28,7 +28,7 @@ build:
 
 install:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"
-	cd ${QUIP_ROOT}/Tools/quippy; python setup.py install
+	cd ${QUIP_ROOT}/Tools/quippy; sudo QUIP_ARCH=${QUIP_ARCH} python setup.py install
 
 clean:
 	@echo "QUIP_ROOT=${QUIP_ROOT}"

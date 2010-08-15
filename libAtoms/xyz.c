@@ -120,7 +120,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   char *bname;
   char indexname[LINESIZE], linebuffer[LINESIZE], buf1[LINESIZE], buf2[LINESIZE];
   int natoms, i, nframes;
-  int from_scratch, do_update; 
+  int from_scratch, do_update;
   struct stat xyz_stat, idx_stat;
 
   INIT_ERROR;
@@ -131,7 +131,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   if (stat(fname, &xyz_stat) != 0) {
     RAISE_ERROR("Cannot stat xyz file %s\n", fname);
   }
-  
+
   from_scratch = stat(indexname, &idx_stat) != 0;
 
   if (from_scratch) {
@@ -150,7 +150,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   }
 
   do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
-  
+
   if (!from_scratch) {
     debug("xyz_find_frames: reading XYZ index from file %s\n", indexname);
     index = fopen(indexname, "r");
@@ -174,7 +174,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     if (in == NULL) {
       RAISE_ERROR("xyz_find_frames: cannot open %s for reading", fname);
     }
-    if (from_scratch) 
+    if (from_scratch)
       nframes = 0;
     else {
       debug("xyz_find_frames: trying to update XYZ index... \n");
@@ -281,7 +281,37 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 }
 
 
-void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom, int frame, int string, int string_length, int *error)
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+
+char* get_line(char *linebuffer, int string, int string_length, char *orig_stringp, char *stringp, char **prev_stringp,
+		FILE *in, char *info, int *error)
+{
+  INIT_ERROR;
+
+  if (string) {
+    if (*stringp == '\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) {
+      RAISE_ERROR(info);
+    }
+    *prev_stringp = stringp;
+    while (*stringp != '\n' && *stringp != '\0' && (string_length == 0 || stringp-orig_stringp < string_length)) stringp++;
+    strncpy(linebuffer, *prev_stringp, stringp-*prev_stringp);
+    linebuffer[stringp-*prev_stringp] = '\0';
+    //debug("line = <%s>\n", linebuffer);
+    if (*stringp == '\n') stringp++;
+    return stringp;
+  } else {
+    if (!fgets(linebuffer,LINESIZE,in)) {
+      RAISE_ERROR(info);
+    }
+    linebuffer[strlen(linebuffer)-1] = '\0';
+  }
+}
+
+#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error)
+
+void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom,
+	       int compute_index, int frame, int string, int string_length, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx;
@@ -291,7 +321,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   char *p, *p1, tmp_logical, *orig_stringp, *prev_stringp, *stringp;
   int nxyz, nfields=0, offset, error_occured;
   double tmpd;
-  int n_frame, n_selected, len;
+  int n_frame, n_selected;
   long *frames;
   int *atoms, type, shape[2], tmp_error, tmp_type, tmp_shape[2];
   int frames_array_size, got_index;
@@ -299,42 +329,22 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
 
-#define min(a,b) ((a) < (b) ? (a) : (b))
-
-#define GET_LINE(info, ...)  if (string) {				\
-    debug("chars used %d length %d\n", stringp-orig_stringp, string_length); \
-    debug("chars remaining %d\n", string_length-(stringp-orig_stringp)); \
-    if (*stringp =='\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) { \
-      RAISE_ERROR(info, ## __VA_ARGS__);				\
-    }									\
-    prev_stringp = stringp;						\
-    while (*stringp != '\n' && *stringp != '\0' && (string_length == 0 || stringp-orig_stringp < string_length)) stringp++; \
-    len =  stringp - prev_stringp;					\
-    strncpy(linebuffer, prev_stringp, stringp-prev_stringp);		\
-    linebuffer[stringp-prev_stringp] = '\0';				\
-    debug("line = <%s>\n", linebuffer);					\
-    if (*stringp == '\n') stringp++;					\
-  } else {								\
-    if (!fgets(linebuffer,LINESIZE,in)) {				\
-      RAISE_ERROR(info, ## __VA_ARGS__);				\
-    }									\
-    linebuffer[strlen(linebuffer)-1] = '\0';				\
-  }									\
-
-
   INIT_ERROR;
-  
+
   if (strcmp(filename, "stdout") == 0) {
     RAISE_ERROR("read_xyz: cannot open \"stdout\" for reading.");
   }
-  
+
   got_index = 0;
   if (string) {
+    debug("read_xyz: reading from string\n");
     orig_stringp = stringp = filename;
   } else if (strcmp(filename, "stdin") == 0) {
+    debug("read_xyz: reading from STDIN\n");
     in = stdin;
-  } else { 
-    // Not reading from stdin or from a string, so we can get an index
+  } else if (compute_index) {
+    // Not reading from stdin or from a string, so we can compute an index
+    debug("read_xyz: computing index for file %s\n", filename);
     frames_array_size = 0;
     n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
     if (frame < 0 || frame >= n_frame) {
@@ -352,19 +362,39 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     }
     free(frames);
     free(atoms);
+  } else {
+    // compute_index = 0, so we just open the file and start at the beginning
+    in = fopen(filename, "r");
+    if (in == NULL) {
+      RAISE_ERROR("read_xyz: cannot open file %s for reading", filename);
+    }
+  }
+
+  if (!got_index && frame != 0) {
+    debug("read_xyz: skipping to frame %d\n", frame);
+
+    for (i=0; i<frame-1; i++) {
+      GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
+      if (sscanf(linebuffer, "%d", &nxyz) != 1) {
+  	RAISE_ERROR("read_xyz: first line (%s) must be number of atoms when skipping frame %d", linebuffer, i);
+      }
+      GET_LINE("read_xyz: premature end when skipping, expecting comment line");
+      for (j=0; j<nxyz; j++)
+  	GET_LINE("read_xyz: premature end when skipping");
+    }
   }
 
   GET_LINE("read_xyz: premature end, expecting number of atoms");
-   
+
   if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-    RAISE_ERROR("first line (%s) must be number of atoms", linebuffer);
+    RAISE_ERROR("read_xyz: first line (%s) must be number of atoms", linebuffer);
   }
 
   if (got_index) {
     if (nxyz != *n_atom) {
-      RAISE_ERROR("Mismatch in number of atoms - expecting %d but got %d\n", *n_atom, nxyz);
+      RAISE_ERROR("read_xyz: mismatch in number of atoms - expecting %d but got %d\n", *n_atom, nxyz);
     }
-  } else 
+  } else
     *n_atom = nxyz;
 
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
@@ -374,14 +404,14 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     // It's not an extended XYZ file. Try to guess what's going on.
     // If comment line contains nine or more fields, assume last nine are
     // lattice in cartesian coordinates.
-    
+
     p = linebuffer;
     k = 0;
     while ((p1 = strsep(&p, " \t")) != NULL) {
       if (*p1 == '\0') continue;
       strncpy(fields[k++], p1, LINESIZE);
     }
-    
+
     if (k >= 9) {
       offset = k-9;
       error_occured = 0;
@@ -390,23 +420,23 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 	  error_occured = 1;
 	  break;
 	}
-      
+
       if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
       if (!error_occured) {
 	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
 		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	
+
       } else {
 	RAISE_ERROR("Cannot extract lattice from line %s\n", linebuffer);
       }
     } else {
       // Put in a bogus lattice
       sprintf(tmpbuf, " Lattice=\"0 0 0 0 0 0 0 0 0\"");
-      strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);	
+      strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
     }
   }
-    
+
   if (!strstr(linebuffer, "Properties") && !strstr(linebuffer, "properties")) {
     // No Properties key. Add a default one.
     if ((p = strstr(linebuffer, "\n")) != NULL) *p = '\0';
@@ -419,9 +449,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   while ((p1 = strsep(&p, "\"'{}")) != NULL) {
     if (*p1 == '\0') continue;
     strncpy(fields[k++], p1, LINESIZE);
-    debug("fields[%d] = %s\n", k-1, fields[k-1]);
   }
-  
+
   // Now split things outside quotes on whitespace
   nfields = 0;
   for (i=0; i<k; i++) {
@@ -435,19 +464,19 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       for (n=0; n<j; n++, nfields++) {
 	strncpy(finalfields[nfields],subfields[n], LINESIZE);
       }
-      
+
     } else {
       strncat(finalfields[nfields-1],fields[i],LINESIZE-strlen(finalfields[nfields-1])-1);
     }
   }
-  
+
   // Finally, split on '=' to get key/value pairs
   for (i=0; i<nfields; i++) {
     strncpy(linebuffer, finalfields[i], LINESIZE);
     if ((p = strchr(linebuffer,'=')) == NULL) {
       RAISE_ERROR("Badly formed key/value pair %s\n", linebuffer);
     }
-	
+
     *p = '\0';
     strncpy(param_key, linebuffer, PARAM_STRING_LENGTH);
     strncpy(param_value, p+1, PARAM_STRING_LENGTH);
@@ -455,7 +484,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 
     //if (strcasecmp(param_key, "Lattice") == 0 ||
     //strcasecmp(param_key, "Properties") == 0) continue;
-	
+
     strncpy(linebuffer, param_value, LINESIZE);
     k = 0;
     p = linebuffer;
@@ -474,7 +503,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       for (n=0; n<strlen(fields[j]); n++)
 	if (!isblank(fields[j][n]) && !isdigit(fields[j][n])) goto NOT_INT;
     }
-	
+
     if (k==1) {
       type = T_INTEGER;
       shape[0] = 1;
@@ -495,7 +524,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   NOT_INT:
     for (j=0; j<k; j++)
       if (strtod(fields[j], &p), strlen(p) != 0) goto NOT_REAL;
-	
+
     if (k==1) {
       type = T_REAL;
       shape[0] = 1;
@@ -512,12 +541,12 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       RAISE_ERROR("Bad number of fields %d in real parameter %s\n", k, param_key);
     }
     goto FORMAT_DONE;
-      
+
   NOT_REAL:
     for (j=0; j<k; j++)
       if (strcmp(fields[j],"F") != 0 && strcmp(fields[j],"T") != 0)
 	goto NOT_LOGICAL;
-    
+
     if (k==1) {
       type = T_LOGICAL;
       shape[0] = 1;
@@ -530,18 +559,18 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
       RAISE_ERROR("Bad number of fields %d in logical parameter %s\n", k, param_key);
     }
     goto FORMAT_DONE;
-	
+
   NOT_LOGICAL:
     // Fallback option: treat as a single string
     type = T_CHAR;
     shape[0] = strlen(param_value);
     goto FORMAT_DONE;
-  
+
   FORMAT_DONE:
     if ((type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) && shape[0] != 3) {
       RAISE_ERROR("Parameter %s must have size 1 or 3, but got %d\n", param_key, shape[0]);
     }
-    
+
     // Create key in Fortran dictionary
     debug("read_xyz: adding key %s type=%d shape=[%d %d]\n", param_key, type, shape[0], shape[1]);
     dictionary_add_key(params, param_key, &type, shape, &data, error, strlen(param_key));
@@ -601,7 +630,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   PASS_ERROR;
   strncpy(linebuffer, (char *)data, shape[0]);
   linebuffer[shape[0]+1] = '\0';
-  
+
   debug("properties string %s\n", linebuffer);
 
   p = linebuffer;
@@ -609,14 +638,14 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   while ((p1 = strsep(&p, ":")) != NULL) {
     strncpy(fields[k++], p1, LINESIZE);
   }
-      
+
   entry_count = 0;
   n_property = 0;
   dictionary_get_n(selected_properties, &n_selected);
-      
+
   for (i=0; i<k/3; i++) {
     debug("read_xyz: got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
-    
+
     if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
       RAISE_ERROR("Bad column count %s line=%s\n", fields[3*i+2], linebuffer);
     }
@@ -625,7 +654,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     if (entry_count > MAX_ENTRY_COUNT) {
       RAISE_ERROR("Maximum entry count(%d) exceeded\n", MAX_ENTRY_COUNT);
     }
-    
+
     if (strcmp(fields[3*i+1],"I") == 0) {
       if (ncols == 1) {
 	type = T_INTEGER_A;
@@ -690,11 +719,11 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   for (m=0; m<shape[0]; m++)
     for (n=0; n<shape[1]; n++)
       lattice[m][n] = REAL_A2(data, shape, n, m);
-  
+
   // Now it's just one line per atom
   n = 0;
   for (atidx=0; atidx < nxyz; atidx++) {
-    GET_LINE("premature file ending at atom %d",n);
+    GET_LINE("premature file ending");
     k = 0;
     p = linebuffer;
     while ((p1 = strsep(&p, " \t\n")) != NULL) {
@@ -736,7 +765,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 	break;
 
       case(T_REAL_A2):
-	for (j=0; j < property_ncols[i]; j++) 
+	for (j=0; j < property_ncols[i]; j++)
 	  if (sscanf(fields[k+j], "%lf", &REAL_A2(property_data[i], property_shape[i], j, n)) != 1)  {
 	    RAISE_ERROR("Can't convert real value %s\n", fields[k+j]);
 	  }
@@ -760,7 +789,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 	}
 	k++;
 	break;
-	
+
       default:
 	RAISE_ERROR("Bad property type %d", property_type[i]);
       }
@@ -821,7 +850,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
     PASS_ERROR;
 
     // null-terminate the Fortran string
-    property_name[C_KEY_LEN-1] = '\0'; 
+    property_name[C_KEY_LEN-1] = '\0';
     if (strchr(property_name, ' ') == NULL) {
       RAISE_ERROR("write_xyz: property name %s not terminated with blank", property_name);
     }
@@ -853,7 +882,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 
     property_shape[i][0] = shape[0];
     property_shape[i][1] = shape[1];
-    if (property_type[i] == T_INTEGER_A || property_type[i] == T_REAL_A || 
+    if (property_type[i] == T_INTEGER_A || property_type[i] == T_REAL_A ||
 	property_type[i] == T_LOGICAL_A || property_type[i] == T_CHAR_A)
       ncols = 1;
     else {
@@ -884,9 +913,9 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
   for (i=1; i<=n; i++) {
     dictionary_query_index(params, &i, param_key, &type, shape, &data, error, C_KEY_LEN);
     PASS_ERROR;
-    
+
     // null-terminate the Fortran string
-    param_key[C_KEY_LEN-1] = '\0'; 
+    param_key[C_KEY_LEN-1] = '\0';
     if (strchr(param_key, ' ') == NULL) {
       RAISE_ERROR("write_xyz: key %s not terminated with blank", param_key);
     }
@@ -952,7 +981,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
       if (strchr(param_value, ' ') == NULL) {
 	RAISE_ERROR("write_xyz: value %s not terminated with blank", param_value);
       }
-      *strchr(param_value, ' ') = '\0';    
+      *strchr(param_value, ' ') = '\0';
     }
 
 
@@ -984,7 +1013,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 	sprintf(tmpbuf, int_format, INTEGER_A(property_data[i], n));
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
-	
+
       case(T_INTEGER_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, int_format, INTEGER_A2(property_data[i], property_shape[i], j, n));
@@ -996,7 +1025,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 	sprintf(tmpbuf, real_format, REAL_A(property_data[i], n));
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
-	
+
       case(T_REAL_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, real_format, REAL_A2(property_data[i], property_shape[i], j, n));
@@ -1009,7 +1038,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 	sprintf(tmpbuf, str_format, (char *)property_data[i] + property_shape[i][0]*n);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
-      
+
       case(T_LOGICAL_A):
 	sprintf(tmpbuf, logical_format, LOGICAL_A(property_data[i], n) ? 'T' : 'F');
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
