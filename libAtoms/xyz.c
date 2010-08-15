@@ -1058,5 +1058,10 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
     PUT_LINE(linebuffer);
   }
 
-  if (!string) fflush(out);
+  if (!string) {
+    if (out != stdout) 
+      fclose(out);
+    else
+      fflush(out);
+  }
 }
