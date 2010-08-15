@@ -122,6 +122,11 @@ module DomainDecomposition_module
      module procedure domain_decomposition_enable
   endinterface enable
 
+  public :: disable
+  interface disable
+     module procedure domain_decomposition_disable
+  endinterface disable
+
   interface is_in_domain
      module procedure domain_decomposition_is_in_domain
   endinterface is_in_domain
@@ -285,21 +290,22 @@ contains
     call add_property(at, "ghosts_r", 0, ptr=this%ghosts_r)
     call add_property(at, "ghosts_l", 0, ptr=this%ghosts_l)
 
+    ! This should be a list of all POSSIBLE properties.
+    ! Properties that do not exist are ignored.
     call set_value(this%state_properties, "z", .true.)
     call set_value(this%state_properties, "mass", .true.)
     call set_value(this%state_properties, "travel", .true.)
     call set_value(this%state_properties, "pos", .true.)
     call set_value(this%state_properties, "velo", .true.)
-    call set_value(this%ghost_properties, "move_mask", .true.)
-    call set_value(this%ghost_properties, "damp_mask", .true.)
-    call set_value(this%ghost_properties, "thermostat_region", .true.)
+    call set_value(this%state_properties, "move_mask", .true.)
+    call set_value(this%state_properties, "damp_mask", .true.)
+    call set_value(this%state_properties, "thermostat_region", .true.)
     call set_value(this%state_properties, "local_to_global", .true.)
 
     call set_value(this%ghost_properties, "z", .true.)
     call set_value(this%ghost_properties, "mass", .true.)
     call set_value(this%ghost_properties, "travel", .true.)
     call set_value(this%ghost_properties, "pos", .true.)
-    call set_value(this%ghost_properties, "velo", .true.)
     call set_value(this%ghost_properties, "local_to_global", .true.)
 
   endsubroutine domain_decomposition_initialise
@@ -468,16 +474,44 @@ contains
 
     call print("DomainDecomposition : Ntotal = " // this%Ntotal, PRINT_VERBOSE)
 
+    at%domain_decomposed = .true.
+
     !
     ! Copy ghost particles (for first integration step)
     !
 
-    call communicate_ghosts(this, at, .true.)
+    call communicate_ghosts(this, at, .true., error=error)
+    PASS_ERROR(error)
     if (this%communicate_forces) then
-       call communicate_forces(this, at)
+       call communicate_forces(this, at, error=error)
+       PASS_ERROR(error)
     endif
 
   endsubroutine domain_decomposition_enable
+
+
+  !% Disable domain decomposition, after this call every process
+  !% retains an identical copy of the system.
+  subroutine domain_decomposition_disable(this, at, error)
+    implicit none
+
+    type(DomainDecomposition), intent(inout)  :: this
+    type(Atoms), intent(inout)                :: at
+    integer, intent(out), optional            :: error
+
+    ! ---
+
+    integer :: i, j
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    RAISE_ERROR("domain_decomposition_disable: Not yet implemented.", error)
+
+    at%domain_decomposed = .false.
+
+  endsubroutine domain_decomposition_disable
 
 
   !% Is the position in the current domain?
@@ -813,7 +847,9 @@ contains
 
     at%N = at%Ndomain
 
-    call print("DomainDecomposition : Total number of atoms = " // sum(this%mpi, at%N), PRINT_VERBOSE)
+    this%Ntotal = sum(this%mpi, at%N, error)
+
+!    call print("DomainDecomposition : Total number of atoms = " // this%Ntotal, PRINT_VERBOSE)
 
     call system_timer("domain_decomposition_communicate_domain")
 
@@ -859,7 +895,7 @@ contains
     ! ---
 
     real(DP)  :: upper(3), lower(3)
-    integer   :: i, d, list_off_r, list_off_l
+    integer   :: i, d, list_off_r, list_off_l, last_N
     integer   :: n_send_r, n_send_l, n_recv_r, n_recv_l
 
     real(DP)  :: off_l(3), off_r(3), s
@@ -895,11 +931,11 @@ contains
     call print("DomainDecomposition : upper = " // upper, PRINT_VERBOSE)
     call print("DomainDecomposition : lower = " // lower, PRINT_VERBOSE)
 
+    last_N = at%n
     do i = at%Ndomain+1, at%N
        this%global_to_local(this%local_to_global(i)) = 0
     enddo
-
-    at%N  = at%Ndomain
+    at%N = at%Ndomain
 
     !
     ! Loop over dimensions and distribute particle in the
@@ -995,6 +1031,11 @@ contains
        endif
 
     enddo
+
+    if (at%N /= last_N) then
+       call print("DomainDecomposition : Repointing atoms object", PRINT_VERBOSE)
+       call atoms_repoint(at)
+    endif
 
     call system_timer("domain_decomposition_communicate_ghosts")
 

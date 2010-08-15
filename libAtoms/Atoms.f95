@@ -166,6 +166,7 @@ module  atoms_module
 
      logical                               :: initialised = .false.
      logical                               :: fixed_size = .false. !% Can the number of atoms be changed after initialisation?
+     logical                               :: domain_decomposed = .false.  !% Is this Atoms object domain decomposed?
      integer                               :: N = 0 !% The number of atoms held (including ghost particles)
      integer                               :: Ndomain = 0 !% The number of atoms held by the local process (excluding ghost particles)
      integer                               :: Nbuffer = 0 !% The number of atoms that can be stored in the buffers of this Atoms object
@@ -390,14 +391,16 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   !% Initialise an Atoms object to store 'N' atoms and specify the initial lattice.
-  subroutine atoms_initialise(this,N,lattice,properties,params,fixed_size,error)
+  subroutine atoms_initialise(this,N,lattice,&
+       properties,params,fixed_size,Nbuffer,error)
 
     type(Atoms),                intent(inout) :: this
     integer,                    intent(in)    :: N
     real(dp), dimension(3,3),   intent(in)    :: lattice
     type(Dictionary), optional, intent(in)    :: properties, params
-    logical, optional, intent(in) :: fixed_size
-    integer, intent(out), optional :: error
+    logical,          optional, intent(in)    :: fixed_size
+    integer,          optional, intent(in)    :: Nbuffer
+    integer,          optional, intent(out)   :: error
 
     integer :: stack_size, stack_size_err, i, type
 
@@ -413,6 +416,8 @@ contains
     this%N = N
     this%Ndomain = N
     this%Nbuffer = N
+
+    if (present(Nbuffer))  this%Nbuffer = Nbuffer
 
     this%fixed_size = optional_default(.false., fixed_size)
 
