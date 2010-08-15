@@ -207,19 +207,20 @@ contains
        this%verlet_shell   = verlet_shell
     endif
 
-    call print("DomainDecomposition : Parallelisation using domain decomposition (via MPI) over " // &
+    call print("DomainDecomposition : Parallelisation using domain decomposition over " // &
          this%decomposition // "domains.")
+    call print("DomainDecomposition : " // mpi%n_procs // " MPI processes available.")
+
+    if (this%decomposition(1)*this%decomposition(2)*this%decomposition(3) /= &
+         mpi%n_procs) then
+       RAISE_ERROR("Decomposition geometry requires " // this%decomposition(1)*this%decomposition(2)*this%decomposition(3) // " processes, however, MPI returns " // mpi%n_procs // " processes.", error)
+    endif
 
     call initialise(this%mpi, &
          context  = mpi, &
          dims     = this%decomposition, &
          error   = error)
     PASS_ERROR(error)
-
-    if (this%decomposition(1)*this%decomposition(2)*this%decomposition(3) /= &
-         this%mpi%n_procs) then
-       RAISE_ERROR("Decomposition geometry requires " // this%decomposition(1)*this%decomposition(2)*this%decomposition(3) // " processes, however, MPI returns " // this%mpi%n_procs // " processes.", error)
-    endif
 
 ! For now this needs to be true
 !    this%periodic          = at%periodic
@@ -568,7 +569,7 @@ contains
     call print("DomainDecomposition : verlet_shell      = " // this%verlet_shell, PRINT_VERBOSE)
     call print("DomainDecomposition : border            = " // this%border, PRINT_VERBOSE)
 
-    if (any((at%lattice .mult. (this%upper - this%lower)) < 2*this%border)) then
+    if (any(((at%lattice .mult. (this%upper - this%lower)) < 2*this%border) .and. this%periodic)) then
        RAISE_ERROR("Domain smaller than twice the border. This does not work (yet).", error)
     endif
 
@@ -686,7 +687,7 @@ contains
 
     ! ---
 
-!    call print("i = " // i // ", n = " // n)
+    call print("Paccking: i = " // i // ", n = " // n // ", pos = " // at%pos(:, i))
 
     call pack_buffer(at%properties, this%state_mask, i, n, buffer)
     this%global_to_local(this%local_to_global(i)) = 0 ! This one is gone
@@ -803,7 +804,7 @@ contains
                 at%Ndomain = at%Ndomain+1
 
                 if (at%Ndomain /= i) then
-                   call copy_entry(at, at%Ndomain, i)
+                   call copy_entry(at, i, at%Ndomain)
                 endif
 
              endif
@@ -824,9 +825,9 @@ contains
                n_recv_r, error)
           PASS_ERROR(error)
 
-          call print("DomainDecomposition : Send state buffers. Sizes: l = " // n_send_l/this%state_buffer_size // ", r = " // n_send_r/this%state_buffer_size, PRINT_VERBOSE)
+          call print("DomainDecomposition : Send state buffers. Sizes: l = " // n_send_l/this%state_buffer_size // ", r = " // n_send_r/this%state_buffer_size, PRINT_NERD)
 
-          call print("DomainDecomposition : Received state buffers. Sizes: l = " // n_recv_l/this%state_buffer_size // ", r = " // n_recv_r/this%state_buffer_size, PRINT_VERBOSE)
+          call print("DomainDecomposition : Received state buffers. Sizes: l = " // n_recv_l/this%state_buffer_size // ", r = " // n_recv_r/this%state_buffer_size, PRINT_NERD)
 
           this%n_recv_p_tot = this%n_recv_p_tot + n_recv_r/this%state_buffer_size + n_recv_l/this%state_buffer_size
 
@@ -904,7 +905,7 @@ contains
 
     INIT_ERROR(error)
 
-    call print("DomainDecomposition : communicate_ghosts", PRINT_VERBOSE)
+    call print("DomainDecomposition : communicate_ghosts", PRINT_NERD)
 
     call update_sendrecv_masks(this, at)
 
@@ -928,8 +929,8 @@ contains
 
     enddo
 
-    call print("DomainDecomposition : upper = " // upper, PRINT_VERBOSE)
-    call print("DomainDecomposition : lower = " // lower, PRINT_VERBOSE)
+    call print("DomainDecomposition : upper = " // upper, PRINT_NERD)
+    call print("DomainDecomposition : lower = " // lower, PRINT_NERD)
 
     last_N = at%n
     do i = at%Ndomain+1, at%N
@@ -1009,8 +1010,8 @@ contains
                n_recv_r, error)
           PASS_ERROR(error)
 
-          call print("DomainDecomposition : Send ghost buffers. Sizes: l = " // n_send_l/this%ghost_buffer_size // ", r = " // n_send_r/this%ghost_buffer_size, PRINT_VERBOSE)
-          call print("DomainDecomposition : Received ghost buffers. Sizes: l = " // n_recv_l/this%ghost_buffer_size // ", r = " // n_recv_r/this%ghost_buffer_size, PRINT_VERBOSE)
+          call print("DomainDecomposition : Send ghost buffers. Sizes: l = " // n_send_l/this%ghost_buffer_size // ", r = " // n_send_r/this%ghost_buffer_size, PRINT_NERD)
+          call print("DomainDecomposition : Received ghost buffers. Sizes: l = " // n_recv_l/this%ghost_buffer_size // ", r = " // n_recv_r/this%ghost_buffer_size, PRINT_NERD)
 
           this%n_recv_g_tot = this%n_recv_g_tot + &
                n_recv_r/this%ghost_buffer_size + &
@@ -1022,8 +1023,8 @@ contains
           off_r    = 0.0_DP
           off_r(d) = this%off_r(d)
 
-          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l)
           call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r)
+          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l)
 
           list_off_r = list_off_r + this%n_ghosts_r(d)
           list_off_l = list_off_l + this%n_ghosts_l(d)
@@ -1033,7 +1034,7 @@ contains
     enddo
 
     if (at%N /= last_N) then
-       call print("DomainDecomposition : Repointing atoms object", PRINT_VERBOSE)
+       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
        call atoms_repoint(at)
     endif
 
@@ -1108,7 +1109,7 @@ contains
 
     INIT_ERROR(error)
 
-    call print("DomainDecomposition : communicate_ghosts", PRINT_VERBOSE)
+    call print("DomainDecomposition : communicate_ghosts", PRINT_NERD)
 
     call update_sendrecv_masks(this, at)
 
@@ -1209,7 +1210,7 @@ contains
        entry_i = lookup_entry_i(this, string(keys%keys(i)))
        if (entry_i == -1) then
 !          RAISE_ERROR("Could not find key '" // keys%keys(i) // "'.", error)
-          call print("DomainDecomposition : WARNING - Could not find key '" // keys%keys(i) // "', this property will not be communicated.", PRINT_VERBOSE)
+          call print("DomainDecomposition : WARNING - Could not find key '" // keys%keys(i) // "', this property will not be communicated.", PRINT_ANAL)
        else
 
           select case(this%entries(entry_i)%type)
