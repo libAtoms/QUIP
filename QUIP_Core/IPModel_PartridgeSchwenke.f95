@@ -492,7 +492,8 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
   real(dp), dimension(at%N/3,3) :: rij ! array to pass to vibpot containing geometry
   real(dp), dimension(at%N/3)   :: v   ! result from vibpot containing energy
   real(dp) :: c1(3), c2(3), c(3), r
-  integer :: i, j, n, oindex
+  integer :: i, j, n, oindex, h1, h2
+  logical, dimension(at%N) :: H_associated
 
   INIT_ERROR(error)
 
@@ -510,22 +511,31 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
 
   ! loop through atoms, find oxygens and their closest hydrogens
   oindex = 0
-  do i=1,at%N
+  H_associated = .false.
+
+  do i = 1, at%N
      if(at%Z(i) == 8) then
         oindex = oindex + 1
         rij(oindex,1) = this%cutoff ! initialise smaller oh distance
         rij(oindex,2) = this%cutoff ! initialise larger oh distance
         do n = 1, atoms_n_neighbours(at, i)
            j = atoms_neighbour(at, i, n, r, cosines=c)
+
+           if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
+
            if(r < rij(oindex,1)) then
               rij(oindex,1) = r
               c1 = c
+              h1 = j
            else if(r < rij(oindex,2)) then
               rij(oindex,2) = r
               c2 = c
+              h2 = j
            end if
         end do
-        rij(oindex,3) = acos(c1 .dot. c2)
+        rij(oindex,3) = angle(c1,c2)
+        H_associated(h1) = .true.
+        H_associated(h2) = .true.
      end if
   end do
   ! sanity check
@@ -534,7 +544,7 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
   end if
 
   ! convert distances to atomic units
-  do i=1,oindex
+  do i = 1, oindex
      rij(i,1) = rij(i,1)/BOHR
      rij(i,2) = rij(i,2)/BOHR
   end do
