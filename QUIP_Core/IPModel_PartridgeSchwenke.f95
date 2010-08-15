@@ -491,9 +491,8 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
 
   real(dp), dimension(at%N/3,3) :: rij ! array to pass to vibpot containing geometry
   real(dp), dimension(at%N/3)   :: v   ! result from vibpot containing energy
-  real(dp) :: c1(3), c2(3), c(3), r
-  integer :: i, j, n, oindex, h1, h2
-  logical, dimension(at%N) :: H_associated
+  integer :: i, o, h1, h2
+  integer, dimension(3,at%N/3) :: water_index
 
   INIT_ERROR(error)
 
@@ -510,54 +509,20 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
   if(.not. present(e)) return ! nothing to do
 
   ! loop through atoms, find oxygens and their closest hydrogens
-  oindex = 0
-  H_associated = .false.
 
-  do i = 1, at%N
-     if(at%Z(i) == 8) then
-        oindex = oindex + 1
-        rij(oindex,1) = this%cutoff ! initialise smaller oh distance
-        rij(oindex,2) = this%cutoff ! initialise larger oh distance
-        h1 = 0
-        h2 = 0
-        do n = 1, atoms_n_neighbours(at, i)
-           j = atoms_neighbour(at, i, n, distance=r, cosines=c)
+  call find_water_monomer(at,water_index,error)
 
-           if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
-
-           if(r < rij(oindex,1)) then
-              if(h1 /= 0) then ! H1 was already found, so move it to H2
-                 rij(oindex,2) = rij(oindex,1)
-                 c2 = c1
-                 h2 = h1
-              end if
-              rij(oindex,1) = r
-              c1 = c
-              h1 = j
-           else if(r < rij(oindex,2)) then
-              rij(oindex,2) = r
-              c2 = c
-              h2 = j
-           end if
-        end do
-        if(h1 == 0 .or. h2 == 0) then
-           call print(at)
-           call print(at%connect)
-           call print(rij)
-           RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2, error)
-        end if
-        rij(oindex,3) = angle(c1,c2)
-        H_associated(h1) = .true.
-        H_associated(h2) = .true.
-     end if
+  do i = 1, at%N/3
+     o = water_index(1,i)
+     h1 = water_index(2,i)
+     h2 = water_index(3,i)
+     rij(i,1) = distance_min_image(at,o,h1)
+     rij(i,2) = distance_min_image(at,o,h2)
+     rij(i,3) = acos(cosine(at,o,h1,h2))
   end do
-  ! sanity check
-  if(oindex /= at%N/3) then
-     RAISE_ERROR("Number of oxygens is not equal to at%N/3", error)
-  end if
 
   ! convert distances to atomic units
-  do i = 1, oindex
+  do i = 1, at%N/3
      rij(i,1) = rij(i,1)/BOHR
      rij(i,2) = rij(i,2)/BOHR
   end do
