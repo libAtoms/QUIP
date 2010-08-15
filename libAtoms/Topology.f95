@@ -28,6 +28,8 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module topology_module
 
   use atoms_module           
@@ -60,7 +62,8 @@ module topology_module
              QS_RUN, &
              MM_RUN, &
              QMMM_RUN_CORE, &
-             QMMM_RUN_EXTENDED
+             QMMM_RUN_EXTENDED, &
+             find_water_monomer
 
 
 !parameters for Run_Type
@@ -1977,5 +1980,63 @@ call print('PSF| '//impropers%n//' impropers')
     enddo
 
   end subroutine delete_metal_connects
+
+  subroutine find_water_monomer(at,water_index,error)
+
+     type(atoms), intent(in) :: at
+     integer, dimension(3,at%N/3), intent(out) :: water_index
+     integer, intent(out), optional :: error
+
+     real(dp) :: r, roh1, roh2
+     integer :: i, j, n, h1, h2, oindex
+     logical, dimension(at%N) :: H_associated
+
+
+     ! loop through atoms, find oxygens and their closest hydrogens
+     oindex = 0
+     H_associated = .false.
+
+     do i = 1, at%N
+        if(at%Z(i) == 8) then
+           oindex = oindex + 1
+
+
+           roh1 = at%cutoff ! initialise smaller oh distance
+           roh2 = at%cutoff ! initialise larger oh distance
+           h1 = 0
+           h2 = 0
+           do n = 1, atoms_n_neighbours(at, i)
+              j = atoms_neighbour(at, i, n, distance=r)
+
+              if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
+
+              if(r < roh1) then
+                 if(h1 /= 0) then ! H1 was already found, so move it to H2
+                    roh2 = roh1
+                    h2 = h1
+                 end if
+                 roh1 = r
+                 h1 = j
+              else if(r < roh2) then
+                 roh2 = r
+                 h2 = j
+              end if
+           end do
+           if(h1 == 0 .or. h2 == 0) then
+              RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2, error)
+           end if
+           H_associated(h1) = .true.
+           H_associated(h2) = .true.
+
+           water_index(:,oindex) = (/i, h1, h2/)
+        end if
+     end do
+
+     ! sanity check
+     if(oindex /= at%N/3) then
+        RAISE_ERROR("Number of oxygens is not equal to at%N/3", error)
+     end if
+
+  endsubroutine find_water_monomer
 
 end module topology_module
