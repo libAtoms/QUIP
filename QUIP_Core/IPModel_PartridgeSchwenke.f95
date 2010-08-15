@@ -564,9 +564,10 @@ subroutine vibpot(rij,v,n)
 !     n is number of geometries
 !
   real(dp) :: fmat(15,3)
-  integer, save :: ifirst = 0
+  integer  :: ifirst = 0
   integer :: i, j
   real(dp) :: ce, ex, rad, rhh, term, vhh, voh1, voh2, x1, x2, x3
+  save
 
   if(ifirst.eq.0)then
      ifirst=1
