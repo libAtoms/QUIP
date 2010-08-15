@@ -80,16 +80,16 @@ module CInOutput_module
        integer(kind=C_INT), intent(out) :: error
      end subroutine query_netcdf
 
-     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, frame, string, string_length, error) bind(c)
+     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, string, string_length, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(out) :: n_atom
-       integer(kind=C_INT), intent(in), value :: frame, string, string_length
+       integer(kind=C_INT), intent(in), value :: compute_index, frame, string, string_length
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_xyz
-     
+
      subroutine write_xyz(filename, params, properties, selected_properties, lattice, n_atom, append, prefix, &
        int_format, real_format, str_format, logical_format, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
@@ -189,8 +189,8 @@ contains
     type(MPI_context), optional, intent(in) :: mpi
     integer, intent(out), optional :: error
 
-    logical :: file_exists
     integer :: compute_index
+    logical :: file_exists
 
     INIT_ERROR(error)
 
@@ -221,7 +221,7 @@ contains
     end if
 
     this%n_frame = 0
-    this%n_atom = 0 
+    this%n_atom = 0
     this%n_label = 0
     this%n_string = 0
     this%current_frame = 0
@@ -239,7 +239,8 @@ contains
              if (trim(this%filename) /= 'stdin' .and. trim(this%filename) /= 'stdout') then
                 call query_xyz(trim(this%filename)//C_NULL_CHAR, compute_index, this%current_frame, this%n_frame, this%n_atom, error)
                 BCAST_PASS_ERROR(error, this%mpi)
-                this%got_index = .true.
+                this%got_index = .false.
+                if (compute_index == 1) this%got_index = .true.
              else
                 this%got_index = .false.
              end if
@@ -256,7 +257,7 @@ contains
     end if
 
     if (this%action /= INPUT .and. this%append) this%current_frame = this%n_frame
-       
+
     this%initialised = .true.
 
   end subroutine cinoutput_initialise
@@ -291,7 +292,7 @@ contains
     type(Dictionary) :: empty_dictionary
     type(Dictionary), target :: selected_properties, tmp_params
     integer :: i, j, k, n_properties
-    integer(C_INT) :: do_zero, do_frame, i_rep
+    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep
     real(C_DOUBLE) :: r_rep
     real(dp) :: lattice(3,3), maxlen(3), sep(3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
@@ -301,7 +302,7 @@ contains
     type(Extendable_Str), dimension(:), allocatable :: filtered_keys
 
     real, parameter :: vacuum = 10.0_dp ! amount of vacuum to add if no lattice found in file
-    
+
     INIT_ERROR(error)
 
     if (.not. this%initialised) then
@@ -310,7 +311,7 @@ contains
     if (this%action /= INPUT .and. this%action /= INOUT) then
        RAISE_ERROR_WITH_KIND(ERROR_IO,"Cannot read from action=OUTPUT CInOutput object", error)
     endif
-    
+
     if (present(str) .and. present(estr)) then
        RAISE_ERROR('CInOutput_read: only one of "str" and "estr" may be present, not both', error)
     end if
@@ -373,17 +374,19 @@ contains
           call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                at%lattice, n_atom, do_frame, do_zero, i_rep, r_rep, error)
        else
+          do_compute_index = 1
+          if (.not. this%got_index) do_compute_index = 0
           if (present(str)) then
              call print('len_trim(str) = '//len_trim(str))
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_frame, 1, len_trim(str), error)
+                  at%lattice, n_atom, do_compute_index, do_frame, 1, len_trim(str), error)
           else if(present(estr)) then
 	     call print('estr%len = '//estr%len)
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_frame, 1, estr%len, error)             
+                  at%lattice, n_atom, do_compute_index, do_frame, 1, estr%len, error)
           else
              call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_frame, 0, 0, error)
+                  at%lattice, n_atom, do_compute_index, do_frame, 0, 0, error)
           end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
@@ -399,7 +402,7 @@ contains
           call initialise(filtered_keys(j), tmp_params%keys(i))
           j = j + 1
        end do
-       
+
        call subset(tmp_params, filtered_keys(1:j-1), at%params)
        call finalise(tmp_params)
        do i=1,size(filtered_keys)
@@ -426,7 +429,7 @@ contains
                 end do
              end do
           end do
-          
+
           do k=1,3
              at%lattice(k,k) = maxlen(k) + vacuum
           end do
@@ -526,7 +529,7 @@ contains
     if (present(properties) .and. present(properties_array)) then
        RAISE_ERROR('cinoutput_write: "properties" and "properties_array" cannot both be present.', error)
     end if
-    
+
     call initialise(selected_properties)
     if (.not. present(properties) .and. .not. present(properties_array)) then
        do i=1,at%properties%N
@@ -554,7 +557,7 @@ contains
     params_ptr_i = transfer(params_ptr, params_ptr_i)
     properties_ptr_i = transfer(properties_ptr, properties_ptr_i)
     selected_properties_ptr_i = transfer(selected_properties_ptr, selected_properties_ptr_i)
-    
+
     n_label = 10
     n_string = 1024
 
@@ -581,7 +584,7 @@ contains
 
   end subroutine cinoutput_write
 
-  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, str, estr, mpi, error)
+  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, str, estr, no_compute_index, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in), optional :: filename
@@ -591,6 +594,7 @@ contains
     logical, optional, intent(in) :: zero
     character(len=*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
+    logical, optional, intent(in) :: no_compute_index
     type(MPI_context), optional, intent(inout) :: mpi
     integer, intent(out), optional :: error
 
@@ -598,7 +602,7 @@ contains
 
     INIT_ERROR(error)
 
-    call initialise(cio, filename, INPUT, mpi=mpi, error=error)
+    call initialise(cio, filename, INPUT, no_compute_index=no_compute_index, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call read(cio, this, properties, properties_array, frame, zero, str, estr, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
@@ -657,7 +661,7 @@ contains
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties
-    character(*), intent(in), optional :: properties_array(:)    
+    character(*), intent(in), optional :: properties_array(:)
     character(*), intent(in), optional :: prefix, int_format, real_format
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
