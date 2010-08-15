@@ -64,4 +64,5 @@ module libAtoms_module
   use cinoutput_module
   use atoms_ll_module
   use ringstat_module
+  use domaindecomposition_module
 end module libAtoms_module
