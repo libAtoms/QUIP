@@ -798,8 +798,11 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   }
 }
 
+#define PUT_LINE(line) if (string) extendable_str_concat(estr, line, strlen(line)); else fputs(line, out)
+
 void write_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int n_atom,
-	       int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, int *error) {
+		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
+		int string, int *estr, int *error) {
   FILE *out;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN];
   int i, j, m, n, type, shape[2], tmp_type, tmp_shape[2];
@@ -815,17 +818,27 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
     RAISE_ERROR("write_xyz: cannot open \"stdin\" for writing.");
   }
 
-  if (strcmp(filename, "stdout") == 0) {
-    out = stdout;
-  } else {
-    if (append)
-      out = fopen(filename, "a");
-    else
-      out = fopen(filename, "w");
-    if (out == NULL) {
-      RAISE_ERROR("write_xyz: cannot open %s for writing", filename);
+  debug("write_xyz: string=%d\n", string);
+  if (!string) {
+    if (strcmp(filename, "stdout") == 0) {
+      out = stdout;
+    } else {
+      if (append)
+	out = fopen(filename, "a");
+      else
+	out = fopen(filename, "w");
+      if (out == NULL) {
+	RAISE_ERROR("write_xyz: cannot open %s for writing", filename);
+      }
     }
   }
+
+  // Number of atoms
+  if (prefix[0] != '\0')
+    sprintf(linebuffer, "%s %d\n", prefix, n_atom);
+  else
+    sprintf(linebuffer, "%d\n", n_atom);
+  PUT_LINE(linebuffer);
 
   memset(param_key, ' ', LINESIZE);
   strncpy(param_key, "Lattice", strlen("Lattice"));
@@ -995,12 +1008,8 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
     strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
 
-  if (prefix[0] != '\0')
-    fprintf(out, "%s %d\n", prefix, n_atom);
-  else
-    fprintf(out, "%d\n", n_atom);
   linebuffer[strlen(linebuffer)-1] = '\n';
-  fputs(linebuffer, out);
+  PUT_LINE(linebuffer);
 
   for (n=0; n<n_atom; n++) {
     linebuffer[0] = '\0';
@@ -1046,8 +1055,8 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
       }
     }
     strncat(linebuffer, "\n", LINESIZE-strlen(linebuffer)-1);
-    fputs(linebuffer, out);
+    PUT_LINE(linebuffer);
   }
 
-  fflush(out);
+  if (!string) fflush(out);
 }

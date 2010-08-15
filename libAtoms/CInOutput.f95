@@ -39,7 +39,7 @@ module CInOutput_module
   use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
-  use Extendable_str_module, only: Extendable_str, operator(//), string
+  use Extendable_str_module, only: Extendable_str, operator(//), string, c_extendable_str_initialise
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
        print_keys, c_dictionary_ptr_type, c_dictionary_initialise, assignment(=)
@@ -91,13 +91,14 @@ module CInOutput_module
      end subroutine read_xyz
 
      subroutine write_xyz(filename, params, properties, selected_properties, lattice, n_atom, append, prefix, &
-       int_format, real_format, str_format, logical_format, error) bind(c)
+       int_format, real_format, str_format, logical_format, string, estr, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
-       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
+       integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties, estr
        real(kind=C_DOUBLE), dimension(3,3), intent(in) :: lattice
        integer(kind=C_INT), intent(in), value :: n_atom, append
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: prefix, int_format, real_format, str_format, logical_format
+       integer(kind=C_INT), intent(in), value :: string
        integer(kind=C_INT), intent(out) :: error
      end subroutine write_xyz
 
@@ -194,9 +195,10 @@ contains
 
     INIT_ERROR(error)
 
-    ! Make sure function pointers are set up to allow C to call dictionary and error routines
+    ! Make sure function pointers are set up to allow C to call dictionary, error, and extendable_str
     call c_dictionary_initialise()
     call c_error_initialise()
+    call c_extendable_str_initialise()
 
     this%action = optional_default(INPUT, action)
     this%append = optional_default(.false., append)
@@ -469,7 +471,10 @@ contains
 
 
   subroutine cinoutput_write(this, at, properties, properties_array, prefix, int_format, real_format, frame, &
-       shuffle, deflate, deflate_level, error)
+       shuffle, deflate, deflate_level, estr, error)
+    type c_extendable_str_ptr_type
+       type(Extendable_str), pointer :: p
+    end type c_extendable_str_ptr_type
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(in) :: at
     character(*), intent(in), optional :: properties
@@ -479,6 +484,7 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
+    type(Extendable_Str), intent(inout), optional, target :: estr
     integer, intent(out), optional :: error
 
     logical :: file_exists
@@ -490,7 +496,9 @@ contains
     character(len=100) :: tmp_properties_array(at%properties%n)
     integer n_properties
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
-    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i
+    integer, dimension(12) :: params_ptr_i, properties_ptr_i, selected_properties_ptr_i, estr_ptr_i
+    type(c_extendable_str_ptr_type) :: estr_ptr
+
 
     INIT_ERROR(error)
 
@@ -557,6 +565,10 @@ contains
     params_ptr_i = transfer(params_ptr, params_ptr_i)
     properties_ptr_i = transfer(properties_ptr, properties_ptr_i)
     selected_properties_ptr_i = transfer(selected_properties_ptr, selected_properties_ptr_i)
+    if (present(estr)) then
+       estr_ptr%p => estr
+       estr_ptr_i = transfer(estr_ptr, estr_ptr_i)
+    end if
 
     n_label = 10
     n_string = 1024
@@ -573,8 +585,13 @@ contains
        if (has_key(selected_properties, 'pos')) &
             call swap(selected_properties, 'pos', string(selected_properties%keys(2)))
 
-       call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-            at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, error)
+       if (present(estr)) then
+          call write_xyz(C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 1, estr_ptr_i, error)
+       else
+          call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+               at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 0, estr_ptr_i, error)
+       end if
        PASS_ERROR(error)
     end if
 
@@ -627,16 +644,17 @@ contains
 
   end subroutine atoms_read_cinoutput
 
-  subroutine atoms_write(this, filename, append, properties, properties_array, prefix, int_format, real_format, error)
+  subroutine atoms_write(this, filename, append, properties, properties_array, prefix, int_format, real_format, estr, error)
     !% Write Atoms object to XYZ or NetCDF file. Use filename "stdout" to write to terminal.
     use iso_fortran_env
     type(Atoms), intent(in) :: this
-    character(len=*), intent(in) :: filename
+    character(len=*), intent(in), optional :: filename
     logical, optional, intent(in) :: append
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     character(*), intent(in), optional :: prefix
     character(*), intent(in), optional :: int_format, real_format
+    type(extendable_str), intent(inout), optional :: estr
     integer, intent(out), optional :: error
 
     type(CInOutput) :: cio
@@ -657,7 +675,7 @@ contains
 
   end subroutine atoms_write
 
-  subroutine atoms_write_cinoutput(this, cio, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error)
+  subroutine atoms_write_cinoutput(this, cio, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, estr, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties
@@ -666,10 +684,11 @@ contains
     integer, intent(in), optional :: frame
     logical, intent(in), optional :: shuffle, deflate
     integer, intent(in), optional :: deflate_level
+    type(extendable_str), intent(inout), optional :: estr
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_write(cio, this, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, error=error)
+    call cinoutput_write(cio, this, properties, properties_array, prefix, int_format, real_format, frame, shuffle, deflate, deflate_level, estr, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_write_cinoutput

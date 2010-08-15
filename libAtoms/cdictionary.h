@@ -70,3 +70,4 @@ extern void (*dictionary_get_key)(int*, int*, char *, int*, int*, size_t);
 extern void (*dictionary_query_key)(int*, char*, int*, int*, void*, int*, size_t);
 extern void (*dictionary_query_index)(int*, int*, char*, int*, int*, void*, int*, size_t);
 extern void (*dictionary_add_key)(int*, char*, int*, int*, void*, int*, size_t);
+extern void (*extendable_str_concat)(int *, char*, size_t);
