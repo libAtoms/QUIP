@@ -518,12 +518,19 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
         oindex = oindex + 1
         rij(oindex,1) = this%cutoff ! initialise smaller oh distance
         rij(oindex,2) = this%cutoff ! initialise larger oh distance
+        h1 = 0
+        h2 = 0
         do n = 1, atoms_n_neighbours(at, i)
-           j = atoms_neighbour(at, i, n, r, cosines=c)
+           j = atoms_neighbour(at, i, n, distance=r, cosines=c)
 
            if( (at%Z(j) /= 1) .or. H_associated(j) ) cycle
 
            if(r < rij(oindex,1)) then
+              if(h1 /= 0) then ! H1 was already found, so move it to H2
+                 rij(oindex,2) = rij(oindex,1)
+                 c2 = c1
+                 h2 = h1
+              end if
               rij(oindex,1) = r
               c1 = c
               h1 = j
@@ -533,6 +540,12 @@ subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_
               h2 = j
            end if
         end do
+        if(h1 == 0 .or. h2 == 0) then
+           call print(at)
+           call print(at%connect)
+           call print(rij)
+           RAISE_ERROR("Cannot find hydrogens for oxygen index "//i//". h1="//h1//", h2="//h2, error)
+        end if
         rij(oindex,3) = angle(c1,c2)
         H_associated(h1) = .true.
         H_associated(h2) = .true.
