@@ -699,18 +699,22 @@ contains
 
   end subroutine atoms_copy_without_connect
 
-  subroutine atoms_select(to, from, mask, list, error)
+  subroutine atoms_select(to, from, mask, list, orig_index, error)
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in) :: from
     logical, intent(in), optional :: mask(:)
     integer, intent(in), optional, target :: list(:)
+    logical, optional, intent(in) :: orig_index
     integer, intent(out), optional :: error
 
     integer :: i, n_list
     integer, allocatable, dimension(:), target :: my_list
-    integer, pointer, dimension(:) :: orig_index, use_list
+    integer, pointer, dimension(:) :: orig_index_ptr, use_list
+    logical :: do_orig_index
 
     INIT_ERROR(error)
+
+    do_orig_index = optional_default(.true., orig_index)
 
     if ((.not. present(list) .and. .not. present(mask)) .or. (present(list) .and. present(mask))) then
        RAISE_ERROR('atoms_select: either list or mask must be present (but not both)', error)
@@ -776,8 +780,10 @@ contains
     end do
     call atoms_repoint(to)
 
-    call add_property(to, 'orig_index', 0, ptr=orig_index)
-    orig_index(:) = use_list(:)
+    if (do_orig_index) then
+       call add_property(to, 'orig_index', 0, ptr=orig_index_ptr)
+       orig_index_ptr(:) = use_list(:)
+    end if
     if (allocated(my_list)) deallocate(my_list)
 
     call atoms_repoint(to)

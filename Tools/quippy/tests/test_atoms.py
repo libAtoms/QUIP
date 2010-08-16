@@ -238,15 +238,13 @@ class TestAtoms_LowLevel(QuippyTestCase):
    def test_remove_atoms_2(self):
       cp1 = self.dia.copy()
       cp1.remove_atoms(1)
-      cp2 = self.dia.select(list=[8,2,3,4,5,6,7])
-      cp2.remove_property('orig_index')
+      cp2 = self.dia.select(list=[8,2,3,4,5,6,7],orig_index=False)
       self.assertEqual(cp1, cp2)
 
    def test_remove_atoms_3(self):
       cp1 = self.dia.copy()
       cp1.remove_atoms([1,5])
-      cp2 = self.dia.select(list=[8,2,3,4,7,6])
-      cp2.remove_property('orig_index')
+      cp2 = self.dia.select(list=[8,2,3,4,7,6],orig_index=False)
       self.assertEqual(cp1, cp2)
 
    def test_add_atoms_fixed_size(self):
@@ -473,33 +471,27 @@ class TestAtoms_Extras(QuippyTestCase):
       self.assertRaises(ValueError, self.at.select)
 
    def test_select_mask_all(self):
-      sub_at = self.at.select(mask=[1]*self.at.n)
-      sub_at.remove_property('orig_index')
+      sub_at = self.at.select(mask=[1]*self.at.n, orig_index=False)
       self.assertEqual(self.at, sub_at)
 
    def test_select_mask_one(self):
-      sub_at = self.at.select(mask=[1,0,0,0,0,0,0,0])
-      sub_at.remove_property('orig_index')
+      sub_at = self.at.select(mask=[1,0,0,0,0,0,0,0], orig_index=False)
       self.assertEqual(sub_at[1], self.at[1])
 
    def test_select_list(self):
-      sub_at = self.at.select(list=[2])
-      sub_at.remove_property('orig_index')      
+      sub_at = self.at.select(list=[2], orig_index=False)
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_array(self):
-      sub_at = self.at.select(list=array([2]))
-      sub_at.remove_property('orig_index')      
+      sub_at = self.at.select(list=array([2]), orig_index=False)
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_farray(self):
-      sub_at = self.at.select(list=farray([2]))
-      sub_at.remove_property('orig_index')      
+      sub_at = self.at.select(list=farray([2]), orig_index=False)
       self.assertEqual(sub_at[1], self.at[2])
 
    def test_select_list_2(self):
-      sub_at = self.at.select(list=[2,3])
-      sub_at.remove_property('orig_index')            
+      sub_at = self.at.select(list=[2,3], orig_index=False)
       self.assertEqual((sub_at[1],  sub_at[2]),
                        (self.at[2], self.at[3]))
 
