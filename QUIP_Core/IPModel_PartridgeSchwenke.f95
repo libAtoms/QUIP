@@ -61,7 +61,6 @@ include 'IPModel_interface.h'
 public :: IPModel_PartridgeSchwenke
 type IPModel_PartridgeSchwenke
    real(dp) :: cutoff = 1.7_dp
-   type(mpi_context) :: mpi
 end type IPModel_PartridgeSchwenke
 
 real(dp) :: c5z(245),cbasis(245),ccore(245), crest(245)
@@ -466,13 +465,11 @@ end interface Calc
 
 contains
 
-subroutine IPModel_PartridgeSchwenke_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_PartridgeSchwenke_Initialise_str(this, args_str, param_str)
   type(IPModel_PartridgeSchwenke), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   call Finalise(this)
-  if (present(mpi)) this%mpi = mpi
 end subroutine IPModel_PartridgeSchwenke_Initialise_str
 
 subroutine IPModel_PartridgeSchwenke_Finalise(this)
@@ -480,13 +477,14 @@ subroutine IPModel_PartridgeSchwenke_Finalise(this)
 end subroutine IPModel_PartridgeSchwenke_Finalise
 
 
-subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_str, error)
+subroutine IPModel_PartridgeSchwenke_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_PartridgeSchwenke), intent(inout):: this
   type(Atoms), intent(inout)      :: at
   real(dp), intent(out), optional :: e, local_e(:)
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), optional      :: args_str
+  type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
   real(dp), dimension(at%N/3,3) :: rij ! array to pass to vibpot containing geometry

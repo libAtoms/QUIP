@@ -24,6 +24,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_Glue_module
 
 use libatoms_module
@@ -60,7 +62,6 @@ type IPModel_Glue
   type(Spline), allocatable :: density(:)
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_Glue
 
@@ -86,10 +87,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Glue_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Glue_Initialise_str(this, args_str, param_str)
   type(IPModel_Glue), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
   character(len=FIELD_LENGTH) label
@@ -105,8 +105,6 @@ subroutine IPModel_Glue_Initialise_str(this, args_str, param_str, mpi)
   call finalise(params)
 
   call IPModel_Glue_read_params_xml(this, param_str)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_Glue_Initialise_str
 
@@ -143,13 +141,15 @@ subroutine IPModel_Glue_Finalise(this)
 end subroutine IPModel_Glue_Finalise
 
 
-subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_Glue), intent(inout):: this
   type(Atoms), intent(inout)      :: at
   real(dp), intent(out), optional :: e, local_e(:)
   real(dp), intent(out), optional :: f(:,:)
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), optional      :: args_str
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
@@ -167,6 +167,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str)
   real(dp) :: drho_i_dri(3), potential_deriv
   real(dp), dimension(3,3) :: drho_i_drij_outer_rij
     
+   INIT_ERROR(error)
+
   if (present(e)) e = 0.0_dp
   if (present(f)) f = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp

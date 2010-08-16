@@ -36,6 +36,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_BOP_module
 
 use libatoms_module
@@ -62,7 +64,6 @@ type IPModel_BOP
   integer     :: bptr_num
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_BOP
 
@@ -87,10 +88,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_BOP_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_BOP_Initialise_str(this, args_str, param_str)
   type(IPModel_BOP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -106,8 +106,6 @@ subroutine IPModel_BOP_Initialise_str(this, args_str, param_str, mpi)
 
   call IPModel_BOP_read_params_xml(this, param_str)
 
-  if (present(mpi)) this%mpi = mpi
-
 end subroutine IPModel_BOP_Initialise_str
 
 subroutine IPModel_BOP_Finalise(this)
@@ -122,19 +120,22 @@ end subroutine IPModel_BOP_Finalise
 
 
 ! nat is the number of atoms whose energy and forces have to be computed with bop library
-subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
    type(IPModel_BOP), intent(inout):: this
    type(Atoms), intent(inout)      :: at   !Active + buffer atoms
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
+   character(len=*), optional      :: args_str
+   type(MPI_Context), intent(in), optional :: mpi
+   integer, intent(out), optional :: error
+
    real(dp), allocatable, dimension(:,:) :: f_bop
 !   real(dp), allocatable, dimension(:)   :: local_e_bop 
    integer, allocatable, dimension(:)    :: map_tobop
    type(Atoms)                     :: at_bop   !Active + buffer atoms
    type(Atoms)                     :: at_tmp   
    real(dp)                        :: e_bop
-   character(len=*), optional      :: args_str
    integer                         :: nat  !Number of active atoms, the first nat of at
    type(Dictionary)                :: params
    integer                         :: i, nreplicate_x, nreplicate_y, nreplicate_z
@@ -143,6 +144,8 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), pointer, dimension(:,:):: forces_bop
 !   real(dp), pointer, dimension(:) :: local_energy 
    integer :: nsafe, natoms_active
+
+   INIT_ERROR(error)
 
    lpbc = .false.
    if (present(args_str)) then
@@ -295,7 +298,7 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
    endif
 
    if(present(f)) then
-!     call sum_in_place(this%mpi, f_bop)
+!     if (present(mpi)) call sum_in_place(mpi, f_bop)
      if(lcrack) then
        f(:,1:natoms_active) = f_bop(:,1:natoms_active)  
      else
@@ -303,9 +306,11 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str)
      endif
    endif
    if(present(e)) e = e_bop 
-!   if (present(e)) e = sum(this%mpi, e_bop)
+!   if (present(mpi) .and. present(e)) e = sum(mpi, e_bop)
    call print('Energy computed with BOP library : ' // e_bop // " eV ",PRINT_NERD)
-   if (present(local_e)) call sum_in_place(this%mpi, local_e)
+   if (present(mpi)) then
+      if (present(local_e)) call sum_in_place(mpi, local_e)
+   endif
    if(current_verbosity()  >= PRINT_NERD) then
      do i =1, this%n
        call print('Forces computed with BOP library on atom ' // i // " : " // f_bop(1,i) // " "// f_bop(2,i) // " " // f_bop(3,i) )

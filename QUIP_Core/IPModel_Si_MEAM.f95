@@ -38,6 +38,8 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !
+#include "error.inc"
+
 module IPModel_Si_MEAM_module
 
 use libatoms_module
@@ -65,7 +67,6 @@ type IPModel_Si_MEAM
   real(dp), dimension(:,:), allocatable :: r_cut_f
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 endtype IPModel_Si_MEAM
 
 interface Initialise
@@ -96,10 +97,9 @@ public :: IPModel_Si_MEAM, Initialise, Finalise, Print, Calc
 
 contains
 
-subroutine IPModel_Si_MEAM_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Si_MEAM_Initialise_str(this, args_str, param_str)
   type(IPModel_Si_MEAM), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -114,8 +114,6 @@ subroutine IPModel_Si_MEAM_Initialise_str(this, args_str, param_str, mpi)
   call finalise(params)
 
   call IPModel_Si_MEAM_read_params_xml(this, param_str)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_Si_MEAM_Initialise_str
 
@@ -152,13 +150,15 @@ subroutine IPModel_Si_MEAM_Finalise(this)
   this%label = ''
 end subroutine IPModel_Si_MEAM_Finalise
 
-subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, mpi, error)
   type(IPModel_Si_MEAM), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
   real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
   real(dp), dimension(:,:), intent(out), optional :: f  !% Forces, dimensioned as \texttt{f(3,at%N)}
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   !local
   integer  :: i, j, k, n, nn, ti, tj, tk
@@ -168,6 +168,8 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(3)  :: u_ij, u_ik, dn_i, dn_j, dn_i_dr_ij
   real(dp), dimension(3,3) :: dn_i_drij_outer_rij
 
+   INIT_ERROR(error)
+
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
@@ -176,8 +178,10 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial)
   !Loop over atoms
   do i = 1, at%N
 
-     if(this%mpi%active) then
-        if(mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     if (present(mpi)) then
+	if(mpi%active) then
+	   if(mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	endif
      endif
      ti = get_type(this%type_of_atomic_num, at%Z(i))
 
@@ -300,10 +304,12 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial)
      endif
   enddo
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(f)) call sum_in_place(this%mpi, f)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(f)) call sum_in_place(mpi, f)
+     if (present(virial)) call sum_in_place(mpi, virial)
+  endif
 
 endsubroutine IPModel_Si_MEAM_Calc   
 

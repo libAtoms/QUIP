@@ -39,6 +39,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_ASAP_module
 
 use libatoms_module, only: dp, FIELD_LENGTH
@@ -67,7 +69,6 @@ type IPModel_ASAP
   real(dp) :: cutoff(4)
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
   logical :: initialised
 
 end type IPModel_ASAP
@@ -177,11 +178,10 @@ contains
 #endif
 
 
-subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str)
   use libatoms_module
   type(IPModel_ASAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -201,8 +201,6 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str, mpi)
   this%n_atoms = 0
   this%initialised = .true.
   
-  if (present(mpi)) this%mpi = mpi
-
 end subroutine IPModel_ASAP_Initialise_str
 
 subroutine IPModel_ASAP_Finalise(this)
@@ -233,7 +231,7 @@ subroutine IPModel_ASAP_Finalise(this)
 end subroutine IPModel_ASAP_Finalise
 
 
-subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
 #ifdef HAVE_ASAP
   use neighbour!, only : nsp,nat,iesr,spind,rcut
   use neighbour3
@@ -288,6 +286,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional, intent(in) :: args_str
+   type(MPI_Context), intent(in), optional :: mpi
+
+   integer, intent(out), optional :: error
    type(Dictionary) :: params	 
    real(dp) :: asap_e, asap_stress(3,3), a_ew, f_ew	 
    logical smlra,smlrc,smlgc,smlrc2,smlrc3,smlrc4	 
@@ -311,6 +312,8 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str)
    integer nesr
 
 #ifdef HAVE_ASAP
+
+   INIT_ERROR(error)
 
    allocate(asap_f(3,at%N))
 

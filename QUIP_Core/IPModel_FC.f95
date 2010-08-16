@@ -45,6 +45,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_FC_module
 
 use libatoms_module
@@ -72,7 +74,6 @@ type IPModel_FC
   type(Atoms) :: ideal_struct
 
   character(len=FIELD_LENGTH) label
-  type(mpi_context) :: mpi
 
 end type IPModel_FC
 
@@ -97,10 +98,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_FC_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
   type(IPModel_FC), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
   integer, allocatable :: sorted_index(:)
@@ -140,8 +140,6 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str, mpi)
     endif
   end do
   end do
-
-  if (present(mpi)) this%mpi = mpi
 
   call set_cutoff(this%ideal_struct, this%cutoff)
   call calc_connect(this%ideal_struct)
@@ -191,13 +189,15 @@ end subroutine IPModel_FC_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_FC), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ti, tj, fc_i
@@ -220,6 +220,8 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
 #if NEIGHBOR_LOOP_OPTION == 2
   integer :: i_n1n, j_n1n
 #endif
+
+   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -254,8 +256,10 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
     i_is_min_image = this%ideal_struct%connect%is_min_image(i)
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
 
     do ji = 1, atoms_n_neighbours(this%ideal_struct, i)
@@ -346,13 +350,15 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str)
     end do
   end do ! i
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
-  if (present(f)) call sum_in_place(this%mpi, f)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(f)) call sum_in_place(mpi, f)
+  endif
   if (do_flux) then
     flux = flux / cell_volume(at)
-    call sum_in_place(this%mpi, flux)
+    if (present(mpi)) call sum_in_place(mpi, flux)
     call set_value(at%params, "Flux", flux)
   endif
 
