@@ -53,6 +53,8 @@
 
 #define absval(x)  ( (x) < 0 ? -(x) : (x) )
 #define NETCDF_CHECK(s) if ((retval = (s))) { RAISE_ERROR("%s",nc_strerror(retval)); }
+#define DEG_TO_RAD (M_PI/180.0)
+#define RAD_TO_DEG (180.0/M_PI)
 
 // Function prototypes
 
@@ -523,6 +525,8 @@ void read_netcdf (char *filename, int *params, int *properties, int *selected_pr
   
   debug("read_netcdf: cell_lengths = [%f %f %f]\n", cell_lengths[0], cell_lengths[1], cell_lengths[2]);
   debug("read_netcdf: cell_angles = [%f %f %f]\n", cell_angles[0], cell_angles[1], cell_angles[2]);
+  for (i=0; i<3; i++)
+    cell_angles[i] *= DEG_TO_RAD;
   lattice_abc_to_xyz_(cell_lengths, cell_angles, lattice);
 
   if (zero) {
@@ -823,6 +827,8 @@ void write_netcdf (char *filename, int *params, int *properties, int *selected_p
 
   // Put lattice
   lattice_xyz_to_abc_(lattice, cell_lengths, cell_angles);
+  for (i=0; i<3; i++)
+    cell_angles[i] *= RAD_TO_DEG;
   start[0] = frame;
   start[1] = 0;
   count[0] = 1;
