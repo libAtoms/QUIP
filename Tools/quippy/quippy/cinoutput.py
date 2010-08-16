@@ -29,8 +29,10 @@ class CInOutput(FortranCInOutput):
 
    __doc__ = FortranCInOutput.__doc__
 
-   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, range=None, fpointer=None, finalise=True):
-      FortranCInOutput.__init__(self, filename, action, append, netcdf4, fpointer=fpointer, finalise=finalise)
+   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, no_compute_index=None,
+                frame=None, zero=False, range=None, fpointer=None, finalise=True):
+      FortranCInOutput.__init__(self, filename, action, append, netcdf4, no_compute_index,
+                                frame, fpointer=fpointer, finalise=finalise)
       self.zero = zero
       self.range = range
 
@@ -46,14 +48,14 @@ class CInOutput(FortranCInOutput):
       self.write(value, frame=index)
 
    def write(self, at, properties=None, prefix=None, int_format=None, real_format=None, frame=None,
-             shuffle=None, deflate=None, deflate_level=None):
+             shuffle=None, deflate=None, deflate_level=None, estr=None):
 
       if properties is not None and (not hasattr(properties, 'dtype') or properties.dtype != dtype('S1')):
          properties = padded_str_array(properties, max([len(x) for x in properties])).T
 
       FortranCInOutput.write(self, at, properties_array=properties, prefix=prefix, int_format=int_format,
                              real_format=real_format, frame=frame, shuffle=shuffle, deflate=deflate,
-                             deflate_level=deflate_level)
+                             deflate_level=deflate_level, estr=estr)
                              
 
 class CInOutputReader(object):
@@ -126,8 +128,10 @@ def CInOutputStdinReader(source='stdin'):
 class CInOutputWriter(object):
   """Class to write atoms sequentially to a CInOutput stream"""
 
-  def __init__(self, dest, append=False, netcdf4=True):
+  def __init__(self, dest, append=False, netcdf4=True, estr=None):
      self.opened = False
+     self.estr = estr
+     if self.estr is not None: dest = ''
      if isinstance(dest, str):
         self.opened = True
         self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
@@ -135,7 +139,7 @@ class CInOutputWriter(object):
         self.dest = dest
 
   def write(self, at, frame=None, properties=None, prefix=None):
-     self.dest.write(at, frame=frame, properties=properties, prefix=prefix)
+     self.dest.write(at, frame=frame, properties=properties, prefix=prefix, estr=self.estr)
 
   def close(self):
      self.dest.close()

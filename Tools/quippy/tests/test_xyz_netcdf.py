@@ -310,6 +310,10 @@ class TestCInOutput(QuippyTestCase):
       self.at.write('', estr=es, format='xyz')
       self.assertEqual(str(es), ''.join(self.xyz_ref))
 
+   def test_cinoutput_query_frame(self):
+      al = AtomsList([Atoms(n=n, lattice=fidentity(3)*n) for n in (0,1,2,3,4)])
+      al.write('test.xyz')
+      self.assertEqual([CInOutput('test.xyz', frame=n).n_atom for n in range(5) ], [0, 1, 2, 3, 4])
             
 
 try:

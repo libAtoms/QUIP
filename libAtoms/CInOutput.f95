@@ -181,7 +181,7 @@ module CInOutput_module
 
 contains
 
-  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, mpi, error)
+  subroutine cinoutput_initialise(this, filename, action, append, netcdf4, no_compute_index, frame, mpi, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout)  :: this
     character(*), intent(in), optional :: filename
@@ -189,6 +189,7 @@ contains
     logical, intent(in), optional :: append
     logical, optional, intent(in) :: netcdf4
     logical, optional, intent(in) :: no_compute_index
+    integer, optional, intent(in) :: frame
     type(MPI_context), optional, intent(in) :: mpi
     integer, intent(out), optional :: error
 
@@ -228,7 +229,7 @@ contains
     this%n_atom = 0
     this%n_label = 0
     this%n_string = 0
-    this%current_frame = 0
+    this%current_frame = optional_default(0, frame)
     this%got_index = .false.
 
     ! Should we do an initial query to count number of frames/atoms?
