@@ -515,7 +515,7 @@ contains
     if (this%mpi%active .and. this%mpi%my_proc /= 0) return
 
     ! These are C-strings and thus must be terminated with '\0'
-    do_prefix = optional_default(C_NULL_CHAR, prefix//C_NULL_CHAR)
+    do_prefix = trim(optional_default('', prefix))//C_NULL_CHAR
     do_int_format = trim(optional_default('%8d', int_format))//C_NULL_CHAR
     do_real_format = trim(optional_default('%16.8f', real_format))//C_NULL_CHAR
     do_str_format = '%.10s'//C_NULL_CHAR
