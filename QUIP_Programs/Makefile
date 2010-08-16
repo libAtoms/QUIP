@@ -39,13 +39,15 @@ endif
 OBJS = vacancy_map_mod.o 
 
 PROGRAMS = eval md \
-  NRL_TB_to_xml DFTB_to_xml FC_to_xml \
-  calc_n_poles \
-  analyze_md_phonons \
+  FC_to_xml calc_n_poles analyze_md_phonons \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search\
   metapot_test tabletest ts_calculation\
   fix_traj_latest randomise_calc
+
+ifeq (${HAVE_TB},1)
+   PROGRAMS += NRL_TB_to_xml DFTB_to_xml 
+endif
 
 all: ${PROGRAMS}
 
