@@ -671,10 +671,12 @@ class TestAtoms_Extras(QuippyTestCase):
       self.check_property('int', T_INTEGER_A)
       self.assertEqual(list(self.at.int), [1]*8)
 
-   def test_bcast(self):
-      from quippy import MPI_context, atoms_bcast
-      mpi = MPI_context()
-      atoms_bcast(mpi, self.at)
+   # bcast() test relies on SIZEOF_ATOMS parameter, which is compiler and architecture dependant
+   if QUIP_MAKEFILE['QUIPPY_FCOMPILER'] == 'gnu95' and '-DDARWIN' in QUIP_MAKEFILE['DEFINES']:
+      def test_bcast(self):
+         from quippy import MPI_context, atoms_bcast
+         mpi = MPI_context()
+         atoms_bcast(mpi, self.at)
 
 
 class TestAtoms_Neighbour(QuippyTestCase):
