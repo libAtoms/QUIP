@@ -265,7 +265,7 @@ class Atoms(FortranAtoms):
       try:
          res = dest.write(self, **write_kwargs)
       except TypeError:
-         raise ValueError('Atoms.write destination %r does not specifying arguments %r' % (dest, kwargs))
+         raise ValueError('Atoms.write destination %r does not support arguments %r' % (dest, write_kwargs))
 
       if opened and hasattr(dest, 'close'):
          dest.close()
