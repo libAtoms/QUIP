@@ -134,6 +134,9 @@ if got_cinoutput:
          self.at.write('test.xyz', prefix='PREFIX')
          lines = open('test.xyz').readlines()
          self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
+         lines_without_prefix = [line[len('PREFIX '):] for line in lines]
+         at = Atoms(''.join(lines_without_prefix), format='string')
+         self.assertAtomsEqual(self.at, at)
 
       def testsinglenc(self):
          self.at.write('test.nc')
