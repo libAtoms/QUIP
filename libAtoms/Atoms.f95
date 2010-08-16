@@ -5076,14 +5076,14 @@ contains
     integer, optional, intent(out) :: error
 
     character, allocatable, dimension(:) :: char_array
-    integer, parameter :: SIZEOF_ATOMS = 1752
+    integer, parameter :: SIZEOF_ATOMS = 1756
 
     INIT_ERROR(error)
 
     ! Raise an error if sizeof(Atoms) has changed, indicating fields
     ! have been added or removed from definition of derived type.
     if (size(transfer(at, char_array)) /= SIZEOF_ATOMS) then
-       RAISE_ERROR('atoms_bcast: size of Atoms object /= '//SIZEOF_ATOMS//' - please update atoms_bcast()', error)
+       RAISE_ERROR('atoms_bcast: size of Atoms object ('//size(transfer(at, char_array))//' /= '//SIZEOF_ATOMS//' - please update atoms_bcast()', error)
     end if
 
     if (.not. mpi%active) return
@@ -5094,6 +5094,7 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
+       call bcast(mpi, at%domain_decomposed)
        call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
        call bcast(mpi, at%cutoff_break)
@@ -5110,6 +5111,7 @@ contains
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
+       call bcast(mpi, at%domain_decomposed)
        call bcast(mpi, at%use_uniform_cutoff)
        call bcast(mpi, at%cutoff)
        call bcast(mpi, at%cutoff_break)
