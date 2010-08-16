@@ -154,6 +154,9 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   if (!from_scratch) {
     debug("xyz_find_frames: reading XYZ index from file %s\n", indexname);
     index = fopen(indexname, "r");
+    if (index == NULL) {
+      RAISE_ERROR("Index file %s cannot be opened\n", indexname);
+    }
     if (!fgets(linebuffer,LINESIZE,index)) {
       RAISE_ERROR("Index file %s is empty\n",indexname);
     }
@@ -347,6 +350,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     debug("read_xyz: computing index for file %s\n", filename);
     frames_array_size = 0;
     n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
+    PASS_ERROR;
+
     if (frame < 0 || frame >= n_frame) {
       RAISE_ERROR("read_xyz: frame %d out of range 0 <= frame < %d", frame, n_frame-1);
     }
@@ -796,6 +801,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     }
     n++;
   }
+  if (!string) fclose(in);
 }
 
 #define PUT_LINE(line) if (string) extendable_str_concat(estr, line, strlen(line)); else fputs(line, out)
