@@ -308,16 +308,17 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
       RAISE_ERROR(info);
     }
     linebuffer[strlen(linebuffer)-1] = '\0';
+    return NULL;
   }
 }
 
 #define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error)
 
 void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int string, int string_length, int *error)
+	       int compute_index, int frame, int *range, int string, int string_length, int *error)
 {
   FILE *in;
-  int i,n, entry_count,j=0,k=0,ncols,m, atidx;
+  int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE];
   char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
     finalfields[MAX_ENTRY_COUNT][LINESIZE];
@@ -339,6 +340,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   }
 
   got_index = 0;
+  orig_stringp = stringp = prev_stringp = NULL;
+  in = NULL;
   if (string) {
     debug("read_xyz: reading from string\n");
     orig_stringp = stringp = filename;
@@ -401,6 +404,26 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     }
   } else
     *n_atom = nxyz;
+
+  // Have we been asked to read only a specific range of atom indices?
+  if (range[0] != 0 && range[1] != 0) {
+    if (range[0] < 1) {
+      RAISE_ERROR("read_xyz: lower limit of range (%d) must be >= 1", range[0]);
+    }
+    if (range[1] > *n_atom) {
+      RAISE_ERROR("read_xyz: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+    }
+    if (range[1] <= range[0]) {
+      RAISE_ERROR("read_xyz: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+    }
+    *n_atom = range[1] - range[0] + 1;
+    at_start = range[0]-1;
+    at_end = range[1]-1;
+  }
+  else {
+    at_start = 0;
+    at_end = *n_atom-1;
+  }
 
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
   GET_LINE("premature end - expecting comment line");
@@ -729,6 +752,9 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   n = 0;
   for (atidx=0; atidx < nxyz; atidx++) {
     GET_LINE("premature file ending");
+
+    if (atidx < at_start || atidx > at_end) continue;
+
     k = 0;
     p = linebuffer;
     while ((p1 = strsep(&p, " \t\n")) != NULL) {
@@ -837,7 +863,8 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 	RAISE_ERROR("write_xyz: cannot open %s for writing", filename);
       }
     }
-  }
+  } else
+    out = NULL;
 
   // Number of atoms
   if (prefix[0] != '\0')

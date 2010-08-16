@@ -62,7 +62,7 @@ void lattice_abc_to_xyz_(double cell_lengths[3], double cell_angles[3], double l
 void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double cell_angles[3]);
 
 void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
-		  int *n_atom, int frame, int zero, int irep, double rrep, int *error);
+		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error);
 void write_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3],
 		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
 		   int shuffle, int deflate, int deflate_level, int *error);
@@ -339,10 +339,10 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
 
 
 void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
-		  int *n_atom, int frame, int zero, int irep, double rrep, int *error)
+		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   int nc_id, i, n_selected;
-  int retval, nvars;
+  int retval, nvars, at_start, at_end;
   size_t start[3], count[3];
   double cell_lengths[3], cell_angles[3];
   char varname[NC_MAX_NAME+1];
@@ -389,6 +389,26 @@ void read_netcdf (char *filename, int *params, int *properties, int *selected_pr
 
   if (frame < 0 || frame >= n_frame) {
     RAISE_ERROR("read_netcdf: frame %d out of range 0 <= frame < %d", frame, n_frame);
+  }
+
+  // Have we been asked to read only a specific range of atom indices?
+  if (range[0] != 0 && range[1] != 0) {
+    if (range[0] < 1) {
+      RAISE_ERROR("read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
+    }
+    if (range[1] > *n_atom) {
+      RAISE_ERROR("read_netcdf: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+    }
+    if (range[1] <= range[0]) {
+      RAISE_ERROR("read_netcdf: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+    }
+    *n_atom = range[1] - range[0] + 1;
+    at_start = range[0]-1;
+    at_end = range[1]-1;
+  }
+  else {
+    at_start = 0;
+    at_end = *n_atom-1;
   }
 
   dictionary_get_n(selected_properties, &n_selected);
@@ -979,7 +999,7 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
 
 #else
 void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
-		  int *n_atom, int frame, int zero, int irep, double rrep, int *error)
+		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   INIT_ERROR;
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
