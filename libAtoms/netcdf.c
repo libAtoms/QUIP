@@ -58,6 +58,9 @@
 
 // Function prototypes
 
+void lattice_abc_to_xyz_(double cell_lengths[3], double cell_angles[3], double lattice[3][3]);
+void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double cell_angles[3]);
+
 void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
 		  int *n_atom, int frame, int zero, int irep, double rrep, int *error);
 void write_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3],
