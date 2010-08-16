@@ -992,7 +992,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
          ! Calculate new efield and measure of convergence
          efield_int_old = efield_dipole
          efield_dipole = 0.0_dp
-         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole, mpi)
+         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole, mpi=mpi)
 
          diff = 0.0_dp
          do i=1,at%n
@@ -1032,7 +1032,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    ! Compute final energy, local energies, forces, virial and electric efield
    efield = efield_charge
    if (maxval(abs(dipoles)) > 0.0_dp) then
-      call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield, mpi)
+      call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield, mpi=mpi)
 
       if (save_dipole_velo) then
          ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
