@@ -222,9 +222,9 @@ void c_dictionary_register_functions_(void (*get_n)(int*, int*),
 
 // Extendable_str access routines
 
-void (*extendable_str_concat)(int *, char*, size_t);
+void (*extendable_str_concat)(int *, char*, int *, int *, size_t);
 
-void c_extendable_str_register_functions_(void (*extendable_str_concat_in)(int *, char*, size_t))
+void c_extendable_str_register_functions_(void (*extendable_str_concat_in)(int *, char*, int *, int *size_t))
 {
   extendable_str_concat = extendable_str_concat_in;
 }
