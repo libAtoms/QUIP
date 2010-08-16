@@ -280,7 +280,7 @@ class Atoms(FortranAtoms):
       except ImportError:
          raise RuntimeError('AtomEye not available')
 
-   def select(self, mask=None, list=None):
+   def select(self, mask=None, list=None, orig_index=None):
       """Select a subset of the atoms in an atoms object
 
       Use either a logical mask array or a list of atom indices to include.
@@ -291,11 +291,11 @@ class Atoms(FortranAtoms):
       if mask is not None:
          mask = farray(mask)
          out = Atoms(n=mask.count(),lattice=self.lattice)
-         FortranAtoms.select(out, self, mask=mask)
+         FortranAtoms.select(out, self, mask=mask, orig_index=orig_index)
       elif list is not None:
          list = farray(list)
          out = Atoms(n=len(list), lattice=self.lattice)
-         FortranAtoms.select(out, self, list=list)
+         FortranAtoms.select(out, self, list=list, orig_index=orig_index)
       else:
          raise ValueError('Either mask or list must be present.')
       return out
