@@ -257,8 +257,7 @@ class TestCInOutput(QuippyTestCase):
       self.assertAtomsEqual(at, self.at)
 
    def test_read_ext_string(self):
-      es = Extendable_str()
-      es.concat(''.join(self.xyz_ref))
+      es = Extendable_str(''.join(self.xyz_ref))
       cio = CInOutput()
       at = cio.read(estr=es)
       self.assertAtomsEqual(at, self.at)
@@ -305,6 +304,11 @@ class TestCInOutput(QuippyTestCase):
       at = Atoms('test.nc', range=[1,32])
       sub = self.at.select(list=frange(1,32), orig_index=False)
       self.assertAtomsEqual(at, sub)
+
+   def test_write_ext_string(self):
+      es = Extendable_str()
+      self.at.write('', estr=es, format='xyz')
+      self.assertEqual(str(es), ''.join(self.xyz_ref))
 
             
 

@@ -95,6 +95,7 @@ import cinoutput;       from cinoutput import CInOutput, CInOutputReader, CInOut
 import dynamicalsystem; from dynamicalsystem import DynamicalSystem
 import potential;       from potential import Potential
 import table;           from table import Table
+import extendable_str;  from extendable_str import Extendable_str
 
 for name, cls in classes:
    try:

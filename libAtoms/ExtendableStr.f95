@@ -520,16 +520,24 @@ subroutine string_assign_extendable_str(to, from)
   to = string(from)
 end subroutine string_assign_extendable_str
 
-subroutine c_extendable_str_concat(this, str)
+subroutine c_extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
   type c_extendable_str_ptr_type
      type(Extendable_str), pointer :: p
   end type c_extendable_str_ptr_type
   integer, intent(in) :: this(12)
   character(*), intent(in) :: str
+  integer, intent(in) :: keep_lf, add_lf_if_missing
+
   type(c_extendable_str_ptr_type) :: this_ptr
+  logical do_keep_lf, do_add_lf_if_missing
+
+  do_keep_lf = .false.
+  if (keep_lf == 1) do_keep_lf = .true.
+  do_add_lf_if_missing = .false.
+  if (add_lf_if_missing == 1) do_add_lf_if_missing = .true.
   
   this_ptr = transfer(this, this_ptr)
-  call concat(this_ptr%p, str)
+  call concat(this_ptr%p, str, do_keep_lf, do_add_lf_if_missing)
 
 end subroutine c_extendable_str_concat
 
