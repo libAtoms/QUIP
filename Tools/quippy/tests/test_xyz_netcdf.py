@@ -271,6 +271,20 @@ if got_cinoutput:
          at = cio.read(str=s)
          self.assertAtomsEqual(at, self.at)
 
+      def test_read_loop(self):
+         import resource
+         max_open_files_soft, max_open_files_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+         self.at.write('test.xyz')
+         for i in range(2*max_open_files_soft):
+            a = Atoms('test.xyz', frame=0)
+
+      def test_write_loop(self):
+         import resource
+         max_open_files_soft, max_open_files_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+         for i in range(2*max_open_files_soft):
+            self.at.write('test.xyz')
+            
+
 try:
    import netCDF4
    got_netcdf4 = True
