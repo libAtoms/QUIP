@@ -29,9 +29,10 @@ class CInOutput(FortranCInOutput):
 
    __doc__ = FortranCInOutput.__doc__
 
-   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, fpointer=None, finalise=True):
+   def __init__(self, filename=None, action=INPUT, append=False, netcdf4=True, zero=False, range=None, fpointer=None, finalise=True):
       FortranCInOutput.__init__(self, filename, action, append, netcdf4, fpointer=fpointer, finalise=finalise)
       self.zero = zero
+      self.range = range
 
    __init__.__doc__ = FortranCInOutput.__init__.__doc__
 
@@ -39,7 +40,7 @@ class CInOutput(FortranCInOutput):
       return int(self.n_frame)
 
    def __getitem__(self, index):
-      return self.read(frame=index, zero=self.zero)
+      return self.read(frame=index, zero=self.zero, range=self.range)
 
    def __setitem__(self, index, value):
       self.write(value, frame=index)
@@ -60,10 +61,10 @@ class CInOutputReader(object):
 
   lazy = True
 
-  def __init__(self, source, frame=None, start=0, stop=None, step=1, zero=False):
+  def __init__(self, source, frame=None, range=None, start=0, stop=None, step=1, zero=False):
      if isinstance(source, str):
         self.opened = True
-        self.source = CInOutput(source, action=INPUT, append=False, zero=zero)
+        self.source = CInOutput(source, action=INPUT, append=False, zero=zero, range=range)
         try:
            self.netcdf_file = netcdf_file(source)
         except (RuntimeError, AssertionError):

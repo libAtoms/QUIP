@@ -52,13 +52,14 @@ module CInOutput_module
 
   interface
 
-     subroutine read_netcdf(filename, params, properties, selected_properties, lattice, n_atom, frame, zero, irep, rrep, error) bind(c)
+     subroutine read_netcdf(filename, params, properties, selected_properties, lattice, n_atom, frame, zero, range, irep, rrep, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(out) :: n_atom
        integer(kind=C_INT), intent(in), value :: frame, zero, irep
+       integer(kind=C_INT), intent(in) :: range(2)
        real(kind=C_DOUBLE), intent(in), value :: rrep
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_netcdf
@@ -80,13 +81,14 @@ module CInOutput_module
        integer(kind=C_INT), intent(out) :: error
      end subroutine query_netcdf
 
-     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, string, string_length, error) bind(c)
+     subroutine read_xyz(filename, params, properties, selected_properties, lattice, n_atom, compute_index, frame, range, string, string_length, error) bind(c)
        use iso_c_binding, only: C_CHAR, C_INT, C_PTR, C_DOUBLE
        character(kind=C_CHAR,len=1), dimension(*), intent(in) :: filename
        integer(kind=C_INT), dimension(12), intent(in) :: params, properties, selected_properties
        real(kind=C_DOUBLE), dimension(3,3), intent(out) :: lattice
        integer(kind=C_INT), intent(out) :: n_atom
        integer(kind=C_INT), intent(in), value :: compute_index, frame, string, string_length
+       integer(kind=C_INT), intent(in) :: range(2)
        integer(kind=C_INT), intent(out) :: error
      end subroutine read_xyz
 
@@ -279,7 +281,7 @@ contains
   end subroutine cinoutput_finalise
 
 
-  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, str, estr, error)
+  subroutine cinoutput_read(this, at, properties, properties_array, frame, zero, range, str, estr, error)
     use iso_c_binding, only: C_INT
     type(CInOutput), intent(inout) :: this
     type(Atoms), target, intent(out) :: at
@@ -287,6 +289,7 @@ contains
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    integer, optional, intent(in) :: range(2)
     character(*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
     integer, intent(out), optional :: error
@@ -294,7 +297,7 @@ contains
     type(Dictionary) :: empty_dictionary
     type(Dictionary), target :: selected_properties, tmp_params
     integer :: i, j, k, n_properties
-    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep
+    integer(C_INT) :: do_zero, do_compute_index, do_frame, i_rep, do_range(2)
     real(C_DOUBLE) :: r_rep
     real(dp) :: lattice(3,3), maxlen(3), sep(3)
     type(c_dictionary_ptr_type) :: params_ptr, properties_ptr, selected_properties_ptr
@@ -338,6 +341,9 @@ contains
           if (zero) do_zero = 1
        end if
 
+       do_range(:) = 0
+       if (present(range)) do_range = range
+
        call initialise(selected_properties)
        if (present(properties) .or. present(properties_array)) then
           if (present(properties_array)) then
@@ -374,21 +380,19 @@ contains
           i_rep = 0
           r_rep = 0.0_dp
           call read_netcdf(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-               at%lattice, n_atom, do_frame, do_zero, i_rep, r_rep, error)
+               at%lattice, n_atom, do_frame, do_zero, do_range, i_rep, r_rep, error)
        else
           do_compute_index = 1
           if (.not. this%got_index) do_compute_index = 0
           if (present(str)) then
-             call print('len_trim(str) = '//len_trim(str))
              call read_xyz(str, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, 1, len_trim(str), error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, len_trim(str), error)
           else if(present(estr)) then
-	     call print('estr%len = '//estr%len)
              call read_xyz(estr%s, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, 1, estr%len, error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 1, estr%len, error)
           else
              call read_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
-                  at%lattice, n_atom, do_compute_index, do_frame, 0, 0, error)
+                  at%lattice, n_atom, do_compute_index, do_frame, do_range, 0, 0, error)
           end if
        end if
        BCAST_PASS_ERROR(error, this%mpi)
@@ -601,7 +605,7 @@ contains
 
   end subroutine cinoutput_write
 
-  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, str, estr, no_compute_index, mpi, error)
+  subroutine atoms_read(this, filename, properties, properties_array, frame, zero, range, str, estr, no_compute_index, mpi, error)
     !% Read Atoms object from XYZ or NetCDF file.
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in), optional :: filename
@@ -609,6 +613,7 @@ contains
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    integer, optional, intent(in) :: range(2)
     character(len=*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
     logical, optional, intent(in) :: no_compute_index
@@ -621,25 +626,26 @@ contains
 
     call initialise(cio, filename, INPUT, no_compute_index=no_compute_index, mpi=mpi, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
-    call read(cio, this, properties, properties_array, frame, zero, str, estr, error=error)
+    call read(cio, this, properties, properties_array, frame, zero, range, str, estr, error=error)
     PASS_ERROR_WITH_INFO('While reading "' // filename // '".', error)
     call finalise(cio)
 
   end subroutine atoms_read
 
-  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, str, estr, error)
+  subroutine atoms_read_cinoutput(this, cio, properties, properties_array, frame, zero, range, str, estr, error)
     type(Atoms), target, intent(inout) :: this
     type(CInOutput), intent(inout) :: cio
     character(*), intent(in), optional :: properties
     character(*), intent(in), optional :: properties_array(:)
     integer, optional, intent(in) :: frame
     logical, optional, intent(in) :: zero
+    integer, optional, intent(in) :: range(2)
     character(len=*), intent(in), optional :: str
     type(extendable_str), intent(in), optional :: estr
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
-    call cinoutput_read(cio, this, properties, properties_array, frame, zero, str, estr, error=error)
+    call cinoutput_read(cio, this, properties, properties_array, frame, zero, range, str, estr, error=error)
     PASS_ERROR(error)
 
   end subroutine atoms_read_cinoutput
