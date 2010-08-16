@@ -37,6 +37,7 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 
 module IPModel_FB_module
 
@@ -63,7 +64,6 @@ type IPModel_FB
   real(dp), dimension(:,:), allocatable :: A, B, C, r_cut
 
   character(len=FIELD_LENGTH) label
-  type(mpi_context) :: mpi
 
 end type IPModel_FB
 
@@ -89,10 +89,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_FB_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_FB_Initialise_str(this, args_str, param_str)
   type(IPModel_FB), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -109,8 +108,6 @@ subroutine IPModel_FB_Initialise_str(this, args_str, param_str, mpi)
   call IPModel_FB_read_params_xml(this, param_str)
 
   this%cutoff = maxval(this%r_cut)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_FB_Initialise_str
 
@@ -136,13 +133,15 @@ end subroutine IPModel_FB_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, mpi, error)
   type(IPModel_FB), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
   real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), dimension(:,:), intent(out), optional :: f        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   integer :: i, j, n, ti, tj
   real(dp) :: r_ij, de, de_dr
@@ -150,6 +149,8 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial)
   real(dp), dimension(:), pointer :: charge
 
   type(Atoms) :: at_ew
+
+   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -169,8 +170,10 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial)
   call finalise(at_ew)
 
   do i = 1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
     ti = get_type(this%type_of_atomic_num, at%Z(i))
     do n = 1, atoms_n_neighbours(at, i)
@@ -197,10 +200,12 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial)
     end do
   end do
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
-  if (present(f)) call sum_in_place(this%mpi, f)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(f)) call sum_in_place(mpi, f)
+  endif
 
 end subroutine IPModel_FB_Calc
 

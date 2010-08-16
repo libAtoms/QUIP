@@ -36,6 +36,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_Template_module
 
 use libatoms_module
@@ -56,7 +58,6 @@ type IPModel_Template
   real(dp) :: cutoff = 0.0_dp
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_Template
 
@@ -81,10 +82,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Template_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Template_Initialise_str(this, args_str, param_str)
   type(IPModel_Template), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -102,8 +102,6 @@ subroutine IPModel_Template_Initialise_str(this, args_str, param_str, mpi)
 
   !  Add initialisation code here
 
-  if (present(mpi)) this%mpi = mpi
-
 end subroutine IPModel_Template_Initialise_str
 
 subroutine IPModel_Template_Finalise(this)
@@ -119,15 +117,19 @@ subroutine IPModel_Template_Finalise(this)
 end subroutine IPModel_Template_Finalise
 
 
-subroutine IPModel_Template_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_Template_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
    type(IPModel_Template), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
+   type(MPI_Context), intent(in), optional :: mpi
+   integer, intent(out), optional :: error
 
    ! Add calc() code here
+
+   INIT_ERROR(error)
 
    call system_abort('IPModel_Calc - not implemented')
 

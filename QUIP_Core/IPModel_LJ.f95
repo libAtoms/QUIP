@@ -43,7 +43,6 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 #include "error.inc"
 
 module IPModel_LJ_module
@@ -69,7 +68,6 @@ type IPModel_LJ
   real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:) !% IP parameters.
 
   character(len=FIELD_LENGTH) label
-  type(mpi_context) :: mpi
 
 end type IPModel_LJ
 
@@ -94,10 +92,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_LJ_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_LJ_Initialise_str(this, args_str, param_str)
   type(IPModel_LJ), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -114,8 +111,6 @@ subroutine IPModel_LJ_Initialise_str(this, args_str, param_str, mpi)
   call IPModel_LJ_read_params_xml(this, param_str)
 
   this%cutoff = maxval(this%cutoff_a)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_LJ_Initialise_str
 
@@ -142,13 +137,14 @@ end subroutine IPModel_LJ_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, error)
+subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_LJ), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
+  type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
@@ -201,8 +197,10 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, error)
   do i = 1, at%N
     i_is_min_image = is_min_image(at,i)
 
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
 
     do ji = 1, atoms_n_neighbours(at, i)
@@ -255,13 +253,15 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, args_str, error)
     end do
   end do
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
-  if (present(f)) call sum_in_place(this%mpi, f)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(f)) call sum_in_place(mpi, f)
+  endif
   if (do_flux) then
     flux = flux / cell_volume(at)
-    call sum_in_place(this%mpi, flux)
+    if (present(mpi)) call sum_in_place(mpi, flux)
     call set_value(at%params, "Flux", flux)
   endif
 

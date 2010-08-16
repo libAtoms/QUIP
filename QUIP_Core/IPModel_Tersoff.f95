@@ -38,6 +38,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_Tersoff_module
 
 use libatoms_module
@@ -62,7 +64,6 @@ type IPModel_Tersoff
   real(dp), allocatable :: chi(:,:)                               !% IP parameter depending on the pair interaction (mixing hentalpy), dimensioned as \texttt{(n_types,n_types)}
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_Tersoff
 
@@ -87,10 +88,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Tersoff_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Tersoff_Initialise_str(this, args_str, param_str)
   type(IPModel_Tersoff), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -105,8 +105,6 @@ subroutine IPModel_Tersoff_Initialise_str(this, args_str, param_str, mpi)
   call finalise(params)
 
   call IPModel_Tersoff_read_params_xml(this, param_str)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_Tersoff_Initialise_str
 
@@ -139,13 +137,15 @@ end subroutine IPModel_Tersoff_Finalise
 !% Derivatives are taken from M. Tang, Ph.D. Thesis, MIT 1995.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_Tersoff), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional :: args_str 
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ki, k
@@ -181,6 +181,8 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str)
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
 
+   INIT_ERROR(error)
+
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
@@ -206,8 +208,10 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str)
   endif
 
   do i=1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
 
      if(associated(atom_mask_pointer)) then
@@ -395,10 +399,12 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str)
     deallocate(z_ij)
   end do ! i
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(f)) call sum_in_place(this%mpi, f)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(f)) call sum_in_place(mpi, f)
+     if (present(virial)) call sum_in_place(mpi, virial)
+  endif
   atom_mask_pointer => null()
 
 end subroutine IPModel_Tersoff_Calc

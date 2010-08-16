@@ -39,6 +39,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_FS_module
 
 use libatoms_module
@@ -63,7 +65,6 @@ type IPModel_FS
   real(dp), allocatable :: A(:,:), beta(:,:), d(:,:)
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_FS
 
@@ -88,10 +89,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_FS_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_FS_Initialise_str(this, args_str, param_str)
   type(IPModel_FS), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -109,8 +109,6 @@ subroutine IPModel_FS_Initialise_str(this, args_str, param_str, mpi)
 
 ! Two cutoff radius: this%d > this%c
   this%cutoff = maxval(this%d)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_FS_Initialise_str
 
@@ -139,12 +137,14 @@ end subroutine IPModel_FS_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
   type(IPModel_FS), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}. 
   real(dp), intent(out), optional :: f(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}
   real(dp), intent(out), optional :: virial(3,3)  !% Virial
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   integer i, ji, j, ti, tj
   real(dp) :: rij(3), rij_mag, drij(3)
@@ -153,6 +153,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial)
 
   ! private variables for open-mp 
   real(dp) :: private_virial(3,3), private_f(3,at%N), private_e
+
+   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -170,8 +172,10 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial)
 
 !$omp do 
   do i=1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
      
      phi_tot = 0.0_dp
@@ -237,10 +241,12 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial)
 
 !$omp end parallel
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(f)) call sum_in_place(this%mpi, f)
-  if (present(virial)) call sum_in_place(this%mpi, virial) 
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(f)) call sum_in_place(mpi, f)
+     if (present(virial)) call sum_in_place(mpi, virial) 
+   endif
 
 end subroutine IPModel_FS_Calc
 

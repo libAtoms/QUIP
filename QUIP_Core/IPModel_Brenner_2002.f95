@@ -38,6 +38,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_Brenner_2002_module
 
 use libatoms_module
@@ -69,7 +71,6 @@ type IPModel_Brenner_2002
   integer     :: bptr_num
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_Brenner_2002
 
@@ -94,10 +95,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Brenner_2002_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Brenner_2002_Initialise_str(this, args_str, param_str)
   type(IPModel_Brenner_2002), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
   character(len=FIELD_LENGTH) label
@@ -121,8 +121,6 @@ subroutine IPModel_Brenner_2002_Initialise_str(this, args_str, param_str, mpi)
   call system_abort('IPModel_Brenner_2002_Initialise - support for mdcore not compiled in')
 #endif 
 
-  if (present(mpi)) this%mpi = mpi
-
 end subroutine IPModel_Brenner_2002_Initialise_str
 
 subroutine IPModel_Brenner_2002_Finalise(this)
@@ -136,13 +134,15 @@ subroutine IPModel_Brenner_2002_Finalise(this)
 end subroutine IPModel_Brenner_2002_Finalise
 
 
-subroutine IPModel_Brenner_2002_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_Brenner_2002_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
    type(IPModel_Brenner_2002), intent(inout):: this
    type(Atoms), intent(inout)      :: at   !Active + buffer atoms
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
+   type(MPI_Context), intent(in), optional :: mpi
+   integer, intent(out), optional :: error
 
    integer:: i,n
    real(dp), dimension(:,:), allocatable :: pos_in, force_out, dr
@@ -151,6 +151,8 @@ subroutine IPModel_Brenner_2002_Calc(this, at, e, local_e, f, virial, args_str)
    real(dp), dimension(:,:,:), allocatable :: w_per_at
    integer, dimension(:), allocatable :: aptr, bptr, k_typ
    integer :: n_tot, neighb
+
+   INIT_ERROR(error)
 
    n_tot = 0
    do i=1,at%N

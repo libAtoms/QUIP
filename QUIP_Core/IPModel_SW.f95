@@ -38,6 +38,7 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
 
 module IPModel_SW_module
 
@@ -63,7 +64,6 @@ type IPModel_SW
   real(dp), allocatable :: lambda(:,:,:), gamma(:,:,:), eps3(:,:,:) !% IP parameters
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 end type IPModel_SW
 
@@ -88,10 +88,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_SW_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_SW_Initialise_str(this, args_str, param_str)
   type(IPModel_SW), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -104,8 +103,6 @@ subroutine IPModel_SW_Initialise_str(this, args_str, param_str, mpi)
     call system_abort("IPModel_SW_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
-
-  if (present(mpi)) this%mpi = mpi
 
   call IPModel_SW_read_params_xml(this, param_str)
 
@@ -127,12 +124,14 @@ end subroutine IPModel_SW_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, mpi, error)
   type(IPModel_SW), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ki, k
@@ -153,6 +152,8 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
   real(dp) :: private_virial(3,3), private_e
   real(dp), allocatable :: private_f(:,:), private_local_e(:)
 #endif
+
+   INIT_ERROR(error)
 
   call print("IPModel_SW_Calc starting ", PRINT_ANAL)
   if (present(e)) e = 0.0_dp
@@ -179,8 +180,10 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 !$omp do
 #endif
   do i=1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
     ti = get_type(this%type_of_atomic_num, at%Z(i))
     if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i " // i // " " // atoms_n_neighbours(at,i), PRINT_ANAL)
@@ -386,10 +389,12 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial)
 !$omp end parallel
 #endif
 
-  if (present(e)) e = sum(this%mpi, e) 
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(f)) call sum_in_place(this%mpi, f)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e) 
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(f)) call sum_in_place(mpi, f)
+     if (present(virial)) call sum_in_place(mpi, virial)
+  endif
 
 end subroutine IPModel_SW_Calc
 

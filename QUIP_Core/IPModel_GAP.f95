@@ -38,6 +38,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_GAP_module
 
 use libatoms_module
@@ -90,7 +92,6 @@ type IPModel_GAP
   character(len=256) :: coordinates             !% Coordinate system used in GAP database
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
 
 #ifdef HAVE_GP
   type(gp) :: my_gp
@@ -122,15 +123,12 @@ end interface Calc
 
 contains
 
-subroutine IPModel_GAP_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   type(IPModel_GAP), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
   type(Dictionary) :: params
 
   call Finalise(this)
-
-  if (present(mpi)) this%mpi = mpi
 
   ! now initialise the potential
 
@@ -198,13 +196,15 @@ end subroutine IPModel_GAP_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
+subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error)
   type(IPModel_GAP), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional :: args_str 
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k
@@ -238,6 +238,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
   !$omp threadprivate(f3_hat,df3_hat,qw,dqw)  
 #endif  
+
+   INIT_ERROR(error)
 
   if (present(e)) then
      e = 0.0_dp
@@ -330,9 +332,11 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
 
 !$omp do private(n)
   do i = 1, at%N
-     if (this%mpi%active) then
-       if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
-     endif
+     if (present(mpi)) then
+	if (mpi%active) then
+	  if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	endif
+      endif
 
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
@@ -383,13 +387,19 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
 
 #ifdef HAVE_GP
   allocate(covariance(this%my_gp%n,at%N))
-  call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,this%mpi)
+  if (present(mpi)) then
+     call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,mpi)
+  else
+     call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance)
+  endif
 #endif
     
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
   do i = 1, at%N
-     if (this%mpi%active) then
-        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     if (present(mpi)) then
+	if (mpi%active) then
+	   if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	endif
      endif
 
      if(associated(atom_mask_pointer)) then
@@ -432,8 +442,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
 
   deallocate(vec,jack)
 
-  if(present(f)) call sum_in_place(this%mpi,f)
-  if(present(virial)) call sum_in_place(this%mpi,virial_in)
+  if (present(mpi)) then
+     if(present(f)) call sum_in_place(mpi,f)
+     if(present(virial)) call sum_in_place(mpi,virial_in)
+  endif
 
   if( this%do_ewald ) then
      allocate(charge(at%N))
@@ -464,7 +476,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str)
      if(allocated(f_ewald)) deallocate(f_ewald)
   endif
 
-  if(present(e) .or. present(local_e) ) call sum_in_place(this%mpi,local_e_in)
+  if (present(mpi)) then
+     if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
+  endif
   if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr

@@ -141,7 +141,7 @@ type IP_type
      ! Add new IPs here  
   type(IPModel_Template) ip_Template
 
-  type(mpi_context) :: mpi_glob
+  type(mpi_context) :: mpi_glob, mpi_local
 
 end type IP_type
 
@@ -352,64 +352,46 @@ end subroutine IP_Initialise_str
 subroutine IP_Finalise(this)
   type(IP_type), intent(inout) :: this
 
+  if (this%mpi_local%active) call free_context(this%mpi_local)
   select case (this%functional_form)
     case (FF_GAP)
-      if (this%ip_gap%mpi%active) call free_context(this%ip_gap%mpi)
       call Finalise(this%ip_gap)
     case (FF_LJ)
-      if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
       call Finalise(this%ip_lj)
     case (FF_Morse)
-      if (this%ip_morse%mpi%active) call free_context(this%ip_morse%mpi)
       call Finalise(this%ip_morse)
     case (FF_FC)
-      if (this%ip_fc%mpi%active) call free_context(this%ip_fc%mpi)
       call Finalise(this%ip_fc)
     case (FF_SW)
-      if (this%ip_sw%mpi%active) call free_context(this%ip_sw%mpi)
       call Finalise(this%ip_sw)
     case (FF_Tersoff)
-      if (this%ip_tersoff%mpi%active) call free_context(this%ip_tersoff%mpi)
       call Finalise(this%ip_tersoff)
     case (FF_EAM_ErcolAd)
-      if (this%ip_EAM_ErcolAd%mpi%active) call free_context(this%ip_EAM_ErcolAd%mpi)
       call Finalise(this%ip_EAM_ErcolAd)
     case(FF_Brenner)
-      if (this%ip_brenner%mpi%active) call free_context(this%ip_brenner%mpi)
       call Finalise(this%ip_Brenner)
     case(FF_FB)
-      if (this%ip_fb%mpi%active) call free_context(this%ip_fb%mpi)
       call Finalise(this%ip_fb)
     case(FF_Si_MEAM)
-      if (this%ip_Si_MEAM%mpi%active) call free_context(this%ip_Si_MEAM%mpi)
       call Finalise(this%ip_Si_MEAM)
     case (FF_FS)
-      if (this%ip_fs%mpi%active) call free_context(this%ip_fs%mpi)
       call Finalise(this%ip_fs)
     case (FF_BOP)
-      if (this%ip_bop%mpi%active) call free_context(this%ip_bop%mpi)
       call Finalise(this%ip_bop)
     case (FF_Brenner_Screened)
-      if(this%ip_brenner_screened%mpi%active) call free_context(this%ip_brenner_screened%mpi)
       call Finalise(this%ip_brenner_screened)
     case (FF_Brenner_2002)
-      if(this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
       call Finalise(this%ip_brenner_2002)
     case (FF_ASAP)
-      if(this%ip_ASAP%mpi%active) call free_context(this%ip_ASAP%mpi)
       call Finalise(this%ip_ASAP)
     case (FF_ASAP2)
-      if(this%ip_ASAP2%mpi%active) call free_context(this%ip_ASAP2%mpi)
       call Finalise(this%ip_ASAP2)
     case (FF_GLUE)
-      if(this%ip_Glue%mpi%active) call free_context(this%ip_Glue%mpi)
       call Finalise(this%ip_Glue)
    case (FF_PartridgeSchwenke)
-      if(this%ip_PartridgeSchwenke%mpi%active) call free_context(this%ip_PartridgeSchwenke%mpi)
       call Finalise(this%ip_PartridgeSchwenke)
       ! add new IP here
     case (FF_Template)
-      if(this%ip_template%mpi%active) call free_context(this%ip_template%mpi)
       call Finalise(this%ip_template)
   end select
 
@@ -484,101 +466,55 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, error)
   character(len=*), intent(in), optional      :: args_str 
   integer, intent(out), optional :: error
 
-  logical mpi_active
-
   INIT_ERROR(error)
 
   call system_timer("IP_Calc")
 
-  select case (this%functional_form)
-    case (FF_GAP)
-      mpi_active = this%ip_gap%mpi%active
-    case (FF_LJ)
-      mpi_active = this%ip_lj%mpi%active
-    case (FF_Morse)
-      mpi_active = this%ip_morse%mpi%active
-    case (FF_FC)
-      mpi_active = this%ip_fc%mpi%active
-    case (FF_SW)
-      mpi_active = this%ip_sw%mpi%active
-    case (FF_Tersoff)
-      mpi_active = this%ip_tersoff%mpi%active
-    case (FF_EAM_ErcolAd)
-      mpi_active = this%ip_EAM_ErcolAd%mpi%active
-    case(FF_Brenner)
-      mpi_active = this%ip_Brenner%mpi%active
-    case(FF_FB)
-      mpi_active = this%ip_FB%mpi%active
-    case(FF_Si_MEAM)
-      mpi_active = this%ip_Si_MEAM%mpi%active
-    case(FF_FS)
-      mpi_active = this%ip_fs%mpi%active
-    case(FF_BOP)
-      mpi_active = this%ip_bop%mpi%active
-    case(FF_Brenner_Screened)
-      mpi_active = this%ip_brenner_screened%mpi%active
-    case(FF_Brenner_2002)
-      mpi_active = this%ip_brenner_2002%mpi%active
-    case(FF_ASAP)
-      mpi_active = this%ip_asap%mpi%active
-    case(FF_ASAP2)
-      mpi_active = this%ip_asap2%mpi%active
-    case(FF_GLUE)
-      mpi_active = this%ip_Glue%mpi%active
-   case(FF_PartridgeSchwenke)
-      mpi_active = this%ip_PartridgeSchwenke%mpi%active
-    ! add new IP here
-    case(FF_Template)
-      mpi_active = this%ip_template%mpi%active
-    case default
-      RAISE_ERROR("IP_Calc confused by functional_form " // this%functional_form, error)
-  end select
-
-  if (this%mpi_glob%active .and. .not. mpi_active) then
+  if (this%mpi_glob%active .and. .not. this%mpi_local%active) then
     call setup_parallel(this, at)
   endif
 
   select case (this%functional_form)
     case (FF_GAP)
-      call calc(this%ip_gap, at, energy, local_e, f, virial,args_str)
+      call calc(this%ip_gap, at, energy, local_e, f, virial,args_str, mpi=this%mpi_local, error=error)
     case (FF_LJ)
-      call calc(this%ip_lj, at, energy, local_e, f, virial, args_str, error=error)
+      call calc(this%ip_lj, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
       PASS_ERROR(error)
     case (FF_Morse)
-      call calc(this%ip_morse, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_morse, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_FC)
-      call calc(this%ip_fc, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_fc, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_SW)
-      call calc(this%ip_sw, at, energy, local_e, f, virial)
+      call calc(this%ip_sw, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case (FF_Tersoff)
-      call calc(this%ip_tersoff, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_tersoff, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_EAM_ErcolAd)
-      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, virial)
+      call calc(this%ip_EAM_ErcolAd, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case(FF_Brenner)
-      call calc(this%ip_Brenner, at, energy, local_e, f, virial)
+      call calc(this%ip_Brenner, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case(FF_FB)
-      call calc(this%ip_FB, at, energy, local_e, f, virial)
+      call calc(this%ip_FB, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case(FF_Si_MEAM)
-      call calc(this%ip_Si_MEAM, at, energy, local_e, f, virial)
+      call calc(this%ip_Si_MEAM, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case (FF_FS)
-      call calc(this%ip_fs, at, energy, local_e, f, virial)
+      call calc(this%ip_fs, at, energy, local_e, f, virial, mpi=this%mpi_local, error=error)
     case (FF_BOP)
-      call calc(this%ip_bop, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_bop, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Brenner_Screened)
-      call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Brenner_2002)
-      call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_ASAP)
-      call calc(this%ip_asap, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_asap, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_ASAP2)
-      call calc(this%ip_asap2, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_asap2, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_GLUE)
-      call calc(this%ip_Glue, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_Glue, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_PartridgeSchwenke)
-      call calc(this%ip_PartridgeSchwenke, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_PartridgeSchwenke, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     ! add new IP here
     case (FF_Template)
-      call calc(this%ip_template, at, energy, local_e, f, virial, args_str)
+      call calc(this%ip_template, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case default
       RAISE_ERROR("IP_Calc confused by functional_form " // this%functional_form, error)
   end select
@@ -690,78 +626,16 @@ subroutine setup_parallel_groups(this, mpi, pgroup_size, error)
   integer, intent(in) :: pgroup_size
   integer, intent(out), optional :: error
 
-  type(mpi_context) :: mpi_local
   integer :: split_index
 
   INIT_ERROR(error)
 
+  if (this%mpi_local%active) call free_context(this%mpi_local)
+
   if (mpi%active) then
     split_index = mpi%my_proc/pgroup_size
-    call split_context(mpi, split_index, mpi_local)
+    call split_context(mpi, split_index, this%mpi_local)
   endif
-
-  select case (this%functional_form)
-    case (FF_GAP)
-      if (this%ip_gap%mpi%active) call free_context(this%ip_gap%mpi)
-      this%ip_gap%mpi = mpi_local
-    case (FF_LJ)
-      if (this%ip_lj%mpi%active) call free_context(this%ip_lj%mpi)
-      this%ip_lj%mpi = mpi_local
-    case (FF_Morse)
-      if (this%ip_morse%mpi%active) call free_context(this%ip_morse%mpi)
-      this%ip_morse%mpi = mpi_local
-    case (FF_FC)
-      if (this%ip_fc%mpi%active) call free_context(this%ip_fc%mpi)
-      this%ip_fc%mpi = mpi_local
-    case (FF_SW)
-      if (this%ip_sw%mpi%active) call free_context(this%ip_sw%mpi)
-      this%ip_sw%mpi = mpi_local
-    case (FF_Tersoff)
-      if (this%ip_tersoff%mpi%active) call free_context(this%ip_tersoff%mpi)
-      this%ip_tersoff%mpi = mpi_local
-    case (FF_EAM_ErcolAd)
-      if (this%ip_EAM_ErcolAd%mpi%active) call free_context(this%ip_EAM_ErcolAd%mpi)
-      this%ip_EAM_ErcolAd%mpi = mpi_local
-    case(FF_Brenner)
-      if (this%ip_brenner%mpi%active) call free_context(this%ip_brenner%mpi)
-      this%ip_Brenner%mpi = mpi_local
-    case(FF_FB)
-      if (this%ip_FB%mpi%active) call free_context(this%ip_FB%mpi)
-      this%ip_FB%mpi = mpi_local
-    case(FF_Si_MEAM)
-      if (this%ip_Si_MEAM%mpi%active) call free_context(this%ip_Si_MEAM%mpi)
-      this%ip_Si_MEAM%mpi = mpi_local
-    case(FF_FS)
-      if (this%ip_fs%mpi%active) call free_context(this%ip_fs%mpi)
-      this%ip_fs%mpi = mpi_local
-    case(FF_BOP)
-      if (this%ip_bop%mpi%active) call free_context(this%ip_bop%mpi)
-      this%ip_bop%mpi = mpi_local
-    case(FF_Brenner_Screened)
-      if (this%ip_brenner_screened%mpi%active) call free_context(this%ip_brenner_screened%mpi)
-      this%ip_brenner_screened%mpi = mpi_local
-    case(FF_Brenner_2002)
-      if (this%ip_brenner_2002%mpi%active) call free_context(this%ip_brenner_2002%mpi)
-      this%ip_brenner_2002%mpi = mpi_local
-    case(FF_ASAP)
-      if (this%ip_asap%mpi%active) call free_context(this%ip_asap%mpi)
-      this%ip_asap%mpi = mpi_local
-    case(FF_ASAP2)
-      if (this%ip_asap2%mpi%active) call free_context(this%ip_asap2%mpi)
-      this%ip_asap2%mpi = mpi_local
-    case(FF_GLUE)
-      if (this%ip_Glue%mpi%active) call free_context(this%ip_Glue%mpi)
-      this%ip_Glue%mpi = mpi_local
-    case(FF_PartridgeSchwenke)
-      if (this%ip_Glue%mpi%active) call free_context(this%ip_PartridgeSchwenke%mpi)
-      this%ip_PartridgeSchwenke%mpi = mpi_local
-    ! add new IP here
-    case(FF_Template)
-      if (this%ip_template%mpi%active) call free_context(this%ip_template%mpi)
-      this%ip_template%mpi = mpi_local
-    case default
-      RAISE_ERROR("setup_parallel_groups confused by functional_form " // this%functional_form, error)
-  end select
 
 end subroutine setup_parallel_groups
 

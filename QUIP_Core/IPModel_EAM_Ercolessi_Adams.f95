@@ -41,6 +41,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_EAM_ErcolAd_module
 
 use libatoms_module
@@ -71,8 +73,6 @@ type IPModel_EAM_ErcolAd
 
   character(len=FIELD_LENGTH) :: label
 
-  type(mpi_context) :: mpi
-
 end type IPModel_EAM_ErcolAd
 
 logical, private :: parse_in_ip, parse_matched_label
@@ -98,10 +98,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_EAM_ErcolAd_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_EAM_ErcolAd_Initialise_str(this, args_str, param_str)
   type(IPModel_EAM_ErcolAd), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -116,8 +115,6 @@ subroutine IPModel_EAM_ErcolAd_Initialise_str(this, args_str, param_str, mpi)
   call finalise(params)
 
   call IPModel_EAM_ErcolAd_read_params_xml(this, param_str)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_EAM_ErcolAd_Initialise_str
 
@@ -169,12 +166,14 @@ end subroutine IPModel_EAM_ErcolAd_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial)
+subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, mpi, error)
   type(IPModel_EAM_ErcolAd), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp) :: de, rho_i, drho_i_dri(3), drho_i_drj(3), drho_i_drij_outer_rij(3,3), w_f, V_r, rho_r
   real(dp), pointer :: w_e(:)
@@ -182,6 +181,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial)
   real(dp) :: r_ij_mag, r_ij_hat(3)
   real(dp) :: F_n, dF_n
   real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3)
+
+   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -191,8 +192,10 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial)
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
   do i=1, at%N
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
@@ -279,10 +282,12 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial)
 
   end do ! i
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(f)) call sum_in_place(this%mpi, f)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(f)) call sum_in_place(mpi, f)
+     if (present(virial)) call sum_in_place(mpi, virial)
+  endif
 
 end subroutine IPModel_EAM_ErcolAd_Calc
 

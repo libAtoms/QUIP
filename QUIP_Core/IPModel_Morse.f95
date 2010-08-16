@@ -42,6 +42,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_Morse_module
 
 use libatoms_module
@@ -65,7 +67,6 @@ type IPModel_Morse
   real(dp), allocatable :: D(:,:), alpha(:,:), r0(:,:), cutoff_a(:,:) !% IP parameters.
 
   character(len=FIELD_LENGTH) label
-  type(mpi_context) :: mpi
 
 end type IPModel_Morse
 
@@ -90,10 +91,9 @@ end interface Calc
 
 contains
 
-subroutine IPModel_Morse_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_Morse_Initialise_str(this, args_str, param_str)
   type(IPModel_Morse), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -110,8 +110,6 @@ subroutine IPModel_Morse_Initialise_str(this, args_str, param_str, mpi)
   call IPModel_Morse_read_params_xml(this, param_str)
 
   this%cutoff = maxval(this%cutoff_a)
-
-  if (present(mpi)) this%mpi = mpi
 
 end subroutine IPModel_Morse_Initialise_str
 
@@ -136,13 +134,15 @@ end subroutine IPModel_Morse_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_Morse), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
+  type(MPI_Context), intent(in), optional :: mpi
+  integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ti, tj
@@ -156,6 +156,8 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str)
   logical :: do_flux = .false.
   real(dp), pointer :: velo(:,:)
   real(dp) :: flux(3)
+
+   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -189,8 +191,10 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str)
   do i = 1, at%N
     i_is_min_image = at%connect%is_min_image(i)
 
-    if (this%mpi%active) then
-      if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+    if (present(mpi)) then
+       if (mpi%active) then
+	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+       endif
     endif
 
     do ji = 1, atoms_n_neighbours(at, i)
@@ -243,13 +247,15 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str)
     end do
   end do
 
-  if (present(e)) e = sum(this%mpi, e)
-  if (present(local_e)) call sum_in_place(this%mpi, local_e)
-  if (present(virial)) call sum_in_place(this%mpi, virial)
-  if (present(f)) call sum_in_place(this%mpi, f)
+  if (present(mpi)) then
+     if (present(e)) e = sum(mpi, e)
+     if (present(local_e)) call sum_in_place(mpi, local_e)
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(f)) call sum_in_place(mpi, f)
+  endif
   if (do_flux) then
     flux = flux / cell_volume(at)
-    call sum_in_place(this%mpi, flux)
+    if (present(mpi)) call sum_in_place(mpi, flux)
     call set_value(at%params, "Flux", flux)
   endif
 

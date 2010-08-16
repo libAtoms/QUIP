@@ -39,6 +39,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module IPModel_ASAP2_module
 
 use libatoms_module
@@ -65,7 +67,6 @@ type IPModel_ASAP2
   real(dp) :: cutoff_coulomb, cutoff_ms
 
   character(len=FIELD_LENGTH) :: label
-  type(mpi_context) :: mpi
   logical :: initialised, tdip_sr
 
 end type IPModel_ASAP2
@@ -97,10 +98,9 @@ end interface Calc
 contains
 
 
-subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str, mpi)
+subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str)
   type(IPModel_ASAP2), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
-  type(mpi_context), intent(in), optional :: mpi
 
   type(Dictionary) :: params
 
@@ -119,8 +119,6 @@ subroutine IPModel_ASAP2_Initialise_str(this, args_str, param_str, mpi)
   call IPModel_ASAP2_read_params_xml(this, param_str)
   this%initialised = .true.
   
-  if (present(mpi)) this%mpi = mpi
-
 end subroutine IPModel_ASAP2_Initialise_str
 
 subroutine IPModel_ASAP2_Finalise(this)
@@ -164,7 +162,7 @@ end subroutine smooth_cutoff
 
 
 !% Charge-charge interactions, screened by Yukawa function
-subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield)
+subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), dimension(:), intent(in) :: charge
@@ -172,6 +170,7 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
+   type(MPI_Context), intent(in), optional :: mpi
 
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr
@@ -201,8 +200,10 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield)
 
    !$omp do schedule(runtime)
    do i=1, at%n
-      if (this%mpi%active) then
-         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      if (present(mpi)) then
+	 if (mpi%active) then
+	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	 endif
       endif
 
       if (allocated(at%connect%is_min_image)) then
@@ -278,12 +279,14 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield)
       end do
    end do
 
-   if (this%mpi%active) then
-      if (present(e)) private_e = sum(this%mpi, private_e) 
-      if (present(local_e)) call sum_in_place(this%mpi, private_local_e)
-      if (present(f)) call sum_in_place(this%mpi, private_f)
-      if (present(virial)) call sum_in_place(this%mpi, private_virial)
-      if (present(efield)) call sum_in_place(this%mpi, private_efield)
+   if (present(mpi)) then
+      if (mpi%active) then
+	 if (present(e)) private_e = sum(mpi, private_e) 
+	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
+	 if (present(f)) call sum_in_place(mpi, private_f)
+	 if (present(virial)) call sum_in_place(mpi, private_virial)
+	 if (present(efield)) call sum_in_place(mpi, private_efield)
+      end if
    end if
 
    !$omp critical
@@ -306,7 +309,7 @@ end subroutine asap_rs_charges
 
 
 !% Charge-dipole and dipole-dipole interactions, screened by Yukawa function
-subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
+subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield, mpi)
 #ifdef _OPENMP
    use omp_lib
 #endif
@@ -318,6 +321,7 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
+   type(MPI_Context), intent(in), optional :: mpi
 
    integer i, j, m, ti, tj, k
    real(dp) :: r_ij, u_ij(3), gamjir3, gamjir2, fc, dfc_dr
@@ -350,8 +354,10 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
 
    !$omp do schedule(runtime)
    do i=1, at%n
-      if (this%mpi%active) then
-         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      if (present(mpi)) then
+	 if (mpi%active) then
+	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	 endif
       endif
 
       if (allocated(at%connect%is_min_image)) then
@@ -504,12 +510,14 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
    end do
    !$omp end do
 
-   if (this%mpi%active) then
-      if (present(e)) private_e = sum(this%mpi, private_e) 
-      if (present(local_e)) call sum_in_place(this%mpi, private_local_e)
-      if (present(f)) call sum_in_place(this%mpi, private_f)
-      if (present(virial)) call sum_in_place(this%mpi, private_virial)
-      if (present(efield)) call sum_in_place(this%mpi, private_efield)
+   if (present(mpi)) then
+      if (mpi%active) then
+	 if (present(e)) private_e = sum(mpi, private_e) 
+	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
+	 if (present(f)) call sum_in_place(mpi, private_f)
+	 if (present(virial)) call sum_in_place(mpi, private_virial)
+	 if (present(efield)) call sum_in_place(mpi, private_efield)
+      end if
    end if
 
    !$omp critical
@@ -531,11 +539,12 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield)
 end subroutine asap_rs_dipoles
 
 
-subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr)
+subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
   type(IPModel_ASAP2), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   real(dp), dimension(:), intent(in) :: charge
   real(dp), dimension(:,:), intent(out) :: dip_sr
+   type(MPI_Context), intent(in), optional :: mpi
 
   integer :: i, ti, m, j, tj, k
   real(dp) :: r_ij, u_ij(3), qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr
@@ -553,8 +562,10 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr)
 
   !$omp do schedule(runtime)
   do i=1, at%n
-     if (this%mpi%active) then
-        if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+     if (present(mpi)) then
+	if (mpi%active) then
+ 	  if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+        endif
      endif
 
      ti = get_type(this%type_of_atomic_num, at%Z(i))
@@ -593,7 +604,9 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr)
   end do
   !$omp end do
   
-  if (this%mpi%active)   call sum_in_place(this%mpi, private_dip_sr)
+  if (present(mpi)) then
+     if (mpi%active)   call sum_in_place(mpi, private_dip_sr)
+  endif
 
   !$omp critical
   dip_sr = dip_sr + private_dip_sr
@@ -611,7 +624,7 @@ end subroutine asap_short_range_dipole_moments
 !% U_ij = D_ij \left[ e^{\gamma_{ij}\left( 1 - r_{ij}/r^0_{ij} \right)} 
 !%                  - 2 e^{\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
 !% \end{displaymath}
-subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
+subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 #ifdef _OPENMP
    use omp_lib
 #endif
@@ -620,6 +633,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
+   type(MPI_Context), intent(in), optional :: mpi
 
    integer i, j, m, ti, tj
    real(dp) :: r_ij, u_ij(3), dms, gammams, rms
@@ -657,8 +671,10 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
   
    !$omp do schedule(runtime)
    do i=1, at%n
-      if (this%mpi%active) then
-         if (mod(i-1, this%mpi%n_procs) /= this%mpi%my_proc) cycle
+      if (present(mpi)) then
+	 if (mpi%active) then
+	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+	 endif
       endif
 
       if (allocated(at%connect%is_min_image)) then
@@ -729,11 +745,13 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial)
       end do
    end do
 
-   if (this%mpi%active) then
-      if (present(e)) private_e = sum(this%mpi, private_e) 
-      if (present(local_e)) call sum_in_place(this%mpi, private_local_e)
-      if (present(f)) call sum_in_place(this%mpi, private_f)
-      if (present(virial)) call sum_in_place(this%mpi, private_virial)
+   if (present(mpi)) then
+      if (mpi%active) then
+	 if (present(e)) private_e = sum(mpi, private_e) 
+	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
+	 if (present(f)) call sum_in_place(mpi, private_f)
+	 if (present(virial)) call sum_in_place(mpi, private_virial)
+      end if
    end if
 
    !$omp critical
@@ -784,13 +802,15 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
  end subroutine IPModel_ASAP2_setup_atoms
 
 
-subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
+subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
    real(dp), intent(out), optional :: f(:,:)
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional, intent(in) :: args_str
+   type(MPI_Context), intent(in), optional :: mpi
+   integer, intent(out), optional :: error
 
    type(Dictionary) :: params
    logical :: save_efield, save_dipoles, restart, applied_efield, save_dipole_velo
@@ -805,6 +825,8 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    real, parameter :: difftol = 500.0_dp
 
+   INIT_ERROR(error)
+
    call system_timer('asap_calc')
    vv = current_verbosity()
 
@@ -816,7 +838,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
       call param_register(params, 'restart', 'F', restart)
       call param_register(params, 'applied_efield', 'F', applied_efield)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
-         call system_abort("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str))
+         RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
       endif
       call finalise(params)
    else
@@ -836,44 +858,53 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
    ! Assign pointers
    if (save_efield) then
-      if (.not. assign_pointer(at, 'efield', efield)) &
-           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield" property')
+      if (.not. assign_pointer(at, 'efield', efield)) then
+           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield" property', error)
+      endif
    else
       allocate(theefield(3,at%n))
       efield => theefield
    end if
 
    if (save_dipoles) then
-      if (.not. assign_pointer(at, 'dipoles', dipoles)) &
-           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "dipoles" property')
+      if (.not. assign_pointer(at, 'dipoles', dipoles)) then
+           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "dipoles" property', error)
+      endif
    else
       allocate(thedipoles(3,at%n))
       dipoles => thedipoles
    end if
 
    if (save_dipole_velo .and. maxval(abs(dipoles)) > 0.0_dp) then
-      if (.not. assign_pointer(at, 'dip_velo', dip_velo)) &
-           call system_abort('IPModel_ASAP2_calc failed to assign pointer ot "dip_velo" property')
+      if (.not. assign_pointer(at, 'dip_velo', dip_velo)) then
+           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer ot "dip_velo" property', error)
+      endif
       do i=1,at%n
          dip_velo(:,i) = -dipoles(:,i)
       end do
    end if
 
    if (applied_efield) then
-      if (.not. assign_pointer(at, 'ext_efield', ext_efield)) &
-           call system_abort('IPModel_ASAP2_calc failed to assign pointer to "ext_efield" property')
+      if (.not. assign_pointer(at, 'ext_efield', ext_efield)) then
+           RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "ext_efield" property', error)
+      endif
    end if
 
-   if (.not. assign_pointer(at, 'charge', charge)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "charge" property')
-   if (.not. assign_pointer(at, 'fixdip', fixdip)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "fixdip" property')
-   if (.not. assign_pointer(at, 'efield_old1', efield_old1)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property')
-   if (.not. assign_pointer(at, 'efield_old2', efield_old2)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old2" property')
-   if (.not. assign_pointer(at, 'efield_old3', efield_old3)) &
-        call system_abort('IPModel_ASAP2_calc failed to assign pointer to "efield_old3" property')
+   if (.not. assign_pointer(at, 'charge', charge)) then
+        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+      endif
+   if (.not. assign_pointer(at, 'fixdip', fixdip)) then
+        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "fixdip" property', error)
+      endif
+   if (.not. assign_pointer(at, 'efield_old1', efield_old1)) then
+        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old1" property', error)
+      endif
+   if (.not. assign_pointer(at, 'efield_old2', efield_old2)) then
+        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old2" property', error)
+      endif
+   if (.not. assign_pointer(at, 'efield_old3', efield_old3)) then
+        RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "efield_old3" property', error)
+      endif
 
    if (.not. get_value(at%params, 'n_efield_old', n_efield_old)) n_efield_old = 0
 
@@ -916,12 +947,12 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    efield_charge = 0.0_dp
 
    if (maxval(abs(this%z)) > 0.0_dp) then
-      call asap_rs_charges(this, at, charge, e, local_e, f, virial, efield_charge)
+      call asap_rs_charges(this, at, charge, e, local_e, f, virial, efield_charge, mpi)
    end if
 
    allocate(dip_sr(3,at%n))
    dip_sr = 0.0_dp
-   if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, charge, dip_sr)
+   if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
 
    efield_int_old = 0.0_dp
 
@@ -961,7 +992,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          ! Calculate new efield and measure of convergence
          efield_int_old = efield_dipole
          efield_dipole = 0.0_dp
-         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole)
+         call asap_rs_dipoles(this, at, charge, dipoles, efield=efield_dipole, mpi)
 
          diff = 0.0_dp
          do i=1,at%n
@@ -979,7 +1010,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
 
          if (diff > difftol) then
             call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
-            call system_abort('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff)
+            RAISE_ERROR('IPModel_ASAP2_calc: Polarisation diverges - diff='//diff, error)
          end if
       
          if (abs(diff - diff_old) < this%tolpol) exit
@@ -988,7 +1019,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
          npol = npol + 1
          if (npol >= this%maxipol)  then
             call write(at, 'ipmodel_asap_polarisation_not_converged.xyz')
-            call system_abort('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff)
+            RAISE_ERROR('IPModel_ASAP2_calc: Polarisation not converged in '//this%maxipol//' steps - diff='//diff, error)
          endif
 
       end do
@@ -1001,7 +1032,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    ! Compute final energy, local energies, forces, virial and electric efield
    efield = efield_charge
    if (maxval(abs(dipoles)) > 0.0_dp) then
-      call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield)
+      call asap_rs_dipoles(this, at, charge, dipoles, e, local_e, f, virial, efield, mpi)
 
       if (save_dipole_velo) then
          ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
@@ -1012,7 +1043,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str)
    end if
    
    ! Finally, add the short-range contribution
-   call asap_morse_stretch(this, at, e, local_e, f, virial)
+   call asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 
       ! Unit conversion
    if (present(e)) e = e*HARTREE
