@@ -5076,7 +5076,7 @@ contains
     integer, optional, intent(out) :: error
 
     character, allocatable, dimension(:) :: char_array
-    integer, parameter :: SIZEOF_ATOMS = 1756
+    integer, parameter :: SIZEOF_ATOMS = 1760
 
     INIT_ERROR(error)
 

@@ -78,6 +78,7 @@ classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['
 
 QUIP_ROOT = spec['quip_root']
 QUIP_ARCH = spec['quip_arch']
+QUIP_MAKEFILE = spec['quip_makefile']
 
 for name, cls in classes:
    setattr(sys.modules[__name__], name, cls)

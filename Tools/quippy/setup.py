@@ -234,6 +234,7 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
         fortran_spec['short_names'] = short_names
         fortran_spec['quip_root'] = quip_root
         fortran_spec['quip_arch'] = quip_arch
+        fortran_spec['quip_makefile'] = makefile
         cPickle.dump(fortran_spec, open('%s.spec' % modname, 'w'))
 
         return res
