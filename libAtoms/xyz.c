@@ -830,7 +830,7 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
   if (!string) fclose(in);
 }
 
-#define PUT_LINE(line) if (string) extendable_str_concat(estr, line, strlen(line)); else fputs(line, out)
+#define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else fputs(line, out); }
 
 void write_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int n_atom,
 		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
@@ -843,6 +843,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
   void *property_data[MAX_ENTRY_COUNT];
   char property_code;
   void *data, *tmp_data;
+  int tmp_zero = 0, tmp_one = 1;
 
   INIT_ERROR;
 
