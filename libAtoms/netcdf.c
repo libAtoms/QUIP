@@ -46,38 +46,22 @@
 #include <ctype.h>
 #include <float.h>
 
-#include "error.h"
-#include "cdictionary.h"
-
-// Macro definitions
+#include "libatoms.h"
 
 #define absval(x)  ( (x) < 0 ? -(x) : (x) )
 #define NETCDF_CHECK(s) if ((retval = (s))) { RAISE_ERROR("%s",nc_strerror(retval)); }
 #define DEG_TO_RAD (M_PI/180.0)
 #define RAD_TO_DEG (180.0/M_PI)
 
-// Function prototypes
-
-void lattice_abc_to_xyz_(double cell_lengths[3], double cell_angles[3], double lattice[3][3]);
-void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double cell_angles[3]);
-
-void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
-		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error);
-void write_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3],
-		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
-		   int shuffle, int deflate, int deflate_level, int *error);
-void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error);
-
-
 // Utility functions
 
 #ifdef HAVE_NETCDF
  
-void replace_fill_values(int *params, int *properties, int irep, double rrep, int *error) {
+void replace_fill_values(fortran_t *params, fortran_t *properties, int irep, double rrep, int *error) {
   int i, j=0, k=0, n, d, type, shape[2];
   char key[C_KEY_LEN];
   void *loc;
-  int *dictionaries[2];
+  fortran_t *dictionaries[2];
 
   INIT_ERROR;
   dictionaries[0] = params;
@@ -122,15 +106,15 @@ void replace_fill_values(int *params, int *properties, int irep, double rrep, in
 	break;
 
       case(T_INTEGER_A2):
-	for (k=0; j<shape[1]; k++)
-	  for (j=0; k<shape[0]; j++)
+	for (k=0; k<shape[1]; k++)
+	  for (j=0; j<shape[0]; j++)
 	    if (INTEGER_A2(loc,shape,j,k) == NC_FILL_INT)
 	      INTEGER_A2(loc,shape,j,k) = irep;
 	break;
 
       case(T_REAL_A2):
-	for (k=0; j<shape[1]; k++)
-	  for (j=0; k<shape[0]; j++)
+	for (k=0; k<shape[1]; k++)
+	  for (j=0; j<shape[0]; j++)
 	    if((REAL_A2(loc,shape,j,k) > 0) == (NC_FILL_DOUBLE > 0) && /* prevents potential overflow */
 	       (absval(REAL_A2(loc,shape,j,k) - NC_FILL_DOUBLE) <= absval(DBL_EPSILON * NC_FILL_DOUBLE)))
 	      REAL_A2(loc,shape,j,k) = rrep;
@@ -338,7 +322,7 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
 }
 
 
-void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
+void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], 
 		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   int nc_id, i, n_selected;
@@ -411,7 +395,8 @@ void read_netcdf (char *filename, int *params, int *properties, int *selected_pr
     at_end = *n_atom-1;
   }
 
-  dictionary_get_n(selected_properties, &n_selected);
+  n_selected = 0;
+  if (selected_properties != NULL) dictionary_get_n(selected_properties, &n_selected);
   
   // Loop over all variables in file
   NETCDF_CHECK(nc_inq_nvars(nc_id, &nvars));
@@ -560,7 +545,7 @@ void read_netcdf (char *filename, int *params, int *properties, int *selected_pr
   nc_close(nc_id);
 } 
 
-void write_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3],
+void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
 		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
 		   int shuffle, int deflate, int deflate_level, int *error)
 {
@@ -581,7 +566,7 @@ void write_netcdf (char *filename, int *params, int *properties, int *selected_p
   int n, type, type_att, shape[2], var_id, tmp_type, tmp_shape[2], tmp_error;
   char key[C_KEY_LEN];
   void *data, *tmp_data;
-  int *dictionaries[2];
+  fortran_t *dictionaries[2];
 
   INIT_ERROR;
   dictionaries[0] = params;
@@ -998,14 +983,14 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
 
 
 #else
-void read_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], 
+void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], 
 		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error)
 {
   INIT_ERROR;
   RAISE_ERROR( "No NetCDF support compiled in. Recompile with HAVE_NETCDF=1. \n");
 }
 
-void write_netcdf (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3],
+void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
 		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
 		   int shuffle, int deflate, int deflate_level, int *error)
 
