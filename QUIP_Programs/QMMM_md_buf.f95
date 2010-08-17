@@ -34,6 +34,7 @@
 !filepot_program can be e.g. /Users/csilla/QUIP/build.darwin_x86_64_g95/cp2k_filepot
 !TODO:
 !use the buffer carving of the potential force mixing routines.
+#include "error.inc"
 
 program qmmm_md
 
@@ -146,6 +147,8 @@ program qmmm_md
 logical :: have_silica_potential
   integer :: stat
 
+  integer :: error=ERROR_NONE
+
   real(dp), allocatable :: restraint_stuff(:,:)
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
@@ -214,8 +217,12 @@ logical :: have_silica_potential
         call system_abort('could not parse argument line')
       end if
 
-      if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
-	call system_abort("Need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr//"/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
+      if (Run_Type1(1:4) == 'QMMM' .or. Run_Type2(1:4) == 'QMMM') then
+	if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
+	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
+			      ", need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr// &
+			      "/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
+	endif
       endif
 
       if (Seed.gt.0) call system_reseed_rng(Seed)
@@ -275,6 +282,9 @@ logical :: have_silica_potential
       elseif (Thermostat_Type.eq.2) then
          call print('  Thermostat_Type 1: '//'Nose-Hoover everywhere')
          call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
+      elseif (Thermostat_Type.eq.3) then
+         call print('  Thermostat_Type 3: '//'separate Nose-Hoover for each atom')
+         call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.5) then
          call print('  Thermostat_Type 5: QM core & buffer heavy atoms in the 1st thermostat')
          call print('                     QM core & buffer H in the 2nd thermostat')
@@ -288,6 +298,8 @@ logical :: have_silica_potential
          call print('  Thermostat_Type 7: 3 regions, by radius,')
          call print('                   each with its own Nose-Hoover thermostat')
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
+      else
+	 call print('  Thermostat_Type '//thermostat_type//' unknown')
       endif
       call print('  PSF_Print '//PSF_Print)
       call print('  nneightol '//nneightol)
@@ -386,6 +398,8 @@ logical :: have_silica_potential
 
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
+
+    if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, 3)
 
   !PRINT CONSTRAINTS AND RESTRAINTS
 
@@ -621,12 +635,15 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      !----------------------------------------------------
     call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
-        call write(ds%atoms,traj_xyz,real_format='f17.10')
+        call write(ds%atoms,traj_xyz,real_format='f17.10', error=error)
+	HANDLE_ERROR(error)
     else
-        call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
+        call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f',error=error)
+	HANDLE_ERROR(error)
     endif
     call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-    call write(ds%atoms,latest_xyz,real_format='%17.10f')
+    call write(ds%atoms,latest_xyz,real_format='%17.10f',error=error)
+    HANDLE_ERROR(error)
     call finalise(latest_xyz)
     call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      !----------------------------------------------------
@@ -645,15 +662,18 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
      call set_value(ds%atoms%params,'Time',ds%t)
      if (trim(print_prop).eq.'all') then
-         call write(ds%atoms,traj_xyz,real_format='%17.10f')
+         call write(ds%atoms,traj_xyz,real_format='%17.10f',error=error)
+	 HANDLE_ERROR(error)
 !         call write(ds%atoms,xyz,real_format='%17.10f')
      else
-         call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
+         call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f', error=error)
+	 HANDLE_ERROR(error)
 !         call write(ds%atoms,xyz,real_format='%17.10f')
          !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
      endif
      call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-     call write(ds%atoms,latest_xyz,real_format='%17.10f')
+     call write(ds%atoms,latest_xyz,real_format='%17.10f', error=error)
+     HANDLE_ERROR(error)
      call finalise(latest_xyz)
      call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
 
@@ -783,15 +803,18 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (mod(n,IO_Rate)==0) then
         call set_value(ds%atoms%params,'Time',ds%t)
         if (trim(print_prop).eq.'all') then
-            call write(ds%atoms,traj_xyz,real_format='%17.10f')
+            call write(ds%atoms,traj_xyz,real_format='%17.10f',error=error)
+	    HANDLE_ERROR(error)
 !            call write(ds%atoms,xyz,real_format='%17.10f')
         else
-            call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f')
+            call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f',error=error)
+	    HANDLE_ERROR(error)
 !            call write(ds%atoms,xyz,real_format='%17.10f')
             !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
         endif
         call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
-        call write(ds%atoms,latest_xyz,real_format='%17.10f')
+        call write(ds%atoms,latest_xyz,real_format='%17.10f',error=error)
+	HANDLE_ERROR(error)
         call finalise(latest_xyz)
         call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
@@ -1184,6 +1207,7 @@ contains
      integer, pointer :: qm_flag_p(:)
      character(len=STRING_LENGTH)        :: slow_args_str, fast_args_str, args_str
      logical :: empty_QM_core
+     real(dp), pointer :: force_p(:,:)
 
      empty_QM_core = .false.
      if (qm_region_pt_ctr) then
@@ -1264,6 +1288,9 @@ contains
        energy=0._dp !no energy
      endif
 
+     ! save forces if force property is there
+     if (assign_pointer(at, 'force', force_p)) force_p = f1
+
   end subroutine do_calc_call
 
   subroutine setup_pot(pot, Run_Type, filepot_program)
@@ -1296,6 +1323,11 @@ contains
       case(2)
 	call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
 	call print('Added single Nose-Hoover Thermostat')
+      case(3)
+	do i=1, ds%atoms%N
+	  call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
+	end do
+	call print("Added 1 Nose-Hoover thermostat for each atom")
       case(5)
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
@@ -1386,6 +1418,10 @@ contains
 	continue
       case (2)
 	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=3*at%N, T=T, tau=Nose_Hoover_tau)
+      case(3)
+	do i=1, ds%atoms%N
+	  ds%thermostat(i)%Q = nose_hoover_mass(Ndof=3, T=T, tau=Nose_Hoover_tau)
+	end do
       case(5)
 	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy+Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
 	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H+Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
@@ -1420,6 +1456,10 @@ contains
     select case(Thermostat_Type)
       case(1, 2)
 	  at%thermostat_region = 1
+      case(3)
+	  do i=1, ds%atoms%N
+	    at%thermostat_region(i) = i
+	  end do
       case (5)
 	if (.not. assign_pointer(at, 'cluster_mark', cluster_mark_p)) &
 	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
