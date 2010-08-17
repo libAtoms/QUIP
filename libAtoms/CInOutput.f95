@@ -39,10 +39,10 @@ module CInOutput_module
   use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
-  use Extendable_str_module, only: Extendable_str, operator(//), string, c_extendable_str_initialise
+  use Extendable_str_module, only: Extendable_str, operator(//), string
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, lower_case, &
        T_INTEGER, T_CHAR, T_REAL, T_LOGICAL, T_INTEGER_A, T_REAL_A, T_INTEGER_A2, T_REAL_A2, T_LOGICAL_A, T_CHAR_A, &
-       print_keys, c_dictionary_ptr_type, c_dictionary_initialise, assignment(=)
+       print_keys, c_dictionary_ptr_type, assignment(=)
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use MPI_Context_module, only: MPI_context
 
@@ -197,11 +197,6 @@ contains
     logical :: file_exists
 
     INIT_ERROR(error)
-
-    ! Make sure function pointers are set up to allow C to call dictionary, error, and extendable_str
-    call c_dictionary_initialise()
-    call c_error_initialise()
-    call c_extendable_str_initialise()
 
     this%action = optional_default(INPUT, action)
     this%append = optional_default(.false., append)

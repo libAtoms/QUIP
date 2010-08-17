@@ -44,16 +44,18 @@
 #include <math.h>
 #include <ctype.h>
 #include <float.h>
+#include <libgen.h>
 
-#include "error.h"
-#include "cdictionary.h"
+#include "libatoms.h"
 
 #define LINESIZE 2048
 #define MAX_ENTRY_COUNT 100
 #define PROPERTY_STRING_LENGTH 10
 #define PARAM_STRING_LENGTH 1024
 
-/* Find starting positions of xyz frames within a file
+/* xyz_find_frames() 
+ *
+ * Find starting positions of xyz frames within a file
  * Uses a disk cache to save recomputing if xyz
  * file hasn't been modified. Returns number of frames.
  *
@@ -62,9 +64,6 @@
  * Subsequent nframes+1 lines: offset (long), natoms (int)
  * Last offset is end of final frame scanned.
  */
-
-#include <libgen.h>
-
 void realloc_frames(long **frames, int **atoms, int *frames_array_size, int new_frames_array_size) {
   long *t_frames = NULL;
   int *t_atoms = NULL;
@@ -314,7 +313,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
 
 #define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error)
 
-void read_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int *n_atom,
+void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
 	       int compute_index, int frame, int *range, int string, int string_length, int *error)
 {
   FILE *in;
@@ -604,6 +603,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     dictionary_add_key(params, param_key, &type, shape, &data, error, strlen(param_key));
     PASS_ERROR;
 
+    if (data == NULL) continue;
+
     switch(type) {
     case(T_INTEGER):
       INTEGER(data) = strtol(param_value, &p, 10);
@@ -669,7 +670,8 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 
   entry_count = 0;
   n_property = 0;
-  dictionary_get_n(selected_properties, &n_selected);
+  n_selected = 0;
+  if (selected_properties != NULL) dictionary_get_n(selected_properties, &n_selected);
 
   for (i=0; i<k/3; i++) {
     debug("read_xyz: got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
@@ -732,8 +734,10 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
     }
     if (tmp_error == ERROR_NONE) {
       dictionary_add_key(properties, fields[3*i], &type, shape, &data, error, strlen(fields[3*i]));
-      if (type == T_CHAR_A) memset(data, ' ', shape[0]*shape[1]); // Zero string data
-      property_data[n_property] = data;
+      if (data != NULL) {
+	if (type == T_CHAR_A) memset(data, ' ', shape[0]*shape[1]); // Zero string data
+	property_data[n_property] = data;
+      }
     }
     n_property++;
   }
@@ -832,9 +836,9 @@ void read_xyz (char *filename, int *params, int *properties, int *selected_prope
 
 #define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else fputs(line, out); }
 
-void write_xyz (char *filename, int *params, int *properties, int *selected_properties, double lattice[3][3], int n_atom,
+void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
 		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
-		int string, int *estr, int *error) {
+		int string, fortran_t *estr, int *error) {
   FILE *out;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN];
   int i, j, m, n, type, shape[2], tmp_type, tmp_shape[2];
@@ -868,7 +872,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
     out = NULL;
 
   // Number of atoms
-  if (prefix[0] != '\0')
+  if (prefix != NULL && prefix[0] != '\0')
     sprintf(linebuffer, "%s %d\n", prefix, n_atom);
   else
     sprintf(linebuffer, "%d\n", n_atom);
@@ -956,7 +960,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
   dictionary_get_n(params, &n);
   param_value[0] = '\0';
   linebuffer[0] = '\0';
-  if (prefix[0] != '\0') sprintf(linebuffer, "%s ", prefix);
+  if (prefix != NULL && prefix[0] != '\0') sprintf(linebuffer, "%s ", prefix);
   for (i=1; i<=n; i++) {
     dictionary_query_index(params, &i, param_key, &type, shape, &data, error, C_KEY_LEN);
     PASS_ERROR;
@@ -1047,7 +1051,7 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
 
   for (n=0; n<n_atom; n++) {
     linebuffer[0] = '\0';
-    if (prefix[0] != '\0') strncat(linebuffer, prefix, LINESIZE-strlen(linebuffer)-1);
+    if (prefix != NULL && prefix[0] != '\0') strncat(linebuffer, prefix, LINESIZE-strlen(linebuffer)-1);
 
     for (i=1; i<=n_property; i++) {
 
@@ -1099,3 +1103,4 @@ void write_xyz (char *filename, int *params, int *properties, int *selected_prop
       fflush(out);
   }
 }
+
