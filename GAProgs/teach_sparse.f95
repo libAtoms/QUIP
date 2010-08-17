@@ -100,7 +100,7 @@ program teach_sparse_program
 
   if (.not. param_read_args(params, do_check = .true., command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
-     & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
+     & [r_cut=2.75] [j_max=4] [z0=0.0] [coordinates={bispectrum,qw,water_monomer}] [l_max=6] [cutoff={:}] [cutoff_f={:}] [cutoff_r1={:}] [no_q] [no_w] &
      & [e0=0.0] [f0=avg] [sgm={0.1 0.1 0.1}] [dlt=1.0] [theta_file=file] [sparse_file=file] [theta_fac=3.0] &
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
@@ -129,6 +129,8 @@ program teach_sparse_program
 
   main_teach_sparse%coordinates = lower_case(trim(main_teach_sparse%coordinates))
   select case(trim(main_teach_sparse%coordinates))
+  case('water_monomer')
+     main_teach_sparse%d = 3
   case('qw')
      main_teach_sparse%qw_cutoff = 0.0_dp
      main_teach_sparse%qw_cutoff_f = 0
@@ -332,6 +334,7 @@ program teach_sparse_program
   call print("model parameters:")
   call print("r_cut     = "//main_teach_sparse%r_cut)
   select case(trim(main_teach_sparse%coordinates))
+  case('water_monomer')
   case('qw')
      call print("l_max     = "//main_teach_sparse%qw_l_max)
      call print("cutoff    = "//qw_cutoff_string)

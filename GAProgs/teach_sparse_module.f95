@@ -142,8 +142,19 @@ contains
 
     call finalise(xyzfile)
 
-    allocate(this%species_Z(this%n_species))
-    this%species_Z = species_present(1:this%n_species)
+    select case(trim(this%coordinates))
+    case('water_monomer')
+       this%n_species = 1
+       allocate(this%species_Z(this%n_species))
+       this%species_Z = 8
+       if(3*this%n_ener /= this%nn) call system_abort('coordinates type water_monomer, but 3*n_ener /= ne')
+       this%nn = this%n_ener
+       this%ne = this%n_ener
+
+    case default
+       allocate(this%species_Z(this%n_species))
+       this%species_Z = species_present(1:this%n_species)
+    endselect
 
   end subroutine teach_n_from_xyz
 
@@ -165,7 +176,7 @@ contains
     type(Potential) :: core_pot
     
     integer :: d
-    integer :: n_max, n_con
+    integer :: n_max, n_con, index_o, index_h1, index_h2
     logical :: has_ener, has_force, has_virial
     real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
     real(dp), dimension(3,3) :: virial, virial_ewald, virial_ewald_corr, virial_core
@@ -173,8 +184,9 @@ contains
     real(dp), dimension(:,:), allocatable :: f_ewald, f_ewald_corr, f_core
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
     integer :: shift(3)
-    real(dp) :: pos(3)
-    integer :: li, ui, nn, ix, ie, i_con, i_ener
+    integer, dimension(3,1) :: water_monomer_index
+    real(dp), dimension(3) :: pos, water_monomer_v
+    integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
 
@@ -198,6 +210,9 @@ contains
        call initialise(df_hat,this%j_max, this%z0,this%r_cut)
 
        this%d = j_max2d(f_hat%j_max)
+
+    case('water_monomer')
+       this%d = 3
     case default
        call system_abort('Unknown coordinates '//trim(this%coordinates))
     endselect
@@ -223,6 +238,7 @@ contains
     ie = 0
     i_con = 0
     i_ener = 0
+    w_con = 0
 
     do n_con = 1, n_max
        call read(xyzfile,at,frame=n_con-1)
@@ -270,7 +286,14 @@ contains
           endif
        endif
 
-       if(has_ener) ener = ener - at%N*this%e0     
+       if(has_ener) then
+          select case(trim(this%coordinates))
+          case('water_monomer')
+             ener = ener - this%e0     
+          case default
+             ener = ener - at%N*this%e0     
+          endselect
+       endif
 
        call atoms_set_cutoff(at,this%r_cut)
        call calc_connect(at)
@@ -292,9 +315,25 @@ contains
        enddo
 
        if(has_ener .or. has_force .or. has_virial ) then
-          do i = 1, at%N
-             select case(trim(this%coordinates))
-             case('qw')
+          select case(trim(this%coordinates))
+          case('water_monomer')
+             if( at%N /= 3 ) call system_abort('Number of atoms is '//at%N//', not a single water molecule')
+             call find_water_monomer(at,water_monomer_index)
+             index_o = water_monomer_index(1,1)
+             index_h1 = water_monomer_index(2,1)
+             index_h2 = water_monomer_index(3,1)
+             water_monomer_v = water_monomer(at%pos(:,index_o),at%pos(:,index_h1),at%pos(:,index_h2))
+
+             w_con = w_con + 1
+             this%x(:,w_con) = water_monomer_v
+             this%xz(w_con) = 8
+             this%xf(w_con) = w_con
+             this%yf(w_con) = ener
+             this%lf(w_con) = w_con
+             this%target_type(w_con) = 1
+
+          case('qw')
+             do i = 1, at%N
                 call fourier_transform(f3_hat,at,i)
                 call calc_qw(qw,f3_hat)
                 call qw2vec(qw,vec(:,i))
@@ -305,7 +344,9 @@ contains
                       call qw2vec(dqw,jack(:,3*n+1:3*(n+1),i))
                    enddo
                 endif
-             case('bispectrum')
+             enddo
+          case('bispectrum')
+             do i = 1, at%N
                 call fourier_transform(f_hat,at,i,w)
                 call calc_bispectrum(bis,f_hat)
                 call bispectrum2vec(bis,vec(:,i))
@@ -316,82 +357,87 @@ contains
                       call bispectrum2vec(dbis,jack(:,3*n+1:3*(n+1),i))
                    enddo
                 endif
-             case default
-                call system_abort('Unknown coordinates '//trim(this%coordinates))
-             endselect
-          enddo
+             enddo
+          case default
+             call system_abort('Unknown coordinates '//trim(this%coordinates))
+          endselect
 
-          do i = 1, at%N
-             ix = i_con + i
-             this%x(:,ix) = vec(:,i)
-             this%xz(ix) = at%Z(i)
+          select case(trim(this%coordinates))
+          case('water_monomer')
 
-             if( has_ener ) then
-                ie = ie + 1
-                this%xf(ie) = ix
-             endif
-        
-             if(has_force) then
-                do k = 1, 3
-                   li = ui + 1
-                   ui = ui + 1
-                   nn = nn+1
-                   this%xdf(ui) = ix
-                   this%xd(:,ui) = jack(:,k,i)
-                   do n = 1, atoms_n_neighbours(at,i)
-                      j = atoms_neighbour(at,i,n,jn=jn)
+          case default
+             do i = 1, at%N
+                ix = i_con + i
+                this%x(:,ix) = vec(:,i)
+                this%xz(ix) = at%Z(i)
+
+                if( has_ener ) then
+                   ie = ie + 1
+                   this%xf(ie) = ix
+                endif
+           
+                if(has_force) then
+                   do k = 1, 3
+                      li = ui + 1
                       ui = ui + 1
-                      jx = i_con + j
-                      this%xdf(ui) = jx
-                      this%xd(:,ui) = jack(:,jn*3+k,j)
-                   enddo
-
-                   this%ydf(nn) = -f(k,i)
-                   this%ldf(nn) = ui
-                   !sigma(nn+n_ener) = sgm(2)
-                   this%target_type(nn+this%n_ener) = 2
-                enddo
-             endif
-          enddo
-
-          if(has_virial) then
-             do k = 1, 3
-                do l = 1, 3
-                   nn = nn+1
-
-                   do i = 1, at%N
-                      ix = i_con + i
-
-                      ui = ui + 1
+                      nn = nn+1
                       this%xdf(ui) = ix
-                      this%xd(:,ui) = jack(:,k,i)*at%pos(l,i)
+                      this%xd(:,ui) = jack(:,k,i)
                       do n = 1, atoms_n_neighbours(at,i)
-                         j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
+                         j = atoms_neighbour(at,i,n,jn=jn)
                          ui = ui + 1
                          jx = i_con + j
                          this%xdf(ui) = jx
-                         pos = at%pos(:,i) - matmul(at%lattice,shift)
-                         this%xd(:,ui) = jack(:,jn*3+k,j)*pos(l)
+                         this%xd(:,ui) = jack(:,jn*3+k,j)
                       enddo
+
+                      this%ydf(nn) = -f(k,i)
+                      this%ldf(nn) = ui
+                      !sigma(nn+n_ener) = sgm(2)
+                      this%target_type(nn+this%n_ener) = 2
                    enddo
-
-                   this%ydf(nn) = -virial(l,k) 
-                   this%ldf(nn) = ui
-                   !sigma(nn+n_ener) = sgm(3)
-                   this%target_type(nn+this%n_ener) = 3
-                enddo
+                endif
              enddo
-          endif
 
-          i_con = i_con + at%N
+             if(has_virial) then
+                do k = 1, 3
+                   do l = 1, 3
+                      nn = nn+1
 
-          if(has_ener) then
-             i_ener = i_ener + 1
-             this%yf(i_ener) = ener
-             this%lf(i_ener) = ie
-             !sigma(i_ener) = sgm(1)
-             this%target_type(i_ener) = 1
-          endif
+                      do i = 1, at%N
+                         ix = i_con + i
+
+                         ui = ui + 1
+                         this%xdf(ui) = ix
+                         this%xd(:,ui) = jack(:,k,i)*at%pos(l,i)
+                         do n = 1, atoms_n_neighbours(at,i)
+                            j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
+                            ui = ui + 1
+                            jx = i_con + j
+                            this%xdf(ui) = jx
+                            pos = at%pos(:,i) - matmul(at%lattice,shift)
+                            this%xd(:,ui) = jack(:,jn*3+k,j)*pos(l)
+                         enddo
+                      enddo
+
+                      this%ydf(nn) = -virial(l,k) 
+                      this%ldf(nn) = ui
+                      !sigma(nn+n_ener) = sgm(3)
+                      this%target_type(nn+this%n_ener) = 3
+                   enddo
+                enddo
+             endif
+
+             i_con = i_con + at%N
+
+             if(has_ener) then
+                i_ener = i_ener + 1
+                this%yf(i_ener) = ener
+                this%lf(i_ener) = ie
+                !sigma(i_ener) = sgm(1)
+                this%target_type(i_ener) = 1
+             endif
+          endselect
        endif
 
        if(allocated(vec)) deallocate(vec)
@@ -462,7 +508,12 @@ contains
              endif
           endif
 
-          this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
+          select case(trim(this%coordinates))
+          case('water_monomer')
+             this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core)
+          case default
+             this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
+          endselect
 
           n_ener = n_ener + 1
        endif
@@ -486,13 +537,18 @@ contains
     type(atoms) :: at
 
     allocate(this%w_Z(maxval(this%species_Z)))
-    call initialise(xyzfile,this%at_file)
+    select case(trim(this%coordinates))
+    case('water_monomer')
+       this%w_Z(8) = 1.0_dp
+    case default
+       call initialise(xyzfile,this%at_file)
 
-    call read(xyzfile,at,frame=0)
-    call get_weights(at,this%w_Z)
-    call finalise(at)
+       call read(xyzfile,at,frame=0)
+       call get_weights(at,this%w_Z)
+       call finalise(at)
 
-    call finalise(xyzfile)
+       call finalise(xyzfile)
+    endselect
 
   end subroutine w_Z_from_xyz
 
@@ -528,6 +584,11 @@ contains
      call xml_AddAttribute(xf,"f0",""//this%f0)
 
      select case(trim(this%coordinates))
+     case('water_monomer')
+        call xml_AddAttribute(xf,"coordinates","water_monomer")
+        call xml_NewElement(xf,"water_monomer_params")
+        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
+        call xml_EndElement(xf,"water_monomer_params")
      case('qw')
         call xml_AddAttribute(xf,"coordinates","qw")
 

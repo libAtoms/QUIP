@@ -4,7 +4,7 @@
 [j_max=4] max of expansion of bispectrum
 [z0=0.0] ???
 
-[coordinates] {bispectrum,qw} representation to use (bispectrum default)
+[coordinates] {bispectrum,qw,water_monomer} representation to use (bispectrum default)
 
 QW parameters:
 [l_max=6] maximum sphearical harmonic expansion
