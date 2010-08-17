@@ -314,6 +314,7 @@ module bispectrum_module
    public :: fourier_so3, grad_fourier_so3, qw_so3, grad_qw_so3
    public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
    public :: kmax2d, suggest_kmax, suggest_resolution
+   public :: water_monomer
 
    contains
 
@@ -3629,28 +3630,12 @@ module bispectrum_module
      !#
      !###############################################################
 
-     function water_monomer(at) result(vec)
-       type(Atoms), intent(in) :: at
+     function water_monomer(rO,rH1,rH2) result(vec)
+       real(dp), dimension(3), intent(in) :: rO, rH1, rH2
        real(dp) :: vec(3), v1(3), v2(3)
-       integer ::io, ih1, ih2, i
 
-       if(at%N /= 3) call system_abort("water_monomer: Atoms object does not have 3 atoms") 
-       ! find the index of the oxygen atom
-       io = 0
-       do i=1,3
-          if(at%Z(i) == 8) then
-             io=i
-             exit
-          end if
-       end do
-       if (io == 0) call system_abort("water_monomer: Cannot find oxygen atom.")
-       ih1 = mod(io,3)+1   ! index of H atom
-       ih2 = mod(io+4,3)+1 ! index of H atom
-       if(at%Z(ih1) /= 1 .or. at%Z(ih2) /= 1) &
-            call system_abort("water_monomer: Cannot find hydrogen atoms.")
-       ! O--H vectors
-       v1 = at%pos(:,io)-at%pos(:,ih1)
-       v2 = at%pos(:,io)-at%pos(:,ih2)
+       v1 = rO - rH1
+       v2 = rO - rH2
 
        ! descriptors
        vec(1) = norm2(v1+v2)
