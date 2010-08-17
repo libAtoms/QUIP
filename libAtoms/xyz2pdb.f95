@@ -30,17 +30,18 @@
 
 ! last modified -- 2009-02-19 -- Csilla
 ! takes an xyz file, identifies the residues and outputs a PSF and a PDB file.
+#include "error.inc"
 
 program xyz2pdb
 
 !  use libatoms_module
 
   use atoms_module,            only: atoms, finalise, &
-                                     read_xyz, &
                                      set_cutoff, &
                                      calc_connect, print, &
                                      distance_min_image, bond_length, &
-                                     map_into_cell
+                                     map_into_cell, assign_pointer, add_property, &
+				     has_property, atoms_sort
   use dictionary_module,       only: dictionary, initialise, finalise, &
                                      set_value
   use linearalgebra_module,    only: find_in_array
@@ -59,6 +60,8 @@ program xyz2pdb
                                      write_brookhaven_pdb_file, &
                                      write_psf_file, &
                                      MM_RUN, silica_2body_cutoff
+  use cinoutput_module,        only : read, write
+  use error_module
 
   implicit none
 
@@ -81,6 +84,11 @@ program xyz2pdb
     logical                     :: ex
     logical                     :: have_silica_potential
     logical                     :: use_avgpos
+    integer :: at_i
+    integer, pointer :: sort_index_p(:)
+    logical                     :: do_sort
+    integer :: error = ERROR_NONE
+    character(80) :: sorted_name
 
     call system_initialise(verbosity=PRINT_silent,enable_timing=.true.)
     call verbosity_push(PRINT_NORMAL)
@@ -96,6 +104,7 @@ program xyz2pdb
     call param_register(params_in, 'Center_atom', '0', center_atom)
     call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
     call param_register(params_in, 'use_avgpos', 'T', use_avgpos)
+    call param_register(params_in, 'sort', 'F', do_sort)
     if (.not. param_read_args(params_in, do_check = .true.)) then
       call print_usage
       call system_abort('could not parse argument line')
@@ -111,6 +120,7 @@ program xyz2pdb
     pdb_name = trim(Root)//'.pdb'
     psf_name = trim(Root)//'.psf'
     xsc_name = trim(Root)//'.xsc'
+    sorted_name = trim(Root)//'.sorted.xyz'
 
    ! print run parameters
     call print('Input:')
@@ -121,6 +131,7 @@ program xyz2pdb
     call print('  Neighbour Tolerance: '//Neighbour_Tolerance)
     call print('  have_silica_potential: '//have_silica_potential)
     call print('  use_avgpos to build connectivity: '//use_avgpos)
+    call print('  sort atoms by molecule/residue : '//use_avgpos)
     if(center_atom > 0) &
          call print('  Center atom: '//center_atom)
     call print('Output:')
@@ -146,7 +157,7 @@ program xyz2pdb
 
    ! read in XYZ
     call print('Reading in coordinates...')
-    call read_xyz(my_atoms,xyz_file)
+    call read(my_atoms,trim(xyz_file))
 
 
    ! calculating connectivities
@@ -183,11 +194,44 @@ program xyz2pdb
 	have_silica_potential=have_silica_potential,pos_field_for_connectivity="pos")
     endif
 
+    if (do_sort) then
+       ! sort by molecule, residue ID
+       nullify(sort_index_p)
+       if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) then
+	 call add_property(my_atoms, 'sort_index', 0)
+	 if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) &
+	   call system_abort("WARNING: do_cp2k_calc failed to assign pointer for sort_index, not sorting")
+       endif
+       if (associated(sort_index_p)) then
+	 do at_i=1, my_atoms%N
+	   sort_index_p(at_i) = at_i
+	 end do
+       endif
+       if (.not.(has_property(my_atoms,'mol_id')) .or. .not. has_property(my_atoms,'atom_res_number')) then
+	 call system_abort("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number")
+       else
+	 call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', error=error)
+	 HANDLE_ERROR(error)
+	 if (associated(sort_index_p)) then
+	   do at_i=1, my_atoms%N
+	     if (sort_index_p(at_i) /= at_i) then
+	       call print("sort() of my_atoms%data by mol_id, atom_res_number reordered some atoms")
+	       exit
+	     endif
+	   end do
+	 endif
+       end if
+       call calc_connect(my_atoms)
+    end if ! do_sort
+
    ! print output PDB and PSF files
     call print('Writing files with CHARMM format...')
     call write_psf_file(my_atoms,psf_file=trim(psf_name),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
     call write_brookhaven_pdb_file(my_atoms,trim(pdb_name))
     if (Print_XSC) call write_xsc_file(my_atoms,xsc_file=trim(xsc_name))
+    if (do_sort) then
+      call write(my_atoms, trim(sorted_name))
+    endif
 
     call finalise(intrares_impropers)
     call finalise(my_atoms)
@@ -212,6 +256,7 @@ contains
     call print('  [Center_atom=num], optionally shifts atoms so that the atom with index num is at')
     call print('                        the origin, before dropping periodic boundary condition info')
     call print('  [use_avgpos=T], optionally use instantaneous positions instead of average positions, if this is set to F')
+    call print('  [sort=F], optionally sort atoms by residue/molecule')
     call print('  [have_silica_potential=F], optionally switches on the use of silica potential described by Cole et al., JChemPhys, 2007.')
 
     call print('')

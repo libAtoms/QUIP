@@ -533,13 +533,13 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 	     else ! default
 call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
                do j=1,size(molecules(i)%i_a)
-                  atom_mol_name(:,j) = pad("M"//i, TABLE_STRING_LENGTH)
+                  atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
                end do
 	     endif
 	   else ! default
 call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not water, single atom or silica")
              do j=1,size(molecules(i)%i_a)
-                atom_mol_name(:,j) = pad("M"//i, TABLE_STRING_LENGTH)
+                atom_mol_name(:,molecules(i)%i_a(j)) = pad("M"//i, TABLE_STRING_LENGTH)
              end do
 	   endif
 	 end if ! allocated(molecules)
