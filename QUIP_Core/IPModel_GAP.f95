@@ -207,12 +207,13 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
-  real(dp) :: e_i, f_gp, f_gp_k
+  real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w, charge
   real(dp), dimension(:,:,:), allocatable   :: virial_in
   real(dp), dimension(:,:), allocatable   :: vec, f_ewald, f_ewald_corr
   real(dp), dimension(:,:,:), allocatable   :: jack
-  integer :: d, i, j, k, n, nei_max, jn
+  integer, dimension(:,:), allocatable :: water_monomer_index
+  integer :: d, i, j, k, n, nei_max, jn, index_o, index_h1, index_h2
 
   real(dp) :: e_ewald, e_ewald_corr
   real(dp), dimension(3,3) :: virial_ewald, virial_ewald_corr
@@ -292,18 +293,28 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   endif
 
   allocate(w(at%N))
-  do i = 1, at%N
-     w(i) = this%w_Z(at%Z(i))
-  enddo
+  select case(trim(this%coordinates))
+  case('water_monomer')
+     w = 1.0_dp
+  case default
+     do i = 1, at%N
+        w(i) = this%w_Z(at%Z(i))
+     enddo
+  endselect
 
 #ifdef HAVE_GP
-  if (trim(this%coordinates) == 'bispectrum') then
+  select case(trim(this%coordinates))
+  case('water_monomer')
+     d = 3
+  case('bispectrum')
      d = j_max2d(this%j_max)
      call cg_initialise(this%j_max,2)
-  elseif (trim(this%coordinates) == 'qw') then
+  case('qw')
      d = (this%qw_l_max / 2) * this%qw_f_n
      if (this%qw_do_q .and. this%qw_do_w) d = d * 2
-  endif
+  case default
+     call system_abort('IPModel_GAP_Calc: coordinates = '//trim(this%coordinates)//' unknown')
+  endselect
 #endif
 
   nei_max = 0
@@ -311,9 +322,26 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      if( nei_max < (atoms_n_neighbours(at,i)+1) ) nei_max = atoms_n_neighbours(at,i)+1
   enddo
 
-  allocate(vec(d,at%N),jack(d,3*nei_max,at%N))
-  vec = 0.0_dp
-  jack = 0.0_dp
+  select case(trim(this%coordinates))
+  case('water_monomer')
+     if(mod(at%N,3) /= 0) call system_abort('IPModel_GAP_Calc: number of atoms '//at%N//' cannot be divided by 3 - cannot be pure water.')
+
+     allocate(vec(d,at%N/3),water_monomer_index(3,at%N/3))
+     call find_water_monomer(at,water_monomer_index)
+     do i = 1, at%N/3
+        index_o = water_monomer_index(1,i)
+        index_h1 = water_monomer_index(2,i)
+        index_h2 = water_monomer_index(3,i)
+        vec(:,i) = water_monomer(at%pos(:,index_o),at%pos(:,index_h1),at%pos(:,index_h2))
+     enddo
+  case default
+     allocate(vec(d,at%N))
+     vec = 0.0_dp
+     if(present(f) .or. present(virial)) then
+        allocate(jack(d,3*nei_max,at%N))
+        jack = 0.0_dp
+     endif
+  endselect
 
 !$omp parallel 
 #ifdef HAVE_GP
@@ -386,61 +414,71 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 !$omp end parallel
 
 #ifdef HAVE_GP
-  allocate(covariance(this%my_gp%n,at%N))
-  if (present(mpi)) then
+  select case(trim(this%coordinates))
+  case('water_monomer')
+
+  case default
+     allocate(covariance(this%my_gp%n,at%N))
      call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,mpi)
-  else
-     call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance)
-  endif
+  endselect
 #endif
     
+  select case(trim(this%coordinates))
+  case('water_monomer')
+     do i = 1, at%N/3
+        if(present(e)) then
+           call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i),Z=8)
+           e = e + water_monomer_energy + this%e0
+        endif
+     enddo
+
+  case default
 !$omp parallel do private(k,f_gp,f_gp_k,n,j,jn,shift)
-  do i = 1, at%N
-     if (present(mpi)) then
-	if (mpi%active) then
-	   if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	endif
-     endif
+     do i = 1, at%N
+        if (present(mpi)) then
+           if (mpi%active) then
+              if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+           endif
+        endif
 
-     if(associated(atom_mask_pointer)) then
-        if(.not. atom_mask_pointer(i)) cycle
-     endif
+        if(associated(atom_mask_pointer)) then
+           if(.not. atom_mask_pointer(i)) cycle
+        endif
 
-     if(present(e) .or. present(local_e)) then
+        if(present(e) .or. present(local_e)) then
 #ifdef HAVE_GP
-        call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i),c_in=covariance(:,i))
+           call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
-        local_e_in(i) = local_e_in(i) + this%e0
-     endif
+           local_e_in(i) = local_e_in(i) + this%e0
+        endif
 
-     if(present(f).or.present(virial)) then
-        do k = 1, 3
-           f_gp = 0.0_dp
+        if(present(f).or.present(virial)) then
+           do k = 1, 3
+              f_gp = 0.0_dp
        
 #ifdef HAVE_GP
-           call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i),c_in=covariance(:,i))
+              call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
        
-           if( present(f) ) f(k,i) = f(k,i) - f_gp_k
-           if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
+              if( present(f) ) f(k,i) = f(k,i) - f_gp_k
+              if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
 
-           do n = 1, atoms_n_neighbours(at,i)
-              j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
+              do n = 1, atoms_n_neighbours(at,i)
+                 j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
 #ifdef HAVE_GP
-              call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,n*3+k,i),Z=at%Z(i),c_in=covariance(:,i))
+                 call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,n*3+k,i),Z=at%Z(i),c_in=covariance(:,i))
 #endif
 !$omp critical
-              if( present(f) ) f(k,j) = f(k,j) - f_gp_k
-              if( present(virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
+                 if( present(f) ) f(k,j) = f(k,j) - f_gp_k
+                 if( present(virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
 !$omp end critical
-           enddo
+              enddo
        
-        enddo
-     endif
-  enddo
-
-  deallocate(vec,jack)
+           enddo
+        endif
+     enddo
+  endselect
 
   if (present(mpi)) then
      if(present(f)) call sum_in_place(mpi,f)
@@ -479,7 +517,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   if (present(mpi)) then
      if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
   endif
-  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
+!  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
 
@@ -487,6 +525,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   if(allocated(virial_in)) deallocate(virial_in)
   if(allocated(w)) deallocate(w)
   if(allocated(covariance)) deallocate(covariance)
+  if(allocated(vec)) deallocate(vec)
+  if(allocated(jack)) deallocate(jack)
+  if(allocated(water_monomer_index)) deallocate(water_monomer_index)
   atom_mask_pointer => null()
 
 end subroutine IPModel_GAP_Calc
@@ -583,6 +624,15 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
      endif
 
      allocate( parse_ip%Z(parse_ip%n_species) )
+
+  elseif(parse_in_ip .and. name == 'water_monomer_params') then
+
+     call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%cutoff
+     else
+        call system_abort('IPModel_GAP_read_params_xml cannot find cutoff')
+     endif
 
   elseif(parse_in_ip .and. name == 'bispectrum_so4_params') then
 
@@ -715,6 +765,8 @@ subroutine IPModel_endElement_handler(URI, localname, name)
     elseif(name == 'GAP_data') then
 
     elseif(name == 'bispectrum_so4_params') then
+
+    elseif(name == 'water_monomer_params') then
 
     elseif(name == 'qw_so3_params') then
 
