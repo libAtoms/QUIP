@@ -428,7 +428,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      do i = 1, at%N/3
         if(present(e)) then
            call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i),Z=8)
-           e = e + water_monomer_energy + this%e0
+           local_e_in(i) = water_monomer_energy + this%e0
         endif
      enddo
 
@@ -517,7 +517,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   if (present(mpi)) then
      if(present(e) .or. present(local_e) ) call sum_in_place(mpi,local_e_in)
   endif
-!  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
+  if(present(e)) e = sum(local_e_in) + e_ewald - e_ewald_corr
   if(present(local_e)) local_e = local_e_in
   if(present(virial)) virial = sum(virial_in,dim=3) + virial_ewald - virial_ewald_corr
 
