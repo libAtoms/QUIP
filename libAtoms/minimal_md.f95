@@ -38,7 +38,7 @@ program md
 
   type(DynamicalSystem) :: ds
   type(Atoms)           :: at, tmpat
-  type(inoutput)        :: movie
+  type(cinoutput)        :: movie
   real(dp), allocatable :: f(:,:)
   real(dp)              :: Q
   integer               :: n
@@ -78,7 +78,7 @@ program md
   do n = 1, 1000
      call ds_print_status(ds, 'M')
      if(mod(n, 20) == 0) then
-        call print_xyz(ds%atoms,movie)
+        call write(ds%atoms,movie)
         call calc_connect(ds%atoms)
      end if
 
