@@ -181,7 +181,7 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi)
 
    call system_timer('asap_rs_charges')
 
-   !$omp parallel default(none) shared(this, charge, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
+   !$omp parallel default(none) shared(this, mpi, charge, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -335,7 +335,7 @@ subroutine asap_rs_dipoles(this, at, charge, dip, e, local_e, f, virial, efield,
 
    call system_timer('asap_rs_dipoles')
 
-   !$omp parallel default(none) shared(this, at, charge, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
+   !$omp parallel default(none) shared(this, mpi, at, charge, dip, e, local_e, f, virial, efield) private(i, j, m, ti, tj, k, r_ij, u_ij, gamjir3, gamjir2, fc, dfc_dr, expfactor, dipi, dipj, qj, qi, pp, pri, prj, de_ind, de_dd, de_qd, dfqdip, dfdipdip, factor1, dist3, dist5, const1, const2, factork, de_sr, df_sr, gij, dgijdrij, bij, cij, i_is_min_image, j_is_min_image, tpoli, tpolj, qipj, qjpi, pipj, private_e, private_local_e, private_virial, private_f, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
@@ -555,7 +555,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
 
   dip_sr = 0.0_dp
 
-  !$omp parallel default(none) shared(this, at, charge, dip_sr) private(ti, m, j, tj, k, r_ij, u_ij, qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr, private_dip_sr)
+  !$omp parallel default(none) shared(this, mpi, at, charge, dip_sr) private(ti, m, j, tj, k, r_ij, u_ij, qj, bij, cij, dist3, dist5, gij, factork, expfactor, fc, dfc_dr, private_dip_sr)
 
   allocate(private_dip_sr(size(dip_sr,1),size(dip_sr,2)))
   private_dip_sr = 0.0_dp
@@ -656,7 +656,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
       end do
    end do
 
-   !$omp parallel default(none) shared(this, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e)
+   !$omp parallel default(none) shared(this, mpi, at, e, local_e, f, virial, elimitij) private(i, j, m, ti, tj, r_ij, u_ij, dms, gammams, rms, exponentms, factorms, phi, de, dforce, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
