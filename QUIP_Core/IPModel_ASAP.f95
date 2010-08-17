@@ -43,6 +43,7 @@
 
 module IPModel_ASAP_module
 
+use error_module
 use libatoms_module, only: dp, FIELD_LENGTH
 use mpi_context_module
 use QUIP_Common_module
