@@ -150,7 +150,13 @@ contains
        if(3*this%n_ener /= this%nn) call system_abort('coordinates type water_monomer, but 3*n_ener /= ne')
        this%nn = this%n_ener
        this%ne = this%n_ener
-
+    case('water_dimer')
+       this%n_species = 1
+       allocate(this%species_Z(this%n_species))
+       this%species_Z = 8
+       if(6*this%n_ener /= this%nn) call system_abort('coordinates type water_dimer, but 6*n_ener /= ne')
+       this%nn = this%n_ener
+       this%ne = this%n_ener
     case default
        allocate(this%species_Z(this%n_species))
        this%species_Z = species_present(1:this%n_species)
@@ -176,7 +182,7 @@ contains
     type(Potential) :: core_pot
     
     integer :: d
-    integer :: n_max, n_con, index_o, index_h1, index_h2
+    integer :: n_max, n_con
     logical :: has_ener, has_force, has_virial
     real(dp) :: ener, ener_ewald, ener_ewald_corr, ener_core
     real(dp), dimension(3,3) :: virial, virial_ewald, virial_ewald_corr, virial_core
@@ -185,7 +191,9 @@ contains
     real(dp), allocatable :: vec(:,:), jack(:,:,:), w(:)
     integer :: shift(3)
     integer, dimension(3,1) :: water_monomer_index
+    integer, dimension(3,2) :: water_dimer_index
     real(dp), dimension(3) :: pos, water_monomer_v
+    real(dp), dimension(12) :: water_dimer_v
     integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
@@ -213,6 +221,8 @@ contains
 
     case('water_monomer')
        this%d = 3
+    case('water_dimer')
+       this%d = 12
     case default
        call system_abort('Unknown coordinates '//trim(this%coordinates))
     endselect
@@ -288,7 +298,7 @@ contains
 
        if(has_ener) then
           select case(trim(this%coordinates))
-          case('water_monomer')
+          case('water_monomer','water_dimer')
              ener = ener - this%e0     
           case default
              ener = ener - at%N*this%e0     
@@ -319,13 +329,23 @@ contains
           case('water_monomer')
              if( at%N /= 3 ) call system_abort('Number of atoms is '//at%N//', not a single water molecule')
              call find_water_monomer(at,water_monomer_index)
-             index_o = water_monomer_index(1,1)
-             index_h1 = water_monomer_index(2,1)
-             index_h2 = water_monomer_index(3,1)
-             water_monomer_v = water_monomer(at%pos(:,index_o),at%pos(:,index_h1),at%pos(:,index_h2))
+             water_monomer_v = water_monomer(at,water_monomer_index(:,1))
 
              w_con = w_con + 1
              this%x(:,w_con) = water_monomer_v
+             this%xz(w_con) = 8
+             this%xf(w_con) = w_con
+             this%yf(w_con) = ener
+             this%lf(w_con) = w_con
+             this%target_type(w_con) = 1
+
+          case('water_dimer')
+             if( at%N /= 6 ) call system_abort('Number of atoms is '//at%N//', not two water molecules')
+             call find_water_monomer(at,water_dimer_index)
+             water_dimer_v = water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2))
+
+             w_con = w_con + 1
+             this%x(:,w_con) = water_dimer_v
              this%xz(w_con) = 8
              this%xf(w_con) = w_con
              this%yf(w_con) = ener
@@ -363,7 +383,7 @@ contains
           endselect
 
           select case(trim(this%coordinates))
-          case('water_monomer')
+          case('water_monomer','water_dimer')
 
           case default
              do i = 1, at%N
@@ -509,7 +529,7 @@ contains
           endif
 
           select case(trim(this%coordinates))
-          case('water_monomer')
+          case('water_monomer','water_dimer')
              this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core)
           case default
              this%e0 = this%e0 + (ener-ener_ewald+ener_ewald_corr-ener_core) / at%N
@@ -538,7 +558,7 @@ contains
 
     allocate(this%w_Z(maxval(this%species_Z)))
     select case(trim(this%coordinates))
-    case('water_monomer')
+    case('water_monomer','water_dimer')
        this%w_Z(8) = 1.0_dp
     case default
        call initialise(xyzfile,this%at_file)
@@ -589,6 +609,11 @@ contains
         call xml_NewElement(xf,"water_monomer_params")
         call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
         call xml_EndElement(xf,"water_monomer_params")
+     case('water_dimer')
+        call xml_AddAttribute(xf,"coordinates","water_dimer")
+        call xml_NewElement(xf,"water_dimer_params")
+        call xml_AddAttribute(xf,"cutoff",""//this%r_cut)
+        call xml_EndElement(xf,"water_dimer_params")
      case('qw')
         call xml_AddAttribute(xf,"coordinates","qw")
 

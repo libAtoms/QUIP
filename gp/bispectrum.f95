@@ -314,7 +314,7 @@ module bispectrum_module
    public :: fourier_so3, grad_fourier_so3, qw_so3, grad_qw_so3
    public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
    public :: kmax2d, suggest_kmax, suggest_resolution
-   public :: water_monomer
+   public :: water_monomer, water_dimer
 
    contains
 
@@ -3630,12 +3630,18 @@ module bispectrum_module
      !#
      !###############################################################
 
-     function water_monomer(rO,rH1,rH2) result(vec)
-       real(dp), dimension(3), intent(in) :: rO, rH1, rH2
-       real(dp) :: vec(3), v1(3), v2(3)
+     function water_monomer(at,w) result(vec)
+       type(atoms), intent(in) :: at
+       integer, dimension(3), intent(in) :: w
+       real(dp), dimension(3) :: vec, v1, v2
+       integer :: iO, iH1, iH2
 
-       v1 = rO - rH1
-       v2 = rO - rH2
+       iO = w(1)
+       iH1 = w(2)
+       iH2 = w(3)
+
+       v1 = diff_min_image(at,iO,iH1)
+       v2 = diff_min_image(at,iO,iH2)
 
        ! descriptors
        vec(1) = norm2(v1+v2)
@@ -3644,59 +3650,27 @@ module bispectrum_module
 
      end function water_monomer
 
-     function water_dimer(at) result(vec)
-       type(Atoms), intent(in) :: at
-       real(dp) :: vec(12), dA, dB
+     function water_dimer(at,w1,w2) result(vec)
+       type(atoms), intent(in) :: at
+       integer, dimension(3), intent(in) :: w1, w2
+       real(dp), dimension(12) :: vec(12)
+       real(dp) :: dA, dB
        real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, pA, pB
-       integer ::iAo, iAh1, iAh2, iBo, iBh1, iBh2, i
+       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i
 
-       if(at%N /= 6) call system_abort("water_dimer: atoms object does not have 6 atoms") 
-       ! find the index of the oxygen atoms
-       iAo = 0
-       iBo = 0
-       do i=1,6
-          if(at%Z(i) == 8) then
-             if(iAo == 0) then
-                iAo = i 
-             else 
-                iBo = i
-             end if
-          end if
-       end do
-       if (iAo == 0 .or. iBo == 0) &
-            call system_abort("water_dimer: cannot find oxygen atoms.")
-       ! find hydrogen atoms next to each oxygen
-       iAh1 = 0
-       iAh2 = 0
-       iBh1 = 0
-       iBh2 = 0
-       do i=1,6
-          if(at%Z(i) == 1) then
-             dA = distance_min_image(at, i, iAo)
-             dB = distance_min_image(at, i, iBo)
-             if(dA < dB) then
-                if(iAh1 == 0) then
-                   iAh1 = i
-                else
-                   iAh2 = i
-                end if
-             else
-                if(iBh1 == 0) then
-                   iBh1 = i
-                else
-                   iBh2 = i
-                end if
-             end if
-          end if
-       end do
-       if(iAh1 == 0 .or. iAh2 == 0 .or. iBh1 == 0 .or. iBh2 == 0) &
-            call system_abort("water_dimer: cannot find hydrogen atoms.")
+       iAo = w1(1)
+       iAh1 = w1(2)
+       iAh2 = w1(3)
+       iBo = w2(1)
+       iBh1 = w2(2)
+       iBh2 = w2(3)
 
        ! O--H vectors
-       vA1 = at%pos(:,iAo)-at%pos(:,iAh1)
-       vA2 = at%pos(:,iAo)-at%pos(:,iAh2)
-       vB1 = at%pos(:,iBo)-at%pos(:,iBh1)
-       vB2 = at%pos(:,iBo)-at%pos(:,iBh2)
+       vA1 = diff_min_image(at,iAo,iAh1)
+       vA2 = diff_min_image(at,iAo,iAh2)
+       vB1 = diff_min_image(at,iBo,iBh1)
+       vB2 = diff_min_image(at,iBo,iBh2)
+
        nA = vA1 .cross. vA2
        nB = vB1 .cross. vB2
        sA = (vA1+vA2)
@@ -3719,7 +3693,6 @@ module bispectrum_module
        vec(12) = distance_min_image(at, iAo, iBo)
 
      end function water_dimer
-
 
     !#################################################################################
     !#
