@@ -3634,6 +3634,7 @@ module bispectrum_module
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w
        real(dp), dimension(3) :: vec, v1, v2
+       real(dp) :: r1, r2
        integer :: iO, iH1, iH2
 
        iO = w(1)
@@ -3643,11 +3644,18 @@ module bispectrum_module
        v1 = diff_min_image(at,iO,iH1)
        v2 = diff_min_image(at,iO,iH2)
 
+       r1 = norm(v1)
+       r2 = norm(v2)
+
        ! descriptors
-       vec(1) = norm2(v1+v2)
-       vec(2) = norm2(v1-v2)
+       !vec(1) = norm2(v1+v2)
+       !vec(2) = norm2(v1-v2)
        !vec(3) = angle(v1,v2)
-       vec(3) = angle(v1+v2,v1-v2)
+       !vec(3) = angle(v1+v2,v1-v2)
+       !vec(3) = dot_product(v1+v2,v1-v2)
+       vec(1) = r1 + r2
+       vec(2) = (r1 - r2)**2
+       vec(3) = angle(v1,v2)
 
      end function water_monomer
 
