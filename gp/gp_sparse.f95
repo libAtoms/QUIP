@@ -90,12 +90,12 @@ module gp_sparse_module
       !% Therefore adding new data points is easy and fast.
       real(dp), dimension(:,:), allocatable :: x, c
       real(dp), dimension(:), allocatable   :: alpha
-      real(qp), dimension(:,:,:), allocatable :: x_div_theta
+      real(dp), dimension(:,:), allocatable :: x_div_theta
 
       !% Hyperparameters.
       !% Error parameter, range parameter, sensitivity parameters.
       real(dp), dimension(:,:), allocatable       :: theta
-      real(dp), dimension(2) :: sigma
+      real(dp) :: sigma
       real(dp), dimension(:), allocatable :: delta, f0
 
       integer, dimension(:), allocatable :: xz, sp
@@ -124,7 +124,7 @@ module gp_sparse_module
 
 
    interface Initialise
-      module procedure GP_Initialise
+      module procedure GP_Initialise, gp_simple_initialise
    end interface Initialise
 
    interface Finalise
@@ -270,6 +270,71 @@ module gp_sparse_module
 
       end subroutine GP_initialise
 
+      subroutine gp_simple_initialise(this,sigma_in, delta_in, theta_in, f0_in, y_in, x_in)
+
+         type(gp), intent(inout)                        :: this
+         real(dp), intent(in)                           :: sigma_in, delta_in, f0_in
+         real(dp), dimension(:,:), intent(in)           :: theta_in    !% hyperparameters, dimension(p)
+         real(dp), dimension(:), intent(in)             :: y_in        !% function (or derivative) value at teaching points, dimension(m)
+         real(dp), dimension(:,:), intent(in)           :: x_in        !% teaching points, dimension(d,n)
+
+         integer :: i, j
+         type(LA_matrix) :: LA_C_nn
+         real(dp), dimension(:), allocatable :: xixjtheta
+
+         if(this%initialised) call finalise(this)
+
+         this%d = size(x_in,1)
+         this%n = size(x_in,2) 
+         this%nsp = 1
+
+         call check_size('theta_in',theta_in,(/this%d,1/),'gp_simple_initialise')
+         call check_size('y_in',y_in,(/this%n/),'gp_simple_initialise')
+
+         allocate(this%x(this%d,this%n), this%alpha(this%n), this%x_div_theta(this%d,this%n), &
+         this%c(this%n,this%n), this%theta(this%d,1), this%delta(1), this%f0(1), this%xz(this%n), this%sp(1))
+
+         this%x = x_in
+         this%sigma = sigma_in
+         this%delta = delta_in
+         this%theta = theta_in
+         this%f0 = f0_in
+
+         this%xz = 0
+         this%sp = 0
+
+	 call setup_x_div_theta(this)
+         allocate(xixjtheta(this%d))
+
+         do i = 1, this%n
+            do j = i + 1, this%n
+               xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
+               this%c(j,i) = exp(-0.5 * dot_product(xixjtheta,xixjtheta))
+            enddo
+         enddo
+
+         deallocate(xixjtheta)
+
+         do i = 1, this%n
+            this%c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
+            do j = 1, i - 1
+               this%c(j,i) = this%c(i,j)
+            enddo
+         enddo
+
+         call initialise(LA_C_nn,this%c)
+         call LA_Matrix_Factorise(LA_C_nn)
+
+         call LA_Matrix_Solve_Vector(LA_C_nn,y_in,this%alpha)
+         call LA_Matrix_Finalise(LA_C_nn)
+         
+         this%c = this%c * this%delta(1)**2
+         this%alpha = this%alpha / this%delta(1)**2
+
+         this%initialised = .true.
+
+      endsubroutine gp_simple_initialise
+
       subroutine GP_sparsify(this,r,sigma_in, delta_in, theta_in, y_in, yd_in, x_in, x_prime_in, xf_in, xdf_in, lf_in, ldf_in, xz_in,sp_in, f0_in, target_type_in)
          type(gp_sparse), intent(inout)                 :: this        !% gp to initialise
          !integer, intent(in)                            :: sr
@@ -355,7 +420,7 @@ module gp_sparse_module
          if(present(xz_in)) then
             this%xz = xz_in
          else
-            this%xz = 1
+            this%xz = 0
          end if
 
          if( this%mf>0 ) then
@@ -654,20 +719,28 @@ module gp_sparse_module
       !
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-      subroutine gp_precompute_covariance(gp_data,x_star,Z,c,mpi)
+      subroutine gp_precompute_covariance(gp_data,x_star,c,Z,mpi)
          type(gp), intent(in)                        :: gp_data
          real(dp), dimension(:,:), intent(in)        :: x_star                 !% test point, dimension(d)
-         integer, dimension(:), intent(in), optional :: Z
          real(dp), dimension(:,:), intent(out)       :: c
+         integer, dimension(:), intent(in), optional :: Z
          type(mpi_context), intent(in), optional     :: mpi
 
          integer :: i, j, Z_type, sp, m
          real(dp), dimension(gp_data%d,gp_data%nsp) :: inv_theta
          real(dp), dimension(gp_data%d) :: x_star_div_theta, xixjtheta
+         integer, dimension(size(x_star,2)) :: my_Z
 
-         if( size(x_star,1) /= gp_data%d ) call system_abort('gp_precompute_covariance: first dimension of x_star is not '//gp_data%d)
+         if( size(x_star,1) /= gp_data%d ) call system_abort('gp_precompute_covariance: first dimension of x_star is '//size(x_star,1)//', not '//gp_data%d)
          m = size(x_star,2)
-         call check_size('Z',Z,(/m/), 'gp_precompute_covariance')
+
+         if(present(Z)) then
+            call check_size('Z',Z,(/m/), 'gp_precompute_covariance')
+            my_Z = Z
+         else
+            my_Z = 0
+         endif
+
          call check_size('c',c,(/gp_data%n,m/), 'gp_precompute_covariance')
 
          inv_theta = 1.0_dp / gp_data%theta
@@ -681,17 +754,18 @@ module gp_sparse_module
                endif
             endif
             ! Determine what type of atom we have
-            do sp = 1, gp_data%nsp; if( gp_data%sp(sp) == Z(i) ) Z_type = sp; enddo
+            do sp = 1, gp_data%nsp; if( gp_data%sp(sp) == my_Z(i) ) Z_type = sp; enddo
 
             x_star_div_theta = x_star(:,i) * inv_theta(:,Z_type)
             do j = 1, gp_data%n
-               if( Z(i) == gp_data%xz(j) ) then
-                  xixjtheta = gp_data%x_div_theta(:,j,Z_type)-x_star_div_theta
+               if( my_Z(i) == gp_data%xz(j) ) then
+                  xixjtheta = gp_data%x_div_theta(:,j)-x_star_div_theta
                   c(j,i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) )
                endif
             enddo
          enddo
 !$omp end do 
+
          if(present(mpi)) call sum_in_place(mpi,c)
 
       endsubroutine gp_precompute_covariance
@@ -731,7 +805,7 @@ module gp_sparse_module
          c = 0.0_dp
          do i = 1, gp_data%n
             if( do_Z == gp_data%xz(i) ) then
-               xixjtheta(:,i) = gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta
+               xixjtheta(:,i) = gp_data%x_div_theta(:,i)-x_star_div_theta
                if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
             endif
          enddo
@@ -747,7 +821,7 @@ module gp_sparse_module
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
                   & dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
 #else
-                  !xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
+                  !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
                   !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
                   !& dot_product(xixjtheta,x_prime_star_div_theta)
                   k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
@@ -771,7 +845,7 @@ module gp_sparse_module
                   xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
                   k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
 #else
-                  !xixjtheta = (gp_data%x_div_theta(:,i,Z_type)-x_star_div_theta)
+                  !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
                   !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
                   k(i) = c(i) + gp_data%f0(Z_type)**2
 #endif
@@ -2712,15 +2786,18 @@ deallocate(diff_xijt)
       subroutine setup_x_div_theta(this)
 	 type(gp), intent(inout) :: this
 
-	 integer :: i, j
+	 integer :: i, j, Z_type
 
 	 if (allocated(this%x_div_theta)) deallocate(this%x_div_theta)
-	 allocate(this%x_div_theta(this%d,this%n,this%nsp))
-	 do i=1, this%n
-	 do j=1, this%nsp
-	    this%x_div_theta(:,i,j) = this%x(:,i)/this%theta(:,j)
-	 end do
-	 end do
+	 allocate(this%x_div_theta(this%d,this%n))
+	 do i = 1, this%n
+
+            do j = 1, this%nsp
+               if( this%sp(j) == this%xz(i) ) Z_type = j
+            enddo
+
+            this%x_div_theta(:,i) = this%x(:,i) / this%theta(:,Z_type)
+	 enddo
       end subroutine
 
       subroutine GP_FoX_get_value(attributes, key, val, status)
