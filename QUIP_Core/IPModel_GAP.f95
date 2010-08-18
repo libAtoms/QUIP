@@ -447,7 +447,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
   case default
      allocate(covariance(this%my_gp%n,at%N))
-     call gp_precompute_covariance(this%my_gp,vec,at%Z,covariance,mpi)
+     call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
   endselect
 #endif
     
@@ -455,7 +455,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   case('water_monomer','water_dimer')
      do i = 1, size(vec,2)
         if(present(e)) then
-           call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i),Z=8)
+           call gp_predict(gp_data=this%my_gp, mean=water_monomer_energy,x_star=vec(:,i))
            local_e_in(1) = local_e_in(1) + water_monomer_energy + this%e0
         endif
      enddo
