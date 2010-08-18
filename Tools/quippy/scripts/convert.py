@@ -52,8 +52,10 @@ Supported formats: %s.""" % ', '.join([s for s in AtomsWriters.keys() if isinsta
 p.add_option('-m', '--merge', action='store', help="""Merge two input files. An auxilary input file name should be given.""")
 p.add_option('-M', '--merge-properties', action='store', help="""List of properties to overwrite from MERGE file. Default is all properties.""")
 p.add_option('-g', '--merge-params', action='store_true', help="""Merge params from MERGE file into output file.""", default=False)
+p.add_option('-x', '--extract-params', action='store_true', help="""Instead of printing the output frames, produce a table of parameters, one line per frame""", default=False)
+p.add_option('-F', '--extract-format', action='store', help="""Format used to print parameters if the --extract-params option is used.""")
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
-available as `at`.""")
+available as `at`, and do_print is set to True. If the user-supplied code sets do_print to False, the frame is not printed.""")
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
@@ -159,7 +161,14 @@ def process(at, frame):
       print 'PARAMS:', at.params.keys()
       
    # Do the writing
-   if do_print and outfile is not None:
+   if opt.extract_params:
+      for k in at.params.keys():
+         if opt.extract_format:
+            print(opt.extract_format % at.params[k]),
+         else:
+            print("%16.8g" % at.params[k]),
+      print
+   elif do_print and outfile is not None:
       if opt.properties is None:
          outfile.write(at)
       else:
@@ -205,7 +214,7 @@ if isinstance(opt.range, slice):
 
    for i, at in fenumerate(itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)):
       process(at, i)
-      if got_length:
+      if got_length and not opt.extract_params:
          pb(i)
 
    print
