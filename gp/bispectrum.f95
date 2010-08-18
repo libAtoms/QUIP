@@ -3655,7 +3655,7 @@ module bispectrum_module
        !vec(3) = dot_product(v1+v2,v1-v2)
        vec(1) = r1 + r2
        vec(2) = (r1 - r2)**2
-       vec(3) = angle(v1,v2)
+       vec(3) = dot_product(v1,v2)
 
      end function water_monomer
 
