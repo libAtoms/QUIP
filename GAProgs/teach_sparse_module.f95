@@ -42,7 +42,7 @@ module teach_sparse_mod
      real(dp), dimension(3) :: sgm
      logical :: do_core = .false., do_ewald = .false. , do_ewald_corr = .false., &
      qw_no_q, qw_no_w, do_sigma, do_delta, do_theta, do_sparx, do_f0, &
-     do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot
+     do_theta_fac, do_test_gp_gradient, do_cluster, do_pivot, do_sparse
 
      integer :: d, m, j_max, qw_l_max, n, nn, ne, n_ener, n_force, n_virial, min_steps, min_save, n_species, &
      qw_f_n

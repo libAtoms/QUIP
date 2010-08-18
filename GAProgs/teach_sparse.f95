@@ -97,6 +97,7 @@ program teach_sparse_program
   call param_register(params, 'energy_property_name', 'energy', main_teach_sparse%energy_property_name)
   call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name)
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name)
+  call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse)
 
   if (.not. param_read_args(params, do_check = .true., command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
@@ -105,7 +106,7 @@ program teach_sparse_program
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
      & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [do_ewald_corr=F] &
-     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial]")
+     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [do_sparse=T]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
@@ -178,33 +179,38 @@ program teach_sparse_program
 
   main_teach_sparse%dlta = main_teach_sparse%dlt 
 
-  if( has_sparse_file ) then
-     allocate(sparse_string_array(SPARSE_N_FIELDS))
-     call initialise(sparse_inout,sparse_file)
-     read(sparse_inout%unit,'(a)') sparse_string
-     call parse_string(sparse_string,' ',sparse_string_array,main_teach_sparse%m)
-     allocate(main_teach_sparse%r(main_teach_sparse%m))
-     do i = 1, main_teach_sparse%m
-        main_teach_sparse%r(i) = string_to_int(sparse_string_array(i))
-     enddo
-     deallocate(sparse_string_array)
-     call finalise(sparse_inout)
-  elseif(main_teach_sparse%do_cluster) then
-     allocate(main_teach_sparse%r(main_teach_sparse%m))
-     call bisect_kmedoids(main_teach_sparse%x,main_teach_sparse%m,med=main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
-  elseif(main_teach_sparse%do_pivot) then
-     allocate(main_teach_sparse%r(main_teach_sparse%m))
-     call pivot(main_teach_sparse%x, main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
-  else
-     allocate(main_teach_sparse%r(main_teach_sparse%m))
-     call fill_random_integer(main_teach_sparse%r,size(main_teach_sparse%x,2))
-  endif
-  call sort_array(main_teach_sparse%r)
+  if(main_teach_sparse%do_sparse) then
+     if( has_sparse_file ) then
+        allocate(sparse_string_array(SPARSE_N_FIELDS))
+        call initialise(sparse_inout,sparse_file)
+        read(sparse_inout%unit,'(a)') sparse_string
+        call parse_string(sparse_string,' ',sparse_string_array,main_teach_sparse%m)
+        allocate(main_teach_sparse%r(main_teach_sparse%m))
+        do i = 1, main_teach_sparse%m
+           main_teach_sparse%r(i) = string_to_int(sparse_string_array(i))
+        enddo
+        deallocate(sparse_string_array)
+        call finalise(sparse_inout)
+     elseif(main_teach_sparse%do_cluster) then
+        allocate(main_teach_sparse%r(main_teach_sparse%m))
+        call bisect_kmedoids(main_teach_sparse%x,main_teach_sparse%m,med=main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
+     elseif(main_teach_sparse%do_pivot) then
+        allocate(main_teach_sparse%r(main_teach_sparse%m))
+        call pivot(main_teach_sparse%x, main_teach_sparse%r,theta_fac=main_teach_sparse%theta_fac)
+     else
+        allocate(main_teach_sparse%r(main_teach_sparse%m))
+        call fill_random_integer(main_teach_sparse%r,size(main_teach_sparse%x,2))
+     endif
+     call sort_array(main_teach_sparse%r)
 
-  call print('')
-  call print('Atomic environments used in sparsification')
-  call print(main_teach_sparse%r)
-  call print('')
+     call print('')
+     call print('Atomic environments used in sparsification')
+     call print(main_teach_sparse%r)
+     call print('')
+  else
+     allocate(main_teach_sparse%r(main_teach_sparse%nn))
+     main_teach_sparse%r = (/ (i,i=1,main_teach_sparse%nn) /)
+  endif
 
   allocate(main_teach_sparse%theta(main_teach_sparse%d,main_teach_sparse%n_species))
 
@@ -246,8 +252,13 @@ program teach_sparse_program
   ! The biggest arrays allocated are 2*sr*(nx+nxd), where sr is the
   ! number of sparse points, nx and nxd are the number of bispectra and partial
   ! derivatives.
-  mem_required = 2.0_dp * real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
-  + real(size(main_teach_sparse%xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
+  if(main_teach_sparse%do_sparse) then
+     mem_required = 2.0_dp * real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
+     + real(size(main_teach_sparse%xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
+  else
+     mem_required = size(main_teach_sparse%x,2)**2 * real(dp,dp) / (1024.0_dp**3)
+  endif
+
   call mem_info(mem_total,mem_free)
   mem_total = mem_total / (1024.0_dp**3)
   mem_free = mem_free / (1024.0_dp**3)
@@ -255,83 +266,93 @@ program teach_sparse_program
   call print('Memory required (approx.): '//mem_required//' GB')
   if( mem_required > mem_free ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_free//' GB).')
 
-  call gp_sparsify(gp_sp,main_teach_sparse%r,&
-  main_teach_sparse%sgm,main_teach_sparse%dlta,main_teach_sparse%theta,&
-  main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
-  main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
-  main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
-  main_teach_sparse%target_type)
-
-  !deallocate(x,xd,xf,xdf,yf,ydf,lf,ldf)
-
-  call print('')
-  call print('theta')
-  do l = 1, size(gp_sp%theta, 2)
-     do o = 1, size(gp_sp%theta, 1)
-        call print(real(gp_sp%theta(o,l),kind=dp))
-     enddo
-  enddo
-  call print('')
-
-  call enable_timing()
-  
-  if( main_teach_sparse%do_test_gp_gradient ) then
-     call verbosity_push(PRINT_NERD)
-     test_gp_gradient_result = test_gp_gradient(gp_sp,&
-     sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
-     theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
-     f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
-     call verbosity_pop()
-  endif
-
-  ! Conjugate gradient minimiser's counter starts at 1, and stops when it reaches min_steps,
-  ! so if min_steps is equal to 1, no iterations are made!
- 
-  if (main_teach_sparse%min_save == 0) main_teach_sparse%min_save = main_teach_sparse%min_steps
-
-  k = 0
-  do i = 1, ((main_teach_sparse%min_steps / main_teach_sparse%min_save) + 1)
-     if (k == main_teach_sparse%min_steps) exit
-
-     if ((main_teach_sparse%min_steps - k) >= main_teach_sparse%min_save) then
-        j = minimise_gp_gradient(gp_sp,max_steps=(main_teach_sparse%min_save + 1),&
-        sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
-        theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
-        f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
-        k = k + main_teach_sparse%min_save
-     elseif ((main_teach_sparse%min_steps - k) < main_teach_sparse%min_save) then
-        j = minimise_gp_gradient(gp_sp,max_steps=(main_teach_sparse%min_steps - k + 1),&
-        sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
-        theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
-        f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
-
-        k = main_teach_sparse%min_steps
-     endif
+  if(main_teach_sparse%do_sparse) then
+     call gp_sparsify(gp_sp,main_teach_sparse%r,&
+     main_teach_sparse%sgm,main_teach_sparse%dlta,main_teach_sparse%theta,&
+     main_teach_sparse%yf,main_teach_sparse%ydf,main_teach_sparse%x,main_teach_sparse%xd,&
+     main_teach_sparse%xf,main_teach_sparse%xdf,main_teach_sparse%lf,main_teach_sparse%ldf,&
+     main_teach_sparse%xz,main_teach_sparse%species_Z,(/(main_teach_sparse%f0,i=1,main_teach_sparse%n_species)/),&
+     main_teach_sparse%target_type)
 
      call print('')
-     call print(k // ' iterations completed:')
-     call print('delta')
-     call print(real(gp_sp%delta,kind=dp))
      call print('theta')
      do l = 1, size(gp_sp%theta, 2)
         do o = 1, size(gp_sp%theta, 1)
            call print(real(gp_sp%theta(o,l),kind=dp))
         enddo
      enddo
-     call print('f0')
-     call print(real(gp_sp%f0,kind=dp))
      call print('')
 
-     call initialise(main_teach_sparse%my_gp,gp_sp)
+     call enable_timing()
+     
+     if( main_teach_sparse%do_test_gp_gradient ) then
+        call verbosity_push(PRINT_NERD)
+        test_gp_gradient_result = test_gp_gradient(gp_sp,&
+        sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
+        theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
+        f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
+        call verbosity_pop()
+     endif
 
-     gp_file = 'gp_'//main_teach_sparse%m//'_'//k//'.xml'
+     ! Conjugate gradient minimiser's counter starts at 1, and stops when it reaches min_steps,
+     ! so if min_steps is equal to 1, no iterations are made!
+    
+     if (main_teach_sparse%min_save == 0) main_teach_sparse%min_save = main_teach_sparse%min_steps
+
+     k = 0
+     do i = 1, ((main_teach_sparse%min_steps / main_teach_sparse%min_save) + 1)
+        if (k == main_teach_sparse%min_steps) exit
+
+        if ((main_teach_sparse%min_steps - k) >= main_teach_sparse%min_save) then
+           j = minimise_gp_gradient(gp_sp,max_steps=(main_teach_sparse%min_save + 1),&
+           sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
+           theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
+           f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
+           k = k + main_teach_sparse%min_save
+        elseif ((main_teach_sparse%min_steps - k) < main_teach_sparse%min_save) then
+           j = minimise_gp_gradient(gp_sp,max_steps=(main_teach_sparse%min_steps - k + 1),&
+           sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
+           theta=main_teach_sparse%do_theta,sparx=main_teach_sparse%do_sparx,&
+           f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
+
+           k = main_teach_sparse%min_steps
+        endif
+
+        call print('')
+        call print(k // ' iterations completed:')
+        call print('delta')
+        call print(real(gp_sp%delta,kind=dp))
+        call print('theta')
+        do l = 1, size(gp_sp%theta, 2)
+           do o = 1, size(gp_sp%theta, 1)
+              call print(real(gp_sp%theta(o,l),kind=dp))
+           enddo
+        enddo
+        call print('f0')
+        call print(real(gp_sp%f0,kind=dp))
+        call print('')
+
+        call initialise(main_teach_sparse%my_gp,gp_sp)
+        gp_file = 'gp_'//main_teach_sparse%m//'_'//k//'.xml'
+
+        call teach_sparse_print_xml(main_teach_sparse,gp_file)
+
+        call system_command('ln -fs '//trim(gp_file)//' gp.xml')
+
+        call finalise(main_teach_sparse%my_gp)
+     enddo
+  else
+     call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
+     main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &
+     main_teach_sparse%yf, main_teach_sparse%x)
+
+     gp_file = 'gp_'//main_teach_sparse%my_gp%n//'.xml'
 
      call teach_sparse_print_xml(main_teach_sparse,gp_file)
-
      call system_command('ln -fs '//trim(gp_file)//' gp.xml')
-
      call finalise(main_teach_sparse%my_gp)
-  enddo
+  endif
+
 
   call print("model parameters:")
   call print("r_cut     = "//main_teach_sparse%r_cut)

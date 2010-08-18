@@ -4,7 +4,7 @@
 [j_max=4] max of expansion of bispectrum
 [z0=0.0] ???
 
-[coordinates] {bispectrum,qw,water_monomer} representation to use (bispectrum default)
+[coordinates] {bispectrum,qw,water_monomer,water_dimer} representation to use (bispectrum default)
 
 QW parameters:
 [l_max=6] maximum sphearical harmonic expansion
@@ -32,3 +32,4 @@ Optimise hyper parameters: [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [
 [do_ewald_corr=F] ???
 [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] names of properties in the at_file that describe the data
 
+[do_sparse=T] do sparsification or not
