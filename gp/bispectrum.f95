@@ -3646,7 +3646,8 @@ module bispectrum_module
        ! descriptors
        vec(1) = norm2(v1+v2)
        vec(2) = norm2(v1-v2)
-       vec(3) = angle(v1,v2)
+       !vec(3) = angle(v1,v2)
+       vec(3) = angle(v1+v2,v1-v2)
 
      end function water_monomer
 
