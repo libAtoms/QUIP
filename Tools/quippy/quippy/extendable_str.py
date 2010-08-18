@@ -30,14 +30,14 @@ class Extendable_str(FortranExtendable_str):
             if s is not None:
                 self.concat(str(s))
 
-    @property
-    def string(self):
+    def getstring(self):
         return ''.join(self.s[1,1:self.len])
 
-    @string.setter
-    def string(self, s):
+    def setstring(self, s):
         self.initialise()
         self += s
+
+    string = property(getstring, setstring)
 
     def __iadd__(self, s):
         self.concat(s)
