@@ -116,10 +116,7 @@ def parse_makefile(fn, g=None):
 
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
-    if 'QUIP_ROOT' in os.environ:
-        quip_root = os.environ['QUIP_ROOT']
-    else:
-        quip_root = os.path.abspath(os.path.join(os.getcwd(), '../../'))
+    quip_root = os.path.abspath(os.path.join(os.getcwd(), '../../'))
 
     if not 'QUIP_ARCH' in os.environ:
         raise ValueError('QUIP_ARCH environment variable not set')
