@@ -28,6 +28,9 @@
 /* H0 X                                                                            */
 /* H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 
+#ifndef LIBATOMS_H
+#define LIBATOMS_H
+
 #define C_KEY_LEN    256
 
 /* Dictionary types */
@@ -163,3 +166,4 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 		   int shuffle, int deflate, int deflate_level, int *error);
 void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error);
 
+#endif
