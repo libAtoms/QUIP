@@ -195,7 +195,9 @@ if opt.atoms_ref is not None:
 else:
    all_configs = AtomsList(infile, store=False)
 
+stdout = False
 if outfile is not None:
+   if outfile == 'stdout': stdout = True
    outfile = AtomsWriter(outfile, format=opt.format)
 
 try:
@@ -212,9 +214,14 @@ if isinstance(opt.range, slice):
       from quippy.progbar import ProgressBar
       pb = ProgressBar(0,len(frange(*opt.range.indices(len(all_configs)))),80,showValue=True)
 
-   for i, at in fenumerate(itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)):
+   if opt.range.step is None:
+      frames = itertools.islice(all_configs, opt.range.start-1, opt.range.stop)
+   else:
+      frames = itertools.islice(all_configs, opt.range.start-1, opt.range.stop, opt.range.step)
+
+   for i, at in fenumerate(frames):
       process(at, i)
-      if got_length and not opt.extract_params:
+      if got_length and not opt.extract_params and not stdout:
          pb(i)
 
    print
