@@ -256,7 +256,7 @@ program teach_sparse_program
      mem_required = 2.0_dp * real(size(main_teach_sparse%r),dp) * (real(size(main_teach_sparse%xf),dp) &
      + real(size(main_teach_sparse%xdf),dp)) * real(dp,dp) / (1024.0_dp**3)
   else
-     mem_required = size(main_teach_sparse%x,2)**2 * real(dp,dp) / (1024.0_dp**3)
+     mem_required = 3*size(main_teach_sparse%x,2)**2 * real(dp,dp) / (1024.0_dp**3)
   endif
 
   call mem_info(mem_total,mem_free)
@@ -264,7 +264,7 @@ program teach_sparse_program
   mem_free = mem_free / (1024.0_dp**3)
 
   call print('Memory required (approx.): '//mem_required//' GB')
-  if( mem_required > mem_free ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_free//' GB).')
+  if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_free//' GB).')
 
   if(main_teach_sparse%do_sparse) then
      call gp_sparsify(gp_sp,main_teach_sparse%r,&
@@ -345,6 +345,19 @@ program teach_sparse_program
      call initialise(main_teach_sparse%my_gp, main_teach_sparse%sgm(1), &
      main_teach_sparse%dlta(1), main_teach_sparse%theta, main_teach_sparse%f0, &
      main_teach_sparse%yf, main_teach_sparse%x)
+
+     if( main_teach_sparse%do_test_gp_gradient ) then
+        call verbosity_push(PRINT_NERD)
+        test_gp_gradient_result = test_gp_simple_gradient(main_teach_sparse%my_gp,&
+        sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
+        theta=main_teach_sparse%do_theta, &
+        f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
+        call verbosity_pop()
+     endif
+     j = minimise_gp_simple_gradient(main_teach_sparse%my_gp,max_steps=main_teach_sparse%min_steps ,&
+         sigma=main_teach_sparse%do_sigma,delta=main_teach_sparse%do_delta,&
+         theta=main_teach_sparse%do_theta,&
+         f0=main_teach_sparse%do_f0,theta_fac=main_teach_sparse%do_theta_fac)
 
      gp_file = 'gp_'//main_teach_sparse%my_gp%n//'.xml'
 
