@@ -1912,6 +1912,34 @@ CONTAINS
 
   endsubroutine LA_Matrix_Initialise
 
+  subroutine LA_Matrix_Update(this,matrix)
+
+     type(LA_Matrix), intent(inout) :: this
+     real(qp), dimension(:,:), intent(in) :: matrix
+
+     integer :: factorised
+
+     factorised = this%factorised
+
+     if(this%initialised) then
+        if( all(shape(matrix) == (/this%n,this%m/)) ) then
+           this%matrix = matrix
+        else
+           call initialise(this,matrix)
+        endif
+     else
+        call initialise(this,matrix)
+     endif
+
+     select case(factorised)
+     case(CHOLESKY)
+        call LA_Matrix_Factorise(this)
+     case(QR)
+        call LA_Matrix_QR_Factorise(this)
+     endselect
+
+  endsubroutine LA_Matrix_Update
+
   subroutine LA_Matrix_Finalise(this)
 
      type(LA_Matrix), intent(inout) :: this
