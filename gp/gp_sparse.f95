@@ -88,8 +88,9 @@ module gp_sparse_module
 
       !% Data arrays. These are (re)allocated quite rarely, always bigger than they should be.
       !% Therefore adding new data points is easy and fast.
+      type(LA_Matrix) :: LA_C_nn
       real(dp), dimension(:,:), allocatable :: x, c
-      real(dp), dimension(:), allocatable   :: alpha
+      real(dp), dimension(:), allocatable   :: alpha, y
       real(dp), dimension(:,:), allocatable :: x_div_theta
 
       !% Hyperparameters.
@@ -114,7 +115,6 @@ module gp_sparse_module
 
    end type gp
 
-
    type gp_minimise
       type(gp_sparse), pointer :: minim_gp => null()
       real(qp), dimension(:,:), pointer :: theta_0 => null()
@@ -122,6 +122,12 @@ module gp_sparse_module
       integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_sparx = 1, ui_sparx = 1, li_f0 = 1, ui_f0 = 1,  li_theta_fac = 1, ui_theta_fac = 1
    end type gp_minimise
 
+   type gp_simple_minimise
+      type(gp), pointer :: minim_gp => null()
+      real(qp), dimension(:,:), pointer :: theta_0 => null()
+      logical :: do_sigma = .false., do_delta = .false., do_theta = .false., do_f0 = .false., do_theta_fac = .false.
+      integer :: li_sigma = 1, ui_sigma = 1, li_delta = 1, ui_delta = 1, li_theta = 1, ui_theta = 1, li_f0 = 1, ui_f0 = 1,  li_theta_fac = 1, ui_theta_fac = 1
+   end type gp_simple_minimise
 
    interface Initialise
       module procedure GP_Initialise, gp_simple_initialise
@@ -152,7 +158,8 @@ module gp_sparse_module
    type (gp), pointer :: parse_gp
 
    public :: gp, gp_sparse, initialise, finalise, gp_update, gp_mean, gp_variance, gp_predict, &
-   likelihood, test_gp_gradient, minimise_gp_gradient, minimise_gp_ns, gp_sparsify, &
+   likelihood, test_gp_gradient, test_gp_simple_gradient, minimise_gp_gradient, minimise_gp_simple_gradient, &
+   minimise_gp_ns, gp_sparsify, &
    gp_print_binary, gp_read_binary, minimise_gp_ns_new, fill_random_integer, gp_precompute_covariance, &
    gp_print_xml, gp_read_xml
 
@@ -192,7 +199,6 @@ module gp_sparse_module
          real(qp), dimension(:), allocatable :: alpha
          integer :: i, j, n, m, info
 #endif         
-
 
          this%d = sparse%d
          this%n = sparse%sr
@@ -278,20 +284,18 @@ module gp_sparse_module
          real(dp), dimension(:), intent(in)             :: y_in        !% function (or derivative) value at teaching points, dimension(m)
          real(dp), dimension(:,:), intent(in)           :: x_in        !% teaching points, dimension(d,n)
 
-         integer :: i, j
-         type(LA_matrix) :: LA_C_nn
-         real(dp), dimension(:), allocatable :: xixjtheta
-
          if(this%initialised) call finalise(this)
 
          this%d = size(x_in,1)
          this%n = size(x_in,2) 
          this%nsp = 1
 
+         if( this%n == 0 ) call system_abort('gp_simple_initialise: n = 0, nothing to teach.')
+
          call check_size('theta_in',theta_in,(/this%d,1/),'gp_simple_initialise')
          call check_size('y_in',y_in,(/this%n/),'gp_simple_initialise')
 
-         allocate(this%x(this%d,this%n), this%alpha(this%n), this%x_div_theta(this%d,this%n), &
+         allocate(this%x(this%d,this%n), this%alpha(this%n), this%y(this%n), this%x_div_theta(this%d,this%n), &
          this%c(this%n,this%n), this%theta(this%d,1), this%delta(1), this%f0(1), this%xz(this%n), this%sp(1))
 
          this%x = x_in
@@ -299,37 +303,10 @@ module gp_sparse_module
          this%delta = delta_in
          this%theta = theta_in
          this%f0 = f0_in
+         this%y = y_in
 
          this%xz = 0
          this%sp = 0
-
-	 call setup_x_div_theta(this)
-         allocate(xixjtheta(this%d))
-
-         do i = 1, this%n
-            do j = i + 1, this%n
-               xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
-               this%c(j,i) = exp(-0.5 * dot_product(xixjtheta,xixjtheta))
-            enddo
-         enddo
-
-         deallocate(xixjtheta)
-
-         do i = 1, this%n
-            this%c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
-            do j = 1, i - 1
-               this%c(j,i) = this%c(i,j)
-            enddo
-         enddo
-
-         call initialise(LA_C_nn,this%c)
-         call LA_Matrix_Factorise(LA_C_nn)
-
-         call LA_Matrix_Solve_Vector(LA_C_nn,y_in,this%alpha)
-         call LA_Matrix_Finalise(LA_C_nn)
-         
-         this%c = this%c * this%delta(1)**2
-         this%alpha = this%alpha / this%delta(1)**2
 
          this%initialised = .true.
 
@@ -603,6 +580,59 @@ module gp_sparse_module
 
       end subroutine gp_update
 
+      subroutine gp_update_simple(this, x_in, y_in, sigma_in, delta_in, theta_in, f0_in, do_covariance)
+         type(gp), intent(inout)                        :: this       !% gp object to update
+         real(qp), dimension(:,:), intent(in), optional :: x_in       !% update teaching points, dimension(d,n)
+         real(qp), dimension(:), intent(in), optional   :: y_in       !% update function values, dimension(m)
+         real(qp), intent(in), optional                 :: sigma_in   !% update hyperparameters, dimension(p)
+         real(qp), dimension(:), intent(in), optional   :: delta_in   !% update hyperparameters, dimension(p)
+         real(qp), dimension(:,:), intent(in), optional :: theta_in   !% update hyperparameters, dimension(p)
+         real(qp), dimension(:), intent(in), optional   :: f0_in   !% update hyperparameters, dimension(p)
+         logical, intent(in), optional :: do_covariance
+
+         logical :: my_do_covariance
+
+         if( .not. this%initialised ) return
+
+         my_do_covariance = optional_default(.true.,do_covariance)
+
+         if( present(x_in) ) then
+             if( all( shape(this%x) /= shape(x_in) ) ) call system_abort('gp_update: array sizes do not conform')
+             this%x = x_in
+         end if
+
+         if( present(y_in) ) then
+             if( all( shape(this%y) /= shape(y_in) ) ) call system_abort('gp_update: array sizes do not conform')
+             this%y = y_in
+         end if
+
+         if( present(sigma_in) ) then
+            this%sigma = sigma_in
+         endif
+
+         if( present(delta_in) ) then
+            call check_size('delta_in',delta_in,shape(this%delta),'gp_update')
+            this%delta = delta_in
+         endif
+
+         if( present(f0_in) ) then
+            call check_size('f0_in',f0_in,shape(this%f0),'gp_update')
+            this%f0 = f0_in
+         endif
+
+         if( present(theta_in) ) then
+             if( all( shape(this%theta) /= shape(theta_in) ) ) call system_abort('gp_update: array sizes do not conform')
+             this%theta = theta_in
+         end if
+
+         if( my_do_covariance ) then
+            if( present(x_in) .or. present(y_in) .or. &
+            present(sigma_in) .or. present(delta_in) .or. present(theta_in) .or. present(f0_in) ) &
+            call covariance_matrix_simple(this)
+         end if
+
+      endsubroutine gp_update_simple
+
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
       !% Finalise a gp object.
@@ -642,9 +672,12 @@ module gp_sparse_module
          if(allocated(this%x_div_theta)) deallocate(this%x_div_theta)
          if(allocated(this%c)) deallocate(this%c)
          if(allocated(this%alpha)) deallocate(this%alpha)
+         if(allocated(this%y)) deallocate(this%y)
          if(allocated(this%xz)) deallocate(this%xz)
          if(allocated(this%sp)) deallocate(this%sp)
          if(allocated(this%f0)) deallocate(this%f0)
+
+         call finalise(this%LA_C_nn)
             
          this%d = 0
          this%n = 0
@@ -1080,6 +1113,39 @@ deallocate(diff_xijt)
 
       end subroutine covariance_matrix_sparse
 
+      subroutine covariance_matrix_simple(this)
+         type(gp), intent(inout) :: this
+
+         integer :: i, j
+         real(dp), dimension(:), allocatable :: xixjtheta
+         real(dp), dimension(:,:), allocatable :: c
+
+	 call setup_x_div_theta(this)
+         allocate(xixjtheta(this%d),c(this%n,this%n))
+
+         do i = 1, this%n
+            do j = i + 1, this%n
+               xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
+               c(j,i) = exp(-0.5 * dot_product(xixjtheta,xixjtheta))
+            enddo
+            c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
+         enddo
+
+         c = c * this%delta(1)**2
+
+         do i = 1, this%n
+            do j = 1, i - 1
+               c(j,i) = c(i,j)
+            enddo
+         enddo
+
+         call LA_Matrix_Update(this%LA_C_nn,c)
+         if(this%LA_C_nn%factorised /= CHOLESKY) call LA_Matrix_Factorise(this%LA_C_nn)
+
+         call LA_Matrix_Solve_Vector(this%LA_C_nn,this%y,this%alpha)
+         deallocate(c,xixjtheta)
+         
+      endsubroutine covariance_matrix_simple
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
       !% In case of sum of values as teaching points, apply the operation
@@ -1832,6 +1898,77 @@ deallocate(diff_xijt)
 
       end subroutine likelihood
       
+      subroutine likelihood_simple(this,l,dl_dsigma, dl_ddelta,dl_dtheta,dl_df0, &
+      & do_l, do_sigma, do_delta, do_theta, do_f0)
+
+         type(gp), intent(inout)                       :: this
+         real(qp), intent(out), optional               :: l
+         real(qp), intent(out), optional               :: dl_dsigma, dl_ddelta, dl_df0
+         real(qp), dimension(:), intent(out), optional :: dl_dtheta
+         logical, intent(in), optional :: do_l, do_sigma, do_delta, do_theta, do_f0
+
+         logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_f0
+         real(qp), dimension(:,:), allocatable :: c_inverse, outer_alpha_minus_c_inverse, k, dk
+         integer :: i, j, d
+
+         my_do_l = present(l) .and. optional_default(present(l), do_l)
+         my_do_sigma = present(dl_dsigma) .and. optional_default(present(dl_dsigma), do_sigma)
+         my_do_delta = present(dl_ddelta) .and. optional_default(present(dl_ddelta), do_delta)
+         my_do_theta = present(dl_dtheta) .and. optional_default(present(dl_dtheta), do_theta)
+         my_do_f0 = present(dl_df0) .and. optional_default(present(dl_df0), do_f0)
+
+         if(my_do_l) l = 0.0_qp
+
+         if( my_do_l ) &
+         l = - 0.5_qp * LA_Matrix_LogDet(this%LA_C_nn)  &
+             - 0.5_qp * dot_product( this%y, this%alpha )  &
+             - 0.5_qp * this%n * log(2.0_qp * PI)
+
+         if( my_do_sigma .or. my_do_delta .or. my_do_theta .or. my_do_f0 ) then
+            allocate(c_inverse(this%n,this%n))
+            call LA_Matrix_Inverse(this%LA_C_nn, c_inverse)
+         endif
+
+         if(my_do_delta .or. my_do_theta) then
+            allocate(outer_alpha_minus_c_inverse(this%n,this%n),k(this%n,this%n))
+            k = this%LA_C_nn%matrix
+            do j = 1, this%n
+               do i = 1, this%n
+                  outer_alpha_minus_c_inverse(i,j) = this%alpha(i) * this%alpha(j) - c_inverse(i,j)
+               enddo
+               k(j,j) = k(j,j) - this%sigma**2
+            enddo
+         endif
+
+         if( my_do_sigma ) &
+         dl_dsigma = this%sigma * ( dot_product(this%alpha,this%alpha) - trace(c_inverse) )
+
+         if( my_do_delta ) &
+         dl_ddelta = sum( outer_alpha_minus_c_inverse * k ) / this%delta(1)
+
+         if( my_do_theta ) then
+            dl_dtheta = 0.0_qp
+            allocate(dk(this%n,this%n))
+            do d = 1, this%d
+               do j = 1, this%n
+                  do i = 1, this%n
+                     dk(i,j) = (this%x(d,i)-this%x(d,j))**2
+                  enddo
+               enddo
+               dl_dtheta(d) = 0.5_dp * sum( outer_alpha_minus_c_inverse * dk * k) / this%theta(d,1)**3
+            enddo
+         endif
+
+
+         if( my_do_f0 ) dl_df0 = 0.0_qp
+
+         if(allocated(c_inverse)) deallocate(c_inverse)
+         if(allocated(outer_alpha_minus_c_inverse)) deallocate(outer_alpha_minus_c_inverse)
+         if(allocated(k)) deallocate(k)
+         if(allocated(dk)) deallocate(dk)
+
+      endsubroutine likelihood_simple
+
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
       !% Maximises the log likelihood of a GP in the space of the hyperparameters
@@ -2003,6 +2140,105 @@ deallocate(diff_xijt)
 
       end function test_gp_gradient
 
+      function test_gp_simple_gradient(this,sigma,delta,theta,f0,theta_fac)
+
+         type(gp), intent(inout), target :: this                 !% GP
+         logical, intent(in), optional :: sigma, delta, theta, f0, theta_fac
+         logical                 :: test_gp_simple_gradient
+         real(dp), dimension(:), allocatable :: xx_dp
+         real(qp), dimension(:), allocatable :: xx
+         integer :: n, li, ui
+
+         type(gp_simple_minimise) :: am
+         character, dimension(:), allocatable :: am_data
+         character, dimension(1) :: am_mold
+         integer :: am_data_size
+         real(qp), dimension(:,:), allocatable, target :: theta_0
+
+         am_data_size = size(transfer(am,am_mold))
+         allocate(am_data(am_data_size))
+
+         am%minim_gp => this
+
+         am%do_sigma = optional_default(.true.,sigma)
+         am%do_delta = optional_default(.true.,delta)
+         am%do_theta = optional_default(.true.,theta)
+         am%do_f0 = optional_default(.true.,f0)
+         am%do_theta_fac = optional_default(.false.,theta_fac)
+
+         if(am%do_theta .and. am%do_theta_fac) then
+            call print_warning('test_gp_gradient called with both theta and theta_fac active. Switching theta_fac to false.')
+            am%do_theta_fac = .false.
+         endif
+
+         if(am%do_theta_fac) then
+            allocate(theta_0(this%d,this%nsp))
+            theta_0 = this%theta
+            am%theta_0 => theta_0
+         endif
+
+         test_gp_simple_gradient = .false.
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_f0) .and. (.not.am%do_theta_fac)  ) return
+
+         n = 0
+         li = 0
+         ui = 0
+         if( am%do_sigma ) n = n + 1
+         if( am%do_delta ) n = n + this%nsp
+         if( am%do_theta ) n = n + this%d*this%nsp
+         if( am%do_f0 ) n = n + this%nsp
+         if( am%do_theta_fac ) n = n + this%nsp
+
+         allocate( xx(n), xx_dp(n) )
+
+         if(am%do_sigma) then
+            li = li + 1
+            ui = li
+            am%li_sigma = li
+            am%ui_sigma = ui
+            xx(li:ui) = this%sigma
+         endif
+         if(am%do_delta) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_delta = li
+            am%ui_delta = ui
+            xx(li:ui) = this%delta
+         endif
+         if(am%do_theta) then
+            li = ui + 1
+            ui = li + this%d*this%nsp - 1
+            am%li_theta = li
+            am%ui_theta = ui
+            xx(li:ui) = reshape(this%theta,(/this%d*this%nsp/))
+         endif
+         if(am%do_f0) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_f0 = li
+            am%ui_f0 = ui
+            xx(li:ui) = this%f0
+         endif
+         if(am%do_theta_fac) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_theta_fac = li
+            am%ui_theta_fac = ui
+            xx(li:ui) = 1.0_qp
+         endif
+
+         xx_dp = real(xx,kind=dp)
+         am_data = transfer(am, am_data)
+
+         test_gp_simple_gradient = test_gradient(xx_dp, likelihood_simple_function, likelihood_simple_gradient, data=am_data)
+
+         deallocate(xx,xx_dp,am_data)
+         am%minim_gp => null()
+         am%theta_0 => null()
+         if(allocated(theta_0)) deallocate(theta_0)
+
+      end function test_gp_simple_gradient
+
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
       !
       !% Maximises the log likelihood in the space of hyperparameters
@@ -2127,6 +2363,115 @@ deallocate(diff_xijt)
          if(allocated(theta_0)) deallocate(theta_0)
 
       end function minimise_gp_gradient
+
+      function minimise_gp_simple_gradient(this,convergence_tol,max_steps,always_do_test_gradient,sigma,delta,theta,f0,theta_fac)
+
+         type(gp), intent(inout), target :: this                       !% GP
+         integer, intent(in), optional :: max_steps            !% maximum number of steps, default: 100
+         real(dp), intent(in), optional :: convergence_tol     !% convergence tolerance, default: 0.1
+         logical, intent(in), optional :: always_do_test_gradient
+         logical, intent(in), optional :: sigma, delta, theta, f0, theta_fac
+         integer                 :: minimise_gp_simple_gradient
+         real(dp), dimension(:), allocatable :: xx_dp
+         real(qp), dimension(:), allocatable :: xx
+         integer :: n, li, ui
+
+         integer :: do_max_steps
+         real(dp) :: do_convergence_tol
+         type(gp_simple_minimise) :: am
+         character, dimension(:), allocatable :: am_data
+         character, dimension(1) :: am_mold
+         integer :: am_data_size
+         real(qp), dimension(:,:), allocatable, target :: theta_0
+
+         do_max_steps = optional_default(100,max_steps)
+         do_convergence_tol = optional_default(0.0001_dp,convergence_tol)
+
+         am_data_size = size(transfer(am,am_mold))
+         allocate(am_data(am_data_size))
+
+         am%minim_gp => this
+
+         am%do_sigma = optional_default(.true.,sigma)
+         am%do_delta = optional_default(.true.,delta)
+         am%do_theta = optional_default(.true.,theta)
+         am%do_f0 = optional_default(.true.,f0)
+         am%do_theta_fac = optional_default(.false.,theta_fac)
+
+         if(am%do_theta .and. am%do_theta_fac) then
+            call print_warning('minimise_gp_gradient called with both theta and theta_fac active. Switching theta_fac to false.')
+            am%do_theta_fac = .false.
+         endif
+
+         if(am%do_theta_fac) then
+            allocate(theta_0(this%d,this%nsp))
+            theta_0 = this%theta
+            am%theta_0 => theta_0
+         endif
+
+         minimise_gp_simple_gradient = 0
+         if( (.not.am%do_sigma) .and. (.not.am%do_delta) .and. (.not.am%do_theta) .and. (.not.am%do_f0) .and. (.not.am%do_theta_fac) ) return
+
+         n = 0
+         li = 0
+         ui = 0
+         if( am%do_sigma ) n = n + 1
+         if( am%do_delta ) n = n + this%nsp
+         if( am%do_theta ) n = n + this%d*this%nsp
+         if( am%do_f0 ) n = n + this%nsp
+         if( am%do_theta_fac ) n = n + this%nsp
+
+         allocate( xx(n), xx_dp(n) )
+
+         if(am%do_sigma) then
+            li = li + 1
+            ui = li
+            am%li_sigma = li
+            am%ui_sigma = ui
+            xx(li:ui) = this%sigma
+         endif
+         if(am%do_delta) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_delta = li
+            am%ui_delta = ui
+            xx(li:ui) = this%delta
+         endif
+         if(am%do_theta) then
+            li = ui + 1
+            ui = li + this%d*this%nsp - 1
+            am%li_theta = li
+            am%ui_theta = ui
+            xx(li:ui) = reshape(this%theta,(/this%d*this%nsp/))
+         endif
+         if(am%do_f0) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_f0 = li
+            am%ui_f0 = ui
+            xx(li:ui) = this%f0
+         endif
+         if(am%do_theta_fac) then
+            li = ui + 1
+            ui = li + this%nsp - 1
+            am%li_theta_fac = li
+            am%ui_theta_fac = ui
+            xx(li:ui) = 1.0_qp
+         endif
+
+         xx_dp = real(xx,kind=dp)
+         am_data = transfer(am, am_data)
+
+         minimise_gp_simple_gradient = minim(xx_dp,likelihood_simple_function,likelihood_simple_gradient,&
+         & method='cg',convergence_tol=do_convergence_tol,max_steps=do_max_steps,&
+         & hook = save_likelihood_parameters, hook_print_interval=1,data=am_data, always_do_test_gradient=always_do_test_gradient)
+
+         deallocate(xx,xx_dp,am_data)
+         am%minim_gp => null()
+         am%theta_0 => null()
+         if(allocated(theta_0)) deallocate(theta_0)
+
+      end function minimise_gp_simple_gradient
 
       subroutine minimise_gp_ns_new(this,N_live,max_steps)
          type(gp_sparse), intent(inout) :: this                       !% GP
@@ -2316,6 +2661,41 @@ deallocate(diff_xijt)
 
       end function likelihood_function
 
+      function likelihood_simple_function(x_in, am_data) result(l)
+
+         real(dp), dimension(:) :: x_in
+         real(dp)               :: l
+         character,optional     :: am_data(:)
+         real(qp), dimension(:), allocatable :: x
+         real(qp) :: l_qp
+
+         type(gp_simple_minimise) :: am
+
+         l = 0.0_dp
+         allocate(x(size(x_in)))
+         x = real(x_in,kind=qp)
+
+         am = transfer(am_data,am)
+
+         if( am%do_sigma ) call gp_update_simple( am%minim_gp, sigma_in=x(am%li_sigma), do_covariance = .false. )
+         if( am%do_delta ) call gp_update_simple( am%minim_gp, delta_in=x(am%li_delta:am%ui_delta), do_covariance = .false. )
+         if( am%do_theta ) call gp_update_simple( am%minim_gp, theta_in= &
+         reshape(x(am%li_theta:am%ui_theta),(/am%minim_gp%d,am%minim_gp%nsp/)), &
+         do_covariance = .false. )
+         if( am%do_f0 ) call gp_update_simple( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
+         if( am%do_theta_fac ) call gp_update_simple( am%minim_gp, theta_in= &
+         spread(x(am%li_theta_fac:am%ui_theta_fac),dim=1,ncopies=am%minim_gp%d)*am%theta_0, do_covariance = .false. )
+
+         call covariance_matrix_simple(am%minim_gp)
+
+         am_data = transfer(am, am_data)
+
+         call likelihood_simple(am%minim_gp,l=l_qp)
+         l = -real(l_qp,kind=dp)
+         deallocate(x)
+
+      end function likelihood_simple_function
+
       function likelihood_gradient(x_in,am_data) result(dl_out)
 
          real(dp), dimension(:)          :: x_in
@@ -2363,6 +2743,51 @@ deallocate(diff_xijt)
          if(allocated(dl_dtheta)) deallocate(dl_dtheta)
 
       end function likelihood_gradient
+
+      function likelihood_simple_gradient(x_in,am_data) result(dl_out)
+
+         real(dp), dimension(:)          :: x_in
+         real(dp), dimension(size(x_in)) :: dl_out
+         character,optional              :: am_data(:)
+
+         real(qp), dimension(:), allocatable :: x, dl, dl_dtheta
+         type(gp_simple_minimise) :: am
+
+         allocate(x(size(x_in)),dl(size(x_in)))
+
+         x = real(x_in,kind=qp)
+         dl = 0.0_qp
+
+         am = transfer(am_data,am)
+
+         if( am%do_sigma ) call gp_update_simple( am%minim_gp, sigma_in=x(am%li_sigma), do_covariance = .false. )
+         if( am%do_delta ) call gp_update_simple( am%minim_gp, delta_in=x(am%li_delta:am%ui_delta), do_covariance = .false. )
+         if( am%do_theta ) call gp_update_simple( am%minim_gp, theta_in= &
+         reshape(x(am%li_theta:am%ui_theta),(/am%minim_gp%d,am%minim_gp%nsp/)), &
+         do_covariance = .false. )
+         if( am%do_f0 ) call gp_update_simple( am%minim_gp, f0_in=x(am%li_f0:am%ui_f0), do_covariance = .false. )
+         if( am%do_theta_fac ) call gp_update_simple( am%minim_gp, theta_in= &
+         spread(x(am%li_theta_fac:am%ui_theta_fac),dim=1,ncopies=am%minim_gp%d)*am%theta_0, do_covariance = .false. )
+
+         if(am%do_theta .or. am%do_theta_fac) allocate(dl_dtheta(am%minim_gp%d*am%minim_gp%nsp))
+
+         call covariance_matrix_simple(am%minim_gp)
+
+         am_data = transfer(am, am_data)
+
+         call likelihood_simple(am%minim_gp,dl_dsigma=dl(am%li_sigma),do_sigma = am%do_sigma, &
+         dl_ddelta=dl(am%li_delta), do_delta = am%do_delta, &
+         dl_dtheta=dl_dtheta, do_theta = (am%do_theta .or.am%do_theta_fac) , &
+         dl_df0=dl(am%li_f0), do_f0 = am%do_f0 )
+
+         if( am%do_theta ) dl(am%li_theta:am%ui_theta) = dl_dtheta
+         if( am%do_theta_fac ) dl(am%li_theta_fac:am%ui_theta_fac) = sum(reshape(dl_dtheta,(/am%minim_gp%d,am%minim_gp%nsp/))*am%theta_0,dim=1)
+
+         dl_out = -real(dl,kind=dp)
+         deallocate(x,dl)
+         if(allocated(dl_dtheta)) deallocate(dl_dtheta)
+
+      end function likelihood_simple_gradient
 
       subroutine save_likelihood_parameters(x,dx,e,done,do_print,data)
          real(dp), dimension(:), intent(in) :: x
