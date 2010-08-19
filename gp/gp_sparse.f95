@@ -289,6 +289,7 @@ module gp_sparse_module
          this%d = size(x_in,1)
          this%n = size(x_in,2) 
          this%nsp = 1
+print*,y_in
 
          if( this%n == 0 ) call system_abort('gp_simple_initialise: n = 0, nothing to teach.')
 
@@ -307,6 +308,8 @@ module gp_sparse_module
 
          this%xz = 0
          this%sp = 0
+
+         call covariance_matrix_simple(this)
 
          this%initialised = .true.
 
