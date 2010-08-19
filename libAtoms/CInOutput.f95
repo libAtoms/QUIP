@@ -586,7 +586,7 @@ contains
             call swap(selected_properties, 'pos', string(selected_properties%keys(2)))
 
        if (present(estr)) then
-          call write_xyz(C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
+          call write_xyz(''//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
                at%lattice, at%n, append, do_prefix, do_int_format, do_real_format, do_str_format, do_logical_format, 1, estr_ptr_i, error)
        else
           call write_xyz(trim(this%filename)//C_NULL_CHAR, params_ptr_i, properties_ptr_i, selected_properties_ptr_i, &
