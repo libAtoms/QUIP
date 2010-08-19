@@ -658,7 +658,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   dictionary_query_key(params, param_key, &type, shape, &data, error, strlen("Properties"));
   PASS_ERROR;
   strncpy(linebuffer, (char *)data, shape[0]);
-  linebuffer[shape[0]+1] = '\0';
+  linebuffer[shape[0]] = '\0';
 
   debug("properties string %s\n", linebuffer);
 
@@ -766,8 +766,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       strncpy(fields[k++], p1, LINESIZE);
     }
     if (k != entry_count) {
-      RAISE_ERROR("incomplete row, atom %d - got %d/%d entries line=%s\n", n, k, entry_count, linebuffer);
-      //for (i=0;i<k;i++) RAISE_ERROR("fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
+      for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
+      RAISE_ERROR("incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linebuffer);
     }
 
     k = 0;
