@@ -289,7 +289,6 @@ module gp_sparse_module
          this%d = size(x_in,1)
          this%n = size(x_in,2) 
          this%nsp = 1
-print*,y_in
 
          if( this%n == 0 ) call system_abort('gp_simple_initialise: n = 0, nothing to teach.')
 
