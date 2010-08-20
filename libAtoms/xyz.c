@@ -1029,12 +1029,9 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       memset(param_value, ' ', LINESIZE);
       strncpy(param_value, CHAR(data), shape[0]);
       param_value[LINESIZE-1] = '\0';
-      if (strchr(param_value, ' ') == NULL) {
-	RAISE_ERROR("write_xyz: value %s not terminated with blank", param_value);
-      }
-      *strchr(param_value, ' ') = '\0';
+      while (param_value[strlen(param_value)-1] == ' ')
+	param_value[strlen(param_value)-1] = '\0';
     }
-
 
     trimmed = param_value;
     while (isblank(trimmed[0])) trimmed++;
