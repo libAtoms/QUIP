@@ -60,7 +60,9 @@ export DEFAULT_MATH_LINKOPTS = -llapack -lf77blas -lcblas -latlas
 
 # rules
 
+MAKEDEP_ARGS = -lc -suffix .mod
+
 .f95.o:
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
 	${F95} ${F95FLAGS}  -c $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env RE_SKIP=GFORTRAN ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi

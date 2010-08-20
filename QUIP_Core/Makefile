@@ -126,8 +126,9 @@ cp2k_filepot_old: % : %.o libatoms.a libquip.a
 cp2k_filepot: % : %.o libatoms.a libquip.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
-# depend:
-# 	${MAKE} -f Makefile.depend
+ifeq (${USE_MAKEDEP},1)
+QUIP_Core.depend: ${LIBATOMS_SOURCES}
+	$(SCRIPT_PATH)/makedep ${MAKEDEP_ARGS} -- ../QUIP_Core/*.f95 | sed 's/[^ ]*\///g' > QUIP_Core.depend
 
--include depend
-
+-include QUIP_Core.depend
+endif

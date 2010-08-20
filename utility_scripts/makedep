@@ -90,8 +90,8 @@ foreach my $file (@ARGV) {
   my $fobj = $file;
   $fobj =~ s/$ftnre/.o/;
   foreach my $mod (@{$module_defs{$file}}) {
-    print "$mod: $file\n";
-    print "	make $fobj\n";
+    print "$mod: $file\n\n";
+    # print "	make $fobj\n";
   }
 
   my $defsre = '^('.join("|",@{$module_defs{$file}}).')$';

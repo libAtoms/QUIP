@@ -33,6 +33,8 @@ usage="reuse saved copies of module files created by a source file if they are i
 environment: OD_SKIP = number of bytes to skip in module file header
 Usage: $0 [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]" 1>&2
 
+mydir=`dirname $0`
+
 if [[ $# -lt 1 ]]; then
   echo "$usage" 1>&2
   exit 1
@@ -52,16 +54,20 @@ if [[ $1 != "--" ]]; then
 fi
 shift
 
-if [ -z "$OD_SKIP" ]; then
-  OD_SKIP=0
-fi
-
 for file in $*; do
   modules=`egrep -i '^[ 	]*module[ 	]+[^ 	]+[ 	]*$!?' $file | awk '{print $2}'`
-  for mod in `echo $modules | ${QUIP_PATH}module_name $args`; do
+  for mod in `echo $modules | $mydir/module_name $args`; do
     if [ -f $mod.save ]; then
-      od -t x -j $OD_SKIP < $mod > $mod.txt
-      od -t x -j $OD_SKIP < $mod.save > $mod.save.txt
+      cp $mod $mod.txt
+      cp $mod.save $mod.save.txt
+      if [[ ! -z $OD_SKIP ]] ; then
+	 od -t x -j $OD_SKIP < $mod > $mod.txt
+	 od -t x -j $OD_SKIP < $mod.save > $mod.save.txt
+      fi
+      if [[ ! -z $RE_SKIP ]] ; then
+	 egrep -v "$RE_SKIP" < $mod > $mod.txt
+	 egrep -v "$RE_SKIP" < $mod.save > $mod.save.txt
+      fi
       diff -q $mod.txt $mod.save.txt > /dev/null
       out=$?
       if [[ $out == 0 ]]; then
@@ -69,7 +75,7 @@ for file in $*; do
       else
 	rm -f $mod.save
       fi
-      rm -f $mod.txt $mod.save.txt
+      # rm -f $mod.txt $mod.save.txt
     fi
   done
 done

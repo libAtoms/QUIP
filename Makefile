@@ -39,6 +39,7 @@ else
 	BUILDDIR=crap
 endif
 
+export SCRIPT_PATH=${QUIP_ROOT}/utility_scripts/
 
 ifeq (${HAVE_GP},1)
 MODULES = libAtoms gp QUIP_Core QUIP_Utils GAProgs QUIP_Programs # Tests

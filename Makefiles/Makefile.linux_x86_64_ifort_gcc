@@ -66,4 +66,4 @@ QUIPPY_NO_CRACK = 1
 .f95.o:
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
 	${F95} ${F95FLAGS} -c -Tf $< -o $@
-	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=64 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
