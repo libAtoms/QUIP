@@ -141,6 +141,19 @@ module dictionary_module
      module procedure dictionary_set_value_r_a2
   end interface set_value
 
+  private :: dictionary_set_value_pointer_i, dictionary_set_value_pointer_r
+  private :: dictionary_set_value_pointer_c, dictionary_set_value_pointer_l, dictionary_set_value_pointer_s
+  private :: dictionary_set_value_pointer_i2, dictionary_set_value_pointer_r2
+  interface set_value_pointer
+     module procedure dictionary_set_value_pointer_i
+     module procedure dictionary_set_value_pointer_r
+     module procedure dictionary_set_value_pointer_c
+     module procedure dictionary_set_value_pointer_l
+     module procedure dictionary_set_value_pointer_s
+     module procedure dictionary_set_value_pointer_i2
+     module procedure dictionary_set_value_pointer_r2
+  end interface set_value_pointer
+
   !% Get a value from a Dictionary
   private :: dictionary_get_value_i, dictionary_get_value_r, dictionary_get_value_c, dictionary_get_value_l
   private :: dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
@@ -167,19 +180,6 @@ module dictionary_module
      module procedure dictionary_assign_pointer_i2
      module procedure dictionary_assign_pointer_r2
   end interface assign_pointer
-
-  private :: dictionary_set_value_pointer_i, dictionary_set_value_pointer_r
-  private :: dictionary_set_value_pointer_c, dictionary_set_value_pointer_l, dictionary_set_value_pointer_s
-  private :: dictionary_set_value_pointer_i2, dictionary_set_value_pointer_r2
-  interface set_value_pointer
-     module procedure dictionary_set_value_pointer_i
-     module procedure dictionary_set_value_pointer_r
-     module procedure dictionary_set_value_pointer_c
-     module procedure dictionary_set_value_pointer_l
-     module procedure dictionary_set_value_pointer_s
-     module procedure dictionary_set_value_pointer_i2
-     module procedure dictionary_set_value_pointer_r2
-  end interface set_value_pointer
 
   private :: dictionary_add_array_i, dictionary_add_array_r
   private :: dictionary_add_array_c, dictionary_add_array_l, dictionary_add_array_s
@@ -1373,15 +1373,15 @@ contains
   subroutine dictionary_set_value_pointer_i(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    integer, intent(in), pointer :: ptr(:)
+    integer, intent(in), target :: ptr(:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_INTEGER_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = size(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%i_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1391,15 +1391,15 @@ contains
   subroutine dictionary_set_value_pointer_r(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    real(dp), intent(in), pointer :: ptr(:)
+    real(dp), intent(in), target :: ptr(:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_REAL_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = size(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%r_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1409,15 +1409,15 @@ contains
   subroutine dictionary_set_value_pointer_c(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    complex(dp), intent(in), pointer :: ptr(:)
+    complex(dp), intent(in), target :: ptr(:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_COMPLEX_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = size(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%c_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1427,15 +1427,15 @@ contains
   subroutine dictionary_set_value_pointer_l(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    logical, intent(in), pointer :: ptr(:)
+    logical, intent(in), target :: ptr(:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_LOGICAL_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = size(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%l_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1445,16 +1445,16 @@ contains
   subroutine dictionary_set_value_pointer_s(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    character(1), intent(in), pointer :: ptr(:,:)
+    character(1), intent(in), target :: ptr(:,:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_CHAR_A
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = 0
     entry%len2 = size(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%s_a => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1464,16 +1464,16 @@ contains
   subroutine dictionary_set_value_pointer_i2(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    integer, intent(in), pointer :: ptr(:,:)
+    integer, intent(in), target :: ptr(:,:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_INTEGER_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = 0
     entry%len2 = shape(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%i_a2 => ptr
     call finalise(entry)
     this%cache_invalid = 1
@@ -1483,16 +1483,16 @@ contains
   subroutine dictionary_set_value_pointer_r2(this, key, ptr)
     type(Dictionary), intent(inout) :: this
     character(len=*), intent(in) :: key
-    real(dp), intent(in), pointer :: ptr(:,:)
+    real(dp), intent(in), target :: ptr(:,:)
 
     type(DictEntry) entry
     integer entry_i
 
     entry%type = T_REAL_A2
     entry%own_data = .false. ! force any possible previous entry with same key to be finalised
-    entry_i = add_entry(this, key, entry)
     entry%len = 0
     entry%len2 = shape(ptr)
+    entry_i = add_entry(this, key, entry)
     this%entries(entry_i)%r_a2 => ptr
     call finalise(entry)
     this%cache_invalid = 1
