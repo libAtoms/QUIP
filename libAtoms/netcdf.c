@@ -478,7 +478,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 
     count[0] = 1;
     // If it's a 2D array we need to transpose shape
-    if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) {
+    if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A || type == T_CHAR) {
       count[1] = shape[0];
     } else {
       count[1] = shape[1];
@@ -508,6 +508,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     case(T_CHAR):
       memset(data, ' ', n_string);
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
+      debug("read string value <%s>\n", (char *)data);
       break;
     case(T_INTEGER_A):
     case(T_LOGICAL_A):
@@ -768,10 +769,10 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       } else {
 	NETCDF_CHECK(nc_inq_var(nc_id, var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
 	if (vartype != check_vartype) {
-	  RAISE_ERROR("Mismatch in entry %s - type %d != %d\n", key, vartype, check_vartype);
+	  RAISE_ERROR("Mismatch in entry \"%s\" - type %d != %d. Perhaps duplicate variable name?\n", key, vartype, check_vartype);
 	}
 	if (ndims != check_ndims) {
-	  RAISE_ERROR("Mismatch in entry %s - ndims %d != %d\n", key, ndims, check_ndims);
+	  RAISE_ERROR("Mismatch in entry \"%s\" - ndims %d != %d. Perhaps duplicate variable name?\n", key, ndims, check_ndims);
 	  
 	}
 	for (j=0; j<ndims; j++)
@@ -887,7 +888,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 
       count[0] = 1;
       // If it's a 2D array we need to transpose shape
-      if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) {
+      if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A || type == T_CHAR) {
 	count[1] = shape[0];
       } else {
 	count[1] = shape[1];
