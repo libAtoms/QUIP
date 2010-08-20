@@ -378,6 +378,14 @@ module  atoms_module
      module procedure atoms_copy_entry
   endinterface copy_entry
 
+  interface index_to_z_index
+     module procedure atoms_index_to_z_index
+  end interface index_to_z_index
+
+  interface z_index_to_index
+     module procedure atoms_z_index_to_index
+  end interface z_index_to_index
+
 contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -5308,5 +5316,39 @@ contains
        endif
     end do
   end subroutine atoms_sort
+
+  !% Convert from a single index in range 1..this%N to a CASTEP-style (element, index) pair
+  function atoms_index_to_z_index(this, index) result(z_index)
+    type(Atoms), intent(in) :: this
+    integer, intent(in) :: index
+    integer :: z_index
+    integer :: j
+
+    z_index = 0
+    do j=1,index
+       if (this%z(index) == this%z(j)) z_index = z_index + 1
+    end do
+  
+  end function atoms_index_to_z_index
+
+  !% Inverse of atoms_index_to_z_index
+  function atoms_z_index_to_index(this, z, z_index, error) result(index)
+    type(Atoms), intent(in) :: this
+    integer, intent(in) :: z, z_index
+    integer, intent(out), optional :: error
+    integer :: index
+    integer :: nz
+    
+    INIT_ERROR(error)
+
+    nz = 0
+    do index=1,this%N
+       if(this%z(index) == z) nz = nz + 1
+       if (nz == z_index) return
+    end do
+    
+    RAISE_ERROR('atoms_z_index_to_index: index pair ('//z//','//z_index//') not found', error)
+
+  end function atoms_z_index_to_index
 
 end module atoms_module
