@@ -3650,9 +3650,7 @@ module bispectrum_module
        ! descriptors
        !vec(1) = norm2(v1+v2)
        !vec(2) = norm2(v1-v2)
-       !vec(3) = angle(v1,v2)
-       !vec(3) = angle(v1+v2,v1-v2)
-       !vec(3) = dot_product(v1+v2,v1-v2)
+       !vec(3) = ((v1+v2).dot.(v1-v2))**2
        vec(1) = r1 + r2
        vec(2) = (r1 - r2)**2
        vec(3) = dot_product(v1,v2)
@@ -3662,9 +3660,9 @@ module bispectrum_module
      function water_dimer(at,w1,w2) result(vec)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
-       real(dp), dimension(12) :: vec(12)
-       real(dp) :: dA, dB
-       real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, pA, pB
+       real(dp), dimension(12) :: vec
+       real(dp) :: rA1, rA2, rB1, rB2
+       real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, pA, pB, dA, dB
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i
 
        iAo = w1(1)
@@ -3680,20 +3678,33 @@ module bispectrum_module
        vB1 = diff_min_image(at,iBo,iBh1)
        vB2 = diff_min_image(at,iBo,iBh2)
 
+       rA1 = norm(vA1)
+       rA2 = norm(vA2)
+       rB1 = norm(vB1)
+       rB2 = norm(vB2)
        nA = vA1 .cross. vA2
        nB = vB1 .cross. vB2
        sA = (vA1+vA2)
+       dA = (vA1-vA2)
        pA = sA .cross. nA
        sB = (vB1+vB2)
+       dB = (vB1-vB2)
        pB = sB .cross. nB
 
        ! descriptors
-       vec(1) = norm2(sA)
-       vec(2) = norm2(vA1-vA2)
-       vec(3) = abs(vA1 .dot. vA2)
-       vec(4) = norm2(sB)
-       vec(5) = norm2(vB1-vB2)
-       vec(6) = abs(vB1 .dot. vB2)
+       !vec(1) = norm2(sA)
+       !vec(2) = norm2(dA)
+       !vec(3) = (sA .dot. dA)**2
+       !vec(4) = norm2(sB)
+       !vec(5) = norm2(dB)
+       !vec(6) = (sB .dot. dB)**2
+       vec(1) = rA1+rA2
+       vec(2) = (rA1-rA2)**2
+       vec(3) = vA1 .dot. vA2
+       vec(4) = rB1+rB2
+       vec(5) = (rB1-rB2)**2
+       vec(6) = vB1 .dot. vB2
+
        vec(7) = sA .dot. sB
        vec(8) = sA .dot. nB
        vec(9) = sB .dot. nA
