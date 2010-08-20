@@ -265,7 +265,7 @@ contains
     real(dp), intent(in)          :: l_crack_pos, r_crack_pos, zone_width
     real(dp), intent(inout)       :: G
     logical, optional             :: apply_load
-    real(dp), allocatable, dimension(:,:), intent(out) :: disp
+    real(dp), dimension(:,:), intent(out) :: disp
 
     integer ::  j
     real(dp) top_old, top_new, bottom_old, bottom_new, x, y, q, strain, E, v, &
@@ -283,8 +283,6 @@ contains
 
     if (.not. get_value(at%params, 'CrackPosy', crack_pos_y)) & 
          call system_abort('crack_uniform_load: CrackPosy parameter missing from atoms')
-
-    allocate(disp(3,at%N))
 
     ! Calculate strain corresponding to given G
     strain = crack_g_to_strain(G, E, v, orig_height)
