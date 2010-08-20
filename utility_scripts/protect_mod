@@ -32,6 +32,8 @@
 usage="make copies of module files defined in a source file
 Usage: $0 [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]"
 
+mydir=`dirname $0`
+
 if [[ $# -lt 1 ]]; then
   echo "$usage" 1>&2
   exit 1
@@ -53,7 +55,7 @@ shift
 
 for file in $*; do
   modules=`egrep -i '^[ 	]*module[ 	]+[^ 	]+[ 	]*$!?' $file | awk '{print $2}'`
-  for mod in `echo $modules | ${QUIP_PATH}module_name $args`; do
+  for mod in `echo $modules | $mydir/module_name $args`; do
     if [ -f $mod ]; then
       mv $mod $mod.save
     fi

@@ -93,6 +93,7 @@ LIBATOMS_F95_OBJS = ${addsuffix .o, ${LIBATOMS_F95_FILES}}
 LIBATOMS_C_SOURCES = ${addsuffix .c, ${LIBATOMS_C_FILES}}
 LIBATOMS_C_OBJS = ${addsuffix .o, ${LIBATOMS_C_FILES}}
 
+LIBATOMS_SOURCES = ${LIBATOMS_F77_SOURCES} ${LIBATOMS_F95_SOURCES} ${LIBATOMS_C_SOURCES}
 LIBATOMS_OBJS = ${LIBATOMS_F77_OBJS} ${LIBATOMS_F95_OBJS} ${LIBATOMS_C_OBJS}
 
 
@@ -114,4 +115,10 @@ minimal_md:  libatoms.a minimal_md.o
 xyz2pdb:  libatoms.a xyz2pdb.o
 	$(LINKER)  -o $@ ${LINKFLAGS} $@.o  libatoms.a ${LINKOPTS}
 
--include depend
+
+ifeq (${USE_MAKEDEP},1)
+libAtoms.depend: ${LIBATOMS_SOURCES}
+	$(SCRIPT_PATH)/makedep ${MAKEDEP_ARGS} -- ../libAtoms/*.f95 | sed 's/[^ ]*\///g' > libAtoms.depend
+
+-include libAtoms.depend
+endif
