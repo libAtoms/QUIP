@@ -29,7 +29,7 @@ for file in args:
       new_lat = lat*pow(v_mean/v,1.0/3.0)
       at.set_lattice(new_lat, scale_positions=True)
       dot_pos = file.rindex('.')
-      new_file=file[:dot_pos]+(fmt % i)+"."+file[dot_pos+1:]
+      new_file=file[:dot_pos]+(fmt % i)+".mean_vol."+file[dot_pos+1:]
       print new_file
       at.write(new_file)
       i += 1
