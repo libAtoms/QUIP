@@ -114,6 +114,17 @@ subroutine IPModel_SW_Finalise(this)
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
 
+  if (allocated(this%a)) deallocate(this%a)
+  if (allocated(this%AA)) deallocate(this%AA)
+  if (allocated(this%BB)) deallocate(this%BB)
+  if (allocated(this%p)) deallocate(this%p)
+  if (allocated(this%q)) deallocate(this%q)
+  if (allocated(this%sigma)) deallocate(this%sigma)
+  if (allocated(this%eps2)) deallocate(this%eps2)
+  if (allocated(this%lambda)) deallocate(this%lambda)
+  if (allocated(this%gamma)) deallocate(this%gamma)
+  if (allocated(this%eps3)) deallocate(this%eps3)
+
   this%n_types = 0
   this%label = ''
 end subroutine IPModel_SW_Finalise
