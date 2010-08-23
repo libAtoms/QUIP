@@ -169,11 +169,12 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
         in_files = ['%s/../%s' % (build_dir, f) for f in all_sources]
         wrap_files = ['%s/../%s' % (build_dir, f) for f in wrap_sources]
 
-        if newer_group(wrap_files, '%s.f90doc' % modname):
+        f90doc_file = os.path.join(build_dir, '../../%s.f90doc' % modname)
+        if newer_group(wrap_files, f90doc_file):
             programs, modules, functs, subts = f90doc.read_files(in_files)
-            cPickle.dump((programs, modules, functs, subts), open('%s.f90doc' % modname, 'w'))
+            cPickle.dump((programs, modules, functs, subts), open(f90doc_file, 'w'))
         else:
-            (programs, modules, functs, subts) = cPickle.load(open('%s.f90doc' % modname))
+            (programs, modules, functs, subts) = cPickle.load(open(f90doc_file))
 
         for mod, name in modules:
             for n in [t.name for t in mod.types]:
@@ -187,8 +188,9 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
 
         res = []
         fortran_spec = {}
-        if os.path.exists('%s.spec' % modname):
-            fortran_spec = cPickle.load(open('%s.spec' % modname))
+        spec_file = os.path.join(build_dir, '../../%s.spec' % modname)
+        if os.path.exists(spec_file):
+            fortran_spec = cPickle.load(open(spec_file))
 
         wrap_modules = []
         for file in wrap_sources:
@@ -232,7 +234,7 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
         fortran_spec['quip_root'] = quip_root
         fortran_spec['quip_arch'] = quip_arch
         fortran_spec['quip_makefile'] = makefile
-        cPickle.dump(fortran_spec, open('%s.spec' % modname, 'w'))
+        cPickle.dump(fortran_spec, open(os.path.join(build_dir, '../../%s.spec' % modname), 'w'))
 
         return res
 
@@ -473,7 +475,7 @@ if makefile_test('QUIPPY_DEBUG'):
     os.environ['FOPT'] = '-O0'
     os.environ['FARCH'] = ''
     macros.append(('DEBUG',None))
-#    macros.append(('CDEBUG',None))
+    macros.append(('CDEBUG',None))
 
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
@@ -538,7 +540,7 @@ exts = [arraydata_ext, quippy_ext]
 setup(name='quippy',
       packages = ['quippy'],
       ext_modules = exts,
-      data_files = [('quippy',['quippy.spec'])],
+      data_files = [('quippy',[os.path.join(default_options['build']['build_base'],'quippy.spec')])],
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext},
 #      version=os.popen('svnversion -n .').read(),
