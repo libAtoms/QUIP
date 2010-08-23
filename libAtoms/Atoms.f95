@@ -5155,17 +5155,18 @@ contains
     real(dp), intent(in) :: cos_theta
     type(Table), intent(out) :: output
 
-    real(dp) :: d(3)
+    real(dp) :: d(3), ndir(3), p
     integer :: i
+
+    ndir = dir/norm(dir)
+    p = ndir .dot. this%pos(:,origin)
 
     call allocate(output, 1,0,0,0)
     do i=1,this%n
        if (i == origin) cycle
-       d = diff_min_image(this, origin, i)
-       if ((d .dot. dir)/(norm(d)*norm(dir)) > cos_theta) call append(output, i)
+       d = this%pos(:,i) - this%pos(:, origin)
+       if ((d .dot. ndir) < p .and. (d .dot. ndir)/(norm(d)) > cos_theta) call append(output, i)
     end do
-
-    call print(output)
 
   end subroutine atoms_filter_cone
 
