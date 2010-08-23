@@ -435,11 +435,12 @@ contains
           hybrid_mark = HYBRID_NO_MARK
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, new_args_str)
-          cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str)
+          cluster_info = create_cluster_info_from_mark(at, new_args_str,error=error)
+	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
 	  cluster = carve_cluster(at, new_args_str, cluster_info)
 	  call finalise(cluster_info)
 
-          ! Reassign pointers - create_cluster_info_from_hybrid_mark() might have broken them
+          ! Reassign pointers - create_cluster_info_from_mark() might have broken them
           if (has_property(at, 'hybrid_mark')) &
                dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
           if (has_property(at, 'weight_region1')) &
@@ -500,7 +501,7 @@ contains
 
        if (do_carve_cluster) then
 	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_hybrid_mark(at, new_args_str, error=error)
+	 cluster_info = create_cluster_info_from_mark(at, new_args_str, error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: creating cluster info from hybrid_mark", error)
 
          ! Check there are no repeated indices among the non-termination atoms in the cluster
@@ -531,7 +532,7 @@ contains
 	 PASS_ERROR_WITH_INFO('Potential_Simple_calc: single_cluster failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
 	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
 
-         ! Reassign pointers - create_cluster_info_from_hybrid_mark() might have broken them
+         ! Reassign pointers - create_cluster_info_from_mark() might have broken them
          if (has_property(at, 'hybrid_mark')) &
               dummy = assign_pointer(at, 'hybrid_mark', hybrid_mark)
 
@@ -546,7 +547,7 @@ contains
 	 call finalise(cluster)
        else ! not do_carve_cluster
 	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_hybrid_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, error)
+	 cluster_info = create_cluster_info_from_mark(at, trim(new_args_str) // " cluster_same_lattice", cut_bonds, error=error)
 	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
          !save cluster in cluster_mark property and optionally cluster_mark_postfix property

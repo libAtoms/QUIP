@@ -135,6 +135,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
+  logical                     :: use_create_cluster_info_for_core
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
 
@@ -205,6 +206,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster)
+      call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core)
       call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr)
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer)
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
@@ -462,7 +464,7 @@ logical :: have_silica_potential
              call calc_dists(ds%atoms)
 	     if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
              call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius, &
-	       origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+	       origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
 if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_abort('??')
 !!!!!!!!!
 !call initialise(csilla_out,filename='csillaQM.xyz',ACTION=OUTPUT,append=.true.)
@@ -492,7 +494,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 	     !qm_seed_p = hybrid_mark_p
 
              !extend QM core around seed atoms
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,list_changed=list_changed1)
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
 !             call construct_hysteretic_region(region=core,at=ds%atoms,core=seed,loop_atoms_no_connectivity=.false., &
 !                  inner_radius=Inner_QM_Region_Radius,outer_radius=Outer_QM_Region_Radius, use_avgpos=.false., add_only_heavy_atoms=(.not.buffer_general), &
 !                  nneighb_only=.false., min_images_only=.true.)
@@ -707,7 +709,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (trim(Run_Type1).eq.'QMMM_EXTENDED') then
         if (qm_region_pt_ctr) then
 	   if (qm_region_atom_ctr /= 0) qm_region_ctr = ds%atoms%pos(:,qm_region_atom_ctr)
-           call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),list_changed=list_changed1)
+           call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general),use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
            if (list_changed1) then
               call print('Core has changed')
 !             call set_value(ds%atoms%params,'QM_core_changed',list_changed)
@@ -715,7 +717,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
            endif
         else !qm_region_pt_ctr
            !extend QM core around seed atoms
-             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,list_changed=list_changed1)
+             call create_pos_or_list_centred_hybrid_region(ds%atoms,Inner_QM_Region_Radius,Outer_QM_Region_Radius,atomlist=qm_seed,add_only_heavy_atoms=(.not. buffer_general),nneighb_only=.false.,min_images_only=.true.,use_create_cluster_info=use_create_cluster_info_for_core,list_changed=list_changed1)
         endif
      endif
 
@@ -1301,9 +1303,9 @@ contains
     else if (trim(Run_Type) == 'MM') then
        call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:mol_id:atom_res_number min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_CORE') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_core:old_cluster_mark_core:cut_bonds min_cutoff=0.0')
     else if (trim(Run_Type) == 'QMMM_EXTENDED') then
-       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended min_cutoff=0.0')
+       call initialise(pot,'FilePot command='//trim(filepot_program)//' property_list=species:pos:avgpos:atom_charge:mol_id:atom_res_number:cluster_mark_extended:old_cluster_mark_extended:cut_bonds min_cutoff=0.0')
     else
        call system_abort("Run_Type='"//trim(Run_Type)//"' not supported")
     endif

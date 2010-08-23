@@ -66,7 +66,7 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
      "h_outer_l ", &
      "h_fit     " /)
 
-public :: create_cluster_info_from_hybrid_mark, carve_cluster, create_hybrid_weights, &
+public :: create_cluster_info_from_mark, carve_cluster, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
     add_cut_hydrogens, construct_hysteretic_region, &
@@ -1243,21 +1243,24 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% Create a cluster using the 'hybrid_mark' property and options in 'args_str'.
+  !% Create a cluster using the mark_name (optional arg, default 'hybrid_mark') 
+  !% property and options in 'args_str'.
   !% All atoms that are marked with anything other than 'HYBRID_NO_MARK' will
   !% be included in the cluster; this includes active, transition and buffer
-  !% atoms. 
-  !% Returns an Table object (cluster_info) which contains info on atoms whose
+  !% atoms.   Atoms added (to satisfy heuristics) will be marked in new property
+  !% modified_//trim(mark_name) as HYBRID_BUFFER_MARK.
+  !% Returns a Table object (cluster_info) which contains info on atoms whose
   !% indices are given in atomlist, possibly with some extras for consistency,
   !% and optionally terminated with Hydrogens, that can be used by carve_cluster().
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function create_cluster_info_from_hybrid_mark(at, args_str, cut_bonds, error) result(cluster_info)
+  function create_cluster_info_from_mark(at, args_str, cut_bonds, mark_name, error) result(cluster_info)
     type(Atoms), intent(inout), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), optional, intent(out)   :: cut_bonds !% Return a list of the bonds cut when making
     !% the cluster.  See create_cluster() documentation.
+    character(len=*), intent(in), optional :: mark_name
     integer, optional, intent(out) :: error
     type(Table) :: cluster_info
 
@@ -1288,10 +1291,13 @@ contains
     type(Connection), pointer :: use_connect
     logical :: connectivity_just_from_connect
     logical :: cluster_changed, cluster_hopping
+    character(len=STRING_LENGTH) :: my_mark_name
 
     INIT_ERROR(error)
 
-    call print('create_cluster_info_from_hybrid_mark got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
+    my_mark_name = optional_default('hybrid_mark', mark_name)
+
+    call print('create_cluster_info_from_mark got args_str "'//trim(args_str)//'"', PRINT_VERBOSE)
 
     call initialise(params)
     call param_register(params, 'terminate', 'T', terminate)
@@ -1312,28 +1318,19 @@ contains
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_termination_rescale)
     call param_register(params, 'cluster_hopping', 'T', cluster_hopping)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_hybrid_mark args_str') ) then
-         RAISE_ERROR("create_cluster_info_from_hybrid_mark failed to parse args_str='"//trim(args_str)//"'", error)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='create_cluster_info_from_mark args_str') ) then
+         RAISE_ERROR("create_cluster_info_from_mark failed to parse args_str='"//trim(args_str)//"'", error)
     endif
     call finalise(params)
 
     do_periodic = (/periodic_x,periodic_y,periodic_z/)
 
-    if (.not. has_property(at, 'hybrid_mark')) then
-         RAISE_ERROR('create_cluster_info_from_hybrid_mark: atoms structure has no "hybrid_mark" property', error)
+    if (.not. has_property(at, trim(my_mark_name))) then
+       RAISE_ERROR('create_cluster_info_from_mark: atoms structure has no "'//trim(my_mark_name)//'" property', error)
     endif
 
-    if (cluster_allow_modification) then
-       call add_property(at, 'modified_hybrid_mark', 0)
-       if (.not. assign_pointer(at, 'modified_hybrid_mark', modified_hybrid_mark)) then
-            RAISE_ERROR('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property', error)
-       endif
-    endif
-
-    ! only after adding modified_hybrid_mark_property
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
-         RAISE_ERROR('create_cluster_info_from_hybrid_mark passed atoms structure with no hybrid_mark property', error)
-    endif
+    call assign_property_pointer(at, trim(my_mark_name), hybrid_mark, error=error)
+    PASS_ERROR_WITH_INFO('create_cluster_info_from_mark passed atoms structure with no hybrid_mark property', error)
 
     ! Calculate centre of cluster
     call allocate(cluster_list, 1,0,0,0)
@@ -1404,7 +1401,7 @@ contains
           if (cluster_list%N == old_n) then
              call write(at, 'create_cluster_abort.xyz')
              call print(cluster_list)
-             RAISE_ERROR('create_cluster_info_from_hybrid_mark: cluster stopped growing before all marked atoms found - check for split QM region', error)
+             RAISE_ERROR('create_cluster_info_from_mark: cluster stopped growing before all marked atoms found - check for split QM region', error)
           end if
           old_n = cluster_list%N
        end do
@@ -1519,8 +1516,11 @@ contains
     endif
 
     if (cluster_allow_modification) then
+       call add_property(at, 'modified_'//trim(my_mark_name), 0, ptr=modified_hybrid_mark)
        cluster_changed = .true.
        modified_hybrid_mark = hybrid_mark
+       prev_cluster_info_n = cluster_info%N
+
        do while (cluster_changed) 
           cluster_changed = .false.
           call print("fixing up cluster according to heuristics keep_whole_residues " // keep_whole_residues // &
@@ -1530,50 +1530,26 @@ contains
                ' protect_double_bonds ' // protect_double_bonds // &
                ' terminate .or. fix_termination_clash ' // (terminate .or. fix_termination_clash), verbosity=PRINT_NERD)
           if (keep_whole_residues) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_keep_whole_residues(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, keep_whole_residues_has_value)
           endif
           if (keep_whole_silica_tetrahedra) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_keep_whole_silica_tetrahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_keep_whole_silica_tetrahedra(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           end if
           if (reduce_n_cut_bonds) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_reduce_n_cut_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
           if (protect_X_H_bonds) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_protect_X_H_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
           if (protect_double_bonds) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_protect_double_bonds(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask, protect_double_bonds_has_value)
           endif
           if (terminate .or. fix_termination_clash) then
-             prev_cluster_info_n = cluster_info%N
-             if (cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)) then
-                cluster_changed = .true.
-                modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
-             endif
+             cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
-          !OUTDATED if (ss_in_out_in) cluster_changed = cluster_changed .or. cluster_ss_in_out_in(at, cluster_info, use_connect)
-          !OUTDATED if (biochem_in_out_in) cluster_changed = cluster_changed .or. cluster_biochem_in_out_in(at, cluster_info, use_connect)
        end do ! while cluster_changed
+
+       if (prev_cluster_info_n < cluster_info%N) modified_hybrid_mark(cluster_info%int(1,prev_cluster_info_n+1:cluster_info%N)) = HYBRID_BUFFER_MARK
 
        call print('create_cluster: Finished fixing cluster for various heuristic pathologies',PRINT_NERD)
        call print("create_cluster: cluster list:", PRINT_NERD)
@@ -1619,8 +1595,6 @@ contains
                 ! Label term atom with indices into original atoms structure.
                 ! j is atom it's generated from and n is index into cluster table of atom it's attached to
                 call append(cluster_info,(/j,ishift,1,n/),(/H1, rescale/), (/ "term      " /)) 
-		! label term atom in original atos object calso
-!!$		hybrid_mark(j) = HYBRID_TERM_MARK
 
                 ! Keep track of how many termination atoms each cluster atom has
                 p = find_in_array(int_part(n_term,(/1,2,3,4/)),(/n,ishift/))
@@ -1682,7 +1656,7 @@ contains
 
     call finalise(cluster_list)
 
-  end function create_cluster_info_from_hybrid_mark
+  end function create_cluster_info_from_mark
 
 
   !% Given an atoms structure with a 'hybrid_mark' property, this routine
@@ -2514,22 +2488,21 @@ contains
 
     call update_hysteretic_region(at,inner_region,outer_region,region)
 
-       call print('construct_hysteretic_region: inner_region list:',PRINT_VERBOSE)
-       call print(inner_region,PRINT_VERBOSE)
+    call print('construct_hysteretic_region: inner_region list:',PRINT_VERBOSE)
+    call print(inner_region,PRINT_VERBOSE)
+    call print('construct_hysteretic_region: outer_region list:',PRINT_VERBOSE)
+    call print(outer_region,PRINT_VERBOSE)
 
-       call print('construct_hysteretic_region: outer_region list:',PRINT_VERBOSE)
-       call print(outer_region,PRINT_VERBOSE)
+    if (present(debugfile)) call print("   new inner region list", file=debugfile)
+    if (present(debugfile)) call print(inner_region, file=debugfile)
+    if (present(debugfile)) call print("   new outer region list", file=debugfile)
+    if (present(debugfile)) call print(outer_region, file=debugfile)
 
-       if (present(debugfile)) call print("   new inner region list", file=debugfile)
-       if (present(debugfile)) call print(inner_region, file=debugfile)
-       if (present(debugfile)) call print("   new outer region list", file=debugfile)
-       if (present(debugfile)) call print(outer_region, file=debugfile)
+    call print('construct_hysteretic_region: new region list:',PRINT_VERBOSE)
+    call print(region,PRINT_VERBOSE)
 
-       call print('construct_hysteretic_region: new region list:',PRINT_VERBOSE)
-       call print(region,PRINT_VERBOSE)
-
-       if (present(debugfile)) call print("   new region list", file=debugfile)
-       if (present(debugfile)) call print(region, file=debugfile)
+    if (present(debugfile)) call print("   new region list", file=debugfile)
+    if (present(debugfile)) call print(region, file=debugfile)
 
     call finalise(inner_region)
     call finalise(outer_region)
@@ -3253,37 +3226,37 @@ type(inoutput), optional :: debugfile
   !% Do this hysteretically, from $R_inner$ to $R_outer$ around $origin$ or $atomlist$, that is
   !% the centre of the QM region (a position in space or a list of atoms).
   !
-  subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms,nneighb_only,min_images_only,list_changed, error)
+  subroutine create_pos_or_list_centred_hybrid_region(my_atoms,R_inner,R_outer,origin, atomlist,use_avgpos,add_only_heavy_atoms, &
+	     nneighb_only,min_images_only,use_create_cluster_info, create_cluster_info_args, list_changed, error)
 
     type(Atoms),        intent(inout) :: my_atoms
     real(dp),           intent(in)    :: R_inner
     real(dp),           intent(in)    :: R_outer
     real(dp), optional, intent(in)    :: origin(3)
     type(Table), optional, intent(in)    :: atomlist !the seed of the QM region
-    logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only
+    logical,  optional, intent(in)   :: use_avgpos, add_only_heavy_atoms, nneighb_only, min_images_only, use_create_cluster_info
+    character(len=*), optional, intent(in) :: create_cluster_info_args
     logical,  optional, intent(out)   :: list_changed
     integer, optional, intent(out) :: error
 
     type(Atoms) :: atoms_for_add_cut_hydrogens
     type(Table) :: core, old_core, ext_qmlist
-!    real(dp)    :: my_origin(3)
     integer, pointer :: hybrid_p(:), hybrid_mark_p(:)
+    character(len=1024) :: my_create_cluster_info_args
+    integer, pointer :: hybrid_region_core_tmp_p(:)
+    type(Table) :: padded_cluster_info
 
     INIT_ERROR(error)
 
     if (count((/present(origin),present(atomlist)/))/=1) then
       RAISE_ERROR('create_pos_or_list_centred_hybrid_mark: Exactly 1 of origin and atomlist must be present.', error)
     endif
-!    my_origin = optional_default((/0._dp,0._dp,0._dp/),origin)
 
     call map_into_cell(my_atoms)
 
     call allocate(core,4,0,0,0,0)
     call allocate(old_core,4,0,0,0,0)
     call allocate(ext_qmlist,4,0,0,0,0)
-    ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,old_core,int_property='hybrid_mark')
-    ! call get_hybrid_list(my_atoms,HYBRID_ACTIVE_MARK,core,int_property='hybrid_mark')
-    ! call get_hybrid_list(my_atoms,HYBRID_BUFFER_MARK,ext_qmlist, int_property='hybrid_mark',get_up_to_mark_value=.true.)
     call get_hybrid_list(my_atoms,old_core,active_trans_only=.true., int_property='hybrid_mark', error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting old core", error)
     call get_hybrid_list(my_atoms,core,active_trans_only=.true., int_property='hybrid_mark', error=error)
@@ -3291,28 +3264,31 @@ type(inoutput), optional :: debugfile
     call get_hybrid_list(my_atoms,ext_qmlist, all_but_term=.true., int_property='hybrid_mark', error=error)
     PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region getting all but term", error)
 
-!Build the hysteretic QM core:
-  if (present(atomlist)) then
+   !Build the hysteretic QM core:
+   if (present(atomlist)) then
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,core=atomlist,loop_atoms_no_connectivity=.false., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
        nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
-  else !present origin
+   else !present origin
      call print("create_pos_or_list_centred_hybrid_region calling construct_hysteretic_region", verbosity=PRINT_NERD)
      call construct_hysteretic_region(region=core,at=my_atoms,centre=origin,loop_atoms_no_connectivity=.true., &
        inner_radius=R_inner,outer_radius=R_outer, use_avgpos=use_avgpos, add_only_heavy_atoms=add_only_heavy_atoms, &
        nneighb_only=nneighb_only, min_images_only=min_images_only, error=error) !NB , debugfile=mainlog) 
-  endif
-  PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
+   endif
+   PASS_ERROR_WITH_INFO("create_pos_or_list_centred_hybrid_region constructing hysteretic region", error)
 
-!    call construct_buffer_origin(my_atoms,R_inner,inner_list,my_origin)
-!    call construct_buffer_origin(my_atoms,R_outer,outer_list,my_origin)
-!    call construct_region(my_atoms,R_inner,inner_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
-!    call construct_region(my_atoms,R_outer,outer_list,centre=my_origin,use_avgpos=.false.,add_only_heavy_atoms=.false., with_hops=.false.)
-
-!    call select_hysteretic_quantum_region(my_atoms,inner_list,outer_list,core)
-!    call finalise(inner_list)
-!    call finalise(outer_list)
+    if (use_create_cluster_info) then
+      call add_property(my_atoms, "hybrid_region_core_tmp", HYBRID_NO_MARK, ptr=hybrid_region_core_tmp_p)
+      hybrid_region_core_tmp_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
+      my_create_cluster_info_args = optional_default("terminate=F cluster_allow_modification cluster_nneighb_only", create_cluster_info_args)
+      padded_cluster_info = create_cluster_info_from_mark(my_atoms, my_create_cluster_info_args, mark_name="hybrid_region_core_tmp")
+      call finalise(core)
+      call initialise(core, Nint=4, Nreal=0, Nstr=0, Nlogical=0, max_length=padded_cluster_info%N)
+      call append(core, blank_rows=padded_cluster_info%N)
+      core%int(1:4,1:padded_cluster_info%N) = padded_cluster_info%int(1:4,1:padded_cluster_info%N)
+      call remove_property(my_atoms,"hybrid_region_core_tmp")
+    endif
 
 !TO BE OPTIMIZED : add avgpos to add_cut_hydrogen
    ! add cut hydrogens, according to avgpos
@@ -3325,10 +3301,6 @@ type(inoutput), optional :: debugfile
     call calc_connect(atoms_for_add_cut_hydrogens)
 
     call add_cut_hydrogens(atoms_for_add_cut_hydrogens,core)
-    !call print('Atoms in hysteretic quantum region after adding the cut hydrogens:')
-    !do i=1,core%N
-    !   call print(core%int(1,i))
-    !enddo
     call finalise(atoms_for_add_cut_hydrogens)
 
    ! check changes in QM list and set the new QM list
@@ -3337,17 +3309,16 @@ type(inoutput), optional :: debugfile
        if (list_changed)  call print('QM list around the origin  has changed')
     endif
 
-   ! update QM_flag of my_atoms
+    ! update QM_flag of my_atoms
     if (.not. assign_pointer(my_atoms,'hybrid_mark',hybrid_mark_p)) then
       RAISE_ERROR("create_pos_or_list_centred_hybrid_region couldn't get hybrid_mark property", error)
     endif
-    hybrid_mark_p(1:my_atoms%N) = 0
+    ! default to NO_MARK
+    hybrid_mark_p(1:my_atoms%N) = HYBRID_NO_MARK
+    ! anything which was marked before is now BUFFER (so hysteretic buffer, later, has correct previous values)
     hybrid_mark_p(int_part(ext_qmlist,1)) = HYBRID_BUFFER_MARK
+    ! anything returned in the core list is now ACTIVE
     hybrid_mark_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
-    ! qm_flag_index = get_property(my_atoms,'hybrid_mark')
-    ! my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
-    ! my_atoms%data%int(qm_flag_index,int_part(ext_qmlist,1)) = 2
-    ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
 
    ! update hybrid property of my_atoms
     if (.not. assign_pointer(my_atoms,'hybrid',hybrid_p)) then
@@ -3355,9 +3326,6 @@ type(inoutput), optional :: debugfile
     endif
     hybrid_p(1:my_atoms%N) = 0
     hybrid_p(int_part(core,1)) = 1
-    ! qm_flag_index = get_property(my_atoms,'hybrid')
-    ! my_atoms%data%int(qm_flag_index,1:my_atoms%N) = 0
-    ! my_atoms%data%int(qm_flag_index,int_part(core,1)) = 1
 
     call finalise(core)
     call finalise(old_core)
