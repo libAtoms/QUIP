@@ -370,13 +370,13 @@ contains
        if (assign_pointer(at,'cut_bonds',cut_bonds_p)) then
           call initialise(cut_bonds,2,0,0,0,0)
           do i_inner=1,at%N
-             do j=1,4 !MAX_CUT_BONDS
+             do j=1,size(cut_bonds_p,1) !MAX_CUT_BONDS
                 i_outer = cut_bonds_p(j,i_inner)
                 if (i_outer .eq. 0) exit
                 call append(cut_bonds,(/i_inner,i_outer/))
              enddo
           enddo
-          if (cut_bonds%N.gt.0) then
+          if (cut_bonds%N > 0) then
              call uniq(cut_bonds%int(2,1:cut_bonds%N),link_list_a)
              allocate(qm_and_link_list_a(size(qm_list_a)+size(link_list_a)))
              qm_and_link_list_a(1:size(qm_list_a)) = qm_list_a(1:size(qm_list_a))
@@ -384,15 +384,15 @@ contains
           else
              allocate(link_list_a(0))
              allocate(qm_and_link_list_a(size(qm_list_a)))
-             if (size(qm_list_a).gt.0) qm_and_link_list_a = qm_list_a
+             if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
           endif
        else
           allocate(qm_and_link_list_a(size(qm_list_a)))
-          if (size(qm_list_a).gt.0) qm_and_link_list_a = qm_list_a
+          if (size(qm_list_a) > 0) qm_and_link_list_a = qm_list_a
        endif
 
        !If needed, read QM/MM link_template_file
-       if (allocated(link_list_a)) then
+       if (size(link_list_a) > 0) then
           if (trim(link_template_file).eq."") call system_abort("There are QM/MM links, but qmmm_link_template is not defined.")
           call initialise(link_template_io, trim(link_template_file), INPUT)
           call read_file(link_template_io, link_template_a, link_template_n_lines)
