@@ -280,7 +280,7 @@ contains
     character(*),      intent(in) :: message
 #ifdef IFORT_TRACEBACK_ON_ABORT
     integer :: j
-#endif IFORT_TRACEBACK_ON_ABORT
+#endif /* IFORT_TRACEBACK_ON_ABORT */
 #ifdef SIGNAL_ON_ABORT
     integer :: status
     integer, parameter :: SIGUSR1 = 30

@@ -134,4 +134,4 @@ implicit none
 end program
 #else
 vacancy_map_hybrid_relax without HAVE_HYBRID makes no sense
-#endif HAVE_HYBRID
+#endif /* HAVE_HYBRID */
