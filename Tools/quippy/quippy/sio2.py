@@ -371,7 +371,7 @@ def rcut(alpha, eps=1.0/40.0, min=1.0, max=100.0):
 
 def force_test(at, p, dx=1e-4):
    analytic_f = fzeros((3,at.n))
-   p.calc(at, f=analytic_f)
+   p.calc(at, force=analytic_f)
    num_f = fzeros((3,at.n))
    ep, em = farray(0.0), farray(0.0)
 
@@ -379,10 +379,10 @@ def force_test(at, p, dx=1e-4):
       for j in (1,2,3):
          ap = at.copy()
          ap.pos[j,i] += dx
-         p.calc(ap, e=ep)
+         p.calc(ap, energy=ep)
          print 'e+', j,i,ep
          ap.pos[j,i] -= 2.0*dx
-         p.calc(ap, e=em)
+         p.calc(ap, energy=em)
          print 'e-', j,i,em
          num_f[j,i] = -(ep - em)/(2*dx)
 
@@ -507,7 +507,7 @@ def timing_test():
          p = Potential('IP ASAP', xml % (rcut(alpha), alpha))
 
          t1 = time.time()
-         p.calc(aa, e=e)
+         p.calc(aa, energy=e)
          t2 = time.time()
 
          times[(rep,alpha)] = (aa.n, t2-t1)
@@ -952,7 +952,7 @@ def costfn(config_list, pot, wf=1.0, ws=0.5, we=0.1, bulk_mod=2000.0/294156.6447
    dist_s = 0.0; norm_s = 0.0
 
    for ati, at in enumerate(config_list):
-      pot.calc(at, calc_virial=True, calc_force=True, calc_energy=True)
+      pot.calc(at, virial=True, force=True, energy=True)
 
       at.params['md_energy'] = at.params['energy'] / HARTREE
       at.params['md_stress'] = at.virial/at.cell_volume() / (HARTREE/(BOHR**3))

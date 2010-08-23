@@ -160,7 +160,7 @@ program makecrack
   real (dp), dimension(3,3) :: lattice
 
   real (dp) :: maxy, miny, maxx, &
-       width, height, E, v, v2, energy, crack_pos(2)
+       width, height, E, v, v2, crack_pos(2)
 
   integer :: i,  n_fixed, nargs
 
@@ -288,7 +288,7 @@ program makecrack
   if (params%crack_apply_initial_load) then
      if (mpi_glob%active .and. params%crack_relax_loading_field) then
         allocate(f(3,crack_slab%N))
-        call setup_parallel(classicalpot, crack_slab, e=energy, f=f, args_str=params%classical_args_str)
+        call setup_parallel(classicalpot, crack_slab, args_str=params%classical_args_str//" energy force")
         deallocate(f)
      end if
      

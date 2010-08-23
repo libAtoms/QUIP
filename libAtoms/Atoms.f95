@@ -243,62 +243,80 @@ module  atoms_module
 
   end type Atoms
 
+  private :: atoms_initialise, connection_initialise
   interface initialise
      module procedure atoms_initialise, connection_initialise
   end interface initialise
 
   !% Free up the memory associated with one or more objects.
+  private :: atoms_finalise,atoms_finalise_multi, connection_finalise
   interface finalise
      module procedure atoms_finalise,atoms_finalise_multi, connection_finalise
   end interface finalise
 
+  private :: connection_wipe
   interface wipe
      module procedure connection_wipe
   end interface wipe
 
+  private :: atoms_zero
   interface zero
      module procedure atoms_zero
   end interface
 
   !% Overloaded assigment operators for Atoms and Connection objects.
+  private :: atoms_assignment, connection_assignment
   interface assignment(=)
      module procedure atoms_assignment, connection_assignment
   end interface assignment(=)
 
+  private :: atoms_set_atoms, atoms_set_atoms_singlez
   interface set_atoms
      module procedure atoms_set_atoms, atoms_set_atoms_singlez
   end interface
 
   !% increase cutoff
+  private :: atoms_set_cutoff_minimum
   interface set_cutoff_minimum
      module procedure atoms_set_cutoff_minimum
   end interface
 
   !% set (a uniform) cutoff
+  private :: atoms_set_cutoff
   interface set_cutoff
      module procedure atoms_set_cutoff
   end interface
 
   !% set cutoff factor
+  private :: atoms_set_cutoff_factor
   interface set_cutoff_factor
      module procedure atoms_set_cutoff_factor
   end interface
 
   !% Add one or more atoms to an Atoms object.
+  private :: add_atom_single, add_atom_multiple
   interface add_atoms
      module procedure add_atom_single, add_atom_multiple
   end interface add_atoms
 
   !% Remove one or more atoms from an Atoms object.
+  private :: remove_atom_single, remove_atom_multiple
   interface remove_atoms
      module procedure remove_atom_single, remove_atom_multiple
   end interface remove_atoms
 
-  !% Add an extra property to this atoms object, as extra columns of 
-  !% integers or real numbers in the 'data' table. For example, this interface
-  !% is used by the DynamicalSystems module to create the 'velo', 'acc', etc. properties
-  !% Optionally, the type and indices of the new property are returned
-  !% in the array 'lookup'.
+  !% Add a per-atom property to this atoms object, as extra entry with columns of 
+  !% integers, reals, logical, or strings in the 'properties' dictionary. For example, 
+  !% this interface is used by the DynamicalSystems module to create the 'velo', 'acc', 
+  !% etc. properties.
+  !% Optionally, a pointer to the new property is returned.
+  private :: atoms_add_property_int, atoms_add_property_int_a
+  private :: atoms_add_property_real, atoms_add_property_real_a
+  private :: atoms_add_property_str, atoms_add_property_str_2da
+  private :: atoms_add_property_str_a
+  private :: atoms_add_property_logical, atoms_add_property_logical_a 
+  private :: atoms_add_property_int_2Da
+  private :: atoms_add_property_real_2Da
   interface add_property
      module procedure atoms_add_property_int, atoms_add_property_int_a
      module procedure atoms_add_property_real, atoms_add_property_real_a
@@ -309,15 +327,54 @@ module  atoms_module
      module procedure atoms_add_property_real_2Da
   end interface
 
+  !% Add a per-atom property to this atoms object, but point to existing space
+  !% rather than allocating new space for it (as add_property does).
+  private :: atoms_add_property_p_int, atoms_add_property_p_int_a
+  private :: atoms_add_property_p_real, atoms_add_property_p_real_a
+  private :: atoms_add_property_p_str
+  private :: atoms_add_property_p_logical
+  interface add_property_from_pointer
+     module procedure atoms_add_property_p_int, atoms_add_property_p_int_a
+     module procedure atoms_add_property_p_real, atoms_add_property_p_real_a
+     module procedure atoms_add_property_p_str
+     module procedure atoms_add_property_p_logical
+  end interface
+
+  !% get a (per-configuration) value from the atoms%params dictionary
+  private :: atoms_get_param_value_int, atoms_get_param_value_int_a
+  private :: atoms_get_param_value_real, atoms_get_param_value_real_a, atoms_get_param_value_real_a2
+  private :: atoms_get_param_value_str
+  private :: atoms_get_param_value_logical
+  interface get_param_value
+     module procedure atoms_get_param_value_int, atoms_get_param_value_int_a
+     module procedure atoms_get_param_value_real, atoms_get_param_value_real_a, atoms_get_param_value_real_a2
+     module procedure atoms_get_param_value_str
+     module procedure atoms_get_param_value_logical
+  end interface get_param_value
+
+  !% set a (per-configuration) value from the atoms%params dictionary
+  private :: atoms_set_param_value_int, atoms_set_param_value_int_a
+  private :: atoms_set_param_value_real, atoms_set_param_value_real_a, atoms_set_param_value_real_a2
+  private :: atoms_set_param_value_str
+  private :: atoms_set_param_value_logical
+  interface set_param_value
+     module procedure atoms_set_param_value_int, atoms_set_param_value_int_a
+     module procedure atoms_set_param_value_real, atoms_set_param_value_real_a, atoms_set_param_value_real_a2
+     module procedure atoms_set_param_value_str
+     module procedure atoms_set_param_value_logical
+  end interface set_param_value
+
   !% Convenience function to test if a property is present. No checking
   !% of property type is done.
+  private :: atoms_has_property
   interface has_property
      module procedure atoms_has_property
   end interface
 
   !% remove a property from this atoms object
+  private :: atoms_remove_property
   interface remove_property
-    module procedure atoms_remove_property
+     module procedure atoms_remove_property
   end interface
 
   !% This is a convenience interface to assign pointers to custom properties of this
@@ -325,6 +382,11 @@ module  atoms_module
   !% 'this%properties' Dictionary. Adding or removing atoms will invalidate these pointers.
   !% Returns true if successful, false if property doesn't exist or
   !% if property type and type of pointer don't match.
+  !% OUTDATED - replace by subroutine assign_property_pointer with error handling
+  private :: atoms_assign_pointer_int1D, atoms_assign_pointer_int2D
+  private :: atoms_assign_pointer_real1D, atoms_assign_pointer_real2D
+  private :: atoms_assign_pointer_str
+  private :: atoms_assign_pointer_logical
   interface assign_pointer
      module procedure atoms_assign_pointer_int1D, atoms_assign_pointer_int2D
      module procedure atoms_assign_pointer_real1D, atoms_assign_pointer_real2D
@@ -332,22 +394,43 @@ module  atoms_module
      module procedure atoms_assign_pointer_logical
   end interface
 
+  !% This is a convenience interface to assign pointers to custom properties of this
+  !% Atoms object. The pointer is simply directed to the relevant array in the
+  !% 'this%properties' Dictionary. Adding or removing atoms will invalidate these pointers.
+  !% Raises error for failure
+  private :: atoms_assign_prop_ptr_int1D, atoms_assign_prop_ptr_int2D
+  private :: atoms_assign_prop_ptr_real1D, atoms_assign_prop_ptr_real2D
+  private :: atoms_assign_prop_ptr_str
+  private :: atoms_assign_prop_ptr_logical
+  interface assign_property_pointer
+     module procedure atoms_assign_prop_ptr_int1D, atoms_assign_prop_ptr_int2D
+     module procedure atoms_assign_prop_ptr_real1D, atoms_assign_prop_ptr_real2D
+     module procedure atoms_assign_prop_ptr_str
+     module procedure atoms_assign_prop_ptr_logical
+  end interface
+
   !% This interface calculates the distance between the nearest periodic images of two points (or atoms).
+  private :: distance8_atom_atom, distance8_atom_vec, distance8_vec_atom, distance8_vec_vec
   interface distance_min_image
      module procedure distance8_atom_atom, distance8_atom_vec, distance8_vec_atom, distance8_vec_vec
   end interface
 
   !% This interface calculates the difference vector between the nearest periodic images of two points (or atoms).
+  private :: diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
   interface diff_min_image
      module procedure diff_atom_atom, diff_atom_vec, diff_vec_atom, diff_vec_vec
   end interface
 
   !% Print a verbose textual description of an Atoms or Connection object to the default logger or to
   !% a specificied Inoutput object.
+  private :: atoms_print, connection_print
   interface print
      module procedure atoms_print, connection_print
   end interface print
 
+  !% set the lattice of an atoms object - please use this, rather than setting atoms%lattice
+  !% directly, because it also set up reciprocal lattice and orthorhombic/periodic logical flags
+  private :: atoms_set_lattice
   interface set_lattice
      module procedure atoms_set_lattice
   end interface set_lattice
@@ -355,25 +438,32 @@ module  atoms_module
   !% Select a subset of the atoms in an atoms object, either using a logical 
   !% mask array or a Table, in which case the first 'int' column is taken to 
   !% be a list of the atoms that should be retained.
+  private :: atoms_select
   interface select
      module procedure atoms_select
   end interface select
 
   !% calculate volume of unit cell
+  private :: atoms_cell_volume
+  private :: lattice_cell_volume
   interface cell_volume
     module procedure atoms_cell_volume
     module procedure lattice_cell_volume
   end interface
 
+  private :: atoms_map_into_cell
+  private :: vec_map_into_cell
   interface map_into_cell
     module procedure atoms_map_into_cell
     module procedure vec_map_into_cell
   end interface
 
+  private :: atoms_bcast
   interface bcast
      module procedure atoms_bcast
   end interface
 
+  private :: atoms_copy_entry
   interface copy_entry
      module procedure atoms_copy_entry
   endinterface copy_entry
@@ -820,6 +910,273 @@ contains
     
   end function atoms_has_property
 
+   subroutine atoms_set_param_value_int(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      integer, intent(in) :: value
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_int
+   subroutine atoms_set_param_value_int_a(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      integer, intent(in) :: value(:)
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_int_a
+   subroutine atoms_set_param_value_real(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(in) :: value
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_real
+   subroutine atoms_set_param_value_real_a(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(in) :: value(:)
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_real_a
+   subroutine atoms_set_param_value_real_a2(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(in) :: value(:,:)
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_real_a2
+   subroutine atoms_set_param_value_logical(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      logical, intent(in) :: value
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_logical
+   subroutine atoms_set_param_value_str(this, key, value)
+      type(Atoms), intent(inout) :: this
+      character(len=*), intent(in) :: key
+      character(1), intent(in) :: value(:)
+      
+      call set_value(this%params, key, value)
+   end subroutine atoms_set_param_value_str
+
+   subroutine atoms_get_param_value_int(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      integer, intent(out) :: value
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get int value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_int
+   subroutine atoms_get_param_value_int_a(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      integer, intent(out) :: value(:)
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get int array value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_int_a
+   subroutine atoms_get_param_value_real(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(out) :: value
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get real value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_real
+   subroutine atoms_get_param_value_real_a(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(out) :: value(:)
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_real_a
+   subroutine atoms_get_param_value_real_a2(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      real(dp), intent(out) :: value(:,:)
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_real_a2
+   subroutine atoms_get_param_value_str(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      character(1), intent(out) :: value(:)
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get str value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_str
+   subroutine atoms_get_param_value_logical(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      logical, intent(out) :: value
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get logical value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_logical
+
+  subroutine atoms_add_property_p_int(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    integer, intent(in), target :: ptr(:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,1) /= this%Nbuffer) then
+      RAISE_ERROR("atoms_add_property_p_int_a: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = 1
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_INTEGER_A) then
+          RAISE_ERROR("atoms_add_property_p_int: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_int
+
+  subroutine atoms_add_property_p_int_a(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    integer, intent(in), target :: ptr(:,:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,2) /= this%Nbuffer) then
+      RAISE_ERROR("atoms_add_property_p_int_a: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = size(ptr,1)
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_INTEGER_A) then
+          RAISE_ERROR("atoms_add_property_p_int_a: incompatible property "//trim(name)//" already present", error)
+       end if
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
+          RAISE_ERROR("atoms_add_property_p_int_a: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_int_a
+
+  subroutine atoms_add_property_p_real(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    real(dp), intent(in), target :: ptr(:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,1) /= this%Nbuffer) then
+      RAISE_ERROR("atoms_add_property_p_real_a: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = 1
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_REAL_A) then
+          RAISE_ERROR("atoms_add_property_p_real: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_real
+
+  subroutine atoms_add_property_p_real_a(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    real(dp), intent(in), target :: ptr(:,:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,2) /= this%Nbuffer) then
+      RAISE_ERROR("atoms_add_property_p_real_a: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = size(ptr,1)
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_REAL_A) then
+          RAISE_ERROR("atoms_add_property_p_real_a: incompatible property "//trim(name)//" already present", error)
+       end if
+       if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
+          RAISE_ERROR("atoms_add_property_p_real_a: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_real_a
+
+
+  subroutine atoms_add_property_p_logical(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    logical, intent(in), target :: ptr(:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,1) /= this%Nbuffer) then
+      RAISE_ERROR("atoms_add_property_p_logical: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = 1
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_LOGICAL_A) then
+          RAISE_ERROR("atoms_add_property_p_logical: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_logical
+
+  subroutine atoms_add_property_p_str(this, name, ptr, error)
+    type(Atoms), intent(inout), target :: this
+    character(len=*), intent(in) :: name
+    character(1), intent(in), target :: ptr(:,:)
+    integer, intent(out), optional :: error
+
+    integer :: use_n_cols, i
+
+    INIT_ERROR(error)
+    if (size(ptr,2) /= this%N) then
+      RAISE_ERROR("atoms_add_property_p_str: incompatible pointer this%Nbuffer="//this%Nbuffer//" pointer shape "//shape(ptr), error)
+    endif
+    use_n_cols = 1
+    i = lookup_entry_i(this%properties, name)
+    if (i /= -1) then
+       if (use_n_cols == 1 .and. this%properties%entries(i)%type /= T_CHAR_A) then
+          RAISE_ERROR("atoms_add_property_p_str: incompatible property "//trim(name)//" already present", error)
+       end if
+    end if
+    call set_value_pointer(this%properties, name, ptr)
+  end subroutine atoms_add_property_p_str
+
   subroutine atoms_add_property_int(this, name, value, n_cols, ptr, ptr2, overwrite, error)
     type(Atoms), intent(inout), target :: this
     character(len=*), intent(in) :: name
@@ -1175,7 +1532,7 @@ contains
     i = lookup_entry_i(this%properties, name)
     if (i /= -1) then
        if (this%properties%entries(i)%type /= T_LOGICAL_A) then
-          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
+          RAISE_ERROR("atoms_add_property_logical: incompatible property "//trim(name)//" already present", error)
        end if
     end if
     
@@ -1204,7 +1561,7 @@ contains
     i = lookup_entry_i(this%properties, name)
     if (i /= -1) then
        if (this%properties%entries(i)%type /= T_LOGICAL_A) then
-          RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
+          RAISE_ERROR("atoms_add_property_logical_a: incompatible property "//trim(name)//" already present", error)
        end if
     end if
     
@@ -1267,6 +1624,101 @@ contains
     atoms_assign_pointer_logical = assign_pointer(this%properties, name, ptr)
   end function atoms_assign_pointer_logical
 
+  subroutine atoms_assign_prop_ptr_int1D(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    integer, pointer :: ptr(:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_int1d failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_int1D
+
+  subroutine atoms_assign_prop_ptr_int2D(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    integer, pointer :: ptr(:,:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_int2d failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_int2D
+
+  subroutine atoms_assign_prop_ptr_real1D(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    real(dp), pointer :: ptr(:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_real1d failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_real1D
+
+  subroutine atoms_assign_prop_ptr_real2D(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    real(dp), pointer :: ptr(:,:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_real2d failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_real2D
+
+  subroutine atoms_assign_prop_ptr_str(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    character(1), pointer :: ptr(:,:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_str failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_str
+
+  subroutine atoms_assign_prop_ptr_logical(this, name, ptr, error)
+    type(Atoms), intent(in) :: this
+    character(len=*), intent(in) :: name
+    logical, pointer :: ptr(:)
+    integer, intent(out), optional :: error
+    
+    logical :: res
+
+    INIT_ERROR(error)
+
+    res = assign_pointer(this%properties, name, ptr)
+    if (.not. res) then
+      RAISE_ERROR("atoms_assign_prop_ptr_logical failed to assign pointer in this%properties", error)
+    endif
+  end subroutine atoms_assign_prop_ptr_logical
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Set the cutoff (uniform or factor) to at least the requested value

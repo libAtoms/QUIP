@@ -56,51 +56,66 @@
 
   end subroutine Potential_Sum_Print
 
-  subroutine Potential_Sum_Calc(this, at, e, local_e, f, df, virial, args_str, error)
+  subroutine Potential_Sum_Calc(this, at, args_str, error)
     type(Potential_Sum), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: e
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: f(:,:)
-    real(dp), intent(out), optional :: df(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
     character(*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
+
+    real(dp) :: energy, virial(3,3)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
 
     real(dp) :: my_e_1, my_e_2
     real(dp), allocatable :: my_local_e_1(:)
     real(dp), allocatable :: my_f_1(:,:)
-    real(dp), allocatable :: my_df_1(:,:)
     real(dp) :: my_virial_1(3,3)
+    type(Dictionary) :: params
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial
 
     INIT_ERROR(error)
 
-    if (present(local_e)) allocate(my_local_e_1(size(local_e)))
-    if (present(f)) allocate(my_f_1(size(f, 1),size(f, 2)))
-    if (present(df)) allocate(my_df_1(size(df, 1),size(df, 2)))
+    call initialise(params)
+    call param_register(params,"energy", "", calc_energy)
+    call param_register(params,"force", "", calc_force)
+    call param_register(params,"virial", "", calc_virial)
+    call param_register(params,"local_energy", "", calc_local_energy)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Sum_calc args_str')) then
+       RAISE_ERROR('Potential_Sum_calc failed to parse args_str="'//trim(args_str)//'"', error)
+    endif
+    call finalise(params)
 
-    call calc(this%pot1, at, e, local_e, f, df, virial, args_str, error)
+    call calc(this%pot1, at, args_str=args_str, error=error)
     PASS_ERROR(error)
+    if (len_trim(calc_energy) > 0) call get_param_value(at, trim(calc_energy), my_e_1)
+    if (len_trim(calc_virial) > 0) call get_param_value(at, trim(calc_virial), my_virial_1)
+    if (len_trim(calc_local_energy) > 0) then
+       call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
+       allocate(my_local_e_1(at%N))
+       my_local_e_1 = at_local_energy_ptr
+    endif
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+       allocate(my_f_1(3, at%N))
+       my_f_1 = at_force_ptr
+    endif
 
-    if (present(e)) my_e_1 = e
-    if (present(local_e)) my_local_e_1 = local_e
-    if (present(f)) my_f_1 = f
-    if (present(df)) my_df_1 = df
-    if (present(virial)) my_virial_1 = virial
-
-    call calc(this%pot2, at, e, local_e, f, df, virial, args_str, error)
+    call calc(this%pot2, at, args_str=args_str, error=error)
     PASS_ERROR(error)
+    if (len_trim(calc_energy) > 0) then
+       call get_param_value(at, trim(calc_energy), energy)
+       energy = my_e_1 + energy
+       call set_param_value(at, trim(calc_energy), energy)
+    endif
+    if (len_trim(calc_virial) > 0) then
+       call get_param_value(at, trim(calc_virial), virial)
+       virial = my_virial_1 + virial
+       call set_param_value(at, trim(calc_virial), virial)
+    endif
+    if (len_trim(calc_local_energy) > 0) at_local_energy_ptr = my_local_e_1 + at_local_energy_ptr
+    if (len_trim(calc_force) > 0) at_force_ptr = my_f_1 + at_force_ptr
 
-    if (present(e)) e = my_e_1 + e
-    if (present(local_e)) local_e = my_local_e_1 + local_e
-    if (present(f)) f = my_f_1 + f
-    if (present(df)) df = my_df_1 + df
-    if (present(virial)) virial = my_virial_1 + virial
-
-    if (present(local_e)) deallocate(my_local_e_1)
-    if (present(f)) deallocate(my_f_1)
-    if (present(df)) deallocate(my_df_1)
-  
+    if (allocated(my_local_e_1)) deallocate(my_local_e_1)
+    if (allocated(my_f_1)) deallocate(my_f_1)
   end subroutine Potential_Sum_Calc
 
   function Potential_Sum_Cutoff(this)

@@ -1259,7 +1259,7 @@ if hasattr(quippy, 'Potential'):
                                     [ -1.73947053e-01,  -2.44126270e-01,  -1.42540079e-01]])
 
          self.e_ref = -562.993702807
-         self.pot.calc(self.cluster, calc_force=True, calc_energy=True)
+         self.pot.calc(self.cluster, force=True, energy=True)
 
 
       def test_force(self):

@@ -35,16 +35,19 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine potential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj)
+  subroutine potential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: region1_pot, region2_pot
+    type(Potential), intent(inout), target :: region1_pot, region2_pot
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi_obj
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: params
     logical :: minimise_bulk
     logical :: do_rescale_r, do_rescale_E, do_tb_defaults
+
+    INIT_ERROR(error)
 
     call initialise(params)
     call param_register(params, "r_scale", "1.0", this%r_scale_pot1)
@@ -68,8 +71,9 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix_initialise args_str') ) &
-      call system_abort("Potential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix_initialise args_str') ) then
+      RAISE_ERROR("Potential_Local_E_Mix_initialise failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
     call initialise(this%create_hybrid_weights_params)
@@ -98,9 +102,9 @@
     endif
 
     if (do_rescale_r .or. do_rescale_E .or. do_tb_defaults) then
-      if (.not. present(reference_bulk)) &
-	call system_abort("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E// &
-	  " do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present")
+      if (.not. present(reference_bulk)) then
+	RAISE_ERROR("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E//" do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
+      endif
 
       call do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
 	this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
@@ -153,15 +157,11 @@
     call print('')
   end subroutine potential_local_e_mix_print
 
-  subroutine potential_local_e_mix_calc(this, at, energy, local_e, force, virial, args_str, err)
+  subroutine potential_local_e_mix_calc(this, at, args_str, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: energy
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: force(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
     character(len=*), intent(in), optional :: args_str
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
 
     logical :: calc_weights
     integer :: core_hops, transition_hops, buffer_hops
@@ -169,6 +169,8 @@
     type(Table) :: region1_table
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
+
+    INIT_ERROR(error)
 
     if (.not. associated(this%pot_region1) .or. .not. associated(this%pot_region2)) &
       call system_abort("Potential_Local_E_Mix_calc: this%pot_region1 or this%pot_region2 not initialised")
@@ -204,34 +206,37 @@
       call create_hybrid_weights(at, write_string(calc_create_hybrid_weights_params))
     endif
 
-    call calc_local_energy_mix(this, at, energy, local_e, force, virial, args_str)
-
-    if (present(err)) err = 0
+    call calc_local_energy_mix(this, at, args_str, error=error)
+    PASS_ERROR(error)
 
   end subroutine potential_local_e_mix_calc
 
-  subroutine calc_local_energy_mix(this, at, energy, local_e, force, virial, args_str)
+  subroutine calc_local_energy_mix(this, at, args_str, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: energy
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: force(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
     character(len=*), intent(in), optional :: args_str
+    integer, intent(out), optional :: error
+
+    real(dp) :: energy, virial(3,3)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
 
     ! local variables
     integer :: i
     integer,  pointer :: hybrid_mark(:), index(:), termindex(:)
     real(dp), pointer :: weight(:), weight_region1(:), rescale(:), c_weight(:)
-    real(dp), allocatable :: f_cluster(:,:), local_e_cluster(:)
+    real(dp), pointer :: f_cluster(:,:), local_e_cluster(:)
     real(dp), allocatable :: weight_saved(:), local_e_weight(:), local_e_region2(:), local_e_region1(:), f_region1(:,:)
     real(dp) :: e_cluster
     logical :: dummy
     type(Atoms) :: cluster
+    type(Table) :: cluster_info
     type(Dictionary) :: params
     character(FIELD_LENGTH) :: cc_args_str
 
     real(dp), pointer :: local_e_pot1(:), local_e_pot2(:)
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_local_energy, calc_virial, local_energy_args_str, local_energy_name
+
+    INIT_ERROR(error)
 
     allocate(weight_saved(at%N))
     allocate(local_e_weight(at%N))
@@ -240,6 +245,15 @@
     allocate(f_region1(3,at%N))
 
     call system_timer("calc_local_energy_mix")
+
+    call initialise(params)
+    call param_register(params, 'energy', '', calc_energy)
+    call param_register(params, 'force', '', calc_force)
+    call param_register(params, 'local_energy', '', calc_local_energy)
+    call param_register(params, 'virial', '', calc_virial)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Local_E_Mix args_str') ) &
+      call system_abort("Potential_Local_E_Mix failed to parse args_str='"//trim(args_str)//"'")
+    call finalise(params)
 
     if(.not. (associated(this%pot_region1) .and. associated(this%pot_region2))) then
        call system_abort('local_e_mix_calc_energy_mix: potential for region 1 or region 2 is not initialised')
@@ -261,9 +275,8 @@
        call system_abort('hybrid_calc_energy_mix: atoms structure has no "weight_region1" property')
 
     if(.not. all(hybrid_mark == HYBRID_NO_MARK)) then
-      if(present(virial)) then
-         virial = 0.0_dp
-         call system_abort('hybrid_calc_energy_mix: virials are not yet implemented when QM region is active')
+      if(len_trim(calc_virial) > 0) then
+         RAISE_ERROR('hybrid_calc_energy_mix: virial yet implemented when QM region is active', error)
       end if
     endif
 
@@ -278,7 +291,8 @@
       call set_value(params, 'randomise_buffer', 'F')
       cc_args_str = write_string(params)
       call finalise(params)
-      cluster =  create_cluster_hybrid_mark(at, cc_args_str)
+      cluster_info =  create_cluster_info_from_hybrid_mark(at, cc_args_str)
+      cluster =  carve_cluster(at, cc_args_str, cluster_info)
 
       if (this%minimise_mm) then
 	dummy = assign_pointer(cluster, 'index', index)
@@ -289,19 +303,34 @@
       endif
     endif
 
+    if (len_trim(calc_local_energy) > 0) then
+      call assign_property_pointer(at, trim(local_energy_name), at_local_energy_ptr)
+      local_energy_name = trim(calc_local_energy)
+      local_energy_args_str = ""
+    else
+      local_energy_name = "LEMIX_local_energy"
+      call add_property(at, trim(local_energy_name), 0.0_dp, ptr=at_local_energy_ptr)
+      local_energy_args_str = "local_energy="//trim(local_energy_name)
+    endif
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+    endif
+
     ! do calculation in region 2 first
     weight = weight_saved-weight_region1 ! "negate" the weights
 
     call system_timer("calc_local_energy_mix/calc_region_2")
-    call Calc(this%pot_region2, at, energy, local_e_region2, force, args_str=args_str)
+    call Calc(this%pot_region2, at, args_str=args_str//" "//trim(local_energy_args_str))
     call system_timer("calc_local_energy_mix/calc_region_2")
+    if (len_trim(calc_energy) > 0) call get_param_value(at, trim(calc_energy), energy)
+    local_e_region2 = at_local_energy_ptr
 
     if (assign_pointer(at, "local_e_pot2", local_e_pot2)) local_e_pot2 = local_e_region2
 
     call system_timer("calc_local_energy_mix/prep_cluster")
-    if(present(local_e)) then
+    if(len_trim(calc_local_energy) > 0) then
       local_e_weight = 1.0_dp-weight_region1
-      local_e = local_e_weight * local_e_region2
+      at_local_energy_ptr = local_e_weight * local_e_region2
     endif
 
     ! if there are no marked atoms, we are done, so return
@@ -328,23 +357,23 @@
 
     call system_timer("calc_local_energy_mix/prep_cluster")
     call system_timer("calc_local_energy_mix/calc_region_1")
-    allocate(f_cluster(3,cluster%N))
-    allocate(local_e_cluster(cluster%N))
-    if (present(force)) then
-      call Calc(this%pot_region1, cluster, e_cluster, local_e_cluster, f_cluster, args_str = trim(args_str) // " solver=DIAG_GF SCF=GLOBAL_U")
+    call Calc(this%pot_region1, cluster, args_str = args_str//" solver=DIAG_GF SCF=GLOBAL_U "//trim(local_energy_args_str))
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(cluster, trim(calc_force), f_cluster, error=error)
+       PASS_ERROR_WITH_INFO("Potential_Local_E_Mix failed to assign pointer for region 1 force property '"//trim(calc_force)//"'", error)
       ! scale back forces
       f_cluster = f_cluster*this%E_scale_pot1*this%r_scale_pot1
-    else
-      call Calc(this%pot_region1, cluster, e_cluster, local_e_cluster, args_str = trim(args_str) // " solver=DIAG_GF SCF=GLOBAL_U")
     endif
+    if (len_trim(calc_energy) > 0) call get_param_value(at, trim(calc_energy), e_cluster)
+    call assign_property_pointer(at, trim(local_energy_name), local_e_cluster, error=error)
+    PASS_ERROR_WITH_INFO("Potential_Local_E_Mix failed to assign pointer for region 1 local_energy property '"//trim(calc_local_energy)//"'", error)
 
-    e_cluster = e_cluster*this%E_scale_pot1
-    local_e_cluster = local_e_cluster*this%E_scale_pot1
+    if (len_trim(calc_energy) > 0) e_cluster = e_cluster*this%E_scale_pot1
+    if (len_trim(calc_local_energy) > 0) local_e_cluster = local_e_cluster*this%E_scale_pot1
     call system_timer("calc_local_energy_mix/calc_region_1")
 
     call system_timer("calc_local_energy_mix/combine")
-    if(current_verbosity() > PRINT_VERBOSE) &
-         call print_cfg(cluster, "cluster.cfg", all_properties = .true.)
+    if(current_verbosity() > PRINT_VERBOSE) call write(cluster, "cluster.cfg")
 
     ! redistribute local energies and weights from the cluster to region 1
     if (.not. assign_pointer(cluster, 'index', index)) &
@@ -357,7 +386,7 @@
     ! depends on the position of the atoms they are terminating
     local_e_region1 = 0.0_dp
     f_region1 = 0.0_dp
-    if(present(force)) then
+    if(len_trim(calc_force) > 0) then
        do i=1,cluster%N
           if(termindex(i) > 0) &
                f_cluster(:,termindex(i)) = f_cluster(:,termindex(i)) + (1.0_dp-rescale(i))*f_cluster(:,i)
@@ -365,24 +394,25 @@
     end if
     ! now do the redistribution
     do i=1,cluster%N
-       if(present(force)) f_region1(:,index(i)) = f_region1(:,index(i)) + f_cluster(:,i)*rescale(i)
-       local_e_region1(index(i)) = local_e_region1(index(i)) + local_e_cluster(i)
+       if(len_trim(calc_force) > 0) f_region1(:,index(i)) = f_region1(:,index(i)) + f_cluster(:,i)*rescale(i)
+       if(len_trim(calc_local_energy) > 0) local_e_region1(index(i)) = local_e_region1(index(i)) + local_e_cluster(i)
     end do
 
     if (assign_pointer(at, "local_e_pot1", local_e_pot1)) local_e_pot1 = local_e_region1
 
     ! finally add region 1 stuff to the output variables
-    if(present(energy)) energy = energy + e_cluster
-    if(present(local_e)) then
-      local_e_weight = weight_region1
-      local_e = local_e + local_e_weight * local_e_region1
+    if(len_trim(calc_energy) > 0) then
+      energy = energy + e_cluster
+      call set_param_value(at, trim(calc_energy), energy)
     endif
-    if(present(force)) force = force + f_region1
+    if(len_trim(calc_local_energy) > 0) then
+      local_e_weight = weight_region1
+      at_local_energy_ptr = at_local_energy_ptr + local_e_weight * local_e_region1
+    endif
+    if(len_trim(calc_force) > 0) at_force_ptr = at_force_ptr + f_region1
 
     weight = weight_saved
 
-    deallocate(f_cluster)
-    deallocate(local_e_cluster)
     call finalise(cluster)
 
     deallocate(weight_saved)
@@ -390,6 +420,8 @@
     deallocate(local_e_region2)
     deallocate(local_e_region1)
     deallocate(f_region1)
+
+    if (len_trim(calc_local_energy) == 0) call remove_property(at, trim(local_energy_name))
 
     call system_timer("calc_local_energy_mix/combine")
     call system_timer("calc_local_energy_mix")

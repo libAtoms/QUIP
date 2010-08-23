@@ -193,7 +193,7 @@
 
 	p = Potential('CallbackPot')
 	p.set_callback(example_callback)
-	p.calc(at, calc_energy=True)
+	p.calc(at, energy=True)
 	print at.energy
 	...
  

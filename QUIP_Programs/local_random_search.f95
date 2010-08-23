@@ -170,7 +170,7 @@ implicit none
 !        niter =  minim(mpot, at, 'cg', 1.0e-10_dp, 5000, &
 !             do_pos=.true., do_print=.false., print_inoutput=movie)
 !        call calc_connect(at)
-!        call calc(mpot, at, local_e=atlocale)
+!        call calc(mpot, at, local_energy=atlocale)
 
         !x = x0
         !niter = minim(x, lj, dlj, 'cg', 1.0e-10_dp, 5000)
@@ -182,7 +182,7 @@ implicit none
 
         !at%pos = reshape(x0, (/3,at%N/))
 
-        call Calc(mpot, at, e=eold)
+        call Calc(mpot, at, energy=eold)
         call read(at, 'filepot.0.out')
         call zero_sum(at%pos)
         call add_property(at, "local_e", 0.0_dp);
@@ -253,7 +253,7 @@ subroutine random_initial_pos(at, rad)
   do while(bad)
      x = reshape(at%pos, (/at%N*3/))
      atlocale = elj(x)
-     !        call calc(mpot, at, local_e=e)
+     !        call calc(mpot, at, local_energy=e)
      call print (atlocale)
      bad = .false.
      do i=1,at%N

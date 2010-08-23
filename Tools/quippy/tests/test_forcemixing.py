@@ -131,7 +131,7 @@ if hasattr(quippy, 'Potential'):
          create_hybrid_weights(self.at, buffer_hops=3)
          self.at.add_property('force', 0.0, n_cols=3)
          f = fzeros((3,self.at.n))
-         self.pot2.calc(self.at, f=f, args_str="single_cluster=T cluster_calc_connect=T")
+         self.pot2.calc(self.at, force=f, args_str="single_cluster=T cluster_calc_connect=T")
 
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4264523725      -1.4614174250      -0.5027997001
@@ -652,7 +652,7 @@ if hasattr(quippy, 'Potential'):
          create_hybrid_weights(self.at, buffer_hops=3)
          self.at.add_property('force', 0.0, n_cols=3)
          f = fzeros((3,self.at.n))
-         self.pot3.calc(self.at, f=f, args_str="little_clusters=T cluster_calc_connect=T buffer_hops=3")
+         self.pot3.calc(self.at, force=f, args_str="little_clusters=T cluster_calc_connect=T buffer_hops=3")
 
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4264523725      -1.4614174250      -0.5027997001
@@ -1173,7 +1173,7 @@ if hasattr(quippy, 'Potential'):
          pot = Potential('ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
-         pot.calc(self.at, f=f)
+         pot.calc(self.at, force=f)
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -1693,7 +1693,7 @@ if hasattr(quippy, 'Potential'):
          pot = Potential('ForceMixing method=force_mixing_smooth transition_hops=0 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
-         pot.calc(self.at, f=f)
+         pot.calc(self.at, force=f)
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4264523725      -1.4614174250      -0.5027997001
        0.1036734719       1.3014620397       0.5790116361
@@ -2212,7 +2212,7 @@ if hasattr(quippy, 'Potential'):
          pot = Potential('ForceMixing method=force_mixing_super_smooth transition_hops=2 cluster_nneighb_only=T buffer_hops=0 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
-         pot.calc(self.at, f=f)
+         pot.calc(self.at, force=f)
          self.assertArrayAlmostEqual(f, string_to_array("""
 4.264523724577462538e-01 -1.461417424951666044e+00 -5.027997001248233344e-01
 1.036734719171164415e-01 1.301462039650632452e+00 5.790116361205615014e-01
@@ -2733,7 +2733,7 @@ if hasattr(quippy, 'Potential'):
          pot = Potential('ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}',
                                  pot1=self.pot1, pot2=self.pot2)
          f = fzeros((3,self.at.n))
-         pot.calc(self.at, f=f)
+         pot.calc(self.at, force=f)
          self.assertArrayAlmostEqual(f, string_to_array("""
        0.4270785085      -1.4627721014      -0.5021788398
        0.1042996079       1.3001073632       0.5796324965

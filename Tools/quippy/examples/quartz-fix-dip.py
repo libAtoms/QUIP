@@ -30,7 +30,7 @@ at.calc_connect()
 
 
 print_title('With polarisation')
-p.calc(at, calc_force=True)
+p.calc(at, force=True)
 f1 = at.force.copy()
 
 print at.dipoles
@@ -38,7 +38,7 @@ print at.dipoles
 at.fixdip[:] = True
 
 print_title('Without polarisation')
-p.calc(at, calc_force=True)
+p.calc(at, force=True)
 f2 = at.force.copy()
 
 print abs(f1 - f2).max()

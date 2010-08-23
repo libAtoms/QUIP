@@ -101,7 +101,7 @@ class CalculatorMixin(object):
          force = zeros((3,self.quippy_at.n), order='F')
          virial = zeros((3,3), order='F')
 
-         self.calc(self.quippy_at, f=force, e=energy, virial=virial)
+         self.calc(self.quippy_at, force=force, energy=energy, virial=virial)
 
          self.energy = float(energy)
          self.forces = array(force.T)
@@ -120,7 +120,7 @@ class CalculatorMixin(object):
       
       self.update(atoms)
       df = zeros((3,self.quippy_at.n), order='F')
-      self.calc(self.quippy_at, df=df)
+      self.calc(self.quippy_at, force=df, force_fd=True)
       return df.T
 
    def get_stress(self, atoms):

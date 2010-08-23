@@ -62,7 +62,7 @@ subroutine init_hybrid(pot1, pot2, hybridpot, hybrid_args_str)
   call calc_connect(bulk1)
 
   ! should do minimise_bulk instead, but no mechanism for doing it just for pot1
-  call initialise(hybridpot, "Hybrid terminate=F r_scale=1.0005154009139747 " // trim(hybrid_args_str), pot2, pot1, bulk1)
+  call initialise(hybridpot, "Hybrid terminate=F r_scale=1.0005154009139747 " // trim(hybrid_args_str), pot2, pot1, bulk_scale=bulk1)
 
   call print(hybridpot)
 

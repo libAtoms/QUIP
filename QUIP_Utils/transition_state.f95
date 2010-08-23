@@ -255,11 +255,11 @@ subroutine TS_Calc(this,pot,niter,params,file, mpi)
   do i = 1, this%cos%N
     call calc_connect(this%cos%image(i)%at)
     if(.not.params%simulation_hybrid) then
-      call calc(pot,this%cos%image(i)%at,e=this%cos%image(i)%energy,f=forces_pot(i,:,:),args_str=params%classical_args_str)
+      call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=params%classical_args_str)
       call integrate_forces(this, i, forces_pot, energy_temp)
       call print('Check Integration Forces '// i // " " // this%cos%image(i)%energy // " " // energy_temp)
     else
-      call calc(pot,this%cos%image(i)%at,f=forces_pot(i,:,:))
+      call calc(pot,this%cos%image(i)%at,force=forces_pot(i,:,:))
       call integrate_forces(this, i, forces_pot, this%cos%image(i)%energy)
     endif
     energy(i) = this%cos%image(i)%energy
@@ -332,9 +332,9 @@ subroutine TS_Calc(this,pot,niter,params,file, mpi)
        call calc_connect(this%cos%image(i)%at)
        
        if(.not.params%simulation_hybrid) then
-          call calc(pot,this%cos%image(i)%at,e=this%cos%image(i)%energy,f=forces_pot(i,:,:),args_str=params%classical_args_str)
+          call calc(pot,this%cos%image(i)%at,energy=this%cos%image(i)%energy,force=forces_pot(i,:,:),args_str=params%classical_args_str)
        else
-          call calc(pot,this%cos%image(i)%at,f=forces_pot(i,:,:))
+          call calc(pot,this%cos%image(i)%at,force=forces_pot(i,:,:))
           call integrate_forces(this, i, forces_pot, this%cos%image(i)%energy)
        endif
 

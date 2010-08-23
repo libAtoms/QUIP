@@ -56,7 +56,7 @@ module QUIP_LAMMPS_wrapper_module
       if( .not. at%initialised .or. at%N /= (nlocal+nghost) ) then
          call finalise(at)
          call initialise(at,(nlocal+nghost),lattice)
-         call atoms_set_cutoff(at,cutoff(pot))
+         call set_cutoff(at,cutoff(pot))
          call connection_fill(at%connect,at%N,at%N,nn_guess=2*maxval(quip_num_neigh)) 
       endif
 
@@ -108,7 +108,7 @@ module QUIP_LAMMPS_wrapper_module
       enddo
 
       ! Call the QUIP potential.
-      call calc(pot,at,e=quip_e,local_e=quip_local_e,f=quip_force,virial=quip_virial,args_str="atom_mask_name=local")
+      call calc(pot,at,energy=quip_e,local_energy=quip_local_e,force=quip_force,virial=quip_virial,args_str="atom_mask_name=local")
 
    endsubroutine quip_lammps_wrapper
 

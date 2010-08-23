@@ -103,6 +103,7 @@ class ParamReaderMixin:
     def parse(self, s):
         key_quoted_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*["\{\}]([^"\{\}]+)["\{\}]\s*')
         key_value = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*=\s*([-0-9A-Za-z_.:\[\]()]+)\s*')
+        key_re = re.compile(r'([A-Za-z_]+[A-Za-z0-9_]*)\s*')
 
         s = s.strip()
 
@@ -113,13 +114,22 @@ class ParamReaderMixin:
               m = key_value.match(s)
               if m is not None:
                  s = key_value.sub('', s, 1)
+              else:
+                  # Just a key with no value
+                  m = key_re.match(s)
+                  if m is not None:
+                      s = key_re.sub('', s, 1)
            else:
               s = key_quoted_value.sub('', s, 1)
 
            if m is None: break # No more matches
 
            key = m.group(1)
-           value = m.group(2)
+           try:
+               value = m.group(2)
+           except IndexError:
+               # default value is 'T' (True)
+               value = 'T'
 
            # Try to convert to (list of) floats, ints
            try:
@@ -176,9 +186,9 @@ class ParamReaderMixin:
     def asstring(self, sep=' '):
         if len(self) == 0: return ''
 
-        type_val_map = {(bool,True): 'T',
+        type_val_map = {(bool,True): None,
                         (bool,False): 'F',
-                        (numpy.bool_,True): 'T',
+                        (numpy.bool_,True): None,
                         (numpy.bool_,False): 'F'}
         
         s = ''
@@ -192,7 +202,9 @@ class ParamReaderMixin:
             else:
                 val = type_val_map.get((type(val),val), val)
 
-            if type(val) == type('') and ' ' in val:
+            if val is None:
+                s = s + '%s%s' % (key, sep)
+            elif type(val) == type('') and ' ' in val:
                 s = s + '%s="%s"%s' % (key, val, sep)
             else:
                 s = s + '%s=%s%s' % (key, str(val), sep)

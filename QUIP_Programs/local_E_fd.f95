@@ -102,7 +102,7 @@ implicit none
   call calc_connect(at)
 
 
-  call calc(pot, at, e = E0, args_str = calc_args)
+  call calc(pot, at, energy = E0, args_str = calc_args)
 
   allocate(local_E_p(at%N))
   allocate(local_E_m(at%N))
@@ -117,14 +117,14 @@ implicit none
 
   at%pos(:,fd_index) = p0 + fd_vec
   call calc_connect(at)
-  call calc(pot, at, local_e = local_E_p, args_str = trim(calc_args) // " do_at_local_N")
+  call calc(pot, at, local_energy = local_E_p, args_str = trim(calc_args) // " do_at_local_N")
   if (.not. assign_pointer(at, "local_N", local_N)) &
     call system_abort("Impossible: Failed to assign pointer for local_N")
   local_N_p = local_N
 
   at%pos(:,fd_index) = p0 - fd_vec
   call calc_connect(at)
-  call calc(pot, at, local_e = local_E_m, args_str = trim(calc_args) // " do_at_local_N")
+  call calc(pot, at, local_energy = local_E_m, args_str = trim(calc_args) // " do_at_local_N")
   if (.not. assign_pointer(at, "local_N", local_N)) &
     call system_abort("Impossible: Failed to assign pointer for local_N")
   local_N_m = local_N

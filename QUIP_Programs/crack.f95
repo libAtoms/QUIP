@@ -580,7 +580,7 @@ program crack
   endif
 
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot)+params%md_crust)//' A.')
-  call atoms_set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
+  call set_cutoff(ds%atoms, cutoff(classicalpot)+params%md_crust)
   call print('Neighbour crust is '//params%md_crust// ' A.')
 
   call calc_connect(ds%atoms, store_is_min_image=.true.)
@@ -633,7 +633,7 @@ program crack
      if (count(hybrid == 1) == 0) call system_abort('Zero QM atoms selected')
   end if
 
-  call setup_parallel(classicalpot, ds%atoms, e=energy, f=f,args_str=params%classical_args_str)
+  call setup_parallel(classicalpot, ds%atoms, args_str=params%classical_args_str//" energy force")
 
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
@@ -761,7 +761,7 @@ program crack
 
      ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
      if (params%md_extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
-        call calc(hybrid_pot, ds%atoms, f=f)
+        call calc(hybrid_pot, ds%atoms, force=f)
      end if
 
      !****************************************************************
@@ -906,14 +906,14 @@ program crack
            do i = 1, params%md_extrapolate_steps
 
               if (params%simulation_classical) then
-                 call calc(classicalpot, ds%atoms, f=f, args_str=params%classical_args_str)
+                 call calc(classicalpot, ds%atoms, force=f, args_str=params%classical_args_str)
               else
                  if (i== 1) then
-                    call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
+                    call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=T lotf_do_map=T")
                  else
-                    call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F")
+                    call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=F")
                  end if
-                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, f=f_fm)
+                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
@@ -968,7 +968,7 @@ program crack
 
               call print_title('Computation of forces')
               call system_timer('force computation')
-              call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
+              call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=T lotf_do_init=F lotf_do_fit=T")
               call system_timer('force computation')
 
 
@@ -984,10 +984,10 @@ program crack
 
               do i = 1, params%md_extrapolate_steps
 
-                 call calc(hybrid_pot, ds%atoms, f=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
+                 call calc(hybrid_pot, ds%atoms, force=f, args_str="lotf_do_qm=F lotf_do_init=F lotf_do_interp=T lotf_interp="&
                       //(real(i-1,dp)/real(params%md_extrapolate_steps,dp)))
 
-                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, f=f_fm)
+                 if (params%qm_calc_force_error) call calc(forcemix_pot, ds%atoms, force=f_fm)
 
                  if (params%hack_qm_zero_z_force) then
                     ! Zero z forces in embed region
@@ -1038,9 +1038,9 @@ program crack
            call print_title('Force Computation')
            call system_timer('force computation/optimisation')
            if (params%simulation_classical) then
-              call calc(classicalpot, ds%atoms, e=energy, f=f, args_str=params%classical_args_str)
+              call calc(classicalpot, ds%atoms, energy=energy, force=f, args_str=params%classical_args_str)
            else
-              call calc(hybrid_pot, ds%atoms, f=f)
+              call calc(hybrid_pot, ds%atoms, force=f)
            end if
            call system_timer('force computation/optimisation')
 
@@ -1171,10 +1171,10 @@ program crack
         call calc_connect(ds%atoms, store_is_min_image=.true.)
 
         if (params%simulation_classical) then
-           call calc(classicalpot, ds%atoms, f=f, e=energy, args_str=params%classical_args_str)
+           call calc(classicalpot, ds%atoms, force=f, energy=energy, args_str=params%classical_args_str)
            if (i == 0) fd_e0 = energy
         else
-           call calc(hybrid_pot, ds%atoms, f=f)
+           call calc(hybrid_pot, ds%atoms, force=f)
         end if
 
 	f_prop = f

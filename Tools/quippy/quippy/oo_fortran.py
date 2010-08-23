@@ -24,6 +24,7 @@ from farray import *
 import numpy
 from types import MethodType
 from util import args_str
+from dictmixin import PuPyDictionary
 
 major, minor = sys.version_info[0:2]
 
@@ -85,7 +86,11 @@ def fortran_equivalent_type(t):
       raise TypeError('Unknown type %s' % type(t))
           
 def type_is_compatible(spec, arg):
-    arg_type, dims, itemsize = fortran_equivalent_type(arg)
+    try:
+        arg_type, dims, itemsize = fortran_equivalent_type(arg)
+    except TypeError:
+        return False
+    
     if dims == (): dims = 'scalar'
 
     spec_type = spec['type'].lower()
@@ -123,6 +128,7 @@ def type_is_compatible(spec, arg):
             return all([x == y for (x,y) in zip(adims,dims)])
 
 def process_in_args(args, kwargs, inargs, prefix):
+   # Process positional arguments
    newargs = []
    for arg, spec in zip(args,inargs):
       if arg is not None and spec['type'].startswith('type'):
@@ -139,30 +145,46 @@ def process_in_args(args, kwargs, inargs, prefix):
       else:
          newargs.append(arg)
 
-   type_lookup = dict([(badnames.get(x['name'].lower(),x['name'].lower()),x['type']) for x in inargs])
+   # Process keyword arguments and args_str arguments.
+
+   # If we're expecting an args_str argument, then any kwarg is
+   # permitted. Otherwise kwarg name must match one of the expected
+   # names. If kwarg name matches one of expected values, but type of
+   # argument does not, then we assume it's an arg_str argument.
+
+   kwarg_lookup = dict([(badnames.get(x['name'].lower(),x['name'].lower()),x) for x in inargs])
+   got_args_str = prefix+'args_str' in kwarg_lookup
+
    newkwargs = {}
    args_str_kwargs = {}
    for k,a in kwargs.iteritems():
       k = prefix+k
-      if not k in type_lookup:
-          if prefix+'args_str' in type_lookup:
+      if got_args_str:
+          if k != prefix+'args_str' and (k not in kwarg_lookup or (k in kwarg_lookup and not type_is_compatible(kwarg_lookup[k], a))):
               args_str_kwargs[k[len(prefix):]] = a
               continue
-          else:
-              raise ValueError('Unknown keyword argument %s' % k)
-      if type_lookup[k].startswith('type'):
-         if isinstance(a, FortranDerivedTypes[type_lookup[k].lower()]):
+      if k not in kwarg_lookup:
+          raise ValueError('Unknown keyword argument %s' % k)
+      if kwarg_lookup[k]['type'].startswith('type'):
+         if isinstance(a, FortranDerivedTypes[kwarg_lookup[k]['type'].lower()]):
             newkwargs[k] = a._fpointer
          elif a is None:
              continue
          else:
-             raise TypeError('Argument %s=%s should be of type %s' % (k,a,type_lookup[k]))
+             raise TypeError('Argument %s=%s should be of type %s' % (k,a,kwarg_lookup[k]))
       else:
           if a is None: continue
           newkwargs[k] = a
 
-   if prefix+'args_str' in type_lookup and args_str_kwargs != {}:
-       newkwargs[prefix+'args_str'] = newkwargs.get(prefix+'args_str', '') + ' ' + args_str(args_str_kwargs)
+   # Construct final args_str by merging args_str argument with args_str_kwargs
+   if got_args_str:
+       args_str_final = {}
+       if prefix+'args_str' in newkwargs:
+           args_str_final.update(PuPyDictionary(newkwargs[prefix+'args_str']))
+       if args_str_kwargs != {}:
+           args_str_final.update(args_str_kwargs)
+       if args_str_final != {}:
+           newkwargs[prefix+'args_str'] = args_str(args_str_final)
 
    return tuple(newargs), newkwargs
 

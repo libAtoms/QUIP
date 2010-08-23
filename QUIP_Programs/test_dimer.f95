@@ -69,7 +69,7 @@ program test_dimer
   at%pos = 0.0_dp
   at%pos(1,1) = 1.0_dp
   at%pos(1,2) = -1.0_dp
-  call atoms_set_cutoff(at, 6.0_dp)
+  call set_cutoff(at, 6.0_dp)
   call calc_connect(at)
   call print(at)
 

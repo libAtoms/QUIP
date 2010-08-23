@@ -232,15 +232,13 @@
   end subroutine Potential_FM_print
 
 
-  subroutine Potential_FM_calc(this, at, e, local_e, f, virial, args_str, error)
+  subroutine Potential_FM_calc(this, at, args_str, error)
     type(Potential_FM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: e
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: f(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
-    integer, intent(out), optional :: error
     character(*), intent(in), optional :: args_str
+    integer, intent(out), optional :: error
+
+    real(dp), pointer :: at_force_ptr(:,:)
 
     real(dp), allocatable, dimension(:,:) :: df, df_fit
     real(dp), allocatable, dimension(:,:) :: f_mm, f_qm
@@ -257,6 +255,8 @@
          AP_method, lotf_interp_order
     real(dp) :: mm_reweight, dV_dt, f_tot(3), w_tot, weight, lotf_interp
     integer :: fit_hops
+
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
 
     integer :: weight_method, qm_little_clusters_buffer_hops, lotf_spring_hops
     integer,      parameter   :: UNIFORM_WEIGHT=1, MASS_WEIGHT=2, MASS2_WEIGHT=3, USER_WEIGHT=4, CM_WEIGHT_REGION1=5
@@ -307,6 +307,11 @@
     call param_register(params, 'lotf_do_fit', 'T', lotf_do_fit)
     call param_register(params, 'lotf_do_interp', 'F', lotf_do_interp)
     call param_register(params, 'lotf_interp', '0.0', lotf_interp)
+
+    call param_register(params, 'energy', '', calc_energy)
+    call param_register(params, 'force', '', calc_force)
+    call param_register(params, 'virial', '', calc_virial)
+    call param_register(params, 'local_energy', '', calc_local_energy)
 
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_FM_Calc args_str') ) then
       RAISE_ERROR("Potential_FM_calc failed to parse args_str='"//trim(args_str)//"'", error)
@@ -364,13 +369,15 @@
        call set_value(calc_create_hybrid_weights_params, 'weight_interpolation', 'distance_ramp')
     end if
 
-    if (present(e) .or. present(local_e) .or. present(virial) .or. .not. present(f)) then
-         RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial or local_e', error)
-   endif
+    if (len_trim(calc_energy) > 0 .or. len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0 .or. &
+        len_trim(calc_force) <= 0) then
+       RAISE_ERROR('Potential_FM_calc: supports only forces, not energy, virial, or local_energy', error)
+    endif
 
     allocate(f_mm(3,at%N),f_qm(3,at%N))
     f_mm = 0.0_dp
     f_qm = 0.0_dp
+    call assign_property_pointer(at, trim(calc_force), at_force_ptr)
 
     if (calc_weights) then 
 
@@ -430,9 +437,11 @@
 
     ! Do the classical calculation
     if(associated(this%mmpot)) then
-       call calc(this%mmpot, at, f=f_mm, args_str=mm_args_str, error=error)
+       mm_args_str=trim(mm_args_str)//' force'
+       call calc(this%mmpot, at, args_str=mm_args_str, error=error)
+       f_mm = at_force_ptr
     else
-       f_mm = 0
+       f_mm = 0.0_dp
     end if
 
     !Potential calc could have added properties e.g. old_cluster_mark
@@ -440,7 +449,7 @@
          RAISE_ERROR('Potential_FM_Calc: hybrid_mark property missing', error)
     endif
     if (.not. any(hybrid_mark /= HYBRID_NO_MARK)) then
-       f = f_mm
+       at_force_ptr = f_mm
        return
     end if
 
@@ -458,6 +467,8 @@
        call initialise(params)
        call read_string(params, qm_args_str)
 
+       call set_value(params, 'force')
+       
        !! TODO - possibly want to set more default options in the qm_args_str here
        if (.not. dictionary_has_key(params, 'buffer_hops')) &
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
@@ -475,7 +486,8 @@
        ! then potential calc() will do cluster carving. 
        ! We pass along our mpi context object to allow little clusters to be split over
        ! nodes.
-       call calc(this%qmpot, at, f=f_qm, args_str=qm_args_str, error=error)
+       call calc(this%qmpot, at, args_str=qm_args_str, error=error)
+       f_qm = at_force_ptr
     end if
 
     !Fitlist construction has been moved here.
@@ -542,8 +554,8 @@
              call adjustable_potential_force(at, df, power=dV_dt)
           end if
        
-          f = f_mm                   ! Start with classical forces
-          f(:,fit) = f(:,fit) + df   ! Add correction in fit region
+          at_force_ptr = f_mm                   ! Start with classical forces
+          at_force_ptr(:,fit) = at_force_ptr(:,fit) + df   ! Add correction in fit region
        
           deallocate(df)
 
@@ -649,8 +661,8 @@
        !NB end of workaround for pgf90 bug (as of 9.0-1)
 
        ! Final forces are classical forces plus corrected QM forces
-       f = f_mm + df
-       f(:,fit) = f(:,fit) + df_fit
+       at_force_ptr = f_mm + df
+       at_force_ptr(:,fit) = at_force_ptr(:,fit) + df_fit
 
        call verbosity_pop()
 
@@ -664,29 +676,17 @@
 
        ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
        do i=1,at%N
-          f(:,i) = weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)
+          at_force_ptr(:,i) = weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)
        end do
 
     else
        RAISE_ERROR('Potential_FM_calc: unknown method '//trim(method), error)
     end if
        
-    ! Save QM and MM forces and total force as properties of Atoms object
+    ! Save QM and MM forces if requested to be saved
     if (save_forces) then
-       if (.not. has_property(at, 'qm_force')) &
-            call add_property(at, 'qm_force', 0.0_dp, n_cols=3)
-       dummy = assign_pointer(at, 'qm_force', force_ptr)
-       force_ptr = f_qm
-
-       if (.not. has_property(at, 'mm_force')) &
-            call add_property(at, 'mm_force', 0.0_dp, n_cols=3)
-       dummy = assign_pointer(at, 'mm_force', force_ptr)
-       force_ptr = f_mm
-
-       if (.not. has_property(at, 'force')) &
-            call add_property(at, 'force', 0.0_dp, n_cols=3)
-       dummy = assign_pointer(at, 'force', force_ptr)
-       force_ptr = f
+      call add_property(at, 'FM_QM_'//trim(calc_force), f_qm)
+      call add_property(at, 'FM_MM_'//trim(calc_force), f_mm)
     end if
 
     deallocate(f_mm,f_qm)

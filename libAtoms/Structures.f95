@@ -500,7 +500,7 @@ contains
     real(dp), intent(in) :: a
     type(Atoms) :: cube
 
-    call Atoms_Initialise(cube, 4, &
+    call Initialise(cube, 4, &
          reshape((/ 3.0_dp*a, 0.0_dp,   0.0_dp, &
                     0.0_dp,   sqrt(3.0_dp)*a, 0.0_dp, &
                     0.0_dp,   0.0_dp,   10.0_dp/), (/3, 3/)))
@@ -558,7 +558,7 @@ contains
             call Append(keep_list, i)
     end do
 
-    call Atoms_Initialise(slab, keep_list%N, tmp_slab%lattice)
+    call Initialise(slab, keep_list%N, tmp_slab%lattice)
     slab%Z = tmp_slab%Z(keep_list%int(1,1:keep_list%N))
     slab%species = tmp_slab%species(:,keep_list%int(1,1:keep_list%N))
 
@@ -785,7 +785,7 @@ contains
     lattice(:,1) = a%lattice(:,1)*n1
     lattice(:,2) = a%lattice(:,2)*n2
     lattice(:,3) = a%lattice(:,3)*n3
-    call atoms_initialise(aa, a%N*n1*n2*n3, lattice)
+    call initialise(aa, a%N*n1*n2*n3, lattice)
     if (a%use_uniform_cutoff) then
        call set_cutoff(aa, a%cutoff)
     else
@@ -917,7 +917,7 @@ contains
 
     integer :: i
 
-    call atoms_initialise(myatoms, 8, &
+    call initialise(myatoms, 8, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
     
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
@@ -966,7 +966,7 @@ contains
     real(dp)                      :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape((/a/2,a/2,0.0_dp,0.0_dp,a/2,a/2,a/2,0.0_dp,a/2/), (/3,3/)))
     
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
@@ -989,7 +989,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape((/        a,   0.0_dp,   0.0_dp, &
                   &   0.0_dp,        a,   0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*a, 0.5_dp*c /), (/3,3/) ))
@@ -1013,7 +1013,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 4, &
+    call initialise(myatoms, 4, &
          reshape((/a, 0.0_dp, 0.0_dp, 0.0_dp, a, 0.0_dp, 0.0_dp, 0.0_dp, c/), (/3,3/)))
     
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp,        0.00_dp,        0.00_dp /))
@@ -1037,7 +1037,7 @@ contains
     real(dp)                      :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 4, &
+    call initialise(myatoms, 4, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
     
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
@@ -1062,7 +1062,7 @@ contains
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                a*sqrt(8.0_dp/3.0_dp) /),(/3,3/)))
@@ -1087,7 +1087,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 1, &
+    call initialise(myatoms, 1, &
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c /),(/3,3/)))
@@ -1111,7 +1111,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape( (/     a,         0.0_dp, 0.0_dp, &
                   & 0.0_dp, sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,         0.0_dp, c /),(/3,3/)))
@@ -1136,7 +1136,7 @@ contains
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 1, &
+    call initialise(myatoms, 1, &
          reshape( (/     a, 0.0_dp, 0.0_dp, &
                   & 0.0_dp,      a, 0.0_dp, &
                   & 0.0_dp, 0.0_dp,      a /),(/3,3/)))
@@ -1160,7 +1160,7 @@ contains
     real(dp)                 :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
     
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
@@ -1183,7 +1183,7 @@ contains
     real(dp)                 :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 1, &
+    call initialise(myatoms, 1, &
     & 0.5_dp*a*reshape( (/1.0_dp,-1.0_dp, 1.0_dp, &
                         & 1.0_dp, 1.0_dp,-1.0_dp, &
                         &-1.0_dp, 1.0_dp, 1.0_dp/),(/3,3/)))
@@ -1207,7 +1207,7 @@ contains
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z1, Z2
 
-    call atoms_initialise(myatoms, 2, &
+    call initialise(myatoms, 2, &
          reshape( (/0.0_dp,   0.5_dp*a, 0.5_dp*a, &
                   & 0.5_dp*a, 0.0_dp,   0.5_dp*a, &
                   & 0.5_dp*a, 0.5_dp*a, 0.0_dp /),(/3,3/)))
@@ -1240,7 +1240,7 @@ contains
     my_c = optional_default(sqrt(8.0_dp/3.0_dp)*a,c)
     my_u = optional_default(3.0_dp/8.0_dp,u)
 
-    call atoms_initialise(myatoms, 4, &
+    call initialise(myatoms, 4, &
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                my_c/),(/3,3/)))
@@ -1269,7 +1269,7 @@ contains
     real(dp)                      :: a
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 8, &
+    call initialise(myatoms, 8, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
 
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
@@ -1298,7 +1298,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 4, &
+    call initialise(myatoms, 4, &
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c/),(/3,3/)))
@@ -1317,7 +1317,7 @@ contains
     real(dp), intent(in)          :: a, c
     integer, intent(in), optional :: Z
 
-    call atoms_initialise(myatoms, 6, &
+    call initialise(myatoms, 6, &
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c/),(/3,3/)))
@@ -1559,7 +1559,7 @@ contains
           call system_abort('Make_Structure: Unknown lattice type: '//type)
     end select
 
-    call atoms_initialise(structure,(motif%N * points%N),lattice)
+    call initialise(structure,(motif%N * points%N),lattice)
 
     do j = 1, points%N
        do i = 1, motif%N

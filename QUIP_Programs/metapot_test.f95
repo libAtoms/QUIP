@@ -77,11 +77,11 @@ program pot_test
 
   call print('single_cluster')
   call create_hybrid_weights(at, 'buffer_hops=3')
-  call calc(pot2, at, f=f1, args_str='single_cluster=T cluster_calc_connect=T')
+  call calc(pot2, at, force=f1, args_str='single_cluster=T cluster_calc_connect=T')
   call print(f1)
 
   call print('little_clusters')
-  call calc(pot2, at, f=f2, args_str='little_clusters=T cluster_calc_connect=T buffer_hops=3')
+  call calc(pot2, at, force=f2, args_str='little_clusters=T cluster_calc_connect=T buffer_hops=3')
   call print(f2)
 
   ! buffering is perfect, forces should be equal
@@ -93,7 +93,7 @@ program pot_test
   call print('force_mixing')
   call initialise(pot, 'ForceMixing method=force_mixing buffer_hops=3 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(pot)
-  call calc(pot, at, f=f1)
+  call calc(pot, at, force=f1)
   call print(f1)
   call finalise(pot)
 
@@ -101,7 +101,7 @@ program pot_test
   call print('force_mixing_smooth')
   call initialise(pot, 'ForceMixing method=force_mixing_smooth buffer_hops=1 qm_args_str={single_cluster=T  cluster_calc_connect=T}', pot1, pot2)
   call print(pot)
-  call calc(pot, at, f=f2)
+  call calc(pot, at, force=f2)
   call print(f2)
   call print('force_mixing_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
   call finalise(pot)
@@ -110,7 +110,7 @@ program pot_test
   call print('force_mixing_super_smooth')
   call initialise(pot, 'ForceMixing method=force_mixing_super_smooth buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(pot)
-  call calc(pot, at, f=f2)
+  call calc(pot, at, force=f2)
   call print(f2)
   call print('force_mixing_super_smooth force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
   call finalise(pot)
@@ -119,7 +119,7 @@ program pot_test
   call print('conserve_momentum')
   call initialise(pot, 'ForceMixing method=conserve_momentum fit_hops=2 buffer_hops=1 qm_args_str={single_cluster=T cluster_calc_connect=T}', pot1, pot2)
   call print(pot)
-  call calc(pot, at, f=f2)
+  call calc(pot, at, force=f2)
   call print(f2)
   call print('conserve_momentum force error '//rms_diff(f1, f2)//' '//maxval(abs(f1-f2)))
   call finalise(pot)

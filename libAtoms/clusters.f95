@@ -1037,7 +1037,7 @@ contains
     real(dp), allocatable, dimension(:)  :: mpi_force
 
     call get_mpi_size_rank(MPI_COMM_WORLD, mpi_size, mpi_rank)
-#endif _MPI
+#endif /* _MPI */
 
     INIT_ERROR(error)
 
@@ -1167,9 +1167,9 @@ contains
        call print('carve_cluster: doing calc_connect', PRINT_VERBOSE)
        ! Does QM force model need connectivity information?
        if (at%use_uniform_cutoff) then
-          call atoms_set_cutoff(cluster, at%cutoff)
+          call set_cutoff(cluster, at%cutoff)
        else
-          call atoms_set_cutoff_factor(cluster, at%cutoff)
+          call set_cutoff_factor(cluster, at%cutoff)
        end if
        call calc_connect(cluster)
     end if
@@ -1233,7 +1233,7 @@ contains
        write (clusterfilename, '(a,i3.3,a)') 'clusters.',mpi_rank,'.xyz'
 #else
        clusterfilename = 'clusters.xyz'
-#endif _MPI
+#endif /* _MPI */
        call initialise(clusterfile, clusterfilename, append=.true., action=OUTPUT)
        call write(clusterfile, cluster)
        call finalise(clusterfile)

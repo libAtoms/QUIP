@@ -77,10 +77,10 @@ subroutine gap_wrapper(N,lattice,symbol,coord,energy,force,stress)
   enddo 
   at%pos = coord*BOHR
 
-  call atoms_set_cutoff(at,cutoff(pot)+0.5_dp)
+  call set_cutoff(at,cutoff(pot)+0.5_dp)
   call calc_connect(at)
 
-  call calc(pot,at,e=energy,f=force,virial=stress)
+  call calc(pot,at,energy=energy,force=force,virial=stress)
 
   energy = energy / HARTREE
   force = force / HARTREE * BOHR

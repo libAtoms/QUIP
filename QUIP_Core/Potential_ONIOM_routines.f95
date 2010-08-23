@@ -35,16 +35,19 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine potential_ONIOM_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj)
+  subroutine potential_ONIOM_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
     type(Potential_ONIOM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
-    type(Potential), intent(in), target :: region1_pot, region2_pot
+    type(Potential), intent(inout), target :: region1_pot, region2_pot
     type(Atoms), optional, intent(inout) :: reference_bulk
     type(MPI_Context), intent(in), optional :: mpi_obj
+    integer, intent(out), optional :: error
 
     type(Dictionary) :: params
     logical :: minimise_bulk
     logical :: do_rescale_r, do_rescale_E, do_tb_defaults
+
+    INIT_ERROR(error)
 
     call initialise(params)
     call param_register(params, "r_scale", "1.0", this%r_scale_pot1)
@@ -68,8 +71,9 @@
     call param_register(params, 'minim_mm_use_n_minim', 'F', this%minim_mm_use_n_minim)
     call param_register(params, 'minim_mm_args_str', '', this%minim_mm_args_str)
 
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_initialise args_str') ) &
-      call system_abort("Potential_ONIOM_initialise failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_initialise args_str') ) then
+      RAISE_ERROR("Potential_ONIOM_initialise failed to parse args_str='"//trim(args_str)//"'",error)
+    endif
     call finalise(params)
 
     if (this%minimise_mm) then
@@ -77,9 +81,9 @@
     endif
 
     if (do_rescale_r .or. do_rescale_E .or. do_tb_defaults) then
-      if (.not. present(reference_bulk)) &
-	call system_abort("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E// &
-	  " do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present")
+      if (.not. present(reference_bulk)) then
+	RAISE_ERROR("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E//" do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
+      endif
 
       call do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
 	this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
@@ -133,15 +137,11 @@
   end subroutine potential_ONIOM_print
 
 
-  subroutine potential_ONIOM_calc(this, at, energy, local_e, force, virial, args_str, err)
+  subroutine potential_ONIOM_calc(this, at, args_str, error)
     type(Potential_ONIOM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: energy
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: force(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
     character(len=*), intent(in), optional :: args_str
-    integer, intent(out), optional :: err
+    integer, intent(out), optional :: error
 
     logical :: calc_weights
     integer :: core_hops
@@ -150,23 +150,29 @@
     integer :: i
     integer, pointer :: hybrid(:), hybrid_mark(:)
 
-    if (.not. associated(this%pot_region1) .or. .not. associated(this%pot_region2)) &
-      call system_abort("Potential_ONIOM_calc: this%pot_region1 or this%pot_region2 not initialised")
+    INIT_ERROR(error)
+
+    if (.not. associated(this%pot_region1) .or. .not. associated(this%pot_region2)) then
+      RAISE_ERROR("Potential_ONIOM_calc: this%pot_region1 or this%pot_region2 not initialised", error)
+    endif
 
     call initialise(params)
     call param_register(params, "calc_weights", "F", calc_weights)
     call param_register(params, "core_hops", "0", core_hops)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_Calc args_str') ) &
-      call system_abort("Potential_ONIOM_calc_energy failed to parse args_str='"//trim(args_str)//"'")
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_ONIOM_Calc args_str') ) then
+      RAISE_ERROR("Potential_ONIOM_calc_energy failed to parse args_str='"//trim(args_str)//"'",error)
+    endif
     call finalise(params)
     if (calc_weights) then
       call print("Potential_ONIOM_calc got calc_weights core_hops " // core_hops, PRINT_VERBOSE)
       call add_property(at, "weight_region1", 0.0_dp)
       call add_property(at, "hybrid_mark", HYBRID_NO_MARK)
-      if (.not. assign_pointer(at, "hybrid", hybrid)) &
-        call system_abort("QC_QUIP_calc at doesn't have hybrid property and calc_weights was specified")
-      if (.not. assign_pointer(at, "hybrid_mark", hybrid_mark)) &
-        call system_abort("QC_QUIP_calc Failed to add hybrid_mark property to at")
+      if (.not. assign_pointer(at, "hybrid", hybrid)) then
+        RAISE_ERROR("QC_QUIP_calc at doesn't have hybrid property and calc_weights was specified", error)
+      endif
+      if (.not. assign_pointer(at, "hybrid_mark", hybrid_mark)) then
+        RAISE_ERROR("QC_QUIP_calc Failed to add hybrid_mark property to at", error)
+      endif
 
       call calc_connect(at)
 
@@ -178,31 +184,32 @@
       call bfs_grow(at, region1_table, core_hops, nneighb_only = .false.)
       hybrid_mark(int_part(region1_table,1)) = HYBRID_ACTIVE_MARK
 
-      call create_hybrid_weights(at, trans_width=0, buffer_width=0)
+      call create_hybrid_weights(at, args_str="transition_hops=0 buffer_hops=0")
     endif
 
-    call calc_oniom(this, at, energy, local_e, force, virial, args_str)
-
-    if (present(err)) err = 0
+    call calc_oniom(this, at, args_str, error)
+    PASS_ERROR(error)
 
   end subroutine potential_ONIOM_calc
 
 
-  subroutine calc_oniom(this, at, energy, local_e, force, virial, args_str)
+  subroutine calc_oniom(this, at, args_str, error)
     type(Potential_ONIOM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: energy
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: force(:,:)
-    real(dp), intent(out), optional :: virial(3,3)
     character(len=*), intent(in), optional :: args_str
+    integer, intent(out), optional :: error
+
+    real(dp) :: energy, virial(3,3)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
 
     type(Atoms) :: cluster
+    type(Table) :: cluster_info
     type(Dictionary) :: params
     character(FIELD_LENGTH) :: cc_args_str
 
     real(dp) :: cluster_energy_1, cluster_energy_2
     real(dp), allocatable :: cluster_local_e_1(:), cluster_local_e_2(:)
+    real(dp), pointer :: cluster_force_ptr(:,:), cluster_local_energy_ptr(:)
     real(dp), allocatable :: cluster_force_1(:,:), cluster_force_2(:,:)
     real(dp) :: cluster_virial_1(3,3), cluster_virial_2(3,3)
 
@@ -211,15 +218,30 @@
     logical :: dummy
     integer i
 
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+
+    INIT_ERROR(error)
+
     call system_timer("calc_oniom")
 
+    call initialise(params)
+    call param_register(params, "energy", "", calc_energy)
+    call param_register(params, "force", "", calc_force)
+    call param_register(params, "virial", "", calc_virial)
+    call param_register(params, "local_energy", "", calc_local_energy)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Calc_ONIOM args_str')) then
+      RAISE_ERROR("Calc_ONIOM failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
+    call finalise(params)
+
     if(.not. (associated(this%pot_region1) .and. associated(this%pot_region2))) then
-       call system_abort('calc_oniom: potential for region 1 or region 2 is not initialised')
+       RAISE_ERROR('calc_oniom: potential for region 1 or region 2 is not initialised', error)
     end if
 
     ! Check for a compatible hybrid_mark property. It must be present.
-    if (.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) &
-       call system_abort('calc_oniom: atoms structure has no "hybrid_mark" property')
+    if (.not.assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
+       RAISE_ERROR('calc_oniom: atoms structure has no "hybrid_mark" property', error)
+    endif
 
     ! if hybrid is active, carve cluster and do minimisation if necessary
     if(any(hybrid_mark /= HYBRID_NO_MARK)) then
@@ -232,7 +254,9 @@
       call set_value(params, 'cluster_periodic_z', 'T')
       call set_value(params, 'randomise_buffer', 'F')
       cc_args_str = write_string(params)
-      cluster =  create_cluster_hybrid_mark(at, cc_args_str)
+      cluster_info = create_cluster_info_from_hybrid_mark(at, cc_args_str)
+      cluster = carve_cluster(at, cc_args_str, cluster_info)
+
 
       if (this%minimise_mm) then
 	dummy = assign_pointer(cluster, 'index', index)
@@ -243,16 +267,21 @@
       endif
     endif
 
+    if (len_trim(calc_force) > 0) call assign_property_pointer(at, trim(calc_force), at_force_ptr)
+    if (len_trim(calc_local_energy) > 0) call assign_property_pointer(at, trim(calc_local_energy), at_local_energy_ptr)
+
     ! do calculation in whole system first using pot_region2
     call system_timer("calc_oniom/calc_whole_sys")
-    call Calc(this%pot_region2, at, energy, local_e, force, virial, args_str=args_str)
+    call Calc(this%pot_region2, at, args_str=args_str)
     call system_timer("calc_oniom/calc_whole_sys")
+    if (len_trim(calc_energy) > 0) call get_param_value(at, trim(calc_energy), energy)
+    if (len_trim(calc_virial) > 0) call get_param_value(at, trim(calc_virial), virial)
 
     call system_timer("calc_oniom/prep_cluster")
 
     ! if there are no marked atoms, we are done, so return
     if(all(hybrid_mark == HYBRID_NO_MARK)) then
-       call print('No REGION 1 marks, not carving REGION 1 cluster')
+       call print('WARNING: ONIOM with No REGION 1 marks, not carving REGION 1 cluster')
        return
     end if
 
@@ -266,28 +295,25 @@
     call system_timer("calc_oniom/calc_cluster_1")
     allocate(cluster_force_1(3,cluster%N))
     allocate(cluster_local_e_1(cluster%N))
-    if (present(force)) then
-      if (present(virial)) then
-        call Calc(this%pot_region1, cluster, cluster_energy_1, cluster_local_e_1, cluster_force_1, cluster_virial_1, args_str=args_str)
-        ! scale back forces
-        cluster_force_1 = cluster_force_1*this%E_scale_pot1*this%r_scale_pot1
-        cluster_virial_1 = cluster_virial_1*this%E_scale_pot1
-      else
-        call Calc(this%pot_region1, cluster, cluster_energy_1, cluster_local_e_1, cluster_force_1, args_str=args_str)
-        ! scale back forces
-        cluster_force_1 = cluster_force_1*this%E_scale_pot1*this%r_scale_pot1
-      endif
-    else
-      if (present(virial)) then
-        call Calc(this%pot_region1, cluster, cluster_energy_1, cluster_local_e_1, virial=cluster_virial_1, args_str=args_str)
-        ! scale back virial
-        cluster_virial_1 = cluster_virial_1*this%E_scale_pot1
-      else
-        call Calc(this%pot_region1, cluster, cluster_energy_1, cluster_local_e_1, args_str=args_str)
-      endif
+    call Calc(this%pot_region1, cluster, args_str=args_str)
+    if (len_trim(calc_force) > 0) then
+      call assign_property_pointer(cluster, trim(calc_force), cluster_force_ptr, error=error)
+      PASS_ERROR_WITH_INFO("Calc_ONIOM failed to get value for force property '"//trim(calc_force)//"'", error)
+      cluster_force_1 = cluster_force_ptr*this%E_scale_pot1*this%r_scale_pot1
     endif
-    cluster_energy_1 = cluster_energy_1*this%E_scale_pot1
-    cluster_local_e_1 = cluster_local_e_1*this%E_scale_pot1
+    if (len_trim(calc_virial) > 0) then
+      call get_param_value(cluster, trim(calc_virial), cluster_virial_1)
+      cluster_virial_1 = cluster_virial_1*this%E_scale_pot1
+    endif
+    if (len_trim(calc_energy) > 0) then
+      call get_param_value(cluster, trim(calc_energy), cluster_energy_1)
+      cluster_energy_1 = cluster_energy_1*this%E_scale_pot1
+    endif
+    if (len_trim(calc_local_energy) > 0) then
+      call assign_property_pointer(cluster, trim(calc_local_energy), cluster_local_energy_ptr, error=error)
+      RAISE_ERROR("Calc_ONIOM failed to get value for local_energy property '"//trim(calc_local_energy)//"'", ERROR)
+      cluster_local_e_1 = cluster_local_energy_ptr*this%E_scale_pot1
+    endif
     call system_timer("calc_oniom/calc_cluster_1")
 
     ! unrescale cluster
@@ -298,24 +324,16 @@
     call system_timer("calc_oniom/calc_cluster_2")
     allocate(cluster_force_2(3,cluster%N))
     allocate(cluster_local_e_2(cluster%N))
-    if (present(force)) then
-      if (present(virial)) then
-        call Calc(this%pot_region2, cluster, cluster_energy_2, cluster_local_e_2, cluster_force_2, cluster_virial_2, args_str=args_str)
-      else
-        call Calc(this%pot_region2, cluster, cluster_energy_2, cluster_local_e_2, cluster_force_2, args_str=args_str)
-      endif
-    else
-      if (present(virial)) then
-        call Calc(this%pot_region2, cluster, cluster_energy_2, cluster_local_e_2, virial=cluster_virial_2, args_str=args_str)
-      else
-        call Calc(this%pot_region2, cluster, cluster_energy_2, cluster_local_e_2, args_str=args_str)
-      endif
-    endif
+    call Calc(this%pot_region2, cluster, args_str=args_str)
+    if (len_trim(calc_force) > 0) cluster_force_2 = cluster_force_ptr
+    if (len_trim(calc_virial) > 0) call get_param_value(cluster, trim(calc_virial), cluster_virial_2)
+    if (len_trim(calc_energy) > 0) call get_param_value(cluster, trim(calc_energy), cluster_energy_2)
+    if (len_trim(calc_local_energy) > 0) cluster_local_e_2 = cluster_local_energy_ptr
     call system_timer("calc_oniom/calc_cluster_2")
 
     call system_timer("calc_oniom/combine")
     if(current_verbosity() > PRINT_VERBOSE) &
-         call print_cfg(cluster, "cluster.cfg", all_properties = .true.)
+         call write(cluster, "cluster.cfg")
 
     ! redistribute local energies and weights from the cluster to region 1
     dummy = assign_pointer(cluster, 'index', index)
@@ -323,7 +341,7 @@
     dummy = assign_pointer(cluster, 'termindex', termindex)
     ! first add terms arising from the fact that the position of the rescaled termination atoms
     ! depends on the position of the atoms they are terminating
-    if(present(force)) then
+    if(len_trim(calc_force) > 0) then
        do i=1,cluster%N
           if(termindex(i) > 0) then
              cluster_force_1(:,termindex(i)) = cluster_force_1(:,termindex(i)) + (1.0_dp-rescale(i))*cluster_force_1(:,i)
@@ -332,21 +350,23 @@
        end do
     end if
     ! now do the redistribution
-    if(present(force)) then
+    if(len_trim(calc_force) > 0) then
       do i=1,cluster%N
-        force(:,index(i)) = force(:,index(i)) + cluster_force_1(:,i)*rescale(i) - cluster_force_2(:,i)*rescale(i)
+        at_force_ptr(:,index(i)) = at_force_ptr(:,index(i)) + cluster_force_1(:,i)*rescale(i) - cluster_force_2(:,i)*rescale(i)
       end do
     end if
-    if(present(virial)) then
+    if(len_trim(calc_virial) > 0) then
       virial = virial + cluster_virial_1 - cluster_virial_2
+      call set_param_value(at, trim(calc_virial), virial)
     endif
-    if (present(local_e)) then
+    if(len_trim(calc_local_energy) > 0) then
       do i=1,cluster%N
-        local_e(index(i)) = local_e(index(i)) + cluster_local_e_1(i) - cluster_local_e_2(i)
+        at_local_energy_ptr(index(i)) = at_local_energy_ptr(index(i)) + cluster_local_e_1(i) - cluster_local_e_2(i)
       end do
     end if
-    if(present(energy)) then
+    if(len_trim(calc_energy) > 0) then
       energy = energy + cluster_energy_1 - cluster_energy_2
+      call set_param_value(at, trim(calc_energy), energy)
     endif
     call system_timer("calc_oniom/combine")
 

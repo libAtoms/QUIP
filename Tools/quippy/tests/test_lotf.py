@@ -110,8 +110,8 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
             f = fzeros((3,self.at.n))
             f_hyb = fzeros((3,self.at.n))
             verbosity_push(PRINT_SILENT)
-            self.lotf.calc(ds.atoms, f=f)
-            self.forcemix.calc(ds.atoms, f=f_hyb)
+            self.lotf.calc(ds.atoms, force=f)
+            self.forcemix.calc(ds.atoms, force=f_hyb)
             ds.advance_verlet(1.0, f_hyb)
             verbosity_pop()
             self.assertArrayAlmostEqual([rms_diff2(f_hyb, f), abs(f_hyb -f).max()],
@@ -122,29 +122,29 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and quippy.have
             f_hyb = fzeros((3,self.at.n))
             extrap_force_err = []
             interp_force_err = []
-            self.lotf.calc(self.ds.atoms, f=f) # bootstrap
+            self.lotf.calc(self.ds.atoms, force=f) # bootstrap
 
             # Extrapolation
             self.ds_saved.save_state(self.ds)
             for j in frange(n_extrap):
                 if j == 1:
-                    self.lotf.calc(self.ds.atoms, f=f, lotf_do_qm=False, lotf_do_init=True, lotf_do_map=True)
+                    self.lotf.calc(self.ds.atoms, force=f, lotf_do_qm=False, lotf_do_init=True, lotf_do_map=True)
                 else:
-                    self.lotf.calc(self.ds.atoms, f=f, lotf_do_qm=False, lotf_do_init=False)
-                self.forcemix.calc(self.ds.atoms, f=f_hyb)
+                    self.lotf.calc(self.ds.atoms, force=f, lotf_do_qm=False, lotf_do_init=False)
+                self.forcemix.calc(self.ds.atoms, force=f_hyb)
                 self.ds.advance_verlet(1.0, f)
                 self.ds.print_status('E', instantaneous=True)
                 extrap_force_err.append([rms_diff2(f_hyb, f), abs(f_hyb -f).max()])
             
             # Force computation
-            self.lotf.calc(self.ds.atoms, f=f, lotf_do_qm=True, lotf_do_init=False, lotf_do_fit=True)
+            self.lotf.calc(self.ds.atoms, force=f, lotf_do_qm=True, lotf_do_init=False, lotf_do_fit=True)
 
             self.ds.restore_state(self.ds_saved)
 
             # Interpolation
             for j in frange(n_extrap):
-                self.lotf.calc(self.ds.atoms, f=f, lotf_do_qm=False, lotf_do_init=False, lotf_do_interp=True, lotf_interp=float(j-1)/float(n_extrap))
-                self.forcemix.calc(self.ds.atoms, f=f_hyb)
+                self.lotf.calc(self.ds.atoms, force=f, lotf_do_qm=False, lotf_do_init=False, lotf_do_interp=True, lotf_interp=float(j-1)/float(n_extrap))
+                self.forcemix.calc(self.ds.atoms, force=f_hyb)
                 self.ds.advance_verlet(1.0, f)
                 self.ds.print_status('I', instantaneous=True)
                 interp_force_err.append([rms_diff2(f_hyb, f), abs(f_hyb -f).max()])
