@@ -383,8 +383,9 @@ contains
   !% Initialise this CrackParams structure and set default
   !% values for all parameters. WARNING: many of these defaults are
   !% only really appropriate for diamond structure silicon fracture.
-  subroutine CrackParams_initialise(this)
+  subroutine CrackParams_initialise(this, filename)
     type(CrackParams), intent(inout) :: this
+    character(len=*), optional, intent(in) :: filename
     
     ! Parameters for 'makecrack'
     this%crack_structure         = 'diamond'
@@ -558,6 +559,10 @@ contains
     ! Nasty hack
     this%hack_qm_zero_z_force        = .false.
     this%hack_fit_on_eqm_coordination_only = .false.
+
+    if (present(filename)) then
+       call read_xml(this, filename)
+    end if
 
   end subroutine CrackParams_initialise
 
