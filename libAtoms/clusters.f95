@@ -843,6 +843,54 @@ contains
     call print(cluster_info, PRINT_NERD)
   end function cluster_protect_X_H_bonds
 
+  !% Go through the cluster atoms and find cut bonds. 
+  !% Include the bonded-to atom in the cluster list.
+  !% cheap alternative to keep_residues_whole
+  function cluster_keep_whole_molecules(this, cluster_info, connectivity_just_from_connect, use_connect, atom_mask) result(cluster_changed)
+    type(Atoms), intent(in) :: this !% atoms structure 
+    type(Table), intent(inout) :: cluster_info !% table of cluster info, modified if necessary on output
+    logical, intent(in) :: connectivity_just_from_connect !% if true, we're doing hysterestic connect and should rely on the connection object completely
+    type(Connection), intent(in) :: use_connect !% connection object to use for connectivity info
+    logical, intent(in) :: atom_mask(6) !% which fields in int part of table to compare when checking for identical atoms
+    logical :: cluster_changed
+
+    integer :: n, i, ishift(3), m, j, jshift(3)
+
+    call print('doing cluster_keep_whole_molecules', PRINT_NERD)
+    cluster_changed = .false.
+
+    ! loop over each atom in the cluster already
+    n = 1
+    do while (n <= cluster_info%N)
+      i = cluster_info%int(1,n)
+      ishift = cluster_info%int(2:4,n)
+      call print('cluster_keep_whole_molecules: i = '//i//'. Looping over '//atoms_n_neighbours(this,i,alt_connect=use_connect)//' neighbours...',PRINT_ANAL)
+
+      ! loop over every neighbour, looking for outside neighbours
+      do m=1, atoms_n_neighbours(this, i, alt_connect=use_connect)
+	j = atoms_neighbour(this, i, m, shift=jshift, alt_connect=use_connect)
+
+	! if j is in, or not a nearest neighbour, go on to next
+	if (find(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), atom_mask ) /= 0) cycle
+	if(.not. (connectivity_just_from_connect .or. is_nearest_neighbour(this,i, m, alt_connect=use_connect))) then
+	  call print("cluster_keep_whole_molecules:   j = "//j//" ["//jshift//"] not nearest neighbour",PRINT_ANAL)
+	  cycle
+	end if
+	! if we're here, j must be an outside neighbour of i
+
+	call append(cluster_info, (/ j, ishift+jshift, this%Z(j), 0 /), (/ this%pos(:,j), 1.0_dp /), (/"molec     " /) )
+	cluster_changed = .true.
+	call print('cluster_keep_whole_molecules:  Added atom ' //j//' ['//(ishift+jshift)//'] to cluster. Atoms = ' // cluster_info%N, PRINT_NERD)
+      end do ! m
+
+      n = n + 1
+    end do ! while (n <= cluster_info%N)
+
+    call print('cluster_keep_whole_molecules: Finished checking',PRINT_NERD)
+    call print("cluster_keep_whole_molecules: cluster list:", PRINT_NERD)
+    call print(cluster_info, PRINT_NERD)
+  end function cluster_keep_whole_molecules
+
   !if by accident a single atom is included, that is part of a larger entity (not ion)
   !then delete it from the list as it will cause error in SCF (e.g. C=O oxygen)
   !call allocate(to_delete,4,0,0,0,1)
@@ -1269,7 +1317,7 @@ contains
          even_electrons, do_periodic(3), cluster_nneighb_only, &
          cluster_allow_modification, hysteretic_connect, same_lattice, &
          fix_termination_clash, keep_whole_residues, keep_whole_silica_tetrahedra, reduce_n_cut_bonds, &
-         protect_X_H_bonds, protect_double_bonds, has_termination_rescale
+         protect_X_H_bonds, protect_double_bonds, keep_whole_molecules, has_termination_rescale
     logical :: keep_whole_residues_has_value, protect_double_bonds_has_value
     real(dp) :: r, r_min, centre(3), termination_rescale
     type(Table) :: cluster_list, currentlist, nextlist, activelist, bufferlist
@@ -1315,6 +1363,7 @@ contains
     call param_register(params, 'reduce_n_cut_bonds','T', reduce_n_cut_bonds)
     call param_register(params, 'protect_X_H_bonds','T', protect_X_H_bonds)
     call param_register(params, 'protect_double_bonds','T', protect_double_bonds, protect_double_bonds_has_value)
+    call param_register(params, 'keep_whole_molecules','F', keep_whole_molecules)
     call param_register(params, 'termination_rescale', '0.0', termination_rescale, has_termination_rescale)
     call param_register(params, 'cluster_hopping', 'T', cluster_hopping)
 
@@ -1546,6 +1595,9 @@ contains
           endif
           if (terminate .or. fix_termination_clash) then
              cluster_changed = cluster_changed .or. cluster_fix_termination_clash(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
+          endif
+          if (keep_whole_molecules) then
+             cluster_changed = cluster_changed .or. cluster_keep_whole_molecules(at, cluster_info, connectivity_just_from_connect, use_connect, atom_mask)
           endif
        end do ! while cluster_changed
 
@@ -3281,7 +3333,7 @@ type(inoutput), optional :: debugfile
     if (use_create_cluster_info) then
       call add_property(my_atoms, "hybrid_region_core_tmp", HYBRID_NO_MARK, ptr=hybrid_region_core_tmp_p)
       hybrid_region_core_tmp_p(int_part(core,1)) = HYBRID_ACTIVE_MARK
-      my_create_cluster_info_args = optional_default("terminate=F cluster_allow_modification cluster_nneighb_only", create_cluster_info_args)
+      my_create_cluster_info_args = optional_default("terminate=F cluster_nneighb_only cluster_allow_modification", create_cluster_info_args)
       padded_cluster_info = create_cluster_info_from_mark(my_atoms, my_create_cluster_info_args, mark_name="hybrid_region_core_tmp")
       call finalise(core)
       call initialise(core, Nint=4, Nreal=0, Nstr=0, Nlogical=0, max_length=padded_cluster_info%N)

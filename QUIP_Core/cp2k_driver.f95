@@ -360,7 +360,7 @@ contains
 	case(QMMM_RUN_EXTENDED)
 	  call get_hybrid_list(at, qm_list, all_but_term=.true.,int_property="cluster_mark"//trim(qm_name_postfix))
 	case default
-	  call system_abort("use_QMM is true, but run_type_i="//run_type_i //" is neither QMMM_RUN_CORE="//QMMM_RUN_CORE// &
+	  call system_abort("use_QMMM is true, but run_type_i="//run_type_i //" is neither QMMM_RUN_CORE="//QMMM_RUN_CORE// &
 	    " QMMM_RUN_EXTENDED="//QMMM_RUN_EXTENDED)
       end select
       allocate(qm_list_a(qm_list%N))
