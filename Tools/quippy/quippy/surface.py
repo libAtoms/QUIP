@@ -29,12 +29,12 @@ def surface_energy(pot, bulk, surface, dir=2):
 
    if not hasattr(bulk, 'energy'):
       bulk.calc_connect()
-      pot.calc(bulk, calc_energy=True, calc_force=True)
+      pot.calc(bulk, energy=True, force=True)
 
    bulk_energy_per_sio2 = bulk.energy/(bulk.z == 14).count()
 
    surface.calc_connect()
-   pot.calc(surface, calc_energy=True, calc_force=True)
+   pot.calc(surface, energy=True, force=True)
 
    area = surface.cell_volume()/surface.lattice[dir,dir]
 

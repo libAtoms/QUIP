@@ -100,7 +100,7 @@ c=44""")
 
    def testargs_str(self):
       arg = args_str({'a':1, 'b':True, 'c':False})
-      self.assertEqual(' '.join(sorted(arg.split())), 'a=1 b=T c=F')
+      self.assertEqual(' '.join(sorted(arg.split())), 'a=1 b c=F')
 
    def test_int_array(self):
       d = Dictionary()

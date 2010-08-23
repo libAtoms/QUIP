@@ -295,8 +295,8 @@ subroutine print_pot(params, pot)
   mainlog%prefix="MD_POT"
 #ifdef HAVE_TB
   if (pot%is_simple) then
-    if (associated(pot%pot%tb)) then
-      call print(pot%pot%tb)
+    if (associated(pot%simple%tb)) then
+      call print(pot%simple%tb)
     endif
   endif
 #endif
@@ -406,8 +406,7 @@ implicit none
   type(DynamicalSystem) :: ds
 
   real(dp) :: E, virial(3,3)
-  real(dp), allocatable :: forces(:,:)
-  real(dp), pointer :: forces_p(:,:)
+  real(dp), pointer :: force_p(:,:)
   real(dp) :: cutoff_buffer, max_moved, last_state_change_time
 
   integer i, i_step
@@ -417,6 +416,7 @@ implicit none
 
   logical :: store_constraint_force
   real(dp), allocatable :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
+  character(STRING_LENGTH) :: extra_calc_args
 
   call system_initialise()
 
@@ -461,8 +461,7 @@ implicit none
   if (params%zero_angular_momentum) call zero_angular_momentum(ds%atoms)
 
   ! add properties
-  call add_property(ds%atoms, 'forces', 0.0_dp, n_cols=3)
-  allocate(forces(3,ds%atoms%N))
+  call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3, ptr2=force_p)
 
   cutoff_buffer=params%cutoff_buffer
   call set_cutoff(ds%atoms, cutoff(pot)+cutoff_buffer)
@@ -471,32 +470,23 @@ implicit none
   ! calculate f(t)
   call calc_connect(ds%atoms)
   if (params%quiet_calc) call verbosity_push_decrement()
-  if (params%calc_energy) then
-    if (params%calc_virial) then
-      call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
-    else
-      call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
-    endif
-  else
-    if (params%calc_virial) then
-      call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
-    else
-      call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
-    endif
-  endif
+
+  extra_calc_args="force"
+  if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
+  if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+  call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+  if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
+  if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
   if (params%quiet_calc) call verbosity_pop()
   call set_value(ds%atoms%params, 'time', ds%t)
 
   ! calculate a(t) from f(t)
-  forall(i = 1:ds%N) ds%atoms%acc(:,i) = forces(:,i) / ElementMass(ds%atoms%Z(i))
+  forall(i = 1:ds%N) ds%atoms%acc(:,i) = force_p(:,i) / ElementMass(ds%atoms%Z(i))
 
   if (ds%Nrestraints > 0) then
      call calc_restraint_stuff(ds, restraint_stuff)
      restraint_stuff_timeavg = restraint_stuff
   end if
-  if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
-    call system_abort('Impossible failure to assign_ptr for forces')
-  forces_p = forces
   call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, 0, override_intervals = .true.)
 
   call calc_connect(ds%atoms)
@@ -518,19 +508,17 @@ implicit none
         call update_thermostat(ds, params, do_rescale=(ds%cur_temp.gt.params%T))
     endif
 
-    call advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
+    call advance_md(ds, params, pot, store_constraint_force)
     if (ds%Nconstraints > 0) then
        call calc_restraint_stuff(ds, restraint_stuff)
        call update_exponential_average(restraint_stuff_timeavg, params%dt/ds%avg_time, restraint_stuff)
     end if
+    if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
 
     ! now we have p(t+dt), v(t+dt), a(t+dt)
 
     call system_timer("md/print")
     call set_value(ds%atoms%params, 'time', ds%t)
-    if (.not. assign_pointer(ds%atoms, 'forces', forces_p)) &
-      call system_abort('Impossible failure to assign_ptr for forces')
-    forces_p = forces
     call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step)
 
     call system_timer("md/print")
@@ -557,39 +545,27 @@ contains
     end do
   end subroutine
 
-  subroutine advance_md(ds, params, pot, forces, virial, E, store_constraint_force)
+  subroutine advance_md(ds, params, pot, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
     type(Potential), intent(inout) :: pot
-    real(dp), intent(inout) :: forces(:,:), virial(3,3)
-    real(dp), intent(inout) :: E
     logical, intent(in) :: store_constraint_force
 
     integer :: i_substep
-    real(dp), pointer :: new_pos(:,:), new_velo(:,:), new_forces(:,:)
+    real(dp), pointer :: new_pos(:,:), new_velo(:,:), new_forces(:,:), force_p(:,:)
     real(dp) :: new_E
     logical :: has_new_pos, has_new_velo, has_new_forces, has_new_E
+    character(STRING_LENGTH) :: extra_calc_args
 
     if (params%advance_md_substeps > 0) then
       call calc_connect(ds%atoms)
       if (params%quiet_calc) call verbosity_push_decrement()
-      if (params%calc_energy) then
-	if (params%calc_virial) then
-	  call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args // &
-	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
-	else
-	  call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args // &
-	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
-	endif
-      else
-	if (params%calc_virial) then
-	  call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args // &
-	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
-	else
-	  call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args // &
-	    'do_md md_time_step='//params%dt // ' md_n_steps='//params%advance_md_substeps)
-	endif
-      endif
+
+      extra_calc_args="force"
+      if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
+      if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+      call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+
       if (params%quiet_calc) call verbosity_pop()
       has_new_pos = assign_pointer(ds%atoms, 'new_pos', new_pos)
       has_new_velo = assign_pointer(ds%atoms, 'new_velo', new_velo)
@@ -602,29 +578,34 @@ contains
 	  endif
 	ds%atoms%pos = new_pos
 	ds%atoms%velo = new_velo
-	forces = new_forces
-	if (has_new_E) E = new_E
+	if (.not. assign_pointer(ds%atoms, "force", force_p)) then
+	  call system_abort("advance_md failed to assign pointer for force")
+	endif
+	force_p = new_forces
+	if (has_new_E) call set_param_value(ds%atoms, "energy", new_E)
 	ds%t = ds%t + params%dt*params%advance_md_substeps
 	ds%nSteps = ds%nSteps + params%advance_md_substeps
 	call calc_connect(ds%atoms)
 	max_moved = 0.0_dp
       else ! failed to find new_pos
 	do i_substep=1, params%advance_md_substeps
-	  call advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
+	  call advance_md_one(ds, params, pot, store_constraint_force)
 	end do
       endif
     else
-      call advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
+      call advance_md_one(ds, params, pot, store_constraint_force)
     endif
   end subroutine advance_md
 
-  subroutine advance_md_one(ds, params, pot, forces, virial, E, store_constraint_force)
+  subroutine advance_md_one(ds, params, pot, store_constraint_force)
     type(DynamicalSystem), intent(inout) :: ds
     type(md_params), intent(in) :: params
     type(Potential), intent(inout) :: pot
-    real(dp), intent(inout) :: forces(:,:), virial(3,3)
-    real(dp), intent(inout) :: E
     logical, intent(in) :: store_constraint_force
+
+    real(dp), pointer :: force_p(:,:)
+    real(dp) :: E, virial(3,3)
+    character(STRING_LENGTH) :: extra_calc_args
 
     ! start with have p(t), v(t), a(t)
 
@@ -651,19 +632,15 @@ contains
     ! calc f(t+dt)
     call system_timer("md/calc")
     if (params%quiet_calc) call verbosity_push_decrement()
-    if (params%calc_energy) then
-      if (params%calc_virial) then
-	call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
-      else
-	call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
-      endif
-    else
-      if (params%calc_virial) then
-	call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
-      else
-	call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
-      endif
-    endif
+
+    extra_calc_args="force"
+    if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
+    if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
+    call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+    if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
+    if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
+    if (.not. assign_pointer(ds%atoms, "force", force_p)) call system_abort("md failed to get force")
+
     if (params%quiet_calc) call verbosity_pop()
     call system_timer("md/calc")
     ! now we have a(t+dt)
@@ -671,9 +648,9 @@ contains
     ! second Verlet half-step
     call system_timer("md/advance_verlet2")
     if(params%const_P) then
-       call advance_verlet2(ds, params%dt, forces, virial=virial, E=E, store_constraint_force=store_constraint_force)
+       call advance_verlet2(ds, params%dt, force_p, virial=virial, E=E, store_constraint_force=store_constraint_force)
     else
-       call advance_verlet2(ds, params%dt, forces, E=E, store_constraint_force=store_constraint_force)
+       call advance_verlet2(ds, params%dt, force_p, E=E, store_constraint_force=store_constraint_force)
     endif
     call system_timer("md/advance_verlet2")
 
@@ -682,19 +659,7 @@ contains
     ! call calc again if needed for v dep. forces
     if (params%v_dep_quants_extra_calc) then
       if (params%quiet_calc) call verbosity_push_decrement()
-      if (params%calc_energy) then
-	if (params%calc_virial) then
-	  call calc(pot, ds%atoms, e=E, f=forces, virial=virial, args_str=params%pot_calc_args)
-	else
-	  call calc(pot, ds%atoms, e=E, f=forces, args_str=params%pot_calc_args)
-	endif
-      else
-	if (params%calc_virial) then
-	  call calc(pot, ds%atoms, f=forces, virial=virial, args_str=params%pot_calc_args)
-	else
-	  call calc(pot, ds%atoms, f=forces, args_str=params%pot_calc_args)
-	endif
-      endif
+      call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
       if (params%quiet_calc) call verbosity_pop()
     end if
     call system_timer("md/calc")

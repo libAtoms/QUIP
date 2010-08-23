@@ -88,16 +88,14 @@
 
   end subroutine Potential_EVB_Print
 
-  subroutine Potential_EVB_Calc(this, at, e, local_e, f, df, virial, args_str, error)
+  subroutine Potential_EVB_Calc(this, at, args_str, error)
     type(Potential_EVB), intent(inout)          :: this
     type(Atoms),         intent(inout)          :: at
-    real(dp),            intent(out), optional  :: e
-    real(dp),            intent(out), optional  :: local_e(:)
-    real(dp),            intent(out), optional  :: f(:,:)
-    real(dp),            intent(out), optional  :: df(:,:)
-    real(dp),            intent(out), optional  :: virial(3,3)
     character(*),        intent(in),  optional  :: args_str
     integer,             intent(out), optional  :: error
+
+    real(dp) :: e, virial
+    real(dp), pointer       :: at_force_ptr(:,:)
 
     type(Dictionary)        :: params
     character(FIELD_LENGTH) :: mm_args_str
@@ -111,10 +109,11 @@
     real(dp), allocatable   :: my_f_1(:,:), my_f_2(:,:), delta_eoffdiag(:,:)
     real(dp)                :: offdiagonal_A12, offdiagonal_mu12, &
                                rab, d_rab_dx(3)
-    real(dp), pointer       :: force_ptr(:,:)
     logical                 :: no_coupling, dummy
 
     character(FIELD_LENGTH) :: psf_print
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+    character(10240) :: new_args_str
 
     INIT_ERROR(error)
 
@@ -130,6 +129,10 @@
     call param_register(params, 'offdiagonal_mu12', ''//this%offdiagonal_mu12, offdiagonal_mu12)
     call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
     call param_register(params, 'save_energies', ''//this%save_energies, save_energies)
+    call param_register(params, 'energy', '', calc_energy)
+    call param_register(params, 'force', '', calc_force)
+    call param_register(params, 'virial', '', calc_virial)
+    call param_register(params, 'local_energy', '', calc_local_energy)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_initialise args_str')) then
        RAISE_ERROR('Potential_EVB_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
@@ -151,9 +154,12 @@
 
     !CHECK ARGUMENTS
 
-    if (present(local_e) .or. present(virial) .or. present(df)) then
-         RAISE_ERROR('Potential_EVB_calc: supports only energy and forces, not virial, energy or local_e', error)
+    if (len_trim(calc_virial) > 0 .or. len_trim(calc_local_energy) > 0) then
+       RAISE_ERROR('Potential_EVB_calc: supports only energy and forces, not virial or local_energy', error)
     endif
+
+    call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+    PASS_ERROR_WITH_INFO("Potential_EVB_Calc assigning pointer for force property '"//trim(calc_force)//"'", error)
 
     !coupling parameters
     if (offdiagonal_A12 .feq. 0._dp) then
@@ -195,9 +201,11 @@
 
     !CALCULATE E,F WITH DIFFERENT TOPOLOGIES
 
-    if (present(f)) allocate(my_f_1(size(f, 1),size(f, 2)))
-    if (present(f)) allocate(my_f_2(size(f, 1),size(f, 2)))
-    if (present(f)) allocate(delta_eoffdiag(size(f, 1),size(f, 2)))
+    if (len_trim(calc_force) > 0) then
+      allocate(my_f_1(3,at%N))
+      allocate(my_f_1(3,at%N))
+      allocate(delta_eoffdiag(3,at%N))
+    endif
 
     !set breaking and forming bonds for topology1
     call remove_value(at%params, 'form_bond')
@@ -205,11 +213,11 @@
     if (.not.skip_form_bond) call set_value(at%params,'form_bond',form_bond(1:2))
     if (.not.skip_break_bond) call set_value(at%params,'break_bond',break_bond(1:2))
     !calc with topology1
-    call calc(this%pot1, at, e, local_e, f, df, virial, trim(mm_args_str)//" topology_suffix="//trim(topology_suffix1), error)
+    call calc(this%pot1, at, args_str=mm_args_str//" topology_suffix="//trim(topology_suffix1), error=error)
     PASS_ERROR(error)
 
-    if (present(e)) my_e_1 = e
-    if (present(f)) my_f_1 = f
+    if (len_trim(calc_energy) > 0) call get_param_value(at, "energy", my_e_1)
+    if (len_trim(calc_force) > 0) my_f_1 = at_force_ptr
 
     !set breaking and forming bonds for topology2
     call remove_value(at%params, 'form_bond')
@@ -217,11 +225,11 @@
     if (.not.skip_break_bond) call set_value(at%params,'form_bond',break_bond(1:2))
     if (.not.skip_form_bond) call set_value(at%params,'break_bond',form_bond(1:2))
     !calc with topology2
-    call calc(this%pot1, at, e, local_e, f, df, virial, trim(mm_args_str)//" topology_suffix="//trim(topology_suffix2), error)
+    call calc(this%pot1, at, args_str=mm_args_str//" topology_suffix="//trim(topology_suffix2), error=error)
     PASS_ERROR(error)
 
-    if (present(e)) my_e_2 = e
-    if (present(f)) my_f_2 = f
+    if (len_trim(calc_energy) > 0) call get_param_value(at, "energy", my_e_2)
+    if (len_trim(calc_force) > 0) my_f_2 = at_force_ptr
 
 
     !CALCULATE EVB ENERGY AND FORCES
@@ -230,11 +238,11 @@
     if (no_coupling) then
        !take the E, F of the resonance state with the smaller E
        if (my_e_1 < my_e_2) then
-          if (present(e)) e = my_e_1
-          if (present(f)) f = my_f_1
+	  if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_1)
+	  if (len_trim(calc_force) > 0) at_force_ptr = my_f_1
        else
-          if (present(e)) e = my_e_2
-          if (present(f)) f = my_f_2
+	  if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_2)
+	  if (len_trim(calc_force) > 0) at_force_ptr = my_f_2
        endif
     else
        !calculate coupling terms
@@ -242,72 +250,54 @@
        if (.not. skip_form_bond) rab = rab + distance_min_image(at,form_bond(1),form_bond(2))
        if (.not. skip_form_bond) rab = rab - distance_min_image(at,break_bond(1),break_bond(2))
    
-       if (present(e) .or. present(f)) then
+       if (len_trim(calc_energy) > 0 .or. len_trim(calc_force) > 0) then
           e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
        endif
 
        !energy
-       if (present(e)) then
+       if (len_trim(calc_energy) > 0) then
           e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
+	  call set_param_value(at, trim(calc_energy), e)
        endif
 
        !force
-       if (present(f)) then
+       if (len_trim(calc_force) > 0) then
           !force coupling term
-          delta_eoffdiag(1:size(f, 1),1:size(f, 2)) = 0._dp
+          delta_eoffdiag = 0._dp
           if (.not. skip_form_bond) then
              d_rab_dx = diff_min_image(at,form_bond(1),form_bond(2))/distance_min_image(at,form_bond(1),form_bond(2))
              if (rab < 0) d_rab_dx = - d_rab_dx
-             delta_eoffdiag(1:size(f, 1),form_bond(1)) = delta_eoffdiag(1:size(f, 1),form_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             delta_eoffdiag(1:size(f, 1),form_bond(2)) = delta_eoffdiag(1:size(f, 1),form_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             delta_eoffdiag(1:3,form_bond(1)) = delta_eoffdiag(1:3,form_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             delta_eoffdiag(1:3,form_bond(2)) = delta_eoffdiag(1:3,form_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
           if (.not. skip_break_bond) then
              d_rab_dx = diff_min_image(at,break_bond(1),break_bond(2))/distance_min_image(at,break_bond(1),break_bond(2))
              if (rab > 0) d_rab_dx = - d_rab_dx
-             delta_eoffdiag(1:size(f, 1),break_bond(1)) = delta_eoffdiag(1:size(f, 1),break_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             delta_eoffdiag(1:size(f, 1),break_bond(2)) = delta_eoffdiag(1:size(f, 1),break_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             delta_eoffdiag(1:3,break_bond(1)) = delta_eoffdiag(1:3,break_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             delta_eoffdiag(1:3,break_bond(2)) = delta_eoffdiag(1:3,break_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
           !force
-          f = 0.5_dp * (my_f_1(1:size(f, 1),1:size(f, 2)) + my_f_2(1:size(f, 1),1:size(f, 2))) - &
-              0.5_dp * (my_e_1 - my_e_2)*(my_f_1(1:size(f, 1),1:size(f, 2)) - my_f_2(1:size(f, 1),1:size(f, 2)) - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+          at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
+              0.5_dp * (my_e_1 - my_e_2)*(my_f_1 - my_f_2 - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
        endif
     endif
 
     !SAVE E,F IF NEEDED
 
-    if (save_energies) then
-       call set_value(at%params,'EVB1_energy',my_e_1)
-       call set_value(at%params,'EVB2_energy',my_e_2)
+    if (save_energies .and. len_trim(calc_energy) > 0) then
+       call set_param_value(at,'EVB1_'//trim(calc_energy),my_e_1)
+       call set_param_value(at,'EVB2_'//trim(calc_energy),my_e_2)
     endif
 
-    if (save_forces) then
-       !only save forces, if requested and calculated
-       if (present(f)) then
-          if (.not. has_property(at, 'EVB1_force')) &
-               call add_property(at, 'EVB1_force', 0.0_dp, n_cols=3)
-          dummy = assign_pointer(at, 'EVB1_force', force_ptr)
-          call print(size(force_ptr,1)//" "//size(force_ptr,2))
-          call print(size(my_f_1,1)//" "//size(my_f_1,2))
-          force_ptr = my_f_1
-   
-          if (.not. has_property(at, 'EVB2_force')) &
-               call add_property(at, 'EVB2_force', 0.0_dp, n_cols=3)
-          dummy = assign_pointer(at, 'EVB2_force', force_ptr)
-          force_ptr = my_f_2
-
-          if (.not. has_property(at, 'force')) &
-               call add_property(at, 'force', 0.0_dp, n_cols=3)
-          dummy = assign_pointer(at, 'force', force_ptr)
-          force_ptr = f
-       else
-          call print('WARNING! Potential_EVB_calc did not calculate EVB forces, so it cannot and will not save them.',PRINT_ALWAYS)
-       endif
+    if (save_forces .and. len_trim(calc_force) > 0) then
+      call add_property(at, 'EVB1_'//trim(calc_force), my_f_1)
+      call add_property(at, 'EVB2_'//trim(calc_force), my_f_2)
     endif
 
 
-    if (present(f)) deallocate(my_f_1)
-    if (present(f)) deallocate(my_f_2)
-    if (present(f)) deallocate(delta_eoffdiag)
+    if (allocated(my_f_1)) deallocate(my_f_1)
+    if (allocated(my_f_2)) deallocate(my_f_2)
+    if (allocated(delta_eoffdiag)) deallocate(delta_eoffdiag)
   
   end subroutine Potential_EVB_Calc
 

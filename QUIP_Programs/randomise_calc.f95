@@ -98,7 +98,7 @@ implicit none
      end if
      if(.not. dryrun) then
         call system_timer("calc")
-        call calc(pot, at, e=e, f=f, virial=v)
+        call calc(pot, at, energy=e, force=f, virial=v)
         call system_timer("calc")
      end if
      call add_property(at, 'f', f)

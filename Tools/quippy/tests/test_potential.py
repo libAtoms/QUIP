@@ -95,33 +95,33 @@ if hasattr(quippy, 'Potential'):
          self.pot.calc(self.at)
 
       def testcalc2(self):
-         self.pot.calc(self.at, f=self.f)
+         self.pot.calc(self.at, force=self.f)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
 
       def testcalc3(self):
-         self.pot.calc(self.at, local_e=self.le)
+         self.pot.calc(self.at, local_energy=self.le)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc4(self):
-         self.pot.calc(self.at, local_e=self.le, f=self.f)
+         self.pot.calc(self.at, local_energy=self.le, force=self.f)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc5(self):
-         self.pot.calc(self.at, e=self.e)
+         self.pot.calc(self.at, energy=self.e)
          self.assertAlmostEqual(self.e, self.e_ref)
 
       def testcalc6(self):
-         self.pot.calc(self.at, e=self.e, f=self.f)
+         self.pot.calc(self.at, energy=self.e, force=self.f)
          self.assertAlmostEqual(e, self.e_ref)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
 
       def testcalc7(self):
-         self.pot.calc(self.at, e=self.e, local_e=self.le)
+         self.pot.calc(self.at, energy=self.e, local_energy=self.le)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc8(self):
-         self.pot.calc(self.at, e=self.e, local_e=self.le, f=self.f)
+         self.pot.calc(self.at, energy=self.e, local_energy=self.le, force=self.f)
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
@@ -130,93 +130,102 @@ if hasattr(quippy, 'Potential'):
          self.assertArrayAlmostEqual(self.v, self.v_ref)
 
       def testcalc10(self):
-         self.pot.calc(self.at, f=self.f, virial=self.v)
+         self.pot.calc(self.at, force=self.f, virial=self.v)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
 
       def testcalc11(self):
-         self.pot.calc(self.at, local_e=self.le, virial=self.v)
+         self.pot.calc(self.at, local_energy=self.le, virial=self.v)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc12(self):
-         self.pot.calc(self.at, local_e=self.le, f=self.f, virial=self.v)
+         self.pot.calc(self.at, local_energy=self.le, force=self.f, virial=self.v)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc13(self):
-         self.pot.calc(self.at, e=self.e, virial=self.v)
+         self.pot.calc(self.at, energy=self.e, virial=self.v)
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
 
       def testcalc14(self):
-         self.pot.calc(self.at, e=self.e, f=self.f, virial=self.v)
+         self.pot.calc(self.at, energy=self.e, force=self.f, virial=self.v)
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
 
       def testcalc15(self):
-         self.pot.calc(self.at, e=self.e, local_e=self.le, virial=self.v)
+         self.pot.calc(self.at, energy=self.e, local_energy=self.le, virial=self.v)
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
 
       def testcalc16(self):
-         self.pot.calc(self.at, e=self.e, local_e=self.le, f=self.f, virial=self.v)
+         self.pot.calc(self.at, energy=self.e, local_energy=self.le, force=self.f, virial=self.v)
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertArrayAlmostEqual(self.v, self.v_ref)
          self.assertArrayAlmostEqual(self.le, self.le_ref)
          self.assertArrayAlmostEqual(self.f, self.f_ref)
 
       def testcalc17(self):
-         self.pot.calc(self.at, calc_force=True)
+         self.pot.calc(self.at, args_str="force")
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
       def testcalc18(self):
-         self.pot.calc(self.at, calc_local_e=True)
-         self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
+         self.pot.calc(self.at, args_str="local_energy")
+         self.assertArrayAlmostEqual(self.at.local_energy, self.le_ref)
 
       def testcalc19(self):
-         self.pot.calc(self.at, calc_local_e=True, calc_force=True)
-         self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
+         self.pot.calc(self.at, args_str="local_energy force")
+         self.assertArrayAlmostEqual(self.at.local_energy, self.le_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
       def testcalc20(self):
-         self.pot.calc(self.at, calc_energy=True)
+         self.pot.calc(self.at, args_str="energy")
          self.assertAlmostEqual(self.at.energy, self.e_ref)
 
       def testcalc21(self):
-         self.pot.calc(self.at, calc_energy=True, calc_force=True)
+         self.pot.calc(self.at, args_str={'energy':True, 'force':True})
          self.assertAlmostEqual(self.at.energy, self.e_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
       def testcalc22(self):
-         self.pot.calc(self.at, calc_energy=True, calc_local_e=True)
+         self.pot.calc(self.at, args_str={'energy':True, 'local_energy':True})
          self.assertAlmostEqual(self.at.energy, self.e_ref)
-         self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
+         self.assertArrayAlmostEqual(self.at.local_energy, self.le_ref)
 
       def testcalc23(self):
-         self.pot.calc(self.at, calc_energy=True, calc_local_e=True, calc_force=True)
+         self.pot.calc(self.at, energy=True, local_energy=True, force=True)
          self.assertAlmostEqual(self.at.energy, self.e_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+         self.assertArrayAlmostEqual(self.at.local_energy, self.le_ref)
 
       def testcalc24(self):
-         self.pot.calc(self.at, calc_energy=True, calc_local_e=True, calc_force=True, calc_virial=True)
+         self.pot.calc(self.at, args_str={'energy':True, 'local_energy':True, 'force':True, 'virial':True})
+         self.assertAlmostEqual(self.at.energy, self.e_ref)
+         self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+         self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
+
+      def testcalc25(self):
+         self.pot.calc(self.at, args_str="energy local_energy force virial")
+         self.assertAlmostEqual(self.at.energy, self.e_ref)
+         self.assertArrayAlmostEqual(self.at.force, self.f_ref)
+         self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
+
+      def testcalc26(self):
+         self.pot.calc(self.at, energy=True, local_energy=True, force=True, virial=True)
          self.assertAlmostEqual(self.at.energy, self.e_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
          self.assertArrayAlmostEqual(self.at.virial, self.v_ref)
 
       def testcalc_df(self):
-         self.pot.calc(self.at, df=self.df)
-         self.assertArrayAlmostEqual(self.df, self.f_ref)
-
-      def testcalc_df2(self):
-         self.pot.calc(self.at, calc_df=True)
-         self.assertArrayAlmostEqual(self.at.df, self.f_ref)
+         self.pot.calc(self.at, args_str="force fd_force")
+         self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
       def testcalc_force_both(self):
-         self.pot.calc(self.at, f=self.f, calc_force=True)
+         self.pot.calc(self.at, force=self.f, args_str="force")
          self.assertArrayAlmostEqual(self.f, self.f_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
@@ -225,20 +234,17 @@ if hasattr(quippy, 'Potential'):
       
       #def testcalc_force_non_contigous(self):
       #   self.at.add_property('force', 0.0, n_cols=3)
-      #   self.assertRaises(ValueError, self.pot.calc, self.at, f=self.at.force)
+      #   self.assertRaises(ValueError, self.pot.calc, self.at, force=self.at.force)
 
       def testcalc_all(self):
-         self.pot.calc(self.at, f=self.f, df=self.df, e=self.e, local_e=self.le, virial=self.v,
-                       calc_force=True, calc_energy=True, calc_local_e=True, calc_df=True, calc_virial=True)
+         self.pot.calc(self.at, force=self.f, energy=self.e, local_energy=self.le, virial=self.v,
+                       args_str="force energy local_energy virial")
 
          self.assertArrayAlmostEqual(self.f, self.f_ref)
          self.assertArrayAlmostEqual(self.at.force, self.f_ref)
 
-         self.assertArrayAlmostEqual(self.df, self.f_ref)
-         self.assertArrayAlmostEqual(self.at.df, self.f_ref)
-
          self.assertArrayAlmostEqual(self.le, self.le_ref)
-         self.assertArrayAlmostEqual(self.at.local_e, self.le_ref)
+         self.assertArrayAlmostEqual(self.at.local_energy, self.le_ref)
 
          self.assertAlmostEqual(self.e, self.e_ref)
          self.assertAlmostEqual(self.at.energy, self.e_ref)
@@ -332,18 +338,18 @@ if hasattr(quippy, 'Potential'):
             verbosity_pop()
 
          def test_energy(self):
-            self.pot.calc(self.at, SCF_LOCAL_U=True, calc_energy=True)
+            self.pot.calc(self.at, args_str="energy SCF_LOCAL_U=T")
             self.assertAlmostEqual(self.at.energy, 9.3810611711946219)
 
          def test_virial(self):
-            self.pot.calc(self.at, SCF_LOCAL_U=True, calc_virial=True)
+            self.pot.calc(self.at, SCF_LOCAL_U=True, args_str="virial")
             self.assertArrayAlmostEqual(self.at.virial,
                                         farray([[ 0.5865603956735974E+00, -0.1377850228522192E+00, -0.3055872087626610E+00],
                                                 [-0.1377850228522220E+00,  0.2216201633362491E+00,  0.1910908299371670E+01],
                                                 [-0.3055872087626552E+00,  0.1910908299371667E+01,  0.1366230430253259E+01]]))
 
          def test_force(self):
-            self.pot.calc(self.at, SCF_LOCAL_U=True, calc_force=True)
+            self.pot.calc(self.at, SCF_LOCAL_U=True, args_str="force")
             self.assertArrayAlmostEqual(self.at.force,
                                         farray([[-1.77614476,    1.89628018,    0.55837291],
                                                 [0.12109842,   -1.82740015,    0.52697574],
@@ -389,22 +395,22 @@ if hasattr(quippy, 'Potential'):
          self.a.calc_connect()
 
       def test_energy(self):
-         self.p.calc(self.a, calc_energy=True)
+         self.p.calc(self.a, args_str="energy")
          self.assertAlmostEqual(self.a.energy, 1.0)
 
       def test_force(self):
-         self.p.calc(self.a, calc_force=True)
+         self.p.calc(self.a, args_str="force")
          self.assertArrayAlmostEqual(self.a.force, 1.0*numpy.ones((3,self.a.n)))
 
       def test_virial(self):
-         self.p.calc(self.a, calc_virial=True)
+         self.p.calc(self.a, args_str="virial")
          self.assertArrayAlmostEqual(self.a.virial, 1.0*numpy.ones((3,3)))
 
       def test_all(self):
          e = farray(0.0)
          f = fzeros((3,self.a.n))
          v = fzeros((3,3))
-         self.p.calc(self.a, e=e, f=f, virial=v)
+         self.p.calc(self.a, energy=e, force=f, virial=v)
          self.assertAlmostEqual(e, 1.0)
          self.assertArrayAlmostEqual(v, 1.0*numpy.ones((3,3)))
          self.assertArrayAlmostEqual(f, 1.0*numpy.ones((3,self.a.n)))
@@ -412,16 +418,16 @@ if hasattr(quippy, 'Potential'):
       def test_new_pot(self):
          p2 = Potential('CallbackPot')
          p2.set_callback(TestPotential_Callback.callback_2)
-         p2.calc(self.a, calc_energy=True)
+         p2.calc(self.a, energy=True)
          self.assertEqual(self.a.energy, 2.0)
 
-         self.p.calc(self.a, calc_energy=True)
+         self.p.calc(self.a, energy=True)
          self.assertEqual(self.a.energy, 1.0)
 
       def test_bad_label(self):
          p3 = Potential('CallbackPot label=BAD')
          verbosity_push(PRINT_SILENT) # suppress warning about energy not being computed
-         self.assertRaises(ValueError, p3.calc, self.a, calc_energy=True)
+         self.assertRaises(ValueError, p3.calc, self.a, args_str="energy")
          verbosity_pop()
          
 
@@ -505,14 +511,13 @@ if hasattr(quippy, 'Potential'):
          v2 = fzeros((3,3))
 
          self.at.calc_connect()
-         self.pot.calc(self.at, calc_energy=True, calc_force=True, calc_df=True, virial=v1)
+         self.pot.calc(self.at, virial=v1, args_str="energy force")
 
          cp = self.at.copy()
-         self.pot.calc(self.at, calc_energy=True, calc_force=True, calc_df=True, virial=v2)
+         self.pot.calc(self.at, virial=v2, args_str="energy force")
 
          self.assertAlmostEqual(self.at.energy, cp.energy)
          self.assertArrayAlmostEqual(self.at.force, cp.force)
-         self.assertArrayAlmostEqual(self.at.df, cp.df)
          self.assertArrayAlmostEqual(v1, v2)
 
       def testminim(self):

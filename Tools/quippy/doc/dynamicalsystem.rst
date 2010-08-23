@@ -120,7 +120,7 @@
          ds.atoms.calc_connect() 
 	 for n in range(n_steps):
 	    ds.advance_verlet1(dt)
-	    pot.calc(ds.atoms, calc_force=True, calc_energy=True)
+	    pot.calc(ds.atoms, force=True, energy=True)
 	    ds.advance_verlet2(dt, ds.atoms.force)
 	    ds.print_status(epot=ds.atoms.energy)
 	    if n % connect_interval == 0:
@@ -137,7 +137,7 @@
       :meth:`advance_verlet1`. This allows a simple MD loop::
 
 	  for n in range(n_steps):
-	      pot.calc(ds.atoms, calc_force=True, calc_energy=True)
+	      pot.calc(ds.atoms, force=True, energy=True)
 	      ds.advance_verlet(dt, ds.atoms.force)
 	      ds.print_status(epot=ds.atoms.energy)
 	      if n % connect_interval == 0:

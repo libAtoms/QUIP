@@ -81,7 +81,7 @@ contains
 
     if (current_verbosity() > PRINT_VERBOSE) then
        call verbosity_push_decrement(PRINT_NERD)
-       call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
+       call calc(this, at_bulk, energy=e0, virial=v0, args_str=args_str)
        call verbosity_pop()
        call print("initial config")
        call write(at_bulk, 'stdout')
@@ -98,7 +98,7 @@ contains
 
        if (current_verbosity() >= PRINT_VERBOSE) then
           call verbosity_push_decrement(PRINT_VERBOSE)
-          call calc(this, at_bulk, e=e0, virial=v0, args_str=args_str)
+          call calc(this, at_bulk, energy=e0, virial=v0, args_str=args_str)
           call verbosity_pop()
           call print("relaxed config")
           call write(at_bulk, 'stdout')
@@ -126,7 +126,7 @@ contains
           at_t = at_bulk
           call set_lattice(at_t, Fp .mult. at_t%lattice, scale_positions=.true.)
           call calc_connect(at_t)
-          call calc(this, at_t, e=e0, virial=V0p, args_str=args_str)
+          call calc(this, at_t, energy=e0, virial=V0p, args_str=args_str)
           call verbosity_push_decrement(PRINT_VERBOSE)
           call print("plus perturbed config")
           call write(at_t, 'stdout')
@@ -142,7 +142,7 @@ contains
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(this, at_t, e=e0, virial=Vp, args_str=args_str)
+             call calc(this, at_t, energy=e0, virial=Vp, args_str=args_str)
              call verbosity_push_decrement(PRINT_VERBOSE)
              call print("plus perturbed relaxed config")
              call write(at_t, 'stdout')
@@ -155,7 +155,7 @@ contains
           at_t = at_bulk
           call set_lattice(at_t, Fm .mult. at_t%lattice, scale_positions=.true.)
           call calc_connect(at_t)
-          call calc(this, at_t, e=e0, virial=V0m, args_str=args_str)
+          call calc(this, at_t, energy=e0, virial=V0m, args_str=args_str)
           call verbosity_push_decrement(PRINT_VERBOSE)
           call print("minus perturbed config")
           call write(at_t, 'stdout')
@@ -171,7 +171,7 @@ contains
              call verbosity_pop()
 
              call calc_connect(at_t)
-             call calc(this, at_t, e=e0, virial=Vm, args_str=args_str)
+             call calc(this, at_t, energy=e0, virial=Vm, args_str=args_str)
              call verbosity_push_decrement(PRINT_VERBOSE)
              call print("minus perturbed relaxed config")
              call write(at_t, 'stdout')
@@ -303,7 +303,7 @@ contains
     cube = Graphene_Cubic(a0)
 
     call Supercell(at, cube, nx, ny, 1)
-    call Atoms_Set_Cutoff(at, cutoff(pot))
+    call Set_Cutoff(at, cutoff(pot))
     call randomise(at%pos, 0.01_dp)
     call calc_connect(at)
 
@@ -318,12 +318,12 @@ contains
     ! Set a to average of x and y lattice constants
     a = 0.5_dp*(at%lattice(1,1)/(3.0_dp*nx) + at%lattice(2,2)/(sqrt(3.0_dp)*ny))
 
-    call calc(pot, at, e=graphene_e_per_atom, args_str=args_str)
+    call calc(pot, at, energy=graphene_e_per_atom, args_str=args_str)
     graphene_e_per_atom = graphene_e_per_atom/at%N
 
     cube = Graphene_Cubic(a)
     call Supercell(at2, cube, nx, ny, 1)
-    call Atoms_Set_Cutoff(at2, cutoff(pot))
+    call Set_Cutoff(at2, cutoff(pot))
     call calc_connect(at2)
 
     ! Apply small strain in x direction
@@ -365,7 +365,7 @@ contains
              i = minim(pot, tube, 'cg', 1e-5_dp, 1000, 'FAST_LINMIN', do_print=.false., &
                   do_pos=.true., do_lat=.false.)
              
-             call calc(pot, tube, e=energy, args_str=args_str)
+             call calc(pot, tube, energy=energy, args_str=args_str)
 
              tube_r(tube_i) = tube_radius(tube)
              tube_energy(tube_i) = energy/tube%N - graphene_e_per_atom
@@ -427,7 +427,7 @@ contains
        myatoms%pos = at%pos
        myatoms%pos(j,myi) = myatoms%pos(j,myi) + mydelta
        call calc_connect(myatoms)
-       call calc(pot, myatoms, f=f, args_str=args_str)
+       call calc(pot, myatoms, force=f, args_str=args_str)
        w_e(j) = sqrt(-f(j,myi)/(mass*mydelta))*ONESECOND
     end do
 

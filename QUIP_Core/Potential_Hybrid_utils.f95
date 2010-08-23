@@ -64,21 +64,21 @@
 	do_print = .false., do_lat = .true., args_str='solver=DIAG SCF_NONE')
       call verbosity_pop()
     endif
-    call calc(region1_pot, bulk_region1, e=e_bulk, args_str='solver=DIAG SCF_NONE')
+    call calc(region1_pot, bulk_region1, energy=e_bulk, args_str='solver=DIAG SCF_NONE')
     call print("region1 Potential energy " // e_bulk)
     call print("region1 Potential lattice")
     call print(bulk_region1%lattice)
 
 #ifdef HAVE_TB
-    if (do_tb_defaults .and. associated(region1_pot%pot%tb)) then
-      region1_pot%pot%tb%tbsys%tbmodel%default_fermi_E = region1_pot%pot%tb%fermi_E
-      region1_pot%pot%tb%tbsys%tbmodel%has_default_fermi_E = .true.
-      region1_pot%pot%tb%tbsys%tbmodel%default_band_width = (region1_pot%pot%tb%fermi_E - minval(TB_evals(region1_pot%pot%tb)))*1.2_dp
-      region1_pot%pot%tb%tbsys%tbmodel%has_default_band_width = .true.
-      region1_pot%pot%tb%tbsys%tbmodel%default_fermi_T = 0.2_dp
-      region1_pot%pot%tb%tbsys%tbmodel%has_default_fermi_T = .true.
+    if (do_tb_defaults .and. associated(region1_pot%simple%tb)) then
+      region1_pot%simple%tb%tbsys%tbmodel%default_fermi_E = region1_pot%simple%tb%fermi_E
+      region1_pot%simple%tb%tbsys%tbmodel%has_default_fermi_E = .true.
+      region1_pot%simple%tb%tbsys%tbmodel%default_band_width = (region1_pot%simple%tb%fermi_E - minval(TB_evals(region1_pot%simple%tb)))*1.2_dp
+      region1_pot%simple%tb%tbsys%tbmodel%has_default_band_width = .true.
+      region1_pot%simple%tb%tbsys%tbmodel%default_fermi_T = 0.2_dp
+      region1_pot%simple%tb%tbsys%tbmodel%has_default_fermi_T = .true.
 
-      region1_pot%pot%tb%tbsys%scf%conv_tol = 1e-8_dp
+      region1_pot%simple%tb%tbsys%scf%conv_tol = 1e-8_dp
     endif
 #endif
 
@@ -94,21 +94,21 @@
 	do_print = .false., do_lat = .true.)
       call verbosity_pop()
     end if
-    call calc(region2_pot, bulk_region2, e=e_bulk)
+    call calc(region2_pot, bulk_region2, energy=e_bulk)
     call print("region2 Potential Bulk energy = " // e_bulk)
     call print("region2 Potential lattice")
     call print(bulk_region2%lattice)
 
 #ifdef HAVE_TB
-    if (do_tb_defaults .and. associated(region2_pot%pot%tb)) then
-      region2_pot%pot%tb%tbsys%tbmodel%default_fermi_E = region2_pot%pot%tb%fermi_E
-      region2_pot%pot%tb%tbsys%tbmodel%has_default_fermi_E = .true.
-      region2_pot%pot%tb%tbsys%tbmodel%default_band_width = (region2_pot%pot%tb%fermi_E - minval(TB_evals(region2_pot%pot%tb)))*1.2_dp
-      region2_pot%pot%tb%tbsys%tbmodel%has_default_band_width = .true.
-      region2_pot%pot%tb%tbsys%tbmodel%default_fermi_T = 0.2_dp
-      region2_pot%pot%tb%tbsys%tbmodel%has_default_fermi_T = .true.
+    if (do_tb_defaults .and. associated(region2_pot%simple%tb)) then
+      region2_pot%simple%tb%tbsys%tbmodel%default_fermi_E = region2_pot%simple%tb%fermi_E
+      region2_pot%simple%tb%tbsys%tbmodel%has_default_fermi_E = .true.
+      region2_pot%simple%tb%tbsys%tbmodel%default_band_width = (region2_pot%simple%tb%fermi_E - minval(TB_evals(region2_pot%simple%tb)))*1.2_dp
+      region2_pot%simple%tb%tbsys%tbmodel%has_default_band_width = .true.
+      region2_pot%simple%tb%tbsys%tbmodel%default_fermi_T = 0.2_dp
+      region2_pot%simple%tb%tbsys%tbmodel%has_default_fermi_T = .true.
 
-      region2_pot%pot%tb%tbsys%scf%conv_tol = 1e-8_dp
+      region2_pot%simple%tb%tbsys%scf%conv_tol = 1e-8_dp
     endif
 #endif
     if (do_rescale_r) then

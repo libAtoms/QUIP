@@ -107,7 +107,7 @@ contains
 
     if( my_use_ewald_cutoff .and. (ewald_cutoff > at_in%cutoff) ) then
         my_at = at_in
-        call atoms_set_cutoff(my_at,ewald_cutoff)
+        call set_cutoff(my_at,ewald_cutoff)
         call calc_connect(my_at)
         at => my_at
     else
@@ -315,7 +315,7 @@ contains
 
     if( present(cutoff) .and. (my_cutoff > at_in%cutoff) ) then
         my_at = at_in
-        call atoms_set_cutoff(my_at,cutoff)
+        call set_cutoff(my_at,cutoff)
         call calc_connect(my_at)
         at => my_at
     else

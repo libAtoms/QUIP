@@ -83,7 +83,7 @@ program bulktest
   call diamond(dia, 5.44_dp)
   call supercell(at, dia, 5,5,5)
   at%Z = 14
-  call atoms_set_cutoff(at, 4.0_dp)
+  call set_cutoff(at, 4.0_dp)
   call randomise(at%pos, 0.01_dp)
   call calc_connect(at)
 

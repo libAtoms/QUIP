@@ -43,7 +43,7 @@ if hasattr(quippy, 'Potential'):
 
    if got_asap2:
       class PotTestMixin:
-         def compare_p1_p2(self, at, debug=True, df=False):
+         def compare_p1_p2(self, at, debug=True):
             e1 = farray(0.0)
             e2 = farray(0.0)
             f1 = fzeros((3, at.n))
@@ -63,11 +63,11 @@ if hasattr(quippy, 'Potential'):
             at2.calc_connect()
 
             if df:
-               self.p1.calc(at1, e=e1, f=f1, virial=v1, df=df1, calc_dipoles=True)
-               self.p2.calc(at2, e=e2, f=f2, virial=v2, df=df2, local_e=local_e2)
+               self.p1.calc(at1, energy=e1, force=f1, virial=v1, calc_dipoles=True)
+               self.p2.calc(at2, energy=e2, force=f2, virial=v2, local_energy=local_e2)
             else:
-               self.p1.calc(at1, e=e1, f=f1, virial=v1, calc_dipoles=True)
-               self.p2.calc(at2, e=e2, f=f2, virial=v2, local_e=local_e2)
+               self.p1.calc(at1, energy=e1, force=f1, virial=v1, calc_dipoles=True)
+               self.p2.calc(at2, energy=e2, force=f2, virial=v2, local_energy=local_e2)
 
 
             if debug:
@@ -103,7 +103,7 @@ if hasattr(quippy, 'Potential'):
             df = fzeros((3, at.n))
             local_e = fzeros((at.n,))
             at.calc_connect()
-            self.p2.calc(at, e=e, f=f, virial=v, local_e=local_e)
+            self.p2.calc(at, energy=e, force=f, virial=v, local_energy=local_e)
 
             e_ref, f_ref, v_ref, local_e_ref, dip_ref = ref
 
@@ -121,7 +121,7 @@ if hasattr(quippy, 'Potential'):
             dimer.set_atoms([14, 8])
             dimer.set_cutoff(self.cutoff)
             if do_compare_p1_p2:
-               self.compare_p1_p2(dimer, debug=self.debug, df=False)
+               self.compare_p1_p2(dimer, debug=self.debug)
             else:
                self.compare_ref(dimer, self.dimer_ref)
 
@@ -133,7 +133,7 @@ if hasattr(quippy, 'Potential'):
             trimer.set_atoms([8, 14, 8])
             trimer.set_cutoff(self.cutoff)
             if do_compare_p1_p2:
-               self.compare_p1_p2(trimer, debug=self.debug, df=False)
+               self.compare_p1_p2(trimer, debug=self.debug)
             else:
                self.compare_ref(trimer, self.trimer_ref)
 
@@ -9372,7 +9372,6 @@ if hasattr(quippy, 'Potential'):
                for i, (at1, at2) in enumerate(itertools.izip(traj1, traj2)):
                   self.assertArrayAlmostEqual(at1.force, at2.force)
                   self.assertArrayAlmostEqual(at1.pos, at2.pos)
-
 
 
 if __name__ == '__main__':

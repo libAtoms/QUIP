@@ -302,7 +302,7 @@ if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
             # Minimise internal degrees of freedom
             self.pot.minim(at, 'cg', 1e-6, 100, do_pos=True, do_lat=False)
          
-         self.pot.calc(at, calc_virial=True)
+         self.pot.calc(at, virial=True)
          virial_stress = stress_vector(-at.virial*GPA/at.cell_volume())
 
          elastic_fields(at, a=self.a, cij=C)

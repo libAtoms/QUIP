@@ -83,7 +83,7 @@ module Potential_module
      character(len=FIELD_LENGTH) :: init_args_pot1, init_args_pot2, xml_label, xml_init_args
 
      logical :: is_simple = .false.
-     type(Potential_simple) :: pot
+     type(Potential_simple) :: simple
 
      type(Potential), pointer :: l_mpot1 => null() ! local copies of potentials, if they are created by potential_initialise from an args string
      type(Potential), pointer :: l_mpot2 => null() ! local copies of potentials, if they are created by potential_initialise from an args string
@@ -284,10 +284,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   call param_register(params, 'EVB', 'false', this%is_evb)
 #ifdef HAVE_LOCAL_E_MIX
   call param_register(params, 'Local_E_Mix', 'false', this%is_local_e_mix)
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
   call param_register(params, 'ONIOM', 'false', this%is_oniom)
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
 
   if(.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='Potential_Initialise args_str')) then
     RAISE_ERROR("Potential_initialise failed to parse args_str='"//trim(my_args_str)//"'", error)
@@ -336,10 +336,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   if (count( (/this%is_simple, this%is_sum, this%is_forcemixing, this%is_evb &
 #ifdef HAVE_LOCAL_E_MIX
           , this%is_local_e_mix &
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
           , this%is_oniom &
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
           /) ) /= 1) then
      RAISE_ERROR("Potential_initialise found too few or two many Potential types args_str='"//trim(my_args_str)//"'", error)
   end if
@@ -347,7 +347,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   if (this%is_simple) then
     if (present(bulk_scale)) call print("Potential_initialise Simple ignoring bulk_scale passed in", PRINT_ALWAYS)
 
-    call initialise(this%pot, my_args_str, param_str, mpi_obj, error=error)
+    call initialise(this%simple, my_args_str, param_str, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing pot", error)
   else if (this%is_sum) then
     if (present(bulk_scale)) call print("Potential_initialise Sum ignoring bulk_scale passed in", PRINT_ALWAYS)
@@ -392,7 +392,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     allocate(this%local_e_mix)
     call initialise(this%local_e_mix, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing local_e_mix", error)
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
   else if (this%is_oniom) then
     if (.not. associated(u_pot2)) then
@@ -402,7 +402,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     allocate(this%oniom)
     call initialise(this%oniom, my_args_str, u_pot1, u_pot2, bulk_scale, mpi_obj, error=error)
     PASS_ERROR_WITH_INFO("Initializing oniom", error)
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
   end if
 
   end subroutine potential_initialise
@@ -414,7 +414,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   INIT_ERROR(error)
 
     if (this%is_simple) then
-       call finalise(this%pot)
+       call finalise(this%simple)
     else if (this%is_sum) then
        call finalise(this%sum)
        deallocate(this%sum)
@@ -428,12 +428,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     else if (this%is_local_e_mix) then
        call finalise(this%local_e_mix)
        deallocate(this%local_e_mix)
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
        call finalise(this%oniom)
        deallocate(this%oniom)
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
     end if
 
     if (associated(this%l_mpot1)) call finalise(this%l_mpot1)
@@ -455,61 +455,117 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   end subroutine potential_finalise
 
 
-  subroutine potential_calc(this, at, e, local_e, f, df, virial, args_str, error)
+  subroutine potential_calc(this, at, energy, force, virial, local_energy, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at
-    real(dp), intent(out), optional :: e
-    real(dp), intent(out), optional :: local_e(:)
-    real(dp), intent(out), optional :: f(:,:)
-    real(dp), intent(out), optional :: df(:,:)
+    real(dp), intent(out), optional :: energy
+    real(dp), intent(out), optional :: force(:,:)
     real(dp), intent(out), optional :: virial(3,3)
+    real(dp), intent(out), optional :: local_energy(:)
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
 
-  INIT_ERROR(error)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
+    type(Dictionary) :: params
+    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, extra_args_str
+
+    INIT_ERROR(error)
+
+    call initialise(params)
+    call param_register(params, "energy", "", calc_energy)
+    call param_register(params, "virial", "", calc_virial)
+    call param_register(params, "force", "", calc_force)
+    call param_register(params, "local_energy", "", calc_local_energy)
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Calc args_str')) then
+       RAISE_ERROR('Potential_Calc failed to parse args_str="'//trim(args_str)//'"', error)
+    endif
+    call finalise(params)
+
+    extra_args_str = ""
+    if (present(energy) .and. len_trim(calc_energy) == 0) then
+       calc_energy = "energy"
+       extra_args_str = trim(extra_args_str) // " energy"
+    endif
+    if (present(force)) then
+       if (len_trim(calc_force) == 0) then
+	  extra_args_str = trim(extra_args_str) // " force"
+	  call add_property_from_pointer(at, "force", force)
+       else
+	  call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
+       endif
+    else if (len_trim(calc_force) > 0) then
+       call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
+    endif
+    if (present(virial) .and. len_trim(calc_virial) == 0) then
+       calc_virial = "virial"
+       extra_args_str = trim(extra_args_str) // " virial"
+    endif
+    if (present(local_energy)) then
+       if (len_trim(calc_local_energy) == 0) then
+	  extra_args_str = trim(extra_args_str) // " local_energy"
+	  call add_property_from_pointer(at, "local_energy", local_energy)
+       else
+	  call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
+       endif
+    else if (len_trim(calc_local_energy) > 0) then
+       call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
+    endif
 
     if (this%is_simple) then
-       call Calc(this%pot, at, e, local_e, f, df, virial, args_str, error=error)
+       call Calc(this%simple, at, trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_sum) then
-       call Calc(this%sum, at, e, local_e, f, df, virial, args_str, error=error)
+       call Calc(this%sum, at, trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_forcemixing) then
-       call Calc(this%forcemixing, at, e, local_e, f, virial, args_str, error=error)
+       call Calc(this%forcemixing, at, trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
     else if (this%is_evb) then
-       call Calc(this%evb, at, e, local_e, f, df, virial, args_str, error=error)
+       call Calc(this%evb, at, trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
-      call Calc(this%local_e_mix, at, e, local_e, f, virial, args_str, error=error)
+      call Calc(this%local_e_mix, at, trim(args_str)//" "//trim(extra_args_str), error=error)
       PASS_ERROR(error)
-#endif HAVE_local_e_mix
+#endif /* HAVE_local_e_mix */
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
-      call Calc(this%oniom, at, e, local_e, f, virial, args_str, error=error)
+      call Calc(this%oniom, at, trim(args_str)//" "//trim(extra_args_str), error=error)
       PASS_ERROR(error)
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
     else
       RAISE_ERROR('Potential_Calc: no potential type is set',error)
     endif
 
+    if (present(energy)) call get_param_value(at, trim(calc_energy), energy)
+    if (present(force)) then
+       if (len_trim(calc_force) == 0) then
+	  call remove_property(at, "force")
+       else
+	  force = at_force_ptr
+       endif
+    endif
+    if (present(virial)) call get_param_value(at, trim(calc_virial), virial)
+    if (present(local_energy)) then
+       if (len_trim(calc_local_energy) == 0) then
+	  call remove_property(at, "local_energy")
+       else
+	  local_energy = at_local_energy_ptr
+       endif
+    endif
+
   end subroutine potential_calc
 
-  subroutine Potential_setup_parallel(this, at, e, local_e, f, virial, args_str, error)
+  subroutine Potential_setup_parallel(this, at, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
-    real(dp), intent(out), optional :: e                   !% Total energy
-    real(dp), intent(out), optional :: local_e(:)          !% Energy per atom    
-    real(dp), intent(out), optional :: f(:,:)              !% Forces, dimensioned \texttt{(3,at%N)}
-    real(dp), intent(out), optional :: virial(3,3)         !% Virial
     character(len=*), intent(in), optional :: args_str
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
 
     if(this%is_simple) then
-       call setup_parallel(this%pot, at, e, local_e, f, virial)
+       call setup_parallel(this%simple, at, args_str)
     endif
   end subroutine Potential_setup_parallel
 
@@ -522,7 +578,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     if (this%is_simple) then
        call Print('Potential containing potential')
-       call Print(this%pot, file=file)
+       call Print(this%simple, file=file)
     else if (this%is_sum) then
        call Print(this%sum, file=file)
     else if (this%is_forcemixing) then
@@ -532,11 +588,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
        call Print(this%local_e_mix, file=file)
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
        call Print(this%oniom, file=file)
-#endif HAVE_oniom
+#endif /* HAVE_oniom */
     else
        RAISE_ERROR('Potential_Print: no potential type is set', error)
     end if
@@ -551,7 +607,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   INIT_ERROR(error)
 
     if (this%is_simple) then
-       potential_cutoff = cutoff(this%pot)
+       potential_cutoff = cutoff(this%simple)
     else if (this%is_sum) then
        potential_cutoff = cutoff(this%sum)
     else if (this%is_forcemixing) then
@@ -561,11 +617,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_LOCAL_E_MIX
     else if (this%is_local_e_mix) then
        potential_cutoff = cutoff(this%local_e_mix)
-#endif HAVE_local_e_mix
+#endif /* HAVE_local_e_mix */
 #ifdef HAVE_ONIOM
     else if (this%is_oniom) then
        potential_cutoff = cutoff(this%oniom)
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
     else
        RAISE_ERROR('Potential_Cutoff: no potential type if set', error)
     end if
@@ -686,11 +742,11 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 #ifdef HAVE_LOCAL_E_MIX
           if (this%is_local_e_mix) &
                this%local_e_mix%minim_cinoutput_movie => print_cinoutput
-#endif HAVE_LOCAL_E_MIX
+#endif /* HAVE_LOCAL_E_MIX */
 #ifdef HAVE_ONIOM
           if (this%is_oniom) &
                this%oniom%minim_cinoutput_movie => print_cinoutput
-#endif HAVE_ONIOM
+#endif /* HAVE_ONIOM */
        end if
     else
       nullify(am%minim_cinoutput_movie)
@@ -1027,7 +1083,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call print("energy_func using am%minim_at", PRINT_NERD)
     if (current_verbosity() >= PRINT_NERD) call write(am%minim_at, 'stdout')
 
-    call calc(am%minim_pot, am%minim_at, e = energy_func, args_str = am%minim_args_str)
+    call calc(am%minim_pot, am%minim_at, energy = energy_func, args_str = am%minim_args_str)
     call print ("energy_func got energy " // energy_func, PRINT_NERD)
 
     energy_func = energy_func + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
@@ -1100,9 +1156,9 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     f = 0.0_dp
     virial = 0.0_dp
     if (am%minim_do_pos .and. am%minim_do_lat) then
-      call calc(am%minim_pot, am%minim_at, f = f, virial = virial, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, force = f, virial = virial, args_str = am%minim_args_str)
     else if (am%minim_do_pos) then
-      call calc(am%minim_pot, am%minim_at, f = f, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, force = f, args_str = am%minim_args_str)
     else
       call calc(am%minim_pot, am%minim_at, virial = virial, args_str = am%minim_args_str)
     endif
@@ -1294,11 +1350,11 @@ max_atom_rij_change = 1.038_dp
     f = 0.0_dp
     virial = 0.0_dp
     if (am%minim_do_pos .and. am%minim_do_lat) then
-      call calc(am%minim_pot, am%minim_at, e = val, f = f, virial = virial, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, energy = val, force = f, virial = virial, args_str = am%minim_args_str)
     else if (am%minim_do_pos) then
-      call calc(am%minim_pot, am%minim_at, e = val, f = f, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, energy = val, force = f, args_str = am%minim_args_str)
     else
-      call calc(am%minim_pot, am%minim_at, e = val, virial = virial, args_str = am%minim_args_str)
+      call calc(am%minim_pot, am%minim_at, energy = val, virial = virial, args_str = am%minim_args_str)
     endif
 
     call print ("both_func got f", PRINT_NERD)
@@ -1534,7 +1590,7 @@ max_atom_rij_change = 1.038_dp
     end interface
     
     if (this%is_simple) then
-       call set_callback(this%pot, callback)
+       call set_callback(this%simple, callback)
     else
        call system_abort('potential_set_callback() only implemented for simple Potentials.')
     end if
@@ -1585,10 +1641,9 @@ max_atom_rij_change = 1.038_dp
     my_connect_interval = optional_default(1, connect_interval)
     my_args_str = optional_default("", args_str)
     call initialise(params)
-    if (.not. param_read_line(params, my_args_str, ignore_unknown=.true.,task='dynamicalsystem_run') ) &
-         call system_abort("dynamicalsystem_run failed to parse args_str='"//trim(my_args_str)//"'")
-    call set_value(params, 'calc_energy', .true.)
-    call set_value(params, 'calc_force', .true.)
+    call read_string(params, my_args_str)
+    if (.not. has_key(params, 'energy')) call set_value(params, 'energy')
+    if (.not. has_key(params, 'force'))  call set_value(params, 'force')
     my_args_str = write_string(params)
     call finalise(params)
 

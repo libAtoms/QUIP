@@ -104,8 +104,8 @@ program ts_main
   call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT)
   call read(at_fin, in_fin)
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot))//' A.')
-  call atoms_set_cutoff(at_in, cutoff(classicalpot))
-  call atoms_set_cutoff(at_fin, cutoff(classicalpot))
+  call set_cutoff(at_in, cutoff(classicalpot))
+  call set_cutoff(at_fin, cutoff(classicalpot))
 
   call initialise(ds_in,at_in)
   call initialise(ds_fin,at_fin)

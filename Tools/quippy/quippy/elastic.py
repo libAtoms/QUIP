@@ -252,7 +252,7 @@ def calc_stress(configs, pot, relax=False, relax_tol=1e-3, relax_steps=100):
       at2.calc_connect()
       if relax:
          pot.minim(at2, 'cg', relax_tol, relax_steps, do_pos=True, do_lat=False)
-      pot.calc(at2, calc_virial=True)
+      pot.calc(at2, virial=True)
       at2.params['stress'] = -at2.params['virial']*GPA/at2.cell_volume()
       yield at2
 

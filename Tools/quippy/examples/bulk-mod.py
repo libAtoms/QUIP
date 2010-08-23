@@ -86,7 +86,7 @@ def sample_input():
       at.pos *= 1.0 + eps*i
       at.calc_connect()
       pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-      pot.calc(at, calc_energy=True, calc_virial=True)
+      pot.calc(at, energy=True, virial=True)
       at.pressure = at.virial.trace()*at.cell_volume()/(3.0*GPA)
       print at.virial
       yield at

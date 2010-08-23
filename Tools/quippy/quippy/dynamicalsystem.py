@@ -28,8 +28,8 @@ class DynamicalSystem(FortranDynamicalSystem):
          if hook_interval is not None:
             raise ValueError('hook_interval not permitted when hook is not present. save_interval is used instead')
          traj = []
-         FortranDynamicalSystem.run(self, pot, dt, n_steps, hook_interval=save_interval, write_interval=write_interval, 
-                                    connect_interval=connect_interval, trajectory=trajectory, args_str=args_str, hook=lambda:traj.append(self.atoms.copy()))
+         FortranDynamicalSystem.run(self, pot, dt, n_steps, lambda:traj.append(self.atoms.copy()), hook_interval=save_interval, write_interval=write_interval, 
+                                    connect_interval=connect_interval, trajectory=trajectory, args_str=args_str)
          return traj
       else:
          FortranDynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval, write_interval, 

@@ -127,11 +127,13 @@ module dictionary_module
   end interface print_keys
 
   !% Set a value in a Dictionary
+  private :: dictionary_set_value_none
   private :: dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
   private :: dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
   private :: dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a, dictionary_set_value_s_a2
   private :: dictionary_set_value_d
   interface set_value
+     module procedure dictionary_set_value_none
      module procedure dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
      module procedure dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
      module procedure dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a2
@@ -465,6 +467,19 @@ contains
   ! *    set_value() interface
   ! * 
   ! ****************************************************************************
+
+  subroutine dictionary_set_value_none(this, key)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+
+    type(DictEntry) entry
+    integer entry_i
+
+    entry%type = T_NONE
+    entry_i = add_entry(this, key, entry)
+    call finalise(entry)
+    
+  end subroutine dictionary_set_value_none
 
   subroutine dictionary_set_value_i(this, key, value)
     type(Dictionary), intent(inout) :: this
@@ -1348,19 +1363,26 @@ contains
 
     integer entry_i
 
+call print("dictionary_assign_pointer_r2 00 key '"//trim(key)//"'", PRINT_ANAL)
     entry_i = lookup_entry_i(this, key, case_sensitive)
     
+call print("dictionary_assign_pointer_r2 10 key '"//trim(key)//"'", PRINT_ANAL)
     if (entry_i <= 0) then
+call print("dictionary_assign_pointer_r2 20 key '"//trim(key)//"'", PRINT_ANAL)
        dictionary_assign_pointer_r2 = .false.
        return
     endif
 
+call print("dictionary_assign_pointer_r2 30 key '"//trim(key)//"'", PRINT_ANAL)
     if (this%entries(entry_i)%type == T_REAL_A2) then
+call print("dictionary_assign_pointer_r2 40 key '"//trim(key)//"'", PRINT_ANAL)
        v => this%entries(entry_i)%r_a2
        dictionary_assign_pointer_r2 = .true.
     else
+call print("dictionary_assign_pointer_r2 50 key '"//trim(key)//"'", PRINT_ANAL)
        dictionary_assign_pointer_r2 = .false.
     endif
+call print("dictionary_assign_pointer_r2 60 returning " //dictionary_assign_pointer_r2, PRINT_ANAL)
   end function dictionary_assign_pointer_r2
 
 
@@ -2023,9 +2045,8 @@ contains
        status = .true.
        return
     else if (num_fields == 0) then
-       ! Nothing there, assume it's logical and true
-       l = .true.
-       call set_value(this, key, l)
+       ! Nothing there, so type is T_NONE
+       call set_value(this, key)
        status = .true.
        return
 
@@ -2196,11 +2217,17 @@ contains
     do i=1,this%N
 
        if (i == 1) then
-          call concat(str, string(this%keys(i))//'=')
+          call concat(str, string(this%keys(i)))
        else
-          call concat(str, my_entry_sep//string(this%keys(i))//'=')
+          call concat(str, my_entry_sep//string(this%keys(i)))
        end if
+
+       if (this%entries(i)%type /= T_NONE) call concat(str, '=')
+       
        select case(this%entries(i)%type)
+
+       case(T_NONE)
+          ! no value to write
 
        case(T_INTEGER)
           call concat(str, ''//this%entries(i)%i)

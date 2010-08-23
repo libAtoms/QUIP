@@ -57,7 +57,7 @@ implicit none
   logical :: use_n_minim, do_torque, precond_n_minim
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file
+  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
@@ -70,8 +70,8 @@ implicit none
   integer, dimension(3) :: phonon_supercell
 
   real(dp) :: E0
-  real(dp), allocatable :: local_E0(:)
-  real(dp), allocatable :: F0(:,:)
+  real(dp), pointer :: local_E0(:)
+  real(dp), pointer :: F0(:,:)
   real(dp) :: V0(3,3), P0(3,3)
   real(dp) :: c(6,6), c0(6,6), cij_dx 
 
@@ -395,53 +395,18 @@ implicit none
      if (do_E .or. do_F .or. do_V .or. do_local) then
         did_something=.true.
 
-        if (do_F) allocate(F0(3,at%N))
-        if (do_local) allocate(local_E0(at%N))
-        
-        if (do_E) then
-           if (do_F) then
-              if (do_V) then
-                 if (do_local) then
-                    call calc(pot, at, e = E0, local_e = local_E0, f = F0, virial = V0, args_str = calc_args)
-                 else
-                    call calc(pot, at, e = E0, f = F0, virial = V0, args_str = calc_args)
-                 endif
-              else ! no V
-                 if (do_local) then
-                    call calc(pot, at, e = E0, local_e = local_E0, f = F0, args_str = calc_args)
-                 else
-                    call calc(pot, at, e = E0, f = F0, args_str = calc_args)
-                 endif
-              endif
-           else ! no F
-              if (do_V) then
-                 if (do_local) then
-                    call calc(pot, at, e = E0, local_e = local_E0, virial = V0, args_str = calc_args)
-                 else
-                    call calc(pot, at, e = E0, virial = V0, args_str = calc_args)
-                 endif
-              else ! no V
-                 if (do_local) then
-                    call calc(pot, at, e = E0, local_e = local_E0, args_str = calc_args)
-                 else
-                    call calc(pot, at, e = E0, args_str = calc_args)
-                 endif
-              endif
-           endif
-        else ! no E
-           if (do_F) then
-              if (do_V) then
-                 call calc(pot, at, f = F0, virial = V0, args_str = calc_args)
-              else ! no V
-                 call calc(pot, at, f = F0, args_str = calc_args)
-              endif
-           else ! no F
-              if (do_V) then
-                 call calc(pot, at, virial = V0, args_str = calc_args)
-              endif
-           endif
-        endif
-        
+	extra_calc_args = ""
+	if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
+	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+	if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+
+	call calc(pot, at, args_str = calc_args//" "//extra_calc_args)
+	if (do_E) call get_param_value(at, 'energy', E0)
+	if (do_F) call assign_property_pointer(at, "force", F0)
+	if (do_V) call get_param_value(at, "virial", V0)
+	if (do_local) call assign_property_pointer(at, "local_energy", local_E0)
+
         if (do_E) then
            call print ("Energy=" // E0)
            call set_value(at%params, 'Energy', "" // E0)
@@ -482,7 +447,7 @@ implicit none
      
 #ifdef HAVE_TB
      if (do_absorption) then
-        if (.not. associated (pot%pot%tb)) &
+        if (.not. associated (pot%simple%tb)) &
              call system_abort("Can only do absorption of TB model")
         
         absorption_polarization = (/ cmplx(absorption_polarization_in(1), absorption_polarization_in(2), dp), &
@@ -498,7 +463,7 @@ implicit none
            absorption_freqs(freq_i) = absorption_freq_range(1) +(freq_i-1)*absorption_freq_range(3)
         end do
         
-        call absorption(pot%pot%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
+        call absorption(pot%simple%tb, absorption_polarization, absorption_freqs, absorption_gamma, absorption_v)
         do freq_i=1, size(absorption_freqs)
            call print("absorption i " // freq_i // " freq " // absorption_freqs(freq_i) // " a " // absorption_v(freq_i))
         end do

@@ -588,7 +588,7 @@ interested in, which can either be returned in arrays or stored within
 the Atoms object. Let's try to calculate the energy of our silicon cell::
 
     >>> energy = farray(0.0)   # Create a rank-0 array to store energy
-    >>> pot.calc(s, e=energy)  # Do the calculation
+    >>> pot.calc(s, energy=energy)  # Do the calculation
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
       File "/home/jk2/lib/python2.6/site-packages/quippy/oo_fortran.py", line 438, in <lambda>
@@ -608,7 +608,7 @@ the connectivity). ::
 
     >>> s.set_cutoff(pot.cutoff() + 2.0)    # crust of 2.0 Angstrom
     >>> s.calc_connect()
-    >>> pot.calc(s, e=energy)
+    >>> pot.calc(s, energy=energy)
     >>> print energy
     -936.325908705
 
@@ -616,7 +616,7 @@ the connectivity). ::
 If we now calculate forces for our crystal, we find their all almost
 zero by symmetry in the unperturbed bulk configuration::
 
-   >>> pot.calc(s, calc_force=True)
+   >>> pot.calc(s, force=True)
    >>> print s.force.max()
    1.74703475792e-14
    
@@ -626,7 +626,7 @@ positions a little. ::
    >>> c = s.copy()
    >>> c.pos += numpy.random.uniform(-0.1, 0.1, 3*c.n).reshape(3,c.n)
    >>> c.calc_connect()
-   >>> pot.calc(c, calc_force=True)
+   >>> pot.calc(c, force=True)
    
 The extended AtomEye plugin can draw arrows to represent these forces::
 
@@ -656,7 +656,7 @@ The molecular dynamics loop would then look something like this::
     ds.atoms.calc_connect() 
     for n in range(n_steps):
        ds.advance_verlet1(dt)
-       pot.calc(ds.atoms, calc_force=True, calc_energy=True)
+       pot.calc(ds.atoms, force=True, energy=True)
        ds.advance_verlet2(dt, ds.atoms.force)
        ds.print_status(epot=ds.atoms.energy)
        if n % connect_interval == 0:
@@ -800,8 +800,8 @@ true we then minimise with respect to the internal degrees of freedom
          at.calc_connect()
          if relax:
             pot.minim(at, 'cg', 1e-7, 100, do_pos=True, do_lat=False)
-         pot.calc(at, calc_energy=True)
-         at.volume   = at.cell_volume()
+         pot.calc(at, energy=True)
+         at.volume = at.cell_volume()
          yield at
 
 :func:`compress_expand` is a generator: rather than returning a single

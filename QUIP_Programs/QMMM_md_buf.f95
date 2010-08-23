@@ -1231,7 +1231,7 @@ contains
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_core) then
 	    call print('WARNING: Empty QM core. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
-	    call calc(empty_qm_pot,at,e=energy,f=f1,args_str=trim(args_str))
+	    call calc(empty_qm_pot,at,energy=energy,force=f1,args_str=trim(args_str))
 	  else
 	    args_str = trim(args_str) // &
 	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
@@ -1244,7 +1244,7 @@ contains
             args_str = trim(args_str) // ' cluster_mark_postfix=_core'
           endif
 	endif
-	call calc(pot,at,e=energy,f=f1,args_str=trim(args_str))
+	call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
      else ! do force mixing
 
        slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
@@ -1281,9 +1281,9 @@ contains
        if (qm_region_pt_ctr .and. empty_QM_core) then
 	 if (trim(Run_Type2) /= 'MM') &
 	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
-	 call calc(empty_qm_pot,at,f=f1,args_str=trim(fast_args_str))
+	 call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
        else
-	 call calc(pot,at,f=f1,args_str=trim(args_str))
+	 call calc(pot,at,force=f1,args_str=trim(args_str))
        endif
        energy=0._dp !no energy
      endif

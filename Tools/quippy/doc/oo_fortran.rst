@@ -93,12 +93,12 @@ providing the Fortran source code was built using
       variable numbers and types of arguments. For example::
 
         p = Potential('IP SW', xml_string)
-	p.calc(at, calc_virial=True, calc_energy=True)
+	p.calc(at, virial=True, energy=True)
 
       is equivalent to::
 
         p = Potential('IP SW', xml_string)
-	p.calc(at, args_str="calc_virial=T calc_energy=T")
+	p.calc(at, args_str="virial energy")
 	
       The return value us made up of a tuple of the arguments to the
       Fortran routine which are ``intent(out)``. Pointers to Fortran

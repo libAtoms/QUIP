@@ -1186,7 +1186,7 @@ contains
     end if
 
     call print('Recalculating nearest neighbour table')
-    call atoms_set_cutoff_factor(nn_atoms, params%md_nneigh_tol)
+    call set_cutoff_factor(nn_atoms, params%md_nneigh_tol)
     if (trim(params%simulation_task) == 'md' .and. associated(at%avgpos)) then
        nn_atoms%pos = at%avgpos
     else
@@ -1738,7 +1738,7 @@ contains
           cellsNb = cellsNb*2
           cellsNc = cellsNc*2
        end if
-       call connection_initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g)
+       call initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g)
        call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
        call partition_atoms(connect, at)
        
@@ -2195,7 +2195,7 @@ contains
 
        call supercell(crack_layer, bulk, nx, ny, 1)
       
-       call atoms_set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
+       call set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
        call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
        call calc_connect(crack_slab, store_is_min_image=.true.)
 
@@ -2281,7 +2281,7 @@ contains
           crack_layer%lattice(3,3) = 10.0_dp
           crack_slab = crack_layer
 
-          call atoms_set_cutoff(crack_slab, cutoff(classicalpot)+params%md_crust)
+          call set_cutoff(crack_slab, cutoff(classicalpot)+params%md_crust)
           call calc_connect(crack_slab, store_is_min_image=.true.)
 
           call Print('Graphene sheet contains '//crack_slab%N//' atoms.')
@@ -2368,7 +2368,7 @@ contains
              call slab(crack_layer, axes, width=params%crack_width, height=params%crack_height, nz=1, atnum=params%crack_z, &
                   lat_type=trim(params%crack_structure), a=a, c=params%crack_lattice_c, u=params%crack_lattice_u, &
                   x=params%crack_lattice_x, y=params%crack_lattice_y, z=params%crack_lattice_z)
-             call atoms_set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
+             call set_cutoff(crack_layer, cutoff(classicalpot)+params%md_crust)
              call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
           endif
 

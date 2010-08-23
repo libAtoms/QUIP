@@ -171,9 +171,9 @@ program extract_EVB
        args_str = "evb_step="//step_nr//" mm_args_str={"//trim(mm_args_str)//"} topology_suffix1=_evb1 topology_suffix2=_evb2"
      !  call set_value(at%params,'Library',trim(Residue_Library))
 
-       call calc(evbpot,at,e=energy1,args_str=trim(args_str))
+       call calc(evbpot,at,energy=energy1,args_str=trim(args_str))
        !allocate(f1(1:3,1:at%N))
-       !call calc(evbpot,at,e=energy1,f=f1,args_str=trim(args_str))
+       !call calc(evbpot,at,energy=energy1,f=f1,args_str=trim(args_str))
        !deallocate(f1)
        !call print_xyz(at,'evb_all.xyz',all_properties=.true.)
 

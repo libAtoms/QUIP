@@ -402,7 +402,11 @@ module paramreader_module
 	     entry%has_value = .true.
 	   endif
            call print ("parser got: " // trim(paramentry_write_string(key, entry)), PRINT_VERBOSE)
-	   status = param_parse_value(entry)
+	   if (equal_pos == 0) then
+	      status = param_parse_value(entry, key)
+	   else
+	      status = param_parse_value(entry)
+	   endif
 	   if (.not. status) then
 	      call Print('Error parsing value '//trim(entry%value))
 	      return
@@ -727,8 +731,9 @@ module paramreader_module
     ! Parse the value according to its param_type and number of values
     ! and set the targets to the values read. Called by Register and ReadLine
     !%OMIT
-    function param_parse_value(entry) result(status)
+    function param_parse_value(entry, key) result(status)
       type(ParamEntry) :: entry
+      character(len=*), optional :: key
       logical :: status
 
       character(len=FIELD_LENGTH), dimension(MAX_N_FIELDS) :: fields
@@ -790,7 +795,11 @@ module paramreader_module
          end if
 
       case (PARAM_STRING)
-         entry%string = trim(entry%value)
+	 if (num_fields == 0 .and. present(key)) then
+	    entry%string = trim(key)
+	 else
+	    entry%string = trim(entry%value)
+	 endif
 
       case default
          write (line, '(a,i0)') 'Param_ParseValue: unknown parameter type ', & 

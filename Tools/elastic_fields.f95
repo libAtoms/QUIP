@@ -92,7 +92,7 @@ program elastic
 
      call print('Frame '//n)
 
-     call atoms_set_cutoff(at, cutoff)
+     call set_cutoff(at, cutoff)
      at%nneightol = nneightol
 
      call elastic_fields(at, a, C11, C12, C44)
