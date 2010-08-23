@@ -28,6 +28,8 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
+
 module CrackTools_module
 
   use libAtoms_module
@@ -1103,7 +1105,7 @@ contains
     integer, intent(in) :: c
     integer i
     
-    call allocate(list, 4, 0, 0, 0)
+    call allocate(list, Nint=4, Nreal=0, Nstr=0, Nlogical=0)
 
     do i=1,at%N
        if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(list, (/i, 0, 0, 0/))
@@ -1260,7 +1262,7 @@ contains
     real(dp), dimension(2,3) :: selection_ellipse
     real(dp) :: ellipse_bias(3), crack_pos(3)
     integer :: dislo_seed, temp_N
-
+    integer :: error=ERROR_NONE
     integer, pointer, dimension(:) :: nn, changed_nn, hybrid, edge_mask
 
     call system_timer('selection update')
@@ -1286,8 +1288,8 @@ contains
 
     call print('Building QM selection zone...')
     
-    call allocate(embedlist, 1,0,0,0)
-    call allocate(old_embed, 1,0,0,0)
+    call allocate(embedlist, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
+    call allocate(old_embed, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
     call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
     call print('Got '//count(hybrid == HYBRID_ACTIVE_MARK)//' old embed atoms')
     if (count(hybrid == HYBRID_ACTIVE_MARK) /= 0) &
@@ -1303,7 +1305,7 @@ contains
     ellipse_bias(1) = params%selection_ellipse_bias*selection_ellipse(1,1)
 
     !if there is a dislo_seed, add qm atoms around the dislocation core
-    call allocate(temptable, 4,0,0,0)
+    call allocate(temptable, Nint=4,Nreal=0,Nstr=0,Nlogical=0)
     dislo_seed = params%crack_dislo_seed
     temp_N=0
     if (dislo_seed .ne. 0) then
@@ -1316,7 +1318,7 @@ contains
     ! Do selection twice, once to get inner and once to get outer surface
     do surface=1,2
        
-       call table_allocate(selectlist(surface), 5, 0, 0, 0)
+       call allocate(selectlist(surface), Nint=5, Nreal=0, Nstr=0, Nlogical=0)
 
        ! Mark ellipsoid around each real atom with changed_nn /= 0 with its age
        !  - If central (active) atom already marked, keep the newer mark
@@ -1324,7 +1326,7 @@ contains
        
        do i=1,at%N
           if (changed_nn(i) == 0) cycle
-          
+
           if (abs(at%pos(1,i)-crack_pos(1)) < params%selection_cutoff_plane .and. & 
                abs(at%pos(2,i)-crack_pos(2)) < params%selection_cutoff_plane) then
              
@@ -1355,6 +1357,8 @@ contains
              end do
           end if
        end do
+
+
     
        ! Sort by age of NN changes, most recent are smallest values
        allocate(sorted(selectlist(surface)%N))
@@ -1398,14 +1402,18 @@ contains
 
     ! Keep old embed atoms unless they're now outside outer surface
     do i=1,old_embed%N
-       if (is_in_array(new_embed(2)%int(1,1:new_embed(2)%N), old_embed%int(1,i))) &
-            call append(embedlist, old_embed%int(:,i))
+       if (is_in_array(new_embed(2)%int(1,1:new_embed(2)%N), old_embed%int(1,i))) then
+          call append(embedlist, old_embed%int(1,i), error=error)
+          HANDLE_ERROR(error)
+       end if
     end do
     
     ! Add atoms inside inner surface
     do i=1,new_embed(1)%N
-       if (.not. is_in_array(embedlist%int(1,1:embedlist%N), new_embed(1)%int(1,i))) &
-            call append(embedlist, new_embed(1)%int(1,i))
+       if (.not. is_in_array(embedlist%int(1,1:embedlist%N), new_embed(1)%int(1,i))) then
+          call append(embedlist, new_embed(1)%int(1,i), error=error)
+          HANDLE_ERROR(error)
+       end if
     end do
     
     call Print('Embedding '//embedlist%N//' atoms.')
@@ -1469,8 +1477,8 @@ contains
     if (.not. assign_pointer(at, 'hybrid', hybrid)) &
          call system_abort('crack_update_selection: atoms structure is missing hybrid property')
 
-    call allocate(embedlist, 1,0,0,0)
-    call allocate(old_embed, 1,0,0,0)
+    call allocate(embedlist, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
+    call allocate(old_embed, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
     call print('Got '//count(hybrid == HYBRID_ACTIVE_MARK)//' old embed atoms')
     if (count(hybrid == HYBRID_ACTIVE_MARK) /= 0) &
          call append(old_embed, find(hybrid == HYBRID_ACTIVE_MARK))
@@ -1560,7 +1568,7 @@ contains
     integer :: i, n
 
     if (trim(params%crack_tip_method) == 'coordination') then
-       call allocate(crack_tips, 0, 3, 0, 0)   
+       call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)   
        crack_tip = crack_find_tip_coordination(at, params)
        call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
 
@@ -1705,7 +1713,7 @@ contains
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_tip_percolation: "OrigWidth" parameter missing from atoms')
     
-    call allocate(crack_tips, 0, 3, 0, 0)   
+    call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)   
     
     do grid_i=0,2
        grid_factor = 2**grid_i
@@ -1907,7 +1915,7 @@ contains
     end do
     
     ! Find all the local minima
-    call allocate(minima, 3,0,0,0)
+    call allocate(minima, Nint=3,Nreal=0,Nstr=0,Nlogical=0)
     do k=1,connect%cellsnc
        do j=1,connect%cellsnb
           do i=1,connect%cellsna
