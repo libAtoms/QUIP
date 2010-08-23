@@ -131,10 +131,9 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call Finalise(this)
 
   ! now initialise the potential
-
 #ifndef HAVE_GP
   call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP')
-#endif
+#else
   
   call initialise(params)
   this%label=''
@@ -146,7 +145,6 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   call IPModel_GAP_read_params_xml(this, param_str)
 
-#ifdef HAVE_GP
   !call gp_read_binary(this%my_gp, this%datafile)
   call gp_read_xml(this%my_gp, param_str,label=this%label)
 
@@ -160,15 +158,15 @@ end subroutine IPModel_GAP_Initialise_str
 
 subroutine IPModel_GAP_Finalise(this)
   type(IPModel_GAP), intent(inout) :: this
-
+#ifdef HAVE_GP
   if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
   if (allocated(this%qw_cutoff_f)) deallocate(this%qw_cutoff_f)
   if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
 
   if (allocated(this%Z)) deallocate(this%Z)
-#ifdef HAVE_GP
+
   if (this%my_gp%initialised) call finalise(this%my_gp)
-#endif
+
 
   this%cutoff = 0.0_dp
   this%j_max = 0
@@ -187,7 +185,7 @@ subroutine IPModel_GAP_Finalise(this)
 
   this%label = ''
   this%initialised = .false.
-
+#endif
 end subroutine IPModel_GAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -206,6 +204,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
+#ifdef HAVE_GP
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy, water_dimer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w, charge
@@ -225,7 +224,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   logical :: has_atom_mask_name
   character(FIELD_LENGTH) :: atom_mask_name
 
-#ifdef HAVE_GP
+
   type(fourier_so4), save :: f_hat
   type(grad_fourier_so4), save :: df_hat
   type(bispectrum_so4), save :: bis
@@ -238,7 +237,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
 
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
   !$omp threadprivate(f3_hat,df3_hat,qw,dqw)  
-#endif  
+
 
    INIT_ERROR(error)
 
@@ -302,7 +301,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      enddo
   endselect
 
-#ifdef HAVE_GP
+
   select case(trim(this%coordinates))
   case('water_monomer')
      d = 3
@@ -317,7 +316,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   case default
      call system_abort('IPModel_GAP_Calc: coordinates = '//trim(this%coordinates)//' unknown')
   endselect
-#endif
+
 
   nei_max = 0
   do i = 1, at%N
@@ -372,7 +371,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   endselect
 
 !$omp parallel 
-#ifdef HAVE_GP
+
   if (trim(this%coordinates) == 'bispectrum') then
      call initialise(f_hat,this%j_max,this%z0,this%cutoff)
      if(present(f).or.present(virial)) call initialise(df_hat,this%j_max,this%z0,this%cutoff)
@@ -384,7 +383,6 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         call initialise(dqw, this%qw_l_max, this%qw_f_n, do_q = this%qw_do_q, do_w = this%qw_do_w)
      endif
   endif
-#endif
 
 !$omp do private(n)
   do i = 1, at%N
@@ -398,7 +396,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
-#ifdef HAVE_GP
+
      if (trim(this%coordinates) == 'bispectrum') then
         call fourier_transform(f_hat,at,i,w)
         call calc_bispectrum(bis,f_hat)
@@ -422,11 +420,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
            enddo
         endif
      endif
-#endif
   enddo
 !$omp end do 
 
-#ifdef HAVE_GP
+
   if (trim(this%coordinates) == 'bispectrum') then
      call finalise(f_hat)
      call finalise(df_hat)
@@ -438,10 +435,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      call finalise(qw)
      call finalise(dqw)
   endif
-#endif
+
 !$omp end parallel
 
-#ifdef HAVE_GP
+
   select case(trim(this%coordinates))
   case('water_monomer','water_dimer')
 
@@ -449,7 +446,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
      allocate(covariance(this%my_gp%n,at%N))
      call gp_precompute_covariance(this%my_gp,vec,covariance,at%Z,mpi)
   endselect
-#endif
+
     
   select case(trim(this%coordinates))
   case('water_monomer','water_dimer')
@@ -474,9 +471,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         endif
 
         if(present(e) .or. present(local_e)) then
-#ifdef HAVE_GP
+
            call gp_predict(gp_data=this%my_gp, mean=local_e_in(i),x_star=vec(:,i),Z=at%Z(i),c_in=covariance(:,i))
-#endif
+
            local_e_in(i) = local_e_in(i) + this%e0
         endif
 
@@ -484,9 +481,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
            do k = 1, 3
               f_gp = 0.0_dp
        
-#ifdef HAVE_GP
+
               call gp_predict(gp_data=this%my_gp, mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,k,i),Z=at%Z(i),c_in=covariance(:,i))
-#endif
+
        
               if( present(f) ) f(k,i) = f(k,i) - f_gp_k
               if( present(virial) ) virial_in(:,k,i) = virial_in(:,k,i) - f_gp_k*at%pos(:,i)
@@ -494,9 +491,9 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
               do n = 1, atoms_n_neighbours(at,i)
                  j = atoms_neighbour(at,i,n,jn=jn,shift=shift)
        
-#ifdef HAVE_GP
+
                  call gp_predict(gp_data=this%my_gp,mean=f_gp_k,x_star=vec(:,i),x_prime_star=jack(:,n*3+k,i),Z=at%Z(i),c_in=covariance(:,i))
-#endif
+
 !$omp critical
                  if( present(f) ) f(k,j) = f(k,j) - f_gp_k
                  if( present(virial) ) virial_in(:,k,j) = virial_in(:,k,j) - f_gp_k*( at%pos(:,j) + matmul(at%lattice,shift) )
@@ -557,6 +554,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   if(allocated(jack)) deallocate(jack)
   if(allocated(water_monomer_index)) deallocate(water_monomer_index)
   atom_mask_pointer => null()
+
+#endif
 
 end subroutine IPModel_GAP_Calc
 
@@ -856,6 +855,7 @@ subroutine IPModel_GAP_Print (this, file)
   type(Inoutput), intent(inout),optional :: file
   integer :: i
 
+#ifdef HAVE_GP
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
   call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
@@ -863,7 +863,7 @@ subroutine IPModel_GAP_Print (this, file)
   call Print("IPModel_GAP : n_species = "//this%n_species, file=file)
   call Print("IPModel_GAP : do_ewald = "//this%do_ewald, file=file)
   call Print("IPModel_GAP : do_ewald_corr = "//this%do_ewald_corr, file=file)
-#ifdef HAVE_GP
+
   do i = 1, this%n_species
      call Print("IPModel_GAP : Z = "//this%Z(i), file=file)
      call Print("IPModel_GAP : z_eff = "//this%z_eff(this%Z(i)), file=file)

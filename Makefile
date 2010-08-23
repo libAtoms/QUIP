@@ -70,7 +70,7 @@ ${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	make -C ${FOX} -I${PWD} -I${PWD}/Makefiles -I${PWD}/${BUILDDIR} -f Makefile.QUIP 
 
 
-${MODULES}: ${BUILDDIR}
+${MODULES}:  ${BUILDDIR}
 	ln -sf ${PWD}/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/$@ -I${PWD} -I${PWD}/Makefiles
 	rm ${BUILDDIR}/Makefile
@@ -118,7 +118,7 @@ ${BUILDDIR}: arch
 	@if [ ! -d build.${QUIP_ARCH} ] ; then mkdir build.${QUIP_ARCH} ; fi
 
 
-clean:
+clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
 	  ${MAKE} -C ${BUILDDIR} -I${PWD} -I${PWD}/Makefiles clean ; \

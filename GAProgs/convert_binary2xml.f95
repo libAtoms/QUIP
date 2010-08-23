@@ -2,7 +2,7 @@ program convert
 
   use libatoms_module
   use gp_sparse_module
-  use teach_sparse_module
+  use teach_sparse_mod
 
   implicit none
 
@@ -67,7 +67,7 @@ program convert
                & get_value(my_dictionary,'z0',GAP%z0) ) ) &
      & call system_abort('covert: did not find bispectrum parameters in gp data file, &
      & might be old version or format not correct')
-     GAP%do_qw_so3 = .false.
+!     GAP%do_qw_so3 = .false.
   elseif (trim(coordinates) == 'qw') then
      if (.not. get_value(my_dictionary, 'l_max', GAP%qw_l_max) .and. &
                get_value(my_dictionary, 'f_n', GAP%qw_f_n)) &
@@ -86,7 +86,7 @@ program convert
      GAP%qw_no_q = .not. GAP%qw_no_q
      GAP%qw_no_w = .not. GAP%qw_no_w
 
-     GAP%do_qw_so3 = .true.
+!     GAP%do_qw_so3 = .true.
      GAP%r_cut = maxval(GAP%qw_cutoff)
   else
      call system_abort('convert: datafile_coordinates '//trim(coordinates)//' unknown')

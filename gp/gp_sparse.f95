@@ -815,14 +815,16 @@ module gp_sparse_module
          real(dp), dimension(:), intent(in), optional :: c_in 
 
 #ifdef GP_PREDICT_QP
-         real(qp), dimension(gp_data%n) :: k
-         real(qp), dimension(gp_data%d) :: xixjtheta !, tmp
+         real(qp), dimension(gp_data%n) :: k, c
+         real(qp), dimension(gp_data%d,gp_data%n) :: xixjtheta !, tmp
+	 real(qp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #else
          real(dp), dimension(gp_data%n) :: k, c
          real(dp), dimension(gp_data%d,gp_data%n) :: xixjtheta !, tmp
+	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #endif
          real(dp) :: kappa
-	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
+
 
          integer :: i, do_Z, Z_type
 
@@ -844,7 +846,7 @@ module gp_sparse_module
                if(.not. present(c_in)) c(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta(:,i),xixjtheta(:,i)) )
             endif
          enddo
-         if(present(c_in)) c = c_in
+         if(present(c_in)) c = real(c_in, qp)
 
          if(present(x_prime_star)) then
 	    x_prime_star_div_theta = x_prime_star / gp_data%theta(:,Z_type)
@@ -852,15 +854,15 @@ module gp_sparse_module
                !k(i) = covSEard( gp_data%delta, gp_data%theta, gp_data%x(:,i), x_star, x_prime_star )
                if( do_Z == gp_data%xz(i) ) then
 #ifdef GP_PREDICT_QP
-                  xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
-                  & dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
+                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) * &
+                  !dot_product(xixjtheta,real(x_prime_star/gp_data%theta(:,Z_type),qp))
 #else
                   !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
                   !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) * &
                   !& dot_product(xixjtheta,x_prime_star_div_theta)
-                  k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
 #endif
+                  k(i) = c(i) * dot_product(xixjtheta(:,i),x_prime_star_div_theta)
                else
                   k(i) = 0.0_dp
                end if
@@ -877,13 +879,13 @@ module gp_sparse_module
 !               xixjtheta = (gp_data%x(:,i)-x_star)*tmp
                if( do_Z == gp_data%xz(i) ) then
 #ifdef GP_PREDICT_QP
-                  xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
-                  k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
+                  !xixjtheta = real((gp_data%x(:,i)-x_star)/gp_data%theta(:,Z_type),qp)
+                  !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_qp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
 #else
                   !xixjtheta = (gp_data%x_div_theta(:,i)-x_star_div_theta)
                   !k(i) = gp_data%delta(Z_type)**2 * exp( - 0.5_dp * dot_product(xixjtheta,xixjtheta) ) + gp_data%f0(Z_type)**2
-                  k(i) = c(i) + gp_data%f0(Z_type)**2
 #endif
+                  k(i) = c(i) + gp_data%f0(Z_type)**2
                else
                   k(i) = 0.0_dp
                end if
@@ -1119,8 +1121,9 @@ deallocate(diff_xijt)
          type(gp), intent(inout) :: this
 
          integer :: i, j
-         real(dp), dimension(:), allocatable :: xixjtheta
-         real(dp), dimension(:,:), allocatable :: c
+         real(qp), dimension(:), allocatable :: xixjtheta
+         real(qp), dimension(:,:), allocatable :: c
+         real(qp) :: local_alpha(this%N)
 
 	 call setup_x_div_theta(this)
          allocate(xixjtheta(this%d),c(this%n,this%n))
@@ -1144,7 +1147,8 @@ deallocate(diff_xijt)
          call LA_Matrix_Update(this%LA_C_nn,c)
          if(this%LA_C_nn%factorised /= CHOLESKY) call LA_Matrix_Factorise(this%LA_C_nn)
 
-         call LA_Matrix_Solve_Vector(this%LA_C_nn,this%y,this%alpha)
+         call LA_Matrix_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
+         this%alpha = real(local_alpha, dp)
          deallocate(c,xixjtheta)
          
       endsubroutine covariance_matrix_simple
