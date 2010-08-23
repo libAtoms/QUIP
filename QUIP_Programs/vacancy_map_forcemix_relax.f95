@@ -157,7 +157,7 @@ implicit none
 end program
 #else
 vacancy_map_forcemix_relax without HAVE_HYBRID and HAVE_LOTF makes no sense
-#endif HAVE_LOTF
+#endif /* HAVE_LOTF */
 #else
 vacancy_map_forcemix_relax without HAVE_HYBRID and HAVE_LOTF makes no sense
-#endif HAVE_HYBRID
+#endif /* HAVE_HYBRID */
