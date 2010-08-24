@@ -53,7 +53,7 @@ private
 
 include 'IPModel_interface.h'
 
-logical, private :: asap_initialised = .false.
+integer, private, parameter :: nspins = 2
 
 public :: IPModel_ASAP2
 type IPModel_ASAP2
@@ -771,35 +771,230 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 end subroutine asap_morse_stretch
 
 subroutine IPModel_ASAP2_setup_atoms(this, at)
-   type(IPModel_ASAP2), intent(in):: this
-   type(Atoms), intent(inout)      :: at
+  type(IPModel_ASAP2), intent(in):: this
+  type(Atoms), intent(inout)      :: at
 
-   logical :: dummy
-   integer :: i, ti
-   real(dp), dimension(:), pointer :: charge
-
-   ! If charge property doesn't exist, we add and initialise it now
+  logical :: dummy
+  integer :: i, ti
+  real(dp), dimension(:), pointer :: charge
+  
+  ! If charge property doesn't exist, we add and initialise it now
    
-   if (.not. has_property(at, 'charge')) then
-      call add_property(at, 'charge', 0.0_dp)
-      dummy = assign_pointer(at, 'charge', charge)
-      do i=1, at%N
-         ti = get_type(this%type_of_atomic_num, at%Z(i))
-         charge(i) = this%z(ti)
-      end do
-   end if
+  if (.not. has_property(at, 'charge')) then
+     call add_property(at, 'charge', 0.0_dp)
+     dummy = assign_pointer(at, 'charge', charge)
+     do i=1, at%N
+        ti = get_type(this%type_of_atomic_num, at%Z(i))
+        charge(i) = this%z(ti)
+     end do
+  end if
+  
+  if (.not. has_property(at, 'fixdip')) call add_property(at, 'fixdip', .false.)
+  if (.not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
+  if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
+  if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
+  if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
+  if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
+  
+  ! Increment at%cutoff if necessary
+  call set_cutoff_minimum(at, max(this%cutoff_ms, this%cutoff_coulomb)*BOHR)
+  
+end subroutine IPModel_ASAP2_setup_atoms
 
-   if (.not. has_property(at, 'fixdip')) call add_property(at, 'fixdip', .false.)
-   if (.not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
-   if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
 
-   ! Increment at%cutoff if necessary
-   call set_cutoff_minimum(at, max(this%cutoff_ms, this%cutoff_coulomb)*BOHR)
+subroutine assign_grid_coordinates(at, ngx, ngy, ngz, grid_size, r_real_grid)
+  type(Atoms), intent(in) :: at
+  integer, intent(in) :: ngx, ngy, ngz
+  real(dp), intent(out) :: grid_size(3)
+  real(dp), dimension(:,:), intent(out) :: r_real_grid
 
- end subroutine IPModel_ASAP2_setup_atoms
+  real(dp) :: lattice(3,3)
+  integer :: nx, ny, nz, point
+  real(dp) :: a, b, c, alpha, beta, gamma
+
+  ! CASTEP lattice is tranpose of our lattice
+  lattice = transpose(at%lattice)
+
+  point = 0
+  do nz=1,ngz
+     do ny=1,ngy
+        do nx=1,ngx
+           
+           point=point+1
+           
+           r_real_grid(1,point) = real(nx-1,dp)*lattice(1,1)/real(ngx,dp) +&
+                & real(ny-1,dp)*lattice(2,1)/real(ngy,dp) +&
+                & real(nz-1,dp)*lattice(3,1)/real(ngz,dp)
+           r_real_grid(2,point) = real(nx-1,dp)*lattice(1,2)/real(ngx,dp) +&
+                & real(ny-1,dp)*lattice(2,2)/real(ngy,dp) +&
+                & real(nz-1,dp)*lattice(3,2)/real(ngz,dp)
+           r_real_grid(3,point) = real(nx-1,dp)*lattice(1,3)/real(ngx,dp) +&
+                & real(ny-1,dp)*lattice(2,3)/real(ngy,dp) +&
+                & real(nz-1,dp)*lattice(3,3)/real(ngz,dp)
+           
+        end do
+     end do
+  end do
+
+  call get_lattice_params(at%lattice, a, b, c, alpha, beta, gamma)
+  grid_size(1) = a/real(ngx, dp)
+  grid_size(2) = b/real(ngy, dp)
+  grid_size(3) = c/real(ngz, dp)
+
+end subroutine assign_grid_coordinates
+
+function gaussian_charge_pot_func(r, s, grid_size) result(V)
+  real(dp) :: r, s, grid_size(3)
+  real(dp) :: V
+
+  real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
+  
+  ! Truncate r so smallest value is one grid point
+  r = max(r, maxval(grid_size))
+  
+  ! point charge part
+  V = 1.0_dp/r
+  if (s > 0.0_dp .and. r < 9.0_dp*s) then ! screening if width > 0, correction for r >= 9s is < 1e-16
+     V = V * erf(r/(sqrt_2*s))
+  endif
+end function gaussian_charge_pot_func
+
+function gaussian_charge_pot_force_func(r, rsq, s, grid_size) result(Vf)
+  real(dp) :: r(3), rsq, s, grid_size(3)
+  real(dp) :: Vf(3)
+  
+  real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
+  real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
+  real(dp) :: r_mag, V_pt, erf_val, erf_deriv(3)
+  integer :: i
+  
+  ! V = 1/r erf(r/(sqrt_2 s))
+  ! derf(x)/dx = (2/sqrt(pi)) exp(-x^2)
+  
+  do i=1,3
+     r(i) = max(r(i), grid_size(i))
+  end do
+  rsq = max(r(1)*r(1)+r(2)*r(2)+r(3)*r(3), rsq)
+    
+  ! point charge part
+  Vf = 1.0_dp/(rsq*sqrt(rsq)) * r
+  if (s > 0.0_dp .and. rsq < 81.0_dp*s*s) then ! screening if width > 0, correction for r >= 9s is <= 1e-16
+     r_mag = sqrt(rsq)
+     V_pt = 1.0_dp/r_mag
+     erf_val = erf(r_mag/(sqrt_2 * s))
+     erf_deriv = -(sqrt_2/(sqrt_pi*s)) * exp(-rsq/(2.0*s*s)) * r/r_mag
+     Vf = Vf * erf_val + V_pt * erf_deriv
+  endif
+end function gaussian_charge_pot_force_func
+
+subroutine write_electrostatic_header(out, lattice, ngx, ngy, ngz, sigma)
+  type(InOutput), intent(inout) :: out
+  real(dp), intent(in) :: lattice(3,3), sigma
+  integer, intent(in) :: ngx, ngy, ngz
+  real(dp) :: a, b, c, alpha, beta, gamma
+
+  call get_lattice_params(lattice, a, b, c, alpha, beta, gamma)
+
+  call print('BEGIN header', file=out)
+  call print('', file=out)
+  call print('           Real Lattice(A)               Lattice parameters(A)    Cell Angles', file=out)
+  write (out%unit, '(3f12.7,5x,"a =",f12.6,2x,"alpha =",f12.6)') lattice(:,1), a, alpha
+  write (out%unit, '(3f12.7,5x,"b =",f12.6,2x,"beta  =",f12.6)') lattice(:,2), b, beta
+  write (out%unit, '(3f12.7,5x,"c =",f12.6,2x,"gamma =",f12.6)') lattice(:,3), c, gamma
+  call print('', file=out)
+  write(out%unit,'(i4,T30,a)') nspins,'   ! nspins'
+  write(out%unit,'(3(i4,2x),T30,a)') ngx, ngy, ngz,'   ! fine FFT grid along <a,b,c>'
+  write(out%unit,'(f12.7,T30,a)') sigma, '   ! Gaussian width sigma'
+
+end subroutine write_electrostatic_header
+
+subroutine write_electrostatic_potential(this, at, filename, mask_name, ngx, ngy, ngz, sigma, grid_size, real_grid, error)
+  type(IPModel_ASAP2), intent(inout) :: this
+  type(Atoms), intent(inout) :: at
+  character(len=*), intent(in) :: filename, mask_name
+  integer, intent(in) :: ngx, ngy, ngz
+  real(dp), intent(in) :: sigma, grid_size(3)
+  real(dp), dimension(:,:), intent(in) :: real_grid
+  integer, optional, intent(out) :: error
+
+  type(InOutput) :: out
+  real(dp) :: d(3), d2, pot
+  logical, pointer, dimension(:) :: mask
+  integer spin, i, j, k, l, igrid
+
+  INIT_ERROR(error)
+  if (.not. assign_pointer(at, mask_name, mask)) then
+     RAISE_ERROR('write_electrostatic_potential: cannot assign pointer to '//trim(mask_name)//' property.', error)
+  end if
+
+  call initialise(out, filename, OUTPUT)
+  call write_electrostatic_header(out, at%lattice, ngx, ngy, ngz, sigma)
+  call print('END header: data is "i j k pot"', file=out)  
+  do spin=1,nspins
+     igrid = 0
+     do k=1,ngz
+        do j=1,ngy
+           do i=1,ngx
+              igrid = igrid + 1
+              pot = 0.0_dp
+              d = real_grid(:,igrid)
+              do l=1,at%n
+                 if (mask(l)) cycle
+              end do
+              write (out%unit,'(3i6,4f20.6)') i, j, k, real_grid(:,igrid), pot
+           end do
+        end do
+     end do
+  end do
+  call finalise(out)
+
+end subroutine write_electrostatic_potential
+
+subroutine write_electric_field(this, at, filename, mask_name, ngx, ngy, ngz, sigma, grid_size, real_grid, error)
+  type(IPModel_ASAP2), intent(inout) :: this
+  type(Atoms), intent(inout) :: at
+  character(len=*), intent(in) :: filename, mask_name
+  integer, intent(in) :: ngx, ngy, ngz
+  real(dp), intent(in) :: sigma, grid_size(3)
+  real(dp), dimension(:,:), intent(in) :: real_grid
+  integer, optional, intent(out) :: error
+
+  type(InOutput) out
+  integer i, j
+  real(dp) :: d(3), d2, charge
+  logical, pointer, dimension(:) :: mask
+  real(dp), allocatable, dimension(:,:) :: efield
+
+  INIT_ERROR(error)
+  if (.not. assign_pointer(at, mask_name, mask)) then
+     RAISE_ERROR('write_electric_field: cannot assign pointer to '//trim(mask_name)//' property.', error)
+  end if
+
+  allocate(efield(3,at%N))
+  efield(:,:) = 0.0_dp
+
+  do i=1,at%N
+     if (mask(i)) cycle
+     do j=1,at%N
+        if (i == j) cycle
+        d = diff_min_image(at, i, j)
+        d2 = d(1)*d(1) + d(2)*d(2) + d(3)*d(3)
+        efield(:,i) = efield(:,i) + gaussian_charge_pot_force_func(d, d2, sigma, grid_size)
+     end do
+  end do
+
+  call initialise(out, filename, OUTPUT)
+  call write_electrostatic_header(out, at%lattice, ngx, ngy, ngz, sigma)
+  call print('END header: data is "sp nsp charge efield_x efield_y efield_z"', file=out)
+  
+  do i=1,at%N
+     if (mask(i)) cycle
+     charge = this%z(get_type(this%type_of_atomic_num, at%Z(i)))
+     write (out%unit,'(a6,i6,4f12.6)'), a2s(at%species(:,i)), index_to_z_index(at, i), charge, efield(:,i)
+  end do
+  call finalise(out)
+
+end subroutine write_electric_field
 
 
 subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
@@ -813,7 +1008,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    integer, intent(out), optional :: error
 
    type(Dictionary) :: params
-   logical :: save_efield, save_dipoles, restart, applied_efield, save_dipole_velo
+   logical :: save_efield, save_dipoles, restart, applied_efield, save_dipole_velo, write_electrostatics
    real(dp), allocatable, target :: theefield(:,:), thedipoles(:,:), efield_int_old(:,:)
    real(dp), allocatable :: efield_charge(:,:), efield_dipole(:,:), dip_sr(:,:)
    real(dp), pointer, dimension(:) :: charge
@@ -821,7 +1016,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    logical, pointer, dimension(:) :: fixdip
    real(dp) :: diff, diff_old
    integer :: n_efield_old
-   integer :: i, npol, ti, vv
+   integer :: i, npol, ti, vv, electrostatic_ngx, electrostatic_ngy, electrostatic_ngz
+   real(dp) :: electrostatic_sigma, grid_size(3)
+   character(len=STRING_LENGTH) :: electrostatic_stem, electrostatic_mask
+   real(dp), allocatable, dimension(:,:) :: real_grid
 
    real, parameter :: difftol = 500.0_dp
 
@@ -837,6 +1035,13 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
       call param_register(params, 'save_dipole_velo', 'F', save_dipole_velo)
       call param_register(params, 'restart', 'F', restart)
       call param_register(params, 'applied_efield', 'F', applied_efield)
+      call param_register(params, 'write_electrostatics', 'F', write_electrostatics)
+      call param_register(params, 'electrostatic_stem', 'asap2', electrostatic_stem)
+      call param_register(params, 'electrostatic_mask', 'mask', electrostatic_mask)
+      call param_register(params, 'electrostatic_ngx', '1', electrostatic_ngx)
+      call param_register(params, 'electrostatic_ngy', '1', electrostatic_ngy)
+      call param_register(params, 'electrostatic_ngz', '1', electrostatic_ngz)
+      call param_register(params, 'electrostatic_sigma', '0.0', electrostatic_sigma)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
       endif
@@ -1040,6 +1245,23 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
             dip_velo(:,i) = dip_velo(:,i) + dipoles(:,i)
          end do
       end if
+   end if
+
+   ! Write electrostatic potential on 3D grid, and electric field at atoms
+   if (write_electrostatics) then
+
+      allocate(real_grid(3,electrostatic_ngx*electrostatic_ngy*electrostatic_ngz))
+      call assign_grid_coordinates(at, electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, grid_size, real_grid)
+
+      call write_electrostatic_potential(this, at, trim(electrostatic_stem)//'.pot_fmt', electrostatic_mask, &
+           electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, electrostatic_sigma, grid_size, real_grid, error)
+      PASS_ERROR(error)
+
+      call write_electric_field(this, at, trim(electrostatic_stem)//'.efield_fmt', electrostatic_mask, &
+           electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, electrostatic_sigma, grid_size, real_grid, error)
+      PASS_ERROR(error)
+
+      deallocate(real_grid)
    end if
    
    ! Finally, add the short-range contribution

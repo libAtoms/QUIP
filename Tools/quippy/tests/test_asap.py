@@ -9374,5 +9374,18 @@ if hasattr(quippy, 'Potential'):
                   self.assertArrayAlmostEqual(at1.pos, at2.pos)
 
 
+   class TestElectrostatics(QuippyTestCase):
+
+      def setUp(self):
+         verbosity_set_minimum(PRINT_VERBOSE)
+         self.at = alpha_quartz_cubic(**sio2.quartz_params['CASTEP_LDA'])
+         self.at.add_property('mask', False)
+         self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
+         self.at.set_cutoff(self.pot.cutoff())
+         self.at.calc_connect()
+
+      def test_write_electric_field(self):
+         self.pot.calc(self.at, calc_force=True, write_electrostatics=True, electrostatic_ngx=2)
+         
 if __name__ == '__main__':
    unittest.main()
