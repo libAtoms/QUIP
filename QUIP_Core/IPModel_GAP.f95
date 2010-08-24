@@ -238,8 +238,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   !$omp threadprivate(f_hat,df_hat,bis,dbis)  
   !$omp threadprivate(f3_hat,df3_hat,qw,dqw)  
 
-
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) then
      e = 0.0_dp
@@ -347,6 +346,8 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
         endif
      enddo
 
+     n_water_pair = n_water_pair / 2 ! Water dimers were double counted
+
      allocate(vec(d,n_water_pair),water_monomer_index(3,at%N/3))
      call find_water_monomer(at,water_monomer_index)
      k = 0
@@ -356,8 +357,10 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
            iBo = atoms_neighbour(at,iAo,n)
            if(at%Z(iBo) == 8) then
               j = find_in_array(water_monomer_index(1,:),iBo)
-              k = k + 1
-              vec(:,k) = water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j))
+              if( i < j ) then
+                 k = k + 1
+                 vec(:,k) = water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j))
+              endif
            endif
         enddo
      enddo
