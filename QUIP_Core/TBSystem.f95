@@ -38,6 +38,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module TBSystem_module
 
 use libatoms_module
@@ -549,12 +551,15 @@ function TBSystem_n_elec(this, at, w_n)
   end do
 end function TBSystem_n_elec
 
-subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj)
+subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi_obj, error)
   type(TBSystem), intent(inout) :: this
   type(Atoms), intent(in) :: at
   logical, intent(in), optional :: noncollinear
   character(len=*), intent(in), optional :: args_str
   type(MPI_context), intent(in), optional :: mpi_obj
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
 
   call initialise_kpoints(this, args_str=args_str, mpi_obj=mpi_obj)
   if (this%kpoints_generate_dynamically) then
@@ -562,25 +567,33 @@ subroutine TBSystem_Setup_atoms_from_atoms(this, at, noncollinear, args_str, mpi
     call Initialise_tbsystem_k_dep_stuff(this, mpi_obj)
     this%kpoints_generate_dynamically = this%kpoints_generate_next_dynamically
   endif
-  call setup_atoms(this, at%N, at%Z, noncollinear)
+  call setup_atoms(this, at%N, at%Z, noncollinear, error=error)
+  PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_atoms_from_atoms
 
-subroutine TBSystem_Setup_atoms_from_tbsys(this, from)
+subroutine TBSystem_Setup_atoms_from_tbsys(this, from, error)
   type(TBSystem), intent(inout) :: this
   type(TBSystem), intent(in) :: from
+  integer, intent(out), optional :: error
 
-  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear)
+  INIT_ERROR(error)
+
+  call setup_atoms(this, from%N_atoms, from%at_Z, from%noncollinear, error=error)
+  PASS_ERROR(error)
 
 end subroutine TBSystem_Setup_Atoms_from_tbsys
 
-subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear)
+subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, error)
   type(TBSystem), intent(inout) :: this
   integer, intent(in) :: at_N, at_Z(:)
   logical, intent(in), optional :: noncollinear
+  integer, intent(out), optional :: error
 
   integer :: i_at, i_man, man_offset, last_man_offset
   integer :: n_mag
+
+  INIT_ERROR(error)
 
   call Wipe(this)
 
