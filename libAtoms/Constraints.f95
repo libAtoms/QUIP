@@ -516,40 +516,37 @@ contains
     type(Inoutput), optional, intent(inout) :: file
     integer, optional, intent(in) :: index
     integer                       :: i
+    character(len=20) :: type
+
+    if (this%k < 0.0_dp) then
+      type="Constraint"
+    else
+      type="Restraint"
+    endif
 
     call print('================', verbosity, file)
     if (present(index)) then
-       write(line,'(a,i0)')' Constraint ',index
-       call print(line, verbosity, file)
+      call print(' '//trim(type)//' '// index, verbosity, file)
     else
-       call print('Constraint', verbosity, file)
-    end if
+      call print(' '//trim(type), verbosity, file)
+    endif
     call print('================', verbosity, file)  
     call print('', verbosity, file)
     if (this%initialised) then       
-       write(line,'(a,i0)')'Number of atoms = ',this%N
-       call print(line, verbosity, file)      
-       call print('Atoms:', verbosity, file)
-       call print(this%atom, verbosity, file)
-       call print('Data:', verbosity, file)
-       call print(this%data, verbosity, file)
-       write(line,'(a,i0)')'Constraint function = ',this%func
-       call print(line, verbosity, file)      
-       write(line,'(a,f0.8)')'Constraint value    = ',this%C
-       call print(line, verbosity, file)
-       call print('Constraint gradients :')
+       call print('Number of atoms = '//this%N, verbosity, file)
+       call print('Atoms: '//this%atom, verbosity, file)
+       call print('Data: '//this%data, verbosity, file)
+       if (this%k >= 0.0_dp) call print(trim(type)//' k = '//this%k, verbosity, file)
+       call print(trim(type)//' function = '//this%func, verbosity, file)
+       call print(trim(type)//' value = '//this%C, verbosity, file)
+       call print(trim(type)//' gradients :')
        do i = 1, this%N
-          write(line,'(3(f0.8,1x))'),this%dC_dr(3*i-2:3*i)
-          call print(line, verbosity, file)
+	  call print(this%dC_dr(3*i-2:3*i), verbosity, file)
        end do
-       write(line,'(a,f0.8)')'Time Derivative     = ', this%dC_dt
-       call print(line, verbosity, file)
-       write(line,'(a,f0.8)')'Lagrange multiplier(R) = ', this%lambdaR
-       call print(line, verbosity, file)
-       write(line,'(a,f0.8)')'Lagrange multiplier(V) = ', this%lambdaV
-       call print(line, verbosity, file)
-       write(line,'(a,f0.8)')'spring constant(k) = ', this%k
-       call print(line, verbosity, file)
+       call print('Time Derivative     = '// this%dC_dt, verbosity, file)
+       call print('Lagrange multiplier(R) = '// this%lambdaR, verbosity, file)
+       call print('Lagrange multiplier(V) = '// this%lambdaV, verbosity, file)
+       call print('spring constant(k) = '// this%k, verbosity, file)
     else
        call print('(uninitialised)', verbosity, file)
     end if
