@@ -9377,14 +9377,17 @@ if hasattr(quippy, 'Potential'):
    class TestElectrostatics(QuippyTestCase):
 
       def setUp(self):
-         self.at = alpha_quartz_cubic(**sio2.quartz_params['CASTEP_LDA'])
-         self.at.add_property('mask', False)
          self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
+         self.at = Atoms(n=2, lattice=10.0*fidentity(3))
+         self.at.pos[1] = [0.0,0.0,0.0]
+         self.at.pos[2] = [3.042*BOHR, 0.0, 0.0]
+         self.at.set_atoms([14, 8])
          self.at.set_cutoff(self.pot.cutoff())
+         self.at.add_property('mask', False)
          self.at.calc_connect()
 
       def test_write_electric_field(self):
-         self.pot.calc(self.at, calc_force=True, write_electrostatics=True, electrostatic_ngx=2)
+         self.pot.calc(self.at, force=True, write_electrostatics=True, electrostatic_grid=[5,5,5])
          
 if __name__ == '__main__':
    unittest.main()
