@@ -1711,10 +1711,13 @@ contains
   end function create_cluster_info_from_mark
 
 
-  !% Given an atoms structure with a 'hybrid_mark' property, this routine
-  !% creates a 'weight_region1' property, whose values are between 0 and
-  !% 1. Atoms marked with HYBRID_ACTIVE_MARK in 'hybrid_mark' get weight
-  !% 1, the neighbourhopping is done up to transition_hops times, during which
+  !% Given an atoms structure with a 'hybrid_mark' property, set to 
+  !% HYBRID_ACTIVE_MARK for some atoms, this routine adds transition 
+  !% and buffer regions, and creates a 'weight_region1' property, 
+  !% whose values are between 0 and 1. 
+  !%
+  !% Atoms marked with HYBRID_ACTIVE_MARK in 'hybrid_mark' get weight
+  !% 1.  Neighbour hopping is done up to transition_hops times, over which
   !% the weight linearly decreases to zero with hop count if 'weight_interpolation=hop_ramp'.
   !% If weight_interpolation=distance_ramp, weight is 1 up to
   !% distance_ramp_inner_radius, and goes linearly to 0 by distance_ramp_outer_radius,
@@ -1723,10 +1726,13 @@ contains
   !% on a sphere with radius distance_ramp_inner_radius from 
   !% distance_ramp_center, no hysteresis, and with transition_hops < 0 so hops
   !% continue until no more atoms are added.
-  !% Transition atoms are marked with HYBRID_TRANS_MARK. Further hopping 
-  !% is done 'buffer_hops' times and atoms are marked with HYBRID_BUFFER_MARK 
-  !% and given weight
-  !% zero.
+  !% Transition atoms are marked with HYBRID_TRANS_MARK.   
+  !% If hysteretic_buffer=F (default), buffer atoms are selected by
+  !% hopping buffer_hops times, otherwise hysteretically with 
+  !% radii hysteretic_buffer_inner_radius and hysteretic_buffer_outer_radius.
+  !% Buffer atoms are marked with HYBRID_BUFFER_MARK and given weight 0.
+  !% If hysteretic_connect is set, all hops are done on bonds in the hysteretic_connect
+  !% structure.
 
   subroutine create_hybrid_weights(at, args_str, error)
     type(Atoms), intent(inout) :: at
@@ -2106,7 +2112,7 @@ contains
                hybrid_mark(bufferlist%int(1,i)) = HYBRID_BUFFER_MARK
 
           ! Marking the outer layer with  HYBRID_BUFFER_OUTER_LAYER_MARK is
-          ! dealt with in create_cluster_hybrid_mark.
+          ! dealt with in create_cluster_from_mark.
 
        end do
 
