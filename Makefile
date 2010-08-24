@@ -166,10 +166,6 @@ doc: quip-reference-manual.pdf
 quip-reference-manual.pdf:
 	./Tools/mkdoc
 
-atomeye:
-	if [[ ! -d Tools/AtomEye ]]; then svn co svn+ssh://pastewka@cvs.tcm.phy.cam.ac.uk/home/jrk33/repo/trunk/AtomEye Tools/AtomEye; fi
-	make -C Tools/AtomEye QUIP_ROOT=${PWD}
-
 quippy:
 	make -C Tools/quippy install QUIP_ROOT=${PWD}
 
