@@ -59,7 +59,7 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
             command = "cd %s && make %s" % (dir, target)
             print 'Rebuilding target %s with command "%s"' % (target, command)
             if os.system(command) != 0:
-                raise RuntimeError('Command "%s" failed' % command)
+                raise SystemExit('Command "%s" failed' % command)
 
         # Have any of wrap_sources changed since we last scanned source files?
         f90doc_file = os.path.join(build_dir, '../../%s.f90doc' % modname)
