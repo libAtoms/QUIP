@@ -360,6 +360,9 @@ contains
        end if
 
        lattice = 0.0_dp
+       lattice(1,1) = 1.0_dp
+       lattice(2,2) = 1.0_dp
+       lattice(3,3) = 1.0_dp
        call initialise(empty_dictionary) ! pass an empty dictionary to prevent pos, species, z properties being created
        call initialise(at, 0, lattice, properties=empty_dictionary)
        call finalise(empty_dictionary)
