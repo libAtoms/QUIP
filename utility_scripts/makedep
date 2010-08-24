@@ -70,15 +70,20 @@ foreach my $file (@ARGV) {
   }
   $module_defs{$file} = [];
   $module_uses{$file} = [];
-  open FP, "<$file";
-  while (my $line = <FP>) {
-    if ($line =~ /^\s*module\s+(\S+)\s*(!.*)?$/) {
-      my $mod_name = `echo $1 | $MODULE_NAME $args`; chomp ($mod_name);
-      push @{$module_defs{$file}}, $mod_name;
-      push @local_modules, $mod_name;
-    }
-    if ($line =~ /^\s*use\s+(\S+)/) {
-      push @{$module_uses{$file}}, $1;
+  my $file_fpp = $file; $file_fpp =~ s/$ftnre/.fpp/;
+  if ( ! -f $file_fpp) {
+    warn "$file_fpp doesn't exist for $file, skipping\n";
+  } else {
+    open FP, "<$file_fpp";
+    while (my $line = <FP>) {
+      if ($line =~ /^\s*module\s+(\S+)\s*(!.*)?$/) {
+	my $mod_name = `echo $1 | $MODULE_NAME $args`; chomp ($mod_name);
+	push @{$module_defs{$file}}, $mod_name;
+	push @local_modules, $mod_name;
+      }
+      if ($line =~ /^\s*use\s+(\S+)/) {
+	push @{$module_uses{$file}}, $1;
+      }
     }
   }
   close FP;
