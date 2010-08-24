@@ -119,9 +119,7 @@ module cp2k_driver_module
                                      INPUT, OUTPUT, INOUT, &
                                      system_timer, &
                                      system_command, &
-#ifndef HAVE_QUIPPY
                                      system_abort, &
-#endif                               
                                      optional_default, &
                                      print, print_title, &
                                      string_to_int, string_to_real, round, &

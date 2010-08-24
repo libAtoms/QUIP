@@ -97,17 +97,21 @@ module error_module
   ! ---
 
   public :: system_abort
-#ifdef HAVE_QUIPPY
-  interface system_abort
-     subroutine system_abort(message)
-       character(*), intent(in) :: message
-     end subroutine system_abort
-  end interface system_abort
-#else
   interface system_abort
      module procedure error_abort_with_message
   endinterface
-#endif
+
+  interface quippy_running
+     function quippy_running()
+       logical :: quippy_running
+     end function quippy_running
+  end interface quippy_running
+
+  interface quippy_error_abort
+     subroutine quippy_error_abort(message)
+       character(*), intent(in) :: message
+     end subroutine quippy_error_abort
+  end interface quippy_error_abort
 
   public :: error_abort
   interface error_abort
@@ -274,7 +278,6 @@ contains
   endfunction get_error_string_and_clear
 
 
-#ifndef HAVE_QUIPPY
   !% Quit with an error message. Calls 'MPI_Abort' for MPI programs.
   subroutine error_abort_with_message(message)
     character(*),      intent(in) :: message
@@ -289,6 +292,8 @@ contains
     integer::PRINT_ALWAYS
     include "mpif.h"
 #endif
+
+    if (quippy_running()) call quippy_error_abort(message)
 
 #ifdef _MPI
     write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,trim(message)
@@ -317,7 +322,7 @@ contains
 #endif
 #endif
   end subroutine error_abort_with_message
-#endif
+
 
   !% Stop program execution since this error is not handled properly
   subroutine error_abort_from_stack(error)

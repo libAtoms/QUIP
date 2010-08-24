@@ -4323,7 +4323,7 @@ contains
 	 lat_pos = this%g .mult. this%pos(:,n)
 	 map_shift(:,n) = - floor(lat_pos+0.5_dp)
       end do
-   end subroutine
+end subroutine set_map_shift
 
 
   subroutine cell_of_pos(this, lat_pos, i, j, k)

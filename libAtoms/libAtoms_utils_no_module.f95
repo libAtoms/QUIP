@@ -32,8 +32,13 @@ subroutine c_system_initialise(verbosity)
 
 end subroutine c_system_initialise
 
-! Error handling routines callable from C
+function quippy_running()
+  use system_module, only: get_quippy_running
+  logical quippy_running
+  quippy_running = get_quippy_running()
+end function quippy_running
 
+! Error handling routines callable from C
 
 subroutine c_push_error_with_info(doc, fn, line, kind)
   use error_module
@@ -112,6 +117,7 @@ subroutine c_dictionary_get_n(this, n)
 end subroutine c_dictionary_get_n
 
 subroutine c_dictionary_get_key(this, i, key, length, error)
+  use error_module
   use dictionary_module
   integer, intent(in) :: this(12), i
   character(len=*), intent(out) :: key
@@ -128,6 +134,7 @@ subroutine c_dictionary_get_key(this, i, key, length, error)
 end subroutine c_dictionary_get_key
 
 subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
+  use error_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
   integer, intent(in) :: this(12)
@@ -153,6 +160,9 @@ subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
 end subroutine c_dictionary_query_key
 
 subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, error)
+  use error_module
+  use extendable_str_module
+  use system_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
   integer, intent(in) :: this(12)
@@ -242,6 +252,7 @@ subroutine c_dictionary_query_index(this, entry_i, key, type, dshape, dloc, erro
 end subroutine c_dictionary_query_index
 
 subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
+  use system_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
   integer, intent(in) :: this(12)

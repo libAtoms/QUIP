@@ -36,7 +36,7 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-OBJS = vacancy_map_mod.o 
+OBJS = vacancy_map_mod.o
 
 PROGRAMS = eval md \
   FC_to_xml calc_n_poles analyze_md_phonons \
@@ -61,13 +61,11 @@ EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP
 ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
-CRACK_OBJS = crackparams.o cracktools.o
+crack: % :  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
-crack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
-
-makecrack: % :  ${CRACK_OBJS} %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${CRACK_OBJS} ${LIBS}  ${LINKOPTS}
+makecrack: % : %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} crack makecrack

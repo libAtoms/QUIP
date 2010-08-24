@@ -131,12 +131,7 @@ interface
    subroutine register_callbackpot_sub(sub)
      interface 
         subroutine sub(at)
-#ifdef HAVE_QUIPPY
           integer, intent(in) :: at(12)
-#else
-          use Atoms_module, only: Atoms
-          type(Atoms), intent(inout) :: at
-#endif
         end subroutine sub
      end interface
    end subroutine register_callbackpot_sub
@@ -144,12 +139,7 @@ end interface
   
 interface 
    subroutine call_callbackpot_sub(i,at)
-#ifdef HAVE_QUIPPY
      integer, intent(in) :: at(12)
-#else
-     use Atoms_module, only: Atoms
-     type(Atoms), intent(inout) :: at
-#endif
      integer, intent(in) :: i
    end subroutine call_callbackpot_sub
 end interface
@@ -186,12 +176,7 @@ subroutine callbackpot_set_callback(this, callback, error)
   type(Callbackpot_type), intent(inout) :: this
   interface
      subroutine callback(at)
-#ifdef HAVE_QUIPPY
        integer, intent(in) :: at(12)
-#else
-       use Atoms_module, only: Atoms
-       type(Atoms), intent(inout) :: at
-#endif
      end subroutine callback
   end interface
   integer, intent(out), optional :: error
@@ -252,10 +237,8 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   integer, intent(out), optional :: error
 
   type(Atoms), target :: at_copy
-#ifdef HAVE_QUIPPY
   type(atoms_ptr_type) :: at_ptr
   integer :: at_ptr_i(12)
-#endif
   real(dp), pointer :: local_e_ptr(:), force_ptr(:,:)
   logical :: calc_energy, calc_local_e, calc_force, calc_virial
 
@@ -294,13 +277,9 @@ subroutine Callbackpot_Calc(this, at, energy, local_e, forces, virial, args_str,
   call set_value(at_copy%params, 'callback_id', this%callback_id)
   call set_value(at_copy%params, 'label', this%label)
 
-#ifdef HAVE_QUIPPY
   at_ptr%p => at_copy
   at_ptr_i = transfer(at_ptr, at_ptr_i)
   call call_callbackpot_sub(this%callback_id, at_ptr_i)
-#else
-  call call_callbackpot_sub(this%callback_id, at_copy)
-#endif
 
   if (present(energy)) then
      if (.not. get_value(at_copy%params, 'energy', energy)) then

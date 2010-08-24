@@ -470,7 +470,7 @@
        call set_value(params, 'force')
        
        !! TODO - possibly want to set more default options in the qm_args_str here
-       if (.not. dictionary_has_key(params, 'buffer_hops')) &
+       if (.not. has_key(params, 'buffer_hops')) &
  	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)

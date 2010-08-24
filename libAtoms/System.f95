@@ -69,6 +69,7 @@ module system_module
   integer :: traced_memory = 0
 
   logical, private :: system_do_timing = .false.
+  logical, private :: system_quippy_running = .false.
 
   type Stack
     integer:: pos
@@ -1705,12 +1706,13 @@ contains
   !% using MPI, by default we set the same random seed for each process.
   !% This also attempts to read the executable name, the number of command
   !% arguments, and the arguments themselves.
-  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing)
+  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing, quippy_running)
     integer,intent(in), optional::verbosity           !% mainlog output verbosity
     integer,intent(in), optional::seed                !% Seed for the random number generator.
     logical,intent(in), optional::mpi_all_inoutput    !% Print on all MPI nodes (false by default)
     logical,intent(in), optional::common_seed 
     logical,intent(in), optional::enable_timing           !% Enable system_timer() calls
+    logical,intent(in), optional::quippy_running       !% .true. if running under quippy (Python interface)
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
     character(30) :: arg
@@ -1778,6 +1780,8 @@ contains
       call print("Calls to system_timer will do nothing by default")
     endif
     call print('')
+
+    system_quippy_running = optional_default(.false., quippy_running)
 
   end subroutine system_initialise
 
@@ -2478,6 +2482,13 @@ contains
     system_do_timing = do_timing
   end subroutine set_timing
 
+  function get_quippy_running()
+    logical :: get_quippy_running
+
+    get_quippy_running = system_quippy_running
+
+  end function get_quippy_running
+
   function increase_stack(stack_size)
     integer, intent(in) :: stack_size
     integer :: increase_stack
@@ -2622,7 +2633,6 @@ contains
     n = mpi_n
   end function mpi_n_procs
 
-#ifdef HAVE_QUIPPY
   function reference_true()
     logical :: reference_true
     
@@ -2636,8 +2646,6 @@ contains
     reference_false = .false.
 
   end function reference_false
-#endif
-
 
 !% String to character array
 function s2a(s) result(a)

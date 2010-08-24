@@ -16,24 +16,24 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-:mod:`quippy.atomeye` -- Interface to AtomEye viewer
+:mod:`atomeye` -- Interface to AtomEye viewer
 ====================================================
 
-.. module:: quippy.atomeye
+.. module:: atomeye
    :platform: Unix
    :synopsis: Interface to AtomEye viewer
 
 .. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
 
 This module provides a high-level interface between quippy and the
-AtomEye extension module :mod:`quippy._atomeye`. Usually
+AtomEye extension module :mod:`_atomeye`. Usually
 :class:`Atoms` or :class:`AtomsList` objects will be visualised by
-calling their :meth:`~quippy.Atoms.show` method, but if you want to
+calling their :meth:`~quippy.atoms.Atoms.show` method, but if you want to
 customise the AtomEye view you'll have to interact with this module
 directly.
 
 Usually you'll have only one :class:`AtomEyeView` window open, which
-you can access with the :attr:`~quippy.atomeye.view` attribute. For
+you can access with the :attr:`atomeye.view` attribute. For
 example, to display a 2 x 2 x 2 supercell of bulk silicon, change the
 background colour to black, set the size and save an image you'd do
 the following::
@@ -90,7 +90,7 @@ The module defines the following methods and attributes:
       
    Class to represent an AtomEye viewer window. Constructing a new
    class opens a new window. Instances will typically be created with
-   the :meth:`quippy.Atoms.show` or :meth:`quippy.AtomsList.show`
+   the :meth:`quippy.atoms.Atoms.show` or :meth:`quippy.atomslist.AtomsList.show`
    methods or with the :func:`show` function defined in this
    module. The argument `copy` can be used to clone a viewer window; all
    other arguments are the same as for the :meth:`show` method.
@@ -104,9 +104,9 @@ The module defines the following methods and attributes:
 
    .. method:: show(obj, [property, frame, arrows])
 
-      Show `obj`, which should be either an :class:`~quippy.Atoms`
-      object or a sequence of :class:`~quippy.Atoms` objects (for
-      example an :class:`quippy.AtomsList`).
+      Show `obj`, which should be either an :class:`~quippy.atoms.Atoms`
+      object or a sequence of :class:`~quippy.atoms.Atoms` objects (for
+      example an :class:`quippy.atomslist.AtomsList`).
 
       `frame` can be used to specify one-based frame index if `obj` is
       a sequence of Atoms objects. The other arguments are as 

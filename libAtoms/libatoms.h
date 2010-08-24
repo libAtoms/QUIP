@@ -95,12 +95,19 @@
 extern void c_push_error_with_info_(char*, char*, int*, int*, size_t, size_t);
 extern void c_push_error_(char*, int*, int*, size_t);
 extern void c_error_abort_(int *);
-extern void c_error_clear_stack_();
+extern void c_error_clear_stack_(void);
 
 extern char error_h_info[1000];
 extern int error_h_line;
 extern int error_h_kind;
 
+/* quippy abort handler */
+
+#include <setjmp.h>
+extern jmp_buf environment_buffer;
+extern char abort_message[1024];
+void quippy_error_abort_(char *message, int len);
+void quippy_error_abort_int_handler(int signum);
 
 /* System.f95 (via libAtoms_utils_no_module.f95) */
 
@@ -165,5 +172,6 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
 		   int shuffle, int deflate, int deflate_level, int *error);
 void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error);
+
 
 #endif

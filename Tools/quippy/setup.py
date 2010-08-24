@@ -26,7 +26,6 @@ from numpy import get_include
 from numpy.distutils.system_info import get_info
 from distutils.file_util import copy_file
 from distutils.dep_util import newer, newer_group
-# from distutils.sysconfig import parse_makefile
 from custom_commands import *
 from distutils.util import get_platform
 
@@ -34,85 +33,6 @@ major, minor = sys.version_info[0:2]
 if (major, minor) < (2, 4):
     sys.stderr.write('Python 2.4 or later is needed to use this package\n')
     sys.exit(1)
-
-# parse_makefile() from Python 2.6.1 distutils.sys_config.
-
-# Regexes needed for parsing Makefile (and similar syntaxes,
-# like old-style Setup files).
-_variable_rx = re.compile("([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
-_findvar1_rx = re.compile(r"\$\(([A-Za-z][A-Za-z0-9_]*)\)")
-_findvar2_rx = re.compile(r"\${([A-Za-z][A-Za-z0-9_]*)}")
-
-def parse_makefile(fn, g=None):
-   """Parse a Makefile-style file.
-
-   A dictionary containing name/value pairs is returned.  If an
-   optional dictionary is passed in as the second argument, it is
-   used instead of a new dictionary.
-   """
-   from distutils.text_file import TextFile
-   fp = TextFile(fn, strip_comments=1, skip_blanks=1, join_lines=1)
-
-   if g is None:
-       g = {}
-   done = {}
-   notdone = {}
-
-   while 1:
-       line = fp.readline()
-       if line is None:                # eof
-           break
-       m = _variable_rx.match(line)
-       if m:
-           n, v = m.group(1, 2)
-           v = string.strip(v)
-           if "$" in v:
-               notdone[n] = v
-           else:
-               try: v = int(v)
-               except ValueError: pass
-               done[n] = v
-
-   # do variable interpolation here
-   while notdone:
-       for name in notdone.keys():
-           value = notdone[name]
-           m = _findvar1_rx.search(value) or _findvar2_rx.search(value)
-           if m:
-               n = m.group(1)
-               found = True
-               if n in done:
-                   item = str(done[n])
-               elif n in notdone:
-                   # get it on a subsequent round
-                   found = False
-               elif n in os.environ:
-                   # do it like make: fall back to environment
-                   item = os.environ[n]
-               else:
-                   done[n] = item = ""
-               if found:
-                   after = value[m.end():]
-                   value = value[:m.start()] + item + after
-                   if "$" in after:
-                       notdone[name] = value
-                   else:
-                       try: value = int(value)
-                       except ValueError:
-                           done[name] = string.strip(value)
-                       else:
-                           done[name] = value
-                       del notdone[name]
-           else:
-               # bogus variable reference; just drop it since we can't deal
-               del notdone[name]
-
-   fp.close()
-
-   # save the results in the global dictionary
-   g.update(done)
-   return g
-
 
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
@@ -126,56 +46,42 @@ def find_quip_root_and_arch():
     return (quip_root, quip_arch)
 
 
-def SourceImporter(infile, defines, include_dirs, cpp, is_wrap_source):
-    """Import source code from infile and copy to build_dir/package,
-       passing through filter if it's an F95 source file. The filter
-       converts private interface members to public and runs the cpp
-       preprocessor."""
-
-    def func(extension, build_dir):
-
-        outfile = os.path.join(build_dir, os.path.split(infile)[1])
-
-        if outfile.endswith('.f95'):
-            outfile = outfile[:-4]+'.f90'
-
-        cpp_opt = ' '.join(gen_preprocess_options(macros, include_dirs))
-
-        if infile.endswith('.f95'):
-            if newer(infile, outfile):
-                print 'filtering %s to create %s, is_wrap_source=%s' % (infile, outfile, is_wrap_source)
-                tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(infile)[:-4] + '.f90')
-                if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
-                f2py_wrapper_gen.filter_source_file(open(infile), open(tmp_file, 'w'), is_wrap_source)
-                os.system("%s %s %s | grep -v '^#' >  %s" % (' '.join(cpp), cpp_opt, tmp_file, outfile))
-
-                #os.remove(tmp_file)
-                if os.path.exists(tmp_file[:-4] + '.s'): os.remove(tmp_file[:-4] + '.s')
-        else:
-            copy_file(infile, outfile, update=True)
-
-        return outfile
-    
-    return func
-
-
-def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kindlines=[], short_names={}, initlines={}, 
-                      filtertypes=None, prefix='',callback_routines={}):
+def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kindlines=[], short_names={},
+                      initlines={}, filtertypes=None, prefix='',callback_routines={}):
     """Build a Fortran 90 wrapper for the given F95 source files
     that is suitable for use with f2py. Derived types are wrapped to 
     give access to methods and instance data."""
 
     def func(extension, build_dir):
-        in_files = ['%s/../%s' % (build_dir, f) for f in all_sources]
-        wrap_files = ['%s/../%s' % (build_dir, f) for f in wrap_sources]
 
+        # first ensure libraries are up to date
+        for (dir, target) in targets:
+            command = "cd %s && make %s" % (dir, target)
+            print 'Rebuilding target %s with command "%s"' % (target, command)
+            if os.system(command) != 0:
+                raise RuntimeError('Command "%s" failed' % command)
+
+        # Have any of wrap_sources changed since we last scanned source files?
         f90doc_file = os.path.join(build_dir, '../../%s.f90doc' % modname)
-        if newer_group(wrap_files, f90doc_file):
-            programs, modules, functs, subts = f90doc.read_files(in_files)
+        if newer_group(wrap_sources, f90doc_file):
+
+            # Rebuild .f90doc file containing interfaces of wrapped routines
+            tmp_wrap_sources = []
+            cpp_opt = ' '.join(gen_preprocess_options(macros, include_dirs))                
+            for src in wrap_sources:
+                tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(src))
+                if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
+                os.system("%s %s %s | grep -v '^#' > %s" % (' '.join(cpp), cpp_opt, src, tmp_file))
+                if src[:-4]+'.s': os.remove(src[:-4]+'.s')
+                tmp_wrap_sources.append(tmp_file)
+                
+            programs, modules, functs, subts = f90doc.read_files(tmp_wrap_sources)
             cPickle.dump((programs, modules, functs, subts), open(f90doc_file, 'w'))
         else:
+            # Read previous .f90doc file
             (programs, modules, functs, subts) = cPickle.load(open(f90doc_file))
 
+        # Update map from type names to module in which they are defined
         for mod, name in modules:
             for n in [t.name for t in mod.types]:
                 type_map[n.lower()] = mod.name
@@ -186,12 +92,14 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
             else: # assume it's a string
                 type_map.update(cPickle.load(open('%s.type' % item)))
 
+        # Try to load previous .spec file
         res = []
         fortran_spec = {}
         spec_file = os.path.join(build_dir, '../../%s.spec' % modname)
         if os.path.exists(spec_file):
             fortran_spec = cPickle.load(open(spec_file))
 
+        # Write new wrapper files and update .spec file
         wrap_modules = []
         for file in wrap_sources:
 
@@ -210,7 +118,9 @@ def F90WrapperBuilder(modname, all_sources, wrap_sources, dep_type_maps=[], kind
                 res.append(wrapper)
                 continue
 
-            public_symbols = f2py_wrapper_gen.find_public_symbols('%s/../%s' % (build_dir, file))
+            public_symbols = f2py_wrapper_gen.find_public_symbols(file)
+
+            print 'public_symbols = ', public_symbols
 
             tmpf = StringIO.StringIO()
             new_spec = f2py_wrapper_gen.wrap_mod(mod, type_map, tmpf, kindlines=kindlines, initlines=initlines,
@@ -305,76 +215,56 @@ endif""")
     return makefile
 
 
-def find_sources(makefile, quip_root):
-
-    source_dirs  = []
-    all_sources  = []
+def find_wrap_sources(makefile, quip_root):
+    source_dirs = []
     wrap_sources = []
     wrap_types   = []
+    libraries = []
+    targets = []
 
     libatoms_dir   = os.path.join(quip_root, 'libAtoms/')
-    makefile_libatoms   = parse_makefile(os.path.join(libatoms_dir,'Makefile'))
-    libatoms_sources = [os.path.join(libatoms_dir,f) for f in
-                        (expand_addsuffix(makefile_libatoms['LIBATOMS_F77_SOURCES']).split() +
-                         expand_addsuffix(makefile_libatoms['LIBATOMS_F95_SOURCES']).split() +
-                         expand_addsuffix(makefile_libatoms['LIBATOMS_C_SOURCES']).split())]
-    all_sources += libatoms_sources
-    wrap_sources += ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
+    wrap_sources += [os.path.join(libatoms_dir, s) for s in
+                     ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95',
                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms.f95', 'DynamicalSystem.f95',
-                     'clusters.f95','Structures.f95', 'CInOutput.f95', 'ParamReader.f95']
+                     'clusters.f95','Structures.f95', 'CInOutput.f95', 'ParamReader.f95']]
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection',
                    'dynamicalsystem', 'cinoutput', 'extendable_str']
     source_dirs.append(libatoms_dir)
+    libraries.append('atoms')
+    targets.append((quip_root, 'libAtoms'))
 
     if 'HAVE_GP' in makefile and int(makefile['HAVE_GP']) == 1:
         gp_dir = os.path.join(quip_root, 'gp')
-        gp_makefile = parse_makefile(os.path.join(gp_dir, 'Makefile'))
-        gp_sources = [os.path.join(gp_dir, f) for f in expand_addsuffix(gp_makefile['GP_F95_SOURCES']).split()]        
-        all_sources += gp_sources
+        source_dirs.append(gp_dir)
+        libraries.append('gp')
+        targets.append((quip_root, 'gp'))
         # wrap_sources += ... # list of Fortran files to wrap
         # wrap_types += .... # list of types to wrap
-        source_dirs.append(gp_dir)
-
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
-    makefile_quip_core = parse_makefile(os.path.join(quip_core_dir, 'Makefile'))
-
-    # Low-level routines and Interatomic Potentials
-    quip_core_sources = [os.path.join(quip_core_dir,f) for f in expand_addsuffix(makefile_quip_core['ALL_F95_FILES']).split()]
-
-    # Optionally include tight binding sources
-    if 'HAVE_TB' in makefile and int(makefile['HAVE_TB']) == 1:
-        quip_core_sources +=  [os.path.join(quip_core_dir,f) for f in
-                               expand_addsuffix(makefile_quip_core['TB_F77_SOURCES']).split() +
-                               expand_addsuffix(makefile_quip_core['TB_F95_SOURCES']).split()]
-
-    # Potential sources must come at end
-    quip_core_sources += [ os.path.join(quip_core_dir, f) for f in expand_addsuffix(makefile_quip_core['POT_F95_SOURCES']).split()]
-
-    all_sources += quip_core_sources
-    wrap_sources += ['Potential.f95']
-    wrap_types += ['potential']
     source_dirs.append(quip_core_dir)
+    wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95']]
+    wrap_types += ['potential']
+    libraries.append('quip')
+    targets.append((quip_root, 'QUIP_Core'))
 
-    if (not 'QUIPPY_NO_TOOLS' in makefile or
-        ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))):
+    do_tools = not 'QUIPPY_NO_TOOLS' in makefile or ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))
+    do_crack = not 'QUIPPY_NO_CRACK' in makefile or ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))
+       
+    if do_tools or do_crack:
         quip_utils_dir = os.path.join(quip_root, 'QUIP_Utils/')
-        makefile_quip_utils = parse_makefile(os.path.join(quip_utils_dir, 'Makefile'))
-        quip_utils_sources = [os.path.join(quip_utils_dir,f)+'.f95' for f in makefile_quip_utils['F95_FILES'].split()]
-        all_sources += quip_utils_sources
-        wrap_sources += ['elasticity.f95']
         source_dirs.append(quip_utils_dir)
+        libraries.append('quiputils')
+        targets.append((quip_root, 'QUIP_Utils'))
 
-    if (not 'QUIPPY_NO_CRACK' in makefile or
-        ('QUIPPY_NO_CRACK' in makefile and not int(makefile['QUIPPY_NO_CRACK']))):
-        crack_dir = os.path.join(quip_root, 'QUIP_Programs/')
-        crack_sources = [os.path.join(crack_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
-        all_sources += crack_sources
-        wrap_sources += ['cracktools.f95', 'crackparams.f95']
+    if do_tools:
+        wrap_sources += [os.path.join(quip_utils_dir, s) for s in ['elasticity.f95']]
+
+    if do_crack:
+        wrap_sources += [os.path.join(quip_utils_dir,f) for f in ('crackparams.f95', 'cracktools.f95')]
         wrap_types += ['crackparams']
-        source_dirs.append(crack_dir)
-
-    return source_dirs, all_sources, wrap_sources, wrap_types
+        
+    return source_dirs, wrap_sources, wrap_types, libraries, targets
 
 
 type_map = {}
@@ -409,7 +299,7 @@ library_dirs  = [s[2:] for s in fields if s[:2] == '-L']
 extra_link_args = [s for s in fields if not s[2:] in libraries and not s in libraries and not s[2:] in library_dirs and not s[2:] in include_dirs]
 
 # Preprocessor macros
-macros = [('HAVE_QUIPPY',None), ('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
+macros = [('SVN_VERSION',r'\"%s\"' % os.popen('svnversion -n .').read())]
 for defn in makefile['DEFINES'].split():
     if defn[:2] == '-D':
         if '=' in defn:
@@ -419,15 +309,6 @@ for defn in makefile['DEFINES'].split():
             macros.append((defn[2:], None))
     elif defn[:2] == '-U':
         macros.append(defn[2:])
-
-macros.extend([
-    ('NUMPY_PTR_SIZE', numpy.dtype('O').itemsize),
-    ('NUMPY_INTEGER',  numpy.dtype('int32').num),
-    ('NUMPY_REAL_DP',  numpy.dtype('d').num),
-    ('NUMPY_LOGICAL',  numpy.dtype('int32').num),
-    ('NUMPY_COMPLEX',  numpy.dtype('complex').num),
-    ('NUMPY_CHAR',     numpy.dtype('S').num)
-    ])
 
 print 'include_dirs', include_dirs
 print 'libraries', libraries
@@ -490,8 +371,13 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
         default_options['install'][n] = v
 
 # Find Fortran source code files
-source_dirs, all_sources, wrap_sources, wrap_types = find_sources(makefile, quip_root)
+source_dirs, wrap_sources, wrap_types, quip_libraries, quip_targets = find_wrap_sources(makefile, quip_root)
 include_dirs.extend(source_dirs)
+libraries.extend(quip_libraries)
+
+# Add build.${QUIP_ARCH} to include and library paths
+include_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
+library_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
 
 # arraydata extension module
 f2py_info = get_info('f2py')
@@ -499,24 +385,19 @@ arraydata_ext = Extension(name='quippy.arraydata',
                           sources=['arraydatamodule.c'] + f2py_info['sources'],
                           include_dirs=f2py_info['include_dirs'])
 
-# underlying quippy library, libquippy.a
-quippy_lib = ('quippy', {
-    'sources': [ SourceImporter(f, macros, source_dirs, cpp, os.path.basename(f) in wrap_sources) for f in all_sources ],
-    'include_dirs':  include_dirs,
-    'macros': macros,
-    })
 
 # _quippy extension module
 quippy_ext = Extension(name='quippy._quippy',
                        sources=[ F90WrapperBuilder('quippy',
-                                                   [os.path.basename(f)[:-4]+'.f90' for f in all_sources if f.endswith('.f95')],
-                                                   [os.path.basename(f)[:-4]+'.f90' for f in wrap_sources],
+                                                   wrap_sources=wrap_sources,
+                                                   cpp=cpp,
+                                                   targets=quip_targets,
                                                    dep_type_maps=[{'c_ptr': 'iso_c_binding',
                                                                    'dictionary_t':'FoX_sax'}], 
                                                    kindlines=['use system_module, only: dp, qp',
                                                               'use iso_c_binding, only: c_intptr_t'],
                                                    short_names={'dynamicalsystem':'ds',
-                                                                'metapotential': 'metapot'},
+                                                                'potential': 'pot'},
                                                    initlines={'atoms': ('atoms_module', ('call atoms_repoint(%(PTR)s)',
                                                                                          'if (present(%(ARG)s)) call atoms_repoint(%(PTR)s)'))},
                                                    filtertypes=wrap_types,
@@ -530,7 +411,7 @@ quippy_ext = Extension(name='quippy._quippy',
                                  ],
                        library_dirs=library_dirs,
                        include_dirs=include_dirs,
-                       libraries=[quippy_lib] + libraries,
+                       libraries=libraries,
                        define_macros= macros,
                        extra_link_args=extra_link_args)
 
@@ -543,7 +424,7 @@ setup(name='quippy',
       data_files = [('quippy',[os.path.join(default_options['build']['build_base'],'quippy.spec')])],
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext},
-#      version=os.popen('svnversion -n .').read(),
+      version=os.popen('svnversion -n .').read(),
       description='Python bindings to QUIP code',
       author='James Kermode',
       author_email='james.kermode@kcl.ac.uk',

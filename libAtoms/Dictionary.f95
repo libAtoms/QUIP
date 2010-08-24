@@ -44,6 +44,11 @@ module dictionary_module
 
   implicit none
 
+  private
+  
+  public :: T_NONE, T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, &
+       T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_LOGICAL_A, &
+       T_CHAR, T_CHAR_A, T_DATA, T_INTEGER_A2, T_REAL_A2
   integer, parameter :: &
        T_NONE = 0, &
        T_INTEGER = 1, T_REAL =2, T_COMPLEX = 3, T_LOGICAL=4, &
@@ -51,14 +56,16 @@ module dictionary_module
        T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13 !% OMIT
 
   ! Maintained for backwards compatibility with old NetCDF files using type attribute
+  public :: PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
   integer, parameter :: &
        PROPERTY_INT = 1, PROPERTY_REAL = 2, PROPERTY_STR = 3, PROPERTY_LOGICAL = 4
 
+  public :: C_KEY_LEN, dict_field_length, dict_n_fields
   integer, parameter :: C_KEY_LEN = 256
-
   integer, parameter :: dict_field_length = 1023  !% Maximum field width during parsing
   integer, parameter :: dict_n_fields = 100       !% Maximum number of fields during parsing
 
+  public :: dictdata
   type DictData
      integer, dimension(:), allocatable :: d
   end type DictData
@@ -92,6 +99,7 @@ module dictionary_module
 
   integer, parameter :: n_entry_block = 10 !% OMIT
 
+  public Dictionary
   type Dictionary
      integer :: N !% number of entries in use
      type(extendable_str), allocatable :: keys(:) !% array of keys
@@ -99,39 +107,36 @@ module dictionary_module
      integer :: cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed
   end type Dictionary
 
+  public c_dictionary_ptr_type
   type c_dictionary_ptr_type
      type(Dictionary), pointer :: p
   end type c_dictionary_ptr_type
   
   !% Initialise a new empty dictionary
-  private :: dictionary_initialise
+  public initialise
   interface initialise
      module procedure dictionary_initialise
   end interface initialise
 
   !% Finalise dictionary
-  private :: dictionary_finalise, dictentry_finalise
+  public finalise
   interface finalise
      module procedure dictionary_finalise, dictentry_finalise
   end interface finalise
 
   !% Print a DictEntry or a Dictionary
-  private :: dictentry_print, dictionary_print
+  public print
   interface print
      module procedure dictentry_print, dictionary_print
   end interface print
 
-  private :: dictionary_print_keys
+  public print_keys
   interface print_keys
      module procedure dictionary_print_keys
   end interface print_keys
 
   !% Set a value in a Dictionary
-  private :: dictionary_set_value_none
-  private :: dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
-  private :: dictionary_set_value_i_a, dictionary_set_value_r_a, dictionary_set_value_c_a, dictionary_set_value_l_a
-  private :: dictionary_set_value_s, dictionary_set_value_s_es, dictionary_set_value_s_a, dictionary_set_value_s_a2
-  private :: dictionary_set_value_d
+  public set_value
   interface set_value
      module procedure dictionary_set_value_none
      module procedure dictionary_set_value_i, dictionary_set_value_r, dictionary_set_value_c, dictionary_set_value_l
@@ -143,9 +148,7 @@ module dictionary_module
      module procedure dictionary_set_value_r_a2
   end interface set_value
 
-  private :: dictionary_set_value_pointer_i, dictionary_set_value_pointer_r
-  private :: dictionary_set_value_pointer_c, dictionary_set_value_pointer_l, dictionary_set_value_pointer_s
-  private :: dictionary_set_value_pointer_i2, dictionary_set_value_pointer_r2
+  public set_value_pointer
   interface set_value_pointer
      module procedure dictionary_set_value_pointer_i
      module procedure dictionary_set_value_pointer_r
@@ -157,10 +160,7 @@ module dictionary_module
   end interface set_value_pointer
 
   !% Get a value from a Dictionary
-  private :: dictionary_get_value_i, dictionary_get_value_r, dictionary_get_value_c, dictionary_get_value_l
-  private :: dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
-  private :: dictionary_get_value_s, dictionary_get_value_s_es, dictionary_get_value_s_a, dictionary_get_value_s_a2
-  private :: dictionary_get_value_d
+  public get_value
   interface get_value
      module procedure dictionary_get_value_i, dictionary_get_value_r, dictionary_get_value_c, dictionary_get_value_l
      module procedure dictionary_get_value_i_a, dictionary_get_value_r_a, dictionary_get_value_c_a, dictionary_get_value_l_a
@@ -170,9 +170,7 @@ module dictionary_module
      module procedure dictionary_get_value_r_a2
   end interface get_value
 
-  private :: dictionary_assign_pointer_i, dictionary_assign_pointer_r
-  private :: dictionary_assign_pointer_c, dictionary_assign_pointer_l, dictionary_assign_pointer_s
-  private :: dictionary_assign_pointer_i2, dictionary_assign_pointer_r2
+  public assign_pointer
   interface assign_pointer
      module procedure dictionary_assign_pointer_i
      module procedure dictionary_assign_pointer_r
@@ -183,9 +181,7 @@ module dictionary_module
      module procedure dictionary_assign_pointer_r2
   end interface assign_pointer
 
-  private :: dictionary_add_array_i, dictionary_add_array_r
-  private :: dictionary_add_array_c, dictionary_add_array_l, dictionary_add_array_s
-  private :: dictionary_add_array_i2, dictionary_add_array_r2
+  public add_array
   interface add_array
      module procedure dictionary_add_array_i
      module procedure dictionary_add_array_r
@@ -204,38 +200,45 @@ module dictionary_module
   end interface add_array
 
   !% Remove an entry from a Dictionary
-  private :: dictionary_remove_value
+  public remove_value
   interface remove_value
      module procedure dictionary_remove_value
   end interface remove_value
 
   !% Write a string representation of this dictionary
+  public write_string
   interface write_string
      module procedure dictionary_write_string
   end interface write_string
 
   !% Read into this dictionary from a string
+  public read_string
   interface read_string
      module procedure dictionary_read_string
   end interface read_string
 
+  public subset
   interface subset
      module procedure dictionary_subset
      module procedure dictionary_subset_es
   end interface subset
 
+  public swap
   interface swap
      module procedure dictionary_swap
   end interface swap
 
+  public has_key
   interface has_key
      module procedure dictionary_has_key
   end interface has_key
 
+  public bcast
   interface bcast
      module procedure dictionary_bcast
   end interface bcast
 
+  public assignment(=)
   interface assignment(=)
      module procedure dictionary_deepcopy
 #ifdef POINTER_COMPONENT_MANUAL_COPY
@@ -244,7 +247,7 @@ module dictionary_module
 #endif
   end interface assignment(=)
 
-  private :: add_entry, extend_entries, remove_entry
+  public :: dictionary_get_key, dictionary_get_type_and_size, dictionary_get_array, lookup_entry_i, lower_case
 
 contains
 
@@ -2769,16 +2772,17 @@ call print("dictionary_assign_pointer_r2 60 returning " //dictionary_assign_poin
     
   end subroutine dictionary_deepcopy
 
-
-#ifdef HAVE_QUIPPY
   subroutine dictionary_get_array(this, key, nd, dtype, dshape, dloc)
+    use iso_c_binding, only: c_intptr_t
     type(Dictionary), intent(in) :: this
     character(len=*), intent(in) :: key
     integer, intent(out) :: nd
     integer, intent(out) :: dtype
     integer, dimension(10), intent(out) :: dshape
-    integer(NUMPY_PTR_SIZE), intent(out) :: dloc
+    integer(c_intptr_t), intent(out) :: dloc
     
+    integer, parameter :: NUMPY_INTEGER=5, NUMPY_REAL_DP=12, NUMPY_LOGICAL=5, NUMPY_COMPLEX=15, NUMPY_CHAR=18
+
     integer entry_i
 
     nd = 0
@@ -2837,7 +2841,6 @@ call print("dictionary_assign_pointer_r2 60 returning " //dictionary_assign_poin
     end select
 
   end subroutine dictionary_get_array
-#endif
 
      
 #ifdef POINTER_COMPONENT_MANUAL_COPY
