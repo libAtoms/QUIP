@@ -46,6 +46,7 @@ module paramreader_module
   use system_module
   use table_module
   use dictionary_module
+  use extendable_str_module
 
   implicit none
 

@@ -802,7 +802,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 !      at%pos = at%pos + (at%lattice .mult. at%travel)
 !      at%travel = 0
 !    endif
-  end subroutine
+end subroutine undo_travel
 
   ! test the gradient given a potential, string to pass to calc, and atoms structure
   function pot_test_gradient(pot, at, do_pos, do_lat, args_str, dir_field)
@@ -1472,7 +1472,7 @@ max_atom_rij_change = 1.038_dp
     dg = lat_factor*reshape(xx(1:9), (/ 3,3 /) )
     at_pos = reshape(xx(10:), (/ 3, at_N /) )
 
-  end subroutine
+end subroutine unpack_pos_dg
 
   ! pack a 3xN 2-D array into a 1-D array
   subroutine pack_pos_dg(x2d, dg2d, x, lat_factor)
@@ -1494,7 +1494,7 @@ max_atom_rij_change = 1.038_dp
 
       x(10:) = reshape(x2d, (/ size(x2d) /) )
 
-  end subroutine
+end subroutine pack_pos_dg
 
   subroutine Potential_read_params_xml(this, param_str)
      type(Potential), intent(inout), target :: this
@@ -1580,12 +1580,7 @@ max_atom_rij_change = 1.038_dp
     type(Potential), intent(inout) :: this
     interface
        subroutine callback(at)
-#ifdef HAVE_QUIPPY
          integer, intent(in) :: at(12)
-#else
-         use Atoms_module, only: Atoms
-         type(Atoms), intent(inout) :: at
-#endif
        end subroutine callback
     end interface
     

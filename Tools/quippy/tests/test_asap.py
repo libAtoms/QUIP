@@ -9377,7 +9377,6 @@ if hasattr(quippy, 'Potential'):
    class TestElectrostatics(QuippyTestCase):
 
       def setUp(self):
-         verbosity_set_minimum(PRINT_VERBOSE)
          self.at = alpha_quartz_cubic(**sio2.quartz_params['CASTEP_LDA'])
          self.at.add_property('mask', False)
          self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))

@@ -23,9 +23,10 @@ is generated. We make several changes to f2py:
      If an argument to an f2py wrapped function is optional and is not given, replace it
      with ``NULL``.
      
-  2. Allow Fortran routines to raise a :exc:`RuntimeError` exception with a message
-     by calling the :cfunc:`system_abort` function. This is implemented using a :cfunc:`setjmp`/
-     :cfunc:`longjmp` trap.
+  2. Allow Fortran routines to raise a :exc:`RuntimeError` exception
+     with a message by calling an external function
+     :cfunc:`quippy_error_abort`. This is implemented using a
+     :cfunc:`setjmp`/ :cfunc:`longjmp` trap.
 
   3. Allow Fortran routines to be interrupted with :kbd:`Ctrl+C` by installing a custom
      interrupt handler before the call into Fortran is made. After the Fortran routine
@@ -46,26 +47,7 @@ numpy.f2py.capi_maps.cformat_map['long_long'] = '%Ld'
 import numpy.f2py.rules, numpy.f2py.cb_rules
 
 numpy.f2py.rules.module_rules['modulebody'] = numpy.f2py.rules.module_rules['modulebody'].replace('#includes0#\n', """#includes0#
-
-/* Added by James Kermode */
-#include <setjmp.h>
-jmp_buf environment_buffer;
-char abort_message[1024];
-
-void system_abort_(char *message, int len)
-{
-  strncpy(abort_message, message, len);
-  abort_message[len] = '\\0';
-  longjmp(environment_buffer,0);
-}
-
-void system_abort_int_handler(int signum)
-{
-  char message[] = "Interrupt occured";
-  system_abort_(message, strlen(message));
-}
-/* end addition */
-""")
+#include <libatoms.h>""")
 
 numpy.f2py.rules.routine_rules['body'] = numpy.f2py.rules.routine_rules['body'].replace('\tvolatile int f2py_success = 1;\n', """\tvolatile int f2py_success = 1;
 \tint setjmpvalue; /* James Kermode - for setjmp */
@@ -73,7 +55,7 @@ numpy.f2py.rules.routine_rules['body'] = numpy.f2py.rules.routine_rules['body'].
 
 numpy.f2py.rules.routine_rules['body'] = numpy.f2py.rules.routine_rules['body'].replace('#callfortranroutine#\n', """/* setjmp() exception handling added by James Kermode */
 PyOS_sighandler_t _npy_sig_save;
-_npy_sig_save = PyOS_setsig(SIGINT, system_abort_int_handler);
+_npy_sig_save = PyOS_setsig(SIGINT, quippy_error_abort_int_handler);
 setjmpvalue = setjmp(environment_buffer);
 if (setjmpvalue != 0) {
   PyOS_setsig(SIGINT, _npy_sig_save);

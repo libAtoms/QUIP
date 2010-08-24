@@ -966,12 +966,7 @@ contains
     type(Potential_Simple), intent(inout) :: this
     interface
        subroutine callback(at)
-#ifdef HAVE_QUIPPY
          integer, intent(in) :: at(12)
-#else
-         use Atoms_module, only: Atoms
-         type(Atoms), intent(inout) :: at
-#endif
        end subroutine callback
     end interface
     integer, intent(out), optional :: error

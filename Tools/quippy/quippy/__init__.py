@@ -58,12 +58,12 @@ def quippy_cleanup():
    _quippy.qp_verbosity_pop()
    _quippy.qp_system_finalise()
 
-_quippy.qp_system_initialise(-1)
+_quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
 _quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 trial_spec_files = [os.path.join(os.path.dirname(__file__),'quippy.spec'),
-                    os.path.join(os.getcwd(), 'quippy.spec')]
+                    os.path.join(os.getcwd(), 'build.'+os.environ['QUIP_ARCH'], 'quippy.spec')]
                     
 for spec_file in trial_spec_files:
    try:

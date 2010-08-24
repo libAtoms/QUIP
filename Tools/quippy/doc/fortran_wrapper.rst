@@ -50,9 +50,6 @@ installed quippy package), and the last two at run-time.
    conversion between Python object instances and Fortran derived-type
    variables, converting arguments back and forth automatically.
 
-4. :mod:`quippy.extras` subclasses some of the automatically generated
-   classes to create a more Pythonic look and feel. 
-
 Contents:
 
 .. toctree::
@@ -61,7 +58,6 @@ Contents:
    f2py_wrapper_gen.rst
    patch_f2py.rst
    oo_fortran.rst
-   extras.rst
 
 References:
 

@@ -98,7 +98,8 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       return True
 
    def no_private_symbols(sub):
-      return sub.name.lower() in [s.lower() for s in public_symbols]
+      subname = sub_to_interface.get(sub.name, sub.name)
+      return subname.lower() in [s.lower() for s in public_symbols]
       
 
    debug(mod.name)
@@ -107,17 +108,18 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
    if out is None:
       out = sys.stdout #open('%s.f90' %shortname, 'w')
 
-
-   # Don't care about interfaces, so put subts and functs back
-   # into flat lists. Copy interface doc comment to all members.
+   # Interfaces
+   sub_to_interface = {}
    subts = filter(no_callbacks, mod.subts)
    functs = filter(no_callbacks, mod.functs)
    for intf in mod.interfaces:
+      if intf.name.startswith('operator('): continue
       thissubs = filter(no_callbacks, intf.subts)
       thisfuncts = filter(no_callbacks, intf.functs)
       subts.extend(thissubs)
       functs.extend(thisfuncts)
-
+      for sub in thissubs + thisfuncts:
+         sub_to_interface[sub.name] = intf.name
 
    subts = filter(no_allocatables_or_pointers, subts)
    functs = filter(no_allocatables_or_pointers, functs)
@@ -134,7 +136,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
       functs = filter(no_bad_types, functs)
 
    if public_symbols is not None:
-      print 'Filterting routines to exclude routines not in list of public symbols %s' % public_symbols
+      print 'Filtering routines to exclude routines not in list of public symbols %s' % public_symbols
       subts = filter(no_private_symbols, subts)
       functs = filter(no_private_symbols, functs)
 
@@ -442,15 +444,25 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
 
       for line in init:
          println(line)
-            
-      if hasattr(sub, 'ret_val'):
-          argfilt = [ name for name,arg in zip(argnames,args) if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
-          if sub.ret_val.type.startswith('type'):
-             println('%s_ptr%%p = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))                          
-          else:
-             println('%s = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))
+
+      subname = sub_to_interface.get(sub.name, sub.name)
+
+      if subname == 'assignment(=)':
+         assert len(argnames) == 2
+         to_arg = argnames[0]
+         to_arg = to_arg[to_arg.index('=')+1:]
+         from_arg = argnames[1]
+         from_arg = from_arg[from_arg.index('=')+1:]
+         println('%s = %s' % (to_arg, from_arg))
       else:
-          println('call %s(%s)' % (sub.name, join_and_split_lines(argnames)))
+         if hasattr(sub, 'ret_val'):
+             argfilt = [ name for name,arg in zip(argnames,args) if not (hasattr(arg, 'is_ret_val') and arg.is_ret_val) ]
+             if sub.ret_val.type.startswith('type'):
+                println('%s_ptr%%p = %s(%s)' % (sub.ret_val.name, sub.name, join_and_split_lines(argfilt)))                          
+             else:
+                println('%s = %s(%s)' % (sub.ret_val.name, subname, join_and_split_lines(argfilt)))
+         else:
+             println('call %s(%s)' % (subname, join_and_split_lines(argnames)))
 
       for var in transfer_out: println('%s = transfer(%s_ptr, %s)' % (var,var,var))
 
@@ -717,7 +729,7 @@ def filter_source_file(infile, outfile, is_wrapper=False):
          in_interface = True
          interface_lines = []
          outfile.write(line)
-      elif is_wrapper and sline.startswith('end interface') or sline.startswith('endinterface'):
+      elif is_wrapper and (sline.startswith('end interface') or sline.startswith('endinterface')):
          in_interface = False
          outfile.write(line)
          for interface_line in interface_lines:
@@ -737,7 +749,7 @@ def filter_source_file(infile, outfile, is_wrapper=False):
             sline = sline[len('module procedure'):]
             if '!' in sline: sline = sline[:sline.index('!')]
             interface_lines.append(sline)
-      elif is_wrapper and sline.startswith('private::') or sline.startswith('private ::'):
+      elif is_wrapper and (sline.startswith('private::') or sline.startswith('private ::')):
          outfile.write('!%s' % line)
       else:
          outfile.write(line)

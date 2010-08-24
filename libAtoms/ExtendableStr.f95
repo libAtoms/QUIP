@@ -467,7 +467,7 @@ function extendable_str_cat_string(this, str)
 
   call initialise(extendable_str_cat_string, this)
   call concat(extendable_str_cat_string, str)
-end function
+end function extendable_str_cat_string
 
 function string_cat_extendable_str(str, this)
   character(*), intent(in)          :: str
@@ -479,7 +479,7 @@ function string_cat_extendable_str(str, this)
 
   string_cat_extendable_str = str
   string_cat_extendable_str(max(1,len(str)+1):) = string(this)
-end function
+end function string_cat_extendable_str
 
 function extendable_str_cat_extendable_str(this, str)
   type(extendable_str), intent(in)  :: this
@@ -491,7 +491,7 @@ function extendable_str_cat_extendable_str(this, str)
 
   call initialise(extendable_str_cat_extendable_str, this)
   call concat(extendable_str_cat_extendable_str, string(str))
-end function
+end function extendable_str_cat_extendable_str
 
 subroutine extendable_str_assign_string(to, from)
   type(extendable_str), intent(out)  :: to

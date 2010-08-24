@@ -203,6 +203,17 @@
       automatically.  If `zero_l` is true then the angular momentum is
       also zeroed.
 
+   .. method:: run(pot, [dt, n_steps, save_interval, connect_interval, args_str])
+
+      Generator to return snapshots from a trajectory. For each step,
+      forces are evaluated using the :class:`Potential` `pot` and
+      the DynamicalSystem is advanced by a time `dt` (default 1 fs).
+      `n_steps` (default 10 steps) are carried out in total, with
+      the generator yielding a result every `save_interval`
+      steps. The connectivity is recalculated every
+      `connect_interval` steps.  `args_str` can be used to supply
+      extra arguments to :meth:`Potential.calc`.
+
    .. method:: temperature(this[, region, include_all, instantaneous])
 
       Return the temperature, assuming each degree of freedom

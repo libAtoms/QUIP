@@ -141,10 +141,9 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          self.set_value(k,s2a(v))
 
    def __delitem__(self, k):
-      i = self.lookup_entry_i(k)
-      if i == -1:
+      if not k in self:
          raise KeyError('Key %s not found in Dictionary' % k)
-      self.remove_entry(i)
+      self.remove_value(k)
 
    def __repr__(self):
       return ParamReaderMixin.__repr__(self)

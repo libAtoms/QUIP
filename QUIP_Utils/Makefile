@@ -40,7 +40,7 @@ else
 endif
 
 
-F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml
+F95_FILES =  ts_params transition_state elasticity phonons restraints_constraints_xml crackparams cracktools 
 OBJS = ${addsuffix .o, ${F95_FILES}}
 
 

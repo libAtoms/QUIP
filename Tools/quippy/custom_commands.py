@@ -19,7 +19,7 @@
 """Overridden versions of distutils `clean` and `build_ext` commands,
 and a new `test` command to find and run unittests."""
 
-import sys, os, glob
+import sys, os, glob, re, string
 
 from distutils.command.clean import clean as _clean
 from numpy.distutils.command.build_ext import build_ext as _build_ext
@@ -34,6 +34,84 @@ from numpy.distutils.misc_util import filter_sources, has_f_sources, \
      get_numpy_include_dirs, is_sequence, get_build_architecture
 from numpy.distutils.ccompiler import new_compiler
 from unittest import TestLoader, TextTestRunner
+
+# parse_makefile() from Python 2.6.1 distutils.sys_config.
+
+# Regexes needed for parsing Makefile (and similar syntaxes,
+# like old-style Setup files).
+_variable_rx = re.compile("([a-zA-Z][a-zA-Z0-9_]+)\s*=\s*(.*)")
+_findvar1_rx = re.compile(r"\$\(([A-Za-z][A-Za-z0-9_]*)\)")
+_findvar2_rx = re.compile(r"\${([A-Za-z][A-Za-z0-9_]*)}")
+
+def parse_makefile(fn, g=None):
+   """Parse a Makefile-style file.
+
+   A dictionary containing name/value pairs is returned.  If an
+   optional dictionary is passed in as the second argument, it is
+   used instead of a new dictionary.
+   """
+   from distutils.text_file import TextFile
+   fp = TextFile(fn, strip_comments=1, skip_blanks=1, join_lines=1)
+
+   if g is None:
+       g = {}
+   done = {}
+   notdone = {}
+
+   while 1:
+       line = fp.readline()
+       if line is None:                # eof
+           break
+       m = _variable_rx.match(line)
+       if m:
+           n, v = m.group(1, 2)
+           v = string.strip(v)
+           if "$" in v:
+               notdone[n] = v
+           else:
+               try: v = int(v)
+               except ValueError: pass
+               done[n] = v
+
+   # do variable interpolation here
+   while notdone:
+       for name in notdone.keys():
+           value = notdone[name]
+           m = _findvar1_rx.search(value) or _findvar2_rx.search(value)
+           if m:
+               n = m.group(1)
+               found = True
+               if n in done:
+                   item = str(done[n])
+               elif n in notdone:
+                   # get it on a subsequent round
+                   found = False
+               elif n in os.environ:
+                   # do it like make: fall back to environment
+                   item = os.environ[n]
+               else:
+                   done[n] = item = ""
+               if found:
+                   after = value[m.end():]
+                   value = value[:m.start()] + item + after
+                   if "$" in after:
+                       notdone[name] = value
+                   else:
+                       try: value = int(value)
+                       except ValueError:
+                           done[name] = string.strip(value)
+                       else:
+                           done[name] = value
+                       del notdone[name]
+           else:
+               # bogus variable reference; just drop it since we can't deal
+               del notdone[name]
+
+   fp.close()
+
+   # save the results in the global dictionary
+   g.update(done)
+   return g
 
 class clean(_clean):
     def initialize_options(self):
@@ -65,14 +143,9 @@ class clean(_clean):
                     log.warn("'%s' does not exist -- can't clean it",
                              directory)
 
-        # just for the heck of it, try to remove the base build directory:
-        # we might have emptied it right now, but if not we don't care
-        if not self.dry_run:
-            try:
-                os.rmdir(self.build_base)
-                log.info("removing '%s'", self.build_base)
-            except OSError:
-                pass
+        if not self.dry_run and os.path.exists(self.build_base):
+            remove_tree(self.build_base)
+            log.info("removing '%s'", self.build_base)
 
 class build_ext(_build_ext):
     """Subclass of numpy.distutils.command.build_ext.build_ext with two new features:

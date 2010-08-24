@@ -112,7 +112,7 @@ module linearalgebra_module
      module procedure matrix_print_mainlog, matrix_print, vector_print_mainlog, vector_print
      module procedure matrix_z_print_mainlog, matrix_z_print, vector_z_print_mainlog, vector_z_print
      module procedure integer_array_print, integer_array_print_mainlog, logical_array_print_mainlog
-     module procedure int_matrix_print_mainlog, int_matrix_print
+     module procedure int_matrix_print_mainlog, int_matrix_print, logical_array_print
   end interface
 
   private :: matrix_z_print_mathematica, matrix_print_mathematica
@@ -150,7 +150,9 @@ module linearalgebra_module
 
   !% Matrix product with the diagonal matrix constructed from a vector in subroutine form,
   !% with no return value allocated on the stack
+#ifdef HAVE_QP
   private :: matrix_product_vect_asdiagonal_sub_qqq
+#endif
   private :: matrix_product_vect_asdiagonal_sub_ddd
   private :: matrix_product_vect_asdiagonal_sub_zzd
   private :: matrix_product_vect_asdiagonal_sub_zdz
@@ -586,6 +588,7 @@ CONTAINS
    ! subroutine form of m(:,:) .multd. v(:) for real = real * real
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
+#ifdef HAVE_QP
    subroutine matrix_product_vect_asdiagonal_sub_qqq(lhs, matrix, vect) 
     real(qp), dimension(:,:), intent(out) :: lhs
     real(qp), dimension(:,:), intent(in) :: matrix
@@ -598,6 +601,7 @@ CONTAINS
     enddo
      
    endsubroutine matrix_product_vect_asdiagonal_sub_qqq
+#endif
 
    subroutine matrix_product_vect_asdiagonal_sub_ddd(lhs, matrix, vect) 
     real(dp), dimension(:,:), intent(out) :: lhs
@@ -1281,6 +1285,7 @@ CONTAINS
 
   end function matrix_trace
 
+#ifdef HAVE_QP
   function matrix_trace_q(matrix) result(tr)
     real(qp),intent(in), dimension(:,:) ::matrix
     real(qp)::tr
@@ -1294,6 +1299,7 @@ CONTAINS
     end do
 
   end function matrix_trace_q
+#endif
 
   !returns trace of the result matrix
   function matrix_trace_mult(matrixA, matrixB) result(trm)
