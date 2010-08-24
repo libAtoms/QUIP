@@ -3660,7 +3660,7 @@ module bispectrum_module
      function water_dimer(at,w1,w2) result(vec)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
-       real(dp), dimension(12) :: vec
+       real(dp), dimension(12) :: vec, v
        real(dp) :: rA1, rA2, rB1, rB2
        real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, pA, pB, dA, dB
        integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i
@@ -3698,18 +3698,32 @@ module bispectrum_module
        !vec(4) = norm2(sB)
        !vec(5) = norm2(dB)
        !vec(6) = (sB .dot. dB)**2
-       vec(1) = rA1+rA2
-       vec(2) = (rA1-rA2)**2
-       vec(3) = vA1 .dot. vA2
-       vec(4) = rB1+rB2
-       vec(5) = (rB1-rB2)**2
-       vec(6) = vB1 .dot. vB2
+       v(1) = rA1+rA2
+       v(2) = (rA1-rA2)**2
+       v(3) = vA1 .dot. vA2
+       v(4) = rB1+rB2
+       v(5) = (rB1-rB2)**2
+       v(6) = vB1 .dot. vB2
+
+       vec(1) = v(1)+v(4)
+       vec(2) = (v(1)-v(4))**2
+       vec(3) = v(2)+v(5)
+       vec(4) = (v(2)-v(5))**2
+       vec(5) = v(3)+v(6)
+       vec(6) = (v(3)-v(6))**2
 
        vec(7) = sA .dot. sB
-       vec(8) = sA .dot. nB
-       vec(9) = sB .dot. nA
-       vec(10) = pA .dot. sB
-       vec(11) = pB .dot. sA
+
+       v(8) = sA .dot. nB
+       v(9) = sB .dot. nA
+       v(10) = pA .dot. sB
+       v(11) = pB .dot. sA
+
+       vec(8) = v(8)+v(9)
+       vec(9) = (v(8)-v(9))**2
+       vec(10) = v(10)+v(11)
+       vec(11) = (v(10)-v(11))**2
+
        vec(12) = distance_min_image(at, iAo, iBo)
 
      end function water_dimer
