@@ -36,6 +36,7 @@ F95 = ifort
 CC = gcc
 CPLUSPLUS = g++
 LINKER = ifort
+FPP = ifort -EP
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
