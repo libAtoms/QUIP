@@ -437,7 +437,7 @@
 
     ! Do the classical calculation
     if(associated(this%mmpot)) then
-       mm_args_str=trim(mm_args_str)//' force'
+       mm_args_str=trim(mm_args_str)//' force='//trim(calc_force)
        call calc(this%mmpot, at, args_str=mm_args_str, error=error)
        f_mm = at_force_ptr
     else
@@ -467,7 +467,7 @@
        call initialise(params)
        call read_string(params, qm_args_str)
 
-       call set_value(params, 'force')
+       call set_value(params, 'force='//trim(calc_force))
        
        !! TODO - possibly want to set more default options in the qm_args_str here
        if (.not. has_key(params, 'buffer_hops')) &
