@@ -72,7 +72,7 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
                 tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(src))
                 if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
                 os.system("%s %s %s | grep -v '^#' > %s" % (' '.join(cpp), cpp_opt, src, tmp_file))
-                if src[:-4]+'.s': os.remove(src[:-4]+'.s')
+                if os.path.exists(src[:-4]+'.s'): os.remove(src[:-4]+'.s')
                 tmp_wrap_sources.append(tmp_file)
                 
             programs, modules, functs, subts = f90doc.read_files(tmp_wrap_sources)
