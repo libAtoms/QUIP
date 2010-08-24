@@ -603,7 +603,7 @@ Cluster carving routines
    routine creates a `weight_region1` property, whose values are
    between 0 and 1.
 
-.. function:: create_cluster_info_from_hybrid_mark(at, args_str[, cut_bonds])
+.. function:: create_cluster_info_from_mark(at, args_str[, cut_bonds])
 
    Create a cluster using the 'hybrid_mark' property and options in
    `args_str`.  All atoms that are marked with anything other than
