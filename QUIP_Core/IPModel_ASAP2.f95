@@ -802,9 +802,9 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
 end subroutine IPModel_ASAP2_setup_atoms
 
 
-subroutine assign_grid_coordinates(at, ngx, ngy, ngz, grid_size, r_real_grid)
+subroutine assign_grid_coordinates(at,ngrid, grid_size, r_real_grid)
   type(Atoms), intent(in) :: at
-  integer, intent(in) :: ngx, ngy, ngz
+  integer, intent(in) :: ngrid(3)
   real(dp), intent(out) :: grid_size(3)
   real(dp), dimension(:,:), intent(out) :: r_real_grid
 
@@ -816,30 +816,30 @@ subroutine assign_grid_coordinates(at, ngx, ngy, ngz, grid_size, r_real_grid)
   lattice = transpose(at%lattice)
 
   point = 0
-  do nz=1,ngz
-     do ny=1,ngy
-        do nx=1,ngx
+  do nz=1,ngrid(3)
+     do ny=1,ngrid(2)
+        do nx=1,ngrid(1)
            
            point=point+1
            
-           r_real_grid(1,point) = real(nx-1,dp)*lattice(1,1)/real(ngx,dp) +&
-                & real(ny-1,dp)*lattice(2,1)/real(ngy,dp) +&
-                & real(nz-1,dp)*lattice(3,1)/real(ngz,dp)
-           r_real_grid(2,point) = real(nx-1,dp)*lattice(1,2)/real(ngx,dp) +&
-                & real(ny-1,dp)*lattice(2,2)/real(ngy,dp) +&
-                & real(nz-1,dp)*lattice(3,2)/real(ngz,dp)
-           r_real_grid(3,point) = real(nx-1,dp)*lattice(1,3)/real(ngx,dp) +&
-                & real(ny-1,dp)*lattice(2,3)/real(ngy,dp) +&
-                & real(nz-1,dp)*lattice(3,3)/real(ngz,dp)
+           r_real_grid(1,point) = real(nx-1,dp)*lattice(1,1)/real(ngrid(1),dp) +&
+                & real(ny-1,dp)*lattice(2,1)/real(ngrid(2),dp) +&
+                & real(nz-1,dp)*lattice(3,1)/real(ngrid(3),dp)
+           r_real_grid(2,point) = real(nx-1,dp)*lattice(1,2)/real(ngrid(1),dp) +&
+                & real(ny-1,dp)*lattice(2,2)/real(ngrid(2),dp) +&
+                & real(nz-1,dp)*lattice(3,2)/real(ngrid(3),dp)
+           r_real_grid(3,point) = real(nx-1,dp)*lattice(1,3)/real(ngrid(1),dp) +&
+                & real(ny-1,dp)*lattice(2,3)/real(ngrid(2),dp) +&
+                & real(nz-1,dp)*lattice(3,3)/real(ngrid(3),dp)
            
         end do
      end do
   end do
 
   call get_lattice_params(at%lattice, a, b, c, alpha, beta, gamma)
-  grid_size(1) = a/real(ngx, dp)
-  grid_size(2) = b/real(ngy, dp)
-  grid_size(3) = c/real(ngz, dp)
+  grid_size(1) = a/real(ngrid(1), dp)
+  grid_size(2) = b/real(ngrid(2), dp)
+  grid_size(3) = c/real(ngrid(3), dp)
 
 end subroutine assign_grid_coordinates
 
@@ -887,10 +887,10 @@ function gaussian_charge_pot_force_func(r, rsq, s, grid_size) result(Vf)
   endif
 end function gaussian_charge_pot_force_func
 
-subroutine write_electrostatic_header(out, lattice, ngx, ngy, ngz, sigma)
+subroutine write_electrostatic_header(out, lattice, ngrid, sigma)
   type(InOutput), intent(inout) :: out
   real(dp), intent(in) :: lattice(3,3), sigma
-  integer, intent(in) :: ngx, ngy, ngz
+  integer, intent(in) :: ngrid(3)
   real(dp) :: a, b, c, alpha, beta, gamma
 
   call get_lattice_params(lattice, a, b, c, alpha, beta, gamma)
@@ -903,22 +903,22 @@ subroutine write_electrostatic_header(out, lattice, ngx, ngy, ngz, sigma)
   write (out%unit, '(3f12.7,5x,"c =",f12.6,2x,"gamma =",f12.6)') lattice(:,3), c, gamma
   call print('', file=out)
   write(out%unit,'(i4,T30,a)') nspins,'   ! nspins'
-  write(out%unit,'(3(i4,2x),T30,a)') ngx, ngy, ngz,'   ! fine FFT grid along <a,b,c>'
+  write(out%unit,'(3(i4,2x),T30,a)') ngrid, '   ! fine FFT grid along <a,b,c>'
   write(out%unit,'(f12.7,T30,a)') sigma, '   ! Gaussian width sigma'
 
 end subroutine write_electrostatic_header
 
-subroutine write_electrostatic_potential(this, at, filename, mask_name, ngx, ngy, ngz, sigma, grid_size, real_grid, error)
+subroutine write_electrostatic_potential(this, at, filename, mask_name, ngrid, sigma, grid_size, real_grid, error)
   type(IPModel_ASAP2), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   character(len=*), intent(in) :: filename, mask_name
-  integer, intent(in) :: ngx, ngy, ngz
+  integer, intent(in) :: ngrid(3)
   real(dp), intent(in) :: sigma, grid_size(3)
   real(dp), dimension(:,:), intent(in) :: real_grid
   integer, optional, intent(out) :: error
 
   type(InOutput) :: out
-  real(dp) :: d(3), d2, pot
+  real(dp) :: d, charge, pot
   logical, pointer, dimension(:) :: mask
   integer spin, i, j, k, l, igrid
 
@@ -928,20 +928,22 @@ subroutine write_electrostatic_potential(this, at, filename, mask_name, ngx, ngy
   end if
 
   call initialise(out, filename, OUTPUT)
-  call write_electrostatic_header(out, at%lattice, ngx, ngy, ngz, sigma)
+  call write_electrostatic_header(out, at%lattice, ngrid, sigma)
   call print('END header: data is "i j k pot"', file=out)  
   do spin=1,nspins
      igrid = 0
-     do k=1,ngz
-        do j=1,ngy
-           do i=1,ngx
+     do k=1,ngrid(3)
+        do j=1,ngrid(2)
+           do i=1,ngrid(1)
               igrid = igrid + 1
               pot = 0.0_dp
-              d = real_grid(:,igrid)
               do l=1,at%n
                  if (mask(l)) cycle
+                 d = distance_min_image(at, l, real_grid(:,igrid)) 
+                 charge = this%z(get_type(this%type_of_atomic_num, at%Z(l)))
+                 pot = pot + charge*gaussian_charge_pot_func(d, sigma, grid_size)
               end do
-              write (out%unit,'(3i6,4f20.6)') i, j, k, real_grid(:,igrid), pot
+              write (out%unit,'(3i6,f20.6)') i, j, k, pot
            end do
         end do
      end do
@@ -950,11 +952,11 @@ subroutine write_electrostatic_potential(this, at, filename, mask_name, ngx, ngy
 
 end subroutine write_electrostatic_potential
 
-subroutine write_electric_field(this, at, filename, mask_name, ngx, ngy, ngz, sigma, grid_size, real_grid, error)
+subroutine write_electric_field(this, at, filename, mask_name, ngrid, sigma, grid_size, real_grid, error)
   type(IPModel_ASAP2), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   character(len=*), intent(in) :: filename, mask_name
-  integer, intent(in) :: ngx, ngy, ngz
+  integer, intent(in) :: ngrid(3)
   real(dp), intent(in) :: sigma, grid_size(3)
   real(dp), dimension(:,:), intent(in) :: real_grid
   integer, optional, intent(out) :: error
@@ -984,7 +986,7 @@ subroutine write_electric_field(this, at, filename, mask_name, ngx, ngy, ngz, si
   end do
 
   call initialise(out, filename, OUTPUT)
-  call write_electrostatic_header(out, at%lattice, ngx, ngy, ngz, sigma)
+  call write_electrostatic_header(out, at%lattice, ngrid, sigma)
   call print('END header: data is "sp nsp charge efield_x efield_y efield_z"', file=out)
   
   do i=1,at%N
@@ -1016,7 +1018,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    logical, pointer, dimension(:) :: fixdip
    real(dp) :: diff, diff_old
    integer :: n_efield_old
-   integer :: i, npol, ti, vv, electrostatic_ngx, electrostatic_ngy, electrostatic_ngz
+   integer :: i, npol, ti, vv, electrostatic_grid(3)
    real(dp) :: electrostatic_sigma, grid_size(3)
    character(len=STRING_LENGTH) :: electrostatic_stem, electrostatic_mask
    real(dp), allocatable, dimension(:,:) :: real_grid
@@ -1038,9 +1040,7 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
       call param_register(params, 'write_electrostatics', 'F', write_electrostatics)
       call param_register(params, 'electrostatic_stem', 'asap2', electrostatic_stem)
       call param_register(params, 'electrostatic_mask', 'mask', electrostatic_mask)
-      call param_register(params, 'electrostatic_ngx', '1', electrostatic_ngx)
-      call param_register(params, 'electrostatic_ngy', '1', electrostatic_ngy)
-      call param_register(params, 'electrostatic_ngz', '1', electrostatic_ngz)
+      call param_register(params, 'electrostatic_grid', '1 1 1', electrostatic_grid)
       call param_register(params, 'electrostatic_sigma', '0.0', electrostatic_sigma)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
@@ -1250,15 +1250,17 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    ! Write electrostatic potential on 3D grid, and electric field at atoms
    if (write_electrostatics) then
 
-      allocate(real_grid(3,electrostatic_ngx*electrostatic_ngy*electrostatic_ngz))
-      call assign_grid_coordinates(at, electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, grid_size, real_grid)
+      call print('writing electrostatics with stem='//trim(electrostatic_stem))
+
+      allocate(real_grid(3,electrostatic_grid(1)*electrostatic_grid(2)*electrostatic_grid(3)))
+      call assign_grid_coordinates(at, electrostatic_grid, grid_size, real_grid)
 
       call write_electrostatic_potential(this, at, trim(electrostatic_stem)//'.pot_fmt', electrostatic_mask, &
-           electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, electrostatic_sigma, grid_size, real_grid, error)
+           electrostatic_grid, electrostatic_sigma, grid_size, real_grid, error)
       PASS_ERROR(error)
 
       call write_electric_field(this, at, trim(electrostatic_stem)//'.efield_fmt', electrostatic_mask, &
-           electrostatic_ngx, electrostatic_ngy, electrostatic_ngz, electrostatic_sigma, grid_size, real_grid, error)
+           electrostatic_grid, electrostatic_sigma, grid_size, real_grid, error)
       PASS_ERROR(error)
 
       deallocate(real_grid)
