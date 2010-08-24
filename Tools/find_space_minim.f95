@@ -145,12 +145,12 @@ end subroutine bothfunc
 
 subroutine hook(x,dx,E,done,do_print,data)
   use system_module
-  real(dp)::x(:)
-  real(dp)::dx(:)
-  real(dp)::E
-  logical :: done
-  logical, optional:: do_print
-  character,optional::data(:)
+  real(dp), intent(in) ::x(:)
+  real(dp), intent(in) ::dx(:)
+  real(dp), intent(in) ::E
+  logical, intent(out) :: done
+  logical, optional, intent(in) :: do_print
+  character(len=1),optional, intent(in) ::data(:)
 
   done = norm(dx) .feq. 0.0_dp
 
