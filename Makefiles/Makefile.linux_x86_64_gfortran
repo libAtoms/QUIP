@@ -36,7 +36,7 @@ F95 = gfortran
 CC = gcc
 CPLUSPLUS = g++
 #LINKER = gfortran -L/usr/local/lib64 -Wl,-rpath,/usr/local/lib64
-LINKER = gfortran -static-libgfortran -static-libgcc
+LINKER = gfortran
 
 DEFAULT_DEBUG = -O0 -g -DDUMP_CORE_ON_ABORT -DDEBUG -fbounds-check
 DEFAULT_OPTIM = -O3

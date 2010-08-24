@@ -70,6 +70,7 @@ module dictionary_module
      integer, dimension(:), allocatable :: d
   end type DictData
 
+  public :: dictentry
   type DictEntry 
      !% OMIT
      integer :: type = T_NONE
