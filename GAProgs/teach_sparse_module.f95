@@ -105,7 +105,7 @@ contains
        has_virial = get_value(at%params,this%virial_property_name,virial)
 
        if( has_ener .or. has_force .or. has_virial ) then
-          call atoms_set_cutoff(at,this%r_cut)
+          call set_cutoff(at,this%r_cut)
           call calc_connect(at)
        endif
 
@@ -267,7 +267,7 @@ contains
           call set_cutoff(at, max(cutoff(core_pot),this%r_cut))
           call calc_connect(at)
 
-          call calc(core_pot,at,e=ener_core,f=f_core,virial=virial_core)
+          call calc(core_pot,at,energy=ener_core,force=f_core,virial=virial_core)
 
           if(has_ener) ener = ener - ener_core
           if(has_force) f = f - f_core
@@ -305,7 +305,7 @@ contains
           endselect
        endif
 
-       call atoms_set_cutoff(at,this%r_cut)
+       call set_cutoff(at,this%r_cut)
        call calc_connect(at)
 
        nei_max = 0
@@ -510,7 +510,7 @@ contains
           if( this%do_core ) then
              call set_cutoff(at, cutoff(core_pot))
              call calc_connect(at)
-             call calc(core_pot,at,e=ener_core)
+             call calc(core_pot,at,energy=ener_core)
           endif
 
           ener_ewald = 0.0_dp
