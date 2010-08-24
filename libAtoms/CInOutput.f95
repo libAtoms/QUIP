@@ -37,6 +37,7 @@ module CInOutput_module
   use iso_c_binding
   use error_module
   use System_module, only: dp, optional_default, s2a, a2s, parse_string, print, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT
+  use linearalgebra_module, only: print
   use Atoms_module, only: Atoms, initialise, finalise, add_property, bcast, has_property, set_lattice, atoms_repoint
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Extendable_str_module, only: Extendable_str, operator(//), string

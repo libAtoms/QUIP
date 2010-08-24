@@ -106,7 +106,7 @@ implicit none
 
   n_types = count(count(r0_table(:,:,1) > 0.0, 2) > 0)
   max_n_fcs = maxval(count(r0_table > 0.0, 3))
-  call print('<FC_params n_types="'// n_types //'" ideal_struct_file="" max_n_fcs="'//max_n_fcs//'" cutoff="'//maxval(r0_table)+1.0//'" label="" >')
+  call print('<FC_params n_types="'// n_types //'" ideal_struct_file="" max_n_fcs="'//max_n_fcs//'" cutoff="'//(maxval(r0_table)+1.0)//'" label="" >')
   do Zi=1, size(phi2_table,1)
     do Zj=1, size(phi2_table,2)
       if (maxval(r0_table(Zi,Zj,:)) > 0.0) then

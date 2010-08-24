@@ -99,7 +99,9 @@ use IPModel_FS_module
 use IPModel_BOP_module
 use IPModel_Brenner_Screened_module
 use IPModel_Brenner_2002_module
+#ifdef HAVE_ASAP
 use IPModel_ASAP_module
+#endif
 use IPModel_ASAP2_module
 use IPModel_Glue_module
 use IPModel_PartridgeSchwenke_module
@@ -134,7 +136,9 @@ type IP_type
   type(IPModel_BOP) ip_BOP
   type(IPModel_Brenner_Screened) ip_Brenner_Screened
   type(IPModel_Brenner_2002) ip_Brenner_2002
+#ifdef HAVE_ASAP
   type(IPModel_ASAP) ip_ASAP
+#endif
   type(IPModel_ASAP2) ip_ASAP2
   type(IPModel_Glue) ip_Glue
   type(IPModel_PartridgeSchwenke) ip_PartridgeSchwenke
@@ -267,7 +271,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'BOP', 'false', is_BOP)
   call param_register(params, 'Brenner_Screened', 'false', is_Brenner_Screened)
   call param_register(params, 'Brenner_2002', 'false', is_Brenner_2002)
+#ifdef HAVE_ASAP
   call param_register(params, 'ASAP', 'false', is_ASAP)
+#endif
   call param_register(params, 'ASAP2', 'false', is_ASAP2)
   call param_register(params, 'Glue', 'false', is_Glue)
   call param_register(params, 'PartridgeSchwenke', 'false', is_PartridgeSchwenke)
@@ -327,9 +333,11 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_Brenner_2002) then
     this%functional_form = FF_Brenner_2002
     call Initialise(this%ip_brenner_2002, args_str, param_str)
+#ifdef HAVE_ASAP
   else if (is_ASAP) then
     this%functional_form = FF_ASAP
     call Initialise(this%ip_ASAP, args_str, param_str) 
+#endif
   else if (is_ASAP2) then
     this%functional_form = FF_ASAP2
     call Initialise(this%ip_ASAP2, args_str, param_str) 
@@ -382,8 +390,10 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_brenner_screened)
     case (FF_Brenner_2002)
       call Finalise(this%ip_brenner_2002)
+#ifdef HAVE_ASAP
     case (FF_ASAP)
       call Finalise(this%ip_ASAP)
+#endif
     case (FF_ASAP2)
       call Finalise(this%ip_ASAP2)
     case (FF_GLUE)
@@ -430,8 +440,10 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_brenner_screened%cutoff
   case (FF_Brenner_2002)
      IP_cutoff = this%ip_brenner_2002%cutoff
+#ifdef HAVE_ASAP
   case (FF_ASAP)
      IP_cutoff = maxval(this%ip_asap%cutoff)*BOHR
+#endif
   case (FF_ASAP2)
      IP_cutoff = max(this%ip_asap2%cutoff_ms, this%ip_asap2%cutoff_coulomb)*BOHR
   case (FF_GLUE)
@@ -504,8 +516,10 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, args_str, error)
       call calc(this%ip_brenner_screened, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_Brenner_2002)
       call calc(this%ip_brenner_2002, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+#ifdef HAVE_ASAP
     case (FF_ASAP)
       call calc(this%ip_asap, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
+#endif
     case (FF_ASAP2)
       call calc(this%ip_asap2, at, energy, local_e, f, virial, args_str, mpi=this%mpi_local, error=error)
     case (FF_GLUE)
@@ -561,8 +575,10 @@ subroutine IP_Print(this, file, error)
       call Print(this%ip_brenner_screened, file=file)
     case (FF_Brenner_2002)
       call Print(this%ip_brenner_2002, file=file)
+#ifdef HAVE_ASAP
     case (FF_ASAP)
       call Print(this%ip_asap, file=file)
+#endif
     case (FF_ASAP2)
       call Print(this%ip_asap2, file=file)
     case (FF_GLUE)
