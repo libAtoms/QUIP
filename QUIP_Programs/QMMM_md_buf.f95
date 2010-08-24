@@ -401,7 +401,7 @@ logical :: have_silica_potential
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0._dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
 
-    if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, 3)
+    if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
 
   !PRINT CONSTRAINTS AND RESTRAINTS
 

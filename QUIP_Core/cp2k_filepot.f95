@@ -125,11 +125,11 @@ contains
     enddo
 
     if ((sumF(1).feq.0.0_dp).and.(sumF(2).feq.0.0_dp).and.(sumF(3).feq.0.0_dp)) then
-       call print('Sum of the forces are zero.')
+       call print('cp2k_driver: Sum of the forces are zero.')
        return
     endif
 
-    call print('Sum of the forces was '//sumF(1:3))
+    call print('cp2k_driver: Sum of the forces was '//sumF(1:3))
     sumF = sumF / size(force,2)
 
     do i = 1, size(force,2)
@@ -141,7 +141,7 @@ contains
        sumF(2) = sum(force(2,1:size(force,2)))
        sumF(3) = sum(force(3,1:size(force,2)))
     enddo
-    call print('Sum of the forces after mom.cons.: '//sumF(1:3))
+    call print('cp2k_driver: Sum of the forces after mom.cons.: '//sumF(1:3))
 
   end subroutine sum0
 

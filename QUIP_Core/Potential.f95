@@ -468,6 +468,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:)
     type(Dictionary) :: params
     character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, extra_args_str
+    character(len=STRING_LENGTH) :: use_calc_energy, use_calc_force, use_calc_virial, use_calc_local_energy
 
     INIT_ERROR(error)
 
@@ -482,35 +483,59 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     call finalise(params)
 
     extra_args_str = ""
-    if (present(energy) .and. len_trim(calc_energy) == 0) then
-       calc_energy = "energy"
-       extra_args_str = trim(extra_args_str) // " energy"
+
+    ! create property/param names and possibly storage
+    use_calc_energy = trim(calc_energy)
+    if (present(energy) .and. len_trim(calc_energy) == 0) then ! have optional and no args_str - make new name for param
+       use_calc_energy = "energy"
+       do while (lookup_entry_i(at%params, trim(calc_energy)) > 0)
+	 use_calc_energy = "T"//trim(use_calc_energy)
+       end do
+       extra_args_str = trim(extra_args_str) // " energy="//trim(use_calc_energy)
     endif
+
+    use_calc_force = trim(calc_force)
     if (present(force)) then
-       if (len_trim(calc_force) == 0) then
-	  extra_args_str = trim(extra_args_str) // " force"
-	  call add_property_from_pointer(at, "force", force)
-       else
+       if (len_trim(calc_force) == 0) then ! have force optional but not args_str - add property from pointer in new property name
+	  use_calc_force = "force"
+	  do while (has_property(at, trim(use_calc_force)))
+	    use_calc_force = "T"//trim(use_calc_force)
+	  end do
+	  extra_args_str = trim(extra_args_str) // " force="//trim(use_calc_force)
+	  call add_property_from_pointer(at, trim(use_calc_force), force)
+       else ! has force optional _and_ args_str - add property with its own storage
 	  call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
        endif
-    else if (len_trim(calc_force) > 0) then
+    else if (len_trim(calc_force) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
     endif
+
+    use_calc_virial = trim(calc_virial) ! have optional and no args_str - make new name for param
     if (present(virial) .and. len_trim(calc_virial) == 0) then
-       calc_virial = "virial"
-       extra_args_str = trim(extra_args_str) // " virial"
+       use_calc_virial = "virial"
+       do while (lookup_entry_i(at%params, trim(calc_virial)) > 0)
+	 use_calc_virial = "T"//trim(use_calc_virial)
+       end do
+       extra_args_str = trim(extra_args_str) // " virial="//trim(use_calc_virial)
     endif
+
+    use_calc_local_energy = trim(calc_local_energy)
     if (present(local_energy)) then
-       if (len_trim(calc_local_energy) == 0) then
-	  extra_args_str = trim(extra_args_str) // " local_energy"
-	  call add_property_from_pointer(at, "local_energy", local_energy)
-       else
+       if (len_trim(calc_local_energy) == 0) then ! have local_energy optional but not args_str - add property from pointer in new property name
+	  use_calc_local_energy = "local_energy"
+	  do while (has_property(at, trim(use_calc_local_energy)))
+	    use_calc_local_energy = "T"//trim(use_calc_local_energy)
+	  end do
+	  extra_args_str = trim(extra_args_str) // " local_energy="//trim(use_calc_local_energy)
+	  call add_property_from_pointer(at, trim(use_calc_local_energy), local_energy)
+       else ! has local_energy optional _and_ args_str - add property with its own storage
 	  call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
        endif
-    else if (len_trim(calc_local_energy) > 0) then
+    else if (len_trim(calc_local_energy) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
     endif
 
+    ! do actual calculation using args_str
     if (this%is_simple) then
        call Calc(this%simple, at, trim(args_str)//" "//trim(extra_args_str), error=error)
        PASS_ERROR(error)
@@ -537,21 +562,28 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
       RAISE_ERROR('Potential_Calc: no potential type is set',error)
     endif
 
-    if (present(energy)) call get_param_value(at, trim(calc_energy), energy)
-    if (present(force)) then
-       if (len_trim(calc_force) == 0) then
-	  call remove_property(at, "force")
-       else
-	  force = at_force_ptr
-       endif
+    ! get values from property/param if necessary, and remove temporary if only optional was passed in
+    if (present(energy)) then
+      call get_param_value(at, trim(use_calc_energy), energy)
+      if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     endif
-    if (present(virial)) call get_param_value(at, trim(calc_virial), virial)
+    if (present(force)) then
+      if (len_trim(calc_force) == 0) then ! property should be a pointer to force optional
+	call remove_property(at, trim(use_calc_force))
+      else
+        force = at_force_ptr
+      endif
+    endif
+    if (present(virial)) then
+      call get_param_value(at, trim(use_calc_virial), virial)
+      if (len_trim(calc_virial) == 0) call remove_value(at%params, trim(use_calc_virial))
+    endif
     if (present(local_energy)) then
-       if (len_trim(calc_local_energy) == 0) then
-	  call remove_property(at, "local_energy")
-       else
-	  local_energy = at_local_energy_ptr
-       endif
+      if (len_trim(calc_local_energy) == 0) then ! property should be pointer to local_energy optional
+	call remove_property(at, trim(use_calc_local_energy))
+      else
+	local_energy = at_local_energy_ptr
+      endif
     endif
 
   end subroutine potential_calc
