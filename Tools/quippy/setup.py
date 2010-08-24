@@ -71,7 +71,9 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
             for src in wrap_sources:
                 tmp_file = os.path.join(build_dir.replace('src', 'temp'), os.path.basename(src))
                 if not os.path.exists(os.path.dirname(tmp_file)): os.makedirs(os.path.dirname(tmp_file))
-                os.system("%s %s %s | grep -v '^#' > %s" % (' '.join(cpp), cpp_opt, src, tmp_file))
+                command = "%s %s %s | grep -v '^#' > %s" % (' '.join(cpp), cpp_opt, src, tmp_file)
+                print 'Exectuting command %s' % command
+                os.system(command)
                 if os.path.exists(src[:-4]+'.s'): os.remove(src[:-4]+'.s')
                 tmp_wrap_sources.append(tmp_file)
                 
@@ -356,7 +358,6 @@ if makefile_test('QUIPPY_DEBUG'):
     os.environ['FOPT'] = '-O0'
     os.environ['FARCH'] = ''
     macros.append(('DEBUG',None))
-    macros.append(('CDEBUG',None))
 
 if 'QUIPPY_OPT' in makefile:
     default_options['config_fc']['opt'] = makefile['QUIPPY_OPT'].split()
