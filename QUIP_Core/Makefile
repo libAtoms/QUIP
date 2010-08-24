@@ -130,7 +130,7 @@ cp2k_filepot: % : %.o libatoms.a libquip.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 ifeq (${USE_MAKEDEP},1)
-QUIP_Core.depend: ${LIBATOMS_SOURCES}
+QUIP_Core.depend: ${ALL_F95_FILES}
 	$(SCRIPT_PATH)/makedep ${MAKEDEP_ARGS} -- ../QUIP_Core/*.f95 | sed 's/[^ ]*\///g' > QUIP_Core.depend
 
 -include QUIP_Core.depend
