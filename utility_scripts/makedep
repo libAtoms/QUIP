@@ -53,14 +53,14 @@ if ($ARGV[0] ne "--") {
   shift @ARGV;
 }
 
-my $ftnre='\.(f|F|f90|F90|f95|F95)$';
+my $ftnre='\.(f|F|f90|F90|f95|F95)';
 
-my (%module_defs, %module_uses);
+my (%module_defs, %module_uses, %file_uses);
 
 my @local_modules;
 
 foreach my $file (@ARGV) {
-  if ($file !~ /$ftnre/) {
+  if ($file !~ /${ftnre}$/) {
     warn "file $file not a fortran file\n";
     next;
   }
@@ -70,7 +70,7 @@ foreach my $file (@ARGV) {
   }
   $module_defs{$file} = [];
   $module_uses{$file} = [];
-  my $file_fpp = $file; $file_fpp =~ s/$ftnre/.fpp/; $file_fpp =~ s#.*/##;
+  my $file_fpp = $file; $file_fpp =~ s/${ftnre}$/.fpp/; $file_fpp =~ s#.*/##;
   if ( ! -f $file_fpp) {
     warn "$file_fpp doesn't exist for $file, skipping\n";
   } else {
@@ -84,6 +84,9 @@ foreach my $file (@ARGV) {
       if ($line =~ /^\s*use\s+(\S+)/) {
 	push @{$module_uses{$file}}, $1;
       }
+      if ($line =~ /^#\s+[0-9]+\s+".*\/([^\/]+${ftnre})"/) {
+	$file_uses{$file}->{$1} = 1;
+      }
     }
   }
   close FP;
@@ -93,7 +96,7 @@ my $local_modules_re = '^('.join("|",@local_modules).')$';
 
 foreach my $file (@ARGV) {
   my $fobj = $file;
-  $fobj =~ s/$ftnre/.o/;
+  $fobj =~ s/${ftnre}$/.o/;
   foreach my $mod (@{$module_defs{$file}}) {
     print "$mod: $file\n\n";
     # print "	make $fobj\n";
@@ -111,6 +114,13 @@ foreach my $file (@ARGV) {
       }
       print "$mod_name ";
     }
+  }
+  foreach my $used_file (keys(%{$file_uses{$file}})) {
+    if (! $did_header) {
+      print "$fobj: \\\n  ";
+      $did_header = 1;
+    }
+    print "$used_file ";
   }
   if ($did_header) {
     print "\n";
