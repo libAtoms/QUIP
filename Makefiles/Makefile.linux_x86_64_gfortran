@@ -67,3 +67,7 @@ MAKEDEP_ARGS = -lc -suffix .mod
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
 	${F95} ${F95FLAGS}  -c $< -o $@
 	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env RE_SKIP=GFORTRAN ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+
+.f95.fpp:
+	${FPP} ${F95FLAGS} $< -o $@
+

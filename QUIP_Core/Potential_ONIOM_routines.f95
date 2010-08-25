@@ -254,7 +254,7 @@
       call set_value(params, 'cluster_periodic_z', 'T')
       call set_value(params, 'randomise_buffer', 'F')
       cc_args_str = write_string(params)
-      cluster_info = create_cluster_info_from_hybrid_mark(at, cc_args_str)
+      cluster_info = create_cluster_info_from_mark(at, cc_args_str)
       cluster = carve_cluster(at, cc_args_str, cluster_info)
 
 
