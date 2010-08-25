@@ -143,11 +143,8 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   this%init_args_str = args_str
 
   call initialise(params)
-  command=''
-  property_list='pos'
-  filename='filepot'
   call param_register(params, 'command', PARAM_MANDATORY, command)
-  call param_register(params, 'property_list', 'pos', property_list)
+  call param_register(params, 'property_list', 'species:pos', property_list)
   call param_register(params, 'filename', 'filepot', filename)
   call param_register(params, 'min_cutoff', '0.0', min_cutoff)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
