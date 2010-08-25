@@ -1859,7 +1859,7 @@ contains
     allocate(neighbour_Z(count(A(opt_atom,:)==1)))
     neighbour_Z = pack(Z,(A(opt_atom,:)==1))
 
-    call print("opt_atom " // opt_atom // " Z " // at%Z(opt_atom), verbosity=PRINT_ANAL)
+    call print("opt_atom " // opt_atom // " Z " // Z(opt_atom), verbosity=PRINT_ANAL)
 
     my_start = 1
     if (present(start)) then
