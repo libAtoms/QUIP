@@ -101,7 +101,7 @@ libatoms.a: ${LIBATOMS_OBJS}
 	${AR} ${AR_ADD} libatoms.a $?
 
 clean:
-	rm -f libatoms.a *.o *.mod
+	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp
 
 allclean: clean docclean
 

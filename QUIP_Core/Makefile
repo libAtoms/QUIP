@@ -111,7 +111,7 @@ ${TARGETS}: % :  libquip.a %.o
 	${F95} ${LINKFLAGS} -o $@ $@.o libquip.a libatoms.a ${LINKOPTS}
 
 clean:
-	rm -f *.o *.mod *.mod.save libquip.a cp2k_filepot cp2k_filepot_old quip.dtd
+	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp libquip.a cp2k_filepot cp2k_filepot_old quip.dtd 
 	-rm -r doctmp
 
 allclean: clean
