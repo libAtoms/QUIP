@@ -616,7 +616,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
-     if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RE')
+     if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'E')
      call print(ds%thermostat)
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
@@ -776,10 +776,10 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
      if (ds%t < Equilib_Time) then
         call ds_print_status(ds, 'E',energy)
-        if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RE')
+        if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'E')
      else
         call ds_print_status(ds, 'I',energy)
-	if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'RI')
+	if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'I')
      end if
 
      !Thermostat
