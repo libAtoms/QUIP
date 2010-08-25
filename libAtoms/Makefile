@@ -119,11 +119,8 @@ xyz2pdb:  libatoms.a xyz2pdb.o
 ifeq (${USE_MAKEDEP},1)
 LIBATOMS_F95_FPP_FILES = ${addsuffix .fpp, ${LIBATOMS_F95_FILES}}
 
-.f95.fpp:
-	${FPP} ${F95FLAGS} -E $< > $>
-
 libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
-	$(SCRIPT_PATH)/makedep ${MAKEDEP_ARGS} -- ../libAtoms/*.f95 | sed 's/[^ ]*\///g' > libAtoms.depend
+	${SCRIPT_PATH}makedep ${MAKEDEP_ARGS} -- ../libAtoms/*.f95 | sed 's/[^ ]*\///g' > libAtoms.depend
 
--include libAtoms.depend
+include libAtoms.depend
 endif

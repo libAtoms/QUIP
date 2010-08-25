@@ -468,10 +468,12 @@ module  atoms_module
      module procedure atoms_copy_entry
   endinterface copy_entry
 
+  private :: atoms_index_to_z_index
   interface index_to_z_index
      module procedure atoms_index_to_z_index
   end interface index_to_z_index
 
+  private :: atoms_z_index_to_index
   interface z_index_to_index
      module procedure atoms_z_index_to_index
   end interface z_index_to_index

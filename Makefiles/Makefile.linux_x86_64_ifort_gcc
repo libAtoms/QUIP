@@ -36,7 +36,7 @@ F95 = ifort
 CC = gcc
 CPLUSPLUS = g++
 LINKER = ifort
-FPP = ifort -EP
+FPP = ifort -E
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 DEFAULT_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
@@ -68,3 +68,6 @@ QUIPPY_NO_CRACK = 1
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
 	${F95} ${F95FLAGS} -c -Tf $< -o $@
 	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=64 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+
+.f95.fpp:
+	${FPP} ${F95FLAGS} -Tf $< -o $@

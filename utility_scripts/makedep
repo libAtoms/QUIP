@@ -70,7 +70,7 @@ foreach my $file (@ARGV) {
   }
   $module_defs{$file} = [];
   $module_uses{$file} = [];
-  my $file_fpp = $file; $file_fpp =~ s/$ftnre/.fpp/;
+  my $file_fpp = $file; $file_fpp =~ s/$ftnre/.fpp/; $file_fpp =~ s#.*/##;
   if ( ! -f $file_fpp) {
     warn "$file_fpp doesn't exist for $file, skipping\n";
   } else {
