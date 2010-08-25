@@ -1131,7 +1131,7 @@ deallocate(diff_xijt)
          do i = 1, this%n
             do j = i + 1, this%n
                xixjtheta = this%x_div_theta(:,i) - this%x_div_theta(:,j)
-               c(j,i) = exp(-0.5 * dot_product(xixjtheta,xixjtheta))
+               c(j,i) = exp(-0.5_dp * dot_product(xixjtheta,xixjtheta))
             enddo
             c(i,i) = 1.0_dp + this%sigma**2 / this%delta(1)**2
          enddo
@@ -1145,9 +1145,9 @@ deallocate(diff_xijt)
          enddo
 
          call LA_Matrix_Update(this%LA_C_nn,c)
-         if(this%LA_C_nn%factorised /= CHOLESKY) call LA_Matrix_Factorise(this%LA_C_nn)
+         if(this%LA_C_nn%factorised /= QR) call LA_Matrix_QR_Factorise(this%LA_C_nn)
 
-         call LA_Matrix_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
+         call LA_Matrix_QR_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
          this%alpha = real(local_alpha, dp)
          deallocate(c,xixjtheta)
          
@@ -1914,7 +1914,7 @@ deallocate(diff_xijt)
          logical, intent(in), optional :: do_l, do_sigma, do_delta, do_theta, do_f0
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_f0
-         real(qp), dimension(:,:), allocatable :: c_inverse, outer_alpha_minus_c_inverse, k, dk
+         real(qp), dimension(:,:), allocatable :: c_inverse, outer_alpha_minus_c_inverse, k, dk, one
          integer :: i, j, d
 
          my_do_l = present(l) .and. optional_default(present(l), do_l)
@@ -1931,8 +1931,14 @@ deallocate(diff_xijt)
              - 0.5_qp * this%n * log(2.0_qp * PI)
 
          if( my_do_sigma .or. my_do_delta .or. my_do_theta .or. my_do_f0 ) then
-            allocate(c_inverse(this%n,this%n))
-            call LA_Matrix_Inverse(this%LA_C_nn, c_inverse)
+            allocate(c_inverse(this%n,this%n),one(this%n,this%n))
+            one = 0.0_dp
+            do i = 1, this%n
+               one(i,i) = 1.0_dp
+            enddo
+            !call LA_Matrix_Inverse(this%LA_C_nn, c_inverse)
+            call LA_Matrix_QR_Solve_Matrix(this%LA_C_nn, one, c_inverse)
+            deallocate(one)
          endif
 
          if(my_do_delta .or. my_do_theta) then
