@@ -614,6 +614,9 @@ def CastepGeomMDReader(source, atoms_ref=None):
       if stress_lines:
          at.params['virial'] = -virial*at.cell_volume()
 
+      if atoms_ref is None:
+         atoms_ref = at.copy()
+
       yield at
 
 # Synonyms
@@ -693,18 +696,18 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
       lattice_lines = [i for (i,x) in enumerate(castep_output) if x == '                                      Unit Cell\n']
       
       if lattice_lines == []:
-         if abort:
-            raise ValueError('No unit cell found in castep file')
+         if atoms_ref is None or abort:
+            raise ValueError('No unit cell found in castep file - try passing atoms_ref')
          else:
-            continue
-         
-      lattice_line = lattice_lines[-1] # last lattice
-      
-      lattice_lines = castep_output[lattice_line+3:lattice_line+6]
-      lattice = fzeros((3,3))
-      lattice[:,1] = map(float, lattice_lines[0].split()[0:3])
-      lattice[:,2] = map(float, lattice_lines[1].split()[0:3])
-      lattice[:,3] = map(float, lattice_lines[2].split()[0:3])
+            lattice = atoms_ref.lattice.copy()
+      else:
+         lattice_line = lattice_lines[-1] # last lattice
+
+         lattice_lines = castep_output[lattice_line+3:lattice_line+6]
+         lattice = fzeros((3,3))
+         lattice[:,1] = map(float, lattice_lines[0].split()[0:3])
+         lattice[:,2] = map(float, lattice_lines[1].split()[0:3])
+         lattice[:,3] = map(float, lattice_lines[2].split()[0:3])
 
       cell_contents = [i for (i,x) in  enumerate(castep_output) if x == '                                     Cell Contents\n']
       if cell_contents == []:
@@ -897,6 +900,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
 
       atoms.params.update(mod_param)
 
+      if atoms_ref is None:
+         atoms_ref = atoms.copy()
+         
       yield atoms
 
       if eof:
