@@ -766,14 +766,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
       # (correct if we're doing a variable cell geom. opt. with fixed ions)
       atoms.pos[:] = numpy.dot(atoms.lattice, atoms.frac_pos)
 
+      energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
+
       if param.has_key('finite_basis_corr') and param['finite_basis_corr'].lower() != 'none':
-         energy_lines = filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), \
-                               castep_output)
-      elif param.has_key('task') and (param['task'].lower() == 'geometryoptimization' or
-                                      param['task'].lower() == 'geometryoptimisation'):
-         energy_lines = filter(lambda s: s.startswith(' BFGS: Final Enthalpy'), castep_output)
-      else:
-         energy_lines = filter(lambda s: s.startswith('Final energy') and not s.endswith('<- EDFT\n'), castep_output)
+         energy_lines.extend(filter(lambda s: s.startswith(' Total energy corrected for finite basis set'), castep_output))
 
       if (len(energy_lines) == 0):
          if abort:
@@ -782,6 +778,14 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
          # Energy is second to last field on line (last is "eV")
          # Use last matching energy line in file
          atoms.params['energy'] = float(energy_lines[-1].split()[-2])
+
+      # If we're doing geom-opt, look for enthalpy
+      if param.has_key('task') and (param['task'].lower() == 'geometryoptimization' or
+                                    param['task'].lower() == 'geometryoptimisation'):
+         enthalpy_lines = [s for s in castep_output if s.startswith(' BFGS: finished iteration ') or
+                            s.startswith(' BFGS: Final Enthalpy')]
+         if enthalpy_lines != []:
+            atoms.params['enthalpy'] = float(enthalpy_lines[-1].split()[-2])
 
       try:
 
