@@ -2826,17 +2826,19 @@ type(inoutput), optional :: debugfile
   !% bonds which have been cut and include the other atom of 
   !% the pair in the quantum list.
   !
-  subroutine add_cut_hydrogens(this,qmlist,verbosity,alt_connect)
+  subroutine add_cut_hydrogens(this,qmlist,nneighb_only,verbosity,alt_connect)
 
     type(Atoms),       intent(in),          target :: this
     type(Table),       intent(inout)               :: qmlist
     integer, optional, intent(in)                  :: verbosity
+    logical, optional, intent(in)                  :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
 
     type(Table)                :: neighbours, bonds, centre
     logical                    :: more_atoms
     integer                    :: i, j, n, nn, added
     type(Connection), pointer :: use_connect
+    logical :: my_nneighb_only
 
     ! Check for atomic connectivity
     if (present(alt_connect)) then
@@ -2844,6 +2846,8 @@ type(inoutput), optional :: debugfile
     else
       use_connect => this%connect
     endif
+
+    my_nneighb_only = optional_default(.true., nneighb_only)
 
     more_atoms = .true.
     added = 0
@@ -2855,7 +2859,7 @@ type(inoutput), optional :: debugfile
        more_atoms = .false.
 
        !Find nearest neighbours of the cluster
-       call bfs_step(this,qmlist,neighbours,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+       call bfs_step(this,qmlist,neighbours,nneighb_only=my_nneighb_only,min_images_only=.true.,alt_connect=use_connect)
 
        !Loop over neighbours
        do n = 1, neighbours%N
@@ -2866,7 +2870,7 @@ type(inoutput), optional :: debugfile
           call append(centre,(/i,0,0,0/))
 
           ! Find atoms bonded to this neighbour
-          call bfs_step(this,centre,bonds,nneighb_only=.true.,min_images_only=.true.,alt_connect=use_connect)
+          call bfs_step(this,centre,bonds,nneighb_only=my_nneighb_only,min_images_only=.true.,alt_connect=use_connect)
 
           !Loop over these bonds
           do nn = 1, bonds%N

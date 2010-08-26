@@ -164,13 +164,16 @@ contains
     logical :: dummy, have_silica_potential
     type(Table) :: intrares_impropers
 
-    integer :: mol_id_lookup(3), atom_res_number_lookup(3), sort_index_lookup(3)
     integer, pointer :: sort_index_p(:)
+    integer, allocatable :: rev_sort_index(:)
     integer :: at_i
 
     integer :: run_dir_i
 
     logical :: at_periodic
+    integer :: form_bond(2), break_bond(2)
+    integer :: form_bond_sorted(2), break_bond_sorted(2)
+    integer :: l_error
 
     INIT_ERROR(error)
 
@@ -200,6 +203,8 @@ contains
       call param_register(cli, 'auto_centre', 'F', auto_centre)
       call param_register(cli, 'centre_pos', '0.0 0.0 0.0', centre_pos, has_centre_pos)
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake)
+      call param_register(cli, 'form_bond', '0 0', form_bond)
+      call param_register(cli, 'break_bond', '0 0', break_bond)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('could not parse argument line')
@@ -291,46 +296,54 @@ contains
     ! if writing PSF file, calculate residue labels, before sort
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
-	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential)
+	call create_residue_labels_arb_pos(at,do_CHARMM=.true.,intrares_impropers=intrares_impropers,have_silica_potential=have_silica_potential,form_bond=form_bond,break_bond=break_bond)
       end if
     end if
 
     ! sort by molecule, residue ID
     nullify(sort_index_p)
-    if (.not. assign_pointer(at, 'sort_index', sort_index_p)) then
-      call add_property(at, 'sort_index', 0)
-      if (.not. assign_pointer(at, 'sort_index', sort_index_p)) &
-	call print("WARNING: do_cp2k_calc failed to assign pointer for sort_index, not sorting")
+    call assign_property_pointer(at, 'sort_index', sort_index_p, error=l_error)
+    if (l_error /= ERROR_NONE) then
+       call add_property(at, 'sort_index', 0, n_cols=1, ptr=sort_index_p, error=error)
+       PASS_ERROR_WITH_INFO("Failed to add sort_index property", error)
     endif
-    if (associated(sort_index_p)) then
+    ! initialise sort index
+    do at_i=1, at%N
+      sort_index_p(at_i) = at_i
+    end do
+    if (.not. has_property(at,'mol_id') .or. .not. has_property(at,'atom_res_type') .or. .not. has_property(at,'motif_atom_num')) then
+      call print("WARNING: can't do sort_by_molecule - need mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
+    else ! do the sort
+      call atoms_sort(at, 'mol_id', 'atom_res_type', 'motif_atom_num', error=error)
+      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_type", error)
       do at_i=1, at%N
-	sort_index_p(at_i) = at_i
+	if (sort_index_p(at_i) /= at_i) then
+	  call print("sort() of at%data by mol_id, atom_res_type, motif_atom_num reordered some atoms")
+	  exit
+	endif
       end do
-    endif
-    if (.not.(has_property(at,'mol_id')) .or. .not. has_property(at,'atom_res_number')) then
-      call print("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number.  CP2K may complain", PRINT_ALWAYS)
-    else
-      call atoms_sort(at, 'mol_id', 'atom_res_number', error=error)
-      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_number", error)
-      if (associated(sort_index_p)) then
-	do at_i=1, at%N
-	  if (sort_index_p(at_i) /= at_i) then
-	    call print("sort() of at%data by mol_id, atom_res_number reordered some atoms")
-	    exit
-	  endif
-	end do
-      endif
       call calc_connect(at)
+      if ((all(form_bond > 0) .and. all(form_bond <= at%N)) .or. (all(break_bond > 0) .and. all(break_bond <= at%N))) then
+	 allocate(rev_sort_index(at%N))
+	 do i=1, at%N
+	   rev_sort_index(sort_index_p(i)) = i
+	 end do
+	 if (all(form_bond > 0) .and. all(form_bond <= at%N)) form_bond_sorted(:) = rev_sort_index(form_bond(:))
+	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond_sorted(:) = rev_sort_index(break_bond(:))
+	 deallocate(rev_sort_index)
+      end if
     end if
 
     ! write PSF file, if requested
     if (run_type /= "QS") then
       if (trim(psf_print) == "DRIVER_PRINT_AND_SAVE") then
 	if (has_property(at, 'avgpos')) then
-	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential)
+	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
+	    add_silica_23body=have_silica_potential,form_bond=form_bond_sorted,break_bond=break_bond_sorted)
 	else if (has_property(at, 'pos')) then
 	  call print("WARNING: do_cp2k_calc using pos for connectivity.  avgpos is preferred but not found.")
-	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers,add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos')
+	  call write_psf_file_arb_pos(at, "quip_cp2k"//trim(topology_suffix)//".psf", run_type_string=trim(run_type),intrares_impropers=intrares_impropers, &
+	    add_silica_23body=have_silica_potential,pos_field_for_connectivity='pos',form_bond=form_bond_sorted,break_bond=break_bond_sorted)
 	else
 	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
 	endif

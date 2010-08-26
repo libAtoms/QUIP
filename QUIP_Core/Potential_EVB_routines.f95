@@ -23,8 +23,8 @@
 
     call initialise(params)
     call param_register(params, 'mm_args_str', '', this%mm_args_str)
-    call param_register(params, 'topology_suffix1', '', this%topology_suffix1)
-    call param_register(params, 'topology_suffix2', '', this%topology_suffix2)
+    call param_register(params, 'topology_suffix1', '_EVB1', this%topology_suffix1)
+    call param_register(params, 'topology_suffix2', '_EVB2', this%topology_suffix2)
     call param_register(params, 'form_bond', '0 0', this%form_bond)
     call param_register(params, 'break_bond', '0 0', this%break_bond)
     !call param_register(params, 'energy_offset', '0.0' , this%energy_offset)
@@ -97,6 +97,7 @@
     real(dp) :: e, virial
     real(dp), pointer       :: at_force_ptr(:,:)
 
+    real(dp) :: gap
     type(Dictionary)        :: params
     character(FIELD_LENGTH) :: mm_args_str
     character(FIELD_LENGTH) :: topology_suffix1, topology_suffix2
@@ -110,9 +111,11 @@
     real(dp)                :: offdiagonal_A12, offdiagonal_mu12, &
                                rab, d_rab_dx(3)
     logical                 :: no_coupling, dummy
+    character(STRING_LENGTH) :: extra_calc_args
 
     character(FIELD_LENGTH) :: psf_print
     character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+    character(STRING_LENGTH) :: use_calc_energy
     character(10240) :: new_args_str
 
     INIT_ERROR(error)
@@ -133,24 +136,10 @@
     call param_register(params, 'force', '', calc_force)
     call param_register(params, 'virial', '', calc_virial)
     call param_register(params, 'local_energy', '', calc_local_energy)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_initialise args_str')) then
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_calc args_str')) then
        RAISE_ERROR('Potential_EVB_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
     call finalise(params)
-
-    !!!!!
-    !at the moment it only works with existing topologies
-    call initialise(params)
-      psf_print = ''
-      call param_register(params, 'PSF_print', 'NO_PSF', psf_print)
-    if (.not. param_read_line(params, mm_args_str, ignore_unknown=.true.,task='Potential_EVB_calc mm_args_str')) then
-       RAISE_ERROR('Potential_EVB_calc failed to parse mm_args_str="'//trim(mm_args_str)//'"', error)
-    endif
-    call finalise(params)
-    if ( (trim(psf_print) /= 'USE_EXISTING_PSF')) &
-      call system_abort("EVB calculation has been only implemented for using existing topology files yet.  Generate 2 topology files with the resonance structures, and try with them.")
-    !!!!!
-
 
     !CHECK ARGUMENTS
 
@@ -158,8 +147,10 @@
        RAISE_ERROR('Potential_EVB_calc: supports only energy and forces, not virial or local_energy', error)
     endif
 
-    call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
-    PASS_ERROR_WITH_INFO("Potential_EVB_Calc assigning pointer for force property '"//trim(calc_force)//"'", error)
+    if (len_trim(calc_force) > 0) then
+       call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
+       PASS_ERROR_WITH_INFO("Potential_EVB_Calc assigning pointer for force property '"//trim(calc_force)//"'", error)
+    endif
 
     !coupling parameters
     if (offdiagonal_A12 .feq. 0._dp) then
@@ -201,41 +192,66 @@
 
     !CALCULATE E,F WITH DIFFERENT TOPOLOGIES
 
+    ! allocate local arrays
     if (len_trim(calc_force) > 0) then
       allocate(my_f_1(3,at%N))
       allocate(my_f_1(3,at%N))
       allocate(delta_eoffdiag(3,at%N))
     endif
 
-    !set breaking and forming bonds for topology1
-    call remove_value(at%params, 'form_bond')
-    call remove_value(at%params, 'break_bond')
-    if (.not.skip_form_bond) call set_value(at%params,'form_bond',form_bond(1:2))
-    if (.not.skip_break_bond) call set_value(at%params,'break_bond',break_bond(1:2))
+    ! SETUP CALC_ARGS, AND CALL CALC FOR TOPOLOGY 1
+    ! topology suffix
+    extra_calc_args="topology_suffix="//trim(topology_suffix1)
+    ! add energy= arg if needed
+    use_calc_energy=trim(calc_energy)
+    if (len_trim(calc_energy) == 0) then
+      do while (has_key(at%params, trim(use_calc_energy)))
+	 use_calc_energy = "T"//trim(use_calc_energy)
+      end do
+    endif
+    extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
+    extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
+    ! add args to form/break bonds for topology 1
+    if (.not. skip_form_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//form_bond(1:2)//"}"
+    if (.not. skip_break_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//break_bond(1:2)//"}"
     !calc with topology1
-    call calc(this%pot1, at, args_str=mm_args_str//" topology_suffix="//trim(topology_suffix1), error=error)
+    call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
 
-    if (len_trim(calc_energy) > 0) call get_param_value(at, "energy", my_e_1)
+    call get_param_value(at, trim(use_calc_energy), my_e_1)
+    if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_1 = at_force_ptr
 
-    !set breaking and forming bonds for topology2
-    call remove_value(at%params, 'form_bond')
-    call remove_value(at%params, 'break_bond')
-    if (.not.skip_break_bond) call set_value(at%params,'form_bond',break_bond(1:2))
-    if (.not.skip_form_bond) call set_value(at%params,'break_bond',form_bond(1:2))
+    ! SETUP CALC_ARGS, AND CALL CALC FOR TOPOLOGY 2
+    ! topology suffix
+    extra_calc_args="topology_suffix="//trim(topology_suffix2)
+    ! add energy and force args if needed
+    use_calc_energy=trim(calc_energy)
+    if (len_trim(calc_energy) == 0) then
+      do while (has_key(at%params, trim(use_calc_energy)))
+	 use_calc_energy = "T"//trim(use_calc_energy)
+      end do
+    endif
+    extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
+    extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
+    ! form/break bonds for topology 2
+    if (.not. skip_form_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//form_bond(1:2)//"}"
+    if (.not. skip_break_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//break_bond(1:2)//"}"
     !calc with topology2
-    call calc(this%pot1, at, args_str=mm_args_str//" topology_suffix="//trim(topology_suffix2), error=error)
+    call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
 
-    if (len_trim(calc_energy) > 0) call get_param_value(at, "energy", my_e_2)
+    call get_param_value(at, trim(use_calc_energy), my_e_2)
+    if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_2 = at_force_ptr
 
+    call print("EVB energies my_e_1 " // my_e_1 // " " // my_e_2, PRINT_VERBOSE)
 
     !CALCULATE EVB ENERGY AND FORCES
 
     !distance or distance difference
     if (no_coupling) then
+       call print("EVB no coupling", PRINT_VERBOSE)
        !take the E, F of the resonance state with the smaller E
        if (my_e_1 < my_e_2) then
 	  if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_1)
@@ -249,15 +265,19 @@
        rab = 0._dp
        if (.not. skip_form_bond) rab = rab + distance_min_image(at,form_bond(1),form_bond(2))
        if (.not. skip_form_bond) rab = rab - distance_min_image(at,break_bond(1),break_bond(2))
-   
+
        if (len_trim(calc_energy) > 0 .or. len_trim(calc_force) > 0) then
           e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
+	  call print("EVB e_offidag " // e_offdiag, PRINT_VERBOSE)
        endif
 
        !energy
        if (len_trim(calc_energy) > 0) then
           e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
+	  gap =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
 	  call set_param_value(at, trim(calc_energy), e)
+	  call print("EVB coupled energy " // e, PRINT_VERBOSE)
+	  call print("EVB gap " // gap, PRINT_VERBOSE)
        endif
 
        !force
