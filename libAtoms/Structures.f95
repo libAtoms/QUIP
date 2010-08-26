@@ -911,7 +911,7 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine diamond(myatoms, a, Z)
-    type(Atoms), intent(o ut)      :: myatoms
+    type(Atoms), intent(out)      :: myatoms
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z(:)
 
