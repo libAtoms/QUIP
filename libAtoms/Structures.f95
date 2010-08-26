@@ -915,8 +915,6 @@ contains
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z(:)
 
-    integer :: i
-
     call initialise(myatoms, 8, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
     
@@ -946,8 +944,7 @@ contains
 	call system_abort("diamond got passed Z with size="//size(Z)//" which isn't 1 or 2")
       endif
 
-      if (present(Z)) call set_atoms(myatoms,Z)
-
+      call set_atoms(myatoms,myatoms%Z)
     endif
   end subroutine diamond
 
