@@ -36,6 +36,7 @@ F95 = gfortran
 CC = gcc
 CPLUSPLUS = g++
 LINKER = gfortran
+FPP = gfortran -E -x f95-cpp-input
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 DEFAULT_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
@@ -68,3 +69,7 @@ QUIPPY_DEBUG = 1
 	@if ( which ${SCRIPT_PATH}protect_mod >/dev/null 2>&1 ); then ${SCRIPT_PATH}protect_mod $(MAKEDEP_ARGS) -- $<; fi
 	${F95} ${F95FLAGS}  -c $< -o $@
 	@if ( which ${SCRIPT_PATH}unprotect_mod >/dev/null 2>&1 ); then env OD_SKIP=52 ${SCRIPT_PATH}unprotect_mod $(MAKEDEP_ARGS) -- $<; fi
+
+.f95.fpp:
+	${FPP} ${F95FLAGS} $< -o $@
+
