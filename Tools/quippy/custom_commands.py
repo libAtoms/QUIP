@@ -549,7 +549,9 @@ class test(Command):
         ('verbosity=', None,
          "verbosity for unit tests"),
         ("test=", None,
-         "single test to run")
+         "single test to run"),
+        ("debug", None,
+          "start debug ipython shell after running test")
         ]
 
     def initialize_options(self):
@@ -561,6 +563,7 @@ class test(Command):
         self.test_suffixes = None
         self.verbosity = None
         self.test = None
+        self.debug = None
 
     def finalize_options(self):
         import os
@@ -601,15 +604,59 @@ class test(Command):
         else:
             tests = TestLoader().loadTestsFromNames([self.test_prefix+case for case in self.test_suffixes])
 
-        print 'Running tests with verbosity %d' % self.verbosity
-        result = TextTestRunner(verbosity=self.verbosity).run(tests)
+
+        if self.debug is not None:
+           from IPython.Shell import IPShellEmbed
+           ipshell = IPShellEmbed(['-pdb','-pi1','debug In <\\#>: ','-pi2','debug    .\\D.: ',
+                                   '-po','debug Out<\\#>: ','-nosep'])
+           tests.debug()
+           ipshell()
+        else:
+           print 'Running tests with verbosity %d' % self.verbosity
+           runner = TextTestRunner(verbosity=self.verbosity)
+           result = runner.run(tests)
+
+           # Exit script with exitcode 1 if any tests failed
+           if result.failures != [] or result.errors != []:
+              sys.exit(1)
 
         # restore sys.path
         sys.path = old_path[:]
 
-        # Exit script with exitcode 1 if any tests failed
-        if result.failures != [] or result.errors != []:
-            sys.exit(1)
         
 
 
+class interact(Command):
+    description = "interact with the distribution prior to install"
+
+    user_options = []
+
+    def initialize_options(self):
+        self.build_base = 'build'
+
+    def finalize_options(self):
+        build = self.get_finalized_command('build')
+        self.build_purelib = build.build_purelib
+        self.build_platlib = build.build_platlib
+
+    def run(self):
+        import sys
+        # Invoke the 'build' command to "build" pure Python modules
+        # (ie. copy 'em into the build tree)
+        self.run_command('build')
+
+        # remember old sys.path to restore it afterwards
+        old_path = sys.path[:]
+
+        # extend sys.path
+        sys.path.insert(0, self.build_purelib)
+        sys.path.insert(0, self.build_platlib)
+
+        # start embedded ipython shell
+        from IPython.Shell import IPShellEmbed
+        ipshell = IPShellEmbed(['-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
+                                '-po','interact Out<\\#>: ','-nosep'])
+        ipshell()
+
+        # restore sys.path
+        sys.path = old_path[:]
