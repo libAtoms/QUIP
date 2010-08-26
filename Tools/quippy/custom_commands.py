@@ -651,7 +651,7 @@ class interact(Command):
 
         # start embedded ipython shell
         from IPython.Shell import IPShellEmbed
-        ipshell = IPShellEmbed(['-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
+        ipshell = IPShellEmbed(['-pdb', '-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
                                 '-po','interact Out<\\#>: ','-nosep'])
 
         # extend sys.path
