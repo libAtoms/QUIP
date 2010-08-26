@@ -1367,26 +1367,19 @@ contains
 
     integer entry_i
 
-call print("dictionary_assign_pointer_r2 00 key '"//trim(key)//"'", PRINT_ANAL)
     entry_i = lookup_entry_i(this, key, case_sensitive)
     
-call print("dictionary_assign_pointer_r2 10 key '"//trim(key)//"'", PRINT_ANAL)
     if (entry_i <= 0) then
-call print("dictionary_assign_pointer_r2 20 key '"//trim(key)//"'", PRINT_ANAL)
        dictionary_assign_pointer_r2 = .false.
        return
     endif
 
-call print("dictionary_assign_pointer_r2 30 key '"//trim(key)//"'", PRINT_ANAL)
     if (this%entries(entry_i)%type == T_REAL_A2) then
-call print("dictionary_assign_pointer_r2 40 key '"//trim(key)//"'", PRINT_ANAL)
        v => this%entries(entry_i)%r_a2
        dictionary_assign_pointer_r2 = .true.
     else
-call print("dictionary_assign_pointer_r2 50 key '"//trim(key)//"'", PRINT_ANAL)
        dictionary_assign_pointer_r2 = .false.
     endif
-call print("dictionary_assign_pointer_r2 60 returning " //dictionary_assign_pointer_r2, PRINT_ANAL)
   end function dictionary_assign_pointer_r2
 
 
