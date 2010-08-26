@@ -911,7 +911,7 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine diamond(myatoms, a, Z)
-    type(Atoms), intent(out)      :: myatoms
+    type(Atoms), intent(o ut)      :: myatoms
     real(dp), intent(in)          :: a
     integer, intent(in), optional :: Z(:)
 
@@ -946,9 +946,7 @@ contains
 	call system_abort("diamond got passed Z with size="//size(Z)//" which isn't 1 or 2")
       endif
 
-      do i=1,myatoms%N
-         myatoms%species(:,i) = s2a(ElementName(myatoms%Z(i)))
-      end do
+      if (present(Z)) call set_atoms(myatoms,Z)
 
     endif
   end subroutine diamond
