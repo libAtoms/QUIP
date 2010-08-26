@@ -343,12 +343,12 @@ module  atoms_module
   !% get a (per-configuration) value from the atoms%params dictionary
   private :: atoms_get_param_value_int, atoms_get_param_value_int_a
   private :: atoms_get_param_value_real, atoms_get_param_value_real_a, atoms_get_param_value_real_a2
-  private :: atoms_get_param_value_str
+  private :: atoms_get_param_value_str, atoms_get_param_value_es
   private :: atoms_get_param_value_logical
   interface get_param_value
      module procedure atoms_get_param_value_int, atoms_get_param_value_int_a
      module procedure atoms_get_param_value_real, atoms_get_param_value_real_a, atoms_get_param_value_real_a2
-     module procedure atoms_get_param_value_str
+     module procedure atoms_get_param_value_str, atoms_get_param_value_es
      module procedure atoms_get_param_value_logical
   end interface get_param_value
 
@@ -1031,6 +1031,17 @@ contains
 	 RAISE_ERROR("atoms_get_param_value failed to get str value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_str
+   subroutine atoms_get_param_value_es(this, key, value, error)
+      type(Atoms), intent(in) :: this
+      character(len=*), intent(in) :: key
+      type(Extendable_Str), intent(inout) :: value
+      integer, intent(out), optional :: error
+      
+      INIT_ERROR(error)
+      if (.not. get_value(this%params, key, value)) then
+	 RAISE_ERROR("atoms_get_param_value failed to get es value for key='"//trim(key)//"' from this%params", error)
+      endif
+   end subroutine atoms_get_param_value_es
    subroutine atoms_get_param_value_logical(this, key, value, error)
       type(Atoms), intent(in) :: this
       character(len=*), intent(in) :: key
@@ -5733,14 +5744,14 @@ end subroutine set_map_shift
   endsubroutine atoms_copy_entry
 
   !% sort atoms by one or more (max 2 now) integer or real properties
-  subroutine atoms_sort(this, prop1, prop2, error)
+  subroutine atoms_sort(this, prop1, prop2, prop3, error)
     type(Atoms), intent(inout) :: this
     character(len=*), intent(in) :: prop1
-    character(len=*), intent(in), optional :: prop2
+    character(len=*), intent(in), optional :: prop2, prop3
     integer, intent(out), optional :: error
 
-    integer, pointer :: i_p1(:) => null(), i_p2(:) => null()
-    real(dp), pointer :: r_p1(:) => null(), r_p2(:) => null()
+    integer, pointer :: i_p1(:) => null(), i_p2(:) => null(), i_p3(:) => null()
+    real(dp), pointer :: r_p1(:) => null(), r_p2(:) => null(), r_p3(:) => null()
     integer :: cur_place, i_a, smallest_i_a
     logical :: is_lt
 
@@ -5758,11 +5769,18 @@ end subroutine set_map_shift
 	  endif
        endif
     endif
+    if (present(prop3)) then
+       if (.not. assign_pointer(this, prop3, i_p3)) then
+	  if (.not. assign_pointer(this, prop3, r_p3)) then
+	     RAISE_ERROR("atoms_sort can't find 3rd integer or real property '" // prop3 //"'", error)
+	  endif
+       endif
+    endif
 
     do cur_place=1, this%N-1
        smallest_i_a = cur_place
        do i_a = cur_place+1, this%N
-	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, error=error)
+	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, i_p3=i_p3, r_p3=r_p3, error=error)
 	  PASS_ERROR(error)
 	  if (is_lt) then
 	     smallest_i_a = i_a

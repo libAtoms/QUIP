@@ -5038,19 +5038,21 @@ CONTAINS
 
   !% compare contents of 2 cells in up to N=2 arrays (int or real), return true if 
   !% contents in first cell is less than 2nd, with 1st array taking precendence.  
-  function arrays_lt(i, j, i_p1, r_p1, i_p2, r_p2, error)
+  function arrays_lt(i, j, i_p1, r_p1, i_p2, r_p2, i_p3, r_p3, error)
      integer, intent(in) :: i, j
      integer, intent(in), pointer, optional :: i_p1(:)
      real(dp), intent(in), pointer, optional :: r_p1(:)
      integer, intent(in), pointer, optional :: i_p2(:)
      real(dp), intent(in), pointer, optional :: r_p2(:)
+     integer, intent(in), pointer, optional :: i_p3(:)
+     real(dp), intent(in), pointer, optional :: r_p3(:)
      integer, intent(out), optional :: error
      logical :: arrays_lt
 
-     integer :: n_p1, n_p2
+     integer :: n_p1, n_p2, n_p3
      logical :: p1_is_i = .false., p1_is_r = .false.
-     logical :: p2_is_i = .false., p2_is_r = .false.
-     logical :: have_p2
+     logical :: p2_is_i = .false., p2_is_r = .false., have_p2 = .false.
+     logical :: p3_is_i = .false., p3_is_r = .false., have_p3 = .false.
 
      INIT_ERROR(error)
 
@@ -5088,6 +5090,24 @@ CONTAINS
         RAISE_ERROR("arrays_lt got too many present and associated p2 pointers",error)
      endif
      have_p2 = (n_p2 == 1)
+
+     n_p3 = 0
+     if (present(i_p3)) then
+       if (associated(i_p3)) then
+	  n_p3 = n_p3 + 1
+	  p3_is_i = .true.
+       endif
+     end if
+     if (present(r_p3)) then
+       if (associated(r_p3)) then
+	  n_p3 = n_p3 + 1
+	  p3_is_r = .true.
+       endif
+     endif
+     if (n_p3 > 1) then
+        RAISE_ERROR("arrays_lt got too many present and associated p3 pointers",error)
+     endif
+     have_p3 = (n_p3 == 1)
 
      ! always have some *_p1, test *_p1
      if (p1_is_i) then
@@ -5129,7 +5149,28 @@ CONTAINS
 	endif
      endif
 
-     ! *_p2 must be equal
+     ! *_p2 must be equal, test *_p3
+     if (have_p3) then ! must have some present and associated *_p3 pointer, test it
+	if (p3_is_i) then
+	   if (i_p3(i) < i_p3(j)) then
+	      arrays_lt = .true.
+	      return
+	   else if (i_p3(i) > i_p3(j)) then
+	      arrays_lt = .false.
+	      return
+	   endif
+	else ! p3_is_r
+	   if (r_p3(i) < r_p3(j)) then
+	      arrays_lt = .true.
+	      return
+	   else if (r_p3(i) > r_p3(j)) then
+	      arrays_lt = .false.
+	      return
+	   endif
+	endif
+     endif
+
+     ! *_p3 must be equal
      arrays_lt = .false.
   end function arrays_lt
 

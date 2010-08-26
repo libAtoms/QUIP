@@ -793,10 +793,10 @@ contains
     integer, optional,          intent(out)   :: status
     integer                                   :: my_status
 
+    num_fields = 0 ! in case read gives non-zero status
     local_line = read_line(this,my_status)
-    if(present(status)) status = my_status
-    if(my_status == 0) call parse_string(local_line,delimiters,fields,&
-      num_fields,error=status)
+    if (present(status)) status = my_status
+    if (my_status == 0) call split_string_simple(local_line, fields, num_fields, delimiters)
 
   end subroutine inoutput_parse_line
 
@@ -815,13 +815,17 @@ contains
     cur_field = 1
     do while (cur_pos <= str_len)
       if (cur_field > size(fields)) &
-	call system_abort("split_string_simple no room for fields")
+	call system_abort("split_string_simple str='"//trim(str)//"' no room for fields size(fields)="//size(fields)//" cur_field "//cur_field)
       next_pos = scan(str(cur_pos+1:str_len),separators)
       if (next_pos > 0) then
-	fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-2)
-	cur_pos = cur_pos + next_pos
-	cur_field = cur_field + 1
-      else
+	if (next_pos == 1) then ! found another separator, skip it
+	   cur_pos = cur_pos + 1
+	else ! some stuff between us and separator, must be another field
+	   fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-2)
+	   cur_pos = cur_pos + next_pos
+	   cur_field = cur_field + 1
+	endif
+      else ! end of string, last field
 	fields(cur_field) = str(cur_pos+1:str_len)
 	cur_field = cur_field + 1
 	cur_pos = str_len+1 ! exit loop

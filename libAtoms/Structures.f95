@@ -1774,7 +1774,7 @@ contains
 
     integer,     allocatable :: A(:,:),B(:,:),C(:,:),depth(:), neighbour_Z(:), Z(:), M0(:,:), M(:,:), &
                                 match_indices(:), depth_real(:)
-    integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom
+    integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom, i_match
     logical                  :: match
     type(table)              :: neighbours, core, num_species_at, num_species_motif
     logical, allocatable :: assigned_to_motif(:)

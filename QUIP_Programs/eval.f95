@@ -401,7 +401,8 @@ implicit none
 	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
 	if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
 
-	call calc(pot, at, args_str = calc_args//" "//extra_calc_args)
+	call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
+	HANDLE_ERROR(error)
 	if (do_E) call get_param_value(at, 'energy', E0)
 	if (do_F) call assign_property_pointer(at, "force", F0)
 	if (do_V) call get_param_value(at, "virial", V0)

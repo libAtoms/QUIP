@@ -56,7 +56,6 @@ module topology_module
              write_cp2k_pdb_file, &
              write_psf_file, &
              write_psf_file_arb_pos, &
-             create_residue_labels, &
              create_residue_labels_arb_pos, &
              NONE_RUN, &
              QS_RUN, &
@@ -105,12 +104,14 @@ contains
 
   !% Topology calculation using arbitrary (usually avgpos) coordinates, as a wrapper to find_residue_labels
   !%
-  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential,pos_field_for_connectivity)
+  subroutine create_residue_labels_arb_pos(at,do_CHARMM,intrares_impropers,have_silica_potential,pos_field_for_connectivity,form_bond,break_bond,error)
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
     type(Table), optional, intent(out)   :: intrares_impropers
     logical,     optional, intent(in)    :: have_silica_potential
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
+    integer, optional, intent(in) :: form_bond(2), break_bond(2)
+    integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
@@ -118,19 +119,28 @@ contains
     logical :: do_have_silica_potential
     logical :: use_pos_is_pos
 
+    logical :: bond_exists
+    integer :: shift(3)
+    real(dp) :: form_bond_dist
+    integer :: ji, j
+
+    INIT_ERROR(error)
+
     ! save a copy
     at_copy = at
 
     use_pos_is_pos = .false.
     ! find desired position field (pos, avgpos, whatever)
     if (present(pos_field_for_connectivity)) then
-      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
-	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) then
+	RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
+      endif
       if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else if (.not. assign_pointer(at, 'avgpos', use_pos)) then
       call print("WARNING: calc_topology can't find default pos field 'avgpos', trying to use pos instead")
-      if (.not. assign_pointer(at, 'pos', use_pos)) &
-	call system_abort("calc_topology can't find avgpos or pos fields")
+      if (.not. assign_pointer(at, 'pos', use_pos)) then
+	RAISE_ERROR("calc_topology can't find avgpos or pos fields",error)
+      endif
       use_pos_is_pos = .true.
     endif
 
@@ -142,15 +152,22 @@ contains
     if (do_have_silica_potential) then
       call set_cutoff(at_copy,SILICA_2body_CUTOFF)
     else
-      call set_cutoff(at_copy,0.0_dp)
+      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
     endif
     call calc_connect(at_copy, alt_connect=t_connect)
 
+    call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
+    PASS_ERROR(error)
+
     ! now create labels using this connectivity object
-    ! if cutoff is set to 0, nneighb_only doesn't matter
-    ! if cutoff is large, then nneighb_only must be true
-    !    so might as well pass true
-    call create_residue_labels(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential)
+    if (do_have_silica_potential) then
+       ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.true.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, error=error)
+    else
+       ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
+       call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,nneighb_only=.false.,alt_connect=t_connect,have_silica_potential=do_have_silica_potential, error=error)
+    endif
+    PASS_ERROR(error)
     call finalise(t_connect)
 
   end subroutine create_residue_labels_arb_pos
@@ -164,7 +181,7 @@ contains
   !% Optionally could use hysteretic neighbours instead of nearest neighbours, if the cutoff of the
   !% alt_connect were the same as at%cutoff(_break).
   !%
-  subroutine create_residue_labels(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential) !, hysteretic_neighbours)
+  subroutine create_residue_labels_internal(at,do_CHARMM,intrares_impropers, nneighb_only,alt_connect,have_silica_potential, error) !, hysteretic_neighbours)
 
     type(Atoms),           intent(inout),target :: at
     logical,     optional, intent(in)    :: do_CHARMM
@@ -172,9 +189,10 @@ contains
     logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
     logical,     optional, intent(in)    :: have_silica_potential
+    integer, optional, intent(out) :: error
 !    logical, optional, intent(in) :: hysteretic_neighbours
 
-    character(*), parameter  :: me = 'create_residue_labels_pos: '
+    character(*), parameter  :: me = 'create_residue_labels_pos_internal: '
     logical :: remove_Si_H_silica_bonds = .true.
 
     type(Inoutput)                       :: lib
@@ -191,7 +209,7 @@ contains
     real(dp),     allocatable, dimension(:) :: at_charges
     logical                              :: my_do_charmm
     character, dimension(:,:), pointer   :: atom_type, atom_type_PDB, atom_res_name, atom_mol_name
-    integer, dimension(:), pointer       :: atom_res_number
+    integer, dimension(:), pointer       :: atom_res_number, atom_res_type, motif_atom_num
     real(dp), dimension(:), pointer      :: atom_charge_ptr
     logical                              :: ex
     type(extendable_str)                 :: residue_library
@@ -215,8 +233,11 @@ logical :: silica_potential
 
 !    integer, pointer :: mol_id(:)
     type(allocatable_array_pointers), allocatable :: molecules(:)
+    integer :: i_motif_at
 
-    call system_timer('create_residue_labels_pos')
+    INIT_ERROR(error)
+
+    call system_timer('create_residue_labels_pos_internal')
 
     silica_potential = optional_default(.false.,have_silica_potential)
 
@@ -225,17 +246,18 @@ logical :: silica_potential
     else
       use_connect => at%connect
     endif
-    if (.not.use_connect%initialised) call system_abort(me//'No connectivity data present in atoms structure')    
+    if (.not.use_connect%initialised) then
+      RAISE_ERROR(me//'No connectivity data present in atoms structure', error)
+    endif
 !    use_hysteretic_neighbours = optional_default(.false.,hysteretic_neighbours)
 
     my_do_charmm = optional_default(.true.,do_CHARMM)
 
     call initialise(residue_library)
     call print_title('Creating CHARMM format')
-    ex = .false.
-    ex = get_value(at%params,'Library',residue_library)
-    if (ex) call print('Library: '//string(residue_library))
-    if (.not.ex) call system_abort('create_residue_labels_pos: no residue library specified, but topology generation requested')
+    call get_param_value(at, 'Library', residue_library, error=error)
+    PASS_ERROR_WITH_INFO('create_residue_labels_pos_internal: no residue library specified, but topology generation requested', error)
+    call print('Library: '//string(residue_library))
 
     !Open the residue library
     !call print('Opening library...')
@@ -243,6 +265,9 @@ logical :: silica_potential
 
     !Set all atoms as initially unidentified
     unidentified = .true.
+
+    ! add property for find_motif() to save the index of each atom in the motif
+    call add_property(at,'motif_atom_num',0, ptr=motif_atom_num)
 
     !Read each of the residue motifs from the library
     n = 0
@@ -300,12 +325,12 @@ logical :: silica_potential
           endif
           !Add H atoms -- if .not.remove_Si_H_bonds, we might include whole water molecules at this stage, adding the remaining -OH.
       !    call bfs_step(at,atom_SiO,atom_SIOH,nneighb_only=.true.,min_images_only=.true.)
-          call add_cut_hydrogens(at,atom_SiO,alt_connect=use_connect)
+          call add_cut_hydrogens(at,atom_SiO,nneighb_only=.true.,alt_connect=use_connect)
           call print(atom_SiO%N//' O/H atoms found in total')
 
           !check if none of these atoms are identified yet
           if (any(.not.unidentified(atom_Si%int(1,1:atom_Si%N)))) then
-             call system_abort('already identified atoms found again.')
+             RAISE_ERROR('already identified atoms found again.', error)
           endif
           if (any(.not.unidentified(atom_SiO%int(1,1:atom_SiO%N)))) then
 !             call system_abort('already identified atoms found again.')
@@ -348,8 +373,9 @@ logical :: silica_potential
 !                   call print('Found OH silanol oxygen.'//atom_SiO%int(1,i)//' hydrogen: '//O_neighb%int(1,hydrogen))
                    !check if it has only 1 H nearest neighbour
                    if (hydrogen.lt.O_neighb%N) then
-                      if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N)),1).gt.0) &
-                         call system_abort('More than 1 H neighbours of O '//atom_i)
+                      if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N)),1).gt.0) then
+                         RAISE_ERROR('More than 1 H neighbours of O '//atom_i, error)
+		      endif
                    endif
                 else
                    atom_name(atom_i) = 'OSB' !bridging O
@@ -363,7 +389,7 @@ logical :: silica_potential
                 atom_name(atom_SiO%int(1,i)) = 'HSI'
                 atom_name_PDB(atom_SiO%int(1,i)) = 'HSI'
              else
-                call system_abort('Non O/H atom '//atom_i//'!?')
+                RAISE_ERROR('Non O/H atom '//atom_i//'!?', error)
              endif
           enddo
 
@@ -434,6 +460,10 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 !1 row is 1 residue
              unidentified(list%int(:,m)) = .false.
 
+	     do i_motif_at=1, size(list%int,1)
+	       motif_atom_num(list%int(i_motif_at,m)) = i_motif_at
+	     end do
+
              !Store the residue info
              nres = nres + 1
              call append(residue_type,(/n/))
@@ -464,7 +494,9 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     end do
 
    ! check if residue library is empty
-    if (.not.found_residues) call system_abort('Residue library '//trim(lib%filename)//' does not contain any residues!')
+    if (.not.found_residues) then
+      RAISE_ERROR('Residue library '//trim(lib%filename)//' does not contain any residues!', error)
+    endif
 
     call print('Finished.')
     call print(nres//' residues found in total')
@@ -476,16 +508,16 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
 	  if (unidentified(i)) then
 	    call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
 	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=PRINT_ALWAYS)
-	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i),verbosity=PRINT_ALWAYS)
-	    do ji=1, atoms_n_neighbours(at, i)
-	      j = atoms_neighbour(at, i, ji)
+	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//atoms_n_neighbours(at,i,alt_connect=alt_connect),verbosity=PRINT_ALWAYS)
+	    do ji=1, atoms_n_neighbours(at, i, alt_connect=alt_connect)
+	      j = atoms_neighbour(at, i, ji, alt_connect=alt_connect)
 	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=PRINT_ALWAYS)
 	    end do
 	  endif
        enddo
 
        ! THIS IS WHERE THE CALCULATION OF NEW PARAMETERS SHOULD GO
-      call system_abort('create_residue_labels_pos: Unidentified atoms')
+      RAISE_ERROR('create_residue_labels_pos_internal: Unidentified atoms', error)
 
     else
        call print('All atoms identified')
@@ -498,6 +530,7 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     call add_property(at,'atom_res_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_res_name)
     call add_property(at,'atom_mol_name',repeat(' ',TABLE_STRING_LENGTH), ptr=atom_mol_name)
     call add_property(at,'atom_res_number',0, ptr=atom_res_number)
+    call add_property(at,'atom_res_type',0, ptr=atom_res_type)
     call add_property(at,'atom_charge',0._dp, ptr=atom_charge_ptr)
 
     atom_type(1,1:at%N) = 'X'
@@ -505,11 +538,13 @@ call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_lis
     atom_res_name(1,1:at%N) = 'X'
     atom_mol_name(1,1:at%N) = 'X'
     atom_res_number(1:at%N) = 0
+    atom_res_type(1:at%N) = 0
     atom_charge_ptr(1:at%N) = 0._dp
 
     do i=1, at%N
        atom_res_name(:,i) = pad(cha_res_name(residue_type%int(1,residue_number(i))), TABLE_STRING_LENGTH)
        atom_res_number(i) = residue_number(i)
+       atom_res_type(i) = residue_type%int(1,residue_number(i))
        atom_type(:,i) = pad(adjustl(atom_name(i)), TABLE_STRING_LENGTH)
        atom_type_PDB(:,i) = pad(adjustl(atom_name_PDB(i)), TABLE_STRING_LENGTH)
     end do
@@ -548,12 +583,15 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
        atom_charge_ptr(1:at%N) = atom_charge(1:at%N)
     endif
 
-    if (any(atom_res_number(1:at%N).le.0)) &
-       call system_abort('create_residue_labels_pos: atom_res_number is not >0 for every atom')
-    if (any(atom_type(1,1:at%N).eq.'X')) &
-       call system_abort('create_residue_labels_pos: atom_type is not saved for at least one atom')
-    if (any(atom_res_name(1,1:at%N).eq. 'X')) &
-       call system_abort('create_residue_labels_pos: atom_res_name is not saved for at least one atom')
+    if (any(atom_res_number(1:at%N).le.0)) then
+       RAISE_ERROR('create_residue_labels_pos_internal: atom_res_number is not >0 for every atom', error)
+    endif
+    if (any(atom_type(1,1:at%N).eq.'X')) then
+       RAISE_ERROR('create_residue_labels_pos_internal: atom_type is not saved for at least one atom', error)
+    endif
+    if (any(atom_res_name(1,1:at%N).eq. 'X')) then
+       RAISE_ERROR('create_residue_labels_pos_internal: atom_res_name is not saved for at least one atom', error)
+    endif
 
     !Free up allocations
     call finalise(residue_type)
@@ -563,9 +601,9 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     !Close the library
     call finalise(lib)
 
-    call system_timer('create_residue_labels_pos')
+    call system_timer('create_residue_labels_pos_internal')
 
-  end subroutine create_residue_labels
+  end subroutine create_residue_labels_internal
 
   subroutine find_molecule_ids(at,molecules,nneighb_only,alt_connect)
     type(Atoms), intent(inout) :: at
@@ -911,7 +949,8 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
 
   end subroutine write_cp2k_pdb_file
 
-  subroutine write_psf_file_arb_pos(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,pos_field_for_connectivity)
+  subroutine write_psf_file_arb_pos(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,&
+                                    pos_field_for_connectivity,form_bond,break_bond, error)
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(inout) :: at
     character(len=*), optional, intent(in) :: run_type_string
@@ -919,12 +958,16 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(80),    optional, intent(in) :: imp_filename
     logical,          optional, intent(in) :: add_silica_23body
     character(len=*), optional, intent(in) :: pos_field_for_connectivity
+    integer, optional, intent(in) :: form_bond(2), break_bond(2)
+    integer, optional, intent(out) :: error
 
     real(dp), pointer :: use_pos(:,:)
     type(Connection) :: t_connect
     type(Atoms) :: at_copy
     !character(len=TABLE_STRING_LENGTH), pointer :: atom_res_name_p(:)
     logical :: use_pos_is_pos, do_add_silica_23body
+
+    INIT_ERROR(error)
 
     ! save a copy
     at_copy = at
@@ -934,12 +977,14 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     ! find desired position field (pos, avgpos, whatever)
     use_pos_is_pos = .false.
     if (present(pos_field_for_connectivity)) then
-      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) &
-	call system_abort("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'")
+      if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) then
+	RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
+      endif
       if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else
-      if (.not. assign_pointer(at, 'avgpos', use_pos)) &
-	call system_abort("calc_topology can't find default pos field avgpos")
+      if (.not. assign_pointer(at, 'avgpos', use_pos)) then
+	RAISE_ERROR("calc_topology can't find default pos field avgpos", error)
+      endif
     endif
 
     ! copy desired pos to pos, and new connectivity
@@ -948,22 +993,32 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     if (do_add_silica_23body) then
       call set_cutoff(at_copy,SILICA_2body_CUTOFF)
     else
-      call set_cutoff(at_copy,0.0_dp)
+      call set_cutoff(at_copy,0.0_dp) ! will use default cutoff, which is the same as nneighb_only=.true.
     endif
     call calc_connect(at_copy, alt_connect=t_connect)
+
+    call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
+    PASS_ERROR(error)
 
     ! now create labels using this connectivity object
     ! if cutoff is set to 0, nneighb_only doesn't matter
     ! if cutoff is large, then nneighb_only must be true
     !    so might as well pass true
-    call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect)
+    if (do_add_silica_23body) then
+       ! cutoff is large, must do nneighb_only=.true., but EVB form bond won't work
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.true.,alt_connect=t_connect)
+    else
+       ! cutoff is set to 0, all bonds are already nneighb_only except extra EVB form_bond bonds
+       call write_psf_file (at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only=.false.,alt_connect=t_connect)
+    endif
+    PASS_ERROR(error)
     call finalise(t_connect)
   end subroutine write_psf_file_arb_pos
 
   !% Writes PSF topology file, to be used with the PDB coordinate file.
   !% PSF contains the list of atoms, bonds, angles, impropers, dihedrals.
   !
-  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect)
+  subroutine write_psf_file(at,psf_file,run_type_string,intrares_impropers,imp_filename,add_silica_23body,nneighb_only,alt_connect, error)
 
     character(len=*),           intent(in) :: psf_file
     type(atoms),                intent(in) :: at
@@ -973,6 +1028,7 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     logical,          optional, intent(in) :: add_silica_23body
     logical, intent(in), optional :: nneighb_only
     type(Connection), intent(in), optional, target :: alt_connect
+    integer, intent(out), optional :: error
 
     type(Inoutput)          :: psf
     character(103)          :: sor
@@ -990,6 +1046,8 @@ call print("Found molecule containing "//size(molecules(i)%i_a)//" atoms and not
     character(len=1024)     :: my_run_type_string
     !integer                 :: run_type
     logical                 :: do_add_silica_23body
+
+    INIT_ERROR(error)
 
     call system_timer('write_psf_file_pos')
 
@@ -2038,5 +2096,53 @@ call print('PSF| '//impropers%n//' impropers')
      end if
 
   endsubroutine find_water_monomer
+
+   subroutine break_form_bonds(at, conn, form_bond, break_bond, error)
+      type(Atoms), intent(in) :: at
+      type(Connection), intent(inout) :: conn
+      integer, intent(in), optional :: form_bond(2), break_bond(2)
+      integer, intent(out), optional :: error
+
+      logical :: bond_exists
+      real(dp) :: form_bond_dist
+      integer :: j, ji
+      integer :: shift(3)
+
+      INIT_ERROR(error)
+
+       if (present(form_bond)) then
+	 if (all(form_bond >= 1) .and. all(form_bond <= at%N)) then
+	    bond_exists = .false.
+	    do ji=1, atoms_n_neighbours(at, form_bond(1), alt_connect=conn)
+	       j = atoms_neighbour(at, form_bond(1), ji, shift=shift, alt_connect=conn)
+	       if (j == form_bond(2)) then
+		  bond_exists = .true.
+		  exit
+	       endif
+	    end do
+	    if (.not. bond_exists) then
+	       form_bond_dist = distance_min_image(at, form_bond(1), form_bond(2), shift=shift)
+	       call add_bond(conn, at%pos, at%lattice, form_bond(1), form_bond(2), shift, form_bond_dist, error=error)
+	       PASS_ERROR(error)
+	    endif
+	 endif ! valid atom #s
+       endif ! present(form_bond)
+       if (present(break_bond)) then
+	 if (all(break_bond >= 1) .and. all(break_bond <= at%N)) then
+	    bond_exists = .false.
+	    do ji=1, atoms_n_neighbours(at, break_bond(1), alt_connect=conn)
+	       j = atoms_neighbour(at, break_bond(1), ji, shift=shift, alt_connect=conn)
+	       if (j == break_bond(2)) then
+		  bond_exists = .true.
+		  exit
+	       endif
+	    end do
+	    if (bond_exists) then
+	       call remove_bond(conn, break_bond(1), break_bond(2), shift, error=error)
+	       PASS_ERROR(error)
+	    endif
+	 endif ! valid atom #s
+       endif ! present(break_bond)
+   end subroutine break_form_bonds
 
 end module topology_module
