@@ -664,7 +664,10 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
 
          if line.startswith(' BFGS: improving iteration'):
             break
-         
+
+      if castep_output == []:
+         break
+
       # NB: CASTEP doesn't always print 'Total time'
       run_time = None
       total_time = filter(lambda s: s.startswith('Total time'), castep_output)
@@ -1167,9 +1170,11 @@ def read_formatted_potential(filename, header=False):
       
    nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
    data = fzeros((nx,ny,nz))
-   for (i,j,k,value) in pot:
+   data2 = fzeros((nx,ny,nz))
+   for (i,j,k,value,value2) in pot:
       data[int(i),int(j),int(k)] = value
-   return data
+      data2[int(i),int(j),int(k)] = value2
+   return data, data2
    
 def read_formatted_density(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
