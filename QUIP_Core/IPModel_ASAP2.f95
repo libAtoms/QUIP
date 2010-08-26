@@ -181,7 +181,7 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi)
 
    call system_timer('asap_rs_charges')
 
-   !$omp parallel default(none) shared(this, mpi, charge, at, e, local_e, f, virial, efield) private(i, j, m, ti, tj, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
+   !$omp parallel default(none) shared(this, mpi, charge, at, e, local_e, f, virial, efield) private(i, j, m, r_ij, u_ij, zv2, gamjir, gamjir3, gamjir2, fc, dfc_dr, de, dforce, expfactor, i_is_min_image, j_is_min_image, private_virial, private_e, private_f, private_local_e, private_efield)
 
    if (present(e)) private_e = 0.0_dp
    if (present(local_e)) then
