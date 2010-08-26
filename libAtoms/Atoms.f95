@@ -772,6 +772,8 @@ contains
     end if
 
     to%N = from%N
+    to%Nbuffer = from%Nbuffer
+    to%Ndomain = from%Ndomain
     call set_lattice(to, from%lattice, .false.)
 
     if (present(properties) .or. present(properties_array)) then
@@ -789,10 +791,11 @@ contains
     endif
     to%params = from%params
     to%fixed_size = from%fixed_size
+    to%domain_decomposed = from%domain_decomposed
     to%use_uniform_cutoff = from%use_uniform_cutoff
-    to%cutoff      = from%cutoff
-    to%cutoff_break      = from%cutoff_break
-    to%nneightol   = from%nneightol
+    to%cutoff = from%cutoff
+    to%cutoff_break = from%cutoff_break
+    to%nneightol = from%nneightol
 
     call atoms_repoint(to)
     to%initialised = .true.
