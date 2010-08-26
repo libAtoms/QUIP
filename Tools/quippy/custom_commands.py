@@ -629,10 +629,11 @@ class test(Command):
 class interact(Command):
     description = "interact with the distribution prior to install"
 
-    user_options = []
+    user_options = [('execute=', None, "code to execute on startup")]
 
     def initialize_options(self):
         self.build_base = 'build'
+        self.execute = None
 
     def finalize_options(self):
         build = self.get_finalized_command('build')
@@ -648,14 +649,20 @@ class interact(Command):
         # remember old sys.path to restore it afterwards
         old_path = sys.path[:]
 
-        # extend sys.path
-        sys.path.insert(0, self.build_purelib)
-        sys.path.insert(0, self.build_platlib)
-
         # start embedded ipython shell
         from IPython.Shell import IPShellEmbed
         ipshell = IPShellEmbed(['-pi1','interact In <\\#>: ','-pi2','interact    .\\D.: ',
                                 '-po','interact Out<\\#>: ','-nosep'])
+
+        # extend sys.path
+        sys.path.insert(0, self.build_purelib)
+        sys.path.insert(0, self.build_platlib)
+        if os.getcwd() in sys.path: sys.path.remove(os.getcwd())
+        if '' in sys.path: sys.path.remove('')
+
+        from quippy import *
+        if self.execute is not None:
+           exec(self.execute)
         ipshell()
 
         # restore sys.path
