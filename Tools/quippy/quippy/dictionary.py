@@ -149,7 +149,6 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
       return ParamReaderMixin.__repr__(self)
 
    def __eq__(self, other):
-      tol = 1e-8
       if sorted(self.keys()) != sorted(other.keys()): return False
 
       for key in self:
@@ -158,7 +157,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
             if v1.dtype.kind != 'f':
                if (v1 != v2).any(): return False
             else:
-               if abs(v1 - v2).max() > tol: return False
+               if abs(v1 - v2).max() > self._cmp_tol: return False
          else:
             if v1 != v2: return False
       return True

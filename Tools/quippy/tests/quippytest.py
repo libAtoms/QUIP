@@ -16,14 +16,13 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import unittest
+import unittest, logging
 from numpy import all, unravel_index, loadtxt
 from quippy import frange, farray, FortranArray
 from StringIO import StringIO
 
 def string_to_array(s):
    return loadtxt(StringIO(s)).T
-
 
 class QuippyTestCase(unittest.TestCase):
 
@@ -43,21 +42,16 @@ class QuippyTestCase(unittest.TestCase):
                if v1 != v2:
                   self.fail('Dictionaries differ: key=%s value1=%r value2=%r' % (key, v1, v2))
       
-
-   def assertAtomsEqual(self, at1, at2, tol=1e-10):
-      if at1 == at2: return
-
-      if at1.n != at2.n:
-         self.fail('Atoms objects differ: at1.n(%d) != at2.n(%d)' % (at1.n, at2.n))
-
-      if abs(at1.lattice - at2.lattice).max() > tol:
-         self.fail('Atoms objects differ: at1.lattice(%r) != at.lattice(%r)' % (at1.lattice, at2.lattice))
-
-      self.assertDictionariesEqual(at1.params, at2.params)
-      self.assertDictionariesEqual(at1.properties, at2.properties)
+   def assertEqual(self, a, b):
+      if a == b: return
+      # Repeat comparison with debug-level logging
+      import logging
+      level = logging.root.level
+      logging.root.setLevel(logging.DEBUG)
+      a == b
+      logging.root.setLevel(level)
+      self.fail('%s != %s' % (a,b))
       
-      # Catch all case
-      self.fail('Atoms objects at1 and at2 differ')
    
    def assertArrayAlmostEqual(self, a, b, tol=1e-7):
       a = farray(a)

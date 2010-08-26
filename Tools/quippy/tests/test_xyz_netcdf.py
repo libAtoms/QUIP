@@ -121,7 +121,7 @@ class TestCInOutput(QuippyTestCase):
    def testsinglexyz(self):
       self.at.write('test.xyz')
       at = Atoms('test.xyz')
-      self.assertAtomsEqual(self.at, at)
+      self.assertEqual(self.at, at)
       self.assertEqual(self.xyz_ref, open('test.xyz', 'r').readlines())
 
    def testsinglexyzprefix(self):
@@ -130,7 +130,7 @@ class TestCInOutput(QuippyTestCase):
       self.assert_(all([line[:len('PREFIX')] == 'PREFIX' for line in lines]))
       lines_without_prefix = [line[len('PREFIX '):] for line in lines]
       at = Atoms(''.join(lines_without_prefix), format='string')
-      self.assertAtomsEqual(self.at, at)
+      self.assertEqual(self.at, at)
 
    def testsinglenc(self):
       self.at.write('test.nc')
@@ -256,13 +256,13 @@ class TestCInOutput(QuippyTestCase):
       s = ''.join(self.xyz_ref)
       cio = CInOutput()
       at = cio.read(str=s)
-      self.assertAtomsEqual(at, self.at)
+      self.assertEqual(at, self.at)
 
    def test_read_ext_string(self):
       es = Extendable_str(''.join(self.xyz_ref))
       cio = CInOutput()
       at = cio.read(estr=es)
-      self.assertAtomsEqual(at, self.at)
+      self.assertEqual(at, self.at)
 
    def test_read_loop(self):
       import resource
@@ -288,24 +288,24 @@ class TestCInOutput(QuippyTestCase):
    def test_read_xyz_range_all(self):
       self.at.write('test.xyz')
       at = Atoms('test.xyz', range=[1,64])
-      self.assertAtomsEqual(at, self.at)
+      self.assertEqual(at, self.at)
 
    def test_read_xyz_range_subset(self):
       self.at.write('test.xyz')
       at = Atoms('test.xyz', range=[1,32])
       sub = self.at.select(list=frange(1,32), orig_index=False)
-      self.assertAtomsEqual(at, sub)
+      self.assertEqual(at, sub)
 
    def test_read_nc_range_all(self):
       self.at.write('test.nc')
       at = Atoms('test.nc', range=[1,64])
-      self.assertAtomsEqual(at, self.at)
+      self.assertEqual(at, self.at)
 
    def test_read_nc_range_subset(self):
       self.at.write('test.nc')
       at = Atoms('test.nc', range=[1,32])
       sub = self.at.select(list=frange(1,32), orig_index=False)
-      self.assertAtomsEqual(at, sub)
+      self.assertEqual(at, sub)
 
    def test_write_ext_string(self):
       es = Extendable_str()
@@ -383,7 +383,7 @@ class TestPythonNetCDF(QuippyTestCase):
          nc = Dataset('test3.nc','r')
          al = AtomsList(nc)
          for a, b in zip(self.al, al):
-            self.assertAtomsEqual(a, b)
+            self.assertEqual(a, b)
          nc.close()
 
       def testnetcdf4_write(self):
@@ -421,7 +421,7 @@ class TestPuPyXYZ(QuippyTestCase):
    def testsinglexyz(self):
       self.at.write(PuPyXYZWriter('test.xyz'))
       at = Atoms(PuPyXYZReader('test.xyz'))
-      self.assertAtomsEqual(at, self.at)
+      self.assertEqual(at, self.at)
 
    def testmultixyz(self):
       self.al.write(PuPyXYZWriter('test.xyz'))

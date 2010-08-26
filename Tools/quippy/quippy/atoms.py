@@ -130,6 +130,8 @@ class Neighbours(object):
                yield neighb.distance
 
 class Atom(dict):
+   _cmp_tol = 1e-8
+   
    def __init__(self, *args, **kwargs):
       dict.__init__(self, *args, **kwargs)
 
@@ -143,8 +145,6 @@ class Atom(dict):
       return 'Atom(%s)' % ', '.join(['%s=%r' % (k,v) for (k, v) in self.iteritems()])
 
    def __eq__(self, other):
-      tol = 1e-8
-
       self_ = dict([(k.lower(),v) for (k,v) in self.iteritems() if k != 'i'])
       other_ = dict([(k.lower(),v) for (k,v) in other.iteritems() if k != 'i'])
 
@@ -153,7 +153,7 @@ class Atom(dict):
       for k in self_.keys():
          v1, v2 = self_[k], other_[k]
          if isinstance(v1, FortranArray):
-            if abs(v1 - v2).max() > tol:
+            if abs(v1 - v2).max() > self._cmp_tol:
                return False
          else:
             if v1 != v2:
@@ -342,20 +342,8 @@ class Atoms(FortranAtoms):
          raise ValueError('Atoms index should be in range 1..self.n(%d)' % self.n)
       for k, v in atom.iteratoms():
          setattr(self, k.lower())[...,i] = v
+
       
-
-   def __eq__(self, other):
-      tol = 1e-8
-      if self.n != other.n: return False
-      if abs(self.lattice - other.lattice).max() > tol: return False
-      if self.params != other.params: return False
-      if self.properties != other.properties: return False
-      return True
-
-   def __ne__(self, other):
-      return not self.__eq__(other)
-
-
    def density(self):
       from quippy import ElementMass, N_A, MASSCONVERT
       
