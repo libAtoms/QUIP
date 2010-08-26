@@ -1159,14 +1159,17 @@ class CastepPotential(Potential):
             at.add_property(k, getattr(result, k))
 
 
-def read_formatted_potential(filename, header=False):
+def read_formatted_potential(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
    to a 3-dimensional FortranArray suitable for writing to a .cube file."""
 
-   if header:
-      pot = numpy.loadtxt(filename, skiprows=11)
+   fh = open(filename)
+   if fh.readline().startswith('BEGIN header'):
+      while not fh.readline().startswith('END header'):
+         pass
    else:
-      pot = numpy.loadtxt(filename)
+      fh.seek(0)
+   pot = numpy.loadtxt(fh)
       
    nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
    data = fzeros((nx,ny,nz))
