@@ -21,6 +21,7 @@ from quippy import FortranTable
 class Table(FortranTable):
 
    __doc__ = FortranTable.__doc__
+   _cmp_skip_fields = ['max_length', 'increment']
 
    def __repr__(self):
       return ('Table(n=%d,intsize=%d,realsize=%d,strsize=%d,logicalsize=%d)' %
@@ -37,32 +38,6 @@ class Table(FortranTable):
       if self.strsize != 0: t.str[...] = self.str[...]
       if self.logicalsize != 0: t.logical[...] = self.logical[...]
       return t
-
-   def __eq__(self, other):
-      return self.equal(other)
-
-   def __ne__(self, other):
-      return not self.equal(other)
-
-   def equal(self, other):
-      tol = 1e-8
-      
-      for t1, t2 in zip((self.n,  self.intsize,  self.realsize,  self.strsize,  self.logicalsize),
-                        (other.n, other.intsize, other.realsize, other.strsize, other.logicalsize)):
-         if t1 != t2: return False
-
-      for n, a1, a2, in zip((self.intsize, self.realsize, self.strsize, self.logicalsize),
-                            (self.int,  self.real,  self.str,  self.logical),
-                            (other.int, other.real, other.str, other.logical)):
-
-         if n == 0: continue
-         try:
-            if abs(a1 - a2).max() > tol: return False
-         except TypeError:
-            if (a1 != a2).any(): return False
-
-      return True
-
 
    def _get_array_shape(self, name):
        if name in ('int','real','logical'):

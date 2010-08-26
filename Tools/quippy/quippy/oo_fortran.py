@@ -237,6 +237,8 @@ class FortranDerivedType(object):
    _arrays = {}
    _interfaces = {}
    _elements = {}
+   _cmp_skip_fields = []
+   _cmp_tol = 1e-8
 
    _prefix = ''
 
@@ -297,6 +299,45 @@ class FortranDerivedType(object):
              items.append('%s=%s' % (k,v))
       return '%s(%s)' % (self.__class__.__name__, ',\n'.join(items))
 
+   def __eq__(self, other):
+      import logging
+
+      # Class name must match
+      if self.__class__ != other.__class__:
+          logging.debug('class mismatch %s != %s')
+          return False
+
+      # Don't compare uninitialised objects
+      if hasattr(self, 'initialised') and not self.initialised:
+          return True
+
+      # Compare elements and sub-objects
+      for el in self._elements.keys() + self._subobjs.keys():
+          if el in self._cmp_skip_fields:
+              continue
+          
+          if getattr(self, el) != getattr(other, el):
+              logging.debug('element mismatch %s' % el)
+              return False
+
+      # Compare arrays
+      for array in self._arrays:
+          a = getattr(self, array)
+          b = getattr(other, array)
+          if a is None and b is None: continue
+          if a is None or b is None: return False
+          if a.dtype.kind != 'f':
+              if not (a == b).all():
+                  logging.debug('array mismatch %s' % array)
+                  return False
+          else:
+              if (abs(a-b) > self._cmp_tol).any():
+                  logging.debug('real array mismatch %s' % array)
+                  return False
+      return True
+
+   def __ne__(self, other):
+      return not self.__eq__(other)
 
    def _update(self):
        logging.debug('updating %s at 0x%x' % (self.__class__, id(self)))

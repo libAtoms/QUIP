@@ -254,7 +254,7 @@ Si  -4.45906255   0.           0.
       a = transform(diamond(5.44, 14), shear)
       c = castep.CastepCell(atoms=a)
       a2 = c.to_atoms()
-      self.assertAtomsEqual(a, a2)
+      self.assertEqual(a, a2)
 
       c.write('test.cell')
 
