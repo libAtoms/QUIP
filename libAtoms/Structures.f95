@@ -1774,12 +1774,13 @@ contains
 
     integer,     allocatable :: A(:,:),B(:,:),C(:,:),depth(:), neighbour_Z(:), Z(:), M0(:,:), M(:,:), &
                                 match_indices(:), depth_real(:)
-    integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom, i_match
+    integer                  :: i,j,k,p,q,N,max_depth,max_depth_real, my_start,my_end, opt_atom, ji
     logical                  :: match
     type(table)              :: neighbours, core, num_species_at, num_species_motif
     logical, allocatable :: assigned_to_motif(:)
     logical :: do_append
     logical :: do_find_all_possible_matches
+    logical :: my_nneighb_only
 
     integer                  :: discards(7)
 !    logical :: use_hysteretic_neighbours
@@ -1787,6 +1788,8 @@ contains
 
     call print("find_motif", verbosity=PRINT_ANAL)
     call print(motif, verbosity=PRINT_ANAL)
+
+    my_nneighb_only = optional_default(.true., nneighb_only)
 
     discards = 0
     do_find_all_possible_matches = optional_default(.false., find_all_possible_matches)
@@ -1977,27 +1980,18 @@ contains
        B = 0
        do p = 1, core%N
           k = core%int(1,p)
-          do q = p+1, core%N
-             j = core%int(1,q)
-!             !Optionally takes into account the hysteretic nearest neighbours.
-!             !Only works if the alt_connect's cutoff is the same as the at%cutoff(_break)
-!             !Determine what cutoff distance to use
-!             if (use_hysteretic_neighbours) then
-!                if (at%use_uniform_cutoff) then
-!                   cutoff = at%cutoff_break
-!                else
-!                   cutoff = bond_length(at%Z(k),at%Z(j)) * at%cutoff_break
-!                end if
-!             else
-!                cutoff = bond_length(at%Z(k),at%Z(j))*at%nneightol
-!             endif
-!             if (distance_min_image(at,k,j) < cutoff) then
-             if (distance_min_image(at,k,j) < bond_length(at%Z(k),at%Z(j))*at%nneightol) then
-                B(p,q) = 1
-                B(q,p) = 1
-             end if
-          end do
-       end do
+	  do ji=1, atoms_n_neighbours(at, k, alt_connect=alt_connect)
+	    j = atoms_neighbour(at, k, ji, alt_connect=alt_connect)
+	    if (my_nneighb_only) then
+	       if (.not. is_nearest_neighbour(at, k, ji, alt_connect=alt_connect)) cycle
+	    endif
+	    q = find_in_array(core%int(1,:),j)
+	    if (q > 0) then
+	       B(p,q) = 1
+	       B(q,p) = 1
+	    endif
+	 end do ! ji
+       end do !p
 
        call print("core", verbosity=PRINT_ANAL)
        call print(core, verbosity=PRINT_ANAL)
