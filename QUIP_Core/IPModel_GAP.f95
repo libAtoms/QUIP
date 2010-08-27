@@ -305,7 +305,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   case('water_monomer')
      d = 3
   case('water_dimer')
-     d = 12
+     d = WATER_DIMER_D
   case('bispectrum')
      d = j_max2d(this%j_max)
      call cg_initialise(this%j_max,2)
