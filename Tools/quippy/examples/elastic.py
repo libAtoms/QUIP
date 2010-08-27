@@ -18,7 +18,7 @@
 
 from quippy import *
 
-p = Potential("IP SW", """
+p = Potential("IP SW", param_str="""
    <SW_params n_types="2" label="PRB_31_plus_H">
    <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984), extended for other elements </comment>
    <per_type_data type="1" atomic_num="1" />
