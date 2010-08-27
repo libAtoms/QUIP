@@ -204,12 +204,13 @@
     ! add energy= arg if needed
     use_calc_energy=trim(calc_energy)
     if (len_trim(calc_energy) == 0) then
+      use_calc_energy="energy"
       do while (has_key(at%params, trim(use_calc_energy)))
 	 use_calc_energy = "T"//trim(use_calc_energy)
       end do
     endif
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
-    extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
+    if (len_trim(calc_force) > 0) extra_calc_args=trim(extra_calc_args)//" force="//trim(calc_force)
     ! add args to form/break bonds for topology 1
     if (have_form_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//form_bond(1:2)//"}"
     if (have_break_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//break_bond(1:2)//"}"
@@ -217,7 +218,8 @@
     call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
 
-    call get_param_value(at, trim(use_calc_energy), my_e_1)
+    call get_param_value(at, trim(use_calc_energy), my_e_1, error=error)
+    PASS_ERROR_WITH_INFO("getting energy parameter '"//trim(use_calc_energy)//"' for topology 1", error)
     if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_1 = at_force_ptr
 
@@ -227,12 +229,13 @@
     ! add energy and force args if needed
     use_calc_energy=trim(calc_energy)
     if (len_trim(calc_energy) == 0) then
+      use_calc_energy="energy"
       do while (has_key(at%params, trim(use_calc_energy)))
 	 use_calc_energy = "T"//trim(use_calc_energy)
       end do
     endif
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
-    extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
+    if (len_trim(calc_force) > 0) extra_calc_args=trim(extra_calc_args)//" force="//trim(calc_force)
     ! form/break bonds for topology 2
     if (have_form_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//form_bond(1:2)//"}"
     if (have_break_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//break_bond(1:2)//"}"
@@ -240,7 +243,8 @@
     call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
 
-    call get_param_value(at, trim(use_calc_energy), my_e_2)
+    call get_param_value(at, trim(use_calc_energy), my_e_2, error=error)
+    PASS_ERROR_WITH_INFO("getting energy parameter '"//trim(use_calc_energy)//"' for topology 2", error)
     if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_2 = at_force_ptr
 
