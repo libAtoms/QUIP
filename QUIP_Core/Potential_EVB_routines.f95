@@ -95,7 +95,7 @@
     integer,             intent(out), optional  :: error
 
     real(dp) :: e, virial
-    real(dp), pointer       :: at_force_ptr(:,:)
+    real(dp), pointer       :: at_force_ptr(:,:), dgap_dr_ptr(:,:)
 
     real(dp) :: gap
     type(Dictionary)        :: params
@@ -114,7 +114,7 @@
     character(STRING_LENGTH) :: extra_calc_args
 
     character(FIELD_LENGTH) :: psf_print
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
+    character(STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy, calc_EVB_gap
     character(STRING_LENGTH) :: use_calc_energy
     character(10240) :: new_args_str
 
@@ -136,6 +136,7 @@
     call param_register(params, 'force', '', calc_force)
     call param_register(params, 'virial', '', calc_virial)
     call param_register(params, 'local_energy', '', calc_local_energy)
+    call param_register(params, 'EVB_gap', '', calc_EVB_gap)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_EVB_calc args_str')) then
        RAISE_ERROR('Potential_EVB_calc failed to parse args_str="'//trim(args_str)//'"', error)
     endif
@@ -277,9 +278,12 @@
        !energy
        if (len_trim(calc_energy) > 0) then
           e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
-	  gap =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
 	  call set_param_value(at, trim(calc_energy), e)
 	  call print("EVB coupled energy " // e, PRINT_VERBOSE)
+       endif
+       if (len_trim(calc_EVB_gap) > 0) then
+	  gap =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
+	  call set_param_value(at, trim(calc_EVB_gap), gap)
 	  call print("EVB gap " // gap, PRINT_VERBOSE)
        endif
 
@@ -302,6 +306,11 @@
           !force
           at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
               0.5_dp * (my_e_1 - my_e_2)*(my_f_1 - my_f_2 - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+	  if (len_trim(calc_EVB_gap) > 0) then
+	    call add_property(at, trim(calc_EVB_gap)//"_force", 0.0_dp, n_cols=3, ptr2=dgap_dr_ptr, error=error)
+	    PASS_ERROR(error)
+	    dgap_dr_ptr = - (my_e_1 - my_e_2)*(my_f_1 - my_f_2 - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+	  endif
        endif
     endif
 
