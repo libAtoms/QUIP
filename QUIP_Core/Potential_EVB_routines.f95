@@ -103,7 +103,7 @@
     character(FIELD_LENGTH) :: topology_suffix1, topology_suffix2
     !real(dp)                :: energy_offset
     integer                 :: form_bond(2), break_bond(2)
-    logical                 :: skip_form_bond, skip_break_bond
+    logical                 :: have_form_bond, have_break_bond
 
     logical                 :: save_energies, save_forces
     real(dp)                :: my_e_1, my_e_2, e_offdiag
@@ -164,38 +164,37 @@
     endif
 
     !form_bond
-    skip_form_bond = .false.
+    have_form_bond = .true.
     if(any(form_bond<1) .or. any(form_bond>at%N)) then
        !check whether all 0 (skip)
        if (all(form_bond==0)) then
-          skip_form_bond = .true.
+          have_form_bond = .false.
        else
           RAISE_ERROR('Potential_EVB_calc form_bond is out of range 1--'//at%N//': '//form_bond, error)
        endif
     endif
 
     !break_bond
-    skip_break_bond = .false.
+    have_break_bond = .true.
     if(any(break_bond<1) .or. any(break_bond>at%N)) then
        !check whether all 0 (skip)
        if (all(break_bond==0)) then
-          skip_break_bond = .true.
+          have_break_bond = .false.
        else
           RAISE_ERROR('Potential_EVB_calc break_bond is out of range 1--'//at%N//': '//break_bond, error)
        endif
     endif
 
-    if (skip_form_bond .and. skip_break_bond) then
+    if (.not.(have_form_bond .or. have_break_bond)) then
        RAISE_ERROR('Potential_EVB_calc no bonds to form neither to break. ', error)
     endif
-
 
     !CALCULATE E,F WITH DIFFERENT TOPOLOGIES
 
     ! allocate local arrays
     if (len_trim(calc_force) > 0) then
       allocate(my_f_1(3,at%N))
-      allocate(my_f_1(3,at%N))
+      allocate(my_f_2(3,at%N))
       allocate(delta_eoffdiag(3,at%N))
     endif
 
@@ -212,8 +211,8 @@
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
     extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
     ! add args to form/break bonds for topology 1
-    if (.not. skip_form_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//form_bond(1:2)//"}"
-    if (.not. skip_break_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//break_bond(1:2)//"}"
+    if (have_form_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//form_bond(1:2)//"}"
+    if (have_break_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//break_bond(1:2)//"}"
     !calc with topology1
     call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
@@ -235,8 +234,8 @@
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
     extra_calc_args=trim(extra_calc_args)//" "//trim(calc_force)
     ! form/break bonds for topology 2
-    if (.not. skip_form_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//form_bond(1:2)//"}"
-    if (.not. skip_break_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//break_bond(1:2)//"}"
+    if (have_form_bond) extra_calc_args=trim(extra_calc_args)//" break_bond={"//form_bond(1:2)//"}"
+    if (have_break_bond) extra_calc_args=trim(extra_calc_args)//" form_bond={"//break_bond(1:2)//"}"
     !calc with topology2
     call calc(this%pot1, at, args_str=trim(mm_args_str)//" "//trim(extra_calc_args), error=error)
     PASS_ERROR(error)
@@ -263,8 +262,8 @@
     else
        !calculate coupling terms
        rab = 0._dp
-       if (.not. skip_form_bond) rab = rab + distance_min_image(at,form_bond(1),form_bond(2))
-       if (.not. skip_form_bond) rab = rab - distance_min_image(at,break_bond(1),break_bond(2))
+       if (have_form_bond) rab = rab + distance_min_image(at,form_bond(1),form_bond(2))
+       if (have_form_bond) rab = rab - distance_min_image(at,break_bond(1),break_bond(2))
 
        if (len_trim(calc_energy) > 0 .or. len_trim(calc_force) > 0) then
           e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
@@ -284,13 +283,13 @@
        if (len_trim(calc_force) > 0) then
           !force coupling term
           delta_eoffdiag = 0._dp
-          if (.not. skip_form_bond) then
+          if (have_form_bond) then
              d_rab_dx = diff_min_image(at,form_bond(1),form_bond(2))/distance_min_image(at,form_bond(1),form_bond(2))
              if (rab < 0) d_rab_dx = - d_rab_dx
              delta_eoffdiag(1:3,form_bond(1)) = delta_eoffdiag(1:3,form_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
              delta_eoffdiag(1:3,form_bond(2)) = delta_eoffdiag(1:3,form_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
-          if (.not. skip_break_bond) then
+          if (have_break_bond) then
              d_rab_dx = diff_min_image(at,break_bond(1),break_bond(2))/distance_min_image(at,break_bond(1),break_bond(2))
              if (rab > 0) d_rab_dx = - d_rab_dx
              delta_eoffdiag(1:3,break_bond(1)) = delta_eoffdiag(1:3,break_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
@@ -314,11 +313,10 @@
       call add_property(at, 'EVB2_'//trim(calc_force), my_f_2)
     endif
 
-
     if (allocated(my_f_1)) deallocate(my_f_1)
     if (allocated(my_f_2)) deallocate(my_f_2)
     if (allocated(delta_eoffdiag)) deallocate(delta_eoffdiag)
-  
+
   end subroutine Potential_EVB_Calc
 
   function Potential_EVB_Cutoff(this)

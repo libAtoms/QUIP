@@ -430,10 +430,7 @@ implicit none
               call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*GPA))
            end do
         end if
-        
-        if (do_F) call add_property(at, "forces", F0)
-        if (do_local) call add_property(at, "local_E", local_E0)
-        
+
         if (do_torque) then
            if (.not. do_F) then
               call print("ERROR: Can't do torque without forces", PRINT_ALWAYS)
@@ -442,8 +439,6 @@ implicit none
               call print("Torque " // tau)
            endif
         endif
-        if (do_F) deallocate(F0)
-        if (do_local) deallocate(local_E0)
      endif
      
 #ifdef HAVE_TB
