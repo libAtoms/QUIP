@@ -27,7 +27,7 @@ try:
 except ImportError:
    got_scipy = False
 
-if hasattr(quippy, 'Potential') and hasattr(quippy, 'Potential') and got_scipy:
+if hasattr(quippy, 'Potential') and got_scipy:
    
    class TestElastic(QuippyTestCase):
 
