@@ -30,6 +30,7 @@ module bispectrum_module
    implicit none
 
    real(dp), parameter :: QW_FP_ZERO = 1.0E-12_dp
+   integer, parameter :: WATER_DIMER_D = 15
 
    type real_3
         real(dp), dimension(3) :: x
@@ -314,7 +315,7 @@ module bispectrum_module
    public :: fourier_so3, grad_fourier_so3, qw_so3, grad_qw_so3
    public :: wigner_big_U, grad_wigner_big_U, fourier_transform_so4_old, reduce_lattice
    public :: kmax2d, suggest_kmax, suggest_resolution
-   public :: water_monomer, water_dimer
+   public :: water_monomer, water_dimer, WATER_DIMER_D
 
    contains
 
@@ -3660,11 +3661,17 @@ module bispectrum_module
      function water_dimer(at,w1,w2) result(vec)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
-       real(dp), dimension(12) :: vec, v
-       real(dp) :: rA1, rA2, rB1, rB2
-       real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, pA, pB, dA, dB
-       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i
+       real(dp), dimension(WATER_DIMER_D) :: vec !, v
+       real(dp) :: rOH(8), rHH(6), fOH(8), fHH(6)
+       !real(dp) :: rA1, rA2, rB1, rB2
+       !real(dp), dimension(3) :: vA1, vA2, vB1, vB2, sA, sB, nA, nB, dA, dB, vAB
+       integer :: iAo, iAh1, iAh2, iBo, iBh1, iBh2, i, j
 
+       ! Descriptors based on the interatomic distances. In theory, a
+       ! configuration can be regenerated based on the interatomic distances. In
+       ! this approach we take these and make them permutationally invariant.
+
+       ! Atomic indices
        iAo = w1(1)
        iAh1 = w1(2)
        iAh2 = w1(3)
@@ -3672,60 +3679,97 @@ module bispectrum_module
        iBh1 = w2(2)
        iBh2 = w2(3)
 
-       ! O--H vectors
-       vA1 = diff_min_image(at,iAo,iAh1)
-       vA2 = diff_min_image(at,iAo,iAh2)
-       vB1 = diff_min_image(at,iBo,iBh1)
-       vB2 = diff_min_image(at,iBo,iBh2)
+       ! All H-O distances
+       rOH(1) = distance_min_image(at, iAo, iAh1)
+       rOH(2) = distance_min_image(at, iAo, iAh2)
+       rOH(3) = distance_min_image(at, iAo, iBh1)
+       rOH(4) = distance_min_image(at, iAo, iBh2)
+       rOH(5) = distance_min_image(at, iBo, iAh1)
+       rOH(6) = distance_min_image(at, iBo, iAh2)
+       rOH(7) = distance_min_image(at, iBo, iBh1)
+       rOH(8) = distance_min_image(at, iBo, iBh2)
 
-       rA1 = norm(vA1)
-       rA2 = norm(vA2)
-       rB1 = norm(vB1)
-       rB2 = norm(vB2)
-       nA = vA1 .cross. vA2
-       nB = vB1 .cross. vB2
-       sA = (vA1+vA2)
-       dA = (vA1-vA2)
-       pA = sA .cross. nA
-       sB = (vB1+vB2)
-       dB = (vB1-vB2)
-       pB = sB .cross. nB
+       ! All H-H distances
+       rHH(1) = distance_min_image(at, iAh1, iAh2)
+       rHH(2) = distance_min_image(at, iAh1, iBh1)
+       rHH(3) = distance_min_image(at, iAh1, iBh2)
+       rHH(4) = distance_min_image(at, iAh2, iBh1)
+       rHH(5) = distance_min_image(at, iAh2, iBh2)
+       rHH(6) = distance_min_image(at, iBh1, iBh2)
 
-       ! descriptors
-       !vec(1) = norm2(sA)
-       !vec(2) = norm2(dA)
-       !vec(3) = (sA .dot. dA)**2
-       !vec(4) = norm2(sB)
-       !vec(5) = norm2(dB)
-       !vec(6) = (sB .dot. dB)**2
-       v(1) = rA1+rA2
-       v(2) = (rA1-rA2)**2
-       v(3) = vA1 .dot. vA2
-       v(4) = rB1+rB2
-       v(5) = (rB1-rB2)**2
-       v(6) = vB1 .dot. vB2
+       ! "Fourier Transform" distances. This should be completely reversible,
+       ! i.e. we can reconstruct all the distances up to permutations.
 
-       vec(1) = v(1)+v(4)
-       vec(2) = (v(1)-v(4))**2
-       vec(3) = v(2)+v(5)
-       vec(4) = (v(2)-v(5))**2
-       vec(5) = v(3)+v(6)
-       vec(6) = (v(3)-v(6))**2
+       fOH = 0.0_dp
+       do i = 1, 8
+          do j = 1, 8
+             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / 10.0_dp )
+          enddo
+       enddo
 
-       vec(7) = sA .dot. sB
+       fHH = 0.0_dp
+       do i = 1, 6
+          do j = 1, 6
+             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / 10.0_dp )
+          enddo
+       enddo
 
-       v(8) = sA .dot. nB
-       v(9) = sB .dot. nA
-       v(10) = pA .dot. sB
-       v(11) = pB .dot. sA
+       vec(1) = distance_min_image(at, iAo, iBo)
+       vec(2:9) = fOH
+       vec(10:15) = fHH
 
-       vec(8) = v(8)+v(9)
-       vec(9) = (v(8)-v(9))**2
-       vec(10) = v(10)+v(11)
-       vec(11) = (v(10)-v(11))**2
+       !! O--H vectors
+       !vA1 = diff_min_image(at,iAo,iAh1)
+       !vA2 = diff_min_image(at,iAo,iAh2)
+       !vB1 = diff_min_image(at,iBo,iBh1)
+       !vB2 = diff_min_image(at,iBo,iBh2)
+       !vAB = diff_min_image(at,iAo,iBo)
 
-       vec(12) = distance_min_image(at, iAo, iBo)
+       !rA1 = norm(vA1)
+       !rA2 = norm(vA2)
+       !rB1 = norm(vB1)
+       !rB2 = norm(vB2)
+       !nA = vA1 .cross. vA2
+       !nB = vB1 .cross. vB2
+       !sA = (vA1+vA2)
+       !dA = (vA1-vA2)
+       !sB = (vB1+vB2)
+       !dB = (vB1-vB2)
 
+       !! descriptors
+       !!vec(1) = norm2(sA)
+       !!vec(2) = norm2(dA)
+       !!vec(3) = (sA .dot. dA)**2
+       !!vec(4) = norm2(sB)
+       !!vec(5) = norm2(dB)
+       !!vec(6) = (sB .dot. dB)**2
+       !v(1) = rA1+rA2
+       !v(2) = (rA1-rA2)**2
+       !v(3) = vA1 .dot. vA2
+       !v(4) = rB1+rB2
+       !v(5) = (rB1-rB2)**2
+       !v(6) = vB1 .dot. vB2
+
+       !vec(1) = v(1)+v(4)
+       !vec(2) = (v(1)-v(4))**2
+       !vec(3) = v(2)+v(5)
+       !vec(4) = (v(2)-v(5))**2
+       !vec(5) = v(3)+v(6)
+       !vec(6) = (v(3)-v(6))**2
+
+       !vec(7) = sA .dot. sB
+
+       !!v(8) = sA .dot. nB
+       !!v(9) = sB .dot. nA
+       !!v(10) = pA .dot. sB
+       !!v(11) = pB .dot. sA
+
+       !vec(8) = (dA .dot. dB)**2
+       !vec(9) = (nA .dot. nB)**2
+       !vec(10) = (vAB .dot. sB) - (vAB .dot. sA)
+       !vec(11) = (vAB .dot. dB)**2 + (vAB .dot. dA)**2
+
+       !vec(12) = distance_min_image(at, iAo, iBo)
      end function water_dimer
 
     !#################################################################################
