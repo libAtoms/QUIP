@@ -64,9 +64,6 @@ ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 crack: % :  %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
-makecrack: % : %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
-
 clean:	
 	-rm -f *.mod *.o ${PROGRAMS} ${EXTRA_PROGRAMS} crack makecrack
 
