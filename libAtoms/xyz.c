@@ -50,6 +50,7 @@
 
 #define LINESIZE 2048
 #define MAX_ENTRY_COUNT 100
+#define MAX_FIELD_COUNT 200
 #define PROPERTY_STRING_LENGTH 10
 #define PARAM_STRING_LENGTH 1024
 
@@ -319,8 +320,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE];
-  char fields[MAX_ENTRY_COUNT][LINESIZE], subfields[MAX_ENTRY_COUNT][LINESIZE],
-    finalfields[MAX_ENTRY_COUNT][LINESIZE];
+  char fields[MAX_FIELD_COUNT][LINESIZE], subfields[MAX_FIELD_COUNT][LINESIZE],
+    finalfields[MAX_FIELD_COUNT][LINESIZE];
   char *p, *p1, tmp_logical, *orig_stringp, *prev_stringp, *stringp;
   int nxyz, nfields=0, offset, error_occured;
   double tmpd;
@@ -665,6 +666,9 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   p = linebuffer;
   k = 0;
   while ((p1 = strsep(&p, ":")) != NULL) {
+    if (k >= MAX_FIELD_COUNT) {
+      RAISE_ERROR("Maximum field count (%d) exceeded", MAX_FIELD_COUNT);
+    }
     strncpy(fields[k++], p1, LINESIZE);
   }
 
