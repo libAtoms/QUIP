@@ -3703,14 +3703,14 @@ module bispectrum_module
        fOH = 0.0_dp
        do i = 1, 8
           do j = 1, 8
-             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / 10.0_dp )
+             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / at%cutoff )
           enddo
        enddo
 
        fHH = 0.0_dp
        do i = 1, 6
           do j = 1, 6
-             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / 10.0_dp )
+             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / at%cutoff )
           enddo
        enddo
 
