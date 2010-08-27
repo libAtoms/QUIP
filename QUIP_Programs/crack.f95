@@ -487,7 +487,7 @@ program crack
      inquire(file=trim(stem)//'_check.nc', exist=texist)
      if (texist) then
         call print('Reading atoms from input file '//trim(stem)//'_check.nc')
-        call initialise(crackin, trim(stem)//'_check.nc', action=INPUT)
+        call initialise(crackin, trim(stem)//'_check.nc', action=INPUT, mpi=mpi_glob)
         call read(crackin, crack_slab)
         call finalise(crackin)
      endif
@@ -497,7 +497,7 @@ program crack
      inquire(file=trim(stem)//'_check.xyz', exist=texist)
      if (texist) then
         call print('Reading atoms from input file '//trim(stem)//'_check.xyz')
-        call initialise(crackin, trim(stem)//'_check.xyz', action=INPUT)
+        call initialise(crackin, trim(stem)//'_check.xyz', action=INPUT, mpi=mpi_glob)
         call read(crackin, crack_slab)
         call finalise(crackin)
      endif
@@ -507,7 +507,7 @@ program crack
      inquire(file=trim(stem)//'.nc', exist=texist)
      if (texist) then
         call print('Reading atoms from input file '//trim(stem)//'.nc')
-        call initialise(crackin, trim(stem)//'.nc', action=INPUT)
+        call initialise(crackin, trim(stem)//'.nc', action=INPUT, mpi=mpi_glob)
         call read(crackin, crack_slab)
         call finalise(crackin)
      endif     
@@ -517,7 +517,7 @@ program crack
      inquire(file=trim(stem)//'.xyz', exist=texist)
      if (texist) then
         call print('Reading atoms from input file '//trim(stem)//'.xyz')
-        call initialise(crackin, trim(stem)//'.xyz', action=INPUT)
+        call initialise(crackin, trim(stem)//'.xyz', action=INPUT, mpi=mpi_glob)
         call read(crackin, crack_slab)
         call finalise(crackin)
      endif
