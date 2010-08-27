@@ -1,15 +1,27 @@
 import sys
 from custom_commands import *
 from numpy.distutils.core import setup
+import optparse
 
-if len(sys.argv[1:]) != 1:
-    print 'Usage: debug.py test_case'
-    sys.exit(1)
+p = optparse.OptionParser(usage='%prog [options]')
+p.add_option('-e', '--execute', action='store')
+p.add_option('-t', '--test', action='store')
 
-sys.argv.insert(1, 'test')
-sys.argv.insert(2, '--verbosity=2')
-if not sys.argv[3].startswith('--test='):
-    sys.argv[3] = '--test=' + sys.argv[3]
+opt, arg = p.parse_args()
 
-setup(name='quippy', cmdclass = {'test': test},
+if (opt.test is None) + (opt.execute is None) != 1:
+    p.error('Exactl one of -c or -t must be present.')
+
+sys.argv[1:] = []
+
+if opt.test is not None:
+    sys.argv.insert(1, 'test')
+    sys.argv.insert(2, '--verbosity=2')
+    sys.argv[3] = '--test=' + opt.test
+
+if opt.execute is not None:
+    sys.argv.insert(1, 'interact')
+    sys.argv.insert(2, '--execute=' + opt.execute)
+
+setup(name='quippy', cmdclass = {'test': test, 'interact' : interact},
       options={'build': { 'build_base': 'build.%s' % os.environ['QUIP_ARCH']}})
