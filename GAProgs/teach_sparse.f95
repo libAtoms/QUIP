@@ -133,7 +133,7 @@ program teach_sparse_program
   case('water_monomer')
      main_teach_sparse%d = 3
   case('water_dimer')
-     main_teach_sparse%d = 12
+     main_teach_sparse%d = WATER_DIMER_D
   case('qw')
      main_teach_sparse%qw_cutoff = 0.0_dp
      main_teach_sparse%qw_cutoff_f = 0
@@ -264,7 +264,7 @@ program teach_sparse_program
   mem_free = mem_free / (1024.0_dp**3)
 
   call print('Memory required (approx.): '//mem_required//' GB')
-  if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_free//' GB).')
+  if( mem_required > mem_total ) call system_abort('Required memory ('//mem_required//' GB) exceeds available memory ('//mem_total//' GB).')
 
   if(main_teach_sparse%do_sparse) then
      call gp_sparsify(gp_sp,main_teach_sparse%r,&

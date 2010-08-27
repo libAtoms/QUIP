@@ -193,7 +193,7 @@ contains
     integer, dimension(3,1) :: water_monomer_index
     integer, dimension(3,2) :: water_dimer_index
     real(dp), dimension(3) :: pos, water_monomer_v
-    real(dp), dimension(12) :: water_dimer_v
+    real(dp), dimension(WATER_DIMER_D) :: water_dimer_v
     integer :: li, ui, nn, ix, ie, i_con, i_ener, w_con
     integer :: nei_max
     integer :: i, j, n, k, l, jx, jn
@@ -222,7 +222,7 @@ contains
     case('water_monomer')
        this%d = 3
     case('water_dimer')
-       this%d = 12
+       this%d = WATER_DIMER_D
     case default
        call system_abort('Unknown coordinates '//trim(this%coordinates))
     endselect
