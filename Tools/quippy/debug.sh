@@ -2,7 +2,7 @@
 
 cat > gdb.in <<EOF
 set auto-solib-add off
-run debug.py $1
+run debug.py "$@"
 continue
 sha libgfortran
 sha _quippy
