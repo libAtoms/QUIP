@@ -620,6 +620,7 @@ contains
     call map_into_cell(at)
 
     ! unsort
+    f(:,sort_index_p(:)) = f(:,:)
     if (associated(sort_index_p)) then
       call atoms_sort(at, 'sort_index', error=error)
       PASS_ERROR_WITH_INFO("do_cp2k_calc sorting atoms by sort_index",error)

@@ -107,7 +107,7 @@
 
     logical                 :: save_energies, save_forces
     real(dp)                :: my_e_1, my_e_2, e_offdiag
-    real(dp), allocatable   :: my_f_1(:,:), my_f_2(:,:), delta_eoffdiag(:,:)
+    real(dp), allocatable   :: my_f_1(:,:), my_f_2(:,:), de_offdiag_dr(:,:)
     real(dp)                :: offdiagonal_A12, offdiagonal_mu12, &
                                rab, d_rab_dx(3)
     logical                 :: no_coupling, dummy
@@ -196,7 +196,7 @@
     if (len_trim(calc_force) > 0) then
       allocate(my_f_1(3,at%N))
       allocate(my_f_2(3,at%N))
-      allocate(delta_eoffdiag(3,at%N))
+      allocate(de_offdiag_dr(3,at%N))
     endif
 
     ! SETUP CALC_ARGS, AND CALL CALC FOR TOPOLOGY 1
@@ -290,26 +290,26 @@
        !force
        if (len_trim(calc_force) > 0) then
           !force coupling term
-          delta_eoffdiag = 0._dp
+          de_offdiag_dr = 0._dp
           if (have_form_bond) then
              d_rab_dx = diff_min_image(at,form_bond(1),form_bond(2))/distance_min_image(at,form_bond(1),form_bond(2))
              if (rab < 0) d_rab_dx = - d_rab_dx
-             delta_eoffdiag(1:3,form_bond(1)) = delta_eoffdiag(1:3,form_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             delta_eoffdiag(1:3,form_bond(2)) = delta_eoffdiag(1:3,form_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,form_bond(1)) = de_offdiag_dr(1:3,form_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,form_bond(2)) = de_offdiag_dr(1:3,form_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
           if (have_break_bond) then
              d_rab_dx = diff_min_image(at,break_bond(1),break_bond(2))/distance_min_image(at,break_bond(1),break_bond(2))
              if (rab > 0) d_rab_dx = - d_rab_dx
-             delta_eoffdiag(1:3,break_bond(1)) = delta_eoffdiag(1:3,break_bond(1)) + 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-             delta_eoffdiag(1:3,break_bond(2)) = delta_eoffdiag(1:3,break_bond(2)) - 4._dp * e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,break_bond(1)) = de_offdiag_dr(1:3,break_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,break_bond(2)) = de_offdiag_dr(1:3,break_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
           !force
           at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
-              0.5_dp * (my_e_1 - my_e_2)*(my_f_1 - my_f_2 - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+              (0.5_dp * (my_e_1 - my_e_2)*(my_f_1 - my_f_2) + de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag)
 	  if (len_trim(calc_EVB_gap) > 0) then
 	    call add_property(at, trim(calc_EVB_gap)//"_force", 0.0_dp, n_cols=3, ptr2=dgap_dr_ptr, error=error)
 	    PASS_ERROR(error)
-	    dgap_dr_ptr = - (my_e_1 - my_e_2)*(my_f_1 - my_f_2 - 4._dp * delta_eoffdiag) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2._dp)
+	    dgap_dr_ptr = ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) + 2.0_dp * de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag)
 	  endif
        endif
     endif
@@ -328,7 +328,7 @@
 
     if (allocated(my_f_1)) deallocate(my_f_1)
     if (allocated(my_f_2)) deallocate(my_f_2)
-    if (allocated(delta_eoffdiag)) deallocate(delta_eoffdiag)
+    if (allocated(de_offdiag_dr)) deallocate(de_offdiag_dr)
 
   end subroutine Potential_EVB_Calc
 
