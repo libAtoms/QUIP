@@ -41,6 +41,13 @@ module DomainDecomposition_module
 
   private
 
+  public :: DD_WRAP_TO_CELL, DD_WRAP_TO_DOMAIN
+  !% All particles, including ghosts, are wrapped into the cell
+  integer, parameter  :: DD_WRAP_TO_CELL    = 1
+  !% Particles are wrapped into the domain, ghost particles are located
+  !% next to the domain.
+  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2
+
   public :: DomainDecomposition
   type DomainDecomposition
 
@@ -49,6 +56,8 @@ module DomainDecomposition_module
      integer, allocatable       :: global_to_local(:)   !% Global index to local index
 
      integer                    :: decomposition(3)    = (/ 2, 2, 2 /)   !% Type of decomposition
+
+     integer                    :: mode                = DD_WRAP_TO_CELL
 
      real(DP)                   :: requested_border    = 0.0_DP
      real(DP)                   :: border(3)           = 0.0_DP
@@ -69,15 +78,15 @@ module DomainDecomposition_module
 
      type(Dictionary)           :: state_properties   !% Fields to communicate if for particles
      type(Dictionary)           :: ghost_properties   !% Fields to communicate for ghosts
-     type(Dictionary)           :: backc_properties   !% Fields for back-communication after force computations     
+     type(Dictionary)           :: revrs_properties   !% Fields for back-communication after force computations     
 
      logical, allocatable       :: state_mask(:)
      logical, allocatable       :: ghost_mask(:)
-     logical, allocatable       :: backc_mask(:)
+     logical, allocatable       :: revrs_mask(:)
 
      integer                    :: state_buffer_size
      integer                    :: ghost_buffer_size
-     integer                    :: backc_buffer_size
+     integer                    :: revrs_buffer_size
 
      character(1), allocatable  :: send_l(:)   !% buffer for sending to the left
      character(1), allocatable  :: send_r(:)   !% buffer for sending to the right
@@ -86,8 +95,8 @@ module DomainDecomposition_module
 
      integer                    :: n_ghosts_r(3), n_ghosts_l(3)  !% length of the ghost particle lists
 
-     integer, pointer           :: ghosts_r(:)  => NULL()   !% particles send to the right (where they become ghosts)
-     integer, pointer           :: ghosts_l(:)  => NULL()   !% particles send to the left (where they become ghosts)
+     integer, allocatable       :: ghosts_r(:)   !% particles send to the right (where they become ghosts)
+     integer, allocatable       :: ghosts_l(:)   !% particles send to the left (where they become ghosts)
 
      integer                    :: n_send_p_tot   !% Statistics: Number of total particles send
      integer                    :: n_recv_p_tot   !% Statistics: Number of total particles received
@@ -155,6 +164,14 @@ module DomainDecomposition_module
      module procedure domain_decomposition_communicate_forces
   endinterface
 
+  !
+  ! Internal only stuff
+  !
+
+  interface communicate_domain_to_all
+     module procedure domain_decomposition_communicate_domain_to_all
+  endinterface
+
 
   !
   ! Supplement to the Dictionary class required by the domain
@@ -178,15 +195,16 @@ contains
 
   !% Initialize the domain decomposition module
   subroutine domain_decomposition_initialise(this, at, mpi, &
-       decomposition, verlet_shell, error)
+       decomposition, verlet_shell, mode, error)
     implicit none
 
-    type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    type(MPI_context), intent(in)             :: mpi
-    integer, intent(in), optional             :: decomposition(3)
-    real(DP), intent(in), optional            :: verlet_shell
-    integer, intent(out), optional :: error
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),                         intent(inout)  :: at
+    type(MPI_context),                   intent(in)     :: mpi
+    integer,                   optional, intent(in)     :: decomposition(3)
+    real(DP),                  optional, intent(in)     :: verlet_shell
+    integer,                   optional, intent(in)     :: mode
+    integer,                   optional, intent(out)    :: error
 
     ! ---
 
@@ -205,6 +223,16 @@ contains
 
     if (present(verlet_shell)) then
        this%verlet_shell   = verlet_shell
+    endif
+
+    if (present(mode)) then
+       if (mode /= DD_WRAP_TO_CELL .and. mode /= DD_WRAP_TO_DOMAIN) then
+          RAISE_ERROR("Unknown domain decomposition mode '" // mode // "'.", error)
+       endif
+
+       this%mode = mode
+    else
+       this%mode = DD_WRAP_TO_CELL
     endif
 
     call print("DomainDecomposition : Parallelisation using domain decomposition over " // &
@@ -275,6 +303,11 @@ contains
     call print("DomainDecomposition : periodic (par.)    = ( " // this%periodic // " )", PRINT_VERBOSE)
 !    call print("periodic (local)   = ( " // this%locally_periodic // " )", PRINT_VERBOSE)
 
+    if (this%mode == DD_WRAP_TO_CELL) then
+       this%off_l  = 0.0_DP
+       this%off_r  = 0.0_DP
+    endif
+
     call print("DomainDecomposition : off_l              = ( " // this%off_l // " )", PRINT_VERBOSE)
     call print("DomainDecomposition : off_r              = ( " // this%off_r // " )", PRINT_VERBOSE)
 
@@ -288,11 +321,10 @@ contains
 
     ! Additional properties (integers)
     call add_property(at, "local_to_global", 0, ptr=this%local_to_global)
-    call add_property(at, "ghosts_r", 0, ptr=this%ghosts_r)
-    call add_property(at, "ghosts_l", 0, ptr=this%ghosts_l)
 
     ! This should be a list of all POSSIBLE properties.
     ! Properties that do not exist are ignored.
+    call initialise(this%state_properties)
     call set_value(this%state_properties, "z", .true.)
     call set_value(this%state_properties, "mass", .true.)
     call set_value(this%state_properties, "travel", .true.)
@@ -303,11 +335,14 @@ contains
     call set_value(this%state_properties, "thermostat_region", .true.)
     call set_value(this%state_properties, "local_to_global", .true.)
 
+    call initialise(this%ghost_properties)
     call set_value(this%ghost_properties, "z", .true.)
     call set_value(this%ghost_properties, "mass", .true.)
     call set_value(this%ghost_properties, "travel", .true.)
     call set_value(this%ghost_properties, "pos", .true.)
     call set_value(this%ghost_properties, "local_to_global", .true.)
+
+    call initialise(this%revrs_properties)
 
   endsubroutine domain_decomposition_initialise
 
@@ -326,7 +361,6 @@ contains
 
     call print("DomainDecomposition : allocate", PRINT_VERBOSE)
 
-    allocate(this%global_to_local(at%Nbuffer))
 
 !    call log_memory_start("domain_decomposition_allocate")
 
@@ -374,10 +408,10 @@ contains
        endif
     endif
 
-    if (allocated(this%backc_mask)) then
-       if (size(this%backc_mask) < at%properties%N) then
-          deallocate(this%backc_mask)
-          this%backc_buffer_size = 0
+    if (allocated(this%revrs_mask)) then
+       if (size(this%revrs_mask) < at%properties%N) then
+          deallocate(this%revrs_mask)
+          this%revrs_buffer_size = 0
        endif
     endif
 
@@ -401,15 +435,15 @@ contains
        call print("DomainDecomposition : ghost_buffer_size  = " // &
             this%ghost_buffer_size, PRINT_VERBOSE)
     endif
-    if (.not. allocated(this%backc_mask) .and. this%backc_properties%N > 0) then
-       allocate(this%backc_mask(at%properties%N))
+    if (.not. allocated(this%revrs_mask) .and. this%revrs_properties%N > 0) then
+       allocate(this%revrs_mask(at%properties%N))
        call keys_to_mask( &
-            at%properties, this%backc_properties, this%backc_mask, &
-            s = this%backc_buffer_size, error = error)
+            at%properties, this%revrs_properties, this%revrs_mask, &
+            s = this%revrs_buffer_size, error = error)
        PASS_ERROR(error)
 
-       call print("DomainDecomposition : backc_buffer_size  = " // &
-            this%backc_buffer_size, PRINT_VERBOSE)
+       call print("DomainDecomposition : revrs_buffer_size  = " // &
+            this%revrs_buffer_size, PRINT_VERBOSE)
     endif
 
     s = max(this%state_buffer_size, this%ghost_buffer_size) * at%Nbuffer
@@ -451,6 +485,10 @@ contains
     INIT_ERROR(error)
 
     call print("DomainDecomposition : enable", PRINT_VERBOSE)
+
+    allocate(this%global_to_local(at%Nbuffer))
+    allocate(this%ghosts_r(at%Nbuffer))
+    allocate(this%ghosts_l(at%Nbuffer))
 
     j = 0
     do i = 1, at%N
@@ -502,15 +540,22 @@ contains
 
     ! ---
 
-    integer :: i, j
-
-    ! ---
-
     INIT_ERROR(error)
 
-    RAISE_ERROR("domain_decomposition_disable: Not yet implemented.", error)
+    if (.not. at%domain_decomposed) then
+       RAISE_ERROR("Atoms-object is not in a domain-decomposed state. Cannot disable domain decomposition.", error)
+    endif
 
     at%domain_decomposed = .false.
+
+    call communicate_domain_to_all(this, at, error=error)
+    PASS_ERROR(error)
+
+    this%local_to_global(1:at%Ndomain) = 0
+
+    deallocate(this%global_to_local)
+    deallocate(this%ghosts_r)
+    deallocate(this%ghosts_l)
 
   endsubroutine domain_decomposition_disable
 
@@ -600,17 +645,16 @@ contains
 
     ! ---
 
-    call print("DomainDecomposition : finalise -", PRINT_VERBOSE)
-
-    deallocate(this%global_to_local)
+    call print("DomainDecomposition : finalise", PRINT_VERBOSE)
 
     deallocate(this%send_l)
     deallocate(this%send_r)
     deallocate(this%recv_l)
     deallocate(this%recv_r)
 
-    deallocate(this%ghosts_l)
-    deallocate(this%ghosts_r)
+    if (allocated(this%global_to_local))  deallocate(this%global_to_local)
+    if (allocated(this%ghosts_l))         deallocate(this%ghosts_l)
+    if (allocated(this%ghosts_r))         deallocate(this%ghosts_r)
 
     call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_VERBOSE)
     call print("DomainDecomposition : Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_VERBOSE)
@@ -620,7 +664,7 @@ contains
 
     call finalise(this%state_properties)
     call finalise(this%ghost_properties)
-    call finalise(this%backc_properties)
+    call finalise(this%revrs_properties)
 
     call finalise(this%mpi)
 
@@ -687,7 +731,7 @@ contains
 
     ! ---
 
-    call print("Paccking: i = " // i // ", n = " // n // ", pos = " // at%pos(:, i))
+    call print("Packing: i = " // i // ", n = " // n // ", pos = " // at%pos(:, i))
 
     call pack_buffer(at%properties, this%state_mask, i, n, buffer)
     this%global_to_local(this%local_to_global(i)) = 0 ! This one is gone
@@ -729,9 +773,9 @@ contains
   subroutine domain_decomposition_communicate_domain(this, at, error)
     implicit none
 
-    type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    integer, intent(out), optional            :: error
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),                         intent(inout)  :: at
+    integer,                   optional, intent(out)    :: error
 
     ! ---
 
@@ -790,13 +834,11 @@ contains
                 ! Send to the right
 
                 call pack_state_buffer(this, at, i, n_send_r, this%send_r)
-!                n_send_r = n_send_r + 1
 
              else if (s < this%lower(d)) then
                 ! Send to the left
 
                 call pack_state_buffer(this, at, i, n_send_l, this%send_l)
-!                n_send_l = n_send_l + 1
 
              else
                 ! Keep on this processor and reorder
@@ -857,14 +899,125 @@ contains
   endsubroutine domain_decomposition_communicate_domain
 
 
+  !% Communicate all particles from this domain to all other domains
+  subroutine domain_decomposition_communicate_domain_to_all(this, at, error)
+    implicit none
+
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),                         intent(inout)  :: at
+    integer,                   optional, intent(out)    :: error
+
+    ! ---
+
+    ! 
+    ! General and auxiliary variables      
+    !
+
+    integer   :: i, j
+    integer   :: oldnatloc
+
+    ! 
+    ! Structure variables, mpi and system structure
+    !
+
+    integer   :: n_send, n_recv
+
+    real(DP)  :: s(3)
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    call print("DomainDecomposition : communicate_domain_to_all", PRINT_VERBOSE)
+
+    call system_timer("domain_decomposition_communicate_domain_to_all")
+
+    ! Update internal buffers
+    call update_sendrecv_masks(this, at)
+
+    this%nit_p = this%nit_p + 1
+
+    do i = at%Ndomain+1, at%N
+       this%global_to_local(this%local_to_global(i)) = 0
+    enddo
+
+    !
+    ! Loop over dimensions and distribute particle in the
+    ! respective direction
+    !
+
+    oldnatloc   = at%Ndomain
+    at%Ndomain  = 0
+
+    n_send      = 0
+
+    do i = 1, oldnatloc
+
+       ! Send always
+       call pack_state_buffer(this, at, i, n_send, this%send_r)
+
+       s = sdompos(this, at, at%pos(:, i))
+       if (.not. at%domain_decomposed .or. &
+           all(s >= this%lower) .and. all(s < this%upper)) then
+          ! Keep on this processor and reorder
+
+          at%Ndomain = at%Ndomain+1
+
+          if (at%Ndomain /= i) then
+             call copy_entry(at, i, at%Ndomain)
+          endif
+
+       endif
+
+    enddo
+
+    do j = 0, this%mpi%n_procs-1
+
+       if (j == this%mpi%my_proc) then
+          call bcast(this%mpi, n_send, root=j, error=error)
+          PASS_ERROR(error)
+
+          call print("n_send = " // n_send // ", size(send_r) = " // size(this%send_r), PRINT_ALWAYS)
+
+          call bcast(this%mpi, this%send_r(1:n_send), root=j, error=error)
+          PASS_ERROR(error)
+       else
+          call bcast(this%mpi, n_recv, root=j, error=error)
+          PASS_ERROR(error)
+
+          call print("n_recv = " // n_recv // ", size(recv_r) = " // size(this%recv_r), PRINT_ALWAYS)
+          call print("n = " // (n_recv/this%state_buffer_size))
+
+          call bcast(this%mpi, this%recv_r(1:n_recv), root=j, error=error)
+          PASS_ERROR(error)
+
+          call unpack_state_buffer(this, at, n_recv, this%recv_r)
+       endif
+
+    enddo
+
+    at%N = at%Ndomain
+
+    call print("domain_decomposition_communicate_domain_to_all : " // &
+         "Ndomain = " // at%Ndomain, PRINT_VERBOSE)
+
+    ! Sort atoms by global index
+    call atoms_sort(at, "local_to_global")
+
+    call system_timer("domain_decomposition_communicate_domain_to_all")
+
+  endsubroutine domain_decomposition_communicate_domain_to_all
+
+
   !% Copy particle data from the (ghost) receive buffer
-  subroutine unpack_ghost_buffer(this, at, n, buffer)
+  subroutine unpack_ghost_buffer(this, at, n, buffer, off)
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    integer, intent(in)                       :: n
-    character(1), intent(in)                  :: buffer(:)
+    type(Atoms),               intent(inout)  :: at
+    integer,                   intent(in)     :: n
+    character(1),              intent(in)     :: buffer(:)
+    real(DP),                  intent(in)     :: off(3)
 
     ! ---
 
@@ -876,6 +1029,7 @@ contains
     do while (i < n)
        at%N = at%N+1
        call unpack_buffer(at%properties, this%ghost_mask, i, buffer, at%N)
+       at%pos(:, at%N)  = at%pos(:, at%N) + off
        this%global_to_local(this%local_to_global(at%N)) = at%N
     enddo
 
@@ -1023,8 +1177,8 @@ contains
           off_r    = 0.0_DP
           off_r(d) = this%off_r(d)
 
-          call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r)
-          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l)
+          call unpack_ghost_buffer(this, at, n_recv_r, this%recv_r, off_r)
+          call unpack_ghost_buffer(this, at, n_recv_l, this%recv_l, off_l)
 
           list_off_r = list_off_r + this%n_ghosts_r(d)
           list_off_l = list_off_l + this%n_ghosts_l(d)
@@ -1060,7 +1214,7 @@ contains
     ! ---
 
     m = n
-    call pack_buffer(at%properties, this%backc_mask, i, m, buffer)
+    call pack_buffer(at%properties, this%revrs_mask, i, m, buffer)
 
   endsubroutine copy_forces_to_send_ghosts
   
@@ -1085,7 +1239,7 @@ contains
     do while (i < n)
        cur = cur+1
 
-       call unpack_buffer(at%properties, this%backc_mask, i, buffer, cur)
+       call unpack_buffer(at%properties, this%revrs_mask, i, buffer, cur)
     enddo
 
   endsubroutine copy_forces_from_recv_ghosts
@@ -1128,16 +1282,16 @@ contains
        if (this%decomposition(d) > 1) then
 
           do i = 1, this%n_ghosts_r(d)
-             call copy_forces_to_send_ghosts(this, at, this%global_to_local(this%ghosts_r(list_off_r+i)), (i-1)*this%backc_buffer_size, this%send_r)
+             call copy_forces_to_send_ghosts(this, at, this%global_to_local(this%ghosts_r(list_off_r+i)), (i-1)*this%revrs_buffer_size, this%send_r)
           enddo
 
           do i = 1, this%n_ghosts_l(d)
-             call copy_forces_to_send_ghosts(this, at, this%global_to_local(this%ghosts_l(list_off_l+i)), (i-1)*this%backc_buffer_size, this%send_l)
+             call copy_forces_to_send_ghosts(this, at, this%global_to_local(this%ghosts_l(list_off_l+i)), (i-1)*this%revrs_buffer_size, this%send_l)
           enddo
 
 !          call mpi_sendrecv( &
-!               this%send_r, this%backc_buffer_size*this%n_ghosts_r(d), MPI_DOUBLE_PRECISION, this%r(d), 0, &
-!               this%recv_l, this%backc_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%l(d), 0, &
+!               this%send_r, this%revrs_buffer_size*this%n_ghosts_r(d), MPI_DOUBLE_PRECISION, this%r(d), 0, &
+!               this%recv_l, this%revrs_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%l(d), 0, &
 !               this%comm, status, i)
 !          PASS_MPI_ERROR(i, error)
 !
@@ -1145,15 +1299,15 @@ contains
 !          PASS_MPI_ERROR(i, error)
 
           call sendrecv(this%mpi, &
-               this%send_r(1:this%backc_buffer_size*this%n_ghosts_r(d)), &
+               this%send_r(1:this%revrs_buffer_size*this%n_ghosts_r(d)), &
                this%r(d), 0, &
                this%recv_l, this%l(d), 0, &
                n_recv_l, error)
           PASS_ERROR(error)
 
 !          call mpi_sendrecv( &
-!               this%send_l, this%backc_buffer_size*this%n_ghosts_l(d), MPI_DOUBLE_PRECISION, this%l(d), 1, &
-!               this%recv_r, this%backc_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%r(d), 1, &
+!               this%send_l, this%revrs_buffer_size*this%n_ghosts_l(d), MPI_DOUBLE_PRECISION, this%l(d), 1, &
+!               this%recv_r, this%revrs_buffer_size*at%maxnatloc, MPI_DOUBLE_PRECISION, this%r(d), 1, &
 !               this%comm, status, i)
 !          PASS_MPI_ERROR(i, error)
 !
@@ -1161,7 +1315,7 @@ contains
 !          PASS_MPI_ERROR(i, error)
 
           call sendrecv(this%mpi, &
-               this%send_l(1:this%backc_buffer_size*this%n_ghosts_l(d)), &
+               this%send_l(1:this%revrs_buffer_size*this%n_ghosts_l(d)), &
                this%l(d), 1, &
                this%recv_r, this%r(d), 1, &
                n_recv_r, error)
