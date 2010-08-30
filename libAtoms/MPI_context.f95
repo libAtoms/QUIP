@@ -705,13 +705,15 @@ include 'mpif.h'
 #endif
 end subroutine  MPI_context_sum_in_place_complex1
 
-subroutine MPI_context_bcast_int(this, v, error)
+subroutine MPI_context_bcast_int(this, v, root, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
 #ifdef _MPI
@@ -723,7 +725,13 @@ include 'mpif.h'
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_INTEGER, 0, this%communicator, err)
+  if (present(root)) then
+     my_root = root
+  else
+     my_root = 0
+  endif
+
+  call MPI_Bcast(v, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int
@@ -983,13 +991,15 @@ include 'mpif.h'
 #endif
 end subroutine MPI_context_bcast_real2
 
-subroutine MPI_context_bcast_char(this, v, error)
+subroutine MPI_context_bcast_char(this, v, root, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
 #ifdef _MPI
@@ -1001,18 +1011,26 @@ include 'mpif.h'
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, len(v), MPI_CHARACTER, 0, this%communicator, err)
+  if (present(root)) then
+     my_root = root
+  else
+     my_root = 0
+  endif
+
+  call MPI_Bcast(v, len(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char
 
-subroutine MPI_context_bcast_char1(this, v, error)
+subroutine MPI_context_bcast_char1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
 #ifdef _MPI
@@ -1024,18 +1042,28 @@ include 'mpif.h'
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, len(v(1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
+  if (present(root)) then
+     my_root = root
+  else
+     my_root = 0
+  endif
+
+  call MPI_Bcast(&
+       v, len(v(1))*size(v), MPI_CHARACTER, &
+       my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char1
 
-subroutine MPI_context_bcast_char2(this, v, error)
+subroutine MPI_context_bcast_char2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   character(*), intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
 #ifdef _MPI
@@ -1047,7 +1075,15 @@ include 'mpif.h'
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, len(v(1,1))*size(v), MPI_CHARACTER, 0, this%communicator, err)
+  if (present(root)) then
+     my_root = root
+  else
+     my_root = 0
+  endif
+
+  call MPI_Bcast( &
+       v, len(v(1,1))*size(v), MPI_CHARACTER, &
+       my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char2
