@@ -273,6 +273,8 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'Brenner_2002', 'false', is_Brenner_2002)
 #ifdef HAVE_ASAP
   call param_register(params, 'ASAP', 'false', is_ASAP)
+#else
+  is_ASAP = .false.
 #endif
   call param_register(params, 'ASAP2', 'false', is_ASAP2)
   call param_register(params, 'Glue', 'false', is_Glue)
