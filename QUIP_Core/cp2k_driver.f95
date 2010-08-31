@@ -207,7 +207,7 @@ contains
       call param_register(cli, 'break_bond', '0 0', break_bond)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
-	call system_abort('could not parse argument line')
+	call system_abort('cp2k_driver could not parse argument line')
     call finalise(cli)
 
     if (cp2k_calc_fake) then
