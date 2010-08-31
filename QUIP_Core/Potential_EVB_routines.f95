@@ -64,10 +64,10 @@
     type(Inoutput),      intent(inout), optional :: file
 
     call print('Potential_EVB:', file=file)
-    call print('  mm_args_str'//trim(this%mm_args_str), file=file)
-    call print('  topology_suffix1'//trim(this%topology_suffix1), file=file)
-    call print('  topology_suffix2'//trim(this%topology_suffix2), file=file)
-    call print('  evb1-form and evb2-break bond:  '//this%form_bond(1:2), file=file)
+    call print('  mm_args_str='//trim(this%mm_args_str), file=file)
+    call print('  topology_suffix1='//trim(this%topology_suffix1), file=file)
+    call print('  topology_suffix2='//trim(this%topology_suffix2), file=file)
+    call print('  evb1-form and evb2-break bond: '//this%form_bond(1:2), file=file)
     call print('  evb1-break and evb2-form bond: '//this%break_bond(1:2), file=file)
     !call print('  energy offset: '//this%energy_offset, file=file)
     call print('  offdiagonal A12(pre-exponent factor): '//this%offdiagonal_A12, file=file)
