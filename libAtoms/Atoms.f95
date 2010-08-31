@@ -526,11 +526,11 @@ contains
        do i=1,properties%N
           type = properties%entries(i)%type
           if (type == T_INTEGER_A .or. type == T_REAL_A .or. type == T_LOGICAL_A) then
-             if (properties%entries(i)%len /= this%N) then
-                RAISE_ERROR('atoms_initialise: bad array size for array key='//string(properties%keys(i))//' size('//properties%entries(i)%len//') != this%N('//this%N//')', error)
+             if (properties%entries(i)%len /= this%Nbuffer) then
+                RAISE_ERROR('atoms_initialise: bad array size for array key='//string(properties%keys(i))//' size('//properties%entries(i)%len//') != this%Nbuffer('//this%Nbuffer//')', error)
              end if
           else if (type == T_INTEGER_A2 .or. type == T_REAL_A2 .or. type == T_CHAR_A) then
-             if (properties%entries(i)%len2(2) /= this%N) then
+             if (properties%entries(i)%len2(2) /= this%Nbuffer) then
                 RAISE_ERROR('atoms_initialise: bad array size for array key='//properties%keys(i)//' shape='//properties%entries(i)%len2, error)
              end if
           else
@@ -543,9 +543,13 @@ contains
        ! By default, we just add properties for Z, species name and position
        call initialise(this%properties)
        
-       call add_property(this, 'Z', 0)
-       call add_property(this, 'pos', 0.0_dp, n_cols=3)
-       call add_property(this, 'species', repeat(' ', TABLE_STRING_LENGTH))
+       call add_property(this, 'Z', 0, error=error)
+       PASS_ERROR(error)
+       call add_property(this, 'pos', 0.0_dp, n_cols=3, error=error)
+       PASS_ERROR(error)
+       call add_property(this, 'species', repeat(' ', TABLE_STRING_LENGTH), &
+            error=error)
+       PASS_ERROR(error)
     end if
 
     call atoms_repoint(this)
@@ -727,7 +731,7 @@ contains
        return
     end if
 
-    call atoms_initialise(to,from%N,from%lattice, from%properties, from%params, from%fixed_size)
+    call atoms_initialise(to, from%N, from%lattice, from%properties, from%params, from%fixed_size, from%Nbuffer)
 
     to%use_uniform_cutoff = from%use_uniform_cutoff
     to%cutoff      = from%cutoff
@@ -736,6 +740,8 @@ contains
 
     to%connect     = from%connect
     to%hysteretic_connect     = from%hysteretic_connect
+
+    to%domain_decomposed = from%domain_decomposed
 
   end subroutine atoms_assignment
 
@@ -884,7 +890,8 @@ contains
     call atoms_repoint(to)
 
     if (do_orig_index) then
-       call add_property(to, 'orig_index', 0, ptr=orig_index_ptr)
+       call add_property(to, 'orig_index', 0, ptr=orig_index_ptr, error=error)
+       PASS_ERROR(error)
        orig_index_ptr(:) = use_list(:)
     end if
     if (allocated(my_list)) deallocate(my_list)
