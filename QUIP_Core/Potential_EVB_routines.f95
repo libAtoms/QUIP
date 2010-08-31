@@ -276,13 +276,13 @@
        endif
 
        !energy
+       gap =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag**2)
        if (len_trim(calc_energy) > 0) then
-          e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
+          e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * gap
 	  call set_param_value(at, trim(calc_energy), e)
 	  call print("EVB coupled energy " // e, PRINT_VERBOSE)
        endif
        if (len_trim(calc_EVB_gap) > 0) then
-	  gap =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag)
 	  call set_param_value(at, trim(calc_EVB_gap), gap)
 	  call print("EVB gap " // gap, PRINT_VERBOSE)
        endif
@@ -305,11 +305,11 @@
           endif
           !force
           at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
-              (0.5_dp * (my_e_1 - my_e_2)*(my_f_1 - my_f_2) + de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag)
+              0.5_dp * ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) - 4.0_dp*e_offdiag*de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2)
 	  if (len_trim(calc_EVB_gap) > 0) then
 	    call add_property(at, trim(calc_EVB_gap)//"_force", 0.0_dp, n_cols=3, ptr2=dgap_dr_ptr, error=error)
 	    PASS_ERROR(error)
-	    dgap_dr_ptr = ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) + 2.0_dp * de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag)
+	    dgap_dr_ptr = ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) - 4.0_dp*e_offdiag*de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2)
 	  endif
        endif
     endif
