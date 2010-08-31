@@ -278,7 +278,9 @@ logical :: have_silica_potential
       call print('  Run_Type1 '//Run_Type1)
       call print('  Run_Type2 '//Run_Type2)
       call print('  IO_Rate '//IO_Rate)
-      if (Thermostat_Type.eq.1) then
+      if (Thermostat_Type.eq.0) then
+         call print('  Thermostat_Type 0: '//'None, NVE')
+      elseif (Thermostat_Type.eq.1) then
          call print('  Thermostat_Type 1: '//'Langevin everywhere')
          call print('  Tau '//Tau)
       elseif (Thermostat_Type.eq.2) then
@@ -1318,7 +1320,7 @@ contains
 
     select case(Thermostat_Type)
       case(0)
-	call print("WARNING: No thermostat!!", PRINT_ALWAYS)
+	call print("No thermostat, NVE!!", PRINT_ALWAYS)
       case(1)
 	call add_thermostat(ds,type=LANGEVIN,T=T,tau=Tau)
 	call print('Added single Langevin Thermostat')
@@ -1456,6 +1458,8 @@ contains
     real(dp) :: r
 
     select case(Thermostat_Type)
+      case(0) 
+	  continue
       case(1, 2)
 	  at%thermostat_region = 1
       case(3)
