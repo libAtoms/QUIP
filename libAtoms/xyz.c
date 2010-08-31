@@ -328,7 +328,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   int n_frame, n_selected;
   long *frames;
   int *atoms, type, shape[2], tmp_error, tmp_type, tmp_shape[2];
-  int frames_array_size, got_index;
+  int frames_array_size, got_index, n_buffer;
   void *data, *tmp_data;
   int property_type[MAX_ENTRY_COUNT], property_shape[MAX_ENTRY_COUNT][2], property_ncols[MAX_ENTRY_COUNT], n_property;
   void *property_data[MAX_ENTRY_COUNT];
@@ -364,6 +364,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       RAISE_ERROR("read_xyz: cannot open file %s for reading", filename);
     }
 
+    n_buffer = *n_atom;
     *n_atom = atoms[frame];
     if (fseek(in, frames[frame], SEEK_SET) == -1) {
       RAISE_ERROR("cannot seek XYZ input file %s", filename);
@@ -424,6 +425,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     at_start = 0;
     at_end = *n_atom-1;
   }
+  if (n_buffer < *n_atom)
+      n_buffer = *n_atom;
 
   // Read comment line, which should contain 'Lattice=' and 'Properties=' keys
   GET_LINE("premature end - expecting comment line");
@@ -692,20 +695,20 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     if (strcmp(fields[3*i+1],"I") == 0) {
       if (ncols == 1) {
 	type = T_INTEGER_A;
-	shape[0] = *n_atom;
+	shape[0] = n_buffer;
       } else {
 	type = T_INTEGER_A2;
 	shape[0] = 3;
-	shape[1] = *n_atom;
+	shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"R") == 0) {
       if (ncols == 1) {
 	type = T_REAL_A;
-	shape[0] = *n_atom;
+	shape[0] = n_buffer;
       } else {
 	type = T_REAL_A2;
 	shape[0] = 3;
-	shape[1] = *n_atom;
+	shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"S") == 0) {
       if (ncols != 1) {
@@ -713,13 +716,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       }
       type = T_CHAR_A;
       shape[0] = PROPERTY_STRING_LENGTH; // FIXME: this could be variable
-      shape[1] = *n_atom;
+      shape[1] = n_buffer;
     } else if (strcmp(fields[3*i+1],"L") == 0) {
       if (ncols != 1) {
 	RAISE_ERROR("Logical property %s with ncols != 1 no longer supported", fields[3*i]);
       }
       type = T_LOGICAL_A;
-      shape[0] = *n_atom;
+      shape[0] = n_buffer;
     } else  {
       RAISE_ERROR("Bad property type %s\n", fields[3*i+1]);
     }

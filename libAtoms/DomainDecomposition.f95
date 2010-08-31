@@ -59,22 +59,24 @@ module DomainDecomposition_module
 
      integer                    :: mode                = DD_WRAP_TO_CELL
 
-     real(DP)                   :: requested_border    = 0.0_DP
-     real(DP)                   :: border(3)           = 0.0_DP
-     real(DP)                   :: verlet_shell        = 0.0_DP
+     logical                    :: domain_decomposed   = .false.   !% True if domain decomposition is active
+
+     real(dp)                   :: requested_border    = 0.0_DP
+     real(dp)                   :: border(3)           = 0.0_DP
+     real(dp)                   :: verlet_shell        = 0.0_DP
 
      logical                    :: communicate_forces  = .false.
 
-     real(DP)                   :: lower(3)               !% Lower domain boundary, in fraction of the total cell
-     real(DP)                   :: upper(3)               !% Upper domain boundary, in fraction of the total cell
-     real(DP)                   :: center(3)              !% Center of the domain
-     real(DP)                   :: lower_with_border(3)   !% Lower domain boundary, including border
-     real(DP)                   :: upper_with_border(3)   !% Upper domain boundary, including border
+     real(dp)                   :: lower(3)               !% Lower domain boundary, in fraction of the total cell
+     real(dp)                   :: upper(3)               !% Upper domain boundary, in fraction of the total cell
+     real(dp)                   :: center(3)              !% Center of the domain
+     real(dp)                   :: lower_with_border(3)   !% Lower domain boundary, including border
+     real(dp)                   :: upper_with_border(3)   !% Upper domain boundary, including border
 
      type(MPI_context)          :: mpi                  !% MPI communicator
      logical                    :: periodic(3)          !% Periodicity for domain decomposition
      integer                    :: l(3), r(3)           !% Ranks of neighboring domains in x-, y- and z-direction
-     real(DP)                   :: off_l(3), off_r(3)   !% Distance vector to neighboring domain
+     real(dp)                   :: off_l(3), off_r(3)   !% Distance vector to neighboring domain
 
      type(Dictionary)           :: state_properties   !% Fields to communicate if for particles
      type(Dictionary)           :: ghost_properties   !% Fields to communicate for ghosts
@@ -117,11 +119,6 @@ module DomainDecomposition_module
      module procedure domain_decomposition_finalise
   endinterface
 
-  public :: allocate
-  interface allocate
-     module procedure domain_decomposition_allocate
-  endinterface
-
   interface update_sendrecv_masks
      module procedure domain_decomposition_update_sendrecv_masks
   endinterface
@@ -135,6 +132,11 @@ module DomainDecomposition_module
   interface disable
      module procedure domain_decomposition_disable
   endinterface disable
+
+  public :: allocate
+  interface allocate
+     module procedure domain_decomposition_allocate
+  endinterface allocate
 
   interface is_in_domain
      module procedure domain_decomposition_is_in_domain
@@ -164,10 +166,7 @@ module DomainDecomposition_module
      module procedure domain_decomposition_communicate_forces
   endinterface
 
-  !
-  ! Internal only stuff
-  !
-
+  public :: communicate_domain_to_all
   interface communicate_domain_to_all
      module procedure domain_decomposition_communicate_domain_to_all
   endinterface
@@ -194,22 +193,20 @@ module DomainDecomposition_module
 contains
 
   !% Initialize the domain decomposition module
-  subroutine domain_decomposition_initialise(this, at, mpi, &
+  subroutine domain_decomposition_initialise(this, mpi, &
        decomposition, verlet_shell, mode, error)
     implicit none
 
     type(DomainDecomposition),           intent(inout)  :: this
-    type(Atoms),                         intent(inout)  :: at
     type(MPI_context),                   intent(in)     :: mpi
     integer,                   optional, intent(in)     :: decomposition(3)
-    real(DP),                  optional, intent(in)     :: verlet_shell
+    real(dp),                  optional, intent(in)     :: verlet_shell
     integer,                   optional, intent(in)     :: mode
     integer,                   optional, intent(out)    :: error
 
     ! ---
 
     integer   :: d
-    real(DP)  :: l(3)
 
     ! ---
 
@@ -263,14 +260,6 @@ contains
        PASS_ERROR(error)
     enddo
 
-    if ((at%lattice(:, 1) .dot. at%lattice(:, 2)) > 1e-6 .or. &
-        (at%lattice(:, 2) .dot. at%lattice(:, 3)) > 1e-6 .or. &
-        (at%lattice(:, 3) .dot. at%lattice(:, 1)) > 1e-6) then
-       RAISE_ERROR("Only orthorhombic lattices are support for now.", error)
-    endif
-
-    l        = (/ at%lattice(1, 1), at%lattice(2, 2), at%lattice(3, 3) /)
-
     this%lower  = (1.0_DP*this%mpi%my_coords)     / this%decomposition
     this%upper  = (1.0_DP*(this%mpi%my_coords+1)) / this%decomposition
     this%center = (this%lower + this%upper)/2
@@ -279,38 +268,6 @@ contains
     call print("DomainDecomposition : upper              = ( " // this%upper // " )", PRINT_VERBOSE)
     call print("DomainDecomposition : center             = ( " // this%center // " )", PRINT_VERBOSE)
 
-    this%off_r  = 0.0_DP
-    this%off_l  = 0.0_DP
-
-    do d = 1, 3
-!       if (at%periodic(d) .and. this%decomposition(d) > 1) then
-       if (this%decomposition(d) > 1) then
-          ! No periodicity in binning because we explicitly copy the atoms
-          ! from the other processors
-!          this%locally_periodic(d) = .false.
-       else
-          this%periodic(d) = .false.
-       endif
-
-       if (this%mpi%my_coords(d) == 0) then
-          this%off_l(d) = -l(d)
-       else if (this%mpi%my_coords(d) == this%decomposition(d)-1) then
-          this%off_r(d) = l(d)
-       endif
-    enddo
-
-!    call print("periodic (global)  = ( " // at%periodic // " )", PRINT_VERBOSE)
-    call print("DomainDecomposition : periodic (par.)    = ( " // this%periodic // " )", PRINT_VERBOSE)
-!    call print("periodic (local)   = ( " // this%locally_periodic // " )", PRINT_VERBOSE)
-
-    if (this%mode == DD_WRAP_TO_CELL) then
-       this%off_l  = 0.0_DP
-       this%off_r  = 0.0_DP
-    endif
-
-    call print("DomainDecomposition : off_l              = ( " // this%off_l // " )", PRINT_VERBOSE)
-    call print("DomainDecomposition : off_r              = ( " // this%off_r // " )", PRINT_VERBOSE)
-
     this%n_send_p_tot  = 0
     this%n_recv_p_tot  = 0
     this%n_send_g_tot  = 0
@@ -318,9 +275,6 @@ contains
     this%nit_p         = 0
     this%nit_g         = 0
 
-
-    ! Additional properties (integers)
-    call add_property(at, "local_to_global", 0, ptr=this%local_to_global)
 
     ! This should be a list of all POSSIBLE properties.
     ! Properties that do not exist are ignored.
@@ -347,36 +301,6 @@ contains
   endsubroutine domain_decomposition_initialise
 
 
-  !% Allocate buffers
-  subroutine domain_decomposition_allocate(this, at, error)
-    implicit none
-
-    type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    integer, intent(out), optional            :: error
-
-    ! ---
-
-    INIT_ERROR(error)
-
-    call print("DomainDecomposition : allocate", PRINT_VERBOSE)
-
-
-!    call log_memory_start("domain_decomposition_allocate")
-
-!    call log_memory_estimate(this%send_l)
-!    call log_memory_estimate(this%send_r)
-!    call log_memory_estimate(this%recv_l)
-!    call log_memory_estimate(this%recv_r)
-!
-!    call log_memory_estimate(this%ghosts_r)
-!    call log_memory_estimate(this%ghosts_l)
-!
-!    call log_memory_stop("domain_decomposition_allocate")
-
-  endsubroutine domain_decomposition_allocate
-
-
   !% Update send and receive masks, only necessary after properties have
   !% been added to or removed from the Atoms object
   subroutine domain_decomposition_update_sendrecv_masks(this, at, error)
@@ -393,6 +317,13 @@ contains
     ! ---
 
     INIT_ERROR(error)
+
+    ! XXX FIXME This should become unecessary if DynamicalSystem only
+    ! pointer to an atoms object
+    if (.not. assign_pointer(at%properties, "local_to_global", &
+                             this%local_to_global)) then
+       RAISE_ERROR("Could not find 'local_to_global'", error)
+    endif
 
     if (allocated(this%state_mask)) then
        if (size(this%state_mask) < at%properties%N) then
@@ -472,13 +403,13 @@ contains
   subroutine domain_decomposition_enable(this, at, error)
     implicit none
 
-    type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    integer, intent(out), optional :: error
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),               optional, intent(inout)  :: at
+    integer,                   optional, intent(out)    :: error
 
     ! ---
 
-    integer :: i, j
+    integer   :: i, j
 
     ! ---
 
@@ -486,45 +417,31 @@ contains
 
     call print("DomainDecomposition : enable", PRINT_VERBOSE)
 
-    allocate(this%global_to_local(at%Nbuffer))
-    allocate(this%ghosts_r(at%Nbuffer))
-    allocate(this%ghosts_l(at%Nbuffer))
+    if (present(at)) then
+       if (at%initialised) then
+          call allocate(this, at, error=error)
+          PASS_ERROR(error)
 
-    j = 0
-    do i = 1, at%N
-       !% Assign global indices
-       this%local_to_global(i) = i
-       this%global_to_local(i) = -1
-
-       !% If this is in the domain, keep it
-       if (is_in_domain(this, at, at%pos(:, i))) then
-          j = j+1
-          if (i /= j) then
-             call copy_entry(at, i, j)
-          endif
-          this%global_to_local(i) = j
+          ! at is initialised, this means we need to retain only the atoms that
+          ! are in the current domain.
+          j = 0
+          do i = 1, at%N
+             ! If this is in the domain, keep it
+             if (is_in_domain(this, at, at%pos(:, i))) then
+                j = j+1
+                if (i /= j) then
+                   call copy_entry(at, i, j)
+                endif
+             endif
+          enddo
+          at%N = j
+          at%Ndomain = j
        endif
-    enddo
-    at%N = j
-    at%Ndomain = j
 
-    this%Ntotal = sum(this%mpi, at%N, error)
-    PASS_ERROR(error)
-
-    call print("DomainDecomposition : Ntotal = " // this%Ntotal, PRINT_VERBOSE)
-
-    at%domain_decomposed = .true.
-
-    !
-    ! Copy ghost particles (for first integration step)
-    !
-
-    call communicate_ghosts(this, at, .true., error=error)
-    PASS_ERROR(error)
-    if (this%communicate_forces) then
-       call communicate_forces(this, at, error=error)
-       PASS_ERROR(error)
+       at%domain_decomposed = .true.
     endif
+
+    this%domain_decomposed = .true.
 
   endsubroutine domain_decomposition_enable
 
@@ -542,22 +459,119 @@ contains
 
     INIT_ERROR(error)
 
+    if (.not. this%domain_decomposed) then
+       RAISE_ERROR("DomainDecomposition-object is not in a domain-decomposed state. Cannot disable domain decomposition.", error)
+    endif
+
     if (.not. at%domain_decomposed) then
        RAISE_ERROR("Atoms-object is not in a domain-decomposed state. Cannot disable domain decomposition.", error)
     endif
 
-    at%domain_decomposed = .false.
+    this%domain_decomposed  = .false.
+    at%domain_decomposed    = .false.
 
     call communicate_domain_to_all(this, at, error=error)
     PASS_ERROR(error)
 
-    this%local_to_global(1:at%Ndomain) = 0
+    this%local_to_global = 0
 
-    deallocate(this%global_to_local)
-    deallocate(this%ghosts_r)
-    deallocate(this%ghosts_l)
+    if (allocated(this%global_to_local))  deallocate(this%global_to_local)
+    if (allocated(this%ghosts_r))         deallocate(this%ghosts_r)
+    if (allocated(this%ghosts_l))         deallocate(this%ghosts_l)
 
   endsubroutine domain_decomposition_disable
+
+
+  !% Allocate internal buffer
+  subroutine domain_decomposition_allocate(this, at, range, error)
+    implicit none
+
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),                         intent(inout)  :: at
+    integer,                   optional, intent(in)     :: range(2)
+    integer,                   optional, intent(inout)  :: error
+
+    ! ---
+
+    integer   :: i, d, my_range(2)
+    real(dp)  :: l(3)
+
+    ! ---
+
+    if ((at%lattice(:, 1) .dot. at%lattice(:, 2)) > 1e-6 .or. &
+        (at%lattice(:, 2) .dot. at%lattice(:, 3)) > 1e-6 .or. &
+        (at%lattice(:, 3) .dot. at%lattice(:, 1)) > 1e-6) then
+       RAISE_ERROR("Only orthorhombic lattices are support for now.", error)
+    endif
+
+    l = (/ at%lattice(1, 1), at%lattice(2, 2), at%lattice(3, 3) /)
+
+    this%off_r  = 0.0_DP
+    this%off_l  = 0.0_DP
+
+    do d = 1, 3
+!       if (at%periodic(d) .and. this%decomposition(d) > 1) then
+       if (this%decomposition(d) > 1) then
+          ! No periodicity in binning because we explicitly copy the atoms
+          ! from the other processors
+!          this%locally_periodic(d) = .false.
+       else
+          this%periodic(d) = .false.
+       endif
+
+       if (this%mpi%my_coords(d) == 0) then
+          this%off_l(d) = -l(d)
+       else if (this%mpi%my_coords(d) == this%decomposition(d)-1) then
+          this%off_r(d) = l(d)
+       endif
+    enddo
+
+!    call print("periodic (global)  = ( " // at%periodic // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : periodic (par.)    = ( " // this%periodic // " )", PRINT_VERBOSE)
+!    call print("periodic (local)   = ( " // this%locally_periodic // " )", PRINT_VERBOSE)
+
+    if (this%mode == DD_WRAP_TO_CELL) then
+       this%off_l  = 0.0_DP
+       this%off_r  = 0.0_DP
+    endif
+
+    call print("DomainDecomposition : off_l              = ( " // this%off_l // " )", PRINT_VERBOSE)
+    call print("DomainDecomposition : off_r              = ( " // this%off_r // " )", PRINT_VERBOSE)
+
+    if (present(range)) then
+       my_range = range
+       if (my_range(2) - my_range(1) + 1 /= at%N) then
+          RAISE_ERROR("*range* and number of atoms do not match.", error)
+       endif
+    else
+       my_range = (/ 1, at%N /)
+    endif
+
+    ! Additional properties (integers)
+    call add_property(at, "local_to_global", 0, &
+         ptr=this%local_to_global, error=error)
+    PASS_ERROR(error)
+
+    ! Allocate local buffers
+    allocate(this%global_to_local(at%Nbuffer))
+    allocate(this%ghosts_r(at%Nbuffer))
+    allocate(this%ghosts_l(at%Nbuffer))
+
+    do i = 1, at%N
+       !% Assign global indices
+       this%local_to_global(i) = i+my_range(1)-1
+       this%global_to_local(i+my_range(1)-1) = i
+    enddo
+
+    this%Ntotal = sum(this%mpi, at%N, error)
+    PASS_ERROR(error)
+
+    call print("DomainDecomposition : Ntotal = " // this%Ntotal, PRINT_VERBOSE)
+
+    call set_border(this, at, this%requested_border, error=error)
+    PASS_ERROR(error)
+
+  endsubroutine domain_decomposition_allocate
 
 
   !% Is the position in the current domain?
@@ -566,13 +580,13 @@ contains
 
     type(DomainDecomposition), intent(in)  :: this
     type(Atoms), intent(in)                :: at
-    real(DP), intent(in)                   :: r(3)
+    real(dp), intent(in)                   :: r(3)
 
     logical                                :: id
 
     ! ---
 
-    real(DP)  :: s(3)
+    real(dp)  :: s(3)
 
     ! ---
 
@@ -588,9 +602,9 @@ contains
     implicit none
 
     type(DomainDecomposition), intent(inout)  :: this
-    type(Atoms), intent(inout)                :: at
-    real(DP), intent(in)                      :: border
-    real(DP), intent(in), optional            :: verlet_shell
+    type(Atoms), intent(in)                   :: at
+    real(dp), intent(in)                      :: border
+    real(dp), intent(in), optional            :: verlet_shell
     integer, intent(out), optional :: error
 
     ! ---
@@ -614,25 +628,28 @@ contains
     call print("DomainDecomposition : verlet_shell      = " // this%verlet_shell, PRINT_VERBOSE)
     call print("DomainDecomposition : border            = " // this%border, PRINT_VERBOSE)
 
-    if (any(((at%lattice .mult. (this%upper - this%lower)) < 2*this%border) .and. this%periodic)) then
-       RAISE_ERROR("Domain smaller than twice the border. This does not work (yet).", error)
+    if (at%initialised) then
+
+       if (any(((at%lattice .mult. (this%upper - this%lower)) < 2*this%border) .and. this%periodic)) then
+          RAISE_ERROR("Domain smaller than twice the border. This does not work (yet). border = " // this%border // ", lattice = " // at%lattice(:, 1) // ", " // at%lattice(:, 2) // ", " // at%lattice(:, 3) // ", lower = " // this%lower // ", upper = " // this%upper, error)
+       endif
+
+       do d = 1, 3
+          if (this%periodic(d) .or. this%mpi%my_coords(d) /= 0) then
+             this%lower_with_border(d)  = this%lower(d) - (at%g(d, :) .dot. this%border)
+          else
+             this%lower_with_border(d)  = this%lower(d)
+          endif
+          if (this%periodic(d) .or. this%mpi%my_coords(d) /= this%decomposition(d)-1) then
+             this%upper_with_border(d)  = this%upper(d) + (at%g(d, :) .dot. this%border)
+          else
+             this%upper_with_border(d)  = this%upper(d)
+          endif
+       enddo
+
+       call print("DomainDecomposition : lower_with_border  = ( " // this%lower_with_border // " )", PRINT_VERBOSE)
+       call print("DomainDecomposition : upper_with_border  = ( " // this%upper_with_border // " )", PRINT_VERBOSE)
     endif
-
-    do d = 1, 3
-       if (this%periodic(d) .or. this%mpi%my_coords(d) /= 0) then
-          this%lower_with_border(d)  = this%lower(d) - (at%g(d, :) .dot. this%border)
-       else
-          this%lower_with_border(d)  = this%lower(d)
-       endif
-       if (this%periodic(d) .or. this%mpi%my_coords(d) /= this%decomposition(d)-1) then
-          this%upper_with_border(d)  = this%upper(d) + (at%g(d, :) .dot. this%border)
-       else
-          this%upper_with_border(d)  = this%upper(d)
-       endif
-    enddo
-
-    call print("DomainDecomposition : lower_with_border  = ( " // this%lower_with_border // " )", PRINT_VERBOSE)
-    call print("DomainDecomposition : upper_with_border  = ( " // this%upper_with_border // " )", PRINT_VERBOSE)
 
   endsubroutine domain_decomposition_set_border
 
@@ -647,14 +664,14 @@ contains
 
     call print("DomainDecomposition : finalise", PRINT_VERBOSE)
 
-    deallocate(this%send_l)
-    deallocate(this%send_r)
-    deallocate(this%recv_l)
-    deallocate(this%recv_r)
+    if (allocated(this%send_l))  deallocate(this%send_l)
+    if (allocated(this%send_r))  deallocate(this%send_r)
+    if (allocated(this%recv_l))  deallocate(this%recv_l)
+    if (allocated(this%recv_r))  deallocate(this%recv_r)
 
     if (allocated(this%global_to_local))  deallocate(this%global_to_local)
-    if (allocated(this%ghosts_l))         deallocate(this%ghosts_l)
     if (allocated(this%ghosts_r))         deallocate(this%ghosts_r)
+    if (allocated(this%ghosts_l))         deallocate(this%ghosts_l)
 
     call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_VERBOSE)
     call print("DomainDecomposition : Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_VERBOSE)
@@ -678,14 +695,14 @@ contains
 
     type(DomainDecomposition), intent(in)  :: this
     type(Atoms), intent(in)                :: at
-    real(DP), intent(in)                   :: r(3)
+    real(dp), intent(in)                   :: r(3)
     integer, intent(in)                    :: d
 
-    real(DP)                               :: sdompos1
+    real(dp)                               :: sdompos1
 
     ! ---
 
-    real(DP)  :: s
+    real(dp)  :: s
 
     ! ---
 
@@ -702,13 +719,13 @@ contains
 
     type(DomainDecomposition), intent(in)  :: this
     type(Atoms), intent(in)                :: at
-    real(DP), intent(in)                   :: r(3)
+    real(dp), intent(in)                   :: r(3)
 
-    real(DP)                               :: sdompos3(3)
+    real(dp)                               :: sdompos3(3)
 
     ! ---
 
-    real(DP)  :: s(3)
+    real(dp)  :: s(3)
 
     ! ---
 
@@ -731,7 +748,7 @@ contains
 
     ! ---
 
-    call print("Packing: i = " // i // ", n = " // n // ", pos = " // at%pos(:, i))
+!    write (*, *)  "Packing: i = " // i // ", n = " // n // ", index = " // this%local_to_global(i) // ", pos = " // at%pos(:, i)
 
     call pack_buffer(at%properties, this%state_mask, i, n, buffer)
     this%global_to_local(this%local_to_global(i)) = 0 ! This one is gone
@@ -751,8 +768,13 @@ contains
     ! ---
 
     integer  :: i
+!    real(dp), pointer :: pos(:, :)
 
     ! ---
+
+!    if (.not. assign_pointer(at%properties, "pos", pos)) then
+!       call system_abort("...")
+!    endif
 
 !    do i = 1, n
     i = 0
@@ -760,12 +782,54 @@ contains
        at%Ndomain = at%Ndomain+1
 
        call unpack_buffer(at%properties, this%state_mask, i, buffer, at%Ndomain)
+!       write (*, *) "Unpacked: n = " // at%Ndomain // ", index = " // this%local_to_global(at%Ndomain) // ", pos = " // pos(:, at%Ndomain)
        this%global_to_local(this%local_to_global(at%Ndomain))  = at%Ndomain
 
 !       call print("n = " // at%Ndomain // ", pos = " // at%pos(:, at%Ndomain))
     enddo
 
   endsubroutine unpack_state_buffer
+
+
+  !% Copy particle data from the receive buffer
+  subroutine unpack_state_buffer_if_in_domain(this, at, n, buffer, error)
+    implicit none
+
+    type(DomainDecomposition),           intent(inout)  :: this
+    type(Atoms),                         intent(inout)  :: at
+    integer,                             intent(in)     :: n
+    character(1),                        intent(in)     :: buffer(:)
+    integer,                   optional, intent(out)    :: error
+
+    ! ---
+
+    integer            :: i
+    real(dp)           :: s(3)
+    real(dp), pointer  :: pos(:, :)
+
+    ! ---
+
+    INIT_ERROR(error)
+
+    if (.not. assign_pointer(at%properties, "pos", pos)) then
+       RAISE_ERROR("Property 'pos' not found.", error)
+    endif
+
+    i = 0
+    do while (i < n)
+       at%Ndomain = at%Ndomain+1
+
+       call unpack_buffer(at%properties, this%state_mask, i, buffer, at%Ndomain)
+
+       s = sdompos(this, at, pos(1:3, at%Ndomain))
+       if (all(s >= this%lower) .and. all(s < this%upper)) then
+          this%global_to_local(this%local_to_global(at%Ndomain))  = at%Ndomain
+       else
+          at%Ndomain = at%Ndomain-1
+       endif
+    enddo
+
+  endsubroutine unpack_state_buffer_if_in_domain
 
 
   !% Communicate particles which left the domains
@@ -784,7 +848,7 @@ contains
     !
 
     integer   :: i, d
-    integer   :: oldnatloc
+    integer   :: last_N
 
     ! 
     ! Structure variables, mpi and system structure
@@ -792,7 +856,7 @@ contains
 
     integer   :: n_send_l, n_send_r, n_recv_l, n_recv_r
 
-    real(DP)  :: off_l(3), off_r(3), s
+    real(dp)  :: off_l(3), off_r(3), s
 
     ! ---
 
@@ -820,13 +884,13 @@ contains
 
        if (this%decomposition(d) > 1) then
 
-          oldnatloc  = at%Ndomain
+          last_N  = at%Ndomain
           at%Ndomain   = 0
 
           n_send_r   = 0
           n_send_l   = 0
 
-          do i = 1, oldnatloc
+          do i = 1, last_N
 
              s = sdompos(this, at, at%pos(:, i), d)
 !             call print("d = " // d // ", i = " // i // ", s = " // s // ", lower = " // this%lower(d) // ", upper = " // this%upper(d))
@@ -889,6 +953,10 @@ contains
     enddo
 
     at%N = at%Ndomain
+    if (at%Ndomain /= last_N) then
+       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
+       call atoms_repoint(at)
+    endif
 
     this%Ntotal = sum(this%mpi, at%N, error)
 
@@ -914,7 +982,7 @@ contains
     !
 
     integer   :: i, j
-    integer   :: oldnatloc
+    integer   :: last_N
 
     ! 
     ! Structure variables, mpi and system structure
@@ -922,36 +990,30 @@ contains
 
     integer   :: n_send, n_recv
 
-    real(DP)  :: s(3)
+    real(dp)  :: s(3)
 
     ! ---
 
     INIT_ERROR(error)
 
     call print("DomainDecomposition : communicate_domain_to_all", PRINT_VERBOSE)
-
-    call system_timer("domain_decomposition_communicate_domain_to_all")
+    call print("DomainDecomposition : domain_decomposed = " // &
+         at%domain_decomposed, PRINT_VERBOSE)
 
     ! Update internal buffers
     call update_sendrecv_masks(this, at)
-
-    this%nit_p = this%nit_p + 1
-
-    do i = at%Ndomain+1, at%N
-       this%global_to_local(this%local_to_global(i)) = 0
-    enddo
 
     !
     ! Loop over dimensions and distribute particle in the
     ! respective direction
     !
 
-    oldnatloc   = at%Ndomain
+    last_N      = at%Ndomain
     at%Ndomain  = 0
 
     n_send      = 0
 
-    do i = 1, oldnatloc
+    do i = 1, last_N
 
        ! Send always
        call pack_state_buffer(this, at, i, n_send, this%send_r)
@@ -977,7 +1039,7 @@ contains
           call bcast(this%mpi, n_send, root=j, error=error)
           PASS_ERROR(error)
 
-          call print("n_send = " // n_send // ", size(send_r) = " // size(this%send_r), PRINT_ALWAYS)
+!          call print("n_send = " // n_send // ", size(send_r) = " // size(this%send_r), PRINT_ALWAYS)
 
           call bcast(this%mpi, this%send_r(1:n_send), root=j, error=error)
           PASS_ERROR(error)
@@ -985,26 +1047,44 @@ contains
           call bcast(this%mpi, n_recv, root=j, error=error)
           PASS_ERROR(error)
 
-          call print("n_recv = " // n_recv // ", size(recv_r) = " // size(this%recv_r), PRINT_ALWAYS)
-          call print("n = " // (n_recv/this%state_buffer_size))
+!          call print("n_recv = " // n_recv // ", size(recv_r) = " // size(this%recv_r), PRINT_ALWAYS)
+!          call print("n = " // (n_recv/this%state_buffer_size), PRINT_ALWAYS)
 
           call bcast(this%mpi, this%recv_r(1:n_recv), root=j, error=error)
           PASS_ERROR(error)
 
-          call unpack_state_buffer(this, at, n_recv, this%recv_r)
+          if (at%domain_decomposed) then
+             call unpack_state_buffer_if_in_domain(this, at, &
+                  n_recv, this%recv_r, &
+                  error = error)
+             PASS_ERROR(error)
+          else
+             call unpack_state_buffer(this, at, n_recv, this%recv_r)
+          endif
        endif
 
     enddo
 
-    at%N = at%Ndomain
+    call print("DomainDecomposition : " // &
+         "Ndomain = " // at%Ndomain // ", Nbuffer = " // at%Nbuffer, &
+         PRINT_VERBOSE)
 
-    call print("domain_decomposition_communicate_domain_to_all : " // &
-         "Ndomain = " // at%Ndomain, PRINT_VERBOSE)
+    if (at%domain_decomposed) then
+       call print("DomainDecomposition : total number of atoms = " // &
+            sum(this%mpi, at%Ndomain), PRINT_VERBOSE)
+    endif
+
+    at%N = at%Ndomain
+    if (at%Ndomain /= last_N) then
+       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
+       call atoms_repoint(at)
+    endif
+
+    call print("DomainDecomposition : Sorting atoms object", PRINT_ANAL)
 
     ! Sort atoms by global index
-    call atoms_sort(at, "local_to_global")
-
-    call system_timer("domain_decomposition_communicate_domain_to_all")
+    call atoms_sort(at, "local_to_global", error=error)
+    PASS_ERROR(error)
 
   endsubroutine domain_decomposition_communicate_domain_to_all
 
@@ -1017,7 +1097,7 @@ contains
     type(Atoms),               intent(inout)  :: at
     integer,                   intent(in)     :: n
     character(1),              intent(in)     :: buffer(:)
-    real(DP),                  intent(in)     :: off(3)
+    real(dp),                  intent(in)     :: off(3)
 
     ! ---
 
@@ -1049,11 +1129,11 @@ contains
 
     ! ---
 
-    real(DP)  :: upper(3), lower(3)
+    real(dp)  :: upper(3), lower(3)
     integer   :: i, d, list_off_r, list_off_l, last_N
     integer   :: n_send_r, n_send_l, n_recv_r, n_recv_l
 
-    real(DP)  :: off_l(3), off_r(3), s
+    real(dp)  :: off_l(3), off_r(3), s
 
     ! ---
 

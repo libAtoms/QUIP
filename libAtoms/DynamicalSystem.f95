@@ -201,21 +201,34 @@ contains
 
       ! Add properties for the dynamical variables to this%atoms if they don't
       ! already exist
-      call add_property(this%atoms, 'mass', ElementMass(this%atoms%Z))
-      call add_property(this%atoms, 'travel', 0, n_cols=3)
+      call add_property(this%atoms, 'mass', 0.0_DP, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'travel', 0, n_cols=3, error=error)
+      PASS_ERROR(error)
 
-      call add_property(this%atoms, 'move_mask', 1)
-      call add_property(this%atoms, 'damp_mask', 1)
-      call add_property(this%atoms, 'thermostat_region', 1)
+      call add_property(this%atoms, 'move_mask', 1, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'damp_mask', 1, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'thermostat_region', 1, error=error)
+      PASS_ERROR(error)
 
-      call add_property(this%atoms, 'avg_ke', 0.0_dp)
-      call add_property(this%atoms, 'velo', 0.0_dp, n_cols=3)
-      call add_property(this%atoms, 'acc', 0.0_dp, n_cols=3)
-      call add_property(this%atoms, 'avgpos', 0.0_dp, n_cols=3)
-      call add_property(this%atoms, 'oldpos', 0.0_dp, n_cols=3)
+      call add_property(this%atoms, 'avg_ke', 0.0_dp, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'velo', 0.0_dp, n_cols=3, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'acc', 0.0_dp, n_cols=3, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'avgpos', 0.0_dp, n_cols=3, error=error)
+      PASS_ERROR(error)
+      call add_property(this%atoms, 'oldpos', 0.0_dp, n_cols=3, error=error)
+      PASS_ERROR(error)
 
       ! Update pointers in this%atoms so we can use this%atoms%velo etc.
       call atoms_repoint(this%atoms)
+
+      ! Set mass
+      this%atoms%mass = ElementMass(this%atoms%Z)
 
       ! The input arrays must have 3N components if they are present
       ! if not, local arrays are set to zero
