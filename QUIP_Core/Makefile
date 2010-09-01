@@ -112,12 +112,10 @@ ${TARGETS}: % :  libquip.a %.o
 	${F95} ${LINKFLAGS} -o $@ $@.o libquip.a libatoms.a ${LINKOPTS}
 
 clean:
-	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp libquip.a cp2k_filepot cp2k_filepot_old quip.dtd 
+	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
+	-rm libquip.a cp2k_filepot cp2k_filepot_old quip.dtd
 	-rm -r doctmp
-
-allclean: clean
-	rm -f depend 
-
+	-rm -f QUIP_Core.depend
 
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
@@ -134,7 +132,7 @@ ifeq (${USE_MAKEDEP},1)
 ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}
 
 QUIP_Core.depend: ${ALL_F95_FPP_FILES}
-	${SCRIPT_PATH}makedep ${MAKEDEP_ARGS} -- ../QUIP_Core/*.f95 | sed 's/[^ ]*\///g' > QUIP_Core.depend
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > QUIP_Core.depend
 
-include QUIP_Core.depend
+-include QUIP_Core.depend
 endif

@@ -30,6 +30,8 @@
 
 PROGRAMS = minimal_md xyz2pdb xyz2xyz
 
+.PHONY: default all clean docclean
+
 default: libatoms.a 
 all: default ${PROGRAMS}
 
@@ -101,7 +103,8 @@ libatoms.a: ${LIBATOMS_OBJS}
 	${AR} ${AR_ADD} libatoms.a $?
 
 clean:
-	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp
+	rm -f libatoms.a *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
+	-rm libAtoms.depend
 
 allclean: clean docclean
 
@@ -120,7 +123,7 @@ ifeq (${USE_MAKEDEP},1)
 LIBATOMS_F95_FPP_FILES = ${addsuffix .fpp, ${LIBATOMS_F95_FILES}}
 
 libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
-	${SCRIPT_PATH}makedep ${MAKEDEP_ARGS} -- ../libAtoms/*.f95 | sed 's/[^ ]*\///g' > libAtoms.depend
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../libAtoms/,${LIBATOMS_F95_SOURCES}} | sed 's/[^ ]*\///g' > libAtoms.depend
 
-include libAtoms.depend
+-include libAtoms.depend
 endif
