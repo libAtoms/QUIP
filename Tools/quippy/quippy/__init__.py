@@ -55,8 +55,11 @@ from oo_fortran import FortranDerivedType, FortranDerivedTypes, fortran_class_pr
 # and routines found therein.
 
 def quippy_cleanup():
-   _quippy.qp_verbosity_pop()
-   _quippy.qp_system_finalise()
+   try:
+      _quippy.qp_verbosity_pop()
+      _quippy.qp_system_finalise()
+   except AttributeError:
+      pass
 
 _quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
 _quippy.qp_verbosity_push(0)
