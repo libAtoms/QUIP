@@ -394,14 +394,14 @@ class Atoms(FortranAtoms):
          # override value_ref if property_type is specified
          
          from quippy import (T_INTEGER_A, T_REAL_A, T_LOGICAL_A, T_CHAR_A,
-                             T_INTEGER_A2, T_REAL_A2)
+                             T_INTEGER_A2, T_REAL_A2, TABLE_STRING_LENGTH)
 
          new_property = not self.has_property(name)
          
          type_to_value_ref = {
             T_INTEGER_A  : 0,
             T_REAL_A : 0.0,
-            T_CHAR_A  : " ",
+            T_CHAR_A  : " "*TABLE_STRING_LENGTH,
             T_LOGICAL_A : False,
             T_INTEGER_A2 : 0,
             T_REAL_A2: 0.0
@@ -410,6 +410,9 @@ class Atoms(FortranAtoms):
             value_ref = type_to_value_ref[property_type]
          except KeyError:
             raise ValueError('Unknown property_type %d' % property_type)
+
+         if hasattr(value, 'shape') and len(value.shape) == 2 and property_type != T_CHAR_A and n_cols is None:
+            kwargs['n_cols'] = value.shape[0]
 
          FortranAtoms.add_property(self, name, value_ref, **kwargs)
          if new_property or overwrite:
