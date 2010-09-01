@@ -184,9 +184,9 @@ module system_module
      module procedure inoutput_print_char_array
   end interface print
 
-  private :: reada_real_dim1
+  private :: reada_real_dim1, reada_int_dim1
   interface read_ascii
-    module procedure reada_real_dim1
+    module procedure reada_real_dim1, reada_int_dim1
   end interface read_ascii
 
   private :: inoutput_read_line
@@ -1422,6 +1422,24 @@ contains
        if (my_status > 0) call system_abort('read_line: Error reading file '//trim(adjustl(this%filename)))
     end if
   end subroutine reada_real_dim1
+
+  subroutine reada_int_dim1(this,ia,status)
+    type(Inoutput), intent(in)     :: this
+    integer, intent(out) :: ia(:)
+    integer, optional, intent(out) :: status
+
+    integer :: my_status
+
+    if (this%action == OUTPUT) call system_abort('read_line: Cannot read from an output file ('//trim(adjustl(this%filename))//')')
+
+    if (present(status)) then
+       read (this%unit,fmt=*,iostat=status) ia
+    else
+       read (this%unit,fmt=*,iostat=my_status) ia
+       if (my_status < 0) call system_abort('read_line: End of file when reading '//trim(adjustl(this%filename)))
+       if (my_status > 0) call system_abort('read_line: Error reading file '//trim(adjustl(this%filename)))
+    end if
+  end subroutine reada_int_dim1
 
    !% Rewind to the start of this file. Works for both formatted and unformatted files.
    subroutine rewind(this)

@@ -165,7 +165,7 @@ contains
     type(Table) :: intrares_impropers
 
     integer, pointer :: sort_index_p(:)
-    integer, allocatable :: rev_sort_index(:)
+    integer, pointer :: rev_sort_index(:)
     integer :: at_i
 
     integer :: run_dir_i
@@ -174,6 +174,8 @@ contains
     integer :: form_bond(2), break_bond(2)
     integer :: form_bond_sorted(2), break_bond_sorted(2)
     integer :: l_error
+
+    type(Inoutput) :: sort_index_io
 
     INIT_ERROR(error)
 
@@ -311,8 +313,21 @@ contains
     do at_i=1, at%N
       sort_index_p(at_i) = at_i
     end do
+
     if (.not. has_property(at,'mol_id') .or. .not. has_property(at,'atom_res_type') .or. .not. has_property(at,'motif_atom_num')) then
-      call print("WARNING: can't do sort_by_molecule - need mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
+      if (trim(psf_print) == 'USE_EXISTING_PSF') then ! read sort order
+	 call initialise(sort_index_io, "quip_sort_order"//trim(topology_suffix), action=INPUT)
+	 call read_ascii(sort_index_io, sort_index_p)
+	 call finalise(sort_index_io)
+	 call add_property(at, 'rev_sort_index', 0, n_cols=1, ptr=rev_sort_index, error=error)
+	 PASS_ERROR_WITH_INFO("Failed to add rev_sort_index property", error)
+	 do i=1, at%N
+	   rev_sort_index(sort_index_p(i)) = i
+	 end do
+	 call atoms_sort(at, 'rev_sort_index')
+      else ! complain
+	 call print("WARNING: can't do sort_by_molecule - need mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
+      endif
     else ! do the sort
       call atoms_sort(at, 'mol_id', 'atom_res_type', 'motif_atom_num', error=error)
       PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_type", error)
@@ -347,6 +362,10 @@ contains
 	else
 	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
 	endif
+	! write sort order
+	call initialise(sort_index_io, "quip_sort_order"//trim(topology_suffix), action=OUTPUT)
+	call print(sort_index_p, file=sort_index_io)
+	call finalise(sort_index_io)
       endif
     endif
 
