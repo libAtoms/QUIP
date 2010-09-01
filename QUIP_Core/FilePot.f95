@@ -319,7 +319,8 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   my_filepot_log = optional_default(.false., filepot_log)
 
-  call read(at_out, outfile)
+  call read(at_out, outfile, error=error)
+  PASS_ERROR(error)
 
   if (nx /= 1 .or. ny /= 1 .or. nz /= 1) then
      ! Discard atoms outside the primitive cell
