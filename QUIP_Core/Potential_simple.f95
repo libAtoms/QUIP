@@ -925,10 +925,14 @@ contains
     call param_register(params, "energy", "", calc_energy)
     call param_register(params, "force", "", calc_force)
     call param_register(params, "calc_prefix", "", calc_prefix)
-    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
-      call system_abort("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'")
-    endif
+    if (present(args_str)) then
+       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
+          call system_abort("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'")
+       endif
+    end if
     call finalise(params)
+
+    if (len_trim(calc_force) > 0) allocate(f(3,at%n))
 
     if(associated(this%ip)) then
        if (len_trim(calc_energy) > 0) then
@@ -959,6 +963,8 @@ contains
     else
        RAISE_ERROR ("Potential_Simple_Print: Potential_Simple is not initialised", error)
     end if
+
+    if (allocated(f)) deallocate(f)
 
   end subroutine Potential_Simple_setup_parallel
 
