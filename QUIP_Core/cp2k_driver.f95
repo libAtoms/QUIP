@@ -164,18 +164,17 @@ contains
     logical :: dummy, have_silica_potential
     type(Table) :: intrares_impropers
 
-    integer, pointer :: sort_index_p(:)
-    integer, pointer :: rev_sort_index(:)
+    integer, pointer :: sort_index_p(:), saved_rev_sort_index_p(:)
+    integer, allocatable :: rev_sort_index(:)
     integer :: at_i
+    type(Inoutput) :: rev_sort_index_io
+    logical :: sorted
 
     integer :: run_dir_i
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
     integer :: form_bond_sorted(2), break_bond_sorted(2)
-    integer :: l_error
-
-    type(Inoutput) :: sort_index_io
 
     INIT_ERROR(error)
 
@@ -303,37 +302,40 @@ contains
     end if
 
     ! sort by molecule, residue ID
-    nullify(sort_index_p)
-    call assign_property_pointer(at, 'sort_index', sort_index_p, error=l_error)
-    if (l_error /= ERROR_NONE) then
-       call add_property(at, 'sort_index', 0, n_cols=1, ptr=sort_index_p, error=error)
-       PASS_ERROR_WITH_INFO("Failed to add sort_index property", error)
-    endif
+    call add_property(at, 'sort_index', 0, n_cols=1, ptr=sort_index_p, error=error)
+    PASS_ERROR_WITH_INFO("Failed to add sort_index property", error)
     ! initialise sort index
     do at_i=1, at%N
       sort_index_p(at_i) = at_i
     end do
 
-    if (.not. has_property(at,'mol_id') .or. .not. has_property(at,'atom_res_type') .or. .not. has_property(at,'motif_atom_num')) then
-      if (trim(psf_print) == 'USE_EXISTING_PSF') then ! read sort order
-	 call initialise(sort_index_io, "quip_sort_order"//trim(topology_suffix), action=INPUT)
-	 call read_ascii(sort_index_io, sort_index_p)
-	 call finalise(sort_index_io)
-	 call add_property(at, 'rev_sort_index', 0, n_cols=1, ptr=rev_sort_index, error=error)
-	 PASS_ERROR_WITH_INFO("Failed to add rev_sort_index property", error)
-	 do i=1, at%N
-	   rev_sort_index(sort_index_p(i)) = i
-	 end do
-	 call atoms_sort(at, 'rev_sort_index')
-      else ! complain
-	 call print("WARNING: can't do sort_by_molecule - need mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
-      endif
-    else ! do the sort
-      call atoms_sort(at, 'mol_id', 'atom_res_type', 'motif_atom_num', error=error)
-      PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_type", error)
+    ! do sort by read in order or labels
+    sorted = .false.
+    if (trim(psf_print) == 'USE_EXISTING_PSF') then ! read sort order
+       ! add property for saved reverse sort indx
+       call add_property(at, 'saved_rev_sort_index', 0, n_cols=1, ptr=saved_rev_sort_index_p, error=error)
+       PASS_ERROR_WITH_INFO("Failed to add saved_rev_sort_index property", error)
+       ! read it from file
+       call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=INPUT)
+       call read_ascii(rev_sort_index_io, saved_rev_sort_index_p)
+       call finalise(rev_sort_index_io)
+       ! sort by it
+       call atoms_sort(at, 'saved_rev_sort_index', error=error)
+       PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by read-in sort_index from quip_sort_order"//trim(topology_suffix), error)
+       sorted = .true.
+    endif
+    if (trim(psf_print) == 'DRIVER_PRINT_AND_SAVE') then ! sort by labels
+       if (has_property(at,'mol_id') .and. has_property(at,'atom_res_type') .or. .not. has_property(at,'motif_atom_num')) then
+	  call atoms_sort(at, 'mol_id', 'atom_res_type', 'motif_atom_num', error=error)
+	  PASS_ERROR_WITH_INFO ("do_cp2k_calc sorting atoms by mol_id and atom_res_type", error)
+	  sorted = .true.
+       endif
+    endif
+
+    if (sorted) then
       do at_i=1, at%N
 	if (sort_index_p(at_i) /= at_i) then
-	  call print("sort() of at%data by mol_id, atom_res_type, motif_atom_num reordered some atoms")
+	  call print("sort() of at%data reordered some atoms")
 	  exit
 	endif
       end do
@@ -347,6 +349,8 @@ contains
 	 if (all(break_bond > 0) .and. all(break_bond <= at%N)) break_bond_sorted(:) = rev_sort_index(break_bond(:))
 	 deallocate(rev_sort_index)
       end if
+    else
+      call print("WARNING: didn't do sort_by_molecule - need saved sort_index or mol_id, atom_res_type, motif_atom_num.  CP2K may complain", PRINT_ALWAYS)
     end if
 
     ! write PSF file, if requested
@@ -363,9 +367,14 @@ contains
 	  call system_abort("do_cp2k_calc needs some pos field for connectivity (run_type='"//trim(run_type)//"' /= 'QS'), but found neither avgpos nor pos")
 	endif
 	! write sort order
-	call initialise(sort_index_io, "quip_sort_order"//trim(topology_suffix), action=OUTPUT)
-	call print(sort_index_p, file=sort_index_io)
-	call finalise(sort_index_io)
+	call initialise(rev_sort_index_io, "quip_rev_sort_index"//trim(topology_suffix), action=OUTPUT)
+	allocate(rev_sort_index(at%N))
+	do i=1, at%N
+	  rev_sort_index(sort_index_p(i)) = i
+	end do
+	call print(rev_sort_index, file=rev_sort_index_io)
+	deallocate(rev_sort_index)
+	call finalise(rev_sort_index_io)
       endif
     endif
 
@@ -639,8 +648,8 @@ contains
     call map_into_cell(at)
 
     ! unsort
-    f(:,sort_index_p(:)) = f(:,:)
     if (associated(sort_index_p)) then
+      f(:,sort_index_p(:)) = f(:,:)
       call atoms_sort(at, 'sort_index', error=error)
       PASS_ERROR_WITH_INFO("do_cp2k_calc sorting atoms by sort_index",error)
     endif
