@@ -1062,36 +1062,47 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       switch(property_type[i]) {
       case(T_INTEGER_A):
 	sprintf(tmpbuf, int_format, INTEGER_A(property_data[i], n));
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
 
       case(T_INTEGER_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, int_format, INTEGER_A2(property_data[i], property_shape[i], j, n));
+	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
 
       case(T_REAL_A):
 	sprintf(tmpbuf, real_format, REAL_A(property_data[i], n));
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
 
       case(T_REAL_A2):
 	for (j=0; j < property_shape[i][0]; j++) {
 	  sprintf(tmpbuf, real_format, REAL_A2(property_data[i], property_shape[i], j, n));
+	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	}
 	break;
 
       case(T_CHAR_A):
-	if (linebuffer[0] != '\0') strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	sprintf(tmpbuf, str_format, (char *)property_data[i] + property_shape[i][0]*n);
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
 
       case(T_LOGICAL_A):
 	sprintf(tmpbuf, logical_format, LOGICAL_A(property_data[i], n) ? 'T' : 'F');
+	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ') 
+	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 	break;
       }
