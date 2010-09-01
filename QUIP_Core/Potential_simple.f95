@@ -911,45 +911,43 @@ contains
   subroutine Potential_Simple_setup_parallel(this, at, args_str, error)
     type(Potential_Simple), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
-    character(len=*), intent(in), optional :: args_str
+    character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
     real(dp) :: e                   
     real(dp), allocatable :: f(:,:)              
     type(Dictionary) :: params
-    character(STRING_LENGTH) :: calc_energy, calc_force, calc_prefix, new_calc_prefix
+    character(STRING_LENGTH) :: calc_energy, calc_force
 
     INIT_ERROR(error)
 
     call initialise(params)
     call param_register(params, "energy", "", calc_energy)
     call param_register(params, "force", "", calc_force)
-    call param_register(params, "calc_prefix", "", calc_prefix)
-    if (present(args_str)) then
-       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
-          call system_abort("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'")
-       endif
-    end if
+    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='Potential_Simple_setup_parallel args_str')) then
+       RAISE_ERROR("Potential_Simple_setup_parallel failed to parse args_str='"//trim(args_str)//"'", error)
+    endif
     call finalise(params)
 
-    if (len_trim(calc_force) > 0) allocate(f(3,at%n))
 
     if(associated(this%ip)) then
        if (len_trim(calc_energy) > 0) then
 	  if (len_trim(calc_force) > 0) then
+	     allocate(f(3,at%n))
 	     call setup_parallel(this%ip, at, energy=e, f=f, args_str=args_str)
+	     deallocate(f)
 	  else
 	     call setup_parallel(this%ip, at, energy=e, args_str=args_str)
 	  endif
        else
 	  if (len_trim(calc_force) > 0) then
+	     allocate(f(3,at%n))
 	     call setup_parallel(this%ip, at, f=f, args_str=args_str)
+	     deallocate(f)
 	  else
 	     call setup_parallel(this%ip, at, args_str=args_str)
 	  endif
        endif
-       call remove_value(at%params, trim(new_calc_prefix)//"_"//trim(calc_energy))
-       if (has_property(at,trim(new_calc_prefix)//"_"//trim(calc_force))) call remove_property(at, trim(new_calc_prefix)//"_"//trim(calc_force))
 #ifdef HAVE_TB
     else if(associated(this%tb)) then
        return

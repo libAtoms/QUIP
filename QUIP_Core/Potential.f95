@@ -591,7 +591,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   subroutine Potential_setup_parallel(this, at, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at     !% The atoms structure to compute energy and forces
-    character(len=*), intent(in), optional :: args_str
+    character(len=*), intent(in) :: args_str
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
