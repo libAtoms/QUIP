@@ -16,7 +16,9 @@ if [ ! -x $bindir/md ]; then
    (cd $QUIP_ROOT && make QUIP_Programs/md) || exit 2
 fi
 
-cat<<EOF > test_md.in.xyz
+TEST=test_md
+
+cat<<EOF > ${TEST}.in.xyz
 8
 Lattice="5.428835          0.000000          0.000000          0.000000          5.428835          0.000000          0.000000          0.000000          5.428835" Properties=species:S:1:pos:R:3
   Si      0.1000000      0.0000000      0.0000000
@@ -29,7 +31,7 @@ Lattice="5.428835          0.000000          0.000000          0.000000         
   Si      1.3572088      4.0716264      4.0716264
 EOF
 
-cat<<EOF2 > test_md.traj_ref.xyz
+cat<<EOF2 > ${TEST}.traj_ref.xyz
 Si 0.0373138234 0.0162570897 0.0220034794
 Si 2.6883050493 2.6892127445 -0.0471159207
 Si 2.7505791801 -0.0026373295 2.7064228232
@@ -40,7 +42,7 @@ Si 4.0503599351 1.3206667202 4.0801757046
 Si 1.3860213006 4.0757748339 4.1062771491
 EOF2
 
-cat<<EOF3 > test_md.out_ref
+cat<<EOF3 > ${TEST}.out_ref
 ST        0.00      0.0000      0.0000    0.23E+02      0.00000000E+00      0.00000000E+00      0.31022586E+00     -0.34192499E+02     -0.34192499E+02
 ST        1.00    313.0982      3.1154    0.23E+02      0.00000000E+00      0.00000000E+00      0.32377052E+00     -0.34192530E+02     -0.34192530E+02
 ST        2.00    324.7638      6.3158    0.23E+02      0.00000000E+00      0.00000000E+00      0.33583379E+00     -0.34192559E+02     -0.34192559E+02
@@ -55,20 +57,21 @@ ST       10.00    327.8362     32.0674    0.23E+02      0.00000000E+00      0.00
 ST       10.00    327.8362     32.0674    0.23E+02      0.00000000E+00      0.00000000E+00      0.33901087E+00     -0.34192598E+02     -0.34192598E+02
 EOF3
 
-$bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=test_md.traj.xyz T=300.0 dt=1.0 N_steps=10 rng_seed=1 < test_md.in.xyz | egrep '^ST ' > test_md.out
-tail -8 test_md.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > test_md.traj_pos.xyz
+${MPIRUN} $bindir/md pot_init_args='{IP SW}' params_in_file=$QUIP_ROOT/QUIP_Core/parameters/ip.parms.SW.xml trajectory_out_file=${TEST}.traj.xyz T=300.0 dt=1.0 N_steps=10 rng_seed=1 < ${TEST}.in.xyz > ${TEST}.out.raw
+egrep '^ST ' ${TEST}.out.raw > ${TEST}.out
+tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 
 diff=diff
 which ndiff > /dev/null && diff=ndiff
 
 error=0
 echo -n "$0: "
-nr=`wc -l < test_md.traj_ref.xyz`
-nt=`wc -l < test_md.traj_pos.xyz`
+nr=`wc -l < ${TEST}.traj_ref.xyz`
+nt=`wc -l < ${TEST}.traj_pos.xyz`
 if [[ $nr != $nt ]]; then
    echo -n "final pos line number mismatch $nr $nt "
 else
-   if $diff test_md.traj_ref.xyz test_md.traj_pos.xyz  > /dev/null 2>&1; then
+   if $diff ${TEST}.traj_ref.xyz ${TEST}.traj_pos.xyz  > /dev/null 2>&1; then
       echo -n "final pos OK "
    else
       echo -n "final pos differs "
@@ -76,12 +79,12 @@ else
    fi
 fi
 
-nr=`wc -l < test_md.out`
-nt=`wc -l < test_md.out_ref`
+nr=`wc -l < ${TEST}.out`
+nt=`wc -l < ${TEST}.out_ref`
 if [[ $nr != $nt ]]; then
    echo -n "output line number mismatch $nr $nt"
 else
-   if $diff test_md.out_ref test_md.out > /dev/null 2>&1; then
+   if $diff ${TEST}.out_ref ${TEST}.out > /dev/null 2>&1; then
       echo -n "E/T OK"
    else
       echo -n "E/T differs"
@@ -91,5 +94,5 @@ fi
 
 echo ""
 
-[[ $error == 0 ]] && rm -f test_md.*
+# [[ $error == 0 ]] && rm -f ${TEST}.*
 exit $error
