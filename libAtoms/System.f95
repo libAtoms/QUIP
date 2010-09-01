@@ -1257,6 +1257,14 @@ contains
     real(dp)                   :: string_to_real
     integer stat
 
+    if (present(err)) then
+       err = .false.
+       if (scan(adjustl(string), 'tfTF') == 1) then
+          err = .true.
+          return
+       end if
+    end if
+
     read(string,*,iostat=stat) string_to_real
 
     if (present(err)) err = (stat /= 0)

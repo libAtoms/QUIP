@@ -1659,7 +1659,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_int1d failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_int1d failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_int1D
 
@@ -1675,7 +1675,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_int2d failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_int2d failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_int2D
 
@@ -1691,7 +1691,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_real1d failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_real1d failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_real1D
 
@@ -1707,7 +1707,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_real2d failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_real2d failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_real2D
 
@@ -1723,7 +1723,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_str failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_str failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_str
 
@@ -1739,7 +1739,7 @@ contains
 
     res = assign_pointer(this%properties, name, ptr)
     if (.not. res) then
-      RAISE_ERROR("atoms_assign_prop_ptr_logical failed to assign pointer in this%properties", error)
+      RAISE_ERROR("atoms_assign_prop_ptr_logical failed to assign pointer to "//trim(name)//" in this%properties", error)
     endif
   end subroutine atoms_assign_prop_ptr_logical
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

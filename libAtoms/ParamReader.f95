@@ -365,6 +365,7 @@ module paramreader_module
       else
         call print("parser doing UNKNOWN", PRINT_VERBOSE)
       endif
+      call print("parser input line: <"//trim(myline)//">", PRINT_VERBOSE)
       ! Set the new entries
       do i=1,num_pairs
 	 field = final_fields(i)
