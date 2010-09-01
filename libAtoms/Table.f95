@@ -1563,7 +1563,7 @@ contains
     !locals
     character(10) :: my_real_format, my_int_format, my_str_format, my_logical_format
     character(100) :: fmt
-    integer                              :: i, j, k
+    integer                              :: i, j
 
     my_real_format = optional_default('f16.8',real_format)
     my_int_format  = optional_default('i8',int_format)
