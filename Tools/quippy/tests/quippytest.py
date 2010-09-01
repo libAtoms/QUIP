@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest, logging
-from numpy import all, unravel_index, loadtxt
+from numpy import all, unravel_index, loadtxt, isnan
 from quippy import frange, farray, FortranArray
 from StringIO import StringIO
 
@@ -58,6 +58,13 @@ class QuippyTestCase(unittest.TestCase):
       b = farray(b)
       self.assertEqual(a.shape, b.shape)
 
+      if isnan(a).any() or isnan(b).any():
+         print 'a'
+         print a
+         print 'b'
+         print b
+         self.fail('Not a number (NaN) found in array')
+      
       if a.dtype.kind != 'f':
          self.assert_((a == b).all())
       else:

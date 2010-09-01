@@ -470,8 +470,6 @@ contains
           do k=1,3
              at%lattice(k,k) = maxlen(k) + vacuum
           end do
-          call print('set lattice to ')
-          call print(at%lattice)
        end if
        call set_lattice(at, at%lattice, scale_positions=.false.)
 
