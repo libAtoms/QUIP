@@ -57,7 +57,7 @@ implicit none
   logical :: use_n_minim, do_torque, precond_n_minim
   real(dp) :: tau(3)
   character(len=FIELD_LENGTH) :: relax_print_file, linmin_method, minim_method
-  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args
+  character(len=FIELD_LENGTH) init_args, calc_args, at_file, param_file, extra_calc_args, pre_relax_calc_args
   integer relax_iter
   real(dp) :: relax_tol, relax_eps
   type(CInOutput) :: relax_io
@@ -115,10 +115,6 @@ implicit none
 
   call enable_timing()
 
-  init_args = ''
-  calc_args = ''
-  relax_print_file=''
-  test_dir_field=''
   call initialise(cli_params)
   call param_register(cli_params, 'at_file', 'stdin', at_file)
   call param_register(cli_params, 'param_file', 'quip_params.xml', param_file)
@@ -156,6 +152,7 @@ implicit none
   call param_register(cli_params, 'relax_eps', '0.0001', relax_eps)
   call param_register(cli_params, 'init_args', PARAM_MANDATORY, init_args)
   call param_register(cli_params, 'calc_args', '', calc_args)
+  call param_register(cli_params, 'pre_relax_calc_args', '', pre_relax_calc_args)
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity)
   call param_register(cli_params, 'use_n_minim', 'F', use_n_minim)
   call param_register(cli_params, 'precond_n_minim', 'F', precond_n_minim)
@@ -172,7 +169,7 @@ implicit none
     call print("  [absorption] [absorption_polarization='{0.0 0.0 0.0 0.0 1.0 0.0}']", PRINT_ALWAYS)
     call print("  [absorption_freq_range='{0.1 1.0 0.1}'] [absorption_gamma=0.01]", PRINT_ALWAYS)
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
-    call print("  [init_args='str'] [calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
+    call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
     call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
     call print("  [minim_method=string(cg)]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
@@ -181,6 +178,7 @@ implicit none
 
   call print ("Using init args " // trim(init_args))
   call print ("Using calc args " // trim(calc_args))
+  call print ("Using pre-relax calc args " // trim(pre_relax_calc_args))
 
   call Initialise(mpi_glob)
 
@@ -245,6 +243,15 @@ implicit none
      end if
      
      if (do_relax) then
+	if (len_trim(pre_relax_calc_args) > 0) then
+	   extra_calc_args = ""
+	   if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
+	   if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+	   if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+	   if (do_local) extra_calc_args = trim(extra_calc_args)//" local_energy"
+	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
+	   HANDLE_ERROR(error)
+	endif
         if (len(trim(relax_print_file)) > 0) then
            call initialise(relax_io, relax_print_file, OUTPUT)
            n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
