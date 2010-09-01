@@ -138,11 +138,12 @@ module CrackParams_module
      integer  :: crack_num_layers         !% Number of primitive cells in $z$ direction
      logical  :: crack_apply_initial_load !% If 'true', apply initial loading field to crack slab
      real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$
-     character(STRING_LENGTH) :: crack_loading !% 'unform' for constant load, 
+     character(STRING_LENGTH) :: crack_loading !% 'uniform' for constant load, 
                                                !% 'ramp' for linearly decreasing load along $x$, 
                                                !% 'kfield' for Irwin plane strain K-field,
                                                !% 'interp_kfield_uniform' to linearly interpolate between k-field 
                                                !% (at crack tip) and uniform at distance 'crack_load_interp_length'
+                                               !% 'reduce_uniform' for reducing load  
      real(dp) :: crack_load_interp_length !% Length over which linear interpolation between k-field 
                                           !% and uniform strain field is carried out
      real(dp) :: crack_ramp_length        !% Length of ramp for the case 'crack_loading="ramp"'
