@@ -59,6 +59,7 @@ available as `at`, and do_print is set to True. If the user-supplied code sets d
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
+p.add_option('-s', '--select', action='store', help="""Output only a subset of the atoms in input file. Argument should resolve to logical mask.""")
 
 opt, args = p.parse_args()
 
@@ -113,9 +114,15 @@ if opt.merge is not None:
    if opt.merge_properties is not None:
       opt.merge_properties = parse_comma_colon_list(opt.merge_properties)
    else:
-      opt.merge_properties = merge_config.properties.keys()
+      at_merge = merge_configs[1]
+      opt.merge_properties = at_merge.properties.keys()
 
 def process(at, frame):
+   # filter atoms
+   if opt.select is not None:
+      at2 = at.select(mask=eval(opt.select))
+      at = at2
+   
    # Override lattice
    if opt.lattice is not None:
       at.set_lattice(opt.lattice)
@@ -129,10 +136,12 @@ def process(at, frame):
 
    # Merge from merge_config
    if opt.merge:
-      at_merge = merge_configs[frame]
+      try:
+         at_merge = merge_configs[frame]
+      except IndexError:
+         at_merge = merge_configs[1]
       for k in opt.merge_properties:
-         # specify property type explicity - needed because of NumPy ambiguity between logical and integer
-         at.add_property(k, getattr(at_merge, k.lower()), property_type=at_merge.properties[k][1])
+         at.add_property(k, at_merge.properties[k], property_type=at_merge.properties.get_type(k), overwrite=True)
 
       if opt.merge_params is not None:
          at.params.update(at_merge.params)
