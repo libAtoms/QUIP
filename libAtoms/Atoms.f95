@@ -1458,7 +1458,7 @@ contains
     
     ! temporary hack - string length fixed to TABLE_STRING_LENGTH
     if (len(value) /= TABLE_STRING_LENGTH) then
-       RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
+       RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH but got "//len(value), error)
     end if
     call add_array(this%properties, name, value, (/TABLE_STRING_LENGTH, this%Nbuffer/), ptr, overwrite)
 
