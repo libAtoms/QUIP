@@ -55,7 +55,7 @@ EXTRA_ALL_DIRS = Tools
 all: default
 	@for f in ${MODULES} ${EXTRA_ALL_DIRS}; do ${MAKE} $$f/all; done
 
-.PHONY: arch ${MODULES} doc
+.PHONY: arch ${MODULES} doc clean install test quippy doc install-structures install-Tools install-build.QUIP_ARCH
 
 arch: 
 ifeq (${QUIP_ARCH},)
@@ -121,7 +121,7 @@ ${BUILDDIR}: arch
 clean: ${BUILDDIR}
 	for mods in  ${MODULES} ; do \
 	  ln -sf ${PWD}/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} -I${PWD} -I${PWD}/Makefiles clean ; \
+	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${PWD} VPATH=${PWD}/$$mods -I${PWD} -I${PWD}/Makefiles clean ; \
 	done ; \
 
 deepclean: clean
