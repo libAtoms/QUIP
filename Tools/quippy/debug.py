@@ -17,7 +17,7 @@ sys.argv[1:] = []
 if opt.test is not None:
     sys.argv.insert(1, 'test')
     sys.argv.insert(2, '--verbosity=2')
-    sys.argv[3] = '--test=' + opt.test
+    sys.argv.insert(3,'--test=' + opt.test)
 
 if opt.execute is not None:
     sys.argv.insert(1, 'interact')
