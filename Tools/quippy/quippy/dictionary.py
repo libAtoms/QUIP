@@ -99,6 +99,14 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
       else:
          raise KeyError('Key "%s" does not correspond to an array entry' % key)
 
+   def get_type(self, key):
+      "Return an integer code for the type of the value associated with a key"
+      
+      import _quippy, arraydata
+      if key in self:
+         return self.get_type_and_size(key)[0]
+      else:
+         raise KeyError('Key "%s" not found' % key)
 
    def __getitem__(self, k):
       k = k.lower()
