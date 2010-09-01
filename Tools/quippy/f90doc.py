@@ -86,7 +86,7 @@ recursive = re.compile('recursive',re.IGNORECASE)
 
 funct       = re.compile('^(('+types+r')\s+)*function',re.IGNORECASE)
 #funct       = re.compile('^function',re.IGNORECASE)
-funct_end   = re.compile('^end\s*function\s+(\w*)',re.IGNORECASE)
+funct_end   = re.compile('^end\s*function\s*(\w*)',re.IGNORECASE)
 
 prototype   = re.compile(r'^module procedure ([a-zA-Z0-9_,\s]*)')
 
@@ -285,6 +285,17 @@ class C_prog:
         self.functs=[]
         self.uses=[]
 
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.doc == other.doc and
+                self.subts == other.subts and
+                self.functs == other.functs and
+                self.uses == other.uses)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def latex(self,depth,fn='', short_doc=False):
 
         if self.doc:
@@ -341,6 +352,20 @@ class C_module:
         self.doc=[]
         self.uses=[]
         self.interfaces=[]
+
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.types == other.types and
+                self.elements == other.elements and
+                self.subts == other.subts and
+                self.functs == other.functs and
+                self.doc == other.doc and
+                self.uses == other.uses and
+                self.interfaces == other.interfaces)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def display(self):
         print 'module',self.name,self.doc
@@ -426,6 +451,18 @@ class C_subt:
         self.doc=[]
         self.uses=[]
         self.recur=''
+
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.arguments == other.arguments and
+                self.doc == other.doc and
+                self.uses == other.uses and
+                self.recur == other.recur)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     
     def display(self):
         print '    subroutine',self.name,'(',
@@ -571,6 +608,21 @@ class C_funct:
         self.ret_val=None
         self.ret_val_doc=[]
         self.recur=''
+
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.arguments == other.arguments and
+                self.procedures == other.procedures and
+                self.doc == other.doc and
+                self.uses == other.uses and
+                self.ret_val == other.ret_val and
+                self.ret_val_doc == other.ret_val_doc and
+                self.recur == other.recur)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     
     def display(self):
         print '   function',self.name,'(',
@@ -734,6 +786,17 @@ class C_decl:
         self.doc=[]
         self.value=''
 
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.type == other.type and
+                self.attributes == other.attributes and
+                self.doc == other.doc and
+                self.value == other.value)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def display(self):
         print '        ',self.name,'\t',self.type,
         print self.attributes,
@@ -809,6 +872,16 @@ class C_type:
         self.name=''
         self.elements=[]
         self.doc=[]
+
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.elements == other.elements and
+                self.doc == other.doc)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)
+        
     
     def display(self):
         print '    type',self.name,self.doc
@@ -860,6 +933,17 @@ class C_interface:
         self.subts = []
         self.functs = []
         self.doc = []
+
+    def __eq__(self, other):
+        if other is None: return False
+        return (self.name == other.name and
+                self.procedures == other.procedures and
+                self.subts == other.subts and
+                self.functs == other.functs and
+                self.doc == other.doc)
+        
+    def __ne__(self, other):
+        return not self.__eq__(other)        
 
     def display(self):
         print '     interface', self.name, self.doc
