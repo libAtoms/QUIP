@@ -128,18 +128,19 @@ def CInOutputStdinReader(source='stdin'):
 class CInOutputWriter(object):
   """Class to write atoms sequentially to a CInOutput stream"""
 
-  def __init__(self, dest, append=False, netcdf4=True, estr=None):
+  def __init__(self, dest, append=False, netcdf4=True, **write_kwargs):
      self.opened = False
-     self.estr = estr
-     if self.estr is not None: dest = ''
+     self.write_kwargs = {}
+     self.write_kwargs.update(write_kwargs)
      if isinstance(dest, str):
         self.opened = True
         self.dest = CInOutput(dest, action=OUTPUT, append=append, netcdf4=netcdf4)
      else:
         self.dest = dest
 
-  def write(self, at, frame=None, properties=None, prefix=None):
-     self.dest.write(at, frame=frame, properties=properties, prefix=prefix, estr=self.estr)
+  def write(self, at, **kwargs):
+     kwargs.update(self.write_kwargs)
+     self.dest.write(at, **kwargs)
 
   def close(self):
      self.dest.close()

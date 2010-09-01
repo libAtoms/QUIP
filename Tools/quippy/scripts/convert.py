@@ -60,6 +60,8 @@ p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuratio
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
 p.add_option('-s', '--select', action='store', help="""Output only a subset of the atoms in input file. Argument should resolve to logical mask.""")
+p.add_option('--int-format', action='store', help="""Format string to use when writing integers in XYZ format.""")
+p.add_option('--real-format', action='store', help="""Format string to use when writing real numbers in XYZ format.""")
 
 opt, args = p.parse_args()
 
@@ -179,7 +181,7 @@ def process(at, frame):
       print
    elif do_print and outfile is not None:
       if opt.properties is None:
-         outfile.write(at)
+         outfile.write(at, **write_args)
       else:
 
          # Convert from frac_pos to pos
@@ -194,7 +196,7 @@ def process(at, frame):
 
          try:
             # Try to do the filtering at the writing stage
-            outfile.write(at, properties=opt.properties)
+            outfile.write(at, **write_args)
          except TypeError:
             p.error('Cannot specify property filtering when writing to file "%s"' % outfile)
 
@@ -208,6 +210,14 @@ stdout = False
 if outfile is not None:
    if outfile == 'stdout': stdout = True
    outfile = AtomsWriter(outfile, format=opt.format)
+
+write_args = {}
+if opt.real_format is not None:
+   write_args['real_format'] = opt.real_format
+   write_args['int_format'] = opt.int_format
+
+if opt.properties is not None:
+   write_args['properties'] = opt.properties
 
 try:
    if len(all_configs) == 1:
