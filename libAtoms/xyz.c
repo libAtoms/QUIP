@@ -755,9 +755,18 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   dictionary_query_key(params, param_key, &type, shape, &data, error, strlen("Lattice"));
   PASS_ERROR;
 
-  for (m=0; m<shape[0]; m++)
-    for (n=0; n<shape[1]; n++)
-      lattice[m][n] = REAL_A2(data, shape, n, m);
+  if (type == T_REAL_A2) {
+    for (m=0; m<shape[0]; m++)
+      for (n=0; n<shape[1]; n++)
+	lattice[m][n] = REAL_A2(data, shape, n, m);
+  } 
+   else if (type == T_INTEGER_A2) {
+    for (m=0; m<shape[0]; m++)
+      for (n=0; n<shape[1]; n++)
+  	lattice[m][n] = INTEGER_A2(data, shape, n, m);
+  } else {
+    RAISE_ERROR("read_xyz: bad type for Lattice (%d)", type);
+  }
 
   // Now it's just one line per atom
   n = 0;
