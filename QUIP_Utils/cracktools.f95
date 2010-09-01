@@ -50,12 +50,12 @@ module CrackTools_module
 
 contains
 
-  subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+  subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark) 
 
     type(Atoms), intent(inout) :: crack_slab
     real(dp), pointer, dimension(:,:) :: load 
-    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
     if (.not. has_property(crack_slab, 'nn')) &
@@ -82,6 +82,11 @@ contains
          call add_property(crack_slab, 'edge_mask', 0)
     if (.not. assign_pointer(crack_slab, 'edge_mask', edge_mask)) &
          call system_abort('edge_mask pointer assignment failed')
+
+    if (.not. has_property(crack_slab, 'load_mask')) &
+         call add_property(crack_slab, 'load_mask', 0)
+    if (.not. assign_pointer(crack_slab, 'load_mask', load_mask)) &
+         call system_abort('load_mask pointer assignment failed')
 
     if (.not. has_property(crack_slab, 'md_old_changed_nn')) &
          call add_property(crack_slab, 'md_old_changed_nn', 0)
@@ -538,16 +543,22 @@ contains
 
     ! Pointers into Atoms data structure
     real(dp), pointer, dimension(:,:) :: load!, k_disp, u_disp
-    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
 
-    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
 
     ! Setup edge_mask to allow easy exclusion of edge atoms
     do i=1,crack_slab%N
        if (crack_is_edge_atom(crack_slab, i, params%selection_edge_tol)) &
 	    edge_mask(i) = 1
+    end do
+
+    ! Setup load_mask 
+    do i=1,crack_slab%N
+       if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) & 
+            load_mask(i) = 1
     end do
 
     ! Calculate connectivity and numbers of nearest neighbours
@@ -563,7 +574,7 @@ contains
     call set_value(crack_slab%params, 'CrackPosx', crack_tips%real(1,crack_tips%N))
     call set_value(crack_slab%params, 'CrackPosy', crack_tips%real(2,crack_tips%N))
 
-    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark)!, u_disp, k_disp)
 
     ! clear changed_nn, hybrid and hybrid_mark 
@@ -594,7 +605,7 @@ contains
     type(Atoms) :: crack_slab1, bulk
     real(dp), pointer, dimension(:,:) :: load
     real(dp), allocatable, dimension(:,:) :: k_disp, u_disp
-    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     type(CInOutput) :: movie
     real(dp), allocatable :: relaxed_pos(:,:), initial_pos(:,:), new_pos(:,:)
@@ -631,7 +642,7 @@ contains
 
        call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
 
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
             old_nn, hybrid, hybrid_mark)  
 
        if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
@@ -698,6 +709,20 @@ contains
           ! strain it a bit
           do i=1,crack_slab%N
              crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp+params%crack_initial_loading_strain)
+          end do
+     
+       else if (trim(load_method) == 'reduce_uniform') then
+ 
+          ! Save relaxed positions 
+          relaxed_pos = crack_slab%pos
+ 
+          crack_slab%pos = initial_pos  
+          call print_title('Applying uniform load decrement')
+          ! Invoque function crack_is_topbottom_edge_atom = abs(slab%pos(2,i)) > height/2.0_dp - edge_gap
+          ! strain it a bit
+          do i=1,crack_slab%N
+            if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) &
+             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp-params%crack_initial_loading_strain)    
           end do
 
        else if (trim(load_method) == 'kfield') then
@@ -824,7 +849,7 @@ contains
                print_cinoutput=movie)
        end if
     
-       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+       call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
             old_nn, hybrid, hybrid_mark)  
  
        ! work out displacement field, using relaxed positions
@@ -860,12 +885,12 @@ contains
 
     real(dp), allocatable, dimension(:,:):: k_disp, u_disp 
     real(dp), pointer, dimension(:,:) :: load
-    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+    integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
     real(dp) :: G, E, v, v2, Orig_Width, Orig_Height,  r, l_crack_pos, r_crack_pos, strain
     integer :: i, k
 
-    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+    call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark) 
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
@@ -993,6 +1018,37 @@ contains
              end do
           end if
        end do
+
+    else if (trim(params%crack_loading) == 'reduce_uniform') then
+
+       if (params%crack_G > 0.0_dp) then
+
+          call print_title('Seed crack - Reduce Loading')
+
+          G = params%crack_G
+          call set_value(crack_slab%params, 'G', G)
+          call set_value(crack_slab%params, 'CrackPosx', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+          call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
+          call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
+          call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
+               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
+
+          if(params%crack_rescale_x_z) then
+             !  Rescale in x direction by v and in z direction by v2
+             if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
+             strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
+             crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
+             crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
+             crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
+             call set_lattice(crack_slab, crack_slab%lattice, scale_positions=.false.)
+          elseif(params%crack_rescale_x) then
+             !  Rescale in x direction by v 
+             if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
+             strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
+             crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
+          endif
+       end if
+
     else
        call system_abort('Unknown loading type '//trim(params%crack_loading))
     end if
@@ -1134,6 +1190,22 @@ contains
          abs(slab%pos(1,i)) > width/2.0_dp - edge_gap
 
   end function crack_is_edge_atom
+
+  !%Returns true if atom 'i' is the topbottom surface of slab
+  !%Topbottom surfaces are planes at $y = \pm$'OrigHeight/2'
+  function crack_is_topbottom_edge_atom(slab, i, edge_gap)
+    type(Atoms), intent(in) :: slab
+    integer, intent(in) :: i
+    real(dp), intent(in) :: edge_gap
+    logical :: crack_is_topbottom_edge_atom
+    real(dp) :: height
+
+    if (.not. get_value(slab%params, 'OrigHeight', height)) &
+         call system_abort('crack_is_topbottom_edge_atom: "OrigHeight" parameter missing')
+
+    crack_is_topbottom_edge_atom =  abs(slab%pos(2,i)) > height/2.0_dp - edge_gap
+
+  end function crack_is_topbottom_edge_atom
 
   !% Update the connectivity of a crack slab. calc_connect is only called if 
   !% necessary (i.e. if the maximal atomic displacement is bigger than
