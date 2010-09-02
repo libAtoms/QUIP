@@ -27,7 +27,7 @@
     call param_register(params, 'topology_suffix2', '_EVB2', this%topology_suffix2)
     call param_register(params, 'form_bond', '0 0', this%form_bond)
     call param_register(params, 'break_bond', '0 0', this%break_bond)
-    !call param_register(params, 'energy_offset', '0.0' , this%energy_offset)
+    call param_register(params, 'diagonal_dE2', '0.0', this%diagonal_dE2)
     call param_register(params, 'offdiagonal_A12', '0.0', this%offdiagonal_A12)
     call param_register(params, 'offdiagonal_mu12', '0.0', this%offdiagonal_mu12)
     call param_register(params, 'save_forces', 'T', this%save_forces)
@@ -51,7 +51,7 @@
     this%topology_suffix2 = ""
     this%form_bond(1:2) = 0
     this%break_bond(1:2) = 0
-    !this%energy_offset = 0._dp
+    this%diagonal_E = 0._dp
     this%offdiagonal_A12 = 0._dp
     this%offdiagonal_mu12 = 0._dp
     this%save_forces = .false.
@@ -69,7 +69,7 @@
     call print('  topology_suffix2='//trim(this%topology_suffix2), file=file)
     call print('  evb1-form and evb2-break bond: '//this%form_bond(1:2), file=file)
     call print('  evb1-break and evb2-form bond: '//this%break_bond(1:2), file=file)
-    !call print('  energy offset: '//this%energy_offset, file=file)
+    call print('  diagonal E2(shift to E2): '//this%diagonal_dE2, file=file)
     call print('  offdiagonal A12(pre-exponent factor): '//this%offdiagonal_A12, file=file)
     call print('  offdiagonal mu12(exponent factor): '//this%offdiagonal_mu12, file=file)
     call print('  save_forces: '//this%save_forces, file=file)
@@ -101,7 +101,6 @@
     type(Dictionary)        :: params
     character(FIELD_LENGTH) :: mm_args_str
     character(FIELD_LENGTH) :: topology_suffix1, topology_suffix2
-    !real(dp)                :: energy_offset
     integer                 :: form_bond(2), break_bond(2)
     logical                 :: have_form_bond, have_break_bond
 
@@ -127,7 +126,7 @@
     call param_register(params, 'topology_suffix2', ''//this%topology_suffix2, topology_suffix2)
     call param_register(params, 'form_bond', ''//this%form_bond, form_bond)
     call param_register(params, 'break_bond', ''//this%break_bond, break_bond)
-    !call param_register(params, 'energy_offset', ''//this%energy_offset, energy_offset)
+    call param_register(params, 'diagonal_dE2', ''//this%diagonal_dE2, diagonal_dE2)
     call param_register(params, 'offdiagonal_A12', ''//this%offdiagonal_A12, offdiagonal_A12)
     call param_register(params, 'offdiagonal_mu12', ''//this%offdiagonal_mu12, offdiagonal_mu12)
     call param_register(params, 'save_forces', ''//this%save_forces, save_forces)
@@ -246,6 +245,7 @@
 
     call get_param_value(at, trim(use_calc_energy), my_e_2, error=error)
     PASS_ERROR_WITH_INFO("getting energy parameter '"//trim(use_calc_energy)//"' for topology 2", error)
+    my_e_2 = my_e_2 + this%diagonal_dE2
     if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_2 = at_force_ptr
 
