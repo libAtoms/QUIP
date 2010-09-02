@@ -138,7 +138,7 @@ module system_module
   integer,              save :: NUM_COMMAND_ARGS  = 0  !% The number of arguments on the command line
   integer, parameter         :: MAX_READABLE_ARGS = 100 !% The maximum number of arguments that will be read
   character(255),       save :: EXEC_NAME              !% The name of the executable
-  character(255), dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
+  character(2550), dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
 
   private :: inoutput_initialise
   interface initialise
