@@ -13,7 +13,7 @@
      integer :: form_bond(2)                       !% Atom pair that is bonded in EVB1 only
      integer :: break_bond(2)                      !% Atom pair that is bonded in EVB2 only
 
-     !real(dp) :: energy_offset                    !the energy offset of the 2 resonance states
+     real(dp) :: diagonal_dE2                      !% The energy offset to E2
      real(dp) :: offdiagonal_A12                   !% The offdiagonal pre-exponent factor of EVB Hamiltonian
      real(dp) :: offdiagonal_mu12                  !% The offdiagonal exponent factor of the EVB Hamiltonian
 

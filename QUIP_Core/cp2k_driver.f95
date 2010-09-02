@@ -574,7 +574,8 @@ contains
 	!insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&SCF")
 	!call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&SCF SCF_GUESS RESTART", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       endif
-      call calc_charge_lsd(at, qm_list_a, charge, do_lsd)
+      call calc_charge_lsd(at, qm_list_a, charge, do_lsd, error=error)
+      PASS_ERROR(error)
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       if (do_lsd) call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT LSD ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
@@ -1078,23 +1079,28 @@ contains
 
   end function
 
-  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd)
+  subroutine calc_charge_lsd(at, qm_list_a, charge, do_lsd, error)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     integer, intent(out) :: charge
     logical, intent(out) :: do_lsd
+    integer, intent(out), optional :: error
 
     real(dp), pointer :: atom_charge(:)
     integer, pointer  :: Z_p(:)
     integer           :: sum_Z
-    logical           :: dummy
+    integer           :: l_error
 
-    if (.not. assign_pointer(at, "Z", Z_p)) &
-	call system_abort("calc_charge_lsd could not find Z property")
+    INIT_ERROR(error)
+
+    if (.not. assign_pointer(at, "Z", Z_p)) then
+	RAISE_ERROR("calc_charge_lsd could not find Z property", error)
+    endif
 
     if (size(qm_list_a) > 0) then
-      if (.not. assign_pointer(at, "atom_charge", atom_charge)) &
-	call system_abort("calc_charge_lsd could not find atom_charge")
+      if (.not. assign_pointer(at, "atom_charge", atom_charge)) then
+	RAISE_ERROR("calc_charge_lsd could not find atom_charge", error)
+      endif
       charge = nint(sum(atom_charge(qm_list_a)))
       !check if we have an odd number of electrons
       sum_Z = sum(Z_p(qm_list_a(1:size(qm_list_a))))
@@ -1103,9 +1109,12 @@ contains
       sum_Z = sum(Z_p)
       do_lsd = .false.
       charge = 0 
-      dummy = (get_value(at%params, 'LSD', do_lsd))
+      call get_param_value(at, 'LSD', do_lsd, error=l_error) ! ignore error
+      CLEAR_ERROR(error)
       !if charge is saved, also check if we have an odd number of electrons
-      if (get_value(at%params, 'Charge', charge)) then
+      call get_param_value(at, 'Charge', charge, error=l_error)
+      CLEAR_ERROR(error)
+      if (l_error == 0) then
         call print("Using Charge " // charge)
         do_lsd = do_lsd .or. (mod(sum_Z-charge,2) /= 0)
       else !charge=0 is assumed by CP2K
