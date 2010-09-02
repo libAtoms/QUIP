@@ -188,7 +188,7 @@ char abort_message[1024];
 void quippy_error_abort_(char *message, int len)
 {
   strncpy(abort_message, message, len);
-  abort_message[len] = '\\0';
+  abort_message[len] = '\0';
   longjmp(environment_buffer,0);
 }
 
