@@ -425,18 +425,6 @@ H	6.859570	9.215634	3.262673""")
 
 
 
-
-
-                                  
-      
-            
-
-try:
-   import netCDF4
-   got_netcdf4 = True
-except ImportError:
-   got_netcdf4 = False
-
 class TestPythonNetCDF(QuippyTestCase):
    def setUp(self):
       self.at = supercell(diamond(5.44,14), 2,2,2)
@@ -454,7 +442,7 @@ class TestPythonNetCDF(QuippyTestCase):
       self.assertEqual(list(self.al), list(al))
       nc.close()
 
-   if got_netcdf4:
+   if 'netCDF4' in quippy.available_modules:
       
       def testnetcdf4_read(self):
          from netCDF4 import Dataset

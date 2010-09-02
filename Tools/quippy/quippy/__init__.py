@@ -26,9 +26,49 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 import sys
 assert sys.version_info >= (2,4,0)
 
-import cPickle, atexit, os, numpy, logging
+import atexit, os, numpy, logging
+from ConfigParser import ConfigParser
 
-logging.root.setLevel(logging.WARNING)
+# Read ${HOME}/.quippyrc config file if it exists
+cfg = ConfigParser()
+quippyrc = os.path.join(os.environ['HOME'],'.quippyrc')
+if os.path.exists(quippyrc):
+   cfg.read(quippyrc)
+
+# Read config file given in ${QUIPPY_CFG} if it exists
+if 'QUIPPY_CFG' in os.environ and os.path.exists(os.environ['QUIPPY_CFG']):
+   cfg.read(os.environ['QUIPPY_CFG'])
+
+if 'logging' in cfg.sections():
+   if 'level' in cfg.options('logging'):
+      logging.root.setLevel(getattr(logging, cfg.get('logging', 'level')))
+
+disabled_modules = []
+if 'modules' in cfg.sections():
+   for name, value in cfg.items('modules'):
+      if not int(value):
+         disabled_modules.append(name)
+
+# External dependencies
+available_modules = []
+unavailable_modules = []
+for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye']:
+   if mod in disabled_modules: continue
+   try:
+      __import__(mod)
+      available_modules.append(mod)
+   except ImportError:
+      unavailable_modules.append(mod)
+
+logging.warning('disabled_modules %r' % disabled_modules)
+logging.warning('available_modules %r' % available_modules)
+logging.warning('unavailable_modules %r' % unavailable_modules)
+
+if 'netCDF4' in available_modules:
+   from netCDF4 import Dataset
+   netcdf_file = Dataset
+else:
+   from pupynere import netcdf_file
 
 AtomsReaders = {}
 AtomsWriters = {}
@@ -65,18 +105,7 @@ _quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
 _quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
-trial_spec_files = [os.path.join(os.path.dirname(__file__),'quippy.spec'),
-                    os.path.join(os.getcwd(), 'build.'+os.environ['QUIP_ARCH'], 'quippy.spec')]
-                    
-for spec_file in trial_spec_files:
-   try:
-      spec = cPickle.load(open(spec_file))
-      break
-   except IOError:
-      continue
-else:
-   raise IOError('quippy.spec file not found in locations %s' % trial_spec_files)
-
+from spec import spec
 classes, routines, params = wrap_all(_quippy, spec, spec['wrap_modules'], spec['short_names'], prefix='qp_')
 
 QUIP_ROOT = spec['quip_root']
@@ -116,9 +145,7 @@ del routines
 del params
 del wrap_all
 del fortran_class_prefix
-del spec_file
 del spec
-del trial_spec_files
 
 import farray;      from farray import *
 import atomslist;   from atomslist import *
@@ -127,17 +154,13 @@ import util;        from util import *
 
 import sio2, povray, cube, xyz, netcdf
 
-try:
+if 'ase' in available_modules:
    import aseinterface
-except ImportError:
-   pass
 
 try:
    import castep
 except ImportError:
    logging.warning('quippy.castep import failed.')
 
-try:
+if 'atomeye' in available_modules:
    import atomeye
-except ImportError:
-   pass
