@@ -19,11 +19,7 @@
 from quippy import FortranCInOutput, INPUT, OUTPUT, INOUT, AtomsReaders, AtomsWriters, atoms_reader
 from farray import padded_str_array
 
-try:
-   from netCDF4 import Dataset
-   netcdf_file = Dataset
-except ImportError:
-   from pupynere import netcdf_file
+from quippy import netcdf_file
 
 class CInOutput(FortranCInOutput):
 

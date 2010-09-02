@@ -30,12 +30,7 @@ from quippy.atoms import make_lattice, get_lattice_params
 from quippy.farray import *
 import logging, StringIO
 from math import pi
-
-try:
-   from netCDF4 import Dataset
-   netcdf_file = Dataset
-except ImportError:
-   from pupynere import netcdf_file
+from quippy import netcdf_file
 
 def netcdf_dimlen(obj, name):
    """Return length of dimension 'name'. Works for both netCDF4 and pupynere."""

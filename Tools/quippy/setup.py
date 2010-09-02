@@ -109,7 +109,7 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
                 if os.path.basename(name) == os.path.basename(file):
                     break
             else:
-                raise ValueError("Can't find module %s" % file)
+                raise ValueError("Can't find Fortran module corresponding to file %s" % file)
 
             wrap_mod_name = mod.name.lower()[:-7]
             wrap_modules.append(wrap_mod_name)
@@ -147,6 +147,12 @@ def F90WrapperBuilder(modname, wrap_sources, targets, cpp, dep_type_maps=[], kin
         fortran_spec['quip_arch'] = quip_arch
         fortran_spec['quip_makefile'] = makefile
         cPickle.dump(fortran_spec, open(os.path.join(build_dir, '../../%s.spec' % modname), 'w'))
+
+        spec_py_name = '%s/spec.py' % build_dir
+        spec_py = open(spec_py_name, 'w')
+        spec_py.write('spec = %r\n' % fortran_spec)
+        spec_py.close()
+        res.append(spec_py_name)
 
         return res
 
@@ -240,8 +246,8 @@ def find_wrap_sources(makefile, quip_root):
         source_dirs.append(gp_dir)
         libraries.append('gp')
         targets.append((quip_root, 'gp'))
-        # wrap_sources += ... # list of Fortran files to wrap
-        # wrap_types += .... # list of types to wrap
+        wrap_sources += [os.path.join(gp_dir, s) for s in ['clustering.f95']]
+        wrap_types += ['lst', 'clstr']
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
@@ -419,10 +425,10 @@ quippy_ext = Extension(name='quippy._quippy',
 exts = [arraydata_ext, quippy_ext]
 
 # Finally, call setup() to run command
+
 setup(name='quippy',
       packages = ['quippy'],
       ext_modules = exts,
-      data_files = [('quippy',[os.path.join(default_options['build']['build_base'],'quippy.spec')])],
       scripts=glob.glob('scripts/*.py'),      
       cmdclass = {'clean': clean, 'test': test, 'build_ext': build_ext, 'interact': interact},
       version=os.popen('svnversion -n .').read(),
