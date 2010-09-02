@@ -305,7 +305,7 @@ program crack
 
   ! Pointers into Atoms data table
   real(dp), pointer, dimension(:,:) :: load
-  integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, md_old_changed_nn, &
+  integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark
 
   ! Big arrays
@@ -534,7 +534,7 @@ program crack
   call add_property(ds%atoms, 'qm_force', 0.0_dp, n_cols=3)
   call add_property(ds%atoms, 'mm_force', 0.0_dp, n_cols=3)
 
-  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
 
   ds%atoms%damp_mask = 1
@@ -635,7 +635,7 @@ program crack
 
   call setup_parallel(classicalpot, ds%atoms, args_str=params%classical_args_str//" energy force")
 
-  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+  call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
 
   if (.not. has_property(ds%atoms, 'load')) then
@@ -643,7 +643,7 @@ program crack
      call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, & 
           .true., mpi_glob)
 
-     call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+     call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
           old_nn, hybrid, hybrid_mark)
   end if
 
@@ -770,7 +770,7 @@ program crack
      !****************************************************************    
      do
         call system_timer('step')
-        call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, md_old_changed_nn, &
+        call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
              old_nn, hybrid, hybrid_mark)
 
 
