@@ -293,7 +293,7 @@ program crack
 
   ! Objects
   type(InOutput) :: xmlfile
-  type(CInOutput) :: movie, crackin, movie_backup, checkfile
+  type(CInOutput) :: movie, crackin, movie_backup
   type(DynamicalSystem), target :: ds, ds_save
   type(Atoms) :: crack_slab, fd_start, fd_end, bulk
   type(CrackParams) :: params
@@ -319,7 +319,7 @@ program crack
        last_checkpoint_time, last_calc_connect_time, &
        last_md_interval_time, time, temp, crack_pos(2), orig_crack_pos, &
        G, last_update_selection_time
-  character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix
+  character(STRING_LENGTH) :: stem, movie_name, xmlfilename, suffix, checkfile_name
   character(STRING_LENGTH) :: state_string
 
 
@@ -1106,10 +1106,13 @@ program crack
               last_checkpoint_time = ds%t
               call set_value(ds%atoms%params, 'LastCheckpointTime', last_checkpoint_time)
 
-              call initialise(checkfile, trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix, OUTPUT)
-              call write(ds%atoms, checkfile)
-              call finalise(checkfile)
-           endif
+              checkfile_name = trim(params%io_checkpoint_path)//trim(stem)//'_check'//suffix
+              inquire (file=checkfile_name,exist=texist)
+              if (texist) then
+                 call system_command('mv '//trim(checkfile_name)//' '//trim(checkfile_name)//'.backup')
+              end if
+              call write(ds%atoms, checkfile_name)
+             endif
         end if
 
         ! Recalculate connectivity and nearest neighbour tables
