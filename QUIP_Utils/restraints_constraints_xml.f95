@@ -22,7 +22,9 @@ contains
       integer :: n
       integer :: atom_1, atom_2, atom_3
       real(dp) :: k
-      real(dp) :: c, d, plane_n(3)
+      real(dp) :: c
+      real(dp) :: d, plane_n(3), di, df
+      real(dp) :: t0, tau
       character(len=20) :: type_str
 
       if (parse_in_restraints) type_str = "restraint"
@@ -74,6 +76,43 @@ contains
 		  call constrain_bondlength(parse_ds, atom_1, atom_2, restraint_k=k)
 	       else
 		  call constrain_bondlength(parse_ds, atom_1, atom_2)
+	       endif
+	    endif
+
+	 else if (name == 'relax_bond_length') then
+	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length "//trim(type_str))
+	    read (value, *) atom_1
+	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length "//trim(type_str))
+	    read (value, *) atom_2
+	    if (parse_in_restraints) then
+	       call QUIP_FoX_get_value(attributes, "k", value, status)
+	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length "//trim(type_str))
+	       read (value, *) k
+	    endif
+	    call QUIP_FoX_get_value(attributes, "t0", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read t0 in bond_length "//trim(type_str))
+	    read (value, *) t0
+	    call QUIP_FoX_get_value(attributes, "tau", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read tau in bond_length "//trim(type_str))
+	    read (value, *) tau
+	    call QUIP_FoX_get_value(attributes, "df", value, status)
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in bond_length "//trim(type_str))
+	    read (value, *) df
+	    call QUIP_FoX_get_value(attributes, "di", value, status)
+	    if (status == 0) then
+	       read (value, *) di
+	       if (parse_in_restraints) then
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di, restraint_k=k)
+	       else
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, di)
+	       endif
+	    else
+	       if (parse_in_restraints) then
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df, restraint_k=k)
+	       else
+		  call constrain_relax_bondlength(parse_ds, atom_1, atom_2, t0, tau, df)
 	       endif
 	    endif
 
