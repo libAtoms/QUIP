@@ -884,22 +884,71 @@ contains
     real(dp), dimension(size(pos)), intent(out) :: dC_dr
     real(dp),                       intent(out) :: dC_dt
     !local variables                             
-    real(dp), dimension(3)                       :: d
+    real(dp)                        :: r(3), d
 
     if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom positions must be specified')
     if(size(velo) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
     if(size(data) /= 1) call system_abort('BONDLENGTH: "data" must contain exactly one value')
 
-    d = pos(1:3)-pos(4:6)
+    r = pos(1:3)-pos(4:6)
+    d = data(1)
 
-    C = norm(d) - data(1)
+    C = norm(r) - d
 
-    dC_dr(1:3) = d/norm(d)
-    dC_dr(4:6) = -d/norm(d)
+    dC_dr(1:3) = r/norm(r)
+    dC_dr(4:6) = -r/norm(r)
 
     dC_dt = dC_dr .dot. velo
 
   end subroutine BONDLENGTH
+
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
+  !X RELAX_BONDLENDTH:
+  !X
+  !% Exponentially decay a bond length towards a final value.
+  !%
+  !% \begin{itemize}
+  !% \item data(1) = initial bond length
+  !% \item data(2) = final bond length
+  !% \item data(3) = initial time
+  !% \item data(4) = relaxation time
+  !% \end{itemize}
+  !%
+  !% Constraint function is $C = |\mathbf{r}_1 - \mathbf{r}_2| - d$, where
+  !% \begin{displaymath}
+  !% d = d_{final} + (d_{init} - d_{final})\exp\left(-\frac{t-t_{init}}{t_{relax}}\right)
+  !% \end{displaymath}
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine RELAX_BONDLENDTH(pos, velo, t, data, C, dC_dr, dC_dt)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr
+    real(dp),                       intent(out) :: dC_dt
+    !local variables                             
+    real(dp)                                    :: r(3), d, diff, efact
+
+    if(size(pos) /= 6) call system_abort('RELAX_BONDLENDTH: Exactly 2 atoms must be specified')
+    if(size(data) /= 4) call system_abort('RELAX_BONDLENDTH: "data" must contain exactly four value')
+
+    r = pos(1:3)-pos(4:6)
+    diff = data(1) - data(2)
+    efact = exp(-(t-data(3))/data(4))
+    d = data(2) + diff * efact
+
+    C = norm(r) - d
+
+    dC_dr(1:3) = r/norm(r)
+    dC_dr(4:6) = -r/norm(r)
+
+    dC_dt = dC_dr .dot. velo + diff * efact / data(4)
+
+  end subroutine RELAX_BONDLENDTH
+
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
@@ -940,7 +989,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
-  !X RELAX_BOND:
+  !X RELAX_BONDLENDTH_SQ:
   !X
   !% Exponentially decay a bond length towards a final value.
   !%
@@ -958,7 +1007,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BOND(pos, velo, t, data, C, dC_dr, dC_dt)
+  subroutine RELAX_BONDLENDTH_SQ(pos, velo, t, data, C, dC_dr, dC_dt)
 
     real(dp), dimension(:),         intent(in)  :: pos, velo, data
     real(dp),                       intent(in)  :: t
@@ -968,8 +1017,8 @@ contains
     !local variables                             
     real(dp)                                    :: r(3), d, diff, efact
 
-    if(size(pos) /= 6) call system_abort('RELAX_BOND: Exactly 2 atoms must be specified')
-    if(size(data) /= 4) call system_abort('RELAX_BOND: "data" must contain exactly four value')
+    if(size(pos) /= 6) call system_abort('RELAX_BONDLENDTH_SQ: Exactly 2 atoms must be specified')
+    if(size(data) /= 4) call system_abort('RELAX_BONDLENDTH_SQ: "data" must contain exactly four value')
 
     r = pos(1:3)-pos(4:6)
     diff = data(1) - data(2)
@@ -981,7 +1030,7 @@ contains
     dC_dr(4:6) = -2.0_dp * r
     dC_dt = dC_dr .dot. velo + 2.0_dp * d * diff * efact / data(4)
 
-  end subroutine RELAX_BOND
+  end subroutine RELAX_BONDLENDTH_SQ
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X

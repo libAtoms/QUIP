@@ -2119,13 +2119,13 @@ contains
 
      !Do nothing for i==j
      if (i==j) then
-        call print_warning('Constrain_Bond: Tried to constrain bond '//i//'--'//j)
+        call print_warning('Constrain_bondlength: Tried to constrain bond '//i//'--'//j)
         return
      end if
 
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
-        call system_abort('Constrain_Bond: Cannot constrain bond '//i//'--'//j//&
+        call system_abort('Constrain_bondlength: Cannot constrain bond '//i//'--'//j//&
                                  ': Atom out of range (N='//this%N//')')
      end if
 
@@ -2142,6 +2142,42 @@ contains
    end subroutine constrain_bondlength
 
    !% Constrain the bond between atoms i and j
+   subroutine constrain_relax_bondlength(this,i,j,t0,tau,df,di,restraint_k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     integer,               intent(in)    :: i,j
+     real(dp), intent(in)                 :: t0, tau, df
+     real(dp), intent(in), optional       :: di, restraint_k
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: BOND_FUNC
+     real(dp)                             :: use_di
+
+     !Do nothing for i==j
+     if (i==j) then
+        call print_warning('Constrain_relax_bondlength: Tried to constrain bond '//i//'--'//j)
+        return
+     end if
+
+     !Report bad atom indices
+     if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
+        call system_abort('Constrain_relax_bondlength: Cannot constrain bond '//i//'--'//j//&
+                                 ': Atom out of range (N='//this%N//')')
+     end if
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        BOND_FUNC = register_constraint(BONDLENGTH)
+        first_call = .false.
+     end if
+
+     !Add the constraint
+     use_di = optional_default(distance_min_image(this%atoms,i,j), di)
+     call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,df,t0,tau/), restraint_k=restraint_k)
+
+   end subroutine constrain_relax_bondlength
+
+   !% Constrain the bond between atoms i and j
    subroutine constrain_bondlength_sq(this,i,j,d,restraint_k)
 
      type(DynamicalSystem), intent(inout) :: this
@@ -2154,13 +2190,13 @@ contains
 
      !Do nothing for i==j
      if (i==j) then
-        call print_warning('Constrain_Bond: Tried to constrain bond '//i//'--'//j)
+        call print_warning('Constrain_bondlength_sq: Tried to constrain bond '//i//'--'//j)
         return
      end if
 
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) ) then
-        call system_abort('Constrain_Bond: Cannot constrain bond '//i//'--'//j//&
+        call system_abort('Constrain_bondlength_sq: Cannot constrain bond '//i//'--'//j//&
                                  ': Atom out of range (N='//this%N//')')
      end if
 
@@ -2194,13 +2230,13 @@ contains
      !Do nothing for i==j or i==k or j==k
      if (i==j.or.i==k.or.j==k) then
         
-        call print_warning('Constrain_Bond_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
+        call print_warning('Constrain_bondlength_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
         return
      end if
      
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1) .or. (j>this%N) .or. (j<1) .or. (k>this%N) .or. (k<0) ) then
-        call system_abort('Constrain_Bond_Diff: Cannot constrain bond '//i//'--'//j//'--'//k//&
+        call system_abort('Constrain_bondlength_Diff: Cannot constrain bond '//i//'--'//j//'--'//k//&
                                  ': Atom out of range (N='//this%N//')')
      end if
      
@@ -2230,7 +2266,7 @@ contains
 
      !Report bad atom indices
      if ( (i>this%N) .or. (i<1)) then
-        call system_abort('Constrain_Bond: Cannot constrain atom '//i// &
+        call system_abort('Constrain_atom_plane: Cannot constrain atom '//i// &
                                  ': Atom out of range (N='//this%N//')')
      end if
 

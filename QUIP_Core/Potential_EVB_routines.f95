@@ -51,7 +51,7 @@
     this%topology_suffix2 = ""
     this%form_bond(1:2) = 0
     this%break_bond(1:2) = 0
-    this%diagonal_E = 0._dp
+    this%diagonal_dE2 = 0._dp
     this%offdiagonal_A12 = 0._dp
     this%offdiagonal_mu12 = 0._dp
     this%save_forces = .false.
@@ -107,7 +107,7 @@
     logical                 :: save_energies, save_forces
     real(dp)                :: my_e_1, my_e_2, e_offdiag
     real(dp), allocatable   :: my_f_1(:,:), my_f_2(:,:), de_offdiag_dr(:,:)
-    real(dp)                :: offdiagonal_A12, offdiagonal_mu12, &
+    real(dp)                :: offdiagonal_A12, offdiagonal_mu12, diagonal_dE2, &
                                rab, d_rab_dx(3)
     logical                 :: no_coupling, dummy
     character(STRING_LENGTH) :: extra_calc_args
@@ -245,7 +245,7 @@
 
     call get_param_value(at, trim(use_calc_energy), my_e_2, error=error)
     PASS_ERROR_WITH_INFO("getting energy parameter '"//trim(use_calc_energy)//"' for topology 2", error)
-    my_e_2 = my_e_2 + this%diagonal_dE2
+    my_e_2 = my_e_2 + diagonal_dE2
     if (len_trim(calc_energy) == 0) call remove_value(at%params, trim(use_calc_energy))
     if (len_trim(calc_force) > 0) my_f_2 = at_force_ptr
 
