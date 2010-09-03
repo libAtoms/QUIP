@@ -81,24 +81,28 @@ contains
 
 	 else if (name == 'relax_bond_length') then
 	    call QUIP_FoX_get_value(attributes, "atom_1", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_1 in relax_bond_length "//trim(type_str))
 	    read (value, *) atom_1
 	    call QUIP_FoX_get_value(attributes, "atom_2", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read atom_2 in relax_bond_length "//trim(type_str))
 	    read (value, *) atom_2
 	    if (parse_in_restraints) then
 	       call QUIP_FoX_get_value(attributes, "k", value, status)
-	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length "//trim(type_str))
+	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in relax_bond_length "//trim(type_str))
 	       read (value, *) k
 	    endif
 	    call QUIP_FoX_get_value(attributes, "t0", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read t0 in bond_length "//trim(type_str))
-	    read (value, *) t0
+	    if (status /= 0) then
+	       call print("restraint_startElement_handler failed to read t0 in relax_bond_length "//trim(type_str)//", defaulting to 0", PRINT_ALWAYS)
+	       t0 = 0.0_dp
+	    else
+	       read (value, *) t0
+	    endif
 	    call QUIP_FoX_get_value(attributes, "tau", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read tau in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read tau in relax_bond_length "//trim(type_str))
 	    read (value, *) tau
 	    call QUIP_FoX_get_value(attributes, "df", value, status)
-	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in bond_length "//trim(type_str))
+	    if (status /= 0) call system_abort("restraint_startElement_handler failed to read df in relax_bond_length "//trim(type_str))
 	    read (value, *) df
 	    call QUIP_FoX_get_value(attributes, "di", value, status)
 	    if (status == 0) then
