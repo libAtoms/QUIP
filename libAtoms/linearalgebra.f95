@@ -2340,7 +2340,7 @@ CONTAINS
 
      integer :: my_info
 #ifndef HAVE_QP
-     real(qp), dimension(:), allocatable :: work
+     real(dp), dimension(:), allocatable :: work
      integer :: lwork
 #endif
 
