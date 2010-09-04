@@ -359,7 +359,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
               j = find_in_array(water_monomer_index(1,:),iBo)
               if( i < j ) then
                  k = k + 1
-                 vec(:,k) = water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j))
+                 vec(:,k) = water_dimer(at,water_monomer_index(:,i),water_monomer_index(:,j),this%cutoff)
               endif
            endif
         enddo
