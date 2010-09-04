@@ -3658,9 +3658,10 @@ module bispectrum_module
 
      end function water_monomer
 
-     function water_dimer(at,w1,w2) result(vec)
+     function water_dimer(at,w1,w2,cutoff) result(vec)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
+       real(dp), intent(in) :: cutoff
        real(dp), dimension(WATER_DIMER_D) :: vec !, v
        real(dp) :: rOH(8), rHH(6), fOH(8), fHH(6)
        !real(dp) :: rA1, rA2, rB1, rB2
@@ -3703,14 +3704,14 @@ module bispectrum_module
        fOH = 0.0_dp
        do i = 1, 8
           do j = 1, 8
-             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / at%cutoff )
+             fOH(i) = fOH(i) + cos( PI*rOH(j)*i / cutoff )
           enddo
        enddo
 
        fHH = 0.0_dp
        do i = 1, 6
           do j = 1, 6
-             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / at%cutoff )
+             fHH(i) = fHH(i) + cos( PI*rHH(j)*i / cutoff )
           enddo
        enddo
 
@@ -3735,7 +3736,6 @@ module bispectrum_module
        !dA = (vA1-vA2)
        !sB = (vB1+vB2)
        !dB = (vB1-vB2)
-
        !! descriptors
        !!vec(1) = norm2(sA)
        !!vec(2) = norm2(dA)

@@ -342,7 +342,7 @@ contains
           case('water_dimer')
              if( at%N /= 6 ) call system_abort('Number of atoms is '//at%N//', not two water molecules')
              call find_water_monomer(at,water_dimer_index)
-             water_dimer_v = water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2))
+             water_dimer_v = water_dimer(at,water_dimer_index(:,1),water_dimer_index(:,2),this%r_cut)
 
              w_con = w_con + 1
              this%x(:,w_con) = water_dimer_v
