@@ -1993,14 +1993,16 @@ CONTAINS
         this%factor = this%matrix
      endif
 
-     !call dpotrf('U', this%n, this%factor, this%n, info)
-     call my_potrf(this%factor,my_info)
-
-!     do i = 1, this%n
-!        do j = i+1, this%n
-!           this%factor(j,i) = 0.0_qp
-!        enddo
-!     enddo
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
+     call qpotrf(this%factor,my_info)
+#else
+     call dpotrf('L', this%n, this%factor, this%n, my_info)
+     do i = 2, this%n
+        do j = 1, i
+           this%factor(j,i) = this%factor(i,j)
+        enddo
+     enddo
+#endif
 
      if( present(info) ) then
         info = my_info
@@ -2026,7 +2028,7 @@ CONTAINS
         
   endsubroutine LA_Matrix_Factorise
 
-  subroutine my_potrf(this,info)
+  subroutine qpotrf(this,info)
      real(qp), dimension(:,:), intent(inout) :: this
      integer, intent(out), optional :: info
      real(qp), dimension(:), allocatable :: v, w
@@ -2096,7 +2098,7 @@ CONTAINS
         enddo
      enddo
 
-  endsubroutine my_potrf
+  endsubroutine qpotrf
 
   subroutine LA_Matrix_Inverse(this,inverse,info)
 
@@ -2120,8 +2122,11 @@ CONTAINS
 
      inverse = this%factor
 
-     !call dpotri('U', this%n, inverse, this%n, info)
-     call my_potri(inverse); my_info = 0
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
+     call qpotri(inverse,my_info)
+#else
+     call dpotri('U', this%n, inverse, this%n, my_info)
+#endif
 
      do i = 1, this%n
         do j = i+1, this%n
@@ -2137,9 +2142,11 @@ CONTAINS
 
   endsubroutine LA_Matrix_Inverse
 
-  subroutine my_potri(this)
+  subroutine qpotri(this,info)
 
      real(qp), dimension(:,:), intent(inout) :: this
+     integer, optional, intent(out) :: info
+
      real(qp), dimension(:,:), allocatable :: one
      integer :: i, n
 
@@ -2149,11 +2156,13 @@ CONTAINS
      do i = 1, n
         one(i,i) = 1.0_qp
      enddo
-     call my_potrs(this,one)
+     call qpotrs(this,one)
      this = one
      deallocate(one)
+
+     if(present(info)) info = 0
      
-  endsubroutine my_potri
+  endsubroutine qpotri
 
   subroutine LA_Matrix_Solve_Vector(this,b,x,refine,info)
 
@@ -2187,8 +2196,6 @@ CONTAINS
      integer, intent(out), optional :: info
 
      real(qp), dimension(:,:), allocatable :: my_b, my_x
-     !real(qp), dimension(:), allocatable :: work, ferr, berr
-     !integer, dimension(:), allocatable :: iwork
      integer :: i, m, my_info
 
      logical :: my_refine
@@ -2224,11 +2231,11 @@ CONTAINS
         my_b = my_x
      endif
 
-     !call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, info )
-     call my_potrs( this%factor, my_x ); my_info = 0
-
-!     if( my_refine ) call dporfs( 'U', this%n, m, this%matrix, this%n, this%factor, &
-!     & this%n, my_b, this%n, my_x, this%n, ferr, berr, work, iwork, info )
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
+     call qpotrs( this%factor, my_x, my_info )
+#else
+     call dpotrs( 'U', this%n, m, this%factor, this%n, my_x, this%n, my_info )
+#endif
 
      if( this%equilibrated ) then
         do i = 1, m
@@ -2239,13 +2246,15 @@ CONTAINS
      endif
 
      if( my_info /= 0 ) call system_abort('LA_Matrix_Solve_Matrix: cannot solve, PRINT_ALWAYS: '//info)
-     deallocate(my_x,my_b) !,work, iwork, ferr, berr)
+     deallocate(my_x,my_b)
 
   endsubroutine LA_Matrix_Solve_Matrix
 
-  subroutine my_potrs(factor,x)
+  subroutine qpotrs(factor,x, info)
     real(qp), dimension(:,:), intent(in) ::factor
     real(qp), dimension(:,:), intent(inout) :: x
+    integer, intent(out), optional :: info
+
     integer :: n, m, i, j
 
     n = size(factor,1)
@@ -2264,8 +2273,10 @@ CONTAINS
        enddo
        x(1,i) = x(1,i)/factor(1,1)
     enddo
+    
+    if( present(info) ) info = 0
 
-  endsubroutine my_potrs
+  endsubroutine qpotrs
 
   function LA_Matrix_LogDet(this,info)
 
@@ -2346,7 +2357,7 @@ CONTAINS
 
      this%factor = this%matrix
 
-#ifdef HAVE_QP
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
      call qgeqrf(this%factor,this%tau,my_info)
 #else
 
@@ -2393,7 +2404,7 @@ CONTAINS
         call check_size('q', q, (/this%n,this%m/),'LA_Matrix_GetQR')
         q = this%factor
 
-#ifdef HAVE_QP
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
         call qorgqr(this%factor,this%tau,q,my_info)
 #else
         allocate(work(1))
@@ -2451,7 +2462,7 @@ CONTAINS
 
      allocate(my_result(n,o))
      my_result = matrix
-#ifdef HAVE_QP
+#if defined(HAVE_QP) || defined(ALBERT_LAPACK)
      call qormqr(this%factor, this%tau, my_result, my_info)
 #else
      lwork = -1
