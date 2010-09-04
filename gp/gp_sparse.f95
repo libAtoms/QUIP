@@ -1145,9 +1145,14 @@ deallocate(diff_xijt)
          enddo
 
          call LA_Matrix_Update(this%LA_C_nn,c)
-         if(this%LA_C_nn%factorised /= CHOLESKY) call LA_Matrix_Factorise(this%LA_C_nn)
 
+#ifdef HAVE_QR
+         if(this%LA_C_nn%factorised /= QR) call LA_Matrix_QR_Factorise(this%LA_C_nn)
+         call LA_Matrix_QR_Solve_Vector(this%LA_C_nn,real(this%y,qp),local_alpha)
+#else
+         if(this%LA_C_nn%factorised /= CHOLESKY) call LA_Matrix_Factorise(this%LA_C_nn)
          call LA_Matrix_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
+#endif
          this%alpha = real(local_alpha, dp)
          deallocate(c,xixjtheta)
          
@@ -1915,6 +1920,9 @@ deallocate(diff_xijt)
 
          logical :: my_do_l, my_do_sigma, my_do_delta, my_do_theta, my_do_f0
          real(qp), dimension(:,:), allocatable :: c_inverse, outer_alpha_minus_c_inverse, k, dk
+#ifdef HAVE_QR
+         real(qp), dimension(:,:), allocatable :: one
+#endif
          integer :: i, j, d
 
          my_do_l = present(l) .and. optional_default(present(l), do_l)
@@ -1931,8 +1939,18 @@ deallocate(diff_xijt)
              - 0.5_qp * this%n * log(2.0_qp * PI)
 
          if( my_do_sigma .or. my_do_delta .or. my_do_theta .or. my_do_f0 ) then
+#ifdef HAVE_QR
+            allocate(c_inverse(this%n,this%n),one(this%n,this%n))
+            one = 0.0_dp
+            do i = 1, this%n        
+               one(i,i) = 1.0_dp        
+            enddo
+            call LA_Matrix_QR_Solve_Matrix(this%LA_C_nn, one, c_inverse)     
+            deallocate(one)
+#else
             allocate(c_inverse(this%n,this%n))
             call LA_Matrix_Inverse(this%LA_C_nn, c_inverse)
+#endif
          endif
 
          if(my_do_delta .or. my_do_theta) then
