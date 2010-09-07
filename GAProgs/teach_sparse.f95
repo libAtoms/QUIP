@@ -43,6 +43,7 @@ program teach_sparse_program
   type(Dictionary) :: params
   type(gp_sparse) :: gp_sp
 
+  character(len=FIELD_LENGTH) :: verbosity
   character(len=FIELD_LENGTH) :: qw_cutoff_string, qw_cutoff_f_string, qw_cutoff_r1_string, &
   theta_file, sparse_file, z_eff_string, bispectrum_file
   real(dp) :: mem_required, mem_total, mem_free
@@ -98,6 +99,8 @@ program teach_sparse_program
   call param_register(params, 'force_property_name', 'force', main_teach_sparse%force_property_name)
   call param_register(params, 'virial_property_name', 'virial', main_teach_sparse%virial_property_name)
   call param_register(params, 'do_sparse', 'T', main_teach_sparse%do_sparse)
+  call param_register(params, 'verbosity', 'NORMAL', verbosity)
+
 
   if (.not. param_read_args(params, do_check = .true., command_line=main_teach_sparse%command_line)) then
      call print("Usage: teach_sparse [at_file=file] [m=50] &
@@ -106,10 +109,25 @@ program teach_sparse_program
      & [do_sigma=F] [do_delta=F] [do_theta=F] [do_sparx=F] [do_f0=F] [do_theta_fac=F] &
      & [do_cluster=F] [do_pivot=F] [min_steps=10] [min_save=0] [z_eff={Ga:1.0:N:-1.0}] &
      & [do_test_gp_gradient=F] [bispectrum_file=file] [ip_args={}] [do_ewald_corr=F] &
-     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [do_sparse=T]")
+     & [energy_property_name=energy] [force_property_name=force] [virial_property_name=virial] [do_sparse=T] [verbosity=NORMAL]")
      call system_abort('Exit: Mandatory argument(s) missing...')
   endif
   call finalise(params)
+
+  select case(verbosity)
+    case ("NORMAL")
+      call verbosity_push(PRINT_NORMAL)
+    case ("VERBOSE")
+      call verbosity_push(PRINT_VERBOSE)
+    case ("NERD")
+      call verbosity_push(PRINT_NERD)
+    case ("ANAL")
+      call verbosity_push(PRINT_ANAL)
+    case default
+      call system_abort("confused by verbosity " // trim(verbosity))
+  end select
+
+
 
   if( count( (/has_e0,has_f0/) ) > 1 ) &
   & call print('Warning - you have specified both e0 and f0 - careful!')
