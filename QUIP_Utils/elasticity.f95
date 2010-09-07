@@ -116,7 +116,7 @@ contains
 
     do ii=1, 3
        do jj=ii, 3
-          call print("doing ii " // ii // " jj " // jj, PRINT_VERBOSE)
+          call print("doing strain [" // ii // "," // jj//"]", PRINT_VERBOSE)
           Fp = 0.0_dp; call add_identity(Fp)
           Fm = 0.0_dp; call add_identity(Fm)
 
