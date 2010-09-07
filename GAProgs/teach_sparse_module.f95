@@ -660,9 +660,9 @@ contains
 
      ! Print the command line used for the teaching
      if(len(trim(this%command_line))> 0 ) then
-        call xml_NewElement(xf,"commmmand_line")
+        call xml_NewElement(xf,"command_line")
         call xml_AddCharacters(xf,trim(this%command_line),parsed=.false.)
-        call xml_EndElement(xf,"commmmand_line")
+        call xml_EndElement(xf,"command_line")
      endif
 
      ! Print the teaching configurations used for this potential.
