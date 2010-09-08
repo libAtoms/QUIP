@@ -53,7 +53,7 @@ type IPModel_Glue
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)
 
   real(dp) :: cutoff = 0.0_dp
-  real(dp) :: poly
+  real(dp), allocatable, dimension(:) :: poly
 
   real(dp), allocatable :: density_extent(:), density_scale(:)
 
@@ -126,6 +126,7 @@ subroutine IPModel_Glue_Finalise(this)
       if(allocated(this%spline_data(i)%spline_density)) deallocate(this%spline_data(i)%spline_density)
     end do
     deallocate(this%spline_data)
+    deallocate(this%poly)
   endif
 
   if (allocated(this%potential)) then
@@ -209,7 +210,6 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
     do ji=1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
       tj = get_type(this%type_of_atomic_num, at%Z(j))
-
       if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           rho_local = rho_local + eam_density(this, tj, r_ij_mag)
           drho_i_drij = eam_density_deriv(this, tj, r_ij_mag)
@@ -217,7 +217,6 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
           drho_i_drij_outer_rij = drho_i_drij_outer_rij + drho_i_drij*(r_ij_hat .outer. r_ij_hat) * r_ij_mag
       endif
     end do ! ji
-
     potential_deriv = eam_spline_potential_deriv(this, ti, rho_local)
     if(present(f)) f(:,i) = f(:,i) + drho_i_dri * potential_deriv
 
@@ -255,7 +254,7 @@ function eam_density(this, ti, r)
   if (r < glue_cutoff(this, ti)) then
     !eam_density = this%density_scale(ti) * exp(-r/this%density_extent(ti))
     !eam_density = spline_value(this%density(ti),r) 
-    eam_density = this%poly*(glue_cutoff(this, ti)-r)**3
+    eam_density = this%poly(ti)*(glue_cutoff(this, ti)-r)**3
   else
     eam_density = 0.0_dp
   endif
@@ -270,7 +269,7 @@ function eam_density_deriv(this, ti, r)
   if (r < glue_cutoff(this, ti)) then
     !eam_density_deriv = - this%density_scale(ti)/this%density_extent(ti) * exp(-r/this%density_extent(ti))
     !eam_density_deriv = spline_deriv(this%density(ti),r)
-    eam_density_deriv = -3.0_dp * this%poly*(glue_cutoff(this, ti)-r)**2
+    eam_density_deriv = -3.0_dp * this%poly(ti)*(glue_cutoff(this, ti)-r)**2
   else
     eam_density_deriv = 0.0_dp
   endif
@@ -422,6 +421,11 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
     !call initialise(this%potential(ti), this%spline_data(ti)%spline_potential(1,:), this%spline_data(ti)%spline_potential(2,:), grad_lower, grad_upper)
     call initialise(this%potential(ti), this%spline_data(ti)%spline_potential(1,:), this%spline_data(ti)%spline_potential(2,:),2.0e30_dp,2.0e30_dp)
     call initialise(this%density(ti), this%spline_data(ti)%spline_density(1,:), this%spline_data(ti)%spline_density(2,:), this%spline_data(ti)%density_y1, this%spline_data(ti)%density_yn)
+
+    this%poly(ti) = dot_product(this%spline_data(ti)%spline_density(2,:), (glue_cutoff(this,ti) - &
+      this%spline_data(ti)%spline_density(1,:))**3) / &
+      dot_product((glue_cutoff(this,ti)-this%spline_data(ti)%spline_density(1,:))**3, &
+      (glue_cutoff(this,ti)-this%spline_data(ti)%spline_density(1,:))**3)
   end do
 
   ! Find the largest cutoff
@@ -430,10 +434,6 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
       this%cutoff = glue_cutoff(this,ti)
     endif
   end do
-
-  
-  this%poly = dot_product(this%spline_data(1)%spline_density(2,:), (this%cutoff-this%spline_data(1)%spline_density(1,:))**3) / &
-  & dot_product((this%cutoff-this%spline_data(1)%spline_density(1,:))**3,(this%cutoff-this%spline_data(1)%spline_density(1,:))**3)
 
 end subroutine IPModel_Glue_read_params_xml
 
@@ -501,6 +501,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       ! Allocate the splines
       allocate(parse_ip%potential(parse_ip%n_types))
       allocate(parse_ip%density(parse_ip%n_types))
+      allocate(parse_ip%poly(parse_ip%n_types))
     endif
 
 
