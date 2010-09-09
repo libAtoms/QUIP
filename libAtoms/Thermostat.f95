@@ -527,6 +527,8 @@ contains
     real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i
     integer, dimension(:), pointer :: prop_ptr
+!    integer :: ntherm
+!    real(dp) :: dvelo
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat1: cannot find property '//property)
@@ -578,11 +580,16 @@ contains
 	 decay = 1.0_dp
        endif
 
+!       dvelo = 0.0_dp
+!       ntherm = 0
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
           K = K + at%mass(i)*norm2(at%velo(:,i))
+!	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
+!	  ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
        end do
+!       call print("Thermostat " // value //" thermostat1 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Propagate the work for dt/2
        if (this%Q > 0.0_dp) then
@@ -906,6 +913,8 @@ contains
     real(dp), dimension(3) :: decay_matrix_eigenvalues
     integer  :: i
     integer, pointer, dimension(:) :: prop_ptr
+!    integer :: ntherm
+!    real(dp) :: dvelo
 
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat4: cannot find property '//property)
@@ -949,11 +958,16 @@ contains
 	 decay = 1.0_dp
        endif
        K = 0.0_dp
+!       dvelo = 0.0_dp
+!       ntherm = 0
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
+!	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
+!	  ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
           K = K + at%mass(i)*norm2(at%velo(:,i))
        end do
+!       call print("Thermostat " // value //" thermostat4 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Calculate new f_eta...
        this%f_eta = 0.0_dp

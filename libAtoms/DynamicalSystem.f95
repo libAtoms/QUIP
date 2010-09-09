@@ -1525,6 +1525,7 @@ contains
         end select
 
      end do
+!     call print("advance_verlet1 <delta vel> "//(0.5_dp*dt*sum(norm(this%atoms%acc,1))/real(this%atoms%N,dp)))
 
 #ifdef _MPI
      ! Broadcast the new velocities
@@ -1838,6 +1839,7 @@ contains
         end select
 
      end do
+!     call print("advance_verlet2 <delta vel> "//(0.5_dp*dt*sum(norm(this%atoms%acc,1))/real(this%atoms%N,dp)))
 
 #ifdef _MPI
      ! Broadcast the new velocities, accelerations and possibly constraint forces
