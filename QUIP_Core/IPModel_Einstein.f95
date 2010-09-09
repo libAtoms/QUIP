@@ -160,7 +160,6 @@ subroutine IPModel_Einstein_Calc(this, at, e, local_e, f, virial, args_str, mpi,
 
       if(present(f)) f(:,i) = f(:,i) - ki*diff
       if(present(virial)) virial = virial - ki*(diff .outer. at%pos(:,i))
-      print*, diff .outer. at%pos(:,i)
    enddo
 
 end subroutine IPModel_Einstein_Calc
