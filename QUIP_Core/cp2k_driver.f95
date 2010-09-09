@@ -641,7 +641,7 @@ contains
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     ! parse output
-    call read_energy_forces(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f)
+    call read_energy_forces(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, error=error)
 
     at%pos(1,:) = at%pos(1,:) + centre_pos(1) - cp2k_box_centre_pos(1)
     at%pos(2,:) = at%pos(2,:) + centre_pos(2) - cp2k_box_centre_pos(2)
@@ -749,25 +749,30 @@ contains
 
   end function find_make_cp2k_input_section
 
-  subroutine read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f)
+  subroutine read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, error)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
+    integer, intent(out), optional :: ERROR
 
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
 
+    INIT_ERROR(error)
+
     call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
     call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
 
-    if (.not. get_value(f_xyz%params, "E", e)) &
-      call system_abort('read_energy_forces failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file')
+    if (.not. get_value(f_xyz%params, "E", e)) then
+      RAISE_ERROR('read_energy_forces failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file', error)
+    endif
 
-    if (.not.(assign_pointer(f_xyz, 'frc', force_p))) &
-      call system_abort("Did not find frc property in "//trim(run_dir)//'/quip-frc-1.xyz file')
+    if (.not.(assign_pointer(f_xyz, 'frc', force_p))) then
+      RAISE_ERROR("Did not find frc property in "//trim(run_dir)//'/quip-frc-1.xyz file', error)
+    endif
     f = force_p
 
     e = e * HARTREE
@@ -821,6 +826,13 @@ contains
       endif
     endif
 
+    do i=1, at%N
+      if (reordering_index(i) /= i) then
+	 call print("WARNING: reorder_if_necessary indeed found reordered atoms", PRINT_ALWAYS)
+	 exit
+      endif
+    end do
+
     new_f(1,reordering_index(:)) = new_f(1,:)
     new_f(2,reordering_index(:)) = new_f(2,:)
     new_f(3,reordering_index(:)) = new_f(3,:)
@@ -839,14 +851,22 @@ contains
 
     reordering_index = 0
     do i=1, N
-      do j=1, N
-	dpos = matmul(recip_lattice(1:3,1:3), old_p(1:3,i) + shift(1:3) - new_p(1:3,j))
-	dpos_i = nint(dpos)
-	if (all(abs(dpos-dpos_i) <= 1.0e-4_dp)) then
-	  reordering_index(i) = j
-	  cycle
-	endif
-      end do
+      ! check for same-order
+      j = i
+      dpos = matmul(recip_lattice(1:3,1:3), old_p(1:3,i) + shift(1:3) - new_p(1:3,j))
+      dpos_i = nint(dpos)
+      if (all(abs(dpos-dpos_i) <= 1.0e-4_dp)) then
+        reordering_index(i) = j
+      else ! not same order, search
+	 do j=1, N
+	   dpos = matmul(recip_lattice(1:3,1:3), old_p(1:3,i) + shift(1:3) - new_p(1:3,j))
+	   dpos_i = nint(dpos)
+	   if (all(abs(dpos-dpos_i) <= 1.0e-4_dp)) then
+	     reordering_index(i) = j
+	     exit
+	   endif
+	 end do
+       end if
     end do
   end subroutine check_reordering
 

@@ -3039,7 +3039,7 @@ type(inoutput), optional :: debugfile
     type(DynamicalSystem), intent(inout) :: this
     integer,               intent(in)    :: i
     real(dp),              intent(in)    :: smoothing_time
-    integer, save                        :: CUBIC_FUNC
+    integer, save                        :: CUBIC_BONDLENGTH_SQ_FUNC
     logical, save                        :: first_call = .true.
     integer                              :: g, j, n, a1, a2, datalength
     real(dp)                             :: x0,y0,y0p,x1,y1,y1p, coeffs(4), t, dE, m1, m2, meff
@@ -3047,7 +3047,7 @@ type(inoutput), optional :: debugfile
 
     !Register the constraint function if this is the first call
     if (first_call) then
-       CUBIC_FUNC = Register_Constraint(CUBIC_BOND)
+       CUBIC_BONDLENGTH_SQ_FUNC = Register_Constraint(CUBIC_BONDLENGTH_SQ)
        first_call = .false.
     end if
 
@@ -3106,7 +3106,7 @@ type(inoutput), optional :: debugfile
              call fit_cubic(x0,y0,y0p,x1,y1,y1p,coeffs)
 
              !Change the constraint
-             call ds_amend_constraint(this,j,CUBIC_FUNC,(/coeffs,x0,x1/))
+             call ds_amend_constraint(this,j,CUBIC_BONDLENGTH_SQ_FUNC,(/coeffs,x0,x1/))
 
              !Work out the amount of energy which will be removed
              m1 = ElementMass(this%atoms%Z(a1))

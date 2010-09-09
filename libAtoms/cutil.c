@@ -53,12 +53,13 @@
 //X  The definition of the constraint subroutine in the struct   
 //X  matches the fortran version:					     
 //X  								     
-//X   subroutine CONSTRAINT(pos, velo, t, data, C, dC_dr, dC_dt)	     
+//X   subroutine CONSTRAINT(pos, velo, t, data, C, dC_dr, dC_dt, target_v)	     
 //X     real(dp), dimension(:),         intent(in)  :: pos, velo, data 
 //X     real(dp),                       intent(in)  :: t
 //X     real(dp),                       intent(out) :: C		     
 //X     real(dp), dimension(size(pos)), intent(out) :: dC_dr	     
 //X     real(dp),                       intent(out) :: dC_dt           
+//X     real(dp),                       intent(out) :: target_v
 //X     ...
 //X   end subroutine CONSTRAINT 
 //X
@@ -68,19 +69,19 @@
 
 
 typedef struct{
-  void (*sub)(double*,double*,double*,double*,double*,double*,double*);
+  void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*);
 } VCONSTRAINTSUB_TABLE;
 
 VCONSTRAINTSUB_TABLE constraintsub_table[20];
 static int nconstraintsub = 0;
 
-void register_constraint_sub_(void (*sub)(double*,double*,double*,double*,double*,double*,double*)){
+void register_constraint_sub_(void (*sub)(double*,double*,double*,double*,double*,double*,double*,double*)){
   constraintsub_table[nconstraintsub++].sub = sub;
 }
 
 void call_constraint_sub_(int* i, double* pos, double* velo, double* t, 
-			  double* data, double* C, double* dC_dr, double* dC_dt){
-  constraintsub_table[*i].sub(pos, velo, t, data, C, dC_dr, dC_dt);
+			  double* data, double* C, double* dC_dr, double* dC_dt, double* target_v){
+  constraintsub_table[*i].sub(pos, velo, t, data, C, dC_dr, dC_dt, target_v);
 }
 
 // some systems might not support isnan() from Fortran so wrap it here

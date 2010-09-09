@@ -39,13 +39,14 @@ private
   type md_params
     character(len=FIELD_LENGTH) :: atoms_in_file, params_in_file, trajectory_out_file
     integer :: N_steps
+    real(dp) :: max_time
     real(dp) :: dt,  thermalise_wait_time, damping_time
     real(dp) :: T_initial, T, T_final, freq_DT, langevin_tau, p_ext
     real(dp) :: velocity_rescaling_time 
     real(dp) :: cutoff_buffer 
     integer :: velocity_rescaling_freq
     logical :: calc_virial, calc_energy, const_T, const_P
-    character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args
+    character(len=FIELD_LENGTH) :: pot_init_args, pot_calc_args, first_pot_calc_args
     integer :: summary_interval, params_print_interval, at_print_interval, pot_print_interval
     character(len=FIELD_LENGTH), allocatable :: print_property_list(:)
     integer :: rng_seed
@@ -54,6 +55,7 @@ private
     logical :: quiet_calc, do_timing
     integer :: advance_md_substeps
     logical :: v_dep_quants_extra_calc
+    logical :: continuation
   end type md_params
 
 public :: get_params, print_params, print_usage, do_prints, initialise_md_thermostat, update_thermostat
@@ -69,13 +71,15 @@ subroutine get_params(params, mpi_glob)
   logical :: md_params_exist
   character(len=FIELD_LENGTH) :: print_property_list_str
   integer :: n_print_property_list
+  logical :: has_N_steps
 
   call initialise(md_params_dict)
   call param_register(md_params_dict, 'atoms_in_file', 'stdin', params%atoms_in_file)
   call param_register(md_params_dict, 'trajectory_out_file', 'traj.xyz', params%trajectory_out_file)
   call param_register(md_params_dict, 'params_in_file', 'quip_params.xml', params%params_in_file)
   call param_register(md_params_dict, 'rng_seed', '-1', params%rng_seed)
-  call param_register(md_params_dict, 'N_steps', '1', params%N_steps)
+  call param_register(md_params_dict, 'N_steps', '1', params%N_steps, has_N_steps)
+  call param_register(md_params_dict, 'max_time', '-1.0', params%max_time)
   call param_register(md_params_dict, 'dt', '1.0', params%dt)
   call param_register(md_params_dict, 'T', '0.0', params%T_initial)
   call param_register(md_params_dict, 'T_final', '-100.0', params%T_final)
@@ -103,10 +107,12 @@ subroutine get_params(params, mpi_glob)
   call param_register(md_params_dict, 'zero_momentum', 'F', params%zero_momentum)
   call param_register(md_params_dict, 'zero_angular_momentum', 'F', params%zero_angular_momentum)
   call param_register(md_params_dict, 'pot_calc_args', '', params%pot_calc_args)
+  call param_register(md_params_dict, 'first_pot_calc_args', '', params%first_pot_calc_args)
   call param_register(md_params_dict, 'quiet_calc', 'T', params%quiet_calc)
   call param_register(md_params_dict, 'do_timing', 'F', params%do_timing)
   call param_register(md_params_dict, 'advance_md_substeps', '-1', params%advance_md_substeps)
   call param_register(md_params_dict, 'v_dep_quants_extra_calc', 'F', params%v_dep_quants_extra_calc)
+  call param_register(md_params_dict, 'continuation', 'F', params%continuation)
 
   inquire(file='md_params', exist=md_params_exist)
   if (md_params_exist) then
@@ -130,7 +136,13 @@ subroutine get_params(params, mpi_glob)
      call system_abort("get_params got empty pot_init_args")
   end if
 
-  if (params%N_steps < 1) call system_abort("get_params got N_steps " // params%N_steps // " < 1")
+  if (len_trim(params%first_pot_calc_args) == 0) params%first_pot_calc_args = params%pot_calc_args
+
+
+  if (has_N_steps .and. params%N_steps > 0 .and. params%max_time > 0.0_dp) then
+    call system_abort("get_params got both N_steps="//params%N_steps//" > 0 and max_time="//params%max_time//" > 0.0")
+  endif
+  if (params%max_time <= 0.0_dp .and. params%N_steps < 1) call system_abort("get_params got max_time="//params%max_time//" <= 0.0 and N_steps=" // params%N_steps // " < 1")
   if (params%dt <= 0.0_dp) call system_abort("get_params got dt " // params%dt // " <= 0.0")
   if (params%const_T) then
     if (params%langevin_tau <= 0.0_dp) call system_abort("get_params got const_T, but langevin_tau " // params%langevin_tau // " <= 0.0")
@@ -157,12 +169,14 @@ subroutine print_params(params)
 
   call print("md_params%pot_init_args='" // trim(params%pot_init_args) // "'")
   call print("md_params%pot_calc_args='" // trim(params%pot_calc_args) // "'")
+  call print("md_params%first_pot_calc_args='" // trim(params%first_pot_calc_args) // "'")
   call print("md_params%atoms_in_file='" // trim(params%atoms_in_file) // "'")
   call print("md_params%params_in_file='" // trim(params%params_in_file) // "'")
   call print("md_params%trajectory_out_file='" // trim(params%trajectory_out_file) // "'")
   call print("md_params%cutoff_buffer='" // params%cutoff_buffer // "'")
   call print("md_params%rng_seed=" // params%rng_seed)
   call print("md_params%N_steps=" // params%N_steps)
+  call print("md_params%max_time=" // params%max_time)
   call print("md_params%dt=" // params%dt)
   call print("md_params%T=" // params%T_initial)
   if(params%T_final.lt.0.0) then
@@ -206,20 +220,22 @@ subroutine print_params(params)
   call print("md_params%do_timing=" // params%do_timing)
   call print("md_params%advance_md_substeps=" // params%advance_md_substeps)
   call print("md_params%v_dep_quants_extra_calc=" // params%v_dep_quants_extra_calc)
+  call print("md_params%continuation=" // params%continuation)
 end subroutine print_params
 
 subroutine print_usage()
   call Print('Usage: md <command line arguments>', PRINT_ALWAYS)
   call Print('available parameters (in md_params file or on command line):', PRINT_ALWAYS)
-  call Print('  pot_init_args="args" [pot_calc_args="args"]', PRINT_ALWAYS)
+  call Print('  pot_init_args="args" [pot_calc_args="args"] [first_pot_calc_args="args"]', PRINT_ALWAYS)
   call Print('  [atoms_in_file=file(stdin)] [params_in_file=file(quip_params.xml)]', PRINT_ALWAYS)
   call Print('  [trajectory_out_file=file(traj.xyz)] [cutoff_buffer=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
-  call Print('  [N_steps=n(1)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
+  call Print('  [N_steps=n(1)] [max_time=t(-1.0)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
   call Print('  [calc_virial=logical(F)]', PRINT_ALWAYS)
   call Print('  [summary_interval=n(1)] [params_print_interval=n(-1)] [at_print_interval=n(100)]', PRINT_ALWAYS)
   call Print('  [print_property_list=prop1:prop2:...()] [pot_print_interval=n(-1)]', PRINT_ALWAYS)
   call Print('  [zero_momentum=T/F(F)] [zero_angular_momentum=T/F(F)]', PRINT_ALWAYS)
   call Print('  [quiet_calc=T/F(T)] [do_timing=T/F(F)] [advance_md_substeps=N(-1)] [v_dep_quants_extra_calc=T/F(F)]', PRINT_ALWAYS)
+  call Print('  [continuation=T/F(F)]', PRINT_ALWAYS)
 end subroutine print_usage
 
 subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step, override_intervals)
@@ -242,7 +258,7 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
   if (allocated(restraint_stuff)) then
      if (params%summary_interval > 0) then
 	if (my_override_intervals .or. mod(i_step, params%summary_interval) == 0) &
-	   call print_restraint_stuff(params, restraint_stuff, restraint_stuff_timeavg)
+	   call print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
      endif
   endif
 
@@ -261,12 +277,20 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
 
 end subroutine
 
-subroutine print_restraint_stuff(params, restraint_stuff, restraint_stuff_timeavg)
+subroutine print_restraint_stuff(params, ds, restraint_stuff, restraint_stuff_timeavg)
   type(md_params), intent(in) :: params
+  type(DynamicalSystem), intent(in) :: ds
   real(dp), intent(in) :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
 
-  call print("RI " // reshape( restraint_stuff, (/ 3*size(restraint_stuff,2) /) ))
-  call print("R " // reshape( restraint_stuff_timeavg, (/ 3*size(restraint_stuff_timeavg,2) /) ))
+  logical, save :: firstcall = .true.
+
+  if (firstcall) then
+    call print("#RI t  target_v C E dE/dcoll dE/dk ....")
+    call print("#R t  target_v C E dE/dcoll dE/dk ....")
+    firstcall = .false.
+  endif
+  call print("RI " // ds%t // " " // reshape( restraint_stuff, (/ size(restraint_stuff) /) ))
+  call print("R " // ds%t // " " // reshape( restraint_stuff_timeavg, (/ size(restraint_stuff_timeavg) /) ))
 end subroutine
 
 subroutine print_summary(params, ds, e)
@@ -409,7 +433,7 @@ implicit none
   real(dp), pointer :: force_p(:,:)
   real(dp) :: cutoff_buffer, max_moved, last_state_change_time
 
-  integer i, i_step
+  integer :: i, i_step, initial_i_step
   type(md_params) :: params
   integer :: error = ERROR_NONE
   type(extendable_str) :: params_es
@@ -417,6 +441,7 @@ implicit none
   logical :: store_constraint_force
   real(dp), allocatable :: restraint_stuff(:,:), restraint_stuff_timeavg(:,:)
   character(STRING_LENGTH) :: extra_calc_args
+  integer :: l_error
 
   call system_initialise()
 
@@ -444,11 +469,19 @@ implicit none
   call initialise(ds, at_in)
   call finalise(at_in)
 
+  ! set some initial values, in particular if this run is a continuation
+  initial_i_step = 1
+  if (params%continuation) then
+    call get_param_value(ds%atoms, 'time', ds%t, l_error)
+    call get_param_value(ds%atoms, 'i_step', initial_i_step, l_error)
+    CLEAR_ERROR(error)
+  endif
+
   call init_restraints_constraints(ds, string(params_es))
   store_constraint_force = has_property(ds%atoms, "constraint_force")
   if (ds%Nrestraints > 0) then
-     allocate(restraint_stuff(3,ds%Nrestraints))
-     allocate(restraint_stuff_timeavg(3,ds%Nrestraints))
+     allocate(restraint_stuff(5,ds%Nrestraints))
+     allocate(restraint_stuff_timeavg(5,ds%Nrestraints))
   endif
 
   call finalise(params_es)
@@ -474,7 +507,7 @@ implicit none
   extra_calc_args="force"
   if (params%calc_energy) extra_calc_args = trim(extra_calc_args) // " energy"
   if (params%calc_virial) extra_calc_args = trim(extra_calc_args) // " virial"
-  call calc(pot, ds%atoms, args_str=trim(params%pot_calc_args)//" "//trim(extra_calc_args))
+  call calc(pot, ds%atoms, args_str=trim(params%first_pot_calc_args)//" "//trim(extra_calc_args))
   if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
   if (params%calc_virial) call get_param_value(ds%atoms, "virial", virial)
   if (params%quiet_calc) call verbosity_pop()
@@ -484,7 +517,7 @@ implicit none
   forall(i = 1:ds%N) ds%atoms%acc(:,i) = force_p(:,i) / ElementMass(ds%atoms%Z(i))
 
   if (ds%Nrestraints > 0) then
-     call calc_restraint_stuff(ds, restraint_stuff)
+     call get_restraint_stuff(ds, restraint_stuff)
      restraint_stuff_timeavg = restraint_stuff
   end if
   call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, 0, override_intervals = .true.)
@@ -498,7 +531,8 @@ implicit none
 
   ! on entry, we have p(t), v(t), a(t), like advance verlet 1 wants
   call system_timer("md_loop")
-  do i_step=1, params%N_steps
+  i_step = initial_i_step
+  do while ((params%N_steps > 0 .and. i_step <= params%N_steps) .or. (params%max_time > 0.0_dp .and. ds%t <= params%max_time))
 
     if (params%annealing.and.ds%t - last_state_change_time >= params%thermalise_wait_time) then
         call print('Rescaling velocities at time '//ds%t//' from '//params%T// &
@@ -509,8 +543,8 @@ implicit none
     endif
 
     call advance_md(ds, params, pot, store_constraint_force)
-    if (ds%Nconstraints > 0) then
-       call calc_restraint_stuff(ds, restraint_stuff)
+    if (ds%Nrestraints > 0) then
+       call get_restraint_stuff(ds, restraint_stuff)
        call update_exponential_average(restraint_stuff_timeavg, params%dt/ds%avg_time, restraint_stuff)
     end if
     if (params%calc_energy) call get_param_value(ds%atoms, "energy", E)
@@ -519,10 +553,12 @@ implicit none
 
     call system_timer("md/print")
     call set_value(ds%atoms%params, 'time', ds%t)
+    call set_value(ds%atoms%params, 'i_step', i_step)
     call do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeavg, traj_out, i_step)
 
     call system_timer("md/print")
 
+    i_step = i_step + 1
   end do
   call system_timer("md_loop")
 
@@ -532,16 +568,18 @@ implicit none
 
 contains
 
-  subroutine calc_restraint_stuff(ds, restraint_stuff)
+  subroutine get_restraint_stuff(ds, restraint_stuff)
     type(DynamicalSystem), intent(in) :: ds
     real(dp), intent(out) :: restraint_stuff(:,:)
 
     integer i_r
 
     do i_r = 1, ds%Nrestraints
-       restraint_stuff(1,i_r) = ds%restraint(i_r)%C
-       restraint_stuff(2,i_r) = ds%restraint(i_r)%E
-       restraint_stuff(3,i_r) = -ds%restraint(i_r)%dE_dcoll
+       restraint_stuff(1,i_r) =  ds%restraint(i_r)%target_v
+       restraint_stuff(2,i_r) =  ds%restraint(i_r)%C
+       restraint_stuff(3,i_r) =  ds%restraint(i_r)%E
+       restraint_stuff(4,i_r) = -ds%restraint(i_r)%dE_dcoll
+       restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
     end do
   end subroutine
 
