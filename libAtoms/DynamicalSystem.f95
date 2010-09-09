@@ -2167,7 +2167,7 @@ contains
 
      !Register the constraint function if this is the first call
      if (first_call) then
-        BOND_FUNC = register_constraint(BONDLENGTH)
+        BOND_FUNC = register_constraint(RELAX_BONDLENGTH)
         first_call = .false.
      end if
 
