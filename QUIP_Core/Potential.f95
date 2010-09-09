@@ -217,6 +217,8 @@ recursive subroutine potential_Filename_Initialise(this, args_str, param_filenam
   call initialise(io, param_filename, INPUT, master_only=.true.)
   call initialise(this, args_str, io, bulk_scale, mpi_obj, error=error)
   PASS_ERROR(error)
+  call finalise(io)
+
 end subroutine potential_Filename_Initialise
 
 subroutine potential_initialise_inoutput(this, args_str, io_obj, bulk_scale, mpi_obj, error)
