@@ -171,7 +171,7 @@ module Potential_module
      real(dp), pointer :: last_connect_x(:) => null()
      type(Potential), pointer :: minim_pot => null()
      type(CInoutput), pointer :: minim_cinoutput_movie => null()
-     logical, dimension(3,3) :: lattice_fix
+     logical, dimension(3,3) :: lattice_fix = .false.
      real(dp), dimension(3,3) :: external_pressure = 0.0_dp
   end type Potential_minimise
 
