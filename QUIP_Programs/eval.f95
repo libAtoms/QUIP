@@ -99,18 +99,7 @@ implicit none
   if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
     call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
   end if
-  select case(verbosity)
-    case ("NORMAL")
-      call verbosity_push(PRINT_NORMAL)
-    case ("VERBOSE")
-      call verbosity_push(PRINT_VERBOSE)
-    case ("NERD")
-      call verbosity_push(PRINT_NERD)
-    case ("ANAL")
-      call verbosity_push(PRINT_ANAL)
-    case default
-      call system_abort("confused by verbosity " // trim(verbosity))
-  end select
+  call verbosity_push(trim(verbosity))
   call finalise(cli_params)
 
   call enable_timing()
