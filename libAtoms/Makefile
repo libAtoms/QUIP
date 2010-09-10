@@ -51,6 +51,7 @@ LIBATOMS_F95_FILES = \
   MPI_context \
   Units \
   linearalgebra \
+  statistics \
   Dictionary \
   Table \
   PeriodicTable \
