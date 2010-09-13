@@ -2420,7 +2420,8 @@ contains
        RAISE_ERROR('Atoms_Add: this atoms has no species property', error)
     end if
     do i=1,size(Z)
-       this%species(:,oldN+i) = s2a(ElementName(Z(i)))
+       this%species(:,oldN+i) = ' '
+       this%species(1:3,oldN+i) = s2a(ElementName(Z(i)))
     end do
 
     if (present(travel)) then
