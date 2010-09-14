@@ -102,7 +102,7 @@ def quippy_cleanup():
       pass
 
 _quippy.qp_system_initialise(-1, qp_quippy_running=QUIPPY_TRUE)
-_quippy.qp_verbosity_push_i(0)
+_quippy.qp_verbosity_push(0)
 atexit.register(quippy_cleanup)
 
 from spec import spec
