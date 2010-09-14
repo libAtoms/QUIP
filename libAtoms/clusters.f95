@@ -66,7 +66,7 @@ character(len=TABLE_STRING_LENGTH), parameter :: hybrid_mark_name(0:6) = &
      "h_outer_l ", &
      "h_fit     " /)
 
-public :: create_cluster_info_from_mark, carve_cluster, create_hybrid_weights, &
+public :: create_cluster_info_from_mark, carve_cluster, create_cluster_simple, create_hybrid_weights, &
     bfs_grow, bfs_step, multiple_images, discard_non_min_images, make_convex, create_embed_and_fit_lists, &
     create_embed_and_fit_lists_from_cluster_mark, &
     add_cut_hydrogens, construct_hysteretic_region, &
@@ -1043,6 +1043,25 @@ contains
     call print(cluster_info, PRINT_NERD)
   end function cluster_protect_double_bonds
 
+  function create_cluster_simple(at, args_str, mark_name, error) result(cluster)
+     type(Atoms), intent(inout) :: at
+     character(len=*), intent(in) :: args_str
+     character(len=*), intent(in), optional :: mark_name
+     integer, intent(out), optional :: ERROR
+     type(Atoms) :: cluster
+
+     type(Table) :: cluster_info
+
+     INIT_ERROR(error)
+
+     call calc_connect(at)
+     cluster_info = create_cluster_info_from_mark(at, args_str, mark_name=mark_name, error=error)
+     PASS_ERROR(error)
+     cluster = carve_cluster(at, args_str, cluster_info, mark_name=mark_name, error=error)
+     PASS_ERROR(error)
+     
+  end function create_cluster_simple
+
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   ! Create cluster from atoms and cluster information table
@@ -1057,10 +1076,11 @@ contains
   !% 
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  function carve_cluster(at, args_str, cluster_info, error) result(cluster)
+  function carve_cluster(at, args_str, cluster_info, mark_name, error) result(cluster)
     type(Atoms), intent(in), target :: at
     character(len=*), intent(in) :: args_str
     type(Table), intent(in) :: cluster_info
+    character(len=*), optional, intent(in) :: mark_name
     integer, optional, intent(out) :: error
     type(Atoms) :: cluster
 
@@ -1075,6 +1095,7 @@ contains
     integer, pointer :: hybrid_mark(:), cluster_index(:), cluster_hybrid_mark(:), cluster_shift(:,:)
     type(CInoutput)                    :: clusterfile
     character(len=255)                :: clusterfilename
+    character(len=255)                :: my_mark_name
     type(Table) :: outer_layer
     logical :: in_outer_layer
 
@@ -1196,9 +1217,10 @@ contains
          cluster%lattice(2,2), cluster%lattice(3,3)
     call print(line, PRINT_VERBOSE)
 
+    my_mark_name = optional_default('hybrid_mark', mark_name)
     ! reassign pointers
-    if (.not. assign_pointer(at, 'hybrid_mark', hybrid_mark)) then
-         RAISE_ERROR('cannot reassign hybrid_mark property', error)
+    if (.not. assign_pointer(at, trim(my_mark_name), hybrid_mark)) then
+         RAISE_ERROR('cannot reassign "'//trim(my_mark_name)//'" property', error)
     endif
 
     ! rescale cluster positions and lattice 
@@ -1237,8 +1259,8 @@ contains
 	    RAISE_ERROR('cannot determine which buffer atoms to randomise if terminate=F and hysteretic_buffer=T', error)
 	  endif
 
-          if (.not. assign_pointer(cluster, 'hybrid_mark', cluster_hybrid_mark)) then
-               RAISE_ERROR('hybrid_mark property not found in cluster', error)
+          if (.not. assign_pointer(cluster, trim(my_mark_name), cluster_hybrid_mark)) then
+               RAISE_ERROR(trim(my_mark_name)//' property not found in cluster', error)
 	  endif
 
           do i=1,cluster%N

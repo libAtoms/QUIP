@@ -28,6 +28,7 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+#include "error.inc"
 module frametools_module
 use system_module
 use linearalgebra_module
@@ -35,72 +36,164 @@ use atoms_module
 use quaternions_module
 implicit none
 
-!interface rotate
-!  module procedure ft_rotate
-!end interface rotate
+
+public :: atoms_mark
+
+public :: mark_cylinder, mark_sphere
+
+public :: ft_rotate
 
 contains
 
-subroutine atoms_mark(this, mark_f, f_i_data, f_r_data)
+subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mark_value, intersection, error)
   type(atoms), intent(inout) :: this
   interface
-    function mark_f(at, i, i_data, r_data)
+    function mark_f(at, i, periodic, i_data, r_data, error)
     use system_module
     use atoms_module
       type(atoms) :: at
       integer :: i
+      logical :: periodic
       integer, optional :: i_data(:)
       real(dp), optional :: r_data(:)
+      integer, optional :: error
       logical mark_f
     end function mark_f
   end interface
   integer, intent(in), optional :: f_i_data(:)
   real(dp), intent(in), optional :: f_r_data(:)
+  logical, intent(in), optional :: periodic
+  character(len=*), intent(in), optional :: mark_name
+  integer, intent(in), optional :: mark_value
+  logical, intent(in), optional :: intersection
+  integer, intent(out), optional :: error
 
-  integer i
+  integer :: i
+  character(len=128) :: my_mark_name
+  integer :: my_mark_value
+  logical :: my_intersection, my_periodic
   integer, pointer :: mark(:)
-  logical dummy
 
-  call print ("called atoms_mark, this%N " // this%N)
+  INIT_ERROR(error)
 
-  nullify(mark)
-  if (.not. assign_pointer(this, "mark", mark)) then
-    call add_property(this, "mark", 0)
-    dummy = assign_pointer(this, "mark", mark)
+  my_mark_name = optional_default("mark", mark_name)
+  my_mark_value = optional_default(1, mark_value)
+  my_intersection = optional_default(.false., intersection)
+  my_periodic = optional_default(.true., periodic)
+
+  if (.not. assign_pointer(this, trim(my_mark_name), mark)) then
+      call add_property(this, trim(my_mark_name), 0, ptr=mark)
+  else
+      call assign_property_pointer(this, trim(my_mark_name), mark)
   endif
-  call print("associated(mark) " // associated(mark))
-  call print("size(mark) " // size(mark))
 
   do i=1, this%N
-    if (mark_f(this, i, f_i_data, f_r_data)) then
-      mark(i) = 1
+    if (my_intersection .and. mark(i) == 0) cycle ! if we're doing intersection and this one isn't already marked, skip it
+    if (my_intersection) mark(i) = 0 ! if we're doing intersection, set mark to .false., and it'll will be set to true if it's marked in the current shape
+    if (mark_f(this, i, my_periodic, f_i_data, f_r_data, error=error)) then
+      mark(i) = my_mark_value
     endif
+    PASS_ERROR(error)
   end do
 end subroutine atoms_mark
 
-
-function is_in_cylinder(this, i, i_data, r_data)
+function is_in_cylinder_f(this, i, periodic, i_data, r_data, error)
   type(atoms), intent(in) :: this
   integer, intent(in) :: i
+  logical :: periodic
   integer, intent(in), optional :: i_data(:)
   real(dp), intent(in), optional :: r_data(:)
-  logical is_in_cylinder
+  integer, intent(out), optional :: error
+  logical is_in_cylinder_f
 
+  logical :: my_periodic
   real(dp) :: delta_p(3), v(3), r
 
-  if (present(i_data)) call system_abort("is_in_cylinder doesn't take i_data")
-  if (.not.present(r_data)) call system_abort("is_in_cylinder requires r_data")
+  INIT_ERROR(error)
 
-  if (size(r_data) /= 7) call system_abort("is_in_cylinder requires [px py pz vx vy vz r] in cylinder")
+  if (present(i_data)) then
+     RAISE_ERROR("is_in_cylinder_f doesn't take i_data", error)
+  endif
+  if (.not.present(r_data)) then
+     RAISE_ERROR("is_in_cylinder_f requires r_data", error)
+  endif
+  if (size(r_data) /= 7) then
+     RAISE_ERROR("is_in_cylinder_f requires [px py pz vx vy vz r] in cylinder", error)
+  endif
 
-  delta_p = this%pos(:,i) - r_data(1:3)
+  if (periodic) then
+     delta_p = diff_min_image(this, i, r_data(1:3))
+  else
+     delta_p = this%pos(:,i) - r_data(1:3)
+  endif
   v = r_data(4:6)
   v = v/norm(v)
   r = r_data(7)
 
   delta_p = delta_p - v*(v .dot. delta_p)
-  is_in_cylinder = (norm(delta_p) < r)
-end function is_in_cylinder
+  if (r > 0.0_dp) then
+     is_in_cylinder_f = (norm(delta_p) < r)
+  else
+     is_in_cylinder_f = (norm(delta_p) >= -r)
+  endif
+end function is_in_cylinder_f
+
+function is_in_sphere_f(this, i, periodic, i_data, r_data, error)
+  type(atoms), intent(in) :: this
+  integer, intent(in) :: i
+  logical :: periodic
+  integer, intent(in), optional :: i_data(:)
+  real(dp), intent(in), optional :: r_data(:)
+  integer, intent(out), optional :: error
+  logical is_in_sphere_f
+
+  real(dp) :: dr, r
+
+  INIT_ERROR(error)
+
+  if (present(i_data)) then
+     RAISE_ERROR("is_in_sphere_f doesn't take i_data", error)
+  endif
+  if (.not.present(r_data)) then
+     RAISE_ERROR("is_in_sphere_f requires r_data", error)
+  endif
+  if (size(r_data) /= 4) then
+     RAISE_ERROR("is_in_sphere_f requires [px py pz r] in sphere", error)
+  endif
+
+  if (periodic) then
+     dr = distance_min_image(this, i, r_data(1:3))
+  else
+     dr = norm(this%pos(:,i)-r_data(1:3))
+  endif
+  r = r_data(4)
+
+  if (r > 0.0_dp) then
+     is_in_sphere_f = (dr < r)
+  else
+     is_in_sphere_f = (dr >= -r)
+  endif
+end function is_in_sphere_f
+
+subroutine mark_cylinder(this, p, v, r, periodic, mark_name, mark_value, intersection)
+  type(atoms), intent(inout) :: this
+  real(dp), intent(in) :: p(3), v(3), r
+  character(len=*), intent(in), optional :: mark_name
+  integer, intent(in), optional :: mark_value
+  logical, intent(in), optional :: periodic, intersection
+
+  call atoms_mark(this, is_in_cylinder_f, f_r_data=(/ p, v, r /), periodic=periodic, mark_name=mark_name, mark_value=mark_value, intersection=intersection)
+end subroutine mark_cylinder
+
+subroutine mark_sphere(this, p, r, periodic, mark_name, mark_value, intersection)
+  type(atoms), intent(inout) :: this
+  real(dp), intent(in) :: p(3), r
+  character(len=*), intent(in), optional :: mark_name
+  integer, intent(in), optional :: mark_value
+  logical, intent(in), optional :: periodic, intersection
+
+  call atoms_mark(this, is_in_sphere_f, f_r_data=(/ p, r /), periodic=periodic, mark_name=mark_name, mark_value=mark_value, intersection=intersection)
+end subroutine mark_sphere
 
 subroutine ft_rotate(field, axis, angle, origin)
   real(dp), intent(inout) :: field(:,:)
