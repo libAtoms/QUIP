@@ -510,7 +510,7 @@ contains
               RAISE_ERROR('Potential_Simple_calc: single_cluster=T not yet implemented when cluster contains repeated periodic images', error)
 	 endif
 
-	 cluster = carve_cluster(at, new_args_str, cluster_info, error)
+	 cluster = carve_cluster(at, new_args_str, cluster_info, error=error)
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
