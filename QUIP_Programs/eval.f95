@@ -99,7 +99,7 @@ implicit none
   if (.not. param_read_args(cli_params, ignore_unknown=.true., task="preliminary eval CLI arguments")) then
     call system_abort("Nearly impossible failure to look for verbosity argument in preliminary parse")
   end if
-  call verbosity_push(trim(verbosity))
+  call verbosity_push(verbosity_of_str(trim(verbosity)))
   call finalise(cli_params)
 
   call enable_timing()

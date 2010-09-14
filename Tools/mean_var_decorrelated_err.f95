@@ -1,5 +1,5 @@
 program do_statistics_decorrelated_err
-use libatoms_module, only : dp, system_initialise, system_finalise, system_abort, verbosity_push, verbosity_pop, initialise, finalise, read_file, print, operator(//), param_register, param_read_args
+use libatoms_module, only : dp, system_initialise, system_finalise, system_abort, verbosity_push, verbosity_pop, verbosity_of_str, initialise, finalise, read_file, print, operator(//), param_register, param_read_args
 use libatoms_module, only : PRINT_SILENT, INPUT, STRING_LENGTH
 use libatoms_module, only : inoutput, dictionary
 use statistics_module, only : mean_var_decorrelated_err
@@ -21,7 +21,7 @@ implicit none
       call system_abort("Failed to parse command line arguments")
    end if
    call finalise(cli)
-   call verbosity_push(trim(verbosity_str))
+   call verbosity_push(verbosity_of_str(trim(verbosity_str)))
 
    call initialise(io, "stdin", INPUT)
 

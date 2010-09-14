@@ -1078,7 +1078,7 @@ contains
        
        call QUIP_FoX_get_value(attributes, "verbosity", value, status)
        if (status == 0) then
-          parse_cp%io_verbosity = str_to_verbosity(value)
+          parse_cp%io_verbosity = verbosity_of_str(value)
        end if
 
        call QUIP_FoX_get_value(attributes, "netcdf", value, status)
