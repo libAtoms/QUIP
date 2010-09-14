@@ -339,6 +339,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     RAISE_ERROR("read_xyz: cannot open \"stdout\" for reading.");
   }
 
+  n_buffer = 0;
   got_index = 0;
   orig_stringp = stringp = prev_stringp = NULL;
   in = NULL;
