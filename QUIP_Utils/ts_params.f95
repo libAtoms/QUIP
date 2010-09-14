@@ -268,7 +268,7 @@ subroutine tsParams_startElement_handler(URI, localname, name, attributes)
 
      call QUIP_FoX_get_value(attributes, "verbosity", value, status)
      if (status == 0) then
-       parse_ts%io_verbosity = str_to_verbosity(value)
+       parse_ts%io_verbosity = verbosity_of_str(value)
      end if
 
      call QUIP_FoX_get_value(attributes, "print_interval", value, status)

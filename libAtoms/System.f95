@@ -277,11 +277,6 @@ module system_module
     module procedure Stack_Print
   end interface Print
 
-  private :: verbosity_push_i, verbosity_push_s
-  interface verbosity_push
-     module procedure verbosity_push_i, verbosity_push_s
-  end interface verbosity_push
-
   !% takes as arguments a default value and an optional argument, and 
   !% returns the optional argument value if it's present, otherwise
   !% the default value
@@ -2322,7 +2317,7 @@ contains
   end function verbosity_to_str
 
   !% Map from descriptive verbosity names ('NORMAL', 'VERBOSE' etc.) to numbers
-  function str_to_verbosity(str) result(val)
+  function verbosity_of_str(str) result(val)
     character(len=*), intent(in) :: str
     integer :: val
 
@@ -2339,22 +2334,15 @@ contains
     else if (trim(str) == 'ANAL') then
        val = PRINT_ANAL
     else
-       call system_abort("str_to_verbosity failed to understand '"//trim(str)//"'")
+       call system_abort("verbosity_of_str failed to understand '"//trim(str)//"'")
     end if
-  end function str_to_verbosity
+  end function verbosity_of_str
     
-
-  !% Push a value onto the verbosity stack, by string name
-  subroutine verbosity_push_s(val)
-    character(len=*), intent(in) :: val 
-
-    call verbosity_push(str_to_verbosity(trim(val)))
-  end subroutine verbosity_push_s
 
   !% Push a value onto the verbosity stack
   !% Don't ever lower the verbosity if verbosity minimum is set,
   !%   but always push _something_
-  subroutine verbosity_push_i(val)
+  subroutine verbosity_push(val)
     integer, intent(in) :: val 
 
     if ((value(mainlog%verbosity_cascade_stack) == 0) .or. &
@@ -2364,7 +2352,7 @@ contains
       call push(mainlog%verbosity_stack, value(mainlog%verbosity_stack))
     endif
     !call print('verbosity_push now '//current_verbosity(), PRINT_ALWAYS)
-  end subroutine verbosity_push_i
+  end subroutine verbosity_push
 
   !% pop the current verbosity value off the stack
   subroutine verbosity_pop()
