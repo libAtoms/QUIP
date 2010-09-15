@@ -142,7 +142,7 @@ install:
 
 install-build.QUIP_ARCH:
 	@echo "installing from build.${QUIP_ARCH}"; \
-	for f in `/bin/ls build.${QUIP_ARCH} | egrep -v '\.o|\.a|\.mod|Makefile*'`; do \
+	for f in `/bin/ls build.${QUIP_ARCH} | egrep -v '\.o|\.a|\.mod|Makefile*|^test$'`; do \
 	  if [ -x build.${QUIP_ARCH}/$$f ]; then \
 	    echo "copying f $$f to ${QUIP_INSTDIR}"; \
 	    cp build.${QUIP_ARCH}/$$f ${QUIP_INSTDIR}; \
