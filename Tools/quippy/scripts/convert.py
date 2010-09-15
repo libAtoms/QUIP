@@ -39,7 +39,8 @@ that should be included in output file, e.g.
 The default is to print all properties.
 For a valid XYZ file, the first should be "species" and the second
 should be something position-like. The order of properties is as
-specified in this command.""")
+specified in this command. If list is the string 'SAME', output
+properties of each frame are same as input properties.""")
 p.add_option('-P', '--params', action='store', help="""Comma or colon separated list of parameters (per-frame variables) to
 include in output file. For example:
   -P Energy,MaxForce
@@ -56,6 +57,7 @@ p.add_option('-x', '--extract-params', action='store_true', help="""Instead of p
 p.add_option('-F', '--extract-format', action='store', help="""Format used to print parameters if the --extract-params option is used.""")
 p.add_option('-e', '--exec-code', action='store', help="""Python code to execute on each frame before writing it to output file. Atoms object is
 available as `at`, and do_print is set to True. If the user-supplied code sets do_print to False, the frame is not printed.""")
+p.add_option('-E', '--exec-code-file', action='store', help="""File with python code to execute, just like -e/--exec-code.""")
 p.add_option('-R', '--atoms-ref', action='store', help="""Reference configuration for reordering atoms. Applies to CASTEP file formats only.""")
 p.add_option('-v', '--verbose', action='store_true', help="""Verbose output (first frame only)""", default=False)
 p.add_option('-n', '--rename', action='append', help="""Old and new names for a property or parameter to be renamed. Can appear multiple times.""", nargs=2)
@@ -67,6 +69,10 @@ opt, args = p.parse_args()
 
 if len(args) != 1 and len(args) != 2:
    p.error('One input file must be specified. Output file is optional.')
+
+exec_code_file = None
+if opt.exec_code_file is not None:
+   exec_code_file = open(opt.exec_code_file, "r").read()
 
 try:
    infile, outfile = args
@@ -98,8 +104,12 @@ if opt.lattice is not None:
       p.error('LATTICE should consist of 1, 3 or 9 numbers -- got %r' % opt.lattice)
 
 
+print_same_properties=False
 if opt.properties is not None:
-   opt.properties = parse_comma_colon_list(opt.properties)
+   if opt.properties == 'SAME':
+      print_same_properties=True
+   else:
+      opt.properties = parse_comma_colon_list(opt.properties)
 
 if opt.params is not None:
    opt.params = parse_comma_colon_list(opt.params)
@@ -120,6 +130,9 @@ if opt.merge is not None:
       opt.merge_properties = at_merge.properties.keys()
 
 def process(at, frame):
+   if print_same_properties:
+      write_args['properties'] = at.properties.keys()
+
    # filter atoms
    if opt.select is not None:
       at2 = at.select(mask=eval(opt.select))
@@ -150,6 +163,8 @@ def process(at, frame):
 
    # Execute user code
    do_print = True
+   if exec_code_file is not None:
+      exec(exec_code_file)
    if opt.exec_code is not None:
       exec(opt.exec_code)
 
