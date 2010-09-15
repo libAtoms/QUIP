@@ -47,8 +47,16 @@ contains
   pure function vs_str(s) result(vs)
     character(len=*), intent(in) :: s
     character, dimension(len(s)) :: vs
+    integer :: i
 
-    vs = transfer(s, vs)
+    ! Ifort fails to copy the string to the character array sometimes using
+    ! transfer. Do loop should be always safe.
+
+    !vs = transfer(s, vs)
+    do i = 1, len(s)
+      vs(i) = s(i:i)
+    enddo
+
   end function vs_str
 
   pure function vs_str_alloc(s) result(vs)
