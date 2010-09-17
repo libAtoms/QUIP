@@ -114,7 +114,7 @@ program qmmm_md
   character(len=FIELD_LENGTH) :: restraint_constraint_xml_file
   type(Extendable_Str)        :: restraint_constraint_xml_es
   integer                     :: Charge
-  real(dp)                    :: Tau, Nose_Hoover_Tau
+  real(dp)                    :: Langevin_Tau, Nose_Hoover_Tau
   logical                     :: Buffer_general, do_general
   logical                     :: Continue_it
   logical                     :: reinitialise_qm_region
@@ -138,6 +138,8 @@ program qmmm_md
   logical                     :: use_create_cluster_info_for_core
   real(dp) :: qm_region_ctr(3)
   real(dp) :: use_cutoff
+  real(dp) :: H_extra_heat_ctr(3), H_extra_heat_r(2), H_extra_heat_velo_factor
+  real(dp) :: nH_extra_heat_ctr(3), nH_extra_heat_r(2), nH_extra_heat_velo_factor
 
   logical :: distance_ramp
   real(dp) :: distance_ramp_inner_radius, distance_ramp_outer_radius
@@ -151,6 +153,7 @@ logical :: have_silica_potential
   integer :: error=ERROR_NONE
 
   real(dp), allocatable :: restraint_stuff(:,:)
+  real(dp) :: r
 
 !    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
@@ -183,7 +186,7 @@ logical :: have_silica_potential
       call param_register(params_in, 'Residue_Library', 'all_res.CHARMM.lib',Residue_Library) 
       call param_register(params_in, 'restraint_constraint_xml_file', '', restraint_constraint_xml_file) 
       call param_register(params_in, 'Charge', '0', Charge)
-      call param_register(params_in, 'Tau', '500.0', Tau)
+      call param_register(params_in, 'Langevin_Tau', '500.0', Langevin_Tau)
       call param_register(params_in, 'Nose_Hoover_Tau', '74.0', Nose_Hoover_Tau)
       call param_register(params_in, 'Buffer_general', 'F', Buffer_general)
       call param_register(params_in, 'Continue', 'F', Continue_it)
@@ -214,6 +217,13 @@ logical :: have_silica_potential
       call param_register(params_in, 'distance_ramp', 'F', distance_ramp)
       call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius)
       call param_register(params_in, 'distance_ramp_outer_radius', '4.0', distance_ramp_outer_radius)
+
+      call param_register(params_in, 'H_extra_heat_ctr', '0.0 0.0 0.0', H_extra_heat_ctr)
+      call param_register(params_in, 'H_extra_heat_r', '0.0 -1.0', H_extra_heat_r)
+      call param_register(params_in, 'H_extra_heat_velo_factor', '1.0', H_extra_heat_velo_factor)
+      call param_register(params_in, 'nH_extra_heat_ctr', '0.0 0.0 0.0', nH_extra_heat_ctr)
+      call param_register(params_in, 'nH_extra_heat_r', '0.0 -1.0', nH_extra_heat_r)
+      call param_register(params_in, 'nH_extra_heat_velo_factor', '1.0', nH_extra_heat_velo_factor)
 
       if (.not. param_read_args(params_in, do_check = .true.)) then
         call system_abort('could not parse argument line')
@@ -279,21 +289,24 @@ logical :: have_silica_potential
       call print('  Run_Type2 '//Run_Type2)
       call print('  IO_Rate '//IO_Rate)
       if (Thermostat_Type.eq.0) then
-         call print('  Thermostat_Type 0: '//'None, NVE')
+         call print('  Thermostat_Type 0: None, NVE')
       elseif (Thermostat_Type.eq.1) then
-         call print('  Thermostat_Type 1: '//'Langevin everywhere')
-         call print('  Tau '//Tau)
+         call print('  Thermostat_Type 1: Langevin everywhere')
+         call print('  Langevin_Tau '//Langevin_Tau)
       elseif (Thermostat_Type.eq.2) then
-         call print('  Thermostat_Type 1: '//'Nose-Hoover everywhere')
+         call print('  Thermostat_Type 1: Nose-Hoover everywhere')
          call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.3) then
-         call print('  Thermostat_Type 3: '//'separate Nose-Hoover for each atom')
+         call print('  Thermostat_Type 3: separate Nose-Hoover for each atom')
          call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
+      elseif (Thermostat_Type.eq.4) then
+         call print('  Thermostat_Type 4: separate Nose-Hoover-Langevin for each atom')
+         call print('  Langevin_Tau ' // Langevin_Tau // ' Nose_Hoover_Tau '//Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.5) then
          call print('  Thermostat_Type 5: QM core & buffer heavy atoms in the 1st thermostat')
          call print('                     QM core & buffer H in the 2nd thermostat')
          call print('                     classical O & H in the 3rd thermostat')
-         call print('  Tau '//Tau // ', Nose_Hoover_Tau ' // Nose_Hoover_Tau)
+         call print('  Langevin_Tau '//Langevin_Tau // ', Nose_Hoover_Tau ' // Nose_Hoover_Tau)
       elseif (Thermostat_Type.eq.6) then
          call print('  Thermostat_Type 6: 3 regions (QM, buffer, MM) x  2 types (H, heavy)')
          call print('                   each with its own Nose-Hoover thermostat')
@@ -390,7 +403,7 @@ logical :: have_silica_potential
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
        call init_restraints_constraints(ds, string(restraint_constraint_xml_es))
        call finalise(restraint_constraint_xml_es)
-       if (ds%Nrestraints > 0) allocate(restraint_stuff(3,ds%Nrestraints))
+       if (ds%Nrestraints > 0) allocate(restraint_stuff(5,ds%Nrestraints))
     endif
 
     ds%avg_time = avg_time
@@ -609,7 +622,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         f = sum0(f1,ds%atoms)
      endif
 
-     if (ds%Nrestraints > 0) call calc_restraint_stuff(ds, restraint_stuff)
+     if (ds%Nrestraints > 0) call get_restraint_stuff(ds, restraint_stuff)
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
      call set_thermostat_regions(ds%atoms, Thermostat_Type, Thermostat_7_rs, qm_region_ctr)
@@ -618,7 +631,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
-     if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'E')
+     if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'E')
      call print(ds%thermostat)
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
@@ -772,20 +785,22 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      call advance_verlet2(ds, Time_Step, f)
 
   !RESTRAINTS
-     if (ds%Nrestraints > 0) call calc_restraint_stuff(ds, restraint_stuff)
+     if (ds%Nrestraints > 0) call get_restraint_stuff(ds, restraint_stuff)
 
   !PRINT DS,THERMOSTAT,CONSTRAINT,XYZ
 
      if (ds%t < Equilib_Time) then
         call ds_print_status(ds, 'E',energy)
-        if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'E')
+        if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'E')
      else
         call ds_print_status(ds, 'I',energy)
-	if (ds%Nrestraints > 0) call print_restraint_stuff(restraint_stuff, 'I')
+	if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'I')
      end if
 
-     !Thermostat
-     call print(ds%thermostat)
+     !Thermostat (only if not per-atom)
+     if (thermostat_type /= 3 .and. thermostat_type /= 4) then
+       call print(ds%thermostat)
+     endif
 
      !Constraint
      if (ds%Nconstraints > 0) then
@@ -822,6 +837,23 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
         call finalise(latest_xyz)
         call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
+
+     if (H_extra_heat_r(2) >= H_extra_heat_r(1)) then
+       do i=1, ds%atoms%N
+	if (ds%atoms%Z(i) == 1) then
+	  r = distance_min_image(ds%atoms, i, H_extra_heat_ctr)
+	  if (r >= H_extra_heat_r(1) .and. r <= H_extra_heat_r(2)) ds%atoms%velo(:,i) = H_extra_heat_velo_factor*ds%atoms%velo(:,i)
+	endif
+       end do
+     endif
+     if (nH_extra_heat_r(2) >= nH_extra_heat_r(1)) then
+       do i=1, ds%atoms%N
+	if (ds%atoms%Z(i) /= 1) then
+	  r = distance_min_image(ds%atoms, i, nH_extra_heat_ctr)
+	  if (r >= nH_extra_heat_r(1) .and. r <= nH_extra_heat_r(2)) ds%atoms%velo(:,i) = nH_extra_heat_velo_factor*ds%atoms%velo(:,i)
+	endif
+       end do
+     endif
      
   !ADVANCE VERLET 1
 
@@ -1322,7 +1354,7 @@ contains
       case(0)
 	call print("No thermostat, NVE!!", PRINT_ALWAYS)
       case(1)
-	call add_thermostat(ds,type=LANGEVIN,T=T,tau=Tau)
+	call add_thermostat(ds,type=LANGEVIN,T=T,tau=Langevin_Tau)
 	call print('Added single Langevin Thermostat')
       case(2)
 	call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
@@ -1331,11 +1363,18 @@ contains
 	do i=1, ds%atoms%N
 	  call add_thermostat(ds,type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
 	end do
+	ds%print_thermostat_temps = .false.
 	call print("Added 1 Nose-Hoover thermostat for each atom")
+      case(4)
+	do i=1, ds%atoms%N
+	  call add_thermostat(ds,type=NOSE_HOOVER_LANGEVIN,T=T,Q=1.0_dp, tau=Langevin_Tau)
+	end do
+	ds%print_thermostat_temps = .false.
+	call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
       case(5)
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
-	call add_thermostat(ds, type=NOSE_HOOVER_LANGEVIN,T=T,tau=Tau,Q=1.0_dp) ! MM
+	call add_thermostat(ds, type=NOSE_HOOVER_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp) ! MM
 	call print("Added 1 Nose-Hoover for QM+buffer heavy, 1 Nose-Hoover for QM+buffer H, and 1 Nose-Hoover-Langevin for MM")
       case(6)
 	call add_thermostat(ds, type=NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
@@ -1422,7 +1461,7 @@ contains
 	continue
       case (2)
 	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=3*at%N, T=T, tau=Nose_Hoover_tau)
-      case(3)
+      case(3, 4)
 	do i=1, ds%atoms%N
 	  ds%thermostat(i)%Q = nose_hoover_mass(Ndof=3, T=T, tau=Nose_Hoover_tau)
 	end do
@@ -1462,7 +1501,7 @@ contains
 	  continue
       case(1, 2)
 	  at%thermostat_region = 1
-      case(3)
+      case(3, 4)
 	  do i=1, ds%atoms%N
 	    at%thermostat_region(i) = i
 	  end do
@@ -1526,24 +1565,32 @@ contains
     end select
   end subroutine set_thermostat_regions
 
-   subroutine print_restraint_stuff(restraint_stuff, suffix)
+   subroutine print_restraint_stuff(ds, restraint_stuff, suffix)
+     type(DynamicalSystem), intent(in) :: ds
      real(dp), intent(in) :: restraint_stuff(:,:)
      character(len=*), intent(in) :: suffix
+     logical, save :: firstcall = .true.
 
-     call print('R'//trim(suffix) // " " // reshape( restraint_stuff, (/ size(restraint_stuff,1)*size(restraint_stuff,2) /) ))
+     if (firstcall) then
+       call print("#R t  target_v C E dE/dcoll dE/dk ....")
+     endif
+
+     call print('R'//trim(suffix) // " " // ds%t // " " // reshape( restraint_stuff, (/ size(restraint_stuff) /) ))
    end subroutine print_restraint_stuff
 
-   subroutine calc_restraint_stuff(ds, restraint_stuff)
+   subroutine get_restraint_stuff(ds, restraint_stuff)
      type(DynamicalSystem), intent(in) :: ds
      real(dp), intent(out) :: restraint_stuff(:,:)
  
      integer i_r
  
      do i_r = 1, ds%Nrestraints
-        restraint_stuff(1,i_r) = ds%restraint(i_r)%C
-        restraint_stuff(2,i_r) = ds%restraint(i_r)%E
-        restraint_stuff(3,i_r) = -ds%restraint(i_r)%dE_dcoll
+        restraint_stuff(1,i_r) = ds%restraint(i_r)%target_v
+        restraint_stuff(2,i_r) = ds%restraint(i_r)%C
+        restraint_stuff(3,i_r) = ds%restraint(i_r)%E
+        restraint_stuff(4,i_r) = -ds%restraint(i_r)%dE_dcoll
+        restraint_stuff(5,i_r) = -ds%restraint(i_r)%dE_dk
      end do
-   end subroutine calc_restraint_stuff
+   end subroutine get_restraint_stuff
 
 end program qmmm_md
