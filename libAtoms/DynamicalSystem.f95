@@ -110,6 +110,7 @@ module dynamicalsystem_module
       type(RigidBody),  allocatable, dimension(:) :: rigidbody
       type(Group),      allocatable, dimension(:) :: group
       type(thermostat), allocatable, dimension(:) :: thermostat
+      logical :: print_thermostat_temps = .true.
 
    end type DynamicalSystem
 
@@ -2006,16 +2007,18 @@ contains
      end if
      call print(line)
 
-     if (any(region_temps >= 0.0_dp)) then
-       call print("T", nocr=.true.)
-       do i=0, size(region_temps)-1
-	 if (this%thermostat(i)%type /= NONE) then
-	   call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
-	 else
-	   call print(" "// i // " type=NONE", nocr=.true.)
-	 endif
-       end do
-       call print("")
+     if (this%print_thermostat_temps) then
+       if (any(region_temps >= 0.0_dp)) then
+	 call print("T", nocr=.true.)
+	 do i=0, size(region_temps)-1
+	   if (this%thermostat(i)%type /= NONE) then
+	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true.)
+	   else
+	     call print(" "// i // " type=NONE", nocr=.true.)
+	   endif
+	 end do
+	 call print("")
+       endif
      endif
 
    end subroutine ds_print_status
