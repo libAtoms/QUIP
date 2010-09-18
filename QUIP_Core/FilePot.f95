@@ -357,12 +357,13 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
           RAISE_ERROR("filepot_read_output: don't know how to rescale virial for repicated system", error)
      endif
 
-    if (.not. get_value(at_out%params,'virial',virial_1d)) then
+    if ( get_value(at_out%params,'virial',virial_1d)) then
+      virial(:,1) = virial_1d(1:3)
+      virial(:,2) = virial_1d(4:6)
+      virial(:,3) = virial_1d(7:9)
+    elseif( .not. get_value(at_out%params,'virial',virial) ) then
       RAISE_ERROR("filepot_read_output needed virial, but couldn't find virial in '"//trim(outfile)//"'", error)
     endif
-    virial(:,1) = virial_1d(1:3)
-    virial(:,2) = virial_1d(4:6)
-    virial(:,3) = virial_1d(7:9)
   endif
 
   if (present(local_e)) then
