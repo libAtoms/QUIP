@@ -184,6 +184,15 @@ contains
     this%y2_initialised = .true.
 
     deallocate(u) ! free temporary
+
+    if( this%yp1 > 0.99e30_dp ) then
+       this%yp1 = spline_deriv(this,this%x(1))
+    endif
+
+    if( this%ypn > 0.99e30_dp ) then
+       this%ypn = spline_deriv(this,this%x(n))
+    endif
+
   end subroutine spline_y2calc
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -196,7 +205,7 @@ contains
   function spline_value(this,x) result(y)
     type(spline)::this
     real(dp)::x,h,a,b,y
-    integer::klo,khi,k
+    integer::klo,khi,k, n
 
     if(.NOT.this%y2_initialised) then
        if(allocated(this%x).and.allocated(this%y)) then
@@ -206,27 +215,33 @@ contains
        end if
     end if
 
+    n = this%n
+    if( x < this%x(1) ) then
+       y = this%y(1) + (x - this%x(1))*this%yp1
+    elseif( x > this%x(n) ) then
+       y = this%y(n) + (x - this%x(n))*this%ypn
+    else
+       klo = 1
+       khi = this%n
 
-    klo = 1
-    khi = this%n
+       do  while(khi-klo > 1)
+          k = (khi+klo)/2
+          if(this%x(k) > x) then 
+             khi = k
+          else 
+             klo = k
+          end if
+       end do
 
-    do  while(khi-klo > 1)
-       k = (khi+klo)/2
-       if(this%x(k) > x) then 
-          khi = k
-       else 
-          klo = k
+       h = this%x(khi)-this%x(klo)
+       if(h .EQ. 0.0_dp) then
+          call system_abort("spline_interpolate: h=0!!!")
        end if
-    end do
 
-    h = this%x(khi)-this%x(klo)
-    if(h .EQ. 0.0_dp) then
-       call system_abort("spline_interpolate: h=0!!!")
-    end if
-
-    a = (this%x(khi)-x)/h
-    b = (x-this%x(klo))/h
-    y = a*this%y(klo)+b*this%y(khi)+((a*a*a-a)*this%y2(klo)+(b*b*b-b)*this%y2(khi))*(h*h)/6.0
+       a = (this%x(khi)-x)/h
+       b = (x-this%x(klo))/h
+       y = a*this%y(klo)+b*this%y(khi)+((a*a*a-a)*this%y2(klo)+(b*b*b-b)*this%y2(khi))*(h*h)/6.0
+    endif
 
   end function spline_value
 
@@ -252,26 +267,32 @@ contains
 
     n = this%n
 
-    klo = 1
-    khi = n
+    if( x < this%x(1) ) then
+       dy = this%yp1
+    elseif( x > this%x(n) ) then
+       dy = this%ypn
+    else
+       klo = 1
+       khi = n
 
-    do  while(khi-klo > 1)
-       k = (khi+klo)/2
-       if(this%x(k) > x) then 
-          khi = k
-       else 
-          klo = k
+       do  while(khi-klo > 1)
+          k = (khi+klo)/2
+          if(this%x(k) > x) then 
+             khi = k
+          else 
+             klo = k
+          end if
+       end do
+
+       h = this%x(khi)-this%x(klo)
+       if(h .EQ. 0.0) then
+          call system_abort("spline_deriv: h=0!!!")
        end if
-    end do
 
-    h = this%x(khi)-this%x(klo)
-    if(h .EQ. 0.0) then
-       call system_abort("spline_deriv: h=0!!!")
-    end if
-
-    a = (this%x(khi)-x)/h
-    b = (x-this%x(klo))/h
-    dy = (this%y(khi)-this%y(klo))/h+((3.0_dp*b*b-1.0_dp)*this%y2(khi)-(3.0_dp*a*a-1.0_dp)*this%y2(klo))*h/6.0_dp
+       a = (this%x(khi)-x)/h
+       b = (x-this%x(klo))/h
+       dy = (this%y(khi)-this%y(klo))/h+((3.0_dp*b*b-1.0_dp)*this%y2(khi)-(3.0_dp*a*a-1.0_dp)*this%y2(klo))*h/6.0_dp
+    endif
 
   end function spline_deriv
 
