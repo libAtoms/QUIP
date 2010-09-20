@@ -329,8 +329,8 @@ SM   SM    173.000     2.0290 ! ALLOW   SUL ION
 SS   CS    205.000     1.8360 ! ALLOW   SUL
                 ! methylthiolate 6-31+G* geom/freq, adm jr., 6/1/92
 !AMBER parameters for methyl chloride
-CL   CCL   232.000     1.7660     ! from AMBER
-CCL  HCL   340.000     1.09       ! from AMBER
+CL   CCL   279.000     1.786       ! from AMBER
+CCL  HCL   335.900     1.093       ! from AMBER
 
 ANGLES
 !
@@ -1062,8 +1062,8 @@ SS   CS   CT3    55.000   118.0000 ! ALLOW SUL
 SS   CS   HA     40.000   112.3000 ! ALLOW SUL
                 ! methylthiolate 6-31+G* geom/freq, adm jr., 6/1/92
 !AMBER parameters for methyl chloride
-CL   CCL  HCL    50.000   108.5    !from AMBER 
-HCL  CCL  HCL    35.000   109.5    !from AMBER
+CL   CCL  HCL    40.700   105.93010    !from AMBER 
+HCL  CCL  HCL    39.200   109.55005    !from AMBER
 CL   CCL  CL      0.000     0.0    !for cp2k not to complain
 
 DIHEDRALS
@@ -3329,12 +3329,12 @@ CC1B   0.0   -0.0680     2.0900 !
 CC2    0.0   -0.0640     2.0800 !
 NS1    0.000000  -0.200000     1.850000 !N for deprotonated Schiff's base
 NS2    0.000000  -0.200000     1.850000 !N for protonated Schiff's base
-!AMBER parameters for methyl chloride
+!AMBER GAFF parameters for methyl chloride
 CCL    0.000000  -0.109400     1.908000
 HCL    0.000000  -0.015700     1.387000 
 !averaged AMBER parameters for the chlorine and chloride
-CL     0.000000  -0.182500     2.209000
-CLA    0.000000  -0.182500     2.209000
+CL     0.000000  -0.163000     2.209000
+CLA    0.000000  -0.163000     2.209000
 
 HBOND CUTHB 0.5  ! If you want to do hbond analysis (only), then use
                  ! READ PARAM APPEND CARD
