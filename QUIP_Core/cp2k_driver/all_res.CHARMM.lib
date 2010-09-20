@@ -3355,9 +3355,17 @@ IMP 10  9   7   18
 %%residue H1 HWP HWP
 1   0   0   0   0   0   0   HT    0.417
 
+#CH3Cl from AMBER GAFF
+%residue H3C1Cl1 MCL MCL
+17  5   0   0   0   0   0   CL    -0.18556
+1   5   0   0   0   0   0   HCL    0.14741
+1   5   0   0   0   0   0   HCL    0.14741
+1   5   0   0   0   0   0   HCL    0.14741
+6   1   2   3   4   0   0   CCL   -0.25667
+
 #residue CH3Cl, not present in CHARMM!!
 #charge distribution from Nguyen_JPhysChemA_108_11101_(2004)
-%residue H3C1Cl1 MCL MCL
+%%residue H3C1Cl1 MCL MCL
 17  5   0   0   0   0   0   CL    -0.0995
 1   5   0   0   0   0   0   HCL    0.244
 1   5   0   0   0   0   0   HCL    0.244
