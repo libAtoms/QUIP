@@ -916,11 +916,12 @@ subroutine write_electrostatic_potential(this, at, filename, mask_name, ngrid, g
 
   type(Atoms) :: at_copy
   type(InOutput) :: out
-  real(dp) :: r, charge, sigma
+  real(dp) :: r, charge, sigma, e, e0
   real(dp), pointer :: at_charge(:)
   real(dp), allocatable :: local_e(:)
   logical, pointer, dimension(:) :: mask
   integer spin, i, j, k, l, igrid, test_atom
+
 
   INIT_ERROR(error)
   if (.not. assign_pointer(at, mask_name, mask)) then
@@ -929,11 +930,24 @@ subroutine write_electrostatic_potential(this, at, filename, mask_name, ngrid, g
 
   ! Add a non-interacting test_atom at grid point
   call atoms_copy_without_connect(at_copy, at)
+  !at_copy%lattice(:,1) = 0.0_dp
+  !at_copy%lattice(:,2) = 0.0_dp
+  !call set_lattice(at_copy, at_copy%lattice, .false.)
+  call print('at_copy%is_periodic '//(at_copy%is_periodic))
+  call set_cutoff(at_copy, this%cutoff_coulomb*BOHR)
+  call calc_connect(at_copy)
+
+  if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
+     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+  endif
+
+  e0 = 0.0_dp
+  call asap_rs_charges(this, at_copy, at_charge, e=e0)
+  call print('e0 = '//e0)
+
   call add_atoms(at_copy, (/0.0_dp, 0.0_dp, 0.0_dp/), 0)
-  at_copy%is_periodic = .false.
   test_atom = at_copy%n
   allocate(local_e(at_copy%n))
-  call set_cutoff(at_copy, this%cutoff_coulomb*BOHR)
 
   if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
      RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
@@ -952,14 +966,17 @@ subroutine write_electrostatic_potential(this, at, filename, mask_name, ngrid, g
               at_copy%pos(:,test_atom) = real_grid(:,igrid)
               call calc_connect(at_copy)
               local_e = 0.0_dp
+              e = 0.0_dp
 
               ! TODO:
+              !  (0) test charge should be non-interacting
               !  (1) pseudising of potential for small distances
               !  (2) grid_size effects
+              !  (3) make potential periodic across grid
 
-              call asap_rs_charges(this, at_copy, at_charge, local_e=local_e)
+              call asap_rs_charges(this, at_copy, at_charge, e=e, local_e=local_e)
 
-              write (out%unit,'(3i6,f20.6)') i, j, k, local_e(test_atom)
+              write (out%unit,'(3i6,2f20.6)') i, j, k, (e - e0)/at_charge(test_atom), 2.0_dp*local_e(test_atom)/at_charge(test_atom)
            end do
         end do
      end do
@@ -994,7 +1011,7 @@ subroutine write_electric_field(this, at, filename, mask_name, ngrid, grid_size,
   efield(:,:) = efield_dipole
 
   do i=1,at%N
-     if (mask(i)) cycle
+     !if (mask(i)) cycle
      do j=1,at%N
         if (i == j) cycle
         d = diff(at, i, j, shift=(/0,0,0/))
@@ -1010,7 +1027,7 @@ subroutine write_electric_field(this, at, filename, mask_name, ngrid, grid_size,
   call print('END header: data is "sp nsp charge efield_x efield_y efield_z"', file=out)
   
   do i=1,at%N
-     if (mask(i)) cycle
+     !if (mask(i)) cycle
      charge = this%z(get_type(this%type_of_atomic_num, at%Z(i)))
      write (out%unit,'(a6,i6,4f12.6)'), a2s(at%species(:,i)), index_to_z_index(at, i), charge, efield(:,i)
   end do
