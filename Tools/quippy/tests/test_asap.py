@@ -9390,7 +9390,7 @@ if hasattr(quippy, 'Potential'):
 
       def test_write_electric_field(self):
          self.pot.calc(self.at, force=True, write_electrostatics=True, electrostatic_grid=[50,50,1])
-         data = castep.read_formatted_potential('asap2.pot_fmt')
+         #data = castep.read_formatted_potential('asap2.pot_fmt')
          #self.at.write('dimer.cube', data=data)
          
 if __name__ == '__main__':
