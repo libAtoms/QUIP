@@ -152,9 +152,13 @@ class Atom(dict):
       
       for k in self_.keys():
          v1, v2 = self_[k], other_[k]
-         if isinstance(v1, FortranArray):
-            if abs(v1 - v2).max() > self._cmp_tol:
-               return False
+         if hasattr(v1, '__iter__') and hasattr(v2, '__iter__'):
+            v1 = farray(v1)
+            v2 = farray(v2)
+            if v1.dtype.kind != 'f':
+               if (v1 != v2).any(): return False
+            else:
+               if abs(v1 - v2).max() > self._cmp_tol: return False
          else:
             if v1 != v2:
                return False

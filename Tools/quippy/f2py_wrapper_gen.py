@@ -485,6 +485,19 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
                      'character*(*)':'S',
                      'complex(dp)':'complex',
                      'real(qp)':'float128'}
+
+   T_REAL_A = 6
+   T_INTEGER_A = 5
+   T_CHAR_A = 10
+   T_COMPLEX_A = 7
+   
+   fortran_type_code = {
+      'd': T_REAL_A,
+      'i': T_INTEGER_A,
+      'S': T_CHAR_A,
+      'complex': T_COMPLEX_A
+      }
+
    max_type_len = max(map(len,numpy_type_map.values()))
 
    subnames = [x.name for x in subts+functs]
@@ -556,7 +569,7 @@ def wrap_mod(mod, type_map, out=None, kindlines=[], initlines={}, filtertypes=No
               println('integer*%d, intent(out) :: dloc' % numpy.dtype('O').itemsize)
               println()
               println('nd = %d' % rank)
-              println('dtype = %d' % numpy.dtype(typename).num)
+              println('dtype = %s' % fortran_type_code[typename])
               println('this_ptr = transfer(this, this_ptr)')
               if 'allocatable' in el.attributes:
                   println('if (allocated(this_ptr%%p%%%s)) then' % el.name)

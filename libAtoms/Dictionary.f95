@@ -2775,8 +2775,6 @@ contains
     integer, dimension(10), intent(out) :: dshape
     integer(c_intptr_t), intent(out) :: dloc
     
-    integer, parameter :: NUMPY_INTEGER=5, NUMPY_REAL_DP=12, NUMPY_LOGICAL=5, NUMPY_COMPLEX=15, NUMPY_CHAR=18
-
     integer entry_i
 
     nd = 0
@@ -2787,48 +2785,43 @@ contains
     entry_i = lookup_entry_i(this, key)
     if (entry_i == 0) return
 
+    dtype = this%entries(entry_i)%type
+
     select case(this%entries(entry_i)%type)
        case(T_INTEGER_A)
           nd = 1
-          dtype = NUMPY_INTEGER
           dshape(1) = size(this%entries(entry_i)%i_a)
           dloc = loc(this%entries(entry_i)%i_a)
 
        case(T_REAL_A)
           nd = 1
-          dtype = NUMPY_REAL_DP
           dshape(1) = size(this%entries(entry_i)%r_a)
           dloc = loc(this%entries(entry_i)%r_a)
 
        case(T_COMPLEX_A)
           nd = 1
-          dtype = NUMPY_COMPLEX
           dshape(1) = size(this%entries(entry_i)%c_a)
           dloc = loc(this%entries(entry_i)%c_a)
 
        case(T_LOGICAL_A)
           nd = 1
-          dtype = NUMPY_LOGICAL
           dshape(1) = size(this%entries(entry_i)%l_a)
           dloc = loc(this%entries(entry_i)%l_a)
 
        case(T_CHAR_A)
           nd = 2
-          dtype = NUMPY_CHAR
           dshape(1) = size(this%entries(entry_i)%s_a,1)
           dshape(2) = size(this%entries(entry_i)%s_a,2)
           dloc = loc(this%entries(entry_i)%s_a)
 
        case(T_INTEGER_A2)
           nd = 2
-          dtype = NUMPY_INTEGER
           dshape(1) = size(this%entries(entry_i)%i_a2, 1)
           dshape(2) = size(this%entries(entry_i)%i_a2, 2)
           dloc = loc(this%entries(entry_i)%i_a2)
 
        case(T_REAL_A2)
           nd = 2
-          dtype = NUMPY_REAL_DP
           dshape(1) = size(this%entries(entry_i)%r_a2, 1)
           dshape(2) = size(this%entries(entry_i)%r_a2, 2)
           dloc = loc(this%entries(entry_i)%r_a2)
