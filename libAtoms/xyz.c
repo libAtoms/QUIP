@@ -125,6 +125,8 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
 
   INIT_ERROR;
 
+  natoms = 0;
+  nframes = 0;
   strncpy(indexname, fname, LINESIZE);
   strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
@@ -222,6 +224,8 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
 	}
     }
   XYZ_END:
+    if (nframes == 0) return 0;
+
     (*frames)[nframes] = ftell(in); // end of last frame in file
     (*atoms)[nframes] = natoms;
     index = fopen(indexname, "w");
@@ -273,6 +277,10 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   frames_array_size = 0;
   *n_frame = xyz_find_frames(filename, &frames, &atoms, &frames_array_size, error);
   PASS_ERROR;
+
+  if (*n_frame == 0) {
+    RAISE_ERROR("query_xyz: empty file", frame, *n_frame-1);
+  }
 
   if (frame < 0 || frame >= *n_frame) {
     RAISE_ERROR("query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame-1);

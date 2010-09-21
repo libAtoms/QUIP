@@ -117,6 +117,7 @@ class TestCInOutput(QuippyTestCase):
       if os.path.exists('quartz.xyz'): os.remove('quartz.xyz')
       if os.path.exists('quartz.xyz.idx'): os.remove('quartz.xyz.idx')
       if os.path.exists('quartz.nc'): os.remove('quartz.nc')
+      if os.path.exists('empty.xyz'): os.remove('empty.xyz')
 
    def testsinglexyz(self):
       self.at.write('test.xyz')
@@ -423,7 +424,9 @@ H	5.602166	8.307183	3.670115
 H	6.859570	9.215634	3.262673""")
       self.assertArrayAlmostEqual(at.lattice, numpy.diag([20.0,20.0,20.0]))
 
-
+   def test_read_empty_file(self):
+      os.system('touch empty.xyz')
+      self.assertRaises(RuntimeError, Atoms, 'empty.xyz')
 
 class TestPythonNetCDF(QuippyTestCase):
    def setUp(self):
