@@ -51,12 +51,12 @@ subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mar
     function mark_f(at, i, periodic, i_data, r_data, error)
     use system_module
     use atoms_module
-      type(atoms) :: at
-      integer :: i
-      logical :: periodic
-      integer, optional :: i_data(:)
-      real(dp), optional :: r_data(:)
-      integer, optional :: error
+      type(atoms), intent(inout) :: at
+      integer, intent(in) :: i
+      logical, intent(in) :: periodic
+      integer, intent(in), optional :: i_data(:)
+      real(dp), intent(in), optional :: r_data(:)
+      integer, intent(out), optional :: error
       logical mark_f
     end function mark_f
   end interface
@@ -98,9 +98,9 @@ subroutine atoms_mark(this, mark_f, f_i_data, f_r_data, periodic, mark_name, mar
 end subroutine atoms_mark
 
 function is_in_cylinder_f(this, i, periodic, i_data, r_data, error)
-  type(atoms), intent(in) :: this
+  type(atoms), intent(inout) :: this
   integer, intent(in) :: i
-  logical :: periodic
+  logical, intent(in) :: periodic
   integer, intent(in), optional :: i_data(:)
   real(dp), intent(in), optional :: r_data(:)
   integer, intent(out), optional :: error
@@ -139,9 +139,9 @@ function is_in_cylinder_f(this, i, periodic, i_data, r_data, error)
 end function is_in_cylinder_f
 
 function is_in_sphere_f(this, i, periodic, i_data, r_data, error)
-  type(atoms), intent(in) :: this
+  type(atoms), intent(inout) :: this
   integer, intent(in) :: i
-  logical :: periodic
+  logical, intent(in) :: periodic
   integer, intent(in), optional :: i_data(:)
   real(dp), intent(in), optional :: r_data(:)
   integer, intent(out), optional :: error
