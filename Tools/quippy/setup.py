@@ -391,7 +391,7 @@ library_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
 f2py_info = get_info('f2py')
 arraydata_ext = Extension(name='quippy.arraydata', 
                           sources=['arraydatamodule.c'] + f2py_info['sources'],
-                          include_dirs=f2py_info['include_dirs'])
+                          include_dirs=f2py_info['include_dirs']+include_dirs)
 
 
 # _quippy extension module
