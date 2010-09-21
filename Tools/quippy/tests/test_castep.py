@@ -1733,7 +1733,7 @@ NB est. 0K energy (E-0.5TS)      =  -2999.310130074     eV
 
 
    def testabort(self):
-      self.assertRaises(ValueError, AtomsList, self.lines, format='castep')
+      self.assertRaises(ValueError, AtomsList, self.lines, format='castep', abort=True)
 
    def testatoms_ref(self):
       a = Atoms.read(self.lines, format='castep', atoms_ref=self.al[1], abort=False)

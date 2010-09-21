@@ -624,7 +624,7 @@ CastepGeomReader = CastepMDReader = CastepGeomMDReader
 
 @atoms_reader('castep', False)
 @atoms_reader('castep_log', False)
-def CastepOutputReader(castep_file, atoms_ref=None, abort=True):
+def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
    """Parse .castep file, and return Atoms object with positions,
       energy, forces, and possibly stress and atomic populations as
       well"""
