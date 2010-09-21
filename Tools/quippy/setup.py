@@ -254,7 +254,7 @@ def find_wrap_sources(makefile, quip_root):
     source_dirs.append(quip_core_dir)
     wrap_sources += [os.path.join(quip_core_dir, s) for s in ['Potential.f95']]
     wrap_types += ['potential']
-    libraries.append('quip')
+    libraries = ['quip'] + libraries
     targets.append((quip_root, 'QUIP_Core'))
 
     do_tools = not 'QUIPPY_NO_TOOLS' in makefile or ('QUIPPY_NO_TOOLS' in makefile and not int(makefile['QUIPPY_NO_TOOLS']))
@@ -263,7 +263,7 @@ def find_wrap_sources(makefile, quip_root):
     if do_tools or do_crack:
         quip_utils_dir = os.path.join(quip_root, 'QUIP_Utils/')
         source_dirs.append(quip_utils_dir)
-        libraries.append('quiputils')
+        libraries = ['quiputils'] + libraries
         targets.append((quip_root, 'QUIP_Utils'))
 
     if do_tools:
@@ -381,7 +381,7 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
 # Find Fortran source code files
 source_dirs, wrap_sources, wrap_types, quip_libraries, quip_targets = find_wrap_sources(makefile, quip_root)
 include_dirs.extend(source_dirs)
-libraries.extend(quip_libraries)
+libraries = quip_libraries + libraries
 
 # Add build.${QUIP_ARCH} to include and library paths
 include_dirs.append(os.path.join(quip_root, 'build.%s' % quip_arch))
