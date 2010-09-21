@@ -132,7 +132,9 @@ ifeq (${USE_MAKEDEP},1)
 ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}
 
 QUIP_Core.depend: ${ALL_F95_FPP_FILES}
-	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > QUIP_Core.depend
+	${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} > QUIP_Core.depend
+
+#${SCRIPT_PATH}${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../QUIP_Core/,${ALL_F95_FILES}} | sed 's/[^ ]*\///g' > QUIP_Core.depend
 
 -include QUIP_Core.depend
 endif

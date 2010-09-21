@@ -19,6 +19,7 @@ else:
 
 mod_define = {}
 mod_uses = {}
+mod_includes = {}
 filename_from_mod = {}
 
 f90doc.do_debug = True
@@ -66,6 +67,12 @@ for src in argv:
         filename_from_mod[name] = base+ext
         mod_uses[src].extend([u.lower() for u in mod.uses])
 
+    mod_includes[src] = []
+    include_files = [line.split()[2].replace('"','') for line in open(fpp).readlines() if line.startswith('# ')]
+    for inc in include_files:
+        if os.path.isfile(inc) and os.path.basename(inc) != base+ext and inc not in mod_includes[src]:
+            mod_includes[src].append(inc)
+
 for src in argv:
     base, ext = os.path.splitext(os.path.basename(src))
     if src not in mod_uses:
@@ -76,5 +83,5 @@ for src in argv:
     f90doc_uses = [ os.path.splitext(filename_from_mod[mod])[0]+'.f90doc' for mod in mod_uses[src] if mod in filename_from_mod ]
 
     print "%s: %s\n" % (f90doc_file, base+ext)
-    print "%s: \\\n  %s %s\n" % (fobj, ' '.join(f90doc_uses), base+ext)
+    print "%s: \\\n  %s %s %s\n" % (fobj, ' '.join(f90doc_uses), ' '.join(mod_includes[src]), base+ext)
 
