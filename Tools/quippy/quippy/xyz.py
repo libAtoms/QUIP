@@ -187,9 +187,9 @@ class PuPyXYZWriter(object):
          if issubclass(typ, numpy.integer):
             return '%8d '
          elif issubclass(typ, numpy.floating):
-            return '%16.8f'
+            return '%16.8f '
          elif issubclass(typ, numpy.complex):
-            return '(%f,%f)'
+            return '(%f,%f) '
          else:
             return '%s '
 
