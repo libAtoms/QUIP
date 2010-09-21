@@ -29,7 +29,9 @@ implicit none
   call finalise(cli_params)
 
   dup_cell = structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str)
+  call verbosity_push(PRINT_NORMAL)
   call write(dup_cell, outfile)
+  call verbosity_pop()
 
   call system_finalise()
 
