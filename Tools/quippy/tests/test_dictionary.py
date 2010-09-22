@@ -132,7 +132,7 @@ c=44""")
       d = Dictionary()
       d['string'] = ['one', 'two', 'three']
       a = FortranArray(d.get_array('string'))
-      a[1:5,1] = list('hello')
+      a[:,1] = farray(list('hello'),'S1')
       self.assertEqual(list(a2s(d['string'])), list(a2s(a)))
 
    def test_int_array2(self):
