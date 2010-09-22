@@ -30,7 +30,7 @@
 
 default: libquip.a 
 
-all: libquip.a cp2k_filepot
+all: libquip.a cp2k_filepot evb_filepot
 
 include Makefile.inc
 include Makefile.rules
@@ -113,7 +113,7 @@ ${TARGETS}: % :  libquip.a %.o
 
 clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm libquip.a cp2k_filepot cp2k_filepot_old quip.dtd
+	-rm libquip.a cp2k_filepot cp2k_filepot_old evb_filepot quip.dtd
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
@@ -126,6 +126,9 @@ cp2k_filepot_old: % : %.o libatoms.a libquip.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 cp2k_filepot: % : %.o libatoms.a libquip.a
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
+
+evb_filepot: % : %.o libatoms.a libquip.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 ifeq (${USE_MAKEDEP},1)
