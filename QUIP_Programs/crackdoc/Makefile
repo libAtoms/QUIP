@@ -4,8 +4,8 @@ F90DOC= ../../Tools/f90doc.py
 
 all: crack.ps crack.pdf
 
-crack.tex: ../crack.f95 ../makecrack.f95 ../cracktools.f95 ../crackparams.f95
-	${F90DOC} -t '\textsc{crack} Code Documentation' -a 'James Kermode' -n -l ../crack*.f95 ../makecrack.f95 > crack.tex
+crack.tex: ../crack.f95 ../../QUIP_Utils/cracktools.f95 ../../QUIP_Utils/crackparams.f95
+	${F90DOC} -t '\textsc{crack} Code Documentation' -a 'James Kermode' -n -l ../crack.f95 ../../QUIP_Utils/cracktools.f95 ../../QUIP_Utils/crackparams.f95 > crack.tex
 
 crack.dvi: crack.tex
 	latex crack.tex
