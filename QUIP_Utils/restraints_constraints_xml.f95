@@ -25,6 +25,7 @@ contains
       real(dp) :: c
       real(dp) :: d, plane_n(3), di, df
       real(dp) :: t0, tau
+      real(dp) :: egap
       character(len=20) :: type_str
 
       if (parse_in_restraints) type_str = "restraint"
@@ -210,6 +211,29 @@ contains
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3, restraint_k=k)
 	       else
 		  call constrain_bondlength_diff(parse_ds, atom_1, atom_2, atom_3)
+	       endif
+	    endif
+
+	 else if (name == 'gap_energy') then
+
+	    if (parse_in_restraints) then
+	       call QUIP_FoX_get_value(attributes, "k", value, status)
+	       if (status /= 0) call system_abort("restraint_startElement_handler failed to read k in bond_length_diff "//trim(type_str))
+	       read (value, *) k
+	    endif
+	    call QUIP_FoX_get_value(attributes, "egap", value, status)
+	    if (status == 0) then
+	       read (value, *) egap
+	       if (parse_in_restraints) then
+		  call constrain_gap_energy(parse_ds, egap, restraint_k=k)
+	       else
+		  call constrain_gap_energy(parse_ds, egap)
+	       endif
+	    else
+	       if (parse_in_restraints) then
+		  call constrain_gap_energy(parse_ds, egap, restraint_k=k)
+	       else
+		  call constrain_gap_energy(parse_ds, egap)
 	       endif
 	    endif
 
