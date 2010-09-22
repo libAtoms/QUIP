@@ -85,6 +85,7 @@ implicit none
   real(dp), allocatable :: phonon_evals(:), phonon_evecs(:,:), IR_intensities(:), phonon_masses(:)
   real(dp), allocatable :: force_const_mat(:,:)
   real(dp) :: eval_froz
+  real(dp) :: override_pot_cutoff
 
   logical did_something
   logical test_ok
@@ -150,6 +151,7 @@ implicit none
   call param_register(cli_params, 'iso_pressure', '0.0_dp', iso_pressure, has_iso_pressure)
   call param_register(cli_params, 'diag_pressure', '0.0_dp 0.0_dp 0.0_dp', diag_pressure, has_diag_pressure)
   call param_register(cli_params, 'pressure', '0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp 0.0_dp', pressure, has_pressure)
+  call param_register(cli_params, 'override_pot_cutoff', '-1.0', override_pot_cutoff)
 
   if (.not. param_read_args(cli_params, do_check = .true., task="eval CLI arguments")) then
     call print("Usage: eval [at_file=file(stdin)] [param_file=file(quip_params.xml)",PRINT_ALWAYS)
@@ -160,7 +162,7 @@ implicit none
     call print("  [relax] [relax_print_file=file(none)] [relax_iter=i] [relax_tol=r] [relax_eps=r]", PRINT_ALWAYS)
     call print("  [init_args='str'] [calc_args='str'] [pre_relax_calc_args='str'] [verbosity=VERBOSITY(PRINT_NORMAL)] [precond_n_minim] [use_n_minim]", PRINT_ALWAYS)
     call print("  [linmin_method=string(FAST_LINMIN)]", PRINT_ALWAYS)
-    call print("  [minim_method=string(cg)]", PRINT_ALWAYS)
+    call print("  [minim_method=string(cg)] [override_pot_cutoff=r]", PRINT_ALWAYS)
     call system_abort("Confused by CLI arguments")
   end if
   call finalise(cli_params)
@@ -202,7 +204,11 @@ implicit none
 	endif
      endif
 
-     call set_cutoff(at, cutoff(pot)+0.5_dp)
+     if (override_pot_cutoff >= 0.0_dp) then
+	call set_cutoff(at, override_pot_cutoff)
+     else
+	call set_cutoff(at, cutoff(pot)+0.5_dp)
+     endif
 
      call calc_connect(at)
 
