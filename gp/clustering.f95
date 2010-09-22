@@ -99,7 +99,7 @@ module clustering_module
      real(dp), dimension(:), allocatable :: ktmp
      integer, dimension(:), allocatable :: pivin
      
-     integer :: i, j, k, d, m, n, jtmp, jmax
+     integer :: stat, i, j, k, d, m, n, jtmp, jmax
      real(dp) :: dmax
      
      d = size(x,1)
@@ -109,7 +109,10 @@ module clustering_module
 
      if( m > n ) call system_abort('pivot: required number of changes ('//m//') greater than possible number of changes ('//n//')')
      
-     allocate(knn(n,n),pivin(n),ktmp(n))
+     allocate(knn(n,n),stat=stat)
+     if(stat /=0 ) call system_abort('pivot: could not allocate knn matrix.')
+     
+     allocate(pivin(n),ktmp(n))
      
      call distance_matrix(x,knn,theta_fac)
      do i = 1, n
@@ -175,7 +178,7 @@ module clustering_module
   
      integer, dimension(:), allocatable :: sub_cluster1, sub_cluster2, sub_cluster1_min, sub_cluster2_min
      integer, dimension(1) :: ml
-     integer  :: i, j, k, km, m, n, nc, &
+     integer  :: stat, i, j, k, km, m, n, nc, &
      & lo_med, hi_med, lo_med_new, hi_med_new, lo_med_min, hi_med_min, n1, n2, n1_min, n2_min
 
      n = size(x,2)
@@ -183,7 +186,9 @@ module clustering_module
      if( n_clusters_in > n ) call system_abort('bisect_kmedoids: required number of cluster greater than total number of data points')
 
      if(present(c) ) c = 0
-     allocate(my_cluster%dm(n,n))
+     allocate(my_cluster%dm(n,n),stat=stat)
+     if(stat /=0 ) call system_abort('bisect_kmedoids: could not allocate dm matrix.')
+
      call distance_matrix(x,my_cluster%dm,theta_fac)
 
      ! start clustering
