@@ -2257,6 +2257,38 @@ contains
 
    end subroutine constrain_bondlength_diff
 
+   !
+   ! Routines to make adding constraints easier
+   !
+   !% Constrain the energy gap of two resonance structures
+   subroutine constrain_gap_energy(this,d,restraint_k)
+
+     type(DynamicalSystem), intent(inout) :: this
+     real(dp), intent(in)                 :: d
+     real(dp), intent(in), optional       :: restraint_k
+
+     logical, save                        :: first_call = .true.
+     integer, save                        :: GAP_ENERGY_FUNC
+     real(dp)                             :: use_d
+     integer, allocatable                 :: all_atoms(:)
+     integer                              :: i
+
+     !Register the constraint function if this is the first call
+     if (first_call) then
+        GAP_ENERGY_FUNC = register_constraint(GAP_ENERGY)
+        first_call = .false.
+     end if
+     
+     !Add the constraint
+     allocate(all_atoms(this%atoms%N))
+     do i=1,this%atoms%N
+        all_atoms(i) = i
+     enddo
+     call ds_add_constraint(this,all_atoms,GAP_ENERGY_FUNC,(/d/), restraint_k=restraint_k)
+     deallocate(all_atoms)
+
+   end subroutine constrain_gap_energy
+
    !% Constrain an atom to lie in a particluar plane
    subroutine constrain_atom_plane(this,i,plane_n,d,restraint_k)
 
