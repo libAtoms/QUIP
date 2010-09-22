@@ -140,7 +140,7 @@ module constraints_module
   integer             :: REGISTERED_CONSTRAINTS = 0       !% Stores the number of registered constraint functions
 
   integer, parameter  :: RATTLE_MAX_ITERATIONS = 3000      !% Max iterations before failure (same as AMBER)
-  real(dp), parameter :: CONSTRAINT_TOLERANCE = 1.0E-10_dp !% Default tolerance of constraints
+  real(dp), parameter :: DEFAULT_CONSTRAINT_TOLERANCE = 1.0E-10_dp !% Default tolerance of constraints
   real(dp), parameter :: CONSTRAINT_WARNING_TOLERANCE = 1.0E-3_dp !% Warn if a constraint is added which is not obeyed
                                                                   !% to within this tolerance
   type Constraint
@@ -233,13 +233,13 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   
-  subroutine constraint_initialise(this,indices,func,data,k)
+  subroutine constraint_initialise(this,indices,func,data,k,tol)
 
     type(Constraint),       intent(inout) :: this
     integer,  dimension(:), intent(in)    :: indices
     integer,                intent(in)    :: func
     real(dp), dimension(:), intent(in)    :: data
-    real(dp), optional, intent(in)        :: k
+    real(dp), optional, intent(in)        :: k, tol
 
     if (this%initialised) call constraint_finalise(this)
     
@@ -263,7 +263,10 @@ contains
     this%lambdaV = 0.0_dp
     this%C = 0.0_dp
     this%dC_dt = 0.0_dp
-    this%tol = CONSTRAINT_TOLERANCE
+    this%tol = DEFAULT_CONSTRAINT_TOLERANCE
+    if (present(tol)) then
+       if (tol>0._dp) this%tol = tol
+    endif
 
     allocate(this%dC_dr(3*size(indices)))
     this%dC_dr = 0.0_dp
