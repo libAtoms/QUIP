@@ -1197,6 +1197,106 @@ contains
 
   end subroutine BONDLENGTH_DIFF
 
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !X
+  !X GAP ENERGY:
+  !X
+  !% Constrain the GAP energy defined by two resonance structures,
+  !% where 1 bond breaks and/or another bond forms.
+  !% 'data' should contain the required value of the gap energy.
+  !%
+  !% The function used is $C =  E_\mathbf{GAP}  - data $
+  !X
+  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  subroutine GAP_ENERGY(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+
+    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp),                       intent(in)  :: t
+    real(dp),                       intent(out) :: C
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr
+    real(dp),                       intent(out) :: dC_dt
+    real(dp),                       intent(out) :: target_v
+    !local variables                             
+    real(dp), dimension(3)                      :: d1, d2
+    real(dp)                                    :: norm_d1,norm_d2
+    real(dp) :: E_GAP, EVB1_energy, EVB2_energy
+    type(atoms) :: dummy,dummy2
+    integer :: stat
+    real(dp), pointer :: EVB1_forces(:,:), EVB2_forces(:,:)
+    real(dp), dimension(size(pos)) :: F_GAP
+    integer :: i
+    real(dp) :: posmax, posmin
+    type(InOutput) :: inoutfile
+    integer :: gap_energy_index, gap_energy_index1, gap_energy_index2, num_fields
+    character(len=1023) :: comment, fields(3)
+    logical :: exists
+
+    !check if required properties are present
+    if (mod(size(pos),3)/=0) call system_abort("GAP_ENERGY: pos must have 3N coordinates")
+    if(size(data) /= 1) call system_abort('GAP_ENERGY: "data" must contain exactly one value')
+
+    !print pos info into an xyz file (no lattice and species info)
+    posmax=maxval(pos)
+    posmin=minval(pos)
+    !CInoutPut is on a higher level, cannot call print_xyz and read_xyz
+    call system_command("mv only_pos.xyz only_pos.xyz.bak",stat)
+    call initialise(inoutfile,filename="only_pos.xyz",action=OUTPUT)
+    call print((size(pos)/3),file=inoutfile)
+    call print('Lattice="'//(posmax-posmin)//' 0. 0. 0. '//(posmax-posmin)//' 0. 0. 0. '//(posmax-posmin)//'" Properties=species:S:1:pos:R:3',file=inoutfile)
+    do i=1,size(pos),3
+       call print("H "//pos(i)//" "//pos(i+1)//" "//pos(i+2),file=inoutfile)
+    enddo
+    call finalise(inoutfile)
+
+    !calc evb from an external filepot
+    call system_command("~/bin/egap_from_pos pos=only_pos.xyz only_GAP=T out=only_pos.out", status=stat)
+
+    !read evb forces and energies
+    !CInoutPut is on a higher level, cannot call print_xyz or read_xyz
+    inquire(file="only_pos.out", exist=exists)
+    if (.not.exists) call system_abort("No only_pos.out file found. EVB filepot probably aborted.")
+    call initialise(inoutfile,filename="only_pos.out",action=INPUT)
+    !Natoms
+    call parse_line(inoutfile," ",fields,num_fields,stat)
+    if (stat/=0) call system_abort("GAP_ENERGY: Something wrong while reaing only_pos.out number of atoms.")
+    if (num_fields>1) call system_abort("GAP_ENERGY: More information than GAP forces was found in only_pos.out.")
+    if (size(pos)/=3*string_to_int(fields(1))) call system_abort("GAP_ENERGY: Number of atoms mismatch.")
+    !comment
+    comment=read_line(inoutfile,stat)
+    if (stat/=0) call system_abort("GAP_ENERGY: Something wrong while reaing only_pos.out.")
+    !find gap energy
+    gap_energy_index=index(comment,"gap") !find where "gap=..." starts
+    if (gap_energy_index==0) call system_abort("GAP_ENERGY: Could not find gap energy in only_pos.out comment line.")
+    gap_energy_index1=index(comment(gap_energy_index:),"=") !find the position of "=" in "gap=..."
+    if (gap_energy_index1/=4) call system_abort("GAP_ENERGY: Something wrong with energy value in only_pos.out.")
+    gap_energy_index2=index(comment(gap_energy_index:)," ") !find the position of " " in "gap=..."
+    if (gap_energy_index2==0) then !it is at the end of line
+       E_GAP=string_to_real(comment((gap_energy_index+gap_energy_index1):)) !read from the character after "="
+    else !there is something else behind
+       E_GAP=string_to_real(comment((gap_energy_index+gap_energy_index1):(gap_energy_index+gap_energy_index2-1))) !read from the character after "=" to the one before " "
+    endif
+    !GAP forces
+    do i=1,size(pos),3
+       call parse_line(inoutfile," ",fields,num_fields,stat)
+       if (stat/=0) call system_abort("GAP_ENERGY: Something wrong while reaing only_pos.out.")
+       if (num_fields>3) call system_abort("GAP_ENERGY: More information than GAP forces was found in only_pos.out.")
+       F_GAP(i:i+2) = (/string_to_real(fields(1)),string_to_real(fields(2)),string_to_real(fields(3))/)
+    enddo
+    call finalise(inoutfile)
+
+    C = E_GAP - data(1)
+    target_v = data(1)
+
+    dC_dr(1:size(pos)) = -F_GAP(1:size(pos))
+
+    dC_dt = dC_dr .dot. velo
+
+    call finalise(dummy)
+    call finalise(dummy2)
+
+  end subroutine GAP_ENERGY
+
    subroutine add_restraint_forces(at, Nrestraints, restraints, t, f, E, store_restraint_force)
       type(Atoms), intent(inout) :: at
       integer, intent(in) :: Nrestraints
