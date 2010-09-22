@@ -764,8 +764,9 @@ module gp_sparse_module
          integer :: i, j, Z_type, sp, m
          real(dp), dimension(gp_data%d,gp_data%nsp) :: inv_theta
          real(dp), dimension(gp_data%d) :: x_star_div_theta, xixjtheta
-         integer, dimension(size(x_star,2)) :: my_Z
+         integer, dimension(:), allocatable :: my_Z
 
+         allocate(my_Z(size(x_star,2)))
          if( size(x_star,1) /= gp_data%d ) call system_abort('gp_precompute_covariance: first dimension of x_star is '//size(x_star,1)//', not '//gp_data%d)
          m = size(x_star,2)
 
@@ -803,6 +804,7 @@ module gp_sparse_module
 
          if(present(mpi)) call sum_in_place(mpi,c)
 
+         deallocate(my_Z)
       endsubroutine gp_precompute_covariance
 
       subroutine gp_predict(gp_data, mean, variance, x_star, x_prime_star, Z, c_in)
@@ -815,18 +817,21 @@ module gp_sparse_module
          real(dp), dimension(:), intent(in), optional :: c_in 
 
 #ifdef GP_PREDICT_QP
-         real(qp), dimension(gp_data%n) :: k, c
-         real(qp), dimension(gp_data%d,gp_data%n) :: xixjtheta !, tmp
+         real(qp), dimension(:), allocatable :: k, c
+         real(qp), dimension(:,:), allocatable :: xixjtheta !, tmp
 	 real(qp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #else
-         real(dp), dimension(gp_data%n) :: k, c
-         real(dp), dimension(gp_data%d,gp_data%n) :: xixjtheta !, tmp
+         real(dp), dimension(:), allocatable :: k, c
+         real(dp), dimension(:,:), allocatable :: xixjtheta !, tmp
 	 real(dp) :: x_prime_star_div_theta(size(x_star)), x_star_div_theta(size(x_star))
 #endif
          real(dp) :: kappa
 
-
          integer :: i, do_Z, Z_type
+
+         allocate(k(gp_data%n), c(gp_data%n))
+         allocate(xixjtheta(gp_data%d,gp_data%n))
+
 
          !if( .not. gp_data%initialised ) &
          !& call system_abort('gp_predict: not initialised, call gp_initialise first')
@@ -910,6 +915,7 @@ module gp_sparse_module
 
 !         deallocate( k )
 
+         deallocate(k, c, xixjtheta)
       end subroutine gp_predict
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -941,13 +947,15 @@ module gp_sparse_module
          real(dp), intent(in) :: delta
          real(dp), dimension(:), intent(in) :: xi,xj,theta
          real(dp), dimension(:), intent(in), optional :: dxj
-         real(dp), dimension(size(xi)) :: xixjtheta
+         real(dp), dimension(:), allocatable :: xixjtheta
 
+         allocate(xixjtheta(size(xi)))
          xixjtheta = (xi-xj)/theta
 
          covSEard_dp = delta**2 * exp( - 0.5_dp * norm2(xixjtheta) ) 
          if(present(dxj)) covSEard_dp = covSEard_dp * dot_product(xixjtheta,dxj/theta)
 
+         deallocate(xixjtheta)
       end function covSEard_dp
 
       pure function covSEard_qp(delta,theta,xi,xj,dxj)
@@ -958,13 +966,14 @@ module gp_sparse_module
          real(qp), intent(in) :: delta
          real(qp), dimension(:), intent(in) :: xi,xj,theta
          real(qp), dimension(:), intent(in), optional :: dxj
-         real(qp), dimension(size(xi)) :: xixjtheta
+         real(qp), dimension(:), allocatable :: xixjtheta
 
+         allocate(xixjtheta(size(xi)))
          xixjtheta = (xi-xj)/theta
 
          covSEard_qp = delta**2 * exp( - 0.5_qp * norm2(xixjtheta) ) 
          if(present(dxj)) covSEard_qp = covSEard_qp * dot_product(xixjtheta,dxj/theta)
-
+         deallocate(xixjtheta)
       end function covSEard_qp
 
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1123,8 +1132,9 @@ deallocate(diff_xijt)
          integer :: i, j
          real(qp), dimension(:), allocatable :: xixjtheta
          real(qp), dimension(:,:), allocatable :: c
-         real(qp) :: local_alpha(this%N)
+         real(qp), dimension(:), allocatable :: local_alpha
 
+         allocate(local_alpha(this%N))
 	 call setup_x_div_theta(this)
          allocate(xixjtheta(this%d),c(this%n,this%n))
 
@@ -1154,7 +1164,7 @@ deallocate(diff_xijt)
          call LA_Matrix_Solve_Vector(this%LA_C_nn,real(this%y, qp),local_alpha)
 #endif
          this%alpha = real(local_alpha, dp)
-         deallocate(c,xixjtheta)
+         deallocate(c,xixjtheta, local_alpha)
          
       endsubroutine covariance_matrix_simple
       !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
