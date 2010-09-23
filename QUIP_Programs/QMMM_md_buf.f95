@@ -52,7 +52,9 @@ program qmmm_md
 
   !Force calc.
   type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
-  type(Potential)                 :: pot, empty_qm_pot
+  type(Potential)                     :: evbsub_cp2k_fast_pot, evbsub_cp2k_slow_pot 
+  type(Potential)                     :: pot, empty_qm_pot
+  type(Potential)                     :: evbsub_pot, evbsub_empty_qm_pot
   real(dp)                            :: energy,check,TI_force, TI_corr
   real(dp), dimension(:,:), allocatable :: f,f0,f1, add_force
 
@@ -133,6 +135,7 @@ program qmmm_md
   logical                     :: use_spline
   integer                     :: max_n_steps
   character(len=FIELD_LENGTH) :: cp2k_calc_args               ! other args to calc(cp2k,...)
+  character(len=FIELD_LENGTH) :: evb_args_str                 ! args to calc(EVB(cp2k))
   character(len=FIELD_LENGTH) :: filepot_program
   logical                     :: do_carve_cluster
   logical                     :: use_create_cluster_info_for_core
@@ -140,6 +143,7 @@ program qmmm_md
   real(dp) :: use_cutoff
   real(dp) :: H_extra_heat_ctr(3), H_extra_heat_r(2), H_extra_heat_velo_factor
   real(dp) :: nH_extra_heat_ctr(3), nH_extra_heat_r(2), nH_extra_heat_velo_factor
+  logical :: EVB
 
   logical :: distance_ramp
   real(dp) :: distance_ramp_inner_radius, distance_ramp_outer_radius
@@ -207,12 +211,15 @@ logical :: have_silica_potential
       call param_register(params_in, 'max_n_steps', '-1', max_n_steps)
       cp2k_calc_args=''
       call param_register(params_in, 'cp2k_calc_args', '', cp2k_calc_args)
+      evb_args_str=''
+      call param_register(params_in, 'evb_args_str', '', evb_args_str)
       call param_register(params_in, 'filepot_program', param_mandatory, filepot_program)
       call param_register(params_in, 'carve_cluster', 'F', do_carve_cluster)
       call param_register(params_in, 'use_create_cluster_info_for_core', 'F', use_create_cluster_info_for_core)
       call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr)
       call param_register(params_in, 'calc_connect_buffer', '0.2', calc_connect_buffer)
       call param_register(params_in, 'have_silica_potential', 'F', have_silica_potential)
+      call param_register(params_in, 'EVB', 'F', EVB)
 
       call param_register(params_in, 'distance_ramp', 'F', distance_ramp)
       call param_register(params_in, 'distance_ramp_inner_radius', '3.0', distance_ramp_inner_radius)
@@ -287,6 +294,7 @@ logical :: have_silica_potential
       call print('  filepot_program '//trim(filepot_program))
       call print('  Run_Type1 '//Run_Type1)
       call print('  Run_Type2 '//Run_Type2)
+      call print('  EVB (MMpot) '//EVB)
       call print('  IO_Rate '//IO_Rate)
       if (Thermostat_Type.eq.0) then
          call print('  Thermostat_Type 0: None, NVE')
@@ -366,6 +374,9 @@ logical :: have_silica_potential
       call print('  Print forces at t=0? '//print_forces_at0)
       call print('  carve_cluster '//do_carve_cluster)
       call print('  have_silica_potential '//have_silica_potential)
+      call print('  evb_args_str '//trim(evb_args_str))
+      call print('  cp2k_calc_args '//trim(cp2k_calc_args))
+      call print('  filepot_program '//trim(filepot_program))
       call print('---------------------------------------')
       call print('')
 
@@ -554,12 +565,45 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
     ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
-       call setup_pot(pot, Run_Type1, filepot_program)
+       if (EVB.and.trim(Run_Type1)=='MM') then
+          call setup_pot(evbsub_pot, Run_Type1, filepot_program)
+          call initialise(pot,args_str='EVB=T',  &
+             !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
+             !' form_bond={1 2} break_bond={2 6} ', &
+             pot1=evbsub_pot)
+       else
+          call setup_pot(pot, Run_Type1, filepot_program)
+       endif
        ! set up mm only pot, in case we need it for empty QM core
-       call setup_pot(empty_qm_pot, 'MM', filepot_program)
+       if (EVB) then
+          call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program)
+          call initialise(empty_qm_pot,args_str='EVB=T',  &
+             !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
+             !' form_bond={1 2} break_bond={2 6} ', &
+             pot1=evbsub_empty_qm_pot)
+       else
+          call setup_pot(empty_qm_pot, 'MM', filepot_program)
+       endif
     else ! doing force mixing
-       call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
-       call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
+       if (EVB.and.trim(Run_Type1)=='MM') then
+          call print("WARNING: Force Mixing with MM as the slow potential!")
+          call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program)
+          call initialise(cp2k_slow_pot,args_str='EVB=T',  &
+             !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
+             !' form_bond={1 2} break_bond={2 6} ', &
+             pot1=evbsub_cp2k_slow_pot)
+       else
+          call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program)
+       endif
+       if (EVB.and.trim(Run_Type2)=='MM') then
+          call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program)
+          call initialise(cp2k_fast_pot,args_str='EVB=T',  &
+             !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
+             !' form_bond={1 2} break_bond={2 6} ', &
+             pot1=evbsub_cp2k_fast_pot)
+       else
+          call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program)
+       endif
        if (distance_ramp) then
 	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
 	 weight_interpolation='distance_ramp'
@@ -581,7 +625,15 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
 
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
-	 call setup_pot(empty_qm_pot, Run_Type2, filepot_program)
+          if (EVB) then
+             call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program)
+             call initialise(empty_qm_pot,args_str='EVB=T',  &
+                !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
+                !' form_bond={1 2} break_bond={2 6} ', &
+                pot1=evbsub_empty_qm_pot)
+          else
+             call setup_pot(empty_qm_pot, Run_Type2, filepot_program)
+          endif
        endif
     endif
 
@@ -597,8 +649,8 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
   !FORCE
 
      if (topology_print_rate >= 0) driver_PSF_Print='DRIVER_PRINT_AND_SAVE'
-     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
      if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
      !spline force calculation, if needed
@@ -652,7 +704,7 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      !----------------------------------------------------
     call set_value(ds%atoms%params,'Time',ds%t)
     if (trim(print_prop).eq.'all') then
-        call write(ds%atoms,traj_xyz,real_format='f17.10', error=error)
+        call write(ds%atoms,traj_xyz,real_format='%17.10f', error=error)
 	HANDLE_ERROR(error)
     else
         call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f',error=error)
@@ -745,8 +797,8 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
            driver_PSF_Print = 'USE_EXISTING_PSF'
         endif
      endif
-     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, qm_region_pt_ctr, &
-       distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
+     call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, &
+       distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
 
     !SPLINE force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
@@ -956,7 +1008,7 @@ contains
      d = d12 - d23
      DD = d12 + d23
      if (present(F_corr)) &
-        F_corr = 4 * BOLTZMANN_K * 300 * DD / (DD*DD-d*d)
+        F_corr = - 4 * BOLTZMANN_K * 300 * d / (DD*DD-d*d)
 
      if (present(lambda)) lambda = d
 
@@ -1230,13 +1282,13 @@ contains
     end if
   end subroutine print_qm_region
 
-  subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, qm_region_pt_ctr, &
-			  distance_ramp, qm_region_ctr, cp2k_calc_args, do_carve_cluster, driver_PSF_Print, f1, energy)
+  subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, EVB_MM, qm_region_pt_ctr, &
+			  distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
      type(Potential), intent(inout) :: pot, empty_qm_pot
      type(Atoms), intent(inout) :: at
-     logical, intent(in) :: qm_region_pt_ctr, distance_ramp, do_carve_cluster
+     logical, intent(in) :: EVB_MM, qm_region_pt_ctr, distance_ramp, do_carve_cluster
      real(dp), intent(in) :: qm_region_ctr(3)
-     character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, driver_PSF_Print
+     character(len=*), intent(in) :: Run_Type1, Run_Type2, cp2k_calc_args, evb_args_str, driver_PSF_Print
      real(dp), intent(inout) :: f1(:,:)
      real(dp), intent(out) :: energy
 
@@ -1259,10 +1311,21 @@ contains
 
      if (trim(Run_Type2) == 'NONE' .or. (qm_region_pt_ctr .and. empty_QM_core)) then ! no force mixing
         call print(trim(Run_Type1)//' run will be performed with simple potential.')
-        args_str=trim(cp2k_calc_args) // &
-          ' Run_Type='//trim(Run_Type1)// &
-          ' PSF_Print='//trim(driver_PSF_Print) !// &
-!	  ' clean_up_files=F'
+        if (EVB_MM .and. &
+           !only instead of MM
+           ((trim(Run_Type1) == "MM" .and. trim(Run_Type2) == 'NONE') .or. &
+            (Run_Type1(1:4) == 'QMMM' .and. (qm_region_pt_ctr .and. empty_QM_core) .and. trim(Run_Type2)=="MM"))) then
+           !Add args_str into mm_args_str of EVB pot
+           args_str=trim(evb_args_str)//' mm_args_str="'// &
+             trim(cp2k_calc_args) // &
+             ' Run_Type=MM'// & !only MM
+             ' PSF_Print='//trim(driver_PSF_Print)//'"'
+        else
+           args_str=trim(cp2k_calc_args) // &
+             ' Run_Type='//trim(Run_Type1)// &
+             ' PSF_Print='//trim(driver_PSF_Print) !// &
+!	     ' clean_up_files=F'
+        endif
         call print('ARGS_STR | '//trim(args_str))
 	if (Run_Type1(1:4) == 'QMMM') then
 	  if ( qm_region_pt_ctr .and. empty_QM_core) then
@@ -1283,7 +1346,14 @@ contains
 	call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
      else ! do force mixing
 
-       slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+       if (EVB_MM .and. trim(Run_Type1)=="MM") then
+          call print("WARNING: Force Mixing with MM as the slow potential!")
+          !Add slow_args_str into mm_args_str of EVB pot
+          slow_args_str=trim(evb_args_str)//' mm_args_str="'// &
+             trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print)//'"'
+       else
+          slow_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type1)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+       endif
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
@@ -1296,7 +1366,15 @@ contains
          endif
        endif
 
-       fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+       if (EVB_MM .and. trim(Run_Type2)=="MM") then
+          !Add fast_args_str into mm_args_str of EVB pot
+          fast_args_str=trim(evb_args_str)//' mm_args_str="'// &
+             trim(cp2k_calc_args) // &
+             ' Run_Type=MM'// & !only MM
+             ' PSF_Print='//trim(driver_PSF_Print)//'"'
+       else
+          fast_args_str=trim(cp2k_calc_args) // ' Run_Type='//trim(Run_Type2)//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
+       endif
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
 	 fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_nneighb_only=T ' // &
