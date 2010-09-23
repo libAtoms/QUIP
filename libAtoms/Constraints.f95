@@ -160,6 +160,12 @@ module constraints_module
      real(dp), allocatable, dimension(:) :: old_dC_dr !% Value of 'dC_dr' at the beginning of the algorithm
      real(dp)                            :: tol       !% Convergence tolerance of the constraint
      logical                             :: initialised  = .false.
+     real(dp), allocatable, dimension(:) :: dcoll_dr  !% The derivative of the collective coordinate ($\xi$) wrt. the positions (x),
+                                                      !% needed to calculate the Fixman determinant.
+                                                      !% For constraints $\xi - \xi_0$ it is the same as dC_dr
+     real(dp)                            :: Z_coll    !% Fixman determinant of the constraint
+                                                      !% $ Z_\xi = \sum_i frac{1}{m_i} \left( \frac{\partial \xi}{\partial x_i} \right)^2 $
+                                                      !% $ A (\xi) = \int \langle \lambda_R \rangle_\xi \ud \xi  - k_B T \ln \langle Z_{\xi}^{-1/2} \rangle_\xi
 
      real(dp)                            :: k         !% spring constant for restraint
      real(dp)                            :: E         !% restraint energy
@@ -192,13 +198,13 @@ module constraints_module
   interface 
      subroutine register_constraint_sub(sub)
        interface 
-          subroutine sub(pos,velo,t,data,C,dC_dr,dC_dt,target_v)
+          subroutine sub(pos,velo,mass,t,data,C,dC_dr,dC_dt,dcoll_dr,Z_coll,target_v)
             use system_module  !for dp definition
-            real(dp), dimension(:),         intent(in)  :: pos,velo,data
+            real(dp), dimension(:),         intent(in)  :: pos,velo,mass,data
             real(dp),                       intent(in)  :: t
             real(dp),                       intent(out) :: C
-            real(dp), dimension(size(pos)), intent(out) :: dC_dr
-            real(dp),                       intent(out) :: dC_dt
+            real(dp), dimension(size(pos)), intent(out) :: dC_dr,dcoll_dr
+            real(dp),                       intent(out) :: dC_dt,Z_coll
             real(dp),                       intent(out) :: target_v
           end subroutine sub
        end interface
@@ -207,14 +213,14 @@ module constraints_module
 
   !% OMIT
   interface 
-     subroutine call_constraint_sub(i,pos,velo,t,data,C,dC_dr,dC_dt,target_v)
+     subroutine call_constraint_sub(i,pos,velo,mass,t,data,C,dC_dr,dC_dt,dcoll_dr,Z_coll,target_v)
        use system_module
        integer                                     :: i
-       real(dp), dimension(:),         intent(in)  :: pos, velo, data
+       real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
        real(dp),                       intent(in)  :: t
        real(dp),                       intent(out) :: C
-       real(dp), dimension(size(pos)), intent(out) :: dC_dr
-       real(dp),                       intent(out) :: dC_dt
+       real(dp), dimension(size(pos)), intent(out) :: dC_dr,dcoll_dr
+       real(dp),                       intent(out) :: dC_dt,Z_coll
        real(dp),                       intent(out) :: target_v
      end subroutine call_constraint_sub
   end interface 
@@ -273,6 +279,10 @@ contains
     allocate(this%old_dC_dr(3*size(indices)))
     this%old_dC_dr = 0.0_dp
 
+    allocate(this%dcoll_dr(3*size(indices)))
+    this%dcoll_dr = 0.0_dp
+    this%Z_coll = 0.0_dp
+
     if (present(k)) then
        this%k = k
        this%E = 0.0_dp
@@ -312,6 +322,8 @@ contains
     if (allocated(this%data))  deallocate(this%data)
     if (allocated(this%dC_dr)) deallocate(this%dC_dr)
     if (allocated(this%old_dC_dr)) deallocate(this%old_dC_dr)
+    if (allocated(this%dcoll_dr)) deallocate(this%dcoll_dr)
+    this%Z_coll = 0.0_dp
     this%k = -1.0_dp
     this%E = 0.0_dp
     this%dE_dcoll = 0.0_dp
@@ -387,7 +399,8 @@ contains
        allocate(to%atom(size(from%atom)),   &
                 to%data(size(from%data)),   &
                 to%dC_dr(size(from%dC_dr)), &
-                to%old_dC_dr(size(from%old_dC_dr)))
+                to%old_dC_dr(size(from%old_dC_dr)), &
+                to%dcoll_dr(size(from%dcoll_dr)))
     
        !Then copy over the members one by one
        to%N           = from%N
@@ -400,6 +413,8 @@ contains
        to%dC_dr       = from%dC_dr
        to%dC_dt       = from%dC_dt
        to%old_dC_dr   = from%old_dC_dr
+       to%dcoll_dr    = from%dcoll_dr
+       to%Z_coll      = from%Z_coll
        to%tol         = from%tol
        to%k           = from%k
        to%E           = from%E
@@ -429,13 +444,13 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine constraint_calculate_values(this,pos,velo,t)
+  subroutine constraint_calculate_values(this,pos,velo,mass,t)
 
     type(Constraint),       intent(inout) :: this
-    real(dp), dimension(:), intent(in)    :: pos, velo
+    real(dp), dimension(:), intent(in)    :: pos, velo, mass
     real(dp),               intent(in)    :: t
 
-    call call_constraint_sub(this%func,pos,velo,t,this%data,this%C,this%dC_dr,this%dC_dt,this%target_v)
+    call call_constraint_sub(this%func,pos,velo,mass,t,this%data,this%C,this%dC_dr,this%dC_dt,this%dcoll_dr,this%Z_coll,this%target_v)
     if (this%k >= 0.0_dp) then ! restraint
        this%E = 0.5_dp * this%k * this%C**2
        this%dE_dr = this%k * this%C * this%dC_dr
@@ -451,23 +466,28 @@ contains
     type(atoms),      intent(in)    :: at
     real(dp),         intent(in)    :: t
 
-    real(dp) :: pos(3*this%N), velo(3*this%N)
+    real(dp) :: pos(3*this%N), velo(3*this%N), mass(this%N)
+    real(dp), pointer :: mass_ptr(:)
     integer  :: n, i, o
+
+    if (.not.assign_pointer(at,"mass",mass_ptr)) call system_abort("constraint_calculate_values_at")
 
     o = this%atom(1)
     velo(1:3) = at%velo(:,o)
+    mass(1:3) = mass_ptr(o)
     if (this%N > 1) then
        pos(1:3) = 0.0_dp
        do n = 2, this%N
           i = this%atom(n)
           pos(3*n-2:3*n) = diff_min_image(at,o,i)
           velo(3*n-2:3*n) = at%velo(:,i)
+          mass(n) = mass_ptr(i)
        end do
     else
        pos = at%pos(:,o)
     end if
 
-    call constraint_calculate_values(this,pos,velo,t)
+    call constraint_calculate_values(this,pos,velo,mass,t)
 
   end subroutine constraint_calculate_values_at
   
@@ -498,13 +518,13 @@ contains
 
     integer       :: p
     interface
-       subroutine sub(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+       subroutine sub(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
          use system_module
-         real(dp), dimension(:),         intent(in)  :: pos, velo, data
+         real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
          real(dp),                       intent(in)  :: t
          real(dp),                       intent(out) :: C
-         real(dp), dimension(size(pos)), intent(out) :: dC_dr
-         real(dp),                       intent(out) :: dC_dt           
+         real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+         real(dp),                       intent(out) :: dC_dt, Z_coll
          real(dp),                       intent(out) :: target_v
        end subroutine sub
     end interface
@@ -562,6 +582,11 @@ contains
        call print('Lagrange multiplier(R) = '// this%lambdaR, verbosity, file)
        call print('Lagrange multiplier(V) = '// this%lambdaV, verbosity, file)
        call print('spring constant(k) = '// this%k, verbosity, file)
+       call print('Fixman determinant(Z_xi) = '// this%Z_coll, verbosity, file)
+       call print('  gradients of collective coordinate:')
+       do i = 1, this%N
+	  call print(this%dcoll_dr(3*i-2:3*i), verbosity, file)
+       end do
     else
        call print('(uninitialised)', verbosity, file)
     end if
@@ -844,20 +869,22 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDANGLECOS(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine BONDANGLECOS(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp), dimension(3)                       :: d21_hat, d23_hat
     real(dp)                        :: d21_norm, d23_norm, dot_123
+    integer                         :: i
 
     if(size(pos) /= 9) call system_abort('BONDANGLECOS: Exactly 3 atom positions must be specified')
     if(size(velo) /= 9) call system_abort('BONDANGLECOS: Exactly 3 atom velocities must be specified')
+    if(size(mass) /= 3) call system_abort('BONDANGLECOS: Exactly 3 atom velocities must be specified')
     if(size(data) /= 1) call system_abort('BONDANGLECOS: "data" must contain exactly one value')
 
     d21_hat = pos(1:3)-pos(4:6)
@@ -879,6 +906,12 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
+    dcoll_dr(1:9) = dC_dr(1:9)
+    Z_coll = 0._dp
+    do i=1,3
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
+
   end subroutine BONDANGLECOS
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -893,19 +926,21 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDLENGTH(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine BONDLENGTH(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp)                        :: r(3), d
+    integer                         :: i
 
     if(size(pos) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom positions must be specified')
     if(size(velo) /= 6) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH: Exactly 2 atom velocities must be specified')
     if(size(data) /= 1) call system_abort('BONDLENGTH: "data" must contain exactly one value')
 
     r = pos(1:3)-pos(4:6)
@@ -918,6 +953,12 @@ contains
     dC_dr(4:6) = -r/norm(r)
 
     dC_dt = dC_dr .dot. velo
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
 
   end subroutine BONDLENGTH
 
@@ -941,18 +982,21 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BONDLENGTH(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine RELAX_BONDLENGTH(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp)                                    :: r(3), d, diff, efact
+    integer                         :: i
 
     if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH: Exactly 2 atoms must be specified')
     if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH: "data" must contain exactly four value')
 
     r = pos(1:3)-pos(4:6)
@@ -967,6 +1011,12 @@ contains
     dC_dr(4:6) = -r/norm(r)
 
     dC_dt = dC_dr .dot. velo + diff * efact / data(4)
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
 
   end subroutine RELAX_BONDLENGTH
 
@@ -983,19 +1033,21 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDLENGTH_SQ(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp), dimension(3)                       :: d
+    integer                         :: i
 
     if(size(pos) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom positions must be specified')
     if(size(velo) /= 6) call system_abort('BONDLENGTH_SQ: Exactly 2 atom velocities must be specified')
+    if(size(mass) /= 2) call system_abort('BONDLENGTH_SQ: Exactly 2 atom velocities must be specified')
     if(size(data) /= 1) call system_abort('BONDLENGTH_SQ: "data" must contain exactly one value')
 
     d = pos(1:3)-pos(4:6)
@@ -1007,6 +1059,12 @@ contains
     dC_dr(4:6) = -2.0_dp * d
 
     dC_dt = dC_dr .dot. velo
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
 
   end subroutine BONDLENGTH_SQ
 
@@ -1030,18 +1088,21 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine RELAX_BONDLENGTH_SQ(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine RELAX_BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp)                                    :: r(3), d, diff, efact
+    integer                         :: i
 
     if(size(pos) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('RELAX_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
     if(size(data) /= 4) call system_abort('RELAX_BONDLENGTH_SQ: "data" must contain exactly four value')
 
     r = pos(1:3)-pos(4:6)
@@ -1054,6 +1115,12 @@ contains
     dC_dr(1:3) = 2.0_dp * r
     dC_dr(4:6) = -2.0_dp * r
     dC_dt = dC_dr .dot. velo + 2.0_dp * d * diff * efact / data(4)
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
 
   end subroutine RELAX_BONDLENGTH_SQ
 
@@ -1083,18 +1150,21 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine CUBIC_BONDLENGTH_SQ(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine CUBIC_BONDLENGTH_SQ(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp)                                    :: r(3), t_clamped, l, dl_dt, x, x2, x3
+    integer                         :: i
 
     if(size(pos) /= 6) call system_abort('CUBIC_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(velo) /= 6) call system_abort('CUBIC_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
+    if(size(mass) /= 2) call system_abort('CUBIC_BONDLENGTH_SQ: Exactly 2 atoms must be specified')
     if(size(data) /= 6) call system_abort('CUBIC_BONDLENGTH_SQ: "data" must contain exactly six values')
 
     r = pos(1:3)-pos(4:6)
@@ -1115,6 +1185,12 @@ contains
     dC_dr(4:6) = -2.0_dp * r
     dC_dt = dC_dr .dot. velo - 2.0_dp * l * dl_dt
 
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
+
   end subroutine CUBIC_BONDLENGTH_SQ
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1131,19 +1207,22 @@ contains
   !% 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine PLANE(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine PLANE(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables
     real(dp)                                    :: d, n(3), n_hat(3)
+    integer                         :: i
 
     if(size(data) /= 4 ) call system_abort('PLANE: "data" must be of length 4')
     if(size(pos) /= 3) call system_abort('PLANE: Exactly 1 atom must be specified')
+    if(size(velo) /= 3) call system_abort('PLANE: Exactly 1 atom must be specified')
+    if(size(mass) /= 1) call system_abort('PLANE: Exactly 1 atom must be specified')
 
     n = data(1:3)              !Normal to the plane
     n_hat = n / norm(n)        !Unit normal
@@ -1153,6 +1232,12 @@ contains
     dC_dr = n_hat
     dC_dt = dC_dr .dot. velo
     
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
+
   end subroutine PLANE
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1168,19 +1253,22 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine BONDLENGTH_DIFF(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine BONDLENGTH_DIFF(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
     real(dp), dimension(3)                      :: d1, d2
     real(dp)                                    :: norm_d1,norm_d2
+    integer                         :: i
 
     if(size(pos) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
+    if(size(velo) /= 9) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
+    if(size(mass) /= 3) call system_abort('BONDLENGTH_DIFF: Exactly 3 atoms must be specified')
     if(size(data) /= 1) call system_abort('BONDLENGTH_DIFF: "data" must contain exactly one value')
 
     d1 = pos(1:3)-pos(4:6)
@@ -1198,6 +1286,12 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
+
   end subroutine BONDLENGTH_DIFF
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1212,28 +1306,27 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine GAP_ENERGY(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+  subroutine GAP_ENERGY(pos, velo, mass, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v)
 
-    real(dp), dimension(:),         intent(in)  :: pos, velo, data
+    real(dp), dimension(:),         intent(in)  :: pos, velo, mass, data
     real(dp),                       intent(in)  :: t
     real(dp),                       intent(out) :: C
-    real(dp), dimension(size(pos)), intent(out) :: dC_dr
-    real(dp),                       intent(out) :: dC_dt
+    real(dp), dimension(size(pos)), intent(out) :: dC_dr, dcoll_dr
+    real(dp),                       intent(out) :: dC_dt, Z_coll
     real(dp),                       intent(out) :: target_v
     !local variables                             
-    real(dp), dimension(3)                      :: d1, d2
-    real(dp)                                    :: norm_d1,norm_d2
-    real(dp) :: E_GAP, EVB1_energy, EVB2_energy
-    type(atoms) :: dummy,dummy2
-    integer :: stat
-    real(dp), pointer :: EVB1_forces(:,:), EVB2_forces(:,:)
+    real(dp)                       :: E_GAP, EVB1_energy, EVB2_energy
+    real(dp), pointer              :: EVB1_forces(:,:), EVB2_forces(:,:)
     real(dp), dimension(size(pos)) :: F_GAP
-    integer :: i
-    real(dp) :: posmax, posmin
-    type(InOutput) :: inoutfile
-    integer :: gap_energy_index, gap_energy_index1, gap_energy_index2, num_fields
-    character(len=1023) :: comment, fields(3)
-    logical :: exists
+    type(atoms)                    :: dummy,dummy2
+    type(InOutput)                 :: inoutfile
+    integer                        :: stat
+    integer                        :: i
+    real(dp)                       :: posmax, posmin
+    integer                        :: gap_energy_index, gap_energy_index1, gap_energy_index2
+    integer                        :: num_fields
+    character(len=1023)            :: comment, fields(3)
+    logical                        :: exists
 
     !check if required properties are present
     if (mod(size(pos),3)/=0) call system_abort("GAP_ENERGY: pos must have 3N coordinates")
@@ -1294,6 +1387,12 @@ contains
     dC_dr(1:size(pos)) = -F_GAP(1:size(pos))
 
     dC_dt = dC_dr .dot. velo
+
+    dcoll_dr(1:6) = dC_dr(1:6)
+    Z_coll = 0._dp
+    do i=1,2
+       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
+    enddo
 
     call finalise(dummy)
     call finalise(dummy2)
