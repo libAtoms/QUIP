@@ -1232,11 +1232,9 @@ contains
     dC_dr = n_hat
     dC_dt = dC_dr .dot. velo
     
-    dcoll_dr(1:6) = dC_dr(1:6)
+    dcoll_dr(1:3) = dC_dr(1:3)
     Z_coll = 0._dp
-    do i=1,2
-       Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
-    enddo
+    Z_coll = 1/mass(1) * norm2(dcoll_dr(1:3))
 
   end subroutine PLANE
 
@@ -1286,9 +1284,9 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
-    dcoll_dr(1:6) = dC_dr(1:6)
+    dcoll_dr(1:9) = dC_dr(1:9)
     Z_coll = 0._dp
-    do i=1,2
+    do i=1,3
        Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
     enddo
 
@@ -1388,9 +1386,9 @@ contains
 
     dC_dt = dC_dr .dot. velo
 
-    dcoll_dr(1:6) = dC_dr(1:6)
+    dcoll_dr(1:size(pos)) = dC_dr(1:size(pos))
     Z_coll = 0._dp
-    do i=1,2
+    do i=1,(size(pos)/3)
        Z_coll = 1/mass(i) * norm2(dcoll_dr(i*3-2:i*3))
     enddo
 
