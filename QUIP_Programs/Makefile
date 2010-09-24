@@ -43,7 +43,7 @@ PROGRAMS = eval md \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search\
   metapot_test tabletest ts_calculation\
-  fix_traj_latest randomise_calc
+  fix_traj_latest randomise_calc  lo
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
