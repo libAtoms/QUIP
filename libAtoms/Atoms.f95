@@ -4219,7 +4219,7 @@ contains
       integer, intent(out) :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
 
       if (do_i) then
-	 if (is_periodic(3)) then
+	 if (is_periodic(1)) then
 	   min_cell_image_Na = -cell_image_Na
 	   max_cell_image_Na = cell_image_Na
 	 else
@@ -4236,7 +4236,7 @@ contains
 	 endif
       endif
       if (do_j) then
-	 if (is_periodic(3)) then
+	 if (is_periodic(2)) then
 	   min_cell_image_Nb = -cell_image_Nb
 	   max_cell_image_Nb = cell_image_Nb
 	 else
@@ -4269,6 +4269,13 @@ contains
 	   endif
 	 endif
       endif
+      
+      if (current_verbosity() >= PRINT_NERD) then
+         call print('get_min_max_images cell_image_na min='//min_cell_image_na//' max='//max_cell_image_na, PRINT_NERD)
+         call print('get_min_max_images cell_image_nb min='//min_cell_image_nb//' max='//max_cell_image_nb, PRINT_NERD)
+         call print('get_min_max_images cell_image_nc min='//min_cell_image_nc//' max='//max_cell_image_nc, PRINT_NERD)
+      end if
+
    end subroutine get_min_max_images
 
   !
