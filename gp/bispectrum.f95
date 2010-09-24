@@ -3658,9 +3658,10 @@ module bispectrum_module
 
      end function water_monomer
 
-     function water_dimer(at,w1,w2,cutoff) result(vec)
+     function water_dimer(at,w1,w2,cutoff, rOHout, rHHout) result(vec)
        type(atoms), intent(in) :: at
        integer, dimension(3), intent(in) :: w1, w2
+       real(dp), intent(out), optional :: rOHout(8), rHHout(6)
        real(dp), intent(in) :: cutoff
        real(dp), dimension(WATER_DIMER_D) :: vec !, v
        real(dp) :: rOH(8), rHH(6), fOH(8), fHH(6)
@@ -3689,6 +3690,7 @@ module bispectrum_module
        rOH(6) = distance_min_image(at, iBo, iAh2)
        rOH(7) = distance_min_image(at, iBo, iBh1)
        rOH(8) = distance_min_image(at, iBo, iBh2)
+       
 
        ! All H-H distances
        rHH(1) = distance_min_image(at, iAh1, iAh2)
@@ -3697,6 +3699,14 @@ module bispectrum_module
        rHH(4) = distance_min_image(at, iAh2, iBh1)
        rHH(5) = distance_min_image(at, iAh2, iBh2)
        rHH(6) = distance_min_image(at, iBh1, iBh2)
+
+       if(present(rOHout)) then
+          rOHout = rOH
+       end if
+       if(present(rHHout)) then
+          rHHout = rHH
+       end if
+       
 
        ! "Fourier Transform" distances. This should be completely reversible,
        ! i.e. we can reconstruct all the distances up to permutations.
