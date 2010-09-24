@@ -559,7 +559,7 @@ parameters published in `Phys. Rev. B` **31**, 5262 (1984). Python
 triple-quoted strings can be split over multiple lines, so we can
 include the XML string easily::
 
-   >>> pot = Potential('IP SW', """<SW_params n_types="1">
+   >>> pot = Potential('IP SW', param_str="""<SW_params n_types="1">
     <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
     <per_type_data type="1" atomic_num="14" />
 
@@ -573,12 +573,12 @@ include the XML string easily::
 
 Alternatively, you can read the XML string from a file::
 
-   >>> pot = Potential('IP SW', open('sw.xml').read())
+   >>> pot = Potential('IP SW', param_str=open('sw.xml').read())
 
 or search the QUIP parameter database (located under
 :envvar:`QUIP_ROOT`:file:`/QUIP_Core/parameters`)::
   
-   >>> pot = Potential('IP SW', quip_xml_parameters('SW'))
+   >>> pot = Potential('IP SW', param_str=quip_xml_parameters('SW'))
 
 Our new potential object has several methods, the most important being
 :meth:`~Potential.calc` which is used whenever we want to calculate

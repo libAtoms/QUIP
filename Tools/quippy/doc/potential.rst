@@ -21,7 +21,7 @@
 
 .. currentmodule:: quippy
 
-.. class:: Potential(args_str, param_str)
+.. class:: Potential(args_str,[pot1,pot2,param_str,bulk_scale,mpi_obj,error])
 
    A :class:`Potential` object represents an interatomic potential, a
    tight binding model or an interface to an external code used to
@@ -156,7 +156,7 @@
       
          at0 = diamond(5.44, 14)
 	 at0.calc_connect()
-	 pot = Potential('IP SW', """<SW_params n_types="1">
+	 pot = Potential('IP SW', param_str="""<SW_params n_types="1">
 	         <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984)</comment>
 		 <per_type_data type="1" atomic_num="14" />
 
