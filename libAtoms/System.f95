@@ -2654,13 +2654,13 @@ contains
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   !% Return this processes' MPI ID
-  function mpi_id() result (id)
+  pure function mpi_id() result (id)
     integer::id
     id = mpi_myid
   end function mpi_id
 
   !%  Return the total number of MPI processes.
-  function mpi_n_procs() result (n)
+  pure function mpi_n_procs() result (n)
     integer::n
     n = mpi_n
   end function mpi_n_procs

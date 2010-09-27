@@ -53,18 +53,18 @@
 
 module dynamicalsystem_module
  
-   use units_module
    use system_module
+   use units_module
    use error_module
-   use table_module
-   use atoms_module
-   use periodictable_module
    use linearalgebra_module
+   use table_module
+   use periodictable_module
+   use mpi_context_module
+   use atoms_module
    use rigidbody_module
    use group_module
    use constraints_module
    use thermostat_module
-   use mpi_context_module
    
    implicit none
 

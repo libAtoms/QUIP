@@ -42,8 +42,8 @@
 module quaternions_module
 
   use system_module        ! for dp
-  use linearalgebra_module ! for .feq./.fne
   use units_module         ! for PI
+  use linearalgebra_module ! for .feq./.fne
 
   implicit none
 

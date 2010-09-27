@@ -53,9 +53,9 @@ module  atoms_module
   use system_module
   use extendable_str_module
   use error_module
+  use linearalgebra_module
   use table_module
   use dictionary_module
-  use linearalgebra_module
   use periodictable_module
   use minimization_module
   use mpi_context_module

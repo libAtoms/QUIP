@@ -41,8 +41,8 @@
 module thermostat_module
 
   use system_module
-  use atoms_module
   use units_module
+  use atoms_module
 
   implicit none
 

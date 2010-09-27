@@ -32,6 +32,7 @@
 
 module topology_module
 
+  use units_module           
   use atoms_module           
   use extendable_str_module  
   use clusters_module        
@@ -41,7 +42,6 @@ module topology_module
   use structures_module      
   use system_module          
   use table_module           
-  use units_module           
 
 
   implicit none
