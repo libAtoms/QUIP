@@ -2328,7 +2328,7 @@ contains
 
     integer entry_i
 
-    if (this%N >= size(this%entries)) then
+    if (this%N == 0 .or. this%N >= size(this%entries)) then
        call extend_entries(this, n_entry_block)
     endif
 
@@ -2478,12 +2478,11 @@ contains
 
   end function dictionary_has_key
 
-
-  subroutine dictionary_subset(this, keys, out, case_sensitive, error)
+  subroutine dictionary_subset(this, keys, out, case_sensitive, out_no_initialise, error)
     type(Dictionary), intent(in) :: this
     character(len=*), dimension(:) :: keys
-    type(Dictionary), intent(out) :: out
-    logical, optional :: case_sensitive
+    type(Dictionary), intent(inout) :: out
+    logical, intent(in), optional :: case_sensitive, out_no_initialise
     integer, intent(out), optional :: error
 
     type(extendable_str), dimension(:), allocatable :: tmp_keys
@@ -2497,7 +2496,7 @@ contains
        call concat(tmp_keys(i), keys(i))
     end do
 
-    call dictionary_subset_es(this, tmp_keys, out, case_sensitive, error)
+    call dictionary_subset_es(this, tmp_keys, out, case_sensitive, out_no_initialise, error)
     PASS_ERROR(error)
 
     do i=1,size(tmp_keys)
@@ -2510,24 +2509,71 @@ contains
 
   !% Return a dictionary that is a subset of this in 'out'
   !% with only the keys in the arrays 'keys' present.
-  subroutine dictionary_subset_es(this, keys, out, case_sensitive, error)
+  subroutine dictionary_subset_es(this, keys, out, case_sensitive, out_no_initialise, error)
     type(Dictionary), intent(in) :: this
     type(extendable_str), dimension(:) :: keys
-    type(Dictionary), intent(out) :: out
-    logical, optional :: case_sensitive
+    type(Dictionary), intent(inout) :: out
+    logical, intent(in), optional :: case_sensitive, out_no_initialise
     integer, intent(out), optional :: error
 
-    integer :: i, j
+    logical :: my_out_no_initialise
+    integer :: i, j, io
     
     INIT_ERROR(error)
-    call initialise(out)
+
+
+    my_out_no_initialise = optional_default(.false., out_no_initialise)
+    if (.not. my_out_no_initialise) call initialise(out)
 
     do j=1,size(keys)
 
        i = lookup_entry_i(this, string(keys(j)), case_sensitive)
        if (i == -1) then
-          RAISE_ERROR('out: key '//string(keys(j))//' not in dictionary', error)
+          RAISE_ERROR('this: key '//string(keys(j))//' not in dictionary', error)
        end if
+       if (my_out_no_initialise) then 
+	  io = lookup_entry_i(out, string(keys(j)), case_sensitive)
+	  if (io >= 1) then
+	     if (this%entries(i)%type /= out%entries(io)%type) then
+		RAISE_ERROR('entry type for key '//string(keys(i))//' does not match in this, out', error)
+	     endif
+	     select case(this%entries(i)%type)
+	     case(T_INTEGER_A)
+		if (any(shape(this%entries(i)%i_a) /= shape(out%entries(io)%i_a))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_REAL_A)
+		if (any(shape(this%entries(i)%r_a) /= shape(out%entries(io)%r_a))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_COMPLEX_A)
+		if (any(shape(this%entries(i)%c_a) /= shape(out%entries(io)%c_a))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_LOGICAL_A)
+		if (any(shape(this%entries(i)%l_a) /= shape(out%entries(io)%l_a))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_CHAR_A)
+		if (any(shape(this%entries(i)%s_a) /= shape(out%entries(io)%s_a))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_INTEGER_A2)
+		if (any(shape(this%entries(i)%i_a2) /= shape(out%entries(io)%i_a2))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_REAL_A2)
+		if (any(shape(this%entries(i)%r_a2) /= shape(out%entries(io)%r_a2))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     case(T_DATA)
+		if (any(shape(this%entries(i)%d) /= shape(out%entries(io)%d))) then
+		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+		endif
+	     end select
+	     call remove_entry(out, io)
+	  endif ! io >= 1
+       endif ! my_out_no_initialise
 
        select case(this%entries(i)%type)
        case(T_INTEGER)
