@@ -463,6 +463,11 @@ module  atoms_module
      module procedure atoms_bcast
   end interface
 
+  private :: atoms_copy_properties
+  interface copy_properties
+     module procedure atoms_copy_properties
+  endinterface copy_properties
+
   private :: atoms_copy_entry
   interface copy_entry
      module procedure atoms_copy_entry
@@ -5652,11 +5657,30 @@ end subroutine set_map_shift
 
   end subroutine atoms_filter_cone
 
+  !% Copy some properties from one atoms struct to another
+  !% The destination will be overriden.
+  subroutine atoms_copy_properties(this, from, property_list, case_sensitive, error)
+    type(Atoms), intent(inout) :: this
+    type(Atoms), intent(in) :: from
+    character(len=*), intent(in) :: property_list
+    logical, optional, intent(in) :: case_sensitive
+    integer, optional, intent(out) :: error
+
+    character(len=len_trim(property_list)) :: property_a(100)
+    integer :: property_a_n
+
+    INIT_ERROR(error)
+
+    call split_string_simple(trim(property_list), property_a, property_a_n, ':', error)
+    PASS_ERROR(error)
+    call subset(from%properties, property_a(1:property_a_n), this%properties, case_sensitive=case_sensitive, out_no_initialise=.true., error=error)
+    PASS_ERROR(error)
+
+  end subroutine atoms_copy_properties
 
   !% Move a single atom from one location to another one.
   !% The destination will be overriden.
   subroutine atoms_copy_entry(this, src, dst, swap, error)
-    implicit none
 
     type(Atoms), intent(inout)  :: this
     integer, intent(in)         :: src

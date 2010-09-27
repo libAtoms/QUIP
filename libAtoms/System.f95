@@ -802,20 +802,24 @@ contains
 
   !% split a string into fields separated by possible separators
   !% no quoting, matching separators, just a simple split
-  subroutine split_string_simple(str, fields, n_fields, separators)
+  subroutine split_string_simple(str, fields, n_fields, separators, error)
     character(len=*), intent(in) :: str !% string to be split
     character(len=*), intent(out) :: fields(:) !% on return, array of fields
     integer, intent(out) :: n_fields !% on return, number of fields
     character(len=*), intent(in) :: separators !% string of possible separators
+    integer, intent(out), optional :: error
 
     integer :: str_len, cur_pos, next_pos, cur_field
+
+    INIT_ERROR(error)
 
     str_len = len_trim(str)
     cur_pos = 0
     cur_field = 1
     do while (cur_pos <= str_len)
-      if (cur_field > size(fields)) &
-	call system_abort("split_string_simple str='"//trim(str)//"' no room for fields size(fields)="//size(fields)//" cur_field "//cur_field)
+      if (cur_field > size(fields)) then
+	RAISE_ERROR("split_string_simple str='"//trim(str)//"' no room for fields size(fields)="//size(fields)//" cur_field "//cur_field, error)
+      endif
       next_pos = scan(str(cur_pos+1:str_len),separators)
       if (next_pos > 0) then
 	if (next_pos == 1) then ! found another separator, skip it

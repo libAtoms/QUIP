@@ -87,6 +87,7 @@ public :: FilePot_type
 type FilePot_type
   character(len=1024) :: command
   character(len=1024) :: property_list
+  character(len=1024) :: read_extra_property_list
   character(len=1024) :: filename
   real(dp)            :: min_cutoff
 
@@ -135,7 +136,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   integer, intent(out), optional :: error
 
   type(Dictionary) ::  params
-  character(len=STRING_LENGTH) :: command, property_list, filename
+  character(len=STRING_LENGTH) :: command, property_list, read_extra_property_list, filename
   real(dp) :: min_cutoff
 
   INIT_ERROR(error)
@@ -145,6 +146,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
   call initialise(params)
   call param_register(params, 'command', PARAM_MANDATORY, command)
   call param_register(params, 'property_list', 'species:pos', property_list)
+  call param_register(params, 'read_extra_property_list', '', read_extra_property_list)
   call param_register(params, 'filename', 'filepot', filename)
   call param_register(params, 'min_cutoff', '0.0', min_cutoff)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='filepot_initialise args_str')) then
@@ -154,6 +156,7 @@ subroutine FilePot_Initialise(this, args_str, mpi, error)
 
   this%command = command
   this%property_list = property_list
+  this%read_extra_property_list = read_extra_property_list
   this%min_cutoff = min_cutoff
   this%filename = filename
   if (present(mpi)) this%mpi = mpi
@@ -172,6 +175,7 @@ subroutine FilePot_Wipe(this)
 
   this%command=""
   this%property_list=""
+  this%read_extra_property_list=""
   this%min_cutoff = 0.0_dp
   this%filename = ""
 
@@ -192,6 +196,7 @@ subroutine FilePot_Print(this, file)
   call print("FilePot: command='"//trim(this%command)// &
        "' filename='"//trim(this%filename)//&
        "' property_list='"//trim(this%property_list)//&
+       "' read_extra_property_list='"//trim(this%read_extra_property_list)//&
        "' min_cutoff="//this%min_cutoff,file=file)
 
 end subroutine FilePot_Print
@@ -212,6 +217,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
   integer :: my_err
   integer :: status
 
+  character(len=STRING_LENGTH) :: read_extra_property_list
   type(Dictionary) :: cli
   logical :: FilePot_log
   
@@ -226,6 +232,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
   call initialise(cli)
   call param_register(cli, "FilePot_log", "F", FilePot_log)
+  call param_register(cli, "read_extra_property_list", trim(this%read_extra_property_list), read_extra_property_list)
   if (.not. param_read_line(cli, my_args_str, ignore_unknown=.true.,task='filepot_calc args_str')) then
     RAISE_ERROR("FilePot_calc failed to parse args_str='"//trim(args_str)//"'",error)
   endif
@@ -279,7 +286,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
      call print("FilePot: got status " // status // " from external command")
 
      ! read back output from external command
-     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log=FilePot_log, error=error)
+     call filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, read_extra_property_list, filepot_log=FilePot_log, error=error)
      PASS_ERROR_WITH_INFO("Filepot_Calc reading output", error)
   end if
 
@@ -296,7 +303,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, args_str, err
 
 end subroutine FilePot_calc
 
-subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, filepot_log, error)
+subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces, virial, read_extra_property_list, filepot_log, error)
   character(len=*), intent(in) :: outfile
   type(Atoms), intent(inout) :: at
   integer, intent(in) :: nx, ny, nz
@@ -304,6 +311,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   real(dp), intent(out), target, optional :: local_e(:)
   real(dp), intent(out), optional :: forces(:,:)
   real(dp), intent(out), optional :: virial(3,3)
+  character(len=*), intent(in) :: read_extra_property_list
   logical, intent(in), optional :: filepot_log
   integer, intent(out), optional :: error
 
@@ -378,6 +386,10 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 	RAISE_ERROR("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", error)
     endif
     forces = forces_p
+  endif
+
+  if (len_trim(read_extra_property_list) > 0) then
+     call copy_properties(at, at_out, trim(read_extra_property_list))
   endif
 
   !for the CP2K driver. If the QM cell size is saved in *at_out*, save it in *at*

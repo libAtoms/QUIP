@@ -115,6 +115,7 @@ contains
     real(dp) :: centre_pos(3), cp2k_box_centre_pos(3)
     logical :: auto_centre, has_centre_pos
     logical :: try_reuse_wfn
+    character(len=FIELD_LENGTH) :: calc_qm_charges
 
     character(len=128) :: method
 
@@ -181,17 +182,11 @@ contains
     call system_timer('do_cp2k_calc')
 
     call initialise(cli)
-      run_type = ''
       call param_register(cli, 'Run_Type', PARAM_MANDATORY, run_type)
-      cp2k_template_file = ''
       call param_register(cli, 'cp2k_template_file', 'cp2k_input.template', cp2k_template_file)
-      link_template_file = ""
       call param_register(cli, "qmmm_link_template_file", "", link_template_file)
-      psf_print = ''
       call param_register(cli, 'PSF_print', 'NO_PSF', psf_print)
-      topology_suffix = ''
       call param_register(cli, "topology_suffix", "", topology_suffix)
-      cp2k_program = ''
       call param_register(cli, 'cp2k_program', PARAM_MANDATORY, cp2k_program)
       call param_register(cli, 'clean_up_files', 'T', clean_up_files)
       call param_register(cli, 'save_output_files', 'T', save_output_files)
@@ -206,6 +201,7 @@ contains
       call param_register(cli, 'cp2k_calc_fake', 'F', cp2k_calc_fake)
       call param_register(cli, 'form_bond', '0 0', form_bond)
       call param_register(cli, 'break_bond', '0 0', break_bond)
+      call param_register(cli, 'qm_charges', '', calc_qm_charges)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('cp2k_driver could not parse argument line')
@@ -232,6 +228,7 @@ contains
     call print('  have_silica_potential '//have_silica_potential)
     call print('  auto_centre '//auto_centre)
     call print('  centre_pos '//centre_pos)
+    call print('  calc_qm_charges '//trim(calc_qm_charges))
 
     if (auto_centre .and. has_centre_pos) &
       call system_abort("do_cp2k_calc got both auto_centre and centre_pos, don't know which centre (automatic or specified) to shift to origin")
@@ -579,6 +576,11 @@ contains
       insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL", "&DFT")
       call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT CHARGE "//charge, after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
       if (do_lsd) call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT LSD ", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      if (len_trim(calc_qm_charges) > 0) then
+	 insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT", "&PRINT")
+	 insert_pos = find_make_cp2k_input_section(cp2k_template_a, template_n_lines, "&FORCE_EVAL&DFT&PRINT", "&MULLIKEN")
+	 call insert_cp2k_input_line(cp2k_template_a, "&FORCE_EVAL&DFT&PRINT FILENAME qmcharges", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
+      endif
     endif
 
     ! put in unit cell
@@ -641,7 +643,7 @@ contains
     call run_cp2k_program(trim(cp2k_program), trim(run_dir), max_n_tries)
 
     ! parse output
-    call read_energy_forces(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, error=error)
+    call read_output(at, qm_and_link_list_a, cur_qmmm_qm_abc, trim(run_dir), "quip", e, f, trim(calc_qm_charges), error=error)
 
     at%pos(1,:) = at%pos(1,:) + centre_pos(1) - cp2k_box_centre_pos(1)
     at%pos(2,:) = at%pos(2,:) + centre_pos(2) - cp2k_box_centre_pos(2)
@@ -749,25 +751,45 @@ contains
 
   end function find_make_cp2k_input_section
 
-  subroutine read_energy_forces(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, error)
-    type(Atoms), intent(in) :: at
+  subroutine read_output(at, qm_list_a, cur_qmmm_qm_abc, run_dir, proj, e, f, calc_qm_charges, error)
+    type(Atoms), intent(inout) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: cur_qmmm_qm_abc(3)
     character(len=*), intent(in) :: run_dir, proj
     real(dp), intent(out) :: e, f(:,:)
     real(dp), pointer :: force_p(:,:)
+    character(len=*) :: calc_qm_charges
     integer, intent(out), optional :: ERROR
 
+    real(dp), pointer :: qm_charges_p(:)
     type(Atoms) :: f_xyz, p_xyz
     integer :: m
+    integer :: i, ti
+    type(inoutput) :: qm_charges_io
+    character(len=1024) :: species, qm_charges_l
 
     INIT_ERROR(error)
 
+    if (len_trim(calc_qm_charges) > 0) then
+       if (.not. assign_pointer(at, trim(calc_qm_charges), qm_charges_p)) then
+	  call add_property(at, trim(calc_qm_charges), 0.0_dp, ptr=qm_charges_p)
+       endif
+    endif
+
     call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
     call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
+    call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1.mulliken',action=INPUT)
+    do i=1, 3
+      qm_charges_l = read_line(qm_charges_io)
+    end do
+    do i=1, at%N
+      qm_charges_l = read_line(qm_charges_io)
+      read (unit=qm_charges_l,fmt=*) ti, species, qm_charges_p(i)
+    end do
+    call finalise(qm_charges_io)
 
     if (.not. get_value(f_xyz%params, "E", e)) then
-      RAISE_ERROR('read_energy_forces failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file', error)
+      RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file', error)
     endif
 
     if (.not.(assign_pointer(f_xyz, 'frc', force_p))) then
@@ -790,7 +812,7 @@ contains
     call verbosity_pop()
     call print('Sum of the forces: '//sum(f,2))
 
-  end subroutine read_energy_forces
+  end subroutine read_output
 
   subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f)
     type(Atoms), intent(in) :: at
