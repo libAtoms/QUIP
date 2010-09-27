@@ -575,7 +575,6 @@ contains
   !% OMIT
   ! Initialise pointers for convenient access to special columns of this%properties
   subroutine atoms_repoint(this)
-    use Dictionary_module, only: lower_case
     type(Atoms), target, intent(inout) :: this
     integer :: i
 

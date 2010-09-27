@@ -53,12 +53,12 @@
 
 module dynamicalsystem_module
  
+   use units_module
    use system_module
    use error_module
    use table_module
    use atoms_module
    use periodictable_module
-   use units_module
    use linearalgebra_module
    use rigidbody_module
    use group_module
