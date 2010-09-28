@@ -121,7 +121,7 @@ for name, routine in routines:
 sys.modules[__name__].__dict__.update(params)
 
 # Import custom sub classes
-import atoms;           from atoms import Atoms
+import atoms;           from atoms import Atoms, make_lattice, get_lattice_params
 import dictionary;      from dictionary import Dictionary
 import cinoutput;       from cinoutput import CInOutput, CInOutputReader, CInOutputWriter
 import dynamicalsystem; from dynamicalsystem import DynamicalSystem
