@@ -128,7 +128,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
 			      int frame_dim_id, int spatial_dim_id, int atom_dim_id, 
 			      int label_dim_id, int string_dim_id,
 			      int n_spatial, int n_atom, int n_label, int n_string,
-			      int *type, int *is_param, int *is_property, int *shape, int *error)
+			      int *type, int *is_param, int *is_property, int *is_global, int *shape, int *error)
 {
   int type_map[3][13];
   int i, j;
@@ -141,18 +141,22 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       type_map[j][i] = -1;
 
   type_map[0][NC_INT] = T_INTEGER;
+  type_map[0][NC_FLOAT] = T_REAL;
   type_map[0][NC_DOUBLE] = T_REAL;
 
   type_map[1][NC_INT] = T_INTEGER_A;
+  type_map[1][NC_FLOAT] = T_REAL_A;
   type_map[1][NC_DOUBLE] = T_REAL_A;
   type_map[1][NC_CHAR] = T_CHAR;
 
   type_map[2][NC_INT] = T_INTEGER_A2;
+  type_map[2][NC_FLOAT] = T_REAL_A2;
   type_map[2][NC_DOUBLE] = T_REAL_A2;
   type_map[2][NC_CHAR] = T_CHAR_A;
 
   *is_param = 0;
   *is_property = 0;
+  *is_global = 0;
   shape[0] = 0;
   shape[1] = 0;
 
@@ -166,6 +170,16 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       if (*type == -1) {
 	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
+    }
+    else if (dimids[0] == atom_dim_id) {
+      // vector per-file parameter, needs to be read per frame
+      *is_property = 1;
+      *is_global = 1;
+      *type = type_map[ndims][vartype];
+      if (*type == -1) {
+	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+      }
+      shape[0] = n_atom;
     }
     else {
       RAISE_ERROR("convert_from_netcdf_type: unknown one-dimensional variable %s dimid=%d\n", varname, dimids[0]);
@@ -334,7 +348,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   int ndims, dimids[NC_MAX_VAR_DIMS], natts, shape[2], type, type_att;
   size_t tmp_sizet;
   void *data, *tmp_data;
-  int is_param, is_property;
+  int is_param, is_property, is_global;
   int frame_dim_id, spatial_dim_id, atom_dim_id, cell_spatial_dim_id,
     cell_angular_dim_id, label_dim_id, string_dim_id;
   int n_spatial, n_frame, n_label, n_string;
@@ -351,7 +365,10 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   NETCDF_CHECK(nc_inq_dimid(nc_id, "cell_spatial", &cell_spatial_dim_id));
   NETCDF_CHECK(nc_inq_dimid(nc_id, "cell_angular", &cell_angular_dim_id));
   NETCDF_CHECK(nc_inq_dimid(nc_id, "label", &label_dim_id));
-  NETCDF_CHECK(nc_inq_dimid(nc_id, "string", &string_dim_id));
+  if (nc_inq_dimid(nc_id, "string", &string_dim_id) != NC_NOERR) {
+    // No strings in this file
+    string_dim_id = 0;
+  }
 
   // Get sizes of dimensions
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
@@ -366,8 +383,13 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   *n_atom = (int)tmp_sizet;
   NETCDF_CHECK(nc_inq_dimlen(nc_id, label_dim_id, &tmp_sizet));
   n_label = (int)tmp_sizet;
-  NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
-  n_string = (int)tmp_sizet;
+  if (string_dim_id != 0) {
+    NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
+    n_string = (int)tmp_sizet;
+  }
+  else {
+    n_string = 0;
+  }
 
   debug("read_netcdf: got %d frames, %d atoms\n", n_frame, *n_atom);
 
@@ -429,7 +451,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
     convert_from_netcdf_type(varname, vartype, ndims, dimids, 
 			     frame_dim_id, spatial_dim_id, atom_dim_id, label_dim_id, string_dim_id,
 			     n_spatial, *n_atom, n_label, n_string,
-			     &type, &is_param, &is_property, shape, error);
+			     &type, &is_param, &is_property, &is_global, shape, error);
     PASS_ERROR;
 
     debug("read_netcdf: got variable \"%s\" type %d shape [%d %d] is_param=%d is_property=%d\n", varname, type, shape[0], shape[1], is_param, is_property);
@@ -472,14 +494,24 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 	type = type_att;
     }
 
-    start[0] = frame;
+    if (is_global) {
+      start[0] = 0;
+    }
+    else {
+      start[0] = frame;
+    }
     start[1] = 0;
     start[2] = 0;
 
     count[0] = 1;
     // If it's a 2D array we need to transpose shape
     if (type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A || type == T_CHAR) {
-      count[1] = shape[0];
+      if (is_global) {
+	count[0] = shape[0];
+      }
+      else {
+	count[1] = shape[0];
+      }
     } else {
       count[1] = shape[1];
       count[2] = shape[0];
@@ -952,7 +984,10 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
   NETCDF_CHECK(nc_inq_dimid(nc_id, "cell_spatial", &cell_spatial_dim_id));
   NETCDF_CHECK(nc_inq_dimid(nc_id, "cell_angular", &cell_angular_dim_id));
   NETCDF_CHECK(nc_inq_dimid(nc_id, "label", &label_dim_id));
-  NETCDF_CHECK(nc_inq_dimid(nc_id, "string", &string_dim_id));
+  if (nc_inq_dimid(nc_id, "string", &string_dim_id) != NC_NOERR) {
+    // No strings in this file
+    string_dim_id = 0;
+  }
 
   // Get sizes of dimensions
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
@@ -967,8 +1002,13 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
   *n_atom = (int)tmp_sizet;
   NETCDF_CHECK(nc_inq_dimlen(nc_id, label_dim_id, &tmp_sizet));
   *n_label = (int)tmp_sizet;
-  NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
-  *n_string = (int)tmp_sizet;
+  if (string_dim_id != 0) {
+    NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
+    *n_string = (int)tmp_sizet;
+  }
+  else {
+    n_string = 0;
+  }
 
   debug("query_netcdf: dimension Information:\n");
   debug("  frame_dim_id = %d, n_frame = %d\n", frame_dim_id, *n_frame);
