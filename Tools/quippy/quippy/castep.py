@@ -662,6 +662,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
             else:
                got_header = True
 
+         if line.startswith(' Starting MD iteration'):
+            break
+
          if line.startswith(' Starting BFGS iteration'):
             break
 
