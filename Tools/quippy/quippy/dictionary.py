@@ -179,5 +179,11 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
    def copy(self):
       return Dictionary(self)
 
+   def subset(self, keys, out=None, case_sensitive=None, out_no_initialise=None):
+      if out is None: out = Dictionary()
+      FortranDictionary.subset(self, keys, out, case_sensitive, out_no_initialise)
+      return out
+   
+
      
 
