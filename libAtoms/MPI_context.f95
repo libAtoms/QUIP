@@ -144,6 +144,8 @@ interface sendrecv
    module procedure MPI_context_sendrecv_r, MPI_context_sendrecv_ra
 end interface sendrecv
 
+public :: push_MPI_error
+
 contains
 
 subroutine MPI_context_Initialise(this, communicator, context, dims, periods, error)
@@ -185,31 +187,34 @@ include 'mpif.h'
         comm = context%communicator
      endif
 
-     this%communicator = comm
+  else
 
-     if (present(dims)) then
-        my_periods = .true.
-        if (present(periods)) then
-           my_periods = periods
-        endif
-
-        this%is_cart = .true.
-        call mpi_cart_create(comm, 3, dims, my_periods, .true., &
-             this%communicator, err)
+     comm = MPI_COMM_WORLD
+     call mpi_initialized(is_initialized, err)
+     PASS_MPI_ERROR(err, error)
+     if (.not. is_initialized) then
+        call mpi_init(err)
         PASS_MPI_ERROR(err, error)
      endif
 
-  else
-
-    this%communicator = MPI_COMM_WORLD
-    call mpi_initialized(is_initialized, err)
-    PASS_MPI_ERROR(err, error)
-    if (.not. is_initialized) then
-      call mpi_init(err)
-      PASS_MPI_ERROR(err, error)
-    endif
-
   endif
+
+  this%communicator = comm
+
+  if (present(dims)) then
+     my_periods = .true.
+     if (present(periods)) then
+        my_periods = periods
+     endif
+
+     this%is_cart = .true.
+     call mpi_cart_create(comm, 3, dims, my_periods, .true., &
+          this%communicator, err)
+     PASS_MPI_ERROR(err, error)
+  endif
+
+  call mpi_comm_set_errhandler(this%communicator, MPI_ERRORS_RETURN, err)
+  PASS_MPI_ERROR(err, error)
 
   call mpi_comm_size(this%communicator, this%n_procs, err)
   PASS_MPI_ERROR(err, error)
@@ -221,6 +226,8 @@ include 'mpif.h'
      call mpi_cart_coords(this%communicator, this%my_proc, 3, &
           this%my_coords, err)
      PASS_MPI_ERROR(err, error)
+
+     call print("MPI_context_Initialise : Cart created, coords = " // this%my_coords, PRINT_VERBOSE)
   endif
 #endif
 end subroutine MPI_context_Initialise
