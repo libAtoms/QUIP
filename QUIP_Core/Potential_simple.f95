@@ -514,8 +514,7 @@ contains
 	 PASS_ERROR_WITH_INFO("potential_calc: carving cluster", error)
 	 call finalise(cluster_info)
 	 if (current_verbosity() >= PRINT_NERD) then
-           ! prefix should be CLUSTER
-	   call write(cluster, 'stdout')
+	   call write(cluster, 'stdout', prefix='CLUSTER')
 	 endif
 	 if (.not. assign_pointer(cluster, 'index', cluster_index)) then
 	      RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
