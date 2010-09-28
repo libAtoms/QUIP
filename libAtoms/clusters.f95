@@ -1144,7 +1144,7 @@ contains
        cluster%pos(:,i) = cluster_info%real(1:3, i)+(at%lattice .mult. cluster_info%int(2:4, i))
        cluster%Z(i) = cluster_info%int(5,i)
        cluster%species(:,i) = ' '
-       cluster%species(:,i) = s2a(ElementName(cluster_info%int(5,i)))
+       cluster%species(1:3,i) = s2a(ElementName(cluster_info%int(5,i)))
     end do
     ! add properties to cluster
     call add_property(cluster, 'index', int_part(cluster_info,1))
