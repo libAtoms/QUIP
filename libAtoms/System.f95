@@ -50,6 +50,8 @@ module system_module
 !$ use omp_lib
   implicit none
 
+  logical :: system_always_flush = .false.
+
 #ifdef HAVE_QP
   integer, parameter :: qp = 16 
 #else
@@ -313,7 +315,7 @@ contains
   !% For unformatted output, the
   !% 'isformatted' optional parameter must
   !% be set to false.
-  subroutine inoutput_initialise(this,filename,action,isformatted,append,verbosity,verbosity_cascade,master_only)
+  subroutine inoutput_initialise(this,filename,action,isformatted,append,verbosity,verbosity_cascade,master_only,error)
     type(Inoutput), intent(inout)::this
     character(*),intent(in),optional::filename
     logical,intent(in),optional::isformatted 
@@ -321,11 +323,14 @@ contains
     logical,intent(in),optional::append
     integer,intent(in),optional :: verbosity, verbosity_cascade
     logical,intent(in),optional :: master_only
+    integer,intent(out),optional :: error
 
     character(32)::formattedstr
     character(32)::position_value
     integer::stat
     logical :: my_master_only
+
+    INIT_ERROR(error)
 
     ! Default of optional parameters------------------------------- 
 
@@ -363,7 +368,7 @@ contains
     end if
 
     if(this%append .AND. .NOT.this%formatted) then
-       call system_abort(" Append not implemented for unformatted output")
+       RAISE_ERROR(" Append not implemented for unformatted output",error)
     end if
 
     if (present(filename)) then
@@ -397,7 +402,7 @@ contains
 	    stat = 0
 	  endif
           if(stat.NE.0)then 
-             call system_abort('IO error opening "'//trim(filename)//'", error number: '//stat)
+             RAISE_ERROR('IO error opening "'//trim(filename)//'" on unit '//this%unit//', error number: '//stat,error)
           end if
 
        end if
@@ -506,15 +511,18 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine inoutput_print_string(string, verbosity, file, nocr)
+  subroutine inoutput_print_string(string, verbosity, file, nocr, do_flush)
     character(*),             intent(in) :: string
     integer,  optional,       intent(in) :: verbosity
     type(Inoutput), optional, target, intent(in) :: file
-    logical, optional, intent(in) :: nocr
+    logical, optional, intent(in) :: nocr, do_flush
 
     type(Inoutput), pointer :: myoutput
     integer :: myverbosity
     character(len=2) :: nocr_fmt
+    logical :: my_do_flush
+
+    my_do_flush = optional_default(system_always_flush, do_flush)
 
     nocr_fmt = ''
     if (present(nocr)) then
@@ -559,6 +567,8 @@ contains
 	endif
       endif
     endif
+
+    if (my_do_flush) call flush(myoutput%unit)
   end subroutine inoutput_print_string
 
   function inoutput_do_output(this)
@@ -1740,13 +1750,14 @@ contains
   !% using MPI, by default we set the same random seed for each process.
   !% This also attempts to read the executable name, the number of command
   !% arguments, and the arguments themselves.
-  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing, quippy_running)
+  subroutine system_initialise(verbosity,seed, mpi_all_inoutput, common_seed, enable_timing, quippy_running, mainlog_file)
     integer,intent(in), optional::verbosity           !% mainlog output verbosity
     integer,intent(in), optional::seed                !% Seed for the random number generator.
     logical,intent(in), optional::mpi_all_inoutput    !% Print on all MPI nodes (false by default)
     logical,intent(in), optional::common_seed 
     logical,intent(in), optional::enable_timing           !% Enable system_timer() calls
     logical,intent(in), optional::quippy_running       !% .true. if running under quippy (Python interface)
+    character(len=*),intent(in), optional :: mainlog_file
     !% If 'common_seed' is true (default), random seed will be the same for each
     !% MPI process.
     character(30) :: arg
@@ -1776,7 +1787,11 @@ contains
     mainlog%mpi_all_inoutput_flag = optional_default(.false., mpi_all_inoutput)
 
     ! Initialise the verbosity stack and default logger
-    call initialise(mainlog, verbosity=verbosity)
+    if (present(mainlog_file)) then
+      call initialise(mainlog, trim(mainlog_file), verbosity=verbosity, action=OUTPUT)
+    else
+      call initialise(mainlog, verbosity=verbosity, action=OUTPUT)
+    endif
     call print_mpi_id(mainlog)
     call initialise(errorlog,'stderr')
     call print_mpi_id(errorlog)

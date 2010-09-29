@@ -707,7 +707,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	shape[0] = n_buffer;
       } else {
 	type = T_INTEGER_A2;
-	shape[0] = 3;
+	shape[0] = ncols;
 	shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"R") == 0) {
@@ -716,7 +716,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	shape[0] = n_buffer;
       } else {
 	type = T_REAL_A2;
-	shape[0] = 3;
+	shape[0] = ncols;
 	shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"S") == 0) {

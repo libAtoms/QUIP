@@ -171,7 +171,7 @@ contains
     type(Inoutput) :: rev_sort_index_io
     logical :: sorted
 
-    integer :: run_dir_i
+    integer :: run_dir_i, force_run_dir_i
 
     logical :: at_periodic
     integer :: form_bond(2), break_bond(2)
@@ -202,6 +202,7 @@ contains
       call param_register(cli, 'form_bond', '0 0', form_bond)
       call param_register(cli, 'break_bond', '0 0', break_bond)
       call param_register(cli, 'qm_charges', '', calc_qm_charges)
+      call param_register(cli, 'force_run_dir_i', '-1', force_run_dir_i)
       ! should really be ignore_unknown=false, but higher level things pass unneeded arguments down here
       if (.not.param_read_line(cli, args_str, do_check=.true.,ignore_unknown=.true.,task='cp2k_filepot_template args_str')) &
 	call system_abort('cp2k_driver could not parse argument line')
@@ -633,7 +634,7 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
-    run_dir = make_run_directory(run_dir_i)
+    run_dir = make_run_directory(force_run_dir_i, run_dir_i)
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
@@ -770,23 +771,24 @@ contains
 
     INIT_ERROR(error)
 
-    if (len_trim(calc_qm_charges) > 0) then
-       if (.not. assign_pointer(at, trim(calc_qm_charges), qm_charges_p)) then
-	  call add_property(at, trim(calc_qm_charges), 0.0_dp, ptr=qm_charges_p)
-       endif
-    endif
-
     call read(f_xyz, trim(run_dir)//'/'//trim(proj)//'-frc-1.xyz')
     call read(p_xyz, trim(run_dir)//'/'//trim(proj)//'-pos-1.xyz')
-    call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1.mulliken',action=INPUT)
-    do i=1, 3
-      qm_charges_l = read_line(qm_charges_io)
-    end do
-    do i=1, at%N
-      qm_charges_l = read_line(qm_charges_io)
-      read (unit=qm_charges_l,fmt=*) ti, species, qm_charges_p(i)
-    end do
-    call finalise(qm_charges_io)
+    nullify(qm_charges_p)
+    if (len_trim(calc_qm_charges) > 0) then
+      if (.not. assign_pointer(at, trim(calc_qm_charges), qm_charges_p)) then
+	  call add_property(at, trim(calc_qm_charges), 0.0_dp, ptr=qm_charges_p)
+      endif
+      call initialise(qm_charges_io, trim(run_dir)//'/'//trim(proj)//'-qmcharges--1.mulliken',action=INPUT, error=error)
+      PASS_ERROR_WITH_INFO("cp2k_driver read_output() failed to open qmcharges file", error)
+      do i=1, 3
+	qm_charges_l = read_line(qm_charges_io)
+      end do
+      do i=1, at%N
+	qm_charges_l = read_line(qm_charges_io)
+	read (unit=qm_charges_l,fmt=*) ti, species, qm_charges_p(i)
+      end do
+      call finalise(qm_charges_io)
+    endif
 
     if (.not. get_value(f_xyz%params, "E", e)) then
       RAISE_ERROR('read_output failed to find E value in '//trim(run_dir)//'/quip-frc-1.xyz file', error)
@@ -799,7 +801,7 @@ contains
 
     e = e * HARTREE
     f  = f * HARTREE/BOHR 
-    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f)
+    call reorder_if_necessary(at, qm_list_a, cur_qmmm_qm_abc, p_xyz%pos, f, qm_charges_p)
 
     call print('')
     call print('The energy of the system: '//e)
@@ -814,12 +816,13 @@ contains
 
   end subroutine read_output
 
-  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f)
+  subroutine reorder_if_necessary(at, qm_list_a, qmmm_qm_abc, new_p, new_f, qm_charges_p)
     type(Atoms), intent(in) :: at
     integer, intent(in) :: qm_list_a(:)
     real(dp), intent(in) :: qmmm_qm_abc(3)
     real(dp), intent(in) :: new_p(:,:)
     real(dp), intent(inout) :: new_f(:,:)
+    real(dp), intent(inout), pointer :: qm_charges_p(:)
 
     real(dp) :: shift(3)
     integer, allocatable :: reordering_index(:)
@@ -858,6 +861,9 @@ contains
     new_f(1,reordering_index(:)) = new_f(1,:)
     new_f(2,reordering_index(:)) = new_f(2,:)
     new_f(3,reordering_index(:)) = new_f(3,:)
+    if (associated(qm_charges_p)) then
+      qm_charges_p(reordering_index(:)) = qm_charges_p(:)
+    endif
 
     deallocate(reordering_index)
   end subroutine reorder_if_necessary
@@ -945,7 +951,8 @@ contains
 
   end subroutine run_cp2k_program
 
-  function make_run_directory(run_dir_i) result(dir)
+  function make_run_directory(force_run_dir_i, run_dir_i) result(dir)
+    integer, intent(in) :: force_run_dir_i
     integer, intent(out), optional :: run_dir_i
     integer i
     character(len=1024) :: dir
@@ -953,14 +960,21 @@ contains
     logical :: exists
     integer stat
 
-    exists = .true.
-    i = 0
-    do while (exists)
-      i = i + 1
+    if (force_run_dir_i > 0) then
+      i = force_run_dir_i
       dir = "cp2k_run_"//i
       inquire(file=trim(dir)//'/cp2k_input.inp', exist=exists)
-    end do
-    call system_command("mkdir "//trim(dir), status=stat)
+      if (.not. exists) call system_abort("make_run_directory got force_run_dir_i="//force_run_dir_i//" but cp2k_run_"//force_run_dir_i//"/cp2k_input.inp doesn't exist")
+    else
+      exists = .true.
+      i = 0
+      do while (exists)
+	i = i + 1
+	dir = "cp2k_run_"//i
+	inquire(file=trim(dir)//'/cp2k_input.inp', exist=exists)
+      end do
+      call system_command("mkdir "//trim(dir), status=stat)
+    endif
 
     if (stat /= 0) &
       call system_abort("Failed to mkdir "//trim(dir)//" status " // stat)
