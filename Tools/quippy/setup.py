@@ -242,13 +242,11 @@ def find_wrap_sources(makefile, quip_root):
     libraries.append('atoms')
     targets.append((quip_root, 'libAtoms'))
 
-    if 'HAVE_GP' in makefile and int(makefile['HAVE_GP']) == 1:
-        gp_dir = os.path.join(quip_root, 'gp')
+    if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
+        gp_dir = os.path.join(quip_root, 'gp_predict')
         source_dirs.append(gp_dir)
-        libraries.append('gp')
-        targets.append((quip_root, 'gp'))
-        wrap_sources += [os.path.join(gp_dir, s) for s in ['clustering.f95']]
-        wrap_types += ['lst', 'clstr']
+        libraries.append('gp_predict')
+        targets.extend([(quip_root, 'gp_predict')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
