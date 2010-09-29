@@ -71,7 +71,7 @@ ifeq (${HAVE_TB},1)
 endif
 ifeq (${HAVE_CP2K},1)
   QUIP_OBJS += cp2k_driver.o
-  ALL_F95_FILES += cp2k_driver.f95
+  ALL_F95_FILES += cp2k_driver.f95 cp2k_filepot.f95
 endif
 QUIP_OBJS += ${POT_F95_OBJS}
 ALL_F95_FILES += ${POT_F95_SOURCES}
@@ -79,6 +79,8 @@ ifeq (${HAVE_QC},1)
   QUIP_OBJS += QC_QUIP_Wrapper.o 
   ALL_F95_FILES += QC_QUIP_Wrapper.f95
 endif
+
+ALL_F95_FILES += evb_filepot.f95
 
 
 TEST_TARGETS = test_KP test_Matrix test_TBMatrix test_TBModel test_TBSystem test_TBCalculate  test_RS_SparseMatrix test_DFTB test_Potential test_Self_Consistency test_GreensFunc test_AF   test_ScaLAPACK test_SelfEnergy_passivation test_cat test_QC_QUIP_Wrapper
