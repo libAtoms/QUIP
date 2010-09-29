@@ -26,8 +26,9 @@
 module teach_sparse_mod
 
   use libatoms_module
-  use bispectrum_module
-  use gp_sparse_module
+  use descriptors_module
+  use gp_predict_module
+  use gp_teach_module
   use fox_wxml
   use IPEwald_module
   use QUIP_module
