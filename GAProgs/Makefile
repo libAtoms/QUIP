@@ -37,12 +37,13 @@ OBJS = teach_sparse_module.o
 
 PROGRAMS = teach_sparse test_qw_gradient convert_binary2xml
 
-LIBS = -L. -lquiputils -lquip -lgp -latoms 
-LIBFILES = libatoms.a libgp.a libquip.a libquiputils.a
+LIBS = -L. -lquiputils -lquip ${GP_LIB} -latoms 
+LIBFILES = libatoms.a ${GP_LIBFILE} libquip.a libquiputils.a
 
 .PHONY: clean allclean
 
-${PROGRAMS}: %: ${OBJS} %.o ${LIBFILES}
+${PROGRAMS}: % : ${OBJS} %.o ${LIBFILES}
+	echo ${GP_LIBFILE} >> witty
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS} ${LINKOPTS}
 
 clean:	
