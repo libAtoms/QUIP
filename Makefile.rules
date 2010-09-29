@@ -83,19 +83,25 @@ ifeq (${HAVE_ASAP},1)
   INCLUDES += -I${ASAP_LIBDIR}
   DEFINES += -DHAVE_ASAP
 endif
-ifeq (${HAVE_GP},1)
-  DEFINES += -DHAVE_GP
-  GP_LIB=-lgp
-  GP_LIBFILE=libgp.a
+ifeq (${HAVE_GP_TEACH},1)
+  DEFINES += -DHAVE_GP_TEACH
+  HAVE_GP_PREDICT = 1
+  GP_LIB += -lgp_teach
+  GP_LIBFILE += libgp_teach.a
+endif
+ifeq (${HAVE_GP_PREDICT},1)
+  DEFINES += -DHAVE_GP_PREDICT
+  GP_LIB += -lgp_predict
+  GP_LIBFILE += libgp_predict.a
 endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB
 endif
-ifeq (${HAVE_QP},1)
-  DEFINES += -DHAVE_QP
+ifeq (${HAVE_QP_TEACH},1)
+  DEFINES += -DHAVE_QP -DHAVE_QP_TEACH
 endif
-ifeq (${GP_PREDICT_QP},1)
-  DEFINES += -DGP_PREDICT_QP
+ifeq (${HAVE_QP_PREDICT},1)
+  DEFINES += -DHAVE_QP -DHAVE_QP_PREDICT
 endif
 ifeq (${HAVE_QR},1)
   DEFINES += -DHAVE_QR
