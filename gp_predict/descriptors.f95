@@ -23,7 +23,7 @@
 ! HND X
 ! HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-module bispectrum_module
+module descriptors_module
 
    use libatoms_module
 
@@ -4760,4 +4760,4 @@ module bispectrum_module
 
     endfunction p_norm
 
-endmodule bispectrum_module
+endmodule descriptors_module
