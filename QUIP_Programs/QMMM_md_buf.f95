@@ -649,8 +649,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
   !FORCE
 
      if (topology_print_rate >= 0) driver_PSF_Print='DRIVER_PRINT_AND_SAVE'
+call print("MAIN CALL CALC EVB")
+call print(pot)
      call do_calc_call(pot, empty_qm_pot, ds%atoms, Run_Type1, Run_Type2, EVB, qm_region_pt_ctr, &
        distance_ramp, qm_region_ctr, cp2k_calc_args, evb_args_str, do_carve_cluster, driver_PSF_Print, f1, energy)
+call print("MAIN CALLED CALC EVB")
      if (topology_print_rate >= 0) driver_PSF_Print='USE_EXISTING_PSF'
 
      !spline force calculation, if needed
@@ -688,6 +691,11 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
         do i=1,ds%Nconstraints
+           call print("TI"//i//" Time[fs]  Constraint_value  Lambda_R  Lambda_V  Z_xi")
+           call print("TI"//i//" "//ds%t//" "//ds%constraint(i)%C//" "// &
+                      ds%constraint(i)%lambdaR//" "// &
+                      ds%constraint(i)%lambdaV//" "// &
+                      ds%constraint(i)%Z_coll)
 	   if (ds%constraint(i)%N /= 3) then
 	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
 	   else
@@ -858,6 +866,10 @@ if (.not.(assign_pointer(ds%atoms, "hybrid_mark", hybrid_mark_p))) call system_a
      if (ds%Nconstraints > 0) then
         call print(ds%constraint)
         do i=1,ds%Nconstraints
+           call print("TI"//i//" "//ds%t//" "//ds%constraint(i)%C//" "// &
+                      ds%constraint(i)%lambdaR//" "// &
+                      ds%constraint(i)%lambdaV//" "// &
+                      ds%constraint(i)%Z_coll)
 	   if (ds%constraint(i)%N /= 3) then
 	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
 	   else
