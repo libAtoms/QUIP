@@ -48,9 +48,9 @@ use mpi_context_module
 use QUIP_Common_module
 use IPEwald_module
 
-#ifdef HAVE_GP
-use bispectrum_module
-use gp_sparse_module
+#ifdef HAVE_GP_PREDICT
+use descriptors_module
+use gp_predict_module
 #endif
 
 implicit none
@@ -93,7 +93,7 @@ type IPModel_GAP
 
   character(len=FIELD_LENGTH) :: label
 
-#ifdef HAVE_GP
+#ifdef HAVE_GP_PREDICT
   type(gp) :: my_gp
 #endif
   logical :: initialised = .false.
@@ -131,8 +131,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   call Finalise(this)
 
   ! now initialise the potential
-#ifndef HAVE_GP
-  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP')
+#ifndef HAVE_GP_PREDICT
+  call system_abort('IPModel_GAP_Initialise_str: compiled without HAVE_GP_PREDICT')
 #else
   
   call initialise(params)
@@ -158,7 +158,7 @@ end subroutine IPModel_GAP_Initialise_str
 
 subroutine IPModel_GAP_Finalise(this)
   type(IPModel_GAP), intent(inout) :: this
-#ifdef HAVE_GP
+#ifdef HAVE_GP_PREDICT
   if (allocated(this%qw_cutoff)) deallocate(this%qw_cutoff)
   if (allocated(this%qw_cutoff_f)) deallocate(this%qw_cutoff_f)
   if (allocated(this%qw_cutoff_r1)) deallocate(this%qw_cutoff_r1)
@@ -204,7 +204,7 @@ subroutine IPModel_GAP_Calc(this, at, e, local_e, f, virial,args_str, mpi, error
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
-#ifdef HAVE_GP
+#ifdef HAVE_GP_PREDICT
   real(dp), pointer :: w_e(:)
   real(dp) :: e_i, f_gp, f_gp_k, water_monomer_energy, water_dimer_energy
   real(dp), dimension(:), allocatable   :: local_e_in, w, charge
@@ -858,7 +858,7 @@ subroutine IPModel_GAP_Print (this, file)
   type(Inoutput), intent(inout),optional :: file
   integer :: i
 
-#ifdef HAVE_GP
+#ifdef HAVE_GP_PREDICT
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
   call Print("IPModel_GAP : j_max = "//this%j_max, file=file)
