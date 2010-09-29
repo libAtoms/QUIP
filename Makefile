@@ -108,13 +108,11 @@ ifeq (${HAVE_GP_TEACH},1)
 gp_teach/%: libAtoms ${FOX} gp_predict
 	ln -sf ${PWD}/gp_teach/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/gp_teach -I${PWD} -I${PWD}/Makefiles $${targ#gp_teach/}
-	echo 'cock'>${BUILDDIR}/witty
 	rm ${BUILDDIR}/Makefile
 
 GAProgs/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 	ln -sf ${PWD}/GAProgs/Makefile ${BUILDDIR}/Makefile
 	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAProgs -I${PWD} -I${PWD}/Makefiles $${targ#GAProgs/}
-	echo 'cock'>${BUILDDIR}/witty
 	rm ${BUILDDIR}/Makefile
 endif
 
