@@ -23,7 +23,7 @@
 # HND X
 # HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-all: libgp.a
+all: libgp_predict.a
 
 include Makefile.inc
 include Makefile.rules
@@ -34,17 +34,17 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-GP_F95_FILES = bispectrum clustering gp_sparse 
-GP_F95_SOURCES = ${addsuffix .f95, ${GP_F95_FILES}}
-GP_F95_OBJS = ${addsuffix .o, ${GP_F95_FILES}}
+GP_PREDICT_F95_FILES = descriptors gp_predict
+GP_PREDICT_F95_SOURCES = ${addsuffix .f95, ${GP_PREDICT_F95_FILES}}
+GP_PREDICT_F95_OBJS = ${addsuffix .o, ${GP_PREDICT_F95_FILES}}
 
 .PHONY : clean allclean depend doc
 
-libgp.a: ${GP_F95_OBJS}
-	${AR} ${AR_ADD} libgp.a $?
+libgp_predict.a: ${GP_PREDICT_F95_OBJS}
+	${AR} ${AR_ADD} libgp_predict.a $?
 
 clean:
-	rm -f *.o *.mod *.mod.save libgp.a
+	rm -f *.o *.mod *.mod.save libgp_predict.a
 	-rm -r doctmp
 
 allclean: clean
