@@ -101,7 +101,7 @@
     type(Dictionary)        :: params
     character(FIELD_LENGTH) :: mm_args_str
     character(FIELD_LENGTH) :: topology_suffix1, topology_suffix2
-    integer                 :: form_bond(2), break_bond(2)
+    integer                 :: form_bond(2), break_bond(2), atom1, atom3
     logical                 :: have_form_bond, have_break_bond
 
     logical                 :: save_energies, save_forces
@@ -278,10 +278,33 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
           endif
        endif
     else
-       !calculate coupling terms
+       !calculate coupling terms -- rab is the bondlength or the sum of the bond length
        rab = 0._dp
-       if (have_form_bond) rab = rab + distance_min_image(at,form_bond(1),form_bond(2))
-       if (have_form_bond) rab = rab - distance_min_image(at,break_bond(1),break_bond(2))
+       if (have_form_bond.and.have_break_bond) then
+          !the distance of the two atoms around the central one
+          atom1=form_bond(1)
+          atom3=form_bond(2)
+          if (break_bond(1)==atom1) then
+             atom1=break_bond(2)
+          elseif (break_bond(1)==atom3) then
+             atom3=break_bond(2)
+          elseif (break_bond(2)==atom1) then
+             atom1=break_bond(1)
+          elseif (break_bond(2)==atom3) then
+             atom3=break_bond(1)
+          else
+             call system_abort("The forming and breaking bonds are not around a common atom.  This case has not yet been implemented.")
+          endif
+          rab = distance_min_image(at,atom1,atom3)
+       else
+          !use the only bond that breaks/forms
+          if (have_form_bond) then
+             rab = distance_min_image(at,form_bond(1),form_bond(2))
+          elseif (have_break_bond) then
+             rab = distance_min_image(at,break_bond(1),break_bond(2))
+          endif
+       endif
+
 
        if (len_trim(calc_energy) > 0 .or. len_trim(calc_force) > 0) then
           e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
@@ -305,15 +328,16 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
        if (len_trim(calc_force) > 0) then
           !force coupling term
           de_offdiag_dr = 0._dp
-          if (have_form_bond) then
+          if (have_form_bond.and.have_break_bond) then !breaking and forming bonds around the same atom
+             d_rab_dx = diff_min_image(at,atom1,atom3)/distance_min_image(at,atom1,atom3)
+             de_offdiag_dr(1:3,atom1) = de_offdiag_dr(1:3,atom1) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+             de_offdiag_dr(1:3,atom3) = de_offdiag_dr(1:3,atom3) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
+          elseif (have_form_bond) then !only 1 forming bond
              d_rab_dx = diff_min_image(at,form_bond(1),form_bond(2))/distance_min_image(at,form_bond(1),form_bond(2))
-             if (rab < 0) d_rab_dx = - d_rab_dx
              de_offdiag_dr(1:3,form_bond(1)) = de_offdiag_dr(1:3,form_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
              de_offdiag_dr(1:3,form_bond(2)) = de_offdiag_dr(1:3,form_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
-          endif
-          if (have_break_bond) then
+          elseif (have_break_bond) then !only 1 breaking bond
              d_rab_dx = diff_min_image(at,break_bond(1),break_bond(2))/distance_min_image(at,break_bond(1),break_bond(2))
-             if (rab > 0) d_rab_dx = - d_rab_dx
              de_offdiag_dr(1:3,break_bond(1)) = de_offdiag_dr(1:3,break_bond(1)) + e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
              de_offdiag_dr(1:3,break_bond(2)) = de_offdiag_dr(1:3,break_bond(2)) - e_offdiag * (offdiagonal_mu12) * d_rab_dx(1:3)
           endif
