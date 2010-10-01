@@ -97,6 +97,7 @@ type IPModel_GAP
   type(gp) :: my_gp
 #endif
   logical :: initialised = .false.
+  type(extendable_str) :: command_line
 
 end type IPModel_GAP
 
@@ -186,6 +187,9 @@ subroutine IPModel_GAP_Finalise(this)
   this%label = ''
   this%initialised = .false.
 #endif
+
+  call finalise(this%command_line)
+
 end subroutine IPModel_GAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -788,6 +792,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         call system_abort('IPModel_GAP_read_params_xml cannot find charge')
      endif
 
+  elseif(parse_in_ip .and. name == 'command_line') then
+      call zero(parse_cur_data)
+
   endif
 
 end subroutine IPModel_startElement_handler
@@ -815,10 +822,21 @@ subroutine IPModel_endElement_handler(URI, localname, name)
 
     elseif(name == 'per_type_data') then
 
+    elseif(name == 'command_line') then
+       parse_ip%command_line = parse_cur_data
     end if
   endif
 
 end subroutine IPModel_endElement_handler
+
+subroutine IPModel_characters_handler(in)
+   character(len=*), intent(in) :: in
+
+   if(parse_in_ip) then
+     call concat(parse_cur_data, in, keep_lf=.false.)
+   endif
+
+end subroutine IPModel_characters_handler
 
 subroutine IPModel_GAP_read_params_xml(this, param_str)
   type(IPModel_GAP), intent(inout), target :: this
@@ -833,11 +851,13 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
      parse_in_ip_done = .false.
      parse_matched_label = .false.
      parse_ip => this
+     call initialise(parse_cur_data)
 
      call open_xml_string(fxml, param_str)
      call parse(fxml,  &
        startElement_handler = IPModel_startElement_handler, &
-       endElement_handler = IPModel_endElement_handler)
+       endElement_handler = IPModel_endElement_handler, &
+       characters_handler = IPModel_characters_handler)
      call close_xml_t(fxml)
 
      if(.not. parse_in_ip_done) &
@@ -873,6 +893,8 @@ subroutine IPModel_GAP_Print (this, file)
      call Print("IPModel_GAP : delta = "//this%my_gp%delta(i), file=file)
      call Print("IPModel_GAP : theta = "//this%my_gp%theta(:,i), file=file)
   enddo
+
+  call Print("IPModel_GAP : command_line = "//string(this%command_line))
 #endif
 
 end subroutine IPModel_GAP_Print
