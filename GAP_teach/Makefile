@@ -23,7 +23,7 @@
 # HND X
 # HND XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-all: libgp_predict.a
+all: libgap_teach.a
 
 include Makefile.inc
 include Makefile.rules
@@ -34,17 +34,17 @@ else
   include Makefile.${QUIP_ARCH}
 endif
 
-GP_PREDICT_F95_FILES = descriptors gp_predict
-GP_PREDICT_F95_SOURCES = ${addsuffix .f95, ${GP_PREDICT_F95_FILES}}
-GP_PREDICT_F95_OBJS = ${addsuffix .o, ${GP_PREDICT_F95_FILES}}
+GP_TEACH_F95_FILES = clustering gp_teach 
+GP_TEACH_F95_SOURCES = ${addsuffix .f95, ${GP_TEACH_F95_FILES}}
+GP_TEACH_F95_OBJS = ${addsuffix .o, ${GP_TEACH_F95_FILES}}
 
 .PHONY : clean allclean depend doc
 
-libgp_predict.a: ${GP_PREDICT_F95_OBJS}
-	${AR} ${AR_ADD} libgp_predict.a $?
+libgap_teach.a: ${GP_TEACH_F95_OBJS}
+	${AR} ${AR_ADD} libgap_teach.a $?
 
 clean:
-	rm -f *.o *.mod *.mod.save libgp_predict.a
+	rm -f *.o *.mod *.mod.save libgap_teach.a
 	-rm -r doctmp
 
 allclean: clean
