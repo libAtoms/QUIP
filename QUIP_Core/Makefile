@@ -59,7 +59,7 @@ IP_F95_FILES += IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module gap_wrapper quip_lammps_wrapper
+POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module quip_wrapper quip_lammps_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
