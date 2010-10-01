@@ -34,7 +34,7 @@ FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 NETCDF_LIBS =  -lnetcdf
 NETCDF4_LIBS = -lnetcdf -lhdf5_hl -lhdf5 $(NETCDF4_EXTRA_LIBS)
 NETCDF4_CURL_LIBS = -lcurl
-LARSPOT_LIBS = -lmdcore
+MDCORE_LIBS = -lmdcore
 SVN_VERSION := -D'SVN_VERSION="$(shell svnversion -n ..)"'
 
 ifndef AR
@@ -73,9 +73,9 @@ ifeq (${HAVE_NETCDF},1)
     SYSLIBS +=  ${NETCDF_LIBS}
   endif
 endif
-ifeq (${HAVE_LARSPOT},1)
-  SYSLIBS += -L${LARSPOT_LIBDIR} ${LARSPOT_LIBS}
-  INCLUDES += -I${LARSPOT_INCDIR}
+ifeq (${HAVE_MDCORE},1)
+  SYSLIBS += -L${MDCORE_LIBDIR} ${MDCORE_LIBS}
+  INCLUDES += -I${MDCORE_INCDIR}
   DEFINES  += -DHAVE_MDCORE
 endif
 ifeq (${HAVE_ASAP},1)
