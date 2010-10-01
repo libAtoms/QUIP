@@ -805,6 +805,9 @@ def CastepOutputReader(castep_file, atoms_ref=None, abort=False):
          # Extract force lines from .castep file
          force_lines = castep_output[force_start+6:force_start+6+atoms.n]
 
+         # remove "cons" tags from constrained degrees of freedom
+         force_lines = [ s.replace("(cons' d)", "") for s in force_lines ]
+
          atoms.add_property('force',0.0,n_cols=3)
 
          # Fill in the forces
