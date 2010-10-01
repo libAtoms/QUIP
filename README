@@ -1,3 +1,33 @@
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# X
+# X   libAtoms+QUIP: atomistic simulation library
+# X
+# X   Portions of this code were written by
+# X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# X
+# X   Copyright 2006-2010.
+# X
+# X   These portions of the source code are released under the GNU General
+# X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# X
+# X   If you would like to license the source code under different terms,
+# X   please contact Gabor Csanyi, gabor@csanyi.net
+# X
+# X   Portions of this code were written by Noam Bernstein as part of
+# X   his employment for the U.S. Government, and are not subject
+# X   to copyright in the USA.
+# X
+# X
+# X   When using this software, please cite the following reference:
+# X
+# X   http://www.libatoms.org
+# X
+# X  Additional contributions by
+# X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# X
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 This is the top level directory for QUIP, libAtoms and friends. 
 
 1) decide your architecture by looking at the Makefiles/README, and
@@ -26,11 +56,23 @@ file based on an existing file.
     install : copies all compiled programs it can find to QUIP_INSTDIR,
       if it's defined and is a directory
 
-The Makefile will create a build directory, build.${QUIP_ARCH}, and all
-the building happen there. First it will ask you some questions about
-where you keep libraries and other stuff, if you don't use something it
-is asking for, just leave it blank. The answers will be stored in
-Makefile.inc in the build.${QUIP_ARCH} directory, and you can edit them 
-later (e.g. to change optimisation or debug options).  Note that the
-default state is usually with rather heavy debugging on, including
-bounds checking, which makes the code quite slow.
+   The Makefile will create a build directory, build.${QUIP_ARCH}, and
+   all the building happen there. First it will ask you some questions
+   about where you keep libraries and other stuff, if you don't use
+   something it is asking for, just leave it blank. The answers will
+   be stored in Makefile.inc in the build.${QUIP_ARCH} directory, and
+   you can edit them later (e.g. to change optimisation or debug
+   options).  Note that the default state is usually with rather heavy
+   debugging on, including bounds checking, which makes the code quite
+   slow.
+
+   You can also use QUIP and libAtoms as a library and link to it. To make the
+   library version only, execute
+
+   make libquip
+
+   This will make all the various libraries and combine them into one: 
+   build.${QUIP_ARCH}/libquip.a, which is what you need to link (and of course
+   LAPACK). 
+   
+
