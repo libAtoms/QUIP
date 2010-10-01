@@ -45,13 +45,13 @@ MODULES = libAtoms QUIP_Core QUIP_Utils QUIP_Programs # Tests
 GP = 
 
 ifeq (${HAVE_GP_PREDICT},1)
-MODULES += gp_predict 
-GP += gp_predict
+MODULES += GAP_predict 
+GP += GAP_predict
 endif
 
 ifeq (${HAVE_GP_TEACH},1)
-MODULES += gp_teach GAProgs 
-GP += gp_teach
+MODULES += GAP_teach GAProgs 
+GP += GAP_teach
 endif
 
 FOX = FoX-4.0.3
@@ -84,11 +84,11 @@ ${MODULES}:  ${BUILDDIR}
 	rm ${BUILDDIR}/Makefile
 
 ifeq (${HAVE_GP_PREDICT},1)
-gp_predict: libAtoms
+GAP_predict: libAtoms ${FOX}
 endif
 
 ifeq (${HAVE_GP_TEACH},1)
-gp_teach: gp_predict libAtoms
+GAP_teach: libAtoms ${FOX} GAP_predict 
 GAProgs: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 endif
 
@@ -98,16 +98,16 @@ QUIP_Programs: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 Tests: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
 
 ifeq (${HAVE_GP_PREDICT},1)
-gp_predict/%: libAtoms ${FOX}
-	ln -sf ${PWD}/gp_predict/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/gp_predict -I${PWD} -I${PWD}/Makefiles $${targ#gp_predict/}
+GAP_predict/%: libAtoms ${FOX}
+	ln -sf ${PWD}/GAP_predict/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAP_predict -I${PWD} -I${PWD}/Makefiles $${targ#GAP_predict/}
 	rm ${BUILDDIR}/Makefile
 endif
 
 ifeq (${HAVE_GP_TEACH},1)
-gp_teach/%: libAtoms ${FOX} gp_predict
-	ln -sf ${PWD}/gp_teach/Makefile ${BUILDDIR}/Makefile
-	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/gp_teach -I${PWD} -I${PWD}/Makefiles $${targ#gp_teach/}
+GAP_teach/%: libAtoms ${FOX} GAP_predict
+	ln -sf ${PWD}/GAP_teach/Makefile ${BUILDDIR}/Makefile
+	targ=$@ ; ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${PWD} VPATH=${PWD}/GAP_teach -I${PWD} -I${PWD}/Makefiles $${targ#GAP_teach/}
 	rm ${BUILDDIR}/Makefile
 
 GAProgs/%: libAtoms ${FOX} ${GP} QUIP_Core QUIP_Utils
