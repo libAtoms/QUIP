@@ -28,9 +28,9 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-default: libquip.a 
+default: libquip_core.a 
 
-all: libquip.a cp2k_filepot evb_filepot
+all: libquip_core.a cp2k_filepot evb_filepot
 
 include Makefile.inc
 include Makefile.rules
@@ -94,8 +94,8 @@ TARGETS = ${TEST_TARGETS}
 
 .PHONY : clean allclean depend doc
 
-libquip.a: ${QUIP_OBJS}
-	${AR} ${AR_ADD} libquip.a ${QUIP_OBJS}
+libquip_core.a: ${QUIP_OBJS}
+	${AR} ${AR_ADD} libquip_core.a ${QUIP_OBJS}
 
 Potential.o: \
 	Potential_Hybrid_utils.f95 \
@@ -103,34 +103,34 @@ Potential.o: \
 	Potential_ONIOM_header.f95 Potential_ONIOM_routines.f95 \
 	Potential_ForceMixing_header.f95 Potential_ForceMixing_routines.f95
 
-distribution: libquip.a
+distribution: libquip_core.a
 	mkdir -p distribution/lib distribution/include
 	rm -f distribution/lib/* distribution/include/*
-	cp extern${EXTERN_SUFFIX}/FoX/lib/* libAtoms/libatoms.a libquip.a distribution/lib
+	cp extern${EXTERN_SUFFIX}/FoX/lib/* libAtoms/libatoms.a libquip_core.a distribution/lib
 	cp extern${EXTERN_SUFFIX}/FoX/include/* libAtoms/*.mod *.mod distribution/include
 
 
-${TARGETS}: % :  libquip.a %.o 
-	${F95} ${LINKFLAGS} -o $@ $@.o libquip.a libatoms.a ${LINKOPTS}
+${TARGETS}: % :  libquip_core.a %.o 
+	${F95} ${LINKFLAGS} -o $@ $@.o libquip_core.a libatoms.a ${LINKOPTS}
 
 clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm libquip.a cp2k_filepot cp2k_filepot_old evb_filepot quip.dtd
+	-rm libquip_core.a cp2k_filepot cp2k_filepot_old evb_filepot quip.dtd
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
 quip.dtd: ${IP_F95_SOURCES} ${TB_F95_SOURCES} mkdtd.pl
 	${VPATH}/mkdtd.pl ${IP_F95_SOURCES} ${TB_F95_SOURCES} > $@
 
-LIBS = -L. -lquip -latoms
+LIBS = -L. -lquip_core -latoms
 
-cp2k_filepot_old: % : %.o libatoms.a libquip.a
+cp2k_filepot_old: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
-cp2k_filepot: % : %.o libatoms.a libquip.a
+cp2k_filepot: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
-evb_filepot: % : %.o libatoms.a libquip.a
+evb_filepot: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 ifeq (${USE_MAKEDEP},1)
