@@ -51,8 +51,8 @@ endif
 
 all: ${PROGRAMS}
 
-LIBS =  -L. -lquiputils -lquip ${GP_LIB} -latoms 
-LIBFILES = libatoms.a ${GP_LIBFILE} libquip.a libquiputils.a
+LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
+LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
 
