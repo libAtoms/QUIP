@@ -1683,35 +1683,53 @@ contains
     type(CrackParams) :: params
     real(dp), dimension(2) :: crack_pos
 
-    integer :: i, crack_tip_atom, ti
-    integer, pointer, dimension(:) :: nn, edge_mask
-    real(dp) :: orig_width
+    integer :: i, crack_tip_atom, ti, n_tip
+    integer, pointer, dimension(:) :: nn, edge_mask, orig_index
+    integer, allocatable :: eqm_coord(:)
+    real(dp) :: tip_pos
+    type(Atoms) :: surface
+    real(dp), parameter :: tol = 1.0_dp
 
     if (.not. assign_pointer(at, 'nn', nn)) &
-         call system_abort('crack_find_crack_pos: nn property missing from atoms')
+         call system_abort('crack_find_tip_coordination: nn property missing from atoms')
 
     if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
-         call system_abort('crack_find_crack_pos: edge property missing from atoms')
+         call system_abort('crack_find_tip_coordination: edge property missing from atoms')
 
-    if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
-         call system_abort('crack_find_crack_pos: "OrigWidth" parameter missing from atoms')
-    
-    crack_pos(1) = -orig_width
-    crack_tip_atom = 0
-    do i=1,at%N
+    ! Select undercoodinated atoms
+    allocate(eqm_coord(at%n))
+    do i=1,at%n
        ti = find_in_array(params%crack_z, at%z(i))
-       if (nn(i) >= params%md_eqm_coordination(ti)) cycle
-       if (edge_mask(i) == 1) cycle
-       if (at%pos(1,i) > crack_pos(1)) then
-          crack_pos(1) = at%pos(1,i)
-          crack_pos(2) = at%pos(2,i)
-          crack_tip_atom = i
-       end if
+       eqm_coord(i) = params%md_eqm_coordination(ti)
+    end do
+    call select(surface, at, nn < eqm_coord .and. edge_mask /= 1)
+    deallocate(eqm_coord)
+
+    ! order by x coordinate
+    call add_property(surface, 'posx', surface%pos(1,:))
+    call atoms_sort(surface, 'posx')
+
+    ! include all atoms closer than 'tol' to rightmost undercoordinated atom
+    tip_pos = surface%pos(1,surface%N)
+    n_tip = 1
+    do while (.true.)
+       if (surface%N-n_tip < 1) exit
+       if (abs(surface%pos(1,surface%N-n_tip) - tip_pos) > tol) exit
+       n_tip = n_tip+1
     end do
 
-    call Print('Crack position = '//crack_pos//' near atom '//crack_tip_atom)
+    call print('crack_find_tip_coordination: got '//n_tip//' tip atoms.')
+
+    ! average positions
+    crack_pos(1) = sum(surface%pos(1,surface%N-n_tip+1:surface%N))/real(n_tip, dp)
+    crack_pos(2) = sum(surface%pos(2,surface%N-n_tip+1:surface%N))/real(n_tip, dp)
+
+    call assign_property_pointer(surface, 'orig_index', orig_index)
+    call Print('Crack position = '//crack_pos//' near atoms ['//orig_index(surface%N-n_tip+1:surface%N)//']')
     call set_value(at%params, 'CrackPosx', crack_pos(1))
     call set_value(at%params, 'CrackPosy', crack_pos(2))
+
+    call finalise(surface)
 
   end function crack_find_tip_coordination
 
