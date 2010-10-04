@@ -224,6 +224,7 @@ class Atoms(FortranAtoms):
             if source in AtomsReaders:
                format = source
             else:
+               source = os.path.expanduser(source)
                base, ext = os.path.splitext(source)
                format = ext[1:]
          else:
@@ -252,6 +253,7 @@ class Atoms(FortranAtoms):
             if dest in AtomsWriters:
                format = dest
             else:
+               dest = os.path.expanduser(dest)
                base, ext = os.path.splitext(dest)
                format = ext[1:]
          else:
