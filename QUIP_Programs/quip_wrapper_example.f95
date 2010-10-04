@@ -1,5 +1,7 @@
 program quip_wrapper_example
 
+  implicit none
+
   integer, parameter :: n = 6
   real(8), dimension(3,3) :: lattice
   character(len=3), dimension(n) :: symbol
@@ -25,7 +27,7 @@ program quip_wrapper_example
 
   args_str="IP GAP label=GAP_2010_9_18_60_1_34_16_996"
 
-  call quip_wrapper(n,lattice,symbol,coord,args_str,energy,force,stress)
+  call quip_wrapper(n,lattice,symbol,coord,args_str,energy,force,virial)
 
   print*,'Energy = ', energy
 
