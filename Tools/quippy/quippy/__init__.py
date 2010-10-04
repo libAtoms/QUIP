@@ -60,9 +60,9 @@ for mod in ['netCDF4', 'pylab', 'scipy', 'ase', 'atomeye']:
    except ImportError:
       unavailable_modules.append(mod)
 
-logging.warning('disabled_modules %r' % disabled_modules)
-logging.warning('available_modules %r' % available_modules)
-logging.warning('unavailable_modules %r' % unavailable_modules)
+logging.debug('disabled_modules %r' % disabled_modules)
+logging.debug('available_modules %r' % available_modules)
+logging.debug('unavailable_modules %r' % unavailable_modules)
 
 if 'netCDF4' in available_modules:
    from netCDF4 import Dataset
