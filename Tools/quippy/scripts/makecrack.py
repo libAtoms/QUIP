@@ -117,8 +117,8 @@ def makecrack(params):
 
    if (not params.simulation_classical):
       if (params.selection_method.strip() == 'crack_front' or
-          params.crack_tip_method.strip() == 'local_e'):
-         classicalpot.calc(crack_slab, local_energy="local_e")
+          params.crack_tip_method.strip() == 'local_energy'):
+         classicalpot.calc(crack_slab, local_energy=True)
 
       crack_setup_marks(crack_slab, params)
       crack_update_selection(crack_slab, params)

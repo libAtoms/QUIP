@@ -1565,7 +1565,7 @@ contains
     ellipse_bias(1) = params%selection_ellipse_bias*selection_ellipse(1,1)
 
     ! Find new position of crack front
-    call crack_find_tip_local_e(at, params)
+    call crack_find_tip_local_energy(at, params)
 
     allocate(selectmask(2,at%n))
     selectmask = 0
@@ -1647,11 +1647,11 @@ contains
     else if (trim(params%crack_tip_method) == 'percolation') then
        call crack_find_tip_percolation(at, params, crack_tips)
 
-    else if (trim(params%crack_tip_method) == 'local_e') then
-       call crack_find_tip_local_e(at, params)
+    else if (trim(params%crack_tip_method) == 'local_energy') then
+       call crack_find_tip_local_energy(at, params)
 
        if (.not. assign_pointer(at, 'crack_front', crack_front)) &
-            call system_abort('crack_find_tip_local_e: crack_front property missing from atoms')
+            call system_abort('crack_find_tip_local_energy: crack_front property missing from atoms')
     
        ! Calculate crack tip position as average along crack front
        crack_tip = 0.0_dp
@@ -2087,13 +2087,13 @@ contains
   end subroutine crack_find_tip_percolation
 
 
-  subroutine crack_find_tip_local_e(at, params)
+  subroutine crack_find_tip_local_energy(at, params)
     type(Atoms), intent(inout) :: at
     type(CrackParams), intent(in) :: params
 
-    real(dp), allocatable, dimension(:,:) :: filtered_local_e
+    real(dp), allocatable, dimension(:,:) :: filtered_local_energy
     real(dp), allocatable, dimension(:) :: surface_x, surface_z, surface_x_band, front_z
-    real(dp), pointer, dimension(:) :: local_e
+    real(dp), pointer, dimension(:) :: local_energy
     integer, pointer, dimension(:) :: edge_mask
     integer, allocatable, dimension(:) :: surface_i, surface_i_band, assign, front_i, idx
     logical, pointer, dimension(:) :: crack_surface, crack_front
@@ -2102,17 +2102,17 @@ contains
     integer :: i, n, surface_cluster(1)
     type(Table) :: candidates
 
-    if (.not. assign_pointer(at, 'local_e', local_e)) &
-         call system_abort('crack_find_tip_local_e: local_e property missing from atoms')
+    if (.not. assign_pointer(at, 'local_energy', local_energy)) &
+         call system_abort('crack_find_tip_local_energy: local_energy property missing from atoms')
 
     if (.not. assign_pointer(at, 'crack_front', crack_front)) &
-         call system_abort('crack_find_tip_local_e: crack_front property missing from atoms')
+         call system_abort('crack_find_tip_local_energy: crack_front property missing from atoms')
 
     if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
-         call system_abort('crack_find_tip_local_e: edge_mask property missing from atoms')
+         call system_abort('crack_find_tip_local_energy: edge_mask property missing from atoms')
 
     if (.not. assign_pointer(at, 'crack_surface', crack_surface)) &
-         call system_abort('crack_find_tip_local_e: crack_surface property missing from atoms')
+         call system_abort('crack_find_tip_local_energy: crack_surface property missing from atoms')
 
     ! **************************************************************************
     ! Phase 1 - identify crack surface atoms
@@ -2123,16 +2123,16 @@ contains
     ! crack surface atoms are those in highest energy cluster and with
     ! edge_mask == 0
 
-    allocate(filtered_local_e(count(edge_mask == 0),1), assign(count(edge_mask == 0)))
-    filtered_local_e(:,1) = pack(local_e, edge_mask == 0)
-    call kmeans(filtered_local_e, 2, means, assign, initialisation='random_partition')
+    allocate(filtered_local_energy(count(edge_mask == 0),1), assign(count(edge_mask == 0)))
+    filtered_local_energy(:,1) = pack(local_energy, edge_mask == 0)
+    call kmeans(filtered_local_energy, 2, means, assign, initialisation='random_partition')
     allocate(filtered_surface(size(assign)))
     surface_cluster = maxloc(means(:,1))
     filtered_surface = assign == surface_cluster(1)
     crack_surface = unpack(filtered_surface, edge_mask == 0, .false.)
-    deallocate(filtered_local_e, assign, filtered_surface)
+    deallocate(filtered_local_energy, assign, filtered_surface)
 
-    call print('crack_find_tip_local_e: found '//count(crack_surface)//' surface atoms.')
+    call print('crack_find_tip_local_energy: found '//count(crack_surface)//' surface atoms.')
 
 
     ! **************************************************************************
@@ -2167,7 +2167,7 @@ contains
     end do
 
     deallocate(surface_i, surface_x, surface_z, surface_i_band, surface_x_band)
-    call print('crack_find_tip_local_e: found '//count(crack_front)//' crack front atoms.')
+    call print('crack_find_tip_local_energy: found '//count(crack_front)//' crack front atoms.')
 
     ! **************************************************************************
     ! Phase 3 - expand crack front to edges of cell
@@ -2195,9 +2195,9 @@ contains
     end do
 
     deallocate(front_i, front_z, idx)
-    call print('crack_find_tip_local_e: expanded crack front contains '//count(crack_front)//' atoms.')
+    call print('crack_find_tip_local_energy: expanded crack front contains '//count(crack_front)//' atoms.')
     
-  end subroutine crack_find_tip_local_e
+  end subroutine crack_find_tip_local_energy
 
   subroutine crack_print_cio(at, cio, params)
     type(Atoms), intent(inout) :: at
