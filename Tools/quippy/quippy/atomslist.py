@@ -51,6 +51,7 @@ def AtomsReader(source, format=None, *args, **kwargs):
          if source in AtomsReaders:
             format = source
          else:
+            source = os.path.expanduser(source)
             base, ext = os.path.splitext(source)
             format = ext[1:]
       else:
@@ -74,6 +75,7 @@ def AtomsWriter(dest, format=None, *args, **kwargs):
          if dest in AtomsWriters:
             format = dest
          else:
+            source = os.path.expanduser(source)
             base, ext = os.path.splitext(dest)
             format = ext[1:]
       else:
@@ -95,6 +97,7 @@ class AtomsList(object):
             if source in AtomsReaders:
                format = source
             else:
+               source = os.path.expanduser(source)
                base, ext = os.path.splitext(source)
                format = ext[1:]
          else:
@@ -276,6 +279,7 @@ class AtomsList(object):
             if dest in AtomsWriters:
                format = dest
             else:
+               dest = os.path.expanduser(dest)
                base, ext = os.path.splitext(dest)
                format = ext[1:]
          else:
