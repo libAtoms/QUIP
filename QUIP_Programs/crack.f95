@@ -638,7 +638,7 @@ program crack
   call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
        old_nn, hybrid, hybrid_mark)
 
-  if (.not. has_property(ds%atoms, 'load')) then
+  if (all(abs(load) < 1.0e-7_dp)) then
      call print_title('Applying Initial Load')
      call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, & 
           .true., mpi_glob)
