@@ -243,10 +243,10 @@ def find_wrap_sources(makefile, quip_root):
     targets.append((quip_root, 'libAtoms'))
 
     if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
-        gp_dir = os.path.join(quip_root, 'gp_predict')
+        gp_dir = os.path.join(quip_root, 'GAP_predict')
         source_dirs.append(gp_dir)
-        libraries.append('gp_predict')
-        targets.extend([(quip_root, 'gp_predict')])
+        libraries.append('GAP_predict')
+        targets.extend([(quip_root, 'GAP_predict')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
     source_dirs.append(quip_core_dir)
