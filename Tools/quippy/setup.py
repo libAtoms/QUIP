@@ -245,7 +245,7 @@ def find_wrap_sources(makefile, quip_root):
     if 'HAVE_GP_PREDICT' in makefile and int(makefile['HAVE_GP_PREDICT']) == 1:
         gp_dir = os.path.join(quip_root, 'GAP_predict')
         source_dirs.append(gp_dir)
-        libraries.append('GAP_predict')
+        libraries.append('gap_predict')
         targets.extend([(quip_root, 'GAP_predict')])
 
     quip_core_dir = os.path.join(quip_root, 'QUIP_Core/')
