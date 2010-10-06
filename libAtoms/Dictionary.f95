@@ -2665,6 +2665,7 @@ contains
 
     INIT_ERROR(error)
 
+#ifdef __GFORTRAN__
     ! Raise an error if sizeof(Dictionary) or sizeof(DictEntry) have
     ! changed, indicating fields have been added or removed from
     ! definition of derived type.
@@ -2674,6 +2675,7 @@ contains
     if (size(transfer(entry, char_array)) /= SIZEOF_DICTENTRY) then
        RAISE_ERROR('dictentry_bcast: size of DictEntry object /= '//SIZEOF_DICTENTRY//' - please update dictionary_bcast()', error)
     end if
+#endif
 
     if (.not. mpi%active) return
 
