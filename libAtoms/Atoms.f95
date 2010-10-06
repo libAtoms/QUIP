@@ -5581,11 +5581,13 @@ end subroutine set_map_shift
 
     INIT_ERROR(error)
 
+#ifdef __GFORTRAN__
     ! Raise an error if sizeof(Atoms) has changed, indicating fields
     ! have been added or removed from definition of derived type.
     if (size(transfer(at, char_array)) /= SIZEOF_ATOMS) then
        RAISE_ERROR('atoms_bcast: size of Atoms object ('//size(transfer(at, char_array))//' /= '//SIZEOF_ATOMS//' - please update atoms_bcast()', error)
     end if
+#endif
 
     if (.not. mpi%active) return
 
