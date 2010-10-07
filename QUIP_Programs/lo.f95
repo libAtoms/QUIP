@@ -33,7 +33,7 @@ program eval
   use libAtoms_module
   use QUIP_module
   use libatoms_misc_utils_module
-  use bispectrum_module
+  use descriptors_module
   
   
   implicit none
