@@ -1541,7 +1541,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
   character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
-    if (name == 'ASAP2_params') then
+    if (name == 'ASAP_params') then
       parse_in_ip = .false.
     end if
   endif
