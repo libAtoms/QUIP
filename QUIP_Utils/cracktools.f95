@@ -2168,34 +2168,6 @@ contains
 
     deallocate(surface_i, surface_x, surface_z, surface_i_band, surface_x_band)
     call print('crack_find_tip_local_energy: found '//count(crack_front)//' crack front atoms.')
-
-    ! **************************************************************************
-    ! Phase 3 - expand crack front to edges of cell
-    ! **************************************************************************
-    
-    allocate(front_i(count(crack_front)),front_z(count(crack_front)),idx(count(crack_front)))
-    
-    front_i = pack( (/ (i, i=1,at%N) /), crack_front)
-    front_z = at%pos(3,front_i)
-
-    call insertion_sort(front_z, idx)
-    front_i = front_i(idx) ! now in order of increasing z
-    
-    call atoms_filter_cone(at, origin=front_i(2), dir=(at%pos(:,front_i(1)) - at%pos(:,front_i(2))), &
-         cos_theta=0.995_dp, output=candidates)
-    do i=1,candidates%n
-       if (edge_mask(candidates%int(1,i)) == 1) crack_front(candidates%int(1,i)) = .true.
-    end do
-
-    call wipe(candidates)
-    call atoms_filter_cone(at, origin=front_i(size(front_i)-1), dir=(at%pos(:,front_i(size(front_i))) - at%pos(:,front_i(size(front_i)-1))), &
-         cos_theta=0.995_dp, output=candidates)
-    do i=1,candidates%n
-       if (edge_mask(candidates%int(1,i)) == 1) crack_front(candidates%int(1,i)) = .true.
-    end do
-
-    deallocate(front_i, front_z, idx)
-    call print('crack_find_tip_local_energy: expanded crack front contains '//count(crack_front)//' atoms.')
     
   end subroutine crack_find_tip_local_energy
 
