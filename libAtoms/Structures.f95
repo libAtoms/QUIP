@@ -1587,11 +1587,12 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str) result(dup_cell)
+  function structure_from_file(struct, vol_per_atom, vol_per_unit_cell, repeat, Z_values_str, error) result(dup_cell)
     character(len=*), intent(in) :: struct
     real(dp), intent(in), optional :: vol_per_atom, vol_per_unit_cell
     integer, intent(in), optional :: repeat(3)
     character(len=*), intent(in), optional :: Z_values_str
+    integer, intent(out), optional :: error
     type(Atoms) :: dup_cell
 
     character(len=FIELD_LENGTH) :: struct_file
@@ -1605,6 +1606,9 @@ contains
     integer :: i, n_types
     real(dp) :: u_vol_per_atom, u_vol_per_unit_cell
     type(Dictionary) :: Z_values_params
+    integer :: l_error
+
+    INIT_ERROR(error)
 
     if (minval(repeat) <= 0) &
       call system_abort("all elements of repeat='"//repeat//"' must be >= 1")
@@ -1622,11 +1626,11 @@ contains
     else
       call get_env_var("QUIP_STRUCTS_DIR", quip_structs_dir, stat)
       if (stat /= 0) then
-	call get_env_var("QUIP_DIR", quip_structs_dir, stat)
+	call get_env_var("QUIP_ROOT", quip_structs_dir, stat)
 	if (stat /= 0) then
 	  call get_env_var("HOME", quip_structs_dir, stat)
 	  if (stat /= 0) &
-	    call system_abort("Could not get QUIP_STRUCTS_DIR or QUIP_DIR or HOME env variables")
+	    call system_abort("Could not get QUIP_STRUCTS_DIR or QUIP_ROOT or HOME env variables")
 	  quip_structs_dir = trim(quip_structs_dir) // "/share/quip_structures"
 	else
 	  quip_structs_dir = trim(quip_structs_dir) // "/structures"
@@ -1634,7 +1638,14 @@ contains
       endif
       struct_file = trim(quip_structs_dir)//"/"//trim(struct)//".xyz"
     endif
-    call read(cell, struct_file)
+    call read(cell, struct_file, error=l_error)
+    if (l_error /= 0) then
+      call print("structure_from_file looks for structure files in this order:", PRINT_ALWAYS)
+      call print("  $QUIP_STRUCTS_DIR", PRINT_ALWAYS)
+      call print("  $QUIP_ROOT/structures", PRINT_ALWAYS)
+      call print("  $HOME/share/quip_structures", PRINT_ALWAYS)
+      RAISE_ERROR("file not found", error)
+    endif
 
     n_types=maxval(cell%Z)-minval(cell%Z) + 1
     allocate(Z_values(n_types))
