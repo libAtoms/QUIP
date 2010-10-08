@@ -32,7 +32,6 @@ program randomise_calc
 
 use libAtoms_module
 use Potential_module
-use Potential_module
 
 implicit none
 
@@ -70,7 +69,9 @@ implicit none
 
   if (rng_seed >= 0) call system_set_random_seeds(rng_seed)
 
-  call Initialise(pot, trim(pot_init_args))
+  if(.not. dryrun) then
+     call Initialise(pot, trim(pot_init_args))
+  end if
 
   call read(at2, trim(infile))
   allocate(f(3,at2%N))
@@ -100,11 +101,13 @@ implicit none
         call system_timer("calc")
         call calc(pot, at, energy=e, force=f, virial=v)
         call system_timer("calc")
+        call add_property(at, 'f', f)
+        call set_value(at%properties,'Energy', e)
+        call set_value(at%properties,'virial', reshape(v, (/9 /)))
+        call write(at, outfile, properties='species:pos:f', append=.true.)
+     else
+        call write(at, outfile, properties='species:pos', append=.true.)
      end if
-     call add_property(at, 'f', f)
-     call set_value(at%properties,'Energy', e)
-     call set_value(at%properties,'virial', reshape(v, (/9 /)))
-     call write(at, outfile, properties='pos:f', append=.true.)
   end do
   deallocate(f)
 
