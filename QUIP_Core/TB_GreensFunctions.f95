@@ -39,8 +39,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 module TB_GreensFunctions_module
 
-use System_module
-use Atoms_module
+use libatoms_module
 
 use MPI_context_module
 use TBSystem_module
