@@ -1877,7 +1877,13 @@ contains
 
 #ifndef GETENV_F2003
     call getenv(trim(name), arg)
-    if (present(status)) status = 0
+    if (present(status)) then
+       if( len_trim(arg) > 0 ) then
+          status = 0
+       else
+          status = 1
+       endif
+    endif
 #else
     call get_environment_variable(trim(name), arg, status=status)
 #endif
