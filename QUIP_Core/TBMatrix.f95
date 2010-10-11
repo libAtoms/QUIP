@@ -38,7 +38,7 @@
 
 module TBMatrix_module
 
-use Atoms_module
+use libatoms_module
 
 use MPI_context_module
 use Matrix_module
@@ -351,7 +351,7 @@ end subroutine TBMatrix_Zero
 subroutine TBMatrix_Wipe(this)
   type(TBMatrix), intent(inout) :: this
 
-  integer i
+  integer :: i
 
   if (allocated(this%data_d)) then
     do i=1, size(this%data_d)
