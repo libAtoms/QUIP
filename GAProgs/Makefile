@@ -43,7 +43,6 @@ LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
 .PHONY: clean allclean
 
 ${PROGRAMS}: % : ${OBJS} %.o ${LIBFILES}
-	echo ${GP_LIBFILE} >> witty
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS} ${LINKOPTS}
 
 clean:	
