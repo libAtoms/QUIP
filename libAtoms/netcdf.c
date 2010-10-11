@@ -49,7 +49,7 @@
 #include "libatoms.h"
 
 #define absval(x)  ( (x) < 0 ? -(x) : (x) )
-#define NETCDF_CHECK(s) if ((retval = (s))) { RAISE_ERROR("%s",nc_strerror(retval)); }
+#define NETCDF_CHECK(s) if ((retval = (s))) { RAISE_ERROR_WITH_KIND(ERROR_IO, "%s",nc_strerror(retval)); }
 #define DEG_TO_RAD (M_PI/180.0)
 #define RAD_TO_DEG (180.0/M_PI)
 
@@ -75,7 +75,7 @@ void replace_fill_values(fortran_t *params, fortran_t *properties, int irep, dou
       dictionary_query_index(dictionaries[d], &i, key, &type, shape, &loc, error, C_KEY_LEN);
       PASS_ERROR;
       if (loc == NULL) {
-	RAISE_ERROR("replace_fill_values: NULL pointer for entry i=%d", i);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "replace_fill_values: NULL pointer for entry i=%d", i);
       }
 
       switch(type) {
@@ -168,7 +168,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       *is_param = 1;
       *type = type_map[ndims-1][vartype];
       if (*type == -1) {
-	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
     }
     else if (dimids[0] == atom_dim_id) {
@@ -177,12 +177,12 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       *is_global = 1;
       *type = type_map[ndims][vartype];
       if (*type == -1) {
-	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
       shape[0] = n_atom;
     }
     else {
-      RAISE_ERROR("convert_from_netcdf_type: unknown one-dimensional variable %s dimid=%d\n", varname, dimids[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: unknown one-dimensional variable %s dimid=%d\n", varname, dimids[0]);
     }
   }
   else if (ndims == 2) {
@@ -191,7 +191,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       *is_property = 1;
       *type = type_map[ndims-1][vartype];
       if (*type == -1) {
-	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
       shape[0] = n_atom;
     }
@@ -200,7 +200,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       *is_param = 1;
       *type = type_map[ndims-1][vartype];
       if (*type == -1) {
-	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }
       shape[0] = n_spatial;
     } else if (dimids[0] == frame_dim_id && dimids[1] == string_dim_id) {
@@ -210,7 +210,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       shape[0] = n_string;
     }
     else {
-      RAISE_ERROR("convert_from_netcdf_type: unknown two dimensional variable %s\n", varname);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: unknown two dimensional variable %s\n", varname);
     }
   }
   else if (ndims == 3) {
@@ -228,7 +228,7 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
 	*is_property = 1;
 	*type = type_map[ndims-1][vartype];
 	if (*type == -1) {
-	  RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
 	}
 	shape[0] = n_spatial;
 	shape[1] = n_atom;
@@ -238,18 +238,18 @@ void convert_from_netcdf_type(char *varname, nc_type vartype, int ndims, int *di
       *is_param = 1;
       *type = type_map[ndims-1][vartype];
       if (*type == -1) {
-	RAISE_ERROR("convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: bad vartype %d for varname %s", vartype, varname);
       }      
       shape[0] = n_spatial;
       shape[1] = n_spatial;
     }
     else {
       debug("spatial_dim_id = %d, frame_dim_id = %d\n", spatial_dim_id, frame_dim_id);
-      RAISE_ERROR("convert_from_netcdf_type: Unknown three dimensional variable %s dimids=[%d %d %d]", varname, dimids[0], dimids[1], dimids[2]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: Unknown three dimensional variable %s dimids=[%d %d %d]", varname, dimids[0], dimids[1], dimids[2]);
     }
   }
   else {
-    RAISE_ERROR("convert_from_netcdf_type: Unknown variable %s, dimension %d", varname, ndims);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_from_netcdf_type: Unknown variable %s, dimension %d", varname, ndims);
   }
 }
 
@@ -288,7 +288,7 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
     break;
 
   default:
-    RAISE_ERROR("convert_to_netcdf_type: bad type %d for key %s", type, key);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad type %d for key %s", type, key);
   }
 
   dims[0] = frame_dim_id;
@@ -304,33 +304,33 @@ void convert_to_netcdf_type(char *key, int type, int *shape,
     else if (shape[0] == n_atom)
       dims[1] = atom_dim_id;
     else {
-      RAISE_ERROR("convert_to_netcdf_type: bad array length %d for key %s", shape[0], key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d for key %s", shape[0], key);
     }
   } else if (type == T_INTEGER_A2 || type == T_REAL_A2) {
     *ndims = 3;
     if (shape[0] == n_spatial)
       dims[2] = spatial_dim_id;
     else {
-      RAISE_ERROR("convert_to_netcdf_type: bad array length %d != n_spatial for key %s", shape[0], key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial for key %s", shape[0], key);
     }
     if (shape[1] == n_spatial)
       dims[1] = spatial_dim_id;
     else if (shape[1] == n_atom)
       dims[1] = atom_dim_id;
     else {
-      RAISE_ERROR("convert_to_netcdf_type: bad array length %d != n_spatial or n_atom for key %s", shape[1], key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_spatial or n_atom for key %s", shape[1], key);
     }
   } else if (type == T_CHAR_A) {
     *ndims = 3;
     if (shape[0] == n_label) 
       dims[2] = label_dim_id;
     else {
-      RAISE_ERROR("convert_to_netcdf_type: bad array length %d != n_label for key %s", shape[1], key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_label for key %s", shape[1], key);
     }
     if (shape[1] == n_atom)
       dims[1] = atom_dim_id;
     else {
-      RAISE_ERROR("convert_to_netcdf_type: bad array length %d != n_atom for key %s", shape[2], key);      
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "convert_to_netcdf_type: bad array length %d != n_atom for key %s", shape[2], key);      
     }
   } 
 }
@@ -374,7 +374,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
   n_spatial = (int)tmp_sizet;
   if (n_spatial != 3) {
-    RAISE_ERROR("query_netcdf: number of spatial dimensions = %d != 3", n_spatial);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_netcdf: number of spatial dimensions = %d != 3", n_spatial);
   }
 
   NETCDF_CHECK(nc_inq_dimlen(nc_id, frame_dim_id, &tmp_sizet));
@@ -394,19 +394,19 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
   debug("read_netcdf: got %d frames, %d atoms\n", n_frame, *n_atom);
 
   if (frame < 0 || frame >= n_frame) {
-    RAISE_ERROR("read_netcdf: frame %d out of range 0 <= frame < %d", frame, n_frame);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: frame %d out of range 0 <= frame < %d", frame, n_frame);
   }
 
   // Have we been asked to read only a specific range of atom indices?
   if (range[0] != 0 && range[1] != 0) {
     if (range[0] < 1) {
-      RAISE_ERROR("read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: lower limit of range (%d) must be >= 1", range[0]);
     }
     if (range[1] > *n_atom) {
-      RAISE_ERROR("read_netcdf: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be <= %d", range[1], *n_atom);
     }
     if (range[1] <= range[0]) {
-      RAISE_ERROR("read_netcdf: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
     }
     *n_atom = range[1] - range[0] + 1;
     at_start = range[0]-1;
@@ -472,7 +472,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       nc_get_att_int(nc_id, i, "type", &type_att);
       if (is_property) {
 	if (type_att < 1 || type_att > 4) {
-	  RAISE_ERROR("read_netcdf: type attribtue %d out of range 1 <= type_att <= 4", type_att);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: type attribtue %d out of range 1 <= type_att <= 4", type_att);
 	}
 	switch (type_att) {
 	case(PROPERTY_INT):
@@ -485,7 +485,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
 	  if (ndims == 2)
 	    type = T_LOGICAL_A;
 	  else {
-	    RAISE_ERROR("read_netcdf: logical property with ndims=%d no longer supported", ndims);
+	    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: logical property with ndims=%d no longer supported", ndims);
 	  }
 	  break;
 	}
@@ -560,7 +560,7 @@ void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fort
       NETCDF_CHECK(nc_get_vara_text(nc_id, i, start, count, (char *)data));
       break;      
     default:
-      RAISE_ERROR("read_netcdf: unknown variable \"%s\" type %d\n", varname, type);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_netcdf: unknown variable \"%s\" type %d\n", varname, type);
     }
   }
   
@@ -691,7 +691,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
     NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
     n_spatial = (int)tmp_sizet;
     if (tmp_sizet != 3) {
-      RAISE_ERROR("write_netcdf: number of spatial dimensions = %d != 3", n_spatial);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: number of spatial dimensions = %d != 3", n_spatial);
     }
 
     NETCDF_CHECK(nc_inq_dimlen(nc_id, frame_dim_id, &tmp_sizet));
@@ -699,52 +699,52 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 
     NETCDF_CHECK(nc_inq_dimlen(nc_id, atom_dim_id, &tmp_sizet));
     if (tmp_sizet != n_atom) {
-      RAISE_ERROR("write_netcdf: number of atoms defined in file = %d != %d", (int)tmp_sizet, n_atom);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: number of atoms defined in file = %d != %d", (int)tmp_sizet, n_atom);
     }
 
     NETCDF_CHECK(nc_inq_dimlen(nc_id, label_dim_id, &tmp_sizet));
     if (tmp_sizet != n_label) {
-      RAISE_ERROR("write_netcdf: n_label defined in file = %d != %d", (int)tmp_sizet, n_label);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: n_label defined in file = %d != %d", (int)tmp_sizet, n_label);
     }
 
     NETCDF_CHECK(nc_inq_dimlen(nc_id, string_dim_id, &tmp_sizet));
     if (tmp_sizet != n_string) {
-      RAISE_ERROR("write_netcdf: n_string defined in file = %d != %d", (int)tmp_sizet, n_string);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: n_string defined in file = %d != %d", (int)tmp_sizet, n_string);
     }
 
     // Inquire label variables
     NETCDF_CHECK(nc_inq_varid(nc_id, "spatial", &spatial_var_id));
     NETCDF_CHECK(nc_inq_var(nc_id, spatial_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
     if (check_ndims != 1 || check_dims[0] != spatial_dim_id) {
-      RAISE_ERROR("write_netcdf: \"spatial\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"spatial\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
 
     NETCDF_CHECK(nc_inq_varid(nc_id, "cell_spatial", &cell_spatial_var_id));
     NETCDF_CHECK(nc_inq_var(nc_id, cell_spatial_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
     if (check_ndims != 1 || check_dims[0] != cell_spatial_dim_id) {
-      RAISE_ERROR("write_netcdf: \"cell_spatial\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_spatial\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
 
     NETCDF_CHECK(nc_inq_varid(nc_id, "cell_angular", &cell_angular_var_id));
     NETCDF_CHECK(nc_inq_var(nc_id, cell_angular_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
     if (check_ndims != 2 || check_dims[0] != cell_angular_dim_id || check_dims[1] != label_dim_id) {
-      RAISE_ERROR("write_netcdf: \"cell_angular\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_angular\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
 
     NETCDF_CHECK(nc_inq_varid(nc_id, "cell_lengths", &cell_lengths_var_id));
     NETCDF_CHECK(nc_inq_var(nc_id, cell_lengths_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
     if (check_ndims != 2 || check_dims[0] != frame_dim_id || check_dims[1] != spatial_dim_id) {
-      RAISE_ERROR("write_netcdf: \"cell_lengths\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_lengths\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
 
     NETCDF_CHECK(nc_inq_varid(nc_id, "cell_angles", &cell_angles_var_id));
     NETCDF_CHECK(nc_inq_var(nc_id, cell_angles_var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
     if (check_ndims != 2 || check_dims[0] != frame_dim_id || check_dims[1] != spatial_dim_id) {
-      RAISE_ERROR("write_netcdf: \"cell_angles\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: \"cell_angles\" variable defined in variable incompatible ndims=%d check_dims=[%d %d %d]\n",
 		  ndims, check_dims[0], check_dims[1], check_dims[2]);
     }
   }
@@ -760,13 +760,13 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       dictionary_query_index(dictionaries[d], &i, key, &type, shape, &data, error, C_KEY_LEN);
       PASS_ERROR;
       if (data == NULL) {
-	RAISE_ERROR("write_netcdf: NULL pointer for entry i=%d", i);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: NULL pointer for entry i=%d", i);
       }
 
       // null-terminate the Fortran string
       key[C_KEY_LEN-1] = '\0'; 
       if (strchr(key, ' ') == NULL) {
-	RAISE_ERROR("write_netcdf: key %s not terminated with blank", key);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: key %s not terminated with blank", key);
       }
       *strchr(key, ' ') = '\0';
 
@@ -801,15 +801,15 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       } else {
 	NETCDF_CHECK(nc_inq_var(nc_id, var_id, varname, &check_vartype, &check_ndims, check_dims, &natts));
 	if (vartype != check_vartype) {
-	  RAISE_ERROR("Mismatch in entry \"%s\" - type %d != %d. Perhaps duplicate variable name?\n", key, vartype, check_vartype);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Mismatch in entry \"%s\" - type %d != %d. Perhaps duplicate variable name?\n", key, vartype, check_vartype);
 	}
 	if (ndims != check_ndims) {
-	  RAISE_ERROR("Mismatch in entry \"%s\" - ndims %d != %d. Perhaps duplicate variable name?\n", key, ndims, check_ndims);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Mismatch in entry \"%s\" - ndims %d != %d. Perhaps duplicate variable name?\n", key, ndims, check_ndims);
 	  
 	}
 	for (j=0; j<ndims; j++)
 	  if (dims[j] != check_dims[j]) {
-	    RAISE_ERROR("Mismatch in entry %s - dimension %d ndims=%d dims=[%d %d %d] != check_dims=[%d %d %d]\n", key, j, ndims, dims[0], dims[1], dims[2], 
+	    RAISE_ERROR_WITH_KIND(ERROR_IO, "Mismatch in entry %s - dimension %d ndims=%d dims=[%d %d %d] != check_dims=[%d %d %d]\n", key, j, ndims, dims[0], dims[1], dims[2], 
 			check_dims[0], check_dims[1], check_dims[2]);
 	  }
       }
@@ -834,7 +834,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 	    type_att = PROPERTY_STR;
 	    break;
 	  default:
-	    RAISE_ERROR("write_netcdf: cannot find property type for dictionary type %d", type);
+	    RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: cannot find property type for dictionary type %d", type);
 	  }
 	}
 	nc_put_att_int(nc_id, var_id, "type", NC_INT, 1, &type_att);
@@ -886,13 +886,13 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
       dictionary_query_index(dictionaries[d], &i, key, &type, shape, &data, error, C_KEY_LEN);
       PASS_ERROR;
       if (data == NULL) {
-	RAISE_ERROR("write_netcdf: NULL pointer for entry i=%d", i);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: NULL pointer for entry i=%d", i);
       }
 
       // null-terminate the Fortran string
       key[C_KEY_LEN-1] = '\0'; 
       if (strchr(key, ' ') == NULL) {
-	RAISE_ERROR("write_netcdf: key %s not terminated with blank", key);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: key %s not terminated with blank", key);
       }
       *strchr(key, ' ') = '\0';
 
@@ -958,7 +958,7 @@ void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, for
 	NETCDF_CHECK(nc_put_vara_text(nc_id, var_id, start, count, (char *)data));
 	break;      
       default:
-	RAISE_ERROR("write_netcdf: unknown variable %s type %d\n", key, type);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_netcdf: unknown variable %s type %d\n", key, type);
       }
     }
   }
@@ -993,7 +993,7 @@ void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int 
   NETCDF_CHECK(nc_inq_dimlen(nc_id, spatial_dim_id, &tmp_sizet));
   n_spatial = (int)tmp_sizet;
   if (n_spatial != 3) {
-    RAISE_ERROR("query_netcdf: number of spatial dimensions = %d != 3", n_spatial);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_netcdf: number of spatial dimensions = %d != 3", n_spatial);
   }
 
   NETCDF_CHECK(nc_inq_dimlen(nc_id, frame_dim_id, &tmp_sizet));

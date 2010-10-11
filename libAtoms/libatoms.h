@@ -88,8 +88,9 @@
 #define ERROR_IO_EOF             -3
 
 #define INIT_ERROR if (error != NULL) *error = ERROR_NONE
-#define RAISE_ERROR(info, ...) sprintf(error_h_info, info, ## __VA_ARGS__ ); error_h_line = __LINE__; error_h_kind = ERROR_UNSPECIFIED; c_push_error_with_info_(error_h_info, __FILE__, &error_h_line, &error_h_kind, strlen(error_h_info), strlen(__FILE__)); if (error != NULL) { *error = -1; return; } else c_error_abort_(error)
-#define PASS_ERROR if (error != NULL && *error != 0) { error_h_line = __LINE__; error_h_kind = ERROR_UNSPECIFIED; c_push_error_(__FILE__, &error_h_line, &error_h_kind, strlen(__FILE__)); return; }
+#define RAISE_ERROR(info, ...) sprintf(error_h_info, info, ## __VA_ARGS__ ); error_h_line = __LINE__; error_h_kind = ERROR_UNSPECIFIED; c_push_error_with_info_(error_h_info, __FILE__, &error_h_line, &error_h_kind, strlen(error_h_info), strlen(__FILE__)); if (error != NULL) { *error = error_h_kind; return; } else c_error_abort_(error)
+#define RAISE_ERROR_WITH_KIND(kind, info, ...) sprintf(error_h_info, info, ## __VA_ARGS__ ); error_h_line = __LINE__; error_h_kind = kind; c_push_error_with_info_(error_h_info, __FILE__, &error_h_line, &error_h_kind, strlen(error_h_info), strlen(__FILE__)); if (error != NULL) { *error = error_h_kind; return; } else c_error_abort_(error)
+#define PASS_ERROR if (error != NULL && *error != ERROR_NONE) { error_h_line = __LINE__; c_push_error_(__FILE__, &error_h_line, error, strlen(__FILE__)); return; }
 #define CLEAR_ERROR c_error_clear_stack_();
 
 extern void c_push_error_with_info_(char*, char*, int*, int*, size_t, size_t);

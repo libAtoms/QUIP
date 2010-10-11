@@ -131,7 +131,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
   if (stat(fname, &xyz_stat) != 0) {
-    RAISE_ERROR("Cannot stat xyz file %s\n", fname);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz file %s\n", fname);
   }
 
   from_scratch = stat(indexname, &idx_stat) != 0;
@@ -157,16 +157,16 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     debug("xyz_find_frames: reading XYZ index from file %s\n", indexname);
     index = fopen(indexname, "r");
     if (index == NULL) {
-      RAISE_ERROR("Index file %s cannot be opened\n", indexname);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s cannot be opened\n", indexname);
     }
     if (!fgets(linebuffer,LINESIZE,index)) {
-      RAISE_ERROR("Index file %s is empty\n",indexname);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s is empty\n",indexname);
     }
     sscanf(linebuffer, "%d", &nframes);
     realloc_frames(frames, atoms, frames_array_size, nframes+2);
     for (i=0; i<=nframes; i++) {
       if (!fgets(linebuffer,LINESIZE,index)) {
-	RAISE_ERROR("Premature end of indexfile %s\n",indexname);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Premature end of indexfile %s\n",indexname);
       }
       sscanf(linebuffer, "%ld %d", &(*frames)[i], &(*atoms)[i]);
     }
@@ -177,7 +177,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
     debug("xyz_find_frames: writing XYZ index to file %s\n", indexname);
     in = fopen(fname, "r");
     if (in == NULL) {
-      RAISE_ERROR("xyz_find_frames: cannot open %s for reading", fname);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: cannot open %s for reading", fname);
     }
     if (from_scratch)
       nframes = 0;
@@ -209,7 +209,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
       realloc_frames(frames, atoms, frames_array_size, nframes+2);
       (*frames)[nframes] = ftell(in)-strlen(linebuffer);
       if (sscanf(linebuffer, "%d", &natoms) != 1) {
-	RAISE_ERROR("xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
       }
 
       (*atoms)[nframes] = natoms;
@@ -241,7 +241,7 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
       }
       if (index == NULL) {
 	fclose(in);
-	RAISE_ERROR("Cannot write index file.\n");
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot write index file.\n");
       }
     } else
       debug("xyz_find_frames: writing index to %s\n", indexname);
@@ -266,7 +266,7 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   INIT_ERROR;
 
   if (strcmp(filename, "stdout") == 0 || strcmp(filename, "stdin") == 0) {
-    RAISE_ERROR("query_xyz: cannot query special filename %s", filename);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: cannot query special filename %s", filename);
   }
 
   *n_frame = 0;
@@ -279,11 +279,11 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
   PASS_ERROR;
 
   if (*n_frame == 0) {
-    RAISE_ERROR("query_xyz: empty file", frame, *n_frame-1);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: empty file", frame, *n_frame-1);
   }
 
   if (frame < 0 || frame >= *n_frame) {
-    RAISE_ERROR("query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame-1);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "query_xyz: frame %d out of range 0 <= frame < %d", frame, *n_frame-1);
   }
   *n_atom = atoms[frame];
 
@@ -302,7 +302,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
 
   if (string) {
     if (*stringp == '\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) {
-      RAISE_ERROR(info);
+      RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
     }
     *prev_stringp = stringp;
     while (*stringp != '\n' && *stringp != '\0' && (string_length == 0 || stringp-orig_stringp < string_length)) stringp++;
@@ -313,14 +313,14 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
     return stringp;
   } else {
     if (!fgets(linebuffer,LINESIZE,in)) {
-      RAISE_ERROR(info);
+      RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
     }
     linebuffer[strlen(linebuffer)-1] = '\0';
     return NULL;
   }
 }
 
-#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error)
+#define GET_LINE(info) stringp = get_line(linebuffer, string, string_length, orig_stringp, stringp, &prev_stringp, in, info, error); PASS_ERROR;
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
 	       int compute_index, int frame, int *range, int string, int string_length, int *error)
@@ -344,7 +344,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   INIT_ERROR;
 
   if (strcmp(filename, "stdout") == 0) {
-    RAISE_ERROR("read_xyz: cannot open \"stdout\" for reading.");
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: cannot open \"stdout\" for reading.");
   }
 
   n_buffer = 0;
@@ -365,18 +365,18 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     PASS_ERROR;
 
     if (frame < 0 || frame >= n_frame) {
-      RAISE_ERROR("read_xyz: frame %d out of range 0 <= frame < %d", frame, n_frame-1);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: frame %d out of range 0 <= frame < %d", frame, n_frame-1);
     }
     got_index = 1;
     in = fopen(filename, "r");
     if (in == NULL) {
-      RAISE_ERROR("read_xyz: cannot open file %s for reading", filename);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: cannot open file %s for reading", filename);
     }
 
     n_buffer = *n_atom;
     *n_atom = atoms[frame];
     if (fseek(in, frames[frame], SEEK_SET) == -1) {
-      RAISE_ERROR("cannot seek XYZ input file %s", filename);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot seek XYZ input file %s", filename);
     }
     free(frames);
     free(atoms);
@@ -384,7 +384,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     // compute_index = 0, so we just open the file and start at the beginning
     in = fopen(filename, "r");
     if (in == NULL) {
-      RAISE_ERROR("read_xyz: cannot open file %s for reading", filename);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: cannot open file %s for reading", filename);
     }
   }
 
@@ -394,7 +394,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     for (i=0; i<frame-1; i++) {
       GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
       if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-  	RAISE_ERROR("read_xyz: first line (%s) must be number of atoms when skipping frame %d", linebuffer, i);
+  	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms when skipping frame %d", linebuffer, i);
       }
       GET_LINE("read_xyz: premature end when skipping, expecting comment line");
       for (j=0; j<nxyz; j++)
@@ -405,12 +405,12 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   GET_LINE("read_xyz: premature end, expecting number of atoms");
 
   if (sscanf(linebuffer, "%d", &nxyz) != 1) {
-    RAISE_ERROR("read_xyz: first line (%s) must be number of atoms", linebuffer);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms", linebuffer);
   }
 
   if (got_index) {
     if (nxyz != *n_atom) {
-      RAISE_ERROR("read_xyz: mismatch in number of atoms - expecting %d but got %d\n", *n_atom, nxyz);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: mismatch in number of atoms - expecting %d but got %d\n", *n_atom, nxyz);
     }
   } else
     *n_atom = nxyz;
@@ -418,13 +418,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   // Have we been asked to read only a specific range of atom indices?
   if (range[0] != 0 && range[1] != 0) {
     if (range[0] < 1) {
-      RAISE_ERROR("read_xyz: lower limit of range (%d) must be >= 1", range[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: lower limit of range (%d) must be >= 1", range[0]);
     }
     if (range[1] > *n_atom) {
-      RAISE_ERROR("read_xyz: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be <= %d", range[1], *n_atom);
     }
     if (range[1] <= range[0]) {
-      RAISE_ERROR("read_xyz: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
     }
     *n_atom = range[1] - range[0] + 1;
     at_start = range[0]-1;
@@ -468,7 +468,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
 
       } else {
-	RAISE_ERROR("Cannot extract lattice from line %s\n", linebuffer);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linebuffer);
       }
     } else {
       // Put in a bogus lattice
@@ -514,7 +514,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   for (i=0; i<nfields; i++) {
     strncpy(linebuffer, finalfields[i], LINESIZE);
     if ((p = strchr(linebuffer,'=')) == NULL) {
-      RAISE_ERROR("Badly formed key/value pair %s\n", linebuffer);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Badly formed key/value pair %s\n", linebuffer);
     }
 
     *p = '\0';
@@ -557,7 +557,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       shape[0] = 3;
       shape[1] = 3;
     } else {
-      RAISE_ERROR("Bad number of fields %d in integer parameter %s\n", k, param_key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad number of fields %d in integer parameter %s\n", k, param_key);
     }
     goto FORMAT_DONE;
 
@@ -578,7 +578,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       shape[0] = 3;
       shape[1] = 3;
     } else {
-      RAISE_ERROR("Bad number of fields %d in real parameter %s\n", k, param_key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad number of fields %d in real parameter %s\n", k, param_key);
     }
     goto FORMAT_DONE;
 
@@ -596,7 +596,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       shape[0] = 3;
       shape[1] = 1;
     } else {
-      RAISE_ERROR("Bad number of fields %d in logical parameter %s\n", k, param_key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad number of fields %d in logical parameter %s\n", k, param_key);
     }
     goto FORMAT_DONE;
 
@@ -608,7 +608,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
   FORMAT_DONE:
     if ((type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) && shape[0] != 3) {
-      RAISE_ERROR("Parameter %s must have size 1 or 3, but got %d\n", param_key, shape[0]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s must have size 1 or 3, but got %d\n", param_key, shape[0]);
     }
 
     // Create key in Fortran dictionary
@@ -661,7 +661,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       strncpy(CHAR(data), param_value, strlen(param_value));
       break;
     default:
-      RAISE_ERROR("Unknown param type %d\n", type);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Unknown param type %d\n", type);
     }
   }
 
@@ -679,7 +679,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   k = 0;
   while ((p1 = strsep(&p, ":")) != NULL) {
     if (k >= MAX_FIELD_COUNT) {
-      RAISE_ERROR("Maximum field count (%d) exceeded", MAX_FIELD_COUNT);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Maximum field count (%d) exceeded", MAX_FIELD_COUNT);
     }
     strncpy(fields[k++], p1, LINESIZE);
   }
@@ -693,12 +693,12 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     debug("read_xyz: got property %s:%s:%s\n", fields[3*i], fields[3*i+1], fields[3*i+2]);
 
     if (sscanf(fields[3*i+2], "%d", &ncols) != 1) {
-      RAISE_ERROR("Bad column count %s line=%s\n", fields[3*i+2], linebuffer);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad column count %s line=%s\n", fields[3*i+2], linebuffer);
     }
 
     entry_count += ncols;
     if (entry_count > MAX_ENTRY_COUNT) {
-      RAISE_ERROR("Maximum entry count(%d) exceeded\n", MAX_ENTRY_COUNT);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Maximum entry count(%d) exceeded\n", MAX_ENTRY_COUNT);
     }
 
     if (strcmp(fields[3*i+1],"I") == 0) {
@@ -721,19 +721,19 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       }
     } else if (strcmp(fields[3*i+1],"S") == 0) {
       if (ncols != 1) {
-	RAISE_ERROR("String property %s with ncols != 1 no longer supported", fields[3*i]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "String property %s with ncols != 1 no longer supported", fields[3*i]);
       }
       type = T_CHAR_A;
       shape[0] = PROPERTY_STRING_LENGTH; // FIXME: this could be variable
       shape[1] = n_buffer;
     } else if (strcmp(fields[3*i+1],"L") == 0) {
       if (ncols != 1) {
-	RAISE_ERROR("Logical property %s with ncols != 1 no longer supported", fields[3*i]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Logical property %s with ncols != 1 no longer supported", fields[3*i]);
       }
       type = T_LOGICAL_A;
       shape[0] = n_buffer;
     } else  {
-      RAISE_ERROR("Bad property type %s\n", fields[3*i+1]);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad property type %s\n", fields[3*i+1]);
     }
 
     property_type[n_property] = type;
@@ -774,7 +774,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       for (n=0; n<shape[1]; n++)
   	lattice[m][n] = INTEGER_A2(data, shape, n, m);
   } else {
-    RAISE_ERROR("read_xyz: bad type for Lattice (%d)", type);
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: bad type for Lattice (%d)", type);
   }
 
   // Now it's just one line per atom
@@ -792,7 +792,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     }
     if (k != entry_count) {
       for (i=0;i<k;i++) fprintf(stderr, "fields[%d] = %s, length %lu\n", i, fields[i], (unsigned long)strlen(fields[i]));
-      RAISE_ERROR("incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linebuffer);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "incomplete row, frame %d atom %d - got %d/%d entries\n", frame, n, k, entry_count, frame, linebuffer);
     }
 
     k = 0;
@@ -804,7 +804,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       switch(property_type[i]) {
       case(T_INTEGER_A):
 	if (sscanf(fields[k], "%d", &INTEGER_A(property_data[i], n)) != 1)  {
-	  RAISE_ERROR("Can't convert int value %s\n", fields[k]);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k]);
 	}
 	k++;
 	break;
@@ -812,14 +812,14 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       case(T_INTEGER_A2):
 	for (j=0; j < property_ncols[i]; j++)
 	  if (sscanf(fields[k+j], "%d", &INTEGER_A2(property_data[i], property_shape[i], j, n)) != 1)  {
-	    RAISE_ERROR("Can't convert int value %s\n", fields[k+j]);
+	    RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
 	  }
 	k += property_shape[i][0];
 	break;
 
       case(T_REAL_A):
 	if (sscanf(fields[k], "%lf", &REAL_A(property_data[i], n)) != 1)  {
-	  RAISE_ERROR("Can't convert int value %s\n", fields[k+j]);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
 	}
 	k++;
 	break;
@@ -827,14 +827,14 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       case(T_REAL_A2):
 	for (j=0; j < property_ncols[i]; j++)
 	  if (sscanf(fields[k+j], "%lf", &REAL_A2(property_data[i], property_shape[i], j, n)) != 1)  {
-	    RAISE_ERROR("Can't convert real value %s\n", fields[k+j]);
+	    RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert real value %s\n", fields[k+j]);
 	  }
 	k += property_shape[i][0];
 	break;
 
       case(T_LOGICAL_A):
 	if (sscanf(fields[k+j], "%c", &tmp_logical) != 1)  {
-	  RAISE_ERROR("Can't convert logical value %s\n", fields[k+j]);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert logical value %s\n", fields[k+j]);
 	}
 	if (tmp_logical == 'T')
 	  LOGICAL_A(property_data[i],n) = 1;
@@ -845,13 +845,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
       case(T_CHAR_A):
 	if (sscanf(fields[k], "%10c", &CHAR_A(property_data[i], property_shape[i], 0, n)) != 1)  {
-	  RAISE_ERROR("Can't convert str value %s\n", fields[k]);
+	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert str value %s\n", fields[k]);
 	}
 	k++;
 	break;
 
       default:
-	RAISE_ERROR("Bad property type %d", property_type[i]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad property type %d", property_type[i]);
       }
     }
     n++;
@@ -877,7 +877,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
   INIT_ERROR;
 
   if (strcmp(filename, "stdin") == 0) {
-    RAISE_ERROR("write_xyz: cannot open \"stdin\" for writing.");
+    RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open \"stdin\" for writing.");
   }
 
   debug("write_xyz: string=%d\n", string);
@@ -890,7 +890,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       else
 	out = fopen(filename, "w");
       if (out == NULL) {
-	RAISE_ERROR("write_xyz: cannot open %s for writing", filename);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open %s for writing", filename);
       }
     }
   } else
@@ -928,7 +928,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     // null-terminate the Fortran string
     property_name[C_KEY_LEN-1] = '\0';
     if (strchr(property_name, ' ') == NULL) {
-      RAISE_ERROR("write_xyz: property name %s not terminated with blank", property_name);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: property name %s not terminated with blank", property_name);
     }
     *strchr(property_name, ' ') = '\0';
 
@@ -953,7 +953,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       break;
 
     default:
-      RAISE_ERROR("write_xyz: bad property type %d for key %s", type, property_name);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: bad property type %d for key %s", type, property_name);
     }
 
     property_shape[i][0] = shape[0];
@@ -993,7 +993,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     // null-terminate the Fortran string
     param_key[C_KEY_LEN-1] = '\0';
     if (strchr(param_key, ' ') == NULL) {
-      RAISE_ERROR("write_xyz: key %s not terminated with blank", param_key);
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: key %s not terminated with blank", param_key);
     }
     *strchr(param_key, ' ') = '\0';
 
@@ -1009,7 +1009,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     }
     else if (type == T_INTEGER_A) {
       if (shape[0] != 3) {
-	RAISE_ERROR("Parameter %s integer array size=%d != 3", param_key, shape[0]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s integer array size=%d != 3", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
@@ -1018,7 +1018,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       }
     } else if (type == T_REAL_A) {
       if (shape[0] != 3) {
-	RAISE_ERROR("Parameter %s real array size=%d != 3", param_key, shape[0]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s real array size=%d != 3", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
@@ -1027,7 +1027,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       }
     } else if (type == T_LOGICAL_A) {
       if (shape[0] != 3) {
-	RAISE_ERROR("Parameter %s logical array size=%d != 3", param_key, shape[0]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s logical array size=%d != 3", param_key, shape[0]);
       }
       sprintf(param_value, "%s %s %s",
 	      LOGICAL_A(data,0) ? "T" : "F",
@@ -1035,7 +1035,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	      LOGICAL_A(data,2) ? "T" : "F");
     } else if (type == T_INTEGER_A2) {
       if (shape[0] != 3 || shape[1] != 3) {
-	RAISE_ERROR("Parameter %s 2D integer array shape=[%d %d] != [3 3]", param_key, shape[0], shape[1]);
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s 2D integer array shape=[%d %d] != [3 3]", param_key, shape[0], shape[1]);
       }
       sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", int_format, int_format, int_format,
 	      int_format, int_format, int_format, int_format, int_format, int_format);
