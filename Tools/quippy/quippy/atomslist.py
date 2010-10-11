@@ -75,7 +75,7 @@ def AtomsWriter(dest, format=None, *args, **kwargs):
          if dest in AtomsWriters:
             format = dest
          else:
-            source = os.path.expanduser(source)
+            dest = os.path.expanduser(dest)
             base, ext = os.path.splitext(dest)
             format = ext[1:]
       else:
