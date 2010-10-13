@@ -363,7 +363,7 @@ got_gfortran45 = False
 if makefile['QUIPPY_FCOMPILER'] == 'gnu95':
     version = os.popen("gfortran --version | head -1 | awk '{print $4}'").read()
     print version
-    version = [int(s) for s in version.split('.')]
+    version = [int(s) for s in version.split('.')[0:2]]
     got_gfortran45 = version[0] == 4 and version[1] == 5
 
 if makefile_test('QUIPPY_DEBUG') or got_gfortran45:
