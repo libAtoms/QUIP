@@ -43,7 +43,7 @@ PROGRAMS = eval md \
   xyz_to_SPECSYM_start xyz_to_SPECSYM_forces \
   local_E_fd wrap align local_random_search\
   metapot_test tabletest ts_calculation\
-  fix_traj_latest randomise_calc  lo \
+  fix_traj_latest randomise_calc  \
   quip_wrapper_example
 
 ifeq (${HAVE_TB},1)
