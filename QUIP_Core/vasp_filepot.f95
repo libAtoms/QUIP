@@ -62,9 +62,9 @@ subroutine do_vasp_calc(at, args_str, error)
    character(len=*), intent(in) :: args_str
    integer, intent(out), optional :: error
 
-   character(len=STRING_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path
+   character(len=STRING_LENGTH) :: incar_template_file, kpoints_file, potcar_files, vasp_path, run_suffix, verbosity_str
    character(len=STRING_LENGTH) :: calc_energy, calc_force, calc_virial, calc_local_energy
-   logical :: clean_up_files
+   logical :: clean_up_files, ignore_convergence, no_use_WAVECAR, force_constant_basis
    type(Dictionary) :: incar_dict, cli
 
    character(len=STRING_LENGTH) :: run_dir
@@ -72,10 +72,12 @@ subroutine do_vasp_calc(at, args_str, error)
 
    integer :: at_i, stat
    integer, pointer :: sort_index_p(:)
+   logical :: converged, have_wavecar
 
    INIT_ERROR(error)
 
    call initialise(cli)
+   call param_register(cli, "verbosity", "NORMAL", verbosity_str)
    call param_register(cli, "INCAR_template", "INCAR.template", incar_template_file)
    call param_register(cli, "kpoints_file", "KPOINTS", kpoints_file)
    call param_register(cli, "potcar_files", PARAM_MANDATORY, potcar_files)
@@ -85,10 +87,16 @@ subroutine do_vasp_calc(at, args_str, error)
    call param_register(cli, "virial", "", calc_virial)
    call param_register(cli, "local_energy", "", calc_local_energy)
    call param_register(cli, "clean_up_files", "T", clean_up_files)
+   call param_register(cli, "ignore_convergence", "F", ignore_convergence)
+   call param_register(cli, "no_use_WAVECAR", "F", no_use_WAVECAR)
+   call param_register(cli, "force_constant_basis", "F", force_constant_basis)
+   call param_register(cli, "run_suffix", "run", run_suffix)
    if (.not. param_read_line(cli, args_str, do_check=.true., ignore_unknown=.true.,task='do_vasp_calc args_str')) then
       RAISE_ERROR('do_vasp_calc failed to parse args_str="'//trim(args_str)//'"', error)
    endif
    call finalise(cli)
+
+   call verbosity_push(verbosity_of_str(trim(verbosity_str)))
 
    call print("do_vasp_calc using args:")
    call print("  INCAR_template " // trim(INCAR_template_file))
@@ -100,16 +108,22 @@ subroutine do_vasp_calc(at, args_str, error)
    call print("  virial " // trim(calc_virial))
    call print("  local_energy " // trim(calc_local_energy))
    call print("  clean_up_files " // clean_up_files)
+   call print("  ignore_convergence " // ignore_convergence)
+   call print("  no_use_WAVECAR " // no_use_WAVECAR)
+   call print("  force_constant_basis " // force_constant_basis)
+   call print("  run_suffix " // run_suffix)
 
    ! check for local energy
    if (len_trim(calc_local_energy) > 0) then
       RAISE_ERROR("do_vasp_calc can't do local_energy", error)
    endif
 
+   call print("reading template", PRINT_VERBOSE)
    ! read the template incar
    call read_vasp_incar_dict(incar_dict, trim(incar_template_file), error)
    PASS_ERROR(error)
 
+   call print("setting INCAR dictionary parameters", PRINT_VERBOSE)
    ! check for stress, set ISIF
    if (len_trim(calc_energy) == 0 .and. len_trim(calc_force) == 0 .and. len_trim(calc_virial) == 0) then
       return
@@ -119,13 +133,31 @@ subroutine do_vasp_calc(at, args_str, error)
       call set_value(incar_dict, "ISIF", 2)
    endif
 
+   run_dir = make_run_directory("vasp_run")
+
    ! set dynamics to MD, number of ionic steps to 0
    call set_value(incar_dict, "NSW", 0)
    call set_value(incar_dict, "IBRION", 0)
-
-   run_dir = make_run_directory("vasp_run")
+   if (no_use_WAVECAR) then
+      call set_value(incar_dict, "ISTART", 0)
+   else
+      inquire(file="WAVECAR."//trim(run_suffix), exist=have_wavecar)
+      if (have_wavecar) then
+	 call print("copying old WAVECAR.run_suffix to run_dir/WAVECAR", PRINT_VERBOSE)
+	 call system_command("cp WAVECAR."//trim(run_suffix)//" "//trim(run_dir)//"/WAVECAR", status=stat)
+	 if (stat /= 0) then
+	    RAISE_ERROR("do_vasp_calc copying file WAVECAR."//trim(run_suffix)//" into "//trim(run_dir), error)
+	 endif
+      endif
+      if (force_constant_basis) then
+	 call set_value(incar_dict, "ISTART", 2)
+      else
+	 call set_value(incar_dict, "ISTART", 1)
+      endif
+   endif
 
    ! write INCAR
+   call print("writing INCAR", PRINT_VERBOSE)
    call initialise(io, trim(run_dir)//"/INCAR", action=OUTPUT, error=error)
    PASS_ERROR(error)
    call print(write_string(incar_dict, entry_sep=quip_new_line), file=io)
@@ -133,6 +165,7 @@ subroutine do_vasp_calc(at, args_str, error)
 
    ! write KPOINTS if needed
    if (trim(kpoints_file) /= "_NONE_") then
+      call print("writing KPOINTS", PRINT_VERBOSE)
       call system_command("cp "//trim(kpoints_file)//" "//trim(run_dir)//"/KPOINTS", status=stat)
       if (stat /= 0) then
 	 RAISE_ERROR("do_vasp_calc copying kpoints_file "//trim(kpoints_file)//" into "//trim(run_dir), error)
@@ -148,10 +181,10 @@ subroutine do_vasp_calc(at, args_str, error)
    call atoms_sort(at, 'Z', error=error)
    PASS_ERROR(error)
 
-   call print("writing potcar", PRINT_VERBOSE)
+   call print("writing POTCAR", PRINT_VERBOSE)
    call write_vasp_potcar(at, trim(run_dir), trim(potcar_files), error=error)
    PASS_ERROR(error)
-   call print("writing poscar", PRINT_VERBOSE)
+   call print("writing POSCAR", PRINT_VERBOSE)
    call write_vasp_poscar(at, trim(run_dir), error=error)
    PASS_ERROR(error)
 
@@ -163,8 +196,21 @@ subroutine do_vasp_calc(at, args_str, error)
    endif
 
    call print("reading vasp output", PRINT_VERBOSE)
-   call read_vasp_output(trim(run_dir), trim(calc_energy), trim(calc_force), trim(calc_virial), error=error)
+   call read_vasp_output(trim(run_dir), trim(calc_energy), trim(calc_force), trim(calc_virial), converged, error=error)
    PASS_ERROR(error)
+
+   if (.not. ignore_convergence .and. .not. converged) then
+      RAISE_ERROR("failed to find sign of convergence in OUTCAR", error)
+   endif
+
+   inquire(file=trim(run_dir)//"/WAVECAR", exist=have_wavecar)
+   if (have_wavecar) then
+      call print("copying run_dir/WAVECAR to WAVECAR.run_suffix", PRINT_VERBOSE)
+      call system_command("cp "//trim(run_dir)//"/WAVECAR WAVECAR."//trim(run_suffix), status=stat)
+      if (stat /= 0) then
+	 RAISE_ERROR("do_vasp_calc copying file "//trim(run_dir)//"WAVECAR into ./"//trim(run_dir)//"WAVECAR."//trim(run_suffix), error)
+      endif
+   endif
 
    call print("doing unsorting", PRINT_VERBOSE)
    call atoms_sort(at, 'sort_index', error=error)
@@ -174,6 +220,8 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("cleaning up", PRINT_VERBOSE)
       call system_command("rm -rf "//trim(run_dir))
    endif
+
+   call verbosity_pop()
 
 end subroutine do_vasp_calc
 
@@ -243,8 +291,9 @@ subroutine write_vasp_poscar(at, run_dir, error)
 
 end subroutine write_vasp_poscar
 
-subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, error)
+subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, converged, error)
    character(len=*), intent(in) :: run_dir, calc_energy, calc_force, calc_virial
+   logical, intent(out) :: converged
    integer, intent(out), optional :: ERROR
 
    type(inoutput) :: outcar_io
@@ -265,6 +314,7 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, error
       endif
    endif
 
+   converged = .false.
    force_start_line_i = -1
    call initialise(outcar_io, trim(run_dir)//"/OUTCAR")
    stat = 0
@@ -313,6 +363,11 @@ subroutine read_vasp_output(run_dir, calc_energy, calc_force, calc_virial, error
 	       endif
 	       virial_start_line_i = line_i+13
 	    endif
+	 endif
+      endif
+      if (.not. converged) then
+	 if (index(trim(line),"aborting loop because EDIFF is reached") > 0) then ! found convergence of SCF
+	    converged = .true.
 	 endif
       endif
       ! if (stat == 0) call print("GOT OUTPUT "//trim(line))
