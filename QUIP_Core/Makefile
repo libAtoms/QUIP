@@ -115,7 +115,7 @@ ${TARGETS}: % :  libquip_core.a %.o
 
 clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc
-	-rm libquip_core.a cp2k_filepot cp2k_filepot_old evb_filepot quip.dtd
+	-rm  libquip_core.a cp2k_filepot cp2k_filepot_old evb_filepot quip.dtd
 	-rm -r doctmp
 	-rm -f QUIP_Core.depend
 
