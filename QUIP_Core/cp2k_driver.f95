@@ -634,7 +634,7 @@ contains
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     ENSEMBLE NVE", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
     call insert_cp2k_input_line(cp2k_template_a, "&MOTION&MD     STEPS 0", after_line = insert_pos, n_l = template_n_lines); insert_pos = insert_pos + 1
 
-    run_dir = make_run_directory(force_run_dir_i, run_dir_i)
+    run_dir = make_run_directory("cp2k_run", force_run_dir_i, run_dir_i)
 
     call write_cp2k_input_file(cp2k_template_a(1:template_n_lines), trim(run_dir)//'/cp2k_input.inp')
 
@@ -950,38 +950,6 @@ contains
       call system_abort('cp2k failed to converge after n_tries='//n_tries//'. see output file '//trim(run_dir)//'/cp2k_output.out')
 
   end subroutine run_cp2k_program
-
-  function make_run_directory(force_run_dir_i, run_dir_i) result(dir)
-    integer, intent(in) :: force_run_dir_i
-    integer, intent(out), optional :: run_dir_i
-    integer i
-    character(len=1024) :: dir
-
-    logical :: exists
-    integer stat
-
-    if (force_run_dir_i > 0) then
-      i = force_run_dir_i
-      dir = "cp2k_run_"//i
-      inquire(file=trim(dir)//'/cp2k_input.inp', exist=exists)
-      if (.not. exists) call system_abort("make_run_directory got force_run_dir_i="//force_run_dir_i//" but cp2k_run_"//force_run_dir_i//"/cp2k_input.inp doesn't exist")
-    else
-      exists = .true.
-      i = 0
-      do while (exists)
-	i = i + 1
-	dir = "cp2k_run_"//i
-	inquire(file=trim(dir)//'/cp2k_input.inp', exist=exists)
-      end do
-      call system_command("mkdir "//trim(dir), status=stat)
-    endif
-
-    if (stat /= 0) &
-      call system_abort("Failed to mkdir "//trim(dir)//" status " // stat)
-
-    if (present(run_dir_i)) run_dir_i = i
-
-  end function make_run_directory
 
   subroutine write_cp2k_input_file(l_a, filename)
     character(len=*), intent(in) :: l_a(:)
