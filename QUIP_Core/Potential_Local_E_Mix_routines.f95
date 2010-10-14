@@ -35,7 +35,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine potential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
+  recursive subroutine potential_local_e_mix_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Potential), intent(inout), target :: region1_pot, region2_pot
@@ -122,7 +122,7 @@
 
   end subroutine
 
-  subroutine potential_local_e_mix_finalise(this)
+  recursive subroutine potential_local_e_mix_finalise(this)
     type(Potential_Local_E_Mix), intent(inout) :: this
 
     call finalise(this%pot_region1)
@@ -133,14 +133,14 @@
   end subroutine potential_local_e_mix_finalise
 
 
-  function potential_local_e_mix_cutoff(this)
+  recursive function potential_local_e_mix_cutoff(this)
     type(Potential_Local_E_Mix), intent(in) :: this
     real(dp) :: potential_local_e_mix_cutoff
 
     potential_local_e_mix_cutoff = max(cutoff(this%pot_region1), cutoff(this%pot_region2))
   end function potential_local_e_mix_cutoff
 
-  subroutine potential_local_e_mix_print(this, file)
+  recursive subroutine potential_local_e_mix_print(this, file)
     type(Potential_Local_E_Mix),          intent(inout) :: this
     type(Inoutput),intent(inout),optional:: file
     
@@ -157,7 +157,7 @@
     call print('')
   end subroutine potential_local_e_mix_print
 
-  subroutine potential_local_e_mix_calc(this, at, args_str, error)
+  recursive subroutine potential_local_e_mix_calc(this, at, args_str, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in), optional :: args_str
@@ -211,7 +211,7 @@
 
   end subroutine potential_local_e_mix_calc
 
-  subroutine calc_local_energy_mix(this, at, args_str, error)
+  recursive subroutine calc_local_energy_mix(this, at, args_str, error)
     type(Potential_Local_E_Mix), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in), optional :: args_str

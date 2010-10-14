@@ -604,12 +604,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
   end subroutine Potential_setup_parallel
 
-  subroutine potential_print(this, file, error)
+  recursive subroutine potential_print(this, file, error)
     type(Potential), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
     integer, intent(out), optional :: error
 
-  INIT_ERROR(error)
+    INIT_ERROR(error)
 
     if (this%is_simple) then
        call Print('Potential containing potential')
@@ -634,12 +634,12 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   end subroutine potential_print
 
 
-  function potential_cutoff(this, error)
+  recursive function potential_cutoff(this, error)
     type(Potential), intent(in) :: this
     integer, intent(out), optional :: error
     real(dp) :: potential_cutoff
 
-  INIT_ERROR(error)
+    INIT_ERROR(error)
 
     if (this%is_simple) then
        potential_cutoff = cutoff(this%simple)

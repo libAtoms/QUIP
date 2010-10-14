@@ -5,7 +5,7 @@
   !*
   !*************************************************************************
 
-  subroutine Potential_EVB_Initialise(this, args_str, pot1, mpi, error)
+  recursive subroutine Potential_EVB_Initialise(this, args_str, pot1, mpi, error)
     type(Potential_EVB), intent(inout)         :: this
     character(len=*),    intent(in)            :: args_str
     type(Potential),     intent(in),  target   :: pot1
@@ -41,7 +41,7 @@
 
   end subroutine Potential_EVB_Initialise
 
-  subroutine Potential_EVB_Finalise(this)
+  recursive subroutine Potential_EVB_Finalise(this)
     type(Potential_EVB), intent(inout) :: this
     
     nullify(this%pot1)
@@ -59,7 +59,7 @@
 
   end subroutine Potential_EVB_Finalise
 
-  subroutine Potential_EVB_Print(this, file)
+  recursive subroutine Potential_EVB_Print(this, file)
     type(Potential_EVB), intent(inout)           :: this
     type(Inoutput),      intent(inout), optional :: file
 
@@ -88,7 +88,7 @@
 
   end subroutine Potential_EVB_Print
 
-  subroutine Potential_EVB_Calc(this, at, args_str, error)
+  recursive subroutine Potential_EVB_Calc(this, at, args_str, error)
     type(Potential_EVB), intent(inout)          :: this
     type(Atoms),         intent(inout)          :: at
     character(*),        intent(in),  optional  :: args_str
@@ -371,7 +371,7 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
 
   end subroutine Potential_EVB_Calc
 
-  function Potential_EVB_Cutoff(this)
+  recursive function Potential_EVB_Cutoff(this)
     type(Potential_EVB), intent(in) :: this
     real(dp) :: potential_EVB_cutoff
 
