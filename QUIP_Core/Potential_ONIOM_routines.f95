@@ -35,7 +35,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine potential_ONIOM_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
+  recursive subroutine potential_ONIOM_initialise(this, args_str, region1_pot, region2_pot, reference_bulk, mpi_obj, error)
     type(Potential_ONIOM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Potential), intent(inout), target :: region1_pot, region2_pot
@@ -101,7 +101,7 @@
 
   end subroutine
 
-  subroutine potential_ONIOM_finalise(this)
+  recursive subroutine potential_ONIOM_finalise(this)
     type(Potential_ONIOM), intent(inout) :: this
 
     call finalise(this%pot_region1)
@@ -112,14 +112,14 @@
   end subroutine potential_ONIOM_finalise
 
 
-  function potential_ONIOM_cutoff(this)
+  recursive function potential_ONIOM_cutoff(this)
     type(Potential_ONIOM), intent(in) :: this
     real(dp) :: potential_ONIOM_cutoff
 
     potential_ONIOM_cutoff = max(cutoff(this%pot_region1), cutoff(this%pot_region2))
   end function potential_ONIOM_cutoff
 
-  subroutine potential_ONIOM_print(this, file)
+  recursive subroutine potential_ONIOM_print(this, file)
     type(Potential_ONIOM),          intent(inout) :: this
     type(Inoutput),intent(inout),optional:: file
     
@@ -137,7 +137,7 @@
   end subroutine potential_ONIOM_print
 
 
-  subroutine potential_ONIOM_calc(this, at, args_str, error)
+  recursive subroutine potential_ONIOM_calc(this, at, args_str, error)
     type(Potential_ONIOM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in), optional :: args_str
@@ -193,7 +193,7 @@
   end subroutine potential_ONIOM_calc
 
 
-  subroutine calc_oniom(this, at, args_str, error)
+  recursive subroutine calc_oniom(this, at, args_str, error)
     type(Potential_ONIOM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(len=*), intent(in), optional :: args_str

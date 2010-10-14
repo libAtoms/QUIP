@@ -36,7 +36,7 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-  subroutine Potential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi, error)
+  recursive subroutine Potential_FM_initialise(this, args_str, mmpot, qmpot, reference_bulk, mpi, error)
     type(Potential_FM), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Potential), intent(inout), target :: qmpot
@@ -164,7 +164,7 @@
   end subroutine Potential_FM_initialise
 
 
-  subroutine Potential_FM_finalise(this)
+  recursive subroutine Potential_FM_finalise(this)
     type(Potential_FM), intent(inout) :: this
     
     nullify(this%mmpot)
@@ -175,7 +175,7 @@
   end subroutine Potential_FM_finalise
 
 
-  subroutine Potential_FM_print(this, file)
+  recursive subroutine Potential_FM_print(this, file)
     type(Potential_FM), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
 
@@ -232,7 +232,7 @@
   end subroutine Potential_FM_print
 
 
-  subroutine Potential_FM_calc(this, at, args_str, error)
+  recursive subroutine Potential_FM_calc(this, at, args_str, error)
     type(Potential_FM), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(*), intent(in), optional :: args_str
@@ -697,7 +697,7 @@
   end subroutine Potential_FM_calc
 
 
-  function Potential_FM_cutoff(this)
+  recursive function Potential_FM_cutoff(this)
     type(Potential_FM), intent(in) :: this
     real(dp) :: potential_fm_cutoff
 

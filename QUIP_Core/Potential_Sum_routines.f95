@@ -5,7 +5,7 @@
   !*
   !*************************************************************************
 
-  subroutine Potential_Sum_Initialise(this, args_str, pot1, pot2, mpi, error)
+  recursive subroutine Potential_Sum_Initialise(this, args_str, pot1, pot2, mpi, error)
     type(Potential_Sum), intent(inout) :: this
     character(len=*), intent(in) :: args_str
     type(Potential), intent(in), target :: pot1, pot2
@@ -23,7 +23,7 @@
 
   end subroutine Potential_Sum_Initialise
 
-  subroutine Potential_Sum_Finalise(this)
+  recursive subroutine Potential_Sum_Finalise(this)
     type(Potential_Sum), intent(inout) :: this
     
     nullify(this%pot1)
@@ -31,7 +31,7 @@
 
   end subroutine Potential_Sum_Finalise
 
-  subroutine Potential_Sum_Print(this, file)
+  recursive subroutine Potential_Sum_Print(this, file)
     type(Potential_Sum), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
 
@@ -56,7 +56,7 @@
 
   end subroutine Potential_Sum_Print
 
-  subroutine Potential_Sum_Calc(this, at, args_str, error)
+  recursive subroutine Potential_Sum_Calc(this, at, args_str, error)
     type(Potential_Sum), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     character(*), intent(in), optional :: args_str
@@ -118,7 +118,7 @@
     if (allocated(my_f_1)) deallocate(my_f_1)
   end subroutine Potential_Sum_Calc
 
-  function Potential_Sum_Cutoff(this)
+  recursive function Potential_Sum_Cutoff(this)
     type(Potential_Sum), intent(in) :: this
     real(dp) :: potential_sum_cutoff
 
