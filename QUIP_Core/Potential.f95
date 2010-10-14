@@ -457,7 +457,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
   end subroutine potential_finalise
 
 
-  subroutine potential_calc(this, at, energy, force, virial, local_energy, args_str, error)
+  recursive subroutine potential_calc(this, at, energy, force, virial, local_energy, args_str, error)
     type(Potential), intent(inout) :: this
     type(Atoms), intent(inout) :: at
     real(dp), intent(out), optional :: energy
@@ -497,6 +497,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
 
     use_calc_force = trim(calc_force)
+
     if (present(force)) then
        if (len_trim(calc_force) == 0) then ! have force optional but not args_str - add property from pointer in new property name
 	  use_calc_force = "force"
