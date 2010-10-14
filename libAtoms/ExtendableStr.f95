@@ -200,7 +200,7 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
   str_len = len_trim(str)
   add_lf = .false.
   if (str_len > 0) then
-     if (my_add_lf_if_missing .and. str(str_len:str_len) /= new_line(' ')) add_lf = .true.
+     if (my_add_lf_if_missing .and. str(str_len:str_len) /= quip_new_line) add_lf = .true.
   else
      add_lf = my_add_lf_if_missing
   endif
@@ -233,13 +233,13 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing)
     endif
 
     do i=1, str_len
-       if (.not. my_keep_lf .and. str(i:i) == new_line(' ')) cycle
+       if (.not. my_keep_lf .and. str(i:i) == quip_new_line) cycle
        this%s(this%len+1) = str(i:i)
        this%len = this%len + 1
     end do
 
     if (add_lf) then
-       this%s(this%len+1) = new_line(' ')
+       this%s(this%len+1) = quip_new_line
        this%len = this%len + 1
     endif
 
@@ -341,7 +341,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, kee
 	  call concat(this, trim(line))
 	endif
 	if (is_iostat_eor(stat) .and. my_keep_lf) then
-	  call concat(this, new_line(' '))
+	  call concat(this, quip_new_line)
 	endif
 	last_was_incomplete = (stat == 0)
       else
@@ -422,12 +422,12 @@ end function extendable_str_index
 function extendable_str_read_line(this, status)
   type(extendable_str), intent(inout) :: this
   integer, intent(out), optional :: status
-  character(len=max(1,index(this,new_line(' '))-this%cur)) :: extendable_str_read_line
+  character(len=max(1,index(this,quip_new_line)-this%cur)) :: extendable_str_read_line
 
   integer line_len
   integer i
 
-  line_len = index(this,new_line(' '))-this%cur
+  line_len = index(this,quip_new_line)-this%cur
 
   if (this%cur <= this%len) then
     do i=1, line_len

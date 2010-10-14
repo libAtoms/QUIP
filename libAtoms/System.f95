@@ -64,6 +64,12 @@ module system_module
   integer, parameter :: dp = 8 ! kind(1.0d0)
 #endif
 
+#ifdef NO_F2003_NEW_LINE
+  character, parameter :: quip_new_line = char(13)
+#else
+  character, parameter :: quip_new_line = new_line(' ')
+#endif
+
   integer, parameter :: INTEGER_SIZE = 4
   integer, parameter :: REAL_SIZE = dp
   integer, parameter :: COMPLEX_SIZE = 2*dp
@@ -2743,5 +2749,51 @@ function pad(s,l) result(a)
      a(i) = s(i:i)
   end do
 end function pad
+
+  function make_run_directory(basename, force_run_dir_i, run_dir_i, error) result(dir)
+    character(len=*), optional :: basename
+    integer, intent(in), optional :: force_run_dir_i
+    integer, intent(out), optional :: run_dir_i
+    integer, intent(out), optional :: error
+    character(len=1024) :: dir
+
+    integer i
+    character(len=1024) :: use_basename
+    integer :: use_force_run_dir_i
+   
+    logical :: exists
+    integer stat
+
+    INIT_ERROR(error)
+
+    use_force_run_dir_i = optional_default(0, force_run_dir_i)
+    use_basename = optional_default("run", basename)
+   
+    if (use_force_run_dir_i > 0) then
+      i = use_force_run_dir_i
+      dir = trim(use_basename)//"_"//i
+      call system_command("bash -c '[ -d "//trim(dir)//" ]'", status=stat)
+      if (stat /= 0) then
+         RAISE_ERROR("make_run_directory got force_run_dir_i="//use_force_run_dir_i//" but "//trim(dir)//" doesn't exist or isn't a directory", error)
+      endif
+    else
+      exists = .true.
+      i = 0
+      do while (exists)
+        i = i + 1
+        dir = trim(use_basename)//"_"//i
+        call system_command("bash -c '[ -e "//trim(dir)//" ]'", status=stat)
+	exists = (stat == 0)
+      end do
+      call system_command("mkdir "//trim(dir), status=stat)
+      if (stat /= 0) then
+	 RAISE_ERROR("Failed to mkdir "//trim(dir)//" status " // stat, error)
+      endif
+    endif
+
+    if (present(run_dir_i)) run_dir_i = i
+
+  end function make_run_directory
+
 
 end module system_module

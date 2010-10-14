@@ -348,11 +348,7 @@ contains
 
     call print("Dictionary, allocated "// size(this%entries) //" n_entries " // this%N, verbosity=verbosity,file=file)
     call print('', verbosity=verbosity,file=file)
-#ifdef NO_F2003_NEW_LINE
-    call print(write_string(this,entry_sep=char(13)),verbosity=verbosity,file=file)
-#else
-    call print(write_string(this,entry_sep=new_line(' ')),verbosity=verbosity,file=file)
-#endif
+    call print(write_string(this,entry_sep=quip_new_line),verbosity=verbosity,file=file)
     call finalise(str)
 
   end subroutine dictionary_print

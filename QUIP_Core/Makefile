@@ -30,7 +30,13 @@
 
 default: libquip_core.a 
 
-all: libquip_core.a cp2k_filepot evb_filepot
+all: libquip_core.a evb_filepot
+ifeq (${HAVE_CP2K},1)
+all: cp2k_filepot 
+endif
+ifeq (${HAVE_VASP},1)
+all: vasp_filepot 
+endif
 
 include Makefile.inc
 include Makefile.rules
@@ -72,6 +78,9 @@ endif
 ifeq (${HAVE_CP2K},1)
   QUIP_OBJS += cp2k_driver.o
   ALL_F95_FILES += cp2k_driver.f95 cp2k_filepot.f95
+endif
+ifeq (${HAVE_VASP},1)
+  ALL_F95_FILES += vasp_filepot.f95
 endif
 QUIP_OBJS += ${POT_F95_OBJS}
 ALL_F95_FILES += ${POT_F95_SOURCES}
@@ -128,6 +137,9 @@ cp2k_filepot_old: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 cp2k_filepot: % : %.o libatoms.a libquip_core.a
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
+
+vasp_filepot: % : %.o libatoms.a libquip_core.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS} ${LINKOPTS}
 
 evb_filepot: % : %.o libatoms.a libquip_core.a
