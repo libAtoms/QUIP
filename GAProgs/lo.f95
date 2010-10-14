@@ -33,12 +33,7 @@ program eval
   use libAtoms_module
   use QUIP_module
   use libatoms_misc_utils_module
-
-#ifdef HAVE_GP_PREDICT
   use descriptors_module
-#else
-#error You need to set HAVE_GP_PREDICT in to compile this file
-#endif
   
   implicit none
   
