@@ -239,6 +239,10 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, error)
    call split_string_simple(trim(potcar_files), potcar_files_fields, potcar_files_n_fields, " ", error)
    PASS_ERROR(error)
 
+   if (potcar_files_n_fields <= 0 .or. mod(potcar_files_n_fields,2) /= 0) then
+      RAISE_ERROR("write_vasp_potcar didn't find even number of fields (Z1 potcar1 [Z2 potcar2 ...]) in potcar_files='"//trim(potcar_files)//"'", error)
+   endif
+
    call uniq(at%Z, uniq_Z)
 
    potcar_files_a=""
