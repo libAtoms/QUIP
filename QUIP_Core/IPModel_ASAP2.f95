@@ -162,7 +162,7 @@ end subroutine smooth_cutoff
 
 
 !% Charge-charge interactions, screened by Yukawa function
-subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi, atom_mask, pseudise)
+subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi, atom_mask, source_mask, pseudise, grid_size)
    type(IPModel_ASAP2), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), dimension(:), intent(in) :: charge
@@ -171,8 +171,9 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi,
    real(dp), intent(out), optional :: virial(3,3)
    real(dp), intent(out), optional :: efield(:,:)
    type(MPI_Context), intent(in), optional :: mpi
-   logical, optional, intent(in), dimension(:) :: atom_mask
+   logical, optional, intent(in), dimension(:) :: atom_mask, source_mask
    logical, optional, intent(in) :: pseudise
+   real(dp), optional, intent(in) :: grid_size
 
    real(dp), parameter :: sqrt_2 = 1.41421356237309504880168872421_dp
    real(dp), parameter :: sqrt_pi = 1.77245385090551602729816748334_dp
@@ -226,7 +227,18 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi,
          
          j = atoms_neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_coulomb*BOHR))
          if (j <= 0) cycle
-         if (r_ij .feq. 0.0_dp) cycle
+         
+         if (present(source_mask)) then
+            if (.not. source_mask(j)) cycle
+         end if
+
+         if (r_ij .feq. 0.0_dp) then
+            if (present(grid_size)) then 
+               r_ij = grid_size
+            else
+               cycle
+            end if
+         end if
 
          if (allocated(at%connect%is_min_image)) then
             j_is_min_image = at%connect%is_min_image(j)
@@ -249,7 +261,7 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi,
 
          de = gamjir
 
-         if (do_pseudise .and. at%z(j) /= 0) then
+         if (do_pseudise) then
             pseudise_sigma = ElementCovRad(at%z(j))
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
             if (pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
@@ -274,7 +286,7 @@ subroutine asap_rs_charges(this, at, charge, e, local_e, f, virial, efield, mpi,
          if (present(f) .or. present(virial) .or. present(efield)) then
             dforce = gamjir3*expfactor*fc*r_ij + de*(this%yukalpha*fc - dfc_dr)*expfactor
 
-            if (do_pseudise .and. at%z(j) /= 0) then
+            if (do_pseudise) then
                if (pseudise_sigma > 0.0_dp .and. r_ij < 9.0_dp*pseudise_sigma) then
                   erf_val = erf(r_ij/(sqrt_2 * pseudise_sigma))
                   erf_deriv = -(sqrt_2/(sqrt_pi*pseudise_sigma)) * exp(-r_ij*r_ij/(2.0_dp*pseudise_sigma*pseudise_sigma))
@@ -827,18 +839,18 @@ subroutine IPModel_ASAP2_setup_atoms(this, at)
 end subroutine IPModel_ASAP2_setup_atoms
 
 
-subroutine assign_grid_coordinates(at,ngrid, grid_size, r_real_grid)
-  type(Atoms), intent(in) :: at
+subroutine assign_grid_coordinates(ngrid, grid_size, origin, extent, r_real_grid)
   integer, intent(in) :: ngrid(3)
   real(dp), intent(out) :: grid_size(3)
-  real(dp), dimension(:,:), intent(out) :: r_real_grid
+  real(dp), dimension(:,:), intent(out) :: r_real_grid, origin(3), extent(3)
 
   real(dp) :: lattice(3,3)
   integer :: nx, ny, nz, point
-  real(dp) :: a, b, c, alpha, beta, gamma
 
-  ! CASTEP lattice is tranpose of our lattice
-  lattice = transpose(at%lattice)
+  lattice(:,:) = 0.0_dp
+  lattice(1,1) = extent(1)
+  lattice(2,2) = extent(2)
+  lattice(3,3) = extent(3)
 
   point = 0
   do nz=1,ngrid(3)
@@ -849,22 +861,21 @@ subroutine assign_grid_coordinates(at,ngrid, grid_size, r_real_grid)
            
            r_real_grid(1,point) = real(nx-1,dp)*lattice(1,1)/real(ngrid(1),dp) +&
                 & real(ny-1,dp)*lattice(2,1)/real(ngrid(2),dp) +&
-                & real(nz-1,dp)*lattice(3,1)/real(ngrid(3),dp)
+                & real(nz-1,dp)*lattice(3,1)/real(ngrid(3),dp) + origin(1) - extent(1)/2.0_dp
            r_real_grid(2,point) = real(nx-1,dp)*lattice(1,2)/real(ngrid(1),dp) +&
                 & real(ny-1,dp)*lattice(2,2)/real(ngrid(2),dp) +&
-                & real(nz-1,dp)*lattice(3,2)/real(ngrid(3),dp)
+                & real(nz-1,dp)*lattice(3,2)/real(ngrid(3),dp) + origin(2) - extent(2)/2.0_dp
            r_real_grid(3,point) = real(nx-1,dp)*lattice(1,3)/real(ngrid(1),dp) +&
                 & real(ny-1,dp)*lattice(2,3)/real(ngrid(2),dp) +&
-                & real(nz-1,dp)*lattice(3,3)/real(ngrid(3),dp)
+                & real(nz-1,dp)*lattice(3,3)/real(ngrid(3),dp) + origin(3) - extent(3)/2.0_dp
            
         end do
      end do
   end do
 
-  call get_lattice_params(at%lattice, a, b, c, alpha, beta, gamma)
-  grid_size(1) = a/real(ngrid(1), dp)
-  grid_size(2) = b/real(ngrid(2), dp)
-  grid_size(3) = c/real(ngrid(3), dp)
+  grid_size(1) = extent(1)/real(ngrid(1), dp)
+  grid_size(2) = extent(2)/real(ngrid(2), dp)
+  grid_size(3) = extent(3)/real(ngrid(3), dp)
 
 end subroutine assign_grid_coordinates
 
@@ -932,12 +943,13 @@ subroutine write_electrostatic_header(out, lattice, ngrid)
 
 end subroutine write_electrostatic_header
 
-subroutine write_electric_field(this, at, filename, ngrid, efield)
+subroutine write_electric_field(this, at, filename, ngrid, efield, atom_mask)
   type(IPModel_ASAP2), intent(inout) :: this
   type(Atoms), intent(inout) :: at
   character(len=*), intent(in) :: filename
   integer, intent(in) :: ngrid(3)
   real(dp), dimension(:,:), intent(in) :: efield
+  logical, dimension(:), intent(in) :: atom_mask
 
   type(InOutput) :: out
   integer i
@@ -948,6 +960,7 @@ subroutine write_electric_field(this, at, filename, ngrid, efield)
   call write_electrostatic_header(out, at%lattice, ngrid)
   call print('END header: data is "sp nsp charge efield_x efield_y efield_z"', file=out)
   do i=1,at%N
+     if (.not. atom_mask(i)) cycle
      charge = this%z(get_type(this%type_of_atomic_num, at%Z(i)))
      write (out%unit,'(a6,i6,4f12.6)'), a2s(at%species(:,i)), index_to_z_index(at, i), charge, efield(:,i)
   end do
@@ -983,18 +996,18 @@ subroutine write_electrostatic_potential(this, at, filename, ngrid, pot)
 
 end subroutine write_electrostatic_potential
 
-subroutine make_periodic_potential(real_grid, ngrid, dir_mask, ninterp, pot)
+subroutine make_periodic_potential(at, real_grid, ngrid, dir_mask, cutoff_radius, cutoff_width, pot)
+  type(Atoms), intent(in) :: at
   real(dp), dimension(:,:), intent(in) :: real_grid
   integer, intent(in) :: ngrid(3)
   logical, intent(in) :: dir_mask(3)
-  integer, intent(in) :: ninterp
+  real(dp), intent(in) :: cutoff_radius, cutoff_width
   real(dp), intent(inout) :: pot(:,:,:)
 
-  integer i,j,k,igrid, nsurface
-  real(dp) :: surface_avg, f, d(3), dmax
+  integer i,j,k,a,igrid, nsurface, cell_image_na, cell_image_nb, cell_image_nc
+  real(dp) :: cutoff, surface_avg, f, d(3), fc, dfc, masked_d
 
-  call print('dir_mask = '//dir_mask)
-  
+  ! Calculate average value of potential on open surfaces
   nsurface = 0
   surface_avg = 0.0_dp
   if (dir_mask(1)) then
@@ -1011,124 +1024,195 @@ subroutine make_periodic_potential(real_grid, ngrid, dir_mask, ninterp, pot)
   end if
   surface_avg = surface_avg/nsurface
 
-  dmax = norm(real(ngrid/2, dp))
-  call print('dmax = '//dmax)
-  do k=1,ngrid(3)
-     do j=1,ngrid(2)
-        do i=1,ngrid(1)
+  
+  call fit_box_in_cell(cutoff_radius+cutoff_width, cutoff_radius+cutoff_width, cutoff_radius+cutoff_width, &
+       at%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
+  cell_image_Na = max(1,(cell_image_Na+1)/2)
+  cell_image_Nb = max(1,(cell_image_Nb+1)/2)
+  cell_image_Nc = max(1,(cell_image_Nc+1)/2)
 
-           d(:) = 0.0
-           
-           if (dir_mask(1)) d(1) = real(i-ngrid(1)/2,dp)
-           if (dir_mask(2)) d(2) = real(j-ngrid(2)/2,dp)
-           if (dir_mask(3)) d(3) = real(k-ngrid(3)/2,dp)
-
-           f = min(norm(d)/dmax, 1.0_dp)
-
-           ! TODO: must construct interpolation in such a way that f==1 everywhere on boundary
-
-           pot(i,j,k) = (1.0_dp-f)*pot(i,j,k) + f*surface_avg
-        end do
-     end do
-  end do
-
-  call print('nsurface = '//nsurface)
-  call print('surface_avg = '//surface_avg)
-
-end subroutine make_periodic_potential
-
-subroutine calc_electrostatic_potential(this, at, stem, mask_name, ngrid, grid_size, real_grid, is_periodic, ninterp, pot, efield, error)
-  type(IPModel_ASAP2), intent(inout) :: this
-  type(Atoms), intent(inout) :: at
-  character(len=*), intent(in) :: stem, mask_name
-  integer, intent(in) :: ngrid(3)
-  real(dp), intent(in) :: grid_size(3)
-  real(dp), dimension(:,:), intent(in) :: real_grid
-  logical, intent(in) :: is_periodic(3)
-  integer, intent(in) :: ninterp
-  real(dp), intent(out) :: pot(:,:,:), efield(:,:)
-  integer, optional, intent(out) :: error
-
-  type(Atoms) :: at_copy
-  type(InOutput) :: out
-  real(dp) :: r, charge, sigma
-  real(dp), pointer :: at_charge(:)
-  real(dp), allocatable :: local_e(:)
-  logical, pointer, dimension(:) :: mask
-  logical, allocatable, dimension(:) :: atom_mask
-  integer i, j, k, l, igrid, test_atom
-
-
-  INIT_ERROR(error)
-  if (.not. assign_pointer(at, mask_name, mask)) then
-     RAISE_ERROR('calc_electrostatic_potential: cannot assign pointer to '//trim(mask_name)//' property.', error)
-  end if
-
-  ! Make copy of atoms 
-  call atoms_copy_without_connect(at_copy, at)
-  call set_cutoff(at_copy, this%cutoff_coulomb*BOHR)
-
-  ! Make lattice non-periodic in required directions
-  do i=1,3
-     if (.not. is_periodic(i)) at_copy%lattice(:,i) = 0.0_dp
-  end do
-  call set_lattice(at_copy, at_copy%lattice, .false.)
-
-  call print('is_periodic = '//is_periodic//' at_copy%is_periodic = '//at_copy%is_periodic)
-
-  ! Evaluate electric field at ion positions
-  if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
-     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
-  endif
-  call calc_connect(at_copy)
-  efield(:,:) = 0.0_dp
-  call asap_rs_charges(this, at_copy, at_charge, efield=efield, pseudise=.true.)
-
-  call write_electric_field(this, at, trim(stem)//'.efield_fmt', ngrid, efield)
-
-  ! Add a non-interacting test_atom at grid point
-  call add_atoms(at_copy, (/0.0_dp, 0.0_dp, 0.0_dp/), 0)
-  test_atom = at_copy%n
-  allocate(local_e(at_copy%n), atom_mask(at_copy%n))
-
-  if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
-     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
-  endif
-  at_charge(test_atom) = 1.0_dp
-  atom_mask = .false.
-  atom_mask(test_atom) = .true.
-
+  ! Smoothly interpolate potential to surface_avg away from atoms
   igrid = 0
   do k=1,ngrid(3)
      do j=1,ngrid(2)
         do i=1,ngrid(1)
            igrid = igrid + 1
-           at_copy%pos(:,test_atom) = real_grid(:,igrid)
-           call calc_connect(at_copy)
-           local_e = 0.0_dp
+           a = closest_atom(at, real_grid(:,igrid), cell_image_Na, cell_image_Nb, cell_image_Nc, diff=d)
 
-           ! TODO:
-           !  (1) check efield is derivative of potential
-           !  (2) grid_size effects
+           ! project difference vector to mask out periodic directions
+           masked_d = norm(pack(d, dir_mask))
 
-           call asap_rs_charges(this, at_copy, at_charge, local_e=local_e, atom_mask=atom_mask, pseudise=.true.)
-           
-           pot(i,j,k) = 2.0_dp*local_e(test_atom)/at_charge(test_atom)
+           ! if this grid point is on an open surface, check we're at least cutoff_radius + cutoff_width away from closest atom
+           if ((dir_mask(1) .and. (i==1 .or. i==ngrid(1))) .or. &
+               (dir_mask(2) .and. (j==1 .or. j==ngrid(2))) .or. &
+               (dir_mask(3) .and. (k==1 .or. k==ngrid(3)))) then
+              if (masked_d < cutoff_radius+cutoff_width) &
+                   call system_abort('make_periodic_potential: atom '//a//' pos='//at%pos(:,a)//' too close to surface cell=['//i//' '//j//' '//k//'] pos=['//real_grid(:,igrid)//']')
+           end if
 
+           call smooth_cutoff(masked_d, cutoff_radius, cutoff_width, fc, dfc)
+           pot(i,j,k) = pot(i,j,k)*fc + surface_avg*(1.0_dp-fc)
         end do
      end do
   end do
 
-  !  make potential periodic across open boundaries
-  call make_periodic_potential(real_grid, ngrid, .not. is_periodic, ninterp, pot)
+end subroutine make_periodic_potential
+
+subroutine calc_electrostatic_potential(this, at, stem, mark_name, ngrid, grid_size, real_grid, is_periodic, &
+     cutoff_radius, cutoff_width, origin, extent, pot, efield, error)
+  type(IPModel_ASAP2), intent(inout) :: this
+  type(Atoms), intent(inout) :: at
+  character(len=*), intent(in) :: stem, mark_name
+  integer, intent(in) :: ngrid(3)
+  real(dp), intent(in) :: grid_size(3)
+  real(dp), dimension(:,:), intent(in) :: real_grid
+  logical, intent(in) :: is_periodic(3)
+  real(dp), intent(in) :: cutoff_radius, cutoff_width, origin(3), extent(3)
+  real(dp), intent(out) :: pot(:,:,:), efield(:,:)
+  integer, optional, intent(out) :: error
+
+  type(Atoms) :: at_copy
+  type(Table) :: remove_list
+  type(InOutput) :: out
+  real(dp) :: r, charge, sigma
+  real(dp), pointer :: at_charge(:)
+  real(dp), allocatable :: local_e(:)
+  integer, pointer, dimension(:) :: hybrid_mark
+  integer, allocatable, dimension(:) :: z
+  integer, allocatable, dimension(:,:) :: lookup
+  logical, allocatable, dimension(:) :: atom_mask, source_mask
+  integer i, j, k, n, igrid, offset, stride, npoint
+
+  INIT_ERROR(error)
+
+  ! Make copy of atoms, with lattice non-periodic in required directions
+  call atoms_copy_without_connect(at_copy, at)
+  call set_cutoff(at_copy, this%cutoff_coulomb*BOHR)
+
+  if (.not. assign_pointer(at_copy, mark_name, hybrid_mark)) then
+     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(mark_name)//'" property', error)
+  end if
+  if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
+     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+  endif
+
+  ! Evaluate electric field on real atoms, i.e. those not marked with HYBRID_ELECTROSTATIC_MARK
+  allocate(atom_mask(at_copy%n), source_mask(at_copy%n))
+  atom_mask = hybrid_mark /= HYBRID_ELECTROSTATIC_MARK
+  call calc_connect(at_copy)
+
+  source_mask = hybrid_mark == HYBRID_ELECTROSTATIC_MARK
+
+  efield(:,:) = 0.0_dp
+  call asap_rs_charges(this, at_copy, at_charge, efield=efield, atom_mask=atom_mask, &
+       pseudise=.true., source_mask=source_mask, grid_size=minval(grid_size))
+
+  call write_electric_field(this, at, trim(stem)//'.efield_fmt', ngrid, efield, atom_mask)
+
+  deallocate(atom_mask, source_mask)
+
+  ! Add non-interacting test atoms at each grid point
+
+  stride = 1
+  npoint = size(real_grid(:,1:size(real_grid,2):stride), 2)
+
+  allocate(z(npoint))
+  z(:) = 0
+  call add_atoms(at_copy, real_grid(:,1:size(real_grid,2):stride), z)
+
+  call print('at%n='//at%n)
+  call print('at_copy%n='//at_copy%n)
+
+  allocate(local_e(at_copy%n), atom_mask(at_copy%n), source_mask(at_copy%n))
+  
+  ! added atoms so must reassign pointers
+  if (.not. assign_pointer(at_copy, mark_name, hybrid_mark)) then
+     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "'//trim(mark_name)//'" property', error)
+  end if
+  if (.not. assign_pointer(at_copy, 'charge', at_charge)) then
+     RAISE_ERROR('IPModel_ASAP2_calc failed to assign pointer to "charge" property', error)
+  endif
+  at_charge(at%n+1:at_copy%n) = 1.0_dp
+  atom_mask = .false. 
+  atom_mask(at%n+1:at_copy%n) = .true.
+
+  call print('size(hybrid_mark)='//size(hybrid_mark))
+
+  ! True for atoms which should act as electrostatic sources, i.e. those we're going to remove
+  source_mask(1:at%n) = hybrid_mark(1:at%n) == HYBRID_ELECTROSTATIC_MARK
+  source_mask(at%n+1:at_copy%n) = .false.
+
+  call print('calc_electrostatic_potential: count(source_mask)='//count(source_mask))
+
+  ! Construct mapping from igrid to (i,j,k)
+  igrid = 0
+  allocate(lookup(3,size(real_grid,2)))
+  do k=1,ngrid(3)
+     do j=1,ngrid(2)
+        do i=1,ngrid(1)
+           igrid = igrid + 1
+           lookup(:,igrid) = (/i,j,k/)
+        end do
+     end do
+  end do
+
+  do offset=1,stride
+     npoint = size(real_grid(:,offset:size(real_grid,2):stride),2)
+     at_copy%n = at%n + npoint
+     at_copy%pos(:,at%n+1:at_copy%n) = real_grid(:,offset:size(real_grid,2):stride)
+
+     call write(at_copy, 'embed.'//offset//'.xyz')
+
+     call print('at_copy%n = '//at_copy%n)
+
+     call system_timer('calc_connect')
+     call calc_connect(at_copy, skip_zero_zero_bonds=.true.)
+     call system_timer('calc_connect')
+        
+     local_e = 0.0_dp
+     call asap_rs_charges(this, at_copy, at_charge, local_e=local_e(1:at_copy%n), atom_mask=atom_mask(1:at_copy%n), &
+          source_mask=source_mask(1:at_copy%n), pseudise=.true., grid_size=minval(grid_size))
+
+     do n=1,npoint
+        igrid = (n-1)*stride + offset
+        pot(lookup(1,igrid),lookup(2,igrid),lookup(3,igrid)) = 2.0_dp*local_e(at%n+n)/at_charge(at%n+n)
+     end do
+  end do
+
+  deallocate(lookup)
 
   call write_electrostatic_potential(this, at, trim(stem)//'.pot_fmt', ngrid, pot)
 
+!!$  ! Remove embedding atoms from at_copy
+!!$  call initialise(remove_list,1,0,0,0)
+!!$  do i=1,at%N
+!!$     if (hybrid_mark(i) == HYBRID_ELECTROSTATIC_MARK) call append(remove_list, i)
+!!$  end do
+!!$  do i=at%n+1,at_copy%n
+!!$     call append(remove_list, i)
+!!$  end do
+!!$  call remove_atoms(at_copy, remove_list%int(1,1:remove_list%N))
+!!$  call calc_connect(at_copy)
+!!$  call finalise(remove_list)
+
+  ! make potential periodic across open boundaries
+!!$  do i=1,3
+!!$     if (.not. is_periodic(i)) at_copy%lattice(:,i) = 0.0_dp
+!!$  end do
+!!$  call set_lattice(at_copy, at_copy%lattice, .false.)
+!!$  call make_periodic_potential(at_copy, real_grid, ngrid, .not. is_periodic, cutoff_radius, cutoff_width, pot)
+!!$  call write_electrostatic_potential(this, at, trim(stem)//'.periodic_pot_fmt', ngrid, pot)
+
+  ! Restore original lattice
+!!$  call set_lattice(at_copy, at%lattice, scale_positions=.false., remap=.true.)
+!!$  call write(at_copy, trim(stem)//'.xyz')
+
   call finalise(out)
   call finalise(at_copy)
-  deallocate(local_e, atom_mask)
+  deallocate(local_e, atom_mask, source_mask, z)
 
 end subroutine calc_electrostatic_potential
+
 
 subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
    type(IPModel_ASAP2), intent(inout):: this
@@ -1151,9 +1235,10 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
    logical, pointer, dimension(:) :: fixdip
    real(dp) :: diff, diff_old
    integer :: n_efield_old
-   integer :: i, npol, ti, vv, electrostatic_grid(3), electrostatic_interp
-   real(dp) :: grid_size(3)
-   character(len=STRING_LENGTH) :: electrostatic_stem, electrostatic_mask
+   integer :: i, npol, ti, vv, electrostatic_grid(3)
+   real(dp) :: grid_size(3), electrostatic_cutoff_radius, electrostatic_cutoff_width, &
+        electrostatic_origin(3), electrostatic_extent(3)
+   character(len=STRING_LENGTH) :: electrostatic_stem, electrostatic_mark
    real(dp), allocatable, dimension(:,:) :: real_grid, efield_out
 
    real, parameter :: difftol = 500.0_dp
@@ -1172,12 +1257,15 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
       call param_register(params, 'applied_efield', 'F', applied_efield)
       call param_register(params, 'write_electrostatics', 'F', write_electrostatics)
       call param_register(params, 'electrostatic_stem', 'asap2', electrostatic_stem)
-      call param_register(params, 'electrostatic_mask', 'mask', electrostatic_mask)
+      call param_register(params, 'electrostatic_mark', 'hybrid_mark', electrostatic_mark)
       call param_register(params, 'electrostatic_grid', '1 1 1', electrostatic_grid)
       call param_register(params, 'electrostatic_periodic_x', 'F', electrostatic_periodic_x)
       call param_register(params, 'electrostatic_periodic_y', 'F', electrostatic_periodic_y)
       call param_register(params, 'electrostatic_periodic_z', 'F', electrostatic_periodic_z)
-      call param_register(params, 'electrostatic_intep', '10', electrostatic_interp)
+      call param_register(params, 'electrostatic_cutoff_radius', '5.0', electrostatic_cutoff_radius)
+      call param_register(params, 'electrostatic_cutoff_width', '1.0', electrostatic_cutoff_width)
+      call param_register(params, 'electrostatic_origin', '0.0 0.0 0.0', electrostatic_origin)
+      call param_register(params, 'electrostatic_extent', '10. 10. 10.', electrostatic_extent)
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP2_Calc args_str')) then
          RAISE_ERROR("IPModel_ASAP2_Calc failed to parse args_str="//trim(args_str), error)
       endif
@@ -1391,11 +1479,12 @@ subroutine IPModel_ASAP2_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
       allocate(pot(electrostatic_grid(1),electrostatic_grid(2),electrostatic_grid(3)))
       allocate(efield_out(3,at%n))
 
-      call assign_grid_coordinates(at, electrostatic_grid, grid_size, real_grid)
+      call assign_grid_coordinates(electrostatic_grid, grid_size, electrostatic_origin, electrostatic_extent, real_grid)
 
-      call calc_electrostatic_potential(this, at, electrostatic_stem, electrostatic_mask, &
-           electrostatic_grid, grid_size, real_grid, (/electrostatic_periodic_x, electrostatic_periodic_y, electrostatic_periodic_z/), &
-           electrostatic_interp, pot, efield_out, error)
+      call calc_electrostatic_potential(this, at, electrostatic_stem, electrostatic_mark, electrostatic_grid, &
+           grid_size, real_grid, (/electrostatic_periodic_x, electrostatic_periodic_y, electrostatic_periodic_z/), &
+           electrostatic_cutoff_radius, electrostatic_cutoff_width, electrostatic_origin, electrostatic_extent, &
+           pot, efield_out, error)
       PASS_ERROR(error)
 
       ! Save output electric field as Atoms property
