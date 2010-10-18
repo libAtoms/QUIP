@@ -1098,7 +1098,7 @@ contains
     character(len=255)                :: clusterfilename
     character(len=255)                :: my_mark_name
     type(Table) :: outer_layer
-    logical :: in_outer_layer
+    logical :: in_outer_layer, do_map_into_cell
 
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
@@ -1126,6 +1126,7 @@ contains
     call param_register(params, 'cluster_periodic_z', 'F', do_periodic(3))
     call param_register(params, 'cluster_vacuum', '10.0', cluster_vacuum)
     call param_register(params, 'hysteretic_connect', 'F', hysteretic_connect)
+    call param_register(params, 'map_into_cell', 'T', do_map_into_cell)
     if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='carve_cluster arg_str') ) then
       RAISE_ERROR("carve_cluster failed to parse args_str='"//trim(args_str)//"'", error)
     endif
@@ -1209,7 +1210,9 @@ contains
     call set_lattice(cluster, cluster%lattice, scale_positions=.false.)
 
     ! Remap positions so any image atoms end up inside the cell
-    call map_into_cell(cluster)
+    if (do_map_into_cell) then
+       call map_into_cell(cluster)
+    end if
 
     call print ('carve_cluster: carved cluster with '//cluster%N//' atoms', PRINT_VERBOSE)
 
