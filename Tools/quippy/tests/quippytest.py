@@ -86,3 +86,8 @@ class QuippyTestCase(unittest.TestCase):
 
             self.fail('Maximum abs difference between array elements is %e at location %r' % (absdiff.max(), loc))
    
+
+def skip(f):
+   def g(self):
+      logging.warning('skipping test %s' % f.__name__)
+   return g

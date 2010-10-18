@@ -203,6 +203,7 @@ c=44""")
       mpi = MPI_context()
       dictionary_bcast(mpi, d)
 
+   @skip
    def test_dict_in_dict(self):
       d = Dictionary()
       d2 = Dictionary()
