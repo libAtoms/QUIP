@@ -202,6 +202,14 @@ c=44""")
       d = Dictionary()
       mpi = MPI_context()
       dictionary_bcast(mpi, d)
+
+   def test_dict_in_dict(self):
+      d = Dictionary()
+      d2 = Dictionary()
+      d2['a'] = 1
+      d['d2'] = d2
+      print d
+      print d['d2']
       
 
 if __name__ == '__main__':
