@@ -5326,9 +5326,10 @@ contains
   !%    (that of 'seed', if present)
   !% poorly tested, especially for situations where not all atoms are in one connected clump
   !% probably needs a better subroutine name
-  subroutine coalesce_in_one_periodic_image(this, seed, error)
+  subroutine coalesce_in_one_periodic_image(this, seed, is_periodic, error)
     type(Atoms), intent(inout) :: this
     integer, intent(in), optional :: seed
+    logical, optional, intent(in) :: is_periodic(3)
     integer, intent(out), optional :: error
 
     integer :: i, ji, jji, j, shift(3), delta_shift(3), jj, k, ki
@@ -5336,9 +5337,21 @@ contains
     integer, allocatable :: shifts(:,:,:), cluster_list(:)
     logical, allocatable :: touched(:), is_in_cluster(:)
     integer :: seed_val, last_n_in_cluster
+    logical :: dir_mask(3)
+    integer, allocatable, dimension(:) :: dir_indices
 
     INIT_ERROR(error)
     seed_val=optional_default(1, seed)
+
+    if (present(is_periodic)) then
+       dir_mask = .not. is_periodic
+       allocate(dir_indices(count(dir_mask)))
+       dir_indices(:) = pack((/1,2,3/), dir_mask)
+    else
+       allocate(dir_indices(3))
+       dir_mask = .true.
+       dir_indices = (/1,2,3/)
+    end if
 
     max_n_neighbours = 0
     do i=1, this%N
@@ -5385,7 +5398,7 @@ contains
     touched = .false.
     touched(seed_val) = .true.
 
-    do while (any(shifts(:,:,cluster_list(:)) /= 0))
+    do while (any(shifts(dir_indices,:,cluster_list(:)) /= 0))
       ! look for atoms i that have been touched
       do i=1, this%N
 	if (.not. is_in_cluster(i)) cycle
@@ -5394,7 +5407,7 @@ contains
 	  do ji=1, atoms_n_neighbours(this,i)
 	    j = atoms_neighbour(this, i, ji)
 	    ! if neighbor has 0 shift, it doesn't need to move
-	    if (any(shifts(:,ji,i) /= 0)) then
+	    if (any(shifts(dir_indices,ji,i) /= 0)) then
 	      ! atom j does need to move
 	      ! atoms with non-zero shift should not have been touched before
 	      if (touched(j)) then
@@ -5402,11 +5415,12 @@ contains
 	      endif
 
 	      ! shift atom to zero out shift
-	      this%pos(:,j) = this%pos(:,j) + shifts(1,ji,i)*this%lattice(:,1) + &
-					  shifts(2,ji,i)*this%lattice(:,2) + &
-					  shifts(3,ji,i)*this%lattice(:,3)
+              do k=1,3
+                 if (dir_mask(k)) this%pos(:,j) = this%pos(:,j) + shifts(k,ji,i) * this%lattice(:,k)
+              end do
+
 	      ! fix shifts of j's neighbours
-	      delta_shift = shifts(:,ji,i)
+	      delta_shift = merge(shifts(:,ji,i), (/0, 0, 0/), dir_mask)
 	      do jji=1, atoms_n_neighbours(this, j)
 		! fix shifts from j to its neighbors
 		jj = atoms_neighbour(this, j, jji)
