@@ -9379,6 +9379,7 @@ if hasattr(quippy, 'Potential'):
       def setUp(self):
          self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
          self.at = Atoms(n=1, lattice=10.0*fidentity(3))
+
          self.half_cell = numpy.diag(self.at.lattice)/2.0
          self.at.pos[1] = [0.0,0.0,0.0] + self.half_cell
          #self.at.pos[2] = [3.042*BOHR, 0.0, 0.0] + self.half_cell
@@ -9389,9 +9390,10 @@ if hasattr(quippy, 'Potential'):
          self.at.calc_connect()
 
       def test_write_electric_field(self):
-         self.pot.calc(self.at, force=True, write_electrostatics=True, electrostatic_grid=[50,50,1])
-         #data = castep.read_formatted_potential('asap2.pot_fmt')
-         #self.at.write('dimer.cube', data=data)
+         self.pot.calc(self.at, force=True, write_electrostatics=True, electrostatic_grid=[10,10,1], electrostatic_periodic_z=True)
+         data = castep.read_formatted_potential('asap2.pot_fmt')
+
+         
          
 if __name__ == '__main__':
    unittest.main()

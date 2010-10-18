@@ -1189,11 +1189,9 @@ def read_formatted_potential(filename):
       
    nx, ny, nz = pot[:,0].max(), pot[:,1].max(), pot[:,2].max()
    data = fzeros((nx,ny,nz))
-   data2 = fzeros((nx,ny,nz))
-   for (i,j,k,value,value2) in pot:
+   for (i,j,k,value) in pot:
       data[int(i),int(j),int(k)] = value
-      data2[int(i),int(j),int(k)] = value2
-   return data, data2
+   return data
    
 def read_formatted_density(filename):
    """Load a potential write by CASTEP pot_write_formatted() routine, and convert
