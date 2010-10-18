@@ -9374,25 +9374,111 @@ if hasattr(quippy, 'Potential'):
                   self.assertArrayAlmostEqual(at1.pos, at2.pos)
 
 
-   class TestElectrostatics(QuippyTestCase):
+   if 1:
+      class TestElectrostatics(QuippyTestCase):
 
-      def setUp(self):
-         self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
-         self.at = Atoms(n=1, lattice=10.0*fidentity(3))
+         def setUp(self):
+            self.pot = Potential('IP ASAP2', param_str=quip_xml_parameters('ASAP', 'screened_LDA'))
 
-         self.half_cell = numpy.diag(self.at.lattice)/2.0
-         self.at.pos[1] = [0.0,0.0,0.0] + self.half_cell
-         #self.at.pos[2] = [3.042*BOHR, 0.0, 0.0] + self.half_cell
-         #self.at.set_atoms([14, 8])
-         self.at.set_atoms([8])
-         self.at.set_cutoff(self.pot.cutoff())
-         self.at.add_property('mask', False)
-         self.at.calc_connect()
+         def test_dimer(self):
+            at = Atoms(n=2, lattice=numpy.diag([10.0, 10.0, 5.0]))
+            half_cell = numpy.diag(at.lattice)/2.0
+            at.pos[1] = [0.0,0.0,0.0] + half_cell
+            at.pos[2] = [3.042*BOHR, 0.0, 0.0] + half_cell
+            at.set_atoms([14, 8])
+            at.set_cutoff(self.pot.cutoff())
+            at.add_property('hybrid_mark', HYBRID_NO_MARK)
+            at.hybrid_mark[1] = HYBRID_ACTIVE_MARK
+            at.hybrid_mark[2] = HYBRID_ELECTROSTATIC_MARK
+            at.calc_connect()
 
-      def test_write_electric_field(self):
-         self.pot.calc(self.at, force=True, write_electrostatics=True, electrostatic_grid=[10,10,1], electrostatic_periodic_z=True)
-         data = castep.read_formatted_potential('asap2.pot_fmt')
+            enable_timing()
+            self.pot.calc(at, force=True, write_electrostatics=True, electrostatic_stem='dimer',
+                          electrostatic_grid=[50,50,10], electrostatic_periodic_z=True,
+                          electrostatic_cutoff_radius=2.0)
+            disable_timing()
 
+            data = castep.read_formatted_potential('dimer.pot_fmt')
+            pdata = castep.read_formatted_potential('dimer.periodic_pot_fmt')
+            at.write('dimer.cube', data=data)
+            at.write('pdimer.cube', data=pdata)
+
+         def test_cluster(self):
+            from quippy.surface import crack_rotation_matrix, orthorhombic_slab
+
+            aq = alpha_quartz(**sio2.quartz_params['ASAP_JRK'])
+            unit_slab = orthorhombic_slab(aq, rot=crack_rotation_matrix(aq,(0,0,0,1),z=(-1,0,0)),verbose=False)
+            slab = supercell(unit_slab, 10, 10, 1)
+
+            slab.map_into_cell()
+            width = slab.lattice[1,1]
+            notch_width = 0.5*width
+            notch_height = notch_width/2.0
+
+            slab.lattice[1,1] += 50.0
+            slab.lattice[2,2] += 50.0
+            slab.set_lattice(slab.lattice, scale_positions=False)
+
+            mask = fzeros(slab.n, dtype=int)
+            mask[:] = 1
+            for i in frange(slab.n):
+               if ((slab.pos[2,i] < -(0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) + notch_height/2.0) and
+                   (slab.pos[2,i] >  (0.5*notch_height/notch_width*(slab.pos[1,i]+width/2.0)) - notch_height/2.0)):
+                  mask[i] = 0
+
+            at = slab.select(mask)
+            at.set_cutoff(self.pot.cutoff())
+
+            at.calc_connect()
+
+            half_cell = numpy.diag(at.lattice)/2.0
+            at.pos[:] = at.pos + numpy.tile(half_cell, [at.n, 1]).T
+
+            embed = at.bfs_grow_single(2, n=4, nneighb_only=True)
+            at.add_property('hybrid_mark', HYBRID_NO_MARK)
+            electrostatic_embed = embed.copy()
+            at.bfs_grow_list(electrostatic_embed, n=2, nneighb_only=True)
+            at.hybrid_mark[electrostatic_embed.int[1,:]] = HYBRID_ELECTROSTATIC_MARK
+            at.hybrid_mark[embed.int[1,:]] = HYBRID_ACTIVE_MARK
+
+            cluster_options = {
+               'cluster_periodic_x': False,
+               'cluster_periodic_y': False,
+               'cluster_periodic_z': True, 
+               'terminate': True, 
+               'cluster_allow_modification': True, 
+               'randomise_buffer': False,
+               'keep_whole_silica_tetrahedra': True
+               }
+
+            cluster_info = create_cluster_info_from_mark(at, args_str(cluster_options))
+
+            cluster_info.print_()
+            
+            cluster = carve_cluster(at, args_str(cluster_options), cluster_info=cluster_info)
+
+            at.add_property('es_mark', at.modified_hybrid_mark)
+            at.es_mark[at.modified_hybrid_mark == HYBRID_BUFFER_MARK] = HYBRID_ELECTROSTATIC_MARK
+
+            self.pot.calc(at, force=True, write_electrostatics=True, electrostatic_stem='cluster',
+                          electrostatic_mark='es_mark', electrostatic_origin=at.pos[:,cluster.index[1]],
+                          electrostatic_extent=numpy.diag(cluster.lattice),
+                          electrostatic_grid=[50,50,10], electrostatic_periodic_z=True,
+                          electrostatic_cutoff_radius=2.0)
+
+            at.write('at.xyz')
+
+            #shift = numpy.diag(cluster.lattice)/2.0
+            #cluster.pos[:] = cluster.pos + numpy.tile(shift, [cluster.n, 1]).T
+
+            data = castep.read_formatted_potential('cluster.pot_fmt')
+            #pdata = castep.read_formatted_potential('cluster.periodic_pot_fmt')
+            cluster.write('cluster.xyz')
+            cluster.write('cluster.cube', data=data)
+            #at.write('pcluster.cube', data=pdata)
+
+
+         
          
          
 if __name__ == '__main__':

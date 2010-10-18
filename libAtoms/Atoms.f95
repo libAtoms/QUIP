@@ -4012,10 +4012,10 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_atomic_number_zero, error)
+  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, error)
     type(Atoms), intent(inout), target    :: this
     type(Connection), intent(inout), target, optional :: alt_connect
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_atomic_number_zero
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_zero_zero_bonds
     integer, intent(out), optional :: error
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
@@ -4023,7 +4023,7 @@ contains
     integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
                                             min_cell_image_Nc, max_cell_image_Nc
     real(dp)                             :: cutoff, density, volume_per_cell
-    logical my_own_neighbour, my_store_is_min_image, my_skip_atomic_number_zero, do_fill
+    logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, do_fill
     type(Connection), pointer :: use_connect
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:)
@@ -4037,7 +4037,7 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
-    my_skip_atomic_number_zero = optional_default(.false., skip_atomic_number_zero)
+    my_skip_zero_zero_bonds = optional_default(.false., skip_zero_zero_bonds)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        RAISE_ERROR('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break, error)
@@ -4185,7 +4185,7 @@ contains
 			    ! omit atom2 < atom1
 			    if (atom1 > atom2) cycle
                             
-                            if (my_skip_atomic_number_zero .and. this%z(atom1) == 0 .and. this%z(atom2) == 0) cycle 
+                            if (my_skip_zero_zero_bonds .and. this%z(atom1) == 0 .and. this%z(atom2) == 0) cycle 
        
 			    ! omit self in the same cell without shift
 			    if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
