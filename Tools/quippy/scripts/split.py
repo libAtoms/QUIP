@@ -19,7 +19,7 @@
 
 from quippy import *
 import sys, optparse, itertools, os
-from math import log10, floor
+from math import log10, floor, ceil
 
 p = optparse.OptionParser(usage='%prog [options] <input file> [<output file>]')
 
