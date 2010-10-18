@@ -21,7 +21,7 @@ from quippy import FortranDictionary
 from quippy import (T_NONE, T_INTEGER, T_REAL, T_COMPLEX,
                     T_CHAR, T_LOGICAL, T_INTEGER_A,
                     T_REAL_A, T_COMPLEX_A, T_CHAR_A,
-                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
+                    T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2, T_DICT)
 from farray import *
 
 class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
@@ -31,7 +31,7 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
    _interfaces = FortranDictionary._interfaces
    _interfaces['set_value'] = [ k for k in FortranDictionary._interfaces['set_value'] if k[0] != 'set_value_s_a' ]
 
-   _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR)
+   _scalar_types = (T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, T_CHAR, T_DICT)
 
    _array_types  = (T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_CHAR_A,
                     T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
@@ -86,6 +86,8 @@ class Dictionary(DictMixin, ParamReaderMixin, FortranDictionary):
          v,p = self._get_value_i_a2(k, s2[1], s2[2])
       elif t == T_REAL_A2:
          v,p = self._get_value_r_a2(k, s2[1], s2[2])
+      elif t == T_DICT:
+         v,p = self._get_value_dict(k)
       else:
          raise ValueError('Unsupported dictionary entry type %d' % t)
       return v

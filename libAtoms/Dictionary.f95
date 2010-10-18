@@ -48,12 +48,12 @@ module dictionary_module
   
   public :: T_NONE, T_INTEGER, T_REAL, T_COMPLEX, T_LOGICAL, &
        T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_LOGICAL_A, &
-       T_CHAR, T_CHAR_A, T_DATA, T_INTEGER_A2, T_REAL_A2
+       T_CHAR, T_CHAR_A, T_DATA, T_INTEGER_A2, T_REAL_A2, T_DICT
   integer, parameter :: &
        T_NONE = 0, &
        T_INTEGER = 1, T_REAL =2, T_COMPLEX = 3, T_LOGICAL=4, &
        T_INTEGER_A = 5, T_REAL_A = 6, T_COMPLEX_A = 7, T_LOGICAL_A = 8, &
-       T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13 !% OMIT
+       T_CHAR = 9, T_CHAR_A = 10, T_DATA = 11, T_INTEGER_A2 = 12, T_REAL_A2 = 13, T_DICT = 14 !% OMIT
 
   ! Maintained for backwards compatibility with old NetCDF files using type attribute
   public :: PROPERTY_INT, PROPERTY_REAL, PROPERTY_STR, PROPERTY_LOGICAL
@@ -147,6 +147,7 @@ module dictionary_module
      module procedure dictionary_set_value_d
      module procedure dictionary_set_value_i_a2
      module procedure dictionary_set_value_r_a2
+     module procedure dictionary_set_value_dict
   end interface set_value
 
   public set_value_pointer
@@ -169,6 +170,7 @@ module dictionary_module
      module procedure dictionary_get_value_d
      module procedure dictionary_get_value_i_a2
      module procedure dictionary_get_value_r_a2
+     module procedure dictionary_get_value_dict
   end interface get_value
 
   public assign_pointer
@@ -314,7 +316,7 @@ contains
     else if (this%type == T_REAL_A2) then
        call print("Dict entry real array "//shape(this%r_a2), verbosity,file)
        call print(this%r_a2, verbosity,file)
-    else if (this%type == T_DATA) then
+    else if (this%type == T_DATA .or. this%type == T_DICT) then
        print '("Dict entry arbitary data ",A,1x,I0)', trim(key), size(this%d%d)
        call print(line, verbosity,file)
     endif
@@ -760,6 +762,24 @@ contains
   end subroutine dictionary_set_value_d
 
 
+  subroutine dictionary_set_value_dict(this, key, value)
+    type(Dictionary), intent(inout) :: this
+    character(len=*), intent(in) :: key
+    type(Dictionary), intent(in) :: value
+
+    type(DictEntry) entry
+    integer entry_i
+
+    entry%type = T_DICT
+    allocate(entry%d%d(size(transfer(value,entry%d%d))))
+    entry%d%d = transfer(value, entry%d%d)
+    entry_i = add_entry(this, key, entry)
+    call finalise(entry)
+    this%cache_invalid = 1
+
+  end subroutine dictionary_set_value_dict
+  
+
   ! ****************************************************************************
   ! *
   ! *    get_value() interface
@@ -1202,6 +1222,38 @@ contains
        dictionary_get_value_d = .false.
     endif
   end function dictionary_get_value_d
+
+  function dictionary_get_value_dict(this, key, v, case_sensitive, i)
+    type(Dictionary), intent(in) :: this
+    character(len=*) key
+    type(Dictionary), intent(out) :: v
+    logical :: dictionary_get_value_dict
+    logical, optional :: case_sensitive
+    integer, optional :: i
+
+    type(dictionary) :: tmp_dict
+    integer entry_i
+
+    entry_i = lookup_entry_i(this, key, case_sensitive)
+    if (present(i)) i = entry_i
+
+    if (entry_i <= 0) then
+       dictionary_get_value_dict = .false.
+       return
+    endif
+
+    if (this%entries(entry_i)%type == T_DICT) then
+       ! bug: overloaded assignment operator is invoked
+       call initialise(tmp_dict)
+       tmp_dict = transfer(this%entries(entry_i)%d%d, v)
+       v = tmp_dict
+       call finalise(tmp_dict)
+       dictionary_get_value_dict = .true.
+    else
+       dictionary_get_value_dict = .false.
+    endif
+  end function dictionary_get_value_dict
+
 
 
   ! ****************************************************************************
@@ -2276,6 +2328,9 @@ contains
 
        case(T_DATA)
           call concat(str, 'DATA"'//this%entries(i)%d%d//'"')
+
+       case(T_DICT)
+          call concat(str, 'DATA"'//this%entries(i)%d%d//'"')
        end select
     end do
 
@@ -2336,6 +2391,7 @@ contains
        ! or if new entry will not be allocated by us (i.e. entry%own_data == .false.)
        if (.not. entry%own_data .or. &
             this%entries(entry_i)%type == T_DATA .or. &
+            this%entries(entry_i)%type == T_DICT .or. &
             this%entries(entry_i)%type /= entry%type .or. &
             this%entries(entry_i)%len /= entry%len .or. &
             any(this%entries(entry_i)%len2 /= entry%len2)) then
@@ -2512,6 +2568,7 @@ contains
     logical, intent(in), optional :: case_sensitive, out_no_initialise
     integer, intent(out), optional :: error
 
+    type(Dictionary) :: tmp_dict
     logical :: my_out_no_initialise
     integer :: i, j, io
     
@@ -2610,6 +2667,14 @@ contains
 
        case(T_DATA)
           call set_value(out, string(this%keys(i)), this%entries(i)%d)
+
+       case(T_DICT)
+          if (.not. get_value(this, string(this%keys(i)), tmp_dict)) then
+             RAISE_ERROR('dictionary_subset_es: cannot get_value() as Dictionary type.', error)
+          end if
+          call set_value(out, string(this%keys(i)), tmp_dict)
+          call finalise(tmp_dict)
+
        end select
     end do
 
