@@ -30,14 +30,6 @@
 
 default: libquip_core.a 
 
-all: libquip_core.a evb_filepot
-ifeq (${HAVE_CP2K},1)
-all: cp2k_filepot 
-endif
-ifeq (${HAVE_VASP},1)
-all: vasp_filepot 
-endif
-
 include Makefile.inc
 include Makefile.rules
 ifeq (${QUIP_ARCH},)
@@ -45,6 +37,16 @@ ifeq (${QUIP_ARCH},)
 else
   include Makefile.${QUIP_ARCH}
 endif
+
+ALL_TARGETS = libquip_core.a evb_filepot
+ifeq (${HAVE_CP2K},1)
+   ALL_TARGETS += cp2k_filepot 
+endif
+ifeq (${HAVE_VASP},1)
+   ALL_TARGETS += vasp_filepot 
+endif
+
+all: ${ALL_TARGETS}
 
 BASE_F95_FILES = ScaLAPACK Matrix RS_SparseMatrix QUIP_Common Functions Ewald 
 BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
