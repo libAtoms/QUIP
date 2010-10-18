@@ -5448,13 +5448,15 @@ contains
     deallocate(shifts)
     deallocate(is_in_cluster)
     deallocate(cluster_list)
+    deallocate(dir_indices)
 
   end subroutine coalesce_in_one_periodic_image
 
-  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist, diff, error)
+  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, mask, dist, diff, error)
     type(Atoms), intent(in) :: this
     real(dp), intent(in) :: r(3)
     integer, intent(in) :: cell_image_Na, cell_image_Nb, cell_image_Nc
+    logical, intent(in), optional, dimension(:) :: mask
     real(dp), intent(out), optional :: dist, diff(3)
     integer :: closest_atom
     integer, intent(out), optional :: error
@@ -5513,6 +5515,9 @@ contains
 
 	     do n2 = 1, this%connect%cell(i3,j3,k3)%N
 		atom_i = this%connect%cell(i3,j3,k3)%int(1,n2)
+                if (present(mask)) then
+                   if (.not. mask(atom_i)) cycle
+                end if
 		pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
                 cur_diff = pos - r
 		cur_dist = norm(cur_diff)

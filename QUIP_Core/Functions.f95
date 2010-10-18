@@ -46,7 +46,7 @@ implicit none
 private
 
 public erf, erfc
-public :: f_Fermi, f_Fermi_deriv
+public :: f_Fermi, f_Fermi_deriv, smooth_cutoff
 
 contains
 
@@ -423,5 +423,28 @@ implicit none
     END DO
     RETURN
 end subroutine
+
+
+!% Smooth cutoff function from D.J. Cole \emph{et al.}, J. Chem. Phys. {\bf 127}, 204704 (2007).
+subroutine smooth_cutoff(x,R,D,fc,dfc_dx)
+
+  real(dp) x,R,D,fc,dfc_dx
+  real(dp), parameter :: pi = dacos(-1.0d0)
+
+  if (x .lt. (R-D)) then
+     fc = 1.0d0
+     dfc_dx = 0.0d0
+     return
+  else if (x .gt. (R+D)) then
+     fc = 0.0d0
+     dfc_dx = 0.0d0
+     return
+  else
+     fc = 1.0d0 - (x-R+D)/(2.0d0*D) + 1.0d0/(2.0d0*pi)*dsin((pi/D)*(x-R+D))
+     dfc_dx = 1.0d0/(2.0d0*D)* (dcos((pi/D)*(x-R+D)) - 1.0d0)
+     return
+  end if
+end subroutine smooth_cutoff
+
 
 end module functions_module

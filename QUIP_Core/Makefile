@@ -57,7 +57,7 @@ TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
 TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
 TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
 
-IP_F95_FILES = IPEwald IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_ASAP2 IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Template
+IP_F95_FILES = IPEwald Yukawa IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_ASAP2 IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Template
 ifeq (${HAVE_ASAP},1)
   IP_F95_FILES += IPModel_ASAP
 endif
@@ -65,7 +65,7 @@ IP_F95_FILES += IP
 IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
 IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential QUIP_module quip_wrapper quip_lammps_wrapper
+POT_F95_FILES = FilePot CallbackPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed QUIP_module quip_wrapper quip_lammps_wrapper
 POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
 POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
 
