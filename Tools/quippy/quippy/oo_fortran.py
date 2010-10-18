@@ -694,9 +694,12 @@ def wrapmod(modobj, moddoc, short_names, params, prefix):
        code = value.replace('(/','farray([')
        code = code.replace('/)','])')
        code = code.replace('_dp', '')
-       params[name] = eval(code, evaldict)
-       evaldict[name] = params[name]
-       logging.debug('  adding parameter %s' % name)
+       try:
+           params[name] = eval(code, evaldict)
+           evaldict[name] = params[name]
+           logging.debug('  adding parameter %s' % name)
+       except NameError:
+           logging.debug('  ignorning NameError in parameter %s = %s' % (name, code))
 
    
    return (classes, routines, params)
