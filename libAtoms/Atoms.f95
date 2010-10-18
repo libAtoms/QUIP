@@ -4012,10 +4012,10 @@ contains
   !% of sufficient size that sphere of radius 'cutoff' is contained in a subcell, at least in the directions 
   !% in which the unit cell is big enough. For very small unit cells, there is only one subcell, so the routine
   !% is equivalent to the standard $O(N^2)$ method.
-  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image, error)
+  subroutine calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_atomic_number_zero, error)
     type(Atoms), intent(inout), target    :: this
     type(Connection), intent(inout), target, optional :: alt_connect
-    logical, optional, intent(in) :: own_neighbour, store_is_min_image
+    logical, optional, intent(in) :: own_neighbour, store_is_min_image, skip_atomic_number_zero
     integer, intent(out), optional :: error
 
     integer                              :: cellsNa,cellsNb,cellsNc,i,j,k,i2,j2,k2,i3,j3,k3,i4,j4,k4,n1,n2,atom1,atom2
@@ -4023,7 +4023,7 @@ contains
     integer                              :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, &
                                             min_cell_image_Nc, max_cell_image_Nc
     real(dp)                             :: cutoff, density, volume_per_cell
-    logical my_own_neighbour, my_store_is_min_image, do_fill
+    logical my_own_neighbour, my_store_is_min_image, my_skip_atomic_number_zero, do_fill
     type(Connection), pointer :: use_connect
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:)
@@ -4037,6 +4037,7 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
+    my_skip_atomic_number_zero = optional_default(.false., skip_atomic_number_zero)
 
     if (this%cutoff < 0.0_dp .or. this%cutoff_break < 0.0_dp) then
        RAISE_ERROR('calc_connect: Negative cutoff radius ' // this%cutoff // ' ' // this%cutoff_break, error)
@@ -4183,6 +4184,9 @@ contains
 			    atom2 = use_connect%cell(i3,j3,k3)%int(1,n2)
 			    ! omit atom2 < atom1
 			    if (atom1 > atom2) cycle
+                            
+                            if (my_skip_atomic_number_zero .and. this%z(atom1) == 0 .and. this%z(atom2) == 0) cycle 
+       
 			    ! omit self in the same cell without shift
 			    if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
 				 (i4==0 .and. j4==0 .and. k4==0) .and. &
@@ -4355,10 +4359,10 @@ contains
       endif
 
       do n = 1, this%N
-	 lat_pos = this%g .mult. this%pos(:,n)
-	 map_shift(:,n) = - floor(lat_pos+0.5_dp)
+         lat_pos = this%g .mult. this%pos(:,n)
+         map_shift(:,n) = - floor(lat_pos+0.5_dp)
       end do
-end subroutine set_map_shift
+    end subroutine set_map_shift
 
 
   subroutine cell_of_pos(this, lat_pos, i, j, k)
@@ -5433,18 +5437,18 @@ end subroutine set_map_shift
 
   end subroutine coalesce_in_one_periodic_image
 
-  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist, error)
+  function closest_atom(this, r, cell_image_Na, cell_image_Nb, cell_image_Nc, dist, diff, error)
     type(Atoms), intent(in) :: this
     real(dp), intent(in) :: r(3)
     integer, intent(in) :: cell_image_Na, cell_image_Nb, cell_image_Nc
-    real(dp), intent(out), optional :: dist
+    real(dp), intent(out), optional :: dist, diff(3)
     integer :: closest_atom
     integer, intent(out), optional :: error
 
     integer :: i, j, k
     integer i2, j2, k2, i3, j3, k3, i4, j4, k4, n2, atom_i
     integer :: cellsNa, cellsNb, cellsNc
-    real(dp) :: pos(3), cur_dist, min_dist
+    real(dp) :: pos(3), cur_dist, cur_diff(3), min_dist, min_diff(3)
     integer :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
 
     INIT_ERROR(error)
@@ -5496,9 +5500,11 @@ end subroutine set_map_shift
 	     do n2 = 1, this%connect%cell(i3,j3,k3)%N
 		atom_i = this%connect%cell(i3,j3,k3)%int(1,n2)
 		pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
-		cur_dist = norm(pos-r)
+                cur_diff = pos - r
+		cur_dist = norm(cur_diff)
 		if (cur_dist < min_dist) then
 		  min_dist = cur_dist
+                  min_diff = cur_diff
 		  closest_atom = atom_i
 		endif
 
@@ -5509,6 +5515,7 @@ end subroutine set_map_shift
     end do
 
     if (present(dist)) dist = min_dist
+    if (present(diff)) diff = min_diff
 
   end function closest_atom
 
