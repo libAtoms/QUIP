@@ -84,7 +84,8 @@ program rings
 
   allocate(mask(at%N))
 
-  mask = (at%Z == 6) .and. (at%pos(3, :) > 11.0_DP)
+  !mask = (at%Z == 6) .and. (at%pos(3, :) > 11.0_DP)
+  mask = (at%Z == 6)
 
   call distance_map(at, dist, mask=mask, diameter=diameter)
   call print("# Graph diameter: " // diameter)

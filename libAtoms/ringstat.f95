@@ -218,14 +218,14 @@ contains
 
     cutoff_sq  = cutoff**2
 
-    done  = .false.
-
     no(1) = 0
     do i = 2, at%N
        no(i) = no(i-1) + atoms_n_neighbours(at, i-1)
     enddo
 
     allocate(done(no(at%N) + atoms_n_neighbours(at, at%N)))
+
+    done  = .false.
 
     bonds_loop1: do a = 1, at%N
        if ( .not. present(mask) .or. mask(a) ) then
