@@ -112,7 +112,7 @@ module QUIP_LAMMPS_wrapper_module
 
    endsubroutine quip_lammps_wrapper
 
-   subroutine quip_lammps_potential_intialise(quip_potential,n_quip_potential,quip_cutoff,quip_file,n_quip_file,quip_string,n_quip_string)
+   subroutine quip_lammps_potential_initialise(quip_potential,n_quip_potential,quip_cutoff,quip_file,n_quip_file,quip_string,n_quip_string)
       integer, intent(out), dimension(n_quip_potential) :: quip_potential
       integer, intent(inout) :: n_quip_potential
       real(dp), intent(out) :: quip_cutoff
@@ -145,6 +145,6 @@ module QUIP_LAMMPS_wrapper_module
       ! Cutoff returned.
       quip_cutoff = cutoff(pot)
 
-   endsubroutine quip_lammps_potential_intialise
+   endsubroutine quip_lammps_potential_initialise
 
 endmodule QUIP_LAMMPS_wrapper_module

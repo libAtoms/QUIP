@@ -145,6 +145,9 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str, mpi, erro
 !   real(dp), pointer, dimension(:) :: local_energy 
    integer :: nsafe, natoms_active
 
+   logical :: has_atom_mask_name
+   character(FIELD_LENGTH) :: atom_mask_name
+
    INIT_ERROR(error)
 
    lpbc = .false.
@@ -158,13 +161,19 @@ subroutine IPModel_BOP_Calc(this, at, e, local_e, f, virial, args_str, mpi, erro
      call param_register(params, 'print_xyz', 'F', lprint_xyz)
      call param_register(params, 'crack', 'F', lcrack)
      call param_register(params, 'all_atoms', 'F', latoms)
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
      if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_BOP_Calc args_str')) then
        call system_abort("IPModel_BOP_Calc failed to parse args_str='"//trim(args_str)//"'")
      endif
      call finalise(params)
+
+     if(has_atom_mask_name) then
+        RAISE_ERROR('IPModel_BOP_Calc: atom_mask_name found, but not supported', error)
+     endif
    else
      nat = 1 
    endif
+
 
    if(latoms.and.lcrack) call system_abort('IPModel_BOP: all_atoms ' // latoms// " and crack " // lcrack) 
 

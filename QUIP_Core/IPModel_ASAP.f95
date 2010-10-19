@@ -312,6 +312,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
    logical tpow,tgmin	 
    integer nesr
 
+   logical :: has_atom_mask_name
+   character(FIELD_LENGTH) :: atom_mask_name
+
 #ifdef HAVE_ASAP
 
    INIT_ERROR(error)
@@ -322,10 +325,15 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
    this%label=''
    call param_register(params, 'restart', 'F', do_restart)
    call param_register(params, 'calc_dipoles', 'F', calc_dipoles)
+   call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
    if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_ASAP_Calc args_str')) then
       call system_abort("IPModel_ASAP_Initialise_str failed to parse args_str="//trim(args_str))
    endif
    call finalise(params)
+
+   if(has_atom_mask_name) then
+      RAISE_ERROR('IPModel_ASAP_Calc: atom_mask_name found, but not supported', error)
+   endif
 
    if (.not. asap_initialised .or. this%n_atoms /= at%n) then
       

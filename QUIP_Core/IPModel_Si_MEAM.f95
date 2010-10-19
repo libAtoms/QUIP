@@ -150,13 +150,14 @@ subroutine IPModel_Si_MEAM_Finalise(this)
   this%label = ''
 end subroutine IPModel_Si_MEAM_Finalise
 
-subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_Si_MEAM), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
   real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
   real(dp), dimension(:,:), intent(out), optional :: f  !% Forces, dimensioned as \texttt{f(3,at%N)}
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
+   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -168,12 +169,29 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, mpi, error)
   real(dp), dimension(3)  :: u_ij, u_ik, dn_i, dn_j, dn_i_dr_ij
   real(dp), dimension(3,3) :: dn_i_drij_outer_rij
 
-   INIT_ERROR(error)
+  type(Dictionary)                :: params
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
   if (present(virial)) virial = 0.0_dp
+
+  if (present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+
+     if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Si_MEAM_Calc args_str')) then
+        RAISE_ERROR("IPModel_Si_MEAM_Calc failed to parse args_str='"//trim(args_str)//"'",error)
+     endif
+     call finalise(params)
+     if(has_atom_mask_name) then
+        RAISE_ERROR('IPModel_Si_MEAM_Calc: atom_mask_name found, but not supported', error)
+     endif
+  endif
 
   !Loop over atoms
   do i = 1, at%N
@@ -200,7 +218,10 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, mpi, error)
             if(present(e)) e = e + phi_ij*0.5_dp
 
             if(present(f) .or. present(virial) ) dphi_ij = calc_dy(this%phi(ti,tj),r_ij)
-            if(present(f)) f(:,i) = f(:,i) + dphi_ij*u_ij
+            if(present(f)) then
+               f(:,i) = f(:,i) + 0.5_dp*dphi_ij*u_ij
+               f(:,j) = f(:,j) - 0.5_dp*dphi_ij*u_ij
+            endif
             if(present(virial)) virial = virial - 0.5_dp * dphi_ij*(u_ij .outer. u_ij)*r_ij
         endif
 

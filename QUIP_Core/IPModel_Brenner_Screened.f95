@@ -157,7 +157,24 @@ subroutine IPModel_Brenner_Screened_Calc(this, at, e, local_e, f, virial, args_s
    integer, dimension(:), allocatable :: aptr, bptr, k_typ
    integer :: n_tot, neighb
 
+   type(Dictionary)                :: params
+   logical :: has_atom_mask_name
+   character(FIELD_LENGTH) :: atom_mask_name
+
    INIT_ERROR(error)
+
+   if (present(args_str)) then
+      call initialise(params)
+      call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+
+      if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Brenner_Screened_Calc args_str')) then
+         RAISE_ERROR("IPModel_Brenner_Screened_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+      endif
+      call finalise(params)
+      if(has_atom_mask_name) then
+         RAISE_ERROR('IPModel_Brenner_Screened_Calc: atom_mask_name found, but not supported', error)
+      endif
+   endif
 
    n_tot = 0
    do i=1,at%N

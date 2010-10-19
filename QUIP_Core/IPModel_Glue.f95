@@ -168,7 +168,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
   real(dp) :: drho_i_dri(3), potential_deriv
   real(dp), dimension(3,3) :: drho_i_drij_outer_rij
     
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(f)) f = 0.0_dp
@@ -179,14 +179,16 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, args_str, mpi, err
   if(present(args_str)) then
      call initialise(params)
      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
-     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_GAP_Calc args_str')) &
-     call system_abort("IPModel_GAP_Calc failed to parse args_str='"//trim(args_str)//"'")
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Glue_Calc args_str')) then
+        RAISE_ERROR("IPModel_Glue_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+     endif
      call finalise(params)
 
 
      if( has_atom_mask_name ) then
-        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
-        call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" propery in the atoms object.")
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
+           RAISE_ERROR("IPModel_Glue_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+        endif
      else
         atom_mask_pointer => null()
      endif

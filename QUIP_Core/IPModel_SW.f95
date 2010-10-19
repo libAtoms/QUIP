@@ -135,12 +135,13 @@ end subroutine IPModel_SW_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_SW), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -159,18 +160,35 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, mpi, error)
 
   integer :: n_neigh_i
 
+  type(Dictionary)                :: params
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
 #ifdef _OPENMP
   real(dp) :: private_virial(3,3), private_e
   real(dp), allocatable :: private_f(:,:), private_local_e(:)
 #endif
 
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   call print("IPModel_SW_Calc starting ", PRINT_ANAL)
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(f)) f = 0.0_dp
   if (present(virial)) virial = 0.0_dp
+
+  if (present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+
+     if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Calc args_str')) then
+        RAISE_ERROR("IPModel_SW_Calc failed to parse args_str='"//trim(args_str)//"'",error)
+     endif
+     call finalise(params)
+     if(has_atom_mask_name) then
+        RAISE_ERROR('IPModel_SW_Calc: atom_mask_name found, but not supported', error)
+     endif
+  endif
 
   if (.not.assign_pointer(at,"weight", w_e)) nullify(w_e)
 

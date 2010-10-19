@@ -166,12 +166,13 @@ end subroutine IPModel_EAM_ErcolAd_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_EAM_ErcolAd), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -182,7 +183,12 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, mpi, error)
   real(dp) :: F_n, dF_n
   real(dp) :: spline_rho_d_val, spline_V_d_val, virial_factor(3,3)
 
-   INIT_ERROR(error)
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -191,12 +197,34 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, mpi, error)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  atom_mask_pointer => null()
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_EAM_ErcolAd_Calc args_str')) &
+     call system_abort("IPModel_EAM_ErcolAd_Calc failed to parse args_str='"//trim(args_str)//"'")
+     call finalise(params)
+
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        call system_abort("IPModel_EAM_ErcolAd_Calc did not find "//trim(atom_mask_name)//" propery in the atoms object.")
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
+
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
 	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
+
+    if(associated(atom_mask_pointer)) then
+       if(.not. atom_mask_pointer(i)) cycle
+    endif
+
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     w_f = 1.0_dp
@@ -234,7 +262,8 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, mpi, error)
 	if (present(f)) then
 	  drho_i_dri = drho_i_dri + spline_rho_d_val*r_ij_hat
 #ifdef PAIR
-	  f(:,i) = f(:,i) + w_f*spline_V_d_val*r_ij_hat
+	  f(:,i) = f(:,i) + 0.5_dp*w_f*spline_V_d_val*r_ij_hat
+	  f(:,j) = f(:,j) - 0.5_dp*w_f*spline_V_d_val*r_ij_hat
 #endif
 	endif
 	if (present(virial)) then

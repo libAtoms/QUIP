@@ -138,6 +138,11 @@ subroutine IPModel_Einstein_Calc(this, at, e, local_e, f, virial, args_str, mpi,
    integer :: i, ti
    ! Add calc() code here
 
+   type(Dictionary) :: params
+   logical, dimension(:), pointer :: atom_mask_pointer
+   logical :: has_atom_mask_name
+   character(FIELD_LENGTH) :: atom_mask_name
+
    INIT_ERROR(error)
 
    if (present(e)) e = 0.0_dp
@@ -145,10 +150,32 @@ subroutine IPModel_Einstein_Calc(this, at, e, local_e, f, virial, args_str, mpi,
    if (present(local_e)) local_e = 0.0_dp
    if (present(virial)) virial = 0.0_dp
 
+   atom_mask_pointer => null()
+   if(present(args_str)) then
+      call initialise(params)
+      call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+      if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Einstein_Calc args_str')) &
+      call system_abort("IPModel_Einstein_Calc failed to parse args_str='"//trim(args_str)//"'")
+      call finalise(params)
+ 
+ 
+      if( has_atom_mask_name ) then
+         if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+         call system_abort("IPModel_Einstein_Calc did not find "//trim(atom_mask_name)//" propery in the atoms object.")
+      else
+         atom_mask_pointer => null()
+      endif
+   endif
+
    if(at%N /= this%ref%N) call system_abort("IPModel_Einstein_Calc: number of atoms "//at%N//" does not match the number of atoms "//this%ref%N//" in the &
    reference structure")
 
    do i = 1, at%N
+
+      if(associated(atom_mask_pointer)) then
+         if(.not. atom_mask_pointer(i)) cycle
+      endif
+
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       ki = this%spring_constant(ti)
 
