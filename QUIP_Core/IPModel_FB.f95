@@ -133,13 +133,14 @@ end subroutine IPModel_FB_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_FB), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
   real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), dimension(:,:), intent(out), optional :: f        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
+  character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -148,14 +149,38 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, mpi, error)
   real(dp), dimension(3) :: u_ij
   real(dp), dimension(:), pointer :: charge
 
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
   type(Atoms) :: at_ew
 
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
   if (present(virial)) virial = 0.0_dp
   if (present(f)) f = 0.0_dp 
+
+  atom_mask_pointer => null()
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_FB_Calc args_str')) then
+        RAISE_ERROR("IPModel_FB_Calc failed to parse args_str='"//trim(args_str)//"'",error)
+     endif
+     call finalise(params)
+
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
+           RAISE_ERROR("IPModel_FB_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.",error)
+        endif
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
 
   at_ew = at
   call add_property(at_ew, 'charge', 0.0_dp)
@@ -175,17 +200,19 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, mpi, error)
 	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
+
+    if(associated(atom_mask_pointer)) then
+       if(.not. atom_mask_pointer(i)) cycle
+    endif
+
     ti = get_type(this%type_of_atomic_num, at%Z(i))
     do n = 1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, n, distance=r_ij, cosines = u_ij)
-      if (i < j) cycle
+      if (r_ij .feq. 0.0_dp) cycle
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (present(e) .or. present(local_e)) then
 	de = this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) - this%C(ti,tj) / r_ij**6
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + 0.5_dp*de
-	  local_e(j) = local_e(j) + 0.5_dp*de
-	endif
+	if (present(local_e)) local_e(i) = local_e(i) + de
 	if (present(e)) e = e + de
       endif
       if (present(f) .or. present(virial)) then
@@ -212,21 +239,19 @@ end subroutine IPModel_FB_Calc
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X 
 !% XML param reader functions.
-!% An example for XML stanza is given below, please notice that
-!% they are simply dummy parameters for testing purposes, with no physical meaning.
+!% An example for XML stanza is given below.
 !%
-!%> <LJ_params n_types="2" label="default">
-!%> <per_type_data type="1" atomic_num="29" />
-!%> <per_type_data type="2" atomic_num="79" />
-!%> <per_pair_data type1="1" type2="1" sigma="4.0" eps6="1.0" 
-!%>       eps12="1.0" cutoff="6.0" shifted="T" />
-!%> <per_pair_data type1="2" type2="2" sigma="5.0" eps6="2.0" 
-!%>       eps12="2.0" cutoff="7.5" shifted="T" />
-!%> <per_pair_data type1="1" type2="2" sigma="4.5" eps6="1.5" 
-!%>       eps12="1.5" cutoff="6.75" shifted="T" />
-!%> </LJ_params>
+!%> <FB_params n_types="2" label="default">
+!%> <!-- Flikkema & Bromley  -->
+!%> <per_type_data type="1" atomic_num="8" charge="-1.2"/>
+!%> <per_type_data type="2" atomic_num="14" charge="2.4"/>
+!%> <per_pair_data atomic_num_i="8" atomic_num_j="8" A="1428.406" B="0.358" C="41.374" r_cut="6.0" />
+!%> <per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
+!%> <per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
+!%> </FB_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=*), intent(in)   :: URI  
   character(len=*), intent(in)   :: localname
@@ -415,11 +440,3 @@ end subroutine IPModel_FB_Print
 
 end module IPModel_FB_module
 
-!<FB_params n_types="2" label="default">
-!<!-- Flikkema & Bromley  -->
-!<per_type_data type="1" atomic_num="8" charge="-1.2"/>
-!<per_type_data type="2" atomic_num="14" charge="2.4"/>
-!<per_pair_data atomic_num_i="8" atomic_num_j="8" A="1428.406" B="0.358" C="41.374" r_cut="6.0" />
-!<per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
-!<per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
-!</FB_params>

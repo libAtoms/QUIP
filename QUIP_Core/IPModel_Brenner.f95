@@ -137,12 +137,13 @@ end subroutine IPModel_Brenner_Finalise
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !% This routine computes energy, forces and the virial.
 !% Derivatives by James Kermode <jrk33@cam.ac.uk>.
-subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_Brenner), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
   real(dp), intent(out), optional :: f(:,:)        !% Forces, dimensioned as \texttt{f(3,at%N)} 
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
+  character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -159,7 +160,12 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, mpi, error)
   real(dp) :: De_ij, R1_ij, R2_ij, Re_ij, S_ij, beta_ij, delta_ij, shift_ij, w_f
   real(dp) :: a0_ijk, c0_2_ijk, d0_2_ijk, R1_rk, R2_rk, de
 
-   INIT_ERROR(error)
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -167,6 +173,23 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, mpi, error)
   if (present(virial)) virial = 0.0_dp
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
+
+  atom_mask_pointer => null()
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_Brenner_Calc args_str')) then
+        RAISE_ERROR("IPModel_Brenner_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+     endif
+     call finalise(params)
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        RAISE_ERROR("IPModel_Brenner_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.",error)
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
 
   ! Find maximum number of neighbours and allocate
   ! temporary storage for bond vectors and angles
@@ -187,6 +210,10 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, mpi, error)
 	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
+
+     if(associated(atom_mask_pointer)) then
+        if(.not. atom_mask_pointer(i)) cycle
+     endif
 
      ti = get_type(this%type_of_atomic_num, at%Z(i))
 

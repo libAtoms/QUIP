@@ -292,8 +292,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, args_str, mpi, 
 	! factor of 0.5 because Tersoff definition goes over each pair only once
 	de = 0.5_dp*(V_ij_R + v_ij_A)
 	if (present(local_e)) then
-	  local_e(i) = local_e(i) + 0.5_dp*de
-	  local_e(j) = local_e(j) + 0.5_dp*de
+	  local_e(i) = local_e(i) + de
 	endif
 	if (present(e)) then
 	  e = e + de*w_f

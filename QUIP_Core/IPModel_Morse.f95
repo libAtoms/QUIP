@@ -157,6 +157,10 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
   real(dp), pointer :: velo(:,:)
   real(dp) :: flux(3)
 
+  type(Dictionary)                :: params
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
+
    INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
@@ -184,6 +188,16 @@ subroutine IPModel_Morse_Calc(this, at, e, local_e, f, virial, args_str, mpi, er
 	end do
       endif ! n_extra_calcs
     endif ! len_trim(args_str)
+    call initialise(params)
+    call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_atom_mask_name)
+
+    if(.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Morse_Calc args_str')) then
+       RAISE_ERROR("IPModel_Morse_Calc failed to parse args_str='"//trim(args_str)//"'",error)
+    endif
+    call finalise(params)
+    if(has_atom_mask_name) then
+       RAISE_ERROR('IPModel_Morse_Calc: atom_mask_name found, but not supported', error)
+    endif
   endif ! present(args_str)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)

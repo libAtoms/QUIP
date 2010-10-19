@@ -137,12 +137,13 @@ end subroutine IPModel_FS_Finalise
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
+subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, args_str, mpi, error)
   type(IPModel_FS), intent(inout) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}. 
   real(dp), intent(out), optional :: f(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}
   real(dp), intent(out), optional :: virial(3,3)  !% Virial
+  character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -151,10 +152,14 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
   real(dp) ::  phi_tot, sqrt_phi_tot
   real(dp) ::  Ui, dU
 
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
   ! private variables for open-mp 
   real(dp) :: private_virial(3,3), private_f(3,at%N), private_e
 
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -163,6 +168,25 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
      if(size(f,1) .ne. 3 .or. size(f,2) .ne. at%N) call system_abort('IPMOdel_FS_Calc: f is the wrong size')
      f = 0.0_dp
   end if
+
+  atom_mask_pointer => null()
+  if(present(args_str)) then
+     call initialise(params)
+     call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+     if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_FS_Calc args_str')) then
+        RAISE_ERROR("IPModel_FS_Calc failed to parse args_str='"//trim(args_str)//"'", error)
+     endif
+     call finalise(params)
+
+
+     if( has_atom_mask_name ) then
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) then
+           RAISE_ERROR("IPModel_FS_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.", error)
+        endif
+     else
+        atom_mask_pointer => null()
+     endif
+  endif
 
 !$omp parallel private(i,ji,j,ti,tj,phi_tot,sqrt_phi_tot,dU,Ui,drij,rij_mag,private_virial,private_f,private_e)
 
@@ -178,7 +202,11 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
        endif
     endif
      
-     phi_tot = 0.0_dp
+    if(associated(atom_mask_pointer)) then
+       if(.not. atom_mask_pointer(i)) cycle
+    endif
+
+    phi_tot = 0.0_dp
      
     do ji=1, atoms_n_neighbours(at, i)
       j = atoms_neighbour(at, i, ji, rij_mag)
@@ -207,7 +235,7 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, mpi, error)
        tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       if (present(e) .or. present(local_e)) then
-	 Ui  = 0.5_dp * Vij(this, ti, tj, rij_mag)
+        Ui  = 0.5_dp * Vij(this, ti, tj, rij_mag)
 	if (present(local_e)) then
 	  local_e(i) = local_e(i) + Ui 
 	endif

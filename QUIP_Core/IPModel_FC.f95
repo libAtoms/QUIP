@@ -220,8 +220,12 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 #if NEIGHBOR_LOOP_OPTION == 2
   integer :: i_n1n, j_n1n
 #endif
+  type(Dictionary) :: params
+  logical, dimension(:), pointer :: atom_mask_pointer
+  logical :: has_atom_mask_name
+  character(FIELD_LENGTH) :: atom_mask_name
 
-   INIT_ERROR(error)
+  INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
   if (present(local_e)) local_e = 0.0_dp
@@ -231,6 +235,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
      f = 0.0_dp
   end if
 
+  atom_mask_pointer => null()
   if (present(args_str)) then
     if (len_trim(args_str) > 0) then
       n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
@@ -248,6 +253,16 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	end do
       endif ! n_extra_calcs
     endif ! len_trim(args_str)
+    call initialise(params)
+    call param_register(params, 'atom_mask_name', 'NONE',atom_mask_name,has_atom_mask_name)
+    if (.not. param_read_line(params,args_str,ignore_unknown=.true.,task='IPModel_FC_Calc args_str')) then
+       RAISE_ERROR("IPModel_FC_Calc failed to parse args_str='"//trim(args_str)//"'",error)
+    endif
+    call finalise(params)
+
+    if( has_atom_mask_name ) then
+       RAISE_ERROR('IPModel_FC_Calc: atom_mask_name found, but not supported', error)
+    endif
   endif ! present(args_str)
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
@@ -284,7 +299,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, args_str, mpi, error
 	is_j = .false.
       endif
 #endif
-      if ((i < j) .and. i_is_min_image) cycle
+      if((i < j) .and. i_is_min_image) cycle
       ideal_dr_mag = t%real(1,tind)
       if (ideal_dr_mag .feq. 0.0_dp) cycle
       if (is_j) then
