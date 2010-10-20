@@ -75,7 +75,7 @@ program crack
   !%
   !% \begin{figure}[b]
   !%   \centering
-  !%   \includegraphics[width=12cm]{flow-chart.eps}
+  !%   \includegraphics[width=12cm]{flow-chart}
   !%   \caption[Molecular dynamics methodology flow chart]
   !%   {\label{fig:flow-chart} Flow chart illustrating molecular dynamics
   !%   methodology used for the fracture simulations. See text for a
@@ -156,7 +156,7 @@ program crack
   !% 
   !% \begin{figure}
   !%   \centering
-  !%   \includegraphics[width=120mm]{qm-selection-crack.eps}
+  !%   \includegraphics[width=120mm]{qm-selection-crack}
   !%   \caption[Hysteretic QM selection algorithm for crack tip]{
   !%     \label{fig:qm-selection-crack} Hysteretic QM selection algorithm
   !%     applied to crack tip region. The red and blue atoms are considered
